@@ -1,0 +1,14 @@
+1680x1050
+
+1764000 pixels
+
+diffuse RGBA UBYTE 4 
++zbuffer D32 FLOAT 4
++normal RGB  UBYTE 3
++light RGBA HFLOAT 8
++spec   RGB  UBYTE 3
++final  RGBA UBYTE 4
+
+4+4+3+8+3+4 = 26 byte / pixel
+
+= .. 45Mb of framebuffers 

@@ -1,0 +1,40 @@
+package io.xol.chunkstories.voxel.core;
+
+import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.voxel.Voxel;
+import io.xol.chunkstories.voxel.VoxelFormat;
+import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.chunkstories.voxel.models.VoxelModels;
+
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
+
+public class Voxel8Steps extends Voxel
+{
+	VoxelModel[] steps = new VoxelModel[8];
+
+	public Voxel8Steps(int id, String name)
+	{
+		super(id, name);
+		for(int i = 0; i < 8; i++)
+			steps[i] = VoxelModels.getVoxelModel("steps.m"+i);
+		// System.out.println("kekzer");
+	}
+
+	public VoxelModel getVoxelModel(BlockRenderInfo info)
+	{
+		return steps[info.getMetaData() % 8];
+	}
+
+	public CollisionBox[] getCollisionBoxes(int data)
+	{
+		//System.out.println("kek");
+		int meta = VoxelFormat.meta(data);
+		CollisionBox box2 = new CollisionBox(1, (meta % 8 + 1) / 8f, 1);
+		box2.translate(0.5, -1, 0.5);
+		return new CollisionBox[] { box2 };
+		//return super.getCollisionBoxes(data);
+	}
+}

@@ -1,0 +1,132 @@
+package io.xol.chunkstories.world;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+import io.xol.chunkstories.net.packets.Packet01WorldInfo;
+import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.world.World.WorldSize;
+import io.xol.chunkstories.world.generator.BlankWorldAccessor;
+import io.xol.chunkstories.world.generator.PerlinWorldAccessor;
+
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
+
+public class WorldInfo
+{
+	File folder;
+
+	public String internalName = "";
+	public String name;
+	public String seed;
+	public String description = "";
+	public WorldSize size;
+	public String generator;
+
+	public WorldInfo(String fileContents, String internalName)
+	{
+		this.internalName = internalName;
+		for (String line : fileContents.split("\n"))
+			readLine(line);
+	}
+
+	public WorldInfo(File file, String internalName)
+	{
+		try
+		{
+			this.internalName = internalName;
+
+			FileReader fileReader = new FileReader(file);
+			BufferedReader reader = new BufferedReader(fileReader);
+			String line = "";
+			while ((line = reader.readLine()) != null)
+			{
+				readLine(line);
+			}
+			reader.close();
+			folder = file.getParentFile();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	void readLine(String line)
+	{
+		if (!line.startsWith("#"))
+		{
+			if(!line.contains(":"))
+				return;
+			String[] splitted = line.split(": ");
+			String parameterName = splitted[0];
+			String parameterValue = splitted[1];
+			switch (parameterName)
+			{
+			case "name":
+				name = parameterValue;
+				break;
+			case "seed":
+				seed = parameterValue;
+				break;
+			case "worldgen":
+				generator = parameterValue;
+				break;
+			case "size":
+				size = WorldSize.getWorldSize(parameterValue);
+				break;
+			case "description":
+				description = parameterValue;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	public void save(File file)
+	{
+		try
+		{
+			if(!file.getParentFile().exists())
+				file.getParentFile().mkdirs();
+			Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+			for (String line : saveText())
+				out.write(line + "\n");
+			out.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public String[] saveText()
+	{
+		return new String[] { "name: " + name, "seed: " + seed, "worldgen: " + generator, "size: " + size.name() };
+	}
+
+	public WorldAccessor getAccessor()
+	{
+		WorldAccessor accessor = null;
+		if (generator.equals("blank"))
+			accessor = new BlankWorldAccessor();
+		else if (generator.equals("perlin"))
+			accessor = new PerlinWorldAccessor();
+		return accessor;
+	}
+
+	public void sendInfo(ServerClient sender)
+	{
+		Packet01WorldInfo packet = new Packet01WorldInfo(false);
+		packet.info = this;
+		sender.sendPacket(packet);
+	}
+}

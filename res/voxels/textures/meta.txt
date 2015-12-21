@@ -1,0 +1,17 @@
+# Special textures data
+
+texture stone
+	textureScale: 2
+end
+
+texture smoothstone
+	textureScale: 2
+end
+
+texture bricks2
+	textureScale: 4
+end
+
+texture redbricks
+	textureScale: 4
+end

@@ -1,0 +1,225 @@
+# ChunkStories
+# Voxel definition format 0.1
+
+voxel air 0
+	solid: false
+	opaque: false
+end
+
+voxel stone 1
+	#textures: 'rocks', 'rocks', 'rocks', 'rocks', 'rocks', 'rocks'
+end
+
+voxel grass 2
+	textures: '~', 'dirt', '~side', '~side', '~side', '~side'
+end
+
+voxel dirt 3
+end
+
+voxel wood 4
+end
+
+voxel leaves 5
+	opaque: false
+	selfOpaque: false
+	affectedByWind: true
+end
+
+voxel forestgrass 6
+	textures: '~', 'dirt', '~side', '~side', '~side', '~side'
+end
+
+voxel drygrass 7
+	textures: '~', 'dirt', '~side', '~side', '~side', '~side'
+end
+
+voxel pinewood 8
+end
+
+voxel pineleaves 9
+	opaque: false
+	selfOpaque: false
+	affectedByWind: true
+end
+
+voxel bricks 10
+	#textures: 'bricks2', 'bricks2', 'bricks2', 'bricks2', 'bricks2', 'bricks2'
+end
+
+voxel gravel 11
+end
+
+voxel sand 12
+	#textures: 'sand2', 'sand2', 'sand2', 'sand2', 'sand2', 'sand2'
+end
+
+voxel cactus 13
+	textures: '~top', '~', '~side', '~side', '~side', '~side'
+end
+
+voxel planks 14
+	#textures: 'wood2', 'wood2', 'wood2', 'wood2', 'wood2', 'wood2'
+end
+
+voxel glass 15
+	opaque: false
+	selfOpaque: true
+end
+
+voxel glowing 16
+	emitting: 15
+end
+
+voxel snow 17 io.xol.chunkstories.voxel.core.Voxel8Steps
+	opaque: false
+	model: 'steps.m0'
+end
+
+voxel smoothstone 18
+end
+
+voxel birchleaves 19
+	opaque: false
+	selfOpaque: false
+	affectedByWind: true
+end
+
+voxel whool 20 io.xol.chunkstories.voxel.core.VoxelMeta16
+end
+
+voxel redBricks 23
+	texture: redbricks16
+end
+
+voxel colored 24 io.xol.chunkstories.voxel.core.VoxelMeta16
+end
+
+voxel ironGrill 25 io.xol.chunkstories.voxel.core.VoxelPane
+	opaque: false
+	isProp: true
+	selfOpaque: true
+	#texture: debug
+end
+
+voxel woodFence 26 io.xol.chunkstories.voxel.core.VoxelFence
+	opaque: false
+	isProp: true
+	selfOpaque: true
+	texture: planks
+end
+
+voxel cobble 27
+end
+
+voxel andesite 28
+end
+
+voxel stonebrick 29
+end
+
+voxel stonebrickcracked 30
+end
+
+voxel stonebrickmossy 31
+end
+
+voxel glassPane 32 io.xol.chunkstories.voxel.core.VoxelPane
+	opaque: false
+	isProp: true
+	texture: glass
+	selfOpaque: true
+end
+
+voxel ladder 33 io.xol.chunkstories.voxel.core.VoxelLadder
+	opaque: false
+	isProp: true
+	solid: false
+end
+
+voxel vine 34 io.xol.chunkstories.voxel.core.VoxelVine
+	opaque: false
+	isProp: true
+	solid: false
+end
+
+voxel torch 35
+	solid: false
+	opaque: false
+	model: 'torch'
+	emitting: 15
+	collisionBox: [0.0, 0.0, 0.0, 1.0, 1.0, 1.0]
+end
+
+voxel soil 36
+	opaque: false
+	selfOpaque: true
+	model: 'steps.m6'
+	collisionBox: [0.0, 0.0, 0.0, 1.0, 0.875, 1.0]
+end
+
+voxel snowblock 37
+	texture: snow
+end
+
+voxel web 51
+	solid: false
+	opaque: false
+	model: 'grass'
+	#models: '~'
+	collisionBox: [0.0, 0.0, 0.0, 1.0, 1.0, 1.0]
+end
+
+voxel yellowflower 52
+	solid: false
+	opaque: false
+	model: 'grass'
+	#models: '~'
+	collisionBox: [0.0, 0.0, 0.0, 1.0, 1.0, 1.0]
+	affectedByWind: true
+end
+
+voxel redflower 53
+	solid: false
+	opaque: false
+	model: 'grass'
+	#models: '~'
+	collisionBox: [0.0, 0.0, 0.0, 1.0, 1.0, 1.0]
+	affectedByWind: true
+end
+
+voxel ironblock 54
+end
+
+voxel glowoff 55
+end
+
+voxel rails 66
+	solid: false
+	opaque: false
+	model: 'rails'
+end
+
+voxel grass_prop 64
+	solid: false
+	opaque: false
+	model: 'grass'
+	#models: '~'
+	collisionBox: [0.0, 0.0, 0.0, 1.0, 1.0, 1.0]
+	affectedByWind: true
+end
+
+voxel forestgrass_prop 65
+	solid: false
+	opaque: false
+	model: 'grass'
+	#models: '~' // one for each possible metadata value.
+	collisionBox: [0.0, 0.0, 0.0, 1.0, 1.0, 1.0]
+	affectedByWind: true
+end
+
+voxel water 128
+	solid: false
+	opaque: false
+	liquid: true
+end

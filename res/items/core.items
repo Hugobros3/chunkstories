@@ -1,0 +1,5 @@
+# Here you get/have to assign items their ID and class.
+
+item 1 io.xol.chunkstories.item.core.ItemAk47
+item 2 io.xol.chunkstories.item.core.ItemAk47Magazine
+item 3 io.xol.chunkstories.item.core.ItemHeGrenade

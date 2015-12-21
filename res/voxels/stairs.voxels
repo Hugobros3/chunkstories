@@ -1,0 +1,23 @@
+voxel stonebrickStairs 21 io.xol.chunkstories.voxel.core.VoxelStairs
+	texture: stonebrick
+	opaque: false
+	model: 'stairs.m0'
+end
+
+voxel cobbleStairs 49 io.xol.chunkstories.voxel.core.VoxelStairs
+	texture: stonebrick
+	opaque: false
+	model: 'stairs.m0'
+end
+
+voxel brickStairs 22 io.xol.chunkstories.voxel.core.VoxelStairs
+	texture: redbricks16
+	opaque: false
+	model: 'stairs.m0'
+end
+
+voxel woodStairs 50 io.xol.chunkstories.voxel.core.VoxelStairs
+	texture: planks
+	opaque: false
+	model: 'stairs.m0'
+end

@@ -1,0 +1,157 @@
+package io.xol.chunkstories.entity.core;
+
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
+
+import static org.lwjgl.opengl.GL11.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
+
+import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityHUD;
+import io.xol.chunkstories.renderer.Camera;
+import io.xol.chunkstories.voxel.VoxelFormat;
+import io.xol.chunkstories.world.World;
+import io.xol.engine.base.TexturesHandler;
+import io.xol.engine.base.font.TrueTypeFont;
+import io.xol.engine.model.ModelLibrary;
+import io.xol.engine.model.RenderingContext;
+import io.xol.engine.model.animation.BVHAnimation;
+import io.xol.engine.model.animation.BVHLibrary;
+import io.xol.engine.model.animation.Bone;
+
+public class EntityTest extends Entity implements EntityHUD
+{
+
+	int i = 0;
+
+	public EntityTest(World w, double x, double y, double z)
+	{
+		super(w, x, y, z);
+		//anim = new BVHAnimation(new File("res/models/human.bvh"));
+	}
+
+	public boolean renderable()
+	{
+		return true;
+	}
+
+	//BVHAnimation anim;
+
+	public void render()
+	{
+		// if(Math.random() > 0.9)
+		i++;
+		i %= 80;
+		// System.out.println("rendering entity test");
+		RenderingContext.setDiffuseTexture(TexturesHandler.idTexture("res/models/hogubrus3.png"));
+		RenderingContext.setNormalTexture(TexturesHandler.idTexture("res/textures/normalnormal.png"));
+		RenderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
+		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
+		int lightSky = VoxelFormat.sunlight(modelBlockData);
+		int lightBlock = VoxelFormat.blocklight(modelBlockData);
+		RenderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+
+		RenderingContext.renderingShader.setUniformMatrix4f("localTransform", new Matrix4f());
+		//debugDraw();
+		//ModelLibrary.loadAndRenderMesh("res/models/human.obj");
+		ModelLibrary.loadAndRenderAnimatedMesh("res/models/human.obj", "res/models/human-fixed-standstill.bvh", i);
+	}
+
+	public void debugDraw()
+	{
+		// Debug this shit
+		// System.out.println("Debug draw");
+		BVHAnimation anim = BVHLibrary.getAnimation("res/models/human-fixed-standstill.bvh");
+		
+		for (Bone b : anim.bones)
+		{
+			Matrix4f transform = anim.getTransformationForBone(b.name, i);
+			debugDraw(0.2f, 0.2f, 0.2f, (float) posX, (float) posY , (float) posZ, transform);
+		}
+	}
+	
+	List<float[]> kek = new ArrayList<float[]>();
+
+	void addToList(Matrix4f m, float a, float b, float c, float x, float y, float z)
+	{
+		a -= x;
+		b -= y;
+		c -= z;
+		Vector4f vertex = new Vector4f(a, b, c, 1);
+		Matrix4f.transform(m, vertex, vertex);
+		kek.add(new float[]{vertex.x + x, vertex.y + y, -vertex.z + z});
+	}
+	
+	public void debugDraw(float r, float g, float b, float xpos, float ypos, float zpos, Matrix4f transform)
+	{
+		kek.clear();
+		// glTranslated(xpos-xw/2,ypos,zpos-zw/2);
+		float xw = 0.05f;
+		float zw = 0.05f;
+		float h = 0.0f;
+		//System.out.println("Debug drawing at "+xpos+" y:"+ypos+" z:"+(zpos-zw/2));
+
+		//glDisable(GL_TEXTURE_2D);
+		glColor4f(r, g, b, 1f);
+		glLineWidth(2);
+		glDisable(GL_CULL_FACE);
+		glDepthFunc(GL_LEQUAL);
+		// glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		// glBlendFunc(GL_ONE_MINUS_SRC_COLOR,GL_ONE);
+		glBegin(GL_LINES);
+		
+		addToList(transform, xpos - xw / 2, ypos, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos - xw / 2, ypos, zpos + zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos, zpos + zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos, zpos + zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos - xw / 2, ypos, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos - xw / 2, ypos, zpos + zw / 2, xpos, ypos, zpos);
+
+		addToList(transform, xpos - xw / 2, ypos + h, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos + h, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos - xw / 2, ypos + h, zpos + zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos + h, zpos + zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos + h, zpos + zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos + h, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos - xw / 2, ypos + h, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos - xw / 2, ypos + h, zpos + zw / 2, xpos, ypos, zpos);
+
+		addToList(transform, xpos - xw / 2, ypos, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos - xw / 2, ypos + h, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos - xw / 2, ypos, zpos + zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos - xw / 2, ypos + h, zpos + zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos + h, zpos - zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos, zpos + zw / 2, xpos, ypos, zpos);
+		addToList(transform, xpos + xw / 2, ypos + h, zpos + zw / 2, xpos, ypos, zpos);
+		
+		for(float[] k : kek)
+		{
+			glVertex3d(k[0], k[1], k[2]);
+		}
+		glEnd();
+	}
+
+
+	@Override
+	public void drawHUD(Camera camera)
+	{
+		// TODO Auto-generated method stub
+		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float)posX, (float)posY + 2.5f, (float)posZ));
+		
+		float scale = posOnScreen.z;
+		float dekal = TrueTypeFont.arial12.getWidth("Player")*16*scale;
+		if(scale > 0)
+			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x-dekal/2, posOnScreen.y, "Player", 16*scale, 16*scale, new Vector4f(1,1,1,1));
+	}
+}

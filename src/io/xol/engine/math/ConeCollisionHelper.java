@@ -1,0 +1,57 @@
+package io.xol.engine.math;
+
+import org.lwjgl.util.vector.Vector3f;
+
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
+
+public class ConeCollisionHelper
+{
+
+	public static boolean isPointInCone(float px, float py, float pz,
+			float cox, float coy, float coz, float ctx, float cty, float ctz,
+			float angle)
+	{
+		return false;
+	}
+
+	public static boolean isPointInCone(Vector3f point, Vector3f coneOrigin,
+			Vector3f coneVector)
+	{
+		Vector3f viewerToChunk = new Vector3f();
+		Vector3f.sub(point, coneOrigin, viewerToChunk);
+
+		viewerToChunk = viewerToChunk.normalise(viewerToChunk);
+		coneOrigin = coneOrigin.normalise(coneVector);
+
+		float dot = Vector3f.dot(viewerToChunk, coneVector);
+		float dotFOV = (float) Math.cos(90 * 1.6 / 180d * Math.PI);
+
+		// System.out.println("Dot product : "+dot+" - "+dotFOV+" vtc:"+viewerToChunk.toString());
+
+		if (dot < dotFOV)
+			return false;
+
+		return true;
+	}
+
+	/*
+	 * public static boolean isPointInCone(Vector3f point, Vector3f coneOrigin,
+	 * Vector3f coneTarget, float angle) { float workingAngle = (float)
+	 * (angle/360f*Math.PI);
+	 * 
+	 * Vector3f coneToPoint = new Vector3f(); Vector3f.sub(coneOrigin, point,
+	 * coneToPoint);
+	 * 
+	 * Vector3f coneVector = new Vector3f(); Vector3f.sub(coneOrigin,
+	 * coneTarget, coneVector);
+	 * 
+	 * boolean stopHere = Vector3f.dot(coneToPoint,
+	 * coneVector)/coneToPoint.length()/coneVector.length() <
+	 * Math.cos(workingAngle); if(stopHere) return false;
+	 * 
+	 * return Vector3f.dot(coneToPoint, coneVector)/coneVector.length() <
+	 * coneVector.length(); }
+	 */
+}

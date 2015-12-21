@@ -1,0 +1,51 @@
+package io.xol.chunkstories.physics.particules;
+
+import io.xol.chunkstories.world.World;
+import static io.xol.chunkstories.physics.particules.Particle.Type.*;
+
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
+
+public class ParticleSmoke extends Particle
+{
+
+	int timer = 600;// for 10sec
+
+	public Type getType()
+	{
+		return SMOKE;
+	}
+
+	public void update()
+	{
+		/*
+		 * if(!world.checkCollisionPoint(posX, posY, posZ)) {
+		 * 
+		 * }
+		 */
+		timer--;
+		if (timer < 0)
+			kill();
+		posY += (Math.random() - 0.1) * 0.015;
+		posX += (Math.random() - 0.5) * 0.015;
+		posZ += (Math.random() - 0.5) * 0.015;
+	}
+
+	public ParticleSmoke(World world, double posX, double posY, double posZ)
+	{
+		super(world, posX, posY, posZ);
+	}
+
+	@Override
+	public String getTextureName()
+	{
+		return "./res/textures/smoke2.png";
+	}
+
+	@Override
+	public Float getSize()
+	{
+		return 0.05f;
+	}
+}

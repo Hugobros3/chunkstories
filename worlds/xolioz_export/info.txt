@@ -1,0 +1,4 @@
+name: XolioZ Classic for ChunkStories
+seed: null
+worldgen: blank
+size: SMALL
