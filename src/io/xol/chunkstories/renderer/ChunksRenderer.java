@@ -50,20 +50,7 @@ public class ChunksRenderer extends Thread
 	public void addTask(int chunkX, int chunkY, int chunkZ, boolean priority)
 	{
 		int[] request = new int[] { chunkX, chunkY, chunkZ };
-		/*synchronized (todo) // Lock todo
-		{
-			// Don't add it twice !
-			boolean mayAdd = true;
-			int[] lelz;
-			for (int i = 0; i < todo.size(); i++)
-			{
-				lelz = todo.get(i);
-				if (lelz[0] == request[0] && lelz[1] == request[1] && lelz[2] == request[2])
-					mayAdd = false;
-			}
-			if (mayAdd)
-				todo.add(request);
-		}*/
+		
 		Iterator<int[]> iter = todo.iterator();
 		int[] lelz;
 		while(iter.hasNext())
@@ -98,21 +85,6 @@ public class ChunksRenderer extends Thread
 
 	public void purgeUselessWork(int pCX, int pCY, int pCZ, int sizeInChunks, int chunksViewDistance)
 	{
-		/*synchronized (todo)
-		{
-			int[] request;// = new int[]{chunkX, chunkY, chunkZ};
-			int i = 0;
-			while (i < todo.size())
-			{
-				request = todo.get(i);
-				if ((LoopingMathHelper.moduloDistance(request[0], pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(request[2], pCZ, sizeInChunks) > chunksViewDistance) || (Math.abs(request[1] - pCY) > 4))
-				{
-					todo.remove(i);
-				}
-				else
-					i++;
-			}
-		}*/
 		Iterator<int[]> iter = todo.iterator();
 		int[] request;
 		while(iter.hasNext())
@@ -144,35 +116,6 @@ public class ChunksRenderer extends Thread
 		worldSizeInChunks = world.getSizeInChunks();
 		while (!die.get())
 		{
-			/*synchronized (todo)
-			{
-				if (todo.size() <= 0)
-				{
-					// If queue empty, we set out to sleep
-					sleep = true;
-				}
-				else
-				{
-					// Else we grab a chunk
-					task = todo.remove(0);// todo.remove(todo.size()-1);
-				}
-			}*/
-			
-			// As weird as it may seem it is necessary to separate todo list
-			// accession in an synch event from the time-consuming processing,
-			// as an unsynch add event can break the loop : if we add an already
-			// present request we delete it first, and
-			// with a bid of bad luck it will do that just after we checked for
-			// the list to not be empty and it will crash.
-
-			// Aussi étrange que ça puisse sembler, il est bien nécéssaire de
-			// séparer l'accession de la pile de tâches ( qu'on ne fait pourtant
-			// que lire )
-			// de l'éxécution dans un bloc "synch". En effet, quand on ajoute un
-			// nouvel élément dans la liste, on supprime tout élément redondant
-			// y figurant déjà,
-			// et si on manque de chance on peut supprimmer la tâche sur
-			// laquelel on travaille
 			int[] task = todo.pollFirst();
 			if (task == null)
 			{
@@ -182,7 +125,6 @@ public class ChunksRenderer extends Thread
 					{
 						wait();
 					}
-					// Thread.sleep(30L);
 				}
 				catch (InterruptedException e)
 				{
@@ -218,11 +160,6 @@ public class ChunksRenderer extends Thread
 						 */
 					}
 				}
-				/*
-				 * else { //If can't do it, reschedule it (todo) {
-				 * todo.add(task); } }
-				 */
-				// System.out.println("rendering chunk took "+(System.currentTimeMillis()-t)+"ms");
 			}
 		}
 		System.out.println("Stopping Chunk Renderer thread !");
@@ -239,20 +176,6 @@ public class ChunksRenderer extends Thread
 			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
 		return data;
 	}
-	
-	/*private int getBlockTypeID(CubicChunk c, int x, int y, int z)
-	{
-		int data = 0;
-		// System.out.println("y:"+y);
-		if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
-		{
-			// System.out.println("Direct dataget");
-			data = c.getDataAt(x, y, z);
-		}
-		else
-			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
-		return VoxelFormat.id(data);
-	}*/
 
 	CubicChunk cached;
 
@@ -266,8 +189,6 @@ public class ChunksRenderer extends Thread
 		if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
 		{
 			data = c.getDataAt(x, y, z);
-			// data =
-			// Client.world.getDataAt(c.chunkX*32+x,c.chunkY*32+y,c.chunkZ*32+z);
 		}
 		else
 		{
@@ -354,7 +275,7 @@ public class ChunksRenderer extends Thread
 
 	private void addQuadTop(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
 	{
-		normals.add(new int[] { intifyNormal(0), intifyNormal(1), intifyNormal(0) });
+		normals.add(new int[] { 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */ });
 
 		int llMs = getSunlight(c, sx, sy + 1, sz);
 		int llMb = getBlocklight(c, sx, sy + 1, sz);
@@ -442,7 +363,7 @@ public class ChunksRenderer extends Thread
 	private void addQuadBottom(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
 	{
 
-		normals.add(new int[] { intifyNormal(0), intifyNormal(-1), intifyNormal(0) });
+		normals.add(new int[] { 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */ });
 
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
@@ -513,7 +434,7 @@ public class ChunksRenderer extends Thread
 	{
 		// ++x for dekal
 
-		normals.add(new int[] { intifyNormal(1), intifyNormal(0), intifyNormal(0) });
+		normals.add(new int[] { 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */ });
 		// +1 -1 0
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
@@ -600,7 +521,7 @@ public class ChunksRenderer extends Thread
 	private void addQuadLeft(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
 	{
 
-		normals.add(new int[] { intifyNormal(-1), intifyNormal(0), intifyNormal(0) });
+		normals.add(new int[] { 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */ });
 
 		int llMs = getSunlight(c, sx - 1, sy, sz);
 		int llMb = getBlocklight(c, sx - 1, sy, sz);
@@ -680,7 +601,7 @@ public class ChunksRenderer extends Thread
 
 	private void addQuadFront(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
 	{
-		normals.add(new int[] { intifyNormal(0), intifyNormal(0), intifyNormal(1) });
+		normals.add(new int[] { 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */ });
 
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
@@ -765,7 +686,7 @@ public class ChunksRenderer extends Thread
 	private void addQuadBack(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
 	{
 
-		normals.add(new int[] { intifyNormal(0), intifyNormal(0), intifyNormal(-1) });
+		normals.add(new int[] { 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */ });
 
 		int llMs = getSunlight(c, sx, sy, sz - 1);
 		int llMb = getBlocklight(c, sx, sy, sz - 1);
@@ -943,6 +864,9 @@ public class ChunksRenderer extends Thread
 		return false;
 	}
 
+	public static long renderStart = 0;
+	
+	@SuppressWarnings("unused")
 	private void renderChunk(CubicChunk work)
 	{
 		// Update lightning as well if needed
@@ -955,7 +879,7 @@ public class ChunksRenderer extends Thread
 		if(!work.need_render)
 			return;
 
-		System.currentTimeMillis();
+		long cr_start = System.currentTimeMillis();
 		
 		int cx = work.chunkX;
 		int cy = work.chunkY;
@@ -985,19 +909,25 @@ public class ChunksRenderer extends Thread
 		isWavy_complex.clear();
 		normals_complex.clear();
 
-		System.currentTimeMillis();
+		long cr_iter = System.currentTimeMillis();
 		
 		BlockRenderInfo renderInfo = new BlockRenderInfo();
 
-		for (int i = 0; i < 32; i++)
+		int i,j,k;
+		//Don't waste time rendering void chunks m8
+		if(work.dataPointer == -1)
+			i = 32;
+		for (i = 0; i < 32; i++)
 		{
-			for (int j = 0; j < 32; j++)
+			for (j = 0; j < 32; j++)
 			{
-				for (int k = 0; k < 32; k++)
+				for (k = 0; k < 32; k++)
 				{
 					int src = work.getDataAt(i, k, j);
 					int blockID = VoxelFormat.id(src);
-					//int blockMeta = VoxelFormat.meta(src);
+					
+					if(blockID == 0)
+						continue;
 					Voxel vox = VoxelTypes.get(blockID);
 					// Fill near-blocks info
 					renderInfo.data = src;
@@ -1014,7 +944,6 @@ public class ChunksRenderer extends Thread
 					if (vox.isVoxelProp())
 					{
 						// Prop rendering
-						// TODO use custom models instead of prefabs
 						addProp(work, vertices_complex, texcoords_complex, colors_complex, normals_complex, i, k, j, renderInfo);
 					}
 					else if (vox.isVoxelLiquid())
@@ -1079,9 +1008,8 @@ public class ChunksRenderer extends Thread
 				}
 			}
 		}
-
-
-		System.currentTimeMillis();
+		
+		long cr_convert = System.currentTimeMillis();
 		
 		// Convert to floatBuffer
 		VBOData rslt = new VBOData();
@@ -1096,52 +1024,28 @@ public class ChunksRenderer extends Thread
 
 		rslt.buf = BufferUtils.createByteBuffer(rsltSize);
 
+		long cr_buffer = System.currentTimeMillis();
+		
 		rslt.s_normal = vertices.size();
 		rslt.s_complex = vertices_complex.size();
 		rslt.s_water = vertices_water.size();
 		for (float[] f : vertices)
 		{
-			// Floats regular
-			/*
-			 * rslt.buf.putFloat(f[0]); rslt.buf.putFloat(f[1]);
-			 * rslt.buf.putFloat(f[2]);
-			 */
-
-			/*
-			 * f[0]+=work.chunkX*32; f[1]+=work.chunkY*32; f[2]+=work.chunkZ*32;
-			 * for(float z : f) { rslt.buf.putFloat(z); int kek =
-			 * Float.floatToIntBits(z); rslt.buf.put((byte)((kek) & 0xFF));
-			 * rslt.buf.put((byte)((kek >> 8) & 0xFF)); rslt.buf.put((byte)((kek
-			 * >> 16) & 0xFF)); rslt.buf.put((byte)((kek >> 24) & 0xFF)); }
-			 */
-
-			// Half-floats
-
-			/*
-			 * for(float z : f) { int kek = this.fromFloat(z);
-			 * rslt.buf.put((byte)((kek) & 0xFF)); rslt.buf.put((byte)(((kek) >>
-			 * 8) & 0x00FF)); //System.out.println(z+":"+kek+":"+((byte)((kek) &
-			 * 0xFF))+":"+((byte)(((kek) >> 8) & 0x00FF))); } //Padding
-			 * rslt.buf.put((byte)0); rslt.buf.put((byte)0);
-			 */
-
 			// Packed 2_10_10_10
-			
 			int a = (int) ((f[0])) & 0x3FF;
 			int b = ((int) ((f[1])) & 0x3FF) << 10;
 			int c = ((int) ((f[2])) & 0x3FF) << 20;
-			int kek = a + b + c;
+			int kek = a | b | c;
 			rslt.buf.putInt(kek);
 		}
 		for (int[] f : texcoords)
 		{
 			for (int z : f)
 			{
-				// z*= 32768;
+				// z*= 32768; not needed anymore, done b4
 				rslt.buf.put((byte) ((z) & 0xFF));
 				rslt.buf.put((byte) ((z >> 8) & 0xFF));
 			}
-			// Padding
 		}
 		for (float[] f : colors)
 		{
@@ -1153,27 +1057,27 @@ public class ChunksRenderer extends Thread
 		int count = 0;
 		for (int[] f : normals)
 		{
-			for (int i = 0; i < 6; i++)
-			{
-				//int a = (int) ((f[0] + 1) * 0.5 * 1023) & 0x3FF;
-				//int b = ((int) ((f[1] + 1) * 0.5 * 1023) & 0x3FF) << 10;
-				//int c = ((int) ((f[2] + 1) * 0.5 * 1023) & 0x3FF) << 20;
+			//for (i = 0; i < 6; i++)
+			//{
 				
-				int a = (int) f[0] & 0x3FF;
-				int b = (int) ((f[1] & 0x3FF) << 10);
-				int c = (int) ((f[2] & 0x3FF) << 20);
+			int a = (int) f[0] & 0x3FF;
+			int b = (int) ((f[1] & 0x3FF) << 10);
+			int c = (int) ((f[2] & 0x3FF) << 20);
+			
+			boolean booleanProp = isWavy.get(count);
+			int d = (booleanProp ? 1 : 0 ) << 30;
+			int kek = a | b | c | d;
+			
+			// Loop unrolling
+			rslt.buf.putInt(kek);
+			rslt.buf.putInt(kek);
+			rslt.buf.putInt(kek);
+			
+			rslt.buf.putInt(kek);
+			rslt.buf.putInt(kek);
+			rslt.buf.putInt(kek);
 				
-				boolean booleanProp = isWavy.get(count);
-				int d = (booleanProp ? 1 : 0 ) << 30;
-				int kek = a + b + c + d;
-				rslt.buf.putInt(kek);
-				/*
-				 * rslt.buf.put((byte)((kek >> 0) & 0x000F));
-				 * rslt.buf.put((byte)((kek >> 8) & 0x00F0));
-				 * rslt.buf.put((byte)((kek >> 16) & 0x0F00));
-				 * rslt.buf.put((byte)((kek >> 24) & 0xF000));
-				 */
-			}
+			//}
 			count++;
 		}
 		// Water
@@ -1184,7 +1088,7 @@ public class ChunksRenderer extends Thread
 			int a = (int) ((f[0])) & 0x3FF;
 			int b = ((int) ((f[1])) & 0x3FF) << 10;
 			int c = ((int) ((f[2])) & 0x3FF) << 20;
-			int kek = a + b + c;
+			int kek = a | b | c;
 			rslt.buf.putInt(kek);
 		}
 		for (int[] f : texcoords_water)
@@ -1194,7 +1098,6 @@ public class ChunksRenderer extends Thread
 				rslt.buf.put((byte) (z & 0xFF));
 				rslt.buf.put((byte) ((z >> 8) & 0xFF));
 			}
-			// Padding
 		}
 		for (float[] f : colors_water)
 		{
@@ -1205,33 +1108,26 @@ public class ChunksRenderer extends Thread
 		}
 		for (int[] f : normals_water)
 		{
-			for (int i = 0; i < 6; i++)
-			{
-				/*int a = (int) ((f[0] + 1) * 0.5 * 1023) & 0x3FF;
-				int b = ((int) ((f[1] + 1) * 0.5 * 1023) & 0x3FF) << 10;
-				int c = ((int) ((f[2] + 1) * 0.5 * 1023) & 0x3FF) << 20;*/
+			//for (i = 0; i < 6; i++)
+			//{
+			int a = (int) f[0] & 0x3FF;
+			int b = (int) ((f[1] & 0x3FF) << 10);
+			int c = (int) ((f[2] & 0x3FF) << 20);
+			int kek = a | b | c;
+			rslt.buf.putInt(kek);
+			rslt.buf.putInt(kek);
+			rslt.buf.putInt(kek);
 
-				int a = (int) f[0] & 0x3FF;
-				int b = (int) ((f[1] & 0x3FF) << 10);
-				int c = (int) ((f[2] & 0x3FF) << 20);
-				int kek = a + b + c;
-				rslt.buf.putInt(kek);
-			}
+			rslt.buf.putInt(kek);
+			rslt.buf.putInt(kek);
+			rslt.buf.putInt(kek);
+			//}
 		}
 		// Complex objects
 		for (float[] f : vertices_complex)
 		{
-			/*
-			 * for (float z : f) { int kek = this.fromFloat(z);
-			 * rslt.buf.put((byte) ((kek) & 0xFF)); rslt.buf.put((byte) (((kek)
-			 * >> 8) & 0x00FF)); //
-			 * System.out.println(z+":"+kek+":"+((byte)((kek) & //
-			 * 0xFF))+":"+((byte)(((kek) >> 8) & 0x00FF))); } // Padding
-			 * rslt.buf.put((byte) 0); rslt.buf.put((byte) 0);
-			 */
 			for (float z : f)
 				rslt.buf.putFloat(z);
-			// 3x4
 		}
 		for (int[] f : texcoords_complex)
 		{
@@ -1248,40 +1144,35 @@ public class ChunksRenderer extends Thread
 				rslt.buf.put((byte) (z * 255));
 			// Padding
 			rslt.buf.put((byte) 0);
-
 			// 3x1 + 1
 		}
 		count = 0;
 		for (float[] f : normals_complex)
 		{
-			int a = (int) ((f[0] + 1) * 0.5 * 1023) & 0x3FF;
-			int b = ((int) ((f[1] + 1) * 0.5 * 1023) & 0x3FF) << 10;
-			int c = ((int) ((f[2] + 1) * 0.5 * 1023) & 0x3FF) << 20;
+			int a = (int) ((f[0] + 1) * 511.5f) & 0x3FF;
+			int b = ((int) ((f[1] + 1) * 511.5f) & 0x3FF) << 10;
+			int c = ((int) ((f[2] + 1) * 511.5f) & 0x3FF) << 20;
 			boolean booleanProp = isWavy_complex.get(count);
 			int d = (booleanProp ? 1 : 0 ) << 30;
-			int kek = a + b + c + d;
+			int kek = a | b | c | d;
 			rslt.buf.putInt(kek);
 			count++;
-			// 4
 		}
-
-		// System.out.println("gtvbo:"+(5+3)*vertices.size()+"vertices:"+vertices.size()+"texcoords:"+texcoords.size()+"colors:"+colors.size());
 		rslt.buf.flip();
 		// System.out.println("Final vbo size = "+rsltSize*4);
-		
-		//System.out.println("Took "+(System.currentTimeMillis() - start)+"ms clear: " + clear + "ms, iter: "+ iter+"ms, convert: "+convert+" total:"+totalChunksRendered);
-		
+		long lol = 0;
+		System.out.println("Took "+(System.currentTimeMillis() - cr_start)+"ms total ; "+(cr_iter-cr_start)+" init, "+(cr_convert-cr_iter)+" iter, "
+				+(cr_buffer-cr_convert)+" buffer, "+(System.currentTimeMillis()-cr_buffer)+" convert since RS:"+(System.currentTimeMillis()-ChunksRenderer.renderStart)+" ratio S/C : "+(1f+vertices.size())/(1f+vertices_complex.size())) ;
 		done.add(rslt);
 		
 		totalChunksRendered.incrementAndGet();
 		
 		work.need_render = false;
-		// work.geometrySize = vertices.size();
 	}
 
 	int intifyNormal(float n)
 	{
-		return (int)((n + 1) * 0.5 * 1023);
+		return (int)((n + 1) * 511.5f);
 	}
 	
 	public AtomicInteger totalChunksRendered = new AtomicInteger();

@@ -58,10 +58,6 @@ public class CubicChunk
 			// System.out.println("lol null datapointer");
 			return 0;
 		}
-		else if (dataPointer == -2)
-		{
-			return 1;
-		}
 		else
 		{
 			x %= 32;

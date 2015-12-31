@@ -37,6 +37,9 @@ public class ShaderProgram
 
 	FloatBuffer matrix4fBuffer = BufferUtils.createFloatBuffer(16);
 
+	Map<String, Integer> uniforms = new HashMap<String, Integer>();
+	Map<String, Integer> attributes = new HashMap<String, Integer>();
+	
 	protected ShaderProgram(String filename)
 	{
 		this.filename = filename;
@@ -138,8 +141,6 @@ public class ShaderProgram
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-	Map<String, Integer> uniforms = new HashMap<String, Integer>();
-
 	public int getUniformLocation(String name)
 	{
 		if (uniforms.containsKey(name))
@@ -213,7 +214,15 @@ public class ShaderProgram
 
 	public int getVertexAttributeLocation(String name)
 	{
-		return glGetAttribLocation(shaderP, name);
+		if(attributes.containsKey(name))
+			return attributes.get(name);
+		else
+		{
+			int location = glGetAttribLocation(shaderP, name);
+			attributes.put(name, location);
+			return location;
+		}
+		//return glGetAttribLocation(shaderP, name);
 	}
 
 	public void use(boolean b)
@@ -231,6 +240,7 @@ public class ShaderProgram
 		glDeleteShader(fragS);
 
 		uniforms.clear();
+		attributes.clear();
 	}
 
 	protected void reload(String[] parameters)

@@ -49,7 +49,7 @@ public class ChunkHolder
 
 	//public List<Entity> entities = new ArrayList<Entity>();
 	
-	public ChunkHolder(World world, int regionX, int regionY, int regionZ)
+	public ChunkHolder(World world, int regionX, int regionY, int regionZ, boolean dontLoad)
 	{
 		this.world = world;
 		this.regionX = regionX;
@@ -58,7 +58,8 @@ public class ChunkHolder
 
 		handler = new File(world.getFolderPath() + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf");
 
-		world.ioHandler.requestChunkHolderLoad(this);
+		if(!dontLoad)
+			world.ioHandler.requestChunkHolderLoad(this);
 	}
 
 	/*public void addEntity(Entity entity)
@@ -224,7 +225,7 @@ public class ChunkHolder
 		return c;
 	}
 
-	public boolean free(int chunkX, int chunkY, int chunkZ)
+	public boolean removeChunk(int chunkX, int chunkY, int chunkZ)
 	{
 		// System.out.println("freeee");
 		CubicChunk c = data[chunkX % 8][chunkY % 8][chunkZ % 8];
@@ -269,7 +270,7 @@ public class ChunkHolder
 				for (int c = 0; c < 8; c++)
 				{
 					if (data[a][b][c] != null)
-						free(a, b, c);
+						removeChunk(a, b, c);
 				}
 	}
 

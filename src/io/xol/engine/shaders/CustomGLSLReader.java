@@ -38,6 +38,12 @@ public class CustomGLSLReader
 					else if (line[0].equals("ifdef"))
 					{
 						String def = line[1];
+						boolean shouldFind = true;
+						if(def.startsWith("!"))
+						{
+							def = def.replace("!", "");	
+							shouldFind = false;
+						}
 						boolean found = false;
 						if (parameters != null)
 						{
@@ -45,7 +51,7 @@ public class CustomGLSLReader
 								if (a.equals(def))
 									found = true;
 						}
-						if (!found)
+						if ((shouldFind && !found) || !shouldFind && found)
 						{
 							blockingDef.add(def);
 						}
@@ -53,6 +59,8 @@ public class CustomGLSLReader
 					else if (line[0].equals("endif"))
 					{
 						String def = line[1];
+						if(def.startsWith("!"))
+							def = def.replace("!", "");	
 						blockingDef.remove(def);
 					}
 				}

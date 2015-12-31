@@ -955,31 +955,13 @@ public class WorldRenderer
 		if (!shadowPass)
 		{
 			// First pass done
-			// LIGHTNING
-			Client.profiler.startSection("lights");
-
-			glDepthMask(false);
-			addShadows();
-			
-			glDisable(GL_ALPHA_TEST);
-
-			glDepthMask(true);
-			//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glDisable(GL_BLEND);
-			lightShader.use(false);
-			this.composite_pass_gbuffers.setEnabledRenderTargets();
-
-			// Compute SSAO
-			if(FastConfig.ssaoQuality > 0)
-				this.SSAO(FastConfig.ssaoQuality);
-			
 			// Renders liquids
 
-			glDisable(GL_CULL_FACE);
 			this.composite_pass_gbuffers.bind();
 			this.composite_pass_gbuffers.setEnabledRenderTargets();
+			glDisable(GL_CULL_FACE);
 			glEnable(GL_BLEND);
+			glDisable(GL_ALPHA_TEST);
 
 			liquidBlocksShader.use(true);
 
@@ -1113,6 +1095,15 @@ public class WorldRenderer
 
 			// Water
 			// LIGHTNING #2
+
+			glDepthMask(false);
+			addShadows();
+			glDepthMask(true);
+			
+			// Compute SSAO
+			if(FastConfig.ssaoQuality > 0)
+				this.SSAO(FastConfig.ssaoQuality);
+			
 			Client.profiler.startSection("lights");
 
 			this.composite_pass_gbuffers.bind();

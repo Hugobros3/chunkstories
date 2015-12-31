@@ -1,64 +1,29 @@
 package io.xol.chunkstories.world;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ChunksHolders
+public class ChunkOlder
 {
 	World world;
 	ChunksData chunksData;
 
-	// private ChunkHolder[] data;
-	// private boolean[] dataPresent;
-
-	private ConcurrentHashMap<ChunkHolderKey, ChunkHolder> chunkHolders = new ConcurrentHashMap<ChunkHolderKey, ChunkHolder>();
-
+	private ChunkHolder[] data;
+	private boolean[] dataPresent;
 	final int s, h;
 
-	private class ChunkHolderKey
-	{
-		public int regionX, regionY, regionZ;
-
-		public ChunkHolderKey(int x, int y, int z)
-		{
-			regionX = x;
-			regionY = y;
-			regionZ = z;
-		}
-
-		public boolean equals(Object o)
-		{
-			if(!(o instanceof ChunkHolderKey))
-				return false;
-			ChunkHolderKey chk = (ChunkHolderKey)o;
-			boolean equals = chk.regionX == regionX && chk.regionY == regionY && chk.regionZ == regionZ;
-			//System.out.println("checking if chk == !" + equals);
-			return equals;
-		}
-		
-		public int hashCode()
-		{
-			int address = (regionX * s + regionZ) * h + regionY;
-			//System.out.println("hashCode == "+address);
-			return address;
-		}
-	}
-
-	public ChunksHolders(World world, ChunksData chunksData)
+	public ChunkOlder(World world, ChunksData chunksData)
 	{
 		this.world = world;
 		this.chunksData = chunksData;
 		h = world.size.height / 8;
 		s = world.size.sizeInChunks / 8;
-
-		// data = new ChunkHolder[h * s * s];
-		// dataPresent = new boolean[h * s * s];
+		data = new ChunkHolder[h * s * s];
+		dataPresent = new boolean[h * s * s];
 	}
 
 	public void setChunk(CubicChunk c)
@@ -74,8 +39,7 @@ public class ChunksHolders
 		{
 			if (c != null)
 				c.destroy();
-			// System.out.println("Chunk Holder doesn't exist for " +
-			// c.toString());
+			//System.out.println("Chunk Holder doesn't exist for " + c.toString());
 		}
 	}
 
@@ -93,22 +57,26 @@ public class ChunksHolders
 	public ChunkHolder getChunkHolder(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
 		ChunkHolder holder = null;
-		// if (chunkY > world.size.sizeInChunks)
-		// return null;
-		ChunkHolderKey key = new ChunkHolderKey(chunkX / 8, chunkY / 8, chunkZ / 8 );
-
-		holder = chunkHolders.get(key);
-		if (holder == null && chunkY < h * 8 && chunkY >= 0)
+		if (chunkY > world.size.sizeInChunks)
+			return null;
+		synchronized (data)
 		{
-			holder = new ChunkHolder(world, chunkX / 8, chunkY / 8, chunkZ / 8, false);
-			chunkHolders.putIfAbsent(key, holder);
+			holder = data[getAddress(chunkX, chunkY, chunkZ)];
+			if (load && !dataPresent[getAddress(chunkX, chunkY, chunkZ)])
+			{
+				holder = new ChunkHolder(world, chunkX / 8, chunkY / 8, chunkZ / 8, false);
+				data[getAddress(chunkX, chunkY, chunkZ)] = holder;
+				dataPresent[getAddress(chunkX, chunkY, chunkZ)] = true;
+			}
 		}
 		return holder;
 	}
 
 	public void removeChunk(int chunkX, int chunkY, int chunkZ)
 	{
-		ChunkHolder holder = getChunkHolder(chunkX, chunkY, chunkZ, false);
+		ChunkHolder holder = getChunkHolder(chunkX, chunkY, chunkZ, false);// data[getAddress(chunkX,
+																			// chunkY,
+																			// chunkZ)];
 		boolean emptyHolder = false;
 		if (holder != null)
 		{
@@ -116,8 +84,14 @@ public class ChunksHolders
 		}
 		if (emptyHolder)
 		{
+			// System.out.println("Removing chunk holder...");
+			dataPresent[getAddress(chunkX, chunkY, chunkZ)] = false;
 			holder.destroy();
-			chunkHolders.remove(new ChunkHolderKey(chunkX / 8, chunkY / 8, chunkZ / 8 ));
+			synchronized (data)
+			{
+				// data[getAddress(chunkX, chunkY, chunkZ)].save();
+				data[getAddress(chunkX, chunkY, chunkZ)] = null;
+			}
 		}
 		world.ioHandler.notifyChunkUnload(chunkX, chunkY, chunkZ);
 	}
@@ -127,47 +101,43 @@ public class ChunksHolders
 		ChunkHolder holder = getChunkHolder(chunkX, chunkY, chunkZ, load);
 		if (holder != null)
 		{
+			// System.out.println("non-null holder");
 			return holder.get(chunkX, chunkY, chunkZ, load);
 		}
+		// System.out.println("null holder"+load);
 		return null;
 	}
 
 	public List<CubicChunk> getAllLoadedChunks()
 	{
 		List<CubicChunk> chunks = new ArrayList<CubicChunk>();
-		Iterator<ChunkHolder> i = chunkHolders.values().iterator();
-		ChunkHolder holder;
-		while(i.hasNext())
+		for (ChunkHolder holder : data)
 		{
-			holder = i.next();
 			if (holder != null)
 			{
 				for (CubicChunk c : holder.getLoadedChunks())
 					chunks.add(c);
 			}
+
 		}
 		return chunks;
 	}
 
-	/*public List<ChunkHolder> getAllLoadedChunksHolders()
+	public List<ChunkHolder> getAllLoadedChunksHolders()
 	{
 		List<ChunkHolder> holders = new ArrayList<ChunkHolder>();
-		chunkHolders.values().iterator();
-		for (ChunkHolder holder : data)
+		for(ChunkHolder holder : data)
 		{
-			if (holder != null)
+			if(holder != null)
 				holders.add(holder);
 		}
 		return holders;
-	}*/
+	}
 
 	public void saveAll()
 	{
-		Iterator<ChunkHolder> i = chunkHolders.values().iterator();
-		ChunkHolder holder;
-		while(i.hasNext())
+		for (ChunkHolder holder : data)
 		{
-			holder = i.next();
 			if (holder != null)
 			{
 				holder.save();
@@ -177,17 +147,20 @@ public class ChunksHolders
 
 	public void clearAll()
 	{
-		Iterator<ChunkHolder> i = chunkHolders.values().iterator();
-		ChunkHolder holder;
-		while(i.hasNext())
+		for (ChunkHolder holder : data)
 		{
-			holder = i.next();
 			if (holder != null)
 			{
 				holder.freeAll();
+
+				dataPresent[((holder.regionX * s) + holder.regionY * h) + holder.regionZ] = false;
+				synchronized (data)
+				{
+					// data[getAddress(chunkX, chunkY, chunkZ)].save();
+					data[((holder.regionX * s) + holder.regionY * h) + holder.regionZ] = null;
+				}
 			}
 		}
-		chunkHolders.clear();
 	}
 
 	public void markChunkDirty(int chunkX, int chunkY, int chunkZ)
@@ -211,6 +184,6 @@ public class ChunksHolders
 
 	public void destroy()
 	{
-		chunkHolders.clear();
+		data = null;
 	}
 }

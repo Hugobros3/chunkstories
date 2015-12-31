@@ -129,15 +129,13 @@ void main(){
 	
 	
 	//ao term
-	//finalLight *= vec3(1,1,1)*clamp(1-lightMapCoords.z, 0.0, 1.0);
-	
-	//finalLight+=1.0;
+	<ifdef !ssao>
+		//If SSAO is disabled, we use the crappy free vertex AO ( byproduct of block/sunlight merging in code )
+		finalLight *= vec3(1,1,1)*clamp(1-lightMapCoords.z, 0.0, 1.0);
+	<endif ssao>
 	
 	
 	vec3 finalColor = baseColor*blockColor;
-	//finalColor = vec3(1.0);
-	/*if(givenLightmapCoords.x > 0.5)
-		finalLight = vec3(0.8, 0.8, 0.8)*finalColor;*/
 	
 	//Diffuse G-Buffer
 	gl_FragData[0] = vec4(finalColor,1*chunkTransparency*chunkFade);
@@ -148,6 +146,4 @@ void main(){
 	//gl_FragData[2] = coordinatesInShadowmap;
 	//Specular G-Buffer
 	gl_FragData[3] = vec4(spec, lightMapCoords.xy, 1.0);
-	//Modelview buffer (discard)
-	//gl_FragData[4] = vec4(modelview.rgb,modelview.a);
 }

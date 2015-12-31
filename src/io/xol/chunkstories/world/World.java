@@ -519,12 +519,6 @@ public class World
 		return chunksHolder.getAllLoadedChunks();
 	}
 
-	@SuppressWarnings("unused")
-	private List<ChunkHolder> getAllLoadedChunksHolders()
-	{
-		return chunksHolder.getAllLoadedChunksHolders();
-	}
-
 	public boolean checkCollisionPoint(double posX, double posY, double posZ)
 	{
 		int data = this.getDataAt((int) posX, (int) posY, (int) posZ);

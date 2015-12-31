@@ -26,6 +26,7 @@ import io.xol.chunkstories.physics.particules.ParticleRainfall;
 import io.xol.chunkstories.physics.particules.ParticleSetupLight;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
+import io.xol.chunkstories.renderer.ChunksRenderer;
 import io.xol.chunkstories.renderer.DefferedLight;
 import io.xol.chunkstories.renderer.EntityRenderer;
 import io.xol.chunkstories.renderer.WorldRenderer;
@@ -234,6 +235,7 @@ public class GameplayScene extends OverlayableScene
 			Client.world.particlesHolder.cleanAllParticles();
 			Client.world.reRender();
 			worldRenderer.chunksRenderer.clear();
+			ChunksRenderer.renderStart = System.currentTimeMillis();
 			worldRenderer.modified();
 		}
 		else if (k == FastConfig.GRABUSE_KEY)
