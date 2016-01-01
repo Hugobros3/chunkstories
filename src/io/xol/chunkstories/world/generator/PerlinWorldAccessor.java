@@ -215,7 +215,7 @@ public class PerlinWorldAccessor extends WorldAccessor
 						changed = true;
 					}
 					if (changed)
-						side.need_render = true;
+						side.need_render.set(true);
 					for (GenerableStructure str : side.structures)
 					{
 						str.draw(c);
@@ -232,7 +232,7 @@ public class PerlinWorldAccessor extends WorldAccessor
 						changed = true;
 					}
 					if (changed)
-						side.need_render = true;
+						side.need_render.set(true);
 					for (GenerableStructure str : side.structures)
 					{
 						str.draw(c);
@@ -253,7 +253,7 @@ public class PerlinWorldAccessor extends WorldAccessor
 								changed = true;
 							}
 							if (changed)
-								side.need_render = true;
+								side.need_render.set(true);
 							for (GenerableStructure str : side.structures)
 							{
 								str.draw(c);
@@ -269,7 +269,7 @@ public class PerlinWorldAccessor extends WorldAccessor
 								changed = true;
 							}
 							if (changed)
-								side.need_render = true;
+								side.need_render.set(true);
 							for (GenerableStructure str : side.structures)
 							{
 								str.draw(c);
@@ -287,7 +287,7 @@ public class PerlinWorldAccessor extends WorldAccessor
 									changed = true;
 								}
 								if (changed)
-									side.need_render = true;
+									side.need_render.set(true);
 								for (GenerableStructure str : side.structures)
 								{
 									str.draw(c);

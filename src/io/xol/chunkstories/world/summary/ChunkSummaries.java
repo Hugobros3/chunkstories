@@ -170,6 +170,5 @@ public class ChunkSummaries
 			cs.free();
 		}
 		summaries.clear();
-		summaries = null;
 	}
 }

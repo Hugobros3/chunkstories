@@ -53,7 +53,7 @@ public class GBufferTexture
 		else if (type == 4)
 		{
 			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " RGB texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_FLOAT, (ByteBuffer) null);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer) null);
 		}
 		else if (type == 1)
 		{

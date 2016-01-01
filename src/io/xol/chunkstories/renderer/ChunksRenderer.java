@@ -35,6 +35,7 @@ public class ChunksRenderer extends Thread
 	World world;
 
 	//public List<int[]> todo = new ArrayList<int[]>();
+	
 	public Deque<int[]> todo = new ConcurrentLinkedDeque<int[]>();
 	public Queue<VBOData> done = new ConcurrentLinkedQueue<VBOData>();
 
@@ -47,9 +48,13 @@ public class ChunksRenderer extends Thread
 		int s_complex;
 	}
 
-	public void addTask(int chunkX, int chunkY, int chunkZ, boolean priority)
+	public void requestChunkRender(CubicChunk chunk)
 	{
-		int[] request = new int[] { chunkX, chunkY, chunkZ };
+		if(!chunk.requestable.get())
+			return;
+		
+		int[] request = new int[] { chunk.chunkX, chunk.chunkY, chunk.chunkZ };
+		boolean priority = chunk.need_render_fast.get();
 		
 		Iterator<int[]> iter = todo.iterator();
 		int[] lelz;
@@ -64,6 +69,12 @@ public class ChunksRenderer extends Thread
 					iter.remove();
 			}
 		}
+		
+		// If it has been queued then it can't be asked again
+		chunk.requestable.set(false);
+		// Reset the priority flag
+		chunk.need_render_fast.set(false);
+		//chunk.need_render.set(false);
 		
 		if(priority)
 			todo.addFirst(request);
@@ -123,6 +134,7 @@ public class ChunksRenderer extends Thread
 				{
 					synchronized (this)
 					{
+						//System.out.println("Nothing left to do. Sleep time");
 						wait();
 					}
 				}
@@ -133,23 +145,33 @@ public class ChunksRenderer extends Thread
 			}
 			else
 			{
-				// long t = System.currentTimeMillis();
+				// long t = System.nanoTime();
 				if (world.isChunkLoaded(task[0], task[1], task[2]))
 				{
-					int nearChunks = 0;
-					if (world.isChunkLoaded(task[0] + 1, task[1], task[2]))
-						nearChunks++;
-					if (world.isChunkLoaded(task[0] - 1, task[1], task[2]))
-						nearChunks++;
-					if (world.isChunkLoaded(task[0], task[1], task[2] + 1))
-						nearChunks++;
-					if (world.isChunkLoaded(task[0], task[1], task[2] - 1))
-						nearChunks++;
-					if (nearChunks == 4)
+					CubicChunk work = world.getChunk(task[0], task[1], task[2], false);
+					if (work.need_render.get())
 					{
-						CubicChunk work = world.getChunk(task[0], task[1], task[2], false);
-						if (work.need_render)
+						int nearChunks = 0;
+						
+						
+						if (world.isChunkLoaded(task[0] + 1, task[1], task[2]))
+							nearChunks++;
+						if (world.isChunkLoaded(task[0] - 1, task[1], task[2]))
+							nearChunks++;
+						if (world.isChunkLoaded(task[0], task[1], task[2] + 1))
+							nearChunks++;
+						if (world.isChunkLoaded(task[0], task[1], task[2] - 1))
+							nearChunks++;
+						
+						if (nearChunks == 4)
+						{
 							renderChunk(work);
+						}
+						else
+						{
+							// Reschedule it ?
+							work.requestable.set(true);
+						}
 					}
 					else
 					{
@@ -168,12 +190,29 @@ public class ChunksRenderer extends Thread
 	private int getBlockData(CubicChunk c, int x, int y, int z)
 	{
 		int data = 0;
-		if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
+		
+		if (x >= -32 && z >= -32 && y >= -32 && y < 64 && x < 64 && z < 64)
+		{
+			int relx = x < 0 ? 0 : (x >= 32 ? 2 : 1);
+			int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
+			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
+			CubicChunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
+			if(target != null)
+				data = target.getDataAt(x, y, z);
+		}
+		else
+		{
+			System.out.println("Warning ! Chunk "+c+" rendering process asked information about a block more than 32 blocks away from the chunk itself");
+			System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
+			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
+		}
+		/*if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
 		{
 			data = c.getDataAt(x, y, z);
 		}
 		else
 			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
+		*/
 		return data;
 	}
 
@@ -182,11 +221,45 @@ public class ChunksRenderer extends Thread
 	private int getSunlight(CubicChunk c, int x, int y, int z)
 	{
 		int data = 0;
-		if (y < 0 && c.chunkY == 0)
-			y = 0;
-		if (y > 255)
-			y = 255;
-		if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
+		if (x >= -32 && z >= -32 && y >= -32 && y < 64 && x < 64 && z < 64)
+		{
+			int relx = x < 0 ? 0 : (x >= 32 ? 2 : 1);
+			int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
+			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
+			CubicChunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
+			if(target != null)
+			{
+				data = target.getDataAt(x, y, z);
+				int blockID = VoxelFormat.id(data);
+				return VoxelTypes.get(blockID).isVoxelOpaque() ? -1 : VoxelFormat.sunlight(data);
+			}
+		}
+		else
+		{
+			System.out.println("Warning ! Chunk "+c+" rendering process asked information about a block more than 32 blocks away from the chunk itself");
+			System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
+			//data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
+			return 0;
+		}
+		
+		x += c.chunkX * 32;
+		y += c.chunkY * 32;
+		z += c.chunkZ * 32;
+
+		// Look for a chunk with relevant lightning data
+		cached = Client.world.getChunk(x / 32, y / 32, z / 32, false);
+		if (cached != null && cached.dataPointer >= 0)
+		{
+			data = cached.getDataAt(x, y, z);
+		
+			int blockID = VoxelFormat.id(data);
+			return VoxelTypes.get(blockID).isVoxelOpaque() ? -1 : VoxelFormat.sunlight(data);
+		}
+		
+		// If all else fails, just use the heightmap information
+		return Client.world.chunkSummaries.getHeightAt(x, z) < y ? 15 : 0;
+		
+		/*if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
 		{
 			data = c.getDataAt(x, y, z);
 		}
@@ -202,14 +275,33 @@ public class ChunksRenderer extends Thread
 			else
 				data = cached.getDataAt(x, y, z);
 		}
-		int blockID = VoxelFormat.id(data);
-		return (VoxelTypes.get(blockID).isVoxelOpaque() || blockID == 5 || blockID == 9) ? -1 : VoxelFormat.sunlight(data);
+		*/
+		//int blockID = VoxelFormat.id(data);
+		//return (VoxelTypes.get(blockID).isVoxelOpaque() || blockID == 5 || blockID == 9) ? -1 : VoxelFormat.sunlight(data);
 	}
 
 	private int getBlocklight(CubicChunk c, int x, int y, int z)
 	{
 		int data = 0;
-		if (y < 0 && c.chunkY == 0)
+		
+		// Is it in cache range ?
+		if (x >= -32 && z >= -32 && y >= -32 && y < 64 && x < 64 && z < 64)
+		{
+			int relx = x < 0 ? 0 : (x >= 32 ? 2 : 1);
+			int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
+			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
+			CubicChunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
+			if(target != null)
+				data = target.getDataAt(x, y, z);
+		}
+		else
+		{
+			System.out.println("Warning ! Chunk "+c+" rendering process asked information about a block more than 32 blocks away from the chunk itself");
+			System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
+			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
+		}
+		
+		/*if (y < 0 && c.chunkY == 0)
 			y = 0;
 		if (y > 255)
 			y = 255;
@@ -219,19 +311,10 @@ public class ChunksRenderer extends Thread
 		}
 		else
 			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
+		*/
 		int blockID = VoxelFormat.id(data);
 		return VoxelTypes.get(blockID).isVoxelOpaque() ? 0 : VoxelFormat.blocklight(data);
 	}
-
-	static float TEXTURE_DIV = 16; // Numbers of col/rows in texture atlas
-
-	static int TEXMULT = 16 * 8;
-
-	/*
-	 * float[] blendLights(float amB, float amS){
-	 * 
-	 * return new float[]{amB,amS,0}; }
-	 */
 
 	float[] bakeLightColors(int bl1, int bl2, int bl3, int bl4, int sl1, int sl2, int sl3, int sl4)
 	{
@@ -866,6 +949,8 @@ public class ChunksRenderer extends Thread
 
 	public static long renderStart = 0;
 	
+	public CubicChunk[] cache = new CubicChunk[27];
+	
 	@SuppressWarnings("unused")
 	private void renderChunk(CubicChunk work)
 	{
@@ -876,22 +961,33 @@ public class ChunksRenderer extends Thread
 		if (true)
 			work.doLightning(true);
 		
-		if(!work.need_render)
+		// Don't bother
+		if(!work.need_render.get())
 			return;
 
-		long cr_start = System.currentTimeMillis();
+		long cr_start = System.nanoTime();
 		
 		int cx = work.chunkX;
 		int cy = work.chunkY;
 		int cz = work.chunkZ;
 
+		// For map borders
 		boolean chunkTopLoaded = work.world.isChunkLoaded(cx, cy + 1, cz);
 		boolean chunkBotLoaded = work.world.isChunkLoaded(cx, cy - 1, cz);
+		// Useless ? ( no borders except ceiling in current worlds )
 		boolean chunkRightLoaded = work.world.isChunkLoaded(cx + 1, cy, cz);
 		boolean chunkLeftLoaded = work.world.isChunkLoaded(cx - 1, cy, cz);
 		boolean chunkFrontLoaded = work.world.isChunkLoaded(cx, cy, cz + 1);
 		boolean chunkBackLoaded = work.world.isChunkLoaded(cx, cy, cz - 1);
 
+		// Fill chunk caches ( saves much time avoiding slow-ass world->chunkholders hashmap->chunk holder access for each vert )
+		for(int relx = -1; relx <= 1; relx++)
+			for(int rely = -1; rely <= 1; rely++)
+				for(int relz = -1; relz <= 1; relz++)
+					cache[((relx+1) * 3 + (rely+1)) * 3 + (relz+1)] = work.world.getChunk(cx + relx, cy + rely, cz + relz, true);
+		
+		// Expensive bullshit
+		
 		vertices.clear();
 		texcoords.clear();
 		colors.clear();
@@ -909,7 +1005,7 @@ public class ChunksRenderer extends Thread
 		isWavy_complex.clear();
 		normals_complex.clear();
 
-		long cr_iter = System.currentTimeMillis();
+		long cr_iter = System.nanoTime();
 		
 		BlockRenderInfo renderInfo = new BlockRenderInfo();
 
@@ -1009,7 +1105,7 @@ public class ChunksRenderer extends Thread
 			}
 		}
 		
-		long cr_convert = System.currentTimeMillis();
+		long cr_convert = System.nanoTime();
 		
 		// Convert to floatBuffer
 		VBOData rslt = new VBOData();
@@ -1018,13 +1114,20 @@ public class ChunksRenderer extends Thread
 		rslt.z = work.chunkZ;
 
 		// Compressed data ftw
+		int bufferTotalSize = 0;
+		int VOXEL_ONLY_BITS_PER_VERTEX = 16;
+		int COMPLEX_SHAPES_BITS_PER_VERTEX = 24;
+		
+		bufferTotalSize += vertices.size() * VOXEL_ONLY_BITS_PER_VERTEX;
+		bufferTotalSize += vertices_water.size() * VOXEL_ONLY_BITS_PER_VERTEX;
+		bufferTotalSize += vertices_complex.size() * COMPLEX_SHAPES_BITS_PER_VERTEX;
+		
 		int rsltSize = (vertices.size() + vertices_water.size()) * (16);
-
 		rsltSize += vertices_complex.size() * (24);
 
-		rslt.buf = BufferUtils.createByteBuffer(rsltSize);
+		rslt.buf = BufferUtils.createByteBuffer(bufferTotalSize);
 
-		long cr_buffer = System.currentTimeMillis();
+		long cr_buffer = System.nanoTime();
 		
 		rslt.s_normal = vertices.size();
 		rslt.s_complex = vertices_complex.size();
@@ -1161,13 +1264,14 @@ public class ChunksRenderer extends Thread
 		rslt.buf.flip();
 		// System.out.println("Final vbo size = "+rsltSize*4);
 		long lol = 0;
-		System.out.println("Took "+(System.currentTimeMillis() - cr_start)+"ms total ; "+(cr_iter-cr_start)+" init, "+(cr_convert-cr_iter)+" iter, "
-				+(cr_buffer-cr_convert)+" buffer, "+(System.currentTimeMillis()-cr_buffer)+" convert since RS:"+(System.currentTimeMillis()-ChunksRenderer.renderStart)+" ratio S/C : "+(1f+vertices.size())/(1f+vertices_complex.size())) ;
+		//System.out.println("Took "+(System.nanoTime() - cr_start)+"ms total ; "+(cr_iter-cr_start)+" init, "+(cr_convert-cr_iter)+" iter, "
+		//		+(cr_buffer-cr_convert)+" buffer, "+(System.nanoTime()-cr_buffer)+" convert since RS:"+(System.nanoTime()-ChunksRenderer.renderStart)+" ratio S/C : "+(1f+vertices.size())/(1f+vertices_complex.size())) ;
 		done.add(rslt);
 		
 		totalChunksRendered.incrementAndGet();
 		
-		work.need_render = false;
+		work.need_render.set(false);
+		work.requestable.set(true);
 	}
 
 	int intifyNormal(float n)

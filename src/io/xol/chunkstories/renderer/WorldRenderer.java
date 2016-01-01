@@ -323,14 +323,14 @@ public class WorldRenderer
 				if (c.vbo_id == -1)
 					c.vbo_id = glGenBuffers();
 				glBindBuffer(GL_ARRAY_BUFFER, c.vbo_id);
-				glBufferData(GL_ARRAY_BUFFER, toload.buf, GL_DYNAMIC_DRAW); 
+				glBufferData(GL_ARRAY_BUFFER, toload.buf, GL_STATIC_DRAW); 
 				//if (c.vbo_size_normal + c.vbo_size_complex + c.vbo_size_water <= 0)
 				//	c.fadeTicks = 25;
 
 				c.vbo_size_normal = toload.s_normal;
 				c.vbo_size_complex = toload.s_complex;
 				c.vbo_size_water = toload.s_water;
-				c.requestable = true;
+				
 				chunksChanged = true;
 			}
 			else
@@ -411,10 +411,10 @@ public class WorldRenderer
 						chunk = world.getChunk(a, b, c, true);
 						if (chunk != null)
 						{
-							if (chunk.need_render && chunk.dataPointer != -1)
+							if (chunk.need_render.get() && chunk.dataPointer != -1)
 							{
-								chunk.requestable = false;
-								chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
+								chunksRenderer.requestChunkRender(chunk);
+								//chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
 							}
 							renderList.add(chunk);
 						}
@@ -425,10 +425,10 @@ public class WorldRenderer
 							chunk = world.getChunk(a, b, c, true);
 							if (chunk != null)
 							{
-								if (chunk.need_render && chunk.dataPointer != -1)
+								if (chunk.need_render.get() && chunk.dataPointer != -1)
 								{
-									chunk.requestable = false;
-									chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
+									chunksRenderer.requestChunkRender(chunk);
+									//chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
 								}
 								renderList.add(chunk);
 							}
@@ -438,10 +438,10 @@ public class WorldRenderer
 							chunk = world.getChunk(a, b, c, true);
 							if (chunk != null)
 							{
-								if (chunk.need_render && chunk.dataPointer != -1)
+								if (chunk.need_render.get() && chunk.dataPointer != -1)
 								{
-									chunk.requestable = false;
-									chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
+									chunksRenderer.requestChunkRender(chunk);
+									//chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
 								}
 								renderList.add(chunk);
 							}
@@ -451,10 +451,10 @@ public class WorldRenderer
 						chunk = world.getChunk(a, b, c, true);
 						if (chunk != null)
 						{
-							if (chunk.need_render && chunk.dataPointer != -1)
+							if (chunk.need_render.get() && chunk.dataPointer != -1)
 							{
-								chunk.requestable = false;
-								chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
+								chunksRenderer.requestChunkRender(chunk);
+								//chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
 							}
 							renderList.add(chunk);
 						}
@@ -766,12 +766,10 @@ public class WorldRenderer
 				continue;
 			}
 			// Update if chunk was modified
-			if (chunk.need_render && chunk.requestable && chunk.dataPointer != -1)
+			if (chunk.need_render.get() && chunk.requestable.get() && chunk.dataPointer != -1)
 			{
 				// Launch task
-				chunk.requestable = false;
-				chunk.need_render = false;
-				chunksRenderer.addTask(chunk.chunkX, chunk.chunkY, chunk.chunkZ, chunk.need_render_fast);
+				chunksRenderer.requestChunkRender(chunk);
 			}
 			// Don't bother if it don't render anything
 			if (chunk.vbo_size_normal + chunk.vbo_size_complex == 0)

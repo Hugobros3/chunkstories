@@ -6,6 +6,7 @@ import io.xol.chunkstories.world.generator.structures.GenerableStructure;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -20,9 +21,9 @@ public class CubicChunk
 	public int dataPointer = -1; // -1 means empty chunk (air)
 
 	// Used in client rendering
-	public boolean need_render = true;
-	public boolean need_render_fast = false;
-	public boolean requestable = true;
+	public AtomicBoolean need_render = new AtomicBoolean(true);
+	public AtomicBoolean need_render_fast = new AtomicBoolean(false);
+	public AtomicBoolean requestable = new AtomicBoolean(true);
 	public int vbo_id = -1;
 	public int vbo_size_normal;
 	public int vbo_size_complex;
@@ -104,8 +105,9 @@ public class CubicChunk
 
 	public void markDirty(boolean fast)
 	{
-		need_render = true;
-		need_render_fast = fast;
+		need_render.set(true);
+		requestable.set(true);
+		need_render_fast.set(fast);
 	}
 
 	public void destroy()

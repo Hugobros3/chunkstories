@@ -435,7 +435,8 @@ public class World
 	{
 		for (CubicChunk c : this.getAllLoadedChunks())
 		{
-			c.need_render = true;
+			c.need_render.set(true);
+			c.requestable.set(true);
 			c.vbo_size_normal = 0;
 			c.vbo_size_complex = 0;
 			c.vbo_size_water = 0;
