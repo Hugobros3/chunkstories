@@ -15,16 +15,17 @@ import java.nio.FloatBuffer;
 import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
+
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL12.*;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.*;
 
 import org.lwjgl.util.vector.Vector3f;
 
-//(c) 2015 XolioWare Interactive
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 public class SkyDome
 {
@@ -73,9 +74,11 @@ public class SkyDome
 	public void render(Camera camera)
 	{
 		setupFog();
-		
-		//glDisable(GL_ALPHA_TEST);
+
+		glDisable(GL_ALPHA_TEST);
+		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
+		glDisable(GL_BLEND);
 		glDepthMask(false);
 
 		Vector3f sunPosVector = getSunPos();
@@ -83,25 +86,32 @@ public class SkyDome
 
 		// TexturesHandler.bindTexture("res/textures/environement/sky.png");
 		skyShader.use(true);
+		skyShader.setUniformSampler(9, "cloudsNoise", "res/textures/environement/cloudsStatic.png");
 		skyShader.setUniformSampler(1, "glowSampler", "res/textures/environement/glow.png");
+		glBindTexture(GL_TEXTURE_2D, TexturesHandler.idTexture("res/textures/environement/glow.png"));
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		skyShader.setUniformSampler(0, "colorSampler", "res/textures/environement/sky.png");
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		//skyShader.setUniformSamplerCube(2, "skybox", TexturesHandler.idCubemap("res/textures/skybox"));
 		skyShader.setUniformFloat3("camPos", camera.camPosX, camera.camPosY, camera.camPosZ);
 		skyShader.setUniformFloat3("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
 		skyShader.setUniformFloat("time", time);
-
 		camera.setupShader(skyShader);
 
 		// glTexParameteri(GL_TEXTURE_2D, pname, param);
 		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		TexturesHandler.nowrap("res/textures/environement/sky.png");
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		
+
 		ObjectRenderer.drawFSQuad(skyShader.getVertexAttributeLocation("vertexIn"));
-		
+
 		skyShader.use(false);
-		
+
 		/*TexturesHandler.bindTexture("res/textures/environement/moon.png");
 		double moonloc = (0.2 + time) * Math.PI * 2;
 		float moonangle = 0;
@@ -110,41 +120,44 @@ public class SkyDome
 		 */
 
 		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glPointSize(1f);
 		starsShader.use(true);
 		starsShader.setUniformFloat3("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
 		starsShader.setUniformFloat3("color", 1f, 1f, 1f);
 		camera.setupShader(starsShader);
 		int NB_STARS = 500;
-		if(stars == null)
+		if (stars == null)
 		{
 			stars = BufferUtils.createFloatBuffer(NB_STARS * 3);
-			for(int i = 0; i < NB_STARS; i++)
+			for (int i = 0; i < NB_STARS; i++)
 			{
-				Vector3f star = new Vector3f((float)Math.random() * 2f - 1f, (float)Math.random(), (float)Math.random() * 2f - 1f);
+				Vector3f star = new Vector3f((float) Math.random() * 2f - 1f, (float) Math.random(), (float) Math.random() * 2f - 1f);
 				star.normalise();
 				star.scale(100f);
-				stars.put(new float[]{star.x, star.y, star.z});
+				stars.put(new float[] { star.x, star.y, star.z });
 			}
 		}
 		stars.rewind();
 		int vertexIn = starsShader.getVertexAttributeLocation("vertexIn");
-		if(vertexIn >= 0)
+		if (vertexIn >= 0)
 		{
 			glEnableVertexAttribArray(vertexIn);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glVertexAttribPointer(vertexIn, 3, false, 0, stars);
-	        glDrawArrays(GL_POINTS, 0, NB_STARS);
+			glDrawArrays(GL_POINTS, 0, NB_STARS);
 			glDisableVertexAttribArray(vertexIn);
 			starsShader.use(false);
 		}
 		glDisable(GL_BLEND);
-		//stars = null;
 		glDepthMask(true);
-		
+		glEnable(GL_DEPTH_TEST);
+		//stars = null;
+
 	}
-	
+
 	private FloatBuffer stars = null;
-	
+
 	private double rad(float h)
 	{
 		return h / 180 * Math.PI;

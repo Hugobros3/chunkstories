@@ -28,6 +28,7 @@ public class MatrixHelper
 	public static Matrix4f getLookAtMatrix(Vector3f position, Vector3f direction, Vector3f up)
 	{
 		Matrix4f matrix = new Matrix4f();
+		matrix.setIdentity();
 		Vector3f f = new Vector3f();
 		Vector3f u = new Vector3f();
 		Vector3f s = new Vector3f();

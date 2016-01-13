@@ -47,13 +47,19 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
+uniform mat4 modelViewProjectionMatrix;
+uniform mat4 modelViewProjectionMatrixInv;
+
+attribute vec4 vertexIn;
+
 void main()
 {
 	//Displacement from texture & position
-	vec4 v = vec4(gl_Vertex);
-	textureCoord = vec2((v.z)/256.0,(v.x)/256.0);
+	vec4 v = vec4(vertexIn);
+	textureCoord = (v.zx)/256.0;
 	
 	float baseHeight = texture2D(heightMap,textureCoord).r;
+	//baseHeight = 50;
 	v.y += baseHeight;
 	
 	//Normal computation, brace yourselves
@@ -83,17 +89,18 @@ void main()
 	
 	normalHeightmap += normalZminus;
 	
-	//I'm happy to say I came up with the maths by myself :)
+	//normalHeightmap = vec3(0.0, 1.0, 0.0);
+	//I'm happy and proud to say I came up with the maths by myself :)
 	
 	normalHeightmap = normalize(normalHeightmap);
-	//normalHeightmap = vec3(0.0, 1.0, 0.0);
 	
-	v.x += chunkPosition.x*256.0;
-	v.z += chunkPosition.y*256.0;
+	v.xz += chunkPosition.xy;
+	
+	//fresnelTerm = 1.0 - clamp(dot(normalHeightmap, normalize(v.xyz)), 0.0, 1.0);
+	fresnelTerm = 0.1 + 0.6 * clamp(0.7 + dot(normalize(v.xyz - camPos), normalHeightmap), 0.0, 1.0);
 	
 	vertex = v.xyz;
 	eye = v.xyz-camPos;
-    vec4 glPos = projectionMatrix * modelViewMatrix * v;
 	
 	//float lowerFactorT = (clamp(viewDistance-length(eye.xz)-16.0, 0.0, viewDistance) / viewDistance) * clamp(2.0-abs(eye.y/32.0), 0.0, 1.0);
 	
@@ -101,26 +108,23 @@ void main()
 	
 	float lowerFactorT = clamp((viewDistance-abs(eye.x)-16.0) / viewDistance, 0.0, 1.0) * clamp((viewDistance-abs(eye.z)-16.0) / viewDistance, 0.0, 1.0) * clamp(4.0-abs(camTerrainDiff/32.0), 0.0, 1.0);
 	
-	//lowerFactor = lowerFactorT;
+	lowerFactor = lowerFactorT;
 	//v.y -= 1.0 + lowerFactorT * 2 * lowerFactorT * 2 * 32.0;
 	
 	v.y = mix(v.y, min(v.y, camPos.y-32.0), clamp(lowerFactorT * 3.0, 0.0, 1.0));
 	
-	vec4 projected = projectionMatrix * modelViewMatrix * v;
+	vec4 projected = modelViewProjectionMatrix * v;
 	
-	float projectFactor = clamp(viewDistance-length(eye.xz)-16.0, 0.0, viewDistance) / viewDistance * clamp(4.0-abs((terrainHeight - camPos.y)/32.0), 0.0, 1.0);;
 	
-	projected.z += 0.1*clamp(projectFactor, 0.0, 1.0);
+	projected.z += 0.1;
 	
     gl_Position = projected;
-	
-	fresnelTerm = 0.5;
 	
 	lightMapCoords = vec2(0.0, sunIntensity);
 	
 	//Distance fog
 	
-	/*vec3 sum = (gl_ModelViewProjectionMatrix * v).xyz;
+	vec3 sum = (modelViewMatrix * v).xyz;
 	float dist = clamp(length(sum)-viewDistance, 0.0, 10000.0);
 	const float LOG2 = 1.442695;
 	float density = 0.0025;
@@ -129,11 +133,11 @@ void main()
 					   dist * 
 					   dist * 
 					   LOG2 );
-	fogI = clamp(fogFactor, 0.0, 1.0);*/
+	fogI = clamp(fogFactor, 0.0, 1.0);
 	
 	//Near clipping
 	
-	vec3 camPosChunk = camPos;
+	/*vec3 camPosChunk = camPos;
 	camPosChunk.x = floor((camPosChunk.x+16.0)/32.0)*32.0;
 	camPosChunk.z = floor((camPosChunk.z+16.0)/32.0)*32.0;
 	
@@ -154,7 +158,6 @@ void main()
 	+clamp(abs(eyeChunk.y)-clamp(32, 0.0, 256.0), 0.0, 1.0)
 	;
 	
-	/*
 	clamp(minXChunkLoaded+40 - eyeChunk.x, 0.0, 1.0)
 	+clamp(-maxXChunkLoaded+40 + eyeChunk.x, 0.0, 1.0)
 	

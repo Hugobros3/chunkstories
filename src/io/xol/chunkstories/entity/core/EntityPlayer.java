@@ -244,7 +244,7 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 			camspeed = 1f;
 		if (Keyboard.isKeyDown(Keyboard.KEY_LMENU))
 			camspeed = 5f;
-		if (Keyboard.isKeyDown(31))
+		if (Keyboard.isKeyDown(FastConfig.BACK_KEY))
 		{
 			float a = (float) ((-rotH) / 180f * Math.PI);
 			float b = (float) ((rotV) / 180f * Math.PI);
@@ -253,14 +253,14 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 			else
 				moveWithCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b), true);
 		}
-		if (Keyboard.isKeyDown(44))
+		if (Keyboard.isKeyDown(FastConfig.FORWARD_KEY))
 		{
-			float a = (float) ((-rotH) / 180f * Math.PI);
-			float b = (float) ((rotV) / 180f * Math.PI);
+			float a = (float) ((180-rotH) / 180f * Math.PI);
+			float b = (float) ((-rotV) / 180f * Math.PI);
 			if (noclip)
-				moveWithoutCollisionRestrain(-Math.sin(a) * camspeed * Math.cos(b), -Math.sin(b) * camspeed, -Math.cos(a) * camspeed * Math.cos(b));
+				moveWithoutCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b));
 			else
-				moveWithCollisionRestrain(-Math.sin(a) * camspeed * Math.cos(b), -Math.sin(b) * camspeed, -Math.cos(a) * camspeed * Math.cos(b), true);
+				moveWithCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b), true);
 		}
 		if (Keyboard.isKeyDown(32))
 		{

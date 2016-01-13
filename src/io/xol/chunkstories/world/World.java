@@ -537,9 +537,11 @@ public class World
 		return false;
 	}
 
+	boolean raining;
+	
 	public boolean isRaining()
 	{
-		return false;
+		return raining;
 	}
 
 	AtomicLong veryLong = new AtomicLong();
@@ -547,5 +549,10 @@ public class World
 	public long nextEntityId()
 	{
 		return veryLong.getAndIncrement();
+	}
+
+	public void setWeather(boolean booleanProp)
+	{
+		raining = booleanProp;
 	}
 }

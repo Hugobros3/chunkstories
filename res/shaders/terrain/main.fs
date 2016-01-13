@@ -8,6 +8,7 @@ varying vec4 color;
 varying float fogI;
 uniform sampler2D normalTexture;
 uniform vec3 sunPos; // Sun position
+uniform vec3 camPos;
 uniform float time;
 varying vec3 eye;
 uniform samplerCube skybox;
@@ -43,6 +44,13 @@ uniform mat4 modelViewMatrixInv;
 
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
+
+uniform float shadowVisiblity;
+
+uniform sampler2D glowSampler;
+uniform sampler2D colorSampler;
+
+<include ../sky/sky.glsl>
 
 void main()
 {
@@ -101,38 +109,34 @@ void main()
 	
 	if(id == 128)
 	{
-		vec3 nt = 1.0*(texture2D(normalTexture,(vertex.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
 		
+		vec3 nt = 1.0*(texture2D(normalTexture,(vertex.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
 		nt += 1.0*(texture2D(normalTexture,(vertex.xz/2.0+vec2(-time,-2.0*time)/150.0)/2.0).rgb*2.0-1.0);
 		nt += 0.5*(texture2D(normalTexture,(vertex.zx*0.8+vec2(400.0, sin(-time/5.0)+time/25.0)/350.0)/10.0).rgb*2.0-1.0);
-		nt += 0.5*(texture2D(normalTexture,(vertex.zx*0.2+vec2(400.0, sin(-time/5.0)-time/25.0)/250.0)/15.0).rgb*2.0-1.0);
+		nt += 0.25*(texture2D(normalTexture,(vertex.zx*0.1+vec2(400.0, sin(-time/5.0)-time/25.0)/250.0)/15.0).rgb*2.0-1.0);
 		
 		nt = normalize(nt);
 		
-		float i = 0.125;
+		float i = 0.25;
 		
 		normal.x += nt.r*i;
 		normal.z += nt.g*i;
 		normal.y += nt.b*i;
 		
 		normal = normalize(normal);
-		specular = max(pow(dot(normalize(reflect(normalMatrix * eye,normalMatrix * normal)),normalize(normalMatrix * sunPos)),150.0),0.0);
+		
+		//specular = max(pow(dot(normalize(reflect(normalMatrix * eye,normalMatrix * normal)),normalize(normalMatrix * sunPos)),150.0),0.0);
+		
+		spec = fresnelTerm;
+		
+		specular = spec * pow(clamp(dot(normalize(reflect(normalMatrix * eye,normalMatrix * normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),1750.0);
 	
 		//vec3 reflection = texture(skybox, reflect(eye, normal)).rgb;
 		
-		spec = 0.5;
 	}
-	
-	//vec3 finalLight = texture2D(lightColors,lightMapCoords).rgb;
-	//vec3 finalLight = vec3(1.0);
 
 	vec3 blockLight = texture2D(lightColors,vec2(lightMapCoords.x, 0)).rgb;
 	vec3 sunLight = texture2D(lightColors,vec2(0, lightMapCoords.y)).rgb;
-	
-	sunLight = mix(sunLight, sunLight * shadowColor, 0.75);
-	
-	vec3 finalLight = blockLight * (1-sunLight);
-	finalLight += sunLight;
 	
 	float opacity = 0.0;
 	float NdotL = clamp(dot(normal, normalize(sunPos)), -1.0, 1.0);
@@ -144,28 +148,23 @@ void main()
 	{
 		opacity += 1-(10*clamped);
 	}
-	//sunIntensity
 	
 	opacity = clamp(opacity, 0, 0.52);
-	//finalLight*=opacity;//clamp(NdotL+0.4,0.52,1);
+	
+	sunLight = mix(sunLight * shadowColor, sunLight, (1-opacity) * shadowVisiblity);
+	
+	vec3 finalLight = blockLight;// * (1-sunLight);
+	finalLight += sunLight;
 	
 	//finalLight = mix(finalLight, finalLight*shadowColor, opacity * 1.0);
 	//finalColor*=finalLight;
 	
-	finalColor = mix(finalColor, vec3(0.0), lowerFactor*2);
+	finalColor = finalColor * finalLight + vec3(10.0) * specular;
 	
-	//Diffuse
-	//gl_FragData[0] = mix(vec4(finalColor,1),vec4(gl_Fog.color.rgb,1),1.0-fogI);
-	gl_FragData[0] = vec4(finalColor, 1.0);
+	if(spec >0)
+		finalColor = mix(finalColor, getSkyColor(time, normalize(reflect(eye, normal))), spec);
 	
-	//Normals
-	gl_FragData[1] = vec4((normalMatrix * normal)*0.5+0.5,1.0);
 	
-	//Light
-	gl_FragData[2] = vec4((finalLight + vec3(10.0, 10.0, 10.0) * specular) * (1-lowerFactor*2),1.0);
-	
-	//Speculars
-	gl_FragData[3] = vec4(spec, 0, lightMapCoords.y+spec,1.0);
-	
-	gl_FragDepth = gl_FragCoord.z+0.000;
+	//finalColor = vec3(1.0);
+	gl_FragColor = mix(vec4(finalColor, 1.0),vec4(gl_Fog.color.rgb,1.0),1.0-fogI);
 }

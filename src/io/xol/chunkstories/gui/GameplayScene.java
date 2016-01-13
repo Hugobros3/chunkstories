@@ -54,7 +54,6 @@ public class GameplayScene extends OverlayableScene
 	public boolean multiPlayer;
 	Entity player;
 
-
 	public GameplayScene(XolioWindow w, boolean multiPlayer)
 	{
 		super(w);
@@ -73,9 +72,6 @@ public class GameplayScene extends OverlayableScene
 		worldRenderer = new WorldRenderer(Client.world);
 		worldRenderer.setupRenderSize(XolioWindow.frameW, XolioWindow.frameH);
 		entityRenderer = new EntityRenderer(Client.world, worldRenderer);
-
-		// Start world logic only when we get the basic crap up and running
-		// Client.world.startLogic();
 
 		focus(true);
 	}
@@ -114,8 +110,7 @@ public class GameplayScene extends OverlayableScene
 			Vector3f viewerCamDirVector = new Vector3f((float) (Math.sin((-camera.view_roty) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)),
 					(float) (Math.cos((-camera.view_roty) / 180 * Math.PI) * Math.cos(transformedViewH)));
 
-			worldRenderer.lights.add(new DefferedLight(new Vector3f(1f, 1f, 0.8f), new Vector3f((float) player.posX, (float) player.posY + 1.5f, (float) player.posZ), 75f, 40f, viewerCamDirVector));
-
+			worldRenderer.lights.add(new DefferedLight(new Vector3f(1f, 1f, 0.9f), new Vector3f((float) player.posX, (float) player.posY + 1.5f, (float) player.posZ), 75f, 40f, viewerCamDirVector));
 			if (Keyboard.isKeyDown(Keyboard.KEY_F5))
 				Client.world.particlesHolder.addParticle(new ParticleSetupLight(Client.world, player.posX, player.posY + 1.0f, player.posZ, new DefferedLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) player.posX, (float) player.posY + 1.5f,
 						(float) player.posZ), 75f, 40f, viewerCamDirVector)));
@@ -404,7 +399,7 @@ public class GameplayScene extends OverlayableScene
 		if (current == null)
 			FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk null", BitmapFont.SMALLFONTS);
 		else
-			FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk : vbo=" + current.vbo_id + " vboSize=" + (current.vbo_size_normal + current.vbo_size_water) + " needRender=" + current.need_render
+			FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk : vbo=" + current.vbo_id + " vboSize=" + (current.vbo_size_normal + current.vbo_size_water) + " needRender=" + current.need_render + " requestable=" + current.requestable
 					+ " dataPointer=" + current.dataPointer, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 84, 0, 16, debugInfo, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 100, 0, 16, "View distance : " + FastConfig.viewDistance + " Vertices(N):" + formatBigAssNumber(worldRenderer.renderedVertices + "") + " Chunks in view : "

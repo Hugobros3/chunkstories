@@ -27,7 +27,7 @@ public class VoxelModels
 		{
 			if (!f.isDirectory() && f.getName().endsWith(".model"))
 			{
-				ChunkStoriesLogger.getInstance().log("Loading voxel definition : " + f.getAbsolutePath(), ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.INFO);
+				ChunkStoriesLogger.getInstance().log("Loading custom models file : " + f.getAbsolutePath(), ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.INFO);
 				readBlockModel(f);
 			}
 		}
@@ -182,7 +182,7 @@ public class VoxelModels
 				}
 				ln++;
 			}
-			ChunkStoriesLogger.getInstance().log("Debug : Parsed file " + f + " correctly, loading " + loadedBM + " blockmodels.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.DEBUG);
+			//ChunkStoriesLogger.getInstance().log("Debug : Parsed file " + f + " correctly, loading " + loadedBM + " blockmodels.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.DEBUG);
 
 			reader.close();
 		}

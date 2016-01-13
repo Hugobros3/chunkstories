@@ -195,7 +195,7 @@ public class ChunkHolder
 		{
 			// world.ioHandler.addTaskTodo(new IOTaskLoadChunk(chunkX, chunkY,
 			// chunkZ, true));
-			if(!requested[chunkX % 8][chunkY % 8][chunkZ % 8])
+			//if(!requested[chunkX % 8][chunkY % 8][chunkZ % 8])
 			{
 				requested[chunkX % 8][chunkY % 8][chunkZ % 8] = true;
 				//System.out.println("IO REQUEST");

@@ -5,9 +5,20 @@ package io.xol.engine.base;
 // http://xol.io
 
 import static org.lwjgl.opengl.GL11.*;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.swing.JOptionPane;
+
+import org.lwjgl.LWJGLException;
+
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.GameplayScene;
+import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.scene.Scene;
 
 import org.lwjgl.Sys;
@@ -22,6 +33,7 @@ public class XolioWindow
 {
 	Scene currentScene = null;
 
+	public String name;
 	public static int frameW = 1024;
 	public static int frameH = 640;
 	public static boolean resized = false;
@@ -31,20 +43,59 @@ public class XolioWindow
 
 	public static String engineVersion = "2.2a";
 
+	public static XolioWindow instance;
+
 	static boolean closeRequest = false;
 
 	static String[] modes;
 
 	public XolioWindow(String name, int fw, int fh)
 	{
+		if (fw != -1)
+			frameW = fw;
+		if (fh != -1)
+			frameH = fh;
+		this.name = name;
+	}
+
+	private void glInfo()
+	{
+		// Will print some debug information on the openGL context
+		String glVersion = glGetString(GL_VERSION);
+		ChunkStoriesLogger.getInstance().log("Render device : " + glGetString(GL_RENDERER) + " made by " + glGetString(GL_VENDOR) + " driver version " + glVersion);
+		// Check OpenGL 3.x capacity
+		glVersion = glVersion.split(" ")[0];
+		float glVersionf = Float.parseFloat(glVersion.split("\\.")[0] + "." + glVersion.split("\\.")[1]);
+		ChunkStoriesLogger.getInstance().log("OpenGL VERSION STRING = " + glGetString(GL_VERSION) + " parsed: " + glVersionf);
+		ChunkStoriesLogger.getInstance().log("OpenGL Extensions avaible : " + glGetString(GL_EXTENSIONS));
+		if (glVersionf < 3.1f)
+		{
+			FastConfig.openGL3Capable = false;
+			if (GLContext.getCapabilities().GL_EXT_framebuffer_object && GLContext.getCapabilities().GL_ARB_texture_rg && GLContext.getCapabilities().GL_ARB_vertex_type_2_10_10_10_rev)
+			{
+				FastConfig.fbExtCapable = true;
+				ChunkStoriesLogger.getInstance().log("Pre-OpenGL 3.0 Hardware with needed extensions support detected.");
+			}
+			else
+			{
+				// bien le moyen-âge ?
+				ChunkStoriesLogger.getInstance().log("Pre-OpenGL 3.0 Hardware without needed extensions support detected.");
+				ChunkStoriesLogger.getInstance().log("This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
+				JOptionPane.showMessageDialog(null, "Pre-OpenGL 3.0 Hardware without needed extensions support detected.\n"
+						+ "This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
+				Runtime.getRuntime().exit(0);
+			}
+		}
+		else
+			System.out.println("OpenGL 3.0 Hardware detected.");
+
+	}
+
+	public void createContext()
+	{
+		System.out.println("Initializing XolioEngine 3D v" + engineVersion + " [Game:" + name + ",Width:" + frameW + ",Height:" + frameH + "]");
 		try
 		{
-			if (fw != -1)
-				frameW = fw;
-			if (fh != -1)
-				frameH = fh;
-			System.out.println("Initializing XolioEngine 3D v" + engineVersion + " [Game:" + name + ",Width:" + frameW + ",Height:" + frameH + "]");
-
 			computeDisplayModes();
 
 			Display.setDisplayMode(new DisplayMode(frameW, frameH));
@@ -54,8 +105,9 @@ public class XolioWindow
 			Display.create(new PixelFormat());//, contextAtrributes);
 
 			glInfo();
-
 			switchResolution();
+
+			Keyboard.enableRepeatEvents(true);
 		}
 		catch (Exception e)
 		{
@@ -64,48 +116,15 @@ public class XolioWindow
 		}
 	}
 
-	private void glInfo()
-	{
-		// Will print some debug information on the openGL context
-		String glVersion = glGetString(GL_VERSION);
-		System.out.println("Render device : " + glGetString(GL_RENDERER) + " made by " + glGetString(GL_VENDOR) + " driver version " + glVersion);
-		// Check OpenGL 3.x capacity
-		glVersion = glVersion.split(" ")[0];
-		float glVersionf = Float.parseFloat(glVersion.split("\\.")[0] + "." + glVersion.split("\\.")[1]);
-		System.out.println("OpenGL VERSION STRING = " + glGetString(GL_VERSION) + " parsed: " + glVersionf);
-		System.out.println("OpenGL Extensions avaible : " + glGetString(GL_EXTENSIONS));
-		if (glVersionf < 3.1f)
-		{
-			FastConfig.openGL3Capable = false;
-			if (GLContext.getCapabilities().GL_EXT_framebuffer_object && GLContext.getCapabilities().GL_ARB_texture_rg && GLContext.getCapabilities().GL_ARB_vertex_type_2_10_10_10_rev)
-			{
-				FastConfig.fbExtCapable = true;
-				System.out.println("Pre-OpenGL 3.0 Hardware with needed extensions support detected.");
-			}
-			else
-			{
-				// bien le moyen-âge ?
-				System.out.println("Pre-OpenGL 3.0 Hardware without needed extensions support detected.");
-				System.out.println("Game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
-				Runtime.getRuntime().exit(0);
-			}
-		}
-		else
-			System.out.println("OpenGL 3.0 Hardware detected.");
-
-	}
-
 	public void run()
 	{
 		try
 		{
-			Keyboard.enableRepeatEvents(true);
-
 			Client.onStart();
 			while (!Display.isCloseRequested() && !closeRequest)
 			{
-				if(this.currentScene == null || !(currentScene instanceof GameplayScene))
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				if (this.currentScene == null || !(currentScene instanceof GameplayScene))
+					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 				if (resized)
 					resized = false;
 				if (Display.wasResized() || forceResize)
@@ -173,12 +192,7 @@ public class XolioWindow
 	long timeTookLastTime = 0;
 
 	/**
-	 * An accurate sync method
-	 * 
-	 * Since Thread.sleep() isn't 100% accurate, we assume that it has roughly a
-	 * margin of error of 1ms. This method will sleep for the sync time but burn
-	 * a few CPU cycles "Thread.yield()" for the last 1 millisecond plus any
-	 * remainder micro + nano's to ensure accurate sync time.
+	 * An accurate sync method Since Thread.sleep() isn't 100% accurate, we assume that it has roughly a margin of error of 1ms. This method will sleep for the sync time but burn a few CPU cycles "Thread.yield()" for the last 1 millisecond plus any remainder micro + nano's to ensure accurate sync time.
 	 * 
 	 * @param fps
 	 *            The desired frame rate, in frames per second
@@ -252,12 +266,28 @@ public class XolioWindow
 		try
 		{
 			DisplayMode[] dms = Display.getAvailableDisplayModes();
-			modes = new String[dms.length];
+			Set<DisplayMode> validModes = new HashSet<DisplayMode>();
+			//modes = new String[dms.length];
 			for (int i = 0; i < dms.length; i++)
 			{
-				modes[i] = dms[i].getWidth() + "x" + dms[i].getHeight();
+				if(dms[i].isFullscreenCapable() && dms[i].getBitsPerPixel() >= 32 && dms[i].getWidth() >= 640)
+				{
+					validModes.add(dms[i]);
+				}
+				else
+				{
+					//ChunkStoriesLogger.getInstance().info("Rejected displayMode : "+dms[i] + "fs:"+dms[i].isFullscreenCapable());
+				}
+				//modes[i] = dms[i].getWidth() + "x" + dms[i].getHeight();
 			}
-			System.out.println(modes.length + " display modes avaible.");
+			modes = new String[validModes.size()];
+			int i = 0;
+			for(DisplayMode dm : validModes)
+			{
+				modes[i] = dm.getWidth() + "x" + dm.getHeight();
+				i++;
+			}
+			ChunkStoriesLogger.getInstance().info(modes.length + " display modes avaible.");
 		}
 		catch (Exception e)
 		{
@@ -279,15 +309,18 @@ public class XolioWindow
 			if (Client.getConfig().getBooleanProp("fullScreen", false))
 			{
 				String str[] = Client.getConfig().getProp("fullScreenResolution", "800x600").split("x");
-				String newDM = Client.getConfig().getProp("fullScreenResolution", "800x600");
-				if (newDM.equals(currentDM))
-					return;
 				int w = Integer.parseInt(str[0]);
 				int h = Integer.parseInt(str[1]);
 
+				//String newDM = Client.getConfig().getProp("fullScreenResolution", "800x600");
+				if (Display.isFullscreen() && frameW == w && frameH == h)
+					return;
+				//if (newDM.equals(currentDM))
+				//	return;
+
+				// Look for relevant display mode
 				DisplayMode displayMode = null;
 				DisplayMode[] modes = Display.getAvailableDisplayModes();
-
 				for (int i = 0; i < modes.length; i++)
 				{
 					if (modes[i].getWidth() == w && modes[i].getHeight() == h && modes[i].isFullscreenCapable())
@@ -295,18 +328,40 @@ public class XolioWindow
 						displayMode = modes[i];
 					}
 				}
-
-				Display.setDisplayMode(displayMode);
-				Display.setFullscreen(true);
+				if (displayMode != null)
+				{
+					DisplayMode current = Display.getDisplayMode();
+					try
+					{	
+						Display.setDisplayMode(displayMode);
+						Display.setFullscreen(true);
+					}
+					catch (LWJGLException e)
+					{
+						frameW = 800;
+						frameH = 600;
+						current = new DisplayMode(frameW, frameH);
+						ChunkStoriesLogger.getInstance().warning("Couldnt set display to " + displayMode + "reverting to default resolution");
+						Client.getConfig().setProp("fullScreenResolution", current.getWidth() + "x" + current.getHeight());
+						Client.getConfig().save();
+						Display.setFullscreen(false);
+						Display.setDisplayMode(current);
+						if (Client.windows.currentScene != null && Client.windows.currentScene instanceof OverlayableScene)
+						{
+							OverlayableScene scene = ((OverlayableScene) Client.windows.currentScene);
+							scene.changeOverlay(new MessageBoxOverlay(scene, scene.currentOverlay, "This resolution failed to be set, try another one !"));
+						}
+					}
+				}
 				XolioWindow.forceResize = true;
-
-				currentDM = newDM;
 			}
 			else
 			{
 				if (Display.isFullscreen())
 				{
 					Display.setFullscreen(false);
+					Display.setLocation(0, 0);
+					Display.setDisplayMode(Display.getDesktopDisplayMode());
 					XolioWindow.forceResize = true;
 				}
 			}
@@ -362,6 +417,12 @@ public class XolioWindow
 
 	public void handleSpecialKey(int k)
 	{
-
+		if (k == 87 /* F11 */)
+		{
+			Client.getConfig().setProp("fullScreen", !Client.getConfig().getBooleanProp("fullScreen", false) + "");
+			String fsReso = Display.getDesktopDisplayMode().getWidth() + "x" + Display.getDesktopDisplayMode().getHeight();
+			Client.getConfig().setProp("fullScreenResolution", fsReso);
+			switchResolution();
+		}
 	}
 }

@@ -4,7 +4,7 @@ uniform sampler2D comp_diffuse;
 uniform sampler2D comp_normal;
 uniform sampler2D comp_depth;
 uniform sampler2D comp_light;
-uniform sampler2D comp_specular;
+//uniform sampler2D comp_specular;
 //uniform sampler2D comp_worldpos;
 uniform sampler2D comp_background;
 
@@ -219,12 +219,12 @@ vec4 getProcessedPixel(vec2 screenSpaceCoords)
 	//light = computeLight(lightMapCoordinates, pixelNormal.xyz, cameraSpacePosition);
 	//texture2D(comp_light, screenSpaceCoords).rgba;
 	
-	pixelColor.rgb*=light.rgb;// + pixelColor.rgb*(1-clamp(light.a, 0.0, 1.0));
+	pixelColor.rgb*=light.rgb;
 	
 	//pixelColor = mix(pixelColor,texture2D(comp_background, screenSpaceCoords),1-pixelColor.a);
 	pixelColor.a = 1;
 	
-	float spec = texture2D(comp_specular, screenSpaceCoords).r;
+	float spec = fract(light.a); //texture2D(comp_specular, screenSpaceCoords).r;
 	if(spec > 0)
 	{
 		vec3 cameraSpaceViewDir = normalize(cameraSpacePosition.xyz);
@@ -233,7 +233,7 @@ vec4 getProcessedPixel(vec2 screenSpaceCoords)
 		vec3 normSkyDirection = normalMatrixInv * cameraSpaceVector;
 		//reflection = textureCube(skybox, normSkyDirection);
 		vec3 reflection = getSkyColor(time, normSkyDirection);
-		pixelColor.rgb = mix(pixelColor.rgb,reflection,spec);
+		pixelColor.rgb = mix(pixelColor.rgb, reflection, spec);
 	}
 	
 	
@@ -250,30 +250,27 @@ vec4 getProcessedPixelWithReflections(vec2 screenSpaceCoords)
 	
 	vec4 light = clamp(texture2D(comp_light, screenSpaceCoords).rgba, 0.0, 1.0);
 	
-	if(pass == 1)
-		light.a = 1;
-	
 	//light = computeLight(light, pixelNormal.xyz, cameraSpacePosition);
 	//computeLight(lightMapCoordinates, pixelNormal.xyz, cameraSpacePosition);
 	//texture2D(comp_light, screenSpaceCoords).rgba;
 	
-	pixelColor.rgb = pixelColor.rgb*light.rgb + pixelColor.rgb*(1-clamp(light.a, 0.0, 1.0));
-	//pixelColor.a = 1;
+	pixelColor.rgb*=light.rgb;
+
 	
-	//float replace = pixelColor.a;
-	//pixelColor = mix(pixelColor,texture2D(comp_background, screenSpaceCoords), 1-replace);
-	
-	
-	vec3 specData = texture2D(comp_specular, screenSpaceCoords).rgb;
-	float spec = specData.r;
+	//vec3 specData = texture2D(comp_specular, screenSpaceCoords).rgb;
+	float spec = light.a;
+	float sunlightFactor = pixelNormal.w;
 	
 	//spec = clamp(spec, 1, 1);
 	
 	//Do reflections, dynamic or cubemap
 	vec4 reflection = vec4(0,0,0,0);
-	if(pass < 2 && spec > 0 )
+	if(pass == 0)
+		pixelColor.a = 1;
+	
+	if(pass == 1 && spec > 0 )
 	{
-		reflection = computeReflectedPixel(screenSpaceCoords, cameraSpacePosition.xyz, pixelNormal.xyz, specData.b);
+		reflection = computeReflectedPixel(screenSpaceCoords, cameraSpacePosition.xyz, pixelNormal.xyz, sunlightFactor);
 	}
 	if(pass == 2 && spec > 0 )
 	{
@@ -289,7 +286,7 @@ vec4 getProcessedPixelWithReflections(vec2 screenSpaceCoords)
 		//float specular = clamp(pow(dot(normalize(normSkyDirection),normalize(sunPos)),16.0),0.0,10.0);
 		//color.rgb += vec3(1,1,1)*clamp(pow((dot(normalize(normSkyDirection), normalize(sunPos))+1.055)/4.0,16.0),0.0,1.0);
 		//reflection.rgb += vec3(1,1,1)*specular;
-		reflection.rgb *= specData.b;
+		reflection.rgb *= sunlightFactor;
 	}
 	
 	pixelColor.rgb = mix(pixelColor.rgb,reflection.rgb,spec);

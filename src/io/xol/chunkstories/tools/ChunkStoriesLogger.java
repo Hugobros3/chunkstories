@@ -131,4 +131,14 @@ public class ChunkStoriesLogger
 	{
 		log(string, UNSPECIFIED, INFO);
 	}
+
+	public void warning(String string)
+	{
+		this.log(string, WARN);
+	}
+	
+	public void error(String string)
+	{
+		this.log(string, ERROR);
+	}
 }

@@ -4,6 +4,7 @@ import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.summary.ChunkSummary;
+import io.xol.engine.math.LoopingMathHelper;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -11,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,26 +67,24 @@ public class IOTasks extends Thread
 
 	public void requestChunksUnload(int pCX, int pCY, int pCZ, int sizeInChunks, int chunksViewDistance)
 	{
-		/*synchronized(tasks)
+		Iterator<IOTask> iter = tasks.iterator();
+		while (iter.hasNext())
 		{
-			Iterator<IOTask> iter = tasks.iterator();
-			while (iter.hasNext())
+			IOTask task = iter.next();
+			if (task instanceof IOTaskLoadChunk)
 			{
-				IOTask task = iter.next();
-				if (task instanceof IOTaskLoadChunk)
-				{
-					IOTaskLoadChunk loadChunkTask = (IOTaskLoadChunk) task;
-					int x = loadChunkTask.x;
-					int y = loadChunkTask.y;
-					int z = loadChunkTask.z;
+				IOTaskLoadChunk loadChunkTask = (IOTaskLoadChunk) task;
+				int x = loadChunkTask.x;
+				int y = loadChunkTask.y;
+				int z = loadChunkTask.z;
 
-					if ((LoopingMathHelper.moduloDistance(x, pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(y, pCZ, sizeInChunks) > chunksViewDistance) || (Math.abs(z - pCY) > 4))
-					{
-						iter.remove();
-					}
+				if ((LoopingMathHelper.moduloDistance(x, pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(y, pCZ, sizeInChunks) > chunksViewDistance) || (Math.abs(z - pCY) > 4))
+				{
+					//System.out.println("Removed task "+loadChunkTask+" for being too far");
+					iter.remove();
 				}
 			}
-		}*/
+		}
 	}
 
 	byte[] unCompressedData = new byte[32 * 32 * 32 * 4];
@@ -227,19 +227,16 @@ public class IOTasks extends Thread
 		//System.out.println("req CL "+chunkX+":"+chunkY+":"+chunkZ);
 		
 		// We now do duplicate check in ChunkHolder
-		
-		/*synchronized (tasks)
+
+		for (IOTask ioTask : tasks)
 		{
-			for (IOTask ioTask : tasks)
+			if (ioTask instanceof IOTaskLoadChunk)
 			{
-				if (ioTask instanceof IOTaskLoadChunk)
-				{
-					IOTaskLoadChunk taskLC = (IOTaskLoadChunk) ioTask;
-					//if (taskLC.x == task.x && taskLC.y == task.y && taskLC.z == task.z)
-					//	return;
-				}
+				IOTaskLoadChunk taskLC = (IOTaskLoadChunk) ioTask;
+				if (taskLC.x == task.x && taskLC.y == task.y && taskLC.z == task.z)
+					return;
 			}
-		}*/
+		}
 		addTask(task);
 	}
 

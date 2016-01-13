@@ -45,9 +45,6 @@ uniform samplerCube skybox;
 varying float chunkFade;
 
 //Fog
-varying float fogI;
-
-varying vec4 modelview;
 
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
@@ -65,60 +62,99 @@ float linearizeDepth(float expDepth)
 	return (2 * 0.1) / (3000 + 0.1 - expDepth * (3000 - 0.1));
 }
 
-void main(){
-	//discard;
+const vec3 shadowColor = vec3(0.20, 0.20, 0.31);
+const float shadowStrength = 0.75;
 
-	float opacity = 1.0;
-	
-	float edgeSmoother = 0.0;
-	
-	vec3 normal = vec3(0.0, 1.0, 0.0);//varyingNormal;
-	
+uniform int pass;
+uniform sampler2D readbackShadedBufferTemp;
+uniform sampler2D readbackAlbedoBufferTemp;
+uniform sampler2D readbackMetaBufferTemp;
+uniform sampler2D readbackDepthBufferTemp;
+
+uniform vec2 shadedBufferDimensions;
+uniform float viewDistance;
+
+uniform float underwater;
+
+vec4 unprojectPixel(vec2 co) {
+
+    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2.0-1.0, texture2D(readbackDepthBufferTemp, co, 0.0).x * 2.0 - 1.0), 1.0);
+    fragposition /= fragposition.w;
+    return fragposition;
+}
+
+void main(){
+	vec3 normal = vec3(0.0, 1.0, 0.0);
+
 	vec3 nt = 1.0*(texture2D(normalTexture,(varyingVertex.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
-	
 	nt += 1.0*(texture2D(normalTexture,(varyingVertex.xz/2.0+vec2(-time,-2.0*time)/150.0)/2.0).rgb*2.0-1.0);
 	nt += 0.5*(texture2D(normalTexture,(varyingVertex.zx*0.8+vec2(400.0, sin(-time/5.0)+time/25.0)/350.0)/10.0).rgb*2.0-1.0);
-	nt += 0.5*(texture2D(normalTexture,(varyingVertex.zx*0.2+vec2(400.0, sin(-time/5.0)-time/25.0)/250.0)/15.0).rgb*2.0-1.0);
+	nt += 0.25*(texture2D(normalTexture,(varyingVertex.zx*0.1+vec2(400.0, sin(-time/5.0)-time/25.0)/250.0)/15.0).rgb*2.0-1.0);
 	
 	nt = normalize(nt);
 	
-	//nt = (gl_ModelViewMatrix * vec4(normalize(nt),0)).xyz;
-	
-	//normal = nt;
-	
-	float i = 0.5*0.125;
+	float i = 0.25;
 	
 	normal.x += nt.r*i;
 	normal.z += nt.g*i;
 	normal.y += nt.b*i;
 	
 	normal = normalize(normal);
-	
-	
-	normal = normalize(normalMatrix * normal);
+	normal = normalMatrix * normal;
 
 	//Basic texture color
 	vec2 coords = (gl_FragCoord.xy)/screenSize;
-	coords+=vec2(floor(sin(coords.x*100.0+time/5.0))/screenSize.x,floor(cos(coords.y*100.0+time/5.0))/screenSize.y);
 	
-	vec3 baseColor = texture2D(diffuseTexture, texcoord).rgb;
+	//coords+=10.0 * vec2(floor(sin(coords.x*100.0+time/5.0))/screenSize.x,floor(cos(coords.y*100.0+time/5.0))/screenSize.y);
 	
-	//vec3 reflection = texture(skybox, reflect(eye, normalViewSpace)).rgb;
-	//vec3 refraction = texture2D(comp_fp_diffuse,coords).rgb;
-	//refraction = mix(refraction, vec3(0.4, 0.4, 1.0), clamp(-30*(linearizeDepth(gl_FragCoord.z)-linearizeDepth(texture2D(comp_fp_depth, (gl_FragCoord.xy)/screenSize).r)), 0.0, 1.1));
+	vec4 baseColor = texture2D(diffuseTexture, texcoord);
+	
+	float spec = fresnelTerm;
+	vec4 worldspaceFragment = unprojectPixel(coords);
+	
+	<ifdef perPixelFresnel>
+	float dynamicFresnelTerm = 0.1 + 0.6 * clamp(0.7 + dot(normalize(worldspaceFragment.xyz), normal), 0.0, 1.0);
+	spec = dynamicFresnelTerm;
+	<endif perPixelFresnel>
+	if(pass == 0)
+	{
+		vec4 meta = texture2D(readbackMetaBufferTemp, coords);
+		
+		vec3 blockLight = texture2D(lightColors,vec2(meta.x, 0)).rgb;
+		vec3 sunLight = texture2D(lightColors,vec2(0, meta.y)).rgb;
+		
+		sunLight = mix(sunLight, sunLight * shadowColor, shadowVisiblity * 0.75);
+		
+		vec3 finalLight = blockLight;// * (1-sunLight);
+		finalLight += sunLight;
+		finalLight *= (1-meta.z);
 
-	//baseColor = vec3(texcoord, 0);
+		coords += 15.0 * (1 - length(worldspaceFragment) / viewDistance) * vec2( normal.xz ) / screenSize;
+		vec4 refracted = texture2D(readbackAlbedoBufferTemp, coords);
+		refracted.rgb *= finalLight + vec3(1.0) * (1-refracted.a);
+		
+		float waterFogI2 = length(worldspaceFragment) / viewDistance;
+		//if(refracted.a <= 0.1)
+		//	waterFogI2 = 0;
+		//baseColor.a = refracted.a;
+		baseColor.rgb = mix(refracted.rgb, baseColor.rgb, clamp(waterFogI2+0.2, 0.0, 1.0));
+	}
+	else if(pass == 1)
+		baseColor = texture2D(readbackShadedBufferTemp, gl_FragCoord.xy / screenSize);
+	else
+	{
+		baseColor.a = 0.5;
+		spec = 0.0;
+	}
 	
-	gl_FragData[0] = vec4(baseColor, chunkTransparency*chunkFade*(0.5+0.5*waterFogI*0));
+	spec *= 1-underwater;
 	
-	float spec = 0.5;
+	gl_FragData[0] = vec4(baseColor);
 	
-	gl_FragData[1] = vec4(normalize(normal)*0.5+0.5, 1.0);
+	if(pass == 1)
+	{
+		gl_FragData[1] = vec4(normalize(normal)*0.5+0.5, spec * pass);
 	
-	gl_FragData[2] = vec4(texture2D(lightColors,lightMapCoords.xy).rgb*opacity, chunkTransparency*chunkFade*(0.5+0.5*waterFogI*0)*0.5); /*+vec3(1.0,1.0,1.0)*clamp(specular,0.0,10.0)*/
-	//gl_FragData[2] = vec4(lightMapCoords,0,1);
-	
-	gl_FragData[3] = vec4(spec, lightMapCoords.xw, 1.0);
-	
-	gl_FragData[4] = projectionMatrix * modelview;
+		gl_FragData[2] = vec4(lightMapCoords.xyz, pass);
+	}
 }

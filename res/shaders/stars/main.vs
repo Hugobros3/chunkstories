@@ -22,6 +22,6 @@ void main(){
 	
 	calculatedLight = vec4(5.0) * blend;
 	
-	gl_PointSize = 150.0;
+	gl_PointSize = 1.0;
 	gl_Position = projectionMatrix * modelViewMatrix * vec4(vertexIn, 1.0);
 }

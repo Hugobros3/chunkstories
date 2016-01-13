@@ -6,6 +6,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import org.lwjgl.BufferUtils;
@@ -19,6 +20,7 @@ import io.xol.engine.misc.FloatBufferPool;
 import io.xol.engine.shaders.ShaderProgram;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.*;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -204,22 +206,29 @@ public class TerrainSummarizer
 
 	int cx, cz;
 
-	public int draw(ShaderProgram terrain)
+	public int draw(Camera camera, ShaderProgram terrain)
 	{
 		int elements = 0;
 		glDisable(GL_CULL_FACE); // culling for our glorious terrain
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY); // No need for textures
-		glDisableClientState(GL_NORMAL_ARRAY);
-		glDisableClientState(GL_COLOR_ARRAY);
-
+		//glEnableClientState(GL_VERTEX_ARRAY);
+		
+		//glDisableClientState(GL_TEXTURE_COORD_ARRAY); // No need for textures
+		//glDisableClientState(GL_NORMAL_ARRAY);
+		//glDisableClientState(GL_COLOR_ARRAY);
+		int vertexIn = terrain.getVertexAttributeLocation("vertexIn");
+		glEnableVertexAttribArray(vertexIn);	
+		
 		for (RegionSummary rs : regionsToRender)
 		{
+			float height = 1024f;
+			if(!camera.isBoxInFrustrum(new Vector3f(rs.rxDisplay * 256 + 128, height / 2, rs.rzDisplay * 256 + 128), new Vector3f(256, height, 256)))
+				continue;
+			
 			terrain.setUniformSampler(1, "groundTexture", rs.dataSource.tId);
 
 			glBindTexture(GL_TEXTURE_2D, rs.dataSource.tId);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			
 			terrain.setUniformSampler(0, "heightMap", rs.dataSource.hId);
 			terrain.setUniformSampler1D(2, "blocksTexturesSummary", getBlocksTexturesSummaryId());
@@ -227,10 +236,11 @@ public class TerrainSummarizer
 
 			// terrain.setUniformFloat2("chunkPositionActual", cs.dekalX,
 			// cs.dekalZ);
-			terrain.setUniformFloat2("chunkPosition", rs.rxDisplay, rs.rzDisplay);
+			terrain.setUniformFloat2("chunkPosition", rs.rxDisplay * 256, rs.rzDisplay * 256);
 
 			glBindBuffer(GL_ARRAY_BUFFER, rs.vbo);
-			glVertexPointer(3, GL_FLOAT, 0, 0L);
+			//glVertexPointer(3, GL_FLOAT, 0, 0L);
+			glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0L);
 
 			//if(rs.vbo == 840)
 			//	System.out.println("drawing cs size="+rs.vboSize+" t"+rs.dataSource.hId+"vbo"+rs.vbo);
@@ -242,7 +252,9 @@ public class TerrainSummarizer
 		}
 		//System.out.println(regionsToRender.size()+"parts");
 
-		glDisableClientState(GL_VERTEX_ARRAY);
+		//glDisableClientState(GL_VERTEX_ARRAY);
+		glDisableVertexAttribArray(vertexIn);	
+
 		return elements;
 	}
 

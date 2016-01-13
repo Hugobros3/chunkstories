@@ -92,6 +92,7 @@ public class Client implements Controller
 		soundManager = new ALSoundManager();
 		// Gl init
 		windows = new XolioWindow("Chunk Stories " + VersionInfo.version, -1, -1);
+		windows.createContext();
 		windows.changeScene(new LoginScene(windows));
 		windows.run();
 	}

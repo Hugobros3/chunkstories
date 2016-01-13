@@ -128,7 +128,7 @@ public class ParticlesHolder
 		return i;
 	}
 
-	public int render(int GBufferDiffuseId, Camera camera)
+	public int render(Camera camera)
 	{
 		int totalDrawn = 0;
 		particlesShader.use(true);

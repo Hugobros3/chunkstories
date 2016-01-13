@@ -11,10 +11,6 @@ uniform vec3 blockColor;
 
 uniform sampler2D normalTexture; // Blocks normal texture atlas
 
-//Chunk fading into view
-uniform float chunkTransparency;
-varying float chunkFade;
-
 //Debug
 uniform vec3 blindFactor; // can white-out all the colors
 varying vec4 modelview;
@@ -52,9 +48,11 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
+varying float fresnelTerm;
 uniform vec3 vegetationColor;
 
 uniform vec3 givenLightmapCoords;
+uniform vec2 screenSize;
 
 // I suck at maths, so I used this code in the meanwhile I get how it works
 // http://www.thetenthplanet.de/archives/1180
@@ -81,11 +79,18 @@ vec3 perturb_normal( vec3 N, vec3 V, vec2 texcoord )
 {
     // N, la normale interpolée et
     // V, le vecteur vue (vertex dirigé vers l'œil)
-    vec3 nul = texture2D(normalTexture, texcoord ).xyz;
-	vec3 map = vec3(nul.x, nul.y, nul.z);
+    vec3 map = texture2D(normalTexture, texcoord ).xyz;
+	//vec3 map = vec3(nul.x, nul.y, nul.z);
     map = map*2.0 - 1.0;
 	mat3 TBN = cotangent_frame(N, -V, texcoord);
     return normalize(TBN * map);
+}
+
+vec4 unprojectPixel(vec3 co) {
+
+    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2.0-1.0), 1.0);
+    fragposition /= fragposition.w;
+    return fragposition;
 }
 
 const vec3 shadowColor = vec3(0.20, 0.20, 0.31);
@@ -110,40 +115,58 @@ void main(){
 	//alpha = 1;
 	//baseColor = vec3(1, 0.5, 0.5);
 	
-	if(alpha < 0.5)
+	if(alpha <= 0.0)
 		discard;
+	
 	else if(alpha < 1)
 		baseColor *= vegetationColor;
 	
 	//Rain makes shit glint
-	float spec = rainWetness;//wetness*clamp((lightMapCoords.y-13.0/16.0)*16,0,0.5);
+	float spec = 0;
 	
-	vec3 blockLight = texture2D(lightColors,vec2(lightMapCoords.x, 0)).rgb;
+	
+	<ifdef perPixelFresnel>
+	vec3 coords = (gl_FragCoord.xyz);
+	coords.xy/=screenSize;
+	vec4 worldspaceFragment = unprojectPixel(coords);
+	float dynamicFresnelTerm = 0.1 + 0.6 * clamp(0.7 + dot(normalize(worldspaceFragment.xyz), normal), 0.0, 1.0);
+	spec = rainWetness * dynamicFresnelTerm;
+	<endif perPixelFresnel>
+	spec = rainWetness * fresnelTerm;
+	
+	/*vec3 blockLight = texture2D(lightColors,vec2(lightMapCoords.x, 0)).rgb;
 	vec3 sunLight = texture2D(lightColors,vec2(0, lightMapCoords.y)).rgb;
 	
 	sunLight = mix(sunLight, sunLight * shadowColor, shadowVisiblity * 0.75);
 	
-	vec3 finalLight = blockLight * (1-sunLight);
+	vec3 finalLight = blockLight;// * (1-sunLight);
 	finalLight += sunLight;
-	
+	*/
 	
 	
 	//ao term
 	<ifdef !ssao>
 		//If SSAO is disabled, we use the crappy free vertex AO ( byproduct of block/sunlight merging in code )
-		finalLight *= vec3(1,1,1)*clamp(1-lightMapCoords.z, 0.0, 1.0);
+		//finalLight -= vec3(0.2)*clamp(lightMapCoords.z, 0.0, 1.0);
 	<endif ssao>
 	
 	
-	vec3 finalColor = baseColor*blockColor;
+	vec3 finalColor = baseColor;
 	
 	//Diffuse G-Buffer
-	gl_FragData[0] = vec4(finalColor,1*chunkTransparency*chunkFade);
+	gl_FragData[0] = vec4(finalColor,1);
 	//Normal G-Buffer
-	gl_FragData[1] = vec4(normal*0.5+0.5, 1.0);
+	gl_FragData[1] = vec4(normal*0.5+0.5, spec);
+	
+	gl_FragData[2] = vec4(lightMapCoords, 1.0);
+
+	//old crap
 	//Light color G-buffer
-	gl_FragData[2] = vec4(finalLight,1);
+	//gl_FragData[2] = vec4(finalLight, clamp(spec, 0.0, 1.0));
+	
+	// Even older crap
+	
 	//gl_FragData[2] = coordinatesInShadowmap;
 	//Specular G-Buffer
-	gl_FragData[3] = vec4(spec, lightMapCoords.xy, 1.0);
+	//gl_FragData[3] = vec4(spec, lightMapCoords.xy, 1.0);
 }

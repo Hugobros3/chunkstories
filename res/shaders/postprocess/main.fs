@@ -1,15 +1,15 @@
 //#version 120
+uniform sampler2D shadedBuffer;
 
-uniform sampler2D comp_final;
+uniform sampler2D albedoBuffer;
+uniform sampler2D depthBuffer;
+uniform sampler2D normalBuffer;
+uniform sampler2D metaBuffer;
 
-uniform sampler2D comp_diffuse;
-uniform sampler2D comp_normal;
-uniform sampler2D comp_depth;
-uniform sampler2D comp_light;
-uniform sampler2D comp_specular;
-uniform sampler2D comp_sm;
-uniform sampler2D bloom;
-uniform sampler2D ssao;
+uniform sampler2D shadowMap;
+
+uniform sampler2D bloomBuffer;
+uniform sampler2D ssaoBuffer;
 
 uniform samplerCube skybox;
 
@@ -36,8 +36,6 @@ uniform float underwater;
 
 const vec4 waterColor = vec4(51/255.0, 104/255.0, 110/255.0, 1.0);
 
-vec4 getDebugShit();
-
 vec3 convertCameraSpaceToScreenSpace(vec3 cameraSpace) {
     vec4 clipSpace = projectionMatrix * vec4(cameraSpace, 1.0);
     vec3 NDCSpace = clipSpace.xyz / clipSpace.w;
@@ -46,9 +44,9 @@ vec3 convertCameraSpaceToScreenSpace(vec3 cameraSpace) {
     return screenSpace;
 }
 
-vec3 convertScreenSpaceToWorldSpace(vec2 co) {
+vec3 unprojectPixel(vec2 co) {
 
-    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2-1, texture2D(comp_depth, co, 0).x * 2.0 - 1.0), 1.0);
+    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2-1, texture2D(depthBuffer, co, 0).x * 2.0 - 1.0), 1.0);
     fragposition /= fragposition.w;
     return fragposition.xyz;
 }
@@ -60,87 +58,62 @@ float linearizeDepth(float z)
   return (2.0 * n) / (f + n - z * (f - n));	
 }
 
-vec3 addBloom(vec2 cc)
-{
-	vec3 baseColor = texture2D(bloom, cc).rgb;
-	return baseColor / 1.0;
-}
+vec4 getDebugShit(vec2 coords);
 
-void main() {	
-	//gl_FragColor = bloom(comp_final, f_texcoord);
-	
+void main() {
 	vec2 finalCoords = f_texcoord;
 	
+	// Water coordinates distorsion
 	finalCoords.x += underwater*sin(finalCoords.x * 50 + finalCoords.y * 60 + time * 1.0) / viewWidth * 5.0;
 	finalCoords.y += underwater*cos(finalCoords.y * 60 + time * 1.0) / viewHeight * 2.0;
 	
-	vec4 compositeColor = texture2D(comp_final, finalCoords);
+	// Sampling
+	vec4 compositeColor = texture2D(shadedBuffer, finalCoords);
+	
+	// Do reflections here
+	
+	// etc
 	
 	compositeColor = mix(compositeColor, compositeColor * waterColor, underwater * 0.5);
 	
 	<ifdef doBloom>
-	compositeColor.rgb += addBloom(finalCoords);
+	compositeColor.rgb += texture2D(bloomBuffer, finalCoords).rgb;
 	<endif doBloom>
 	
-	<ifdef ssao>
-	compositeColor.rgb *= texture2D(ssao, finalCoords).rgb;
-	<endif ssao>
-	
 	gl_FragColor = compositeColor;
+	
 	<ifdef debugGBuffers>
-	gl_FragColor = getDebugShit();
+	gl_FragColor = getDebugShit(f_texcoord);
 	<endif debugGBuffers>
 }
 
 
-vec4 getDebugShit()
+vec4 getDebugShit(vec2 coords)
 {
-	vec4 baseColor = vec4(0.0);
-	if(f_texcoord.x > 0.666)
+	vec2 sampleCoords = coords;
+	sampleCoords.x = mod(sampleCoords.x, 0.5);
+	sampleCoords.y = mod(sampleCoords.y, 0.5);
+	sampleCoords *= 2.0;
+	
+	vec4 shit = vec4(0.0);
+	if(coords.x > 0.5)
 	{
-		if(f_texcoord.y > 0.666)
-		{
-			vec2 cc = vec2((f_texcoord.x-0.666)*3,(f_texcoord.y-0.666)*3);
-			baseColor = vec4(texture2D(bloom, cc).rgb,1);
-		}
-		else if(f_texcoord.y > 0.333)
-		{
-			vec2 cc = vec2((f_texcoord.x-0.666)*3,(f_texcoord.y-0.333)*3);
-			baseColor = vec4(vec3(1.0, 0.5, 0.0) * linearizeDepth(texture2D(comp_depth, cc).x),1);
-		}
+		if(coords.y > 0.5)
+			shit = texture2D(shadedBuffer, sampleCoords);
 		else
-			baseColor = texture2D(comp_normal, vec2((f_texcoord.x-0.666)*3,(f_texcoord.y+0.333)*3-1));
-	}
-	else if(f_texcoord.x > 0.333)
-	{
-		if(f_texcoord.y > 0.666)
-		{
-			vec2 cc = vec2((f_texcoord.x-0.666)*3+1,(f_texcoord.y-0.666)*3);
-			baseColor = texture2D(comp_light, cc);
-		}
-		else if(f_texcoord.y > 0.333)
-		{
-			vec2 cc = vec2((f_texcoord.x-0.666)*3+1,(f_texcoord.y-0.333)*3);
-			baseColor = texture2D(ssao, cc);
-		}
-		else
-		{
-			vec2 cc = vec2((f_texcoord.x-0.666)*3+1,(f_texcoord.y+0.333)*3-1);
-			baseColor = vec4((texture2D(comp_specular, cc).rgb),1);
-		}
+			shit = texture2D(normalBuffer, sampleCoords);
 	}
 	else
 	{
-		if(f_texcoord.y > 0.5)
+		if(coords.y > 0.5)
 		{
-			vec2 cc = vec2((f_texcoord.x-0.333)*3+1,(f_texcoord.y-0.5)*2);
-			baseColor = texture2D(comp_final, cc);
+			shit = texture2D(albedoBuffer, sampleCoords);
+			//if(shit.a == 0)
+			shit += (1-shit.a) * vec4(1.0, 0.0, 1.0, 1.0);
 		}
 		else
-		{
-			vec2 cc = vec2((f_texcoord.x-0.333)*3+1,(f_texcoord.y+0.5)*2-1);
-			baseColor = vec4((texture2D(comp_diffuse, cc).rgb),1);
-		}
+			shit = texture2D(metaBuffer, sampleCoords);
 	}
-	return baseColor;
+	shit.a = 1.0;
+	return shit;
 }

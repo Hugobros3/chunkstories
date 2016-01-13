@@ -17,11 +17,19 @@ import static org.lwjgl.opengl.GL30.*;
 public class GBufferTexture
 {
 
-	int id, type;
+	int id;
+	GBufferType type;
 	int w, h;
 	boolean isShadowMap = false;
 
-	public GBufferTexture(int type, int w, int h)
+	public enum GBufferType {
+		RGBA_8BPP,
+		RGB_HDR,
+		DEPTH_SHADOWMAP,
+		DEPTH_RENDERBUFFER;
+	}
+	
+	public GBufferTexture(GBufferType type, int w, int h)
 	{
 		id = glGenTextures();
 		this.type = type;
@@ -31,15 +39,18 @@ public class GBufferTexture
 	public void resize(int w, int h)
 	{
 		glBindTexture(GL_TEXTURE_2D, id);
-
+		
+		if(this.w == w && this.h == h)
+			return;
+		
 		this.w = w;
 		this.h = h;
-		if (type == 0)
+		if (type == GBufferType.RGBA_8BPP)
 		{
 			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " RGBA texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer) null);
 		}
-		else if (type == 3)
+		else if (type == GBufferType.RGB_HDR)
 		{
 			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " D16 texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
 			// Optimization for OpenGL 3 cards
@@ -50,19 +61,14 @@ public class GBufferTexture
 				
 			// GL_RGBA16F_ARB for GL3
 		}
-		else if (type == 4)
-		{
-			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " RGB texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer) null);
-		}
-		else if (type == 1)
+		else if (type == GBufferType.DEPTH_SHADOWMAP)
 		{
 			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " D16 texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, (ByteBuffer) null);
 			// D16 Textures are for shadow maps
 			isShadowMap = true;
 		}
-		else if (type == 2)
+		else if (type == GBufferType.DEPTH_RENDERBUFFER)
 		{
 			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " D32 texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, (ByteBuffer) null);

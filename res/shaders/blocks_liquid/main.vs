@@ -54,6 +54,9 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
+uniform mat4 modelViewProjectionMatrix;
+uniform mat4 modelViewProjectionMatrixInv;
+
 varying float waterFogI;
 
 float getFogI(vec3 position, float fogDistance)
@@ -83,15 +86,12 @@ void main(){
 	v.y += (sin(time/15.0+v.x+v.z)*0.0-0.3);
 	varyingVertex = v;
 	
-	fresnelTerm = 0.5;
+	fresnelTerm = 0.1 + 0.6 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(0, 1.0 , 0)), 0.0, 1.0);
 	
 	//Compute lightmap coords
-	lightMapCoords = vec4(colorIn.r, colorIn.g*sunIntensity, colorIn.b, colorIn.g * 0.5 + colorIn.g*sunIntensity * 0.5);
+	lightMapCoords = vec4(colorIn.r, colorIn.g, colorIn.b, 0);
 	
-	//Translate vertex
-	modelview = modelViewMatrix * v;
-	
-	gl_Position = (projectionMatrix * modelview );
+	gl_Position = modelViewProjectionMatrix * v;
 	
 	//Eye transform
 	eye = v.xyz-camPos;
@@ -101,26 +101,8 @@ void main(){
 	
 	//fresnelTerm = clamp(cos(yAngle),0,0.8);
 	
-	waterFogI = length(eye)/25;
+	waterFogI = length(eye)/(viewDistance/2.0-16);
 	
 	//Fog calculation
-	/*float fogStartDistance = clamp(viewDistance-32,32,512);
-	//float fogEndDistance = clamp(viewDistance,64,512);
-	chunkFade = clamp((abs(eye.x)-fogStartDistance)/32,0,1)+
-	clamp((abs(eye.z)-fogStartDistance)/32,0,1);
-	chunkFade = 1;//-clamp(chunkFade,0,1);*/
-	
-	vec3 camPosChunk = camPos;
-	camPosChunk.x = floor((camPosChunk.x+16)/32)*32;
-	camPosChunk.z = floor((camPosChunk.z+16)/32)*32;
-	
-	vec3 eyeChunk = v.xyz-camPosChunk;
-	
-	float fogStartDistance = clamp(floor(viewDistance/32)*32-12,32,512);
-	
-	chunkFade = clamp((abs(eyeChunk.x)-fogStartDistance)/12,0,1)+
-	clamp((abs(eyeChunk.z)-fogStartDistance)/12,0,1);
-	
-	chunkFade = 1-clamp(chunkFade,0,1);
 	
 }

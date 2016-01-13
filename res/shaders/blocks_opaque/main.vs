@@ -7,6 +7,7 @@ attribute vec4 normalIn;
 
 varying vec2 texcoord;
 varying vec3 lightMapCoords;
+varying float fresnelTerm;
 
 //Lighthing
 uniform float sunIntensity;
@@ -16,11 +17,6 @@ varying vec3 varyingNormal;
 // The vertex we're going to pass to the fragment shader.
 varying vec4 varyingVertex;
 
-//Shadow shit
-uniform mat4 shadowMatrix;
-uniform mat4 shadowMatrix2;
- 
-varying vec4 coordinatesInShadowmap;
 varying vec4 coordinatesInShadowmap2;
 
 varying float fogI;
@@ -44,6 +40,9 @@ uniform mat4 modelViewMatrixInv;
 
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
+
+uniform mat4 modelViewProjectionMatrix;
+uniform mat4 modelViewProjectionMatrixInv;
 
 uniform vec3 givenLightmapCoords;
 
@@ -71,17 +70,17 @@ void main(){
 	varyingVertex = v;
 	varyingNormal =  (normalIn.xyz-0.5)*2.0;//normalIn;
 	
+	fresnelTerm = 0.1 + 0.6 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(varyingNormal)), 0.0, 1.0);
+	
 	texcoord /= 32768.0;
 	
 	//Compute lightmap coords
-	rainWetness = wetness*clamp((colorIn.g-15.5/16.0)*16,0,0.5);
-	lightMapCoords = clamp(vec3(vec2(colorIn.r, colorIn.g), colorIn.b)+givenLightmapCoords, 0.0, 1.0);
-	lightMapCoords.y *= sunIntensity;
+	rainWetness = wetness*clamp((colorIn.g * 16.0 - 15.0),0,1.0);
+	lightMapCoords = vec3(vec2(colorIn.r, colorIn.g)*1.0, colorIn.b);
 	
-	//Translate vertex
-	modelview = modelViewMatrix * v;
+	//lightMapCoords.y *= sunIntensity;
 	
-	gl_Position = projectionMatrix * modelview;
+	gl_Position = modelViewProjectionMatrix * v;
 	
 	//Eye transform
 	eye = v.xyz-camPos;
@@ -89,7 +88,8 @@ void main(){
 	//Fog calculation
 	
 	//Chunk-aligned linear fog
-	vec3 camPosChunk = camPos;
+	
+	/*vec3 camPosChunk = camPos;
 	camPosChunk.x = floor((camPosChunk.x+16)/32)*32;
 	camPosChunk.z = floor((camPosChunk.z+16)/32)*32;
 	
@@ -100,5 +100,5 @@ void main(){
 	chunkFade = clamp((abs(eyeChunk.x)-fogStartDistance)/12,0,1)+
 	clamp((abs(eyeChunk.z)-fogStartDistance)/12,0,1);
 	
-	chunkFade = 1-clamp(chunkFade,0,1);
+	chunkFade = 1-clamp(chunkFade,0,1);*/
 }

@@ -31,8 +31,18 @@ public class ChatPanel
 				java.util.Arrays.fill(chatHistory, "");
 				return;
 			}
-			
-			
+			if(inputBox.text.startsWith("/loctime"))
+			{
+				try{
+				int time = Integer.parseInt(inputBox.text.split(" ")[1]);
+				Client.world.worldTime = time;
+				}
+				catch(Exception e)
+				{
+					
+				}
+				return;
+			}
 			if(Client.connection != null)
 				Client.connection.sendTextMessage("chat/" + inputBox.text);
 			else

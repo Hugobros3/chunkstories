@@ -23,11 +23,12 @@ public class FastConfig
 	// public static boolean waterSpeculars = false;
 	public static boolean dynamicGrass = false;
 	//public static boolean postProcessGlow = false;
-	
+
 	public static boolean debugGBuffers = false;
-	
+
 	// public static boolean dotLightning = false;
 	public static boolean hqTerrain = true;
+	public static boolean perPixelFresnel = false;
 	public static boolean doShadows = true;
 	public static boolean doBloom = true;
 	public static boolean doClouds = true;
@@ -51,6 +52,7 @@ public class FastConfig
 		// dotLightning = Client.getConfig().getBooleanProp("dotLightning",
 		// true);
 		hqTerrain = Client.getConfig().getBooleanProp("hqTerrain", true);
+		perPixelFresnel = Client.getConfig().getBooleanProp("perPixelFresnel", false);
 		doShadows = Client.getConfig().getBooleanProp("doShadows", true);
 		doBloom = Client.getConfig().getBooleanProp("doBloom", true);
 		ssaoQuality = Client.getConfig().getIntProp("ssaoQuality", 1);
@@ -72,10 +74,10 @@ public class FastConfig
 		INVENTORY_KEY = Client.getConfig().getIntProp("INVENTORY_KEY", 18);
 		ENTER_KEY = Client.getConfig().getIntProp("ENTER_KEY", 28);
 		EXIT_KEY = Client.getConfig().getIntProp("EXIT_KEY", 1);
-		
+
 		mouseSensitivity = Client.getConfig().getFloatProp("mouseSensitivity", 1f);
 		fov = Client.getConfig().getFloatProp("fov", 45f);
-		
+
 		XolioWindow.setTargetFPS(Client.getConfig().getIntProp("framerate", 60));
 	}
 
@@ -93,10 +95,9 @@ public class FastConfig
 	public static int ENTER_KEY = 28;
 
 	public static int EXIT_KEY = 1;
-	
+
 	public static float mouseSensitivity = 1f;
 	public static float fov = 1f;
-	
 
 	public static String[] getShaderConfig()
 	{
@@ -113,6 +114,8 @@ public class FastConfig
 			parameters.add("doClouds");
 		if (hqTerrain)
 			parameters.add("hqTerrain");
+		if (perPixelFresnel)
+			parameters.add("perPixelFresnel");
 		if (ssaoQuality > 0)
 			parameters.add("ssao");
 		if (doRealtimeReflections)

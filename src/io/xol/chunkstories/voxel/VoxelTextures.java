@@ -20,6 +20,8 @@ import javax.imageio.stream.ImageInputStream;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -87,7 +89,7 @@ public class VoxelTextures
 					break;
 				}
 			}
-			System.out.println("At least " + sizeRequired + " by " + sizeRequired + " for TextureAtlas (surfacedNeeded : " + totalSurfacedNeeded + ")");
+			ChunkStoriesLogger.getInstance().info("At least " + sizeRequired + " by " + sizeRequired + " for TextureAtlas (surfacedNeeded : " + totalSurfacedNeeded + ")");
 			// Delete previous atlases
 			File diffuseTextureFile = new File("./res/textures/tiles_merged_diffuse.png");
 			if (diffuseTextureFile.exists())

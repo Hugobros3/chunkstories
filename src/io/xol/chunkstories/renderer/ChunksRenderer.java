@@ -10,6 +10,9 @@ import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.math.LoopingMathHelper;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -88,10 +91,7 @@ public class ChunksRenderer extends Thread
 
 	public void clear()
 	{
-		synchronized (todo)
-		{
-			todo.clear();
-		}
+		todo.clear();
 	}
 
 	public void purgeUselessWork(int pCX, int pCY, int pCZ, int sizeInChunks, int chunksViewDistance)
@@ -101,8 +101,11 @@ public class ChunksRenderer extends Thread
 		while(iter.hasNext())
 		{
 			request = iter.next();
-			if ((LoopingMathHelper.moduloDistance(request[0], pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(request[2], pCZ, sizeInChunks) > chunksViewDistance) || (Math.abs(request[1] - pCY) > 4))
+			if ((LoopingMathHelper.moduloDistance(request[0], pCX, sizeInChunks) > chunksViewDistance+1) || (LoopingMathHelper.moduloDistance(request[2], pCZ, sizeInChunks) > chunksViewDistance+1) || (Math.abs(request[1] - pCY) > 4))
 			{
+				CubicChunk freed = world.getChunk(request[0], request[1], request[2], false);
+				if(freed != null)
+					freed.requestable.set(true);
 				iter.remove();
 			}
 		}
@@ -152,8 +155,6 @@ public class ChunksRenderer extends Thread
 					if (work.need_render.get())
 					{
 						int nearChunks = 0;
-						
-						
 						if (world.isChunkLoaded(task[0] + 1, task[1], task[2]))
 							nearChunks++;
 						if (world.isChunkLoaded(task[0] - 1, task[1], task[2]))
@@ -175,12 +176,15 @@ public class ChunksRenderer extends Thread
 					}
 					else
 					{
+						System.out.println("For some reason this chunk is in the renderer todo pool, but doesnt want to be rendered.");
+						work.requestable.set(true);
 						// If can't do it, reschedule it
 						// System.out.println("Forget about "+task[0]+":"+task[1]+":"+task[2]+", not circled ");
 						/*
 						 * synchronized(todo) { todo.add(task); }
 						 */
 					}
+					work.requestable.set(true);
 				}
 			}
 		}
@@ -227,7 +231,7 @@ public class ChunksRenderer extends Thread
 			int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
 			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
 			CubicChunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
-			if(target != null)
+			if(target != null && target.dataPointer != -1)
 			{
 				data = target.getDataAt(x, y, z);
 				int blockID = VoxelFormat.id(data);
@@ -1266,10 +1270,32 @@ public class ChunksRenderer extends Thread
 		long lol = 0;
 		//System.out.println("Took "+(System.nanoTime() - cr_start)+"ms total ; "+(cr_iter-cr_start)+" init, "+(cr_convert-cr_iter)+" iter, "
 		//		+(cr_buffer-cr_convert)+" buffer, "+(System.nanoTime()-cr_buffer)+" convert since RS:"+(System.nanoTime()-ChunksRenderer.renderStart)+" ratio S/C : "+(1f+vertices.size())/(1f+vertices_complex.size())) ;
+		
+		// Debug : write the file :D
+		
+		/*try{
+			BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(new File("debug/chunk-"+work.chunkX+"-"+work.chunkY+"-"+work.chunkZ+".lel")));
+			System.out.println("1"+rslt.buf);
+			while(rslt.buf.remaining() > 0)
+				fos.write(rslt.buf.get());
+			System.out.println("2"+rslt.buf);
+			rslt.buf.flip();
+			System.out.println("3"+rslt.buf);
+			
+			//fos.write(rslt.buf);
+			fos.flush();
+			fos.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}*/
+		
+		
 		done.add(rslt);
 		
 		totalChunksRendered.incrementAndGet();
-		
+
 		work.need_render.set(false);
 		work.requestable.set(true);
 	}

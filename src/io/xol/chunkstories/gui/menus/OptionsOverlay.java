@@ -206,6 +206,8 @@ public class OptionsOverlay extends MenuOverlay
 				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }),
 				new ConfigButtonToggle("dynamicGrass"),
 				new ConfigButtonToggle("hqTerrain"),
+				new ConfigButtonToggle("rainyMode"),
+				new ConfigButtonToggle("perPixelFresnel"),
 				new ConfigButtonToggle("doClouds"),
 				new ConfigButtonMultiChoice("ssaoQuality", new String[] { "0", "1", "2"}),
 				new ConfigButtonToggle("doBloom"),
@@ -225,8 +227,6 @@ public class OptionsOverlay extends MenuOverlay
 				new ConfigButtonKey("RIGHT_KEY", this),
 				new ConfigButtonKey("JUMP_KEY", this),
 				new ConfigButtonKey("RUN_KEY", this),
-				// new ConfigButtonKey("GRABUSE_KEY", this),
-				new ConfigButtonKey("INVENTORY_KEY", this),
 				new ConfigButtonKey("ENTER_KEY", this),
 				new ConfigButtonKey("EXIT_KEY", this),
 				new ConfigButtonKey("INVENTORY_KEY", this),
@@ -360,6 +360,8 @@ public class OptionsOverlay extends MenuOverlay
 				gps.worldRenderer.modified();
 			}
 		}
+		if(Client.world != null)
+			Client.world.setWeather(Client.getConfig().getBooleanProp("rainyMode", false));
 		XolioWindow.switchResolution();
 		//XolioWindow.setDisplayMode(Client.getConfig().getBooleanProp("fullscreen", false), Client.getConfig().getProp(fullScreenResolution));
 		shouldReload = false;

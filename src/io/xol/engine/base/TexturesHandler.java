@@ -6,6 +6,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -42,7 +43,6 @@ public class TexturesHandler
 		glDisable(GL_TEXTURE_CUBE_MAP);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID);
-
 		try
 		{
 			File file = new File(name);
@@ -58,6 +58,10 @@ public class TexturesHandler
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+		catch(FileNotFoundException e)
+		{
+			ChunkStoriesLogger.getInstance().info("Clouldn't find file : "+e.getMessage());
 		}
 		catch (IOException e)
 		{
@@ -94,6 +98,10 @@ public class TexturesHandler
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
+		}
+		catch(FileNotFoundException e)
+		{
+			ChunkStoriesLogger.getInstance().info("Clouldn't find file : "+e.getMessage());
 		}
 		catch (IOException e)
 		{

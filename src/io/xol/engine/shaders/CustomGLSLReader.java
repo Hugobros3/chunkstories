@@ -32,7 +32,7 @@ public class CustomGLSLReader
 					if (line[0].equals("include"))
 					{
 						String fn = line[1];
-						System.out.println("including subshader file : " + fn);
+						//System.out.println("including subshader file : " + fn);
 						loadRecursivly(new File(file.getParentFile().getAbsoluteFile() + "/" + fn), into, parameters, type);
 					}
 					else if (line[0].equals("ifdef"))

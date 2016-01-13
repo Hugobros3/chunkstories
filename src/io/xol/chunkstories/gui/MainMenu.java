@@ -38,9 +38,9 @@ public class MainMenu extends OverlayableScene
 	String skyBox;
 	Camera cam = new Camera();
 
-	private GBufferTexture unblurred = new GBufferTexture(0, XolioWindow.frameW, XolioWindow.frameH);
-	private GBufferTexture blurredH = new GBufferTexture(0, XolioWindow.frameW, XolioWindow.frameH);
-	private GBufferTexture blurredV = new GBufferTexture(0, XolioWindow.frameW, XolioWindow.frameH);
+	private GBufferTexture unblurred = new GBufferTexture(GBufferTexture.GBufferType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
+	private GBufferTexture blurredH = new GBufferTexture(GBufferTexture.GBufferType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
+	private GBufferTexture blurredV = new GBufferTexture(GBufferTexture.GBufferType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
 
 	private FBO unblurredFBO = new FBO(null, unblurred);
 	private FBO blurredHFBO = new FBO(null, blurredH);

@@ -51,7 +51,7 @@ public class LocalWorldButton extends ClickableButton
 		ObjectRenderer.renderTexturedRect(posx - width / 2 + 32 + 4, posy, 64, 64, "gameDir://worlds/" + info.internalName + "/info.png");
 
 		FontRenderer2.setLengthCutoff(true, width - 72);
-		FontRenderer2.drawTextUsingSpecificFont(posx - width / 2 + 72, posy, 0, 1 * 32, info.name + "#CCCCCC    Size : " + info.size.toString() + " ( " + info.size.sizeInChunks / 8 + "x" + info.size.sizeInChunks / 8 + " km )", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(posx - width / 2 + 72, posy, 0, 1 * 32, info.name + "#CCCCCC    Size : " + info.size.toString() + " ( " + info.size.sizeInChunks / 32 + "x" + info.size.sizeInChunks / 32 + " km )", BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFontRVBA(posx - width / 2 + 72, posy - 32, 0, 1 * 32, info.description, BitmapFont.SMALLFONTS, 1.0f, 0.8f, 0.8f, 0.8f);
 		FontRenderer2.setLengthCutoff(false, -1);
 		return width * 2 - 12;

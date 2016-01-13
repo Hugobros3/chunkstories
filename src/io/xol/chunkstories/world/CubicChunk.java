@@ -29,8 +29,6 @@ public class CubicChunk
 	public int vbo_size_complex;
 	public int vbo_size_water;
 
-	public int fadeTicks = 0;
-
 	// Terrain Generation
 	public List<GenerableStructure> structures = new ArrayList<GenerableStructure>();
 
