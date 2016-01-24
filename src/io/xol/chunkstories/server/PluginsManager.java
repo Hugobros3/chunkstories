@@ -1,19 +1,26 @@
 package io.xol.chunkstories.server;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import io.xol.chunkstories.GameDirectory;
-import io.xol.chunkstories.api.Command;
-import io.xol.chunkstories.api.JavaPlugin;
-import io.xol.chunkstories.api.PluginJar;
-import io.xol.chunkstories.api.PluginManager;
-import io.xol.chunkstories.api.PluginStore;
+import io.xol.chunkstories.api.events.Event;
+import io.xol.chunkstories.api.events.EventExecutor;
+import io.xol.chunkstories.api.events.EventHandler;
+import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.events.Listener;
+import io.xol.chunkstories.api.events.RegisteredListener;
+import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
+import io.xol.chunkstories.api.plugin.PluginJar;
+import io.xol.chunkstories.api.plugin.PluginManager;
+import io.xol.chunkstories.api.plugin.PluginStore;
+import io.xol.chunkstories.api.plugin.server.Command;
 import io.xol.chunkstories.server.tech.CommandEmitter;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -24,8 +31,8 @@ public class PluginsManager implements PluginManager
 	Server server;
 	PluginStore store = new PluginStore();
 
-	Set<JavaPlugin> activePlugins = new HashSet<JavaPlugin>();
-	Map<Command, JavaPlugin> commandsHandlers = new HashMap<Command, JavaPlugin>();
+	Set<ChunkStoriesPlugin> activePlugins = new HashSet<ChunkStoriesPlugin>();
+	Map<Command, ChunkStoriesPlugin> commandsHandlers = new HashMap<Command, ChunkStoriesPlugin>();
 
 	public PluginsManager(Server server)
 	{
@@ -33,17 +40,16 @@ public class PluginsManager implements PluginManager
 		File pluginsFolder = new File(GameDirectory.getGameFolderPath() + "/plugins/");
 		pluginsFolder.mkdirs();
 		store.loadPlugins(pluginsFolder, false);
-
-		enablePlugins();
 	}
 
-	private void enablePlugins()
+	public void enablePlugins()
 	{
 		Set<PluginJar> pluginsToInitialize = store.getLoadedPlugins();
 		System.out.println(pluginsToInitialize.size() + " plugins to initialize");
 		for (PluginJar pj : pluginsToInitialize)
 		{
-			JavaPlugin plugin = pj.getInstance();
+			ChunkStoriesPlugin plugin = pj.getInstance();
+			plugin.setPluginManager(this);
 			plugin.setServer(server);
 			// Add commands support
 			for (Command cmd : pj.commands)
@@ -66,7 +72,7 @@ public class PluginsManager implements PluginManager
 
 	public void disablePlugins()
 	{
-		for (JavaPlugin plugin : activePlugins)
+		for (ChunkStoriesPlugin plugin : activePlugins)
 		{
 			plugin.onDisable();
 		}
@@ -96,7 +102,7 @@ public class PluginsManager implements PluginManager
 		{
 			try
 			{
-				commandsHandlers.get(command).handleCommand(command, args, cmd);
+				commandsHandlers.get(command).handleCommand(emitter, command, args, cmd);
 			}
 			catch (Exception e)
 			{
@@ -108,8 +114,64 @@ public class PluginsManager implements PluginManager
 	}
 
 	@Override
-	public void registerEventListener(Listener l, JavaPlugin plugin)
+	public void registerEventListener(Listener listener, ChunkStoriesPlugin plugin)
 	{
+		System.out.println("Registering "+listener);
+		try{
+			// Get a list of all the classes methods
+			Set<Method> methods = new HashSet<Method>();
+			for(Method method : listener.getClass().getMethods())
+				methods.add(method);
+			for(Method method : listener.getClass().getDeclaredMethods())
+				methods.add(method);
+			// Filter it so only interested in @EventHandler annoted methods
+			for(final Method method : methods)
+			{
+				System.out.println("Checking out "+method);
+				EventHandler eh = method.getAnnotation(EventHandler.class);
+				if(eh == null)
+					continue;
+				System.out.println("has correct annotation");
+				//TODO something about priority
+				if(method.getParameterTypes().length != 1 || !Event.class.isAssignableFrom(method.getParameterTypes()[0]))
+				{
+					ChunkStoriesLogger.getInstance().warning("Plugin "+plugin+" attempted to register an invalid EventHandler");
+					continue;
+				}
+				Class<? extends Event> parameter = method.getParameterTypes()[0].asSubclass(Event.class);
+				// Create an EventExecutor to launch the event code
+				EventExecutor executor = new EventExecutor(){
+					public void fireEvent(Event event) throws Exception
+					{
+						method.invoke(listener, event);
+					}
+				};
+				RegisteredListener re = new RegisteredListener(listener, plugin, executor);
+				// Get the listeners list for this event
+				Method getListeners = parameter.getMethod("getListenersStatic");
+				getListeners.setAccessible(true);
+				EventListeners thisEventKindOfListeners = (EventListeners) getListeners.invoke(null);
+				// Add our own to it
+				thisEventKindOfListeners.registerListener(re);
+				ChunkStoriesLogger.getInstance().warning("Successuflly added EventHandler in "+listener+" of plugin "+plugin);
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public boolean fireEvent(Event event)
+	{
+		EventListeners listeners = event.getListeners();
 		
+		for(RegisteredListener listener : listeners.getListeners())
+		{
+			listener.invokeForEvent(event);
+		}
+		
+		return event.isAllowedToExecute();
 	}
 }

@@ -14,6 +14,8 @@ import java.util.List;
 
 import org.lwjgl.BufferUtils;
 
+import io.xol.engine.textures.GBufferTexture;
+
 public class FBO
 {
 	GBufferTexture[] colorAttachements;
@@ -32,26 +34,23 @@ public class FBO
 		// Initialize color output buffers
 		if (colors != null && colors.length > 0)
 		{
-			IntBuffer scratchBuffer = BufferUtils
-					.createIntBuffer(colors.length);
+			IntBuffer scratchBuffer = BufferUtils.createIntBuffer(colors.length);
 			int i = 0;
 			for (GBufferTexture texture : colors)
 			{
-				glFramebufferTexture2D(GL_FRAMEBUFFER,
-						GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
-						texture.getID(), 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
 				scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
 				i++;
 			}
 			glDrawBuffers(scratchBuffer);
-		} else
+		}
+		else
 		{
 			glDrawBuffers(GL_NONE);
 		}
 		// Initialize depth output buffer
 		if (depthAttachement != null)
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-					GL_TEXTURE_2D, depthAttachement.getID(), 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthAttachement.getID(), 0);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -59,22 +58,23 @@ public class FBO
 	public void setEnabledRenderTargets(boolean... targets)
 	{
 		bind();
+		// ???
+		if (depthAttachement != null)
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthAttachement.getID(), 0);
 		if (targets.length == 0)
 		{
 			// If no arguments set ALL to renderable
-			IntBuffer scratchBuffer = BufferUtils
-					.createIntBuffer(colorAttachements.length);
+			IntBuffer scratchBuffer = BufferUtils.createIntBuffer(colorAttachements.length);
 			int i = 0;
 			for (GBufferTexture texture : colorAttachements)
 			{
-				glFramebufferTexture2D(GL_FRAMEBUFFER,
-						GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
-						texture.getID(), 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
 				scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
 				i++;
 			}
 			glDrawBuffers(scratchBuffer);
-		} else
+		}
+		else
 		{
 			List<Integer> drawBuffers = new ArrayList<Integer>();
 			int i = 0;
@@ -86,8 +86,7 @@ public class FBO
 			}
 			if (drawBuffers.size() > 0)
 			{
-				IntBuffer scratchBuffer = BufferUtils
-						.createIntBuffer(drawBuffers.size());
+				IntBuffer scratchBuffer = BufferUtils.createIntBuffer(drawBuffers.size());
 				i = 0;
 				for (int b : drawBuffers)
 				{
@@ -95,7 +94,8 @@ public class FBO
 					i++;
 				}
 				glDrawBuffers(scratchBuffer);
-			} else
+			}
+			else
 				glDrawBuffers(GL_NONE);
 		}
 	}

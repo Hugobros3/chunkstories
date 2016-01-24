@@ -47,7 +47,7 @@ public class VoxelModels
 
 			VoxelModel model = null;
 			int ln = 0;
-			int loadedBM = 0;
+			//int loadedBM = 0;
 			List<float[]> vertices = new ArrayList<float[]>();
 			List<float[]> texcoord = new ArrayList<float[]>();
 			List<float[]> normal = new ArrayList<float[]>();
@@ -93,7 +93,7 @@ public class VoxelModels
 							vertices.clear();
 							texcoord.clear();
 							normal.clear();
-							loadedBM++;
+							//loadedBM++;
 							model = null;
 						}
 						else

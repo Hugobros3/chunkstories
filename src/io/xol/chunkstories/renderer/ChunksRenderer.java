@@ -1,8 +1,8 @@
 package io.xol.chunkstories.renderer;
 
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.voxel.Voxel;
-import io.xol.chunkstories.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
@@ -10,9 +10,6 @@ import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.math.LoopingMathHelper;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -242,7 +239,6 @@ public class ChunksRenderer extends Thread
 		{
 			System.out.println("Warning ! Chunk "+c+" rendering process asked information about a block more than 32 blocks away from the chunk itself");
 			System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
-			//data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
 			return 0;
 		}
 		
@@ -262,26 +258,6 @@ public class ChunksRenderer extends Thread
 		
 		// If all else fails, just use the heightmap information
 		return Client.world.chunkSummaries.getHeightAt(x, z) < y ? 15 : 0;
-		
-		/*if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
-		{
-			data = c.getDataAt(x, y, z);
-		}
-		else
-		{
-			x += c.chunkX * 32;
-			y += c.chunkY * 32;
-			z += c.chunkZ * 32;
-			// if(cached == null || cached.chunkX)
-			cached = Client.world.getChunk(x / 32, y / 32, z / 32, false);
-			if (cached == null || cached.dataPointer < 0)
-				return Client.world.chunkSummaries.getHeightAt(x, z) < y ? 15 : 0;
-			else
-				data = cached.getDataAt(x, y, z);
-		}
-		*/
-		//int blockID = VoxelFormat.id(data);
-		//return (VoxelTypes.get(blockID).isVoxelOpaque() || blockID == 5 || blockID == 9) ? -1 : VoxelFormat.sunlight(data);
 	}
 
 	private int getBlocklight(CubicChunk c, int x, int y, int z)
@@ -855,11 +831,10 @@ public class ChunksRenderer extends Thread
 		 */
 	}
 
-	// Add prop
-
-	private void addProp(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<float[]> normals, int sx, int sy, int sz, BlockRenderInfo info)
-	{
-		// Basic light
+	private void addVoxelUsingCustomModel(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<float[]> normals, int sx, int sy, int sz, BlockRenderInfo info)
+	{ 
+		// Basic light for now
+		// TODO interpolation
 
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
@@ -887,7 +862,7 @@ public class ChunksRenderer extends Thread
 			int meta = VoxelFormat.meta(info.neightborhood[j]);
 			occTest = VoxelTypes.get(id);
 			// If it is, don't draw it.
-			cullingCache[j] = occTest.isVoxelOpaque() || (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
+			cullingCache[j] = (occTest.isVoxelOpaque() || occTest.isFaceOpaque(j, info.neightborhood[j])) || occTest.isFaceOpaque(j, info.neightborhood[j]) || (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
 		}
 		
 		if(model == null)
@@ -940,13 +915,17 @@ public class ChunksRenderer extends Thread
 		}
 	}
 
-	private boolean shallBuildWallArround(int baseID, int id)
+	private boolean shallBuildWallArround(BlockRenderInfo renderInfo, int face)
 	{
-		if (VoxelTypes.get(baseID).isVoxelLiquid() && !VoxelTypes.get(id).isVoxelLiquid())
+		//int baseID = renderInfo.data;
+		Voxel facing = VoxelTypes.get(renderInfo.getSideId(face));
+		Voxel voxel = VoxelTypes.get(renderInfo.data);
+		
+		if (voxel.isVoxelLiquid() && !facing.isVoxelLiquid())
 			return true;
-		if (VoxelTypes.get(baseID).isVoxelLiquid() && VoxelTypes.get(id).isVoxelLiquid())
-			return false;
-		if (!VoxelTypes.get(id).isVoxelOpaque() && (baseID != id || !VoxelTypes.get(id).isVoxelOpaqueWithItself()))
+		//if (voxel.isVoxelLiquid() && facing.isVoxelLiquid())
+		//	return false;
+		if (!facing.isVoxelOpaque() && (!voxel.sameKind(facing) || !voxel.isVoxelOpaqueWithItself()))
 			return true;
 		return false;
 	}
@@ -962,7 +941,7 @@ public class ChunksRenderer extends Thread
 		if (work == null)
 			return;
 
-		if (true)
+		if (work.needRelightning.getAndSet(false))
 			work.doLightning(true);
 		
 		// Don't bother
@@ -1011,7 +990,7 @@ public class ChunksRenderer extends Thread
 
 		long cr_iter = System.nanoTime();
 		
-		BlockRenderInfo renderInfo = new BlockRenderInfo();
+		BlockRenderInfo renderInfo = new BlockRenderInfo(0);
 
 		int i,j,k;
 		//Don't waste time rendering void chunks m8
@@ -1041,66 +1020,66 @@ public class ChunksRenderer extends Thread
 					renderInfo.neightborhood[5] = getBlockData(work, i, k - 1, j);
 					
 					// System.out.println(blockID);
-					if (vox.isVoxelProp())
+					if (vox.isVoxelUsingCustomModel())
 					{
 						// Prop rendering
-						addProp(work, vertices_complex, texcoords_complex, colors_complex, normals_complex, i, k, j, renderInfo);
+						addVoxelUsingCustomModel(work, vertices_complex, texcoords_complex, colors_complex, normals_complex, i, k, j, renderInfo);
 					}
 					else if (vox.isVoxelLiquid())
 					{
-						if ((k < world.getMaxHeight() && shallBuildWallArround(blockID, renderInfo.getSideId(4))))
+						if ((k < world.getMaxHeight() && shallBuildWallArround(renderInfo, 4)))
 						{
 							if (!(k == 31 && !chunkTopLoaded))
-								addQuadTop(work, vertices_water, texcoords_water, colors_water, normals_water, i, k, j, vox.getVoxelTexture(0, renderInfo));
+								addQuadTop(work, vertices_water, texcoords_water, colors_water, normals_water, i, k, j, vox.getVoxelTexture(src, 0, renderInfo));
 						}
 					}
 					else if (blockID != 0)
 					{
-						if (shallBuildWallArround(blockID, renderInfo.getSideId(5)))
+						if (shallBuildWallArround(renderInfo, 5))
 						{
 							if (!(k == 0 && !chunkBotLoaded))
 							{
-								addQuadBottom(work, vertices, texcoords, colors, normals, i, k - 1, j, vox.getVoxelTexture(1, renderInfo));
+								addQuadBottom(work, vertices, texcoords, colors, normals, i, k - 1, j, vox.getVoxelTexture(src, 1, renderInfo));
 								this.isWavy.add(renderInfo.isWavy());
 							}
 						}
-						if ((k < world.getMaxHeight() && shallBuildWallArround(blockID, renderInfo.getSideId(4))))
+						if (k < world.getMaxHeight() && shallBuildWallArround(renderInfo, 4))
 						{
 							if (!(k == 31 && !chunkTopLoaded))
 							{
-								addQuadTop(work, vertices, texcoords, colors, normals, i, k, j, vox.getVoxelTexture(0, renderInfo));
+								addQuadTop(work, vertices, texcoords, colors, normals, i, k, j, vox.getVoxelTexture(src, 0, renderInfo));
 								this.isWavy.add(renderInfo.isWavy());
 							}
 						}
-						if ((shallBuildWallArround(blockID, renderInfo.getSideId(2))))
+						if (shallBuildWallArround(renderInfo, 2))
 						{
 							if (!(i == 31 && !chunkRightLoaded))
 							{
-								addQuadRight(work, vertices, texcoords, colors, normals, i + 1, k, j, vox.getVoxelTexture(2, renderInfo));
+								addQuadRight(work, vertices, texcoords, colors, normals, i + 1, k, j, vox.getVoxelTexture(src, 2, renderInfo));
 								this.isWavy.add(renderInfo.isWavy());
 							}
 						}
-						if ((shallBuildWallArround(blockID, renderInfo.getSideId(0))))
+						if (shallBuildWallArround(renderInfo, 0))
 						{
 							if (!(i == 0 && !chunkLeftLoaded))
 							{
-								addQuadLeft(work, vertices, texcoords, colors, normals, i, k, j, vox.getVoxelTexture(3, renderInfo));
+								addQuadLeft(work, vertices, texcoords, colors, normals, i, k, j, vox.getVoxelTexture(src, 3, renderInfo));
 								this.isWavy.add(renderInfo.isWavy());
 							}
 						}
-						if ((shallBuildWallArround(blockID, renderInfo.getSideId(1))))
+						if (shallBuildWallArround(renderInfo, 1))
 						{
 							if (!(j == 31 && !chunkFrontLoaded))
 							{
-								addQuadFront(work, vertices, texcoords, colors, normals, i, k, j + 1, vox.getVoxelTexture(4, renderInfo));
+								addQuadFront(work, vertices, texcoords, colors, normals, i, k, j + 1, vox.getVoxelTexture(src, 4, renderInfo));
 								this.isWavy.add(renderInfo.isWavy());
 							}
 						}
-						if ((shallBuildWallArround(blockID, renderInfo.getSideId(3))))
+						if (shallBuildWallArround(renderInfo, 3))
 						{
 							if (!(j == 0 && !chunkBackLoaded))
 							{
-								addQuadBack(work, vertices, texcoords, colors, normals, i, k, j, vox.getVoxelTexture(5, renderInfo));
+								addQuadBack(work, vertices, texcoords, colors, normals, i, k, j, vox.getVoxelTexture(src, 5, renderInfo));
 								this.isWavy.add(renderInfo.isWavy());
 							}
 						}

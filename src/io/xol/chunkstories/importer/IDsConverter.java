@@ -1,6 +1,6 @@
 package io.xol.chunkstories.importer;
 
-import io.xol.chunkstories.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

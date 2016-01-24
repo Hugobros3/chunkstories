@@ -1,7 +1,7 @@
 package io.xol.engine.shaders;
 
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.engine.base.TexturesHandler;
+import io.xol.engine.textures.Texture;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,12 +58,16 @@ public class ShaderProgram
 		vertexS = glCreateShader(GL_VERTEX_SHADER);
 		fragS = glCreateShader(GL_FRAGMENT_SHADER);
 
+		String shaderName = filename;
+		if(filename.lastIndexOf("/") != -1)
+			shaderName = filename.substring(filename.lastIndexOf("/"), filename.length());
+		
 		StringBuilder vertexSource = new StringBuilder();
 		StringBuilder fragSource = new StringBuilder();
 		try
 		{
-			vertexSource = CustomGLSLReader.loadRecursivly(new File(filename + "/main.vs"), vertexSource, parameters, false);
-			fragSource = CustomGLSLReader.loadRecursivly(new File(filename + "/main.fs"), fragSource, parameters, true);
+			vertexSource = CustomGLSLReader.loadRecursivly(new File(filename + "/"+shaderName+".vs"), vertexSource, parameters, false);
+			fragSource = CustomGLSLReader.loadRecursivly(new File(filename + "/"+shaderName+".fs"), fragSource, parameters, true);
 		}
 		catch (IOException e)
 		{
@@ -105,9 +109,9 @@ public class ShaderProgram
 		loadOK = true;
 	}
 
-	public void setUniformSampler(int id, String name, String texture)
+	public void setUniformSampler(int id, String name, Texture texture)
 	{
-		setUniformSampler(id, name, TexturesHandler.idTexture(texture));
+		setUniformSampler(id, name, texture.getID());
 	}
 
 	public void setUniformSampler(int id, String name, int texId)
@@ -177,7 +181,7 @@ public class ShaderProgram
 		glUniform1f(getUniformLocation(name), f);
 	}
 
-	public void setUniformFloat3(String name, Vector2f vec2)
+	public void setUniformFloat2(String name, Vector2f vec2)
 	{
 		setUniformFloat2(name, vec2.x, vec2.y);
 	}
@@ -219,10 +223,14 @@ public class ShaderProgram
 		else
 		{
 			int location = glGetAttribLocation(shaderP, name);
+			if(location == -1)
+			{
+				ChunkStoriesLogger.getInstance().warning("Warning, -1 location for VertexAttrib "+name+" in shader "+this.filename);
+				location = 0;
+			}
 			attributes.put(name, location);
 			return location;
 		}
-		//return glGetAttribLocation(shaderP, name);
 	}
 
 	public void use(boolean b)

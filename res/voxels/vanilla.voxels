@@ -51,7 +51,7 @@ voxel gravel 11
 end
 
 voxel sand 12
-	#textures: 'sand2', 'sand2', 'sand2', 'sand2', 'sand2', 'sand2'
+	textures: 'sand2', 'sand2', 'sand2', 'sand2', 'sand2', 'sand2'
 end
 
 voxel cactus 13
@@ -73,6 +73,7 @@ end
 
 voxel snow 17 io.xol.chunkstories.voxel.core.Voxel8Steps
 	opaque: false
+	selfOpaque: true
 	model: 'steps.m0'
 end
 
@@ -97,14 +98,14 @@ end
 
 voxel ironGrill 25 io.xol.chunkstories.voxel.core.VoxelPane
 	opaque: false
-	isProp: true
+	usesCustomModel: true
 	selfOpaque: true
 	#texture: debug
 end
 
 voxel woodFence 26 io.xol.chunkstories.voxel.core.VoxelFence
 	opaque: false
-	isProp: true
+	usesCustomModel: true
 	selfOpaque: true
 	texture: planks
 end
@@ -126,20 +127,20 @@ end
 
 voxel glassPane 32 io.xol.chunkstories.voxel.core.VoxelPane
 	opaque: false
-	isProp: true
+	usesCustomModel: true
 	texture: glass
 	selfOpaque: true
 end
 
 voxel ladder 33 io.xol.chunkstories.voxel.core.VoxelLadder
 	opaque: false
-	isProp: true
+	usesCustomModel: true
 	solid: false
 end
 
 voxel vine 34 io.xol.chunkstories.voxel.core.VoxelVine
 	opaque: false
-	isProp: true
+	usesCustomModel: true
 	solid: false
 end
 
@@ -219,6 +220,7 @@ voxel forestgrass_prop 65
 end
 
 voxel water 128
+	selfOpaque: true
 	solid: false
 	opaque: false
 	liquid: true

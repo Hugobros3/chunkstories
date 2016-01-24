@@ -1,13 +1,13 @@
 package io.xol.chunkstories.voxel.core;
 
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
-import io.xol.chunkstories.voxel.Voxel;
-import io.xol.chunkstories.voxel.VoxelFormat;
+import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 
-public class VoxelStairs extends Voxel
+public class VoxelStairs extends VoxelDefault
 {
 
 	VoxelModel[] models = new VoxelModel[4];
@@ -25,33 +25,28 @@ public class VoxelStairs extends Voxel
 		return models[meta % 4];
 	}
 
-	public CollisionBox[] getCollisionBoxes(int data)
+	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
-		int meta = VoxelFormat.meta(data);
+		int meta = VoxelFormat.meta(info.data);
 		// System.out.println("kek"+meta);
 		CollisionBox[] boxes = new CollisionBox[2];
 		boxes[0] = new CollisionBox(1, 0.5, 1).translate(0.5, -1, 0.5);
 		switch (meta % 4)
 		{
 		case 0:
-			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.75, -0.5,
-					0.5);
+			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.75, -0.5, 0.5);
 			break;
 		case 1:
-			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.25, -0.5,
-					0.5);
+			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.25, -0.5, 0.5);
 			break;
 		case 2:
-			boxes[1] = new CollisionBox(1.0, 0.5, 0.5).translate(0.5, -0.5,
-					0.75);
+			boxes[1] = new CollisionBox(1.0, 0.5, 0.5).translate(0.5, -0.5, 0.75);
 			break;
 		case 3:
-			boxes[1] = new CollisionBox(1.0, 0.5, 0.5).translate(0.5, -0.5,
-					0.25);
+			boxes[1] = new CollisionBox(1.0, 0.5, 0.5).translate(0.5, -0.5, 0.25);
 			break;
 		default:
-			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.5, -0.5,
-					0.25);
+			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.5, -0.5, 0.25);
 			break;
 		}
 

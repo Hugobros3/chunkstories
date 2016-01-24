@@ -1,9 +1,9 @@
 package io.xol.chunkstories.voxel.core;
 
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
-import io.xol.chunkstories.voxel.Voxel;
-import io.xol.chunkstories.voxel.VoxelFormat;
+import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 
@@ -11,7 +11,7 @@ import io.xol.chunkstories.voxel.models.VoxelModels;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class VoxelHalfTile extends Voxel
+public class VoxelHalfTile extends VoxelDefault
 {
 
 	VoxelModel bot;
@@ -39,11 +39,11 @@ public class VoxelHalfTile extends Voxel
 		return top;
 	}
 
-	public CollisionBox[] getCollisionBoxes(int data)
+	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
 		// System.out.println("kek");
 		CollisionBox box2 = new CollisionBox(1, 0.5, 1);
-		if (bottomOrTop(VoxelFormat.meta(data)))
+		if (bottomOrTop(VoxelFormat.meta(info.data)))
 			box2.translate(0.5, -1, 0.5);
 		else
 			box2.translate(0.5, -0.5, 0.5);

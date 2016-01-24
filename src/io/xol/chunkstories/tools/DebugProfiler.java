@@ -34,6 +34,8 @@ public class DebugProfiler
 
 	public void startSection(String name)
 	{
+		if(true)
+			return;
 		long took = System.currentTimeMillis() - currentSection;
 		profiling += currentSectionName + " " + took + " ms; ";
 		currentSection = System.currentTimeMillis();

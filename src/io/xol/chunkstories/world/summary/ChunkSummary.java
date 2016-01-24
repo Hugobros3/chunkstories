@@ -1,7 +1,7 @@
 package io.xol.chunkstories.world.summary;
 
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
 
@@ -203,6 +203,14 @@ public class ChunkSummary
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		
+		glHint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
+
+		if (FastConfig.openGL3Capable)
+			GL30.glGenerateMipmap(GL_TEXTURE_2D);
+		else if (FastConfig.fbExtCapable)
+			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
+		
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		uploadUpToDate.set(true);

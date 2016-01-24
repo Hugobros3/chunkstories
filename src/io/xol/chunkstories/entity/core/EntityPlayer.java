@@ -7,6 +7,7 @@ import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.Controller;
@@ -18,15 +19,14 @@ import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.net.packets.Packet04Entity;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.chunkstories.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
-import io.xol.engine.base.TexturesHandler;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.base.font.TrueTypeFont;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;
+import io.xol.engine.textures.TexturesHandler;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -423,8 +423,8 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 		if(this.equals(Client.controller))
 			return; // Don't render yourself
 		
-		RenderingContext.setDiffuseTexture(TexturesHandler.idTexture("res/models/hogubrus3.png"));
-		RenderingContext.setNormalTexture(TexturesHandler.idTexture("res/textures/normalnormal.png"));
+		RenderingContext.setDiffuseTexture(TexturesHandler.getTextureID("models/hogubrus3.png"));
+		RenderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
 		RenderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
 		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);

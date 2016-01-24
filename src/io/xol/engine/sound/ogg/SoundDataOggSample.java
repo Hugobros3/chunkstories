@@ -20,7 +20,6 @@ public class SoundDataOggSample extends SoundData
 			try
 			{
 				VorbisFile file = new VorbisFile(f.getAbsolutePath());
-				
 				//System.out.println(file.seekable()+"f"+file.pcm_tell());
 			}
 			catch (JOrbisException e)

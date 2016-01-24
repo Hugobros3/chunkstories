@@ -12,3 +12,14 @@ diffuse RGBA UBYTE 4
 4+4+3+8+3+4 = 26 byte / pixel
 
 = .. 45Mb of framebuffers 
+
+1680x1050
+
+1764000 pixels
+
+albedo  RGBA UBYTE 4
++zbuffer D32 INT32 4
++normal RGBA UBYTE 4
++meta   RGBA UBYTE 4
+
++shaded R11_G11_B10F // RGB_16F 4 // 6

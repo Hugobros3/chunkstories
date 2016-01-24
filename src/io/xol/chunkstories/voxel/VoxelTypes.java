@@ -1,5 +1,7 @@
 package io.xol.chunkstories.voxel;
 
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.models.VoxelModels;
@@ -56,7 +58,7 @@ public class VoxelTypes
 							ChunkStoriesLogger.getInstance().log("Voxel redefinition in file " + f + ", line " + ln + ", overriding id " + id + " with " + name, ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 
 						if (splitted.length == 3)
-							voxel = new Voxel(id, name);
+							voxel = new VoxelDefault(id, name);
 						else
 						{
 							try
@@ -76,18 +78,21 @@ public class VoxelTypes
 							}
 						}
 						// Default textures
-						for (int i = 0; i < 6; i++)
-							voxel.texture[i] = VoxelTextures.getVoxelTexture(name);
-						// Default collision box
-						CollisionBox box = new CollisionBox(1, 1, 1);
-						box.translate(0.5, -1, 0.5);
-						voxel.box = box;
+						if (voxel instanceof VoxelDefault)
+						{
+							for (int i = 0; i < 6; i++)
+								((VoxelDefault) voxel).texture[i] = VoxelTextures.getVoxelTexture(name);
+							// Default collision box
+							CollisionBox box = new CollisionBox(1, 1, 1);
+							box.translate(0.5, -1, 0.5);
+							((VoxelDefault) voxel).box = box;
+						}
 					}
 					else if (line.startsWith("end"))
 					{
 						if (voxel != null)
 						{
-							voxels[voxel.voxelID] = voxel;
+							voxels[voxel.getId()] = voxel;
 							voxel = null;
 							loadedVoxels++;
 						}
@@ -98,72 +103,79 @@ public class VoxelTypes
 					{
 						if (voxel != null)
 						{
-							// System.out.println("Debug : loading voxel parameter : "+line);
-							String splitted[] = (line.replace(" ", "").replace("\t", "")).split(":");
-							String parameterName = splitted[0];
-							String parameterValue = splitted[1];
-							switch (parameterName)
+							if (voxel instanceof VoxelDefault)
 							{
-							case "solid":
-								voxel.solid = Boolean.parseBoolean(parameterValue);
-								break;
-							case "opaque":
-								voxel.opaque = Boolean.parseBoolean(parameterValue);
-								break;
-							case "selfOpaque":
-								voxel.self_opaque = Boolean.parseBoolean(parameterValue);
-								break;
-							case "liquid":
-								voxel.liquid = Boolean.parseBoolean(parameterValue);
-								break;
-							case "emitting":
-								voxel.lightLevel = Short.parseShort(parameterValue);
-								break;
-							case "isProp":
-								voxel.prop = Boolean.parseBoolean(parameterValue);
-								break;
-							case "model":
-								voxel.prop = true;
-								voxel.model = VoxelModels.getVoxelModel(parameterValue.replace("'", "").replace("~", voxel.voxelName));
-								break;
-							case "texture":
-								for (int i = 0; i < 6; i++)
-								{
-									voxel.texture[i] = VoxelTextures.getVoxelTexture(parameterValue);
-									// System.out.println(textureName);
-								}
-								break;
-							case "textures":
-								String sides[] = parameterValue.split(",");
-								for (int i = 0; i < sides.length; i++)
-								{
-									String textureName = sides[i].replace("[", "").replace("]", "").replace("'", "").replace("~", voxel.voxelName);
-									voxel.texture[i] = VoxelTextures.getVoxelTexture(textureName);
-									// System.out.println(textureName);
-								}
-								break;
-							case "collisionBox":
-								// Default collision box
-								String sizes[] = (parameterValue.replace("[", "").replace("]", "")).split(",");
+								VoxelDefault voxDefault = (VoxelDefault) voxel;
+								// System.out.println("Debug : loading voxel parameter : "+line);
+								String splitted[] = (line.replace(" ", "").replace("\t", "")).split(":");
+								String parameterName = splitted[0];
+								String parameterValue = splitted[1];
 
-								CollisionBox box = new CollisionBox(Float.parseFloat(sizes[3]), Float.parseFloat(sizes[4]), Float.parseFloat(sizes[5]));
-								box.translate(0.5, -1, 0.5);
-								box.translate(Float.parseFloat(sizes[0]), Float.parseFloat(sizes[1]), Float.parseFloat(sizes[2]));
-								voxel.box = box;
-								break;
-							case "affectedByWind":
-								voxel.affectedByWind = Boolean.parseBoolean(parameterValue);
-								break;
-							case "billboard":
-								voxel.billboard = Boolean.parseBoolean(parameterValue);
-								break;
-							default:
-								ChunkStoriesLogger.getInstance().log("Parse error in file " + f + ", line " + ln + ", unknown parameter '" + parameterName + "'", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
-								break;
+								switch (parameterName)
+								{
+								case "solid":
+									voxDefault.solid = Boolean.parseBoolean(parameterValue);
+									break;
+								case "opaque":
+									voxDefault.opaque = Boolean.parseBoolean(parameterValue);
+									break;
+								case "selfOpaque":
+									voxDefault.self_opaque = Boolean.parseBoolean(parameterValue);
+									break;
+								case "liquid":
+									voxDefault.liquid = Boolean.parseBoolean(parameterValue);
+									break;
+								case "emitting":
+									voxDefault.lightLevel = Short.parseShort(parameterValue);
+									break;
+								case "usesCustomModel":
+									voxDefault.custom_model = Boolean.parseBoolean(parameterValue);
+									break;
+								case "model":
+									voxDefault.custom_model = true;
+									voxDefault.model = VoxelModels.getVoxelModel(parameterValue.replace("'", "").replace("~", voxel.getName()));
+									break;
+								case "texture":
+									for (int i = 0; i < 6; i++)
+									{
+										voxDefault.texture[i] = VoxelTextures.getVoxelTexture(parameterValue);
+										// System.out.println(textureName);
+									}
+									break;
+								case "textures":
+									String sides[] = parameterValue.split(",");
+									for (int i = 0; i < sides.length; i++)
+									{
+										String textureName = sides[i].replace("[", "").replace("]", "").replace("'", "").replace("~", voxel.getName());
+										voxDefault.texture[i] = VoxelTextures.getVoxelTexture(textureName);
+										// System.out.println(textureName);
+									}
+									break;
+								case "collisionBox":
+									// Default collision box
+									String sizes[] = (parameterValue.replace("[", "").replace("]", "")).split(",");
+
+									CollisionBox box = new CollisionBox(Float.parseFloat(sizes[3]), Float.parseFloat(sizes[4]), Float.parseFloat(sizes[5]));
+									box.translate(0.5, -1, 0.5);
+									box.translate(Float.parseFloat(sizes[0]), Float.parseFloat(sizes[1]), Float.parseFloat(sizes[2]));
+									voxDefault.box = box;
+									break;
+								case "affectedByWind":
+									voxDefault.affectedByWind = Boolean.parseBoolean(parameterValue);
+									break;
+								case "billboard":
+									voxDefault.billboard = Boolean.parseBoolean(parameterValue);
+									break;
+								default:
+									ChunkStoriesLogger.getInstance().log("Parse error in file " + f + ", line " + ln + ", unknown parameter '" + parameterName + "'", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
+									break;
+								}
 							}
+							else
+								ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected parameter.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 						}
 						else
-							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected parameter.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
+							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", voxel parameters are reserved to classes extending VoxelDefault !", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 					}
 				}
 				ln++;
@@ -246,6 +258,7 @@ public class VoxelTypes
 
 	public static Voxel get(int voxelId)
 	{
+		//Sanitize
 		voxelId = VoxelFormat.id(voxelId);
 		if (voxelId <= 0)
 			return voxels[0];

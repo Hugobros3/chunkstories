@@ -21,7 +21,7 @@ import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.entity.Controller;
 import io.xol.chunkstories.entity.Entity;
-import io.xol.chunkstories.gui.LoginScene;
+import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.ChunksData;
@@ -93,7 +93,7 @@ public class Client implements Controller
 		// Gl init
 		windows = new XolioWindow("Chunk Stories " + VersionInfo.version, -1, -1);
 		windows.createContext();
-		windows.changeScene(new LoginScene(windows));
+		windows.changeScene(new MainMenu(windows, true));
 		windows.run();
 	}
 
@@ -113,8 +113,7 @@ public class Client implements Controller
 		GuiDrawer.free();
 		soundManager.destroy();
 		clientConfig.save();
-		ChunkStoriesLogger.getInstance().close();
-		System.exit(0);
+		//ChunkStoriesLogger.getInstance().close();
 	}
 
 	public static ConfigFile getConfig()

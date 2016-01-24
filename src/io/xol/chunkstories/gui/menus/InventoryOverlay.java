@@ -10,9 +10,9 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.core.ItemAk47;
 import io.xol.chunkstories.item.core.ItemAk47Magazine;
 import io.xol.chunkstories.item.core.ItemHeGrenade;
-import io.xol.engine.base.TexturesHandler;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.textures.TexturesHandler;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -40,7 +40,7 @@ public class InventoryOverlay extends MenuOverlay
 		if(selectedItem != null)
 		{
 			int slotSize = 24 * 2;
-			int textureId = TexturesHandler.idTexture(selectedItem.getTextureName());
+			int textureId = TexturesHandler.getTextureID(selectedItem.getTextureName());
 			int width = slotSize * selectedItem.item.slotsWidth;
 			int height = slotSize * selectedItem.item.slotsHeight;
 			GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX()-width/2, Mouse.getY()-height/2, width, height, 0, 1, 1, 0, textureId, true, true, null);

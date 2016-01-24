@@ -8,6 +8,10 @@ texture smoothstone
 	textureScale: 2
 end
 
+texture sand2
+	textureScale: 4
+end
+
 texture bricks2
 	textureScale: 4
 end

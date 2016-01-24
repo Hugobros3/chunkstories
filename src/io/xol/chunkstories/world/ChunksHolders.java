@@ -206,7 +206,7 @@ public class ChunksHolders
 		chunkZ = chunkZ % sic;
 		CubicChunk c = getChunk(chunkX, chunkY, chunkZ, false);
 		if (c != null)
-			c.markDirty(false);
+			c.markDirty(true);
 	}
 
 	public void destroy()

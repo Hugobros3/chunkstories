@@ -369,7 +369,6 @@ public class TrueTypeFont
 		drawString(x, y, whatchars, 0, whatchars.length() - 1, scaleX, scaleY, ALIGN_LEFT, color);
 	}
 	
-	
 	public void drawString(float x, float y, String whatchars, float scaleX, float scaleY, int format)
 	{
 		drawString(x, y, whatchars, 0, whatchars.length() - 1, scaleX, scaleY, format, new Vector4f(1,1,1,1));

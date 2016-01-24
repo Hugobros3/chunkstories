@@ -1,9 +1,9 @@
 package io.xol.engine.base;
 
-
-import io.xol.chunkstories.GameDirectory;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.misc.ColorsTools;
+import io.xol.engine.textures.Texture;
+import io.xol.engine.textures.TexturesHandler;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -71,23 +71,24 @@ public class ObjectRenderer
 		renderTexturedRotatedRectRVBA(xpos, ypos, w, h, rot, tcsx, tcsy, tcex, tcey, tex, 1f, 1f, 1f, a);
 	}
 
-	public static void renderTexturedRotatedRectRVBA(float xpos, float ypos, float w, float h, float rot, float tcsx, float tcsy, float tcex, float tcey, String tex, float r, float v, float b, float a)
+	public static void renderTexturedRotatedRectRVBA(float xpos, float ypos, float w, float h, float rot, float tcsx, float tcsy, float tcex, float tcey, String textureName, float r, float v, float b, float a)
 	{
 
-		String texture;
-
-		if (tex.startsWith("internal://"))
-			texture = tex.substring("internal://".length());
-		else if (tex.startsWith("gameDir://"))
-			texture = GameDirectory.getGameFolderPath() + "/" + tex.substring("gameDir://".length());
-		else if (tex.contains("../"))
-			texture = ("./" + tex.replace("../", "") + ".png");
+		if (textureName.startsWith("internal://"))
+			textureName = textureName.substring("internal://".length());
+		else if (textureName.startsWith("gameDir://"))
+			textureName = textureName.substring("gameDir://".length());//GameDirectory.getGameFolderPath() + "/" + tex.substring("gameDir://".length());
+		else if (textureName.contains("../"))
+			textureName = ("./" + textureName.replace("../", "") + ".png");
 		else
-			texture = ("./res/textures/" + tex + ".png");
+			textureName = ("./res/textures/" + textureName + ".png");
 
-		TexturesHandler.mipmapLevel(texture, -1);
+		Texture texture = TexturesHandler.getTexture(textureName);
+		
+		texture.setLinearFiltering(false);
+		//TexturesHandler.mipmapLevel(texture, -1);
 
-		GuiDrawer.drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, TexturesHandler.idTexture(texture), false, true, new Vector4f(r, v, b, a));
+		GuiDrawer.drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, texture.getID(), false, true, new Vector4f(r, v, b, a));
 	}
 
 	public static void renderColoredRect(float xpos, float ypos, float w, float h, float rot, String hex, float a)

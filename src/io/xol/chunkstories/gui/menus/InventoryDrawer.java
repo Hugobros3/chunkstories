@@ -6,9 +6,10 @@ import org.lwjgl.util.vector.Vector4f;
 
 import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.engine.base.TexturesHandler;
 import io.xol.engine.base.font.TrueTypeFont;
 import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.textures.Texture;
+import io.xol.engine.textures.TexturesHandler;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -56,8 +57,10 @@ public class InventoryDrawer
 		int internalHeight = (height + (summary ? 0 : 1) + blankLines) * 24 * scale;
 		int slotSize = 24 * scale;
 
-		int textureId = TexturesHandler.idTexture("res/textures/gui/inventory/inventory.png");
-		TexturesHandler.mipmapLevel("res/textures/gui/inventory/inventory.png", -1);
+		Texture inventoryTexture = TexturesHandler.getTexture("gui/inventory/inventory.png");
+		inventoryTexture.setLinearFiltering(false);
+		int textureId = inventoryTexture.getID();
+		
 		Vector4f color = new Vector4f(1f, 1f, 1f, summary ? 0.5f : 1f);
 		//All 8 corners
 		GuiDrawer.drawBoxWindowsSpaceWithSize(x, y + internalHeight + cornerSize, cornerSize, cornerSize, 0, 0.03125f, 0.03125f, 0, textureId, true, true, color);
@@ -135,6 +138,7 @@ public class InventoryDrawer
 			TrueTypeFont.haettenschweiler.drawStringWithShadow(x + cornerSize, y + cornerSize + internalHeight - slotSize + 2 * scale, inventory.name, scale, scale, new Vector4f(1,1,1,1));
 		}
 		//Inventory contents
+		Texture itemTexture;
 		for (int i = 0; i < inventory.width; i++)
 		{
 			for (int j = 0; j < height; j++)
@@ -142,8 +146,10 @@ public class InventoryDrawer
 				ItemPile pile = inventory.getContents()[i][j];
 				if(pile != null && !(InventoryOverlay.selectedItem != null && inventory.equals(InventoryOverlay.selectedItemInv) && InventoryOverlay.selectedItem.x == i && InventoryOverlay.selectedItem.y == j ))
 				{
-					textureId = TexturesHandler.idTexture(pile.getTextureName());
-					TexturesHandler.mipmapLevel(pile.getTextureName(), -1);
+					itemTexture = TexturesHandler.getTexture(pile.getTextureName());
+					itemTexture.setLinearFiltering(false);
+					//textureId = TexturesHandler.idTexture(pile.getTextureName());
+					//TexturesHandler.mipmapLevel(pile.getTextureName(), -1);
 					//System.out.println(textureId);
 					int center = summary ? slotSize * (pile.item.slotsHeight-1) / 2 : 0;
 					GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, slotSize * pile.item.slotsWidth, slotSize * pile.item.slotsHeight, 0, 1, 1, 0, textureId, true, true, null);

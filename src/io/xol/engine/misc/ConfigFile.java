@@ -136,14 +136,14 @@ public class ConfigFile
 		setProp(p, i + "");
 	}
 
-	public int getIntProp(String s, int keyDown)
+	public int getIntProp(String s, int intProp)
 	{
-		return Integer.parseInt(getProp(s, keyDown + ""));
+		return Integer.parseInt(getProp(s, intProp + ""));
 	}
 
-	public boolean getBooleanProp(String string, boolean renderDenseTiles)
+	public boolean getBooleanProp(String string, boolean booleanProp)
 	{
-		return getProp(string, renderDenseTiles + "").equals("true");
+		return getProp(string, booleanProp + "false").equals("true");
 	}
 
 	public float getFloatProp(String s)

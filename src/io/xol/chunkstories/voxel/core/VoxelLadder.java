@@ -5,11 +5,11 @@ package io.xol.chunkstories.voxel.core;
 // http://xol.io
 
 import io.xol.chunkstories.renderer.BlockRenderInfo;
-import io.xol.chunkstories.voxel.Voxel;
+import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 
-public class VoxelLadder extends Voxel
+public class VoxelLadder extends VoxelDefault implements VoxelClimbable
 {
 	VoxelModel[] models = new VoxelModel[4];
 

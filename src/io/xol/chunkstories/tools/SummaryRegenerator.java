@@ -2,7 +2,7 @@ package io.xol.chunkstories.tools;
 
 import java.io.File;
 
-import io.xol.chunkstories.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.World.WorldSize;

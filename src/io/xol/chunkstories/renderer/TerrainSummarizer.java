@@ -11,7 +11,8 @@ import org.lwjgl.util.vector.Vector4f;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.chunkstories.voxel.Voxel;
+import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
@@ -178,14 +179,14 @@ public class TerrainSummarizer
 			ByteBuffer bb = ByteBuffer.allocateDirect(size * 4);
 			bb.order(ByteOrder.LITTLE_ENDIAN);
 			Voxel vox;
-			BlockRenderInfo temp = new BlockRenderInfo();
+			BlockRenderInfo temp = new BlockRenderInfo(0);
 			for (int i = 0; i < size; i++)
 			{
 				vox = VoxelTypes.get(i);
 				temp.data = i;
 				Vector4f colorAndAlpha = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 				if (vox != null)
-					colorAndAlpha = VoxelTextures.getTextureColorAlphaAVG(vox.getVoxelTexture(0, temp).name);
+					colorAndAlpha = VoxelTextures.getTextureColorAlphaAVG(vox.getVoxelTexture(0, 0, temp).name);
 
 				// colorAndAlpha = new Vector4f(1f, 0.5f, 1f, 1f);
 				bb.put((byte) (colorAndAlpha.x * 255));
@@ -221,16 +222,30 @@ public class TerrainSummarizer
 		for (RegionSummary rs : regionsToRender)
 		{
 			float height = 1024f;
-			if(!camera.isBoxInFrustrum(new Vector3f(rs.rxDisplay * 256 + 128, height / 2, rs.rzDisplay * 256 + 128), new Vector3f(256, height, 256)))
-				continue;
+			//if(!camera.isBoxInFrustrum(new Vector3f(rs.rxDisplay * 256 + 128, height / 2, rs.rzDisplay * 256 + 128), new Vector3f(256, height, 256)))
+			//	continue;
 			
 			terrain.setUniformSampler(1, "groundTexture", rs.dataSource.tId);
 
 			glBindTexture(GL_TEXTURE_2D, rs.dataSource.tId);
-			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
+			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			
 			terrain.setUniformSampler(0, "heightMap", rs.dataSource.hId);
+			glBindTexture(GL_TEXTURE_2D, rs.dataSource.hId);
+			if(FastConfig.hqTerrain)
+			{
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,  GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,  GL_LINEAR);
+			}
+			else
+			{
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
+			}
+			
 			terrain.setUniformSampler1D(2, "blocksTexturesSummary", getBlocksTexturesSummaryId());
 			terrain.setUniformFloat2("regionPosition", rs.dataSource.rx, rs.dataSource.rz);
 

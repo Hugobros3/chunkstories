@@ -6,11 +6,11 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.base.font.BitmapFont;
 import io.xol.engine.base.font.FontRenderer2;
 import io.xol.chunkstories.GameData;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.EntitiesList;
@@ -22,15 +22,12 @@ import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.physics.particules.ParticleLight;
-import io.xol.chunkstories.physics.particules.ParticleRainfall;
 import io.xol.chunkstories.physics.particules.ParticleSetupLight;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.ChunksRenderer;
 import io.xol.chunkstories.renderer.DefferedLight;
 import io.xol.chunkstories.renderer.EntityRenderer;
 import io.xol.chunkstories.renderer.WorldRenderer;
-import io.xol.chunkstories.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.CubicChunk;
 
@@ -61,7 +58,7 @@ public class GameplayScene extends OverlayableScene
 		this.multiPlayer = multiPlayer;
 
 		if (Client.world == null)
-			w.changeScene(new MainMenu(w));
+			w.changeScene(new MainMenu(w, false));
 
 		if (!multiPlayer)
 		{
@@ -122,18 +119,18 @@ public class GameplayScene extends OverlayableScene
 		if (FastConfig.physicsVisualization && player != null)
 		{
 			int id, data;
-
-			for (int i = ((int) player.posX) - 4; i <= ((int) player.posX) + 4; i++)
-				for (int j = ((int) player.posY) - 4; j <= ((int) player.posY) + 4; j++)
-					for (int k = ((int) player.posZ) - 4; k <= ((int) player.posZ) + 4; k++)
+			int drawDebugDist = 6;
+			for (int i = ((int) player.posX) - drawDebugDist; i <= ((int) player.posX) + drawDebugDist; i++)
+				for (int j = ((int) player.posY) - drawDebugDist; j <= ((int) player.posY) + drawDebugDist; j++)
+					for (int k = ((int) player.posZ) - drawDebugDist; k <= ((int) player.posZ) + drawDebugDist; k++)
 					{
 						data = Client.world.getDataAt(i, j, k);
 						id = VoxelFormat.id(data);
-						VoxelTypes.get(id).debugRenderCollision(i, j, k, data);
+						VoxelTypes.get(id).debugRenderCollision(Client.world, i, j, k);
 					}
 
 			for (CollisionBox b : player.getTranslatedCollisionBoxes())
-				b.debugDraw(0, 1, 1);
+				b.debugDraw(0, 1, 1, 1);
 		}
 
 		if (shouldCM)
@@ -142,22 +139,24 @@ public class GameplayScene extends OverlayableScene
 			worldRenderer.screenCubeMap(512);
 		}
 		// THEN THE GUI
-
-		Client.profiler.startSection("post-process");
+		//Client.profiler.startSection("post-process");
 		worldRenderer.postProcess();
 
-		if (FastConfig.showDebugInfo)
+		/*if (FastConfig.showDebugInfo)
 		{
 			ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2, 16, 16, "cursor");
-			ObjectRenderer.renderTexturedRect(XolioWindow.frameW - 50, 50, 64, 64, 0, 0, 1, 1, 1, "../res/voxels/textures/" + VoxelTypes.get(voxelId).getVoxelTexture(2, BlockRenderInfo.get(voxelId, meta)).name);
+			ObjectRenderer.renderTexturedRect(XolioWindow.frameW - 50, 50, 64, 64, 0, 0, 1, 1, 1, "../res/voxels/textures/" + VoxelTypes.get(voxelId).getVoxelTexture(0, 2, BlockRenderInfo.get(voxelId, meta)).name);
 			FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW - 85, 80, 0, 32, voxelId + " : " + meta, BitmapFont.SMALLFONTS);
-		}
-		// System.out.println(voxelId);
+		}*/
 		// Debug rendering
-		Client.profiler.startSection("debug-draw");
+		
+		//Client.profiler.startSection("debug-draw");
 		if (FastConfig.showDebugInfo)
 			debug();
-
+		else
+			Client.profiler.reset("gui");
+		 
+		
 		chat.update();
 		chat.draw(15);
 
@@ -173,16 +172,13 @@ public class GameplayScene extends OverlayableScene
 				Client.world.worldTime -= 10;
 		}
 		
-		// WIP rain effect, should be moved
-		for (int i = 0; i < 0; i++)
-			Client.world.particlesHolder.addParticle(new ParticleRainfall(Client.world, player.posX + (Math.random() - 0.5) * 30, player.posY + 25, player.posZ + (Math.random() - 0.5) * 30));
-
 		if (currentOverlay == null && !chat.chatting)
 			focus(true);
 		Client.profiler.startSection("done");
 		// Draw overlay
 		if (currentOverlay != null)
 			currentOverlay.drawToScreen(0, 0, XolioWindow.frameW, XolioWindow.frameH);
+			
 		super.update();
 		// Check connection didn't died
 		if (Client.connection != null)
@@ -231,6 +227,8 @@ public class GameplayScene extends OverlayableScene
 			Client.world.reRender();
 			worldRenderer.chunksRenderer.clear();
 			ChunksRenderer.renderStart = System.currentTimeMillis();
+			CubicChunk.totalLightRuns = 0;
+			CubicChunk.totalLightTimings = 0L;
 			worldRenderer.modified();
 		}
 		else if (k == FastConfig.GRABUSE_KEY)
@@ -405,9 +403,10 @@ public class GameplayScene extends OverlayableScene
 		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 100, 0, 16, "View distance : " + FastConfig.viewDistance + " Vertices(N):" + formatBigAssNumber(worldRenderer.renderedVertices + "") + " Chunks in view : "
 				+ formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :" + Client.world.particlesHolder.count() + " #FF0000FPS : " + XolioWindow.getFPS(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 114, 0, 16, used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used", BitmapFont.SMALLFONTS);
+		
 		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 130, 0, 16, "VRAM usage : " + getLoadedChunksVramFootprint() + ", " + getLoadedTerrainVramFootprint(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 130 - 16, 0, 16, "Player model : " + this.player, BitmapFont.SMALLFONTS);
-
+		 
 		if (!Display.isActive() && this.currentOverlay == null)
 		{
 			focus(false);

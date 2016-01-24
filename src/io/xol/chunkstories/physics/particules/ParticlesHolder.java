@@ -6,6 +6,7 @@ import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
+import io.xol.engine.textures.TexturesHandler;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL14.*;
@@ -155,7 +156,7 @@ public class ParticlesHolder
 		int billCoordVAL = particlesShader.getVertexAttributeLocation("billboardCoord");
 		int texcoordVAL = particlesShader.getVertexAttributeLocation("textureCoord");
 
-		particlesShader.setUniformSampler(1, "lightColors", "res/textures/environement/light.png");
+		particlesShader.setUniformSampler(1, "lightColors", TexturesHandler.getTexture("environement/light.png"));
 
 		glEnableVertexAttribArray(planeVAL);
 		glEnableVertexAttribArray(billCoordVAL);
@@ -169,7 +170,7 @@ public class ParticlesHolder
 			{
 				if (list.size() > 0)
 				{
-					particlesShader.setUniformSampler(0, "diffuseTexture", list.get(0).getTextureName());
+					particlesShader.setUniformSampler(0, "diffuseTexture", TexturesHandler.getTexture(list.get(0).getTextureName()));
 					particlesShader.setUniformFloat("billboardSize", list.get(0).getSize());
 
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

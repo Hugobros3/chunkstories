@@ -1,7 +1,7 @@
 package io.xol.engine.base.font;
 
-import io.xol.engine.base.TexturesHandler;
 import io.xol.engine.misc.ColorsTools;
+import io.xol.engine.textures.TexturesHandler;
 
 import org.lwjgl.opengl.GL11;
 

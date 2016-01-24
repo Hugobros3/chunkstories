@@ -1,13 +1,12 @@
 package io.xol.chunkstories.voxel.core;
 
 import io.xol.chunkstories.renderer.BlockRenderInfo;
-import io.xol.chunkstories.voxel.Voxel;
+import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
 
-public class VoxelMeta16 extends Voxel
+public class VoxelMeta16 extends VoxelDefault
 {
-
 	VoxelTexture colors[] = new VoxelTexture[16];
 
 	public VoxelMeta16(int id, String name)
@@ -17,9 +16,9 @@ public class VoxelMeta16 extends Voxel
 			colors[i] = VoxelTextures.getVoxelTexture(name + "." + i);
 	}
 
-	public VoxelTexture getVoxelTexture(int side, BlockRenderInfo info) // 0 for top, 1 bot,
-															// 2,3,4,5
-															// north/south/east/west
+	public VoxelTexture getVoxelTexture(int data, int side, BlockRenderInfo info) // 0 for top, 1 bot,
+	// 2,3,4,5
+	// north/south/east/west
 	{
 		int meta = info.getMetaData();
 		// System.out.println("swag");

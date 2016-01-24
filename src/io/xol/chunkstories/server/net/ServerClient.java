@@ -1,6 +1,7 @@
 package io.xol.chunkstories.server.net;
 
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.events.core.PlayerLoginEvent;
 import io.xol.chunkstories.client.net.SendQueue;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.Packet;
@@ -253,7 +254,12 @@ public class ServerClient extends Thread implements HttpRequester, CommandEmitte
 			{
 				authentificated = true;
 				profile = new ServerPlayer(this);
-				Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ")" + " joined.");
+				PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(profile);
+				boolean allowPlayerIn = Server.getInstance().getPluginsManager().fireEvent(playerConnectionEvent);
+				
+				System.out.println(allowPlayerIn+"allow");
+				Server.getInstance().handler.sendAllChat(playerConnectionEvent.connectionMessage);
+				//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ")" + " joined.");
 				profile.onJoin();
 				send("login/ok");
 			}

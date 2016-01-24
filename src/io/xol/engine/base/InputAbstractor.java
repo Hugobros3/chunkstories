@@ -3,8 +3,6 @@ package io.xol.engine.base;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
-import io.xol.chunkstories.client.Client;
-
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io

@@ -1,10 +1,12 @@
 package io.xol.chunkstories.renderer;
 
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.TexturesHandler;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
+import io.xol.engine.textures.Texture;
+import io.xol.engine.textures.TexturesHandler;
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.world.World;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -17,7 +19,6 @@ import javax.imageio.ImageIO;
 import org.lwjgl.BufferUtils;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
@@ -33,24 +34,30 @@ public class SkyDome
 	float distance = 1500;
 	float height = -500;
 
-	BufferedImage colors;
+	BufferedImage colors_sunny;
+	BufferedImage colors_rain;
 	BufferedImage light;
 
 	ShaderProgram skyShader;
 	ShaderProgram starsShader;
 	ShaderProgram cloudsShader;
 
-	public SkyDome()
+	World world;
+	WorldRenderer worldRenderer;
+	
+	public SkyDome(World world, WorldRenderer worldRenderer)
 	{
+		this.world = world;
+		this.worldRenderer = worldRenderer;
 		try
 		{
-			colors = ImageIO.read(new File("res/textures/environement/sky.png"));
+			colors_sunny = ImageIO.read(new File("res/textures/environement/sky.png"));
+			colors_rain = ImageIO.read(new File("res/textures/environement/sky_rain.png"));
 			light = ImageIO.read(new File("res/textures/environement/lightcolors.png"));
 
 			skyShader = ShadersLibrary.getShaderProgram("sky");
 			cloudsShader = ShadersLibrary.getShaderProgram("clouds");
 			starsShader = ShadersLibrary.getShaderProgram("stars");
-
 		}
 		catch (IOException e)
 		{
@@ -86,39 +93,30 @@ public class SkyDome
 
 		// TexturesHandler.bindTexture("res/textures/environement/sky.png");
 		skyShader.use(true);
-		skyShader.setUniformSampler(9, "cloudsNoise", "res/textures/environement/cloudsStatic.png");
-		skyShader.setUniformSampler(1, "glowSampler", "res/textures/environement/glow.png");
-		glBindTexture(GL_TEXTURE_2D, TexturesHandler.idTexture("res/textures/environement/glow.png"));
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		skyShader.setUniformSampler(0, "colorSampler", "res/textures/environement/sky.png");
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		skyShader.setUniformSampler(9, "cloudsNoise", TexturesHandler.getTexture("environement/cloudsStatic.png"));
+		Texture glowTexture = TexturesHandler.getTexture("environement/glow.png");
+		skyShader.setUniformSampler(1, "glowSampler", glowTexture);
+		glowTexture.setLinearFiltering(true);
+		glowTexture.setTextureWrapping(false);
+		glowTexture.setTextureWrapping(false);
+
+		Texture skyTexture = TexturesHandler.getTexture(world.isRaining() ? "environement/sky_rain.png" : "environement/sky.png");
+		skyShader.setUniformSampler(0, "colorSampler", skyTexture);
+		skyShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
+		skyTexture.setLinearFiltering(true);
+		skyTexture.setMipMapping(false);
+		skyTexture.setTextureWrapping(false);
+
 		//skyShader.setUniformSamplerCube(2, "skybox", TexturesHandler.idCubemap("res/textures/skybox"));
 		skyShader.setUniformFloat3("camPos", camera.camPosX, camera.camPosY, camera.camPosZ);
 		skyShader.setUniformFloat3("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
 		skyShader.setUniformFloat("time", time);
 		camera.setupShader(skyShader);
 
-		// glTexParameteri(GL_TEXTURE_2D, pname, param);
-		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		TexturesHandler.nowrap("res/textures/environement/sky.png");
-
 		ObjectRenderer.drawFSQuad(skyShader.getVertexAttributeLocation("vertexIn"));
 
 		skyShader.use(false);
-
-		/*TexturesHandler.bindTexture("res/textures/environement/moon.png");
-		double moonloc = (0.2 + time) * Math.PI * 2;
-		float moonangle = 0;
-		double moondistance = 1350;
-		double[] moonpos = { moondistance * Math.sin(rad(moonangle)) * Math.cos(moonloc), height + moondistance * Math.sin(moonloc), moondistance * Math.cos(rad(moonangle)) * Math.cos(moonloc) };
-		 */
-
+		
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPointSize(1f);
@@ -165,15 +163,15 @@ public class SkyDome
 
 	public void reloadShader()
 	{
-		TexturesHandler.freeTexture("res/textures/environement/sky.png");
-		TexturesHandler.freeTexture("res/textures/environement/glow.png");
+		//TexturesHandler.freeTexture("res/textures/environement/sky.png");
+		//TexturesHandler.freeTexture("res/textures/environement/glow.png");
 		//skyShader.reload(FastConfig.getShaderConfig());
 		//cloudsShader.reload(FastConfig.getShaderConfig());
 		try
 		{
-			colors = ImageIO.read(new File("res/textures/environement/sky.png"));
+			colors_sunny = ImageIO.read(new File("res/textures/environement/sky.png"));
+			colors_rain = ImageIO.read(new File("res/textures/environement/sky_rain.png"));
 			light = ImageIO.read(new File("res/textures/environement/lightcolors.png"));
-
 		}
 		catch (IOException e)
 		{
@@ -190,14 +188,15 @@ public class SkyDome
 
 	public int[] getSkyColor()
 	{
-		Color color = new Color(colors.getRGB((int) (time * 255), 255));
+		Color color = new Color((world.isRaining() ? colors_rain : colors_sunny).getRGB((int) (time * 255), 255));
+		
 		return new int[] { color.getRed(), color.getGreen(), color.getBlue() };
 	}
 
 	private void setupFog()
 	{
 		FloatBuffer fogColor = BufferUtils.createFloatBuffer(4);
-		Color color = new Color(colors.getRGB((int) (time * 256), 255));
+		Color color = new Color((world.isRaining() ? colors_rain : colors_sunny).getRGB((int) (time * 256), 255));
 		fogColor.put(color.getRed() / 255f).put(color.getGreen() / 255f).put(color.getBlue() / 255f).put(1f).flip();
 		int fogMode;
 		fogMode = GL_EXP2;
@@ -225,7 +224,7 @@ public class SkyDome
 		// Math.sqrt(0.005d/(FastConfig.viewDistance*1.442695))+" "+0.0055f);
 		// glFogf(GL_FOG_DENSITY, 0.0055f);
 		glHint(GL_FOG_HINT, GL_DONT_CARE);
-		glFogf(GL_FOG_START, 550.0f);
-		glFogf(GL_FOG_END, 650.0f);
+		glFogf(GL_FOG_START, world.isRaining() ? 32 : FastConfig.viewDistance);
+		glFogf(GL_FOG_END, world.isRaining() ? 384 : FastConfig.viewDistance + 750);
 	}
 }

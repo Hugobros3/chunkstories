@@ -4,10 +4,11 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.DefferedLight;
-import io.xol.chunkstories.voxel.Voxel;
-import io.xol.chunkstories.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.World;
@@ -255,7 +256,7 @@ public abstract class Entity
 						vox = VoxelTypes.get(id);
 						if (vox.isVoxelSolid())
 						{
-							CollisionBox[] boxes = vox.getCollisionBoxes(data);
+							CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
 							if (boxes != null)
 								for (CollisionBox b : boxes)
 								{
@@ -304,7 +305,7 @@ public abstract class Entity
 						vox = VoxelTypes.get(id);
 						if (vox.isVoxelSolid())
 						{
-							CollisionBox[] boxes = vox.getCollisionBoxes(data);
+							CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
 							if (boxes != null)
 								for (CollisionBox b : boxes)
 								{
@@ -354,7 +355,7 @@ public abstract class Entity
 						vox = VoxelTypes.get(id);
 						if (vox.isVoxelSolid())
 						{
-							CollisionBox[] boxes = vox.getCollisionBoxes(data);
+							CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
 							if (boxes != null)
 								for (CollisionBox b : boxes)
 								{

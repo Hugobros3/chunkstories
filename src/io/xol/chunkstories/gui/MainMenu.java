@@ -10,18 +10,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import io.xol.chunkstories.gui.menus.LoginOverlay;
 import io.xol.chunkstories.gui.menus.MainMenuOverlay;
 import io.xol.chunkstories.gui.menus.MenuOverlay;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.FBO;
-import io.xol.chunkstories.renderer.GBufferTexture;
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.TexturesHandler;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
+import io.xol.engine.textures.GBufferTexture;
+import io.xol.engine.textures.Texture;
+import io.xol.engine.textures.TexturesHandler;
 
 public class MainMenu extends OverlayableScene
 {
@@ -38,9 +40,9 @@ public class MainMenu extends OverlayableScene
 	String skyBox;
 	Camera cam = new Camera();
 
-	private GBufferTexture unblurred = new GBufferTexture(GBufferTexture.GBufferType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
-	private GBufferTexture blurredH = new GBufferTexture(GBufferTexture.GBufferType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
-	private GBufferTexture blurredV = new GBufferTexture(GBufferTexture.GBufferType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
+	private GBufferTexture unblurred = new GBufferTexture(Texture.TextureType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
+	private GBufferTexture blurredH = new GBufferTexture(Texture.TextureType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
+	private GBufferTexture blurredV = new GBufferTexture(Texture.TextureType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
 
 	private FBO unblurredFBO = new FBO(null, unblurred);
 	private FBO blurredHFBO = new FBO(null, blurredH);
@@ -48,7 +50,7 @@ public class MainMenu extends OverlayableScene
 
 	// private String splashText = getRandomSplashScreen();
 
-	public MainMenu(XolioWindow XolioWindow)
+	public MainMenu(XolioWindow XolioWindow, boolean askForLogin)
 	{
 		super(XolioWindow);
 		menuSkyBox = ShadersLibrary.getShaderProgram("mainMenuSkyBox");
@@ -56,11 +58,13 @@ public class MainMenu extends OverlayableScene
 		blurV = ShadersLibrary.getShaderProgram("blurV");
 		blit = ShadersLibrary.getShaderProgram("blit");
 		selectRandomSkybox();
+		if(askForLogin)
+			currentOverlay = new LoginOverlay(this, null);
 	}
 
 	public MainMenu(XolioWindow eng, String string)
 	{
-		this(eng);
+		this(eng, false);
 		this.changeOverlay(new MessageBoxOverlay(this, currentOverlay, string));
 	}
 

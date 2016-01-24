@@ -5,11 +5,10 @@ package io.xol.chunkstories.voxel.core;
 // http://xol.io
 
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.voxel.Voxel;
+import io.xol.chunkstories.voxel.VoxelDefault;
 
-public class VoxelAir extends Voxel
+public class VoxelAir extends VoxelDefault
 {
-
 	public VoxelAir(int id, String name)
 	{
 		super(id, name);

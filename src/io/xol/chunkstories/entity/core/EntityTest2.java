@@ -4,16 +4,16 @@ import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector4f;
 
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.DefferedLight;
-import io.xol.chunkstories.voxel.VoxelFormat;
 import io.xol.chunkstories.world.World;
-import io.xol.engine.base.TexturesHandler;
 import io.xol.engine.base.font.TrueTypeFont;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;
+import io.xol.engine.textures.TexturesHandler;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -43,8 +43,8 @@ public class EntityTest2 extends Entity implements EntityHUD
 		i++;
 		i %= 80;
 		// System.out.println("rendering entity test");
-		RenderingContext.setDiffuseTexture(TexturesHandler.idTexture("res/models/rookie.png"));
-		RenderingContext.setNormalTexture(TexturesHandler.idTexture("res/textures/normalnormal.png"));
+		RenderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/rookie.png"));
+		RenderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
 		RenderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY + 0.4f, (float) posZ);
 		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);

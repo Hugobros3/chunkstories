@@ -1,15 +1,9 @@
 package io.xol.engine.gui;
 
-//(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
-
-// Second-generation GUI class for
-
-import io.xol.engine.base.TexturesHandler;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
+import io.xol.engine.textures.TexturesHandler;
 
 import java.nio.FloatBuffer;
 
@@ -60,6 +54,7 @@ public class GuiDrawer
 
 	public static void drawBox(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, int textureID, boolean alpha, boolean textured, Vector4f color)
 	{
+		
 		if (color == null)
 			color = new Vector4f(1f, 1f, 1f, 1f);
 
@@ -75,19 +70,27 @@ public class GuiDrawer
 		if(textureID != -1)
 			setState(textureID, alpha, true,  color);
 
-		addVertice(new float[] { startX, startY }, new float[] { textureStartX, textureStartY });
+		addVertice(startX, startY, textureStartX, textureStartY );
+		addVertice(startX, endY, textureStartX, textureEndY );
+		addVertice(endX, endY , textureEndX, textureEndY );
+
+		addVertice(startX, startY , textureStartX, textureStartY );
+		addVertice(endX, startY, textureEndX, textureStartY );
+		addVertice(endX, endY , textureEndX, textureEndY );
+		
+		/*addVertice(new float[] { startX, startY }, new float[] { textureStartX, textureStartY });
 		addVertice(new float[] { startX, endY }, new float[] { textureStartX, textureEndY });
 		addVertice(new float[] { endX, endY }, new float[] { textureEndX, textureEndY });
 
 		addVertice(new float[] { startX, startY }, new float[] { textureStartX, textureStartY });
 		addVertice(new float[] { endX, startY }, new float[] { textureEndX, textureStartY });
-		addVertice(new float[] { endX, endY }, new float[] { textureEndX, textureEndY });
+		addVertice(new float[] { endX, endY }, new float[] { textureEndX, textureEndY });*/
 
 	}
 
 	public static void debugDraw()
 	{
-		setState(TexturesHandler.idTexture("res/textures/logo.png"), false, true, new Vector4f(1f, 1f, 1f, 1f));
+		setState(TexturesHandler.getTextureID("res/textures/logo.png"), false, true, new Vector4f(1f, 1f, 1f, 1f));
 
 		addVertice(new float[] { -1, -1 }, new float[] { 0, 1 });
 		addVertice(new float[] { -1, 1 }, new float[] { 0, 0 });
@@ -98,6 +101,15 @@ public class GuiDrawer
 		addVertice(new float[] { 1, 1 }, new float[] { 1, 0 });
 	}
 
+	protected static void addVertice(float vx, float vy, float t, float s)
+	{
+		buf.put(vx);
+		buf.put(vy);
+		buf.put(t);
+		buf.put(s);
+		elementsToDraw++;
+	}
+	
 	protected static void addVertice(float[] vertexIn, float[] texCoordIn)
 	{
 		buf.put(vertexIn);

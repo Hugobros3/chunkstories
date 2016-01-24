@@ -1,6 +1,6 @@
 package io.xol.chunkstories.physics;
 
-import static org.lwjgl.opengl.GL11.*;
+import static io.xol.chunkstories.renderer.OverlayRenderer.*;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
 
@@ -91,17 +91,17 @@ public class CollisionBox
 		return h % 1;
 	}
 
-	public void debugDraw(float r, float g, float b)
+	public void debugDraw(float r, float g, float b, float a)
 	{
 		// glTranslated(xpos-xw/2,ypos,zpos-zw/2);
 
-		// System.out.println("Debug drawing at "+xpos+" y:"+ypos+" z:"+zpos-zw/2);
+		//System.out.println("Debug drawing at "+xpos+" y:"+ypos+" z:"+(zpos-zw/2));
 
 		glDisable(GL_TEXTURE_2D);
-		glColor4f(r, g, b, 1f);
+		glColor4f(r, g, b, a);
 		glLineWidth(2);
 		glDisable(GL_CULL_FACE);
-		glDepthFunc(GL_LEQUAL);
+		//glDepthFunc(GL_LEQUAL);
 		// glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		// glBlendFunc(GL_ONE_MINUS_SRC_COLOR,GL_ONE);
@@ -133,12 +133,6 @@ public class CollisionBox
 		glVertex3d(xpos + xw / 2, ypos, zpos + zw / 2);
 		glVertex3d(xpos + xw / 2, ypos + h, zpos + zw / 2);
 		glEnd();
-		// glColor4f(1,1,1,1);
-		// glEnable(GL_TEXTURE_2D);
-		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		// glDisable(GL_BLEND);
-
-		// glTranslated(-xpos-xw/2,-ypos,-zpos-zw/2);
 	}
 
 	public String toString()

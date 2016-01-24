@@ -4,7 +4,19 @@ package io.xol.chunkstories.api.events;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Event
+public abstract class Event
 {
-
+	boolean allowed = true;
+	
+	public void setEventAllowedToExecute(boolean allowed)
+	{
+		this.allowed = allowed;
+	}
+	
+	public boolean isAllowedToExecute()
+	{
+		return allowed;
+	}
+	
+	public abstract EventListeners getListeners();
 }

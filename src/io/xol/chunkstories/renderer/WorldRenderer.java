@@ -4,6 +4,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
+import static io.xol.engine.textures.Texture.TextureType.*;
 import static org.lwjgl.opengl.ARBVertexType2_10_10_10_REV.GL_INT_2_10_10_10_REV;
 
 import java.awt.image.BufferedImage;
@@ -25,29 +26,25 @@ import org.lwjgl.util.vector.Vector3f;
 
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.TexturesHandler;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.MatrixHelper;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
+import io.xol.engine.textures.GBufferTexture;
+import io.xol.engine.textures.Texture;
+import io.xol.engine.textures.TexturesHandler;
 import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.Entity;
-import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.renderer.ChunksRenderer.VBOData;
 import io.xol.chunkstories.tools.DebugProfiler;
-import io.xol.chunkstories.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
-
-import static io.xol.chunkstories.renderer.GBufferTexture.GBufferType.*;
-//(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
 
 public class WorldRenderer
 {
@@ -108,7 +105,7 @@ public class WorldRenderer
 
 	// FBOs
 	private FBO composite_pass_gbuffers = new FBO(composite_zbuffer, composite_albedo, composite_normal, composite_meta);
-	private FBO composite_pass_gbuffers_waterfp = new FBO(composite_zbuffer, composite_shaded, composite_normal, composite_meta);
+	private FBO composite_pass_gbuffers_waterfp = new FBO(composite_zbuffer, composite_shaded);
 
 	private FBO composite_pass_shaded = new FBO(composite_zbuffer, composite_shaded);
 	private FBO composite_pass_bloom = new FBO(null, composite_bloom);
@@ -139,7 +136,7 @@ public class WorldRenderer
 	private Matrix4f depthMatrix = new Matrix4f();
 
 	// Sky
-	public SkyDome sky = new SkyDome();
+	public SkyDome sky;
 
 	// Debug
 	DebugProfiler updateProfiler = new DebugProfiler();
@@ -150,12 +147,16 @@ public class WorldRenderer
 	// Terrain at distance
 	public TerrainSummarizer terrain;
 
+	public WeatherEffectsRenderer wer;
+
 	public WorldRenderer(World w)
 	{
 		// Link world
 		world = w;
 		world.linkWorldRenderer(this);
 		terrain = new TerrainSummarizer(world);
+		wer = new WeatherEffectsRenderer(world, this);
+		sky = new SkyDome(world, this);
 		sizeInChunks = world.getSizeInChunks();
 		resizeShadowMaps();
 
@@ -163,7 +164,6 @@ public class WorldRenderer
 			System.out.println("Loading shaders");
 
 		opaqueBlocksShader = ShadersLibrary.getShaderProgram("blocks_opaque");
-		liquidBlocksShader = ShadersLibrary.getShaderProgram("blocks_liquid");
 		entitiesShader = ShadersLibrary.getShaderProgram("entities");
 		shadowsPassShader = ShadersLibrary.getShaderProgram("shadows");
 		applyShadowsShader = ShadersLibrary.getShaderProgram("shadows_apply");
@@ -198,6 +198,7 @@ public class WorldRenderer
 	{
 		// Set camera
 		this.camera = camera;
+		OverlayRenderer.setCamera(camera);
 		// Debug/Dev : reset vertex counts
 		renderedChunks = 0;
 		renderedVertices = 0;
@@ -237,10 +238,15 @@ public class WorldRenderer
 		camera.translate();
 		composite_pass_gbuffers.setEnabledRenderTargets();
 
-		// Render terrain
+		// Render world
 		glViewport(0, 0, scrW, scrH);
 		renderWorld(false);
+		// Render weather
+		composite_pass_shaded.bind();
+		composite_pass_shaded.setEnabledRenderTargets();
+		wer.renderEffects(camera);
 
+		// Debug
 		if (FastConfig.debugGBuffers)
 			glFinish();
 		if (FastConfig.debugGBuffers)
@@ -252,7 +258,7 @@ public class WorldRenderer
 			glDisable(GL_DEPTH_TEST);
 
 			bloomShader.use(true);
-			bloomShader.setUniformSampler(0, "shadedBuffer", this.composite_shaded.getID());
+			bloomShader.setUniformSampler(0, "shadedBuffer", this.composite_shaded);
 
 			this.composite_pass_bloom.bind();
 			this.composite_pass_bloom.setEnabledRenderTargets();
@@ -266,7 +272,7 @@ public class WorldRenderer
 			blurV.use(true);
 			blurV.setUniformFloat2("screenSize", XolioWindow.frameW / 2f, XolioWindow.frameH / 2f);
 			blurV.setUniformFloat("lookupScale", 1);
-			blurV.setUniformSampler(0, "inputTexture", this.composite_bloom.getID());
+			blurV.setUniformSampler(0, "inputTexture", this.composite_bloom);
 			//drawFSQuad();
 			ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 
@@ -274,7 +280,7 @@ public class WorldRenderer
 			this.composite_pass_bloom.bind();
 			blurH.use(true);
 			blurH.setUniformFloat2("screenSize", XolioWindow.frameW / 2f, XolioWindow.frameH / 2f);
-			blurH.setUniformSampler(0, "inputTexture", blurTemp.getID());
+			blurH.setUniformSampler(0, "inputTexture", blurTemp);
 			//drawFSQuad();
 			ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 
@@ -282,9 +288,9 @@ public class WorldRenderer
 
 			// Done blooming
 			glViewport(0, 0, scrW, scrH);
-			composite_pass_gbuffers.bind();
-			composite_pass_gbuffers.setEnabledRenderTargets();
 		}
+		composite_pass_shaded.bind();
+		composite_pass_shaded.setEnabledRenderTargets();
 
 		Client.profiler.startSection("done");
 		opaqueBlocksShader.use(false);
@@ -356,9 +362,9 @@ public class WorldRenderer
 		viewZ = z;
 		viewRotH = view_rotx;
 		viewRotV = view_roty;
-		int npCX = fastfloor((x -16) / 32);
-		int npCY = fastfloor((y ) / 32);
-		int npCZ = fastfloor((z -16) / 32);
+		int npCX = fastfloor((x - 16) / 32);
+		int npCY = fastfloor((y) / 32);
+		int npCZ = fastfloor((z - 16) / 32);
 		// Fill the VBO array with chunks VBO ids if the player changed chunk
 		if (pCX != npCX || pCY != npCY || pCZ != npCZ || chunksChanged || true)
 		{
@@ -540,11 +546,11 @@ public class WorldRenderer
 		// float worldTime = (world.worldTime%1000+1000)%1000;
 		if (this.getShadowVisibility() == 0f)
 			return; // No shadows at night :)
+		glCullFace(GL_FRONT);
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_ALPHA_TEST);
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
-		//glCullFace(GL_FRONT);
 
 		int size = (shadow_map_near).getWidth();
 		glViewport(0, 0, size, size);
@@ -555,7 +561,12 @@ public class WorldRenderer
 		shadowsPassShader.use(true);
 		Vector3f lightPosition = sky.getSunPos();
 		lightPosition.normalise(normSunPosition);
-		int fun = 8;// / hdPass ? 3 : 8;
+		int fun = 10;// / hdPass ? 3 : 8;
+		if (size > 1024)
+			fun = 15;
+		else if (size > 2048)
+			fun = 20;
+
 		int fun2 = 200;// hdPass ? 100 : 200;
 		Matrix4f depthProjectionMatrix = MatrixHelper.getOrthographicMatrix(-fun * 10, fun * 10, -fun * 10, fun * 10, -fun2, fun2);
 		Matrix4f depthViewMatrix = MatrixHelper.getLookAtMatrix(normSunPosition, new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
@@ -575,9 +586,9 @@ public class WorldRenderer
 	private boolean checkChunkOcclusion(CubicChunk chunk, int correctedCX, int correctedCY, int correctedCZ, Vector3f viewerPosition, Vector3f viewerDirection)
 	{
 		Vector3f centerSphere = new Vector3f(correctedCX * 32 + 16, correctedCY * 32 + 16, correctedCZ * 32 + 16);
-		if(!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F10))
+		if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F10))
 			return camera.isBoxInFrustrum(centerSphere, new Vector3f(32, 32, 32));
-		
+
 		double coneAngle = (camera.fov) * (scrW / (scrH * 1f));
 		if (scrW == scrH)
 			coneAngle = camera.fov;
@@ -598,6 +609,14 @@ public class WorldRenderer
 		return true;
 	}
 
+	Texture glowTexture = TexturesHandler.getTexture("environement/glow.png");
+	Texture skyTexture = TexturesHandler.getTexture("environement/sky.png");
+	Texture lightmapTexture = TexturesHandler.getTexture("environement/light.png");
+	Texture waterNormalTexture = TexturesHandler.getTexture("normal.png");
+
+	Texture blocksDiffuseTexture = TexturesHandler.getTexture("tiles_merged_diffuse.png");
+	Texture blocksNormalTexture = TexturesHandler.getTexture("tiles_merged_normal.png");
+
 	public void renderWorld(boolean shadowPass)
 	{
 		long t;
@@ -605,6 +624,8 @@ public class WorldRenderer
 
 		int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
 
+		skyTexture = TexturesHandler.getTexture(world.isRaining() ? "environement/sky_rain.png" : "environement/sky.png");
+		
 		int[] vegetationColor = { 72, 128, 45 };
 		//int[] vegetationColor = { 35, 35, 35 };
 		//int[] vegetationColor = { (int) (Math.sin((System.currentTimeMillis() % 1000 ) / 1000.0 * Math.PI) * 255 * 0.5 + 255/2), (int) (Math.sin((System.currentTimeMillis() % 2000 ) / 2000.0 * Math.PI) * 255 * 0.5 + 255/2),	(int) (Math.cos((System.currentTimeMillis() % 5000 ) / 5000.0 * Math.PI) * 255 * 0.5 + 255/2)};
@@ -628,15 +649,17 @@ public class WorldRenderer
 			terrainShader.setUniformFloat("terrainHeight", world.chunkSummaries.getHeightAt((int) viewX, (int) viewZ));
 			terrainShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
 			terrainShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
-			terrainShader.setUniformSampler(6, "lightColors", TexturesHandler.idTexture("res/textures/environement/light.png"));
-			terrainShader.setUniformSampler(5, "normalTexture", "res/textures/normal.png");
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			terrainShader.setUniformSampler(6, "lightColors", lightmapTexture);
+			terrainShader.setUniformSampler(5, "normalTexture", waterNormalTexture);
+			waterNormalTexture.setLinearFiltering(true);
+			waterNormalTexture.setMipMapping(true);
 			terrainShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
 			terrainShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
-			terrainShader.setUniformSampler(15, "glowSampler", "res/textures/environement/glow.png");
-			terrainShader.setUniformSampler(14, "colorSampler", "res/textures/environement/sky.png");
+			terrainShader.setUniformSampler(8, "glowSampler", glowTexture);
+			terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
+			setupShadowColors(terrainShader);
 			terrainShader.setUniformFloat("time", sky.time);
+			terrainShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
 
 			if (Client.world.name.contains("cherna"))
 				terrainShader.setUniformFloat("waterLevel", 4f);
@@ -644,7 +667,7 @@ public class WorldRenderer
 			if (FastConfig.debugGBuffers)
 				glFinish();
 			t = System.nanoTime();
-			if(!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
+			if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
 				renderedVertices += terrain.draw(camera, terrainShader);
 
 			if (FastConfig.debugGBuffers)
@@ -656,12 +679,19 @@ public class WorldRenderer
 			this.composite_pass_gbuffers.setEnabledRenderTargets();
 
 			opaqueBlocksShader.use(true);
-			opaqueBlocksShader.setUniformSampler(0, "diffuseTexture", "res/textures/tiles_merged_diffuse.png");
-			opaqueBlocksShader.setUniformSampler(1, "normalTexture", "res/textures/tiles_merged_normal.png");
-			opaqueBlocksShader.setUniformSampler(4, "lightColors", "res/textures/environement/light.png");
-			TexturesHandler.nowrap("res/textures/tiles_merged_normal.png");
-			TexturesHandler.mipmapLevel("res/textures/tiles_merged_normal.png", -1);
-			TexturesHandler.nowrap("res/textures/environement/light.png");
+			opaqueBlocksShader.setUniformSampler(0, "diffuseTexture", blocksDiffuseTexture);
+			opaqueBlocksShader.setUniformSampler(1, "normalTexture", blocksNormalTexture);
+			opaqueBlocksShader.setUniformSampler(4, "lightColors", lightmapTexture);
+			blocksDiffuseTexture.setTextureWrapping(false);
+			blocksDiffuseTexture.setLinearFiltering(false);
+			blocksDiffuseTexture.setMipMapping(false);
+			blocksDiffuseTexture.setMipmapLevelsRange(0, 4);
+
+			blocksNormalTexture.setTextureWrapping(false);
+			blocksNormalTexture.setLinearFiltering(false);
+			blocksNormalTexture.setMipMapping(true);
+			blocksNormalTexture.setMipmapLevelsRange(0, 4);
+
 			opaqueBlocksShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
 			//opaqueBlocksShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
 			opaqueBlocksShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
@@ -688,12 +718,14 @@ public class WorldRenderer
 			depthMatrix.store(matrix44Buffer);
 			matrix44Buffer.flip();
 			shadowsPassShader.setUniformMatrix4f("depthMVP", matrix44Buffer);
+			opaqueBlocksShader.setUniformSampler(0, "albedoTexture", blocksDiffuseTexture);
 		}
 
+		//if(true)
+		//	return;
+		
 		// We just roll our loaded vbos
-		TexturesHandler.bindTexture("res/textures/tiles_merged_diffuse.png");
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		//TexturesHandler.bindTexture("tiles_merged_diffuse.png");
 
 		glAlphaFunc(GL_GREATER, 0.0f);
 		glDisable(GL_ALPHA_TEST);
@@ -870,10 +902,8 @@ public class WorldRenderer
 
 			entitiesShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
 			entitiesShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
-			TexturesHandler.nowrap("res/textures/tiles_merged_normal.png");
-			entitiesShader.setUniformSampler(4, "lightColors", "res/textures/environement/light.png");
-
-			TexturesHandler.nowrap("res/textures/environement/light.png");
+			entitiesShader.setUniformSampler(4, "lightColors", lightmapTexture);
+			lightmapTexture.setTextureWrapping(false);
 			entitiesShader.setUniformFloat2("screenSize", scrW, scrH);
 			entitiesShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
 			entitiesShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
@@ -919,68 +949,74 @@ public class WorldRenderer
 		//glEnable(GL_BLEND);
 		glDisable(GL_ALPHA_TEST);
 
-		liquidBlocksShader.use(true);
-
-		liquidBlocksShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
-
-		liquidBlocksShader.setUniformFloat("yAngle", (float) (viewRotV * Math.PI / 180f));
-		liquidBlocksShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
-		// liquidBlocksShader.setUniformSamplerCube(3, "skybox",
-		// TexturesHandler.idCubemap("textures/skybox"));
-		liquidBlocksShader.setUniformSampler(1, "normalTexture", "res/textures/normal.png");
-		TexturesHandler.nowrap("res/textures/environement/light.png");
-		liquidBlocksShader.setUniformSampler(3, "lightColors", TexturesHandler.idTexture("res/textures/environement/light.png"));
-		liquidBlocksShader.setUniformSampler(0, "diffuseTexture", TexturesHandler.idTexture("res/textures/tiles_merged_diffuse.png"));
-		liquidBlocksShader.setUniformFloat2("screenSize", scrW, scrH);
-		liquidBlocksShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
-		liquidBlocksShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
-		liquidBlocksShader.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
-		liquidBlocksShader.setUniformFloat("time", animationTimer);
-
-		camera.setupShader(liquidBlocksShader);
-
-		liquidBlocksShader.setUniformMatrix4f("shadowMatrix", matrix44Buffer);
-		// liquidBlocksShader.setUniformMatrix4f("shadowMatrix2",
-		// matrix44Buffer2);
-
-		// Vertex attributes setup
-		vertexIn = liquidBlocksShader.getVertexAttributeLocation("vertexIn");
-		texCoordIn = liquidBlocksShader.getVertexAttributeLocation("texCoordIn");
-		colorIn = liquidBlocksShader.getVertexAttributeLocation("colorIn");
-		normalIn = liquidBlocksShader.getVertexAttributeLocation("normalIn");
-
-		glEnableVertexAttribArray(vertexIn);
-		glEnableVertexAttribArray(texCoordIn);
-		glEnableVertexAttribArray(colorIn);
-		glEnableVertexAttribArray(normalIn);
-
-		// Set rendering context.
-		RenderingContext.enableVAMode(vertexIn, texCoordIn, colorIn, normalIn, false);
-		RenderingContext.setCurrentShader(liquidBlocksShader);
-		
 		// We do water in two passes : one for computing the refracted color and putting it in shaded buffer, and another one
 		// to read it back and blend it
 		glDepthFunc(GL_LEQUAL);
-		for (int pass = 0; pass < 2; pass++)
+		for (int pass = 1; pass < 3; pass++)
 		{
+			liquidBlocksShader = ShadersLibrary.getShaderProgram("blocks_liquid_pass" + (pass));
+
+			liquidBlocksShader.use(true);
+
+			liquidBlocksShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
+
+			liquidBlocksShader.setUniformFloat("yAngle", (float) (viewRotV * Math.PI / 180f));
+			liquidBlocksShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
+			// liquidBlocksShader.setUniformSamplerCube(3, "skybox",
+			// TexturesHandler.idCubemap("textures/skybox"));
+			liquidBlocksShader.setUniformSampler(1, "normalTexture", waterNormalTexture);
+			liquidBlocksShader.setUniformSampler(3, "lightColors", lightmapTexture);
+			liquidBlocksShader.setUniformSampler(0, "diffuseTexture", blocksDiffuseTexture);
+			liquidBlocksShader.setUniformFloat2("screenSize", scrW, scrH);
+			liquidBlocksShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
+			liquidBlocksShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
+			liquidBlocksShader.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
+			liquidBlocksShader.setUniformFloat("time", animationTimer);
+
+			camera.setupShader(liquidBlocksShader);
+
+			liquidBlocksShader.setUniformMatrix4f("shadowMatrix", matrix44Buffer);
+			// liquidBlocksShader.setUniformMatrix4f("shadowMatrix2",
+			// matrix44Buffer2);
+
+			// Vertex attributes setup
+			vertexIn = liquidBlocksShader.getVertexAttributeLocation("vertexIn");
+			texCoordIn = liquidBlocksShader.getVertexAttributeLocation("texCoordIn");
+			colorIn = liquidBlocksShader.getVertexAttributeLocation("colorIn");
+			normalIn = liquidBlocksShader.getVertexAttributeLocation("normalIn");
+
+			glEnableVertexAttribArray(vertexIn);
+			glEnableVertexAttribArray(texCoordIn);
+			glEnableVertexAttribArray(colorIn);
+			glEnableVertexAttribArray(normalIn);
+
+			// Set rendering context.
+			RenderingContext.enableVAMode(vertexIn, texCoordIn, colorIn, normalIn, false);
+			RenderingContext.setCurrentShader(liquidBlocksShader);
+
 			Voxel vox = VoxelTypes.get(world.getDataAt((int) viewX, (int) (viewY + 1.3), (int) viewZ, false));
 			liquidBlocksShader.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
-			
-			liquidBlocksShader.setUniformInt("pass", pass);
-			if(pass == 0)
+
+			//liquidBlocksShader.setUniformInt("pass", pass-1);
+			if (pass == 1)
 			{
 				composite_pass_gbuffers_waterfp.bind();
-				composite_pass_gbuffers_waterfp.setEnabledRenderTargets(true, false, false);
-				liquidBlocksShader.setUniformSampler(4, "readbackAlbedoBufferTemp", this.composite_albedo.getID());
-				liquidBlocksShader.setUniformSampler(5, "readbackMetaBufferTemp", this.composite_meta.getID());
-				liquidBlocksShader.setUniformSampler(6, "readbackDepthBufferTemp", this.composite_zbuffer.getID());
-				glEnable(GL_ALPHA_TEST);
+				composite_pass_gbuffers_waterfp.setEnabledRenderTargets(true);
+				liquidBlocksShader.setUniformSampler(4, "readbackAlbedoBufferTemp", this.composite_albedo);
+				liquidBlocksShader.setUniformSampler(5, "readbackMetaBufferTemp", this.composite_meta);
+				liquidBlocksShader.setUniformSampler(6, "readbackDepthBufferTemp", this.composite_zbuffer);
+				//glEnable(GL_ALPHA_TEST);
+				glDisable(GL_ALPHA_TEST);
 				glDepthMask(false);
 			}
-			else if(pass == 1)
+			else if (pass == 2)
 			{
-				this.composite_pass_gbuffers.bind();
-				liquidBlocksShader.setUniformSampler(4, "readbackShadedBufferTemp", this.composite_shaded.getID());
+				//composite_pass_gbuffers_waterfp.unbind();
+				composite_pass_gbuffers.bind();
+				composite_pass_gbuffers.setEnabledRenderTargets();
+				//System.out.println("Race (tm)");
+				liquidBlocksShader.setUniformSampler(4, "readbackShadedBufferTemp", this.composite_shaded);
+				liquidBlocksShader.setUniformSampler(6, "readbackDepthBufferTemp", this.composite_zbuffer);
 				glDepthMask(true);
 			}
 			for (CubicChunk chunk : renderList)
@@ -1036,14 +1072,14 @@ public class WorldRenderer
 					renderedVertices += geometrySize;
 				}
 			}
-		}
 
-		// Disable vertex attributes
-		glDisableVertexAttribArray(vertexIn);
-		glDisableVertexAttribArray(texCoordIn);
-		glDisableVertexAttribArray(colorIn);
-		glDisableVertexAttribArray(normalIn);
-		RenderingContext.disableVAMode();
+			// Disable vertex attributes
+			glDisableVertexAttribArray(vertexIn);
+			glDisableVertexAttribArray(texCoordIn);
+			glDisableVertexAttribArray(colorIn);
+			glDisableVertexAttribArray(normalIn);
+			RenderingContext.disableVAMode();
+		}
 
 		// Draw world shaded with sunlight and vertex light
 		glDepthMask(false);
@@ -1060,14 +1096,14 @@ public class WorldRenderer
 		glDepthMask(false);
 		lightShader.use(true);
 
-		lightShader.setUniformSampler(1, "albedoBuffer", this.composite_albedo.getID());
-		lightShader.setUniformSampler(0, "metaBuffer", this.composite_meta.getID());
-		//lightShader.setUniformSampler(1, "lightBuffer", this.composite_light.getID());
+		lightShader.setUniformSampler(1, "albedoBuffer", this.composite_albedo);
+		lightShader.setUniformSampler(0, "metaBuffer", this.composite_meta);
+		//lightShader.setUniformSampler(1, "lightBuffer", this.composite_light);
 
-		lightShader.setUniformSampler(2, "comp_depth", this.composite_zbuffer.getID());
-		lightShader.setUniformSampler(3, "comp_normal", this.composite_normal.getID());
+		lightShader.setUniformSampler(2, "comp_depth", this.composite_zbuffer);
+		lightShader.setUniformSampler(3, "comp_normal", this.composite_normal);
 
-		//lightShader.setUniformSampler(4, "comp_spec", this.composite_specular.getID());
+		//lightShader.setUniformSampler(4, "comp_spec", this.composite_specular);
 		lightShader.setUniformFloat("powFactor", 5f);
 		camera.setupShader(lightShader);
 		lightShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
@@ -1099,6 +1135,20 @@ public class WorldRenderer
 		this.composite_pass_gbuffers.setEnabledRenderTargets();
 		lights.clear();
 
+	}
+
+	private void setupShadowColors(ShaderProgram shader)
+	{
+		if(world.isRaining())
+		{
+			shader.setUniformFloat("shadowStrength", 0.75f);
+			shader.setUniformFloat3("shadowColor", 0.20f, 0.20f, 0.20f);
+		}
+		else
+		{
+			shader.setUniformFloat("shadowStrength", 0.90f);
+			shader.setUniformFloat3("shadowColor", 0.20f, 0.20f, 0.31f);
+		}
 	}
 
 	private float getShadowVisibility()
@@ -1152,10 +1202,8 @@ public class WorldRenderer
 
 		ssaoShader.use(true);
 
-		ssaoShader.setUniformSampler(1, "normalTexture", this.composite_normal.getID());
-		ssaoShader.setUniformSampler(3, "noiseTexture", TexturesHandler.idTexture("res/textures/ssao.png"));
-		TexturesHandler.mipmapLevel("res/textures/ssao.png", -1);
-		ssaoShader.setUniformSampler(0, "depthTexture", this.composite_zbuffer.getID());
+		ssaoShader.setUniformSampler(1, "normalTexture", this.composite_normal);
+		ssaoShader.setUniformSampler(0, "depthTexture", this.composite_zbuffer);
 
 		ssaoShader.setUniformFloat("viewWidth", scrW);
 		ssaoShader.setUniformFloat("viewHeight", scrH);
@@ -1197,7 +1245,7 @@ public class WorldRenderer
 		blurV.use(true);
 		blurV.setUniformFloat2("screenSize", XolioWindow.frameW * 2, XolioWindow.frameH * 2);
 		blurV.setUniformFloat("lookupScale", 2);
-		blurV.setUniformSampler(0, "inputTexture", this.composite_ssao.getID());
+		blurV.setUniformSampler(0, "inputTexture", this.composite_ssao);
 		ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 		//drawFSQuad();
 
@@ -1205,7 +1253,7 @@ public class WorldRenderer
 		this.composite_pass_ssao.bind();
 		blurH.use(true);
 		blurH.setUniformFloat2("screenSize", XolioWindow.frameW * 2, XolioWindow.frameH * 2);
-		blurH.setUniformSampler(0, "inputTexture", blurTemp.getID());
+		blurH.setUniformSampler(0, "inputTexture", blurTemp);
 		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 		//drawFSQuad();
 
@@ -1222,7 +1270,8 @@ public class WorldRenderer
 		long t = System.nanoTime();
 
 		applyShadowsShader.use(true);
-
+		setupShadowColors(applyShadowsShader);
+		applyShadowsShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
 		// Sun position
 		// if(FastConfig.debugGBuffers ) glFinish();
 		// glFlush();
@@ -1247,21 +1296,20 @@ public class WorldRenderer
 
 		applyShadowsShader.setUniformFloat("brightnessMultiplier", lightMultiplier);
 
-		applyShadowsShader.setUniformSampler(1, "depthBuffer", this.composite_zbuffer.getID());
-		applyShadowsShader.setUniformSampler(2, "normalBuffer", this.composite_normal.getID());
-		applyShadowsShader.setUniformSampler(3, "albedoBuffer", this.composite_albedo.getID());
-		applyShadowsShader.setUniformSampler(4, "metaBuffer", this.composite_meta.getID());
+		applyShadowsShader.setUniformSampler(0, "albedoBuffer", composite_albedo);
+		applyShadowsShader.setUniformSampler(1, "depthBuffer", composite_zbuffer);
+		applyShadowsShader.setUniformSampler(2, "normalBuffer", composite_normal);
+		applyShadowsShader.setUniformSampler(3, "metaBuffer", composite_meta);
+		applyShadowsShader.setUniformSampler(4, "blockLightmap", lightmapTexture);
+		applyShadowsShader.setUniformSampler(5, "shadowMap", shadow_map_near);
+		applyShadowsShader.setUniformSampler(6, "glowSampler", glowTexture);
+		applyShadowsShader.setUniformSampler(7, "colorSampler", skyTexture);
+		//TODO if SSAO
+		applyShadowsShader.setUniformSampler(8, "ssaoBuffer", composite_ssao);
 
-		applyShadowsShader.setUniformSampler(5, "ssaoBuffer", this.composite_ssao.getID());
-
-		applyShadowsShader.setUniformSampler(7, "blockLightmap", TexturesHandler.idTexture("res/textures/environement/light.png"));
-		//applyShadowsShader.setUniformSampler(4, "comp_spec", this.composite_specular.getID());
-
-		applyShadowsShader.setUniformSampler(8, "shadowMap", shadow_map_near.getID());
+		//applyShadowsShader.setUniformSampler(4, "comp_spec", this.composite_specular);
 
 		applyShadowsShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
-		applyShadowsShader.setUniformSampler(15, "glowSampler", "res/textures/environement/glow.png");
-		applyShadowsShader.setUniformSampler(14, "colorSampler", "res/textures/environement/sky.png");
 		applyShadowsShader.setUniformFloat("time", sky.time);
 
 		// Sky color etc
@@ -1293,7 +1341,7 @@ public class WorldRenderer
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 	}
-	
+
 	public void postProcess()
 	{
 
@@ -1307,17 +1355,19 @@ public class WorldRenderer
 		glDisable(GL_BLEND);
 		glDisable(GL_CULL_FACE);
 		postProcess.use(true);
-		postProcess.setUniformSampler(0, "shadedBuffer", this.composite_shaded.getID());
+		postProcess.setUniformSampler(0, "shadedBuffer", this.composite_shaded);
 
-		postProcess.setUniformSampler(1, "albedoBuffer", this.composite_albedo.getID());
-		postProcess.setUniformSampler(2, "depthBuffer", this.composite_zbuffer.getID());
-		postProcess.setUniformSampler(3, "normalBuffer", this.composite_normal.getID());
-		postProcess.setUniformSampler(4, "metaBuffer", this.composite_meta.getID());
+		postProcess.setUniformSampler(1, "albedoBuffer", this.composite_albedo);
+		postProcess.setUniformSampler(2, "depthBuffer", this.composite_zbuffer);
+		postProcess.setUniformSampler(3, "normalBuffer", this.composite_normal);
+		postProcess.setUniformSampler(4, "metaBuffer", this.composite_meta);
 
-		postProcess.setUniformSampler(5, "shadowMap", this.shadow_map_near.getID());
+		postProcess.setUniformSampler(5, "shadowMap", this.shadow_map_near);
 
-		postProcess.setUniformSampler(6, "bloomBuffer", this.composite_bloom.getID());
-		postProcess.setUniformSampler(7, "ssaoBuffer", this.composite_ssao.getID());
+		postProcess.setUniformSampler(6, "bloomBuffer", this.composite_bloom);
+		postProcess.setUniformSampler(7, "ssaoBuffer", this.composite_ssao);
+
+		postProcess.setUniformSampler(8, "debugBuffer", this.blocksNormalTexture);
 
 		Voxel vox = VoxelTypes.get(world.getDataAt((int) viewX, (int) (viewY + 1.3), (int) viewZ, false));
 		postProcess.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
@@ -1341,11 +1391,11 @@ public class WorldRenderer
 			System.out.println("final blit took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		postProcess.use(false);
-		for (Entity e : world.getAllLoadedEntities())
+		/*for (Entity e : world.getAllLoadedEntities())
 		{
 			if (e instanceof EntityHUD)
 				((EntityHUD) e).drawHUD(camera);
-		}
+		}*/
 	}
 
 	public int getQueueSize()
@@ -1371,7 +1421,7 @@ public class WorldRenderer
 		}
 		lightShader.setUniformFloat("lightAngle[" + lightsBuffer + "]", (float) (light.angle / 180 * Math.PI));
 
-		TexturesHandler.nowrap("res/textures/flashlight.png");
+		//TexturesHandler.nowrap("res/textures/flashlight.png");
 
 		lightsBuffer++;
 		if (lightsBuffer == 64)
@@ -1479,12 +1529,12 @@ public class WorldRenderer
 
 			this.composite_pass_shaded.bind();
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			
+
 			// Scene rendering
 			this.renderWorldAtCamera(camera);
 
 			// GL access
-			glBindTexture(GL_TEXTURE_2D, this.composite_shaded.id);
+			glBindTexture(GL_TEXTURE_2D, composite_shaded.getID());
 			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
 
 			// File access

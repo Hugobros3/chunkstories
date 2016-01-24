@@ -8,9 +8,10 @@ import static org.lwjgl.opengl.GL11.*;
 
 import org.lwjgl.util.vector.Vector4f;
 
-import io.xol.engine.base.TexturesHandler;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.misc.ColorsTools;
+import io.xol.engine.textures.Texture;
+import io.xol.engine.textures.TexturesHandler;
 
 public class FontRenderer2
 {
@@ -36,7 +37,6 @@ public class FontRenderer2
 		glDisable(GL_CULL_FACE);
 		glEnable(GL_TEXTURE_2D);
 
-		TexturesHandler.mipmapLevel("./res/textures/font/" + font.name + ".png", -1);
 
 		/*
 		 * glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -52,7 +52,10 @@ public class FontRenderer2
 		 * double rotRad = rot / 180 * Math.PI; float rotSin = (float)
 		 * Math.sin(rotRad); float rotCos = (float) Math.cos(rotRad);
 		 */
-
+		Texture fontTexture = TexturesHandler.getTexture("./res/textures/font/" + font.name + ".png");
+		fontTexture.setLinearFiltering(false);
+		//TexturesHandler.mipmapLevel("./res/textures/font/" + font.name + ".png", -1);
+		
 		Vector4f color = new Vector4f(r, v, b, alpha);
 
 		float baseX = xpos;
@@ -72,17 +75,21 @@ public class FontRenderer2
 		{
 			int totalLength = getTextLengthUsingFont(size, text, font);
 			String[] words = text.split(" ");
-			int wordsToKeep = words.length;
+			int wordsToKeep = words.length - 1;
 			while (totalLength > lengthCutoff)
 			{
 				wordsToKeep--;
 				if (wordsToKeep <= 0)
+				{
 					text = "...";
+					break;
+				}
 				else
 				{
 					text = "";
 					for (int j = 0; j < wordsToKeep; j++)
 					{
+						//System.out.println(j+"w"+words.length+"--"+wordsToKeep);
 						text += words[j] + " ";
 					}
 					text += "...";
@@ -132,7 +139,7 @@ public class FontRenderer2
 
 					float border = size / 16;
 					GuiDrawer.drawBoxWindowsSpace(baseX + (translateX), baseY + (translateY), baseX + (translateX + charW + border), baseY + (translateY + fontsize), tx, ty + cellSize, tx + (charW + border) / 16f / size, ty,
-							TexturesHandler.idTexture("./res/textures/font/" + font.name + ".png"), false, true, color);
+							fontTexture.getID(), false, true, color);
 
 					// System.out.println(cellSize+":"+charW/256f+":"+cellSize);
 

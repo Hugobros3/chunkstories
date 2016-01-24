@@ -16,8 +16,8 @@ import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.api.Player;
-import io.xol.chunkstories.api.ServerInterface;
+import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.plugin.server.ServerInterface;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.net.ServerConnectionsHandler;
 import io.xol.chunkstories.server.tech.CommandEmitter;
@@ -98,6 +98,7 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 			handler.start();
 			// Load plugins
 			pluginsManager = new PluginsManager(this);
+			pluginsManager.enablePlugins();
 		}
 		catch (Exception e)
 		{ // Exceptions stuff

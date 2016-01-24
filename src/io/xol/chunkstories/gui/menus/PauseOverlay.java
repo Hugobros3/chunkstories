@@ -53,7 +53,7 @@ public class PauseOverlay extends MenuOverlay
 		{
 			if(Client.world != null)
 				Client.world.clear();
-			mainScene.eng.changeScene(new MainMenu(mainScene.eng));
+			mainScene.eng.changeScene(new MainMenu(mainScene.eng, false));
 		}
 	}
 	

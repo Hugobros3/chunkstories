@@ -12,10 +12,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.xol.chunkstories.GameDirectory;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
-import io.xol.chunkstories.voxel.VoxelFormat;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.summary.ChunkSummaries;
 import io.xol.engine.misc.ConfigFile;

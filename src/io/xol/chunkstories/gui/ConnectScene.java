@@ -87,7 +87,7 @@ public class ConnectScene extends Scene
 			Client.world = null;
 		}
 			
-		this.eng.changeScene(new MainMenu(eng));
+		this.eng.changeScene(new MainMenu(eng, false));
 	}
 
 	public boolean onKeyPress(int k)

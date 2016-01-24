@@ -19,6 +19,7 @@ import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.engine.misc.CPUModelDetection;
 import io.xol.engine.scene.Scene;
 
 import org.lwjgl.Sys;
@@ -58,6 +59,23 @@ public class XolioWindow
 		this.name = name;
 	}
 
+	private void systemInfo()
+	{
+		// Will print some debug information on the general context
+		ChunkStoriesLogger.getInstance().log("Running on "+System.getProperty("os.name"));
+		ChunkStoriesLogger.getInstance().log(Runtime.getRuntime().availableProcessors()+" avaible CPU cores");
+		ChunkStoriesLogger.getInstance().log("Trying cpu detection : "+CPUModelDetection.detectModel());
+		long allocatedRam = Runtime.getRuntime().maxMemory();
+		ChunkStoriesLogger.getInstance().log("Allocated ram : "+allocatedRam);
+		if(allocatedRam < 900 * 1000 *1000L)
+		{
+			ChunkStoriesLogger.getInstance().log("Less than 1Gb of ram detected");
+			JOptionPane.showMessageDialog(null, "Not enought ram, we will offer NO support for crashes and issues when launching the game with less than 1Gb of ram allocated to it."
+					+ "\n Use the official launcher to launch the game properly, or add -Xmx1G to the java command.");
+			//Runtime.getRuntime().exit(0);
+		}
+	}
+	
 	private void glInfo()
 	{
 		// Will print some debug information on the openGL context
@@ -103,7 +121,8 @@ public class XolioWindow
 			Display.setResizable(true);
 			//ContextAttribs contextAtrributes = new ContextAttribs(3, 2).withForwardCompatible(true);
 			Display.create(new PixelFormat());//, contextAtrributes);
-
+			
+			systemInfo();
 			glInfo();
 			switchResolution();
 
@@ -379,12 +398,17 @@ public class XolioWindow
 	public static void tick()
 	{
 		framesSinceLS++;
+		//lastTimeMS = 0;
 		if (lastTimeMS + 1000 < System.currentTimeMillis())
 		{
 			lastFPS = framesSinceLS;
 			lastTimeMS = System.currentTimeMillis();
 			framesSinceLS = 0;
 		}
+		/*float frameTime = (float)(System.nanoTime() - lastTimeMS);
+		System.out.println(frameTime / 1000000f);
+		lastFPS = (int) (1000000000f / frameTime);
+		lastTimeMS = System.nanoTime();*/
 	}
 
 	public static void setTargetFPS(int target)

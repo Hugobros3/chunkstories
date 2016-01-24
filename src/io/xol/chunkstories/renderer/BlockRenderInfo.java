@@ -1,9 +1,10 @@
 package io.xol.chunkstories.renderer;
 
-import io.xol.chunkstories.voxel.Voxel;
-import io.xol.chunkstories.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.chunkstories.world.World;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -11,48 +12,52 @@ import io.xol.chunkstories.voxel.models.VoxelModel;
 
 public class BlockRenderInfo
 {
-	//Stores data next to this tile :
-	
-	//           1    FRONT z+
-	// x- LEFT 0 X 2  RIGHT x+
-	//           3    BACK  z-
-	// 4 y+ top
-	// X
-	// 5 y- bottom
-	
 	public int data;
 	public Voxel voxelType;
-	
+
 	public int[] neightborhood = new int[6];
-	
+
+	public BlockRenderInfo(int data)
+	{
+		this.data = data;
+	}
+
+	public BlockRenderInfo(World world, int x, int y, int z)
+	{
+		this.data = world.getDataAt(x, y, z);
+		if (world != null)
+		{
+			/**
+			 * Conventions for space in Chunk Stories 1 FRONT z+ x- LEFT 0 X 2 RIGHT x+ 3 BACK z- 4 y+ top X 5 y- bottom
+			 */
+			neightborhood[0] = world.getDataAt(x - 1, y, z);
+			neightborhood[1] = world.getDataAt(x, y, z + 1);
+			neightborhood[2] = world.getDataAt(x + 1, y, z);
+			neightborhood[3] = world.getDataAt(x, y, z - 1);
+			neightborhood[4] = world.getDataAt(x, y + 4, z);
+			neightborhood[5] = world.getDataAt(x, y - 5, z);
+		}
+	}
+
 	public int getSideId(int side)
 	{
 		return VoxelFormat.id(neightborhood[side]);
 	}
-	
-	public static enum Sides {
-		LEFT,
-		FRONT,
-		RIGHT,
-		BACK,
-		TOP,
-		BOTTOM;
-	}
-	
+
 	public boolean isWavy()
 	{
-		if(voxelType != null)
-			return voxelType.affectedByWind;
+		if (voxelType != null)
+			return voxelType.isAffectedByWind();
 		return false;
 	}
 
 	public VoxelModel getModel()
 	{
-		if(voxelType != null)
+		if (voxelType != null)
 			return voxelType.getVoxelModel(this);
 		return null;
 	}
-	
+
 	public VoxelTexture getTexture()
 	{
 		return getTexture(0);
@@ -60,15 +65,14 @@ public class BlockRenderInfo
 
 	public VoxelTexture getTexture(int side)
 	{
-		if(voxelType != null)
-			return voxelType.getVoxelTexture(side, this);
+		if (voxelType != null)
+			return voxelType.getVoxelTexture(data, side, this);
 		return null;
 	}
 
 	public static BlockRenderInfo get(int voxelId, int meta)
 	{
-		BlockRenderInfo info = new BlockRenderInfo();
-		info.data = VoxelFormat.format(meta, meta, 0, 0);
+		BlockRenderInfo info = new BlockRenderInfo(VoxelFormat.format(voxelId, meta, 0, 0));
 		return info;
 	}
 
@@ -76,5 +80,5 @@ public class BlockRenderInfo
 	{
 		return VoxelFormat.meta(data);
 	}
-	
+
 }

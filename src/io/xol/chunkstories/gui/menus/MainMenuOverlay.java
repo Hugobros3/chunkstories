@@ -21,6 +21,7 @@ public class MainMenuOverlay extends MenuOverlay
 	ClickableButton singlePlayer = new ClickableButton(0, 0, 300, 32, ("Single player [demo]"), BitmapFont.SMALLFONTS, 1);
 	ClickableButton multiPlayer = new ClickableButton(0, 0, 300, 32, ("Find a server ... "), BitmapFont.SMALLFONTS, 1);
 	ClickableButton optionsMenu = new ClickableButton(0, 0, 300, 32, ("Game options"), BitmapFont.SMALLFONTS, 1);
+	ClickableButton exitGame = new ClickableButton(0, 0, 300, 32, ("Exit game"), BitmapFont.SMALLFONTS, 1);
 
 	public MainMenuOverlay(OverlayableScene scene, MenuOverlay parent)
 	{
@@ -29,11 +30,12 @@ public class MainMenuOverlay extends MenuOverlay
 		guiHandler.add(singlePlayer);
 		guiHandler.add(multiPlayer);
 		guiHandler.add(optionsMenu);
+		guiHandler.add(exitGame);
 	}
 
 	public void drawToScreen(int x, int y, int w, int h)
 	{
-		ObjectRenderer.renderTexturedRectAlpha(384 - 32 - 4, XolioWindow.frameH - 192, 1024, 1024, "logo", 1f);
+		ObjectRenderer.renderTexturedRectAlpha(384 - 32 - 4, XolioWindow.frameH - 192, 768, 768, "logo", 1f);
 		FontRenderer2.drawTextUsingSpecificFontRVBA(384 + 192, XolioWindow.frameH - 256 - 16, 0, 48, "Indev " + VersionInfo.version, BitmapFont.SMALLFONTS, 1, 0.5f, 1, 1);
 
 		// ObjectRenderer.renderTexturedRectAlpha(XolioWindow.frameW/2,
@@ -51,8 +53,9 @@ public class MainMenuOverlay extends MenuOverlay
 
 		// String random = new String(bytes);
 
-		// TrueTypeFont.haettenschweiler.drawString(384 + 192,
-		// XolioWindow.frameH - 256 - 16, "Сука Блять ", 2f, 2f);
+		//FontRenderer2.drawTextUsingSpecificFontRVBA(500, 500, Math.sin(a) * 15f, 32, "ntm", , alpha, r, v, b)
+
+		//TrueTypeFont.haettenschweiler.drawString(384 + 192, XolioWindow.frameH - 256 - 16, "Сука Блять ", 2f, 2f);
 		// TrueTypeFont.arial12.drawStringWithShadow(384 + 192,
 		// XolioWindow.frameH - 256 - 16, "Cyka blyat Сука Блять", 2f, 2f, new
 		// Vector4f(0,1,1,1));
@@ -69,6 +72,9 @@ public class MainMenuOverlay extends MenuOverlay
 		optionsMenu.setPos(x + 220, XolioWindow.frameH - 320 - 48 * 2);
 		optionsMenu.draw();
 
+		exitGame.setPos(x + 220, XolioWindow.frameH - 320 - 48 * 3);
+		exitGame.draw();
+
 		if (singlePlayer.clicked())
 		{
 			mainScene.changeOverlay(new LevelSelectOverlay(mainScene, this));
@@ -82,6 +88,10 @@ public class MainMenuOverlay extends MenuOverlay
 		if (optionsMenu.clicked())
 		{
 			mainScene.changeOverlay(new OptionsOverlay(mainScene, this));
+		}
+		if (exitGame.clicked())
+		{
+			this.mainScene.eng.close();
 		}
 
 		String version = "ChunkStories " + VersionInfo.version + " - (c) 2015 XolioWare Interactive";
