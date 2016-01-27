@@ -1,5 +1,5 @@
 /bin/
-/config/
+/config/*.cfg
 /worlds/
 counter.jar
 genbench.txt
