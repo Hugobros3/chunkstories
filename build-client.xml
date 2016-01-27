@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="ChunkStories">
+    <property environment="env"/>
+    <property name="Chunk Stories demo plugin.location" value="../Chunk Stories demo plugin"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
+    <path id="ChunkStories.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="lib/lwjgl/jar/jinput.jar"/>
+        <pathelement location="lib/lwjgl/jar/lwjgl_util.jar"/>
+        <pathelement location="lib/lwjgl/jar/lwjgl.jar"/>
+        <pathelement location="lib/commons-codec-1.9.jar"/>
+        <pathelement location="lib/ibxm.jar"/>
+        <pathelement location="lib/lz4-1.3.0.jar"/>
+        <pathelement location="lib/PNGDecoder.jar"/>
+        <pathelement location="lib/jorbis.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="ChunkStories.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
+        <ant antfile="build-client.xml" dir="${Chunk Stories demo plugin.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build-client.xml" dir="${Chunk Stories demo plugin.location}" inheritAll="false" target="build">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+        </ant>
+    </target>
+    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
+        <copy todir="${ant.library.dir}">
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </copy>
+        <unzip dest="${ant.library.dir}">
+            <patternset includes="jdtCompilerAdapter.jar"/>
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </unzip>
+    </target>
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+        <antcall target="build"/>
+    </target>
+    <target name="Client">
+        <java classname="io.xol.chunkstories.client.Client" failonerror="true" fork="yes">
+            <jvmarg line="-Xmx1G"/>
+            <classpath refid="ChunkStories.classpath"/>
+        </java>
+    </target>
+    <target name="LinearAlgebraTest">
+        <java classname="io.xol.engine.math.lalgb.LinearAlgebraTest" failonerror="true" fork="yes">
+            <classpath refid="ChunkStories.classpath"/>
+        </java>
+    </target>
+    <target name="Server">
+        <java classname="io.xol.chunkstories.server.Server" failonerror="true" fork="yes">
+            <classpath refid="ChunkStories.classpath"/>
+        </java>
+    </target>
+</project>

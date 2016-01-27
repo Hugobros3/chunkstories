@@ -24,7 +24,7 @@ import io.xol.engine.misc.ConfigFile;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class World
+public abstract class World
 {
 
 	public String name;

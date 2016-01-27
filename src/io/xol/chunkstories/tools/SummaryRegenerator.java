@@ -41,7 +41,7 @@ public class SummaryRegenerator
 				return;
 			}
 
-			World world = new World(csWorldName, "", new BlankWorldAccessor(), size);
+			World world = new WorldTool(csWorldName, "", new BlankWorldAccessor(), size);
 			for (int i = 0; i < world.getSizeInChunks() / 8; i++)
 			{
 				for (int j = 0; j < world.getSizeInChunks() / 8; j++)

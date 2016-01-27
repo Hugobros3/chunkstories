@@ -225,6 +225,6 @@ public class SkyDome
 		// glFogf(GL_FOG_DENSITY, 0.0055f);
 		glHint(GL_FOG_HINT, GL_DONT_CARE);
 		glFogf(GL_FOG_START, world.isRaining() ? 32 : FastConfig.viewDistance);
-		glFogf(GL_FOG_END, world.isRaining() ? 384 : FastConfig.viewDistance + 750);
+		glFogf(GL_FOG_END, world.isRaining() ? 384 : FastConfig.viewDistance + 768);
 	}
 }

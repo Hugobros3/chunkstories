@@ -138,7 +138,7 @@ void main(){
 	vec3 coords = (gl_FragCoord.xyz);
 	coords.xy/=screenSize;
 	vec4 worldspaceFragment = unprojectPixel(coords);
-	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(worldspaceFragment.xyz), normal), 0.0, 1.0);
+	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(eye), vec3(varyingNormal)), 0.0, 1.0);
 	spec = rainWetness * dynamicFresnelTerm;
 	<endif perPixelFresnel>
 	

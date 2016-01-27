@@ -186,11 +186,11 @@ void main()
 	
 	vec3 fogColor = gl_Fog.color.rgb;
 	fogColor = getSkyColorWOSun(time, normalize(eye));
-	fogColor.rgb = pow(fogColor.rgb, vec3(gamma));
+	//fogColor.rgb = pow(fogColor.rgb, vec3(gammaInv));
 	
 	//finalColor = vec3(1.0);
 	
-	vec4 compositeColor = mix(vec4(finalColor, 1.0),vec4(fogColor,1.0),fogI);
+	vec4 compositeColor = mix(vec4(finalColor, 1.0),vec4(fogColor,1.0), fogI);
 	
 	//compositeColor.rgb = pow(compositeColor.rgb, vec3(gamma));
 	

@@ -6,6 +6,7 @@ attribute vec4 normalIn;
 
 varying vec2 texcoord;
 varying vec3 lightMapCoords;
+varying float fresnelTerm;
 
 //Lighthing
 uniform float sunIntensity;
@@ -63,6 +64,8 @@ void main(){
 	
 	varyingVertex = v;
 	varyingNormal = (localTransformNormal * normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
+	
+	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(varyingNormal)), 0.0, 1.0);
 	
 	//texcoord /= 32768.0;
 	

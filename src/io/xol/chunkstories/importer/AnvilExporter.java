@@ -8,6 +8,7 @@ import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.anvil.MChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.World.WorldSize;
 import io.xol.chunkstories.world.WorldInfo;

@@ -201,7 +201,7 @@ public class Texture
 	// Private function that sets both filering scheme and mipmap usage.
 	private void setFiltering()
 	{
-		System.out.println("Set filtering called for "+name+" "+linearFiltering);
+		//System.out.println("Set filtering called for "+name+" "+linearFiltering);
 		if(mipmapping)
 		{
 			if(linearFiltering)

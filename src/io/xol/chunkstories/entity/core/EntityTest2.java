@@ -64,10 +64,10 @@ public class EntityTest2 extends Entity implements EntityHUD
 				new DefferedLight(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f((float)posX - 1.0f, (float)posY + 1.1f, (float)posZ - 3.5f), 2f),
 				new DefferedLight(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ - 3.5f), 2f),
 
-				new DefferedLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX - 1.0f, (float)posY + 1.1f, (float)posZ + 3.5f), 2f),
+				new DefferedLight(new Vector3f(2.0f, 2.0f, 2.0f), new Vector3f((float)posX - 1.0f, (float)posY + 1.1f, (float)posZ + 3.5f), 2f),
 				new DefferedLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX - 1.0f, (float)posY + 1.1f, (float)posZ + 1.5f), 35f, 30f, new Vector3f(0,0,-1)),
 				
-				new DefferedLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ + 3.5f), 2f),
+				new DefferedLight(new Vector3f(2.0f, 2.0f, 2.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ + 3.5f), 2f),
 				new DefferedLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ + 1.5f), 35f, 30f, new Vector3f(0,0,-1)),
 				
 				//new DefferedLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ + 3.5f), 5f, 30f)

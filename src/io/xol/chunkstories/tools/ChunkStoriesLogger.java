@@ -4,18 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.Writer;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.file.Files;
-
-import io.xol.chunkstories.client.Client;
-
 import static io.xol.chunkstories.tools.ChunkStoriesLogger.LogType.*;
 import static io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel.*;
 
@@ -68,7 +58,7 @@ public class ChunkStoriesLogger
 		}
 	}
 
-	class SendReportThread extends Thread {
+	/*class SendReportThread extends Thread {
 
 		File logFile;
 		
@@ -131,6 +121,7 @@ public class ChunkStoriesLogger
 	}
 	
 	SendReportThread logReportThread;
+	*/
 	
 	public void close()
 	{
@@ -139,8 +130,10 @@ public class ChunkStoriesLogger
 			info("Successfully written log");
 			fileWriter.close();
 			// Report whatever happened
-			logReportThread = new SendReportThread(logFile);
-			logReportThread.run();
+			
+			/*logReportThread = new SendReportThread(logFile);
+			logReportThread.run();*/
+			
 			//System.exit(0);
 		} catch (IOException e)
 		{

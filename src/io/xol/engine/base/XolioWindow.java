@@ -200,6 +200,7 @@ public class XolioWindow
 			System.out.println("Copyright 2015 XolioWare Interactive");
 			Client.onClose();
 			Display.destroy();
+			System.exit(0);
 		}
 		catch (Exception e)
 		{

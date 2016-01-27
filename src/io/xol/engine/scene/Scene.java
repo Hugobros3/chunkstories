@@ -17,9 +17,6 @@ public class Scene
 	public List<Button> buttons = new ArrayList<Button>();
 	public boolean resized = false;
 
-	public SubScene subscene = null;
-	boolean shouldDestroySubscene = false;
-
 	public Scene(XolioWindow XolioWindow)
 	{
 		eng = XolioWindow;
@@ -36,13 +33,6 @@ public class Scene
 			b.render();
 			b.update();
 		}
-		if (shouldDestroySubscene)
-		{
-			subscene = null;
-			shouldDestroySubscene = false;
-		}
-		if (subscene != null)
-			subscene.update();
 
 		GuiDrawer.drawBuffer();
 		XolioWindow.tick();
@@ -71,16 +61,6 @@ public class Scene
 	public boolean onScroll(int scrollAmount)
 	{
 		return false;
-	}
-
-	public void setSubscene(SubScene s)
-	{
-		subscene = s;
-	}
-
-	public void destroySubscene()
-	{
-		shouldDestroySubscene = true;
 	}
 
 	public void destroy()

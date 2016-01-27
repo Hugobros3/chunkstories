@@ -232,7 +232,11 @@ public class GameplayScene extends OverlayableScene
 			worldRenderer.modified();
 		}
 		else if (k == FastConfig.GRABUSE_KEY)
+		{
+			Client.getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float)player.posX, (float)player.posY, (float)player.posZ, 1.0f, 1.0f);
+
 			flashLight = !flashLight;
+		}
 		else if (k == FastConfig.INVENTORY_KEY)
 		{
 			if (player != null)
@@ -250,7 +254,9 @@ public class GameplayScene extends OverlayableScene
 			chat.insert(worldRenderer.screenShot());
 		else if (k == Keyboard.KEY_F3)
 		{
-
+			//Client.getSoundManager().playSoundEffect("music/menu3.ogg", (float)player.posX, (float)player.posY, (float)player.posZ, 1.0f, 1.0f);
+			Client.getSoundManager().stopAnySound();
+			Client.getSoundManager().playMusic("music/radio/horse.ogg", (float)player.posX, (float)player.posY, (float)player.posZ, 1.0f, 1.0f, false).setAttenuationEnd(50f);
 		}
 		else if (k == Keyboard.KEY_F4)
 			Client.world.particlesHolder.addParticle(new ParticleLight(Client.world, player.posX + (Math.random() - 0.5) * 30, player.posY + (Math.random()) * 10, player.posZ + (Math.random() - 0.5) * 30));
@@ -266,7 +272,7 @@ public class GameplayScene extends OverlayableScene
 		}
 		else if (k == Keyboard.KEY_F7)
 		{
-			Entity test = EntitiesList.newEntity(Client.world, (short) 0x02);
+			Entity test = EntitiesList.newEntity(Client.world, (short) 0x03);
 			test.setPosition(player.posX, player.posY, player.posZ);
 			Client.world.addEntity(test);
 		}

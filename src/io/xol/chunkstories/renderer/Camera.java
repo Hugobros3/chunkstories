@@ -71,10 +71,20 @@ public class Camera
 
 	public void alUpdate()
 	{
-		// Sound update
-		float a = (float) ((180 - view_rotx) / 360f * 2 * Math.PI);
-		float b = 0;// (float) ((view_roty)/360f*2*Math.PI);
-		FloatBuffer listenerOrientation = getFloatBuffer(new float[] { (float) Math.sin(a) * 1 * (float) Math.cos(b), (float) Math.sin(b) * 1, (float) Math.cos(a) * 1 * (float) Math.cos(b), 0.0f, 1.0f, 0.0f });
+		float rotH = view_roty;
+		float rotV = view_rotx;
+		float a = (float) ((180-rotH) / 180f * Math.PI);
+		float b = (float) ((-rotV) / 180f * Math.PI);
+		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
+		
+		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+		Vector3f.cross(lookAt, up, up);
+		Vector3f.cross(up, lookAt, up);
+		
+		FloatBuffer listenerOrientation = getFloatBuffer(new float[]{
+				lookAt.x, lookAt.y, lookAt.z, up.x, up.y, up.z
+		});
+		//FloatBuffer listenerOrientation = getFloatBuffer(new float[] { (float) Math.sin(a) * 1 * (float) Math.cos(b), (float) Math.sin(b) * 1, (float) Math.cos(a) * 1 * (float) Math.cos(b), 0.0f, 1.0f, 0.0f });
 		Client.getSoundManager().setListenerPosition(-camPosX, -camPosY, -camPosZ, listenerOrientation);
 	}
 

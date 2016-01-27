@@ -39,6 +39,7 @@ varying vec4 coordinatesInShadowmap2;
 
 //Weather
 uniform float wetness;
+varying float fresnelTerm;
 varying float rainWetness;
 
 //Matrices
@@ -114,7 +115,11 @@ void main(){
 		baseColor *= vegetationColor;
 	
 	//Rain makes shit glint
-	float spec = rainWetness;//wetness*clamp((lightMapCoords.y-13.0/16.0)*16,0,0.5);
+	float spec = rainWetness * fresnelTerm;
+	<ifdef perPixelFresnel>
+	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(eye), vec3(varyingNormal)), 0.0, 1.0);
+	spec = rainWetness * dynamicFresnelTerm;
+	<endif perPixelFresnel>
 	
 	//vec3 finalLight = texture2D(lightColors,lightMapCoords.xy).rgb;
 	

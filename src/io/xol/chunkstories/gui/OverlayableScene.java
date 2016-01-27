@@ -10,7 +10,6 @@ import io.xol.engine.scene.Scene;
 
 public abstract class OverlayableScene extends Scene
 {
-
 	public OverlayableScene(XolioWindow XolioWindow)
 	{
 		super(XolioWindow);

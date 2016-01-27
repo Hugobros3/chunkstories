@@ -222,8 +222,8 @@ public class TerrainSummarizer
 		for (RegionSummary rs : regionsToRender)
 		{
 			float height = 1024f;
-			//if(!camera.isBoxInFrustrum(new Vector3f(rs.rxDisplay * 256 + 128, height / 2, rs.rzDisplay * 256 + 128), new Vector3f(256, height, 256)))
-			//	continue;
+			if(!camera.isBoxInFrustrum(new Vector3f(rs.rxDisplay * 256 + 128, height / 2, rs.rzDisplay * 256 + 128), new Vector3f(256, height, 256)))
+				continue;
 			
 			terrain.setUniformSampler(1, "groundTexture", rs.dataSource.tId);
 

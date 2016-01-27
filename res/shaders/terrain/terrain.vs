@@ -106,7 +106,7 @@ void main()
 	
 	float camTerrainDiff = terrainHeight - v.y;
 	
-	float lowerFactorT = clamp((viewDistance-abs(eye.x)-16.0) / viewDistance, 0.0, 1.0) * clamp((viewDistance-abs(eye.z)-16.0) / viewDistance, 0.0, 1.0) * clamp(4.0-abs(camTerrainDiff/32.0), 0.0, 1.0);
+	float lowerFactorT = clamp((viewDistance-abs(eye.x)-16.0) / viewDistance, 0.0, 1.0) * clamp((viewDistance-abs(eye.z)-16.0) / viewDistance, 0.0, 1.0) * clamp(2.0-abs(camTerrainDiff/32.0), 0.0, 1.0);
 	
 	lowerFactor = lowerFactorT;
 	//v.y -= 1.0 + lowerFactorT * 2 * lowerFactorT * 2 * 32.0;
@@ -134,7 +134,7 @@ void main()
 					   dist * 
 					   LOG2 );
 	fogFactor = (dist) / (gl_Fog.end-gl_Fog.start);
-	fogI = clamp(fogFactor, 0.0, 0.9);
+	fogI = clamp(fogFactor, 0.0, 1.0);
 	
 	//Near clipping
 	

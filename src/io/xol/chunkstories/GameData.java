@@ -9,6 +9,7 @@ import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.animation.BVHLibrary;
+import io.xol.engine.sound.library.SoundsLibrary;
 import io.xol.engine.textures.TexturesHandler;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -29,6 +30,7 @@ public class GameData
 	public static void reloadClientContent()
 	{
 		TexturesHandler.reloadAll();
+		SoundsLibrary.clean();
 		ModelLibrary.reloadAllModels();
 		BVHLibrary.reloadAllAnimations();
 	}
