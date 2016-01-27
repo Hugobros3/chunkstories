@@ -1,8 +1,11 @@
 /bin/
-/config/*.cfg
+config/*.cfg
 /worlds/
 counter.jar
 genbench.txt
 launcher.jar
 readme.txt
 spec.txt
+*.class
+*.jar
+hs_err_pid*
