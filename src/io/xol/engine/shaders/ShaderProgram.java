@@ -104,7 +104,7 @@ public class ShaderProgram
 		glLinkProgram(shaderP);
 		glValidateProgram(shaderP);
 
-		ChunkStoriesLogger.getInstance().log("Shader program " + filename + " sucessfully loaded and compiled ! (P:" + shaderP + ")", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
+		//ChunkStoriesLogger.getInstance().log("Shader program " + filename + " sucessfully loaded and compiled ! (P:" + shaderP + ")", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
 
 		loadOK = true;
 	}
@@ -226,7 +226,7 @@ public class ShaderProgram
 			if(location == -1)
 			{
 				ChunkStoriesLogger.getInstance().warning("Warning, -1 location for VertexAttrib "+name+" in shader "+this.filename);
-				location = 0;
+				//location = 0;
 			}
 			attributes.put(name, location);
 			return location;
@@ -251,15 +251,15 @@ public class ShaderProgram
 		attributes.clear();
 	}
 
-	protected void reload(String[] parameters)
+	public void reload(String[] parameters)
 	{
 		free();
 		load(parameters);
 	}
 
-	protected void reload()
+	/*protected void reload()
 	{
 		free();
 		load(null);
-	}
+	}*/
 }

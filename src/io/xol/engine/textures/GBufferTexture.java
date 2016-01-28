@@ -41,11 +41,15 @@ public class GBufferTexture extends Texture
 		{
 			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " D16 texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
 			// Optimization for OpenGL 3 cards
-			if(FastConfig.openGL3Capable)
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, w, h, 0, GL_RGBA, GL_FLOAT, (ByteBuffer) null);
+			if(!FastConfig.doBloom)
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, (ByteBuffer) null);
 			else
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F_ARB, w, h, 0, GL_RGBA, GL_FLOAT, (ByteBuffer) null);
-				
+			{
+				if(FastConfig.openGL3Capable)
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, w, h, 0, GL_RGB, GL_FLOAT, (ByteBuffer) null);
+				else
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F_ARB, w, h, 0, GL_RGBA, GL_FLOAT, (ByteBuffer) null);
+			}
 			// GL_RGBA16F_ARB for GL3
 		}
 		else if (type == TextureType.DEPTH_SHADOWMAP)

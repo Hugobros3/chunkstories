@@ -242,13 +242,10 @@ public class SoundSourceAL implements SoundSource
 			alDeleteAuxiliaryEffectSlots(efxSlot);*/
 	}
 
-	static int efxSlot = -1;
-	static int reverbEffectSlot = -1;
-
 	private void updateSource()
 	{
 		alSource3f(alId, AL_POSITION, x, y, z);
-		if (efxSlot == -1 && ALSoundManager.efxOn)
+		/*if (efxSlot == -1 && ALSoundManager.efxOn)
 		{
 			efxSlot = alGenAuxiliaryEffectSlots();
 			alAuxiliaryEffectSloti(efxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
@@ -283,7 +280,7 @@ public class SoundSourceAL implements SoundSource
 			}
 			
 			alAuxiliaryEffectSloti(efxSlot, AL_EFFECTSLOT_EFFECT, reverbEffectSlot);
-		}
+		}*/
 
 		if (updateProperties)
 		{
@@ -293,7 +290,7 @@ public class SoundSourceAL implements SoundSource
 			alSourcef(alId, AL_REFERENCE_DISTANCE, start);
 			alSourcef(alId, AL_MAX_DISTANCE, end);
 			//System.out.println(efxSlot + ":"+reverbEffectSlot);
-			alSource3i(alId, AL_AUXILIARY_SEND_FILTER, efxSlot, 0, AL_FILTER_NULL);
+			//alSource3i(alId, AL_AUXILIARY_SEND_FILTER, efxSlot, 0, AL_FILTER_NULL);
 			updateProperties = false;
 		}
 	}

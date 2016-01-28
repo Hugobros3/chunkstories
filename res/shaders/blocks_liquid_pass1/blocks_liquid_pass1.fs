@@ -16,7 +16,6 @@ varying vec4 lightMapCoords; //Computed in vertex shader
 uniform float sunIntensity; // Adjusts the lightmap coordinates
 uniform sampler2D lightColors; // Sampler to lightmap
 uniform vec3 sunPos; // Sun position
-varying float NdotL; // Face luminosity
 
 //Normal mapping
 varying vec3 varyingNormal;

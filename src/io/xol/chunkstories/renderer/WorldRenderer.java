@@ -955,7 +955,7 @@ public class WorldRenderer
 		for (int pass = 1; pass < 3; pass++)
 		{
 			liquidBlocksShader = ShadersLibrary.getShaderProgram("blocks_liquid_pass" + (pass));
-
+			//liquidBlocksShader = ShadersLibrary.getShaderProgram("blocks_"
 			liquidBlocksShader.use(true);
 
 			liquidBlocksShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
@@ -986,9 +986,12 @@ public class WorldRenderer
 			normalIn = liquidBlocksShader.getVertexAttributeLocation("normalIn");
 
 			glEnableVertexAttribArray(vertexIn);
-			glEnableVertexAttribArray(texCoordIn);
-			glEnableVertexAttribArray(colorIn);
-			glEnableVertexAttribArray(normalIn);
+			if(texCoordIn != -1)
+				glEnableVertexAttribArray(texCoordIn);
+			if(colorIn != -1)
+				glEnableVertexAttribArray(colorIn);
+			if(normalIn != -1)
+				glEnableVertexAttribArray(normalIn);
 
 			// Set rendering context.
 			RenderingContext.enableVAMode(vertexIn, texCoordIn, colorIn, normalIn, false);
@@ -1061,9 +1064,12 @@ public class WorldRenderer
 				// glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 12, 0);
 				glVertexAttribPointer(vertexIn, 4, GL_INT_2_10_10_10_REV, false, 4, dekal + 0);
 				int vertexSize = 4;
-				glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 4, dekal + (geometrySize) * vertexSize);
-				glVertexAttribPointer(colorIn, 3, GL_UNSIGNED_BYTE, true, 4, dekal + (geometrySize) * (vertexSize + 4));
-				glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 0, dekal + (geometrySize) * (vertexSize + 8));
+				if(texCoordIn != -1)
+					glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 4, dekal + (geometrySize) * vertexSize);
+				if(colorIn != -1)
+					glVertexAttribPointer(colorIn, 3, GL_UNSIGNED_BYTE, true, 4, dekal + (geometrySize) * (vertexSize + 4));
+				if(normalIn != -1)
+					glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 0, dekal + (geometrySize) * (vertexSize + 8));
 
 				if (geometrySize > 0)
 				{
@@ -1075,9 +1081,12 @@ public class WorldRenderer
 
 			// Disable vertex attributes
 			glDisableVertexAttribArray(vertexIn);
-			glDisableVertexAttribArray(texCoordIn);
-			glDisableVertexAttribArray(colorIn);
-			glDisableVertexAttribArray(normalIn);
+			if(texCoordIn != -1)
+				glDisableVertexAttribArray(texCoordIn);
+			if(colorIn != -1)
+				glDisableVertexAttribArray(colorIn);
+			if(normalIn != -1)
+				glDisableVertexAttribArray(normalIn);
 			RenderingContext.disableVAMode();
 		}
 

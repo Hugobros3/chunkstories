@@ -52,11 +52,11 @@ public class FastConfig
 		// dotLightning = Client.getConfig().getBooleanProp("dotLightning",
 		// true);
 		hqTerrain = Client.getConfig().getBooleanProp("hqTerrain", true);
-		perPixelFresnel = Client.getConfig().getBooleanProp("perPixelFresnel", false);
+		perPixelFresnel = Client.getConfig().getBooleanProp("perPixelFresnel", true);
 		doShadows = Client.getConfig().getBooleanProp("doShadows", true);
 		doBloom = Client.getConfig().getBooleanProp("doBloom", true);
-		ssaoQuality = Client.getConfig().getIntProp("ssaoQuality", 1);
-		doClouds = Client.getConfig().getBooleanProp("doClouds", true);
+		ssaoQuality = Client.getConfig().getIntProp("ssaoQuality", 0);
+		doClouds = Client.getConfig().getBooleanProp("doClouds", false);
 		doRealtimeReflections = Client.getConfig().getBooleanProp("doRealtimeReflections", true);
 
 		// interleavedRendering =
@@ -78,7 +78,7 @@ public class FastConfig
 		mouseSensitivity = Client.getConfig().getFloatProp("mouseSensitivity", 1f);
 		fov = Client.getConfig().getFloatProp("fov", 45f);
 
-		XolioWindow.setTargetFPS(Client.getConfig().getIntProp("framerate", 60));
+		XolioWindow.setTargetFPS(Client.getConfig().getIntProp("framerate", -1));
 	}
 
 	// GAME CONTROLS

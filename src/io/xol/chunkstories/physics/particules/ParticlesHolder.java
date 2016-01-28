@@ -154,13 +154,13 @@ public class ParticlesHolder
 
 		int planeVAL = particlesShader.getVertexAttributeLocation("planeCoord");
 		int billCoordVAL = particlesShader.getVertexAttributeLocation("billboardCoord");
-		int texcoordVAL = particlesShader.getVertexAttributeLocation("textureCoord");
+		//int texcoordVAL = particlesShader.getVertexAttributeLocation("textureCoord");
 
 		particlesShader.setUniformSampler(1, "lightColors", TexturesHandler.getTexture("environement/light.png"));
 
 		glEnableVertexAttribArray(planeVAL);
 		glEnableVertexAttribArray(billCoordVAL);
-		glEnableVertexAttribArray(texcoordVAL);
+		//glEnableVertexAttribArray(texcoordVAL);
 
 		// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -244,7 +244,7 @@ public class ParticlesHolder
 		// We done here
 		glDisableVertexAttribArray(planeVAL);
 		glDisableVertexAttribArray(billCoordVAL);
-		glDisableVertexAttribArray(texcoordVAL);
+		//glDisableVertexAttribArray(texcoordVAL);
 
 		glDepthMask(true);
 

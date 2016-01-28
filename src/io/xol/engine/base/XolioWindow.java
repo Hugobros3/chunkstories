@@ -343,7 +343,7 @@ public class XolioWindow
 				DisplayMode[] modes = Display.getAvailableDisplayModes();
 				for (int i = 0; i < modes.length; i++)
 				{
-					if (modes[i].getWidth() == w && modes[i].getHeight() == h && modes[i].isFullscreenCapable())
+					if (modes[i].getWidth() == w && modes[i].getHeight() == h && modes[i].isFullscreenCapable() && modes[i].getBitsPerPixel() >= 32)
 					{
 						displayMode = modes[i];
 					}

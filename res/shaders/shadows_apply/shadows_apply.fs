@@ -169,6 +169,8 @@ void main() {
 			shadingColor.rgb = mix(shadingColor.rgb, computeReflectedPixel(screenCoord, cameraSpacePosition.xyz, pixelNormal.xyz, pixelMeta.y).rgb, spec);
 		//shadingColor = vec4(1.0, 0.0, 0.0, 0.0);
 	}
+	else
+		discard;
 	
 	//shadingColor.rgb *= brightnessMultiplier;
 	

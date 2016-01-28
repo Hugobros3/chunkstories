@@ -181,7 +181,7 @@ public class ChunkSummary
 			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		bb = ByteBuffer.allocateDirect(4 * 256 * 256);
 		bb.order(ByteOrder.LITTLE_ENDIAN);

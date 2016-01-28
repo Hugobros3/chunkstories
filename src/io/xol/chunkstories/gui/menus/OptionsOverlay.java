@@ -29,7 +29,22 @@ public class OptionsOverlay extends MenuOverlay
 
 	abstract class ConfigButton extends ClickableButton
 	{
-
+		Runnable run = null;
+	
+		public ConfigButton setApplyAction(Runnable run)
+		{
+			this.run = run;
+			return this;
+		}
+		
+		public void apply()
+		{
+			save();
+			FastConfig.define();
+			if(run != null)
+				run.run();
+		}
+		
 		String parameter;
 		String value;
 
@@ -126,7 +141,8 @@ public class OptionsOverlay extends MenuOverlay
 		public void callBack(int key)
 		{
 			value = key + "";
-			options.applyAndSave();
+			apply();
+			//options.applyAndSave();
 		}
 
 	}
@@ -201,17 +217,83 @@ public class OptionsOverlay extends MenuOverlay
 
 		configTabs.add(new ConfigTab("Rendering", new ConfigButton[] { 
 				new ConfigButtonMultiChoice("viewDistance",new String[] { "64", "96", "128", "144", "160", "192", "224", "256" }),
-				new ConfigButtonToggle("doRealtimeReflections"),
-				new ConfigButtonToggle("doShadows"),
-				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }),
-				new ConfigButtonToggle("dynamicGrass"),
-				new ConfigButtonToggle("hqTerrain"),
-				new ConfigButtonToggle("rainyMode"),
-				new ConfigButtonToggle("perPixelFresnel"),
-				new ConfigButtonToggle("doClouds"),
-				new ConfigButtonMultiChoice("ssaoQuality", new String[] { "0", "1", "2"}),
-				new ConfigButtonToggle("doBloom"),
-				new ConfigButtonMultiChoice("framerate",new String[] { "30", "60", "120", "-1" }), }));
+				new ConfigButtonToggle("doRealtimeReflections").setApplyAction(new Runnable(){
+					public void run()
+					{
+						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
+					}
+				}),
+				new ConfigButtonToggle("doShadows").setApplyAction(new Runnable(){
+					public void run()
+					{
+						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
+					}
+				}),
+				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }).setApplyAction(new Runnable(){
+					public void run()
+					{if (mainScene instanceof GameplayScene && shouldReload){
+						GameplayScene gps = ((GameplayScene) mainScene);
+						gps.worldRenderer.resizeShadowMaps();
+					}}
+				}),
+				new ConfigButtonToggle("dynamicGrass").setApplyAction(new Runnable(){
+					public void run()
+					{
+						ShadersLibrary.getShaderProgram("blocks_opaque").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("postprocess").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("shadows").reload(FastConfig.getShaderConfig());
+					}
+				}),
+				new ConfigButtonToggle("hqTerrain").setApplyAction(new Runnable(){
+					public void run()
+					{
+						ShadersLibrary.getShaderProgram("terrain").reload(FastConfig.getShaderConfig());
+					}
+				}),
+				new ConfigButtonToggle("rainyMode").setApplyAction(new Runnable(){
+					public void run()
+					{
+						if(Client.world != null)
+							Client.world.setWeather(Client.getConfig().getBooleanProp("rainyMode", false));
+					}
+				}),
+				new ConfigButtonToggle("perPixelFresnel").setApplyAction(new Runnable(){
+					public void run()
+					{
+						ShadersLibrary.getShaderProgram("blocks_opaque").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("blocks_liquid_pass1").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("blocks_liquid_pass2").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("entities").reload(FastConfig.getShaderConfig());
+					}
+				}),
+				new ConfigButtonToggle("doClouds").setApplyAction(new Runnable(){
+					public void run()
+					{
+						ShadersLibrary.reloadAllShaders();
+					}
+				}),
+				new ConfigButtonMultiChoice("ssaoQuality", new String[] { "0", "1", "2"}).setApplyAction(new Runnable(){
+					public void run()
+					{
+						ShadersLibrary.getShaderProgram("blocks_opaque").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
+					}
+				}),
+				new ConfigButtonToggle("doBloom").setApplyAction(new Runnable(){
+					public void run()
+					{if (mainScene instanceof GameplayScene && shouldReload){
+						GameplayScene gps = ((GameplayScene) mainScene);
+						gps.worldRenderer.setupRenderSize(XolioWindow.frameW, XolioWindow.frameH);
+					}
+					ShadersLibrary.getShaderProgram("postprocess").reload(FastConfig.getShaderConfig()); }
+				}),
+				new ConfigButtonMultiChoice("framerate",new String[] { "30", "60", "120", "-1" }).setApplyAction(new Runnable(){
+					public void run()
+					{
+						XolioWindow.setTargetFPS(Client.getConfig().getIntProp("framerate", -1));
+					}
+				}),
+				}));
 
 		configTabs.add(new ConfigTab("Video", new ConfigButton[] {
 				new ConfigButtonScale("fov", 25f, 85f, 1f),
@@ -233,7 +315,16 @@ public class OptionsOverlay extends MenuOverlay
 				new ConfigButtonKey("GRABUSE_KEY", this),
 				}));
 		configTabs.add(new ConfigTab("Sound", new ConfigButton[] {}));
-		configTabs.add(new ConfigTab("Debug", new ConfigButton[] { new ConfigButtonToggle("debugGBuffers"), new ConfigButtonToggle("physicsVisualization"), new ConfigButtonToggle("showDebugInfo"), }));
+		configTabs.add(new ConfigTab("Debug", new ConfigButton[] { 
+				new ConfigButtonToggle("debugGBuffers").setApplyAction(new Runnable(){
+					public void run()
+					{
+						ShadersLibrary.getShaderProgram("postprocess").reload(FastConfig.getShaderConfig());
+					}
+				}),
+				new ConfigButtonToggle("physicsVisualization"),
+				new ConfigButtonToggle("showDebugInfo"),
+				}));
 
 		for (ConfigTab tab : configTabs)
 		{
@@ -280,7 +371,8 @@ public class OptionsOverlay extends MenuOverlay
 			{
 				ConfigButtonScale cs = (ConfigButtonScale)c;
 				cs.onClick(Mouse.getX(), Mouse.getY(), 0);
-				applyAndSave();
+				cs.apply();
+				//applyAndSave();
 			}
 			
 			a++;
@@ -297,7 +389,8 @@ public class OptionsOverlay extends MenuOverlay
 		
 		if (exitButton.clicked())
 		{
-			applyAndSave();
+			//applyAndSave();
+			Client.getConfig().save();
 			mainScene.changeOverlay(parent);
 		}
 	}
@@ -326,7 +419,8 @@ public class OptionsOverlay extends MenuOverlay
 			if (b.isMouseOver())
 			{
 				b.onClick(posx, posy, button);
-				applyAndSave();
+				b.apply();
+				//applyAndSave();
 			}
 		}
 		return true;
@@ -334,7 +428,7 @@ public class OptionsOverlay extends MenuOverlay
 	
 	boolean shouldReload = false;
 
-	private void applyAndSave()
+	/*private void applyAndSave()
 	{
 		boolean reloadChunks = false;
 		// boolean interleavedBefore = FastConfig.interleavedRendering;
@@ -347,7 +441,7 @@ public class OptionsOverlay extends MenuOverlay
 		FastConfig.define();
 		// if(FastConfig.interleavedRendering != interleavedBefore)
 		// reloadChunks = true;
-		XolioWindow.setTargetFPS(Client.getConfig().getIntProp("framerate", 60));
+		XolioWindow.setTargetFPS(Client.getConfig().getIntProp("framerate", -1));
 		if (this.mainScene instanceof GameplayScene && shouldReload)
 		{
 			GameplayScene gps = ((GameplayScene) mainScene);
@@ -365,6 +459,5 @@ public class OptionsOverlay extends MenuOverlay
 		XolioWindow.switchResolution();
 		//XolioWindow.setDisplayMode(Client.getConfig().getBooleanProp("fullscreen", false), Client.getConfig().getProp(fullScreenResolution));
 		shouldReload = false;
-	}
-
+	}*/
 }
