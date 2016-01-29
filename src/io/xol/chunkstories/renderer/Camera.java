@@ -313,6 +313,18 @@ public class Camera
 		cameraPlanes[3].setup(nearBottomRight, nearTopRight, farBottomRight);
 		cameraPlanes[4].setup(nearTopLeft, nearTopRight, nearBottomRight);
 		cameraPlanes[5].setup(farTopRight, farTopLeft, farBottomLeft);
+		
+		//cache that
+		for(int i = 0; i < 2; i++)
+		{
+			for(int j = 0; j < 2; j++)
+			{
+				for(int k = 0; k < 2; k++)
+				{
+					corners[i * 4 + j * 2 + k] = new Vector3f();
+				}
+			}
+		}
 	}
 	
 	private Vector3f vadd(Vector3f a, Vector3f b)
@@ -335,21 +347,22 @@ public class Camera
 		out.scale(scale);
 		return out;
 	}
+
+	Vector3f corners[] = new Vector3f[8];
 	
 	public boolean isBoxInFrustrum(Vector3f center, Vector3f dimensions)
 	{
-		Vector3f corners[] = new Vector3f[8];
 		for(int i = 0; i < 2; i++)
 		{
 			for(int j = 0; j < 2; j++)
 			{
 				for(int k = 0; k < 2; k++)
 				{
-					Vector3f corner = new Vector3f();
-					corner.x = center.x + dimensions.x / 2f * (i == 0 ? -1 : 1);
-					corner.y = center.y + dimensions.y / 2f * (j == 0 ? -1 : 1);
-					corner.z = center.z + dimensions.z / 2f * (k == 0 ? -1 : 1);
-					corners[i * 4 + j * 2 + k] = corner;
+					//Vector3f corner = new Vector3f();
+					corners[i * 4 + j * 2 + k].x = center.x + dimensions.x / 2f * (i == 0 ? -1 : 1);
+					corners[i * 4 + j * 2 + k].y = center.y + dimensions.y / 2f * (j == 0 ? -1 : 1);
+					corners[i * 4 + j * 2 + k].z = center.z + dimensions.z / 2f * (k == 0 ? -1 : 1);
+					//corners[i * 4 + j * 2 + k] = corner;
 				}
 			}
 		}
