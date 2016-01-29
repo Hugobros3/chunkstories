@@ -16,6 +16,7 @@ import java.nio.FloatBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -42,6 +43,7 @@ import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.renderer.ChunksRenderer.VBOData;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
@@ -208,6 +210,7 @@ public class WorldRenderer
 		// Load/Unload required parts of the world, update the display list etc
 		updateRender(-camera.camPosX, -camera.camPosY, -camera.camPosZ, -camera.view_rotx, -camera.view_roty);
 
+		Client.profiler.startSection("next");
 		// Shadows pre-pass
 		if (FastConfig.doShadows)
 		{
@@ -390,6 +393,20 @@ public class WorldRenderer
 
 			// Unload too far chunks
 			updateProfiler.startSection("unloadFar");
+			//long usageBefore = Runtime.getRuntime().freeMemory();
+			ChunksIterator it = Client.world.iterator();
+			CubicChunk cu;
+			while(it.hasNext())
+			{
+				cu = it.next();
+				if ((LoopingMathHelper.moduloDistance(cu.chunkX, pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(cu.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 1) || (Math.abs(cu.chunkY - pCY) > 4))
+				{
+					glDeleteBuffers(cu.vbo_id);
+					world.removeChunk(cu, false);
+				}
+			}
+			
+			/*
 			List<CubicChunk> allChunks = world.getAllLoadedChunks();
 			for (CubicChunk c : allChunks)
 			{
@@ -398,7 +415,7 @@ public class WorldRenderer
 					glDeleteBuffers(c.vbo_id);
 					world.removeChunk(c, false);
 				}
-			}
+			}*/
 
 			// Now delete from the worker threads what we won't need anymore
 			chunksRenderer.purgeUselessWork(pCX, pCY, pCZ, sizeInChunks, chunksViewDistance);
@@ -625,7 +642,7 @@ public class WorldRenderer
 		int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
 
 		skyTexture = TexturesHandler.getTexture(world.isRaining() ? "environement/sky_rain.png" : "environement/sky.png");
-		
+
 		int[] vegetationColor = { 72, 128, 45 };
 		//int[] vegetationColor = { 35, 35, 35 };
 		//int[] vegetationColor = { (int) (Math.sin((System.currentTimeMillis() % 1000 ) / 1000.0 * Math.PI) * 255 * 0.5 + 255/2), (int) (Math.sin((System.currentTimeMillis() % 2000 ) / 2000.0 * Math.PI) * 255 * 0.5 + 255/2),	(int) (Math.cos((System.currentTimeMillis() % 5000 ) / 5000.0 * Math.PI) * 255 * 0.5 + 255/2)};
@@ -723,7 +740,7 @@ public class WorldRenderer
 
 		//if(true)
 		//	return;
-		
+
 		// We just roll our loaded vbos
 		//TexturesHandler.bindTexture("tiles_merged_diffuse.png");
 
@@ -924,8 +941,12 @@ public class WorldRenderer
 
 		// Render entities
 		DefferedLight[] el;
-		for (Entity e : world.getAllLoadedEntities())
+		Iterator<Entity> ie = world.getAllLoadedEntities();
+		Entity e;
+		while(ie.hasNext())
+		//for (Entity e : getAllLoadedEntities())
 		{
+			e = ie.next();
 			e.render();
 			// Also populate lights buffer
 			el = e.getLights();
@@ -986,11 +1007,11 @@ public class WorldRenderer
 			normalIn = liquidBlocksShader.getVertexAttributeLocation("normalIn");
 
 			glEnableVertexAttribArray(vertexIn);
-			if(texCoordIn != -1)
+			if (texCoordIn != -1)
 				glEnableVertexAttribArray(texCoordIn);
-			if(colorIn != -1)
+			if (colorIn != -1)
 				glEnableVertexAttribArray(colorIn);
-			if(normalIn != -1)
+			if (normalIn != -1)
 				glEnableVertexAttribArray(normalIn);
 
 			// Set rendering context.
@@ -1064,11 +1085,11 @@ public class WorldRenderer
 				// glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 12, 0);
 				glVertexAttribPointer(vertexIn, 4, GL_INT_2_10_10_10_REV, false, 4, dekal + 0);
 				int vertexSize = 4;
-				if(texCoordIn != -1)
+				if (texCoordIn != -1)
 					glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 4, dekal + (geometrySize) * vertexSize);
-				if(colorIn != -1)
+				if (colorIn != -1)
 					glVertexAttribPointer(colorIn, 3, GL_UNSIGNED_BYTE, true, 4, dekal + (geometrySize) * (vertexSize + 4));
-				if(normalIn != -1)
+				if (normalIn != -1)
 					glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 0, dekal + (geometrySize) * (vertexSize + 8));
 
 				if (geometrySize > 0)
@@ -1081,11 +1102,11 @@ public class WorldRenderer
 
 			// Disable vertex attributes
 			glDisableVertexAttribArray(vertexIn);
-			if(texCoordIn != -1)
+			if (texCoordIn != -1)
 				glDisableVertexAttribArray(texCoordIn);
-			if(colorIn != -1)
+			if (colorIn != -1)
 				glDisableVertexAttribArray(colorIn);
-			if(normalIn != -1)
+			if (normalIn != -1)
 				glDisableVertexAttribArray(normalIn);
 			RenderingContext.disableVAMode();
 		}
@@ -1148,7 +1169,7 @@ public class WorldRenderer
 
 	private void setupShadowColors(ShaderProgram shader)
 	{
-		if(world.isRaining())
+		if (world.isRaining())
 		{
 			shader.setUniformFloat("shadowStrength", 0.75f);
 			shader.setUniformFloat3("shadowColor", 0.20f, 0.20f, 0.20f);

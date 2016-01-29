@@ -399,6 +399,7 @@ public class OptionsOverlay extends MenuOverlay
 	{
 		if (k == FastConfig.EXIT_KEY)
 		{
+			Client.getConfig().save();
 			mainScene.changeOverlay(parent);
 			return true;
 		}

@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world.io;
 
+import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
@@ -327,8 +328,15 @@ public class IOTasks extends Thread
 		public boolean run()
 		{
 			// First compress all loaded chunks !
-			for (CubicChunk c : holder.getLoadedChunks())
-				holder.compressChunkData(c);
+			ChunksIterator i = holder.iterator();
+			CubicChunk cu;
+			while(i.hasNext())
+			{
+				cu = i.next();
+				holder.compressChunkData(cu);
+			}
+			//for (CubicChunk c : holder.getLoadedChunks())
+			//	holder.compressChunkData(c);
 			// Then write the file.
 			try
 			{

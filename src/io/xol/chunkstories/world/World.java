@@ -1,9 +1,7 @@
 package io.xol.chunkstories.world;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -13,10 +11,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.world.io.IOTasks;
+import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.summary.ChunkSummaries;
 import io.xol.engine.misc.ConfigFile;
 
@@ -63,7 +63,7 @@ public abstract class World
 	protected boolean client;
 
 	protected WorldInfo worldInfo;
-	
+
 	public ConfigFile internalData;
 
 	public World(WorldSize s)
@@ -91,7 +91,7 @@ public abstract class World
 		logic = Executors.newSingleThreadScheduledExecutor();
 		folder = new File(GameDirectory.getGameFolderPath() + "/worlds/" + name);
 		startLogic();
-		
+
 		internalData = new ConfigFile(GameDirectory.getGameFolderPath() + "/worlds/" + name + "/internal.dat");
 	}
 
@@ -118,10 +118,11 @@ public abstract class World
 		{
 			public void run()
 			{
-				try{
-				tick();
+				try
+				{
+					tick();
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					System.out.println("Son excellence le fils de pute de thread silencieusement suicidaire de mes couilles");
 					e.printStackTrace();
@@ -132,7 +133,7 @@ public abstract class World
 
 	public void addEntity(final Entity entity)
 	{
-		if(!client)
+		if (!client)
 			entity.entityID = nextEntityId();
 		entity.setHolder();
 		this.entities.add(entity);
@@ -145,15 +146,15 @@ public abstract class World
 			}
 		});*/
 	}
-	
+
 	public void removeEntity(Entity entity)
 	{
 		Iterator<Entity> iter = entities.iterator();
 		Entity entity2;
-		while(iter.hasNext())
+		while (iter.hasNext())
 		{
 			entity2 = iter.next();
-			if(entity2.equals(entity))
+			if (entity2.equals(entity))
 			{
 				entity.delete();
 				iter.remove();
@@ -173,10 +174,10 @@ public abstract class World
 			//
 			Iterator<Entity> iter = entities.iterator();
 			Entity entity;
-			while(iter.hasNext())
+			while (iter.hasNext())
 			{
 				entity = iter.next();
-				if(entity.parentHolder != null && entity.parentHolder.isLoaded())
+				if (entity.parentHolder != null && entity.parentHolder.isLoaded())
 					entity.update();
 				//System.out.println(entity);
 			}
@@ -191,26 +192,32 @@ public abstract class World
 		}
 	}
 
-	public List<Entity> getAllLoadedEntities()
+	/*public List<Entity> getAllLoadedEntities()
 	{
 		List<Entity> entitiesToReturn = new ArrayList<Entity>();
-		/*for (ChunkHolder holder : getAllLoadedChunksHolders())
-		{
-			entities.addAll(holder.getAllLoadedEntities());
-		}*/
+		
 		Iterator<Entity> iter = entities.iterator();
-		while(iter.hasNext())
+		while (iter.hasNext())
 		{
 			entitiesToReturn.add(iter.next());
 		}
 		return entitiesToReturn;
-	}
+	}*/
 	
+	public Iterator<Entity> getAllLoadedEntities()
+	{
+		return entities.iterator();
+	}
+
 	public Entity getEntityByUUID(long entityID)
 	{
-		for(Entity e : getAllLoadedEntities())
+		Iterator<Entity> ie = getAllLoadedEntities();
+		Entity e;
+		while(ie.hasNext())
+		//for (Entity e : getAllLoadedEntities())
 		{
-			if(e.entityID == entityID)
+			e = ie.next();
+			if (e.entityID == entityID)
 				return e;
 		}
 		return null;
@@ -433,6 +440,18 @@ public abstract class World
 	 */
 	public synchronized void reRender()
 	{
+		ChunksIterator i = this.iterator();
+		CubicChunk c;
+		while(i.hasNext())
+		{
+			c = i.next();
+			c.need_render.set(true);
+			c.requestable.set(true);
+			c.vbo_size_normal = 0;
+			c.vbo_size_complex = 0;
+			c.vbo_size_water = 0;
+		}
+		/*
 		for (CubicChunk c : this.getAllLoadedChunks())
 		{
 			c.need_render.set(true);
@@ -440,7 +459,7 @@ public abstract class World
 			c.vbo_size_normal = 0;
 			c.vbo_size_complex = 0;
 			c.vbo_size_water = 0;
-		}
+		}*/
 	}
 
 	public void clear()
@@ -453,7 +472,7 @@ public abstract class World
 	{
 		chunksHolder.saveAll();
 		chunkSummaries.saveAll();
-		if(!client)
+		if (!client)
 		{
 			this.internalData.setProp("entities-ids-counter", veryLong.get());
 			this.internalData.save();
@@ -507,7 +526,7 @@ public abstract class World
 		this.chunksHolder.destroy();
 		this.chunkSummaries.destroy();
 		this.logic.shutdown();
-		if(!client)
+		if (!client)
 		{
 			this.internalData.setProp("entities-ids-counter", veryLong.get());
 			this.internalData.save();
@@ -515,10 +534,15 @@ public abstract class World
 		ioHandler.kill();
 	}
 
-	public List<CubicChunk> getAllLoadedChunks()
+	public ChunksIterator iterator()
+	{
+		return new WorldChunksIterator(this);
+	}
+
+	/*public List<CubicChunk> getAllLoadedChunks()
 	{
 		return chunksHolder.getAllLoadedChunks();
-	}
+	}*/
 
 	public boolean checkCollisionPoint(double posX, double posY, double posZ)
 	{
@@ -526,26 +550,29 @@ public abstract class World
 		int id = VoxelFormat.id(data);
 		if (id > 0)
 		{
+
+			/*Voxel v = VoxelTypes.get(id);
+			CollisionBox[] boxes = v.getCollisionBoxes(data);
+			if (boxes != null)
+				for (CollisionBox box : boxes)
+					if (box.isPointInside(posX, posY, posZ))
+						return true;
+			*/
 			return true;
-			/*
-			 * Voxel v = VoxelTypes.get(id); CollisionBox[] boxes =
-			 * v.getCollisionBoxes(data); if(boxes != null) for(CollisionBox box
-			 * : boxes) if(box.isPointInside(posX, posY, posZ)) return true;
-			 */
 
 		}
 		return false;
 	}
 
 	boolean raining;
-	
+
 	public boolean isRaining()
 	{
 		return raining;
 	}
 
 	AtomicLong veryLong = new AtomicLong();
-	
+
 	public long nextEntityId()
 	{
 		return veryLong.getAndIncrement();

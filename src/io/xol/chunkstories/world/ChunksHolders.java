@@ -1,8 +1,6 @@
 package io.xol.chunkstories.world;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -17,7 +15,7 @@ public class ChunksHolders
 	// private ChunkHolder[] data;
 	// private boolean[] dataPresent;
 
-	private ConcurrentHashMap<ChunkHolderKey, ChunkHolder> chunkHolders = new ConcurrentHashMap<ChunkHolderKey, ChunkHolder>();
+	public ConcurrentHashMap<ChunkHolderKey, ChunkHolder> chunkHolders = new ConcurrentHashMap<ChunkHolderKey, ChunkHolder>();
 
 	final int s, h;
 
@@ -131,36 +129,7 @@ public class ChunksHolders
 		}
 		return null;
 	}
-
-	public List<CubicChunk> getAllLoadedChunks()
-	{
-		List<CubicChunk> chunks = new ArrayList<CubicChunk>();
-		Iterator<ChunkHolder> i = chunkHolders.values().iterator();
-		ChunkHolder holder;
-		while(i.hasNext())
-		{
-			holder = i.next();
-			if (holder != null)
-			{
-				for (CubicChunk c : holder.getLoadedChunks())
-					chunks.add(c);
-			}
-		}
-		return chunks;
-	}
-
-	/*public List<ChunkHolder> getAllLoadedChunksHolders()
-	{
-		List<ChunkHolder> holders = new ArrayList<ChunkHolder>();
-		chunkHolders.values().iterator();
-		for (ChunkHolder holder : data)
-		{
-			if (holder != null)
-				holders.add(holder);
-		}
-		return holders;
-	}*/
-
+	
 	public void saveAll()
 	{
 		Iterator<ChunkHolder> i = chunkHolders.values().iterator();

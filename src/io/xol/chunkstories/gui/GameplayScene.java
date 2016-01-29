@@ -11,6 +11,7 @@ import io.xol.engine.base.font.BitmapFont;
 import io.xol.engine.base.font.FontRenderer2;
 import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.EntitiesList;
@@ -425,11 +426,21 @@ public class GameplayScene extends OverlayableScene
 		int nbChunks = 0;
 		long octelsTotal = 0;
 
+		ChunksIterator i = Client.world.iterator();
+		CubicChunk c;
+		while(i.hasNext())
+		{
+			c = i.next();
+
+			nbChunks++;
+			octelsTotal += (c.vbo_size_normal + c.vbo_size_water) * 16 + c.vbo_size_complex * 24;	
+		}
+		/*
 		for (CubicChunk c : Client.world.chunksHolder.getAllLoadedChunks())
 		{
 			nbChunks++;
 			octelsTotal += (c.vbo_size_normal + c.vbo_size_water) * 16 + c.vbo_size_complex * 24;
-		}
+		}*/
 
 		return nbChunks + " chunks, storing " + octelsTotal / 1024 / 1024 + "Mb of vertex data.";
 	}

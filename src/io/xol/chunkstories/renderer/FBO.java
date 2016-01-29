@@ -34,7 +34,7 @@ public class FBO
 		// Initialize color output buffers
 		if (colors != null && colors.length > 0)
 		{
-			IntBuffer scratchBuffer = BufferUtils.createIntBuffer(colors.length);
+			scratchBuffer = BufferUtils.createIntBuffer(colors.length);
 			int i = 0;
 			for (GBufferTexture texture : colors)
 			{
@@ -55,6 +55,9 @@ public class FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
+	IntBuffer scratchBuffer;
+	List<Integer> drawBuffers = new ArrayList<Integer>();
+	
 	public void setEnabledRenderTargets(boolean... targets)
 	{
 		bind();
@@ -64,7 +67,8 @@ public class FBO
 		if (targets.length == 0)
 		{
 			// If no arguments set ALL to renderable
-			IntBuffer scratchBuffer = BufferUtils.createIntBuffer(colorAttachements.length);
+			//IntBuffer scratchBuffer = BufferUtils.createIntBuffer(colorAttachements.length);
+			scratchBuffer.clear();
 			int i = 0;
 			for (GBufferTexture texture : colorAttachements)
 			{
@@ -76,7 +80,7 @@ public class FBO
 		}
 		else
 		{
-			List<Integer> drawBuffers = new ArrayList<Integer>();
+			drawBuffers.clear();
 			int i = 0;
 			for (boolean b : targets)
 			{

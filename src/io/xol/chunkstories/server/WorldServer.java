@@ -3,6 +3,8 @@ package io.xol.chunkstories.server;
 import java.io.File;
 import java.util.List;
 
+import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.packets.Packet04Entity;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.CubicChunk;
@@ -25,15 +27,18 @@ public class WorldServer extends World
 	@Override
 	public void tick()
 	{
-		List<CubicChunk> allChunks = getAllLoadedChunks();
+		//List<CubicChunk> allChunks = getAllLoadedChunks();
 		
 		int chunksViewDistance = 256/32;
 		int sizeInChunks = size.sizeInChunks;
 		
 		int removedChunks = 0;
 		//Chunks pruner
-		for (CubicChunk c : allChunks)
+		ChunksIterator i = Client.world.iterator();
+		CubicChunk c;
+		while(i.hasNext())
 		{
+			c = i.next();
 			boolean neededBySomeone = false;
 			//TODO clean
 			for(ServerClient client : Server.getInstance().handler.clients)

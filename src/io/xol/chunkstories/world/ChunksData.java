@@ -1,5 +1,7 @@
 package io.xol.chunkstories.world;
 
+import java.util.Arrays;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -17,6 +19,9 @@ public class ChunksData
 		System.gc();
 		data = new int[CACHE_SIZE][32 * 32 * 32];// [32][32];
 		used = new boolean[CACHE_SIZE];
+		System.out.println("Preloading chunk cache");
+		for (int i = 0; i < CACHE_SIZE; i++)
+			data[i] = new int[32 * 32 * 32];
 		System.out.println("Initialized chunk cache, size =" + CACHE_SIZE);
 	}
 
@@ -58,10 +63,11 @@ public class ChunksData
 			return;
 		}
 
-		for (int a = 0; a < 32; a++)
-			for (int b = 0; b < 32; b++)
-				for (int c = 0; c < 32; c++)
-					data[i][a * 32 * 32 + b * 32 + c] = 0;
+		Arrays.fill(data[i], 0);
+		//for (int a = 0; a < 32; a++)
+		//	for (int b = 0; b < 32; b++)
+		//		for (int c = 0; c < 32; c++)
+		//			data[i][a * 32 * 32 + b * 32 + c] = 0;
 		// System.out.println("freed ["+i+"] leaving "+(Runtime.getRuntime().freeMemory()/1024/1024)+"Mb of ram avaible");
 		used[i] = false;
 		size--;

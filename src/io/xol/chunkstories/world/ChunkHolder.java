@@ -1,7 +1,9 @@
 package io.xol.chunkstories.world;
 
+import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
+import io.xol.chunkstories.world.iterators.ChunkHolderIterator;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -247,20 +249,10 @@ public class ChunkHolder
 	{
 		return data[chunkX % 8][chunkY % 8][chunkZ % 8] != null;
 	}
-
-	public List<CubicChunk> getLoadedChunks()
+	
+	public ChunksIterator iterator()
 	{
-		List<CubicChunk> chunks = new ArrayList<CubicChunk>();
-		for (int a = 0; a < 8; a++)
-			for (int b = 0; b < 8; b++)
-				for (int c = 0; c < 8; c++)
-				{
-					if (data[a][b][c] != null)
-					{
-						chunks.add(data[a][b][c]);
-					}
-				}
-		return chunks;
+		return new ChunkHolderIterator(this);
 	}
 
 	public void freeAll()
