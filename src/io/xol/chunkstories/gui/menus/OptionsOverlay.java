@@ -74,6 +74,7 @@ public class OptionsOverlay extends MenuOverlay
 		public ConfigButtonToggle(String n)
 		{
 			super(n);
+			value = Client.getConfig().getBooleanProp(n, false)+"";
 		}
 
 		@Override
@@ -313,6 +314,7 @@ public class OptionsOverlay extends MenuOverlay
 				new ConfigButtonKey("EXIT_KEY", this),
 				new ConfigButtonKey("INVENTORY_KEY", this),
 				new ConfigButtonKey("GRABUSE_KEY", this),
+				new ConfigButtonKey("CHAT_KEY", this),
 				}));
 		configTabs.add(new ConfigTab("Sound", new ConfigButton[] {}));
 		configTabs.add(new ConfigTab("Debug", new ConfigButton[] { 
@@ -324,6 +326,7 @@ public class OptionsOverlay extends MenuOverlay
 				}),
 				new ConfigButtonToggle("physicsVisualization"),
 				new ConfigButtonToggle("showDebugInfo"),
+				new ConfigButtonToggle("frametimeGraph"),
 				}));
 
 		for (ConfigTab tab : configTabs)

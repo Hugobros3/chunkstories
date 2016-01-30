@@ -74,6 +74,7 @@ public class FastConfig
 		INVENTORY_KEY = Client.getConfig().getIntProp("INVENTORY_KEY", 18);
 		ENTER_KEY = Client.getConfig().getIntProp("ENTER_KEY", 28);
 		EXIT_KEY = Client.getConfig().getIntProp("EXIT_KEY", 1);
+		CHAT_KEY = Client.getConfig().getIntProp("CHAT_KEY", 20);
 
 		mouseSensitivity = Client.getConfig().getFloatProp("mouseSensitivity", 1f);
 		fov = Client.getConfig().getFloatProp("fov", 45f);
@@ -91,6 +92,8 @@ public class FastConfig
 	public static int RUN_KEY = 29;
 	public static int GRABUSE_KEY = 18;
 	public static int INVENTORY_KEY = 23;
+	
+	public static int CHAT_KEY = 20;
 
 	public static int ENTER_KEY = 28;
 

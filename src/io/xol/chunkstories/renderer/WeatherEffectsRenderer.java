@@ -32,7 +32,7 @@ public class WeatherEffectsRenderer
 	}
 	
 	//Every second regenerate the buffer with fresh vertices
-	float[][][] raindrops = new float[110000][6][4];
+	float[] raindrops = new float[110000 * 6 * 4];
 	FloatBuffer raindropsData = BufferUtils.createFloatBuffer(110000 * 6 * 4);
 	// Array setup : 
 	int bufferOffset = 0;
@@ -63,43 +63,46 @@ public class WeatherEffectsRenderer
 			float rainDropletSize = 0.2f;
 			//Build triangle strip
 			//00
-			raindrops[location][0][0] = rdX-mx;
-			raindrops[location][0][1] = rdY;
-			raindrops[location][0][2] = rdZ-mz;
-			raindrops[location][0][3] = rdMh;
+			
+			raindrops[location * 6 * 4 + 0 * 4 + 0] = rdX-mx;
+			raindrops[location * 6 * 4 + 0 * 4 + 1] = rdY;
+			raindrops[location * 6 * 4 + 0 * 4 + 2] = rdZ-mz;
+			raindrops[location * 6 * 4 + 0 * 4 + 3] = rdMh;
 			//01
-			raindrops[location][1][0] = rdX-mx;
-			raindrops[location][1][1] = rdY + rainDropletSize;
-			raindrops[location][1][2] = rdZ-mz;
-			raindrops[location][1][3] = rdMh + rainDropletSize;
+			raindrops[location * 6 * 4 + 1 * 4 + 0] = rdX-mx;
+			raindrops[location * 6 * 4 + 1 * 4 + 1] = rdY + rainDropletSize;
+			raindrops[location * 6 * 4 + 1 * 4 + 2] = rdZ-mz;
+			raindrops[location * 6 * 4 + 1 * 4 + 3] = rdMh + rainDropletSize;
 			//10
-			raindrops[location][2][0] = rdX+mx;
-			raindrops[location][2][1] = rdY;
-			raindrops[location][2][2] = rdZ+mz;
-			raindrops[location][2][3] = rdMh;
+			raindrops[location * 6 * 4 + 2 * 4 + 0] = rdX+mx;
+			raindrops[location * 6 * 4 + 2 * 4 + 1] = rdY;
+			raindrops[location * 6 * 4 + 2 * 4 + 2] = rdZ+mz;
+			raindrops[location * 6 * 4 + 2 * 4 + 3] = rdMh;
 			//11
-			raindrops[location][3][0] = rdX-mx;
-			raindrops[location][3][1] = rdY + rainDropletSize;
-			raindrops[location][3][2] = rdZ-mz;
-			raindrops[location][3][3] = rdMh + rainDropletSize;
+			raindrops[location * 6 * 4 + 3 * 4 + 0] = rdX-mx;
+			raindrops[location * 6 * 4 + 3 * 4 + 1] = rdY + rainDropletSize;
+			raindrops[location * 6 * 4 + 3 * 4 + 2] = rdZ-mz;
+			raindrops[location * 6 * 4 + 3 * 4 + 3] = rdMh + rainDropletSize;
 			//01
-			raindrops[location][4][0] = rdX+mx;
-			raindrops[location][4][1] = rdY;
-			raindrops[location][4][2] = rdZ+mz;
-			raindrops[location][4][3] = rdMh;
+			raindrops[location * 6 * 4 + 4 * 4 + 0] = rdX+mx;
+			raindrops[location * 6 * 4 + 4 * 4 + 1] = rdY;
+			raindrops[location * 6 * 4 + 4 * 4 + 2] = rdZ+mz;
+			raindrops[location * 6 * 4 + 4 * 4 + 3] = rdMh;
 			//00
-			raindrops[location][5][0] = rdX+mx;
-			raindrops[location][5][1] = rdY + rainDropletSize;
-			raindrops[location][5][2] = rdZ+mz;
-			raindrops[location][5][3] = rdMh + rainDropletSize;
+			raindrops[location * 6 * 4 + 5 * 4 + 0] = rdX+mx;
+			raindrops[location * 6 * 4 + 5 * 4 + 1] = rdY + rainDropletSize;
+			raindrops[location * 6 * 4 + 5 * 4 + 2] = rdZ+mz;
+			raindrops[location * 6 * 4 + 5 * 4 + 3] = rdMh + rainDropletSize;
 			
 		}
 		raindropsData.clear();
 		raindropsData.position(0);
-		for(float[][] r : raindrops) // For each raindrop
+		/*for(float[][] r : raindrops) // For each raindrop
 			for(float v[] : r) // For each vertice
 				for(float c : v) // For each component
-				raindropsData.put(c);
+				raindropsData.put(c);*/
+		
+		raindropsData.put(raindrops, 0, raindrops.length);
 		raindropsData.flip();
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		glBufferData(GL_ARRAY_BUFFER, raindropsData, GL_STATIC_DRAW);

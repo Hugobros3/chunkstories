@@ -54,17 +54,17 @@ public class GuiDrawer
 
 	public static void drawBox(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, int textureID, boolean alpha, boolean textured, Vector4f color)
 	{
-		
-		if (color == null)
-			color = new Vector4f(1f, 1f, 1f, 1f);
+		//if (color == null)
+		//	color = new Vector4f(1f, 1f, 1f, 1f);
 
 		if (elementsToDraw >= 6 * 1024)
 		{
-			// System.out.println("Elements out of bounds : "+elementsToDraw);
+			
+			//System.out.println("Elements out of bounds : "+elementsToDraw);
 			drawBuffer();
 		}
 
-		if (color.w < 1)
+		if (color != null && color.w < 1)
 			alpha = true; // Force blending if alpha < 1
 
 		if(textureID != -1)
@@ -77,14 +77,6 @@ public class GuiDrawer
 		addVertice(startX, startY , textureStartX, textureStartY );
 		addVertice(endX, startY, textureEndX, textureStartY );
 		addVertice(endX, endY , textureEndX, textureEndY );
-		
-		/*addVertice(new float[] { startX, startY }, new float[] { textureStartX, textureStartY });
-		addVertice(new float[] { startX, endY }, new float[] { textureStartX, textureEndY });
-		addVertice(new float[] { endX, endY }, new float[] { textureEndX, textureEndY });
-
-		addVertice(new float[] { startX, startY }, new float[] { textureStartX, textureStartY });
-		addVertice(new float[] { endX, startY }, new float[] { textureEndX, textureStartY });
-		addVertice(new float[] { endX, endY }, new float[] { textureEndX, textureEndY });*/
 
 	}
 
@@ -124,7 +116,7 @@ public class GuiDrawer
 	 */
 	public static void setState(int textureID, boolean alpha, boolean texture, Vector4f color)
 	{
-		if (textureID != currentTexture || alpha != alphaBlending || useTexture != texture || !color.equals(currentColor))
+		if (textureID != currentTexture || alpha != alphaBlending || useTexture != texture || color == null || !color.equals(currentColor))
 			drawBuffer();
 		currentTexture = textureID;
 		alphaBlending = alpha;
@@ -161,7 +153,10 @@ public class GuiDrawer
 		glEnableVertexAttribArray(vertexIn);
 		glEnableVertexAttribArray(texCoordIn);
 		shader.setUniformFloat("useTexture", useTexture ? 1f : 0f);
-		shader.setUniformFloat4("color", currentColor);
+		if(currentColor != null)
+			shader.setUniformFloat4("color", currentColor);
+		else
+			shader.setUniformFloat4("color", 1f, 1f, 1f, 1f);
 		shader.setUniformSampler(0, "sampler", currentTexture);
 		glDisable(GL_DEPTH_TEST);
 		if (alphaBlending)

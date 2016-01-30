@@ -85,9 +85,8 @@ public class GameplayScene extends OverlayableScene
 		if (player == null || player != Client.controller)
 		{
 			player = Client.controller;
-			inventoryDrawer = new InventoryDrawer(player.inventory);
+			inventoryDrawer = player.inventory == null ? null : new InventoryDrawer(player.inventory);
 		}
-
 		// Update the player
 		if (player instanceof EntityControllable)
 			((EntityControllable) player).controls(focus);
@@ -116,7 +115,7 @@ public class GameplayScene extends OverlayableScene
 		worldRenderer.renderWorldAtCamera(camera);
 		if (selectedBlock != null)
 			entityRenderer.drawSelectionBox(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
-
+		
 		if (FastConfig.physicsVisualization && player != null)
 		{
 			int id, data;
@@ -133,33 +132,22 @@ public class GameplayScene extends OverlayableScene
 			for (CollisionBox b : player.getTranslatedCollisionBoxes())
 				b.debugDraw(0, 1, 1, 1);
 		}
-
+		
 		if (shouldCM)
 		{
 			shouldCM = false;
 			worldRenderer.screenCubeMap(512);
 		}
 		// THEN THE GUI
-		//Client.profiler.startSection("post-process");
 		worldRenderer.postProcess();
-
-		/*if (FastConfig.showDebugInfo)
-		{
-			ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2, 16, 16, "cursor");
-			ObjectRenderer.renderTexturedRect(XolioWindow.frameW - 50, 50, 64, 64, 0, 0, 1, 1, 1, "../res/voxels/textures/" + VoxelTypes.get(voxelId).getVoxelTexture(0, 2, BlockRenderInfo.get(voxelId, meta)).name);
-			FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW - 85, 80, 0, 32, voxelId + " : " + meta, BitmapFont.SMALLFONTS);
-		}*/
-		// Debug rendering
 		
-		//Client.profiler.startSection("debug-draw");
 		if (FastConfig.showDebugInfo)
 			debug();
 		else
 			Client.profiler.reset("gui");
 		 
-		
 		chat.update();
-		chat.draw(15);
+		chat.draw();
 
 		if (player != null)
 			if (player.inventory != null)
@@ -210,7 +198,7 @@ public class GameplayScene extends OverlayableScene
 
 		if (!chat.chatting)
 		{
-			if (k == Keyboard.KEY_T)
+			if (k == FastConfig.CHAT_KEY)
 			{
 				chat.openChatbox();
 				focus(false);

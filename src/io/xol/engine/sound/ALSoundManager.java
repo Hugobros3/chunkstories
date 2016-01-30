@@ -228,7 +228,24 @@ public class ALSoundManager extends SoundManager
 	@Override
 	public boolean setEffectForSlot(int slot, SoundEffect effect)
 	{
-		// TODO Auto-generated method stub
-		return false;
+		if(auxEffectsSlots.length <= 0)
+			return false;
+		else if(slot >= 0 && slot < auxEffectsSlots.length)
+		{
+			auxEffectsSlots[slot] = effect;
+			return true;
+		}
+		else
+			return false;
+	}
+	
+	public int getSlotForEffect(SoundEffect effect)
+	{
+		for(int i = 0; i < auxEffectsSlots.length; i++)
+		{
+			if(auxEffectsSlots[i].equals(effect))
+				return i;
+		}
+		return -1;
 	}
 }

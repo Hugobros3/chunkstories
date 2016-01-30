@@ -88,17 +88,21 @@ public class InputText extends Focusable
 			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textbox");
 		else
 			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textboxnofocus");
-		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text, font, 1f);
+		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text + ((focus && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 		// System.out.println(text);
 	}
 
 	public void drawWithBackGroundTransparent()
 	{
+		int len = maxlen;
+		int txtlen = FontRenderer2.getTextLengthUsingFont(fontSize, text+" ", font);
+		if(txtlen > len)
+			len = txtlen;
 		if (focus)
-			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textboxtransp");
+			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "gui/textboxtransp");
 		else
-			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textboxnofocustransp");
-		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text, font, 1f);
+			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "gui/textboxnofocustransp");
+		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text + ((focus && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 		// System.out.println(text);
 	}
 
@@ -112,7 +116,7 @@ public class InputText extends Focusable
 			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textbox");
 		else
 			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textboxnofocus");
-		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, passworded, font, 1f);
+		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, passworded + ((focus && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 
 	}
 

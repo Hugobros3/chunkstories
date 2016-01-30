@@ -184,7 +184,7 @@ void main() {
 	float fogI = clamp(fogFactor, 0.0, 0.9);
 	
 	vec3 fogColor = gl_Fog.color.rgb;
-	fogColor = getSkyColorWOSun(time, normalize((modelViewMatrixInv * cameraSpacePosition + camPos).xyz));
+	fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz + camPos).xyz));
 	fogColor.rgb = pow(fogColor.rgb, vec3(gamma));
 	
 	//gl_FragColor = shadingColor;

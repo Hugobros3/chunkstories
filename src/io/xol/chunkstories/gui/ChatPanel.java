@@ -6,21 +6,40 @@ package io.xol.chunkstories.gui;
 
 import io.xol.engine.base.font.BitmapFont;
 import io.xol.engine.base.font.FontRenderer2;
+import io.xol.engine.base.font.TrueTypeFont;
 import io.xol.engine.gui.InputText;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
+
 import io.xol.chunkstories.client.Client;
 
 public class ChatPanel
 {
-	int chatHistorySize = 50;
-	String[] chatHistory = new String[chatHistorySize];
+	int chatHistorySize = 150;
+	//String[] chatHistory = new String[chatHistorySize];
 	InputText inputBox = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
 	public boolean chatting = false;
 
-	public ChatPanel()
-	{
-		java.util.Arrays.fill(chatHistory, "");
+	Deque<ChatLine> chat = new ArrayDeque<ChatLine>();
+	
+	class ChatLine {
+		public ChatLine(String text)
+		{
+			this.text = text;
+			time = System.currentTimeMillis();
+		}
+		
+		public long time;
+		public String text;
+		
+		public void clickRelative(int x, int y)
+		{
+			
+		}
 	}
-
+	
 	public void key(int k)
 	{
 		if (k == 28)
@@ -28,7 +47,8 @@ public class ChatPanel
 			chatting = false;
 			if(inputBox.text.equals("/clear"))
 			{
-				java.util.Arrays.fill(chatHistory, "");
+				//java.util.Arrays.fill(chatHistory, "");
+				chat.clear();
 				return;
 			}
 			if(inputBox.text.startsWith("/loctime"))
@@ -71,31 +91,40 @@ public class ChatPanel
 				insert(m);
 		if (!chatting)
 			inputBox.text = "<Press T to chat>";
-		// inputBox.drawWithBackGroundTransparent(12,25, 32,
-		// BitmapFont.SMALLFONTS, XolioWindow.frameW/3*2);
 		inputBox.focus = true;
 	}
 
-	public void draw(int lines)
+	public void draw()
 	{
-		int a = 0;
-		for (String text : chatHistory)
+		while(chat.size() > chatHistorySize)
+			chat.removeLast();
+		int linesDrew = 0;
+		int maxLines = 14;
+		Iterator<ChatLine> i = chat.iterator();
+		while(linesDrew < maxLines && i.hasNext())
 		{
-			a++;
-			if (a >= chatHistorySize - lines)
-				FontRenderer2.drawTextUsingSpecificFont(9, (-a + chatHistorySize + 3) * 24, 0, 32, text, BitmapFont.SMALLFONTS, 0.75f);
+			//if (a >= chatHistorySize - lines)
+			ChatLine line = i.next();
+			//System.out.println("added" +line.text);
+			int actualLines = TrueTypeFont.smallfonts.getLinesHeight(line.text);
+			linesDrew+=actualLines;
+			//TrueTypeFont.smallfonts.drawString(9, (-linesDrew + 1) * 24 + 100 + (chatting ? 50 : 0), line.text, 1, 1, 500, new Vector4f(1,1,1,1));
+			
+			float a = (line.time + 10000L - System.currentTimeMillis()) / 1000f;
+			if(a < 0)
+				a = 0;
+			if(a > 1 || chatting)
+				a = 1;
+			FontRenderer2.drawTextUsingSpecificFont(9, (linesDrew + 0*maxLines - 1) * 24 + 100 + (chatting ? 50 : 0), 0, 32, line.text, BitmapFont.SMALLFONTS, a);
 		}
-		inputBox.setPos(12, 25);
-		inputBox.drawWithBackGroundTransparent();
+		inputBox.setPos(12, 112);
+		if (chatting)
+			inputBox.drawWithBackGroundTransparent();
 
 	}
 
 	public void insert(String t)
 	{
-		for (int i = 0; i < chatHistorySize - 1; i++)
-		{
-			chatHistory[i] = chatHistory[i + 1];
-		}
-		chatHistory[chatHistorySize - 1] = t;
+		chat.addFirst(new ChatLine(t));
 	}
 }

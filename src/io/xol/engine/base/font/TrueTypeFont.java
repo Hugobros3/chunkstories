@@ -80,17 +80,7 @@ public class TrueTypeFont
 	private FontMetrics fontMetrics;
 
 	private int correctL = 9;//, correctR = 8;
-
-	/*
-	 * public class IntObject { // Character's width public int width;
-	 * 
-	 * //* Character's height public int height;
-	 * 
-	 * //* Character's stored x position public int storedX;
-	 * 
-	 * //* Character's stored y position public int storedY; }
-	 */
-
+	
 	TrueTypeFont()
 	{
 		glTexIds = new int[256];
@@ -295,22 +285,7 @@ public class TrueTypeFont
 		float SrcHeight = srcY2 - srcY;
 		float RenderWidth = (SrcWidth / textureWidth);
 		float RenderHeight = (SrcHeight / textureHeight);
-
-		/*
-		 * glTexCoord2f(TextureSrcX, TextureSrcY); glVertex2f(drawX, drawY);
-		 * glTexCoord2f(TextureSrcX, TextureSrcY + RenderHeight);
-		 * glVertex2f(drawX, drawY + DrawHeight); glTexCoord2f(TextureSrcX +
-		 * RenderWidth, TextureSrcY + RenderHeight); glVertex2f(drawX +
-		 * DrawWidth, drawY + DrawHeight); glTexCoord2f(TextureSrcX +
-		 * RenderWidth, TextureSrcY); glVertex2f(drawX + DrawWidth, drawY);
-		 */
-
 		GuiDrawer.drawBoxWindowsSpace(drawX, drawY, drawX + DrawWidth, drawY + DrawHeight, TextureSrcX, TextureSrcY, TextureSrcX + RenderWidth, TextureSrcY + RenderHeight, -1, false, true, null);
-
-		// GuiDrawer.drawBoxWindowsSpace(0, 0, 512, 512, 0, 0, 1, 1, -1, true,
-		// null);
-
-		// System.out.println(drawX);
 	}
 
 	public int getWidth(String whatchars)
@@ -321,17 +296,63 @@ public class TrueTypeFont
 		for (int i = 0; i < whatchars.length(); i++)
 		{
 			currentChar = whatchars.charAt(i);
-			/*
-			 * if (currentChar < 256) { intObject = charArray[currentChar]; }
-			 * else { intObject = (IntObject) customChars.get(new
-			 * Character((char) currentChar)); }
-			 */
+			
 			glyph = glyphs[currentChar];
 
 			if (glyph != null)
 				totalwidth += glyph.width - correctL;
 		}
 		return totalwidth;
+	}
+	
+	public int getLinesHeight(String whatchars)
+	{
+		return getLinesHeight(whatchars, -1);
+	}
+	
+	public int getLinesHeight(String whatchars, int clipX)
+	{
+		boolean clip = clipX != -1;
+		int l = 1;
+		int i = 1;
+		char charCurrent;
+		Glyph glyph;
+		int totalwidth = 0;
+		while (i < whatchars.length())
+		{
+			charCurrent = whatchars.charAt(i);
+
+			int pageId = glTexIds[charCurrent / 256];
+			if(pageId == -1)
+			{
+				//System.out.println("Uncached unicode page, generating");
+				pageId = createSet(charCurrent / 256);
+			}
+			
+			glyph = glyphs[charCurrent];
+			
+			if (glyph != null)
+			{
+				//
+				if(clip && (totalwidth + (glyph.width - correctL)) > clipX)
+				{
+					l++;
+					totalwidth = 0;
+					continue;
+				}
+				if (charCurrent == '\n')
+				{
+					totalwidth = 0;
+					l++;
+				}
+				else
+				{
+					totalwidth += (glyph.width - correctL);
+				}
+				i++;
+			}
+		}
+		return l;
 	}
 
 	public int getHeight()
@@ -348,40 +369,52 @@ public class TrueTypeFont
 	{
 		return fontHeight;
 	}
+	
+	public void drawString(float x, float y, String whatchars, float scaleX, int clipX,  float scaleY)
+	{
+		drawString(x, y, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, new Vector4f(1,1,1,1));
+	}
 
 	public void drawString(float x, float y, String whatchars, float scaleX, float scaleY)
 	{
-		drawString(x, y, whatchars, 0, whatchars.length() - 1, scaleX, scaleY, ALIGN_LEFT, new Vector4f(1,1,1,1));
+		drawString(x, y, whatchars, scaleX, scaleY, ALIGN_LEFT, -1, new Vector4f(1,1,1,1));
 	}
 
-	public void drawString(float x, float y, String whatchars, float scaleX, float scaleY, Vector4f color)
+	public void drawString(float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4f color)
 	{
-		drawString(x, y, whatchars, 0, whatchars.length() - 1, scaleX, scaleY, ALIGN_LEFT, color);
+		drawString(x, y, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, color);
 	}
 	
 	public void drawStringWithShadow(float x, float y, String whatchars, float scaleX, float scaleY, Vector4f color)
+	{
+		drawStringWithShadow(x, y, whatchars, scaleX, scaleY, -1, color);
+	}
+	
+	public void drawStringWithShadow(float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4f color)
 	{
 		Vector4f colorDarkened = new Vector4f(color);
 		colorDarkened.x*=0.0f;
 		colorDarkened.y*=0.0f;
 		colorDarkened.z*=0.0f;
-		drawString(x+1*scaleX, y-1*scaleY, whatchars, 0, whatchars.length() - 1, scaleX, scaleY, ALIGN_LEFT, colorDarkened);
-		drawString(x, y, whatchars, 0, whatchars.length() - 1, scaleX, scaleY, ALIGN_LEFT, color);
+		drawString(x+1*scaleX, y-1*scaleY, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, colorDarkened);
+		drawString(x, y, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, color);
 	}
 	
 	public void drawString(float x, float y, String whatchars, float scaleX, float scaleY, int format)
 	{
-		drawString(x, y, whatchars, 0, whatchars.length() - 1, scaleX, scaleY, format, new Vector4f(1,1,1,1));
+		drawString(x, y, whatchars, scaleX, scaleY, format, -1, new Vector4f(1,1,1,1));
 	}
 	
-	public void drawString(float x, float y, String whatchars, int startIndex, int endIndex, float scaleX, float scaleY, int format, Vector4f color)
+	public void drawString(float x, float y, String whatchars, float scaleX, float scaleY, int format, int clipX, Vector4f color)
 	{
+		boolean clip = clipX != -1;
+		
 		Glyph glyph;
 		// IntObject intObject = null;
 		int charCurrent;
 
 		int totalwidth = 0;
-		int i = startIndex, d, c;
+		int i = 0, d, c;
 		float startY = 0;
 
 		/*switch (format)
@@ -389,7 +422,8 @@ public class TrueTypeFont
 		case ALIGN_RIGHT:
 		{
 			d = -1;
-			c = correctR;
+			//correctR
+			c = correctL;
 
 			while (i < endIndex)
 			{
@@ -419,31 +453,18 @@ public class TrueTypeFont
 			c = correctL;
 			break;
 		}
-
 		}*/
-		
 		d = 1;
 		c = correctL;
-
-		// GuiDrawer.setState(fontTextureID, true, new Vector4f(1, 1, 1, 1));
-
-		// glBindTexture(GL_TEXTURE_2D, fontTextureID);
-		// glBegin(GL_QUADS);
 		
-		while (i >= startIndex && i <= endIndex)
+		while (i < whatchars.length())
 		{
 			charCurrent = whatchars.charAt(i);
-
-			/*
-			 * if (charCurrent < 256) { intObject = charArray[charCurrent]; }
-			 * else { intObject = (IntObject) customChars.get(new
-			 * Character((char) charCurrent)); }
-			 */
 
 			int pageId = glTexIds[charCurrent / 256];
 			if(pageId == -1)
 			{
-				System.out.println("Uncached unicode page, generating");
+				//System.out.println("Uncached unicode page, generating");
 				pageId = createSet(charCurrent / 256);
 			}
 			
@@ -451,8 +472,14 @@ public class TrueTypeFont
 			
 			if (glyph != null)
 			{
-				if (d < 0)
-					totalwidth += (glyph.width - c) * d;
+				//if (d < 0)
+				//	totalwidth += (glyph.width - c) * d;
+				if(clip && (totalwidth + (glyph.width - c)) > clipX)
+				{
+					startY -= fontHeight * d;
+					totalwidth = 0;
+					continue;
+				}
 				if (charCurrent == '\n')
 				{
 					startY -= fontHeight * d;
@@ -477,21 +504,15 @@ public class TrueTypeFont
 				}
 				else
 				{
-					/*int pageId = glTexIds[charCurrent / 256];
-					if(pageId == -1)
-					{
-						System.out.println("Uncached unicode page, generating");
-						pageId = createSet(charCurrent / 256);
-					}*/
 					GuiDrawer.setState(pageId, true, true, color);
 					drawQuad((totalwidth + glyph.width) * scaleX + x, startY * scaleY + y, totalwidth * scaleX + x, (startY + glyph.height) * scaleY + y, glyph.x + glyph.width, glyph.y + glyph.height, glyph.x, glyph.y);
-					if (d > 0)
-						totalwidth += (glyph.width - c) * d;
+					//if (d > 0)
+					totalwidth += (glyph.width - c) * d;
 				}
-				i += d;
+				i++;
 			}
 		}
-		
+		//System.out.println(whatchars+":"+color+"x:="+x+"y:"+(totalwidth+y)+"y:"+y);
 		// glEnd();
 	}
 

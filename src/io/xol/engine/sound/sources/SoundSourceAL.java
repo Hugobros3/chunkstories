@@ -194,14 +194,16 @@ public class SoundSourceAL implements SoundSource
 				elapsed--;
 			}
 		}
+		ALSoundManager alManager = ((ALSoundManager) manager);
 		if (isAmbient)
 		{
 			//To get rid of spatialization we tp the ambient sources to the listener
-			ALSoundManager alManager = ((ALSoundManager) manager);
 			x = alManager.x;
 			y = alManager.y;
 			z = alManager.z;
 		}
+		if(soundEffect != null)
+			effectSlotId = alManager.getSlotForEffect(soundEffect);
 		updateSource();
 	}
 
@@ -242,6 +244,8 @@ public class SoundSourceAL implements SoundSource
 			alDeleteAuxiliaryEffectSlots(efxSlot);*/
 	}
 
+	int effectSlotId = -1;
+	
 	private void updateSource()
 	{
 		alSource3f(alId, AL_POSITION, x, y, z);
@@ -290,6 +294,10 @@ public class SoundSourceAL implements SoundSource
 			alSourcef(alId, AL_REFERENCE_DISTANCE, start);
 			alSourcef(alId, AL_MAX_DISTANCE, end);
 			//System.out.println(efxSlot + ":"+reverbEffectSlot);
+			if(effectSlotId != -1)
+				alSource3i(alId, AL_AUXILIARY_SEND_FILTER, effectSlotId, 0, AL_FILTER_NULL);
+			else
+			    alSource3i(alId, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 0, AL_FILTER_NULL);
 			//alSource3i(alId, AL_AUXILIARY_SEND_FILTER, efxSlot, 0, AL_FILTER_NULL);
 			updateProperties = false;
 		}

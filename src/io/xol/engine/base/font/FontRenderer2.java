@@ -150,10 +150,6 @@ public class FontRenderer2
 
 			i++;
 		}
-		// glDisable(GL_BLEND);
-		// glColor4f(1f,1f,1f,1f);
-		// glPopMatrix();
-
 		return l;
 	}
 
@@ -183,6 +179,12 @@ public class FontRenderer2
 			i++;
 		}
 		return len;
+	}
+	
+	public static int getTextHeightUsingFont(float size, String text, BitmapFont font)
+	{
+		//nique
+		return -1;
 	}
 
 	static int getIntForChar(int c)

@@ -4,7 +4,6 @@ import io.xol.chunkstories.gui.OverlayableScene;
 
 public class MenuOverlay
 {
-
 	public OverlayableScene mainScene;
 	public MenuOverlay parent;
 
@@ -16,7 +15,7 @@ public class MenuOverlay
 
 	public void drawToScreen(int x, int y, int w, int h)
 	{
-
+		
 	}
 
 	public boolean handleKeypress(int k)

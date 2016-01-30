@@ -143,7 +143,7 @@ public class ConfigFile
 
 	public boolean getBooleanProp(String string, boolean booleanProp)
 	{
-		return getProp(string, booleanProp + "false").equals("true");
+		return getProp(string, booleanProp + "").equals("true");
 	}
 
 	public float getFloatProp(String s)

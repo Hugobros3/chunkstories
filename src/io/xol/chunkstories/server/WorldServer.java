@@ -1,7 +1,6 @@
 package io.xol.chunkstories.server;
 
 import java.io.File;
-import java.util.List;
 
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
