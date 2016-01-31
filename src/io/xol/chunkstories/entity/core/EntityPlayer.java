@@ -270,7 +270,7 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 			else
 				moveWithCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed, true);
 		}
-		if (Keyboard.isKeyDown(16))
+		if (Keyboard.isKeyDown(FastConfig.LEFT_KEY))
 		{
 			float a = (float) ((-rotH + 90) / 180f * Math.PI);
 			if (noclip)

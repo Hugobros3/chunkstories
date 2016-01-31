@@ -1,5 +1,14 @@
 # Here you get/have to assign items their ID and class.
 
-item 1 io.xol.chunkstories.item.core.ItemAk47
-item 2 io.xol.chunkstories.item.core.ItemAk47Magazine
-item 3 io.xol.chunkstories.item.core.ItemHeGrenade
+item 1 weapon_ak47 io.xol.chunkstories.item.core.ItemAk47
+	width: 2
+	height: 3
+end
+
+item 2 mag_ak47 io.xol.chunkstories.item.core.ItemAk47Magazine
+	width: 2
+	height: 2
+end
+
+item 3 he_grenade io.xol.chunkstories.item.core.ItemHeGrenade
+end

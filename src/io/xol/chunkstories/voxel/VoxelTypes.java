@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -192,6 +193,9 @@ public class VoxelTypes
 
 	public static void loadVoxelTypes()
 	{
+		//Discard previous voxels
+		Arrays.fill(voxels, null);
+		
 		// Load .voxels files
 		// From vanilla
 		File vanillaFolder = new File("./" + "res/voxels/");
@@ -211,51 +215,13 @@ public class VoxelTypes
 				//vo.color = VoxelTextures.getTextureColorAVG(vo.getVoxelTexture(0, new BlockRenderInfo()).name);
 			}
 		}
-		/*
-		 * addVoxel(new VoxelAir(0,"air").solid(false).opaque(false));
-		 * addVoxel(new Voxel(1,"stone")); addVoxel(new Voxel(2,"grass"));
-		 * addVoxel(new Voxel(3,"dirt")); addVoxel(new Voxel(4,"wood"));
-		 * addVoxel(new Voxel(5,"leaves").opaque(false).selfOpaque(false));
-		 * addVoxel(new Voxel(6,"forestgrass")); addVoxel(new
-		 * Voxel(7,"drygrass"));
-		 * 
-		 * addVoxel(new Voxel(8,"pinewood")); addVoxel(new
-		 * Voxel(9,"pineleaves").opaque(false).selfOpaque(false));
-		 * 
-		 * addVoxel(new Voxel(10,"bricks")); addVoxel(new Voxel(11,"gravel"));
-		 * addVoxel(new Voxel(12,"sand"));
-		 * 
-		 * addVoxel(new Voxel(13,"cactus"));
-		 * 
-		 * addVoxel(new Voxel(14,"planks")); addVoxel(new
-		 * Voxel(15,"glass").opaque(false).selfOpaque(true));
-		 * 
-		 * addVoxel(new Voxel(16,"glowing").emitting(15)); addVoxel(new
-		 * Voxel(17,"snow"));
-		 * 
-		 * addVoxel(new
-		 * Voxel(64,"grass_prop").solid(false).prop(true).opaque(false));
-		 * addVoxel(new
-		 * Voxel(65,"forestgrass_prop").solid(false).prop(true).opaque(false));
-		 * 
-		 * addVoxel(new
-		 * Voxel(128,"water").liquid(true).solid(false).opaque(false));
-		 */
 	}
 
-	/*
-	 * private static void addVoxel(Voxel voxel) { if(voxel.voxelID >
-	 * lastAllocatedId) lastAllocatedId = voxel.voxelID; voxels[voxel.voxelID] =
-	 * voxel; voxelTypes++; }
+	/**
+	 * Get a voxel by it's id
+	 * @param voxelId The id of the voxel
+	 * @return
 	 */
-
-	/*
-	 * public static void initVoxelTextures() { for(Voxel vo : voxels) { if(vo
-	 * != null) { for(int i = 0; i < 6; i++) vo.texture[i].legacyId =
-	 * VoxelTiles.getVoxelTexture(vo.getVoxelTexture(i)); //Color summary
-	 * vo.color = VoxelTiles.getTextureColorAVG(vo.getVoxelTexture(0)); } } }
-	 */
-
 	public static Voxel get(int voxelId)
 	{
 		//Sanitize

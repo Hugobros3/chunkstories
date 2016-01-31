@@ -50,7 +50,7 @@ public class Inventory implements Iterable<ItemPile>
 					p = contents[i % width][j % height];
 					if (p != null)
 					{
-						if(i+p.item.slotsWidth-1 >= x && j+p.item.slotsHeight-1 >= y)
+						if(i+p.item.getSlotsWidth()-1 >= x && j+p.item.getSlotsHeight()-1 >= y)
 							return p;
 					}
 				}
@@ -66,12 +66,12 @@ public class Inventory implements Iterable<ItemPile>
 		else
 		{
 			ItemPile p;
-			for (int i = 0; i < x + (pile.item.slotsWidth); i++)
+			for (int i = 0; i < x + (pile.item.getSlotsWidth()); i++)
 			{
 				// If overflow in width
 				if (i >= width)
 					return false;
-				for (int j = 0; j < y + (pile.item.slotsHeight); j++)
+				for (int j = 0; j < y + (pile.item.getSlotsHeight()); j++)
 				{
 					// If overflow in height
 					if (j >= height)
@@ -79,7 +79,7 @@ public class Inventory implements Iterable<ItemPile>
 					p = contents[i % width][j % height];
 					if (p != null)
 					{
-						if(i+p.item.slotsWidth-1 >= x && j+p.item.slotsHeight-1 >= y)
+						if(i+p.item.getSlotsWidth()-1 >= x && j+p.item.getSlotsHeight()-1 >= y)
 							return false;
 					}
 				}

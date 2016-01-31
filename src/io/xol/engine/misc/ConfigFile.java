@@ -114,7 +114,10 @@ public class ConfigFile
 		if (props.containsKey(s))
 			return props.get(s);
 		else
-			props.put(s, a);
+		{
+			if(a != null)
+				props.put(s, a);
+		}
 		// System.out.println("getting prop"+s+"size:"+this.props.size());
 		return a;
 	}

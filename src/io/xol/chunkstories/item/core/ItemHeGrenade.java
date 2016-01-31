@@ -8,6 +8,11 @@ import io.xol.chunkstories.item.Item;
 
 public class ItemHeGrenade extends Item
 {
+	public ItemHeGrenade(int id)
+	{
+		super(id);
+	}
+
 	@Override
 	public String getTextureName()
 	{

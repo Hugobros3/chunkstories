@@ -8,12 +8,9 @@ import io.xol.chunkstories.item.Item;
 
 public class ItemAk47 extends Item
 {
-	// public int slotsWidth = 3;
-	// public int slotsHeight = 3;
-
-	public ItemAk47()
+	public ItemAk47(int id)
 	{
-		super(3, 3);
+		super(id);
 	}
 
 	@Override

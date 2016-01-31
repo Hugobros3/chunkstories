@@ -1,7 +1,6 @@
 package io.xol.chunkstories.item;
 
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.world.World;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,7 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,13 +18,17 @@ import java.util.Map;
 
 public class ItemsList
 {
-	static Map<Short, Constructor<? extends Item>> itemsTypes = new HashMap<Short, Constructor<? extends Item>>();
-	static Map<String, Short> itemsIds = new HashMap<String, Short>();
+	public static Item[] items = new Item[16777216];
+	public static Map<String, Item> dictionary = new HashMap<String, Item>();
+	public static int itemTypes = 0;
+	public static int lastAllocatedId;
+	
 	
 	public static void reload()
 	{
-		itemsIds.clear();
-		itemsTypes.clear();
+		Arrays.fill(items, null);
+		dictionary.clear();
+		
 		File vanillaFolder = new File("./" + "res/items/");
 		for (File f : vanillaFolder.listFiles())
 		{
@@ -46,6 +49,8 @@ public class ItemsList
 			FileReader fileReader = new FileReader(f);
 			BufferedReader reader = new BufferedReader(fileReader);
 			String line = "";
+			
+			Item currentItem = null;
 			while ((line = reader.readLine()) != null)
 			{
 				line = line.replace("\t", "");
@@ -53,47 +58,64 @@ public class ItemsList
 				{
 					// It's a comment, ignore.
 				}
-				else
+				else if(line.startsWith("end"))
+				{
+					if(currentItem == null)
+					{
+						ChunkStoriesLogger.getInstance().warning("Syntax error in file : "+f+" : ");
+						continue;
+					}
+					//Eventually add the item
+					items[currentItem.getID()] = currentItem;
+					dictionary.put(currentItem.getInternalName(), currentItem);
+				}
+				else if(line.startsWith("item"))
 				{
 					if(line.contains(" "))
 					{
 						String[] split = line.split(" ");
-						short id = Short.parseShort(split[1]);
-						String className = split[2];
+						int id = Integer.parseInt(split[1]);
+						String itemName = split[2];
+						String className = split[3];
 						
 						try
 						{
-							Class<?> itemClass = Class.forName(className);
-							if(itemClass == null)
+							Class<?> rawClass = Class.forName(className);
+							if(rawClass == null)
 							{
-								System.out.println("item "+className+" does not exist in codebase.");
+								ChunkStoriesLogger.getInstance().warning("item "+className+" does not exist in codebase.");
+							}
+							else if(!(Item.class.isAssignableFrom(rawClass)))
+							{
+								ChunkStoriesLogger.getInstance().warning("item "+className+" is not extending the Item class.");
 							}
 							else
 							{
-								@SuppressWarnings("rawtypes")
-								Class[] types = {  };
 								@SuppressWarnings("unchecked")
+								Class<? extends Item> itemClass = (Class<? extends Item>)rawClass;
+								Class<?>[] types = { Integer.TYPE };
 								Constructor<? extends Item> constructor = (Constructor<? extends Item>) itemClass.getConstructor(types);
-								
+								//itemClass.getField("internalName").setAccessible(true);
+								//itemClass.getField("internalName").set(null, itemName);
 								//Field eId = itemClass.getField("allocatedID");
 								//System.out.println("Setting "+className+" id to : "+id);
 								//eId.setShort(null, id);
-								
+								Object[] parameters = { id };
 								if(constructor == null)
 								{
 									System.out.println("item "+className+" does not provide a valid constructor.");
+									continue;
 								}
-								else
-								{
-									itemsTypes.put(id, constructor);
-									itemsIds.put(className, id);
-								}
+								currentItem = constructor.newInstance(parameters);
+								currentItem.setInternalName(itemName);
+								
+								
 								//Object[] parameters = { id, name };
 								//voxel = (Voxel) constructor.newInstance(parameters);
 							}
 
 						}
-						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
+						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException e)
 						{
 							e.printStackTrace();
 						}
@@ -107,33 +129,18 @@ public class ItemsList
 			e.printStackTrace();
 		}
 	}
-
-	public static Item newItem(World world, short itemType)
+	
+	public static Item get(int id)
 	{
-		if(itemsTypes.containsKey(itemType))
-		{
-			Object[] parameters = {  };
-			try
-			{
-				Item item = itemsTypes.get(itemType).newInstance(parameters);
-				return item;
-			}
-			catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return null;
+		//Quick & dirty sanitization
+		id = id & 0x00FFFFFF;
+		return items[id];
 	}
 	
-	public static short getIdForClass(String className)
+	public static Item getItemByName(String itemName)
 	{
-		return itemsIds.get(className);
-	}
-
-	public Collection<Short> getAllItemIds()
-	{
-		return itemsIds.values();
+		if(dictionary.containsKey(itemName))
+			return dictionary.get(itemName);
+		return null;
 	}
 }

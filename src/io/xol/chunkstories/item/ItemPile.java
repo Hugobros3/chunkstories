@@ -14,6 +14,8 @@ public class ItemPile
 	public Inventory inventory;
 	public int x,y;
 	
+	
+	
 	public ItemPile(Item item)
 	{
 		this.item = item;

@@ -7,9 +7,7 @@ import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.core.ItemAk47;
-import io.xol.chunkstories.item.core.ItemAk47Magazine;
-import io.xol.chunkstories.item.core.ItemHeGrenade;
+import io.xol.chunkstories.item.ItemsList;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.textures.TexturesHandler;
@@ -41,8 +39,8 @@ public class InventoryOverlay extends MenuOverlay
 		{
 			int slotSize = 24 * 2;
 			int textureId = TexturesHandler.getTextureID(selectedItem.getTextureName());
-			int width = slotSize * selectedItem.item.slotsWidth;
-			int height = slotSize * selectedItem.item.slotsHeight;
+			int width = slotSize * selectedItem.item.getSlotsWidth();
+			int height = slotSize * selectedItem.item.getSlotsHeight();
 			GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX()-width/2, Mouse.getY()-height/2, width, height, 0, 1, 1, 0, textureId, true, true, null);
 		}
 	}
@@ -69,14 +67,14 @@ public class InventoryOverlay extends MenuOverlay
 				int y = c[1];
 				if(button == 2)
 				{
-					inventory.setItemAt(x, y, new ItemPile(new ItemHeGrenade()));
+					inventory.setItemAt(x, y, new ItemPile(ItemsList.getItemByName("he_grenade")));
 				}
 				else if(button == 1)
 				{
 					if(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
-						inventory.setItemAt(x, y, new ItemPile(new ItemAk47()));
+						inventory.setItemAt(x, y, new ItemPile(ItemsList.getItemByName("weapon_ak47")));
 					else
-						inventory.setItemAt(x, y, new ItemPile(new ItemAk47Magazine()));
+						inventory.setItemAt(x, y, new ItemPile(ItemsList.getItemByName("mag_ak47")));
 				}
 				else
 				{
