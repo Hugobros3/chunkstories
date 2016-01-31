@@ -11,6 +11,7 @@ import io.xol.chunkstories.world.World;
 import io.xol.engine.math.LoopingMathHelper;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
@@ -934,6 +935,9 @@ public class ChunksRenderer extends Thread
 	
 	public CubicChunk[] cache = new CubicChunk[27];
 	
+	Deque<Integer> blockSources = new ArrayDeque<Integer>();
+	Deque<Integer> sunSources = new ArrayDeque<Integer>();
+	
 	@SuppressWarnings("unused")
 	private void renderChunk(CubicChunk work)
 	{
@@ -942,7 +946,7 @@ public class ChunksRenderer extends Thread
 			return;
 
 		if (work.needRelightning.getAndSet(false))
-			work.doLightning(true);
+			work.doLightning(true, blockSources, sunSources);
 		
 		// Don't bother
 		if(!work.need_render.get())

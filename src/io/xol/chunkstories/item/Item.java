@@ -20,6 +20,20 @@ public abstract class Item
 	}
 	
 	/**
+	 * This method is used to determine if two items piles can be stacked together in one.
+	 * Default behavior only checks the ids.
+	 * @param a The first ItemPile
+	 * @param b The second ItemPile
+	 * @return Wether they are stackable together without loss of information.
+	 */
+	public boolean comparePiles(ItemPile a, ItemPile b)
+	{
+		if(a.getItem().getID() == b.getItem().getID())
+			return true;
+		return false;
+	}
+	
+	/**
 	 * For Items not implementing a custom renderer, it just shows a dull icon and thus require an icon texture.
 	 * @return The full path to the image file.
 	 */

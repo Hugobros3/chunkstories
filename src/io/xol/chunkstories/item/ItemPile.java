@@ -14,8 +14,6 @@ public class ItemPile
 	public Inventory inventory;
 	public int x,y;
 	
-	
-	
 	public ItemPile(Item item)
 	{
 		this.item = item;
@@ -24,5 +22,10 @@ public class ItemPile
 	public String getTextureName()
 	{
 		return item.getTextureName();
+	}
+
+	public Item getItem()
+	{
+		return item;
 	}
 }

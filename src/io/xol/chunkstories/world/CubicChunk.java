@@ -127,10 +127,7 @@ public class CubicChunk
 	public static long totalLightTimings = 0L;
 	public static int totalLightRuns = 0;
 
-	Deque<Integer> blockSources = new ArrayDeque<Integer>();
-	Deque<Integer> sunSources = new ArrayDeque<Integer>();
-
-	public void doLightning(boolean adjacent)
+	public void doLightning(boolean adjacent, Deque<Integer> blockSources, Deque<Integer> sunSources)
 	{
 		//if(true)
 		//	return;

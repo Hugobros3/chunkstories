@@ -13,6 +13,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -170,6 +172,10 @@ public class IOTasks extends Thread
 		abstract public boolean run();
 	}
 
+	//Used for lightning
+	Deque<Integer> blockSources = new ArrayDeque<Integer>();
+	Deque<Integer> sunSources = new ArrayDeque<Integer>();
+	
 	public class IOTaskLoadChunk extends IOTask
 	{
 		public int x;
@@ -186,7 +192,7 @@ public class IOTasks extends Thread
 			this.shouldLoadCH = shouldLoadCH;
 			this.overwrite = overwrite;
 		}
-
+		
 		@Override
 		public boolean run()
 		{
@@ -215,7 +221,7 @@ public class IOTasks extends Thread
 					c.setDataAt(i / 32 / 32, (i / 32) % 32, i % 32, data);
 				}
 			}
-			c.doLightning(false);
+			c.doLightning(false, blockSources, sunSources);
 			world.setChunk(c);
 			return true;
 		}

@@ -81,7 +81,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 				}
 			}
 
-			c.doLightning(false);
+			c.doLightning(false, blockSources, sunSources);
 
 			// synchronized (chunksAlreadyAsked)
 			{

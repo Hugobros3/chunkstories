@@ -423,7 +423,7 @@ public class WorldRenderer
 			// Also clean the chunk summaries
 			world.chunkSummaries.removeFurther(pCX, pCZ, 32);
 
-			// Raytrace a cone of needed chunks
+			// Build a list of needed chunks
 			renderList.clear();
 			CubicChunk chunk;
 			for (int d = 0; d < chunksViewDistance; d++)
@@ -517,28 +517,6 @@ public class WorldRenderer
 					}
 				}
 			}
-			boolean valid_chunk;
-			// Visibility check
-			for (int a = pCX - chunksViewDistance + 1; a < pCX + chunksViewDistance - 1; a++)
-				for (int b = pCZ - chunksViewDistance + 1; b < pCZ + chunksViewDistance - 1; b++)
-					for (int c = pCY - 2; c < pCY + 2; c++)
-					{
-						chunk = world.getChunk(a, c, b, false);
-						if (chunk == null)
-							valid_chunk = false;
-						else if (chunk.dataPointer == -1 || chunk.vbo_id != -1)
-							valid_chunk = true;
-						else
-							valid_chunk = false;
-
-						if (!valid_chunk)
-						{
-							//
-							if (c > minYChunkLoaded)
-								minYChunkLoaded = c;
-						}
-					}
-
 		}
 		pCX = npCX;
 		pCY = npCY;
@@ -584,7 +562,7 @@ public class WorldRenderer
 		else if (size > 2048)
 			fun = 20;
 
-		int fun2 = 200;// hdPass ? 100 : 200;
+		int fun2 = 102;// hdPass ? 100 : 200;
 		Matrix4f depthProjectionMatrix = MatrixHelper.getOrthographicMatrix(-fun * 10, fun * 10, -fun * 10, fun * 10, -fun2, fun2);
 		Matrix4f depthViewMatrix = MatrixHelper.getLookAtMatrix(normSunPosition, new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
