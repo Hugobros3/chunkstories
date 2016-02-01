@@ -22,7 +22,7 @@ public class BasicTree extends GenerableStructure
 		 * 
 		 * if(oriZ-c.chunkZ*32 < -5) return; if(oriZ-c.chunkZ*32 > 37) return;
 		 */
-		for (int i = height - 4; i < height + 1; i++)
+		/*for (int i = height - 4; i < height + 1; i++)
 		{
 			for (int a = -2; a <= 2; a++)
 				for (int b = -2; b <= 2; b++)
@@ -35,7 +35,7 @@ public class BasicTree extends GenerableStructure
 		for (int i = 0; i < height; i++)
 		{
 			c.setDataAbsolute(oriX, oriY + i, oriZ, 4);
-		}
+		}*/
 	}
 
 }

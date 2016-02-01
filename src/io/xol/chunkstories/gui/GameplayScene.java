@@ -195,7 +195,6 @@ public class GameplayScene extends OverlayableScene
 	{
 		if (currentOverlay != null && currentOverlay.handleKeypress(k))
 			return true;
-
 		if (!chat.chatting)
 		{
 			if (k == FastConfig.CHAT_KEY)
@@ -216,8 +215,6 @@ public class GameplayScene extends OverlayableScene
 			Client.world.reRender();
 			worldRenderer.chunksRenderer.clear();
 			ChunksRenderer.renderStart = System.currentTimeMillis();
-			CubicChunk.totalLightRuns = 0;
-			CubicChunk.totalLightTimings = 0L;
 			worldRenderer.modified();
 		}
 		else if (k == FastConfig.GRABUSE_KEY)
@@ -249,11 +246,6 @@ public class GameplayScene extends OverlayableScene
 		}
 		else if (k == Keyboard.KEY_F4)
 			Client.world.particlesHolder.addParticle(new ParticleLight(Client.world, player.posX + (Math.random() - 0.5) * 30, player.posY + (Math.random()) * 10, player.posZ + (Math.random() - 0.5) * 30));
-		else if (k == Keyboard.KEY_F9)
-		{
-			// Client.connection = new ServerConnection("127.0.0.1", 30410);
-			// chat.insert("#FFFF00Connecting to 127.0.0.1:30410");
-		}
 		else if (k == Keyboard.KEY_F6)
 		{
 			if (player instanceof EntityPlayer)
@@ -267,6 +259,11 @@ public class GameplayScene extends OverlayableScene
 		}
 		else if (k == Keyboard.KEY_F8)
 			shouldCM = true;
+		else if (k == Keyboard.KEY_F9)
+		{
+			// Client.connection = new ServerConnection("127.0.0.1", 30410);
+			// chat.insert("#FFFF00Connecting to 127.0.0.1:30410");
+		}
 		else if (k == Keyboard.KEY_F12)
 		{
 			// VoxelTiles.generateTexture();

@@ -262,6 +262,7 @@ public class WorldRenderer
 
 			bloomShader.use(true);
 			bloomShader.setUniformSampler(0, "shadedBuffer", this.composite_shaded);
+			bloomShader.setUniformFloat("apertureModifier", apertureModifier);
 
 			this.composite_pass_bloom.bind();
 			this.composite_pass_bloom.setEnabledRenderTargets();
@@ -396,7 +397,7 @@ public class WorldRenderer
 			//long usageBefore = Runtime.getRuntime().freeMemory();
 			ChunksIterator it = Client.world.iterator();
 			CubicChunk cu;
-			while(it.hasNext())
+			while (it.hasNext())
 			{
 				cu = it.next();
 				if ((LoopingMathHelper.moduloDistance(cu.chunkX, pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(cu.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 1) || (Math.abs(cu.chunkY - pCY) > 4))
@@ -405,7 +406,7 @@ public class WorldRenderer
 					world.removeChunk(cu, false);
 				}
 			}
-			
+
 			/*
 			List<CubicChunk> allChunks = world.getAllLoadedChunks();
 			for (CubicChunk c : allChunks)
@@ -611,6 +612,9 @@ public class WorldRenderer
 
 	Texture blocksDiffuseTexture = TexturesHandler.getTexture("tiles_merged_diffuse.png");
 	Texture blocksNormalTexture = TexturesHandler.getTexture("tiles_merged_normal.png");
+
+	float averageBrightness = 1f;
+	float apertureModifier = 1f;
 
 	public void renderWorld(boolean shadowPass)
 	{
@@ -921,7 +925,7 @@ public class WorldRenderer
 		DefferedLight[] el;
 		Iterator<Entity> ie = world.getAllLoadedEntities();
 		Entity e;
-		while(ie.hasNext())
+		while (ie.hasNext())
 		//for (Entity e : getAllLoadedEntities())
 		{
 			e = ie.next();
@@ -1105,7 +1109,7 @@ public class WorldRenderer
 		lightShader.use(true);
 
 		lightShader.setUniformSampler(1, "albedoBuffer", this.composite_albedo);
-		lightShader.setUniformSampler(0, "metaBuffer", this.composite_meta);
+		lightShader.setUniformSampler(4, "metaBuffer", this.composite_meta);
 		//lightShader.setUniformSampler(1, "lightBuffer", this.composite_light);
 
 		lightShader.setUniformSampler(2, "comp_depth", this.composite_zbuffer);
@@ -1363,6 +1367,7 @@ public class WorldRenderer
 		glDisable(GL_BLEND);
 		glDisable(GL_CULL_FACE);
 		postProcess.use(true);
+
 		postProcess.setUniformSampler(0, "shadedBuffer", this.composite_shaded);
 
 		postProcess.setUniformSampler(1, "albedoBuffer", this.composite_albedo);
@@ -1389,6 +1394,8 @@ public class WorldRenderer
 		postProcess.setUniformFloat("viewWidth", scrW);
 		postProcess.setUniformFloat("viewHeight", scrH);
 
+		postProcess.setUniformFloat("apertureModifier", apertureModifier);
+
 		ObjectRenderer.drawFSQuad(postProcess.getVertexAttributeLocation("vertexIn"));
 		//drawFSQuad();
 
@@ -1399,12 +1406,59 @@ public class WorldRenderer
 			System.out.println("final blit took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		postProcess.use(false);
+
+		composite_shaded.setMipMapping(true);
+		this.composite_shaded.computeMipmaps();
+
+		if (FastConfig.doBloom)
+		{
+			glBindTexture(GL_TEXTURE_2D, composite_shaded.getID());
+			try
+			{
+				int max_mipmap = (int) (Math.floor(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
+				//System.out.println(fBuffer + " " + max_mipmap);
+				fBuffer.rewind();
+				glGetTexImage(GL_TEXTURE_2D, max_mipmap, GL_RGB, GL_FLOAT, fBuffer);
+				//System.out.println(fBuffer);
+				float luma = fBuffer.getFloat() * 0.2125f + fBuffer.getFloat() * 0.7154f + fBuffer.getFloat() * 0.0721f;
+				luma *= apertureModifier;
+				luma = (float) Math.pow(luma, 1d / 2.2);
+				//System.out.println("luma:"+luma + " aperture:"+ this.apertureModifier);
+
+				float targetLuma = 0.55f;
+				float lumaMargin = 0.35f;
+
+				if (luma < targetLuma - lumaMargin)
+				{
+					if (apertureModifier < 2.0)
+						apertureModifier *= 1.001;
+				}
+				else if (luma > targetLuma + lumaMargin)
+				{
+					if (apertureModifier > 1.0)
+						apertureModifier *= 0.999;
+				}
+				else
+				{
+					float clamped = (float) Math.min(Math.max(1 / apertureModifier, 0.998), 1.002);
+					apertureModifier *= clamped;
+				}
+			}
+			catch (Throwable th)
+			{
+				th.printStackTrace();
+			}
+		}
+		else
+			apertureModifier = 1.0f;
 		/*for (Entity e : world.getAllLoadedEntities())
 		{
 			if (e instanceof EntityHUD)
 				((EntityHUD) e).drawHUD(camera);
 		}*/
 	}
+
+	ByteBuffer fBuffer = BufferUtils.createByteBuffer(4 * 3);
 
 	public int getQueueSize()
 	{

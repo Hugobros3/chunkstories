@@ -14,7 +14,6 @@ import io.xol.chunkstories.world.World;
 
 public class VoxelDefault extends Voxel
 {
-
 	VoxelTexture[] texture = new VoxelTexture[6];
 
 	boolean liquid = false;
@@ -120,24 +119,12 @@ public class VoxelDefault extends Voxel
 	{
 		return texture[side];
 	}
-
-	/**
-	 * Gets the light level that will exit this block, based on the block information and side.
-	 * 
-	 * @param data
-	 *            The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
-	 * @param llIn
-	 *            The 0-15 light level this block is currently at ( either sun or block light )
-	 * @param side
-	 *            The side of the block light would come out of ( see {@link VoxelSides VoxelSides.class} )
-	 * @return The light 0-15 light level this block emits
-	 */
-
-	public int getLightLevelOut(int data, int llIn, int side)
+	
+	public int getLightLevelModifier(int dataFrom, int dataTo, int side)
 	{
 		if (this.isVoxelOpaque())
-			return lightLevel;
-		return llIn - shading;
+			return -15;
+		return shading;
 	}
 
 	public void debugRenderCollision(World world, int x, int y, int z)

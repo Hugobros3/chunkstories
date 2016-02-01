@@ -24,6 +24,7 @@ voxel leaves 5
 	opaque: false
 	selfOpaque: false
 	affectedByWind: true
+	shading: 2
 end
 
 voxel forestgrass 6
@@ -41,6 +42,7 @@ voxel pineleaves 9
 	opaque: false
 	selfOpaque: false
 	affectedByWind: true
+	shading: 2
 end
 
 voxel bricks 10
@@ -84,6 +86,7 @@ voxel birchleaves 19
 	opaque: false
 	selfOpaque: false
 	affectedByWind: true
+	shading: 2
 end
 
 voxel whool 20 io.xol.chunkstories.voxel.core.VoxelMeta16
@@ -224,4 +227,5 @@ voxel water 128
 	solid: false
 	opaque: false
 	liquid: true
+	shading: 1
 end

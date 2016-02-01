@@ -1,5 +1,7 @@
 package io.xol.chunkstories.item;
 
+import io.xol.chunkstories.entity.Entity;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -17,6 +19,21 @@ public abstract class Item
 	public Item(int id)
 	{
 		this.id = id;
+	}
+	
+	public void onCreate(ItemPile pile)
+	{
+		
+	}
+	
+	public void onUse(Entity user, ItemPile pile)
+	{
+		
+	}
+
+	public ItemData getItemData()
+	{
+		return null;
 	}
 	
 	/**

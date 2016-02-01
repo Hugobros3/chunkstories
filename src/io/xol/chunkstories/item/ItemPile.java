@@ -14,9 +14,13 @@ public class ItemPile
 	public Inventory inventory;
 	public int x,y;
 	
+	public ItemData data = null;
+	
 	public ItemPile(Item item)
 	{
 		this.item = item;
+		this.data = item.getItemData();
+		item.onCreate(this);
 	}
 	
 	public String getTextureName()

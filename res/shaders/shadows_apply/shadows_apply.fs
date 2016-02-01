@@ -133,7 +133,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec3 li
 	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0, lightmapCoordinates.y * sunIntensity)).rgb;
 	vec3 finalLight = mix(pow(shadowColor, vec3(gamma)) * baseLight, baseLight, (1 - opacity * shadowStrength) * shadowVisiblity);
 	<ifdef !shadows>
-	finalLight = pow(finalLight, vec3(gamma));
+	//finalLight = pow(finalLight, vec3(gamma));
 	<endif !shadows>
 	
 	finalLight += texture2DGammaIn(blockLightmap, vec2(lightmapCoordinates.x, 0)).rgb;

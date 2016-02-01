@@ -129,6 +129,9 @@ public class VoxelTypes
 								case "emitting":
 									voxDefault.lightLevel = Short.parseShort(parameterValue);
 									break;
+								case "shading":
+									voxDefault.shading = Short.parseShort(parameterValue);
+									break;
 								case "usesCustomModel":
 									voxDefault.custom_model = Boolean.parseBoolean(parameterValue);
 									break;

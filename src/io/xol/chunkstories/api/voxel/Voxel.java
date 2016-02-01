@@ -51,14 +51,13 @@ public abstract class Voxel
 	public abstract VoxelTexture getVoxelTexture(int data, int side, BlockRenderInfo info);
 	
 	/**
-	 * Gets the light level that will exit this block, based on the block information and side.
-	 * @param data  The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
-	 * @param llIn The 0-15 light level this block is currently at ( either sun or block light )
+	 * Gets the reduction of the light that will transfer from this block to another, based on data from the two blocks and the side from wich it's leaving the first block from.
+	 * @param dataFrom  The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
+	 * @param dataTo The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
 	 * @param side The side of the block light would come out of ( see {@link VoxelSides VoxelSides.class} )
-	 * @return The light 0-15 light level this block emits
+	 * @return The reduction to apply to the light level on exit
 	 */
-	
-	public abstract int getLightLevelOut(int data, int llIn, int side);
+	public abstract int getLightLevelModifier(int dataFrom, int dataTo, int side);
 
 	public void debugRenderCollision(World world, int x, int y, int z)
 	{

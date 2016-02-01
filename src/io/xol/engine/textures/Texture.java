@@ -173,12 +173,20 @@ public class Texture
 		setFiltering();
 		if(mipmapping && !mipmapsUpToDate)
 		{
-			//Regenerate the mipmaps only when necessary
-			if (FastConfig.openGL3Capable)
-				GL30.glGenerateMipmap(GL_TEXTURE_2D);
-			else if (FastConfig.fbExtCapable)
-				ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
+			computeMipmaps();
 		}
+	}
+	
+	public void computeMipmaps()
+	{
+		//System.out.println("Computing mipmap for "+name);
+		//mipmapsUpToDate = true;
+		glBindTexture(GL_TEXTURE_2D, glId);
+		//Regenerate the mipmaps only when necessary
+		if (FastConfig.openGL3Capable)
+			GL30.glGenerateMipmap(GL_TEXTURE_2D);
+		else if (FastConfig.fbExtCapable)
+			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	
 	public void setLinearFiltering(boolean on)

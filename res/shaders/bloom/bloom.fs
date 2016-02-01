@@ -4,6 +4,8 @@ uniform sampler2D shadedBuffer;
 
 varying vec2 screenCoord;
 
+uniform float apertureModifier;
+
 const float gamma = 2.2;
 const float gammaInv = 1/2.2;
 
@@ -25,10 +27,10 @@ float luminance(vec3 color)
 void main()
 {	
 	vec3 finalLight = texture2D(shadedBuffer, screenCoord).rgb;
-	finalLight = pow(finalLight, vec3(gammaInv));
-	float lum = luminance(finalLight);
+	float lum = luminance(finalLight) * apertureModifier;
 	
 	finalLight *= clamp(lum-0.8, 0.0, 10.0);
+	finalLight = pow(finalLight, vec3(gammaInv));
 	
 	gl_FragColor = vec4(finalLight, 1.0);
 }

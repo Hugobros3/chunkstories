@@ -16,7 +16,7 @@ public class PineTree extends GenerableStructure
 	@Override
 	public void draw(CubicChunk c)
 	{
-		if (oriX - c.chunkX * 32 < -5)
+		/*if (oriX - c.chunkX * 32 < -5)
 			return;
 		if (oriX - c.chunkX * 32 > 37)
 			return;
@@ -38,7 +38,7 @@ public class PineTree extends GenerableStructure
 		for (int i = 0; i < height; i++)
 		{
 			c.setDataAbsolute(oriX, oriY + i, oriZ, 8);
-		}
+		}*/
 	}
 
 }

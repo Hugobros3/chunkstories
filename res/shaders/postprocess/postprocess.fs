@@ -35,6 +35,8 @@ uniform vec3 sunPos;
 uniform float time;
 uniform float underwater;
 
+uniform float apertureModifier;
+
 const float gamma = 2.2;
 const float gammaInv = 1/2.2;
 
@@ -80,6 +82,7 @@ void main() {
 	
 	compositeColor = mix(compositeColor, compositeColor * waterColor, underwater * 0.5);
 	
+	compositeColor *= apertureModifier;
 	<ifdef doBloom>
 	compositeColor.rgb += texture2D(bloomBuffer, finalCoords).rgb;
 	<endif doBloom>
@@ -120,10 +123,11 @@ vec4 getDebugShit(vec2 coords)
 		else
 		{
 			shit = texture2DLod(debugBuffer, sampleCoords, 4);
-			<ifdef dynamicGrass>
-			shit = texture2DLod(debugBuffer, sampleCoords, 0);
-			<endif dynamicGrass>
 			shit = vec4(1.0, 0.5, 0.0, 1.0) * texture2D(normalBuffer, sampleCoords).w;
+			shit.yz += texture2D(metaBuffer, sampleCoords).xy;
+			<ifdef dynamicGrass>
+			shit = texture2DLod(shadedBuffer, sampleCoords, 80);
+			<endif dynamicGrass>
 		}
 	}
 	shit.a = 1.0;

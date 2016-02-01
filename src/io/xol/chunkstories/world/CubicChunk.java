@@ -1,10 +1,10 @@
 package io.xol.chunkstories.world;
 
+import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.generator.structures.GenerableStructure;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
@@ -55,11 +55,18 @@ public class CubicChunk
 		this.chunkZ = chunkZ;
 	}
 
+	/**
+	 * Get the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
+	 * The coordinates are internally modified to map to the chunk, meaning you can access it both with world coordinates or 0-31 in-chunk coordinates
+	 * @param x 
+	 * @param y
+	 * @param z
+	 * @return
+	 */
 	public int getDataAt(int x, int y, int z)
 	{
 		if (dataPointer == -1)
 		{
-			// System.out.println("lol null datapointer");
 			return 0;
 		}
 		else
@@ -77,15 +84,25 @@ public class CubicChunk
 		}
 	}
 
-	public void setDataAbsolute(int x, int y, int z, int data)
-	{
-		setDataAt(x - chunkX * 32, y - chunkY * 32, z - chunkZ * 32, data);
-	}
-
+	/**
+	 * Sets the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
+	 * The coordinates are internally modified to map to the chunk, meaning you can access it both with world coordinates or 0-31 in-chunk coordinates
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param data
+	 */
 	public void setDataAt(int x, int y, int z, int data)
 	{
-		if (x < 0 || y < 0 || z < 0 || x >= 32 || y >= 32 || z >= 32)
-			return;
+		x %= 32;
+		y %= 32;
+		z %= 32;
+		if (x < 0)
+			x += 32;
+		if (y < 0)
+			y += 32;
+		if (z < 0)
+			z += 32;
 		/*
 		 * if(dataPointer < 0 && data == 0) return;
 		 */
@@ -120,20 +137,8 @@ public class CubicChunk
 	}
 
 	// Now entering lightning code part, brace yourselves
-
-	//List<Integer> blockSources = new ArrayList<Integer>();
-	//List<Integer> sunSources = new ArrayList<Integer>();
-
-	public static long totalLightTimings = 0L;
-	public static int totalLightRuns = 0;
-
 	public void doLightning(boolean adjacent, Deque<Integer> blockSources, Deque<Integer> sunSources)
 	{
-		//if(true)
-		//	return;
-
-		long lightInitTime = System.nanoTime();
-
 		// Whole chunk pass
 		blockSources.clear();
 		sunSources.clear();
@@ -460,6 +465,7 @@ public class CubicChunk
 		boolean checkBackBleeding = (adjacentChunkBack != null) && !adjacentChunkBack.needRelightning.get();
 		boolean checkLeftBleeding = (adjacentChunkLeft != null) && !adjacentChunkLeft.needRelightning.get();
 		boolean checkRightBleeding = (adjacentChunkRight != null) && !adjacentChunkRight.needRelightning.get();
+		Voxel in;
 		while (blockSources.size() > 0)
 		{
 			//int xyz = blockSources.remove(blockSources.size() - 1);
@@ -470,9 +476,9 @@ public class CubicChunk
 			int y = blockSources.pop();
 			int z = blockSources.pop();
 			int x = blockSources.pop();
-			int voxeData = data[x * 1024 + y * 32 + z];
-			int ll = (voxeData & 0x0F000000) >> 0x18;
-			int cId = VoxelFormat.id(voxeData);
+			int voxelData = data[x * 1024 + y * 32 + z];
+			int ll = (voxelData & 0x0F000000) >> 0x18;
+			int cId = VoxelFormat.id(voxelData);
 
 			if (VoxelTypes.get(cId).isVoxelOpaque())
 				ll = 0;
@@ -622,31 +628,30 @@ public class CubicChunk
 			int z = sunSources.pop();
 			int x = sunSources.pop();
 
-			int voxeData = data[x * 1024 + y * 32 + z];
-			int ll = (voxeData & 0x00F00000) >> 0x14;
-			int cId = VoxelFormat.id(voxeData);
-			//if(cId == 25)
-			//	System.out.println("topkek A "+ll);
-			if (VoxelTypes.get(cId).isVoxelOpaque())
+			int voxelData = data[x * 1024 + y * 32 + z];
+			int ll = (voxelData & 0x00F00000) >> 0x14;
+			int cId = VoxelFormat.id(voxelData);
+			
+			in = VoxelTypes.get(cId);
+			
+			if (in.isVoxelOpaque())
 				ll = 0;
-
-			//if(cId == 25)
-			//	System.out.println("topkek B "+ll);
 
 			if (ll > 1)
 			{
 				//if(cId == 25)
 				//	System.out.println("topkek B "+ll);
-
+				
 				// X-propagation
 				if (x < 31)
 				{
 					int adj = data[(x + 1) * 1024 + y * 32 + z];
+					int llRight = ll - in.getLightLevelModifier(voxelData, adj, 2);
 					//if(cId == 25)
 					//	System.out.println(adj & 0xFFFF);
-					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < ll - 1)
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llRight - 1)
 					{
-						data[(x + 1) * 1024 + y * 32 + z] = adj & 0xFF0FFFFF | (ll - 1) << 0x14;
+						data[(x + 1) * 1024 + y * 32 + z] = adj & 0xFF0FFFFF | (llRight - 1) << 0x14;
 						sunSources.push(x + 1);
 						sunSources.push(z);
 						sunSources.push(y);
@@ -655,8 +660,11 @@ public class CubicChunk
 				}
 				else if (checkRightBleeding)
 				{
-					int adjacentSunlight = (adjacentChunkRight.getDataAt(0, y, z) & 0xFF0FFFFF) << 0x14;
-					if (ll > adjacentSunlight + 1)
+					int adj = adjacentChunkRight.getDataAt(0, y, z);
+					int llRight = ll - in.getLightLevelModifier(voxelData, adj, 2);
+					
+					//int adjacentSunlight = (adjacentChunkRight.getDataAt(0, y, z) & 0xFF0FFFFF) << 0x14;
+					if (((adj & 0x00F00000) >> 0x14) < llRight - 1)
 					{
 						adjacentChunkRight.needRelightning.set(true);
 						checkRightBleeding = false;
@@ -665,14 +673,15 @@ public class CubicChunk
 				if (x > 0)
 				{
 					int adj = data[(x - 1) * 1024 + y * 32 + z];
+					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, 0);
 					//int id = (adj & 0xFFFF);
 					//if(id == 25)
 					//	System.out.println("topikek"+VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() + " -> " +((adj & 0x00F00000) >> 0x14));
-					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < ll - 1)
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llLeft - 1)
 					{
 						//if(id == 25)
 						//	System.out.println("MAIS LEL TARACE"+VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() + " -> " +((adj & 0x00F00000) >> 0x14));
-						data[(x - 1) * 1024 + y * 32 + z] = adj & 0xFF0FFFFF | (ll - 1) << 0x14;
+						data[(x - 1) * 1024 + y * 32 + z] = adj & 0xFF0FFFFF | (llLeft - 1) << 0x14;
 						sunSources.push(x - 1);
 						sunSources.push(z);
 						sunSources.push(y);
@@ -681,8 +690,10 @@ public class CubicChunk
 				}
 				else if (checkLeftBleeding)
 				{
-					int adjacentSunlight = (adjacentChunkLeft.getDataAt(31, y, z) & 0xFF0FFFFF) << 0x14;
-					if (ll > adjacentSunlight + 1)
+					int adj = adjacentChunkLeft.getDataAt(31, y, z);
+					//int adjacentSunlight = (adjacentChunkLeft.getDataAt(31, y, z) & 0xFF0FFFFF) << 0x14;
+					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, 0);
+					if (((adj & 0x00F00000) >> 0x14) < llLeft - 1)
 					{
 						adjacentChunkLeft.needRelightning.set(true);
 						checkLeftBleeding = false;
@@ -692,9 +703,10 @@ public class CubicChunk
 				if (z < 31)
 				{
 					int adj = data[x * 1024 + y * 32 + z + 1];
-					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < ll - 1)
+					int llFront = ll - in.getLightLevelModifier(voxelData, adj, 1);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llFront - 1)
 					{
-						data[x * 1024 + y * 32 + z + 1] = adj & 0xFF0FFFFF | (ll - 1) << 0x14;
+						data[x * 1024 + y * 32 + z + 1] = adj & 0xFF0FFFFF | (llFront - 1) << 0x14;
 						sunSources.push(x);
 						sunSources.push(z + 1);
 						sunSources.push(y);
@@ -703,8 +715,10 @@ public class CubicChunk
 				}
 				else if (checkFrontBleeding)
 				{
-					int adjacentSunlight = (adjacentChunkFront.getDataAt(x, y, 0) & 0xFF0FFFFF) << 0x14;
-					if (ll > adjacentSunlight + 1)
+					int adj = adjacentChunkFront.getDataAt(x, y, 0);
+					int llFront = ll - in.getLightLevelModifier(voxelData, adj, 1);
+					//int adjacentSunlight = (adjacentChunkFront.getDataAt(x, y, 0) & 0xFF0FFFFF) << 0x14;
+					if (((adj & 0x00F00000) >> 0x14) < llFront - 1)
 					{
 						adjacentChunkFront.needRelightning.set(true);
 						checkFrontBleeding = false;
@@ -713,9 +727,10 @@ public class CubicChunk
 				if (z > 0)
 				{
 					int adj = data[x * 1024 + y * 32 + z - 1];
-					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < ll - 1)
+					int llBack = ll - in.getLightLevelModifier(voxelData, adj, 3);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBack - 1)
 					{
-						data[x * 1024 + y * 32 + z - 1] = adj & 0xFF0FFFFF | (ll - 1) << 0x14;
+						data[x * 1024 + y * 32 + z - 1] = adj & 0xFF0FFFFF | (llBack - 1) << 0x14;
 						sunSources.push(x);
 						sunSources.push(z - 1);
 						sunSources.push(y);
@@ -724,8 +739,10 @@ public class CubicChunk
 				}
 				else if (checkBackBleeding)
 				{
-					int adjacentSunlight = (adjacentChunkBack.getDataAt(x, y, 31) & 0xFF0FFFFF) << 0x14;
-					if (ll > adjacentSunlight + 1)
+					//int adjacentSunlight = (adjacentChunkBack.getDataAt(x, y, 31) & 0xFF0FFFFF) << 0x14;
+					int adj = adjacentChunkBack.getDataAt(x, y, 31);
+					int llBack = ll - in.getLightLevelModifier(voxelData, adj, 3);
+					if(((adj & 0x00F00000) >> 0x14) < llBack - 1)
 					{
 						adjacentChunkBack.needRelightning.set(true);
 						checkBackBleeding = false;
@@ -735,9 +752,10 @@ public class CubicChunk
 				if (y < 31) // y = 254+1
 				{
 					int adj = data[x * 1024 + (y + 1) * 32 + z];
-					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < ll - 1)
+					int llTop = ll - in.getLightLevelModifier(voxelData, adj, 4);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llTop - 1)
 					{
-						data[x * 1024 + (y + 1) * 32 + z] = adj & 0xFF0FFFFF | (ll - 1) << 0x14;
+						data[x * 1024 + (y + 1) * 32 + z] = adj & 0xFF0FFFFF | (llTop - 1) << 0x14;
 						sunSources.push(x);
 						sunSources.push(z);
 						sunSources.push(y + 1);
@@ -746,8 +764,10 @@ public class CubicChunk
 				}
 				else if (checkTopBleeding)
 				{
-					int adjacentSunlight = (adjacentChunkTop.getDataAt(x, 0, z) & 0xFF0FFFFF) << 0x14;
-					if (ll > adjacentSunlight + 1)
+					int adj = adjacentChunkTop.getDataAt(x, 0, z);
+					int llTop = ll - in.getLightLevelModifier(voxelData, adj, 4);
+					//int adjacentSunlight = (adj & 0xFF0FFFFF) << 0x14;
+					if(((adj & 0x00F00000) >> 0x14) < llTop - 1)
 					{
 						adjacentChunkTop.needRelightning.set(true);
 						checkTopBleeding = false;
@@ -756,10 +776,11 @@ public class CubicChunk
 				if (y > 0)
 				{
 					int adj = data[x * 1024 + (y - 1) * 32 + z];
-					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < ll - 1)
+					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, 5);
+					if (!VoxelTypes.get(adj).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBottm - 1)
 					{
-						//TODO fix this filthy hack and do proper light shading
-						data[x * 1024 + (y - 1) * 32 + z] = adj & 0xFF0FFFFF | (ll - ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)) << 0x14;
+						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)
+						data[x * 1024 + (y - 1) * 32 + z] = adj & 0xFF0FFFFF | (llBottm /* - removed */) << 0x14;
 						sunSources.push(x);
 						sunSources.push(z);
 						sunSources.push(y - 1);
@@ -768,8 +789,10 @@ public class CubicChunk
 				}
 				else if (checkBottomBleeding)
 				{
-					int adjacentSunlight = (adjacentChunkBottom.getDataAt(x, 31, z) & 0xFF0FFFFF) << 0x14;
-					if (ll > adjacentSunlight + 1)
+					int adj = adjacentChunkBottom.getDataAt(x, 31, z);
+					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, 5);
+					//int adjacentSunlight = (adj & 0xFF0FFFFF) << 0x14;
+					if(((adj & 0x00F00000) >> 0x14) < llBottm - 1)
 					{
 						adjacentChunkBottom.needRelightning.set(true);
 						checkBottomBleeding = false;
@@ -777,9 +800,6 @@ public class CubicChunk
 				}
 			}
 		}
-		long totalLightTime = System.nanoTime() - lightInitTime;
-		totalLightTimings += totalLightTime;
-		totalLightRuns++;
 		//System.out.println("Thsi time : " + totalLightTime / 1000f + " Avg : " + (totalLightTimings / totalLightRuns) / 1000f);
 	}
 }

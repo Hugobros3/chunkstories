@@ -152,7 +152,7 @@ public class InventoryDrawer
 					//TexturesHandler.mipmapLevel(pile.getTextureName(), -1);
 					//System.out.println(textureId);
 					int center = summary ? slotSize * (pile.item.getSlotsHeight()-1) / 2 : 0;
-					GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, slotSize * pile.item.getSlotsWidth(), slotSize * pile.item.getSlotsHeight(), 0, 1, 1, 0, textureId, true, true, null);
+					GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, slotSize * pile.item.getSlotsWidth(), slotSize * pile.item.getSlotsHeight(), 0, 1, 1, 0, itemTexture.getID(), true, true, null);
 				}
 			}
 		}
