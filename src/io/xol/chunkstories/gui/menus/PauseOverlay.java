@@ -1,5 +1,6 @@
 package io.xol.chunkstories.gui.menus;
 
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.MainMenu;
@@ -11,7 +12,7 @@ import io.xol.engine.base.font.FontRenderer2;
 import io.xol.engine.gui.ClickableButton;
 import io.xol.engine.gui.FocusableObjectsHandler;
 
-public class PauseOverlay extends MenuOverlay
+public class PauseOverlay extends Overlay
 {
 	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
 	
@@ -19,7 +20,7 @@ public class PauseOverlay extends MenuOverlay
 	ClickableButton optionsButton = new ClickableButton(0, 0, 320, 32, "Options", BitmapFont.SMALLFONTS, 1);
 	ClickableButton exitButton = new ClickableButton(0, 0, 320, 32, "Quit to menu", BitmapFont.SMALLFONTS, 1);
 	
-	public PauseOverlay(OverlayableScene scene, MenuOverlay parent)
+	public PauseOverlay(OverlayableScene scene, Overlay parent)
 	{
 		super(scene, parent);
 		guiHandler.add(resumeButton);

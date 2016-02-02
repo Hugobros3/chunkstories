@@ -1,12 +1,12 @@
 package io.xol.chunkstories.gui;
 
-//(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
-
-import io.xol.chunkstories.gui.menus.MenuOverlay;
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.scene.Scene;
+
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 public abstract class OverlayableScene extends Scene
 {
@@ -15,9 +15,9 @@ public abstract class OverlayableScene extends Scene
 		super(XolioWindow);
 	}
 
-	public MenuOverlay currentOverlay = null;
+	public Overlay currentOverlay = null;
 
-	public void changeOverlay(MenuOverlay newOverlay)
+	public void changeOverlay(Overlay newOverlay)
 	{
 		this.currentOverlay = newOverlay;
 	}

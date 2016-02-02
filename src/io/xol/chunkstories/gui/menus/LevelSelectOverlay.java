@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.xol.chunkstories.GameDirectory;
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -21,7 +22,7 @@ import io.xol.engine.gui.ClickableButton;
 import io.xol.engine.gui.FocusableObjectsHandler;
 import io.xol.engine.gui.LocalWorldButton;
 
-public class LevelSelectOverlay extends MenuOverlay
+public class LevelSelectOverlay extends Overlay
 {
 
 	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
@@ -29,7 +30,7 @@ public class LevelSelectOverlay extends MenuOverlay
 	List<WorldInfo> localWorlds = new ArrayList<WorldInfo>();
 	List<LocalWorldButton> worldsButtons = new ArrayList<LocalWorldButton>();
 
-	public LevelSelectOverlay(OverlayableScene scene, MenuOverlay parent)
+	public LevelSelectOverlay(OverlayableScene scene, Overlay parent)
 	{
 		super(scene, parent);
 		// Gui buttons
@@ -64,11 +65,19 @@ public class LevelSelectOverlay extends MenuOverlay
 
 		int posY = XolioWindow.frameH - 128;
 		FontRenderer2.drawTextUsingSpecificFont(64, posY + 64, 0, 48, "Select a level ...", BitmapFont.SMALLFONTS);
+		int remainingSpace = (int)Math.floor(XolioWindow.frameH/96 - 2);
+		while(scroll + remainingSpace >= worldsButtons.size())
+			scroll--;
+		
+		int skip = scroll;
 		for (LocalWorldButton worldButton : worldsButtons)
 		{
+			if(skip-- >= 0)
+				continue;
+			if(remainingSpace-- <= 0)
+				break;
 			if (worldButton.clicked())
 			{
-				// System.out.println("big deal");
 				Client.world = new WorldLocalClient(worldButton.info);
 				this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 			}
@@ -91,6 +100,15 @@ public class LevelSelectOverlay extends MenuOverlay
 	public boolean handleKeypress(int k)
 	{
 		return false;
+	}
+	
+	public boolean onScroll(int dx)
+	{
+		if(dx < 0)
+			scroll++;
+		else
+			scroll--;
+		return true;
 	}
 
 	public boolean onClick(int posx, int posy, int button)

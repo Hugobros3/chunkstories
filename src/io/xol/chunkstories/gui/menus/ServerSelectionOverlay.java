@@ -14,6 +14,7 @@ import java.util.List;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.ConnectScene;
@@ -34,7 +35,7 @@ import io.xol.engine.misc.HttpRequester;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerSelectionOverlay extends MenuOverlay implements HttpRequester
+public class ServerSelectionOverlay extends Overlay implements HttpRequester
 {
 
 	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
@@ -45,7 +46,7 @@ public class ServerSelectionOverlay extends MenuOverlay implements HttpRequester
 	boolean autologin;
 	private boolean movedInList = false;
 
-	public ServerSelectionOverlay(OverlayableScene scene, MenuOverlay parent, boolean a)
+	public ServerSelectionOverlay(OverlayableScene scene, Overlay parent, boolean a)
 	{
 		super(scene, parent);
 		guiHandler.add(ipForm);

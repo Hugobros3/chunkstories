@@ -1,5 +1,6 @@
 package io.xol.chunkstories.gui.menus;
 
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.menus.OptionsOverlay.ConfigButtonKey;
 import io.xol.engine.base.ObjectRenderer;
@@ -7,7 +8,7 @@ import io.xol.engine.base.XolioWindow;
 import io.xol.engine.base.font.BitmapFont;
 import io.xol.engine.base.font.FontRenderer2;
 
-public class KeyBindSelectionOverlay extends MenuOverlay
+public class KeyBindSelectionOverlay extends Overlay
 {
 	ConfigButtonKey callback;
 	

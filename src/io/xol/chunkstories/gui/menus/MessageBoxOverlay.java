@@ -5,6 +5,7 @@ import java.util.Random;
 import org.lwjgl.util.vector.Vector4f;
 
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
@@ -14,14 +15,14 @@ import io.xol.engine.base.font.TrueTypeFont;
 import io.xol.engine.gui.ClickableButton;
 import io.xol.engine.gui.FocusableObjectsHandler;
 
-public class MessageBoxOverlay extends MenuOverlay
+public class MessageBoxOverlay extends Overlay
 {
 
 	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
 	ClickableButton okButton = new ClickableButton(0, 0, 300, 32, ("Ok"), BitmapFont.SMALLFONTS, 1);
 	String message;
 	
-	public MessageBoxOverlay(OverlayableScene scene, MenuOverlay parent, String message)
+	public MessageBoxOverlay(OverlayableScene scene, Overlay parent, String message)
 	{
 		super(scene, parent);
 		// Gui buttons

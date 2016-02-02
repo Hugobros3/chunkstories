@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.gui.menus.LoginOverlay;
 import io.xol.chunkstories.gui.menus.MainMenuOverlay;
-import io.xol.chunkstories.gui.menus.MenuOverlay;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.FBO;
@@ -29,7 +29,7 @@ public class MainMenu extends OverlayableScene
 {
 
 	// GUI Objects
-	MenuOverlay currentOverlay = new MainMenuOverlay(this, null);
+	Overlay currentOverlay = new MainMenuOverlay(this, null);
 
 	// Stuff for rendering the background
 	ShaderProgram blurH;
@@ -223,9 +223,16 @@ public class MainMenu extends OverlayableScene
 		}
 		return false;
 	}
+	
+	public boolean onScroll(int dx)
+	{
+		if (currentOverlay != null && currentOverlay.onScroll(dx))
+			return true;
+		return false;
+	}
 
 	@Override
-	public void changeOverlay(MenuOverlay overlay)
+	public void changeOverlay(Overlay overlay)
 	{
 		this.currentOverlay = overlay;
 	}

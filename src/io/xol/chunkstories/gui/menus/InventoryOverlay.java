@@ -3,6 +3,7 @@ package io.xol.chunkstories.gui.menus;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -16,7 +17,7 @@ import io.xol.engine.textures.TexturesHandler;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class InventoryOverlay extends MenuOverlay
+public class InventoryOverlay extends Overlay
 {
 	Inventory inventory;
 	InventoryDrawer drawer;
@@ -24,7 +25,7 @@ public class InventoryOverlay extends MenuOverlay
 	public static ItemPile selectedItem;
 	public static Inventory selectedItemInv;
 	
-	public InventoryOverlay(OverlayableScene scene, MenuOverlay parent, Inventory inventory)
+	public InventoryOverlay(OverlayableScene scene, Overlay parent, Inventory inventory)
 	{
 		super(scene, parent);
 		this.inventory = inventory;

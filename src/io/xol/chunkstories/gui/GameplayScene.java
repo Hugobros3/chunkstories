@@ -281,13 +281,13 @@ public class GameplayScene extends OverlayableScene
 
 	public boolean onClick(int x, int y, int button)
 	{
+		if (currentOverlay != null)
+			return currentOverlay.onClick(x, y, button);
 		if (!(player instanceof EntityPlayer))
 			return false;
 
 		EntityPlayer player2 = (EntityPlayer) player;
 
-		if (currentOverlay != null)
-			return currentOverlay.onClick(x, y, button);
 		if (button == 1)
 		{
 			int[] selectedBlock = player2.rayTraceSelectedBlock(false);
@@ -321,6 +321,8 @@ public class GameplayScene extends OverlayableScene
 
 	public boolean onScroll(int a)
 	{
+		if (currentOverlay != null)
+			return currentOverlay.onScroll(a);
 		// XolioWindow.targetFPS = 600;
 		if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
 		{

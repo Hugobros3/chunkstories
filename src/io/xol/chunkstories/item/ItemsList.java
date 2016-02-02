@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class ItemsList
 {
-	public static Item[] items = new Item[16777216];
+	public static Item[] items = new Item[65536];
 	public static Map<String, Item> dictionary = new HashMap<String, Item>();
 	public static int itemTypes = 0;
 	public static int lastAllocatedId;
@@ -68,6 +68,20 @@ public class ItemsList
 					//Eventually add the item
 					items[currentItem.getID()] = currentItem;
 					dictionary.put(currentItem.getInternalName(), currentItem);
+				}
+				else if(line.startsWith("width"))
+				{
+					String[] split = line.replaceAll(" ", "").split(":");
+					int value = Integer.parseInt(split[1]);
+					if(currentItem != null)
+						currentItem.setSlotsWidth(value);
+				}
+				else if(line.startsWith("height"))
+				{
+					String[] split = line.replaceAll(" ", "").split(":");
+					int value = Integer.parseInt(split[1]);
+					if(currentItem != null)
+						currentItem.setSlotsHeight(value);
 				}
 				else if(line.startsWith("item"))
 				{

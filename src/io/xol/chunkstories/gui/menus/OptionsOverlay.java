@@ -6,6 +6,7 @@ import java.util.List;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.GameplayScene;
@@ -20,7 +21,7 @@ import io.xol.engine.gui.Focusable;
 import io.xol.engine.gui.FocusableObjectsHandler;
 import io.xol.engine.shaders.ShadersLibrary;
 
-public class OptionsOverlay extends MenuOverlay
+public class OptionsOverlay extends Overlay
 {
 	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
 	ClickableButton exitButton = new ClickableButton(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
@@ -211,7 +212,7 @@ public class OptionsOverlay extends MenuOverlay
 	List<ClickableButton> tabsButtons = new ArrayList<ClickableButton>();
 	int selectedConfigTab = 0;
 
-	public OptionsOverlay(OverlayableScene scene, MenuOverlay parent)
+	public OptionsOverlay(OverlayableScene scene, Overlay parent)
 	{
 		super(scene, parent);
 		guiHandler.add(exitButton);

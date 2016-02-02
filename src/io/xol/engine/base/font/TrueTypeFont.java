@@ -1,6 +1,7 @@
 package io.xol.engine.base.font;
 
 import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.misc.ColorsTools;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -333,20 +334,27 @@ public class TrueTypeFont
 			
 			if (glyph != null)
 			{
-				//
-				if(clip && (totalwidth + (glyph.width - correctL)) > clipX)
+				if (charCurrent == '#' && whatchars.length() - i - 1 >= 6 && (whatchars.toCharArray()[i + 1] != '#') && ColorsTools.isHexOnly(whatchars.substring(i + 1, i + 7)))
 				{
-					l++;
-					totalwidth = 0;
-					continue;
+					if (!(i > 1 && whatchars.toCharArray()[i - 1] == '#'))
+					{
+						//System.out.println("k");
+						i+=6;
+					}
 				}
-				if (charCurrent == '\n')
+				else if (charCurrent == '\n')
 				{
 					totalwidth = 0;
 					l++;
 				}
 				else
 				{
+					if(clip && (totalwidth + (glyph.width - correctL)) > clipX)
+					{
+						l++;
+						totalwidth = 0;
+						continue;
+					}
 					totalwidth += (glyph.width - correctL);
 				}
 				i++;
@@ -393,9 +401,9 @@ public class TrueTypeFont
 	public void drawStringWithShadow(float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4f color)
 	{
 		Vector4f colorDarkened = new Vector4f(color);
-		colorDarkened.x*=0.0f;
-		colorDarkened.y*=0.0f;
-		colorDarkened.z*=0.0f;
+		colorDarkened.x*=0.2f;
+		colorDarkened.y*=0.2f;
+		colorDarkened.z*=0.2f;
 		drawString(x+1*scaleX, y-1*scaleY, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, colorDarkened);
 		drawString(x, y, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, color);
 	}
@@ -457,6 +465,8 @@ public class TrueTypeFont
 		d = 1;
 		c = correctL;
 		
+		Vector4f colorModified = new Vector4f(color);
+		
 		while (i < whatchars.length())
 		{
 			charCurrent = whatchars.charAt(i);
@@ -474,13 +484,27 @@ public class TrueTypeFont
 			{
 				//if (d < 0)
 				//	totalwidth += (glyph.width - c) * d;
-				if(clip && (totalwidth + (glyph.width - c)) > clipX)
+				if(clip && (totalwidth + (glyph.width - c)) > clipX / scaleX)
 				{
 					startY -= fontHeight * d;
+					//System.out.println(fontHeight);
 					totalwidth = 0;
 					continue;
 				}
-				if (charCurrent == '\n')
+				if (charCurrent == '#' && whatchars.length() - i - 1 >= 6 && (whatchars.toCharArray()[i + 1] != '#') && ColorsTools.isHexOnly(whatchars.substring(i + 1, i + 7)))
+				{
+					if (!(i > 1 && whatchars.toCharArray()[i - 1] == '#'))
+					{
+
+						String colorCode = whatchars.substring(i + 1, i + 7);
+						int rgb[] = ColorsTools.hexToRGB(colorCode);
+						// System.out.println("colorcode found ! - "+colorCode
+						// +" rgb:"+rgb[1]);
+						colorModified = new Vector4f(rgb[0] / 255.0f * color.x,rgb[1] / 255.0f * color.y, rgb[2] / 255.0f * color.z, color.w);
+						i+=6;
+					}
+				}
+				else if (charCurrent == '\n')
 				{
 					startY -= fontHeight * d;
 					totalwidth = 0;
@@ -504,7 +528,7 @@ public class TrueTypeFont
 				}
 				else
 				{
-					GuiDrawer.setState(pageId, true, true, color);
+					GuiDrawer.setState(pageId, true, true, colorModified);
 					drawQuad((totalwidth + glyph.width) * scaleX + x, startY * scaleY + y, totalwidth * scaleX + x, (startY + glyph.height) * scaleY + y, glyph.x + glyph.width, glyph.y + glyph.height, glyph.x, glyph.y);
 					//if (d > 0)
 					totalwidth += (glyph.width - c) * d;

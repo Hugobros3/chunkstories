@@ -1,5 +1,6 @@
 package io.xol.chunkstories.gui.menus;
 
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.base.ObjectRenderer;
@@ -12,9 +13,9 @@ import io.xol.engine.gui.InputText;
 import io.xol.engine.misc.HttpRequestThread;
 import io.xol.engine.misc.HttpRequester;
 
-public class LoginOverlay extends MenuOverlay implements HttpRequester
+public class LoginOverlay extends Overlay implements HttpRequester
 {
-	public LoginOverlay(OverlayableScene scene, MenuOverlay parent)
+	public LoginOverlay(OverlayableScene scene, Overlay parent)
 	{
 		super(scene, parent);
 		
@@ -92,7 +93,7 @@ public class LoginOverlay extends MenuOverlay implements HttpRequester
 		}
 		if(guiHandler.getButton(2).clicked())
 			connect();
-		FontRenderer2.drawTextUsingSpecificFont(12, 12, 0, 32, "Copyright 2015 XolioWare Interactive", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(12, 12, 0, 32, "Copyright 2016 XolioWare Interactive", BitmapFont.SMALLFONTS);
 	}
 	
 	public boolean handleKeypress(int k)

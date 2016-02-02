@@ -5,6 +5,7 @@ import java.util.Random;
 import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.base.ObjectRenderer;
@@ -15,7 +16,7 @@ import io.xol.engine.base.font.FontRenderer2;
 import io.xol.engine.gui.ClickableButton;
 import io.xol.engine.gui.FocusableObjectsHandler;
 
-public class MainMenuOverlay extends MenuOverlay
+public class MainMenuOverlay extends Overlay
 {
 
 	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
@@ -24,7 +25,7 @@ public class MainMenuOverlay extends MenuOverlay
 	ClickableButton optionsMenu = new ClickableButton(0, 0, 300, 32, ("Game options"), BitmapFont.SMALLFONTS, 1);
 	ClickableButton exitGame = new ClickableButton(0, 0, 300, 32, ("Exit game"), BitmapFont.SMALLFONTS, 1);
 
-	public MainMenuOverlay(OverlayableScene scene, MenuOverlay parent)
+	public MainMenuOverlay(OverlayableScene scene, Overlay parent)
 	{
 		super(scene, parent);
 		// Gui buttons
@@ -95,7 +96,7 @@ public class MainMenuOverlay extends MenuOverlay
 			this.mainScene.eng.close();
 		}
 
-		String version = "ChunkStories " + VersionInfo.version + " - (c) 2015 XolioWare Interactive";
+		String version = "ChunkStories " + VersionInfo.version + " - (c) 2016 XolioWare Interactive";
 		FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW - 20 - FontRenderer2.getTextLengthUsingFont(32, version, BitmapFont.SMALLFONTS), 10, 0, 32, version, BitmapFont.SMALLFONTS);
 	}
 

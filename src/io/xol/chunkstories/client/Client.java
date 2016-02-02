@@ -24,7 +24,6 @@ import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
-import io.xol.chunkstories.world.ChunksData;
 import io.xol.chunkstories.world.World;
 
 public class Client implements Controller
@@ -57,21 +56,21 @@ public class Client implements Controller
 				FastConfig.doShadows = false;
 				System.out.println("Legacy OpenGL mode enabled");
 			}
-			if (s.contains("-vd"))
+			else if (s.contains("-vd"))
 			{
 				int vd = Integer.parseInt(s.replace("-vd=", "")) * 2;
 				// WorldRenderer.VBO_ARRAY_SIZE = vd;
 				FastConfig.viewDistance = vd * 16;
 				System.out.println("View distance = " + Integer.parseInt(s.replace("-vd=", "")));
 			}
-			if (s.contains("-cd"))
+			/*if (s.contains("-cd"))
 			{
 				int cd = Integer.parseInt(s.replace("-cd=", "")) * 2;
 				// WorldRenderer.VBO_ARRAY_SIZE = vd;
 				ChunksData.CACHE_SIZE = cd;
 				System.out.println("Chunk cache size = " + Integer.parseInt(s.replace("-cd=", "")));
-			}
-			if (s.contains("-dir"))
+			}*/
+			else if (s.contains("-dir"))
 			{
 				GameDirectory.set(s.replace("-dir=", ""));
 			}
