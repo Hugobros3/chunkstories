@@ -324,7 +324,7 @@ public class GameplayScene extends OverlayableScene
 			return true;
 		if(player != null && player.inventory != null)
 		{
-			if(a > 0)
+			if(a < 0)
 				selectedInventorySlot++;
 			else
 				selectedInventorySlot--;

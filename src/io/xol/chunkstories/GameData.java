@@ -82,7 +82,7 @@ public class GameData
 			if(fileSystem.containsKey(filteredName))
 			{
 				fileSystem.remove(filteredName);
-				System.out.println("Found override for ressource : " + filteredName + " in modDir : " + modsDir);
+				//System.out.println("Found override for ressource : " + filteredName + " in modDir : " + modsDir);
 			}
 			fileSystem.put(filteredName, f);
 			return;
@@ -102,7 +102,7 @@ public class GameData
 				if(fileSystem.containsKey(filteredName))
 				{
 					fileSystem.remove(filteredName);
-					System.out.println("Found override for ressource : " + filteredName + " in modDir : " + modsDir);
+					//System.out.println("Found override for ressource : " + filteredName + " in modDir : " + modsDir);
 				}
 				fileSystem.put(filteredName, f);
 			}

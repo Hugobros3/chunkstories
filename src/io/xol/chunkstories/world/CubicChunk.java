@@ -479,8 +479,10 @@ public class CubicChunk
 			int ll = (voxelData & 0x0F000000) >> 0x18;
 			int cId = VoxelFormat.id(voxelData);
 
+			in = VoxelTypes.get(cId);
+			
 			if (VoxelTypes.get(cId).isVoxelOpaque())
-				ll = 0;
+				ll = in.getLightLevel(voxelData);
 
 			if (ll > 1)
 			{
@@ -616,6 +618,7 @@ public class CubicChunk
 			}
 		}
 		// Sunlight propagation
+		// sunSources.clear();
 		while (sunSources.size() > 0)
 		{
 			/*int xyz = sunSources.remove(sunSources.size() - 1);
@@ -777,7 +780,7 @@ public class CubicChunk
 				{
 					int adj = data[x * 1024 + (y - 1) * 32 + z];
 					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, 5);
-					if (!VoxelTypes.get(adj).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBottm - 1)
+					if (!VoxelTypes.get(adj).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBottm)
 					{
 						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)
 						data[x * 1024 + (y - 1) * 32 + z] = adj & 0xFF0FFFFF | (llBottm /* - removed */) << 0x14;
