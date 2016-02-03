@@ -54,6 +54,7 @@ vec4 gammaOutput(vec4 inputValue)
 }
 
 uniform vec3 shadowColor;
+uniform vec3 sunColor;
 uniform float shadowStrength;
 
 varying float shadowMapBiasMultiplier;
@@ -100,18 +101,18 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec3 li
 	<ifdef shadows>
 	float edgeSmoother = 0.0;
 	ragix = 1;
+	float clamped = clamp(NdotL, 0.0, 0.1);
+	//if(NdotL < 0.1)
+		opacity = 10-(100*clamped);
+	
 	if(!(coordinatesInShadowmap.x <= 0 || coordinatesInShadowmap.x >= 1 || coordinatesInShadowmap.y <= 0 || coordinatesInShadowmap.y >= 1  || coordinatesInShadowmap.z >= 1 || coordinatesInShadowmap.z <= -1))
 	{
-		float bias = clamp(0.00035*tan(acos(NdotL)) * clamp(shadowMapBiasMultiplier, 1.0, 2.0) ,0.000,0.0125 )*(1+2*coordinatesInShadowmap.w);
+		float bias = clamp(0.00070*tan(acos(NdotL)) * clamp(shadowMapBiasMultiplier, 1.0, 2.0) ,-0.000,0.0020 )*(1+2*coordinatesInShadowmap.w);
 		edgeSmoother = 1-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5)-0.25)*4+max(0,abs(coordinatesInShadowmap.y-0.5)-0.25)*4,3),0,1);
 		opacity += edgeSmoother * (1-shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0).r);
 	}
 	
-	float clamped = clamp(NdotL, 0.0, 0.1);
-	if(NdotL < 0.1)
-	{
-		opacity += 1-(10*clamped);
-	}
+	
 	
 	//opacity += 1-NdotL;
 	
@@ -131,7 +132,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec3 li
 	float sunSpec = specular * pow(clamp(dot(normalize(reflect(worldSpacePosition.xyz, normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),1750.0);
 	
 	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0, lightmapCoordinates.y * sunIntensity)).rgb;
-	vec3 finalLight = mix(pow(shadowColor, vec3(gamma)) * baseLight, baseLight, (1 - opacity * shadowStrength) * shadowVisiblity);
+	vec3 finalLight = baseLight * pow(mix(shadowColor, sunColor, (1 - opacity * shadowStrength) * shadowVisiblity), vec3(gamma));
 	<ifdef !shadows>
 	//finalLight = pow(finalLight, vec3(gamma));
 	<endif !shadows>
@@ -185,7 +186,7 @@ void main() {
 	
 	vec3 fogColor = gl_Fog.color.rgb;
 	fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz + camPos).xyz));
-	fogColor.rgb = pow(fogColor.rgb, vec3(gamma));
+	//fogColor.rgb = pow(fogColor.rgb, vec3(gamma));
 	
 	//gl_FragColor = shadingColor;
 	gl_FragColor = mix(shadingColor, vec4(fogColor,shadingColor.a), fogI);

@@ -26,11 +26,11 @@ float luminance(vec3 color)
 
 void main()
 {	
-	vec3 finalLight = texture2D(shadedBuffer, screenCoord).rgb;
+	vec3 finalLight = texture2DLod(shadedBuffer, screenCoord, 0.0).rgb;
 	float lum = luminance(finalLight) * apertureModifier;
 	
-	finalLight *= clamp(lum-0.8, 0.0, 10.0);
 	finalLight = pow(finalLight, vec3(gammaInv));
+	finalLight *= clamp(lum-1.0, 0.0, 1000.0);
 	
 	gl_FragColor = vec4(finalLight, 1.0);
 }

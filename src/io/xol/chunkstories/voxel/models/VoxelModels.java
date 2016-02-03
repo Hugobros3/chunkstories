@@ -93,6 +93,8 @@ public class VoxelModels
 							vertices.clear();
 							texcoord.clear();
 							normal.clear();
+							culling.clear();
+							currentCull = new boolean[6];
 							//loadedBM++;
 							model = null;
 						}
@@ -129,6 +131,7 @@ public class VoxelModels
 							switch(face)
 							{
 							case "bottom":
+								//System.out.println("bottom"+f);
 								currentCull[Face.BOTTOM] = true;
 								break;
 							case "top":
@@ -167,6 +170,8 @@ public class VoxelModels
 										texcoord.add(t);
 									for(float n[] : includeMeh.normals)
 										normal.add(n);
+									for(boolean cul[] : includeMeh.culling)
+										culling.add(cul);
 								}
 								else
 									ChunkStoriesLogger.getInstance().log("Warning ! Can't require '"+toInclude+"'", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);

@@ -286,9 +286,8 @@ public class GameplayScene extends OverlayableScene
 		if (!(player instanceof EntityPlayer))
 			return false;
 
-		EntityPlayer player2 = (EntityPlayer) player;
-
-		if (button == 1)
+		//EntityPlayer player2 = (EntityPlayer) player;
+		/*if (button == 1)
 		{
 			int[] selectedBlock = player2.rayTraceSelectedBlock(false);
 			if (selectedBlock != null)
@@ -315,29 +314,23 @@ public class GameplayScene extends OverlayableScene
 				voxelId = VoxelFormat.id(data);
 				meta = VoxelFormat.meta(data);
 			}
-		}
+		}*/
 		return false;
 	}
 
 	public boolean onScroll(int a)
 	{
-		if (currentOverlay != null)
-			return currentOverlay.onScroll(a);
-		// XolioWindow.targetFPS = 600;
-		if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
+		if (currentOverlay != null && currentOverlay.onScroll(a))
+			return true;
+		if(player != null && player.inventory != null)
 		{
-			if (a > 0)
-				meta++;
+			if(a > 0)
+				selectedInventorySlot++;
 			else
-				meta--;
-			meta = (meta % 16 + 16) % 16;
-		}
-		else
-		{
-			if (a > 0)
-				voxelId = VoxelTypes.getNextValidVoxelId(voxelId);
-			else
-				voxelId = VoxelTypes.getPreviousValidVoxelId(voxelId);
+				selectedInventorySlot--;
+			if(selectedInventorySlot < 0)
+				selectedInventorySlot += 10;
+			selectedInventorySlot %= 10;
 		}
 		return true;
 	}
@@ -420,7 +413,7 @@ public class GameplayScene extends OverlayableScene
 			c = i.next();
 
 			nbChunks++;
-			octelsTotal += (c.vbo_size_normal + c.vbo_size_water) * 16 + c.vbo_size_complex * 24;	
+			octelsTotal += c.vbo_size_normal * 16 + (c.vbo_size_water + c.vbo_size_complex) * 24;	
 		}
 		/*
 		for (CubicChunk c : Client.world.chunksHolder.getAllLoadedChunks())

@@ -7,9 +7,10 @@ varying vec3 eye; // eye-position
 
 //Diffuse colors
 uniform sampler2D diffuseTexture; // Blocks diffuse texture atlas
+uniform sampler2D normalTexture; // Blocks normal texture atlas
+uniform sampler2D materialTexture; // Blocks material texture atlas
 uniform vec3 blockColor;
 
-uniform sampler2D normalTexture; // Blocks normal texture atlas
 
 //Debug
 uniform vec3 blindFactor; // can white-out all the colors
@@ -132,14 +133,15 @@ void main(){
 	//Rain makes shit glint
 	float spec = 0;
 	
+	vec4 material = texture2D(materialTexture, texcoord);
 	
-	spec = rainWetness * fresnelTerm;
+	spec = (material.r + rainWetness) * fresnelTerm;
 	<ifdef perPixelFresnel>
 	vec3 coords = (gl_FragCoord.xyz);
 	coords.xy/=screenSize;
 	vec4 worldspaceFragment = unprojectPixel(coords);
 	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(eye), vec3(varyingNormal)), 0.0, 1.0);
-	spec = rainWetness * dynamicFresnelTerm;
+	spec = (material.r + rainWetness) * dynamicFresnelTerm;
 	<endif perPixelFresnel>
 	
 	/*vec3 blockLight = texture2D(lightColors,vec2(lightMapCoords.x, 0)).rgb;

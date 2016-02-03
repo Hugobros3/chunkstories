@@ -1,21 +1,18 @@
 package io.xol.chunkstories.voxel;
 
-import java.io.File;
-
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
 public class VoxelTexture
 {
-
-	public VoxelTexture(File file, String name)
+	public VoxelTexture(String name) throws Exception
 	{
-		this.file = file;
 		this.name = name;
+		if(name == null)
+			throw new Exception("fuck off m9");
 	}
 
-	public File file;
 	public String name;
 	public int legacyId;
 

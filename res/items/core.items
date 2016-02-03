@@ -1,7 +1,7 @@
 # Here you get/have to assign items their ID and class.
 
 item 1 weapon_ak47 io.xol.chunkstories.item.core.ItemAk47
-	width: 2
+	width: 3
 	height: 3
 end
 

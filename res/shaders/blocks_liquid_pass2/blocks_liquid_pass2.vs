@@ -77,13 +77,13 @@ void main(){
 	//Usual variable passing
 	texcoord = texCoordIn;
 	texcoord /= 32768.0;
-	varyingNormal = normalIn.xyz;
+	varyingNormal = (normalIn.xyz-0.5)*2.0;
 	vec4 v = vec4(vertexIn.xyz, 1);
 	//Move vertex if needed
 	
 	v+=vec4(borderShift,0);
 	
-	v.y += (sin(time/15.0+v.x+v.z)*0.0-0.3);
+	//v.y += (sin(time/15.0+v.x+v.z)*0.0);
 	varyingVertex = v;
 	
 	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(0, 1.0 , 0)), 0.0, 1.0);

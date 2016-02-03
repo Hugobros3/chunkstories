@@ -832,7 +832,7 @@ public class ChunksRenderer extends Thread
 		 */
 	}
 
-	private void addVoxelUsingCustomModel(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<float[]> normals, int sx, int sy, int sz, BlockRenderInfo info)
+	private void addVoxelUsingCustomModel(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<float[]> normals, List<Boolean> isWavy, int sx, int sy, int sz, BlockRenderInfo info)
 	{ 
 		// Basic light for now
 		// TODO interpolation
@@ -864,6 +864,7 @@ public class ChunksRenderer extends Thread
 			occTest = VoxelTypes.get(id);
 			// If it is, don't draw it.
 			cullingCache[j] = (occTest.isVoxelOpaque() || occTest.isFaceOpaque(j, info.neightborhood[j])) || occTest.isFaceOpaque(j, info.neightborhood[j]) || (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
+			//System.out.println("generating culling cache for voxel "+VoxelFormat.id(info.data)+"y:"+sy+"model"+model.name+" cull:"+j+":"+cullingCache[j]);
 		}
 		
 		if(model == null)
@@ -896,7 +897,6 @@ public class ChunksRenderer extends Thread
 
 					if(cullingCache[j])
 						drawFace = false;
-					
 				}
 			}
 			
@@ -906,7 +906,8 @@ public class ChunksRenderer extends Thread
 				texcoords.add(new int[] { (int) (textureS + tex[0] * texture.atlasOffset), (int) (textureT + tex[1] * texture.atlasOffset) });
 				colors.add(lightColors);
 				normals.add(normal);
-				this.isWavy_complex.add(info.isWavy());
+				if(isWavy != null)
+					isWavy.add(info.isWavy());
 			}
 			else
 			{
@@ -1024,18 +1025,19 @@ public class ChunksRenderer extends Thread
 					renderInfo.neightborhood[5] = getBlockData(work, i, k - 1, j);
 					
 					// System.out.println(blockID);
-					if (vox.isVoxelUsingCustomModel())
+					if (vox.isVoxelLiquid())
 					{
-						// Prop rendering
-						addVoxelUsingCustomModel(work, vertices_complex, texcoords_complex, colors_complex, normals_complex, i, k, j, renderInfo);
-					}
-					else if (vox.isVoxelLiquid())
-					{
-						if ((k < world.getMaxHeight() && shallBuildWallArround(renderInfo, 4)))
+						/*if ((k < world.getMaxHeight() && shallBuildWallArround(renderInfo, 4)))
 						{
 							if (!(k == 31 && !chunkTopLoaded))
 								addQuadTop(work, vertices_water, texcoords_water, colors_water, normals_water, i, k, j, vox.getVoxelTexture(src, 0, renderInfo));
-						}
+						}*/
+						addVoxelUsingCustomModel(work, vertices_water, texcoords_water, colors_water, normals_water, null, i, k, j, renderInfo);
+					}
+					else if (vox.isVoxelUsingCustomModel())
+					{
+						// Prop rendering
+						addVoxelUsingCustomModel(work, vertices_complex, texcoords_complex, colors_complex, normals_complex, isWavy_complex, i, k, j, renderInfo);
 					}
 					else if (blockID != 0)
 					{
@@ -1106,11 +1108,11 @@ public class ChunksRenderer extends Thread
 		int COMPLEX_SHAPES_BITS_PER_VERTEX = 24;
 		
 		bufferTotalSize += vertices.size() * VOXEL_ONLY_BITS_PER_VERTEX;
-		bufferTotalSize += vertices_water.size() * VOXEL_ONLY_BITS_PER_VERTEX;
+		bufferTotalSize += vertices_water.size() * COMPLEX_SHAPES_BITS_PER_VERTEX;
 		bufferTotalSize += vertices_complex.size() * COMPLEX_SHAPES_BITS_PER_VERTEX;
 		
-		int rsltSize = (vertices.size() + vertices_water.size()) * (16);
-		rsltSize += vertices_complex.size() * (24);
+		int rsltSize = (vertices.size() + 0) * (16);
+		rsltSize += (vertices_complex.size() + + vertices_water.size()) * (24);
 
 		rslt.buf = BufferUtils.createByteBuffer(bufferTotalSize);
 
@@ -1171,7 +1173,8 @@ public class ChunksRenderer extends Thread
 			count++;
 		}
 		// Water
-		for (float[] f : vertices_water)
+		
+		/*for (float[] f : vertices_water)
 		{
 			// Packed 2_10_10_10
 
@@ -1180,6 +1183,12 @@ public class ChunksRenderer extends Thread
 			int c = ((int) ((f[2])) & 0x3FF) << 20;
 			int kek = a | b | c;
 			rslt.buf.putInt(kek);
+		}*/
+		
+		for (float[] f : vertices_water)
+		{
+			for (float z : f)
+				rslt.buf.putFloat(z);
 		}
 		for (int[] f : texcoords_water)
 		{
@@ -1196,7 +1205,7 @@ public class ChunksRenderer extends Thread
 			// Padding
 			rslt.buf.put((byte) 0);
 		}
-		for (int[] f : normals_water)
+		/*for (int[] f : normals_water)
 		{
 			//for (i = 0; i < 6; i++)
 			//{
@@ -1212,7 +1221,17 @@ public class ChunksRenderer extends Thread
 			rslt.buf.putInt(kek);
 			rslt.buf.putInt(kek);
 			//}
+		}*/
+		for (float[] f : normals_water)
+		{
+			int a = (int) ((f[0] + 1) * 511.5f) & 0x3FF;
+			int b = ((int) ((f[1] + 1) * 511.5f) & 0x3FF) << 10;
+			int c = ((int) ((f[2] + 1) * 511.5f) & 0x3FF) << 20;
+			int kek = a | b | c;
+			rslt.buf.putInt(kek);
+			count++;
 		}
+		
 		// Complex objects
 		for (float[] f : vertices_complex)
 		{
@@ -1299,7 +1318,7 @@ public class ChunksRenderer extends Thread
 	List<float[]> vertices_water = new ArrayList<float[]>();
 	List<int[]> texcoords_water = new ArrayList<int[]>();
 	List<float[]> colors_water = new ArrayList<float[]>();
-	List<int[]> normals_water = new ArrayList<int[]>();
+	List<float[]> normals_water = new ArrayList<float[]>();
 
 	List<float[]> vertices_complex = new ArrayList<float[]>();
 	List<int[]> texcoords_complex = new ArrayList<int[]>();

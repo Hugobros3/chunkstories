@@ -191,8 +191,7 @@ public class CubicChunk
 							sunSources.push(a);
 							sunSources.push(b);
 							sunSources.push(z);
-
-							if (chunkY * 32 + z < csh - 1 || VoxelTypes.get(VoxelFormat.id(data[a * 1024 + (z) * 32 + b])).isVoxelOpaque())
+							if (chunkY * 32 + z < csh - 1 || VoxelTypes.get(VoxelFormat.id(data[a * 1024 + (z) * 32 + b])).getId() != 0)
 							{
 								hit = true;
 							}
@@ -647,6 +646,7 @@ public class CubicChunk
 				{
 					int adj = data[(x + 1) * 1024 + y * 32 + z];
 					int llRight = ll - in.getLightLevelModifier(voxelData, adj, 2);
+						
 					//if(cId == 25)
 					//	System.out.println(adj & 0xFFFF);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llRight - 1)

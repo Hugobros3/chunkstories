@@ -140,13 +140,15 @@ void main(){
 	finalLight *= (1-meta.z);
 
 	//coords += 15.0 * (1 - length(worldspaceFragment) / viewDistance) * vec2( normal.xz ) / screenSize;
-	vec4 refracted = texture2D(readbackAlbedoBufferTemp, coords);
-	refracted.rgb *= pow(finalLight + vec3(1.0) * (1-refracted.a), vec3(gamma));
+	vec4 refracted = texture2D(readbackAlbedoBufferTemp, coords);;
 	
 	float waterFogI2 = length(worldspaceFragment) / viewDistance;
 	//if(refracted.a <= 0.1)
 	//	waterFogI2 = 0;
 	//baseColor.a = refracted.a;
+	//finalLight = mix(finalLight, vec3(1.0), clamp(1-waterFogI2*5-0.5, 0.0, 1.0));
+	//finalLight += vec3(1.0) * clamp(1-waterFogI2*5-0.5, 0.0, 1.0);
+	refracted.rgb *= pow(finalLight + vec3(1.0) * (1-refracted.a), vec3(gamma));
 	baseColor.rgb = mix(refracted.rgb, baseColor.rgb, clamp(waterFogI2+0.2, 0.0, 1.0));
 	
 	spec *= 1-underwater;

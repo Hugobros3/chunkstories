@@ -74,7 +74,7 @@ void main() {
 	finalCoords.y += underwater*cos(finalCoords.y * 60 + time * 1.0) / viewHeight * 2.0;
 	
 	// Sampling
-	vec4 compositeColor = texture2D(shadedBuffer, finalCoords);
+	vec4 compositeColor = texture2DLod(shadedBuffer, finalCoords, 0.0);
 	
 	// Do reflections here
 	
@@ -85,6 +85,7 @@ void main() {
 	compositeColor *= apertureModifier;
 	<ifdef doBloom>
 	compositeColor.rgb += texture2D(bloomBuffer, finalCoords).rgb;
+	//finalLight *= clamp(lum-0.8, 0.0, 10.0);
 	<endif doBloom>
 	
 	compositeColor.rgb = pow(compositeColor.rgb, vec3(gammaInv));
@@ -108,7 +109,7 @@ vec4 getDebugShit(vec2 coords)
 	if(coords.x > 0.5)
 	{
 		if(coords.y > 0.5)
-			shit = pow(texture2D(shadedBuffer, sampleCoords, 1), vec4(gammaInv));
+			shit = pow(texture2D(shadedBuffer, sampleCoords, 0), vec4(gammaInv));
 		else
 			shit = texture2D(normalBuffer, sampleCoords);
 	}
@@ -126,7 +127,7 @@ vec4 getDebugShit(vec2 coords)
 			shit = vec4(1.0, 0.5, 0.0, 1.0) * texture2D(normalBuffer, sampleCoords).w;
 			shit.yz += texture2D(metaBuffer, sampleCoords).xy;
 			<ifdef dynamicGrass>
-			shit = texture2DLod(shadedBuffer, sampleCoords, 80);
+			shit = texture2DLod(bloomBuffer, sampleCoords, 80);
 			<endif dynamicGrass>
 		}
 	}

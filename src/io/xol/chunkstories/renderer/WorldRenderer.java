@@ -260,6 +260,10 @@ public class WorldRenderer
 		{
 			glDisable(GL_DEPTH_TEST);
 
+			this.composite_shaded.setLinearFiltering(true);
+			this.composite_bloom.setLinearFiltering(true);
+			this.blurTemp.setLinearFiltering(true);
+			
 			bloomShader.use(true);
 			bloomShader.setUniformSampler(0, "shadedBuffer", this.composite_shaded);
 			bloomShader.setUniformFloat("apertureModifier", apertureModifier);
@@ -563,7 +567,7 @@ public class WorldRenderer
 		else if (size > 2048)
 			fun = 20;
 
-		int fun2 = 102;// hdPass ? 100 : 200;
+		int fun2 = 200;// hdPass ? 100 : 200;
 		Matrix4f depthProjectionMatrix = MatrixHelper.getOrthographicMatrix(-fun * 10, fun * 10, -fun * 10, fun * 10, -fun2, fun2);
 		Matrix4f depthViewMatrix = MatrixHelper.getLookAtMatrix(normSunPosition, new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
@@ -612,6 +616,7 @@ public class WorldRenderer
 
 	Texture blocksDiffuseTexture = TexturesHandler.getTexture("tiles_merged_diffuse.png");
 	Texture blocksNormalTexture = TexturesHandler.getTexture("tiles_merged_normal.png");
+	Texture blocksMaterialTexture = TexturesHandler.getTexture("tiles_merged_material.png");
 
 	float averageBrightness = 1f;
 	float apertureModifier = 1f;
@@ -680,7 +685,8 @@ public class WorldRenderer
 			opaqueBlocksShader.use(true);
 			opaqueBlocksShader.setUniformSampler(0, "diffuseTexture", blocksDiffuseTexture);
 			opaqueBlocksShader.setUniformSampler(1, "normalTexture", blocksNormalTexture);
-			opaqueBlocksShader.setUniformSampler(4, "lightColors", lightmapTexture);
+			opaqueBlocksShader.setUniformSampler(2, "materialTexture", blocksMaterialTexture);
+			opaqueBlocksShader.setUniformSampler(3, "lightColors", lightmapTexture);
 			blocksDiffuseTexture.setTextureWrapping(false);
 			blocksDiffuseTexture.setLinearFiltering(false);
 			blocksDiffuseTexture.setMipMapping(false);
@@ -688,8 +694,13 @@ public class WorldRenderer
 
 			blocksNormalTexture.setTextureWrapping(false);
 			blocksNormalTexture.setLinearFiltering(false);
-			blocksNormalTexture.setMipMapping(true);
+			blocksNormalTexture.setMipMapping(false);
 			blocksNormalTexture.setMipmapLevelsRange(0, 4);
+
+			blocksMaterialTexture.setTextureWrapping(false);
+			blocksMaterialTexture.setLinearFiltering(false);
+			blocksMaterialTexture.setMipMapping(false);
+			blocksMaterialTexture.setMipmapLevelsRange(0, 4);
 
 			opaqueBlocksShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
 			//opaqueBlocksShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
@@ -852,7 +863,7 @@ public class WorldRenderer
 			if (chunk.vbo_size_complex > 0)
 			{
 				geometrySize = chunk.vbo_size_complex;
-				int dekal = (chunk.vbo_size_normal + chunk.vbo_size_water) * (4) * 4;
+				int dekal = chunk.vbo_size_normal * 16 + chunk.vbo_size_water * 24;
 				vertexSize = 12;
 				glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, vertexSize, dekal + 0);
 
@@ -1057,7 +1068,7 @@ public class WorldRenderer
 
 				glBindBuffer(GL_ARRAY_BUFFER, chunk.vbo_id);
 				int geometrySize = chunk.vbo_size_water;
-				int dekal = (chunk.vbo_size_normal) * (4) * 4;
+				int dekal = chunk.vbo_size_normal * 16;
 				// Texture data is offset by the vertex data as
 				// 64 x 64 x 3 vertices x 2 triangles x 3 coordinates x 4 bytes
 				// per float
@@ -1065,8 +1076,8 @@ public class WorldRenderer
 				// 3x4xgeometry for textcoords
 
 				// glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 12, 0);
-				glVertexAttribPointer(vertexIn, 4, GL_INT_2_10_10_10_REV, false, 4, dekal + 0);
-				int vertexSize = 4;
+				glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 12, dekal + 0);
+				int vertexSize = 12;
 				if (texCoordIn != -1)
 					glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 4, dekal + (geometrySize) * vertexSize);
 				if (colorIn != -1)
@@ -1154,12 +1165,17 @@ public class WorldRenderer
 		if (world.isRaining())
 		{
 			shader.setUniformFloat("shadowStrength", 0.75f);
+			shader.setUniformFloat3("sunColor", 1.0f, 1.0f, 1.0f);
 			shader.setUniformFloat3("shadowColor", 0.20f, 0.20f, 0.20f);
 		}
 		else
 		{
-			shader.setUniformFloat("shadowStrength", 0.90f);
-			shader.setUniformFloat3("shadowColor", 0.20f, 0.20f, 0.31f);
+			shader.setUniformFloat("shadowStrength", 1.0f);
+			float x = 1.1f;
+			shader.setUniformFloat3("sunColor", x * 255f/255f, x * 240f/255f, x * 222/255f);
+			//shader.setUniformFloat3("sunColor", 1.0f, 1.0f, 1.0f);
+			//shader.setUniformFloat3("shadowColor", 0.0f, 0.0f, 0.0f);
+			shader.setUniformFloat3("shadowColor", 104/255f, 110/255f, 122/255f);
 		}
 	}
 
@@ -1407,18 +1423,18 @@ public class WorldRenderer
 
 		postProcess.use(false);
 
-		composite_shaded.setMipMapping(true);
-		this.composite_shaded.computeMipmaps();
-
 		if (FastConfig.doBloom)
 		{
 			glBindTexture(GL_TEXTURE_2D, composite_shaded.getID());
+			composite_shaded.setMipMapping(true);
+
 			try
 			{
 				int max_mipmap = (int) (Math.floor(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
 				//System.out.println(fBuffer + " " + max_mipmap);
 				fBuffer.rewind();
 				glGetTexImage(GL_TEXTURE_2D, max_mipmap, GL_RGB, GL_FLOAT, fBuffer);
+				this.composite_shaded.computeMipmaps();
 				//System.out.println(fBuffer);
 				float luma = fBuffer.getFloat() * 0.2125f + fBuffer.getFloat() * 0.7154f + fBuffer.getFloat() * 0.0721f;
 				luma *= apertureModifier;
@@ -1426,7 +1442,7 @@ public class WorldRenderer
 				//System.out.println("luma:"+luma + " aperture:"+ this.apertureModifier);
 
 				float targetLuma = 0.55f;
-				float lumaMargin = 0.35f;
+				float lumaMargin = 0.15f;
 
 				if (luma < targetLuma - lumaMargin)
 				{
@@ -1435,7 +1451,7 @@ public class WorldRenderer
 				}
 				else if (luma > targetLuma + lumaMargin)
 				{
-					if (apertureModifier > 1.0)
+					if (apertureModifier > 0.275)
 						apertureModifier *= 0.999;
 				}
 				else
@@ -1610,9 +1626,9 @@ public class WorldRenderer
 				for (int y = 0; y < resolution; y++)
 				{
 					int i = 4 * (x + resolution * y);
-					int r = bbuf.get(i) & 0xFF;
-					int g = bbuf.get(i + 1) & 0xFF;
-					int b = bbuf.get(i + 2) & 0xFF;
+					int r = (int) (Math.pow((bbuf.get(i) & 0xFF)/255d, 1d/2.2d)*255d);
+					int g = (int) (Math.pow((bbuf.get(i + 1) & 0xFF)/255d, 1d/2.2d)*255d);
+					int b = (int) (Math.pow((bbuf.get(i + 2) & 0xFF)/255d, 1d/2.2d)*255d);
 					pixels.setRGB(x, resolution - 1 - y, (0xFF << 24) | (r << 16) | (g << 8) | b);
 				}
 			try

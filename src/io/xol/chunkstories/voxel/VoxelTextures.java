@@ -10,16 +10,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
+
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
+import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -44,26 +48,41 @@ public class VoxelTextures
 			colors.clear();
 			// Compute all sizes first.
 			int totalSurfacedNeeded = 0;
-			File folder = new File("./res/voxels/textures/");
+			//File folder = new File("./res/voxels/textures/");
 			// TODO fix for gamemodes
 			// Get all sizes :
 			List<VoxelTexture> sizes = new ArrayList<VoxelTexture>();
-			for (File f : folder.listFiles())
-			{
-				if (f.exists() && f.getName().endsWith(".png"))
-				{
-					String textureName = f.getName().replace(".png", "");
-					if (!texMap.containsKey(textureName))
-					{
-						VoxelTexture vt = new VoxelTexture(f, textureName);
-						vt.imageFileDimensions = getImageSize(f);
 
-						sizes.add(vt);
-						// texMap.put(textureName, vt);
-						totalSurfacedNeeded += vt.imageFileDimensions * vt.imageFileDimensions;
+			//for (File f : folder.listFiles())
+			Iterator<Entry<String, File>> allFiles = GameData.getAllUniqueEntries();
+			Entry<String, File> entry;
+			File f;
+			while (allFiles.hasNext())
+			{
+				entry = allFiles.next();
+				if (entry.getKey().startsWith("./res/voxels/textures/"))
+				{
+					String name = entry.getKey().replace("./res/voxels/textures/", "");
+					if(name.contains("/"))
+						continue;
+					f = entry.getValue();
+					if (!f.isDirectory() && f.exists() && f.getName().endsWith(".png"))
+					{
+						String textureName = f.getName().replace(".png", "");
+						System.out.println("texName:"+textureName+" "+entry.getKey());
+						if (!texMap.containsKey(textureName))
+						{
+							VoxelTexture vt = new VoxelTexture(textureName);
+							vt.imageFileDimensions = getImageSize(f);
+
+							sizes.add(vt);
+							// texMap.put(textureName, vt);
+							totalSurfacedNeeded += vt.imageFileDimensions * vt.imageFileDimensions;
+						}
 					}
 				}
 			}
+			//TODO do also the mods/ dir
 			// Sort.
 			Collections.sort(sizes, new Comparator<VoxelTexture>()
 			{
@@ -98,6 +117,10 @@ public class VoxelTextures
 			File normalTextureFile = new File("./res/textures/tiles_merged_normal.png");
 			if (normalTextureFile.exists())
 				normalTextureFile.delete();
+
+			File materialTextureFile = new File("./res/textures/tiles_merged_material.png");
+			if (materialTextureFile.exists())
+				materialTextureFile.delete();
 			// Build the new one
 			boolean loadedOK = false;
 			while (!loadedOK && sizeRequired <= 4096) // Security to prevend
@@ -112,6 +135,7 @@ public class VoxelTextures
 
 				BufferedImage diffuseTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
 				BufferedImage normalTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
+				BufferedImage materialTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
 
 				BufferedImage imageBuffer;
 
@@ -124,11 +148,6 @@ public class VoxelTextures
 						for (int b = 0; (b < sizeRequired / 16 && !foundSpot); b++)
 						{
 							if (used[a][b] == false && a + vt.imageFileDimensions / 16 <= sizeRequired / 16 && b + vt.imageFileDimensions / 16 <= sizeRequired / 16) // Unused
-																																										// and
-																																										// won't
-																																										// smash
-																																										// against
-																																										// borders.
 							{
 								boolean usedAlready = false;
 								// Not pretty loops that do clamped space checks
@@ -159,7 +178,7 @@ public class VoxelTextures
 						break;
 					}
 
-					imageBuffer = ImageIO.read(vt.file);
+					imageBuffer = ImageIO.read(GameData.getTextureFileLocation("./res/voxels/textures/" + vt.name + ".png"));
 
 					float alphaTotal = 0;
 					int nonNullPixels = 0;
@@ -188,9 +207,9 @@ public class VoxelTextures
 
 					colors.put(vt.name, new Vector4f(color.x, color.y, color.z, alphaTotal));
 					// Do also the normal maps !
-					File normalMap = new File(vt.file.getParentFile().getAbsoluteFile() + "/normal/" + vt.name + ".png");
-					if (!normalMap.exists())
-						normalMap = new File("./res/textures/voxel/normal/notex.png");
+					File normalMap = GameData.getTextureFileLocation("./res/voxels/textures/normal/" + vt.name + ".png");
+					if (normalMap == null || !normalMap.exists())
+						normalMap = GameData.getTextureFileLocation("./res/voxels/textures/normal/notex.png");
 
 					imageBuffer = ImageIO.read(normalMap);
 					for (int x = 0; x < vt.imageFileDimensions; x++)
@@ -201,12 +220,27 @@ public class VoxelTextures
 							normalTexture.setRGB(spotX + x, spotY + y, rgb);
 						}
 					}
+					// And the materials !
+					File materialMap = GameData.getTextureFileLocation("./res/voxels/textures/material/" + vt.name + ".png");
+					if (materialMap == null || !materialMap.exists())
+						materialMap = GameData.getTextureFileLocation("./res/voxels/textures/material/notex.png");
+
+					imageBuffer = ImageIO.read(materialMap);
+					for (int x = 0; x < vt.imageFileDimensions; x++)
+					{
+						for (int y = 0; y < vt.imageFileDimensions; y++)
+						{
+							int rgb = imageBuffer.getRGB(x % imageBuffer.getWidth(), y % imageBuffer.getHeight());
+							materialTexture.setRGB(spotX + x, spotY + y, rgb);
+						}
+					}
 				}
 				if (loadedOK)
 				{
 					// save it son
 					ImageIO.write(diffuseTexture, "PNG", diffuseTextureFile);
 					ImageIO.write(normalTexture, "PNG", normalTextureFile);
+					ImageIO.write(materialTexture, "PNG", materialTextureFile);
 				}
 				else
 					// It's too small, initial estimation was wrong !
@@ -214,7 +248,7 @@ public class VoxelTextures
 			}
 			// Read textures metadata
 			// TODO also read from gamemode folder
-			readTexturesMeta(new File("./res/voxels/textures/meta.txt"));
+			readTexturesMeta(GameData.getFileLocation("./res/voxels/textures/meta.txt"));
 		}
 		catch (Exception e)
 		{

@@ -5,7 +5,6 @@ package io.xol.chunkstories.gui;
 // http://xol.io
 
 import io.xol.engine.base.font.BitmapFont;
-import io.xol.engine.base.font.FontRenderer2;
 import io.xol.engine.base.font.TrueTypeFont;
 import io.xol.engine.gui.InputText;
 

@@ -39,6 +39,7 @@ const float shadowStrength = 0.85;
 */
 
 uniform vec3 shadowColor;
+uniform vec3 sunColor;
 uniform float shadowStrength;
 
 uniform mat4 projectionMatrix;
@@ -171,11 +172,12 @@ void main()
 	
 	opacity = clamp(opacity, 0, 0.52);
 	
-	sunLight = mix(sunLight * pow(shadowColor, vec3(gamma)), sunLight, (1-opacity) * shadowVisiblity);
+	sunLight *= mix(pow(shadowColor, vec3(gamma)),  pow(sunColor, vec3(gamma)), (1-opacity) * shadowVisiblity);
 	
 	vec3 finalLight = blockLight;// * (1-sunLight);
 	finalLight += sunLight;
 	
+	//vec3 finalLight = baseLight * mix(pow(shadowColor, vec3(gamma)), pow(sunColor, vec3(gamma)), (1 - opacity * pow(shadowStrength, gammaInv)) * shadowVisiblity);
 	//finalLight = mix(finalLight, finalLight*shadowColor, opacity * 1.0);
 	//finalColor*=finalLight;
 	
@@ -186,7 +188,7 @@ void main()
 	
 	vec3 fogColor = gl_Fog.color.rgb;
 	fogColor = getSkyColorWOSun(time, normalize(eye));
-	//fogColor.rgb = pow(fogColor.rgb, vec3(gammaInv));
+	//fogColor.rgb = pow(fogColor.rgb, vec3(gamma));
 	
 	//finalColor = vec3(1.0);
 	
