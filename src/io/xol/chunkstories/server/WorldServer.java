@@ -33,7 +33,7 @@ public class WorldServer extends World
 		
 		int removedChunks = 0;
 		//Chunks pruner
-		ChunksIterator i = Client.world.iterator();
+		ChunksIterator i = Server.getInstance().world.iterator();
 		CubicChunk c;
 		while(i.hasNext())
 		{

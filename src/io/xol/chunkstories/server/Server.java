@@ -199,14 +199,12 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 	@Override
 	public void sendMessage(String msg)
 	{
-		// TODO log
 		System.out.println(ColorsTools.convertToAnsi("#FF00FF" + msg));
 	}
 
 	@Override
 	public boolean hasRights(String permission)
 	{
-		// Console always has the right.
 		return true;
 	}
 }
