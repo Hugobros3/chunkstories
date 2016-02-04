@@ -134,7 +134,7 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 
 		if (Client.connection != null)
 		{
-			Packet04Entity packet = new Packet04Entity(true, world);
+			Packet04Entity packet = new Packet04Entity(true);
 			packet.includeRotation = true;
 			packet.entity = this;
 			Client.connection.sendPacket(packet);

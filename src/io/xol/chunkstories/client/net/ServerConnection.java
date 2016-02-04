@@ -296,7 +296,7 @@ public class ServerConnection extends Thread implements HttpRequester
 			}
 			else if (type == 0x04)
 			{
-				Packet04Entity packet = new Packet04Entity(false, Client.world);
+				Packet04Entity packet = new Packet04Entity(false);
 				packet.read(in);
 				Entity entity = Client.world.getEntityByUUID(packet.entityID);
 				if(packet.deleteFlag)

@@ -102,7 +102,7 @@ public class ServerPlayer implements Player
 	
 	public void trackEntity(Entity e, boolean first, boolean delete)
 	{
-		Packet04Entity packet = new Packet04Entity(false, entity.world);
+		Packet04Entity packet = new Packet04Entity(false);
 		packet.entity = e;
 		if(first)
 		{
@@ -180,7 +180,7 @@ public class ServerPlayer implements Player
 	public void setPosition(Location l)
 	{
 		//Send teleport packet
-		Packet04Entity packet = new Packet04Entity(false, entity.world);
+		Packet04Entity packet = new Packet04Entity(false);
 		playerConnection.sendPacket(packet);
 		entity.setPosition(l.x, l.y, l.z);
 	}
@@ -189,6 +189,12 @@ public class ServerPlayer implements Player
 	public boolean isConnected()
 	{
 		return true;
+	}
+
+	@Override
+	public void kickPlayer(String reason)
+	{
+		Server.getInstance().handler.disconnectClient(playerConnection, reason);
 	}
 
 }

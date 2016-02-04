@@ -9,7 +9,8 @@ import java.nio.ByteBuffer;
 
 import io.xol.chunkstories.client.FastConfig;
 
-import static org.lwjgl.opengl.GL30.*;
+//import static org.lwjgl.opengl.GL30.*;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io

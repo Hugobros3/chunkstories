@@ -89,7 +89,7 @@ public class WorldServer extends World
 			worldInfo.sendInfo(sender);
 			if(sender.profile.entity != null)
 			{
-				Packet04Entity packet = new Packet04Entity(false, this);
+				Packet04Entity packet = new Packet04Entity(false);
 				packet.entity = sender.profile.entity;
 				packet.defineControl = true;
 				sender.sendPacket(packet);

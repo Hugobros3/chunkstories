@@ -164,7 +164,7 @@ public class ServerClient extends Thread implements HttpRequester, CommandEmitte
 		}
 		else if (type == 0x04)
 		{
-			Packet04Entity packet = new Packet04Entity(false, Server.getInstance().world);
+			Packet04Entity packet = new Packet04Entity(false);
 			packet.read(in);
 			if(this.profile.entity != null && packet.entityID == this.profile.entity.entityID)
 				packet.applyToEntity(this.profile.entity, in);

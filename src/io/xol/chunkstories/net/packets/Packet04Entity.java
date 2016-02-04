@@ -2,7 +2,6 @@ package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityNameable;
-import io.xol.chunkstories.world.World;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,14 +19,14 @@ public class Packet04Entity extends Packet
 	public Entity entity;
 	public short entityType;
 	public long entityID;
-	World world;
+	//World world;
 
 	public boolean defineControl = false; // Tells the client that the player entity is this one.
 	public boolean includeRotation = false; // Tells both sides to consider extra 2 doubles
 	public boolean includeName = false; // This is a nameable entity
 	public boolean deleteFlag = false; // Tells client to stop tracking this entity and delete it
 
-	public Packet04Entity(boolean client, World world)
+	public Packet04Entity(boolean client)
 	{
 		super(client);
 	}

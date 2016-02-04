@@ -1,14 +1,19 @@
 package io.xol.chunkstories.entity.inventory;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Iterator;
 
+import io.xol.chunkstories.item.Item;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.ItemsList;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Inventory implements Iterable<ItemPile>
+public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 {
 	public String name;
 
@@ -187,5 +192,55 @@ public class Inventory implements Iterable<ItemPile>
 		};
 		return it;
 
+	}
+	
+	public Inventory(DataInputStream stream) throws IOException
+	{
+		load(stream);
+	}
+
+	@Override
+	public void load(DataInputStream stream) throws IOException
+	{
+		this.width = stream.readInt();
+		this.height = stream.readInt();
+		boolean hasName = stream.readBoolean();
+		if(hasName)
+			name = stream.readUTF();
+		contents = new ItemPile[width][height];
+		int id;
+		Item item;
+		for(int i = 0; i < width; i++)
+			for(int j = 0; j < height ; j++)
+			{
+				id = stream.readInt() & 0x00FFFFFF;
+				item = ItemsList.get(id);
+				if(item != null)
+					contents[i][j] = new ItemPile(item, stream);
+			}
+	}
+
+	@Override
+	public void save(DataOutputStream stream) throws IOException
+	{
+		stream.writeInt(width);
+		stream.writeInt(height);
+		boolean hasName = name != null;
+		stream.writeBoolean(hasName);
+		if(hasName)
+			stream.writeUTF(name);
+		ItemPile pile;
+		for(int i = 0; i < width; i++)
+			for(int j = 0; j < height ; j++)
+			{
+				pile = contents[i][j];
+				if(pile == null)
+					stream.writeInt(0);
+				else
+				{
+					stream.writeInt(pile.getItem().getID());
+					pile.save(stream);
+				}
+			}
 	}
 }

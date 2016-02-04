@@ -1,5 +1,9 @@
 package io.xol.chunkstories.item;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import io.xol.chunkstories.entity.Entity;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -121,6 +125,16 @@ public abstract class Item
 	{
 		this.maxStackSize = maxStackSize;
 	}
-	
+
+	public void load(ItemPile itemPile, DataInputStream stream) throws IOException
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	public void save(ItemPile itemPile, DataOutputStream stream) throws IOException
+	{
+		// TODO Auto-generated method stub
+		
+	}
 	// ----- End get/set hell -----
 }

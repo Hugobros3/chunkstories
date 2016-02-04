@@ -39,5 +39,11 @@ public interface Player
 	 */
 	public void setPosition(Location l);
 	
+	/**
+	 * Kicks the player
+	 * @param reason
+	 */
+	public void kickPlayer(String reason);
+	
 	public boolean isConnected();
 }

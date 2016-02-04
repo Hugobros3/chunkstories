@@ -69,7 +69,7 @@ public class VoxelTextures
 					if (!f.isDirectory() && f.exists() && f.getName().endsWith(".png"))
 					{
 						String textureName = f.getName().replace(".png", "");
-						System.out.println("texName:"+textureName+" "+entry.getKey());
+						//System.out.println("texName:"+textureName+" "+entry.getKey());
 						if (!texMap.containsKey(textureName))
 						{
 							VoxelTexture vt = new VoxelTexture(textureName);
@@ -247,7 +247,6 @@ public class VoxelTextures
 					sizeRequired *= 2;
 			}
 			// Read textures metadata
-			// TODO also read from gamemode folder
 			readTexturesMeta(GameData.getFileLocation("./res/voxels/textures/meta.txt"));
 		}
 		catch (Exception e)
