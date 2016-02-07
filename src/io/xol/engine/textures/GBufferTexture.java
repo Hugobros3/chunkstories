@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 
 import io.xol.chunkstories.client.FastConfig;
 
-//import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL30.*;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -46,9 +46,9 @@ public class GBufferTexture extends Texture
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, (ByteBuffer) null);
 			else
 			{
-				/*if(FastConfig.openGL3Capable)
+				if(FastConfig.openGL3Capable)
 					glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, w, h, 0, GL_RGB, GL_FLOAT, (ByteBuffer) null);
-				else*/
+				else
 					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F_ARB, w, h, 0, GL_RGBA, GL_FLOAT, (ByteBuffer) null);
 			}
 			// GL_RGBA16F_ARB for GL3

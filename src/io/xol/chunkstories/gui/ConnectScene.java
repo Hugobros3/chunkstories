@@ -50,12 +50,7 @@ public class ConnectScene extends Scene
 		
 		//WorldInfo info = Client.connection.getWorldInfo();
 		if(Client.world != null)
-		{
-			/*Client.world = new WorldClient(info);
-			message = Client.world.name;
-			System.out.println(info.name);*/
 			loginOk = true;
-		}
 
 		if (loginOk)
 		{
@@ -67,9 +62,10 @@ public class ConnectScene extends Scene
 		drawCenteredText(message, XolioWindow.frameH / 2 - 32, 32, c, c, c, 1f);
 		FontRenderer2.drawTextUsingSpecificFontRVBA(12, 12, 0, 32, "Copyright 2015 XolioWare Interactive", BitmapFont.SMALLFONTS, 1f, 0.3f, 0.3f, 0.3f);
 		super.update();
-		
 		if (cancelButton.clicked())
 			cancel();
+		if(Client.connection.hasFailed())
+			message = "#FF0000Asking server for world info..."+Client.connection.getLatestErrorMessage();
 	}
 
 	void drawCenteredText(String t, float height, int basesize, float r, float v, float b, float a)
@@ -85,8 +81,7 @@ public class ConnectScene extends Scene
 		{
 			Client.world.destroy();
 			Client.world = null;
-		}
-			
+		}	
 		this.eng.changeScene(new MainMenu(eng, false));
 	}
 

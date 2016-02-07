@@ -49,7 +49,6 @@ public class VoxelTextures
 			// Compute all sizes first.
 			int totalSurfacedNeeded = 0;
 			//File folder = new File("./res/voxels/textures/");
-			// TODO fix for gamemodes
 			// Get all sizes :
 			List<VoxelTexture> sizes = new ArrayList<VoxelTexture>();
 
@@ -82,8 +81,7 @@ public class VoxelTextures
 					}
 				}
 			}
-			//TODO do also the mods/ dir
-			// Sort.
+			// Sort them by size
 			Collections.sort(sizes, new Comparator<VoxelTexture>()
 			{
 				@Override
@@ -97,7 +95,7 @@ public class VoxelTextures
 				// System.out.println(vt.imageFileDimensions);
 				texMap.put(vt.name, vt);
 			}
-			// Make an appropriately sized texture atlas
+			// Make an appropriately sized texture atlas (aprox)
 			int sizeRequired = 16;
 			for (int i = 4; i < 14; i++)
 			{
@@ -123,7 +121,7 @@ public class VoxelTextures
 				materialTextureFile.delete();
 			// Build the new one
 			boolean loadedOK = false;
-			while (!loadedOK && sizeRequired <= 4096) // Security to prevend
+			while (!loadedOK && sizeRequired <= 8192) // Security to prevend
 														// HUGE-ASS textures
 			{
 				// We need this

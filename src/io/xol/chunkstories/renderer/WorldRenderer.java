@@ -1433,8 +1433,11 @@ public class WorldRenderer
 				int max_mipmap = (int) (Math.floor(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
 				//System.out.println(fBuffer + " " + max_mipmap);
 				fBuffer.rewind();
-				glGetTexImage(GL_TEXTURE_2D, max_mipmap, GL_RGB, GL_FLOAT, fBuffer);
-				this.composite_shaded.computeMipmaps();
+				if(Math.random() > 0.9)
+				{
+					glGetTexImage(GL_TEXTURE_2D, max_mipmap, GL_RGB, GL_FLOAT, fBuffer);
+					this.composite_shaded.computeMipmaps();
+				}
 				//System.out.println(fBuffer);
 				float luma = fBuffer.getFloat() * 0.2125f + fBuffer.getFloat() * 0.7154f + fBuffer.getFloat() * 0.0721f;
 				luma *= apertureModifier;

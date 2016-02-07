@@ -30,7 +30,7 @@ void main()
 	float lum = luminance(finalLight) * apertureModifier;
 	
 	finalLight = pow(finalLight, vec3(gammaInv));
-	finalLight *= clamp(lum-1.0, 0.0, 1000.0);
+	finalLight *= clamp(lum-0.4, 0.0, 1000.0);
 	
-	gl_FragColor = vec4(finalLight, 1.0);
+	gl_FragColor = vec4(finalLight * 0.4, 1.0);
 }
