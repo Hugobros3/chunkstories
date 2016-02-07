@@ -4,6 +4,15 @@ import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.CubicChunk;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
+/**
+ * Iterates over a ChunkHolder
+ * @author Hugo
+ *
+ */
 public class ChunkHolderIterator implements ChunksIterator
 {
 	ChunkHolder holder;

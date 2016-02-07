@@ -1,19 +1,19 @@
 package io.xol.chunkstories.world.generator;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.World.WorldSize;
 import io.xol.chunkstories.world.biomes.Biome;
 import io.xol.chunkstories.world.biomes.BiomeIndex;
 import io.xol.chunkstories.world.generator.structures.GenerableStructure;
-import io.xol.chunkstories.world.WorldAccessor;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class PerlinWorldAccessor extends WorldAccessor
+public class PerlinWorldAccessor extends WorldGenerator
 {
 
 	// This is the first ever voxel World Generator by XolioWare Interactive
@@ -57,10 +57,9 @@ public class PerlinWorldAccessor extends WorldAccessor
 		boolean[] care;
 	}
 
-	public int getDataAt(int a, int y, int b, int h)
+	public int getDataAt(int a, int b)
 	{
 		int cx = a / 32;
-		int cy = y / 32;
 		int cz = b / 32;
 		a %= 32;
 		b %= 32;
@@ -68,10 +67,10 @@ public class PerlinWorldAccessor extends WorldAccessor
 		float humidity = (float) ((ssng.looped_noise((cx * 32 + a), (cz * 32 + b), sic * 32, 987, 148, sic / 64f, sic / 64f) + 1) / 2f);
 		float temperature = (float) ((ssng.looped_noise((cx * 32 + a), (cz * 32 + b), sic * 32, 32649, -877, sic / 128f, sic / 128f) + 1) / 2f);
 
-		Biome biome = BiomeIndex.getBiomeFor(humidity, temperature, cy * 32);
-		if (y <= 128)
+		Biome biome = BiomeIndex.getBiomeFor(humidity, temperature, 15);
+		if (getHeightAt(a, b) <= 128)
 			return biome.getFluidTile();
-		return biome.getGroundTile(h, y);
+		return biome.getGroundTile(1, 1);
 	}
 	
 	public int getHeightAt(int a, int b)
@@ -110,7 +109,7 @@ public class PerlinWorldAccessor extends WorldAccessor
 	}
 
 	@Override
-	public CubicChunk loadChunk(int cx, int cy, int cz)
+	public CubicChunk generateChunk(int cx, int cy, int cz)
 	{
 		// System.out.println("World init to :"+world);
 		CubicChunk c = new CubicChunk(world, cx, cy, cz);
@@ -378,12 +377,5 @@ public class PerlinWorldAccessor extends WorldAccessor
 	 * VoxelFormat.format(4, 0, 0, 0); } } } c.hasBeenDecorated = true;
 	 * c.needRender = true; } } }
 	 */
-
-	@Override
-	public boolean saveChunk(int cx, int cy, int cz, CubicChunk c)
-	{
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 }

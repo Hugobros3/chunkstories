@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
@@ -37,7 +38,7 @@ public abstract class World
 	// Let's say that the game world runs at 60Ticks per second
 
 	public IOTasks ioHandler;
-	public WorldAccessor accessor;
+	public WorldGenerator generator;
 	final public WorldSize size;
 
 	// RAM-eating monster
@@ -73,18 +74,18 @@ public abstract class World
 
 	public World(WorldInfo info)
 	{
-		this(info.internalName, info.seed, info.getAccessor(), info.size);
+		this(info.internalName, info.seed, info.getGenerator(), info.size);
 		worldInfo = info;
 	}
 
-	public World(String name, String seed, WorldAccessor access, WorldSize s)
+	public World(String name, String seed, WorldGenerator access, WorldSize s)
 	{
 		// Called by any initialisation code.
 		this.name = name;
 		this.seed = seed;
 		size = s;
-		accessor = access;
-		accessor.initialize(this);
+		generator = access;
+		generator.initialize(this);
 		chunksData = new ChunksData();
 		chunksHolder = new ChunksHolders(this, chunksData);
 		chunkSummaries = new ChunkSummaries(this);

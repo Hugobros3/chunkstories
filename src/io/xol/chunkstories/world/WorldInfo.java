@@ -9,10 +9,12 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
+import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.net.packets.Packet01WorldInfo;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.World.WorldSize;
 import io.xol.chunkstories.world.generator.BlankWorldAccessor;
+import io.xol.chunkstories.world.generator.HorizonGenerator;
 import io.xol.chunkstories.world.generator.PerlinWorldAccessor;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -113,13 +115,15 @@ public class WorldInfo
 		return new String[] { "name: " + name, "seed: " + seed, "worldgen: " + generator, "size: " + size.name() };
 	}
 
-	public WorldAccessor getAccessor()
+	public WorldGenerator getGenerator()
 	{
-		WorldAccessor accessor = null;
+		WorldGenerator accessor = null;
 		if (generator.equals("blank"))
 			accessor = new BlankWorldAccessor();
 		else if (generator.equals("perlin"))
 			accessor = new PerlinWorldAccessor();
+		else if (generator.equals("horizon"))
+			accessor = new HorizonGenerator();
 		return accessor;
 	}
 

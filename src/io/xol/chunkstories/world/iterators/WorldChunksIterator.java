@@ -7,6 +7,15 @@ import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
+/**
+ * Iterates over an entire world and gives all *loaded* chunks of it
+ * @author Hugo
+ *
+ */
 public class WorldChunksIterator implements ChunksIterator
 {	
 	Iterator<ChunkHolder> chIterator;

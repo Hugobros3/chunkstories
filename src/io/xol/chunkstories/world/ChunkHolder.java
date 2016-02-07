@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.chunkstories.world.iterators.ChunkHolderIterator;
+import io.xol.engine.concurrency.SimpleLock;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -63,16 +64,7 @@ public class ChunkHolder
 		if(!dontLoad)
 			world.ioHandler.requestChunkHolderLoad(this);
 	}
-
-	/*public void addEntity(Entity entity)
-	{
-		//entity.parentHolder = this;
-		synchronized(entities)
-		{
-			entities.add(entity);
-		}
-	}*/
-
+	
 	public List<Entity> getAllLoadedEntities()
 	{
 		List<Entity> localEntities  = new ArrayList<Entity>();
@@ -91,43 +83,12 @@ public class ChunkHolder
 		}
 		return localEntities;
 	}
-
-	/*public void removeEntity(Entity e)
-	{
-		synchronized(entities)
-		{
-			Iterator<Entity> iterator = entities.iterator();
-			Entity entity;
-			while (iterator.hasNext())
-			{
-				entity = iterator.next();
-				if(entity.equals(e))
-					iterator.remove();
-			}
-		}
-	}*/
 	
 	public void tick()
 	{
 		try{
 			synchronized(world.entities)
 			{
-				/*Iterator<Entity> iterator = entities.iterator();
-				Entity entity;
-				while (iterator.hasNext())
-				{
-					entity = iterator.next();
-					if (entity == null)
-					{
-						System.out.println("le remove");
-						iterator.remove();
-					}
-					else
-					{
-						//TODO check chunk loaded
-						entity.update();
-					}
-				}*/
 				for(Entity entity : world.entities)
 				{
 					if(entity != null)
@@ -148,15 +109,15 @@ public class ChunkHolder
 		world.ioHandler.requestChunkHolderSave(this);
 	}
 
-	public void compressChunkData(CubicChunk chunk)
+	private void compressChunkData(CubicChunk chunk)
 	{
+		int chunkX = chunk.chunkX;
+		int chunkY = chunk.chunkY;
+		int chunkZ = chunk.chunkZ;
 		if (chunk.dataPointer >= 0)
 		{
 			byte[] toCompressData = new byte[32 * 32 * 32 * 4];
 			
-			int chunkX = chunk.chunkX;
-			int chunkY = chunk.chunkY;
-			int chunkZ = chunk.chunkZ;
 			int[] data = world.chunksData.grab(chunk.dataPointer);
 			int z = 0;
 			for (int i : data)
@@ -171,27 +132,21 @@ public class ChunkHolder
 			//
 			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = new byte[compressedDataLength];
 			System.arraycopy(compressedData, 0, compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8], 0, compressedDataLength);
-			// System.out.println("Generated compressed data for chunk "+chunkX+"."+chunkY+"."+chunkZ+" size="+compressedDataLength);
+			//System.out.println("Generated compressed data for chunk "+chunkX+"."+chunkY+"."+chunkZ+" size="+compressedDataLength);
 		}
-	}
-
-	public void compressChunkData(int chunkX, int chunkY, int chunkZ)
-	{
-		CubicChunk chunk = data[chunkX % 8][chunkY % 8][chunkZ % 8];
-		if (chunk != null)
-		{
-			compressChunkData(chunk);
-		}
+		else
+			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
 	}
 
 	public byte[] getCompressedData(int chunkX, int chunkY, int chunkZ)
 	{
-		byte[] cd = compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8];
-		return cd;
+		//byte[] cd = compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8];
+		return compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8];
 	}
 
 	public CubicChunk get(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
+		lock.lock();
 		CubicChunk rslt = data[chunkX % 8][chunkY % 8][chunkZ % 8];
 		if (load && rslt == null)
 		{
@@ -204,44 +159,48 @@ public class ChunkHolder
 				world.ioHandler.requestChunkLoad(chunkX, chunkY, chunkZ, false);
 				if(world.ioHandler instanceof IOTasksImmediate)
 				{
+					lock.unlock();
 					return get(chunkX, chunkY, chunkZ, false);
 				}
 			}
+			lock.unlock();
 			return null;
 			// check for compressed version avaible
 		}
+		lock.unlock();
 		return rslt;
 	}
 
 	public CubicChunk set(int chunkX, int chunkY, int chunkZ, CubicChunk c)
 	{
-		synchronized (data)
-		{
-			if (data[chunkX % 8][chunkY % 8][chunkZ % 8] == null && c != null)
-				loadedChunks.incrementAndGet();
-			data[chunkX % 8][chunkY % 8][chunkZ % 8] = c;
-			requested[chunkX % 8][chunkY % 8][chunkZ % 8] = false;
-			// System.out.println("did set chunk lol");
-			c.holder = this;
-		}
+		lock.lock();
+		if (data[chunkX % 8][chunkY % 8][chunkZ % 8] == null && c != null)
+			loadedChunks.incrementAndGet();
+		data[chunkX % 8][chunkY % 8][chunkZ % 8] = c;
+		requested[chunkX % 8][chunkY % 8][chunkZ % 8] = false;
+		// System.out.println("did set chunk lol");
+		c.holder = this;
+		lock.unlock();
 		return c;
 	}
+	
+	SimpleLock lock = new SimpleLock();
 
 	public boolean removeChunk(int chunkX, int chunkY, int chunkZ)
 	{
-		// System.out.println("freeee");
+		lock.lock();
 		CubicChunk c = data[chunkX % 8][chunkY % 8][chunkZ % 8];
 		if (c != null)
 		{
-			synchronized (data[chunkX % 8][chunkY % 8][chunkZ % 8])
-			{
-				// save(chunkX,chunkY,chunkZ);
-				compressChunkData(c);
-				c.destroy();
-				data[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
-				loadedChunks.decrementAndGet();
-			}
+			//System.out.println("freed"+c);
+			// save(chunkX,chunkY,chunkZ);
+			compressChunkData(c);
+			c.destroy();
+			data[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
+			//compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
+			loadedChunks.decrementAndGet();
 		}
+		lock.unlock();
 		return loadedChunks.get() == 0;
 	}
 
@@ -284,6 +243,7 @@ public class ChunkHolder
 	public void generateAll()
 	{
 		// Generate terrain for the chunk holder !
+		lock.lock();
 		for(int a = 0; a <8; a++)
 			for(int b = 0; b <8; b++)
 				for(int c = 0; c <8; c++)
@@ -292,8 +252,29 @@ public class ChunkHolder
 					int cx = this.regionX * 8 + a;
 					int cy = this.regionY * 8 + b;
 					int cz = this.regionZ * 8 + c;
-					data[a][b][c] =	world.accessor.loadChunk(cx, cy, cz);
+					data[a][b][c] =	world.generator.generateChunk(cx, cy, cz);
 					compressChunkData(data[a][b][c]);
 				}
+		lock.unlock();
+	}
+	
+	public String toString()
+	{
+		return "[ChunkHolder rx:"+regionX+" ry:"+regionY+" rz:"+regionZ+" loaded:"+isLoaded.get()+"]";
+	}
+
+	public void compressAll()
+	{
+		lock.lock();
+		for (int a = 0; a < 8; a++)
+			for (int b = 0; b < 8; b++)
+				for (int c = 0; c < 8; c++)
+				{
+					if (data[a][b][c] != null)
+						compressChunkData(data[a][b][c]);
+					else
+						compressedChunks[a][b][c] = null;
+				}
+		lock.unlock();
 	}
 }

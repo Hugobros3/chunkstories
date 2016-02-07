@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world.io;
 
-import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
@@ -20,6 +20,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import net.jpountz.lz4.LZ4Exception;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
 
@@ -141,6 +142,7 @@ public class IOTasks extends Thread
 				}
 				catch(Exception e)
 				{
+					ChunkStoriesLogger.getInstance().warning("Exception occured when processing task : "+task);
 					e.printStackTrace();
 				}
 			}
@@ -204,7 +206,6 @@ public class IOTasks extends Thread
 				return false;
 			if (!holder.isLoaded())
 				return false;
-
 			if (holder.isChunkLoaded(x, y, z) && !overwrite)
 				return true;
 			byte[] cd = holder.getCompressedData(x, y, z);
@@ -214,7 +215,14 @@ public class IOTasks extends Thread
 			}
 			else
 			{
-				decompressor.decompress(cd, unCompressedData);
+				try
+				{
+					decompressor.decompress(cd, unCompressedData);
+				}
+				catch(LZ4Exception e)
+				{
+					System.out.println("Fail @ "+holder+" chunk "+c);
+				}
 				for (int i = 0; i < 32 * 32 * 32; i++)
 				{
 					int data = ((unCompressedData[i * 4] & 0xFF) << 24) | ((unCompressedData[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData[i * 4 + 2] & 0xFF) << 8) | (unCompressedData[i * 4 + 3] & 0xFF);
@@ -224,6 +232,11 @@ public class IOTasks extends Thread
 			c.doLightning(false, blockSources, sunSources);
 			world.setChunk(c);
 			return true;
+		}
+		
+		public String toString()
+		{
+			return "[IOTaskLoadChunk x="+x+" y= "+y+" z= "+z+"]";
 		}
 
 	}
@@ -261,7 +274,7 @@ public class IOTasks extends Thread
 		{
 			if (holder.handler.exists())
 			{
-				// System.out.println("Loading existing chunk holder...");
+				System.out.println("Loading existing chunk holder...");
 				try
 				{
 					FileInputStream in = new FileInputStream(holder.handler);
@@ -308,6 +321,7 @@ public class IOTasks extends Thread
 			{
 				//Generate this crap !
 				holder.generateAll();
+				//System.out.println("Successfully generated "+holder);
 			}
 			holder.setLoaded(true);
 			return true;
@@ -334,13 +348,14 @@ public class IOTasks extends Thread
 		public boolean run()
 		{
 			// First compress all loaded chunks !
-			ChunksIterator i = holder.iterator();
+			/*ChunksIterator i = holder.iterator();
 			CubicChunk cu;
 			while(i.hasNext())
 			{
 				cu = i.next();
 				holder.compressChunkData(cu);
-			}
+			}*/
+			holder.compressAll();
 			//for (CubicChunk c : holder.getLoadedChunks())
 			//	holder.compressChunkData(c);
 			// Then write the file.
@@ -459,8 +474,8 @@ public class IOTasks extends Thread
 				for (int x = 0; x < 256; x++)
 					for (int z = 0; z < 256; z++)
 					{
-						h = world.accessor.getHeightAt(x + summary.rx * 256, z + summary.rz * 256);
-						t = world.accessor.getDataAt(x + summary.rx * 256, h, z + summary.rz * 256, h);
+						h = world.generator.getHeightAt(x + summary.rx * 256, z + summary.rz * 256);
+						t = world.generator.getDataAt(x + summary.rx * 256, z + summary.rz * 256);
 						summary.heights[x * 256 + z] = h;
 						summary.ids[x * 256 + z] = t;
 					}
