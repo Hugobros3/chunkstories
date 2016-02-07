@@ -9,7 +9,7 @@ import java.util.Arrays;
 public class ChunksData
 {
 	// This is the big memory eater : this class holds 32x32x32 blobs of data
-	public static int CACHE_SIZE = 2048;
+	public static int CACHE_SIZE = 2048+256;
 	private int[][] data;
 	private boolean[] used;
 	private int size = 0;

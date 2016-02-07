@@ -4,7 +4,6 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
-import io.xol.chunkstories.world.World.WorldSize;
 import io.xol.chunkstories.world.biomes.Biome;
 import io.xol.chunkstories.world.biomes.BiomeIndex;
 import io.xol.chunkstories.world.generator.structures.GenerableStructure;
@@ -21,19 +20,6 @@ public class PerlinWorldAccessor extends WorldGenerator
 	SeededRandomNumberTranslator srnt;
 
 	int sic = 2;
-
-	public PerlinWorldAccessor(String seed, WorldSize sz)
-	{
-		// Used for debug-drawing of the world
-		ssng = new SeededSimplexNoiseGenerator(seed);
-		srnt = new SeededRandomNumberTranslator(seed);
-		sic = sz.sizeInChunks;
-	}
-
-	public PerlinWorldAccessor()
-	{
-
-	}
 
 	public void initialize(World w)
 	{

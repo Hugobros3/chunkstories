@@ -385,7 +385,7 @@ public class GameplayScene extends OverlayableScene
 			FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk null", BitmapFont.SMALLFONTS);
 		else
 			FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk : vbo=" + current.vbo_id + " vboSize=" + (current.vbo_size_normal + current.vbo_size_water) + " needRender=" + current.need_render + " requestable=" + current.requestable
-					+ " dataPointer=" + current.dataPointer, BitmapFont.SMALLFONTS);
+					+ " dataPointer=" + current.dataPointer + " etc "+current+" etc2"+current.holder, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 84, 0, 16, debugInfo, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 100, 0, 16, "View distance : " + FastConfig.viewDistance + " Vertices(N):" + formatBigAssNumber(worldRenderer.renderedVertices + "") + " Chunks in view : "
 				+ formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :" + Client.world.particlesHolder.count() + " #FF0000FPS : " + XolioWindow.getFPS(), BitmapFont.SMALLFONTS);

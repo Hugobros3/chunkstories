@@ -47,6 +47,9 @@ public class Camera
 	public Matrix4f modelViewProjectionMatrix4f = new Matrix4f();
 	public Matrix4f modelViewProjectionMatrix4fInverted = new Matrix4f();
 	
+	public Matrix4f untranslatedMVP4f = new Matrix4f();
+	public Matrix4f untranslatedMVP4fInv = new Matrix4f();
+	
 	public Matrix4f modelViewMatrix4f = new Matrix4f();
 	public Matrix4f modelViewMatrix4fInverted = new Matrix4f();
 
@@ -194,6 +197,7 @@ public class Camera
 		
 		Vector3f.add(position, lookAt, lookAt);
 		//modelViewMatrix4f = MatrixHelper.getLookAtMatrix(position, lookAt, up);
+		
 		
 		//System.out.println(modelViewMatrix4f);
 		computeFrustrumPlanes();
@@ -399,8 +403,11 @@ public class Camera
 
 	public void translate()
 	{
+		untranslatedMVP4f.load(modelViewMatrix4f);
+		untranslatedMVP4f.translate(new Vector3f((float) (camPosX-Math.floor(camPosX)), (float) (camPosY-Math.floor(camPosY)), (float) (camPosZ-Math.floor(camPosZ))));
+		Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
+
 		modelViewMatrix4f.translate(new Vector3f(camPosX, camPosY, camPosZ));
-		
 		//glTranslatef(camPosX, camPosY, camPosZ);
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
@@ -420,6 +427,9 @@ public class Camera
 		
 		shaderProgram.setUniformMatrix4f("modelViewProjectionMatrix", modelViewProjectionMatrix);
 		shaderProgram.setUniformMatrix4f("modelViewProjectionMatrixInv", modelViewProjectionMatrixInverse);
+		
+		shaderProgram.setUniformMatrix4f("untranslatedMVP", untranslatedMVP4f);
+		shaderProgram.setUniformMatrix4f("untranslatedMVPInv", untranslatedMVP4fInv);
 	}
 	
 	public Vector3f transform3DCoordinate(Vector3f in)

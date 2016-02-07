@@ -24,6 +24,9 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
+uniform mat4 untranslatedMVP;
+uniform mat4 untranslatedMVPInv;
+
 uniform float shadowVisiblity; // Used for night transitions, hides shadows
 
 uniform sampler2DShadow shadowMap;
@@ -95,7 +98,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec3 li
 
 	float opacity = 0.0;
 	//Shadows sampling
-	vec4 coordinatesInShadowmap = accuratizeShadow(shadowMatrix * modelViewMatrixInv * worldSpacePosition);
+	vec4 coordinatesInShadowmap = accuratizeShadow(shadowMatrix * (untranslatedMVPInv * worldSpacePosition));
 
 	float ragix = 0.8f;
 	<ifdef shadows>

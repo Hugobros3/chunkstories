@@ -319,7 +319,7 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 
 		float distance = 0f;
 		int i = 0;
-		while (distance < 32)
+		while (distance < 1024)
 		{
 			int x = (int) rayX;
 			int y = (int) rayY;

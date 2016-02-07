@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,6 +53,8 @@ public class ChunkHolder
 
 	//public List<Entity> entities = new ArrayList<Entity>();
 	
+	public static Random random = new Random();
+	
 	public ChunkHolder(World world, int regionX, int regionY, int regionZ, boolean dontLoad)
 	{
 		this.world = world;
@@ -61,6 +64,8 @@ public class ChunkHolder
 
 		handler = new File(world.getFolderPath() + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf");
 
+		uuid = random.nextLong();
+		
 		if(!dontLoad)
 			world.ioHandler.requestChunkHolderLoad(this);
 	}
@@ -146,7 +151,6 @@ public class ChunkHolder
 
 	public CubicChunk get(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
-		lock.lock();
 		CubicChunk rslt = data[chunkX % 8][chunkY % 8][chunkZ % 8];
 		if (load && rslt == null)
 		{
@@ -159,15 +163,12 @@ public class ChunkHolder
 				world.ioHandler.requestChunkLoad(chunkX, chunkY, chunkZ, false);
 				if(world.ioHandler instanceof IOTasksImmediate)
 				{
-					lock.unlock();
 					return get(chunkX, chunkY, chunkZ, false);
 				}
 			}
-			lock.unlock();
 			return null;
 			// check for compressed version avaible
 		}
-		lock.unlock();
 		return rslt;
 	}
 
@@ -184,7 +185,7 @@ public class ChunkHolder
 		return c;
 	}
 	
-	SimpleLock lock = new SimpleLock();
+	public SimpleLock lock = new SimpleLock();
 
 	public boolean removeChunk(int chunkX, int chunkY, int chunkZ)
 	{
@@ -192,7 +193,7 @@ public class ChunkHolder
 		CubicChunk c = data[chunkX % 8][chunkY % 8][chunkZ % 8];
 		if (c != null)
 		{
-			//System.out.println("freed"+c);
+			// System.out.println("freed"+c);
 			// save(chunkX,chunkY,chunkZ);
 			compressChunkData(c);
 			c.destroy();
@@ -243,7 +244,7 @@ public class ChunkHolder
 	public void generateAll()
 	{
 		// Generate terrain for the chunk holder !
-		lock.lock();
+		CubicChunk chunk;
 		for(int a = 0; a <8; a++)
 			for(int b = 0; b <8; b++)
 				for(int c = 0; c <8; c++)
@@ -252,15 +253,19 @@ public class ChunkHolder
 					int cx = this.regionX * 8 + a;
 					int cy = this.regionY * 8 + b;
 					int cz = this.regionZ * 8 + c;
-					data[a][b][c] =	world.generator.generateChunk(cx, cy, cz);
+					chunk =	world.generator.generateChunk(cx, cy, cz);
+					if(chunk == null)
+						System.out.println("hmmmmm");
+					data[a][b][c] = chunk;
 					compressChunkData(data[a][b][c]);
 				}
-		lock.unlock();
 	}
+	
+	long uuid;
 	
 	public String toString()
 	{
-		return "[ChunkHolder rx:"+regionX+" ry:"+regionY+" rz:"+regionZ+" loaded:"+isLoaded.get()+"]";
+		return "[ChunkHolder rx:"+regionX+" ry:"+regionY+" rz:"+regionZ+" uuid: "+uuid+"loaded:"+isLoaded.get()+"]";
 	}
 
 	public void compressAll()

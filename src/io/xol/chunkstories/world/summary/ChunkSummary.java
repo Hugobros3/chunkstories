@@ -228,4 +228,9 @@ public class ChunkSummary
 			glDeleteBuffers(vboId);
 
 	}
+
+	public boolean isLoaded()
+	{
+		return loaded.get();
+	}
 }

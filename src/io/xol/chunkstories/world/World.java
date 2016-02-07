@@ -1,5 +1,7 @@
 package io.xol.chunkstories.world;
 
+import static org.lwjgl.opengl.GL15.glDeleteBuffers;
+
 import java.io.File;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
@@ -13,12 +15,15 @@ import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldGenerator;
+import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.summary.ChunkSummaries;
+import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.misc.ConfigFile;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -204,7 +209,7 @@ public abstract class World
 		}
 		return entitiesToReturn;
 	}*/
-	
+
 	public Iterator<Entity> getAllLoadedEntities()
 	{
 		return entities.iterator();
@@ -214,7 +219,7 @@ public abstract class World
 	{
 		Iterator<Entity> ie = getAllLoadedEntities();
 		Entity e;
-		while(ie.hasNext())
+		while (ie.hasNext())
 		//for (Entity e : getAllLoadedEntities())
 		{
 			e = ie.next();
@@ -269,6 +274,7 @@ public abstract class World
 			chunkZ += size.sizeInChunks;
 		if (chunkY < 0)
 			chunkY = 0;
+		//ioHandler.requestChunkUnload(chunkX, chunkY, chunkZ);
 		chunksHolder.removeChunk(chunkX, chunkY, chunkZ);
 	}
 
@@ -443,7 +449,7 @@ public abstract class World
 	{
 		ChunksIterator i = this.iterator();
 		CubicChunk c;
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			c = i.next();
 			c.need_render.set(true);
@@ -563,6 +569,39 @@ public abstract class World
 
 		}
 		return false;
+	}
+
+	/**
+	 * Unloads bits of the map not required by anyone
+	 */
+	public void trimRemovableChunks()
+	{
+		ChunksIterator it = Client.world.iterator();
+		CubicChunk chunk;
+		while (it.hasNext())
+		{
+			chunk = it.next();
+			boolean keep = false;
+			if (!keep && Client.controller != null)
+			{
+				keep = true;
+				int sizeInChunks = this.getSizeInChunks();
+				int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
+				int pCX = (int) (Client.controller.posX / 32);
+				int pCY = (int) (Client.controller.posY / 32);
+				int pCZ = (int) (Client.controller.posZ / 32);
+				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 1) || (chunk.chunkY - pCY) > 3
+						|| (chunk.chunkY - pCY) < -3))
+				{
+					if (chunk.vbo_id != -1)
+						glDeleteBuffers(chunk.vbo_id);
+					chunk.need_render.set(true);
+					keep = false;
+				}
+			}
+			if (!keep)
+				it.remove();
+		}
 	}
 
 	boolean raining;

@@ -1,5 +1,7 @@
 package io.xol.engine.concurrency;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -7,7 +9,9 @@ package io.xol.engine.concurrency;
 public class SimpleLock
 {
 	// Dead-simple lock
-	boolean locked = false;
+	AtomicBoolean locked = new AtomicBoolean();
+	
+	//boolean locked = false;
 	
 	/*long maxWait;
 	
@@ -18,22 +22,22 @@ public class SimpleLock
 	
 	public synchronized void lock()
 	{
-		while(locked)
+		while(locked.get())
 			try
 			{
-				wait(100L);
+				wait(10L);
 			}
 			catch (InterruptedException e)
 			{
 				//e.printStackTrace();
 				//break;
 			}
-		locked = true;
+		locked.set(true);
 	}
 	
 	public synchronized void unlock()
 	{
-		locked = false;
+		locked.set(false);
 		notify();
 	}
 }

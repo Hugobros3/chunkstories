@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world.io;
 
+import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.CubicChunk;
@@ -198,7 +199,6 @@ public class IOTasks extends Thread
 		@Override
 		public boolean run()
 		{
-			CubicChunk c = new CubicChunk(world, x, y, z);
 			ChunkHolder holder = world.chunksHolder.getChunkHolder(x, y, z, shouldLoadCH);
 			// If for some reasons the chunks holder's are still not loaded, we
 			// requeue the job for later.
@@ -206,15 +206,23 @@ public class IOTasks extends Thread
 				return false;
 			if (!holder.isLoaded())
 				return false;
-			if (holder.isChunkLoaded(x, y, z) && !overwrite)
+			//Already loaded
+			if (holder.isChunkLoaded(x, y, z))// && !overwrite)
 				return true;
+			//Look for
+			holder.lock.lock();
 			byte[] cd = holder.getCompressedData(x, y, z);
-			if (cd == null)
+			if (cd == null || cd.length == 0)
 			{
-				// System.out.println("Null chunk :(");
+				CubicChunk c = new CubicChunk(world, x, y, z);
+				//System.out.println("No compressed data for this chunk.");
+				holder.lock.unlock();
+				world.setChunk(c);
+				return true;
 			}
 			else
 			{
+				CubicChunk c = new CubicChunk(world, x, y, z);
 				try
 				{
 					decompressor.decompress(cd, unCompressedData);
@@ -222,15 +230,17 @@ public class IOTasks extends Thread
 				catch(LZ4Exception e)
 				{
 					System.out.println("Fail @ "+holder+" chunk "+c);
+					System.out.println("k why man" + holder.isChunkLoaded(x, y, z)+" holder:"+holder+Thread.currentThread().getName());
 				}
 				for (int i = 0; i < 32 * 32 * 32; i++)
 				{
 					int data = ((unCompressedData[i * 4] & 0xFF) << 24) | ((unCompressedData[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData[i * 4 + 2] & 0xFF) << 8) | (unCompressedData[i * 4 + 3] & 0xFF);
 					c.setDataAt(i / 32 / 32, (i / 32) % 32, i % 32, data);
 				}
+				c.doLightning(false, blockSources, sunSources);
+				holder.lock.unlock();
+				world.setChunk(c);
 			}
-			c.doLightning(false, blockSources, sunSources);
-			world.setChunk(c);
 			return true;
 		}
 		
@@ -245,6 +255,7 @@ public class IOTasks extends Thread
 	{
 		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkX, chunkY, chunkZ, true, overwrite);
 		//System.out.println("req CL "+chunkX+":"+chunkY+":"+chunkZ);
+		//Thread.currentThread().dumpStack();
 		
 		// We now do duplicate check in ChunkHolder
 
@@ -272,6 +283,10 @@ public class IOTasks extends Thread
 		@Override
 		public boolean run()
 		{
+			//Trim world first
+			world.trimRemovableChunks();
+			//Lock
+			holder.lock.lock();
 			if (holder.handler.exists())
 			{
 				System.out.println("Loading existing chunk holder...");
@@ -319,11 +334,41 @@ public class IOTasks extends Thread
 			}
 			else
 			{
+				ChunkSummary chunkSummary = world.chunkSummaries.get(holder.regionX * 256, holder.regionZ * 256);
+				//Require a chunk summary to be generated first !
+				if(chunkSummary == null || !chunkSummary.isLoaded())
+				{
+					holder.lock.unlock();
+					return false;
+				}
 				//Generate this crap !
 				holder.generateAll();
+				//Pre bake phase 1 lightning
+				
+				/*CubicChunk c;
+				ChunksIterator i = holder.iterator();
+				while(i.hasNext())
+				{
+					c = i.next();
+					if(c != null)
+						c.doLightning(false, blockSources, sunSources);
+				}*/
 				//System.out.println("Successfully generated "+holder);
 			}
 			holder.setLoaded(true);
+			//
+			
+			//System.out.println("clear"+holder+Thread.currentThread().getName());
+			for (int a = 0; a < 8; a++)
+				for (int b = 0; b < 8; b++)
+					for (int c = 0; c < 8; c++)
+					{
+						if(!holder.isChunkLoaded(a, b, c))
+							System.out.println("FATAL. (lourd)"+a+b+c);
+					}
+			holder.lock.unlock();
+			//
+			world.trimRemovableChunks();
 			return true;
 		}
 
@@ -482,7 +527,9 @@ public class IOTasks extends Thread
 
 				summary.loaded.set(true);
 				// then save
+				
 				summary.save(summary.handler);
+				
 				// Thread.dumpStack();
 			}
 			return true;
@@ -556,6 +603,44 @@ public class IOTasks extends Thread
 		addTask(task);
 	}
 
+	public class IOTaskRemoveChunk extends IOTask
+	{
+		CubicChunk chunk;
+		
+		public IOTaskRemoveChunk(CubicChunk chunk)
+		{
+			this.chunk = chunk;
+		}
+		
+		@Override
+		public boolean run()
+		{
+			if(chunk == null)
+				return true;
+			chunk.destroy();
+			if(chunk.holder == null ||chunk.holder.isChunkLoaded(chunk.chunkX, chunk.chunkY, chunk.chunkZ))
+			{
+				System.out.println("paradoxe");
+				return true;
+			}
+			ChunkHolder holder = chunk.holder;
+			boolean emptyHolder = false;
+			if (holder != null)
+			{
+				emptyHolder = holder.removeChunk(chunk.chunkX, chunk.chunkY, chunk.chunkZ);
+			}
+			if (emptyHolder)
+			{
+				holder.destroy();
+				int chunkX = chunk.chunkX;
+				int chunkY = chunk.chunkY;
+				int chunkZ = chunk.chunkZ;
+				world.chunksHolder.removeChunkHolder(chunkX / 8, chunkY / 8, chunkZ / 8 );
+			}
+			return true;
+		}
+	}
+	
 	public void notifyChunkUnload(int chunkX, int chunkY, int chunkZ)
 	{
 		

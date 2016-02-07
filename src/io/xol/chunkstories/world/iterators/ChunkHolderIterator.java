@@ -54,5 +54,10 @@ public class ChunkHolderIterator implements ChunksIterator
 		
 		return chunk;
 	}
+	
+	public void remove()
+	{
+		holder.world.removeChunk(chunk, false);
+	}
 
 }

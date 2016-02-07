@@ -15,7 +15,7 @@ public class ChunksHolders
 	// private ChunkHolder[] data;
 	// private boolean[] dataPresent;
 
-	public ConcurrentHashMap<ChunkHolderKey, ChunkHolder> chunkHolders = new ConcurrentHashMap<ChunkHolderKey, ChunkHolder>();
+	public ConcurrentHashMap<ChunkHolderKey, ChunkHolder> chunkHolders = new ConcurrentHashMap<ChunkHolderKey, ChunkHolder>(8, 0.9f, 1);
 
 	final int s, h;
 
@@ -96,7 +96,7 @@ public class ChunksHolders
 		ChunkHolderKey key = new ChunkHolderKey(chunkX / 8, chunkY / 8, chunkZ / 8 );
 
 		holder = chunkHolders.get(key);
-		if (holder == null && chunkY < h * 8 && chunkY >= 0)
+		if (holder == null && chunkY < h * 8 && chunkY >= 0 && load)
 		{
 			holder = new ChunkHolder(world, chunkX / 8, chunkY / 8, chunkZ / 8, false);
 			chunkHolders.putIfAbsent(key, holder);
@@ -117,9 +117,14 @@ public class ChunksHolders
 			holder.destroy();
 			chunkHolders.remove(new ChunkHolderKey(chunkX / 8, chunkY / 8, chunkZ / 8 ));
 		}
-		world.ioHandler.notifyChunkUnload(chunkX, chunkY, chunkZ);
+		//world.ioHandler.notifyChunkUnload(chunkX, chunkY, chunkZ);
 	}
 
+	public void removeChunkHolder(int regionX, int regionY, int regionZ)
+	{
+		chunkHolders.remove(new ChunkHolderKey(regionX, regionY, regionZ));
+	}
+	
 	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
 		ChunkHolder holder = getChunkHolder(chunkX, chunkY, chunkZ, load);

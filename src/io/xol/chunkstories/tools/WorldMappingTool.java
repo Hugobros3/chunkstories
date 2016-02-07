@@ -28,7 +28,7 @@ public class WorldMappingTool
 			System.out.println("Generating " + worldSize.name
 					+ " worldmap for seed : " + seed);
 
-			PerlinWorldAccessor pwa = new PerlinWorldAccessor(seed, worldSize);
+			PerlinWorldAccessor pwa = new PerlinWorldAccessor();
 
 			BufferedImage texture = new BufferedImage(
 					worldSize.sizeInChunks * 32, worldSize.sizeInChunks * 32,

@@ -67,5 +67,10 @@ public class WorldChunksIterator implements ChunksIterator
 			return currentChunkHolderIterator.next();
 		return null;
 	}
+	
+	public void remove()
+	{
+		currentChunkHolderIterator.remove();
+	}
 
 }
