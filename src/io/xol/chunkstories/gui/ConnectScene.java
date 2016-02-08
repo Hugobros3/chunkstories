@@ -64,7 +64,7 @@ public class ConnectScene extends Scene
 		super.update();
 		if (cancelButton.clicked())
 			cancel();
-		if(Client.connection.hasFailed())
+		if(Client.connection != null && Client.connection.hasFailed())
 			message = "#FF0000Asking server for world info..."+Client.connection.getLatestErrorMessage();
 	}
 

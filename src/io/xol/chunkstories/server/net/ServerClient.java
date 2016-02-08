@@ -207,10 +207,10 @@ public class ServerClient extends Thread implements HttpRequester
 			return;
 		if (authentificated)
 		{
-			authentificated = true;
-			profile = new ServerPlayer(this);
+			//authentificated = true;
+			//profile = new ServerPlayer(this);
 			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(profile);
-			boolean allowPlayerOut = Server.getInstance().getPluginsManager().fireEvent(playerDisconnectionEvent);
+			Server.getInstance().getPluginsManager().fireEvent(playerDisconnectionEvent);
 			
 			Server.getInstance().handler.sendAllChat(playerDisconnectionEvent.connectionMessage);
 			
