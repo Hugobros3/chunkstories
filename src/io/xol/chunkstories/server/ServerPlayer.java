@@ -14,14 +14,17 @@ import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.net.packets.Packet04Entity;
 import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.server.tech.CommandEmitter;
+import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.engine.math.LoopingMathHelper;
+import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerPlayer implements Player
+public class ServerPlayer implements Player, CommandEmitter
 {
 	ConfigFile playerData;
 	ServerClient playerConnection;
@@ -103,7 +106,7 @@ public class ServerPlayer implements Player
 	public void trackEntity(Entity e, boolean first, boolean delete)
 	{
 		Packet04Entity packet = new Packet04Entity(false);
-		packet.entity = e;
+		packet.applyFromEntity(e);
 		if(first)
 		{
 			if(e instanceof EntityNameable)
@@ -181,8 +184,12 @@ public class ServerPlayer implements Player
 	{
 		//Send teleport packet
 		Packet04Entity packet = new Packet04Entity(false);
+		packet.applyFromEntity(entity);
+		packet.XBuffered = l.x;
+		packet.YBuffered = l.y;
+		packet.ZBuffered = l.z;
+		System.out.println("Sending packet with position "+l.x);
 		playerConnection.sendPacket(packet);
-		entity.setPosition(l.x, l.y, l.z);
 	}
 
 	@Override
@@ -191,10 +198,31 @@ public class ServerPlayer implements Player
 		return true;
 	}
 
+
+	@Override
+	public void sendMessage(String msg)
+	{
+		playerConnection.sendChat(msg);
+	}
+
+	@Override
+	public boolean hasRights(String permission)
+	{
+		if (UsersPrivileges.isUserAdmin(getName()))
+			return true;
+		return false;
+	}
+	
 	@Override
 	public void kickPlayer(String reason)
 	{
 		Server.getInstance().handler.disconnectClient(playerConnection, reason);
+	}
+
+	public String getDisplayName()
+	{
+		String name = getName();
+		return ColorsTools.getUniqueColorPrefix(name)+name+"#FFFFFF";
 	}
 
 }

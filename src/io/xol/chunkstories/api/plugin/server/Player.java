@@ -14,7 +14,13 @@ public interface Player
 	 * @return
 	 */
 	public String getName();
+
+	/**
+	 * Returns the displayable name of the player (including things like tags, color etc)
+	 * @return
+	 */
 	
+	public String getDisplayName();
 	/**
 	 * Returns the entity this player is controlling
 	 * @return

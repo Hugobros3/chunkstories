@@ -136,7 +136,7 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 		{
 			Packet04Entity packet = new Packet04Entity(true);
 			packet.includeRotation = true;
-			packet.entity = this;
+			packet.applyFromEntity(this);
 			Client.connection.sendPacket(packet);
 			// Client.connection.sendTextMessage("player/position:"+posX+":"+posY+":"+posZ);
 		}

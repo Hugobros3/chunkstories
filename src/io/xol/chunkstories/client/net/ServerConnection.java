@@ -310,7 +310,7 @@ public class ServerConnection extends Thread implements HttpRequester
 					{
 						entity = EntitiesList.newEntity(Client.world, packet.entityType);
 						entity.entityID = packet.entityID;
-						packet.applyToEntity(entity, in);
+						packet.applyToEntity(entity);
 						Client.world.addEntity(entity);
 						System.out.println("Added entity "+entity);
 						if(packet.defineControl)
@@ -318,11 +318,6 @@ public class ServerConnection extends Thread implements HttpRequester
 							Client.controller = entity;
 							//System.out.println("you should control this entity :"+entity);
 						}
-					}
-					else
-					{
-						packet.applyToEntity(entity, in);
-						//System.out.println("Updated Entity "+entity);
 					}
 				}
 				//System.out.println("mdr ");

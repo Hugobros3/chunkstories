@@ -1,5 +1,8 @@
 package io.xol.chunkstories.server.tech;
 
+import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
+import io.xol.chunkstories.api.plugin.server.Command;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.net.ServerConnectionsHandler;
@@ -18,34 +21,62 @@ public class ServerConsole
 		try
 		{
 			//First handle the plugins commands
-			if(Server.getInstance().pluginsManager.dispatchCommand(cmd, emitter))
+			if (Server.getInstance().pluginsManager.dispatchCommand(cmd, emitter))
 				return;
-			
+
 			// No rights needed
 			if (cmd.equals("uptime"))
 			{
-				emitter.sendMessage("The server has been running for " + (System.currentTimeMillis() / 1000 - Server.getInstance().initS) + " seconds.");
+				emitter.sendMessage("#00FFD0The server has been running for " + (System.currentTimeMillis() / 1000 - Server.getInstance().initS) + " seconds.");
 				return;
 			}
 			else if (cmd.equals("info"))
 			{
-				emitter.sendMessage("The server's ip is " + ServerConnectionsHandler.ip);
-				// emitter.sendMessage("It's running version "+VersionInfo.get()+" of the server software.");
+				emitter.sendMessage("#00FFD0The server's ip is " + ServerConnectionsHandler.ip);
+				emitter.sendMessage("#00FFD0It's running version " + VersionInfo.version + " of the server software.");
 				return;
 			}
 			else if (cmd.equals("help"))
 			{
-				emitter.sendMessage("Avaible commands :");
-				//Server.getInstance().pluginsManager.l
+				emitter.sendMessage("#00FFD0Avaible commands :");
+				emitter.sendMessage("#00FFD0" + " /plugins");
+				emitter.sendMessage("#00FFD0" + " /list");
+				emitter.sendMessage("#00FFD0" + " /info");
+				emitter.sendMessage("#00FFD0" + " /uptime");
+				for (Command command : Server.getInstance().pluginsManager.commandsHandlers.keySet())
+				{
+					emitter.sendMessage("#00FFD0 /" + command.getName());
+				}
 				return;
-				
+
 			}
-			else if(cmd.equals("plugins"))
+			else if (cmd.equals("plugins"))
 			{
-				
+				String list = "";
+				int i = 0;
+				for (ChunkStoriesPlugin csp : Server.getInstance().pluginsManager.activePlugins)
+				{
+					i++;
+					list += csp.getName() + (i == Server.getInstance().handler.clients.size() ? "" : ", ");
+				}
+				emitter.sendMessage("#00FFD0" + i + " active plugins : " + list);
+				return;
+
+			}
+			else if (cmd.equals("list"))
+			{
+				String list = "";
+				int i = 0;
+				for (ServerClient client : Server.getInstance().handler.clients)
+				{
+					i++;
+					list += client.profile.getDisplayName() + (i == Server.getInstance().handler.clients.size() ? "" : ", ");
+				}
+				emitter.sendMessage("#00FFD0" + i + " players connected : " + list);
+				return;
 			}
 			// Rights check
-			if(emitter.hasRights("server.admin"))
+			if (emitter.hasRights("server.admin"))
 			{
 				if (cmd.equals("stop"))
 				{
@@ -95,7 +126,7 @@ public class ServerConsole
 				else if (cmd.equals("help"))
 				{
 					emitter.sendMessage("stop - Stops the server.");
-		
+
 					emitter.sendMessage("kickip - Will force disconnect that ip. May kick multiple people on it.");
 					emitter.sendMessage("kick - Will force disconnect that user.");
 					emitter.sendMessage("ban - Will refuse any connection from this user. Redo to unban.");
@@ -109,7 +140,7 @@ public class ServerConsole
 				}
 			}
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			emitter.sendMessage(e.getMessage());
 		}

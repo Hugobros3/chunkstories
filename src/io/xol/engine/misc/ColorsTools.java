@@ -1,5 +1,7 @@
 package io.xol.engine.misc;
 
+import java.security.MessageDigest;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -160,4 +162,24 @@ public class ColorsTools
 		}
 		return ansiEscape[best];
 	}
+	
+
+	static MessageDigest md;
+	
+	public static String getUniqueColorPrefix(String text)
+	{
+		if(md == null)
+			try{
+				md = MessageDigest.getInstance("MD5");;
+			} catch(Exception e)
+		{
+				
+		}
+		byte[] fun = md.digest(text.getBytes());
+		int r = fun[0] & 0xFF;
+		int g = fun[1] & 0xFF;
+		int b = fun[2] & 0xFF;
+		return "#"+intToHex(r)+intToHex(g)+intToHex(b);
+	}
+	//byte[] thedigest = md.digest(bytesOfMessage);
 }

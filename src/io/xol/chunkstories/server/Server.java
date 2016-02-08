@@ -187,7 +187,7 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 			for (ServerClient c : handler.getAuthentificatedClients())
 				if (c.profile != null)
 					set.add(c.profile);
-		return null;
+		return set;
 	}
 
 	@Override
@@ -206,5 +206,16 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 	public boolean hasRights(String permission)
 	{
 		return true;
+	}
+
+	@Override
+	public Player getPlayer(String string)
+	{
+		if (handler != null)
+			for (ServerClient c : handler.getAuthentificatedClients())
+				if (c.profile != null)
+					if(c.profile.getName().startsWith(string))
+						return c.profile;
+		return null;
 	}
 }

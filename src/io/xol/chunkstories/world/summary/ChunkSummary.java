@@ -64,6 +64,9 @@ public class ChunkSummary
 		// 512kb per summary.
 		heights = new int[256 * 256];
 		ids = new int[256 * 256];
+		
+		//System.out.println("New chunk summary made");
+		//Thread.currentThread().dumpStack();
 	}
 
 	public void load(File handler)
@@ -226,7 +229,7 @@ public class ChunkSummary
 		}
 		if (vboId != -1)
 			glDeleteBuffers(vboId);
-
+		System.out.println("Freeing cs"+rx+rz);
 	}
 
 	public boolean isLoaded()

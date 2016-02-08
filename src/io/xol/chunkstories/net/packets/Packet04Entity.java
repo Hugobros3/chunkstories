@@ -16,11 +16,15 @@ public class Packet04Entity extends Packet
 	/**
 	 * Transfers essential data about entities
 	 */
-	public Entity entity;
+	//private Entity entity;
 	public short entityType;
 	public long entityID;
 	//World world;
 
+	public double XBuffered, YBuffered, ZBuffered;
+	public double RHBuffered, RVBuffered;
+	public String nBuffered;
+	
 	public boolean defineControl = false; // Tells the client that the player entity is this one.
 	public boolean includeRotation = false; // Tells both sides to consider extra 2 doubles
 	public boolean includeName = false; // This is a nameable entity
@@ -34,13 +38,13 @@ public class Packet04Entity extends Packet
 	@Override
 	public void send(DataOutputStream out) throws IOException
 	{
-		//System.out.println("Sending entity "+entity+" EID : "+entity.getEID());
+		System.out.println("Sending entity "+entityID+" EID : "+entityType+" PosX"+XBuffered);
 		out.writeByte(0x04);
-		out.writeLong(entity.getUUID());
-		out.writeShort(entity.getEID());
-		out.writeDouble(entity.posX);
-		out.writeDouble(entity.posY);
-		out.writeDouble(entity.posZ);
+		out.writeLong(entityID);
+		out.writeShort(entityType);
+		out.writeDouble(XBuffered);
+		out.writeDouble(YBuffered);
+		out.writeDouble(ZBuffered);
 		byte byteField = 0x00;
 		byteField = (byte) (byteField | ((defineControl ? 0x01 : 0x00) << 0));
 		byteField = (byte) (byteField | ((includeRotation ? 0x01 : 0x00) << 1));
@@ -49,21 +53,18 @@ public class Packet04Entity extends Packet
 		out.writeByte(byteField);
 		if (includeRotation)
 		{
-			out.writeDouble(entity.rotH);
-			out.writeDouble(entity.rotV);
+			out.writeDouble(RHBuffered);
+			out.writeDouble(RVBuffered);
 		}
 		if(includeName)
 		{
-			String name = "ERROR-NOTNAMEABLE";
+			/*String name = "ERROR-NOTNAMEABLE";
 			if(entity instanceof EntityNameable)
-				name = ((EntityNameable)entity).getName();
-			out.writeUTF(name);
+				name = ((EntityNameable)entity).getName();*/
+			out.writeUTF(nBuffered);
 		}
 	}
 
-	double Xtemp, YTemp, ZTemp;
-	double RHTemp, RVTemp;
-	String nTemp;
 	
 	@Override
 	public void read(DataInputStream in) throws IOException
@@ -71,9 +72,9 @@ public class Packet04Entity extends Packet
 		entityID = in.readLong();
 		entityType = in.readShort();
 
-		Xtemp = in.readDouble();
-		YTemp = in.readDouble();
-		ZTemp = in.readDouble();
+		XBuffered = in.readDouble();
+		YBuffered = in.readDouble();
+		ZBuffered = in.readDouble();
 		
 		byte byteField = in.readByte();
 		defineControl = ((byteField >> 0) & 0x01) == 1;
@@ -83,31 +84,50 @@ public class Packet04Entity extends Packet
 		
 		if (includeRotation)
 		{
-			RHTemp = (float) in.readDouble();
-			RVTemp = (float) in.readDouble();
+			RHBuffered = (float) in.readDouble();
+			RVBuffered = (float) in.readDouble();
 		}
 		if(includeName)
 		{
-			nTemp = in.readUTF();
-			System.out.println(nTemp);
+			nBuffered = in.readUTF();
+			System.out.println(nBuffered);
 		}
 	}
 
-	public void applyToEntity(Entity entity, DataInputStream in) throws IOException
+	public void applyToEntity(Entity entity)
 	{
-		entity.posX = Xtemp;
-		entity.posY = YTemp;
-		entity.posZ = ZTemp;
+		entityType = entity.getEID();
+		entityID = entity.getUUID();
+		
+		entity.posX = XBuffered;
+		entity.posY = YBuffered;
+		entity.posZ = ZBuffered;
 		if (includeRotation)
 		{
-			entity.rotH = (float) RHTemp;
-			entity.rotV = (float) RVTemp;
+			entity.rotH = (float) RHBuffered;
+			entity.rotV = (float) RVBuffered;
 		}
 		if(includeName)
 		{
 			if(entity instanceof EntityNameable)
-				((EntityNameable)entity).setName(nTemp);
+				((EntityNameable)entity).setName(nBuffered);
 		}
 	}
-
+	
+	public void applyFromEntity(Entity entity)
+	{
+		XBuffered = entity.posX;
+		YBuffered = entity.posX;
+		ZBuffered = entity.posX;
+		if (includeRotation)
+		{
+		RHBuffered = entity.rotH;
+		RVBuffered = entity.rotV;
+		}
+		if(includeName)
+		{
+			if(entity instanceof EntityNameable)
+				nBuffered = ((EntityNameable)entity).getName();
+		}
+	}
 }

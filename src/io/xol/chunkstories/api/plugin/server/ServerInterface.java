@@ -12,5 +12,7 @@ public interface ServerInterface
 {
 	public Set<Player> getConnectedPlayers();
 
+	public Player getPlayer(String string);
+
 	public PluginManager getPluginsManager();
 }

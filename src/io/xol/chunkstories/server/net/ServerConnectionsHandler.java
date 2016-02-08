@@ -97,7 +97,6 @@ public class ServerConnectionsHandler extends Thread
 		// Checks for auth
 		if (!c.authentificated)
 			return;
-		
 		// Any authentificated client has to have a profile.
 		assert c.profile != null;
 		// Login-mandatory requests ( you need to be authentificated to use them )
@@ -115,11 +114,11 @@ public class ServerConnectionsHandler extends Thread
 			String chatMsg = in.substring(5, in.length());
 			if (chatMsg.startsWith("/"))
 			{
-				ServerConsole.handleCommand(chatMsg.substring(1, chatMsg.length()), c);
+				ServerConsole.handleCommand(chatMsg.substring(1, chatMsg.length()), c.profile);
 			}
 			else if (chatMsg.length() > 0)
 			{
-				sendAllChat("#FF0000" + c.name + "#FFFFFF > " + chatMsg);
+				sendAllChat(c.profile.getDisplayName() + " > " + chatMsg);
 			}
 		}
 		// Debug

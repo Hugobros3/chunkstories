@@ -395,10 +395,10 @@ public class WorldRenderer
 			renderList.clear();
 			ChunksIterator it = Client.world.iterator();
 			CubicChunk chunk;
-			int i = 0;
+			//int i = 0;
 			while (it.hasNext())
 			{
-				i++;
+				//i++;
 				chunk = it.next();
 
 				if (chunk.need_render.get() && chunk.dataPointer != -1)
@@ -413,15 +413,12 @@ public class WorldRenderer
 			chunksRenderer.purgeUselessWork(pCX, pCY, pCZ, sizeInChunks, chunksViewDistance);
 			world.ioHandler.requestChunksUnload(pCX, pCY, pCZ, sizeInChunks, chunksViewDistance + 1);
 			// Also clean the chunk summaries
-			world.chunkSummaries.removeFurther(pCX, pCZ, 32);
 
 			// Update far terrain
 			if (pCX != npCX || pCZ != npCZ)
 				terrain.generateArround(x, z);
-
-			//if(FastConfig.debugGBuffers ) System.out.println("chunk changed");
-
 			terrain.updateData();
+			world.chunkSummaries.removeFurther(pCX, pCZ, 33);
 
 			chunksChanged = false;
 			// Load nearby chunks
@@ -549,7 +546,7 @@ public class WorldRenderer
 
 		skyTexture = TexturesHandler.getTexture(world.isRaining() ? "environement/sky_rain.png" : "environement/sky.png");
 
-		int[] vegetationColor = { 72, 128, 45 };
+		//int[] vegetationColor = { 72, 128, 45 };
 		//int[] vegetationColor = { 35, 35, 35 };
 		//int[] vegetationColor = { (int) (Math.sin((System.currentTimeMillis() % 1000 ) / 1000.0 * Math.PI) * 255 * 0.5 + 255/2), (int) (Math.sin((System.currentTimeMillis() % 2000 ) / 2000.0 * Math.PI) * 255 * 0.5 + 255/2),	(int) (Math.cos((System.currentTimeMillis() % 5000 ) / 5000.0 * Math.PI) * 255 * 0.5 + 255/2)};
 		//int[] vegetationColor = { (int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255) };
@@ -564,25 +561,34 @@ public class WorldRenderer
 			Client.profiler.startSection("terrain");
 			glDisable(GL_BLEND);
 
+			Texture vegetationTexture = TexturesHandler.getTexture(world.folder.getAbsolutePath()+"/grassColor.png");
+			if(vegetationTexture == null || vegetationTexture.getID() == -1)
+				vegetationTexture = TexturesHandler.getTexture("./res/textures/environement/grassColor.png");
+			vegetationTexture.setMipMapping(true);
+			vegetationTexture.setLinearFiltering(true);
 			terrainShader.use(true);
 			camera.setupShader(terrainShader);
-			terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
+			//terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
 			terrainShader.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
 			terrainShader.setUniformFloat("time", animationTimer);
 			terrainShader.setUniformFloat("terrainHeight", world.chunkSummaries.getHeightAt((int) viewX, (int) viewZ));
 			terrainShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
 			terrainShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
-			terrainShader.setUniformSampler(6, "lightColors", lightmapTexture);
-			terrainShader.setUniformSampler(5, "normalTexture", waterNormalTexture);
 			waterNormalTexture.setLinearFiltering(true);
 			waterNormalTexture.setMipMapping(true);
 			terrainShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
 			terrainShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
 			terrainShader.setUniformSampler(8, "glowSampler", glowTexture);
 			terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
+			terrainShader.setUniformSampler(6, "lightColors", lightmapTexture);
+			terrainShader.setUniformSampler(5, "normalTexture", waterNormalTexture);
 			setupShadowColors(terrainShader);
 			terrainShader.setUniformFloat("time", sky.time);
 			terrainShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
+			
+
+			terrainShader.setUniformSampler(3, "vegetationColorTexture", vegetationTexture);
+			terrainShader.setUniformFloat("mapSize", sizeInChunks * 32);
 
 			if (Client.world.name.contains("cherna"))
 				terrainShader.setUniformFloat("waterLevel", 4f);
@@ -606,6 +612,8 @@ public class WorldRenderer
 			opaqueBlocksShader.setUniformSampler(1, "normalTexture", blocksNormalTexture);
 			opaqueBlocksShader.setUniformSampler(2, "materialTexture", blocksMaterialTexture);
 			opaqueBlocksShader.setUniformSampler(3, "lightColors", lightmapTexture);
+			opaqueBlocksShader.setUniformSampler(4, "vegetationColorTexture", vegetationTexture);
+			opaqueBlocksShader.setUniformFloat("mapSize", sizeInChunks * 32);
 			blocksDiffuseTexture.setTextureWrapping(false);
 			blocksDiffuseTexture.setLinearFiltering(false);
 			blocksDiffuseTexture.setMipMapping(false);
@@ -621,7 +629,7 @@ public class WorldRenderer
 			blocksMaterialTexture.setMipMapping(false);
 			blocksMaterialTexture.setMipmapLevelsRange(0, 4);
 
-			opaqueBlocksShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
+			//opaqueBlocksShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
 			//opaqueBlocksShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
 			opaqueBlocksShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
 			opaqueBlocksShader.setUniformFloat2("screenSize", scrW, scrH);

@@ -98,6 +98,7 @@ public class PluginJar extends URLClassLoader
 			Class<?> entryPointClass = Class.forName(entryPoint, true, this);
 			Class<? extends ChunkStoriesPlugin> javaPluginClass = entryPointClass.asSubclass(ChunkStoriesPlugin.class);
 			ChunkStoriesPlugin plugin = javaPluginClass.newInstance();
+			plugin.jar = this;
 			return plugin;
 		}
 		catch (ClassNotFoundException | InstantiationException | IllegalAccessException e)

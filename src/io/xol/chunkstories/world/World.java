@@ -581,6 +581,11 @@ public abstract class World
 		while (it.hasNext())
 		{
 			chunk = it.next();
+			if(chunk == null)
+			{
+				it.remove();
+				continue;
+			}
 			boolean keep = false;
 			if (!keep && Client.controller != null)
 			{

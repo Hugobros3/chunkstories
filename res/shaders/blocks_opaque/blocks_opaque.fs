@@ -9,6 +9,7 @@ varying vec3 eye; // eye-position
 uniform sampler2D diffuseTexture; // Blocks diffuse texture atlas
 uniform sampler2D normalTexture; // Blocks normal texture atlas
 uniform sampler2D materialTexture; // Blocks material texture atlas
+uniform sampler2D vegetationColorTexture; // Blocks material texture atlas
 uniform vec3 blockColor;
 
 
@@ -50,7 +51,6 @@ uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
 varying float fresnelTerm;
-uniform vec3 vegetationColor;
 
 uniform vec3 givenLightmapCoords;
 uniform vec2 screenSize;
@@ -58,6 +58,7 @@ uniform vec2 screenSize;
 const float gamma = 2.2;
 const float gammaInv = 1/2.2;
 
+uniform float mapSize;
 
 
 // I suck at maths, so I used this code in the meanwhile I get how it works
@@ -125,7 +126,7 @@ void main(){
 		discard;
 	
 	else if(alpha < 1)
-		baseColor *= vegetationColor;
+		baseColor *= texture2D(vegetationColorTexture, varyingVertex.xz / vec2(mapSize)).rgb;
 	
 	//Gamma correction
 	//baseColor.rgb = pow(baseColor.rgb, vec3(gamma));

@@ -13,7 +13,6 @@ import io.xol.chunkstories.net.packets.Packet04Entity;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.ServerPlayer;
-import io.xol.chunkstories.server.tech.CommandEmitter;
 import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.engine.misc.HttpRequestThread;
 import io.xol.engine.misc.HttpRequester;
@@ -29,7 +28,7 @@ import java.net.Socket;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerClient extends Thread implements HttpRequester, CommandEmitter
+public class ServerClient extends Thread implements HttpRequester
 {
 	Socket sock;
 	public int id = 0;
@@ -44,9 +43,7 @@ public class ServerClient extends Thread implements HttpRequester, CommandEmitte
 	boolean alreadyKilled = false;
 
 	public String name = "undefined";
-	
 	public String version = "undefined";
-
 	public ServerPlayer profile;
 
 	ServerClient(Socket s)
@@ -167,9 +164,9 @@ public class ServerClient extends Thread implements HttpRequester, CommandEmitte
 			Packet04Entity packet = new Packet04Entity(false);
 			packet.read(in);
 			if(this.profile.entity != null && packet.entityID == this.profile.entity.entityID)
-				packet.applyToEntity(this.profile.entity, in);
+				packet.applyToEntity(this.profile.entity);
 			else
-				packet.applyToEntity(null, in);
+				packet.applyToEntity(null);
 			//entity = EntitiesList.newEntity(world, entityType);
 		}
 		else
@@ -268,20 +265,5 @@ public class ServerClient extends Thread implements HttpRequester, CommandEmitte
 				Server.getInstance().handler.disconnectClient(this, "Invalid session id !");
 			}
 		}
-	}
-
-	@Override
-	public void sendMessage(String msg)
-	{
-		sendChat(msg);
-	}
-
-	@Override
-	public boolean hasRights(String permission)
-	{
-		//TODO implement permissions system
-		if (UsersPrivileges.isUserAdmin(name))
-			return true;
-		return false;
 	}
 }

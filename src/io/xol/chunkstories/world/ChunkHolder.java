@@ -256,6 +256,7 @@ public class ChunkHolder
 					chunk =	world.generator.generateChunk(cx, cy, cz);
 					if(chunk == null)
 						System.out.println("hmmmmm");
+					chunk.holder = this;
 					data[a][b][c] = chunk;
 					compressChunkData(data[a][b][c]);
 				}

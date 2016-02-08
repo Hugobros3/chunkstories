@@ -31,8 +31,8 @@ public class PluginsManager implements PluginManager
 	Server server;
 	PluginStore store = new PluginStore();
 
-	Set<ChunkStoriesPlugin> activePlugins = new HashSet<ChunkStoriesPlugin>();
-	Map<Command, ChunkStoriesPlugin> commandsHandlers = new HashMap<Command, ChunkStoriesPlugin>();
+	public Set<ChunkStoriesPlugin> activePlugins = new HashSet<ChunkStoriesPlugin>();
+	public Map<Command, ChunkStoriesPlugin> commandsHandlers = new HashMap<Command, ChunkStoriesPlugin>();
 
 	public PluginsManager(Server server)
 	{
@@ -94,7 +94,7 @@ public class PluginsManager implements PluginManager
 		if (cmd.contains(" "))
 		{
 			cmdName = cmd.substring(0, cmd.indexOf(" "));
-			args = cmd.substring(cmd.indexOf(" "), cmd.length()).split(" ");
+			args = cmd.substring(cmd.indexOf(" ")+1, cmd.length()).split(" ");
 		}
 		//System.out.println("debug looking for plugin to handle cmd" + cmdName + " args:" + args.length);
 		Command command = new Command(cmdName);

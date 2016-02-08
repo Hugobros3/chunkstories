@@ -18,8 +18,8 @@ varying float fresnelTerm;
 uniform float waterLevel;
 uniform sampler2D heightMap;
 uniform sampler2D groundTexture;
-//uniform isampler2D groundTexture;
 uniform sampler1D blocksTexturesSummary;
+uniform sampler2D vegetationColorTexture; // Blocks material texture atlas
 varying vec2 textureCoord;
 
 varying float chunkFade;
@@ -31,12 +31,6 @@ varying vec3 normalHeightmap;
 uniform sampler2D lightColors; // Sampler to lightmap
 
 varying float lowerFactor;
-
-uniform vec3 vegetationColor;
-/*
-const vec3 shadowColor = vec3(0.20, 0.20, 0.31);
-const float shadowStrength = 0.85;
-*/
 
 uniform vec3 shadowColor;
 uniform vec3 sunColor;
@@ -60,6 +54,8 @@ uniform sampler2D colorSampler;
 const float gamma = 2.2;
 const float gammaInv = 1/2.2;
 
+uniform float mapSize;
+
 vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
 {
 	return pow(texture2D(sampler, coords), vec4(gamma));
@@ -80,7 +76,7 @@ void main()
 	vec4 bs = texture1D(blocksTexturesSummary, id/512.0);
 	finalColor = bs.rgb;
 	if(bs.a < 1)
-		finalColor *= vegetationColor;
+		finalColor *= texture2D(vegetationColorTexture, vertex.xz / vec2(mapSize)).rgb;
 	
 	finalColor.rgb = pow(finalColor.rgb, vec3(gamma));
 	

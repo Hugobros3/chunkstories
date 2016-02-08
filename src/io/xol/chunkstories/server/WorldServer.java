@@ -3,7 +3,6 @@ package io.xol.chunkstories.server;
 import java.io.File;
 
 import io.xol.chunkstories.api.world.ChunksIterator;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.packets.Packet04Entity;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.CubicChunk;
@@ -26,8 +25,57 @@ public class WorldServer extends World
 	@Override
 	public void tick()
 	{
-		//List<CubicChunk> allChunks = getAllLoadedChunks();
+		this.trimRemovableChunks();
+		//Update client tracking
+		for(ServerClient client : Server.getInstance().handler.getAuthentificatedClients())
+		{
+			//System.out.println("Tast");
+			if(client.profile != null)
+				if(client.profile.hasSpawned)
+					client.profile.updateTrackedEntities();
+				//else
+				//	System.out.println("not spawned :'(");
+		}
 		
+		//System.out.println("Test");
+		super.tick();
+	}
+	
+	public void handleWorldMessage(ServerClient sender, String message)
+	{
+		if(message.equals("info"))
+		{
+			//Sends the construction info for the world, and then the player entity
+			worldInfo.sendInfo(sender);
+			if(sender.profile.entity != null)
+			{
+				Packet04Entity packet = new Packet04Entity(false);
+				packet.applyFromEntity(sender.profile.entity);
+				packet.defineControl = true;
+				sender.sendPacket(packet);
+				sender.profile.hasSpawned = true;
+				System.out.println("hasSpawned = true");
+			}
+		}
+		if(message.startsWith("getChunkCompressed"))
+		{
+			String[] split = message.split(":");
+			int x = Integer.parseInt(split[1]);
+			int y = Integer.parseInt(split[2]);
+			int z = Integer.parseInt(split[3]);
+			((IOTasksMultiplayerServer) ioHandler).requestCompressedChunkSend(x, y, z, sender);
+		}
+		if(message.startsWith("getChunkSummary"))
+		{
+			String[] split = message.split(":");
+			int x = Integer.parseInt(split[1]);
+			int z = Integer.parseInt(split[2]);
+			((IOTasksMultiplayerServer) ioHandler).requestChunkSummary(x, z, sender);
+		}
+	}
+	
+	public void trimRemovableChunks()
+	{
 		int chunksViewDistance = 256/32;
 		int sizeInChunks = size.sizeInChunks;
 		
@@ -65,52 +113,5 @@ public class WorldServer extends World
 		}
 		if(removedChunks > 0)
 			System.out.println("Removed "+removedChunks+" chunks.");
-		
-		//Update client tracking
-		for(ServerClient client : Server.getInstance().handler.getAuthentificatedClients())
-		{
-			//System.out.println("Tast");
-			if(client.profile != null)
-				if(client.profile.hasSpawned)
-					client.profile.updateTrackedEntities();
-				//else
-				//	System.out.println("not spawned :'(");
-		}
-		
-		//System.out.println("Test");
-		super.tick();
-	}
-	
-	public void handleWorldMessage(ServerClient sender, String message)
-	{
-		if(message.equals("info"))
-		{
-			//Sends the construction info for the world, and then the player entity
-			worldInfo.sendInfo(sender);
-			if(sender.profile.entity != null)
-			{
-				Packet04Entity packet = new Packet04Entity(false);
-				packet.entity = sender.profile.entity;
-				packet.defineControl = true;
-				sender.sendPacket(packet);
-				sender.profile.hasSpawned = true;
-				System.out.println("hasSpawned = true");
-			}
-		}
-		if(message.startsWith("getChunkCompressed"))
-		{
-			String[] split = message.split(":");
-			int x = Integer.parseInt(split[1]);
-			int y = Integer.parseInt(split[2]);
-			int z = Integer.parseInt(split[3]);
-			((IOTasksMultiplayerServer) ioHandler).requestCompressedChunkSend(x, y, z, sender);
-		}
-		if(message.startsWith("getChunkSummary"))
-		{
-			String[] split = message.split(":");
-			int x = Integer.parseInt(split[1]);
-			int z = Integer.parseInt(split[2]);
-			((IOTasksMultiplayerServer) ioHandler).requestChunkSummary(x, z, sender);
-		}
 	}
 }

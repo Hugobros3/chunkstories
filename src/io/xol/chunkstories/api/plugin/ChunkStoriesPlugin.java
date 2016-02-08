@@ -15,6 +15,7 @@ public abstract class ChunkStoriesPlugin
 	protected ClientInterface clientI;
 	
 	protected PluginManager pluginManager;
+	public PluginJar jar;
 	
 	public void setServer(ServerInterface server)
 	{
@@ -43,5 +44,12 @@ public abstract class ChunkStoriesPlugin
 	public void setPluginManager(PluginManager pluginManager)
 	{
 		this.pluginManager = pluginManager;
+	}
+
+	public String getName()
+	{
+		if(jar == null)
+			return "you were adopted";
+		return jar.getName();
 	}
 }
