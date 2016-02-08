@@ -46,7 +46,7 @@ public class ServerPlayer implements Player, CommandEmitter
 			playerData.setProp("firstlogin", "" + System.currentTimeMillis());
 
 		entity = new EntityPlayer(Server.getInstance().world, playerData.getDoubleProp("posX"), playerData.getDoubleProp("posY", 100), playerData.getDoubleProp("posZ"), playerConnection.name);
-		//System.out.println(entity.getName()+":"+playerConnection.name);
+		System.out.println("Created entity named "+entity.getName()+":"+playerConnection.name);
 	}
 
 	public void updateTrackedEntities()
@@ -106,7 +106,7 @@ public class ServerPlayer implements Player, CommandEmitter
 	public void trackEntity(Entity e, boolean first, boolean delete)
 	{
 		Packet04Entity packet = new Packet04Entity(false);
-		packet.applyFromEntity(e);
+		//First time tracking we send the name if there's one
 		if(first)
 		{
 			if(e instanceof EntityNameable)
@@ -114,6 +114,7 @@ public class ServerPlayer implements Player, CommandEmitter
 		}
 		packet.includeRotation = e instanceof EntityRotateable;
 		packet.deleteFlag = delete;
+		packet.applyFromEntity(e);
 		playerConnection.sendPacket(packet);
 	}
 	
@@ -219,6 +220,11 @@ public class ServerPlayer implements Player, CommandEmitter
 		Server.getInstance().handler.disconnectClient(playerConnection, reason);
 	}
 
+	public String toString()
+	{
+		return getName();
+	}
+	
 	public String getDisplayName()
 	{
 		String name = getName();

@@ -83,7 +83,7 @@ public class SendQueue extends Thread
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		die.set(true);
 		synchronized (this)

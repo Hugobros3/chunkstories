@@ -253,7 +253,7 @@ public class GameplayScene extends OverlayableScene
 		}
 		else if (k == Keyboard.KEY_F7)
 		{
-			Entity test = EntitiesList.newEntity(Client.world, (short) 0x03);
+			Entity test = EntitiesList.newEntity(Client.world, (short) 0x02);
 			test.setPosition(player.posX, player.posY, player.posZ);
 			Client.world.addEntity(test);
 		}

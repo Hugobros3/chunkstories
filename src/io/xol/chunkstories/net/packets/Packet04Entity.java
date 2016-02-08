@@ -24,7 +24,7 @@ public class Packet04Entity extends Packet
 	public double XBuffered, YBuffered, ZBuffered;
 	public double RHBuffered, RVBuffered;
 	public String nBuffered;
-	
+
 	public boolean defineControl = false; // Tells the client that the player entity is this one.
 	public boolean includeRotation = false; // Tells both sides to consider extra 2 doubles
 	public boolean includeName = false; // This is a nameable entity
@@ -38,7 +38,7 @@ public class Packet04Entity extends Packet
 	@Override
 	public void send(DataOutputStream out) throws IOException
 	{
-		System.out.println("Sending entity "+entityID+" EID : "+entityType+" PosX"+XBuffered);
+		//System.out.println("Sending entity " + entityID + " EID : " + entityType + " PosX" + XBuffered + (nBuffered == null ? "null" : nBuffered));
 		out.writeByte(0x04);
 		out.writeLong(entityID);
 		out.writeShort(entityType);
@@ -56,7 +56,7 @@ public class Packet04Entity extends Packet
 			out.writeDouble(RHBuffered);
 			out.writeDouble(RVBuffered);
 		}
-		if(includeName)
+		if (includeName)
 		{
 			/*String name = "ERROR-NOTNAMEABLE";
 			if(entity instanceof EntityNameable)
@@ -65,7 +65,6 @@ public class Packet04Entity extends Packet
 		}
 	}
 
-	
 	@Override
 	public void read(DataInputStream in) throws IOException
 	{
@@ -75,19 +74,19 @@ public class Packet04Entity extends Packet
 		XBuffered = in.readDouble();
 		YBuffered = in.readDouble();
 		ZBuffered = in.readDouble();
-		
+
 		byte byteField = in.readByte();
 		defineControl = ((byteField >> 0) & 0x01) == 1;
 		includeRotation = ((byteField >> 1) & 0x01) == 1;
 		includeName = ((byteField >> 2) & 0x01) == 1;
 		deleteFlag = ((byteField >> 3) & 0x01) == 1;
-		
+
 		if (includeRotation)
 		{
 			RHBuffered = (float) in.readDouble();
 			RVBuffered = (float) in.readDouble();
 		}
-		if(includeName)
+		if (includeName)
 		{
 			nBuffered = in.readUTF();
 			System.out.println(nBuffered);
@@ -96,9 +95,6 @@ public class Packet04Entity extends Packet
 
 	public void applyToEntity(Entity entity)
 	{
-		entityType = entity.getEID();
-		entityID = entity.getUUID();
-		
 		entity.posX = XBuffered;
 		entity.posY = YBuffered;
 		entity.posZ = ZBuffered;
@@ -107,27 +103,32 @@ public class Packet04Entity extends Packet
 			entity.rotH = (float) RHBuffered;
 			entity.rotV = (float) RVBuffered;
 		}
-		if(includeName)
+		if (includeName)
 		{
-			if(entity instanceof EntityNameable)
-				((EntityNameable)entity).setName(nBuffered);
+			System.out.println("apply 2 "+entity+" posx"+XBuffered+" -> "+nBuffered);
+			if (entity instanceof EntityNameable)
+				((EntityNameable) entity).setName(nBuffered);
 		}
+		//System.out.println("apply 2 "+entity+" posx"+XBuffered+" -> "+entity.posX);
 	}
-	
+
 	public void applyFromEntity(Entity entity)
 	{
+		entityType = entity.getEID();
+		entityID = entity.getUUID();
+
 		XBuffered = entity.posX;
-		YBuffered = entity.posX;
-		ZBuffered = entity.posX;
+		YBuffered = entity.posY;
+		ZBuffered = entity.posZ;
 		if (includeRotation)
 		{
-		RHBuffered = entity.rotH;
-		RVBuffered = entity.rotV;
+			RHBuffered = entity.rotH;
+			RVBuffered = entity.rotV;
 		}
-		if(includeName)
+		if (includeName)
 		{
-			if(entity instanceof EntityNameable)
-				nBuffered = ((EntityNameable)entity).getName();
+			if (entity instanceof EntityNameable)
+				nBuffered = ((EntityNameable) entity).getName();
 		}
 	}
 }

@@ -28,6 +28,7 @@ public class PlayerLoginEvent extends Event
 	
 	public Player player;
 	public String connectionMessage;
+	public String refusedConnectionMessage = "Connection was refused by a plugin.";
 	
 	public PlayerLoginEvent(Player player)
 	{

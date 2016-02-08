@@ -40,6 +40,7 @@ import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.renderer.ChunksRenderer.VBOData;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -370,9 +371,9 @@ public class WorldRenderer
 		viewZ = z;
 		viewRotH = view_rotx;
 		viewRotV = view_roty;
-		int npCX = fastfloor((x + 32) / 32);
+		int npCX = fastfloor((x - 0) / 32);
 		int npCY = fastfloor((y) / 32);
-		int npCZ = fastfloor((z + 32) / 32);
+		int npCZ = fastfloor((z - 0) / 32);
 		// Fill the VBO array with chunks VBO ids if the player changed chunk
 		if (pCX != npCX || pCY != npCY || pCZ != npCZ || chunksChanged || true)
 		{
@@ -426,7 +427,7 @@ public class WorldRenderer
 			{
 				//System.out.println(t +" "+ chunksViewDistance + " " + (pCX - chunksViewDistance) + " < " + pCX + " < " + (pCX + chunksViewDistance));
 				for (int g = (pCZ - chunksViewDistance); g < pCZ + chunksViewDistance; g++)
-					for (int b = pCY - 2; b < pCY + 2; b++)
+					for (int b = pCY - 3; b < pCY + 3; b++)
 					{
 						chunk = world.getChunk(t, b, g, true);
 						//if(t == 88)
@@ -1392,11 +1393,14 @@ public class WorldRenderer
 		}
 		else
 			apertureModifier = 1.0f;
-		/*for (Entity e : world.getAllLoadedEntities())
+		Iterator<Entity> ei = world.getAllLoadedEntities();
+		Entity e;
+		while(ei.hasNext())
 		{
+			e = ei.next();
 			if (e instanceof EntityHUD)
 				((EntityHUD) e).drawHUD(camera);
-		}*/
+		}
 	}
 
 	ByteBuffer fBuffer = BufferUtils.createByteBuffer(4 * 3);

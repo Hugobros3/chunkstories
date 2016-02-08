@@ -312,13 +312,15 @@ public class ServerConnection extends Thread implements HttpRequester
 						entity.entityID = packet.entityID;
 						packet.applyToEntity(entity);
 						Client.world.addEntity(entity);
-						System.out.println("Added entity "+entity);
+						//System.out.println("Added entity "+entity);
 						if(packet.defineControl)
 						{
 							Client.controller = entity;
 							//System.out.println("you should control this entity :"+entity);
 						}
 					}
+					else
+						packet.applyToEntity(entity);
 				}
 				//System.out.println("mdr ");
 				//entity = EntitiesList.newEntity(world, entityType);

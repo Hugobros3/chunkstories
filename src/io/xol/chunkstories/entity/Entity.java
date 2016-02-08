@@ -456,6 +456,14 @@ public abstract class Entity
 		return entityID;
 	}
 	
+	@Override
+	public boolean equals(Object o)
+	{
+		if(!(o instanceof Entity))
+			return false;
+		return ((Entity)o).entityID == entityID;
+	}
+	
 	public void delete()
 	{
 		deleteFlag = true;

@@ -2,6 +2,7 @@ package io.xol.chunkstories.server.net;
 
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.events.core.PlayerLoginEvent;
+import io.xol.chunkstories.api.events.core.PlayerLogoutEvent;
 import io.xol.chunkstories.client.net.SendQueue;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.Packet;
@@ -205,12 +206,23 @@ public class ServerClient extends Thread implements HttpRequester
 		if (alreadyKilled)
 			return;
 		if (authentificated)
-			Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
-		if (profile != null)
 		{
-			profile.onLeave();
-			profile.save();
+			authentificated = true;
+			profile = new ServerPlayer(this);
+			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(profile);
+			boolean allowPlayerOut = Server.getInstance().getPluginsManager().fireEvent(playerDisconnectionEvent);
+			
+			Server.getInstance().handler.sendAllChat(playerDisconnectionEvent.connectionMessage);
+			
+			//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
+			assert profile != null;
+			//if (profile != null)
+			//{
+				profile.onLeave();
+				profile.save();
+			//}
 		}
+		
 		try
 		{
 			if (in != null)
@@ -253,8 +265,12 @@ public class ServerClient extends Thread implements HttpRequester
 				profile = new ServerPlayer(this);
 				PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(profile);
 				boolean allowPlayerIn = Server.getInstance().getPluginsManager().fireEvent(playerConnectionEvent);
-				
-				System.out.println(allowPlayerIn+"allow");
+				if(!allowPlayerIn)
+				{
+					Server.getInstance().handler.disconnectClient(this, playerConnectionEvent.refusedConnectionMessage);
+					return;
+				}
+				//System.out.println(allowPlayerIn+"allow");
 				Server.getInstance().handler.sendAllChat(playerConnectionEvent.connectionMessage);
 				//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ")" + " joined.");
 				profile.onJoin();

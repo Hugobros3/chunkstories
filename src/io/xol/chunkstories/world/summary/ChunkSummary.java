@@ -229,7 +229,7 @@ public class ChunkSummary
 		}
 		if (vboId != -1)
 			glDeleteBuffers(vboId);
-		System.out.println("Freeing cs"+rx+rz);
+		//System.out.println("Freeing cs"+rx+rz);
 	}
 
 	public boolean isLoaded()

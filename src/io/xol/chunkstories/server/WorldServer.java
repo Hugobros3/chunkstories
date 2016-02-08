@@ -50,11 +50,13 @@ public class WorldServer extends World
 			if(sender.profile.entity != null)
 			{
 				Packet04Entity packet = new Packet04Entity(false);
-				packet.applyFromEntity(sender.profile.entity);
 				packet.defineControl = true;
+				packet.includeName = true;
+				packet.includeRotation = true;
+				packet.applyFromEntity(sender.profile.entity);
 				sender.sendPacket(packet);
 				sender.profile.hasSpawned = true;
-				System.out.println("hasSpawned = true");
+				//System.out.println("hasSpawned = true");
 			}
 		}
 		if(message.startsWith("getChunkCompressed"))
