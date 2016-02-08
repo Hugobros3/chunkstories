@@ -141,7 +141,7 @@ public class GameData
 		File checkGameFolder = new File(GameDirectory.getGameFolderPath() + "/" + textureName + ".png");
 		if (checkGameFolder.exists())
 			return checkGameFolder;
-		System.out.println(textureName+" not found.");
+		//System.out.println(textureName+" not found.");
 		return null;
 	}
 

@@ -6,7 +6,7 @@ import io.xol.chunkstories.gui.OverlayableScene;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Overlay
+public abstract class Overlay
 {
 	public OverlayableScene mainScene;
 	public Overlay parent;
@@ -17,10 +17,7 @@ public class Overlay
 		this.parent = parent;
 	}
 
-	public void drawToScreen(int x, int y, int w, int h)
-	{
-		
-	}
+	public abstract void drawToScreen(int positionStartX, int positionStartY, int width, int height);
 
 	public boolean handleKeypress(int k)
 	{

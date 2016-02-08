@@ -205,12 +205,12 @@ public class IOTasks extends Thread
 			// requeue the job for later.
 			if (holder == null)
 			{
-				System.out.println("holder null");
+				//System.out.println("holder null");
 				return false;
 			}
 			if (!holder.isLoaded())
 			{
-				System.out.println("holder not yet loaded");
+				//System.out.println("holder not yet loaded");
 				return false;
 			}
 			//Already loaded
@@ -296,7 +296,7 @@ public class IOTasks extends Thread
 			holder.lock.lock();
 			if (holder.handler.exists())
 			{
-				System.out.println("Loading existing chunk holder...");
+				//System.out.println("Loading existing chunk holder...");
 				try
 				{
 					FileInputStream in = new FileInputStream(holder.handler);

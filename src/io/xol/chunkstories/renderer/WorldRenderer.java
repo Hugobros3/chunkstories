@@ -1125,8 +1125,6 @@ public class WorldRenderer
 
 	public void setupRenderSize(int w, int h)
 	{
-		if (FastConfig.debugGBuffers)
-			System.out.println("setup render size");
 		scrW = w;
 		scrH = h;
 		this.composite_pass_gbuffers.resizeFBO(w, h);

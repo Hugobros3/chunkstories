@@ -199,15 +199,10 @@ public class GameplayScene extends OverlayableScene
 		{
 			if (k == FastConfig.CHAT_KEY)
 			{
-				chat.openChatbox();
+				this.changeOverlay(chat.new ChatPanelOverlay(this, null));
 				focus(false);
 				return true;
 			}
-		}
-		else
-		{
-			chat.key(k);
-			return true;
 		}
 		if (k == 19)
 		{

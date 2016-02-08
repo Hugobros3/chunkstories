@@ -33,7 +33,7 @@ public class ServerClient extends Thread implements HttpRequester
 {
 	Socket sock;
 	public int id = 0;
-	
+
 	DataInputStream in = null;
 	SendQueue queue;
 
@@ -114,7 +114,7 @@ public class ServerClient extends Thread implements HttpRequester
 			{
 				byte type = in.readByte();
 				handlePacket(type, in);
-				
+
 				/*if (type == 0x00)
 					Server.getInstance().handler.handle(this, in.readUTF());
 				else
@@ -123,7 +123,7 @@ public class ServerClient extends Thread implements HttpRequester
 			catch (IOException e)
 			{
 				died = true;
-				System.out.println("Socket "+id+" ("+getIp()+") died ("+e.getClass().getName()+")");
+				System.out.println("Socket " + id + " (" + getIp() + ") died (" + e.getClass().getName() + ")");
 			}
 			catch (IllegalPacketException | UnknowPacketException e)
 			{
@@ -132,7 +132,7 @@ public class ServerClient extends Thread implements HttpRequester
 		}
 		Server.getInstance().handler.disconnectClient(this);
 	}
-	
+
 	private void handlePacket(byte type, DataInputStream in) throws IOException, IllegalPacketException, UnknowPacketException
 	{
 		if (type == 0x00)
@@ -145,26 +145,26 @@ public class ServerClient extends Thread implements HttpRequester
 		else if (type == 0x01)
 		{
 			Packet01WorldInfo packet = new Packet01WorldInfo(false);
-			
+
 			throw new IllegalPacketException(packet);
 		}
 		else if (type == 0x02)
 		{
 			Packet02ChunkCompressedData packet = new Packet02ChunkCompressedData(false);
-			
+
 			throw new IllegalPacketException(packet);
 		}
 		else if (type == 0x03)
 		{
 			Packet03ChunkSummary packet = new Packet03ChunkSummary(false);
-			
+
 			throw new IllegalPacketException(packet);
 		}
 		else if (type == 0x04)
 		{
 			Packet04Entity packet = new Packet04Entity(false);
 			packet.read(in);
-			if(this.profile.entity != null && packet.entityID == this.profile.entity.entityID)
+			if (this.profile.entity != null && packet.entityID == this.profile.entity.entityID)
 				packet.applyToEntity(this.profile.entity);
 			else
 				packet.applyToEntity(null);
@@ -175,7 +175,7 @@ public class ServerClient extends Thread implements HttpRequester
 			throw new UnknowPacketException(type);
 		}
 	}
-	
+
 	public String getIp()
 	{
 		return sock.getInetAddress().getHostAddress();
@@ -211,18 +211,18 @@ public class ServerClient extends Thread implements HttpRequester
 			//profile = new ServerPlayer(this);
 			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(profile);
 			Server.getInstance().getPluginsManager().fireEvent(playerDisconnectionEvent);
-			
+
 			Server.getInstance().handler.sendAllChat(playerDisconnectionEvent.connectionMessage);
-			
+
 			//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
 			assert profile != null;
 			//if (profile != null)
 			//{
-				profile.onLeave();
-				profile.save();
+			profile.onLeave();
+			profile.save();
 			//}
 		}
-		
+
 		try
 		{
 			if (in != null)
@@ -265,7 +265,7 @@ public class ServerClient extends Thread implements HttpRequester
 				profile = new ServerPlayer(this);
 				PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(profile);
 				boolean allowPlayerIn = Server.getInstance().getPluginsManager().fireEvent(playerConnectionEvent);
-				if(!allowPlayerIn)
+				if (!allowPlayerIn)
 				{
 					Server.getInstance().handler.disconnectClient(this, playerConnectionEvent.refusedConnectionMessage);
 					return;

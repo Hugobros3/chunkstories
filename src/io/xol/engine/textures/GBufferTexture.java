@@ -28,7 +28,7 @@ public class GBufferTexture extends Texture
 	{
 		glBindTexture(GL_TEXTURE_2D, glId);
 		
-		if(this.width == w && this.height == h)
+		if(this.width == w && this.height == h && !(type == TextureType.RGB_HDR))
 			return;
 		
 		this.width = w;
@@ -40,7 +40,7 @@ public class GBufferTexture extends Texture
 		}
 		else if (type == TextureType.RGB_HDR)
 		{
-			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " D16 texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
+			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " tamer texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
 			// Optimization for OpenGL 3 cards
 			if(!FastConfig.doBloom)
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, (ByteBuffer) null);

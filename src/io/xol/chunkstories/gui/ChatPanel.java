@@ -7,6 +7,7 @@ package io.xol.chunkstories.gui;
 import io.xol.engine.base.font.BitmapFont;
 import io.xol.engine.base.font.TrueTypeFont;
 import io.xol.engine.gui.InputText;
+import io.xol.engine.misc.ColorsTools;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -14,7 +15,9 @@ import java.util.Iterator;
 
 import org.lwjgl.util.vector.Vector4f;
 
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.FastConfig;
 
 public class ChatPanel
 {
@@ -38,69 +41,100 @@ public class ChatPanel
 
 		public void clickRelative(int x, int y)
 		{
-
+			//TODO clickable text
 		}
 	}
-
-	public void key(int k)
+	
+	public class ChatPanelOverlay extends Overlay
 	{
-		if (k == 28)
+		public ChatPanelOverlay(OverlayableScene scene, Overlay parent)
 		{
-			chatting = false;
-			if (inputBox.text.equals("/clear"))
-			{
-				//java.util.Arrays.fill(chatHistory, "");
-				chat.clear();
-				return;
-			}
-			if (inputBox.text.startsWith("/loctime"))
-			{
-				try
-				{
-					int time = Integer.parseInt(inputBox.text.split(" ")[1]);
-					Client.world.worldTime = time;
-				}
-				catch (Exception e)
-				{
-
-				}
-				return;
-			}
-			if (Client.connection != null)
-				Client.connection.sendTextMessage("chat/" + inputBox.text);
-			else
-				insert("#00CC22" + Client.username + "#FFFFFF > " + inputBox.text);
-			inputBox.text = "";
-
+			super(scene, parent);
+			openChatbox();
 		}
-		else if (k == 1)
-			chatting = false;
-		else
-			inputBox.input(k);
 
+		@Override
+		public void drawToScreen(int positionStartX, int positionStartY, int width, int height)
+		{
+			
+		}
+		
+		public boolean handleKeypress(int k)
+		{
+			if (k == FastConfig.EXIT_KEY)
+			{
+				chatting = false;
+				mainScene.changeOverlay(parent);
+				return true;
+			}
+			else if (k == 28)
+			{
+				if (inputBox.text.equals("/clear"))
+				{
+					//java.util.Arrays.fill(chatHistory, "");
+					chat.clear();
+					return true;
+				}
+				else if (inputBox.text.startsWith("/loctime"))
+				{
+					try
+					{
+						int time = Integer.parseInt(inputBox.text.split(" ")[1]);
+						Client.world.worldTime = time;
+					}
+					catch (Exception e)
+					{
+
+					}
+					return true;
+				}
+				if (Client.connection != null)
+					Client.connection.sendTextMessage("chat/" + inputBox.text);
+				else
+					insert(ColorsTools.getUniqueColorPrefix(Client.username) + Client.username + "#FFFFFF > " + inputBox.text);
+				inputBox.text = "";
+
+				chatting = false;
+				mainScene.changeOverlay(parent);
+			}
+			else
+				inputBox.input(k);
+			return true;
+		}
+
+		public boolean onClick(int posx, int posy, int button)
+		{
+			return false;
+		}
+		
+		public boolean onScroll(int dy)
+		{
+			if(dy > 0)
+				scroll++;
+			else
+				scroll--;
+			return true;
+		}
 	}
-
-	public void openChatbox()
+	
+	private void openChatbox()
 	{
 		inputBox.text = "";
 		chatting = true;
+		scroll = 0;
 	}
 
-	public void update()
-	{
-		String m;
-		if (Client.connection != null)
-			while ((m = Client.connection.getLastChatMessage()) != null)
-				insert(m);
-		if (!chatting)
-			inputBox.text = "<Press T to chat>";
-		inputBox.focus = true;
-	}
-
+	int scroll = 0;
+	
 	public void draw()
 	{
 		while (chat.size() > chatHistorySize)
 			chat.removeLast();
+		if(scroll < 0 || !chatting)
+			scroll = 0;
+		if(scroll > chatHistorySize)
+			scroll = chatHistorySize;
+		int ST = scroll;
 		int linesDrew = 0;
 		int maxLines = 14;
 		Iterator<ChatLine> i = chat.iterator();
@@ -108,6 +142,11 @@ public class ChatPanel
 		{
 			//if (a >= chatHistorySize - lines)
 			ChatLine line = i.next();
+			if(ST > 0)
+			{
+				ST--;
+				continue;
+			}
 			//System.out.println("added" +line.text);
 			int actualLines = TrueTypeFont.arial12.getLinesHeight(line.text, 250);
 			linesDrew += actualLines;
@@ -123,7 +162,20 @@ public class ChatPanel
 		inputBox.setPos(12, 112);
 		if (chatting)
 			inputBox.drawWithBackGroundTransparent();
-
+	}
+	
+	/**
+	 * Fetches message from the connection
+	 */
+	public void update()
+	{
+		String m;
+		if (Client.connection != null)
+			while ((m = Client.connection.getLastChatMessage()) != null)
+				insert(m);
+		if (!chatting)
+			inputBox.text = "<Press T to chat>";
+		inputBox.focus = true;
 	}
 
 	public void insert(String t)
