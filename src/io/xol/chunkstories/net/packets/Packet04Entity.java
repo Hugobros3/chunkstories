@@ -164,5 +164,11 @@ public class Packet04Entity extends Packet
 					this.applyToEntity(entity);
 			}
 		}
+		else
+		{
+			if (processor.getServerClient().profile.entity != null && entityID == processor.getServerClient().profile.entity.entityID)
+				applyToEntity(processor.getServerClient().profile.entity);
+			//entity = EntitiesList.newEntity(world, entityType);
+		}
 	}
 }

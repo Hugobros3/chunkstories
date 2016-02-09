@@ -3,23 +3,11 @@ package io.xol.chunkstories.client.net;
 import io.xol.engine.misc.HttpRequestThread;
 import io.xol.engine.misc.HttpRequester;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.entity.EntitiesList;
-import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.net.packets.Packet00Text;
-import io.xol.chunkstories.net.packets.Packet01WorldInfo;
-import io.xol.chunkstories.net.packets.Packet02ChunkCompressedData;
-import io.xol.chunkstories.net.packets.Packet03ChunkSummary;
-import io.xol.chunkstories.net.packets.Packet04Entity;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
-import io.xol.chunkstories.net.packets.UnknowPacketException;
-import io.xol.chunkstories.world.WorldClient;
-import io.xol.chunkstories.world.WorldInfo;
-import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -256,6 +244,7 @@ public class ServerConnection extends Thread implements HttpRequester
 		return null;
 	}*/
 
+	/*
 	private void handlePacket(byte type, DataInputStream in) throws IOException, UnknowPacketException
 	{
 		if (type == 0x00)
@@ -324,7 +313,7 @@ public class ServerConnection extends Thread implements HttpRequester
 		{
 			throw new UnknowPacketException(type);
 		}
-	}
+	}*/
 
 	public boolean hasFailed()
 	{

@@ -7,10 +7,7 @@ import io.xol.chunkstories.client.net.SendQueue;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.net.packets.Packet00Text;
-import io.xol.chunkstories.net.packets.Packet01WorldInfo;
-import io.xol.chunkstories.net.packets.Packet02ChunkCompressedData;
-import io.xol.chunkstories.net.packets.Packet03ChunkSummary;
-import io.xol.chunkstories.net.packets.Packet04Entity;
+import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.ServerPlayer;
@@ -31,10 +28,11 @@ import java.net.Socket;
 
 public class ServerClient extends Thread implements HttpRequester
 {
-	Socket sock;
 	int id = 0;
 
 	//Streams.
+	Socket sock;
+	PacketsProcessor packetsProcessor;
 	DataInputStream in = null;
 	SendQueue queue;
 
@@ -54,6 +52,7 @@ public class ServerClient extends Thread implements HttpRequester
 
 	ServerClient(Socket s)
 	{
+		packetsProcessor = new PacketsProcessor(this);
 		sock = s;
 		id = s.getPort();
 		this.setName("Client thread " + id);
@@ -117,9 +116,13 @@ public class ServerClient extends Thread implements HttpRequester
 		{
 			try
 			{
-				byte type = in.readByte();
-				handlePacket(type, in);
-
+				//byte type = in.readByte();
+				//handlePacket(type, in);
+				
+				Packet packet = packetsProcessor.getPacket(in, false, false);
+				packet.read(in);
+				packet.process(packetsProcessor);
+				
 				/*if (type == 0x00)
 					Server.getInstance().handler.handle(this, in.readUTF());
 				else
@@ -138,6 +141,7 @@ public class ServerClient extends Thread implements HttpRequester
 		Server.getInstance().handler.disconnectClient(this);
 	}
 
+	/*
 	private void handlePacket(byte type, DataInputStream in) throws IOException, IllegalPacketException, UnknowPacketException
 	{
 		if (type == 0x00)
@@ -145,7 +149,6 @@ public class ServerClient extends Thread implements HttpRequester
 			// UTF-8 text data
 			Packet00Text packet = new Packet00Text(false);
 			packet.read(in);
-			Server.getInstance().handler.handle(this, packet.text);
 		}
 		else if (type == 0x01)
 		{
@@ -179,7 +182,7 @@ public class ServerClient extends Thread implements HttpRequester
 		{
 			throw new UnknowPacketException(type);
 		}
-	}
+	}*/
 
 	public String getIp()
 	{
