@@ -199,7 +199,6 @@ public class ServerPlayer implements Player, CommandEmitter
 		return true;
 	}
 
-
 	@Override
 	public void sendMessage(String msg)
 	{
@@ -230,5 +229,4 @@ public class ServerPlayer implements Player, CommandEmitter
 		String name = getName();
 		return ColorsTools.getUniqueColorPrefix(name)+name+"#FFFFFF";
 	}
-
 }

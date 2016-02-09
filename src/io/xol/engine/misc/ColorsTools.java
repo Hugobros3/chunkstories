@@ -2,34 +2,14 @@ package io.xol.engine.misc;
 
 import java.security.MessageDigest;
 
+import io.xol.engine.math.HexTools;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
 public class ColorsTools
 {
-
-	static char[] hexTable = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
-			'9', 'A', 'B', 'C', 'D', 'E', 'F' };
-
-	public static int hexToInt(String hex)
-	{
-		int value = 0;
-		for (char c : hex.toCharArray())
-		{
-			value *= 16;
-			int index = 0;
-			for (char d : hexTable)
-			{
-				if (c == d)
-				{
-					value += index;
-				}
-				index++;
-			}
-		}
-		return value;
-	}
 
 	public static int[] hexToRGB(String hex)
 	{
@@ -39,20 +19,11 @@ public class ColorsTools
 		if (bytes.length != 6)
 			return null;
 
-		rgb[0] = hexToInt(hex.substring(0, 2));
-		rgb[1] = hexToInt(hex.substring(2, 4));
-		rgb[2] = hexToInt(hex.substring(4, 6));
+		rgb[0] = HexTools.hexToInt(hex.substring(0, 2));
+		rgb[1] = HexTools.hexToInt(hex.substring(2, 4));
+		rgb[2] = HexTools.hexToInt(hex.substring(4, 6));
 
 		return rgb;
-	}
-
-	public static String intToHex(int i)
-	{
-		// System.out.println("wtf "+i);
-		if (i < 0)
-			return "";
-		String hex = "" + hexTable[(i / 16) % 16] + hexTable[i % 16];
-		return hex;
 	}
 
 	public static String rgbToHex(int i)
@@ -65,9 +36,9 @@ public class ColorsTools
 		int v = ((i) / 256) % 256;
 		int b = i % 256;
 
-		returnMeh += intToHex(r);
-		returnMeh += intToHex(v);
-		returnMeh += intToHex(b);
+		returnMeh += HexTools.intToHex(r);
+		returnMeh += HexTools.intToHex(v);
+		returnMeh += HexTools.intToHex(b);
 
 		return returnMeh;
 	}
@@ -80,23 +51,6 @@ public class ColorsTools
 		rgb[1] = ((i) / 256) % 256;
 		rgb[2] = i % 256;
 		return rgb;
-	}
-
-	public static boolean isHexOnly(String str)
-	{
-		boolean yes = true;
-		for (char c : str.toCharArray())
-		{
-			boolean found = false;
-			for (char d : hexTable)
-			{
-				if (c == d)
-					found = true;
-			}
-			if (!found)
-				yes = false;
-		}
-		return yes;
 	}
 
 	// HEXADECIMAL TO ANSI CONVERTER
@@ -128,7 +82,7 @@ public class ColorsTools
 			} else
 			{
 				if (c == '#' && text.length() - i - 1 >= 6
-						&& ColorsTools.isHexOnly(text.substring(i + 1, i + 7)))
+						&& HexTools.isHexOnly(text.substring(i + 1, i + 7)))
 				{
 					String colorCode = text.substring(i + 1, i + 7);
 					int rgb[] = ColorsTools.hexToRGB(colorCode);
@@ -179,7 +133,7 @@ public class ColorsTools
 		int r = fun[0] & 0xFF;
 		int g = fun[1] & 0xFF;
 		int b = fun[2] & 0xFF;
-		return "#"+intToHex(r)+intToHex(g)+intToHex(b);
+		return "#"+HexTools.intToHex(r)+HexTools.intToHex(g)+HexTools.intToHex(b);
 	}
 	//byte[] thedigest = md.digest(bytesOfMessage);
 }

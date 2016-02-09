@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -53,8 +54,8 @@ public class VoxelTextures
 			List<VoxelTexture> sizes = new ArrayList<VoxelTexture>();
 
 			//for (File f : folder.listFiles())
-			Iterator<Entry<String, File>> allFiles = GameData.getAllUniqueEntries();
-			Entry<String, File> entry;
+			Iterator<Entry<String, Deque<File>>> allFiles = GameData.getAllUniqueEntries();
+			Entry<String, Deque<File>> entry;
 			File f;
 			while (allFiles.hasNext())
 			{
@@ -64,7 +65,7 @@ public class VoxelTextures
 					String name = entry.getKey().replace("./res/voxels/textures/", "");
 					if(name.contains("/"))
 						continue;
-					f = entry.getValue();
+					f = entry.getValue().getFirst();
 					if (!f.isDirectory() && f.exists() && f.getName().endsWith(".png"))
 					{
 						String textureName = f.getName().replace(".png", "");

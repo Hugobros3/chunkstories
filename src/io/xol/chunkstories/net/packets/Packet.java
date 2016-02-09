@@ -10,14 +10,18 @@ import java.io.IOException;
 
 public abstract class Packet
 {
-	public boolean client = false;
+	public boolean isClient = false;
+	public boolean isServer = false;
 	
 	public Packet(boolean client)
 	{
-		this.client = client;
+		this.isClient = client;
+		this.isServer = !client;
 	}
 	
 	public abstract void send(DataOutputStream out) throws IOException;
 	
 	public abstract void read(DataInputStream in) throws IOException;
+	
+	public abstract void process(PacketsProcessor processor);
 }

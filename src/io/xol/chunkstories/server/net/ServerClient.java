@@ -32,19 +32,24 @@ import java.net.Socket;
 public class ServerClient extends Thread implements HttpRequester
 {
 	Socket sock;
-	public int id = 0;
+	int id = 0;
 
+	//Streams.
 	DataInputStream in = null;
 	SendQueue queue;
 
 	boolean validToken = false;
 	String token = "undefined";
+	//Has the user provided a valid login ?
 	public boolean authentificated = false;
+	//Did the connection died at some point ?
 	boolean died = false;
+	//Used to pevent calling close() twice
 	boolean alreadyKilled = false;
 
 	public String name = "undefined";
 	public String version = "undefined";
+	//Assert : if the player is authentificated it has a profile
 	public ServerPlayer profile;
 
 	ServerClient(Socket s)

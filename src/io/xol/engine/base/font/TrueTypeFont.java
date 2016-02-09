@@ -1,6 +1,7 @@
 package io.xol.engine.base.font;
 
 import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.math.HexTools;
 import io.xol.engine.misc.ColorsTools;
 
 import java.awt.Color;
@@ -334,7 +335,7 @@ public class TrueTypeFont
 			
 			if (glyph != null)
 			{
-				if (charCurrent == '#' && whatchars.length() - i - 1 >= 6 && (whatchars.toCharArray()[i + 1] != '#') && ColorsTools.isHexOnly(whatchars.substring(i + 1, i + 7)))
+				if (charCurrent == '#' && whatchars.length() - i - 1 >= 6 && (whatchars.toCharArray()[i + 1] != '#') && HexTools.isHexOnly(whatchars.substring(i + 1, i + 7)))
 				{
 					if (!(i > 1 && whatchars.toCharArray()[i - 1] == '#'))
 					{
@@ -491,7 +492,7 @@ public class TrueTypeFont
 					totalwidth = 0;
 					continue;
 				}
-				if (charCurrent == '#' && whatchars.length() - i - 1 >= 6 && (whatchars.toCharArray()[i + 1] != '#') && ColorsTools.isHexOnly(whatchars.substring(i + 1, i + 7)))
+				if (charCurrent == '#' && whatchars.length() - i - 1 >= 6 && (whatchars.toCharArray()[i + 1] != '#') &&  HexTools.isHexOnly(whatchars.substring(i + 1, i + 7)))
 				{
 					if (!(i > 1 && whatchars.toCharArray()[i - 1] == '#'))
 					{

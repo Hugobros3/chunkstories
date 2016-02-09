@@ -12,7 +12,6 @@ import java.io.IOException;
 
 public class Packet01WorldInfo extends Packet
 {
-
 	public Packet01WorldInfo(boolean client)
 	{
 		super(client);
@@ -58,6 +57,13 @@ public class Packet01WorldInfo extends Packet
 			chars2[i] = (char) ((bytes[i * 2] << 8) + (bytes[i * 2 + 1] & 0xFF));
 		
 		info = new WorldInfo(new String(chars2), "");
+	}
+
+	@Override
+	public void process(PacketsProcessor processor)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 
 }

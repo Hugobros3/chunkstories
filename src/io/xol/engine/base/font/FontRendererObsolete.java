@@ -1,5 +1,6 @@
 package io.xol.engine.base.font;
 
+import io.xol.engine.math.HexTools;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.textures.TexturesHandler;
 
@@ -106,7 +107,7 @@ public class FontRendererObsolete
 				// color handling
 				if (c == '#' && text.length() - i - 1 >= 6
 						&& (text.toCharArray()[i + 1] != '#')
-						&& ColorsTools.isHexOnly(text.substring(i + 1, i + 7)))
+						&& HexTools.isHexOnly(text.substring(i + 1, i + 7)))
 				{
 					if (!(i > 1 && text.toCharArray()[i - 1] == '#'))
 					{
@@ -169,7 +170,7 @@ public class FontRendererObsolete
 				int charW = (int) (font.fontWidthData[getIntForChar(c)] * (size / 16));
 				if (c == '#' && text.length() - i - 1 >= 6
 						&& (text.toCharArray()[i + 1] != '#')
-						&& ColorsTools.isHexOnly(text.substring(i + 1, i + 7))
+						&& HexTools.isHexOnly(text.substring(i + 1, i + 7))
 						&& !(i > 1 && text.toCharArray()[i - 1] == '#'))
 				{
 					skip = 6;
@@ -226,7 +227,7 @@ public class FontRendererObsolete
 				// color handling
 				if (c == '#' && text.length() - i - 1 >= 6
 						&& (text.toCharArray()[i + 1] != '#')
-						&& ColorsTools.isHexOnly(text.substring(i + 1, i + 7)))
+						&& HexTools.isHexOnly(text.substring(i + 1, i + 7)))
 				{
 					if (!(i > 1 && text.toCharArray()[i - 1] == '#'))
 					{

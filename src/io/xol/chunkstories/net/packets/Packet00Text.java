@@ -10,7 +10,6 @@ import java.io.IOException;
 
 public class Packet00Text extends Packet
 {
-
 	public Packet00Text(boolean client)
 	{
 		super(client);
@@ -29,6 +28,13 @@ public class Packet00Text extends Packet
 	public void read(DataInputStream in) throws IOException
 	{
 		text = in.readUTF();
+	}
+
+	@Override
+	public void process(PacketsProcessor processor)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 
 }

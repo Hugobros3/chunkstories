@@ -9,6 +9,7 @@ import static org.lwjgl.opengl.GL11.*;
 import org.lwjgl.util.vector.Vector4f;
 
 import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.math.HexTools;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.textures.Texture;
 import io.xol.engine.textures.TexturesHandler;
@@ -114,7 +115,7 @@ public class FontRenderer2
 				int charW = (int) (font.fontWidthData[getIntForChar(c)] * (size / 16));
 				// float cellSizeW = (float) (charW/16.0) / ratio;
 				// color handling
-				if (c == '#' && text.length() - i - 1 >= 6 && (text.toCharArray()[i + 1] != '#') && ColorsTools.isHexOnly(text.substring(i + 1, i + 7)))
+				if (c == '#' && text.length() - i - 1 >= 6 && (text.toCharArray()[i + 1] != '#') && HexTools.isHexOnly(text.substring(i + 1, i + 7)))
 				{
 					if (!(i > 1 && text.toCharArray()[i - 1] == '#'))
 					{
@@ -169,7 +170,7 @@ public class FontRenderer2
 			else
 			{
 				int charW = (int) (font.fontWidthData[getIntForChar(c)] * (size / 16));
-				if (c == '#' && text.length() - i - 1 >= 6 && (text.toCharArray()[i + 1] != '#') && ColorsTools.isHexOnly(text.substring(i + 1, i + 7)) && !(i > 1 && text.toCharArray()[i - 1] == '#'))
+				if (c == '#' && text.length() - i - 1 >= 6 && (text.toCharArray()[i + 1] != '#') && HexTools.isHexOnly(text.substring(i + 1, i + 7)) && !(i > 1 && text.toCharArray()[i - 1] == '#'))
 				{
 					skip = 6;
 				}

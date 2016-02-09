@@ -89,7 +89,7 @@ public class ServerConsole
 					emitter.sendMessage("==Listing clients==");
 					for (ServerClient client : Server.getInstance().handler.clients)
 					{
-						emitter.sendMessage(client.getIp() + "/" + client.getHost() + ":" + client.id + " - " + client.name);
+						emitter.sendMessage(client.getIp() + "/" + client.getHost() + " - " + client.name);
 					}
 					emitter.sendMessage("==done==");
 					return;

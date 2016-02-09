@@ -29,19 +29,17 @@ import java.util.List;
 
 public class ServerConnection extends Thread implements HttpRequester
 {
-	// Network handling class - takes care of connecting to a server and dealing
-	// the info with it.
-
+	//This objects connects to a server
 	public String ip = "";
 	public int port = 30410;
 
 	private Socket socket;
 
 	public DataInputStream in;
-	//private DataOutputStream out;
 
-	// Utility for ping server
+	// Do we want to connect or merely to grab info ?
 	boolean whoisMode = false;
+	public SendQueue sendQueue;
 
 	// Status check
 	boolean connected = false;
@@ -57,8 +55,6 @@ public class ServerConnection extends Thread implements HttpRequester
 	// Code magic here
 	boolean die = false;
 	boolean dead = false;
-
-	public SendQueue sendQueue;
 	
 	public ServerConnection(String i, int p)
 	{
@@ -190,12 +186,6 @@ public class ServerConnection extends Thread implements HttpRequester
 		return null;
 	}
 
-	/*
-	 * public synchronized String getLastTechMessage() { if (techReceived.size()
-	 * > 0) { String m = techReceived.get(0); techReceived.remove(0); return m;
-	 * } return null; }
-	 */
-
 	// auth
 	private void auth()
 	{
@@ -301,7 +291,7 @@ public class ServerConnection extends Thread implements HttpRequester
 				Entity entity = Client.world.getEntityByUUID(packet.entityID);
 				if(packet.deleteFlag)
 				{
-					System.out.println("Deleting Entity "+entity);
+					//System.out.println("Deleting Entity "+entity);
 					Client.world.removeEntity(entity);
 				}
 				else
@@ -322,8 +312,6 @@ public class ServerConnection extends Thread implements HttpRequester
 					else
 						packet.applyToEntity(entity);
 				}
-				//System.out.println("mdr ");
-				//entity = EntitiesList.newEntity(world, entityType);
 			}
 			else
 			{

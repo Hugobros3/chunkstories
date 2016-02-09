@@ -1,6 +1,8 @@
 package io.xol.chunkstories;
 
 import java.io.File;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -9,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.item.ItemsList;
+import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModels;
@@ -32,6 +35,7 @@ public class GameData
 		VoxelTypes.loadVoxelTypes();
 		EntitiesList.reload();
 		ItemsList.reload();
+		PacketsProcessor.loadPacketsTypes();
 	}
 
 	public static void reloadClientContent()
@@ -42,7 +46,13 @@ public class GameData
 		BVHLibrary.reloadAllAnimations();
 		ShadersLibrary.reloadAllShaders();
 	}
+	
+	static ConcurrentHashMap<String, Deque<File>> fileSystem = new ConcurrentHashMap<String, Deque<File>>();
 
+	/**
+	 * Creates and fill the fileSystem hashmap of deque of files
+	 * @param modsEnabled
+	 */
 	private static void buildModsFileSystem(String... modsEnabled)
 	{
 		fileSystem.clear();
@@ -79,12 +89,14 @@ public class GameData
 			filteredName = "."+filteredName.replace(modsDir.getAbsolutePath(), "");
 			filteredName = filteredName.replace('\\', '/');
 			//Remove mod path
-			if(fileSystem.containsKey(filteredName))
+			if(!fileSystem.containsKey(filteredName))
 			{
 				fileSystem.remove(filteredName);
+				fileSystem.put(filteredName, new ArrayDeque<File>());
 				//System.out.println("Found override for ressource : " + filteredName + " in modDir : " + modsDir);
 			}
-			fileSystem.put(filteredName, f);
+			fileSystem.get(filteredName).addLast(f);
+			//fileSystem.put(filteredName, f);
 			return;
 		}
 		//We just list dem files
@@ -99,36 +111,40 @@ public class GameData
 				filteredName = "."+filteredName.replace(modsDir.getAbsolutePath(), "");
 				filteredName = filteredName.replace('\\', '/');
 				//Remove mod path
-				if(fileSystem.containsKey(filteredName))
+				if(!fileSystem.containsKey(filteredName))
 				{
 					fileSystem.remove(filteredName);
+					fileSystem.put(filteredName, new ArrayDeque<File>());
 					//System.out.println("Found override for ressource : " + filteredName + " in modDir : " + modsDir);
 				}
-				fileSystem.put(filteredName, f);
+				fileSystem.get(filteredName).addLast(f);
+				//fileSystem.put(filteredName, f);
 			}
 		}
 	}
 
-	static ConcurrentHashMap<String, File> fileSystem = new ConcurrentHashMap<String, File>();
-
-	public static Iterator<Entry<String, File>> getAllUniqueEntries()
+	public static Iterator<Entry<String, Deque<File>>> getAllUniqueEntries()
 	{
 		return fileSystem.entrySet().iterator();
 	}
 	
-	public static Iterator<File> getAllUniqueFilesLocations()
+	public static Iterator<Deque<File>> getAllUniqueFilesLocations()
 	{
 		return fileSystem.values().iterator();
 	}
 
+	/**
+	 * Gets the location of a certain texture file ( checks mods/ first and then various directories )
+	 * @param textureName
+	 * @return hopefully a valid file ( null if it doesn't seem to exist )
+	 */
 	public static File getTextureFileLocation(String textureName)
 	{
 		if(fileSystem.containsKey(textureName))
-			return fileSystem.get(textureName);
+			return fileSystem.get(textureName).getFirst();
 		
 		if (textureName.endsWith(".png"))
 			textureName = textureName.substring(0, textureName.length() - 4);
-
 		File checkTexturesFolder = new File("./res/textures/" + textureName + ".png");
 		if (checkTexturesFolder.exists())
 			return checkTexturesFolder;
@@ -141,20 +157,35 @@ public class GameData
 		File checkGameFolder = new File(GameDirectory.getGameFolderPath() + "/" + textureName + ".png");
 		if (checkGameFolder.exists())
 			return checkGameFolder;
-		//System.out.println(textureName+" not found.");
 		return null;
 	}
 
+	/**
+	 * Gets the most prioritary instance of the file this file system has (or null if it doesn't exist)
+	 * @param fileName
+	 * @return
+	 */
 	public static File getFileLocation(String fileName)
 	{
 		if(fileSystem.containsKey(fileName))
-			return fileSystem.get(fileName);
+			return fileSystem.get(fileName).getFirst();
 		File checkRootFolder = new File("./" + fileName);
 		if (checkRootFolder.exists())
 			return checkRootFolder;
 		File checkGameFolder = new File(GameDirectory.getGameFolderPath() + "/" + fileName);
 		if (checkGameFolder.exists())
 			return checkGameFolder;
+		return null;
+	}
+
+	/**
+	 * Returns all the instances of a file in the various mods, sorted by mod priority
+	 * @return
+	 */
+	public static Deque<File> getAllFileInstances(String fileName)
+	{
+		if(fileSystem.containsKey(fileName))
+			return fileSystem.get(fileName);
 		return null;
 	}
 }

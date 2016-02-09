@@ -119,7 +119,7 @@ public class VoxelDefault extends Voxel
 	{
 		return texture[side];
 	}
-	
+
 	public int getLightLevelModifier(int dataFrom, int dataTo, int side)
 	{
 		if (this.isVoxelOpaque())

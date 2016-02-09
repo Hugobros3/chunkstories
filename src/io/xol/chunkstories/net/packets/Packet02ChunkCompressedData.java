@@ -59,4 +59,11 @@ public class Packet02ChunkCompressedData extends Packet
 			in.readFully(data, 0, length);
 		}
 	}
+
+	@Override
+	public void process(PacketsProcessor processor)
+	{
+		// TODO Auto-generated method stub
+		
+	}
 }

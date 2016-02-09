@@ -131,4 +131,11 @@ public class Packet04Entity extends Packet
 				nBuffered = ((EntityNameable) entity).getName();
 		}
 	}
+
+	@Override
+	public void process(PacketsProcessor processor)
+	{
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -6,23 +6,18 @@ package io.xol.chunkstories.net.packets;
 
 public class UnknowPacketException extends Exception
 {
-
+	int type;
 	
-	byte type;
-	
-	public UnknowPacketException(byte type)
+	public UnknowPacketException(int packetType)
 	{
-		this.type = type;
+		this.type = packetType;
 	}
 	
 	public String getMessage()
 	{
 		return "Unknown packet ID received : "+type;
 	}
-
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 7612121415158158595L;
 
 }
