@@ -1,5 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
+import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 import io.xol.chunkstories.world.summary.ChunkSummary;
 
 import java.io.DataInputStream;
@@ -60,8 +62,8 @@ public class Packet03ChunkSummary extends Packet
 	@Override
 	public void process(PacketsProcessor processor)
 	{
-		// TODO Auto-generated method stub
-		
+		if(processor.isClient)
+			((IOTasksMultiplayerClient) Client.world.ioHandler).requestChunkSummaryProcess(this);
 	}
 
 }

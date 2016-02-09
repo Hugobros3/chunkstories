@@ -64,16 +64,17 @@ public class PacketsProcessor
 							Class<?> untypedClass = Class.forName(splitted[3]);
 							if (!Packet.class.isAssignableFrom(untypedClass))
 								throw new SyntaxErrorException(ln, f, splitted[3] + " is not a subclass of Packet");
-							Class<Packet> packetClass = (Class<Packet>) untypedClass;
+							@SuppressWarnings("unchecked")
+							Class<? extends Packet> packetClass = (Class<? extends Packet>) untypedClass;
 
-							Class[] types = { Boolean.TYPE };
-							Constructor<Packet> constructor = packetClass.getConstructor(types);
+							Class<?>[] types = { Boolean.TYPE };
+							Constructor<? extends Packet> constructor = packetClass.getConstructor(types);
 
 							String allowed = splitted[4];
 
 							PacketType packetType = new PacketType(packetId, packetName, packetClass, constructor, !allowed.equals("server"), !allowed.equals("client"));
 							packetTypes[packetId] = packetType;
-							System.out.println(packetId+" "+packetName);
+							System.out.println(packetId + " " + packetName);
 						}
 						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
 						{
@@ -95,12 +96,12 @@ public class PacketsProcessor
 	{
 		short id;
 		String packetName;
-		Class<Packet> packetClass;
-		Constructor<Packet> packetConstructor;
+		Class<? extends Packet> packetClass;
+		Constructor<? extends Packet> packetConstructor;
 		boolean clientCanSendIt = true;
 		boolean serverCanSendIt = true;
 
-		public PacketType(short id, String packetName, Class<Packet> packetClass, Constructor<Packet> packetConstructor, boolean clientCanSendIt, boolean serverCanSendIt)
+		public PacketType(short id, String packetName, Class<? extends Packet> packetClass, Constructor<? extends Packet> packetConstructor, boolean clientCanSendIt, boolean serverCanSendIt)
 		{
 			super();
 			this.id = id;
@@ -121,7 +122,7 @@ public class PacketsProcessor
 			}
 			catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 			{
-				ChunkStoriesLogger.getInstance().warning("Failed to instanciate "+packetName);
+				ChunkStoriesLogger.getInstance().warning("Failed to instanciate " + packetName);
 				e.printStackTrace();
 			}
 			return null;
@@ -131,6 +132,17 @@ public class PacketsProcessor
 	//Both clients and server use this class
 	ServerConnection serverConnection;
 	ServerClient serverClient;
+
+	public ServerConnection getServerConnection()
+	{
+		return serverConnection;
+	}
+
+	public ServerClient getServerClient()
+	{
+		return serverClient;
+	}
+
 	boolean isClient = false;
 
 	public PacketsProcessor(ServerConnection serverConnection)

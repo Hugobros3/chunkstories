@@ -11,6 +11,7 @@ import io.xol.chunkstories.net.packets.Packet01WorldInfo;
 import io.xol.chunkstories.net.packets.Packet02ChunkCompressedData;
 import io.xol.chunkstories.net.packets.Packet03ChunkSummary;
 import io.xol.chunkstories.net.packets.Packet04Entity;
+import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.world.WorldClient;
 import io.xol.chunkstories.world.WorldInfo;
@@ -33,13 +34,14 @@ public class ServerConnection extends Thread implements HttpRequester
 	public String ip = "";
 	public int port = 30410;
 
+	//Network stuff
 	private Socket socket;
-
-	public DataInputStream in;
+	PacketsProcessor packetsProcessor;
+	private DataInputStream in;
+	private SendQueue sendQueue;
 
 	// Do we want to connect or merely to grab info ?
 	boolean whoisMode = false;
-	public SendQueue sendQueue;
 
 	// Status check
 	boolean connected = false;
@@ -60,6 +62,7 @@ public class ServerConnection extends Thread implements HttpRequester
 	{
 		ip = i;
 		port = p;
+		packetsProcessor = new PacketsProcessor(this);
 		this.setName("Server Connection thread - " + ip);
 		connect();
 	}
@@ -216,8 +219,11 @@ public class ServerConnection extends Thread implements HttpRequester
 			// Just wait for the goddamn packets to come !
 			try
 			{
-				byte type = in.readByte();
-				handlePacket(type, in);
+				//byte type = in.readByte();
+				//handlePacket(type, in);
+				Packet packet = packetsProcessor.getPacket(in, true, false);
+				packet.read(in);
+				packet.process(packetsProcessor);
 			}
 			catch (Exception e)
 			{
@@ -237,7 +243,8 @@ public class ServerConnection extends Thread implements HttpRequester
 	}
 
 	boolean infoAvaible = false;
-	WorldInfo info;
+	
+	/*WorldInfo info;
 
 	public WorldInfo getWorldInfo()
 	{
@@ -247,76 +254,76 @@ public class ServerConnection extends Thread implements HttpRequester
 			return info;
 		}
 		return null;
-	}
+	}*/
 
 	private void handlePacket(byte type, DataInputStream in) throws IOException, UnknowPacketException
 	{
-			if (type == 0x00)
+		if (type == 0x00)
+		{
+			// UTF-8 text data
+			Packet00Text packet = new Packet00Text(true);
+			packet.read(in);
+			handleTextPacket(packet.text);
+		}
+		else if (type == 0x01) // WORLD INFO
+		{
+			// When receiving this packet the games defines a new world
+			Packet01WorldInfo packet = new Packet01WorldInfo(true);
+			packet.read(in);
+			//info = packet.info;
+			
+			Client.world = new WorldClient(packet.info);
+			//message = Client.world.name;
+			//System.out.println(info.name);
+			//loginOk = true;
+		}
+		else if (type == 0x02)
+		{
+			//Chunk bits
+			Packet02ChunkCompressedData packet = new Packet02ChunkCompressedData(true);
+			packet.read(in);
+			((IOTasksMultiplayerClient) Client.world.ioHandler).requestChunkCompressedDataProcess(packet);
+		}
+		else if (type == 0x03)
+		{
+			//Chunk bits
+			Packet03ChunkSummary packet = new Packet03ChunkSummary(true);
+			packet.read(in);
+			((IOTasksMultiplayerClient) Client.world.ioHandler).requestChunkSummaryProcess(packet);
+		}
+		else if (type == 0x04)
+		{
+			Packet04Entity packet = new Packet04Entity(false);
+			packet.read(in);
+			Entity entity = Client.world.getEntityByUUID(packet.entityID);
+			if(packet.deleteFlag)
 			{
-				// UTF-8 text data
-				Packet00Text packet = new Packet00Text(true);
-				packet.read(in);
-				handleTextPacket(packet.text);
-			}
-			else if (type == 0x01) // WORLD INFO
-			{
-				// When receiving this packet the games defines a new world
-				Packet01WorldInfo packet = new Packet01WorldInfo(true);
-				packet.read(in);
-				info = packet.info;
-				
-				Client.world = new WorldClient(info);
-				//message = Client.world.name;
-				//System.out.println(info.name);
-				//loginOk = true;
-			}
-			else if (type == 0x02)
-			{
-				//Chunk bits
-				Packet02ChunkCompressedData packet = new Packet02ChunkCompressedData(true);
-				packet.read(in);
-				((IOTasksMultiplayerClient) Client.world.ioHandler).requestChunkCompressedDataProcess(packet);
-			}
-			else if (type == 0x03)
-			{
-				//Chunk bits
-				Packet03ChunkSummary packet = new Packet03ChunkSummary(true);
-				packet.read(in);
-				((IOTasksMultiplayerClient) Client.world.ioHandler).requestChunkSummaryProcess(packet);
-			}
-			else if (type == 0x04)
-			{
-				Packet04Entity packet = new Packet04Entity(false);
-				packet.read(in);
-				Entity entity = Client.world.getEntityByUUID(packet.entityID);
-				if(packet.deleteFlag)
-				{
-					//System.out.println("Deleting Entity "+entity);
-					Client.world.removeEntity(entity);
-				}
-				else
-				{
-					if(entity == null)
-					{
-						entity = EntitiesList.newEntity(Client.world, packet.entityType);
-						entity.entityID = packet.entityID;
-						packet.applyToEntity(entity);
-						Client.world.addEntity(entity);
-						//System.out.println("Added entity "+entity);
-						if(packet.defineControl)
-						{
-							Client.controller = entity;
-							//System.out.println("you should control this entity :"+entity);
-						}
-					}
-					else
-						packet.applyToEntity(entity);
-				}
+				//System.out.println("Deleting Entity "+entity);
+				Client.world.removeEntity(entity);
 			}
 			else
 			{
-				throw new UnknowPacketException(type);
+				if(entity == null)
+				{
+					entity = EntitiesList.newEntity(Client.world, packet.entityType);
+					entity.entityID = packet.entityID;
+					packet.applyToEntity(entity);
+					Client.world.addEntity(entity);
+					//System.out.println("Added entity "+entity);
+					if(packet.defineControl)
+					{
+						Client.controller = entity;
+						//System.out.println("you should control this entity :"+entity);
+					}
+				}
+				else
+					packet.applyToEntity(entity);
 			}
+		}
+		else
+		{
+			throw new UnknowPacketException(type);
+		}
 	}
 
 	public boolean hasFailed()

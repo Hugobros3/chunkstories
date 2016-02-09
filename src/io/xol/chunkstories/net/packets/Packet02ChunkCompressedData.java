@@ -4,6 +4,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -63,7 +66,7 @@ public class Packet02ChunkCompressedData extends Packet
 	@Override
 	public void process(PacketsProcessor processor)
 	{
-		// TODO Auto-generated method stub
-		
+		if(processor.isClient)		
+			((IOTasksMultiplayerClient) Client.world.ioHandler).requestChunkCompressedDataProcess(this);
 	}
 }

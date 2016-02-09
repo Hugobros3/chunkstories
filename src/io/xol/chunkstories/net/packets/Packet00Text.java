@@ -33,8 +33,8 @@ public class Packet00Text extends Packet
 	@Override
 	public void process(PacketsProcessor processor)
 	{
-		// TODO Auto-generated method stub
-		
+		if(processor.isClient)
+			processor.getServerConnection().handleTextPacket(text);
 	}
 
 }

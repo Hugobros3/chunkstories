@@ -1,5 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
+import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityNameable;
 
@@ -135,7 +137,32 @@ public class Packet04Entity extends Packet
 	@Override
 	public void process(PacketsProcessor processor)
 	{
-		// TODO Auto-generated method stub
-		
+		if(processor.isClient)
+		{
+			Entity entity = Client.world.getEntityByUUID(this.entityID);
+			if(this.deleteFlag)
+			{
+				//System.out.println("Deleting Entity "+entity);
+				Client.world.removeEntity(entity);
+			}
+			else
+			{
+				if(entity == null)
+				{
+					entity = EntitiesList.newEntity(Client.world, this.entityType);
+					entity.entityID = this.entityID;
+					this.applyToEntity(entity);
+					Client.world.addEntity(entity);
+					//System.out.println("Added entity "+entity);
+					if(this.defineControl)
+					{
+						Client.controller = entity;
+						//System.out.println("you should control this entity :"+entity);
+					}
+				}
+				else
+					this.applyToEntity(entity);
+			}
+		}
 	}
 }
