@@ -3,6 +3,7 @@ package io.xol.chunkstories.entity;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.inventory.Inventory;
+import io.xol.chunkstories.entity.inventory.InventoryHolder;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
@@ -18,7 +19,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 // http://chunkstories.xyz
 // http://xol.io
 
-public abstract class Entity
+public abstract class Entity implements InventoryHolder
 {
 	public long entityID;
 
@@ -46,7 +47,7 @@ public abstract class Entity
 	protected boolean flying = false;
 	
 	//Flag set when deleted from world entities list ( to report to other refering places )
-	public boolean deleteFlag = false;
+	public boolean mpSendDeletePacket = false;
 	
 	public Entity(World w, double x, double y, double z)
 	{
@@ -466,6 +467,18 @@ public abstract class Entity
 	
 	public void delete()
 	{
-		deleteFlag = true;
+		mpSendDeletePacket = true;
+	}
+
+	@Override
+	public Inventory getInventory()
+	{
+		return inventory;
+	}
+
+	@Override
+	public void setInventory(Inventory inventory)
+	{
+		this.inventory = inventory;
 	}
 }

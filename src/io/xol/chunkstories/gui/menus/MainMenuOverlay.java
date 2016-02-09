@@ -103,7 +103,8 @@ public class MainMenuOverlay extends Overlay
 	public boolean handleKeypress(int k)
 	{
 		if (k == Keyboard.KEY_E)
-			mainScene.changeOverlay(new InventoryOverlay(mainScene, this, new Inventory(10, 4, "Inventaire")));
+			mainScene.changeOverlay(new InventoryOverlay(mainScene, this, new Inventory[]{new Inventory(null, 10, 4, "Inventaire")
+			,new Inventory(null, 10, 4, "La chatte à ta mère")}));
 
 		if (k == Keyboard.KEY_R)
 			mainScene.changeOverlay(new MessageBoxOverlay(mainScene, this, "Error : error"));

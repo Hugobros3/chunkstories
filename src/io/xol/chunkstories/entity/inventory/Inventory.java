@@ -19,11 +19,15 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 
 	public int width;
 	public int height;
+	
+	//What does this inventory belong to ?
+	public InventoryHolder holder;
 
 	private ItemPile[][] contents;
 
-	public Inventory(int width, int height, String name)
+	public Inventory(InventoryHolder holder, int width, int height, String name)
 	{
+		this.holder = holder;
 		this.width = width;
 		this.height = height;
 		this.name = name;
@@ -101,7 +105,7 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	 * @param pile
 	 * @return
 	 */
-	public ItemPile setItemAt(int x, int y, ItemPile pile)
+	public ItemPile setItemPileAt(int x, int y, ItemPile pile)
 	{
 		if (pile == null)
 		{
@@ -117,6 +121,20 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		else
 			return pile;
 		return null;
+	}
+	
+	/**
+	 * Try to add a pile to this inventory.
+	 * @param pile
+	 * @return Null if it succeeds or the input pile if it fails
+	 */
+	public ItemPile addItemPile(ItemPile pile)
+	{
+		for(int i = 0; i < width; i++)
+			for(int j = 0; j < height; j++)
+				if(setItemPileAt(i, j, pile) == null)
+					return null;
+		return pile;
 	}
 
 	@Override

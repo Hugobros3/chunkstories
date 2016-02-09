@@ -87,7 +87,7 @@ public class ServerPlayer implements Player, CommandEmitter
 		while(iter.hasNext())
 		{
 			e = iter.next();
-			if(e.deleteFlag)
+			if(e.mpSendDeletePacket)
 			{
 				//Despawn the entity
 				trackEntity(e, false, true);

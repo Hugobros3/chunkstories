@@ -19,87 +19,105 @@ import io.xol.engine.textures.TexturesHandler;
 
 public class InventoryOverlay extends Overlay
 {
-	Inventory inventory;
-	InventoryDrawer drawer;
+	Inventory[] inventories;
+	InventoryDrawer[] drawers;
 
 	public static ItemPile selectedItem;
-	public static Inventory selectedItemInv;
-	
-	public InventoryOverlay(OverlayableScene scene, Overlay parent, Inventory inventory)
+
+	public InventoryOverlay(OverlayableScene scene, Overlay parent, Inventory[] inventories)
 	{
 		super(scene, parent);
-		this.inventory = inventory;
-		drawer = new InventoryDrawer(inventory);
+		this.inventories = inventories;
+		this.drawers = new InventoryDrawer[inventories.length];
+		for (int i = 0; i < drawers.length; i++)
+			drawers[i] = new InventoryDrawer(inventories[i]);
 	}
-	
+
 	public void drawToScreen(int x, int y, int w, int h)
 	{
-		drawer.drawInventoryCentered(XolioWindow.frameW/2, XolioWindow.frameH/2, 2, false, 4);
-		
-		if(selectedItem != null)
+		int totalWidth = 0;
+		for (Inventory inv : inventories)
+			totalWidth += 2 + inv.width;
+		totalWidth -= 2;
+		int widthAccumulation = 0;
+		for (int i = 0; i < drawers.length; i++)
+		{
+			int thisWidth = inventories[i].width;
+			drawers[i].drawInventoryCentered(XolioWindow.frameW / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, XolioWindow.frameH / 2, 2, false, 4);
+			widthAccumulation += 1 + thisWidth;
+		}
+
+		if (selectedItem != null)
 		{
 			int slotSize = 24 * 2;
 			int textureId = TexturesHandler.getTextureID(selectedItem.getTextureName());
 			int width = slotSize * selectedItem.item.getSlotsWidth();
 			int height = slotSize * selectedItem.item.getSlotsHeight();
-			GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX()-width/2, Mouse.getY()-height/2, width, height, 0, 1, 1, 0, textureId, true, true, null);
+			GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX() - width / 2, Mouse.getY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
 		}
 	}
 
 	public boolean handleKeypress(int k)
 	{
-		if(k == FastConfig.EXIT_KEY)
+		if (k == FastConfig.EXIT_KEY)
 			this.mainScene.changeOverlay(parent);
 		return false;
 	}
 
 	public boolean onClick(int posx, int posy, int button)
 	{
-		if(drawer.isOverCloseButton())
-			this.mainScene.changeOverlay(parent);
-		else
+		for (int i = 0; i < drawers.length; i++)
 		{
-			int[] c = drawer.getSelectedSlot();
-			if(c == null)
-				return false;
+			if (drawers[i].isOverCloseButton())
+				this.mainScene.changeOverlay(parent);
 			else
 			{
-				int x = c[0];
-				int y = c[1];
-				if(button == 2)
-				{
-					inventory.setItemAt(x, y, new ItemPile(ItemsList.getItemByName("he_grenade")));
-				}
-				else if(button == 1)
-				{
-					if(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
-						inventory.setItemAt(x, y, new ItemPile(ItemsList.getItemByName("weapon_ak47")));
-					else
-						inventory.setItemAt(x, y, new ItemPile(ItemsList.getItemByName("mag_ak47")));
-				}
+
+				int[] c = drawers[i].getSelectedSlot();
+				if (c == null)
+					continue;
 				else
 				{
-					if(selectedItem == null)
+					int x = c[0];
+					int y = c[1];
+					if (button == 2)
 					{
-						selectedItem = inventory.getItem(x, y);
-						selectedItemInv = inventory;
+						inventories[i].setItemPileAt(x, y, new ItemPile(ItemsList.getItemByName("he_grenade")));
+					}
+					else if (button == 1)
+					{
+						if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
+							inventories[i].setItemPileAt(x, y, new ItemPile(ItemsList.getItemByName("weapon_ak47")));
+						else
+							inventories[i].setItemPileAt(x, y, new ItemPile(ItemsList.getItemByName("mag_ak47")));
 					}
 					else
 					{
-						inventory.setItemAt(selectedItem.x, selectedItem.y, null);
-						if(inventory.canPlaceItemAt(x, y, selectedItem))
+						//Clicking on a pile selects it
+						if (selectedItem == null)
 						{
-							ItemPile nextSelection = inventory.getItem(x, y);
-							inventory.setItemAt(x, y, selectedItem);
-							selectedItem = nextSelection;
-							selectedItemInv = inventory;
+							selectedItem = inventories[i].getItem(x, y);
+							//selectedItemInv = inventory;
 						}
 						else
-							inventory.setItemAt(selectedItem.x, selectedItem.y, selectedItem);
+						{
+							selectedItem = selectedItem.moveTo(inventories[i], x, y);
+							/*inventory.setItemAt(selectedItem.x, selectedItem.y, null);
+							if(inventory.canPlaceItemAt(x, y, selectedItem))
+							{
+								ItemPile nextSelection = inventory.getItem(x, y);
+								inventory.setItemAt(x, y, selectedItem);
+								selectedItem = nextSelection;
+								selectedItemInv = inventory;
+							}
+							else
+								inventory.setItemAt(selectedItem.x, selectedItem.y, selectedItem);*/
+						}
 					}
 				}
 			}
 		}
 		return false;
+
 	}
 }

@@ -144,7 +144,7 @@ public class InventoryDrawer
 			for (int j = 0; j < height; j++)
 			{
 				ItemPile pile = inventory.getContents()[i][j];
-				if(pile != null && !(InventoryOverlay.selectedItem != null && inventory.equals(InventoryOverlay.selectedItemInv) && InventoryOverlay.selectedItem.x == i && InventoryOverlay.selectedItem.y == j ))
+				if(pile != null && !(InventoryOverlay.selectedItem != null && InventoryOverlay.selectedItem.inventory != null && inventory.equals(InventoryOverlay.selectedItem.inventory) && InventoryOverlay.selectedItem.x == i && InventoryOverlay.selectedItem.y == j ))
 				{
 					itemTexture = TexturesHandler.getTexture(pile.getTextureName());
 					itemTexture.setLinearFiltering(false);

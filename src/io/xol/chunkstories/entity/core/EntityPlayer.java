@@ -52,7 +52,7 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 	{
 		super(w, x, y, z);
 		this.name = name;
-		inventory = new Inventory(10, 4, this.name + "'s Inventory");
+		inventory = new Inventory(this, 10, 4, this.name + "'s Inventory");
 		flying = true;
 	}
 

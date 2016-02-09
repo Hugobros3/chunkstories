@@ -58,4 +58,25 @@ public class ItemPile implements CSFSerializable
 		stream.writeInt(amount);
 		item.save(this, stream);
 	}
+
+	/**
+	 * Try to move an item to another slot
+	 * @param inventory2 new slot's inventory
+	 * @param x2
+	 * @param y2
+	 * @return
+	 */
+	public ItemPile moveTo(Inventory inventory2, int x2, int y2)
+	{
+		inventory.setItemPileAt(this.x, this.y, null);
+		if(inventory2.canPlaceItemAt(x2, y2, this))
+		{
+			ItemPile nextSelection = inventory.getItem(x2, y2);
+			inventory2.setItemPileAt(x2, y2, this);
+			return nextSelection;
+		}
+		else
+			inventory.setItemPileAt(this.x, this.y, this);
+		return this;
+	}
 }
