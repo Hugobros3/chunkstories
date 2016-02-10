@@ -28,7 +28,6 @@ import io.xol.engine.textures.TexturesHandler;
 
 public class EntityTest extends Entity implements EntityHUD
 {
-
 	int i = 0;
 
 	public EntityTest(World w, double x, double y, double z)
