@@ -8,6 +8,7 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.DefferedLight;
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTypes;
@@ -39,9 +40,7 @@ public abstract class Entity implements InventoryHolder
 	public Vector3d blockedMomentum = new Vector3d();
 	
 	public boolean inWater = false;
-	
 	public Inventory inventory;
-	
 	public ChunkHolder parentHolder;
 
 	protected boolean flying = false;
@@ -67,6 +66,11 @@ public abstract class Entity implements InventoryHolder
 		setHolder();
 	}
 
+	public Location getLocation()
+	{
+		return new Location(posX, posY, posZ);
+	}
+	
 	public void setVelocity(double x, double y, double z)
 	{
 		velX = x;

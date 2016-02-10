@@ -162,8 +162,8 @@ public class Packet04Entity extends Packet
 		else
 		{
 			//Client isn't allowed to force spawning or moving of anything but himself
-			if (processor.getServerClient().profile.entity != null && entityID == processor.getServerClient().profile.entity.entityID)
-				applyToEntity(processor.getServerClient().profile.entity);
+			if (processor.getServerClient().profile.getControlledEntity() != null && entityID == processor.getServerClient().profile.getControlledEntity().entityID)
+				applyToEntity(processor.getServerClient().profile.getControlledEntity());
 			//entity = EntitiesList.newEntity(world, entityType);
 		}
 	}

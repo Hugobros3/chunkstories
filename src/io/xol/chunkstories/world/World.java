@@ -576,7 +576,7 @@ public abstract class World
 	 */
 	public void trimRemovableChunks()
 	{
-		ChunksIterator it = Client.world.iterator();
+		ChunksIterator it = this.iterator();
 		CubicChunk chunk;
 		while (it.hasNext())
 		{

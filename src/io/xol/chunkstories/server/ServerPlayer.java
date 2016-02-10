@@ -8,7 +8,9 @@ import java.util.Map;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.entity.Controller;
 import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.entity.core.EntityPlayer;
@@ -24,12 +26,12 @@ import io.xol.engine.misc.ConfigFile;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerPlayer implements Player, CommandEmitter
+public class ServerPlayer<CE extends Entity & EntityControllable> implements Player<CE>, CommandEmitter, Controller
 {
 	ConfigFile playerData;
 	ServerClient playerConnection;
 
-	public EntityPlayer entity;
+	public CE controlledEntity;
 
 	public Map<int[], Long> loadedChunks = new HashMap<int[], Long>();
 	public List<Entity> trackedEntities = new ArrayList<Entity>();
@@ -45,28 +47,28 @@ public class ServerPlayer implements Player, CommandEmitter
 		if (playerData.getProp("firstlogin", "nope").equals("nope"))
 			playerData.setProp("firstlogin", "" + System.currentTimeMillis());
 
-		entity = new EntityPlayer(Server.getInstance().world, playerData.getDoubleProp("posX"), playerData.getDoubleProp("posY", 100), playerData.getDoubleProp("posZ"), playerConnection.name);
-		System.out.println("Created entity named "+entity.getName()+":"+playerConnection.name);
+		EntityPlayer playerEntity = new EntityPlayer(Server.getInstance().world, playerData.getDoubleProp("posX"), playerData.getDoubleProp("posY", 100), playerData.getDoubleProp("posZ"), playerConnection.name);
+		System.out.println("Created entity named "+playerEntity.getName()+":"+playerConnection.name);
 	}
 
 	public void updateTrackedEntities()
 	{
 		//System.out.println("edgy");
-		if(entity == null)
+		if(controlledEntity == null)
 			return;
 		//System.out.println("edgyy");
-		Iterator<Entity> iter = entity.world.entities.iterator();
+		Iterator<Entity> iter = controlledEntity.world.entities.iterator();
 		Entity e;
-		double ws = entity.world.getSizeSide();
+		double ws = controlledEntity.world.getSizeSide();
 		boolean shouldTrack = false;
 		while(iter.hasNext())
 		{
 			e = iter.next();
-			if(!e.equals(entity))
+			if(!e.equals(controlledEntity))
 			{
-				double dx = LoopingMathHelper.moduloDistance(entity.posX, e.posX, ws);
-				double dy = Math.abs(entity.posX - e.posX);
-				double dz = LoopingMathHelper.moduloDistance(entity.posZ, e.posZ, ws);
+				double dx = LoopingMathHelper.moduloDistance(controlledEntity.posX, e.posX, ws);
+				double dy = Math.abs(controlledEntity.posX - e.posX);
+				double dz = LoopingMathHelper.moduloDistance(controlledEntity.posZ, e.posZ, ws);
 				shouldTrack = (dx < 256 && dz < 256 && dy < 256);
 				boolean contains = trackedEntities.contains(e);
 				//System.out.println("[TRACKER] "+e+" shouldTrack:"+shouldTrack+" contains:"+contains+" "+this.playerConnection.name);
@@ -127,9 +129,9 @@ public class ServerPlayer implements Player, CommandEmitter
 	{
 		long lastTime = Long.parseLong(playerData.getProp("timeplayed", "0"));
 		long lastLogin = Long.parseLong(playerData.getProp("lastlogin", "0"));
-		playerData.setProp("posX", entity.posX);
-		playerData.setProp("posY", entity.posY);
-		playerData.setProp("posZ", entity.posZ);
+		playerData.setProp("posX", controlledEntity.posX);
+		playerData.setProp("posY", controlledEntity.posY);
+		playerData.setProp("posZ", controlledEntity.posZ);
 		playerData.setProp("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)));
 		playerData.save();
 		System.out.println("Player profile "+playerConnection.name+" saved.");
@@ -137,19 +139,18 @@ public class ServerPlayer implements Player, CommandEmitter
 
 	public void onJoin()
 	{
-		if(entity != null)
+		if(controlledEntity != null)
 		{
-			Server.getInstance().world.addEntity(entity);
+			Server.getInstance().world.addEntity(controlledEntity);
 			System.out.println("spawned player entity");
 		}
-		
 	}
 	
 	public void onLeave()
 	{
-		if(entity != null)
+		if(controlledEntity != null)
 		{
-			Server.getInstance().world.removeEntity(entity);
+			Server.getInstance().world.removeEntity(controlledEntity);
 			System.out.println("removed player entity");
 		}
 	}
@@ -160,12 +161,31 @@ public class ServerPlayer implements Player, CommandEmitter
 		return playerConnection.name;
 	}
 
+	
 	@Override
-	public Entity getControlledEntity()
+	public CE getControlledEntity()
 	{
-		return entity;
+		return controlledEntity;
 	}
 
+	@Override
+	public void setControlledEntity(CE entity)
+	{
+		controlledEntity = entity;
+		//Tells the player we assignated him an entity.
+		if(controlledEntity != null)
+		{
+			Packet04Entity packet = new Packet04Entity(false);
+			packet.defineControl = true;
+			packet.includeName = true;
+			packet.includeRotation = true;
+			packet.applyFromEntity(controlledEntity);
+			this.playerConnection.sendPacket(packet);
+			this.hasSpawned = true;
+			//System.out.println("hasSpawned = true");
+		}
+	}
+	
 	@Override
 	public void sendTextMessage(String msg)
 	{
@@ -175,8 +195,8 @@ public class ServerPlayer implements Player, CommandEmitter
 	@Override
 	public Location getPosition()
 	{
-		if(entity != null)
-			return entity.getLocation();
+		if(controlledEntity != null)
+			return controlledEntity.getLocation();
 		return null;
 	}
 
@@ -185,11 +205,11 @@ public class ServerPlayer implements Player, CommandEmitter
 	{
 		//Send teleport packet
 		Packet04Entity packet = new Packet04Entity(false);
-		packet.applyFromEntity(entity);
+		packet.applyFromEntity(controlledEntity);
 		packet.XBuffered = l.x;
 		packet.YBuffered = l.y;
 		packet.ZBuffered = l.z;
-		System.out.println("Sending packet with position "+l.x);
+		//System.out.println("Sending packet with position "+l.x);
 		playerConnection.sendPacket(packet);
 	}
 

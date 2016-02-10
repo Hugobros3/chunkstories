@@ -6,7 +6,6 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
-import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
@@ -455,10 +454,5 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 	public Controller getController()
 	{
 		return null;
-	}
-
-	public Location getLocation()
-	{
-		return new Location(posX, posY, posZ);
 	}
 }

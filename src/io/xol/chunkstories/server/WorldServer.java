@@ -3,7 +3,6 @@ package io.xol.chunkstories.server;
 import java.io.File;
 
 import io.xol.chunkstories.api.world.ChunksIterator;
-import io.xol.chunkstories.net.packets.Packet04Entity;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
@@ -47,6 +46,7 @@ public class WorldServer extends World
 		{
 			//Sends the construction info for the world, and then the player entity
 			worldInfo.sendInfo(sender);
+			/*
 			if(sender.profile.entity != null)
 			{
 				Packet04Entity packet = new Packet04Entity(false);
@@ -58,6 +58,7 @@ public class WorldServer extends World
 				sender.profile.hasSpawned = true;
 				//System.out.println("hasSpawned = true");
 			}
+			*/
 		}
 		if(message.startsWith("getChunkCompressed"))
 		{
@@ -94,9 +95,9 @@ public class WorldServer extends World
 			{
 				if(client.authentificated && client.profile != null)
 				{
-					int pCX = (int)client.profile.entity.posX/32;
-					int pCY = (int)client.profile.entity.posY/32;
-					int pCZ = (int)client.profile.entity.posZ/32;
+					int pCX = (int)client.profile.getControlledEntity().posX/32;
+					int pCY = (int)client.profile.getControlledEntity().posY/32;
+					int pCZ = (int)client.profile.getControlledEntity().posZ/32;
 					
 					if ( !((LoopingMathHelper.moduloDistance(c.chunkX, pCX, sizeInChunks) > chunksViewDistance + 2)
 							|| (LoopingMathHelper.moduloDistance(c.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 2) || (Math.abs(c.chunkY - pCY) > 4)) )

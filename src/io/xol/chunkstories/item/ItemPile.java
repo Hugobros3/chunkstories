@@ -90,7 +90,7 @@ public class ItemPile implements CSFSerializable
 		inventory.setItemPileAt(this.x, this.y, null);
 		if(inventory2.canPlaceItemAt(x2, y2, this))
 		{
-			ItemPile nextSelection = inventory.getItem(x2, y2);
+			ItemPile nextSelection = inventory2.getItem(x2, y2);
 			inventory2.setItemPileAt(x2, y2, this);
 			return nextSelection;
 		}

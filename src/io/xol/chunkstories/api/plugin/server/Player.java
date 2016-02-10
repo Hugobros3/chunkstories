@@ -2,12 +2,13 @@ package io.xol.chunkstories.api.plugin.server;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityControllable;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface Player
+public interface Player<CE extends Entity & EntityControllable>
 {
 	/**
 	 * Returns the username of the player
@@ -20,12 +21,17 @@ public interface Player
 	 * @return
 	 */
 	public String getDisplayName();
+	
 	/**
 	 * Returns the entity this player is controlling
 	 * @return
 	 */
-	public Entity getControlledEntity();
+	public CE getControlledEntity();
 	
+	/**
+	 * Sets the entity this player has control over (and tells him)
+	 */
+	public void setControlledEntity(CE entity);
 	/**
 	 * Sends a text message to this player chat
 	 * @param msg
