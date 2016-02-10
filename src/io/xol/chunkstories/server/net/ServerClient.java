@@ -141,49 +141,6 @@ public class ServerClient extends Thread implements HttpRequester
 		Server.getInstance().handler.disconnectClient(this);
 	}
 
-	/*
-	private void handlePacket(byte type, DataInputStream in) throws IOException, IllegalPacketException, UnknowPacketException
-	{
-		if (type == 0x00)
-		{
-			// UTF-8 text data
-			Packet00Text packet = new Packet00Text(false);
-			packet.read(in);
-		}
-		else if (type == 0x01)
-		{
-			Packet01WorldInfo packet = new Packet01WorldInfo(false);
-
-			throw new IllegalPacketException(packet);
-		}
-		else if (type == 0x02)
-		{
-			Packet02ChunkCompressedData packet = new Packet02ChunkCompressedData(false);
-
-			throw new IllegalPacketException(packet);
-		}
-		else if (type == 0x03)
-		{
-			Packet03ChunkSummary packet = new Packet03ChunkSummary(false);
-
-			throw new IllegalPacketException(packet);
-		}
-		else if (type == 0x04)
-		{
-			Packet04Entity packet = new Packet04Entity(false);
-			packet.read(in);
-			if (this.profile.entity != null && packet.entityID == this.profile.entity.entityID)
-				packet.applyToEntity(this.profile.entity);
-			else
-				packet.applyToEntity(null);
-			//entity = EntitiesList.newEntity(world, entityType);
-		}
-		else
-		{
-			throw new UnknowPacketException(type);
-		}
-	}*/
-
 	public String getIp()
 	{
 		return sock.getInetAddress().getHostAddress();

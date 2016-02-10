@@ -261,4 +261,12 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 				}
 			}
 	}
+
+	/**
+	 * Removes all itempiles in the inventory.
+	 */
+	public void clear()
+	{
+		contents = new ItemPile[width][height];
+	}
 }

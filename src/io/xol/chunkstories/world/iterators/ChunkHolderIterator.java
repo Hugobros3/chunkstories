@@ -57,7 +57,9 @@ public class ChunkHolderIterator implements ChunksIterator
 	
 	public void remove()
 	{
-		holder.world.removeChunk(chunk, false);
+		if(chunk == null)
+			return;
+		holder.removeChunk(chunk.chunkX, chunk.chunkY, chunk.chunkZ);
 	}
 
 }

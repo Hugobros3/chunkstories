@@ -207,8 +207,6 @@ public class ServerConnection extends Thread implements HttpRequester
 			// Just wait for the goddamn packets to come !
 			try
 			{
-				//byte type = in.readByte();
-				//handlePacket(type, in);
 				Packet packet = packetsProcessor.getPacket(in, true, false);
 				packet.read(in);
 				packet.process(packetsProcessor);
@@ -223,98 +221,13 @@ public class ServerConnection extends Thread implements HttpRequester
 					latestErrorMessage = "Fatal error while handling connection to " + ip + ":" + port + ". (" + e.getClass().getName() + ")";
 					System.out.println(latestErrorMessage);
 					close();
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 			}
 		}
 		System.out.println("Letting thread die as it finished it's job.");
 	}
-
-	boolean infoAvaible = false;
 	
-	/*WorldInfo info;
-
-	public WorldInfo getWorldInfo()
-	{
-		if (infoAvaible)
-		{
-			infoAvaible = false;
-			return info;
-		}
-		return null;
-	}*/
-
-	/*
-	private void handlePacket(byte type, DataInputStream in) throws IOException, UnknowPacketException
-	{
-		if (type == 0x00)
-		{
-			// UTF-8 text data
-			Packet00Text packet = new Packet00Text(true);
-			packet.read(in);
-			handleTextPacket(packet.text);
-		}
-		else if (type == 0x01) // WORLD INFO
-		{
-			// When receiving this packet the games defines a new world
-			Packet01WorldInfo packet = new Packet01WorldInfo(true);
-			packet.read(in);
-			//info = packet.info;
-			
-			Client.world = new WorldClient(packet.info);
-			//message = Client.world.name;
-			//System.out.println(info.name);
-			//loginOk = true;
-		}
-		else if (type == 0x02)
-		{
-			//Chunk bits
-			Packet02ChunkCompressedData packet = new Packet02ChunkCompressedData(true);
-			packet.read(in);
-			((IOTasksMultiplayerClient) Client.world.ioHandler).requestChunkCompressedDataProcess(packet);
-		}
-		else if (type == 0x03)
-		{
-			//Chunk bits
-			Packet03ChunkSummary packet = new Packet03ChunkSummary(true);
-			packet.read(in);
-			((IOTasksMultiplayerClient) Client.world.ioHandler).requestChunkSummaryProcess(packet);
-		}
-		else if (type == 0x04)
-		{
-			Packet04Entity packet = new Packet04Entity(false);
-			packet.read(in);
-			Entity entity = Client.world.getEntityByUUID(packet.entityID);
-			if(packet.deleteFlag)
-			{
-				//System.out.println("Deleting Entity "+entity);
-				Client.world.removeEntity(entity);
-			}
-			else
-			{
-				if(entity == null)
-				{
-					entity = EntitiesList.newEntity(Client.world, packet.entityType);
-					entity.entityID = packet.entityID;
-					packet.applyToEntity(entity);
-					Client.world.addEntity(entity);
-					//System.out.println("Added entity "+entity);
-					if(packet.defineControl)
-					{
-						Client.controller = entity;
-						//System.out.println("you should control this entity :"+entity);
-					}
-				}
-				else
-					packet.applyToEntity(entity);
-			}
-		}
-		else
-		{
-			throw new UnknowPacketException(type);
-		}
-	}*/
-
 	public boolean hasFailed()
 	{
 		return failed;
