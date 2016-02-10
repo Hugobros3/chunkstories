@@ -61,7 +61,7 @@ public class InventoryOverlay extends Overlay
 	{
 		if (k == FastConfig.EXIT_KEY)
 			this.mainScene.changeOverlay(parent);
-		return false;
+		return true;
 	}
 
 	public boolean onClick(int posx, int posy, int button)

@@ -77,7 +77,7 @@ public class PacketsProcessor
 
 							PacketType packetType = new PacketType(packetId, packetName, packetClass, constructor, !allowed.equals("server"), !allowed.equals("client"));
 							packetTypes[packetId] = packetType;
-							System.out.println(packetId + " " + packetName);
+							//System.out.println(packetId + " " + packetName);
 						}
 						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
 						{

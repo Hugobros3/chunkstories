@@ -21,6 +21,19 @@ public class ItemPile implements CSFSerializable
 	
 	public ItemData data = null;
 	
+	/**
+	 * Creates an item pile of the item type named 'itemName'
+	 * @param itemName
+	 */
+	public ItemPile(String itemName)
+	{
+		this(ItemsList.getItemByName(itemName));
+	}
+	
+	/**
+	 * Creates an item pile of this item
+	 * @param item
+	 */
 	public ItemPile(Item item)
 	{
 		this.item = item;
@@ -28,6 +41,12 @@ public class ItemPile implements CSFSerializable
 		item.onCreate(this);
 	}
 	
+	/**
+	 * Loads an item pile based on the data supplied (for amount and external data)
+	 * @param item
+	 * @param stream
+	 * @throws IOException
+	 */
 	public ItemPile(Item item, DataInputStream stream)  throws IOException
 	{
 		this.item = item;
@@ -64,7 +83,7 @@ public class ItemPile implements CSFSerializable
 	 * @param inventory2 new slot's inventory
 	 * @param x2
 	 * @param y2
-	 * @return
+	 * @return null if successfull, this if not.
 	 */
 	public ItemPile moveTo(Inventory inventory2, int x2, int y2)
 	{

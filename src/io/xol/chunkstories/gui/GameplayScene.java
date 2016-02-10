@@ -1,6 +1,13 @@
 package io.xol.chunkstories.gui;
 
 import org.lwjgl.util.vector.Vector3f;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -191,6 +198,8 @@ public class GameplayScene extends OverlayableScene
 	boolean flashLight = false;
 	boolean shouldCM = false;
 
+	byte[] inventorySerialized;
+	
 	public boolean onKeyPress(int k)
 	{
 		if (currentOverlay != null && currentOverlay.handleKeypress(k))
@@ -241,6 +250,44 @@ public class GameplayScene extends OverlayableScene
 		}
 		else if (k == Keyboard.KEY_F4)
 			Client.world.particlesHolder.addParticle(new ParticleLight(Client.world, player.posX + (Math.random() - 0.5) * 30, player.posY + (Math.random()) * 10, player.posZ + (Math.random() - 0.5) * 30));
+		else if(k == Keyboard.KEY_F5)
+		{
+			if(inventorySerialized == null)
+			{
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				try
+				{
+					Client.controller.inventory.save(new DataOutputStream(out));
+					Client.controller.inventory.clear();
+					out.flush();
+					inventorySerialized = out.toByteArray();
+					out.close();
+				}
+				catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return true;
+			}
+			else
+			{
+				ByteArrayInputStream in = new ByteArrayInputStream(inventorySerialized);
+				try
+				{
+					Client.controller.inventory.load(new DataInputStream(in));
+					//Client.controller.inventory.clear();
+					inventorySerialized = null;
+					in.close();
+				}
+				catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return true;
+			}
+		}
 		else if (k == Keyboard.KEY_F6)
 		{
 			if (player instanceof EntityPlayer)
