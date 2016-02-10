@@ -141,12 +141,10 @@ public class Packet04Entity extends Packet
 		{
 			Entity entity = Client.world.getEntityByUUID(this.entityID);
 			if(this.deleteFlag)
-			{
-				//System.out.println("Deleting Entity "+entity);
 				Client.world.removeEntity(entity);
-			}
 			else
 			{
+				//Create an entity if the servers tells you to do so
 				if(entity == null)
 				{
 					entity = EntitiesList.newEntity(Client.world, this.entityType);
@@ -155,10 +153,7 @@ public class Packet04Entity extends Packet
 					Client.world.addEntity(entity);
 					//System.out.println("Added entity "+entity);
 					if(this.defineControl)
-					{
 						Client.controller = entity;
-						//System.out.println("you should control this entity :"+entity);
-					}
 				}
 				else
 					this.applyToEntity(entity);
@@ -166,6 +161,7 @@ public class Packet04Entity extends Packet
 		}
 		else
 		{
+			//Client isn't allowed to force spawning or moving of anything but himself
 			if (processor.getServerClient().profile.entity != null && entityID == processor.getServerClient().profile.entity.entityID)
 				applyToEntity(processor.getServerClient().profile.entity);
 			//entity = EntitiesList.newEntity(world, entityType);

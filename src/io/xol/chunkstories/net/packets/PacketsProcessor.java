@@ -112,12 +112,28 @@ public class PacketsProcessor
 			this.serverCanSendIt = serverCanSendIt;
 		}
 
-		public Packet createNew(boolean isClient) throws IllegalPacketException
+		public Packet createNew(boolean isClient, boolean sending) throws IllegalPacketException
 		{
 			Object[] parameters = { isClient };
 			try
 			{
 				Packet packet = (Packet) packetConstructor.newInstance(parameters);
+				//Check legality
+				if(sending)
+				{
+					if(isClient && !clientCanSendIt)
+						throw new IllegalPacketException(packet);
+					if(!isClient && !serverCanSendIt)
+						throw new IllegalPacketException(packet);
+				}
+				//When receiving a packet
+				else
+				{
+					if(isClient && !serverCanSendIt)
+						throw new IllegalPacketException(packet);
+					if(!isClient && !clientCanSendIt)
+						throw new IllegalPacketException(packet);
+				}
 				return packet;
 			}
 			catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
@@ -188,7 +204,7 @@ public class PacketsProcessor
 			secondByte = secondByte & 0xFF;
 			packetType = secondByte | (firstByte & 0x7F) << 8;
 		}
-		Packet packet = packetTypes[packetType].createNew(client);
+		Packet packet = packetTypes[packetType].createNew(client, sending);
 
 		if (packet == null)
 			throw new UnknowPacketException(packetType);
