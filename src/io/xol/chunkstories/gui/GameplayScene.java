@@ -1,7 +1,6 @@
 package io.xol.chunkstories.gui;
 
 import org.lwjgl.util.vector.Vector3f;
-
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -18,6 +17,7 @@ import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.core.EntityPlayer;
+import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.gui.menus.InventoryDrawer;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
@@ -223,7 +223,7 @@ public class GameplayScene extends OverlayableScene
 			if (player != null)
 			{
 				focus(false);
-				this.changeOverlay(new InventoryOverlay(this, null, player.inventory));
+				this.changeOverlay(new InventoryOverlay(this, null, new Inventory[]{player.inventory}));
 			}
 		}
 		else if (k == Keyboard.KEY_F1)
