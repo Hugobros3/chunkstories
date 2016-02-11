@@ -22,6 +22,8 @@ public class GameDirectory
 		String appDataFolder = System.getProperty("user.dir");
 		if(System.getProperty("os.name").toLowerCase().startsWith("win"))
 			appDataFolder = System.getenv("APPDATA");
+		else if(System.getProperty("os.name").toLowerCase().startsWith("lin"))
+			appDataFolder = System.getProperty("user.home");
 		chunkStoriesFolder = new File(appDataFolder + "/.chunkstories");
 	}
 

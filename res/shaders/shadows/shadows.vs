@@ -1,3 +1,4 @@
+#version 130
 attribute vec4 vertexIn;
 attribute vec4 normalIn;
 attribute vec2 texCoordIn;

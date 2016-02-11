@@ -17,15 +17,13 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
     vec3 currentPosition = convertCameraSpaceToScreenSpace(cameraSpaceVectorPosition);
     
 	// Is the reflection pointing in the right direction ?
-	/*float dotReflect = dot(vec3(0,1,0), normalMatrixInv * cameraSpaceVector);
-	if(dotReflect <= 0.00)
-		return vec4(1,-dotReflect,0,1);*/
+
 	
 	vec4 color = vec4(0.0);// texture2D(comp_diffuse, screenSpacePosition2D); // vec4(pow(texture2D(gcolor, screenSpacePosition2D).rgb, vec3(3.0f + 1.2f)), 0.0);
    
 	const int maxRefinements = 3;
 	int numRefinements = 0;
-    int count = 0;
+    	int count = 0;
 	vec2 finalSamplePos = screenSpacePosition2D;
 	
 	int numSteps = 0;
@@ -35,11 +33,11 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	<ifdef doRealtimeReflections>
     for (int i = 0; i < 40; i++)
     {
-        if(currentPosition.x < 0 || currentPosition.x > 1 ||
-           currentPosition.y < 0 || currentPosition.y > 1 ||
-           currentPosition.z <= 0.0 || currentPosition.z > 1.0 ||
-           -cameraSpaceVectorPosition.z > 512 ||
-           -cameraSpaceVectorPosition.z < 0.0f)
+        if((currentPosition.x < 0.0) || (currentPosition.x > 1.0) ||
+           (currentPosition.y < 0.0) || (currentPosition.y > 1.0) ||
+           (currentPosition.z <= 0.0) || (currentPosition.z > 1.0) ||
+           (-cameraSpaceVectorPosition.z > 512.0) ||
+           (-cameraSpaceVectorPosition.z < 0.0f))
 			
         { 
 			outOfViewport = true;
@@ -54,7 +52,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
         float error = length(cameraSpaceVector / pow(2.0f, numRefinements));
 
         //If a collision was detected, refine raymarch
-        if(diff >= 0 && diff <= error * 2.00f && numRefinements <= maxRefinements) 
+        if(diff >= 0.0 && diff <= error * 2.00f && numRefinements <= maxRefinements) 
         {
 			/*if( -cameraSpaceVectorPosition.z > 100)
 				break;*/
@@ -64,13 +62,13 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
         	++numRefinements;
 		//If refinements run out
 		} 
-		else if (diff >= 0 && diff <= error * 4.0f && numRefinements > maxRefinements)
+		else if (diff >= 0.0 && diff <= error * 4.0f && numRefinements > maxRefinements)
 		{
 			outOfViewport = false;
 			finalSamplePos = samplePos;
 			break;
 		}
-		else if(diff > 0)
+		else if(diff > 0.0)
 		{
 			
 		}
@@ -90,7 +88,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	
 	if(numSteps > 38)
 		color.a = 0.0f;
-	if(texture2D(depthBuffer, screenSpaceCoords, 0).x == 1)
+	if(texture2D(depthBuffer, screenSpaceCoords, 0.0).x == 1.0)
 		color.a = 0.0f;
 	if(outOfViewport)
 		color.a = 0.0f;
@@ -103,7 +101,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 		
 	skyColor *= showSkybox;//texture2D(blocklights, lightMapUV).rgb;
 	
-	if(color.a == 0)
+	if(color.a == 0.0)
 	{
 		color.rgb = skyColor;
 	}

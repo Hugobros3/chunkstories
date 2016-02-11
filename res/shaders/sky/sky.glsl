@@ -32,8 +32,8 @@ vec3 getSkyColor(float time, vec3 eyeDirection)
 	
     float vl = dot(V, L);
     // Look up the sky color and glow colors.
-	vl+= 1.0;
-	vl *= 0.5;
+	vl = vl + 1.0;
+	vl = vl * 0.5;
 	
 	vl = clamp(vl, 0.0, 1.0);
     vec4 skyGlow = texture2D(glowSampler, vec2(time, 1.0-vl));
@@ -44,7 +44,7 @@ vec3 getSkyColor(float time, vec3 eyeDirection)
 	
 	vec4 cloudsColor = getClouds(eyeDirection);
 	
-	skyColor +=  (1-isRaining)*max(vec3(15,15,15)*pow(clamp(dot(V, L), 0.0, 1.0), 1750.0), 0.0);
+	skyColor +=  (1.0-isRaining)*max(vec3(15.0,15.0,15.0)*pow(clamp(dot(V, L), 0.0, 1.0), 1750.0), 0.0);
 	
 	//float l = skyColor.r + skyColor.g + skyColor.b;
 	//skyColor.rgb = vec3(0.3333) * l * 1.15;
@@ -58,11 +58,11 @@ vec3 getSkyColor(float time, vec3 eyeDirection)
 
 vec4 getClouds(vec3 eyeDirection)
 {
-	if(eyeDirection.y <= 0)
-		return vec4(0);
+	if(eyeDirection.y <= 0.0)
+		return vec4(0.0);
 		
 	vec2 cloudsPosition = ( -camPos.xz + ( eyeDirection.xz * ((1024.0 + camPos.y) / eyeDirection.y) ) );
-	vec2 coords = 0.001 * cloudsPosition + vec2(0, time*25);
+	vec2 coords = 0.001 * cloudsPosition + vec2(0.0, time*25.0);
 	vec4 clouds = vec4(gl_Fog.color.rgb-vec3(0.10), 0.0);
 	
 	//clouds.a = texture2D(cloudsNoise, vec2(0.5) + coords / 8.0).r * 3;
@@ -86,19 +86,19 @@ vec4 getClouds(vec3 eyeDirection)
 	
 	<endif doClouds>
 	
-	float distantFade = clamp((length( eyeDirection.xz * ((1024.0 + camPos.y) / eyeDirection.y) ) - 3500.0) / 3500, 0.0, 1.0) ;
+	float distantFade = clamp((length( eyeDirection.xz * ((1024.0 + camPos.y) / eyeDirection.y) ) - 3500.0) / 3500.0, 0.0, 1.0) ;
 	clouds.a -= distantFade;
 	
 	
 	
 	//clouds.a += 1.5;
 	
-	if(clouds.a <= 0)
-		return vec4(0);
+	if(clouds.a <= 0.0)
+		return vec4(0.0);
 	
 	if(clouds.a > 0.5)
 		clouds.rgb = mix(clouds.rgb, 0.75*clouds.rgb, (clouds.a-0.5)*0.5);
 	
 	return clamp(clouds, 0.0, 1.0);
-	return vec4(0);
+	return vec4(0.0);
 }

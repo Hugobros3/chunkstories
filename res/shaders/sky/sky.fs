@@ -15,7 +15,7 @@ uniform vec3 camPos;
 varying vec3 eyeDirection;
 
 const float gamma = 2.2;
-const float gammaInv = 1/2.2;
+const float gammaInv = 0.45454545454;
 
 vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
 {

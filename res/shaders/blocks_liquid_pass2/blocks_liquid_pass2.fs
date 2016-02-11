@@ -1,3 +1,4 @@
+#version 130
 // Copyright 2015 XolioWare Interactive
 
 uniform sampler2D diffuseTexture; // Blocks texture atlas

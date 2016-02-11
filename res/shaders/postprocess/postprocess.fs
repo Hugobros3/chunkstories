@@ -1,4 +1,4 @@
-//#version 120
+#version 130
 uniform sampler2D shadedBuffer;
 
 uniform sampler2D albedoBuffer;
@@ -38,9 +38,9 @@ uniform float underwater;
 uniform float apertureModifier;
 
 const float gamma = 2.2;
-const float gammaInv = 1/2.2;
+const float gammaInv = 0.45454545454;
 
-const vec4 waterColor = vec4(51/255.0, 104/255.0, 110/255.0, 1.0);
+const vec4 waterColor = vec4(0.2, 0.4, 0.45, 1.0);
 
 vec3 convertCameraSpaceToScreenSpace(vec3 cameraSpace) {
     vec4 clipSpace = projectionMatrix * vec4(cameraSpace, 1.0);
@@ -52,7 +52,7 @@ vec3 convertCameraSpaceToScreenSpace(vec3 cameraSpace) {
 
 vec3 unprojectPixel(vec2 co) {
 
-    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2-1, texture2D(depthBuffer, co, 0).x * 2.0 - 1.0), 1.0);
+    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2.0-1.0, texture2D(depthBuffer, co, 0.0).x * 2.0 - 1.0), 1.0);
     fragposition /= fragposition.w;
     return fragposition.xyz;
 }
@@ -70,13 +70,11 @@ void main() {
 	vec2 finalCoords = f_texcoord;
 	
 	// Water coordinates distorsion
-	finalCoords.x += underwater*sin(finalCoords.x * 50 + finalCoords.y * 60 + time * 1.0) / viewWidth * 5.0;
-	finalCoords.y += underwater*cos(finalCoords.y * 60 + time * 1.0) / viewHeight * 2.0;
+	finalCoords.x += underwater*sin(finalCoords.x * 50.0 + finalCoords.y * 60.0 + time * 1.0) / viewWidth * 5.0;
+	finalCoords.y += underwater*cos(finalCoords.y * 60.0 + time * 1.0) / viewHeight * 2.0;
 	
 	// Sampling
 	vec4 compositeColor = texture2DLod(shadedBuffer, finalCoords, 0.0);
-	
-	// Do reflections here
 	
 	// etc
 	
@@ -109,7 +107,7 @@ vec4 getDebugShit(vec2 coords)
 	if(coords.x > 0.5)
 	{
 		if(coords.y > 0.5)
-			shit = pow(texture2D(shadedBuffer, sampleCoords, 0), vec4(gammaInv));
+			shit = pow(texture2D(shadedBuffer, sampleCoords, 0.0), vec4(gammaInv));
 		else
 			shit = texture2D(normalBuffer, sampleCoords);
 	}
@@ -119,15 +117,15 @@ vec4 getDebugShit(vec2 coords)
 		{
 			shit = texture2D(albedoBuffer, sampleCoords);
 			//if(shit.a == 0)
-			shit += (1-shit.a) * vec4(1.0, 0.0, 1.0, 1.0);
+			shit += (1.0-shit.a) * vec4(1.0, 0.0, 1.0, 1.0);
 		}
 		else
 		{
-			shit = texture2DLod(debugBuffer, sampleCoords, 4);
+			shit = texture2DLod(debugBuffer, sampleCoords, 4.0);
 			shit = vec4(1.0, 0.5, 0.0, 1.0) * texture2D(normalBuffer, sampleCoords).w;
 			shit.yz += texture2D(metaBuffer, sampleCoords).xy;
 			<ifdef dynamicGrass>
-			shit = texture2DLod(shadowMap, sampleCoords, 80);
+			shit = texture2DLod(shadowMap, sampleCoords, 80.0);
 			<endif dynamicGrass>
 		}
 	}

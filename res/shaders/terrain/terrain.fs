@@ -1,4 +1,4 @@
-
+#version 130
 // Disabled int textures for Intel IGP compatibility, instead it's floats in GL_NEAREST interpolation
 //#extension GL_EXT_gpu_shader4 : require
 

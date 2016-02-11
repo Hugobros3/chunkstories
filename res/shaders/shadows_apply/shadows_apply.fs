@@ -44,7 +44,7 @@ uniform float sunIntensity;
 uniform vec3 sunPos;
 
 const float gamma = 2.2;
-const float gammaInv = 1/2.2;
+const float gammaInv = 0.45454545454;
 
 vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
 {
@@ -100,22 +100,18 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec3 li
 	//Shadows sampling
 	vec4 coordinatesInShadowmap = accuratizeShadow(shadowMatrix * (untranslatedMVPInv * worldSpacePosition));
 
-	float ragix = 0.8f;
 	<ifdef shadows>
 	float edgeSmoother = 0.0;
-	ragix = 1;
 	float clamped = clamp(NdotL, 0.0, 0.1);
 	//if(NdotL < 0.1)
-		opacity = 10-(100*clamped);
+		opacity = 10.0-(100.0*clamped);
 	
-	if(!(coordinatesInShadowmap.x <= 0 || coordinatesInShadowmap.x >= 1 || coordinatesInShadowmap.y <= 0 || coordinatesInShadowmap.y >= 1  || coordinatesInShadowmap.z >= 1 || coordinatesInShadowmap.z <= -1))
+	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
 	{
-		float bias = clamp(0.00070*tan(acos(NdotL)) * clamp(shadowMapBiasMultiplier, 1.0, 2.0) ,-0.000,0.0020 )*(1+2*coordinatesInShadowmap.w);
-		edgeSmoother = 1-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5)-0.25)*4+max(0,abs(coordinatesInShadowmap.y-0.5)-0.25)*4,3),0,1);
-		opacity += edgeSmoother * (1-shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0).r);
+		float bias = clamp(0.00070*tan(acos(NdotL)) * clamp(shadowMapBiasMultiplier, 1.0, 2.0) ,-0.000,0.0020 )*(1.0+2.0*coordinatesInShadowmap.w);
+		edgeSmoother = 1.0-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5)-0.25)*4.0+max(0,abs(coordinatesInShadowmap.y-0.5)-0.25)*4.0, 3.0), 0.0, 1.0);
+		opacity += edgeSmoother * (1.0-shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0).r);
 	}
-	
-	
 	
 	//opacity += 1-NdotL;
 	
@@ -126,22 +122,22 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec3 li
 	<ifdef !shadows>
 	opacity = 0.0;
 	vec3 shadingDir = normalize(normalMatrixInv * normal);
-	opacity += 0.25 * abs(dot(vec3(1,0,0), shadingDir));
-	opacity += 0.45 * abs(dot(vec3(0,0,1), shadingDir));
-	opacity += 0.6 * clamp(dot(vec3(0,-1,0), shadingDir), 0.0, 1.0);
+	opacity += 0.25 * abs(dot(vec3(1.0, 0.0, 0.0), shadingDir));
+	opacity += 0.45 * abs(dot(vec3(0.0, 0.0, 1.0), shadingDir));
+	opacity += 0.6 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
 	<endif !shadows>
 	opacity = clamp(opacity, 0.0, 1.0);
 	
 	float sunSpec = specular * pow(clamp(dot(normalize(reflect(worldSpacePosition.xyz, normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),1750.0);
 	
-	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0, lightmapCoordinates.y * sunIntensity)).rgb;
-	vec3 finalLight = baseLight * pow(mix(shadowColor, sunColor, (1 - opacity * shadowStrength) * shadowVisiblity), vec3(gamma));
+	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0.0, lightmapCoordinates.y * sunIntensity)).rgb;
+	vec3 finalLight = baseLight * pow(mix(shadowColor, sunColor, (1.0 - opacity * shadowStrength) * shadowVisiblity), vec3(gamma));
 	<ifdef !shadows>
 	//finalLight = pow(finalLight, vec3(gamma));
 	<endif !shadows>
 	
-	finalLight += texture2DGammaIn(blockLightmap, vec2(lightmapCoordinates.x, 0)).rgb;
-	float ssao = 1-lightmapCoordinates.z;
+	finalLight += texture2DGammaIn(blockLightmap, vec2(lightmapCoordinates.x, 0.0)).rgb;
+	float ssao = 1.0-lightmapCoordinates.z;
 	<ifdef ssao>
 		//If SSAO is disabled, we use the crappy free vertex AO ( byproduct of block/sunlight merging in code )
 		ssao *= texture2D(ssaoBuffer, screenCoord).x;
@@ -169,7 +165,7 @@ void main() {
 	{
 		float spec = pow(pixelNormal.w, 1.0);
 		shadingColor = computeLight(shadingColor, pixelNormal.xyz, cameraSpacePosition, pixelMeta, spec);
-		if(spec > 0)
+		if(spec > 0.0)
 			shadingColor.rgb = mix(shadingColor.rgb, computeReflectedPixel(screenCoord, cameraSpacePosition.xyz, pixelNormal.xyz, pixelMeta.y).rgb, spec);
 		//shadingColor = vec4(1.0, 0.0, 0.0, 0.0);
 	}

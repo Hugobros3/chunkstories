@@ -23,7 +23,7 @@ varying vec4 varyingVertex;
 uniform sampler2D diffuseGBuffer;
 
 const float gamma = 2.2;
-const float gammaInv = 1/2.2;
+const float gammaInv = 0.45454545454;
 
 vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
 {

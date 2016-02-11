@@ -1,3 +1,4 @@
+#version 130
 varying vec4 texcoord;
 uniform sampler2D albedoTexture;
 
