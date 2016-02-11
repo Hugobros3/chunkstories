@@ -221,7 +221,7 @@ public class ServerConnection extends Thread implements HttpRequester
 					latestErrorMessage = "Fatal error while handling connection to " + ip + ":" + port + ". (" + e.getClass().getName() + ")";
 					System.out.println(latestErrorMessage);
 					close();
-					//e.printStackTrace();
+					e.printStackTrace();
 				}
 			}
 		}

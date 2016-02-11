@@ -172,6 +172,10 @@ public class PluginsManager implements PluginManager
 			listener.invokeForEvent(event);
 		}
 		
+		//If we didn't surpress it's behaviour
+		if(event.isAllowedToExecute())
+			event.defaultBehaviour();
+		
 		return event.isAllowedToExecute();
 	}
 }

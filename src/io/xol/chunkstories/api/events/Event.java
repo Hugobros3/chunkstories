@@ -19,4 +19,14 @@ public abstract class Event
 	}
 	
 	public abstract EventListeners getListeners();
+	
+	/**
+	 * Some events have a default behaviour and it's always overriding this method.
+	 * Disallowing certains events to execute may cause large issues and it's not always recommanded to do so.
+	 * It's more often better to just change the specific event variables to obtain the desired result.
+	 */
+	public void defaultBehaviour()
+	{
+		
+	}
 }

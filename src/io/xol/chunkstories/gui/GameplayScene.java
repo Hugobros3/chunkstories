@@ -89,7 +89,7 @@ public class GameplayScene extends OverlayableScene
 	public void update()
 	{
 		// Update client entity
-		if (player == null || player != Client.controller)
+		if (player == null || player != Client.controller && Client.controller != null)
 		{
 			player = Client.controller;
 			inventoryDrawer = player.inventory == null ? null : new InventoryDrawer(player.inventory);

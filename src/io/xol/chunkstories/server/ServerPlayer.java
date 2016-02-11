@@ -13,7 +13,6 @@ import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
-import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.net.packets.Packet04Entity;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.tech.CommandEmitter;
@@ -26,13 +25,13 @@ import io.xol.engine.misc.ConfigFile;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerPlayer<CE extends Entity & EntityControllable> implements Player<CE>, CommandEmitter, Controller
+public class ServerPlayer implements Player, CommandEmitter, Controller
 {
 	ConfigFile playerData;
 	ServerClient playerConnection;
 
 	//Entity controlled
-	public CE controlledEntity;
+	public Entity controlledEntity;
 
 	//Streaming control
 	public Map<int[], Long> loadedChunks = new HashMap<int[], Long>();
@@ -48,10 +47,7 @@ public class ServerPlayer<CE extends Entity & EntityControllable> implements Pla
 		playerData.setProp("lastlogin", "" + System.currentTimeMillis());
 		if (playerData.getProp("firstlogin", "nope").equals("nope"))
 			playerData.setProp("firstlogin", "" + System.currentTimeMillis());
-
-		EntityPlayer playerEntity = new EntityPlayer(Server.getInstance().world, playerData.getDoubleProp("posX"), playerData.getDoubleProp("posY", 100), playerData.getDoubleProp("posZ"), playerConnection.name);
-		playerEntity.setController(this);
-		System.out.println("Created entity named "+playerEntity.getName()+":"+playerConnection.name);
+		//Does not create a player entity yet, this is taken care of by the player spawn req
 	}
 
 	public void updateTrackedEntities()
@@ -166,15 +162,16 @@ public class ServerPlayer<CE extends Entity & EntityControllable> implements Pla
 
 	
 	@Override
-	public CE getControlledEntity()
+	public <CE extends Entity & EntityControllable> CE getControlledEntity()
 	{
-		return controlledEntity;
+		return (CE) controlledEntity;
 	}
 
 	@Override
-	public void setControlledEntity(CE entity)
+	public <CE extends Entity & EntityControllable> void setControlledEntity(CE entity)
 	{
 		controlledEntity = entity;
+		((EntityControllable) controlledEntity).setController(this);
 		//Tells the player we assignated him an entity.
 		if(controlledEntity != null)
 		{
@@ -257,7 +254,7 @@ public class ServerPlayer<CE extends Entity & EntityControllable> implements Pla
 		/*packet.XBuffered = l.x;
 		packet.YBuffered = l.y;
 		packet.ZBuffered = l.z;*/
-		//System.out.println("Sending packet with position "+l.x);
+		System.out.println("!!!Sending packet with position "+entity);
 		playerConnection.sendPacket(packet);
 	}
 

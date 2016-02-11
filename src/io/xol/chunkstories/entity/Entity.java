@@ -85,6 +85,17 @@ public abstract class Entity implements InventoryHolder
 		return new Location(posX, posY, posZ);
 	}
 	
+	/**
+	 * Sets the location of the entity
+	 * @param loc
+	 */
+	public void setLocation(Location loc)
+	{
+		this.posX = loc.x;
+		this.posY = loc.y;
+		this.posZ = loc.z;
+	}
+	
 	public void setVelocity(double x, double y, double z)
 	{
 		velX = x;

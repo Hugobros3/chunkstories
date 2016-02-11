@@ -8,7 +8,7 @@ import io.xol.chunkstories.entity.EntityControllable;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface Player<CE extends Entity & EntityControllable>
+public interface Player
 {
 	/**
 	 * Returns the username of the player
@@ -26,12 +26,12 @@ public interface Player<CE extends Entity & EntityControllable>
 	 * Returns the entity this player is controlling
 	 * @return
 	 */
-	public CE getControlledEntity();
+	public <CE extends Entity & EntityControllable> CE getControlledEntity();
 	
 	/**
 	 * Sets the entity this player has control over (and tells him)
 	 */
-	public void setControlledEntity(CE entity);
+	public <CE extends Entity & EntityControllable> void setControlledEntity(CE entity);
 	/**
 	 * Sends a text message to this player chat
 	 * @param msg
