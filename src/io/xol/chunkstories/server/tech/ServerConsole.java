@@ -76,7 +76,7 @@ public class ServerConsole
 				return;
 			}
 			// Rights check
-			if (emitter.hasRights("server.admin"))
+			if (emitter.hasPermission("server.admin"))
 			{
 				if (cmd.equals("stop"))
 				{

@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.xol.chunkstories.GameDirectory;
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldGenerator;
@@ -96,7 +97,6 @@ public abstract class World
 		chunkSummaries = new ChunkSummaries(this);
 		logic = Executors.newSingleThreadScheduledExecutor();
 		folder = new File(GameDirectory.getGameFolderPath() + "/worlds/" + name);
-		startLogic();
 
 		internalData = new ConfigFile(GameDirectory.getGameFolderPath() + "/worlds/" + name + "/internal.dat");
 	}
@@ -479,11 +479,11 @@ public abstract class World
 	{
 		chunksHolder.saveAll();
 		chunkSummaries.saveAll();
-		if (!client)
-		{
-			this.internalData.setProp("entities-ids-counter", veryLong.get());
-			this.internalData.save();
-		}
+		//if (!client)
+		
+		this.internalData.setProp("entities-ids-counter", veryLong.get());
+		this.internalData.save();
+		System.out.println("Saving world");
 	}
 
 	public enum WorldSize
@@ -626,5 +626,13 @@ public abstract class World
 	public void setWeather(boolean booleanProp)
 	{
 		raining = booleanProp;
+	}
+
+	public Location getDefaultSpawnLocation()
+	{
+		double dx = internalData.getDoubleProp("defaultSpawnX", 0.0);
+		double dy = internalData.getDoubleProp("defaultSpawnY", 100.0);
+		double dz = internalData.getDoubleProp("defaultSpawnZ", 0.0);
+		return new Location(dx, dy, dz);
 	}
 }

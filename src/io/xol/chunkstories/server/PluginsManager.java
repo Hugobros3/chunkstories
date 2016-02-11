@@ -104,9 +104,9 @@ public class PluginsManager implements PluginManager
 			{
 				commandsHandlers.get(command).handleCommand(emitter, command, args, cmd);
 			}
-			catch (Exception e)
+			catch (Throwable t)
 			{
-				emitter.sendMessage("#FF4040 An exception was throwed when handling your command "+e.getMessage());
+				emitter.sendMessage("#FF4040 An exception was throwed when handling your command "+t.getMessage());
 			}
 			return true;
 		}
@@ -127,11 +127,13 @@ public class PluginsManager implements PluginManager
 			// Filter it so only interested in @EventHandler annoted methods
 			for(final Method method : methods)
 			{
-				System.out.println("Checking out "+method);
+				//System.out.println("Checking out "+method);
+				
 				EventHandler eh = method.getAnnotation(EventHandler.class);
 				if(eh == null)
 					continue;
-				System.out.println("has correct annotation");
+				//System.out.println("has correct annotation");
+				
 				//TODO something about priority
 				if(method.getParameterTypes().length != 1 || !Event.class.isAssignableFrom(method.getParameterTypes()[0]))
 				{
@@ -153,7 +155,7 @@ public class PluginsManager implements PluginManager
 				EventListeners thisEventKindOfListeners = (EventListeners) getListeners.invoke(null);
 				// Add our own to it
 				thisEventKindOfListeners.registerListener(re);
-				ChunkStoriesLogger.getInstance().warning("Successuflly added EventHandler in "+listener+" of plugin "+plugin);
+				ChunkStoriesLogger.getInstance().info("Successuflly added EventHandler in "+listener+" of plugin "+plugin);
 			}
 		}
 		catch(Exception e)

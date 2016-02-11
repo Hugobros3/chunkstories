@@ -12,6 +12,11 @@ public class EventListeners
 	RegisteredListener[] listenersBaked;
 	
 	Set<RegisteredListener> unbaked = new HashSet<RegisteredListener>();
+	
+	public EventListeners()
+	{
+		bake();
+	}
 
 	public void registerListener(RegisteredListener RegisteredListener)
 	{

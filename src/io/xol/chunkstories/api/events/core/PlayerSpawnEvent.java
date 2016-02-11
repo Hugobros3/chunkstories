@@ -5,7 +5,6 @@ import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.plugin.server.Player;
 import io.xol.chunkstories.entity.Entity;
-import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.server.Server;
 
@@ -13,7 +12,7 @@ import io.xol.chunkstories.server.Server;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PlayerSpawnEvent<CE extends Entity & EntityControllable> extends Event
+public class PlayerSpawnEvent extends Event
 {
 	// Every event class has to have this
 	
@@ -31,7 +30,6 @@ public class PlayerSpawnEvent<CE extends Entity & EntityControllable> extends Ev
 	
 	// Specific event code
 	
-	@SuppressWarnings("rawtypes")
 	public Player player;
 	public Location spawnLocation;
 	public Entity entity;
@@ -39,7 +37,7 @@ public class PlayerSpawnEvent<CE extends Entity & EntityControllable> extends Ev
 	public PlayerSpawnEvent(Player player, Location location)
 	{
 		this.player = player;
-		this.spawnLocation = player.getPosition();
+		this.spawnLocation = location;
 		this.entity = new EntityPlayer(Server.getInstance().world, 0d, 0d, 0d, player.getName());
 	}
 
@@ -51,8 +49,12 @@ public class PlayerSpawnEvent<CE extends Entity & EntityControllable> extends Ev
 	@Override
 	public void defaultBehaviour()
 	{
+		if(spawnLocation == null)
+			spawnLocation = entity.world.getDefaultSpawnLocation();
 		entity.setLocation(spawnLocation);
-		player.setControlledEntity((CE) entity);
+		Server.getInstance().world.addEntity(entity);
+		System.out.println("set entity controll");
+		player.setControlledEntity(entity);
 		System.out.println("Created entity named "+entity+":"+player.getDisplayName());
 	}
 	

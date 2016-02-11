@@ -14,8 +14,8 @@ import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.net.packets.Packet04Entity;
+import io.xol.chunkstories.net.packets.Packet05SerializedInventory;
 import io.xol.chunkstories.server.net.ServerClient;
-import io.xol.chunkstories.server.tech.CommandEmitter;
 import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.misc.ColorsTools;
@@ -25,7 +25,7 @@ import io.xol.engine.misc.ConfigFile;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerPlayer implements Player, CommandEmitter, Controller
+public class ServerPlayer implements Player, Controller
 {
 	ConfigFile playerData;
 	ServerClient playerConnection;
@@ -128,24 +128,27 @@ public class ServerPlayer implements Player, CommandEmitter, Controller
 	{
 		long lastTime = Long.parseLong(playerData.getProp("timeplayed", "0"));
 		long lastLogin = Long.parseLong(playerData.getProp("lastlogin", "0"));
-		playerData.setProp("posX", controlledEntity.posX);
-		playerData.setProp("posY", controlledEntity.posY);
-		playerData.setProp("posZ", controlledEntity.posZ);
+		if(controlledEntity != null)
+		{
+			playerData.setProp("posX", controlledEntity.posX);
+			playerData.setProp("posY", controlledEntity.posY);
+			playerData.setProp("posZ", controlledEntity.posZ);
+		}
 		playerData.setProp("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)));
 		playerData.save();
 		System.out.println("Player profile "+playerConnection.name+" saved.");
 	}
 
-	public void onJoin()
+	/*public void onJoin()
 	{
 		if(controlledEntity != null)
 		{
 			Server.getInstance().world.addEntity(controlledEntity);
 			System.out.println("spawned player entity");
 		}
-	}
+	}*/
 	
-	public void onLeave()
+	public void destroy()
 	{
 		if(controlledEntity != null)
 		{
@@ -160,15 +163,14 @@ public class ServerPlayer implements Player, CommandEmitter, Controller
 		return playerConnection.name;
 	}
 
-	
 	@Override
-	public <CE extends Entity & EntityControllable> CE getControlledEntity()
+	public Entity getControlledEntity()
 	{
-		return (CE) controlledEntity;
+		return controlledEntity;
 	}
 
 	@Override
-	public <CE extends Entity & EntityControllable> void setControlledEntity(CE entity)
+	public void setControlledEntity(Entity entity)
 	{
 		controlledEntity = entity;
 		((EntityControllable) controlledEntity).setController(this);
@@ -184,12 +186,6 @@ public class ServerPlayer implements Player, CommandEmitter, Controller
 			this.hasSpawned = true;
 			//System.out.println("hasSpawned = true");
 		}
-	}
-	
-	@Override
-	public void sendTextMessage(String msg)
-	{
-		playerConnection.sendChat(msg);
 	}
 
 	@Override
@@ -218,14 +214,6 @@ public class ServerPlayer implements Player, CommandEmitter, Controller
 	{
 		playerConnection.sendChat(msg);
 	}
-
-	@Override
-	public boolean hasRights(String permission)
-	{
-		if (UsersPrivileges.isUserAdmin(getName()))
-			return true;
-		return false;
-	}
 	
 	@Override
 	public void kickPlayer(String reason)
@@ -244,7 +232,6 @@ public class ServerPlayer implements Player, CommandEmitter, Controller
 		return ColorsTools.getUniqueColorPrefix(name)+name+"#FFFFFF";
 	}
 
-	@SuppressWarnings("hiding")
 	@Override
 	public <CE extends Entity & EntityControllable> void notifyTeleport(CE entity)
 	{
@@ -258,11 +245,29 @@ public class ServerPlayer implements Player, CommandEmitter, Controller
 		playerConnection.sendPacket(packet);
 	}
 
-	@SuppressWarnings("hiding")
 	@Override
 	public <CE extends Entity & EntityControllable> void notifyInventoryChange(CE entity)
 	{
-		// TODO Auto-generated method stub
-		Controller.super.notifyInventoryChange(entity);
+		System.out.println(this+" inventory changed sending packet");
+		Packet05SerializedInventory packetInventory = new Packet05SerializedInventory(false);
+		packetInventory.inventory = entity.inventory;
+		playerConnection.sendPacket(packetInventory);
+	}
+
+	@Override
+	public boolean hasPermission(String permissionNode)
+	{
+		if (UsersPrivileges.isUserAdmin(getName()))
+			return true;
+		return false;
+	}
+
+	public Location getLastPosition()
+	{
+		if(this.playerData.isFieldSet("posX"))
+		{
+			return new Location(playerData.getDoubleProp("posX"), playerData.getDoubleProp("posY"), playerData.getDoubleProp("posZ"));
+		}
+		return null;
 	}
 }

@@ -17,7 +17,7 @@ import io.xol.engine.textures.TexturesHandler;
 
 public class InventoryDrawer
 {
-	Inventory inventory;
+	public Inventory inventory;
 	
 	public InventoryDrawer(Inventory inventory)
 	{
@@ -26,6 +26,8 @@ public class InventoryDrawer
 	
 	public void drawInventoryCentered(int x, int y, int scale, boolean summary, int blankLines)
 	{
+		if(inventory == null)
+			return;
 		drawInventory(x - slotsWidth(inventory.width, scale) / 2, y - slotsHeight(inventory.height, scale, summary, blankLines) / 2, scale, summary, blankLines, -1);
 	}
 	
@@ -44,11 +46,15 @@ public class InventoryDrawer
 	
 	public void drawPlayerInventorySummary(int x, int y, int selectedSlot)
 	{
+		if(inventory == null)
+			return;
 		drawInventory(x - slotsWidth(inventory.width, 2) / 2, y - slotsHeight(inventory.height, 2, true, 0) / 2, 2, true, 0, selectedSlot);
 	}
 	
 	public void drawInventory(int x, int y, int scale, boolean summary, int blankLines, int highlightSlot)
 	{
+		if(inventory == null)
+			return;
 		int cornerSize = 8 * scale;
 		int internalWidth = inventory.width * 24 * scale;
 		

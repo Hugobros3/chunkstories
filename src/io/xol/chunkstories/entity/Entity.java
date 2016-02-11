@@ -509,5 +509,6 @@ public abstract class Entity implements InventoryHolder
 	public void setInventory(Inventory inventory)
 	{
 		this.inventory = inventory;
+		inventory.holder = this;
 	}
 }

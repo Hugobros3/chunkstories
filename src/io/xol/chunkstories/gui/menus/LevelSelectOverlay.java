@@ -79,6 +79,7 @@ public class LevelSelectOverlay extends Overlay
 			if (worldButton.clicked())
 			{
 				Client.world = new WorldLocalClient(worldButton.info);
+				Client.world.startLogic();
 				this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 			}
 			int maxWidth = (int) (XolioWindow.frameW - 64 * 2);

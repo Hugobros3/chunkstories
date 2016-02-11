@@ -12,6 +12,7 @@ import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.server.tech.UsersPrivileges;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.misc.HttpRequestThread;
 import io.xol.engine.misc.HttpRequester;
 
@@ -19,7 +20,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -128,12 +128,18 @@ public class ServerClient extends Thread implements HttpRequester
 				else
 					handleBinary(type, in);*/
 			}
-			catch (IOException e)
+			
+			/*catch (IOException e)
 			{
 				died = true;
 				System.out.println("Socket " + id + " (" + getIp() + ") died (" + e.getClass().getName() + ")");
-			}
+			}*/
 			catch (IllegalPacketException | UnknowPacketException e)
+			{
+				ChunkStoriesLogger.getInstance().info("Disconnected "+this+" for causing an "+e.getClass().getSimpleName());
+				Server.getInstance().handler.disconnectClient(e.getMessage());
+			}
+			catch(Exception e)
 			{
 				Server.getInstance().handler.disconnectClient(e.getMessage());
 			}
@@ -183,7 +189,7 @@ public class ServerClient extends Thread implements HttpRequester
 			assert profile != null;
 			//if (profile != null)
 			//{
-			profile.onLeave();
+			profile.destroy();
 			profile.save();
 			//}
 		}
@@ -238,7 +244,7 @@ public class ServerClient extends Thread implements HttpRequester
 				//System.out.println(allowPlayerIn+"allow");
 				Server.getInstance().handler.sendAllChat(playerConnectionEvent.connectionMessage);
 				//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ")" + " joined.");
-				profile.onJoin();
+				//profile.onJoin();
 				send("login/ok");
 			}
 			else

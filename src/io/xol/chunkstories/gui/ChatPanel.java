@@ -69,11 +69,10 @@ public class ChatPanel
 			}
 			else if (k == 28)
 			{
-				if (inputBox.text.equals("/clear"))
+				if (inputBox.text.equals("/locclear"))
 				{
 					//java.util.Arrays.fill(chatHistory, "");
 					chat.clear();
-					return true;
 				}
 				else if (inputBox.text.startsWith("/loctime"))
 				{
@@ -86,9 +85,8 @@ public class ChatPanel
 					{
 
 					}
-					return true;
 				}
-				if (Client.connection != null)
+				else if (Client.connection != null)
 					Client.connection.sendTextMessage("chat/" + inputBox.text);
 				else
 					insert(ColorsTools.getUniqueColorPrefix(Client.username) + Client.username + "#FFFFFF > " + inputBox.text);

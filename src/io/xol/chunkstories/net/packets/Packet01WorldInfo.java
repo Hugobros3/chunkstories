@@ -65,7 +65,10 @@ public class Packet01WorldInfo extends Packet
 	public void process(PacketsProcessor processor)
 	{
 		if(processor.isClient)
+		{
 			Client.world = new WorldClient(info);
+			Client.world.startLogic();
+		}
 		
 	}
 

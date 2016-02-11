@@ -5,6 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
+import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.item.Item;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
@@ -105,7 +107,8 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	 * @param pile
 	 * @return
 	 */
-	public ItemPile setItemPileAt(int x, int y, ItemPile pile)
+	@SuppressWarnings("unchecked")
+	public <CE extends Entity & EntityControllable> ItemPile setItemPileAt(int x, int y, ItemPile pile)
 	{
 		if (pile == null)
 		{
@@ -120,6 +123,10 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		}
 		else
 			return pile;
+		if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
+		{
+			((EntityControllable)this.holder).getController().notifyInventoryChange((CE)this.holder);
+		}
 		return null;
 	}
 	
@@ -144,62 +151,49 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		{
 			public int i = 0;
 			public int j = 0;
-			boolean reachedEnd = false;
-
-			boolean mustSeek = false;
-
-			void seek() // Just increments the 2d array until the end.
-			{
-				i++;
-				if (i >= width)
-				{
-					i = 0;
-					j++;
-				}
-				if (j >= height)
-				{
-					j = 0;
-					reachedEnd = true;
-				}
-				if (!reachedEnd && contents[i][j] == null)
-					seek();
-				mustSeek = false;
-			}
+			
+			ItemPile current = null;
 
 			@Override
 			public boolean hasNext()
 			{
-				// If end was reached
-				if (reachedEnd)
-					return false;
-				// If last next yelded a valid item
-				if (mustSeek)
-					seek();
-				// If non-null
-				if (contents[i][j] != null)
-					return true;
-				else
-				// If it is null, try seeking
+				while(current == null && !reachedEnd())
 				{
-					seek();
-					if (contents[i][j] == null)
+					i++;
+					if (i >= width)
+					{
+						i = 0;
+						j++;
+					}
+					if(reachedEnd())
 						return false;
+					current = contents[i][j];
 				}
-				return !reachedEnd;
+				return current != null;
 			}
 
+			private boolean reachedEnd()
+			{
+				return j >= height;
+			}
+			
 			@Override
 			public ItemPile next()
 			{
-				// If inventory starts with a null item
-				if (contents[i][j] == null)
-					seek();
-				// If last next yelded a valid item
-				if (mustSeek)
-					seek();
-				ItemPile p = contents[i][j];
-				mustSeek = true;
-				return p;
+				if(reachedEnd())
+					return null;
+				do
+				{
+					current = contents[i][j];
+					i++;
+					if (i >= width)
+					{
+						i = 0;
+						j++;
+					}
+				}
+				while(current == null && !reachedEnd());
+				return current;
 			}
 
 			@Override
@@ -234,7 +228,12 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 				id = stream.readInt() & 0x00FFFFFF;
 				item = ItemsList.get(id);
 				if(item != null)
+				{
 					contents[i][j] = new ItemPile(item, stream);
+					contents[i][j].inventory = this;
+					contents[i][j].x = i;
+					contents[i][j].y = j;
+				}
 			}
 	}
 
@@ -265,8 +264,29 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	/**
 	 * Removes all itempiles in the inventory.
 	 */
-	public void clear()
+	@SuppressWarnings("unchecked")
+	public <CE extends Entity & EntityControllable> void clear()
 	{
 		contents = new ItemPile[width][height];
+		if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
+		{
+			((EntityControllable)this.holder).getController().notifyInventoryChange((CE)this.holder);
+		}
+	}
+
+	/**
+	 * Counts the ammount of stuff this inventory contains.
+	 * @return
+	 */
+	public int size()
+	{
+		int size = 0;
+		Iterator<ItemPile> i = this.iterator();
+		while(i.hasNext())
+		{
+			i.next();
+			size++;
+		}
+		return size;
 	}
 }

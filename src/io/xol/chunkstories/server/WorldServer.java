@@ -2,7 +2,10 @@ package io.xol.chunkstories.server;
 
 import java.io.File;
 
+import io.xol.chunkstories.api.events.core.PlayerSpawnEvent;
 import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
@@ -50,6 +53,9 @@ public class WorldServer extends World
 		{
 			//Sends the construction info for the world, and then the player entity
 			worldInfo.sendInfo(sender);
+
+			PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.profile, sender.profile.getLastPosition());
+			Server.getInstance().getPluginsManager().fireEvent(playerSpawnEvent);
 			/*
 			if(sender.profile.entity != null)
 			{

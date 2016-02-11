@@ -1,14 +1,15 @@
 package io.xol.chunkstories.gui.menus;
 
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemsList;
+import io.xol.chunkstories.net.packets.Packet06InventoryMoveItemPile;
+import io.xol.chunkstories.world.WorldLocalClient;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.textures.TexturesHandler;
@@ -80,44 +81,48 @@ public class InventoryOverlay extends Overlay
 				{
 					int x = c[0];
 					int y = c[1];
-					if (button == 2)
+					if (selectedItem == null)
 					{
-						inventories[i].setItemPileAt(x, y, new ItemPile(ItemsList.getItemByName("he_grenade")));
-					}
-					else if (button == 1)
-					{
-						if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
-							inventories[i].setItemPileAt(x, y, new ItemPile(ItemsList.getItemByName("weapon_ak47")));
-						else
-							inventories[i].setItemPileAt(x, y, new ItemPile(ItemsList.getItemByName("mag_ak47")));
+						selectedItem = inventories[i].getItem(x, y);
+						//selectedItemInv = inventory;
 					}
 					else
 					{
-						//Clicking on a pile selects it
-						if (selectedItem == null)
-						{
-							selectedItem = inventories[i].getItem(x, y);
-							//selectedItemInv = inventory;
-						}
+						if (Client.world instanceof WorldLocalClient)
+							selectedItem = selectedItem.moveTo(inventories[i], x, y);
 						else
 						{
+							Packet06InventoryMoveItemPile packetMove = new Packet06InventoryMoveItemPile(true);
+							packetMove.from = selectedItem.inventory;
+							packetMove.oldX = selectedItem.x;
+							packetMove.oldY = selectedItem.y;
+							packetMove.to = inventories[i];
+							packetMove.newX = x;
+							packetMove.newY = y;
+							packetMove.itemPile = selectedItem;
+							Client.connection.sendPacket(packetMove);
 							selectedItem = selectedItem.moveTo(inventories[i], x, y);
-							/*inventory.setItemAt(selectedItem.x, selectedItem.y, null);
-							if(inventory.canPlaceItemAt(x, y, selectedItem))
-							{
-								ItemPile nextSelection = inventory.getItem(x, y);
-								inventory.setItemAt(x, y, selectedItem);
-								selectedItem = nextSelection;
-								selectedItemInv = inventory;
-							}
-							else
-								inventory.setItemAt(selectedItem.x, selectedItem.y, selectedItem);*/
 						}
+
 					}
+					return true;
 				}
 			}
 		}
-		return false;
+		if(selectedItem != null)
+		{
+			Packet06InventoryMoveItemPile packetMove = new Packet06InventoryMoveItemPile(true);
+			packetMove.from = selectedItem.inventory;
+			packetMove.oldX = selectedItem.x;
+			packetMove.oldY = selectedItem.y;
+			packetMove.to = null;
+			packetMove.newX = 0;
+			packetMove.newY = 0;
+			packetMove.itemPile = selectedItem;
+			Client.connection.sendPacket(packetMove);
+			selectedItem = null;//selectedItem.moveTo(inventories[i], x, y);
+		}
+		return true;
 
 	}
 }

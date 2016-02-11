@@ -50,13 +50,14 @@ public class Packet05SerializedInventory extends Packet
 	}
 
 	public Inventory inventory;
-	public InventoryHolder holder;
+	//public InventoryHolder holder;
 	byte holderType;
 	long eId;
 	
 	@Override
 	public void process(PacketsProcessor processor)
 	{
+		InventoryHolder holder = null;
 		if(holderType == 0x01)
 		{
 			holder = processor.getWorld().getEntityByUUID(eId);

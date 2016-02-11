@@ -10,5 +10,5 @@ public interface CommandEmitter
 
 	public void sendMessage(String msg);
 
-	public boolean hasRights(String permission);
+	public boolean hasPermission(String permissionNode);
 }

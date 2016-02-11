@@ -8,12 +8,14 @@ public class IOTasksImmediate extends IOTasks {
 
 	public IOTasksImmediate(World world) {
 		super(world);
+		this.tasks = null;
 	}
 
+	@Override
 	public void requestChunkLoad(int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
 		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkX, chunkY, chunkZ, true, overwrite);
-		synchronized (tasks)
+		/*synchronized (tasks)
 		{
 			for (IOTask ioTask : tasks)
 			{
@@ -24,29 +26,33 @@ public class IOTasksImmediate extends IOTasks {
 						return;
 				}
 			}
-		}
+		}*/
 		task.run();
 	}
-	
+
+	@Override
 	public void requestChunkHolderLoad(ChunkHolder holder)
 	{
 		IOTask task = new IOTaskLoadChunkHolder(holder);
 		task.run();
 	}
-	
+
+	@Override
 	public void requestChunkHolderSave(ChunkHolder holder)
 	{
 		IOTask task = new IOTaskSaveChunkHolder(holder);
 		//System.out.println("bs");
 		task.run();
 	}
-	
+
+	@Override
 	public void requestChunkSummaryLoad(ChunkSummary summary)
 	{
 		IOTask task = new IOTaskLoadSummary(summary);
 		task.run();
 	}
-	
+
+	@Override
 	public void requestChunkSummarySave(ChunkSummary summary)
 	{
 		IOTask task = new IOTaskSaveSummary(summary);

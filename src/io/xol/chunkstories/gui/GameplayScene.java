@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -28,6 +29,7 @@ import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.gui.menus.InventoryDrawer;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
+import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.physics.particules.ParticleLight;
 import io.xol.chunkstories.physics.particules.ParticleSetupLight;
@@ -94,6 +96,7 @@ public class GameplayScene extends OverlayableScene
 			player = Client.controller;
 			inventoryDrawer = player.inventory == null ? null : new InventoryDrawer(player.inventory);
 		}
+		inventoryDrawer.inventory = player.inventory;
 		// Update the player
 		if (player instanceof EntityControllable)
 			((EntityControllable) player).controls(focus);
@@ -252,6 +255,14 @@ public class GameplayScene extends OverlayableScene
 			Client.world.particlesHolder.addParticle(new ParticleLight(Client.world, player.posX + (Math.random() - 0.5) * 30, player.posY + (Math.random()) * 10, player.posZ + (Math.random() - 0.5) * 30));
 		else if(k == Keyboard.KEY_F5)
 		{
+			System.out.println("llk ???"+(inventorySerialized == null));
+			ItemPile item;
+			Iterator<ItemPile> it = this.player.inventory.iterator();
+			while(it.hasNext())
+			{
+				item = it.next();
+				System.out.println(item);
+			}
 			if(inventorySerialized == null)
 			{
 				ByteArrayOutputStream out = new ByteArrayOutputStream();

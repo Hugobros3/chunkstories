@@ -6,3 +6,5 @@ packet 0x01 PACKET_WORLD_INFO io.xol.chunkstories.net.packets.Packet01WorldInfo 
 packet 0x02 PACKET_CHUNK_DATA io.xol.chunkstories.net.packets.Packet02ChunkCompressedData server
 packet 0x03 PACKET_CHUNK_SUMMARY io.xol.chunkstories.net.packets.Packet03ChunkSummary server
 packet 0x04 PACKET_ENTITY io.xol.chunkstories.net.packets.Packet04Entity all
+packet 0x05 PACKET_SERIALIZED_INVENTORY io.xol.chunkstories.net.packets.Packet05SerializedInventory server
+packet 0x06 PACKET_MOVE_ITEM io.xol.chunkstories.net.packets.Packet06InventoryMoveItemPile client

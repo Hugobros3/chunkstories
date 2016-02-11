@@ -82,7 +82,10 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 			String worldName = serverConfig.getProp("world", "world");
 			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
 			if (new File(worldDir).exists())
+			{
 				world = new WorldServer(worldDir);
+				world.startLogic();
+			}
 			else
 			{
 				System.out.println("Can't find the world \"" + worldName + "\" in " + worldDir + ". Exiting !");
@@ -139,6 +142,7 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 	private void closeServer()
 	{
 		// When stopped, close sockets and save config.
+		world.save();
 		handler.closeAll();
 		serverConfig.save();
 		handler.close();
@@ -203,7 +207,7 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 	}
 
 	@Override
-	public boolean hasRights(String permission)
+	public boolean hasPermission(String permissionNode)
 	{
 		return true;
 	}

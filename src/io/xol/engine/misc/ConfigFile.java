@@ -164,7 +164,7 @@ public class ConfigFile
 		return Double.parseDouble(getProp(s, "0.0"));
 	}
 
-	public double getDoubleProp(String s, float d)
+	public double getDoubleProp(String s, double d)
 	{
 		return Double.parseDouble(getProp(s, d+""));
 	}
@@ -177,5 +177,10 @@ public class ConfigFile
 	public void setProp(String p, float f)
 	{
 		setProp(p, f + "");
+	}
+
+	public boolean isFieldSet(String string)
+	{
+		return props.containsKey(string);
 	}
 }
