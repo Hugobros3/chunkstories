@@ -31,8 +31,10 @@ public class ServerPlayer<CE extends Entity & EntityControllable> implements Pla
 	ConfigFile playerData;
 	ServerClient playerConnection;
 
+	//Entity controlled
 	public CE controlledEntity;
 
+	//Streaming control
 	public Map<int[], Long> loadedChunks = new HashMap<int[], Long>();
 	public List<Entity> trackedEntities = new ArrayList<Entity>();
 	
@@ -48,6 +50,7 @@ public class ServerPlayer<CE extends Entity & EntityControllable> implements Pla
 			playerData.setProp("firstlogin", "" + System.currentTimeMillis());
 
 		EntityPlayer playerEntity = new EntityPlayer(Server.getInstance().world, playerData.getDoubleProp("posX"), playerData.getDoubleProp("posY", 100), playerData.getDoubleProp("posZ"), playerConnection.name);
+		playerEntity.setController(this);
 		System.out.println("Created entity named "+playerEntity.getName()+":"+playerConnection.name);
 	}
 
@@ -203,14 +206,8 @@ public class ServerPlayer<CE extends Entity & EntityControllable> implements Pla
 	@Override
 	public void setPosition(Location l)
 	{
-		//Send teleport packet
-		Packet04Entity packet = new Packet04Entity(false);
-		packet.applyFromEntity(controlledEntity);
-		packet.XBuffered = l.x;
-		packet.YBuffered = l.y;
-		packet.ZBuffered = l.z;
-		//System.out.println("Sending packet with position "+l.x);
-		playerConnection.sendPacket(packet);
+		if(this.controlledEntity != null)
+			this.controlledEntity.setPosition(l.x, l.y, l.z);
 	}
 
 	@Override
@@ -248,5 +245,27 @@ public class ServerPlayer<CE extends Entity & EntityControllable> implements Pla
 	{
 		String name = getName();
 		return ColorsTools.getUniqueColorPrefix(name)+name+"#FFFFFF";
+	}
+
+	@SuppressWarnings("hiding")
+	@Override
+	public <CE extends Entity & EntityControllable> void notifyTeleport(CE entity)
+	{
+		//Send teleport packet
+		Packet04Entity packet = new Packet04Entity(false);
+		packet.applyFromEntity(controlledEntity);
+		/*packet.XBuffered = l.x;
+		packet.YBuffered = l.y;
+		packet.ZBuffered = l.z;*/
+		//System.out.println("Sending packet with position "+l.x);
+		playerConnection.sendPacket(packet);
+	}
+
+	@SuppressWarnings("hiding")
+	@Override
+	public <CE extends Entity & EntityControllable> void notifyInventoryChange(CE entity)
+	{
+		// TODO Auto-generated method stub
+		Controller.super.notifyInventoryChange(entity);
 	}
 }

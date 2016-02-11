@@ -450,9 +450,17 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 		name = n;
 	}
 	
+	Controller controller;
+	
 	@Override
 	public Controller getController()
 	{
-		return null;
+		return controller;
+	}
+
+	@Override
+	public void setController(Controller controller)
+	{
+		this.controller = controller;
 	}
 }

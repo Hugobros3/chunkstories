@@ -57,10 +57,7 @@ public class MainMenuOverlay extends Overlay
 
 		//FontRenderer2.drawTextUsingSpecificFontRVBA(500, 500, Math.sin(a) * 15f, 32, "ntm", , alpha, r, v, b)
 
-		//TrueTypeFont.haettenschweiler.drawString(384 + 192, XolioWindow.frameH - 256 - 16, "Сука Блять ", 2f, 2f);
 		// TrueTypeFont.arial12.drawStringWithShadow(384 + 192,
-		// XolioWindow.frameH - 256 - 16, "Cyka blyat Сука Блять", 2f, 2f, new
-		// Vector4f(0,1,1,1));
 		// FontRenderer2.drawTextUsingSpecificFontRVBA(384 + 192,
 		// XolioWindow.frameH - 256 - 48, 0, 32, "Cyka blyat",
 		// BitmapFont.SMALLFONTS, 1, 1f, 1, 1);

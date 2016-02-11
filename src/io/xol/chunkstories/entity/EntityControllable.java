@@ -14,5 +14,7 @@ public interface EntityControllable
 {
 	public Controller getController();
 	
+	public void setController(Controller controller);
+	
 	public void controls(boolean focus);
 }

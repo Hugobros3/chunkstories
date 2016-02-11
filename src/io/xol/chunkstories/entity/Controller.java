@@ -15,7 +15,7 @@ public interface Controller
 	 * Called whenever a teleport is issued on the entity
 	 * @param entity
 	 */
-	default public void notifyTeleport(Entity entity){
+	default public <CE extends Entity & EntityControllable> void notifyTeleport(CE entity){
 		// Do nothing
 	}
 	
@@ -23,7 +23,7 @@ public interface Controller
 	 * Called whenever the entity's inventory is changed
 	 * @param entity
 	 */
-	default public void notifyInventoryChange(Entity entity){
+	default public <CE extends Entity & EntityControllable> void notifyInventoryChange(CE entity){
 		
 	}
 }

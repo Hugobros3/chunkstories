@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.inventory.CSFSerializable;
 import io.xol.chunkstories.entity.inventory.Inventory;
 
@@ -85,13 +87,19 @@ public class ItemPile implements CSFSerializable
 	 * @param y2
 	 * @return null if successfull, this if not.
 	 */
-	public ItemPile moveTo(Inventory inventory2, int x2, int y2)
+	@SuppressWarnings("unchecked")
+	public <CE extends Entity & EntityControllable> ItemPile moveTo(Inventory inventory2, int x2, int y2)
 	{
 		inventory.setItemPileAt(this.x, this.y, null);
 		if(inventory2.canPlaceItemAt(x2, y2, this))
 		{
 			ItemPile nextSelection = inventory2.getItem(x2, y2);
 			inventory2.setItemPileAt(x2, y2, this);
+			//Successfull item move, then notify controller
+			if(this.inventory.holder != null && this.inventory.holder instanceof Entity && this.inventory.holder instanceof EntityControllable && ((EntityControllable)this.inventory.holder).getController() != null)
+			{
+				((EntityControllable)this.inventory.holder).getController().notifyInventoryChange((CE)this.inventory.holder);
+			}
 			return nextSelection;
 		}
 		else

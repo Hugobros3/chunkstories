@@ -58,14 +58,28 @@ public abstract class Entity implements InventoryHolder
 		setHolder();
 	}
 	
-	public void setPosition(double x, double y, double z)
+	/**
+	 * Teleports an entity to a certain location 
+	 * NB : If this entity implements EntityControllable it will trigger the {@link Controller.notifyTeleport()} callback
+	 * @param x
+	 * @param y
+	 * @param z
+	 */
+	@SuppressWarnings("unchecked")
+	public synchronized <CE extends Entity & EntityControllable> void setPosition(double x, double y, double z)
 	{
 		posX = x;
 		posY = y;
 		posZ = z;
 		setHolder();
+		if(this instanceof EntityControllable && ((EntityControllable)this).getController() != null)
+			((EntityControllable)this).getController().notifyTeleport((CE)this);
 	}
 
+	/**
+	 * Returns the location of the entity
+	 * @return
+	 */
 	public Location getLocation()
 	{
 		return new Location(posX, posY, posZ);
