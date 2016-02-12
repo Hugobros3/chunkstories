@@ -278,8 +278,8 @@ public class ChunkHolder
 				{
 					if (data[a][b][c] != null)
 						compressChunkData(data[a][b][c]);
-					else
-						compressedChunks[a][b][c] = null;
+					//else
+					//	compressedChunks[a][b][c] = null;
 				}
 		lock.unlock();
 	}

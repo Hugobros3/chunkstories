@@ -21,6 +21,7 @@ import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
+import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.summary.ChunkSummaries;
@@ -576,6 +577,8 @@ public abstract class World
 	 */
 	public void trimRemovableChunks()
 	{
+		if(this instanceof WorldTool)
+			System.out.println("omg this should not happen");
 		ChunksIterator it = this.iterator();
 		CubicChunk chunk;
 		while (it.hasNext())
