@@ -178,7 +178,7 @@ public class ServerConnectionsHandler extends Thread
 		clients.remove(serverClient);
 	}
 
-	public void disconnectClient(String ip)
+	public void disconnectClientByIp(String ip)
 	{
 		ServerClient c = null;
 		for (ServerClient sc : clients)

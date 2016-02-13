@@ -18,4 +18,8 @@ public class VoxelModel
 	public float[][] vertices;
 	public float[][] texCoords;
 	public float[][] normals;
+
+	public float jitterX = 0;
+	public float jitterY = 0;
+	public float jitterZ = 0;
 }

@@ -4,8 +4,8 @@ package io.xol.chunkstories.gui.menus;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector4f;
 
-import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.engine.base.font.TrueTypeFont;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.textures.Texture;
@@ -78,6 +78,7 @@ public class InventoryDrawer
 		GuiDrawer.drawBoxWindowsSpaceWithSize(x, y+cornerSize, cornerSize, internalHeight, 0, 248f/256f, 0.03125f, 8f/256f, textureId, true, true, color);
 		GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y+cornerSize, cornerSize, internalHeight, 248/256f, 248f/256f, 1f, 8f/256f, textureId, true, true, color);
 		//Actual inventory slots
+		int sumSlots2HL = 0;
 		boolean foundTheVegan = false;
 		for (int i = 0; i < inventory.width; i++)
 		{
@@ -97,12 +98,32 @@ public class InventoryDrawer
 					selectedPile = inventory.getItem(selectedSlot[0], selectedSlot[1]);
 				ItemPile thisPile = inventory.getItem(i, j);
 				
-				if(thisPile == null && (mouseOver || i+j*inventory.width == highlightSlot) || (selectedPile != null && thisPile != null && selectedPile.x == thisPile.x && selectedPile.y == thisPile.y))
+				if(summary)
 				{
-					GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 32f / 256f, 176 / 256f, 56 / 256f, 152 / 256f, textureId, true, true, color);
+					ItemPile summaryBarSelected = inventory.getItem(highlightSlot, 0);
+					if(summaryBarSelected != null && i == summaryBarSelected.x)
+					{
+						sumSlots2HL = summaryBarSelected.item.getSlotsWidth();
+					}
+					if(sumSlots2HL > 0 || (summaryBarSelected == null && highlightSlot == i))
+					{
+						sumSlots2HL--;
+						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 32f / 256f, 176 / 256f, 56 / 256f, 152 / 256f, textureId, true, true, color);
+					}
+					else
+						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 176 / 256f, 32f / 256f, 152 / 256f, textureId, true, true, color);
+					
 				}
 				else
-					GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 176 / 256f, 32f / 256f, 152 / 256f, textureId, true, true, color);
+				{
+					if(/*thisPile == null && */mouseOver || (selectedPile != null && thisPile != null && selectedPile.x == thisPile.x && selectedPile.y == thisPile.y))
+					{
+						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 32f / 256f, 176 / 256f, 56 / 256f, 152 / 256f, textureId, true, true, color);
+					}
+					else
+						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 176 / 256f, 32f / 256f, 152 / 256f, textureId, true, true, color);
+				
+				}
 			}
 		}
 		if(!foundTheVegan)
@@ -153,6 +174,9 @@ public class InventoryDrawer
 				if(pile != null && !(InventoryOverlay.selectedItem != null && InventoryOverlay.selectedItem.inventory != null && inventory.equals(InventoryOverlay.selectedItem.inventory) && InventoryOverlay.selectedItem.x == i && InventoryOverlay.selectedItem.y == j ))
 				{
 					itemTexture = TexturesHandler.getTexture(pile.getTextureName());
+					if(itemTexture.getID() == -1)
+						itemTexture = TexturesHandler.getTexture("res/items/icons/notex.png");
+					//
 					itemTexture.setLinearFiltering(false);
 					//textureId = TexturesHandler.idTexture(pile.getTextureName());
 					//TexturesHandler.mipmapLevel(pile.getTextureName(), -1);

@@ -118,7 +118,7 @@ public class ServerConsole
 				else if (cmd.split(" ")[0].equals("kickip") && cmd.split(" ").length == 2)
 				{
 					String tokick = cmd.split(" ")[1];
-					Server.getInstance().handler.disconnectClient(tokick);
+					Server.getInstance().handler.disconnectClientByIp(tokick);
 					emitter.sendMessage("Forced disconnect for ip " + tokick);
 					return;
 				}

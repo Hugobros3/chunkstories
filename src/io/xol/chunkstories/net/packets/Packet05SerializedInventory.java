@@ -1,8 +1,8 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.entity.Entity;
-import io.xol.chunkstories.entity.inventory.Inventory;
-import io.xol.chunkstories.entity.inventory.InventoryHolder;
+import io.xol.chunkstories.item.inventory.Inventory;
+import io.xol.chunkstories.item.inventory.InventoryHolder;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

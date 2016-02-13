@@ -25,11 +25,11 @@ import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.core.EntityPlayer;
-import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.gui.menus.InventoryDrawer;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.physics.particules.ParticleLight;
 import io.xol.chunkstories.physics.particules.ParticleSetupLight;
@@ -377,10 +377,22 @@ public class GameplayScene extends OverlayableScene
 			return true;
 		if(player != null && player.inventory != null)
 		{
+			ItemPile selected = null;
 			if(a < 0)
-				selectedInventorySlot++;
+			{
+				selected = player.inventory.getItem(selectedInventorySlot, 0);
+				if(selected != null)
+					selectedInventorySlot+= selected.item.getSlotsWidth();
+				else
+					selectedInventorySlot++;
+			}
 			else
+			{
 				selectedInventorySlot--;
+				selected = player.inventory.getItem(selectedInventorySlot, 0);
+				if(selected != null)
+					selectedInventorySlot = selected.x;
+			}
 			if(selectedInventorySlot < 0)
 				selectedInventorySlot += 10;
 			selectedInventorySlot %= 10;
@@ -390,7 +402,6 @@ public class GameplayScene extends OverlayableScene
 
 	public void onResize()
 	{
-		// System.out.println("on resize");
 		worldRenderer.setupRenderSize(XolioWindow.frameW, XolioWindow.frameH);
 	}
 
@@ -468,13 +479,6 @@ public class GameplayScene extends OverlayableScene
 			nbChunks++;
 			octelsTotal += c.vbo_size_normal * 16 + (c.vbo_size_water + c.vbo_size_complex) * 24;	
 		}
-		/*
-		for (CubicChunk c : Client.world.chunksHolder.getAllLoadedChunks())
-		{
-			nbChunks++;
-			octelsTotal += (c.vbo_size_normal + c.vbo_size_water) * 16 + c.vbo_size_complex * 24;
-		}*/
-
 		return nbChunks + " chunks, storing " + octelsTotal / 1024 / 1024 + "Mb of vertex data.";
 	}
 

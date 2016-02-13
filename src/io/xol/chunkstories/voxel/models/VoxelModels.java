@@ -101,6 +101,15 @@ public class VoxelModels
 						else
 							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 					}
+					else if (line.startsWith("jitter"))
+					{
+						String[] splitted = line.split(" ");
+						if(model == null)
+							continue;
+						model.jitterX = Float.parseFloat(splitted[1]);
+						model.jitterY = Float.parseFloat(splitted[2]);
+						model.jitterZ = Float.parseFloat(splitted[3]);
+					}
 					else if (line.startsWith("v"))
 					{
 						if (model != null)

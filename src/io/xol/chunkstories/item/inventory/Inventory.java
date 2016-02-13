@@ -1,4 +1,4 @@
-package io.xol.chunkstories.entity.inventory;
+package io.xol.chunkstories.item.inventory;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -25,7 +25,7 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	//What does this inventory belong to ?
 	public InventoryHolder holder;
 
-	private ItemPile[][] contents;
+	protected ItemPile[][] contents;
 
 	public Inventory(InventoryHolder holder, int width, int height, String name)
 	{

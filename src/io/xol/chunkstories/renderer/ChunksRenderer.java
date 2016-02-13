@@ -878,6 +878,15 @@ public class ChunksRenderer extends Thread
 
 		if (model == null)
 			return;
+
+		float dx = 0f, dy = 0f, dz = 0f;
+		if (model.jitterX != 0.0f)
+			dx = (float) ((Math.random() * 2.0 - 1.0) * model.jitterX);
+		if (model.jitterY != 0.0f)
+			dy = (float) ((Math.random() * 2.0 - 1.0) * model.jitterY);
+		if (model.jitterZ != 0.0f)
+			dz = (float) ((Math.random() * 2.0 - 1.0) * model.jitterZ);
+
 		for (int i = 0; i < model.vertices.length; i++)
 		{
 			vert = model.vertices[i];
@@ -911,7 +920,7 @@ public class ChunksRenderer extends Thread
 
 			if (drawFace)
 			{
-				vertices.add(new float[] { vert[0] + sx, vert[1] + sy, vert[2] + sz });
+				vertices.add(new float[] { vert[0] + sx + dx, vert[1] + sy + dy, vert[2] + sz + dz });
 				texcoords.add(new int[] { (int) (textureS + tex[0] * texture.atlasOffset), (int) (textureT + tex[1] * texture.atlasOffset) });
 				colors.add(lightColors);
 				normals.add(normal);

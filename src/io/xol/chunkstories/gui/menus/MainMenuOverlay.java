@@ -6,8 +6,9 @@ import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.gui.Overlay;
-import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.item.inventory.Inventory;
+import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.base.font.BitmapFont;
@@ -101,7 +102,7 @@ public class MainMenuOverlay extends Overlay
 	{
 		if (k == Keyboard.KEY_E)
 			mainScene.changeOverlay(new InventoryOverlay(mainScene, this, new Inventory[]{new Inventory(null, 10, 4, "Inventaire")
-			,new Inventory(null, 10, 4, "La chatte à ta mère")}));
+			, new InventoryAllVoxels()})); // new Inventory(null, 10, 4, "La chatte à ta mère")
 
 		if (k == Keyboard.KEY_R)
 			mainScene.changeOverlay(new MessageBoxOverlay(mainScene, this, "Error : error"));

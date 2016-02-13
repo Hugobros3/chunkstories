@@ -6,8 +6,8 @@ import java.io.IOException;
 
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityControllable;
-import io.xol.chunkstories.entity.inventory.CSFSerializable;
-import io.xol.chunkstories.entity.inventory.Inventory;
+import io.xol.chunkstories.item.inventory.CSFSerializable;
+import io.xol.chunkstories.item.inventory.Inventory;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -32,6 +32,11 @@ public class ItemPile implements CSFSerializable
 	{
 		this(ItemsList.getItemByName(itemName));
 	}
+	
+	public ItemPile(String itemName, String[] info)
+	{
+		this(ItemsList.getItemByName(itemName), info);
+	}
 
 	/**
 	 * Creates an item pile of this item
@@ -42,7 +47,25 @@ public class ItemPile implements CSFSerializable
 	{
 		this.item = item;
 		this.data = item.getItemData();
-		item.onCreate(this);
+		item.onCreate(this, null);
+	}
+	
+	public ItemPile(Item item, String[] info)
+	{
+		this.item = item;
+		this.data = item.getItemData();
+		item.onCreate(this, info);
+	}
+	
+	/**
+	 * For items that require special arguments, you can call setInfo on them to apply onCreate once more with proper arguments
+	 * @param info
+	 * @return
+	 */
+	public ItemPile setInfo(String[] info)
+	{
+		item.onCreate(this, null);
+		return this;
 	}
 
 	/**
@@ -67,7 +90,7 @@ public class ItemPile implements CSFSerializable
 
 	public String getTextureName()
 	{
-		return item.getTextureName();
+		return item.getTextureName(this);
 	}
 
 	public Item getItem()
@@ -121,6 +144,12 @@ public class ItemPile implements CSFSerializable
 		//Put it back if we can't move it
 		else if (inventory != null)
 			inventory.setItemPileAt(this.x, this.y, this);
+		return this;
+	}
+
+	public ItemPile setAmount(int amount)
+	{
+		this.amount = amount;
 		return this;
 	}
 }

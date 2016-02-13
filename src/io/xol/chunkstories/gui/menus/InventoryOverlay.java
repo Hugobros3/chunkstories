@@ -5,10 +5,11 @@ import org.lwjgl.input.Mouse;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.entity.inventory.Inventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.net.packets.Packet06InventoryMoveItemPile;
+import io.xol.chunkstories.world.WorldClient;
 import io.xol.chunkstories.world.WorldLocalClient;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.gui.GuiDrawer;
@@ -44,7 +45,7 @@ public class InventoryOverlay extends Overlay
 		for (int i = 0; i < drawers.length; i++)
 		{
 			int thisWidth = inventories[i].width;
-			drawers[i].drawInventoryCentered(XolioWindow.frameW / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, XolioWindow.frameH / 2, 2, false, 4);
+			drawers[i].drawInventoryCentered(XolioWindow.frameW / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, XolioWindow.frameH / 2, 2, false, 4 - i*4);
 			widthAccumulation += 1 + thisWidth;
 		}
 
@@ -52,6 +53,8 @@ public class InventoryOverlay extends Overlay
 		{
 			int slotSize = 24 * 2;
 			int textureId = TexturesHandler.getTextureID(selectedItem.getTextureName());
+			if(textureId == -1)
+				textureId = TexturesHandler.getTexture("res/items/icons/notex.png").getID();
 			int width = slotSize * selectedItem.item.getSlotsWidth();
 			int height = slotSize * selectedItem.item.getSlotsHeight();
 			GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX() - width / 2, Mouse.getY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
@@ -90,7 +93,7 @@ public class InventoryOverlay extends Overlay
 					{
 						if (Client.world instanceof WorldLocalClient)
 							selectedItem = selectedItem.moveTo(inventories[i], x, y);
-						else
+						else if(Client.world instanceof WorldClient)
 						{
 							Packet06InventoryMoveItemPile packetMove = new Packet06InventoryMoveItemPile(true);
 							packetMove.from = selectedItem.inventory;
@@ -103,7 +106,8 @@ public class InventoryOverlay extends Overlay
 							Client.connection.sendPacket(packetMove);
 							selectedItem = selectedItem.moveTo(inventories[i], x, y);
 						}
-
+						else
+							selectedItem = selectedItem.moveTo(inventories[i], x, y);
 					}
 					return true;
 				}

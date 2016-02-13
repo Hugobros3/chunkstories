@@ -15,7 +15,7 @@ import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
-import io.xol.chunkstories.entity.inventory.Inventory;
+import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.net.packets.Packet04Entity;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.voxel.VoxelTypes;

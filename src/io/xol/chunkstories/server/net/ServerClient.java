@@ -137,11 +137,11 @@ public class ServerClient extends Thread implements HttpRequester
 			catch (IllegalPacketException | UnknowPacketException e)
 			{
 				ChunkStoriesLogger.getInstance().info("Disconnected "+this+" for causing an "+e.getClass().getSimpleName());
-				Server.getInstance().handler.disconnectClient(e.getMessage());
+				Server.getInstance().handler.disconnectClient(this, e.getMessage());
 			}
 			catch(Exception e)
 			{
-				Server.getInstance().handler.disconnectClient(e.getMessage());
+				Server.getInstance().handler.disconnectClient(this, e.getMessage());
 			}
 		}
 		Server.getInstance().handler.disconnectClient(this);
@@ -176,6 +176,7 @@ public class ServerClient extends Thread implements HttpRequester
 	{
 		if (alreadyKilled)
 			return;
+		died = true;
 		if (authentificated)
 		{
 			//authentificated = true;
@@ -199,8 +200,6 @@ public class ServerClient extends Thread implements HttpRequester
 			if (in != null)
 				in.close();
 			queue.kill();
-			//if (out != null)
-			//	out.close();
 		}
 		catch (Exception e)
 		{

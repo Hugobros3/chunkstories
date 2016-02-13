@@ -25,12 +25,18 @@ public abstract class Item
 		this.id = id;
 	}
 	
-	public void onCreate(ItemPile pile)
+	public void onCreate(ItemPile pile, String[] info)
 	{
 		
 	}
 	
-	public void onUse(Entity user, ItemPile pile)
+	/**
+	 * Called when the user interacts with the item
+	 * @param user Must be of type Entity implements EntityControllable ! The entity who made use of this item
+	 * @param pile The itemPile
+	 * @param action Additional information on the action the user performed : 0 = Left click, 1 = Right click, other values are left for modding purposes
+	 */
+	public void onUse(Entity user, ItemPile pile, int action)
 	{
 		
 	}
@@ -58,7 +64,7 @@ public abstract class Item
 	 * For Items not implementing a custom renderer, it just shows a dull icon and thus require an icon texture.
 	 * @return The full path to the image file.
 	 */
-	public String getTextureName()
+	public String getTextureName(ItemPile pile)
 	{
 		return "res/items/icons/"+internalName+".png";
 	}
@@ -126,11 +132,24 @@ public abstract class Item
 		this.maxStackSize = maxStackSize;
 	}
 
+	/**
+	 * Called on loading an ItemPile containing this item, usefull for loading stuff into the itemData of the pile.
+	 * @param itemPile
+	 * @param stream
+	 * @throws IOException
+	 */
 	public void load(ItemPile itemPile, DataInputStream stream) throws IOException
 	{
 		// TODO Auto-generated method stub
 		
 	}
+	
+	/**
+	 * See load()
+	 * @param itemPile
+	 * @param stream
+	 * @throws IOException
+	 */
 	public void save(ItemPile itemPile, DataOutputStream stream) throws IOException
 	{
 		// TODO Auto-generated method stub

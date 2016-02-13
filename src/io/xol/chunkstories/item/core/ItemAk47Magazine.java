@@ -1,6 +1,7 @@
 package io.xol.chunkstories.item.core;
 
 import io.xol.chunkstories.item.Item;
+import io.xol.chunkstories.item.ItemPile;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -15,7 +16,7 @@ public class ItemAk47Magazine extends Item
 	}
 
 	@Override
-	public String getTextureName()
+	public String getTextureName(ItemPile pile)
 	{
 		// TODO Auto-generated method stub
 		return "res/items/icons/ak47_magazine.png";

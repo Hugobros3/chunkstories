@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -21,6 +23,7 @@ import java.util.Arrays;
 public class VoxelTypes
 {
 	public static Voxel[] voxels = new Voxel[65536];
+	public static Set<Integer> attributedIds = new HashSet<Integer>();
 	public static int voxelTypes = 0;
 	public static int lastAllocatedId;
 
@@ -94,6 +97,7 @@ public class VoxelTypes
 						if (voxel != null)
 						{
 							voxels[voxel.getId()] = voxel;
+							attributedIds.add(voxel.getId());
 							voxel = null;
 							loadedVoxels++;
 						}
@@ -198,6 +202,7 @@ public class VoxelTypes
 	{
 		//Discard previous voxels
 		Arrays.fill(voxels, null);
+		attributedIds.clear();
 		
 		// Load .voxels files
 		// From vanilla
@@ -266,5 +271,10 @@ public class VoxelTypes
 			v = voxels[id];
 		}
 		return id;
+	}
+	
+	public static Set<Integer> getAllLoadedVoxelIds()
+	{
+		return attributedIds;
 	}
 }

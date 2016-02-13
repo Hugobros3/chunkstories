@@ -2,8 +2,8 @@ package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.entity.inventory.Inventory;
-import io.xol.chunkstories.entity.inventory.InventoryHolder;
+import io.xol.chunkstories.item.inventory.Inventory;
+import io.xol.chunkstories.item.inventory.InventoryHolder;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
