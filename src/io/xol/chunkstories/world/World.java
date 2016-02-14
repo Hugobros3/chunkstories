@@ -595,8 +595,9 @@ public abstract class World
 				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 1) || (chunk.chunkY - pCY) > 3
 						|| (chunk.chunkY - pCY) < -3))
 				{
-					if (chunk.vbo_id != -1)
-						glDeleteBuffers(chunk.vbo_id);
+					if (chunk.vbo_id != -1 && this.renderer != null)
+						renderer.deleteVBO(chunk.vbo_id);
+						//glDeleteBuffers(chunk.vbo_id);
 					chunk.need_render.set(true);
 					keep = false;
 				}

@@ -16,8 +16,10 @@ import java.nio.FloatBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import javax.imageio.ImageIO;
 
@@ -364,7 +366,11 @@ public class WorldRenderer
 				toload = null;
 		}
 		// if(FastConfig.debugGBuffers ) glFinish();
-
+		Iterator<Integer> vbo2freeI = vbo2delete.iterator();
+		while(vbo2freeI.hasNext()){
+			glDeleteBuffers(vbo2freeI.next());
+			vbo2freeI.remove();
+		}
 		// Update view
 		viewX = x;
 		viewY = y;
@@ -1613,5 +1619,12 @@ public class WorldRenderer
 			e.printStackTrace();
 			return "#FF0000Failed to take screenshot ! (" + e.toString() + ")";
 		}
+	}
+
+	Deque<Integer> vbo2delete = new ConcurrentLinkedDeque<Integer>();
+	
+	public void deleteVBO(int vbo_id)
+	{
+		vbo2delete.add(vbo_id);
 	}
 }
