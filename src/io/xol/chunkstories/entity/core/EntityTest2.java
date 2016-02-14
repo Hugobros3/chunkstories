@@ -87,12 +87,6 @@ public class EntityTest2 extends Entity implements EntityHUD
 	@Override
 	public void drawHUD(Camera camera)
 	{
-		// TODO Auto-generated method stub
-		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float)posX, (float)posY + 2.5f, (float)posZ));
 		
-		float scale = posOnScreen.z;
-		float dekal = TrueTypeFont.arial12.getWidth("Player")*16*scale;
-		if(scale > 0)
-			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x-dekal/2, posOnScreen.y, "Player", 16*scale, 16*scale, new Vector4f(1,1,1,1));
 	}
 }

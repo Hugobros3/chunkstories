@@ -99,6 +99,20 @@ public class ChatPanel
 						Client.world.addEntity(test);
 					}
 				}
+				else if (inputBox.text.startsWith("/locbutcher"))
+				{
+					Iterator<Entity> ie = Client.world.getAllLoadedEntities();
+					while(ie.hasNext())
+					{
+						Entity e = ie.next();
+						System.out.println("checking "+e);
+						if(!e.equals(Client.controller))
+						{	
+							System.out.println("removing");
+							ie.remove();
+						}
+					}
+				}
 				else if (Client.connection != null)
 					Client.connection.sendTextMessage("chat/" + inputBox.text);
 				else

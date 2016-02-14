@@ -253,7 +253,7 @@ public class GameplayScene extends OverlayableScene
 		}
 		else if (k == Keyboard.KEY_F4)
 			Client.world.particlesHolder.addParticle(new ParticleLight(Client.world, player.posX + (Math.random() - 0.5) * 30, player.posY + (Math.random()) * 10, player.posZ + (Math.random() - 0.5) * 30));
-		else if(k == Keyboard.KEY_F5)
+		/*else if(k == Keyboard.KEY_F5)
 		{
 			System.out.println("llk ???"+(inventorySerialized == null));
 			ItemPile item;
@@ -298,18 +298,18 @@ public class GameplayScene extends OverlayableScene
 				}
 				return true;
 			}
-		}
+		}*/
 		else if (k == Keyboard.KEY_F6)
 		{
 			if (player instanceof EntityPlayer)
 				((EntityPlayer) player).toggleNoclip();
 		}
-		else if (k == Keyboard.KEY_F7)
+		/*else if (k == Keyboard.KEY_F7)
 		{
 			Entity test = EntitiesList.newEntity(Client.world, (short) 0x02);
 			test.setPosition(player.posX, player.posY, player.posZ);
 			Client.world.addEntity(test);
-		}
+		}*/
 		else if (k == Keyboard.KEY_F8)
 			shouldCM = true;
 		else if (k == Keyboard.KEY_F9)
@@ -380,6 +380,7 @@ public class GameplayScene extends OverlayableScene
 			ItemPile selected = null;
 			if(a < 0)
 			{
+				selectedInventorySlot %= player.inventory.width;
 				selected = player.inventory.getItem(selectedInventorySlot, 0);
 				if(selected != null)
 					selectedInventorySlot+= selected.item.getSlotsWidth();
@@ -389,13 +390,12 @@ public class GameplayScene extends OverlayableScene
 			else
 			{
 				selectedInventorySlot--;
+				if(selectedInventorySlot < 0)
+					selectedInventorySlot += player.inventory.width;
 				selected = player.inventory.getItem(selectedInventorySlot, 0);
 				if(selected != null)
 					selectedInventorySlot = selected.x;
 			}
-			if(selectedInventorySlot < 0)
-				selectedInventorySlot += 10;
-			selectedInventorySlot %= 10;
 		}
 		return true;
 	}

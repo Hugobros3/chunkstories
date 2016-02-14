@@ -94,13 +94,20 @@ public class ChunksHolders
 		// if (chunkY > world.size.sizeInChunks)
 		// return null;
 		ChunkHolderKey key = new ChunkHolderKey(chunkX / 8, chunkY / 8, chunkZ / 8 );
-
+		
 		holder = chunkHolders.get(key);
 		if (holder == null && chunkY < h * 8 && chunkY >= 0 && load)
 		{
 			holder = new ChunkHolder(world, chunkX / 8, chunkY / 8, chunkZ / 8, false);
 			chunkHolders.putIfAbsent(key, holder);
 		}
+		//if(chunkX / 8 == 3 && chunkY / 8 == 0 && chunkZ / 8 == 3)
+		//	System.out.println("holder"+holder);
+		if(holder != null && !holder.isLoaded())
+			world.ioHandler.requestChunkHolderLoad(holder);
+		
+			//	removeChunkHolder(chunkX / 8, chunkY / 8, chunkZ / 8);
+		
 		return holder;
 	}
 

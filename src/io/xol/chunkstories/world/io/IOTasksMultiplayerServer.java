@@ -21,7 +21,6 @@ public class IOTasksMultiplayerServer extends IOTasks
 		}
 		catch (NoSuchAlgorithmException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -71,6 +70,24 @@ public class IOTasksMultiplayerServer extends IOTasks
 			return true;
 		}
 
+		@Override
+		public boolean equals(Object o)
+		{
+			if(o != null && o instanceof IOTaskSendCompressedChunk)
+			{
+				IOTaskSendCompressedChunk comp = ((IOTaskSendCompressedChunk)o);
+				if(comp.client.equals(this.client) && comp.chunkX == this.chunkX && comp.chunkY == this.chunkY && comp.chunkZ == this.chunkZ)
+					return true;
+			}
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return (int) ((-65536 + 7777 * chunkX + 256 * chunkY + chunkZ) % 2147483647);
+		}
+		
 		/*private String toStr(byte[] digest)
 		{
 			BigInteger bigInt = new BigInteger(1,digest);

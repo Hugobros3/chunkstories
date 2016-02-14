@@ -19,8 +19,10 @@ import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityIterator;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
+import io.xol.chunkstories.server.WorldServer;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
@@ -140,30 +142,22 @@ public abstract class World
 
 	public void addEntity(final Entity entity)
 	{
-		if (!client)
+		if(this instanceof WorldServer || this instanceof WorldLocalClient)
 			entity.entityID = nextEntityId();
 		entity.setHolder();
 		this.entities.add(entity);
-		/*ioHandler.requestChunkHolderRequest(entity.parentHolder, new IORequiringTask()
-		{
-			public boolean run(ChunkHolder holder)
-			{
-				holder.addEntity(entity);
-				return true;
-			}
-		});*/
 	}
 
 	public void removeEntity(Entity entity)
 	{
-		Iterator<Entity> iter = entities.iterator();
+		Iterator<Entity> iter = this.getAllLoadedEntities();
 		Entity entity2;
 		while (iter.hasNext())
 		{
 			entity2 = iter.next();
 			if (entity2.equals(entity))
 			{
-				entity.delete();
+				//entity.delete();
 				iter.remove();
 				//System.out.println("entity effectivly removed");
 			}
@@ -179,7 +173,7 @@ public abstract class World
 				//holder.tick();
 			}*/
 			//
-			Iterator<Entity> iter = entities.iterator();
+			Iterator<Entity> iter = this.getAllLoadedEntities();
 			Entity entity;
 			while (iter.hasNext())
 			{
@@ -210,10 +204,10 @@ public abstract class World
 		}
 		return entitiesToReturn;
 	}*/
-
+	
 	public Iterator<Entity> getAllLoadedEntities()
 	{
-		return entities.iterator();
+		return new EntityIterator(entities);//entities.iterator();
 	}
 
 	public Entity getEntityByUUID(long entityID)

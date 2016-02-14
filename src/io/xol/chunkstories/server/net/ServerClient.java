@@ -252,4 +252,16 @@ public class ServerClient extends Thread implements HttpRequester
 			}
 		}
 	}
+	
+	@Override
+	public boolean equals(Object o)
+	{
+		if(o != null && o instanceof ServerClient)
+		{
+			ServerClient c = (ServerClient)o;
+			if(c.name.equals(name) && id == c.id)
+				return true;
+		}
+			return false;
+	}
 }

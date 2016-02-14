@@ -5,6 +5,7 @@ import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.summary.ChunkSummary;
+import io.xol.engine.concurrency.UniqueQueue;
 import io.xol.engine.math.LoopingMathHelper;
 
 import java.io.FileInputStream;
@@ -16,8 +17,6 @@ import java.nio.IntBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.jpountz.lz4.LZ4Exception;
@@ -37,7 +36,7 @@ public class IOTasks extends Thread
 	// This thread does I/O work in queue.
 	// Extended by IOTaskMultiplayerClient and IOTaskMultiplayerServer for the client/server model.
 
-	protected Queue<IOTask> tasks = new ConcurrentLinkedQueue<IOTask>();
+	protected UniqueQueue<IOTask> tasks = new UniqueQueue<IOTask>();
 	int s = 0;
 	int h = 0;
 
@@ -58,15 +57,21 @@ public class IOTasks extends Thread
 		{
 			notifyAll();
 		}
-		// System.out.println("Added task.");
+		//long id = (long) (Math.random() *  655656);
+		synchronized(tasks)
+		{
+			/*Iterator<IOTask> i = tasks.iterator();
+			while(i.hasNext())
+			{
+				System.out.println(id+":"+i.next());
+			}
+			System.out.println("Listed tasks");*/
+		}
 	}
 
 	public String toString()
 	{
-		//synchronized (tasks)
-		{
-			return "IOTasks : " + getSize() + " remaining.";
-		}
+		return "IOTasks : " + getSize() + " remaining.";
 	}
 
 	public void requestChunksUnload(int pCX, int pCY, int pCZ, int sizeInChunks, int chunksViewDistance)
@@ -82,7 +87,7 @@ public class IOTasks extends Thread
 				int y = loadChunkTask.y;
 				int z = loadChunkTask.z;
 
-				if ((LoopingMathHelper.moduloDistance(x, pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(y, pCZ, sizeInChunks) > chunksViewDistance) || (Math.abs(z - pCY) > 4))
+				if ((LoopingMathHelper.moduloDistance(x, pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(y, pCZ, sizeInChunks) > chunksViewDistance) || (Math.abs(z - pCY) > 3))
 				{
 					//System.out.println("Removed task "+loadChunkTask+" for being too far");
 					iter.remove();
@@ -137,7 +142,7 @@ public class IOTasks extends Thread
 					{
 						if (!ok)
 						{
-							//System.out.println("rescheduling");
+							System.out.println("rescheduling"+task);
 							tasks.add(task);
 						}
 					}
@@ -255,6 +260,24 @@ public class IOTasks extends Thread
 		{
 			return "[IOTaskLoadChunk x=" + x + " y= " + y + " z= " + z + "]";
 		}
+		
+		@Override
+		public boolean equals(Object o)
+		{
+			if(o != null && o instanceof IOTaskLoadChunk)
+			{
+				IOTaskLoadChunk comp = ((IOTaskLoadChunk)o);
+				if(comp.x == this.x && comp.y == this.y && comp.z == this.z)
+					return true;
+			}
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return (int) ((65536 + 65536L * x + 256 * y + z) % 2147483647);
+		}
 
 	}
 
@@ -266,7 +289,7 @@ public class IOTasks extends Thread
 
 		// We now do duplicate check in ChunkHolder
 
-		for (IOTask ioTask : tasks)
+		/*for (IOTask ioTask : tasks)
 		{
 			if (ioTask instanceof IOTaskLoadChunk)
 			{
@@ -274,7 +297,7 @@ public class IOTasks extends Thread
 				if (taskLC.x == task.x && taskLC.y == task.y && taskLC.z == task.z)
 					return;
 			}
-		}
+		}*/
 		addTask(task);
 	}
 
@@ -292,6 +315,7 @@ public class IOTasks extends Thread
 		{
 			//Trim world first
 			world.trimRemovableChunks();
+			//System.out.println("Load chunk holder");
 			//Lock
 			holder.lock.lock();
 			if (holder.handler.exists())
@@ -333,10 +357,12 @@ public class IOTasks extends Thread
 				catch (FileNotFoundException e)
 				{
 					e.printStackTrace();
+					return false;
 				}
 				catch (IOException e)
 				{
 					e.printStackTrace();
+					return false;
 				}
 			}
 			else
@@ -379,6 +405,23 @@ public class IOTasks extends Thread
 			return true;
 		}
 
+		@Override
+		public boolean equals(Object o)
+		{
+			if(o != null && o instanceof IOTaskLoadChunkHolder)
+			{
+				IOTaskLoadChunkHolder comp = ((IOTaskLoadChunkHolder)o);
+				if(comp.holder.regionX == holder.regionX && comp.holder.regionY == this.holder.regionY && comp.holder.regionZ == this.holder.regionZ)
+					return true;
+			}
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return (int) ((874 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ ) % 2147483647);
+		}
 	}
 
 	public void requestChunkHolderLoad(ChunkHolder holder)
@@ -457,6 +500,23 @@ public class IOTasks extends Thread
 			return true;
 		}
 
+		@Override
+		public boolean equals(Object o)
+		{
+			if(o != null && o instanceof IOTaskSaveChunkHolder)
+			{
+				IOTaskSaveChunkHolder comp = ((IOTaskSaveChunkHolder)o);
+				if(comp.holder.regionX == holder.regionX && comp.holder.regionY == this.holder.regionY && comp.holder.regionZ == this.holder.regionZ)
+					return true;
+			}
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return (int) ((666778 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ ) % 2147483647);
+		}
 	}
 
 	public void requestChunkHolderSave(ChunkHolder holder)
@@ -545,6 +605,22 @@ public class IOTasks extends Thread
 			return true;
 		}
 
+		public boolean equals(Object o)
+		{
+			if(o instanceof IOTaskLoadSummary)
+			{
+				IOTaskLoadSummary comp = ((IOTaskLoadSummary)o);
+				if(comp.summary.rx == this.summary.rx && comp.summary.rz == this.summary.rz)
+					return true;
+			}
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return (int) 1111 + summary.rx + summary.rz * 256;
+		}
 	}
 
 	public void requestChunkSummaryLoad(ChunkSummary summary)
@@ -606,6 +682,23 @@ public class IOTasks extends Thread
 			return true;
 		}
 
+		public boolean equals(Object o)
+		{
+			/*if(o instanceof IOTaskLoadSummary)
+			{
+				IOTaskLoadSummary comp = ((IOTaskLoadSummary)o);
+				if(comp.summary.rx == this.summary.rx && comp.summary.rz == this.summary.rz)
+					return true;
+			}*/
+			//All saves request are unique
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return (int) 7777 + summary.rx + summary.rz * 256;
+		}
 	}
 
 	public void requestChunkSummarySave(ChunkSummary summary)
@@ -614,7 +707,7 @@ public class IOTasks extends Thread
 		addTask(task);
 	}
 
-	public class IOTaskRemoveChunk extends IOTask
+	/*public class IOTaskRemoveChunk extends IOTask
 	{
 		CubicChunk chunk;
 
@@ -650,7 +743,7 @@ public class IOTasks extends Thread
 			}
 			return true;
 		}
-	}
+	}*/
 
 	public void notifyChunkUnload(int chunkX, int chunkY, int chunkZ)
 	{
@@ -681,6 +774,17 @@ public class IOTasks extends Thread
 			{
 				return task.run(holder);
 			}
+		}
+		
+		public boolean equals(Object o)
+		{
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return (int) -878441;
 		}
 
 	}

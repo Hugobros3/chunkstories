@@ -98,11 +98,26 @@ public class IOTasksMultiplayerClient extends IOTasks
 			world.setChunk(c);
 			return true;
 		}
-		/*
-		 * private String toStr(byte[] digest) { BigInteger bigInt = new
-		 * BigInteger(1, digest); return bigInt.toString(16); }
-		 */
-
+		
+		@Override
+		public boolean equals(Object o)
+		{
+			/*if(o instanceof IOTaskProcessCompressedChunkArrival)
+			{
+				IOTaskProcessCompressedChunkArrival comp = ((IOTaskProcessCompressedChunkArrival)o);
+				if(comp.x == this.x && comp.y == this.y && comp.z == this.z)
+					return true;
+			}*/
+			//All packets are unique
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return 6792;
+			//return (int) ((65536 + 65536L * x + 256 * y + z) % 2147483647);
+		}
 	}
 
 	public void requestChunkCompressedDataProcess(Packet02ChunkCompressedData data)
@@ -175,7 +190,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 	public class IOTaskProcessCompressedChunkSummaryArrival extends IOTask
 	{
-
 		Packet03ChunkSummary packet;
 
 		public IOTaskProcessCompressedChunkSummaryArrival(Packet03ChunkSummary packet)
@@ -212,6 +226,25 @@ public class IOTasksMultiplayerClient extends IOTasks
 			return true;
 		}
 
+		@Override
+		public boolean equals(Object o)
+		{
+			/*if(o instanceof IOTaskProcessCompressedChunkSummaryArrival)
+			{
+				IOTaskProcessCompressedChunkSummaryArrival comp = ((IOTaskProcessCompressedChunkSummaryArrival)o);
+				if(comp.packet.rx == this.packet.rx && comp.packet.rz == this.packet.rz)
+					return true;
+			}*/
+			
+			//All packets are unique
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return (int) 8792;
+		}
 	}
 
 	public void requestChunkSummaryProcess(Packet03ChunkSummary packet)
