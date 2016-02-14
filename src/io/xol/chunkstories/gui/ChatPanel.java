@@ -18,6 +18,8 @@ import org.lwjgl.util.vector.Vector4f;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.entity.EntitiesList;
+import io.xol.chunkstories.entity.Entity;
 
 public class ChatPanel
 {
@@ -84,6 +86,17 @@ public class ChatPanel
 					catch (Exception e)
 					{
 
+					}
+				}
+				else if (inputBox.text.startsWith("/locspawn"))
+				{
+					if(inputBox.text.contains(" "))
+					{
+						int id = Integer.parseInt(inputBox.text.split(" ")[1]);
+						Entity test = EntitiesList.newEntity(Client.world, (short) id);
+						Entity player = Client.controller;
+						test.setPosition(player.posX, player.posY, player.posZ);
+						Client.world.addEntity(test);
 					}
 				}
 				else if (Client.connection != null)

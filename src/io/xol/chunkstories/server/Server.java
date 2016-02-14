@@ -1,6 +1,9 @@
 package io.xol.chunkstories.server;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -109,16 +112,27 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		Scanner in = new Scanner(System.in);
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		System.out.print("> ");
 		while (running.get())
 		{ // main loop
-			System.out.print("> ");
-			String cmd = in.nextLine(); // Wait for input
-			if (cmd != null)
+
+			try
 			{
+				// wait until we have data to complete a readLine()
+				while (!br.ready() && running.get())
+				{
+					Thread.sleep(200);
+				}
+				if (!running.get())
+					break;
+				String cmd = br.readLine();
+				if (cmd == null)
+					continue;
 				try
 				{
 					ServerConsole.handleCommand(cmd, this); // Process it
+					System.out.print("> ");
 				}
 				catch (Exception e)
 				{
@@ -126,22 +140,41 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 					e.printStackTrace();
 				}
 			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			catch (InterruptedException e)
+			{
+				System.out.println("ConsoleInputReadTask() cancelled");
+				break;
+			}
+
 		}
-		in.close();
+		try
+		{
+			br.close();
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		pluginsManager.disablePlugins();
 		closeServer();
 		ChunkStoriesLogger.getInstance().save();
 	}
-	
+
 	@Override
 	public PluginsManager getPluginsManager()
 	{
 		return pluginsManager;
 	}
-	
+
 	private void closeServer()
 	{
 		// When stopped, close sockets and save config.
+		//Thread.currentThread().notify();
 		world.save();
 		handler.closeAll();
 		serverConfig.save();
@@ -218,7 +251,7 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 		if (handler != null)
 			for (ServerClient c : handler.getAuthentificatedClients())
 				if (c.profile != null)
-					if(c.profile.getName().startsWith(string))
+					if (c.profile.getName().startsWith(string))
 						return c.profile;
 		return null;
 	}

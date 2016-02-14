@@ -51,6 +51,7 @@ public class ObjMesh
 		int groupSize = 0;
 		String group = "root";
 
+		int line = 0;
 		//int faces = 0;
 		try
 		{
@@ -62,6 +63,7 @@ public class ObjMesh
 			float[] v, t, n;
 			while ((l = reader.readLine()) != null)
 			{
+				line++;
 				if (!l.startsWith("#"))
 				{
 					splitted = l.split(" ");
@@ -166,6 +168,7 @@ public class ObjMesh
 		}
 		catch (Exception e)
 		{
+			System.out.println("Error loading model at line "+line);
 			e.printStackTrace();
 		}
 	}

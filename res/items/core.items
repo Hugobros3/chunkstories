@@ -1,6 +1,6 @@
 # Here you get/have to assign items their ID and class.
 
-item 0 item_voxel io.xol.chunkstories.item.core.ItemVoxel
+item 1 item_voxel io.xol.chunkstories.item.core.ItemVoxel
 	
 end
 

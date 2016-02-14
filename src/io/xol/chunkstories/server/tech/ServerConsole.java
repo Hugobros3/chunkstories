@@ -21,9 +21,16 @@ public class ServerConsole
 		try
 		{
 			//First handle the plugins commands
+			try{
 			if (Server.getInstance().pluginsManager.dispatchCommand(cmd, emitter))
 				return;
-
+			}
+			catch(Exception e)
+			{
+				emitter.sendMessage("An exception happened while handling your command : "+e.getLocalizedMessage());
+				e.printStackTrace();
+			}
+			
 			// No rights needed
 			if (cmd.equals("uptime"))
 			{

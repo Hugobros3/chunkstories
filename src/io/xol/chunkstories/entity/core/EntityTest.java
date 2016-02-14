@@ -46,7 +46,7 @@ public class EntityTest extends Entity implements EntityHUD
 	public void render()
 	{
 		// if(Math.random() > 0.9)
-		i++;
+		//i++;
 		i %= 80;
 		// System.out.println("rendering entity test");
 		RenderingContext.setDiffuseTexture(TexturesHandler.getTextureID("models/hogubrus3.png"));
