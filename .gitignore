@@ -1,5 +1,5 @@
 /bin/
-config/*.cfg
+config/*
 /worlds/
 counter.jar
 genbench.txt
@@ -9,3 +9,9 @@ spec.txt
 *.class
 *.jar
 hs_err_pid*
+res/textures/tiles_merged*
+*main.fs
+*main.vs
+players/*
+serverlogs/*
+logs/*

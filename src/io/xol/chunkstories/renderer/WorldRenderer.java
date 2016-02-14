@@ -51,9 +51,12 @@ import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class WorldRenderer
 {
-
 	// World pointer
 	World world;
 
