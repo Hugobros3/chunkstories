@@ -63,7 +63,7 @@ public class WorldRenderer
 	// Worker thread
 	public ChunksRenderer chunksRenderer;
 
-	// Current position
+	// Current camera position
 	public float viewX, viewY, viewZ, viewRotH, viewRotV;
 	public int pCX, pCY, pCZ;
 
@@ -102,9 +102,7 @@ public class WorldRenderer
 	private GBufferTexture composite_normal = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
 	private GBufferTexture composite_meta = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
 
-	//private GBufferTexture composite_light = new GBufferTexture(3, XolioWindow.frameW, XolioWindow.frameH);
-
-	// Rendertarget
+	// Main Rendertarget (HDR)
 	private GBufferTexture composite_shaded = new GBufferTexture(RGB_HDR, XolioWindow.frameW, XolioWindow.frameH);
 
 	// Bloom texture
@@ -120,18 +118,13 @@ public class WorldRenderer
 	private FBO composite_pass_ssao = new FBO(null, composite_ssao);
 
 	private GBufferTexture blurTemp = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW / 2, XolioWindow.frameH / 2);
-
 	private FBO blurFBO = new FBO(null, blurTemp);
-	// private FBO composite_pass_bloom4 = new FBO(null, composite_bloom4);
-	// private FBO composite_pass_bloom8 = new FBO(null, composite_bloom8);
-	// private FBO composite_pass_bloom16 = new FBO(null, composite_bloom16);
 
-	// Shadowing !
+	// Normalized sun position
 	Vector3f normSunPosition = new Vector3f();
 
 	// Shadow matrices to shaders
 	private FloatBuffer matrix44Buffer;
-	// private FloatBuffer matrix44Buffer2;
 
 	// Shadow maps
 	private int smr = 0;
@@ -330,7 +323,6 @@ public class WorldRenderer
 		// Called every frame, this method takes care of updating the world :
 		// It will keep up to date the camera position, as well as a list of
 		// to-render chunks in order to fill empty VBO space
-
 		// Upload generated chunks data to GPU
 		updateProfiler.reset("vbo upload");
 		VBOData toload = chunksRenderer.doneChunk();
@@ -346,11 +338,9 @@ public class WorldRenderer
 				glBufferData(GL_ARRAY_BUFFER, toload.buf, GL_STATIC_DRAW);
 				//if (c.vbo_size_normal + c.vbo_size_complex + c.vbo_size_water <= 0)
 				//	c.fadeTicks = 25;
-
 				c.vbo_size_normal = toload.s_normal;
 				c.vbo_size_complex = toload.s_complex;
 				c.vbo_size_water = toload.s_water;
-
 				chunksChanged = true;
 			}
 			else
@@ -369,6 +359,7 @@ public class WorldRenderer
 				toload = null;
 		}
 		// if(FastConfig.debugGBuffers ) glFinish();
+		// Cleans free vbos
 		Iterator<Integer> vbo2freeI = vbo2delete.iterator();
 		while(vbo2freeI.hasNext()){
 			glDeleteBuffers(vbo2freeI.next());
@@ -418,12 +409,9 @@ public class WorldRenderer
 				}
 				renderList.add(chunk);
 			}
-
 			// Now delete from the worker threads what we won't need anymore
 			chunksRenderer.purgeUselessWork(pCX, pCY, pCZ, sizeInChunks, chunksViewDistance);
 			world.ioHandler.requestChunksUnload(pCX, pCY, pCZ, sizeInChunks, chunksViewDistance + 1);
-			// Also clean the chunk summaries
-
 			// Update far terrain
 			if (pCX != npCX || pCZ != npCZ)
 				terrain.generateArround(x, z);

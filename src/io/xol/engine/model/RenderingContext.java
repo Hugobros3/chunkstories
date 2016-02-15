@@ -22,8 +22,7 @@ public class RenderingContext
 		verticesAttribMode = false;
 	}
 
-	public static void enableVAMode(int vertexIn, int texCoordIn, int colorIn,
-			int normalIn, boolean shadow)
+	public static void enableVAMode(int vertexIn, int texCoordIn, int colorIn, int normalIn, boolean shadow)
 	{
 		RenderingContext.vertexIn = vertexIn;
 		RenderingContext.texCoordIn = texCoordIn;

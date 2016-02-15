@@ -1,7 +1,5 @@
 package io.xol.chunkstories.world;
 
-import static org.lwjgl.opengl.GL15.glDeleteBuffers;
-
 import java.io.File;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;

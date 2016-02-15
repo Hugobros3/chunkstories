@@ -2,13 +2,6 @@ package io.xol.chunkstories.gui;
 
 import org.lwjgl.util.vector.Vector3f;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Iterator;
-
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -21,7 +14,6 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.core.EntityPlayer;

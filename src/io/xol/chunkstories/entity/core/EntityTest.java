@@ -136,7 +136,7 @@ public class EntityTest extends Entity implements EntityHUD
 		
 		for(float[] k : kek)
 		{
-			glVertex3d(k[0], k[1], k[2]);
+			glVertex3f(k[0], k[1], k[2]);
 		}
 		glEnd();
 	}
