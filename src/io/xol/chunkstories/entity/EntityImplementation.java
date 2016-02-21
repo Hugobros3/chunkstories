@@ -151,6 +151,13 @@ public abstract class EntityImplementation implements Entity
 		velY += accelerationVector.y;
 		velZ += accelerationVector.z;
 		
+		if(!world.isChunkLoaded((int)posX/32, (int)posY/32, (int)posZ/32))
+		{
+			velX = 0;
+			velY = 0;
+			velZ = 0;
+		}
+		
 		blockedMomentum = moveWithCollisionRestrain(velX, velY, velZ, true);
 		
 		updatePosition();

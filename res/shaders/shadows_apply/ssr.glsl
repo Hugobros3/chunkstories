@@ -117,7 +117,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 		vec4 cameraSpacePosition = convertScreenSpaceToWorldSpace(finalSamplePos);
 		vec4 pixelNormal = texture2D(normalBuffer, finalSamplePos);
 		pixelNormal.rgb * 2.0 - vec3(1.0);
-		vec3 pixelMeta = texture2D(metaBuffer, finalSamplePos).xyz;
+		vec4 pixelMeta = texture2D(metaBuffer, finalSamplePos);
 		//color = vec4(1.0, 0.0, 1.0, 1.0);
 		color = computeLight(color, pixelNormal.xyz, cameraSpacePosition, pixelMeta, pixelNormal.w);
 		//color.rgb = mix(color, skyColor, pixelNormal.w);

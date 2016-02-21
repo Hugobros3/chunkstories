@@ -16,6 +16,7 @@ import java.nio.ByteOrder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
@@ -219,10 +220,10 @@ public class WorldRenderer
 		this.camera = camera;
 		if(FastConfig.doDynamicCubemaps && (System.currentTimeMillis() - lastEnvmapRender) > 2000L)// * Math.pow(30.0f / XolioWindow.getFPS(), 1.0f))
 			screenCubeMap(256, environmentMap);
-		renderWorldAtCameraInternal(camera);
+		renderWorldAtCameraInternal(camera, -1);
 	}
 	
-	public void renderWorldAtCameraInternal(Camera camera)
+	public void renderWorldAtCameraInternal(Camera camera, int chunksToRenderLimit)
 	{
 		// Set camera
 		this.camera = camera;
@@ -238,10 +239,8 @@ public class WorldRenderer
 
 		Client.profiler.startSection("next");
 		// Shadows pre-pass
-		if (FastConfig.doShadows)
-		{
+		if (FastConfig.doShadows && chunksToRenderLimit == -1)
 			shadowPass();
-		}
 		// Prepare matrices
 		camera.justSetup();
 
@@ -269,7 +268,7 @@ public class WorldRenderer
 
 		// Render world
 		glViewport(0, 0, scrW, scrH);
-		renderWorld(false);
+		renderWorld(false, chunksToRenderLimit);
 		// Render weather
 		composite_pass_shaded.bind();
 		composite_pass_shaded.setEnabledRenderTargets();
@@ -410,8 +409,8 @@ public class WorldRenderer
 				//i++;
 				chunk = it.next();
 
-				if(Math.abs(chunk.chunkX - pCX) <= chunksViewDistance)
-					if(Math.abs(chunk.chunkZ - pCZ) <= chunksViewDistance)
+				if(LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, world.getSizeInChunks()) <= chunksViewDistance)
+					if(LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, world.getSizeInChunks()) <= chunksViewDistance)
 					{
 
 						if (chunk.need_render.get() && chunk.dataPointer != -1)
@@ -422,6 +421,21 @@ public class WorldRenderer
 						renderList.add(chunk);
 					}
 			}
+			//Sort 
+			renderList.sort(new Comparator<CubicChunk>()
+					{
+				@Override
+				public int compare(CubicChunk a, CubicChunk b)
+				{
+					int distanceA = LoopingMathHelper.moduloDistance(a.chunkX, pCX, world.getSizeInChunks())
+							+LoopingMathHelper.moduloDistance(a.chunkZ, pCZ, world.getSizeInChunks());
+					int distanceB = LoopingMathHelper.moduloDistance(b.chunkX, pCX, world.getSizeInChunks())
+							+LoopingMathHelper.moduloDistance(b.chunkZ, pCZ, world.getSizeInChunks());
+					return distanceA - distanceB;
+					//return distanceB - distanceA;
+				}
+			});
+			
 			// Now delete from the worker threads what we won't need anymore
 			chunksRenderer.purgeUselessWork(pCX, pCY, pCZ, sizeInChunks, chunksViewDistance);
 			world.ioHandler.requestChunksUnload(pCX, pCY, pCZ, sizeInChunks, chunksViewDistance + 1);
@@ -492,8 +506,8 @@ public class WorldRenderer
 
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
 		shadowsPassShader.setUniformMatrix4f("localTransform", new Matrix4f());
-
-		renderWorld(true);
+		shadowsPassShader.setUniformFloat("entity", 0);
+		renderWorld(true, -1);
 		shadowsPassShader.use(false);
 		glViewport(0, 0, scrW, scrH);
 	}
@@ -536,7 +550,7 @@ public class WorldRenderer
 	float averageBrightness = 1f;
 	float apertureModifier = 1f;
 
-	public void renderWorld(boolean shadowPass)
+	public void renderWorld(boolean shadowPass, int chunksToRenderLimit)
 	{
 		long t;
 		animationTimer = (float) (((System.currentTimeMillis() % 100000) / 200f) % 100.0);
@@ -705,8 +719,12 @@ public class WorldRenderer
 
 		// renderList.clear();
 		glDisable(GL_BLEND);
+		int chunksRendered = 0;
 		for (CubicChunk chunk : renderList)
 		{
+			chunksRendered++;
+			if(chunksToRenderLimit != -1 && chunksRendered > chunksToRenderLimit)
+				break;
 			int vboDekalX = 0;
 			int vboDekalZ = 0;
 			// Adjustements so border chunks show at the correct place.
@@ -1540,14 +1558,13 @@ public class WorldRenderer
 			this.viewRotV = camera.view_roty;
 
 			float transformedViewH = (float) ((viewRotH) / 180 * Math.PI);
-			// if(FastConfig.debugGBuffers ) System.out.println(Math.sin(transformedViewV)+"f");
 			viewerCamDirVector = new Vector3f((float) (Math.sin((180 + viewRotV) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)), (float) (Math.cos((180 + viewRotV) / 180 * Math.PI) * Math.cos(transformedViewH)));
 
 			this.composite_pass_shaded.bind();
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			// Scene rendering
-			this.renderWorldAtCameraInternal(camera);
+			this.renderWorldAtCameraInternal(camera, cubemap == null ? -1 : 128);
 
 			// GL access
 			glBindTexture(GL_TEXTURE_2D, composite_shaded.getID());

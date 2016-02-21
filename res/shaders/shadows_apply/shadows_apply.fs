@@ -93,7 +93,7 @@ vec4 convertScreenSpaceToWorldSpace(vec2 co) {
     return fragposition;
 }
 
-vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec3 lightmapCoordinates, float specular)
+vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 meta, float specular)
 {
 	inputColor.rgb = pow(inputColor.rgb, vec3(gamma));
 
@@ -107,11 +107,12 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec3 li
 	float edgeSmoother = 0.0;
 	float clamped = clamp(NdotL, 0.0, 0.1);
 	//if(NdotL < 0.1)
-		opacity = 10.0-(100.0*clamped);
+	//if(meta.a > 0.5)
+		opacity = mix(opacity, clamp(10.0-(100.0*clamped), 0.0, 1.0), meta.a);
 	
 	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
 	{
-		float bias = clamp(0.0070*tan(acos(NdotL)) * clamp(shadowMapBiasMultiplier, 1.0, 2.0) ,-0.000,0.0010 )*(1.0+2.0*coordinatesInShadowmap.w);
+		float bias = (1.0 - meta.a) * 0.0200 + clamp(0.0070*tan(acos(NdotL)) * clamp(shadowMapBiasMultiplier, 1.0, 2.0) ,-0.000,0.0010 )*(1.0+2.0*coordinatesInShadowmap.w);
 		edgeSmoother = 1.0-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5)-0.25)*4.0+max(0,abs(coordinatesInShadowmap.y-0.5)-0.25)*4.0, 3.0), 0.0, 1.0);
 		opacity += edgeSmoother * (1.0-shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0).r);
 	}
@@ -120,7 +121,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec3 li
 	
 	<endif shadows>
 	//vec4 light = texture2D(comp_light, screenCoord);
-	float sunLightMultiplier = lightmapCoordinates.y;
+	float sunLightMultiplier = meta.y;
 	
 	<ifdef !shadows>
 	opacity = 0.0;
@@ -133,14 +134,14 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec3 li
 	
 	float sunSpec = specular * pow(clamp(dot(normalize(reflect(worldSpacePosition.xyz, normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),1750.0);
 	
-	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0.0, lightmapCoordinates.y * sunIntensity)).rgb;
+	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0.0, meta.y * sunIntensity)).rgb;
 	vec3 finalLight = baseLight * pow(mix(shadowColor, sunColor, (1.0 - opacity * shadowStrength) * shadowVisiblity), vec3(gamma));
 	<ifdef !shadows>
 	//finalLight = pow(finalLight, vec3(gamma));
 	<endif !shadows>
 	
-	finalLight += texture2DGammaIn(blockLightmap, vec2(lightmapCoordinates.x, 0.0)).rgb;
-	float ssao = 1.0-lightmapCoordinates.z;
+	finalLight += texture2DGammaIn(blockLightmap, vec2(meta.x, 0.0)).rgb;
+	float ssao = 1.0-meta.z;
 	<ifdef ssao>
 		//If SSAO is disabled, we use the crappy free vertex AO ( byproduct of block/sunlight merging in code )
 		ssao *= texture2D(ssaoBuffer, screenCoord).x;
@@ -158,7 +159,7 @@ void main() {
     vec4 cameraSpacePosition = convertScreenSpaceToWorldSpace(screenCoord);
 	
 	vec4 pixelNormal = texture2D(normalBuffer, screenCoord);
-	vec3 pixelMeta = texture2D(metaBuffer, screenCoord).xyz;
+	vec4 pixelMeta = texture2D(metaBuffer, screenCoord);
 	
 	pixelNormal.rgb = pixelNormal.rgb * 2.0 - vec3(1.0);
 	
