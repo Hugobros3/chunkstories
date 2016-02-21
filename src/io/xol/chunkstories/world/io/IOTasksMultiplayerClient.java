@@ -13,10 +13,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.packets.Packet02ChunkCompressedData;
 import io.xol.chunkstories.net.packets.Packet03ChunkSummary;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.summary.ChunkSummary;
+import net.jpountz.lz4.LZ4Exception;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -73,11 +75,18 @@ public class IOTasksMultiplayerClient extends IOTasks
 				// System.out.println("Running task x:" + x + "y:" + y + "z:" +
 				// z + " data.length=" + data.length + " md5:" +
 				// toStr(md.digest(data)));
-				decompressor.decompress(data, unCompressedData);
-				for (int i = 0; i < 32 * 32 * 32; i++)
+				try
 				{
-					int data = ((unCompressedData[i * 4] & 0xFF) << 24) | ((unCompressedData[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData[i * 4 + 2] & 0xFF) << 8) | (unCompressedData[i * 4 + 3] & 0xFF);
-					c.setDataAt(i / 32 / 32, (i / 32) % 32, i % 32, data);
+					decompressor.decompress(data, unCompressedData);
+					for (int i = 0; i < 32 * 32 * 32; i++)
+					{
+						int data = ((unCompressedData[i * 4] & 0xFF) << 24) | ((unCompressedData[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData[i * 4 + 2] & 0xFF) << 8) | (unCompressedData[i * 4 + 3] & 0xFF);
+						c.setDataAt(i / 32 / 32, (i / 32) % 32, i % 32, data);
+					}
+				}
+				catch (LZ4Exception exception)
+				{
+					ChunkStoriesLogger.getInstance().warning("Invalid chunk data received for : " + c);
 				}
 			}
 
@@ -98,7 +107,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			world.setChunk(c);
 			return true;
 		}
-		
+
 		@Override
 		public boolean equals(Object o)
 		{
@@ -111,7 +120,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			//All packets are unique
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
@@ -235,11 +244,11 @@ public class IOTasksMultiplayerClient extends IOTasks
 				if(comp.packet.rx == this.packet.rx && comp.packet.rz == this.packet.rz)
 					return true;
 			}*/
-			
+
 			//All packets are unique
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{

@@ -5,7 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
-import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.item.Item;
 import io.xol.chunkstories.item.ItemPile;

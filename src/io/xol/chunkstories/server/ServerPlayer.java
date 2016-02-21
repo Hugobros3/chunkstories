@@ -7,10 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.plugin.server.Player;
 import io.xol.chunkstories.entity.Controller;
-import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityControllable;
+import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.net.packets.Packet04Entity;
@@ -31,11 +32,11 @@ public class ServerPlayer implements Player, Controller
 	ServerClient playerConnection;
 
 	//Entity controlled
-	public Entity controlledEntity;
+	public EntityImplementation controlledEntity;
 
 	//Streaming control
 	public Map<int[], Long> loadedChunks = new HashMap<int[], Long>();
-	public List<Entity> trackedEntities = new ArrayList<Entity>();
+	public List<EntityImplementation> trackedEntities = new ArrayList<EntityImplementation>();
 	
 	public boolean hasSpawned = false;
 
@@ -56,24 +57,25 @@ public class ServerPlayer implements Player, Controller
 		if(controlledEntity == null)
 			return;
 		//System.out.println("edgyy");
-		Iterator<Entity> iter = controlledEntity.world.entities.iterator();
+		Iterator<Entity> iter = controlledEntity.getWorld().entities.iterator();
 		Entity e;
-		double ws = controlledEntity.world.getSizeSide();
+		double ws = controlledEntity.getWorld().getSizeSide();
 		boolean shouldTrack = false;
 		while(iter.hasNext())
 		{
 			e = iter.next();
 			if(!e.equals(controlledEntity))
 			{
-				double dx = LoopingMathHelper.moduloDistance(controlledEntity.posX, e.posX, ws);
-				double dy = Math.abs(controlledEntity.posX - e.posX);
-				double dz = LoopingMathHelper.moduloDistance(controlledEntity.posZ, e.posZ, ws);
+				Location loc = e.getLocation();
+				double dx = LoopingMathHelper.moduloDistance(controlledEntity.posX, loc.x, ws);
+				double dy = Math.abs(controlledEntity.posY - loc.y);
+				double dz = LoopingMathHelper.moduloDistance(controlledEntity.posZ, loc.z, ws);
 				shouldTrack = (dx < 256 && dz < 256 && dy < 256);
 				boolean contains = trackedEntities.contains(e);
 				//System.out.println("[TRACKER] "+e+" shouldTrack:"+shouldTrack+" contains:"+contains+" "+this.playerConnection.name);
 				if(shouldTrack && !contains)
 				{
-					trackedEntities.add(e);
+					trackedEntities.add((EntityImplementation) e);
 					trackEntity(e, true, false);
 				}
 				if(!shouldTrack && contains)
@@ -84,21 +86,21 @@ public class ServerPlayer implements Player, Controller
 				}
 			}
 		}
-		iter = trackedEntities.iterator();
+		Iterator<EntityImplementation> iter2 = trackedEntities.iterator();
 		while(iter.hasNext())
 		{
-			e = iter.next();
-			if(e.mpSendDeletePacket)
+			EntityImplementation e2 = iter2.next();
+			if(e2.mpSendDeletePacket)
 			{
 				//Despawn the entity
-				trackEntity(e, false, true);
+				trackEntity(e2, false, true);
 				iter.remove();
 				//trackedEntities.remove(e);
 			}
 			else
 			{
 				// Just send new positions
-				trackEntity(e, false, false);
+				trackEntity(e2, false, false);
 			}
 		}
 		//System.out.println("edguuuy");
@@ -172,7 +174,7 @@ public class ServerPlayer implements Player, Controller
 	@Override
 	public void setControlledEntity(Entity entity)
 	{
-		controlledEntity = entity;
+		controlledEntity = (EntityImplementation) entity;
 		((EntityControllable) controlledEntity).setController(this);
 		//Tells the player we assignated him an entity.
 		if(controlledEntity != null)
@@ -233,24 +235,21 @@ public class ServerPlayer implements Player, Controller
 	}
 
 	@Override
-	public <CE extends Entity & EntityControllable> void notifyTeleport(CE entity)
+	public void notifyTeleport(Entity entity)
 	{
 		//Send teleport packet
 		Packet04Entity packet = new Packet04Entity(false);
 		packet.applyFromEntity(controlledEntity);
-		/*packet.XBuffered = l.x;
-		packet.YBuffered = l.y;
-		packet.ZBuffered = l.z;*/
 		System.out.println("!!!Sending packet with position "+entity);
 		playerConnection.sendPacket(packet);
 	}
 
 	@Override
-	public <CE extends Entity & EntityControllable> void notifyInventoryChange(CE entity)
+	public void notifyInventoryChange(Entity entity)
 	{
 		System.out.println(this+" inventory changed sending packet");
 		Packet05SerializedInventory packetInventory = new Packet05SerializedInventory(false);
-		packetInventory.inventory = entity.inventory;
+		packetInventory.inventory = entity.getInventory();
 		playerConnection.sendPacket(packetInventory);
 	}
 
@@ -266,7 +265,7 @@ public class ServerPlayer implements Player, Controller
 	{
 		if(this.playerData.isFieldSet("posX"))
 		{
-			return new Location(playerData.getDoubleProp("posX"), playerData.getDoubleProp("posY"), playerData.getDoubleProp("posZ"));
+			return new Location(Server.getInstance().world, playerData.getDoubleProp("posX"), playerData.getDoubleProp("posY"), playerData.getDoubleProp("posZ"));
 		}
 		return null;
 	}

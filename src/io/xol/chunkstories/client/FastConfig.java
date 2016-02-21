@@ -58,6 +58,7 @@ public class FastConfig
 		ssaoQuality = Client.getConfig().getIntProp("ssaoQuality", 0);
 		doClouds = Client.getConfig().getBooleanProp("doClouds", false);
 		doRealtimeReflections = Client.getConfig().getBooleanProp("doRealtimeReflections", true);
+		doDynamicCubemaps = Client.getConfig().getBooleanProp("doDynamicCubemaps", true);
 
 		// interleavedRendering =
 		// Client.getConfig().getBooleanProp("interleavedRendering", false);
@@ -101,6 +102,8 @@ public class FastConfig
 
 	public static float mouseSensitivity = 1f;
 	public static float fov = 1f;
+	
+	public static boolean doDynamicCubemaps = true;
 
 	public static String[] getShaderConfig()
 	{
@@ -123,6 +126,8 @@ public class FastConfig
 			parameters.add("ssao");
 		if (doRealtimeReflections)
 			parameters.add("doRealtimeReflections");
+		if (doDynamicCubemaps)
+			parameters.add("doDynamicCubemaps");
 
 		String[] array = new String[parameters.size()];
 		for (int i = 0; i < array.length; i++)

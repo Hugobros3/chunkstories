@@ -1,17 +1,17 @@
 package io.xol.engine.model;
 
+import io.xol.chunkstories.GameData;
 import io.xol.engine.model.animation.BVHAnimation;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static io.xol.engine.model.RenderingContext.*;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Matrix4f;
@@ -24,19 +24,28 @@ import static org.lwjgl.opengl.GL20.*;
 // http://chunkstories.xyz
 // http://xol.io
 
+/**
+ * An appoling mess of an Obj loader
+ * @author Hugo
+ *
+ */
 public class ObjMesh
 {
 	int vboId = -1;
 	public Map<String, Integer> groups = new HashMap<String, Integer>();
 
-	public void loadMesh(String filename)
+	public ObjMesh(String name) throws FileNotFoundException
 	{
-		File file = new File(filename);
+		loadMesh(GameData.getFileLocation(name));
+	}
+
+	public void loadMesh(File file) throws FileNotFoundException
+	{
 		// Check file
 		if (!file.exists() || file.isDirectory())
 		{
 			System.out.println(".obj file " + file.getAbsolutePath() + " coudln't be loaded.");
-			return;
+			throw new FileNotFoundException(file.getAbsolutePath());
 		}
 		// Reset values
 		vertices.clear();
@@ -178,66 +187,48 @@ public class ObjMesh
 		glDeleteBuffers(vboId);
 	}
 
-	public void render()
+	public void render(RenderingContext renderingContext)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
-		if (verticesAttribMode)
+		if (renderingContext.verticesAttribMode)
 		{
 			// glDisableVertexAttribArray(colorIn);
 			// vboData.add( new float[]{v[0], v[1], v[2], t[0], t[1], n[0],
 			// n[1], n[2]} );
-			glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
-			glVertexAttribPointer(texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
-			/*
-			 * if(shadow) glDisableVertexAttribArray(normalIn); else
-			 */
-			glVertexAttribPointer(normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
+			glVertexAttribPointer(renderingContext.vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
+			glVertexAttribPointer(renderingContext.texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
+			glVertexAttribPointer(renderingContext.normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
 			int totalSize = 0;
 			for (int i : groups.values())
 			{
-				// System.out.println("nsm : "+i+" "+groups.containsValue(i));
+				//System.out.println("nsm : "+i+" "+groups.containsValue(i)+" s");
 				glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 				totalSize += i;
 			}
-			// System.out.println("nsm : "+totalSize+" : "+groups.size());
-
-			// glDrawArrays(GL_TRIANGLES, 0, totalSize*3);
 		}
 	}
 
-	public void renderUsingBVHTree(BVHAnimation animationData, int frame)
+	public void renderUsingBVHTree(RenderingContext renderingContext, BVHAnimation animationData, int frame)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		
 		//EntityTest debug = new EntityTest(null, 0, 0, 0);
-		if (verticesAttribMode)
+		if (renderingContext.verticesAttribMode)
 		{
-			// vboData.add( new float[]{v[0], v[1], v[2], t[0], t[1], n[0],
-			// n[1], n[2]} );
-			glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
-			glVertexAttribPointer(texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
-			// if (false)
-			// glDisableVertexAttribArray(normalIn);
-			// else
-			glVertexAttribPointer(normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
+			glVertexAttribPointer(renderingContext.vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
+			glVertexAttribPointer(renderingContext.texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
+			glVertexAttribPointer(renderingContext.normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
 			int totalSize = 0;
 			Matrix4f matrix;
 			for (String currentVertexGroup : groups.keySet())
 			{
 				int i = groups.get(currentVertexGroup);
 				matrix = animationData.getTransformationForBonePlusOffset(currentVertexGroup, frame);
-				RenderingContext.renderingShader.setUniformMatrix4f("localTransform", matrix);
+				renderingContext.renderingShader.setUniformMatrix4f("localTransform", matrix);
 				matrix.m30 = 0;
 				matrix.m31 = 0;
 				matrix.m32 = 0;
-				RenderingContext.renderingShader.setUniformMatrix4f("localTransformNormal", matrix);
-				//System.out.println("Drawing vertexGroup " + currentVertexGroup + ":" + i + ":" + groups.size());
-
-				//System.out.println(animationData.toString());
-
-				//debug.debugDraw(1, 1, 0, 0, 0, 0);
-				//i = groups.get("boneHead");
-				//totalSize = 12;
+				renderingContext.renderingShader.setUniformMatrix4f("localTransformNormal", matrix);
 				glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 				totalSize += i;
 			}

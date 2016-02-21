@@ -1,5 +1,6 @@
 package io.xol.chunkstories.entity;
 
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.World;
 

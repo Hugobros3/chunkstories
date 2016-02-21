@@ -1,10 +1,10 @@
 package io.xol.chunkstories.api.events.core;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.plugin.server.Player;
-import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.server.Server;
 
@@ -50,7 +50,7 @@ public class PlayerSpawnEvent extends Event
 	public void defaultBehaviour()
 	{
 		if(spawnLocation == null)
-			spawnLocation = entity.world.getDefaultSpawnLocation();
+			spawnLocation = entity.getWorld().getDefaultSpawnLocation();
 		entity.setLocation(spawnLocation);
 		Server.getInstance().world.addEntity(entity);
 		System.out.println("set entity controll");

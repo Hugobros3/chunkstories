@@ -10,12 +10,13 @@ import io.xol.engine.base.XolioWindow;
 import io.xol.engine.base.font.BitmapFont;
 import io.xol.engine.base.font.FontRenderer2;
 import io.xol.chunkstories.GameData;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityControllable;
+import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.gui.menus.InventoryDrawer;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
@@ -51,7 +52,7 @@ public class GameplayScene extends OverlayableScene
 
 	// PLAYER VARIABLES
 	public boolean multiPlayer;
-	Entity player;
+	EntityImplementation player;
 
 	public GameplayScene(XolioWindow w, boolean multiPlayer)
 	{
@@ -85,7 +86,7 @@ public class GameplayScene extends OverlayableScene
 		// Update client entity
 		if (player == null || player != Client.controller && Client.controller != null)
 		{
-			player = Client.controller;
+			player = (EntityImplementation) Client.controller;
 			inventoryDrawer = player.inventory == null ? null : new InventoryDrawer(player.inventory);
 		}
 		inventoryDrawer.inventory = player.inventory;
@@ -138,7 +139,7 @@ public class GameplayScene extends OverlayableScene
 		if (shouldCM)
 		{
 			shouldCM = false;
-			worldRenderer.screenCubeMap(512);
+			worldRenderer.screenCubeMap(512, null);
 		}
 		// THEN THE GUI
 		worldRenderer.postProcess();

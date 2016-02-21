@@ -10,9 +10,9 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.Controller;
-import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityHUD;
+import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.item.inventory.Inventory;
@@ -31,7 +31,7 @@ import io.xol.engine.textures.TexturesHandler;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityPlayer extends Entity implements EntityControllable, EntityHUD, EntityNameable, EntityRotateable
+public class EntityPlayer extends EntityImplementation implements EntityControllable, EntityHUD, EntityNameable, EntityRotateable
 {
 	boolean noclip = true;
 
@@ -52,7 +52,7 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 		super(w, x, y, z);
 		this.name = name;
 		inventory = new Inventory(this, 10, 4, this.name + "'s Inventory");
-		flying = true;
+		flying = false;
 	}
 
 	public void moveCamera()
@@ -128,7 +128,7 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 				flyMove();
 			else
 				normalMove();
-			super.changeChunk();
+			super.updatePosition();
 		}
 
 		if (Client.connection != null)
@@ -417,24 +417,24 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x-dekal/2, posOnScreen.y, txt, 16*scale, 16*scale, new Vector4f(1,1,1,1));
 	}
 	
-	public void render()
+	public void render(RenderingContext renderingContext)
 	{
 		if(this.equals(Client.controller))
 			return; // Don't render yourself
 		
-		RenderingContext.setDiffuseTexture(TexturesHandler.getTextureID("models/hogubrus3.png"));
-		RenderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
-		RenderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
+		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("models/hogubrus3.png"));
+		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
+		renderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
 		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
-		RenderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 		Matrix4f mutrix = new Matrix4f();
 		mutrix.rotate((90-rotH) / 180 * 3.14159f, new Vector3f(0,1,0));
 		
-		RenderingContext.renderingShader.setUniformMatrix4f("localTransform", mutrix);
+		renderingContext.renderingShader.setUniformMatrix4f("localTransform", mutrix);
 		//debugDraw();
-		ModelLibrary.loadAndRenderMesh("res/models/human.obj");
+		ModelLibrary.getMesh("res/models/human.obj").render(renderingContext);
 		//ModelLibrary.loadAndRenderAnimatedMesh("res/models/human.obj", "res/models/human-fixed-standstill.bvh", 0);
 	}
 
@@ -447,6 +447,7 @@ public class EntityPlayer extends Entity implements EntityControllable, EntityHU
 	@Override
 	public void setName(String n)
 	{
+		this.inventory.name = this.name + "'s Inventory";
 		name = n;
 	}
 	

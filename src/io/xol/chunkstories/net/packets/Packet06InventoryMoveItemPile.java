@@ -1,7 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.core.PlayerMoveItemEvent;
-import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.item.Item;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
@@ -97,13 +97,13 @@ public class Packet06InventoryMoveItemPile extends Packet
 		{
 			Entity entity = processor.getWorld().getEntityByUUID(eIdFrom);
 			if(entity != null)
-				from = entity.inventory;
+				from = entity.getInventory();
 		}
 		if(holderTypeTo == 0x01)
 		{
 			Entity entity = processor.getWorld().getEntityByUUID(eIdTo);
 			if(entity != null)
-				to = entity.inventory;
+				to = entity.getInventory();
 		}
 		
 		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(processor.getServerClient().profile, this);

@@ -2,6 +2,8 @@ package io.xol.chunkstories.server;
 
 import java.io.File;
 
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.core.PlayerSpawnEvent;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.server.net.ServerClient;
@@ -90,7 +92,6 @@ public class WorldServer extends World
 		int chunksViewDistance = 256/32;
 		int sizeInChunks = size.sizeInChunks;
 		
-		int removedChunks = 0;
 		//Chunks pruner
 		ChunksIterator i = Server.getInstance().world.iterator();
 		CubicChunk c;
@@ -98,15 +99,18 @@ public class WorldServer extends World
 		{
 			c = i.next();
 			boolean neededBySomeone = false;
-			//TODO clean
 			for(ServerClient client : Server.getInstance().handler.clients)
 			{
 				if(client.authentificated && client.profile != null)
 				{
-					int pCX = (int)client.profile.getControlledEntity().posX/32;
-					int pCY = (int)client.profile.getControlledEntity().posY/32;
-					int pCZ = (int)client.profile.getControlledEntity().posZ/32;
-					
+					Entity clientEntity = client.profile.getControlledEntity();
+					if(clientEntity == null)
+						continue;
+					Location loc = clientEntity.getLocation();
+					int pCX = (int)loc.x/32;
+					int pCY = (int)loc.y/32;
+					int pCZ = (int)loc.z/32;
+					//TODO use proper configurable values for this
 					if ( !((LoopingMathHelper.moduloDistance(c.chunkX, pCX, sizeInChunks) > chunksViewDistance + 2)
 							|| (LoopingMathHelper.moduloDistance(c.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 2) || (Math.abs(c.chunkY - pCY) > 4)) )
 					{
@@ -119,10 +123,9 @@ public class WorldServer extends World
 			{
 				//System.out.println("Removed");
 				removeChunk(c, false);
-				removedChunks++;
 			}
 		}
-		if(removedChunks > 0)
-			System.out.println("Removed "+removedChunks+" chunks.");
+		//if(removedChunks > 0)
+		//	System.out.println("Removed "+removedChunks+" chunks.");
 	}
 }

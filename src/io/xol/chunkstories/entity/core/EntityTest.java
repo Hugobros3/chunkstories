@@ -14,7 +14,7 @@ import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.world.World;
@@ -26,7 +26,7 @@ import io.xol.engine.model.animation.BVHLibrary;
 import io.xol.engine.model.animation.Bone;
 import io.xol.engine.textures.TexturesHandler;
 
-public class EntityTest extends Entity implements EntityHUD
+public class EntityTest extends EntityImplementation implements EntityHUD
 {
 	int i = 0;
 
@@ -43,24 +43,24 @@ public class EntityTest extends Entity implements EntityHUD
 
 	//BVHAnimation anim;
 
-	public void render()
+	public void render(RenderingContext renderingContext)
 	{
 		// if(Math.random() > 0.9)
 		//i++;
 		i %= 80;
 		// System.out.println("rendering entity test");
-		RenderingContext.setDiffuseTexture(TexturesHandler.getTextureID("models/hogubrus3.png"));
-		RenderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
-		RenderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
+		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("models/hogubrus3.png"));
+		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
+		renderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
 		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
-		RenderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 
-		RenderingContext.renderingShader.setUniformMatrix4f("localTransform", new Matrix4f());
+		renderingContext.renderingShader.setUniformMatrix4f("localTransform", new Matrix4f());
 		//debugDraw();
 		//ModelLibrary.loadAndRenderMesh("res/models/human.obj");
-		ModelLibrary.loadAndRenderAnimatedMesh("res/models/human.obj", "res/models/human-fixed-standstill.bvh", i);
+		ModelLibrary.getMesh("./res/models/human.obj").renderUsingBVHTree(renderingContext, BVHLibrary.getAnimation("res/models/human-fixed-standstill.bvh"), i);
 	}
 
 	public void debugDraw()

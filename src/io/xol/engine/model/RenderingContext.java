@@ -1,5 +1,6 @@
 package io.xol.engine.model;
 
+import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.engine.shaders.ShaderProgram;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -10,34 +11,45 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class RenderingContext
 {
-	public static ShaderProgram renderingShader = null;
+	WorldRenderer worldRenderer;
+	
+	public ShaderProgram renderingShader = null;
 
-	public static boolean verticesAttribMode = false;
+	public boolean verticesAttribMode = false;
 
-	public static int vertexIn, texCoordIn, colorIn, normalIn;
-	public static boolean shadow;
+	public int vertexIn, texCoordIn, colorIn, normalIn;
+	public boolean shadow;
 
-	public static void disableVAMode()
+	public RenderingContext(WorldRenderer wr)
+	{
+		worldRenderer = wr;
+	}
+	
+	public void doneWithVertexInputs()
 	{
 		verticesAttribMode = false;
 	}
 
-	public static void enableVAMode(int vertexIn, int texCoordIn, int colorIn, int normalIn, boolean shadow)
+	public void setIsShadowPass(boolean isShadowPass)
 	{
-		RenderingContext.vertexIn = vertexIn;
-		RenderingContext.texCoordIn = texCoordIn;
-		RenderingContext.colorIn = colorIn;
-		RenderingContext.normalIn = normalIn;
-		RenderingContext.shadow = shadow;
+		shadow = isShadowPass;
+	}
+	
+	public void setupVertexInputs(int vertexIn, int texCoordIn, int colorIn, int normalIn)
+	{
+		this.vertexIn = vertexIn;
+		this.texCoordIn = texCoordIn;
+		this.colorIn = colorIn;
+		this.normalIn = normalIn;
 		verticesAttribMode = true;
 	}
 
-	public static void setCurrentShader(ShaderProgram s)
+	public void setCurrentShader(ShaderProgram s)
 	{
 		renderingShader = s;
 	}
 
-	public static void setDiffuseTexture(int id)
+	public void setDiffuseTexture(int id)
 	{
 		if (renderingShader != null)
 			renderingShader.setUniformSampler(0, "diffuseTexture", id);
@@ -46,10 +58,15 @@ public class RenderingContext
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 
-	public static void setNormalTexture(int id)
+	public void setNormalTexture(int id)
 	{
 		if (renderingShader != null)
 			renderingShader.setUniformSampler(1, "normalTexture", id);
 	}
-
+	
+	public void setMaterialTexture(int id)
+	{
+		if (renderingShader != null)
+			renderingShader.setUniformSampler(2, "materialTexture", id);
+	}
 }

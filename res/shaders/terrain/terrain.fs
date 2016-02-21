@@ -19,6 +19,7 @@ uniform float waterLevel;
 uniform sampler2D heightMap;
 uniform sampler2D groundTexture;
 uniform sampler1D blocksTexturesSummary;
+uniform samplerCube environmentCubemap;
 uniform sampler2D vegetationColorTexture; // Blocks material texture atlas
 varying vec2 textureCoord;
 
@@ -132,7 +133,7 @@ void main()
 		
 		nt = normalize(nt);
 		
-		float i = 0.25;
+		float i = 0.125;
 		
 		normal.x += nt.r*i;
 		normal.z += nt.g*i;
@@ -177,14 +178,23 @@ void main()
 	//finalLight = mix(finalLight, finalLight*shadowColor, opacity * 1.0);
 	//finalColor*=finalLight;
 	
-	finalColor = finalColor * finalLight + vec3(10.0) * specular;
+	finalColor = finalColor * finalLight;
 	
+	vec3 reflectionVector = normalize(reflect(vec3(eye.x, eye.y, eye.z), normal));
 	if(spec >0)
-		finalColor = mix(finalColor, getSkyColor(time, normalize(reflect(eye, normal))), spec);
-	
+	{	
+		vec3 reflected = getSkyColor(time, normalize(reflect(eye, normal)));
+		
+		<ifdef doDynamicCubemaps>
+		reflected = textureCube(environmentCubemap, vec3(reflectionVector.x, -reflectionVector.y, -reflectionVector.z)).rgb;
+		<endif doDynamicCubemaps>
+		finalColor = mix(finalColor, reflected , spec);
+	}
 	vec3 fogColor = gl_Fog.color.rgb;
 	fogColor = getSkyColorWOSun(time, normalize(eye));
 	//fogColor.rgb = pow(fogColor.rgb, vec3(gamma));
+	
+	finalColor += vec3(100.0) * specular;
 	
 	//finalColor = vec3(1.0);
 	

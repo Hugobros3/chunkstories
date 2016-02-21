@@ -1,6 +1,7 @@
 package io.xol.engine.shaders;
 
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.engine.textures.Cubemap;
 import io.xol.engine.textures.Texture;
 
 import java.io.File;
@@ -137,11 +138,19 @@ public class ShaderProgram
 		glActiveTexture(GL_TEXTURE0 + id);
 	}
 
-	public void setUniformSamplerCube(int id, String name, int texId)
+	public void setUniformSamplerCubemap(int id, String name, int texId)
 	{
 		this.setUniformInt(name, id);
 		selectTextureUnit(id);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, texId);
+		glActiveTexture(GL_TEXTURE0);
+	}
+	
+	public void setUniformSamplerCubemap(int id, String name, Cubemap cubemap)
+	{
+		this.setUniformInt(name, id);
+		selectTextureUnit(id);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.getID());
 		glActiveTexture(GL_TEXTURE0);
 	}
 

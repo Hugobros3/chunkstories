@@ -78,7 +78,7 @@ void main() {
 	
 	// etc
 	
-	compositeColor = mix(compositeColor, compositeColor * waterColor, underwater * 0.5);
+	compositeColor = mix(compositeColor, compositeColor * waterColor, underwater);
 	
 	compositeColor *= apertureModifier;
 	<ifdef doBloom>

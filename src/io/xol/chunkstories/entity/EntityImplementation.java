@@ -9,6 +9,7 @@ import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.DefferedLight;
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTypes;
@@ -20,7 +21,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 // http://chunkstories.xyz
 // http://xol.io
 
-public abstract class Entity implements InventoryHolder
+public abstract class EntityImplementation implements Entity
 {
 	public long entityID;
 
@@ -48,14 +49,14 @@ public abstract class Entity implements InventoryHolder
 	//Flag set when deleted from world entities list ( to report to other refering places )
 	public boolean mpSendDeletePacket = false;
 	
-	public Entity(World w, double x, double y, double z)
+	public EntityImplementation(World w, double x, double y, double z)
 	{
 		world = w;
 		posX = x;
 		posY = y;
 		posZ = z;
 		accelerationVector = new Vector3d();
-		setHolder();
+		updatePosition();
 	}
 	
 	/**
@@ -66,14 +67,14 @@ public abstract class Entity implements InventoryHolder
 	 * @param z
 	 */
 	@SuppressWarnings("unchecked")
-	public synchronized <CE extends Entity & EntityControllable> void setPosition(double x, double y, double z)
+	public synchronized void setPosition(double x, double y, double z)
 	{
 		posX = x;
 		posY = y;
 		posZ = z;
-		setHolder();
+		updatePosition();
 		if(this instanceof EntityControllable && ((EntityControllable)this).getController() != null)
-			((EntityControllable)this).getController().notifyTeleport((CE)this);
+			((EntityControllable)this).getController().notifyTeleport(this);
 	}
 
 	/**
@@ -82,7 +83,7 @@ public abstract class Entity implements InventoryHolder
 	 */
 	public Location getLocation()
 	{
-		return new Location(posX, posY, posZ);
+		return new Location(world, posX, posY, posZ);
 	}
 	
 	/**
@@ -94,6 +95,11 @@ public abstract class Entity implements InventoryHolder
 		this.posX = loc.x;
 		this.posY = loc.y;
 		this.posZ = loc.z;
+	}
+	
+	public World getWorld()
+	{
+		return world;
 	}
 	
 	public void setVelocity(double x, double y, double z)
@@ -147,10 +153,10 @@ public abstract class Entity implements InventoryHolder
 		
 		blockedMomentum = moveWithCollisionRestrain(velX, velY, velZ, true);
 		
-		changeChunk();
+		updatePosition();
 	}
 
-	public boolean changeChunk()
+	public boolean updatePosition()
 	{
 		posX %= world.getSizeSide();
 		posZ %= world.getSizeSide();
@@ -183,7 +189,7 @@ public abstract class Entity implements InventoryHolder
 		}
 	}
 
-	public void setHolder()
+	/*public void setHolder()
 	{
 		posX %= world.getSizeSide();
 		posZ %= world.getSizeSide();
@@ -195,7 +201,7 @@ public abstract class Entity implements InventoryHolder
 			regionY = world.getMaxHeight() / (32 * 8 );
 		int regionZ = (int) (posZ / (32 * 8));
 		parentHolder = world.chunksHolder.getChunkHolder(regionX * 8, regionY * 8, regionZ * 8, true);
-	}
+	}*/
 	
 	public void moveWithoutCollisionRestrain(double mx, double my, double mz)
 	{
@@ -491,7 +497,7 @@ public abstract class Entity implements InventoryHolder
 	{
 		if(!(o instanceof Entity))
 			return false;
-		return ((Entity)o).entityID == entityID;
+		return ((Entity)o).getUUID() == entityID;
 	}
 	
 	public void delete()

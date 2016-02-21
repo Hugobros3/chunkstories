@@ -136,13 +136,13 @@ void main(){
 	
 	vec4 material = texture2D(materialTexture, texcoord);
 	
-	spec = (material.r + rainWetness) * fresnelTerm;
+	spec = material.r*rainWetness + (material.g + rainWetness) * fresnelTerm;
 	<ifdef perPixelFresnel>
 	vec3 coords = (gl_FragCoord.xyz);
 	coords.xy/=screenSize;
 	vec4 worldspaceFragment = unprojectPixel(coords);
 	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(eye), vec3(varyingNormal)), 0.0, 1.0);
-	spec = (material.r + rainWetness) * dynamicFresnelTerm;
+	spec = material.r*rainWetness + (material.g + rainWetness) * dynamicFresnelTerm;
 	<endif perPixelFresnel>
 	
 	/*vec3 blockLight = texture2D(lightColors,vec2(lightMapCoords.x, 0)).rgb;

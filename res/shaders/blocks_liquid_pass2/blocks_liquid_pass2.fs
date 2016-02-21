@@ -131,7 +131,7 @@ void main(){
 	
 	nt = normalize(nt);
 	
-	float i = 0.25;
+	float i = 0.125;
 	
 	normal.x += nt.r*i;
 	normal.y += nt.g*i;
@@ -153,7 +153,7 @@ void main(){
 	vec4 worldspaceFragment = unprojectPixel(coords);
 	
 	<ifdef perPixelFresnel>
-	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(worldspaceFragment.xyz), normal), 0.0, 1.0);
+	float dynamicFresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(worldspaceFragment.xyz), normal), 0.0, 1.0);
 	spec = dynamicFresnelTerm;
 	<endif perPixelFresnel>
 	

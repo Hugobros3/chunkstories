@@ -1,16 +1,13 @@
 package io.xol.chunkstories.world;
 
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.world.ChunksIterator;
-import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.chunkstories.world.iterators.ChunkHolderIterator;
 import io.xol.engine.concurrency.SimpleLock;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,7 +67,7 @@ public class ChunkHolder
 			world.ioHandler.requestChunkHolderLoad(this);
 	}
 	
-	public List<Entity> getAllLoadedEntities()
+	/*public List<Entity> getAllLoadedEntities()
 	{
 		List<Entity> localEntities  = new ArrayList<Entity>();
 		synchronized(world.entities)
@@ -87,7 +84,7 @@ public class ChunkHolder
 			}
 		}
 		return localEntities;
-	}
+	}*/
 	
 	public void tick()
 	{

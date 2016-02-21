@@ -144,7 +144,7 @@ public class MainMenu extends OverlayableScene
 		cam.justSetup();
 		menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);
-		menuSkyBox.setUniformSamplerCube(0, "skyBox", TexturesHandler.idCubemap(skyBox));
+		menuSkyBox.setUniformSamplerCubemap(0, "skyBox", TexturesHandler.getCubemapID(skyBox));
 		// TODO cap fps and base on time
 		cam.view_rotx = 35 + (float) (Math.sin(cam.view_roty / 15)) * 5f;
 		cam.view_roty = (System.currentTimeMillis()%1000000)/200.0f;

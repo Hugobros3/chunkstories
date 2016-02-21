@@ -225,6 +225,13 @@ public class OptionsOverlay extends Overlay
 						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
 					}
 				}),
+				new ConfigButtonToggle("doDynamicCubemaps").setApplyAction(new Runnable(){
+					public void run()
+					{
+						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("terrain").reload(FastConfig.getShaderConfig());
+					}
+				}),
 				new ConfigButtonToggle("doShadows").setApplyAction(new Runnable(){
 					public void run()
 					{

@@ -1,7 +1,7 @@
 package io.xol.chunkstories.api.plugin.server;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.server.tech.CommandEmitter;
 
 //(c) 2015-2016 XolioWare Interactive

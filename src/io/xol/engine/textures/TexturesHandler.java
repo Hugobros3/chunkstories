@@ -28,8 +28,8 @@ import de.matthiasmann.twl.utils.PNGDecoder.Format;
 
 public class TexturesHandler
 {
-	static Map<String, Integer> loadedCubemaps = new HashMap<String, Integer>();
-	static String alreadyBoundCubemap = "";
+	static ConcurrentHashMap<String, Cubemap> loadedCubemaps = new ConcurrentHashMap<String, Cubemap>();
+	static Cubemap currentCubemap;
 	
 	static ConcurrentHashMap<String, Texture> loadedTextures = new ConcurrentHashMap<String, Texture>();
 	static Texture currentTexture;
@@ -65,41 +65,38 @@ public class TexturesHandler
 		return getTexture(name).getID();
 	}
 
-	/*public static void nowrap(String string)
+	public static Cubemap getCubemap(String name)
 	{
-		int texID = getTextureID(string);
-		glBindTexture(GL_TEXTURE_2D, texID);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	}
-
-	public static void mipmap(String string)
-	{
-		int texID = idTexture(string);
-		glBindTexture(GL_TEXTURE_2D, texID);
-		if (FastConfig.openGL3Capable)
-			GL30.glGenerateMipmap(GL_TEXTURE_2D);
-		else if (FastConfig.fbExtCapable)
-			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
-	}
-
-	public static void mipmapLevel(String string, int level)
-	{
-		int texID = idTexture(string);
-		glBindTexture(GL_TEXTURE_2D, texID);
-		if (level >= 0)
+		if(loadedCubemaps.containsKey(name))
 		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, level);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
+			return loadedCubemaps.get(name);
 		}
 		else
 		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			Cubemap cubemap = new Cubemap(name);
+			loadedCubemaps.put(name, cubemap);
+			return cubemap;
 		}
-	}*/
-
+	}
+	
+	public static void bindCubemap(String name)
+	{
+		int id = getCubemapID(name);
+		if(id < 0)
+		{
+			ChunkStoriesLogger.getInstance().info("Failed to bind Cubemap "+name+", not loaded properly on disk.");
+			return;
+		}
+		glEnable(GL_TEXTURE_CUBE_MAP);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+	}
+	
+	public static int getCubemapID(String name)
+	{
+		return getCubemap(name).getID();
+	}
+	
+	/*
 	public static int loadCubeMap(String name)
 	{
 		int textureID = glGenTextures();
@@ -217,12 +214,17 @@ public class TexturesHandler
 		}
 	}
 
+*/
 	public static void reloadAll()
 	{
 		for(Texture texture : loadedTextures.values())
 		{
-			if(texture.getID() != -1)
 			texture.loadTextureFromDisk();
+		}
+		
+		for(Cubemap cubemap : loadedCubemaps.values())
+		{
+			cubemap.loadCubemapFromDisk();
 		}
 	}
 }

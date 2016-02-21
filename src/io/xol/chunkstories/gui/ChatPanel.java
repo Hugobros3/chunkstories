@@ -15,11 +15,11 @@ import java.util.Iterator;
 
 import org.lwjgl.util.vector.Vector4f;
 
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.EntitiesList;
-import io.xol.chunkstories.entity.Entity;
 
 public class ChatPanel
 {
@@ -95,7 +95,7 @@ public class ChatPanel
 						int id = Integer.parseInt(inputBox.text.split(" ")[1]);
 						Entity test = EntitiesList.newEntity(Client.world, (short) id);
 						Entity player = Client.controller;
-						test.setPosition(player.posX, player.posY, player.posZ);
+						test.setLocation(player.getLocation());
 						Client.world.addEntity(test);
 					}
 				}

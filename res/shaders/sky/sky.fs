@@ -2,7 +2,7 @@ uniform sampler2D glowSampler;
 uniform float isRaining;
 uniform sampler2D colorSampler;
 uniform sampler2D comp_diffuse;
-uniform samplerCube skybox;
+uniform samplerCube environmentCubemap;
 
 uniform vec3 sunPos;
 
@@ -34,6 +34,9 @@ void main()
 	//if(texture2D(comp_diffuse, vertex*0.5 + vec2(0.5)).a > 0.2)
 	//	discard;
     
+	//vec4 envmap = textureCube(environmentCubemap, -vec3(-eyeDirection.x, eyeDirection.yz));
+	//gl_FragColor = mix(vec4(getSkyColor(time, eyeDirection), 1.0), vec4(envmap.rgb, 1.0), envmap.a);
+	
 	gl_FragColor = vec4(getSkyColor(time, eyeDirection), 1.0);
 	
 	//gl_FragData[0] = vec4(getSkyColor(time, eyeDirection), 0.0);

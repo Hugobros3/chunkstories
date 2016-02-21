@@ -3,9 +3,10 @@ package io.xol.chunkstories.entity;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 
+import io.xol.chunkstories.api.entity.Entity;
+
 public class EntityIterator implements Iterator<Entity>
 {
-
 	BlockingQueue<Entity> entities;
 	Iterator<Entity> ie;
 	Entity currentEntity;
@@ -34,7 +35,7 @@ public class EntityIterator implements Iterator<Entity>
 	{
 		if(currentEntity != null)
 		{
-			System.out.println("Iterator removal !");
+			//System.out.println("Iterator removal !");
 			currentEntity.delete();
 		}
 		ie.remove();

@@ -1,7 +1,10 @@
 package io.xol.chunkstories.entity.core;
 
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
+
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;
@@ -11,7 +14,7 @@ import io.xol.engine.textures.TexturesHandler;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityTest2 extends Entity
+public class EntityTest2 extends EntityImplementation
 {
 
 	int i = 0;
@@ -28,20 +31,20 @@ public class EntityTest2 extends Entity
 
 	//BVHAnimation anim;
 
-	public void render()
+	public void render(RenderingContext renderingContext)
 	{
-		RenderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/ak47.hq.png"));
-		RenderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
-		RenderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY + 1.4f, (float) posZ);
+		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/ak47.hq.png"));
+		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
+		renderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY + 1.4f, (float) posZ);
 		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
-		RenderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 		//world.particlesHolder.addParticle(new ParticleSmoke(world, posX+0.8+(Math.random()-0.5)*0.2, posY+0.5, posZ- 3.0f));
-		//Matrix4f mutrix = new Matrix4f();
-		//mutrix.translate(new Vector3f(0.0f, 1.0f, 0.0f));
-		//RenderingContext.renderingShader.setUniformMatrix4f("localTransform", mutrix);
+		Matrix4f mutrix = new Matrix4f();
+		mutrix.translate(new Vector3f(0.0f, 1.0f, 0.0f));
+		renderingContext.renderingShader.setUniformMatrix4f("localTransform", mutrix);
 		
-		ModelLibrary.loadAndRenderMesh("res/models/ak47.hq.obj");
+		ModelLibrary.getMesh("res/models/ak47.hq.obj").render(renderingContext);;
 	}
 }

@@ -2,6 +2,7 @@ package io.xol.chunkstories.renderer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
+import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static io.xol.engine.textures.Texture.TextureType.*;
@@ -12,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -35,16 +35,17 @@ import io.xol.engine.math.MatrixHelper;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
+import io.xol.engine.textures.Cubemap;
 import io.xol.engine.textures.GBufferTexture;
 import io.xol.engine.textures.Texture;
 import io.xol.engine.textures.TexturesHandler;
 import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.entity.Entity;
 import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.renderer.ChunksRenderer.VBOData;
 import io.xol.chunkstories.tools.DebugProfiler;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.voxel.VoxelTypes;
@@ -65,22 +66,26 @@ public class WorldRenderer
 
 	// Current camera position
 	public float viewX, viewY, viewZ, viewRotH, viewRotV;
+	//Chunk space position
 	public int pCX, pCY, pCZ;
 
-	int sizeInChunks; // cache from world
+	// camera object ( we need it so much)
+	private Camera camera;
+
+	//Viewer directions
+	private Vector3f viewerPosVector;
+	private Vector3f viewerCamDirVector;
+
+	private int sizeInChunks; // cache from world
 
 	// Chunks to render
-	public List<CubicChunk> renderList = new ArrayList<CubicChunk>();
+	private List<CubicChunk> renderList = new ArrayList<CubicChunk>();
 
 	// Wheter to update the renderlist or not.
 	private boolean chunksChanged = true;
 
 	// Screen width & height
-	int scrW, scrH;
-
-	// camera object ( we need it so much)
-	Camera camera;
-
+	private int scrW, scrH;
 	// Shader programs
 	private ShaderProgram terrainShader;
 	private ShaderProgram opaqueBlocksShader;
@@ -96,6 +101,10 @@ public class WorldRenderer
 
 	private ShaderProgram blurH;
 	private ShaderProgram blurV;
+	
+	//Rendering context
+	RenderingContext renderingContext;
+	
 	// G-Buffers
 	private GBufferTexture composite_albedo = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
 	private GBufferTexture composite_zbuffer = new GBufferTexture(DEPTH_RENDERBUFFER, XolioWindow.frameW, XolioWindow.frameH);
@@ -123,9 +132,6 @@ public class WorldRenderer
 	// Normalized sun position
 	Vector3f normSunPosition = new Vector3f();
 
-	// Shadow matrices to shaders
-	private FloatBuffer matrix44Buffer;
-
 	// Shadow maps
 	private int smr = 0;
 	private GBufferTexture shadow_map_near = new GBufferTexture(DEPTH_SHADOWMAP, 256, 256);
@@ -133,7 +139,10 @@ public class WorldRenderer
 	private FBO shadow_map_renderer_near = new FBO(shadow_map_near);
 	// private FBO shadow_map_renderer_far = new FBO(shadow_map_far);
 
-	// Shadow temp matrixes
+	//Environment map
+	Cubemap environmentMap;
+	
+	// Shadow transformation matrix
 	private Matrix4f depthMatrix = new Matrix4f();
 
 	// Sky
@@ -150,6 +159,14 @@ public class WorldRenderer
 
 	public WeatherEffectsRenderer wer;
 
+	//For shaders animations
+	float animationTimer = 0.0f;
+
+	//Counters
+	public int renderedVertices = 0;
+	public int renderedVerticesShadow = 0;
+	public int renderedChunks = 0;
+	
 	public WorldRenderer(World w)
 	{
 		// Link world
@@ -160,10 +177,11 @@ public class WorldRenderer
 		sky = new SkyDome(world, this);
 		sizeInChunks = world.getSizeInChunks();
 		resizeShadowMaps();
+		environmentMap = new Cubemap(Cubemap.CubemapType.RGBA_8BPP);
 
-		if (FastConfig.debugGBuffers)
-			System.out.println("Loading shaders");
-
+		renderingContext = new RenderingContext(this);
+		
+		//Pre-load shaders
 		opaqueBlocksShader = ShadersLibrary.getShaderProgram("blocks_opaque");
 		entitiesShader = ShadersLibrary.getShaderProgram("entities");
 		shadowsPassShader = ShadersLibrary.getShaderProgram("shadows");
@@ -177,7 +195,7 @@ public class WorldRenderer
 		blurH = ShadersLibrary.getShaderProgram("blurH");
 		blurV = ShadersLibrary.getShaderProgram("blurV");
 
-		matrix44Buffer = BufferUtils.createFloatBuffer(16);
+		//matrix44Buffer = BufferUtils.createFloatBuffer(16);
 
 		if (FastConfig.debugGBuffers)
 			System.out.println("Starting renderer thread");
@@ -192,10 +210,19 @@ public class WorldRenderer
 			return;
 		smr = FastConfig.shadowMapResolutions;
 		shadow_map_near.resize(smr, smr);
-		// shadow_map_far.resize(smr, smr);
 	}
 
+	long lastEnvmapRender = 0L;
+	
 	public void renderWorldAtCamera(Camera camera)
+	{
+		this.camera = camera;
+		if(FastConfig.doDynamicCubemaps && (System.currentTimeMillis() - lastEnvmapRender) > 2000L)// * Math.pow(30.0f / XolioWindow.getFPS(), 1.0f))
+			screenCubeMap(256, environmentMap);
+		renderWorldAtCameraInternal(camera);
+	}
+	
+	public void renderWorldAtCameraInternal(Camera camera)
 	{
 		// Set camera
 		this.camera = camera;
@@ -213,7 +240,6 @@ public class WorldRenderer
 		// Shadows pre-pass
 		if (FastConfig.doShadows)
 		{
-			Client.profiler.startSection("shadows");
 			shadowPass();
 		}
 		// Prepare matrices
@@ -230,6 +256,7 @@ public class WorldRenderer
 		long t = System.nanoTime();
 		sky.time = (world.worldTime % 10000) / 10000f;
 		sky.skyShader.use(true);
+		sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
 		sky.render(camera);
 		if (FastConfig.debugGBuffers)
 			glFinish();
@@ -309,15 +336,6 @@ public class WorldRenderer
 		return x < xi ? xi - 1 : xi;
 	}
 
-	int maxYChunkLoaded = 0;
-	int minYChunkLoaded = 0;
-
-	int maxXChunkLoaded = 0;
-	int minXChunkLoaded = 0;
-
-	int maxZChunkLoaded = 0;
-	int minZChunkLoaded = 0;
-
 	public void updateRender(float x, float y, float z, float view_rotx, float view_roty)
 	{
 		// Called every frame, this method takes care of updating the world :
@@ -379,16 +397,6 @@ public class WorldRenderer
 		{
 			int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
 
-			// Reset transition variables
-			maxYChunkLoaded = 2;
-			minYChunkLoaded = -2;
-
-			maxXChunkLoaded = chunksViewDistance - 1;
-			minXChunkLoaded = -chunksViewDistance + 1;
-
-			maxZChunkLoaded = chunksViewDistance - 1;
-			minZChunkLoaded = -chunksViewDistance + 1;
-
 			// Unload too far chunks
 			updateProfiler.startSection("unloadFar");
 			//long usageBefore = Runtime.getRuntime().freeMemory();
@@ -402,12 +410,17 @@ public class WorldRenderer
 				//i++;
 				chunk = it.next();
 
-				if (chunk.need_render.get() && chunk.dataPointer != -1)
-				{
-					chunksRenderer.requestChunkRender(chunk);
-					//chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
-				}
-				renderList.add(chunk);
+				if(Math.abs(chunk.chunkX - pCX) <= chunksViewDistance)
+					if(Math.abs(chunk.chunkZ - pCZ) <= chunksViewDistance)
+					{
+
+						if (chunk.need_render.get() && chunk.dataPointer != -1)
+						{
+									chunksRenderer.requestChunkRender(chunk);
+							//chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
+						}
+						renderList.add(chunk);
+					}
 			}
 			// Now delete from the worker threads what we won't need anymore
 			chunksRenderer.purgeUselessWork(pCX, pCY, pCZ, sizeInChunks, chunksViewDistance);
@@ -420,10 +433,10 @@ public class WorldRenderer
 
 			chunksChanged = false;
 			// Load nearby chunks
-			for (int t = (pCX - chunksViewDistance); t < pCX + chunksViewDistance; t++)
+			for (int t = (pCX - chunksViewDistance-1); t < pCX + chunksViewDistance+1; t++)
 			{
 				//System.out.println(t +" "+ chunksViewDistance + " " + (pCX - chunksViewDistance) + " < " + pCX + " < " + (pCX + chunksViewDistance));
-				for (int g = (pCZ - chunksViewDistance); g < pCZ + chunksViewDistance; g++)
+				for (int g = (pCZ - chunksViewDistance+1); g < pCZ + chunksViewDistance+1; g++)
 					for (int b = pCY - 3; b < pCY + 3; b++)
 					{
 						chunk = world.getChunk(t, b, g, true);
@@ -439,19 +452,9 @@ public class WorldRenderer
 		// then re-insert the data in the done chunk
 	}
 
-	//float a = 0.2f;
-	float animationTimer = 0.0f;
-
-	public int renderedVertices = 0;
-	public int renderedVerticesShadow = 0;
-	public int renderedChunks = 0;
-
-	private Vector3f viewerPosVector;
-
-	private Vector3f viewerCamDirVector;
-
 	public void shadowPass()
 	{
+		Client.profiler.startSection("shadows");
 		// float worldTime = (world.worldTime%1000+1000)%1000;
 		if (this.getShadowVisibility() == 0f)
 			return; // No shadows at night :)
@@ -487,8 +490,6 @@ public class WorldRenderer
 		shadowMVP.translate(new Vector3f((float) Math.floor(camera.camPosX), (float) Math.floor(camera.camPosY), (float) Math.floor(camera.camPosZ)));
 		//shadowMVP.translate(new Vector3f((float)camera.camPosX, (float)camera.camPosY, (float)camera.camPosZ));
 
-		depthMatrix.store(matrix44Buffer);
-		matrix44Buffer.flip();
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
 		shadowsPassShader.setUniformMatrix4f("localTransform", new Matrix4f());
 
@@ -580,6 +581,7 @@ public class WorldRenderer
 			terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
 			terrainShader.setUniformSampler(6, "lightColors", lightmapTexture);
 			terrainShader.setUniformSampler(5, "normalTexture", waterNormalTexture);
+			terrainShader.setUniformSamplerCubemap(9, "environmentCubemap", environmentMap);
 			setupShadowColors(terrainShader);
 			terrainShader.setUniformFloat("time", sky.time);
 			terrainShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
@@ -606,12 +608,15 @@ public class WorldRenderer
 			this.composite_pass_gbuffers.setEnabledRenderTargets();
 
 			opaqueBlocksShader.use(true);
+			
+			//Set materials
 			opaqueBlocksShader.setUniformSampler(0, "diffuseTexture", blocksDiffuseTexture);
 			opaqueBlocksShader.setUniformSampler(1, "normalTexture", blocksNormalTexture);
 			opaqueBlocksShader.setUniformSampler(2, "materialTexture", blocksMaterialTexture);
 			opaqueBlocksShader.setUniformSampler(3, "lightColors", lightmapTexture);
 			opaqueBlocksShader.setUniformSampler(4, "vegetationColorTexture", vegetationTexture);
-			opaqueBlocksShader.setUniformFloat("mapSize", sizeInChunks * 32);
+			
+			//Set texturing arguments
 			blocksDiffuseTexture.setTextureWrapping(false);
 			blocksDiffuseTexture.setLinearFiltering(false);
 			blocksDiffuseTexture.setMipMapping(false);
@@ -626,17 +631,18 @@ public class WorldRenderer
 			blocksMaterialTexture.setLinearFiltering(false);
 			blocksMaterialTexture.setMipMapping(false);
 			blocksMaterialTexture.setMipmapLevelsRange(0, 4);
-
-			//opaqueBlocksShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
-			//opaqueBlocksShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
+			
+			//Shadows parameters
 			opaqueBlocksShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
+			opaqueBlocksShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
+			
+			//Camera-related stuff
 			opaqueBlocksShader.setUniformFloat2("screenSize", scrW, scrH);
 			opaqueBlocksShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
-			opaqueBlocksShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
-			//opaqueBlocksShader.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
-			//opaqueBlocksShader.setUniformFloat3("blockColor", 1f, 1f, 1f);
+			
+			//World stuff
+			opaqueBlocksShader.setUniformFloat("mapSize", sizeInChunks * 32);
 			opaqueBlocksShader.setUniformFloat("time", animationTimer);
-
 			opaqueBlocksShader.setUniformFloat("wetness", world.isRaining() ? 0.5f : 0.0f);
 
 			camera.setupShader(opaqueBlocksShader);
@@ -650,8 +656,6 @@ public class WorldRenderer
 		{
 			shadowsPassShader.use(true);
 			shadowsPassShader.setUniformFloat("time", animationTimer);
-			depthMatrix.store(matrix44Buffer);
-			matrix44Buffer.flip();
 			opaqueBlocksShader.setUniformSampler(0, "albedoTexture", blocksDiffuseTexture);
 		}
 
@@ -672,17 +676,18 @@ public class WorldRenderer
 			colorIn = opaqueBlocksShader.getVertexAttributeLocation("colorIn");
 			normalIn = opaqueBlocksShader.getVertexAttributeLocation("normalIn");
 			glEnableVertexAttribArray(colorIn);
-			RenderingContext.enableVAMode(vertexIn, texCoordIn, colorIn, normalIn, false);
-			RenderingContext.setCurrentShader(opaqueBlocksShader);
+			renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
+			renderingContext.setCurrentShader(opaqueBlocksShader);
 		}
 		else
 		{
 			vertexIn = shadowsPassShader.getVertexAttributeLocation("vertexIn");
 			texCoordIn = shadowsPassShader.getVertexAttributeLocation("texCoordIn");
 			normalIn = shadowsPassShader.getVertexAttributeLocation("normalIn");
-			RenderingContext.enableVAMode(vertexIn, texCoordIn, colorIn, normalIn, true);
-			RenderingContext.setCurrentShader(shadowsPassShader);
+			renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
+			renderingContext.setCurrentShader(shadowsPassShader);
 		}
+		renderingContext.setIsShadowPass(shadowPass);
 
 		glEnableVertexAttribArray(normalIn);
 		glEnableVertexAttribArray(vertexIn);
@@ -831,8 +836,8 @@ public class WorldRenderer
 			glEnableVertexAttribArray(texCoordIn);
 			glEnableVertexAttribArray(normalIn);
 
-			RenderingContext.enableVAMode(vertexIn, texCoordIn, 0, normalIn, true);
-			RenderingContext.setCurrentShader(entitiesShader);
+			renderingContext.setupVertexInputs(vertexIn, texCoordIn, -1, normalIn);
+			renderingContext.setCurrentShader(entitiesShader);
 			entitiesShader.setUniformMatrix4f("localTransformNormal", new Matrix4f());
 
 			entitiesShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
@@ -865,7 +870,7 @@ public class WorldRenderer
 		//for (Entity e : getAllLoadedEntities())
 		{
 			e = ie.next();
-			e.render();
+			e.render(renderingContext);
 			// Also populate lights buffer
 			el = e.getLights();
 			if (el != null)
@@ -929,8 +934,8 @@ public class WorldRenderer
 				glEnableVertexAttribArray(normalIn);
 
 			// Set rendering context.
-			RenderingContext.enableVAMode(vertexIn, texCoordIn, colorIn, normalIn, false);
-			RenderingContext.setCurrentShader(liquidBlocksShader);
+			renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
+			renderingContext.setCurrentShader(liquidBlocksShader);
 
 			Voxel vox = VoxelTypes.get(world.getDataAt((int) viewX, (int) (viewY + 1.3), (int) viewZ, false));
 			liquidBlocksShader.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
@@ -1022,7 +1027,7 @@ public class WorldRenderer
 				glDisableVertexAttribArray(colorIn);
 			if (normalIn != -1)
 				glDisableVertexAttribArray(normalIn);
-			RenderingContext.disableVAMode();
+			renderingContext.doneWithVertexInputs();
 		}
 
 		// Draw world shaded with sunlight and vertex light
@@ -1036,49 +1041,50 @@ public class WorldRenderer
 
 		Client.profiler.startSection("lights");
 		this.composite_pass_shaded.bind();
+		
+		// Deffered lightning
+		// Disable depth read/write
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(false);
 		lightShader.use(true);
 
-		lightShader.setUniformSampler(1, "albedoBuffer", this.composite_albedo);
-		lightShader.setUniformSampler(4, "metaBuffer", this.composite_meta);
-		//lightShader.setUniformSampler(1, "lightBuffer", this.composite_light);
-
+		//Required info
+		lightShader.setUniformSampler(0, "albedoBuffer", this.composite_albedo);
+		lightShader.setUniformSampler(1, "metaBuffer", this.composite_meta);
 		lightShader.setUniformSampler(2, "comp_depth", this.composite_zbuffer);
 		lightShader.setUniformSampler(3, "comp_normal", this.composite_normal);
 
-		//lightShader.setUniformSampler(4, "comp_spec", this.composite_specular);
+		//Parameters
 		lightShader.setUniformFloat("powFactor", 5f);
-		camera.setupShader(lightShader);
 		lightShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
+		camera.setupShader(lightShader);
+		//Blend parameters
 		glEnable(GL_BLEND);
 		glEnable(GL_ALPHA_TEST);
 		glDisable(GL_DEPTH_TEST);
 		glBlendFunc(GL_ONE, GL_ONE);
+		
 		lightsBuffer = 0;
+		//Render entities lights
 		for (DefferedLight light : lights)
-		{
 			renderDefferedLight(light);
-			// if(FastConfig.debugGBuffers ) System.out.println("rendering deffered light");
-		}
+		//Render particles's lights
 		Client.world.particlesHolder.renderLights(this);
 		// Render remaining lights
 		if (lightsBuffer > 0)
 		{
-			// if(FastConfig.debugGBuffers ) System.out.println("one light remaing");
 			lightShader.setUniformInt("lightsToRender", lightsBuffer);
 			ObjectRenderer.drawFSQuad(lightShader.getVertexAttributeLocation("vertexIn"));
-			//drawFSQuad();
 		}
-
+		//Cleanup
 		glDepthMask(true);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		lightShader.use(false);
-		this.composite_pass_gbuffers.setEnabledRenderTargets();
 		lights.clear();
-
+		//Go back to G-buffer accumulation
+		// this.composite_pass_gbuffers.setEnabledRenderTargets();
 	}
 
 	private void setupShadowColors(ShaderProgram shader)
@@ -1133,6 +1139,7 @@ public class WorldRenderer
 		composite_pass_ssao.resizeFBO(w, h);
 	}
 
+	//SSAO stuff
 	Vector3f ssao_kernel[];
 	int ssao_kernel_size;
 	int ssao_noiseTex = -1;
@@ -1182,10 +1189,9 @@ public class WorldRenderer
 		}
 
 		ObjectRenderer.drawFSQuad(ssaoShader.getVertexAttributeLocation("vertexIn"));
-		//drawFSQuad();
 		ssaoShader.use(false);
 
-		// Blur bloom
+		// Blur the thing
 
 		// Vertical pass
 		blurFBO.bind();
@@ -1253,6 +1259,7 @@ public class WorldRenderer
 		applyShadowsShader.setUniformSampler(7, "colorSampler", skyTexture);
 		//TODO if SSAO
 		applyShadowsShader.setUniformSampler(8, "ssaoBuffer", composite_ssao);
+		applyShadowsShader.setUniformSamplerCubemap(9, "environmentCubemap", environmentMap);
 
 		//applyShadowsShader.setUniformSampler(4, "comp_spec", this.composite_specular);
 
@@ -1290,7 +1297,6 @@ public class WorldRenderer
 
 	public void postProcess()
 	{
-
 		if (FastConfig.debugGBuffers)
 			glFinish();
 		long t = System.nanoTime();
@@ -1303,17 +1309,13 @@ public class WorldRenderer
 		postProcess.use(true);
 
 		postProcess.setUniformSampler(0, "shadedBuffer", this.composite_shaded);
-
 		postProcess.setUniformSampler(1, "albedoBuffer", this.composite_albedo);
 		postProcess.setUniformSampler(2, "depthBuffer", this.composite_zbuffer);
 		postProcess.setUniformSampler(3, "normalBuffer", this.composite_normal);
 		postProcess.setUniformSampler(4, "metaBuffer", this.composite_meta);
-
 		postProcess.setUniformSampler(5, "shadowMap", this.shadow_map_near);
-
 		postProcess.setUniformSampler(6, "bloomBuffer", this.composite_bloom);
 		postProcess.setUniformSampler(7, "ssaoBuffer", this.composite_ssao);
-
 		postProcess.setUniformSampler(8, "debugBuffer", this.blocksNormalTexture);
 
 		Voxel vox = VoxelTypes.get(world.getDataAt((int) viewX, (int) (viewY + 1.3), (int) viewZ, false));
@@ -1345,19 +1347,18 @@ public class WorldRenderer
 		{
 			glBindTexture(GL_TEXTURE_2D, composite_shaded.getID());
 			composite_shaded.setMipMapping(true);
-
 			try
 			{
 				int max_mipmap = (int) (Math.floor(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
 				//System.out.println(fBuffer + " " + max_mipmap);
-				fBuffer.rewind();
+				shadedMipmapZeroLevelColor.rewind();
 				if (Math.random() > 0.9)
 				{
-					glGetTexImage(GL_TEXTURE_2D, max_mipmap, GL_RGB, GL_FLOAT, fBuffer);
+					glGetTexImage(GL_TEXTURE_2D, max_mipmap, GL_RGB, GL_FLOAT, shadedMipmapZeroLevelColor);
 					this.composite_shaded.computeMipmaps();
 				}
 				//System.out.println(fBuffer);
-				float luma = fBuffer.getFloat() * 0.2125f + fBuffer.getFloat() * 0.7154f + fBuffer.getFloat() * 0.0721f;
+				float luma = shadedMipmapZeroLevelColor.getFloat() * 0.2125f + shadedMipmapZeroLevelColor.getFloat() * 0.7154f + shadedMipmapZeroLevelColor.getFloat() * 0.0721f;
 				luma *= apertureModifier;
 				luma = (float) Math.pow(luma, 1d / 2.2);
 				//System.out.println("luma:"+luma + " aperture:"+ this.apertureModifier);
@@ -1388,6 +1389,8 @@ public class WorldRenderer
 		}
 		else
 			apertureModifier = 1.0f;
+		
+		//Draw entities Huds
 		Iterator<Entity> ei = world.getAllLoadedEntities();
 		Entity e;
 		while(ei.hasNext())
@@ -1398,7 +1401,7 @@ public class WorldRenderer
 		}
 	}
 
-	ByteBuffer fBuffer = BufferUtils.createByteBuffer(4 * 3);
+	ByteBuffer shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(4 * 3);
 
 	public int getQueueSize()
 	{
@@ -1461,9 +1464,20 @@ public class WorldRenderer
 		terrain.destroy();
 	}
 
-	public void screenCubeMap(int resolution)
+	/**
+	 * Renders the whole scene into either a cubemap or saved on disk
+	 * @param resolution
+	 * @param cubemap the cubemap to render to, or null to save to disk
+	 */
+	public void screenCubeMap(int resolution, Cubemap cubemap)
 	{
+		lastEnvmapRender = System.currentTimeMillis();
 		// Save state
+		boolean oldBloom = FastConfig.doBloom;
+		float oldViewDistance = FastConfig.viewDistance;
+		//System.out.println(this.view);
+		//FastConfig.viewDistance = 0;
+		FastConfig.doBloom = false;
 		int oldW = scrW;
 		int oldH = scrH;
 		XolioWindow.frameH = resolution;
@@ -1533,38 +1547,61 @@ public class WorldRenderer
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			// Scene rendering
-			this.renderWorldAtCamera(camera);
+			this.renderWorldAtCameraInternal(camera);
 
 			// GL access
 			glBindTexture(GL_TEXTURE_2D, composite_shaded.getID());
 			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
 
-			// File access
-			File image = new File(GameDirectory.getGameFolderPath() + "/skyboxscreens/" + time + "/" + names[z] + ".png");
-			image.mkdirs();
+			if(cubemap != null)
+			{
+				glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.getID());
 
-			// Saving
-			// bbuf.get(buf);
-			BufferedImage pixels = new BufferedImage(resolution, resolution, BufferedImage.TYPE_INT_RGB);
-			for (int x = 0; x < resolution; x++)
-				for (int y = 0; y < resolution; y++)
+				//String[] names = { "front", "back", "top", "bottom", "right", "left" };
+				//String[] names = { "right", "left", "top", "bottom", "front", "back" };
+				int t[] = new int[]{4, 5, 3, 2, 0, 1};
+				int f = t[z];
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + f, 0, GL_RGBA, resolution, resolution, 0, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				// Anti seam
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				//glFinish();
+			}
+			else
+			{
+				// File access
+				File image = new File(GameDirectory.getGameFolderPath() + "/skyboxscreens/" + time + "/" + names[z] + ".png");
+				image.mkdirs();
+	
+				// Saving
+				// bbuf.get(buf);
+				BufferedImage pixels = new BufferedImage(resolution, resolution, BufferedImage.TYPE_INT_RGB);
+				for (int x = 0; x < resolution; x++)
+					for (int y = 0; y < resolution; y++)
+					{
+						int i = 4 * (x + resolution * y);
+						int r = (int) (Math.pow((bbuf.get(i) & 0xFF) / 255d, 1d / 2.2d) * 255d);
+						int g = (int) (Math.pow((bbuf.get(i + 1) & 0xFF) / 255d, 1d / 2.2d) * 255d);
+						int b = (int) (Math.pow((bbuf.get(i + 2) & 0xFF) / 255d, 1d / 2.2d) * 255d);
+						pixels.setRGB(x, resolution - 1 - y, (0xFF << 24) | (r << 16) | (g << 8) | b);
+					}
+				try
 				{
-					int i = 4 * (x + resolution * y);
-					int r = (int) (Math.pow((bbuf.get(i) & 0xFF) / 255d, 1d / 2.2d) * 255d);
-					int g = (int) (Math.pow((bbuf.get(i + 1) & 0xFF) / 255d, 1d / 2.2d) * 255d);
-					int b = (int) (Math.pow((bbuf.get(i + 2) & 0xFF) / 255d, 1d / 2.2d) * 255d);
-					pixels.setRGB(x, resolution - 1 - y, (0xFF << 24) | (r << 16) | (g << 8) | b);
+					ImageIO.write(pixels, "PNG", image);
 				}
-			try
-			{
-				ImageIO.write(pixels, "PNG", image);
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
 			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+
 		}
 		// Revert correct data
+
+		FastConfig.viewDistance = oldViewDistance;
+		FastConfig.doBloom = oldBloom;
 		camera.view_rotx = camX;
 		camera.view_roty = camY;
 		camera.view_rotz = camZ;
@@ -1612,8 +1649,9 @@ public class WorldRenderer
 		}
 	}
 
-	Deque<Integer> vbo2delete = new ConcurrentLinkedDeque<Integer>();
+	//VBO deletion queue
 	
+	Deque<Integer> vbo2delete = new ConcurrentLinkedDeque<Integer>();
 	public void deleteVBO(int vbo_id)
 	{
 		vbo2delete.add(vbo_id);

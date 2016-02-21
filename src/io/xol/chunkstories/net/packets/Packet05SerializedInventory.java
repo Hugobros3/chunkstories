@@ -1,6 +1,6 @@
 package io.xol.chunkstories.net.packets;
 
-import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.item.inventory.InventoryHolder;
 

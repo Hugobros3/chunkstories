@@ -11,12 +11,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityIterator;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
@@ -140,9 +141,10 @@ public abstract class World
 
 	public void addEntity(final Entity entity)
 	{
-		if(this instanceof WorldServer || this instanceof WorldLocalClient)
-			entity.entityID = nextEntityId();
-		entity.setHolder();
+		EntityImplementation impl = (EntityImplementation) entity;
+		if (this instanceof WorldServer || this instanceof WorldLocalClient)
+			impl.entityID = nextEntityId();
+		entity.updatePosition();
 		this.entities.add(entity);
 	}
 
@@ -166,17 +168,12 @@ public abstract class World
 	{
 		try
 		{
-			/*for (ChunkHolder holder : getAllLoadedChunksHolders())
-			{
-				//holder.tick();
-			}*/
-			//
 			Iterator<Entity> iter = this.getAllLoadedEntities();
 			Entity entity;
 			while (iter.hasNext())
 			{
 				entity = iter.next();
-				if (entity.parentHolder != null && entity.parentHolder.isLoaded())
+				if (((EntityImplementation)entity).parentHolder != null && ((EntityImplementation)entity).parentHolder.isLoaded())
 					entity.update();
 				//System.out.println(entity);
 			}
@@ -202,7 +199,7 @@ public abstract class World
 		}
 		return entitiesToReturn;
 	}*/
-	
+
 	public Iterator<Entity> getAllLoadedEntities()
 	{
 		return new EntityIterator(entities);//entities.iterator();
@@ -216,7 +213,7 @@ public abstract class World
 		//for (Entity e : getAllLoadedEntities())
 		{
 			e = ie.next();
-			if (e.entityID == entityID)
+			if (e.getUUID() == entityID)
 				return e;
 		}
 		return null;
@@ -473,7 +470,7 @@ public abstract class World
 		chunksHolder.saveAll();
 		chunkSummaries.saveAll();
 		//if (!client)
-		
+
 		this.internalData.setProp("entities-ids-counter", veryLong.get());
 		this.internalData.save();
 		System.out.println("Saving world");
@@ -569,14 +566,14 @@ public abstract class World
 	 */
 	public void trimRemovableChunks()
 	{
-		if(this instanceof WorldTool)
+		if (this instanceof WorldTool)
 			System.out.println("omg this should not happen");
 		ChunksIterator it = this.iterator();
 		CubicChunk chunk;
 		while (it.hasNext())
 		{
 			chunk = it.next();
-			if(chunk == null)
+			if (chunk == null)
 			{
 				it.remove();
 				continue;
@@ -587,15 +584,21 @@ public abstract class World
 				keep = true;
 				int sizeInChunks = this.getSizeInChunks();
 				int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
-				int pCX = (int) (Client.controller.posX / 32);
+				Location loc = Client.controller.getLocation();
+				int pCX = (int) loc.x / 32;
+				int pCY = (int) loc.y / 32;
+				int pCZ = (int) loc.z / 32;
+
+				/*int pCX = (int) (Client.controller.posX / 32);
 				int pCY = (int) (Client.controller.posY / 32);
 				int pCZ = (int) (Client.controller.posZ / 32);
+				*/
 				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 1) || (chunk.chunkY - pCY) > 3
 						|| (chunk.chunkY - pCY) < -3))
 				{
 					if (chunk.vbo_id != -1 && this.renderer != null)
 						renderer.deleteVBO(chunk.vbo_id);
-						//glDeleteBuffers(chunk.vbo_id);
+					//glDeleteBuffers(chunk.vbo_id);
 					chunk.need_render.set(true);
 					keep = false;
 				}
@@ -629,6 +632,6 @@ public abstract class World
 		double dx = internalData.getDoubleProp("defaultSpawnX", 0.0);
 		double dy = internalData.getDoubleProp("defaultSpawnY", 100.0);
 		double dz = internalData.getDoubleProp("defaultSpawnZ", 0.0);
-		return new Location(dx, dy, dz);
+		return new Location(this, dx, dy, dz);
 	}
 }

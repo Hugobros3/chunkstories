@@ -1,8 +1,10 @@
 package io.xol.chunkstories.net.packets;
 
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.EntitiesList;
-import io.xol.chunkstories.entity.Entity;
+import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityNameable;
 
 import java.io.DataInputStream;
@@ -97,17 +99,20 @@ public class Packet04Entity extends Packet
 
 	public void applyToEntity(Entity entity)
 	{
-		entity.posX = XBuffered;
-		entity.posY = YBuffered;
-		entity.posZ = ZBuffered;
+		if(!(entity instanceof EntityImplementation))
+			return;
+		EntityImplementation impl = (EntityImplementation)entity;
+		impl.posX = XBuffered;
+		impl.posY = YBuffered;
+		impl.posZ = ZBuffered;
 		if (includeRotation)
 		{
-			entity.rotH = (float) RHBuffered;
-			entity.rotV = (float) RVBuffered;
+			impl.rotH = (float) RHBuffered;
+			impl.rotV = (float) RVBuffered;
 		}
 		if (includeName)
 		{
-			System.out.println("apply 2 "+entity+" posx"+XBuffered+" -> "+nBuffered);
+			//System.out.println("apply 2 "+entity+" posx"+XBuffered+" -> "+nBuffered);
 			if (entity instanceof EntityNameable)
 				((EntityNameable) entity).setName(nBuffered);
 		}
@@ -119,13 +124,15 @@ public class Packet04Entity extends Packet
 		entityType = entity.getEID();
 		entityID = entity.getUUID();
 
-		XBuffered = entity.posX;
-		YBuffered = entity.posY;
-		ZBuffered = entity.posZ;
-		if (includeRotation)
+		Location loc = entity.getLocation();
+		XBuffered = loc.x;
+		YBuffered = loc.y;
+		ZBuffered = loc.z;
+		if (includeRotation && entity instanceof EntityImplementation)
 		{
-			RHBuffered = entity.rotH;
-			RVBuffered = entity.rotV;
+			EntityImplementation impl = (EntityImplementation)entity;
+			RHBuffered = impl.rotH;
+			RVBuffered = impl.rotV;
 		}
 		if (includeName)
 		{
@@ -139,7 +146,7 @@ public class Packet04Entity extends Packet
 	{
 		if(processor.isClient)
 		{
-			Entity entity = Client.world.getEntityByUUID(this.entityID);
+			EntityImplementation entity = (EntityImplementation) Client.world.getEntityByUUID(this.entityID);
 			if(this.deleteFlag)
 				Client.world.removeEntity(entity);
 			else
@@ -147,7 +154,7 @@ public class Packet04Entity extends Packet
 				//Create an entity if the servers tells you to do so
 				if(entity == null)
 				{
-					entity = EntitiesList.newEntity(Client.world, this.entityType);
+					entity = (EntityImplementation) EntitiesList.newEntity(Client.world, this.entityType);
 					entity.entityID = this.entityID;
 					this.applyToEntity(entity);
 					Client.world.addEntity(entity);
@@ -162,7 +169,7 @@ public class Packet04Entity extends Packet
 		else
 		{
 			//Client isn't allowed to force spawning or moving of anything but himself
-			if (processor.getServerClient().profile.getControlledEntity() != null && entityID == processor.getServerClient().profile.getControlledEntity().entityID)
+			if (processor.getServerClient().profile.getControlledEntity() != null && entityID == processor.getServerClient().profile.getControlledEntity().getUUID())
 				applyToEntity(processor.getServerClient().profile.getControlledEntity());
 			//entity = EntitiesList.newEntity(world, entityType);
 		}

@@ -7,6 +7,9 @@ uniform sampler2D normalBuffer;
 
 uniform sampler2D glowSampler;
 uniform sampler2D colorSampler;
+
+uniform samplerCube environmentCubemap;
+
 uniform float isRaining;
 
 uniform sampler2D blockLightmap;
@@ -108,7 +111,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec3 li
 	
 	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
 	{
-		float bias = clamp(0.00070*tan(acos(NdotL)) * clamp(shadowMapBiasMultiplier, 1.0, 2.0) ,-0.000,0.0020 )*(1.0+2.0*coordinatesInShadowmap.w);
+		float bias = clamp(0.0070*tan(acos(NdotL)) * clamp(shadowMapBiasMultiplier, 1.0, 2.0) ,-0.000,0.0010 )*(1.0+2.0*coordinatesInShadowmap.w);
 		edgeSmoother = 1.0-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5)-0.25)*4.0+max(0,abs(coordinatesInShadowmap.y-0.5)-0.25)*4.0, 3.0), 0.0, 1.0);
 		opacity += edgeSmoother * (1.0-shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0).r);
 	}
