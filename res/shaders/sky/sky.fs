@@ -38,6 +38,7 @@ void main()
 	//gl_FragColor = mix(vec4(getSkyColor(time, eyeDirection), 1.0), vec4(envmap.rgb, 1.0), envmap.a);
 	
 	gl_FragColor = vec4(getSkyColor(time, eyeDirection), 1.0);
+	//gl_FragColor = vec4(0.3, 0.3, 0.0, 1.0);
 	
 	//gl_FragData[0] = vec4(getSkyColor(time, eyeDirection), 0.0);
 	//gl_FragData[1] = vec4(0);

@@ -255,8 +255,10 @@ public class WorldRenderer
 		long t = System.nanoTime();
 		sky.time = (world.worldTime % 10000) / 10000f;
 		sky.skyShader.use(true);
-		sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
+		//sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
+		glViewport(0, 0, scrW, scrH);
 		sky.render(camera);
+		
 		if (FastConfig.debugGBuffers)
 			glFinish();
 		if (FastConfig.debugGBuffers)
@@ -267,7 +269,6 @@ public class WorldRenderer
 		composite_pass_gbuffers.setEnabledRenderTargets();
 
 		// Render world
-		glViewport(0, 0, scrW, scrH);
 		renderWorld(false, chunksToRenderLimit);
 		// Render weather
 		composite_pass_shaded.bind();
@@ -1530,8 +1531,8 @@ public class WorldRenderer
 			switch (z)
 			{
 			case 0:
-				camera.view_rotx = 0;
-				camera.view_roty = 0;
+				camera.view_rotx = 0.0f;
+				camera.view_roty = 0f;
 				break;
 			case 1:
 				camera.view_rotx = 0;
@@ -1556,7 +1557,7 @@ public class WorldRenderer
 			}
 			this.viewRotH = camera.view_rotx;
 			this.viewRotV = camera.view_roty;
-
+			
 			float transformedViewH = (float) ((viewRotH) / 180 * Math.PI);
 			viewerCamDirVector = new Vector3f((float) (Math.sin((180 + viewRotV) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)), (float) (Math.cos((180 + viewRotV) / 180 * Math.PI) * Math.cos(transformedViewH)));
 
@@ -1565,6 +1566,7 @@ public class WorldRenderer
 
 			// Scene rendering
 			this.renderWorldAtCameraInternal(camera, cubemap == null ? -1 : 128);
+			
 
 			// GL access
 			glBindTexture(GL_TEXTURE_2D, composite_shaded.getID());

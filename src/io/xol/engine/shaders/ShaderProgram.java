@@ -10,9 +10,9 @@ import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.lwjgl.util.vector.Matrix3f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Matrix4f;
 
@@ -37,6 +37,7 @@ public class ShaderProgram
 	boolean loadOK = false;
 
 	FloatBuffer matrix4fBuffer = BufferUtils.createFloatBuffer(16);
+	FloatBuffer matrix3fBuffer = BufferUtils.createFloatBuffer(9);
 
 	Map<String, Integer> uniforms = new HashMap<String, Integer>();
 	Map<String, Integer> attributes = new HashMap<String, Integer>();
@@ -183,6 +184,12 @@ public class ShaderProgram
 	{
 		fb.position(0);
 		glUniformMatrix3(getUniformLocation(name), false, fb);
+	}
+
+	public void setUniformMatrix3f(String name, Matrix3f matrix3f)
+	{
+		matrix3f.store(matrix3fBuffer);
+		setUniformMatrix3f(name, matrix3fBuffer);
 	}
 
 	public void setUniformFloat(String name, float f)

@@ -104,6 +104,7 @@ public class Camera
 		// projectionMatrix4f.store(projectionMatrix);
 		Matrix4f.invert(projectionMatrix4f, projectionMatrix4fInverted);
 		// Matrix4f invertedProjection = (Matrix4f) projectionMatrix4f.invert();
+		projectionMatrixInverse.position(0);
 		projectionMatrix4fInverted.store(projectionMatrixInverse);
 		
 		// Allow for read in shader
@@ -139,7 +140,7 @@ public class Camera
 		// projectionMatrix.position(0);
 		// projectionMatrixInverse.position(0);
 		Matrix4f.mul(projectionMatrix4f, modelViewMatrix4f, modelViewProjectionMatrix4f);
-		Matrix4f.invert(modelViewProjectionMatrix4f, modelViewMatrix4fInverted);
+		Matrix4f.invert(modelViewProjectionMatrix4f, modelViewProjectionMatrix4fInverted);
 		modelViewProjectionMatrix.clear();
 		modelViewProjectionMatrix4f.store(modelViewProjectionMatrix);
 		modelViewProjectionMatrixInverse.clear();
@@ -416,17 +417,17 @@ public class Camera
 	public void setupShader(ShaderProgram shaderProgram)
 	{
 		// Helper function to clean code from messy bits :)
-		shaderProgram.setUniformMatrix4f("projectionMatrix", projectionMatrix);
-		shaderProgram.setUniformMatrix4f("projectionMatrixInv", projectionMatrixInverse);
+		shaderProgram.setUniformMatrix4f("projectionMatrix", projectionMatrix4f);
+		shaderProgram.setUniformMatrix4f("projectionMatrixInv", projectionMatrix4fInverted);
 
-		shaderProgram.setUniformMatrix4f("modelViewMatrix", modelViewMatrix);
-		shaderProgram.setUniformMatrix4f("modelViewMatrixInv", modelViewMatrixInverse);
+		shaderProgram.setUniformMatrix4f("modelViewMatrix", modelViewMatrix4f);
+		shaderProgram.setUniformMatrix4f("modelViewMatrixInv", modelViewMatrix4fInverted);
 
-		shaderProgram.setUniformMatrix3f("normalMatrix", normalMatrix);
-		shaderProgram.setUniformMatrix3f("normalMatrixInv", normalMatrixInverse);
+		shaderProgram.setUniformMatrix3f("normalMatrix", normalMatrix3f);
+		shaderProgram.setUniformMatrix3f("normalMatrixInv", normalMatrix3fInverted);
 		
-		shaderProgram.setUniformMatrix4f("modelViewProjectionMatrix", modelViewProjectionMatrix);
-		shaderProgram.setUniformMatrix4f("modelViewProjectionMatrixInv", modelViewProjectionMatrixInverse);
+		shaderProgram.setUniformMatrix4f("modelViewProjectionMatrix", modelViewProjectionMatrix4f);
+		shaderProgram.setUniformMatrix4f("modelViewProjectionMatrixInv", modelViewProjectionMatrix4fInverted);
 		
 		shaderProgram.setUniformMatrix4f("untranslatedMVP", untranslatedMVP4f);
 		shaderProgram.setUniformMatrix4f("untranslatedMVPInv", untranslatedMVP4fInv);

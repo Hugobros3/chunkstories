@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project Chunk Stories">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="C:/Users/gobrosse/git/chunkstories/chunkstories.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="io.xol.chunkstories.client.Client"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="C:/Users/gobrosse/git/chunkstories/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/lwjgl/jar/jinput.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/lwjgl/jar/lwjgl_util.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/lwjgl/jar/lwjgl.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/lz4-1.3.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/PNGDecoder.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/jorbis.jar"/>
+        </jar>
+    </target>
+</project>

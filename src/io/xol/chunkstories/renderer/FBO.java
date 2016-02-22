@@ -15,6 +15,7 @@ import java.util.List;
 import org.lwjgl.BufferUtils;
 
 import io.xol.engine.textures.GBufferTexture;
+import io.xol.engine.textures.Texture.TextureType;
 
 public class FBO
 {
@@ -72,6 +73,8 @@ public class FBO
 			int i = 0;
 			for (GBufferTexture texture : colorAttachements)
 			{
+				if(texture.getType().equals(TextureType.RGB_HDR))
+					glDisable(GL_FRAMEBUFFER_SRGB);
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
 				scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
 				i++;

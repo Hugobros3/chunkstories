@@ -40,6 +40,11 @@ public class Texture
 		this.type = type;
 	}
 	
+	public TextureType getType()
+	{
+		return type;
+	}
+	
 	public Texture(String name)
 	{
 		this(TextureType.RGBA_8BPP);
