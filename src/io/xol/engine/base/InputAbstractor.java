@@ -25,12 +25,12 @@ public class InputAbstractor
 		return Mouse.isButtonDown(b);
 	}
 
+	/**
+	 * Polls input and call input functions
+	 * @param engine
+	 */
 	public static void update(XolioWindow engine)
 	{
-		/*
-		 * This part is about Keyboard/mouse events handling. It does be
-		 * dependent of LWJGL.
-		 */
 		// Keyboard events handling
 		while (Keyboard.next())
 		{

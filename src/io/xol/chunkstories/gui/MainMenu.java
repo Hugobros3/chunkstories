@@ -27,7 +27,6 @@ import io.xol.engine.textures.TexturesHandler;
 
 public class MainMenu extends OverlayableScene
 {
-
 	// GUI Objects
 	Overlay currentOverlay = new MainMenuOverlay(this, null);
 
@@ -127,25 +126,21 @@ public class MainMenu extends OverlayableScene
 
 	public void update()
 	{
-		try
+		try // Ugly fps caps yay
 		{
-			// Or the fans go crazy -_-
 			Thread.sleep(33L);
 		}
 		catch (InterruptedException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		// Render this shit boy
 		unblurredFBO.bind();
-		// XolioWindow.setup3d();
 		cam.justSetup();
 		menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);
 		menuSkyBox.setUniformSamplerCubemap(0, "skyBox", TexturesHandler.getCubemapID(skyBox));
-		// TODO cap fps and base on time
 		cam.view_rotx = 35 + (float) (Math.sin(cam.view_roty / 15)) * 5f;
 		cam.view_roty = (System.currentTimeMillis()%1000000)/200.0f;
 		ObjectRenderer.drawFSQuad(menuSkyBox.getVertexAttributeLocation("vertexIn"));

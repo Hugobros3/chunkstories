@@ -10,7 +10,6 @@ import io.xol.engine.base.XolioWindow;
 import io.xol.engine.base.font.BitmapFont;
 import io.xol.engine.base.font.FontRenderer2;
 import io.xol.chunkstories.GameData;
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
@@ -45,12 +44,10 @@ public class GameplayScene extends OverlayableScene
 	EntityRenderer entityRenderer;
 	InventoryDrawer inventoryDrawer;
 
-	// INTERFACE VARIABLES
 	Camera camera = new Camera();
 	public ChatPanel chat = new ChatPanel();
 	boolean focus = true;
 
-	// PLAYER VARIABLES
 	public boolean multiPlayer;
 	EntityImplementation player;
 
@@ -75,11 +72,8 @@ public class GameplayScene extends OverlayableScene
 
 		focus(true);
 	}
-
-	int voxelId = 1;
-	int meta = 0;
-
-	int selectedInventorySlot = 0;
+	
+	 int selectedInventorySlot = 0;
 
 	public void update()
 	{
@@ -152,8 +146,7 @@ public class GameplayScene extends OverlayableScene
 		chat.update();
 		chat.draw();
 
-		if (player != null)
-			if (player.inventory != null)
+		if (player != null && player.inventory != null)
 				inventoryDrawer.drawPlayerInventorySummary(XolioWindow.frameW / 2, 64 + 64, selectedInventorySlot);
 
 		if (Keyboard.isKeyDown(78))
@@ -166,13 +159,12 @@ public class GameplayScene extends OverlayableScene
 		
 		if (currentOverlay == null && !chat.chatting)
 			focus(true);
-		Client.profiler.startSection("done");
 		// Draw overlay
 		if (currentOverlay != null)
 			currentOverlay.drawToScreen(0, 0, XolioWindow.frameW, XolioWindow.frameH);
 			
 		super.update();
-		// Check connection didn't died
+		// Check connection didn't died and change scene if it has
 		if (Client.connection != null)
 		{
 			if (!Client.connection.isAlive() || Client.connection.hasFailed())
@@ -246,73 +238,16 @@ public class GameplayScene extends OverlayableScene
 		}
 		else if (k == Keyboard.KEY_F4)
 			Client.world.particlesHolder.addParticle(new ParticleLight(Client.world, player.posX + (Math.random() - 0.5) * 30, player.posY + (Math.random()) * 10, player.posZ + (Math.random() - 0.5) * 30));
-		/*else if(k == Keyboard.KEY_F5)
-		{
-			System.out.println("llk ???"+(inventorySerialized == null));
-			ItemPile item;
-			Iterator<ItemPile> it = this.player.inventory.iterator();
-			while(it.hasNext())
-			{
-				item = it.next();
-				System.out.println(item);
-			}
-			if(inventorySerialized == null)
-			{
-				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				try
-				{
-					Client.controller.inventory.save(new DataOutputStream(out));
-					Client.controller.inventory.clear();
-					out.flush();
-					inventorySerialized = out.toByteArray();
-					out.close();
-				}
-				catch (IOException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				return true;
-			}
-			else
-			{
-				ByteArrayInputStream in = new ByteArrayInputStream(inventorySerialized);
-				try
-				{
-					Client.controller.inventory.load(new DataInputStream(in));
-					//Client.controller.inventory.clear();
-					inventorySerialized = null;
-					in.close();
-				}
-				catch (IOException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				return true;
-			}
-		}*/
+		
 		else if (k == Keyboard.KEY_F6)
 		{
 			if (player instanceof EntityPlayer)
 				((EntityPlayer) player).toggleNoclip();
 		}
-		/*else if (k == Keyboard.KEY_F7)
-		{
-			Entity test = EntitiesList.newEntity(Client.world, (short) 0x02);
-			test.setPosition(player.posX, player.posY, player.posZ);
-			Client.world.addEntity(test);
-		}*/
 		else if (k == Keyboard.KEY_F8)
 			shouldCM = true;
-		else if (k == Keyboard.KEY_F9)
-		{
-			// Client.connection = new ServerConnection("127.0.0.1", 30410);
-			// chat.insert("#FFFF00Connecting to 127.0.0.1:30410");
-		}
 		else if (k == Keyboard.KEY_F12)
 		{
-			// VoxelTiles.generateTexture();
 			GameData.reload();
 			GameData.reloadClientContent();
 			worldRenderer.terrain.redoBlockTexturesSummary();
@@ -368,6 +303,7 @@ public class GameplayScene extends OverlayableScene
 	{
 		if (currentOverlay != null && currentOverlay.onScroll(a))
 			return true;
+		//Scroll trought the items
 		if(player != null && player.inventory != null)
 		{
 			ItemPile selected = null;

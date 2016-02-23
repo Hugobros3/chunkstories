@@ -112,7 +112,7 @@ public class XolioWindow
 
 	public void createContext()
 	{
-		System.out.println("Initializing XolioEngine 3D v" + engineVersion + " [Game:" + name + ",Width:" + frameW + ",Height:" + frameH + "]");
+		System.out.println("Initializing XolioWare Interactive 3D Engine v" + engineVersion + " [Game:" + name + ",Width:" + frameW + ",Height:" + frameH + "]");
 		try
 		{
 			computeDisplayModes();
@@ -120,8 +120,7 @@ public class XolioWindow
 			Display.setDisplayMode(new DisplayMode(frameW, frameH));
 			Display.setTitle(name);
 			Display.setResizable(true);
-			//ContextAttribs contextAtrributes = new ContextAttribs(3, 2).withForwardCompatible(true);
-			Display.create(new PixelFormat());//, contextAtrributes);
+			Display.create(new PixelFormat());
 			
 			systemInfo();
 			glInfo();
@@ -132,7 +131,7 @@ public class XolioWindow
 		catch (Exception e)
 		{
 			System.out.println("A fatal error occured ! If you see the dev, show him this message !");
-			e.printStackTrace();
+			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 		}
 	}
 

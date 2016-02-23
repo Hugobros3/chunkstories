@@ -11,8 +11,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -87,7 +91,17 @@ public class ConfigFile
 		try
 		{
 			Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(System.getProperty("user.dir") + "/" + path), "UTF-8"));
-			for (String key : props.keySet())
+			Set<String> unsortedKeys = props.keySet();
+			List<String> sortedKeys = new ArrayList<String>(unsortedKeys);
+			sortedKeys.sort(new Comparator<String>(){
+				@Override
+				public int compare(String arg0, String arg1)
+				{
+					return arg0.compareTo(arg1);
+				}
+				
+			});
+			for (String key : sortedKeys)
 			{
 				out.write(key + "=" + props.get(key) + "\n");
 			}

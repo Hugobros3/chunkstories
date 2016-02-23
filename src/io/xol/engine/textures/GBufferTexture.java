@@ -4,7 +4,6 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.ARBTextureFloat.GL_RGBA16F_ARB;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL14.*;
-import static org.lwjgl.opengl.GL21.*;
 
 import java.nio.ByteBuffer;
 
@@ -44,7 +43,7 @@ public class GBufferTexture extends Texture
 			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " tamer texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
 			// Optimization for OpenGL 3 cards
 			if(!FastConfig.doBloom)
-			//	glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, (ByteBuffer) null);
+			//	glTexImage2D(GL_TEXTURE_2D, 0, GL_R9_G8_B9, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, (ByteBuffer) null);
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, (ByteBuffer) null);
 			else
 			{

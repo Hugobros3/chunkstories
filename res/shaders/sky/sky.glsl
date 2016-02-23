@@ -38,15 +38,13 @@ vec3 getSkyColor(float time, vec3 eyeDirection)
 	vl = clamp(vl, 0.0, 1.0);
     vec4 skyGlow = texture2D(glowSampler, vec2(time, 1.0-vl));
 	vec3 skyColor = texture2D(colorSampler, vec2(time, clamp(0.99-normalize(eyeDirection).y * 0.99, 0.0, 1.0))).rgb;
-	
-    //skyColor = normalize(eyeDirection);
+    
 	//skyColor = vec3(1, 1, 0) * 0.5;
-	
 	skyColor = mix(skyColor, skyColor * 0.6 + skyGlow.rgb * 0.8, skyGlow.a * 0.5);
 	
-	vec4 cloudsColor = vec4(0.0);//getClouds(eyeDirection);
+	vec4 cloudsColor = getClouds(eyeDirection);
 	
-	//skyColor +=  (1.0-isRaining)*max(vec3(15.0,15.0,15.0)*pow(clamp(dot(V, L), 0.0, 1.0), 1750.0), 0.0);
+	skyColor +=  (1.0-isRaining)*max(vec3(15.0,15.0,15.0)*pow(clamp(dot(V, L), 0.0, 1.0), 1750.0), 0.0);
 	
 	vec3 combined = mix(skyColor, cloudsColor.rgb, clamp(cloudsColor.a, 0.0, 1.0));
 	

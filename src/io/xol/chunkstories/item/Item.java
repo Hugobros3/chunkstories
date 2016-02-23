@@ -5,6 +5,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.events.actions.ClientAction;
+import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
+import io.xol.chunkstories.item.renderer.ItemRenderer;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -19,10 +22,23 @@ public abstract class Item
 	private int slotsHeight = 1;
 
 	private int maxStackSize = 100;
+	
+	private ItemRenderer itemRenderer;
 
 	public Item(int id)
 	{
 		this.id = id;
+		itemRenderer = new DefaultItemRenderer(this);
+	}
+	
+	public ItemRenderer getItemRenderer()
+	{
+		return itemRenderer;
+	}
+	
+	public void setItemRenderer(ItemRenderer itemRenderer)
+	{
+		this.itemRenderer = itemRenderer;
 	}
 	
 	public void onCreate(ItemPile pile, String[] info)
@@ -34,9 +50,9 @@ public abstract class Item
 	 * Called when the user interacts with the item
 	 * @param user Must be of type Entity implements EntityControllable ! The entity who made use of this item
 	 * @param pile The itemPile
-	 * @param action Additional information on the action the user performed : 0 = Left click, 1 = Right click, other values are left for modding purposes
+	 * @param action Additional information on the action the user performed
 	 */
-	public void onUse(Entity user, ItemPile pile, int action)
+	public void onUse(Entity user, ItemPile pile, ClientAction action)
 	{
 		
 	}
@@ -140,7 +156,6 @@ public abstract class Item
 	 */
 	public void load(ItemPile itemPile, DataInputStream stream) throws IOException
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	
@@ -152,7 +167,6 @@ public abstract class Item
 	 */
 	public void save(ItemPile itemPile, DataOutputStream stream) throws IOException
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	// ----- End get/set hell -----

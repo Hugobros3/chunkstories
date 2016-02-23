@@ -1,11 +1,11 @@
 package io.xol.chunkstories.tools;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.PrintWriter;
+
 import static io.xol.chunkstories.tools.ChunkStoriesLogger.LogType.*;
 import static io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel.*;
 
@@ -15,16 +15,15 @@ import static io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel.*;
 
 public class ChunkStoriesLogger
 {
-
 	static ChunkStoriesLogger instance;
 
 	public static void init(ChunkStoriesLogger log)
 	{
 		instance = log;
-		Runtime.getRuntime().addShutdownHook(new Thread(){
+		Runtime.getRuntime().addShutdownHook(new Thread()
+		{
 			public void run()
 			{
-				System.out.println("lel");
 				ChunkStoriesLogger.getInstance().close();
 			}
 		});
@@ -34,6 +33,8 @@ public class ChunkStoriesLogger
 	{
 		return instance;
 	}
+	
+	boolean logUploadPolicy = false;
 
 	public ChunkStoriesLogger(LogLevel logConsole, LogLevel logFile, File file)
 	{
@@ -47,11 +48,10 @@ public class ChunkStoriesLogger
 				file.getParentFile().mkdirs();
 				if (!file.exists())
 					file.createNewFile();
-				fileWriter = new BufferedWriter(new OutputStreamWriter(
-						new FileOutputStream(file), "UTF-8"));
-				log("Successfully started logFile : " + file.getAbsolutePath(),
-						INTERNAL, INFO);
-			} catch (IOException e)
+				fileWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+				log("Successfully started logFile : " + file.getAbsolutePath(), INTERNAL, INFO);
+			}
+			catch (IOException e)
 			{
 				e.printStackTrace();
 			}
@@ -122,29 +122,23 @@ public class ChunkStoriesLogger
 	
 	SendReportThread logReportThread;
 	*/
-	
+
 	public void close()
 	{
-		try
-		{
 			info("Successfully written log");
 			fileWriter.close();
 			// Report whatever happened
-			
+
 			/*logReportThread = new SendReportThread(logFile);
 			logReportThread.run();*/
-			
+
 			//System.exit(0);
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
 	}
 
 	LogLevel logToConsole;
 	LogLevel logToFile;
 	File logFile;
-	Writer fileWriter;
+	PrintWriter fileWriter;
 
 	public void log(String text)
 	{
@@ -171,14 +165,9 @@ public class ChunkStoriesLogger
 		}
 		if (logFile != null && logToFile.compareTo(level) <= 0)
 		{
-			try
-			{
+			
 				fileWriter.append(line + "\n");
-			} catch (IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			
 		}
 	}
 
@@ -194,15 +183,9 @@ public class ChunkStoriesLogger
 
 	public void save()
 	{
-		try
-		{
+		
 			fileWriter.close();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 	}
 
 	public void info(String string)
@@ -214,9 +197,14 @@ public class ChunkStoriesLogger
 	{
 		this.log(string, WARN);
 	}
-	
+
 	public void error(String string)
 	{
 		this.log(string, ERROR);
+	}
+
+	public PrintWriter getPrintWriter()
+	{
+		return fileWriter;
 	}
 }

@@ -30,6 +30,7 @@ public class HorizonGenerator extends WorldGenerator
 		rnd.setSeed(cx * 32 + cz + 48716148);
 		
 		CubicChunk c = new CubicChunk(world, cx, cy, cz);
+		int type = 0;
 		for(int x = 0; x < 32; x++)
 			for(int z = 0; z < 32; z++)
 			{
@@ -39,12 +40,21 @@ public class HorizonGenerator extends WorldGenerator
 				int y = cy * 32;
 				while(y < cy * 32 + 32 && y < v)
 				{
-					c.setDataAt(x, y, z, 1);
+					if(v - y >= 3)
+						type = 1;
+					else if(v - y > 1 || y + 1 < 60)
+						type = 3;
+					else
+						type = 2;
+					c.setDataAt(x, y, z, type);
+					y++;
+				}
+				while(y < cy * 32 + 32 && y < 60)
+				{
+					c.setDataAt(x, y, z, 128);
 					y++;
 				}
 			}
-		//c.setDataAt(0, 0, 0, 3);
-		//c.setDataAt(0, 0, 1, 0);
 		return c;
 	}
 	
@@ -53,6 +63,7 @@ public class HorizonGenerator extends WorldGenerator
 		float total = 0.0f;
 		float maxAmplitude = 0.0f;
 		float amplitude = 1.0f;
+		freq *= ws / (64 * 32);
 		for(int i = 0; i < octaves; i++)
 		{
 			total += ssng.looped_noise(x * freq, z * freq, ws) * amplitude;
@@ -79,17 +90,33 @@ public class HorizonGenerator extends WorldGenerator
 		return total / maxAmplitude;
 	}
 	
-	public int getHeightAt(int x, int z)
+	private int getHeightAtInternal(int x, int z)
 	{
 		float finalHeight = 0.0f;
+		
+		float mountainFactor = fractalNoise(x + 5487, z + 33320, 3, 1f, 0.5f);
+		mountainFactor *= 1.5f * mountainFactor;
+		if(mountainFactor > 1.0f)
+			mountainFactor = 1f;
 		//Mountains
-		finalHeight += (ridgedNoise(x, z, 5, 1.0f, 0.5f) * 192);
+		finalHeight += (ridgedNoise(x, z, 5, 1.0f, 0.5f) * (64 + 128 * mountainFactor));
 		
 		return (int) finalHeight;
 	}
 	
-	public int getDataAt(int x, int y)
+	public int getHeightAt(int x, int z)
 	{
-		return 1;
+		int finalHeight = getHeightAtInternal(x, z);
+		//if(finalHeight < 60)
+		//	return 60;
+		return finalHeight;
+	}
+	
+	public int getDataAt(int x, int z)
+	{
+		//int finalHeight = getHeightAtInternal(x, z);
+		//if(finalHeight < 60)
+		//	return 128;
+		return 2;
 	}
 }

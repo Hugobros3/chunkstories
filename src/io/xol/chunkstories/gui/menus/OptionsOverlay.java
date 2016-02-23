@@ -335,6 +335,7 @@ public class OptionsOverlay extends Overlay
 				new ConfigButtonToggle("physicsVisualization"),
 				new ConfigButtonToggle("showDebugInfo"),
 				new ConfigButtonToggle("frametimeGraph"),
+				new ConfigButtonMultiChoice("log-policy",new String[] { "send", "dont" }),
 				}));
 
 		for (ConfigTab tab : configTabs)

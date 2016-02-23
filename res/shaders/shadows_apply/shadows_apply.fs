@@ -124,11 +124,13 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	float sunLightMultiplier = meta.y;
 	
 	<ifdef !shadows>
-	opacity = 0.0;
+	float opacityModified = 0.0;
 	vec3 shadingDir = normalize(normalMatrixInv * normal);
-	opacity += 0.25 * abs(dot(vec3(1.0, 0.0, 0.0), shadingDir));
-	opacity += 0.45 * abs(dot(vec3(0.0, 0.0, 1.0), shadingDir));
-	opacity += 0.6 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
+	opacityModified += 0.25 * abs(dot(vec3(1.0, 0.0, 0.0), shadingDir));
+	opacityModified += 0.45 * abs(dot(vec3(0.0, 0.0, 1.0), shadingDir));
+	opacityModified += 0.6 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
+	
+	opacity = mix(opacity, opacityModified, meta.a);
 	<endif !shadows>
 	opacity = clamp(opacity, 0.0, 1.0);
 	

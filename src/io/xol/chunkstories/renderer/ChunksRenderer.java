@@ -266,7 +266,7 @@ public class ChunksRenderer extends Thread
 		}
 
 		// If all else fails, just use the heightmap information
-		return Client.world.chunkSummaries.getHeightAt(x, z) < y ? 15 : 0;
+		return Client.world.chunkSummaries.getHeightAt(x, z) <= y ? 15 : 0;
 	}
 
 	private int getBlocklight(CubicChunk c, int x, int y, int z)
