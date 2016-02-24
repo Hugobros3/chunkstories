@@ -163,8 +163,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 				// chunksAlreadyAsked.clear();
 			}
 			Client.connection.sendTextMessage("world/getChunkCompressed:" + chunkX + ":" + chunkY + ":" + chunkZ);
-			// System.out.println("K x" + chunkX + "y:" + chunkY + "z:" + chunkZ
-			// + "alreadyAsked" + chunksAlreadyAsked.size());
+			//System.out.println("K x" + chunkX + "y:" + chunkY + "z:" + chunkZ + "alreadyAsked" + chunksAlreadyAsked.size());
 		}
 		else
 		{

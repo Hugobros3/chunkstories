@@ -16,6 +16,7 @@ public class SendQueue extends Thread
 {
 	Queue<Packet> sendQueue = new ConcurrentLinkedQueue<Packet>();
 	AtomicBoolean die = new AtomicBoolean(false);
+	AtomicBoolean sleepy = new AtomicBoolean(false);
 	
 	DataOutputStream out;
 
@@ -32,9 +33,12 @@ public class SendQueue extends Thread
 		//System.out.println("Queued packet "+packet.toString());
 		sendQueue.add(packet);
 		
-		synchronized (this)
+		if(sleepy.get())
 		{
-			notifyAll();
+			synchronized (this)
+			{
+				notifyAll();
+			}
 		}
 	}
 	
@@ -54,6 +58,7 @@ public class SendQueue extends Thread
 					synchronized (this)
 					{
 						//Wait if no more job to do.
+						sleepy.set(true);
 						wait();
 					}
 				}
@@ -72,6 +77,7 @@ public class SendQueue extends Thread
 				{
 					e.printStackTrace();
 				}
+			sleepy.set(false);
 		}
 	}
 	

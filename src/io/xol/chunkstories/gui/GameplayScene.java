@@ -110,8 +110,8 @@ public class GameplayScene extends OverlayableScene
 						(float) player.posZ), 75f, 40f, viewerCamDirVector)));
 		}
 		worldRenderer.renderWorldAtCamera(camera);
-		if (selectedBlock != null)
-			entityRenderer.drawSelectionBox(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
+		//if (selectedBlock != null)
+		//	entityRenderer.drawSelectionBox(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
 		
 		if (FastConfig.physicsVisualization && player != null)
 		{
