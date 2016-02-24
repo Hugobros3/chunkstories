@@ -1,6 +1,9 @@
-package io.xol.chunkstories.client.net;
+package io.xol.chunkstories.net;
 
 import io.xol.chunkstories.net.packets.Packet;
+import io.xol.chunkstories.net.packets.PacketsProcessor;
+import io.xol.chunkstories.net.packets.UnknowPacketException;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -18,11 +21,13 @@ public class SendQueue extends Thread
 	AtomicBoolean die = new AtomicBoolean(false);
 	AtomicBoolean sleepy = new AtomicBoolean(false);
 	
+	PacketsProcessor processor;
 	DataOutputStream out;
 
-	public SendQueue(DataOutputStream out)
+	public SendQueue(DataOutputStream out, PacketsProcessor processor)
 	{
 		this.out = out;
+		this.processor = processor;
 		this.setName("Send queue thread");
 	}
 	
@@ -69,13 +74,18 @@ public class SendQueue extends Thread
 			else
 				try
 				{
-					//System.out.println("de-Queued packet "+packet.toString());
+					processor.sendPacketHeader(out, packet);
 					packet.send(out);
 					out.flush();
 				}
 				catch (IOException e)
 				{
-					e.printStackTrace();
+					//We don't care about that
+				}
+				catch (UnknowPacketException e)
+				{
+					//We care about that
+					e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 				}
 			sleepy.set(false);
 		}
@@ -89,7 +99,7 @@ public class SendQueue extends Thread
 		}
 		catch (IOException e)
 		{
-			//e.printStackTrace();
+			//Really that's just disconnection
 		}
 		die.set(true);
 		synchronized (this)

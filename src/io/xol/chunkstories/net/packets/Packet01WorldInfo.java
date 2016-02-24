@@ -24,7 +24,7 @@ public class Packet01WorldInfo extends Packet
 	@Override
 	public void send(DataOutputStream out) throws IOException
 	{
-		out.writeByte(0x01);
+		//out.writeByte(0x01);
 
 		String tg = "";
 		for (String line : info.saveText())

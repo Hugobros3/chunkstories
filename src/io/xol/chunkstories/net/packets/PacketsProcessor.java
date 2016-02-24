@@ -2,12 +2,15 @@ package io.xol.chunkstories.net.packets;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
@@ -27,10 +30,12 @@ public class PacketsProcessor
 {
 	//There is 2^15 possible packets
 	static PacketType[] packetTypes = new PacketType[32768];
+	static Map<String, Short> packetIds = new HashMap<String, Short>();
 
 	public static void loadPacketsTypes()
 	{
 		//Loads *all* possible packets types
+		packetIds.clear();
 		Deque<File> packetsFiles = GameData.getAllFileInstances("./res/data/packetsTypes.txt");
 		for (File f : packetsFiles)
 		{
@@ -77,6 +82,7 @@ public class PacketsProcessor
 
 							PacketType packetType = new PacketType(packetId, packetName, packetClass, constructor, !allowed.equals("server"), !allowed.equals("client"));
 							packetTypes[packetId] = packetType;
+							packetIds.put(splitted[3], packetId);
 							//System.out.println(packetId + " " + packetName);
 						}
 						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
@@ -213,6 +219,27 @@ public class PacketsProcessor
 			throw new UnknowPacketException(packetType);
 		else
 			return packet;
+	}
+	
+	/**
+	 * Sends the packets header ( ID )
+	 * @param out
+	 * @param packet
+	 * @throws UnknowPacketException
+	 * @throws IOException
+	 */
+	public void sendPacketHeader(DataOutputStream out, Packet packet) throws UnknowPacketException, IOException
+	{
+		if(packet == null || !packetIds.containsKey(packet.getClass().getName()))
+			throw new UnknowPacketException(-1);
+		short id = packetIds.get(packet.getClass().getName());
+		if(id < 127)
+			out.writeByte((byte)id);
+		else
+		{
+			out.writeByte((byte)(0x80 | id >> 8));
+			out.writeByte((byte)(id % 256));
+		}
 	}
 
 	public World getWorld()

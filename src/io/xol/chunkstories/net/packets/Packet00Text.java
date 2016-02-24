@@ -22,7 +22,7 @@ public class Packet00Text extends Packet
 	@Override
 	public void send(DataOutputStream out) throws IOException
 	{
-		out.writeByte(0x00);
+		//out.writeByte(0x00);
 		out.writeUTF(text);
 	}
 

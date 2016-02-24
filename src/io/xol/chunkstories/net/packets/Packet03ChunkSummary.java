@@ -31,7 +31,7 @@ public class Packet03ChunkSummary extends Packet
 	@Override
 	public void send(DataOutputStream out) throws IOException
 	{
-		out.writeByte(0x03);
+		//out.writeByte(0x03);
 		out.writeInt(summary.rx);
 		out.writeInt(summary.rz);
 		ByteBuffer compressMe = ByteBuffer.allocateDirect(256 * 256 * 4 * 2);

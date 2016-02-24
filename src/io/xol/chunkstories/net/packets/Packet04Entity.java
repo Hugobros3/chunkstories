@@ -43,7 +43,7 @@ public class Packet04Entity extends Packet
 	public void send(DataOutputStream out) throws IOException
 	{
 		//System.out.println("Sending entity " + entityID + " EID : " + entityType + " PosX" + XBuffered + (nBuffered == null ? "null" : nBuffered));
-		out.writeByte(0x04);
+		//out.writeByte(0x04);
 		out.writeLong(entityID);
 		out.writeShort(entityType);
 		out.writeDouble(XBuffered);

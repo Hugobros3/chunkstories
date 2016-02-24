@@ -3,9 +3,11 @@ package io.xol.chunkstories.client.net;
 import io.xol.engine.misc.HttpRequestThread;
 import io.xol.engine.misc.HttpRequester;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.net.packets.Packet00Text;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
@@ -65,7 +67,7 @@ public class ServerConnection extends Thread implements HttpRequester
 			socket = new Socket(ip, port);
 			in = new DataInputStream(socket.getInputStream());
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-			sendQueue = new SendQueue(out);
+			sendQueue = new SendQueue(out, packetsProcessor);
 			sendQueue.start();
 			connectionStatus = "Established, waiting for login token...";
 			this.start();

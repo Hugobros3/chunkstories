@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import io.xol.chunkstories.client.Client;
@@ -92,17 +94,9 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 			c.doLightning(false, blockSources, sunSources);
 
-			// synchronized (chunksAlreadyAsked)
-			{
-				Iterator<int[]> i = chunksAlreadyAsked.iterator();
-				while (i.hasNext())
-				{
-					int[] coordinates = i.next();
-					if (coordinates[0] == x && coordinates[1] == y && coordinates[2] == z)
-						i.remove();
-				}
-				// System.out.println(chunksAlreadyAsked.size());
-			}
+			//Remove any object preventing us from asking it again
+			ChunkLocation loc = new ChunkLocation(x, y, z);
+			chunksAlreadyAsked.remove(loc);
 
 			world.setChunk(c);
 			return true;
@@ -141,25 +135,43 @@ public class IOTasksMultiplayerClient extends IOTasks
 		addTask(task);
 	}
 
-	Queue<int[]> chunksAlreadyAsked = new ConcurrentLinkedQueue<int[]>();
+	Set<ChunkLocation> chunksAlreadyAsked = ConcurrentHashMap.newKeySet();
 
+	class ChunkLocation{
+		int chunkX, chunkY, chunkZ;
+		
+		public ChunkLocation(int x, int y, int z)
+		{
+			chunkX = x;
+			chunkY = y;
+			chunkZ = z;
+		}
+		
+		public boolean equals(Object o)
+		{
+			if(o instanceof ChunkLocation)
+			{
+				ChunkLocation loc = ((ChunkLocation)o);
+				if(loc.chunkX == chunkX && loc.chunkY == chunkY && loc.chunkZ == chunkZ)
+					return true;
+			}
+			return false;
+		}
+		
+		public int hashCode()
+		{
+			return (chunkX * 65536 * 256 + chunkY * 65536 + chunkZ)%21000000;
+		}
+	}
+	
 	public void requestChunkLoad(int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
-		// don't spam packets !
-		boolean alreadyAsked = false;
-		// synchronized (chunksAlreadyAsked)
-		// {
-		for (int[] coordinates : chunksAlreadyAsked)
-		{
-			if (coordinates[0] == chunkX && coordinates[1] == chunkY && coordinates[2] == chunkZ)
-				alreadyAsked = true;
-		}
-		// }
-		if (!alreadyAsked)
+		ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
+		if (!this.chunksAlreadyAsked.contains(loc))
 		{
 			// synchronized (chunksAlreadyAsked)
 			{
-				chunksAlreadyAsked.add(new int[] { chunkX, chunkY, chunkZ });
+				chunksAlreadyAsked.add(loc);
 				// chunksAlreadyAsked.clear();
 			}
 			Client.connection.sendTextMessage("world/getChunkCompressed:" + chunkX + ":" + chunkY + ":" + chunkZ);
@@ -175,16 +187,8 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 	public void notifyChunkUnload(int chunkX, int chunkY, int chunkZ)
 	{
-		// synchronized (chunksAlreadyAsked)
-		{
-			Iterator<int[]> i = chunksAlreadyAsked.iterator();
-			while (i.hasNext())
-			{
-				int[] coordinates = i.next();
-				if (coordinates[0] == chunkX && coordinates[1] == chunkY && coordinates[2] == chunkZ)
-					i.remove();
-			}
-		}
+		ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
+		chunksAlreadyAsked.remove(loc);
 	}
 
 	public void requestChunkHolderLoad(ChunkHolder holder)

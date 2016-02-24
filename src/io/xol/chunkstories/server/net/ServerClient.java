@@ -3,7 +3,7 @@ package io.xol.chunkstories.server.net;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.events.core.PlayerLoginEvent;
 import io.xol.chunkstories.api.events.core.PlayerLogoutEvent;
-import io.xol.chunkstories.client.net.SendQueue;
+import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.net.packets.Packet00Text;
@@ -162,7 +162,7 @@ public class ServerClient extends Thread implements HttpRequester
 		try
 		{
 			in = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
-			queue = new SendQueue(new DataOutputStream(new BufferedOutputStream(sock.getOutputStream())));
+			queue = new SendQueue(new DataOutputStream(new BufferedOutputStream(sock.getOutputStream())), packetsProcessor);
 			queue.start();
 			//out = );
 		}

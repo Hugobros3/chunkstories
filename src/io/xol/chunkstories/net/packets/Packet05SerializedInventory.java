@@ -23,10 +23,9 @@ public class Packet05SerializedInventory extends Packet
 	@Override
 	public void send(DataOutputStream out) throws IOException
 	{
-		//If no inventory given, fuck off
-		if(inventory == null)
-			return;
-		out.writeByte(0x05);
+		//Inventory existing is a requirement
+		assert inventory != null;
+		//out.writeByte(0x05);
 		//Who does it belong to ?
 		if(inventory.holder == null)
 			out.writeByte(0x00);
