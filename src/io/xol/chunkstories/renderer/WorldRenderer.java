@@ -815,12 +815,15 @@ public class WorldRenderer
 				geometrySize = chunk.vbo_size_complex;
 				int dekal = chunk.vbo_size_normal * 16 + chunk.vbo_size_water * 24;
 				vertexSize = 12;
-				glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, vertexSize, dekal + 0);
 
-				glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 4, dekal + (geometrySize) * vertexSize);
+				// We're going back to interlaced format
+				// Complex blocks ( integer faces ) alignment :
+				// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
+				glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 24, dekal + 0);
+				glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 24, dekal + 12);
 				if (!shadowPass)
-					glVertexAttribPointer(colorIn, 4, GL_UNSIGNED_BYTE, true, 4, dekal + (geometrySize) * (vertexSize + 4));
-				glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 0, dekal + (geometrySize) * (vertexSize + 8));
+					glVertexAttribPointer(colorIn, 4, GL_UNSIGNED_BYTE, true, 24, dekal + 16);
+				glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20);
 
 				if (shadowPass)
 					renderedVerticesShadow += geometrySize;
@@ -1015,25 +1018,30 @@ public class WorldRenderer
 				glBindBuffer(GL_ARRAY_BUFFER, chunk.vbo_id);
 				int geometrySize = chunk.vbo_size_water;
 				int dekal = chunk.vbo_size_normal * 16;
-				// Texture data is offset by the vertex data as
-				// 64 x 64 x 3 vertices x 2 triangles x 3 coordinates x 4 bytes
-				// per float
-				// So it's like 64x64x3x2 is the geometry size, we do
-				// 3x4xgeometry for textcoords
+				
 
-				// glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 12, 0);
-				glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 12, dekal + 0);
+				// We're going back to interlaced format
+				// Complex blocks ( integer faces ) alignment :
+				// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
+				
+				/*glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 24, dekal + 0);
+				glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 24, dekal + 12);
+				if (!shadowPass)
+					glVertexAttribPointer(colorIn, 4, GL_UNSIGNED_BYTE, true, 24, dekal + 16);
+				glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20);*/
+				
+				glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 24, dekal + 0);
 				int vertexSize = 12;
 				if (texCoordIn != -1)
-					glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 4, dekal + (geometrySize) * vertexSize);
+					glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 24, dekal + 12);
 				if (colorIn != -1)
-					glVertexAttribPointer(colorIn, 3, GL_UNSIGNED_BYTE, true, 4, dekal + (geometrySize) * (vertexSize + 4));
+					glVertexAttribPointer(colorIn, 3, GL_UNSIGNED_BYTE, true, 24, dekal + 16);
 				if (normalIn != -1)
-					glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 0, dekal + (geometrySize) * (vertexSize + 8));
+					glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20);
 
 				if (geometrySize > 0)
 				{
-					glDrawArrays(GL_TRIANGLES, 0, geometrySize);
+					//glDrawArrays(GL_TRIANGLES, 0, geometrySize);
 					// if(FastConfig.debugGBuffers ) System.out.println(geometrySize+":"+dekal);
 					renderedVertices += geometrySize;
 				}

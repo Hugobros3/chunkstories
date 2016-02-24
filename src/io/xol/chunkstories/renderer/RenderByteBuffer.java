@@ -29,6 +29,13 @@ public class RenderByteBuffer
 		byteBuffer.putInt(kek);
 	}
 	
+	public void addVerticeFloat(float f0, float f1, float f2)
+	{
+		byteBuffer.putFloat(f0);
+		byteBuffer.putFloat(f1);
+		byteBuffer.putFloat(f2);
+	}
+	
 	public void addTexCoordInt(int i0, int i1)
 	{
 		byteBuffer.put((byte) ((i0) & 0xFF));

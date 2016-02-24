@@ -456,7 +456,6 @@ public class ChunksRenderer extends Thread
 
 	private void addQuadBottom(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
-
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
 
@@ -838,7 +837,7 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 	}
 
-	private void addVoxelUsingCustomModel(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<float[]> normals, List<Boolean> isWavy, int sx, int sy, int sz, BlockRenderInfo info)
+	private void addVoxelUsingCustomModel(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, BlockRenderInfo info)
 	{
 		// Basic light for now
 		// TODO interpolation
@@ -917,12 +916,16 @@ public class ChunksRenderer extends Thread
 
 			if (drawFace)
 			{
-				vertices.add(new float[] { vert[0] + sx + dx, vert[1] + sy + dy, vert[2] + sz + dz });
-				texcoords.add(new int[] { (int) (textureS + tex[0] * texture.atlasOffset), (int) (textureT + tex[1] * texture.atlasOffset) });
-				colors.add(lightColors);
-				normals.add(normal);
-				if (isWavy != null)
-					isWavy.add(info.isWavy());
+				rbbf.addVerticeFloat(vert[0] + sx + dx, vert[1] + sy + dy, vert[2] + sz + dz);
+				//vertices.add(new float[] { vert[0] + sx + dx, vert[1] + sy + dy, vert[2] + sz + dz });
+				rbbf.addTexCoordInt((int) (textureS + tex[0] * texture.atlasOffset), (int) (textureT + tex[1] * texture.atlasOffset));
+				//texcoords.add(new int[] { (int) (textureS + tex[0] * texture.atlasOffset), (int) (textureT + tex[1] * texture.atlasOffset) });
+				rbbf.addColors(lightColors);
+				//colors.add(lightColors);
+				rbbf.addNormalsInt(intifyNormal(normal[0]), intifyNormal(normal[1]), intifyNormal(normal[2]), info.isWavy());
+				//normals.add(normal);
+				//if (isWavy != null)
+				//	isWavy.add(info.isWavy());
 			}
 			else
 			{
@@ -1007,16 +1010,12 @@ public class ChunksRenderer extends Thread
 		rawBlocksBuffer.clear();
 		RenderByteBuffer rawRBBF = new RenderByteBuffer(rawBlocksBuffer);
 
-		vertices_water.clear();
-		texcoords_water.clear();
-		colors_water.clear();
-		normals_water.clear();
+		waterBlocksBuffer.clear();
+		RenderByteBuffer waterRBBF = new RenderByteBuffer(waterBlocksBuffer);
 
-		vertices_complex.clear();
-		texcoords_complex.clear();
-		colors_complex.clear();
-		isWavy_complex.clear();
-		normals_complex.clear();
+		complexBlocksBuffer.clear();
+		RenderByteBuffer complexRBBF = new RenderByteBuffer(complexBlocksBuffer);
+		
 
 		long cr_iter = System.nanoTime();
 
@@ -1052,12 +1051,12 @@ public class ChunksRenderer extends Thread
 					// System.out.println(blockID);
 					if (vox.isVoxelLiquid())
 					{
-						addVoxelUsingCustomModel(work, vertices_water, texcoords_water, colors_water, normals_water, null, i, k, j, renderInfo);
+						addVoxelUsingCustomModel(work, waterRBBF, i, k, j, renderInfo);
 					}
 					else if (vox.isVoxelUsingCustomModel())
 					{
 						// Prop rendering
-						addVoxelUsingCustomModel(work, vertices_complex, texcoords_complex, colors_complex, normals_complex, isWavy_complex, i, k, j, renderInfo);
+						addVoxelUsingCustomModel(work, complexRBBF, i, k, j, renderInfo);
 					}
 					else if (blockID != 0)
 					{
@@ -1122,17 +1121,24 @@ public class ChunksRenderer extends Thread
 		long cr_buffer = System.nanoTime();
 		
 		rslt.s_normal = rawBlocksBuffer.position()/(16);
-		rslt.s_complex = vertices_complex.size();
-		rslt.s_water = vertices_water.size();
+		rslt.s_complex = complexBlocksBuffer.position()/(24);
+		rslt.s_water = waterBlocksBuffer.position()/(24);
 
 		rawBlocksBuffer.limit(rawBlocksBuffer.position());
 		rawBlocksBuffer.position(0);
-		
 		byteBuffer.put(rawBlocksBuffer);
+		
+		waterBlocksBuffer.limit(waterBlocksBuffer.position());
+		waterBlocksBuffer.position(0);
+		byteBuffer.put(waterBlocksBuffer);
+
+		complexBlocksBuffer.limit(complexBlocksBuffer.position());
+		complexBlocksBuffer.position(0);
+		byteBuffer.put(complexBlocksBuffer);
 
 		int count = 0;
 
-		for (float[] f : vertices_water)
+		/*for (float[] f : vertices_water)
 		{
 			for (float z : f)
 				byteBuffer.putFloat(z);
@@ -1196,7 +1202,7 @@ public class ChunksRenderer extends Thread
 			int kek = a | b | c | d;
 			byteBuffer.putInt(kek);
 			count++;
-		}
+		}*/
 		byteBuffer.flip();
 		// System.out.println("Final vbo size = "+rsltSize*4);
 		long lol = 0;
@@ -1224,7 +1230,7 @@ public class ChunksRenderer extends Thread
 	List<Boolean> isWavy = new ArrayList<Boolean>();
 	List<int[]> normals = new ArrayList<int[]>();*/
 
-	List<float[]> vertices_water = new ArrayList<float[]>();
+	/*List<float[]> vertices_water = new ArrayList<float[]>();
 	List<int[]> texcoords_water = new ArrayList<int[]>();
 	List<float[]> colors_water = new ArrayList<float[]>();
 	List<float[]> normals_water = new ArrayList<float[]>();
@@ -1233,7 +1239,7 @@ public class ChunksRenderer extends Thread
 	List<int[]> texcoords_complex = new ArrayList<int[]>();
 	List<float[]> colors_complex = new ArrayList<float[]>();
 	List<Boolean> isWavy_complex = new ArrayList<Boolean>();
-	List<float[]> normals_complex = new ArrayList<float[]>();
+	List<float[]> normals_complex = new ArrayList<float[]>();*/
 
 	public void die()
 	{
