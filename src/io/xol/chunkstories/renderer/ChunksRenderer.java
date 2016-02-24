@@ -9,6 +9,8 @@ import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.math.LoopingMathHelper;
+import io.xol.engine.misc.ByteBufferPool;
+import io.xol.engine.misc.FloatBufferPool;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
@@ -30,20 +32,20 @@ import org.lwjgl.BufferUtils;
 
 public class ChunksRenderer extends Thread
 {
-
 	AtomicBoolean die = new AtomicBoolean();
 
 	World world;
 
-	//public List<int[]> todo = new ArrayList<int[]>();
-
 	public Deque<int[]> todo = new ConcurrentLinkedDeque<int[]>();
 	public Queue<VBOData> done = new ConcurrentLinkedQueue<VBOData>();
+	
+	public ByteBufferPool buffersPool;
 
 	public class VBOData
 	{
 		int x, y, z;
-		ByteBuffer buf;
+		//ByteBuffer buf;
+		int bufferId;
 		int s_normal;
 		int s_water;
 		int s_complex;
@@ -119,6 +121,8 @@ public class ChunksRenderer extends Thread
 	public ChunksRenderer(World w)
 	{
 		world = w;
+		// 8 buffers of 8Mb each (64Mb) for temp/scratch buffer memory
+		buffersPool = new ByteBufferPool(8, 0x800000);
 	}
 
 	public void run()
@@ -167,7 +171,20 @@ public class ChunksRenderer extends Thread
 
 							if (nearChunks == 4)
 							{
-								renderChunk(work);
+								int buffer_id = buffersPool.requestByteBuffer();
+								while(buffer_id == -1)
+								{
+									try
+									{
+										Thread.sleep(200L);
+									}
+									catch (InterruptedException e)
+									{
+										e.printStackTrace();
+									}
+									buffer_id = buffersPool.requestByteBuffer();
+								}
+								renderChunk(work, buffer_id);
 							}
 							else
 							{
@@ -347,7 +364,6 @@ public class ChunksRenderer extends Thread
 
 	private void addQuadTop(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
 	{
-		normals.add(new int[] { 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */ });
 
 		int llMs = getSunlight(c, sx, sy + 1, sz);
 		int llMb = getBlocklight(c, sx, sy + 1, sz);
@@ -400,6 +416,8 @@ public class ChunksRenderer extends Thread
 		// aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs,
 		// llMs);
 
+		normals.add(new int[] { 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */ });
+		
 		// float s = (llMs)/15f;
 		// aoA = aoB = aoC = aoD = new float[]{s,s,s};
 		colors.add(aoC);
@@ -824,27 +842,12 @@ public class ChunksRenderer extends Thread
 		texcoords.add(new int[] { textureS, textureT + offset });
 		texcoords.add(new int[] { textureS + offset, textureT + offset });
 		texcoords.add(new int[] { textureS + offset, textureT });
-
-		/*
-		 * int offset = texture.atlasOffset/texture.textureScale; int textureS =
-		 * texture.atlasS+mod(sx,texture.textureScale)*offset; int textureT =
-		 * texture.atlasT+mod(sy,texture.textureScale)*offset;
-		 * 
-		 * texcoords.add(new float[]{textureS, textureT+offset});
-		 * texcoords.add(new float[]{textureS, textureT}); texcoords.add(new
-		 * float[]{textureS+offset, textureT+offset});
-		 * 
-		 * texcoords.add(new float[]{textureS, textureT}); texcoords.add(new
-		 * float[]{textureS+offset, textureT}); texcoords.add(new
-		 * float[]{textureS+offset, textureT+offset});
-		 */
 	}
 
 	private void addVoxelUsingCustomModel(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<float[]> normals, List<Boolean> isWavy, int sx, int sy, int sz, BlockRenderInfo info)
 	{
 		// Basic light for now
 		// TODO interpolation
-
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
 
@@ -958,18 +961,26 @@ public class ChunksRenderer extends Thread
 	Deque<Integer> sunSources = new ArrayDeque<Integer>();
 
 	@SuppressWarnings("unused")
-	private void renderChunk(CubicChunk work)
+	private void renderChunk(CubicChunk work, int byteBufferId)
 	{
+		ByteBuffer byteBuffer = buffersPool.accessByteBuffer(byteBufferId);
+		
 		// Update lightning as well if needed
 		if (work == null)
+		{
+			buffersPool.releaseByteBuffer(byteBufferId);
 			return;
+		}
 
 		if (work.needRelightning.getAndSet(false))
 			work.doLightning(true, blockSources, sunSources);
 
 		// Don't bother
 		if (!work.need_render.get())
+		{
+			buffersPool.releaseByteBuffer(byteBufferId);
 			return;
+		}
 
 		long cr_start = System.nanoTime();
 
@@ -1132,7 +1143,10 @@ public class ChunksRenderer extends Thread
 		int rsltSize = (vertices.size() + 0) * (16);
 		rsltSize += (vertices_complex.size() + +vertices_water.size()) * (24);
 
-		rslt.buf = BufferUtils.createByteBuffer(bufferTotalSize);
+		byteBuffer.clear();
+		rslt.bufferId = byteBufferId;// = byteBuffer;//BufferUtils.createByteBuffer(bufferTotalSize);
+		
+		//System.out.println(bufferTotalSize);
 
 		long cr_buffer = System.nanoTime();
 
@@ -1146,23 +1160,23 @@ public class ChunksRenderer extends Thread
 			int b = ((int) ((f[1])) & 0x3FF) << 10;
 			int c = ((int) ((f[2])) & 0x3FF) << 20;
 			int kek = a | b | c;
-			rslt.buf.putInt(kek);
+			byteBuffer.putInt(kek);
 		}
 		for (int[] f : texcoords)
 		{
 			for (int z : f)
 			{
 				// z*= 32768; not needed anymore, done b4
-				rslt.buf.put((byte) ((z) & 0xFF));
-				rslt.buf.put((byte) ((z >> 8) & 0xFF));
+				byteBuffer.put((byte) ((z) & 0xFF));
+				byteBuffer.put((byte) ((z >> 8) & 0xFF));
 			}
 		}
 		for (float[] f : colors)
 		{
 			for (float z : f)
-				rslt.buf.put((byte) (z * 255));
+				byteBuffer.put((byte) (z * 255));
 			// Padding
-			rslt.buf.put((byte) 0);
+			byteBuffer.put((byte) 0);
 		}
 		int count = 0;
 		for (int[] f : normals)
@@ -1179,13 +1193,13 @@ public class ChunksRenderer extends Thread
 			int kek = a | b | c | d;
 
 			// Loop unrolling
-			rslt.buf.putInt(kek);
-			rslt.buf.putInt(kek);
-			rslt.buf.putInt(kek);
+			byteBuffer.putInt(kek);
+			byteBuffer.putInt(kek);
+			byteBuffer.putInt(kek);
 
-			rslt.buf.putInt(kek);
-			rslt.buf.putInt(kek);
-			rslt.buf.putInt(kek);
+			byteBuffer.putInt(kek);
+			byteBuffer.putInt(kek);
+			byteBuffer.putInt(kek);
 
 			//}
 			count++;
@@ -1200,53 +1214,36 @@ public class ChunksRenderer extends Thread
 			int b = ((int) ((f[1])) & 0x3FF) << 10;
 			int c = ((int) ((f[2])) & 0x3FF) << 20;
 			int kek = a | b | c;
-			rslt.buf.putInt(kek);
+			byteBuffer.putInt(kek);
 		}*/
 
 		for (float[] f : vertices_water)
 		{
 			for (float z : f)
-				rslt.buf.putFloat(z);
+				byteBuffer.putFloat(z);
 		}
 		for (int[] f : texcoords_water)
 		{
 			for (int z : f)
 			{
-				rslt.buf.put((byte) (z & 0xFF));
-				rslt.buf.put((byte) ((z >> 8) & 0xFF));
+				byteBuffer.put((byte) (z & 0xFF));
+				byteBuffer.put((byte) ((z >> 8) & 0xFF));
 			}
 		}
 		for (float[] f : colors_water)
 		{
 			for (float z : f)
-				rslt.buf.put((byte) (z * 255));
+				byteBuffer.put((byte) (z * 255));
 			// Padding
-			rslt.buf.put((byte) 0);
+			byteBuffer.put((byte) 0);
 		}
-		/*for (int[] f : normals_water)
-		{
-			//for (i = 0; i < 6; i++)
-			//{
-			int a = (int) f[0] & 0x3FF;
-			int b = (int) ((f[1] & 0x3FF) << 10);
-			int c = (int) ((f[2] & 0x3FF) << 20);
-			int kek = a | b | c;
-			rslt.buf.putInt(kek);
-			rslt.buf.putInt(kek);
-			rslt.buf.putInt(kek);
-		
-			rslt.buf.putInt(kek);
-			rslt.buf.putInt(kek);
-			rslt.buf.putInt(kek);
-			//}
-		}*/
 		for (float[] f : normals_water)
 		{
 			int a = (int) ((f[0] + 1) * 511.5f) & 0x3FF;
 			int b = ((int) ((f[1] + 1) * 511.5f) & 0x3FF) << 10;
 			int c = ((int) ((f[2] + 1) * 511.5f) & 0x3FF) << 20;
 			int kek = a | b | c;
-			rslt.buf.putInt(kek);
+			byteBuffer.putInt(kek);
 			count++;
 		}
 
@@ -1254,62 +1251,43 @@ public class ChunksRenderer extends Thread
 		for (float[] f : vertices_complex)
 		{
 			for (float z : f)
-				rslt.buf.putFloat(z);
+				byteBuffer.putFloat(z);
 		}
 		for (int[] f : texcoords_complex)
 		{
 			for (int z : f)
 			{
-				rslt.buf.put((byte) ((z) & 0xFF));
-				rslt.buf.put((byte) ((z >> 8) & 0xFF));
+				byteBuffer.put((byte) ((z) & 0xFF));
+				byteBuffer.put((byte) ((z >> 8) & 0xFF));
 			}
 			// 2x2
 		}
 		for (float[] f : colors_complex)
 		{
 			for (float z : f)
-				rslt.buf.put((byte) (z * 255));
+				byteBuffer.put((byte) (z * 255));
 			// Padding
-			rslt.buf.put((byte) 0);
+			byteBuffer.put((byte) 0);
 			// 3x1 + 1
 		}
 		count = 0;
 		for (float[] f : normals_complex)
 		{
-			int a = (int) ((f[0] + 1) * 511.5f) & 0x3FF;
+			int a = (int) ((f[0] + 1) *  .5f) & 0x3FF;
 			int b = ((int) ((f[1] + 1) * 511.5f) & 0x3FF) << 10;
 			int c = ((int) ((f[2] + 1) * 511.5f) & 0x3FF) << 20;
 			boolean booleanProp = isWavy_complex.get(count);
 			int d = (booleanProp ? 1 : 0) << 30;
 			int kek = a | b | c | d;
-			rslt.buf.putInt(kek);
+			byteBuffer.putInt(kek);
 			count++;
 		}
-		rslt.buf.flip();
+		byteBuffer.flip();
 		// System.out.println("Final vbo size = "+rsltSize*4);
 		long lol = 0;
 		//System.out.println("Took "+(System.nanoTime() - cr_start)+"ms total ; "+(cr_iter-cr_start)+" init, "+(cr_convert-cr_iter)+" iter, "
 		//		+(cr_buffer-cr_convert)+" buffer, "+(System.nanoTime()-cr_buffer)+" convert since RS:"+(System.nanoTime()-ChunksRenderer.renderStart)+" ratio S/C : "+(1f+vertices.size())/(1f+vertices_complex.size())) ;
 
-		// Debug : write the file :D
-
-		/*try{
-			BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(new File("debug/chunk-"+work.chunkX+"-"+work.chunkY+"-"+work.chunkZ+".lel")));
-			System.out.println("1"+rslt.buf);
-			while(rslt.buf.remaining() > 0)
-				fos.write(rslt.buf.get());
-			System.out.println("2"+rslt.buf);
-			rslt.buf.flip();
-			System.out.println("3"+rslt.buf);
-			
-			//fos.write(rslt.buf);
-			fos.flush();
-			fos.close();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}*/
 
 		done.add(rslt);
 

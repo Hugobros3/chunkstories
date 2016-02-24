@@ -25,7 +25,6 @@ public class Packet05SerializedInventory extends Packet
 	{
 		//Inventory existing is a requirement
 		assert inventory != null;
-		//out.writeByte(0x05);
 		//Who does it belong to ?
 		if(inventory.holder == null)
 			out.writeByte(0x00);

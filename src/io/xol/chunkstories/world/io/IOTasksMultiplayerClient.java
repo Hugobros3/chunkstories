@@ -105,12 +105,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 		@Override
 		public boolean equals(Object o)
 		{
-			/*if(o instanceof IOTaskProcessCompressedChunkArrival)
-			{
-				IOTaskProcessCompressedChunkArrival comp = ((IOTaskProcessCompressedChunkArrival)o);
-				if(comp.x == this.x && comp.y == this.y && comp.z == this.z)
-					return true;
-			}*/
 			//All packets are unique
 			return false;
 		}
@@ -119,7 +113,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 		public int hashCode()
 		{
 			return 6792;
-			//return (int) ((65536 + 65536L * x + 256 * y + z) % 2147483647);
 		}
 	}
 
@@ -169,19 +162,9 @@ public class IOTasksMultiplayerClient extends IOTasks
 		ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
 		if (!this.chunksAlreadyAsked.contains(loc))
 		{
-			// synchronized (chunksAlreadyAsked)
-			{
-				chunksAlreadyAsked.add(loc);
-				// chunksAlreadyAsked.clear();
-			}
+			chunksAlreadyAsked.add(loc);
 			Client.connection.sendTextMessage("world/getChunkCompressed:" + chunkX + ":" + chunkY + ":" + chunkZ);
 			//System.out.println("K x" + chunkX + "y:" + chunkY + "z:" + chunkZ + "alreadyAsked" + chunksAlreadyAsked.size());
-		}
-		else
-		{
-			// chunksAlreadyAsked.clear();
-			// System.out.println("K x" + chunkX + "y:" + chunkY + "z:" + chunkZ
-			// + "alreadyAsked" + chunksAlreadyAsked.size());
 		}
 	}
 
@@ -194,8 +177,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 	public void requestChunkHolderLoad(ChunkHolder holder)
 	{
 		holder.setLoaded(true);
-		// IOTask task = new IOTaskLoadChunkHolder(holder);
-		// addTask(task);
 	}
 
 	static byte[] uncompressed = new byte[256 * 256 * 4 * 2];
@@ -241,13 +222,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 		@Override
 		public boolean equals(Object o)
 		{
-			/*if(o instanceof IOTaskProcessCompressedChunkSummaryArrival)
-			{
-				IOTaskProcessCompressedChunkSummaryArrival comp = ((IOTaskProcessCompressedChunkSummaryArrival)o);
-				if(comp.packet.rx == this.packet.rx && comp.packet.rz == this.packet.rz)
-					return true;
-			}*/
-
 			//All packets are unique
 			return false;
 		}

@@ -4,33 +4,34 @@ package io.xol.engine.misc;
 // http://chunkstories.xyz
 // http://xol.io
 
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
+
 import org.lwjgl.BufferUtils;
 
-public class FloatBufferPool
+public class ByteBufferPool
 {
-	FloatBuffer[] pool;
+	ByteBuffer[] pool;
 	boolean avaible[];
 	int size;
 
-	public FloatBufferPool(int poolSize, int buffersSize)
+	public ByteBufferPool(int poolSize, int buffersSize)
 	{
 		size = poolSize;
-		pool = new FloatBuffer[size];
+		pool = new ByteBuffer[size];
 		avaible = new boolean[size];
 		for (int i = 0; i < size; i++)
 		{
-			pool[i] = BufferUtils.createFloatBuffer(buffersSize);
+			pool[i] = BufferUtils.createByteBuffer(buffersSize);
 			avaible[i] = true;
 		}
 	}
 
-	public FloatBuffer accessFloatBuffer(int id)
+	public ByteBuffer accessByteBuffer(int id)
 	{
 		return pool[id];
 	}
 
-	public int requestFloatBuffer()
+	public int requestByteBuffer()
 	{
 		for (int i = 0; i < size; i++)
 		{
@@ -41,11 +42,10 @@ public class FloatBufferPool
 				return i;
 			}
 		}
-		//System.out.println("Out of avaible floatBuffers :/");
 		return -1;
 	}
 
-	public void releaseFloatBuffer(int id)
+	public void releaseByteBuffer(int id)
 	{
 		avaible[id] = true;
 	}

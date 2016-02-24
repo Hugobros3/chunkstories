@@ -353,7 +353,8 @@ public class WorldRenderer
 				if (c.vbo_id == -1)
 					c.vbo_id = glGenBuffers();
 				glBindBuffer(GL_ARRAY_BUFFER, c.vbo_id);
-				glBufferData(GL_ARRAY_BUFFER, toload.buf, GL_STATIC_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, chunksRenderer.buffersPool.accessByteBuffer(toload.bufferId), GL_STATIC_DRAW);
+				this.chunksRenderer.buffersPool.releaseByteBuffer(toload.bufferId);
 				//if (c.vbo_size_normal + c.vbo_size_complex + c.vbo_size_water <= 0)
 				//	c.fadeTicks = 25;
 				c.vbo_size_normal = toload.s_normal;

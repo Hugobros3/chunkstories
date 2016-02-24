@@ -32,7 +32,6 @@ public class Packet02ChunkCompressedData extends Packet
 	@Override
 	public void send(DataOutputStream out) throws IOException
 	{
-		//out.write((byte) 0x02);
 		out.writeInt(x);
 		out.writeInt(y);
 		out.writeInt(z);

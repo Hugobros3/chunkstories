@@ -26,7 +26,6 @@ public class Packet06InventoryMoveItemPile extends Packet
 	@Override
 	public void send(DataOutputStream out) throws IOException
 	{
-		//out.writeByte(0x06);
 		//Describe the move
 		out.writeInt(oldX);
 		out.writeInt(oldY);

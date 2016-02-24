@@ -25,13 +25,11 @@ public class Packet03ChunkSummary extends Packet
 	public Packet03ChunkSummary(boolean client)
 	{
 		super(client);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void send(DataOutputStream out) throws IOException
 	{
-		//out.writeByte(0x03);
 		out.writeInt(summary.rx);
 		out.writeInt(summary.rz);
 		ByteBuffer compressMe = ByteBuffer.allocateDirect(256 * 256 * 4 * 2);
