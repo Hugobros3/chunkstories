@@ -786,15 +786,15 @@ public class WorldRenderer
 			glBindBuffer(GL_ARRAY_BUFFER, chunk.vbo_id);
 			int geometrySize = chunk.vbo_size_normal;
 
-			// Texture data is offset by the vertex data as
-			// 64 x 64 x 3 vertices x 2 triangles x 3 coordinates x 4 bytes per float
-			// So it's like 64x64x3x2 is the geometry size, we do 3x4 geometry for textcoords
-			glVertexAttribPointer(vertexIn, 4, GL_INT_2_10_10_10_REV, false, 4, 0);
+			// We're going back to interlaced format
+			// Raw blocks ( integer faces ) alignment :
+			// Vertex data : [VERTEX_POS(4b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 16 bits
+			glVertexAttribPointer(vertexIn, 4, GL_INT_2_10_10_10_REV, false, 16, 0);
 			int vertexSize = 4;
-			glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 4, (geometrySize) * vertexSize);
+			glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 16, 4);
 			if (!shadowPass)
-				glVertexAttribPointer(colorIn, 4, GL_UNSIGNED_BYTE, true, 4, (geometrySize) * (vertexSize + 4));
-			glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 0, (geometrySize) * (vertexSize + 8));
+				glVertexAttribPointer(colorIn, 4, GL_UNSIGNED_BYTE, true, 16, 8);
+			glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 16, 12);
 
 			if (geometrySize > 0)
 			{

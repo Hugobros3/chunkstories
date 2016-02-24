@@ -38,7 +38,7 @@ public class ChunksRenderer extends Thread
 
 	public Deque<int[]> todo = new ConcurrentLinkedDeque<int[]>();
 	public Queue<VBOData> done = new ConcurrentLinkedQueue<VBOData>();
-	
+
 	public ByteBufferPool buffersPool;
 
 	public class VBOData
@@ -172,7 +172,7 @@ public class ChunksRenderer extends Thread
 							if (nearChunks == 4)
 							{
 								int buffer_id = buffersPool.requestByteBuffer();
-								while(buffer_id == -1)
+								while (buffer_id == -1)
 								{
 									try
 									{
@@ -362,7 +362,7 @@ public class ChunksRenderer extends Thread
 		return new float[] { blocklightFactor / 15f, sunlightFactor / 15f, aoFactor / 4f };
 	}
 
-	private void addQuadTop(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
+	private void addQuadTop(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
 
 		int llMs = getSunlight(c, sx, sy + 1, sz);
@@ -416,44 +416,46 @@ public class ChunksRenderer extends Thread
 		// aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs,
 		// llMs);
 
-		normals.add(new int[] { 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */ });
-		
 		// float s = (llMs)/15f;
 		// aoA = aoB = aoC = aoD = new float[]{s,s,s};
-		colors.add(aoC);
-		colors.add(aoB);
-		colors.add(aoA);
-
-		colors.add(aoD);
-		colors.add(aoC);
-		colors.add(aoA);
-
-		vertices.add(new float[] { sx, sy, sz });
-		vertices.add(new float[] { sx + 1, sy, sz });
-		vertices.add(new float[] { sx + 1, sy, sz + 1 });
-
-		vertices.add(new float[] { sx, sy, sz + 1 });
-		vertices.add(new float[] { sx, sy, sz });
-		vertices.add(new float[] { sx + 1, sy, sz + 1 });
 
 		int offset = texture.atlasOffset / texture.textureScale;
 		int textureS = texture.atlasS + (sx % texture.textureScale) * offset;
 		int textureT = texture.atlasT + (sz % texture.textureScale) * offset;
 
-		texcoords.add(new int[] { textureS, textureT });
-		texcoords.add(new int[] { textureS + offset, textureT });
-		texcoords.add(new int[] { textureS + offset, textureT + offset });
+		rbbf.addVerticeInt(sx, sy, sz);
+		rbbf.addTexCoordInt(textureS, textureT);
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 
-		texcoords.add(new int[] { textureS, textureT + offset });
-		texcoords.add(new int[] { textureS, textureT });
-		texcoords.add(new int[] { textureS + offset, textureT + offset });
+		rbbf.addVerticeInt(sx + 1, sy, sz);
+		rbbf.addTexCoordInt(textureS + offset, textureT);
+		rbbf.addColors(aoB);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 
+		rbbf.addVerticeInt(sx + 1, sy, sz + 1);
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
+
+		rbbf.addVerticeInt(sx, sy, sz + 1);
+		rbbf.addTexCoordInt(textureS, textureT + offset);
+		rbbf.addColors(aoD);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
+
+		rbbf.addVerticeInt(sx, sy, sz);
+		rbbf.addTexCoordInt(textureS, textureT);
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
+
+		rbbf.addVerticeInt(sx + 1, sy, sz + 1);
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadBottom(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
+	private void addQuadBottom(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
-
-		normals.add(new int[] { 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */ });
 
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
@@ -490,41 +492,46 @@ public class ChunksRenderer extends Thread
 		aoB = bakeLightColors(llGb, llHb, llAb, llMb, llGs, llHs, llAs, llMs);
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
-
-		colors.add(aoB);
-		colors.add(aoC);
-		colors.add(aoA);
-
-		colors.add(aoC);
-		colors.add(aoD);
-		colors.add(aoA);
-
-		vertices.add(new float[] { sx + 1, sy, sz });
-		vertices.add(new float[] { sx, sy, sz });
-		vertices.add(new float[] { sx + 1, sy, sz + 1 });
-
-		vertices.add(new float[] { sx, sy, sz });
-		vertices.add(new float[] { sx, sy, sz + 1 });
-		vertices.add(new float[] { sx + 1, sy, sz + 1 });
-
+		
 		int offset = texture.atlasOffset / texture.textureScale;
 		int textureS = texture.atlasS + (sx % texture.textureScale) * offset;
 		int textureT = texture.atlasT + (sz % texture.textureScale) * offset;
+		
+		rbbf.addVerticeInt(sx + 1, sy, sz );
+		rbbf.addTexCoordInt(textureS + offset, textureT );
+		rbbf.addColors(aoB);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
+		
+		rbbf.addVerticeInt(sx, sy, sz );
+		rbbf.addTexCoordInt(textureS, textureT );
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
+		
+		rbbf.addVerticeInt(sx + 1, sy, sz + 1 );
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
 
-		texcoords.add(new int[] { textureS + offset, textureT });
-		texcoords.add(new int[] { textureS, textureT });
-		texcoords.add(new int[] { textureS + offset, textureT + offset });
-
-		texcoords.add(new int[] { textureS, textureT });
-		texcoords.add(new int[] { textureS, textureT + offset });
-		texcoords.add(new int[] { textureS + offset, textureT + offset });
+		rbbf.addVerticeInt(sx, sy, sz );
+		rbbf.addTexCoordInt(textureS, textureT );
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
+		
+		rbbf.addVerticeInt(sx, sy, sz + 1 );
+		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addColors(aoD);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
+		
+		rbbf.addVerticeInt(sx + 1, sy, sz + 1 );
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadRight(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
+	private void addQuadRight(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
 		// ++x for dekal
 
-		normals.add(new int[] { 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */ });
 		// +1 -1 0
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
@@ -561,43 +568,39 @@ public class ChunksRenderer extends Thread
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
 
-		colors.add(aoB);
-		colors.add(aoC);
-		colors.add(aoA);
-
-		colors.add(aoC);
-		colors.add(aoD);
-		colors.add(aoA);
-
-		vertices.add(new float[] { sx, sy, sz });
-		vertices.add(new float[] { sx, sy - 1, sz });
-		vertices.add(new float[] { sx, sy, sz + 1 });
-
-		vertices.add(new float[] { sx, sy - 1, sz });
-		vertices.add(new float[] { sx, sy - 1, sz + 1 });
-		vertices.add(new float[] { sx, sy, sz + 1 });
-
 		int offset = texture.atlasOffset / texture.textureScale;
 		int textureS = texture.atlasS + mod(sz, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
+		
+		rbbf.addVerticeInt(sx, sy, sz );
+		rbbf.addTexCoordInt(textureS, textureT );
+		rbbf.addColors(aoB);
+		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		texcoords.add(new int[] { textureS, textureT });
-		texcoords.add(new int[] { textureS, textureT + offset });
-		texcoords.add(new int[] { textureS + offset, textureT });
+		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		texcoords.add(new int[] { textureS, textureT + offset });
-		texcoords.add(new int[] { textureS + offset, textureT + offset });
-		texcoords.add(new int[] { textureS + offset, textureT });
+		rbbf.addVerticeInt(sx, sy, sz + 1 );
+		rbbf.addTexCoordInt(textureS + offset, textureT );
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		/*
-		 * texcoords.add(new float[]{textureS+offset, textureT});
-		 * texcoords.add(new float[]{textureS, textureT}); texcoords.add(new
-		 * float[]{textureS+offset, textureT+offset});
-		 * 
-		 * texcoords.add(new float[]{textureS, textureT}); texcoords.add(new
-		 * float[]{textureS, textureT+offset}); texcoords.add(new
-		 * float[]{textureS+offset, textureT+offset});
-		 */
+		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+
+		rbbf.addVerticeInt(sx, sy - 1, sz + 1 );
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+		rbbf.addColors(aoD);
+		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+
+		rbbf.addVerticeInt(sx, sy, sz + 1 );
+		rbbf.addTexCoordInt( textureS + offset, textureT );
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
 	private int mod(int a, int b)
@@ -608,11 +611,8 @@ public class ChunksRenderer extends Thread
 		return c += b;
 	}
 
-	private void addQuadLeft(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
+	private void addQuadLeft(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
-
-		normals.add(new int[] { 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */ });
-
 		int llMs = getSunlight(c, sx - 1, sy, sz);
 		int llMb = getBlocklight(c, sx - 1, sy, sz);
 
@@ -650,49 +650,46 @@ public class ChunksRenderer extends Thread
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
 
-		colors.add(aoC);
-		colors.add(aoB);
-		colors.add(aoA);
 
-		colors.add(aoD);
-		colors.add(aoC);
-		colors.add(aoA);
-
-		vertices.add(new float[] { sx, sy - 1, sz });
-		vertices.add(new float[] { sx, sy, sz });
-		vertices.add(new float[] { sx, sy, sz + 1 });
-
-		vertices.add(new float[] { sx, sy - 1, sz + 1 });
-		vertices.add(new float[] { sx, sy - 1, sz });
-		vertices.add(new float[] { sx, sy, sz + 1 });
 
 		int offset = texture.atlasOffset / texture.textureScale;
 		int textureS = texture.atlasS + mod(sz, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
+		
+		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		
+		rbbf.addVerticeInt(sx, sy, sz );
+		rbbf.addTexCoordInt(textureS, textureT );
+		rbbf.addColors(aoB);
+		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		
+		rbbf.addVerticeInt(sx, sy, sz + 1 );
+		rbbf.addTexCoordInt(textureS + offset, textureT );
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		texcoords.add(new int[] { textureS, textureT + offset });
-		texcoords.add(new int[] { textureS, textureT });
-		texcoords.add(new int[] { textureS + offset, textureT });
+		rbbf.addVerticeInt(sx, sy - 1, sz + 1 );
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+		rbbf.addColors(aoD);
+		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		
+		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		
+		rbbf.addVerticeInt(sx, sy, sz + 1 );
+		rbbf.addTexCoordInt(textureS + offset, textureT );
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		texcoords.add(new int[] { textureS + offset, textureT + offset });
-		texcoords.add(new int[] { textureS, textureT + offset });
-		texcoords.add(new int[] { textureS + offset, textureT });
-
-		/*
-		 * texcoords.add(new float[]{textureS, textureT}); texcoords.add(new
-		 * float[]{textureS+offset, textureT}); texcoords.add(new
-		 * float[]{textureS+offset, textureT+offset});
-		 * 
-		 * texcoords.add(new float[]{textureS, textureT+offset});
-		 * texcoords.add(new float[]{textureS, textureT}); texcoords.add(new
-		 * float[]{textureS+offset, textureT+offset});
-		 */
 	}
 
-	private void addQuadFront(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
+	private void addQuadFront(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
-		normals.add(new int[] { 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */ });
-
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
 
@@ -730,53 +727,44 @@ public class ChunksRenderer extends Thread
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
 
-		colors.add(aoC);
-		colors.add(aoB);
-		colors.add(aoA);
-
-		colors.add(aoD);
-		colors.add(aoC);
-		colors.add(aoA);
-
-		vertices.add(new float[] { sx, sy - 1, sz });
-		vertices.add(new float[] { sx, sy, sz });
-		vertices.add(new float[] { sx + 1, sy, sz });
-
-		vertices.add(new float[] { sx + 1, sy - 1, sz });
-		vertices.add(new float[] { sx, sy - 1, sz });
-		vertices.add(new float[] { sx + 1, sy, sz });
-
 		int offset = texture.atlasOffset / texture.textureScale;
 		int textureS = texture.atlasS + mod(sx, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
+		
+		rbbf.addVerticeInt(sx, sy - 1, sz);
+		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
+		
+		rbbf.addVerticeInt(sx, sy, sz );
+		rbbf.addTexCoordInt(textureS, textureT );
+		rbbf.addColors(aoB);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
+		
+		rbbf.addVerticeInt(sx + 1, sy, sz );
+		rbbf.addTexCoordInt(textureS + offset, textureT );
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
 
-		texcoords.add(new int[] { textureS, textureT + offset });
-		texcoords.add(new int[] { textureS, textureT });
-		texcoords.add(new int[] { textureS + offset, textureT });
+		rbbf.addVerticeInt(sx + 1, sy - 1, sz );
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+		rbbf.addColors(aoD);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
+		
+		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
+		
+		rbbf.addVerticeInt(sx + 1, sy, sz );
+		rbbf.addTexCoordInt(textureS + offset, textureT );
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
 
-		texcoords.add(new int[] { textureS + offset, textureT + offset });
-		texcoords.add(new int[] { textureS, textureT + offset });
-		texcoords.add(new int[] { textureS + offset, textureT });
-
-		/*
-		 * int offset = texture.atlasOffset/texture.textureScale; int textureS =
-		 * texture.atlasS+mod(sx,texture.textureScale)*offset; int textureT =
-		 * texture.atlasT+mod(sy,texture.textureScale)*offset;
-		 * 
-		 * texcoords.add(new float[]{textureS, textureT}); texcoords.add(new
-		 * float[]{textureS, textureT+offset}); texcoords.add(new
-		 * float[]{textureS+offset, textureT+offset});
-		 * 
-		 * texcoords.add(new float[]{textureS+offset, textureT});
-		 * texcoords.add(new float[]{textureS, textureT}); texcoords.add(new
-		 * float[]{textureS+offset, textureT+offset});
-		 */
 	}
 
-	private void addQuadBack(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<int[]> normals, int sx, int sy, int sz, VoxelTexture texture)
+	private void addQuadBack(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
-
-		normals.add(new int[] { 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */ });
 
 		int llMs = getSunlight(c, sx, sy, sz - 1);
 		int llMb = getBlocklight(c, sx, sy, sz - 1);
@@ -815,33 +803,39 @@ public class ChunksRenderer extends Thread
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
 
-		colors.add(aoB);
-		colors.add(aoC);
-		colors.add(aoA);
-
-		colors.add(aoC);
-		colors.add(aoD);
-		colors.add(aoA);
-
-		vertices.add(new float[] { sx, sy, sz });
-		vertices.add(new float[] { sx, sy - 1, sz });
-		vertices.add(new float[] { sx + 1, sy, sz });
-
-		vertices.add(new float[] { sx, sy - 1, sz });
-		vertices.add(new float[] { sx + 1, sy - 1, sz });
-		vertices.add(new float[] { sx + 1, sy, sz });
-
 		int offset = texture.atlasOffset / texture.textureScale;
 		int textureS = texture.atlasS + mod(sx, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
+		
+		rbbf.addVerticeInt(sx, sy, sz );
+		rbbf.addTexCoordInt(textureS, textureT );
+		rbbf.addColors(aoB);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		
+		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		
+		rbbf.addVerticeInt(sx + 1, sy, sz );
+		rbbf.addTexCoordInt(textureS + offset, textureT );
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 
-		texcoords.add(new int[] { textureS, textureT });
-		texcoords.add(new int[] { textureS, textureT + offset });
-		texcoords.add(new int[] { textureS + offset, textureT });
-
-		texcoords.add(new int[] { textureS, textureT + offset });
-		texcoords.add(new int[] { textureS + offset, textureT + offset });
-		texcoords.add(new int[] { textureS + offset, textureT });
+		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addColors(aoC);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		
+		rbbf.addVerticeInt(sx + 1, sy - 1, sz );
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+		rbbf.addColors(aoD);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		
+		rbbf.addVerticeInt(sx + 1, sy, sz );
+		rbbf.addTexCoordInt(textureS + offset, textureT );
+		rbbf.addColors(aoA);
+		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 	}
 
 	private void addVoxelUsingCustomModel(CubicChunk c, List<float[]> vertices, List<int[]> texcoords, List<float[]> colors, List<float[]> normals, List<Boolean> isWavy, int sx, int sy, int sz, BlockRenderInfo info)
@@ -960,11 +954,16 @@ public class ChunksRenderer extends Thread
 	Deque<Integer> blockSources = new ArrayDeque<Integer>();
 	Deque<Integer> sunSources = new ArrayDeque<Integer>();
 
+	//Work buffers
+	ByteBuffer rawBlocksBuffer = BufferUtils.createByteBuffer(0x600000);
+	ByteBuffer waterBlocksBuffer = BufferUtils.createByteBuffer(0x200000);
+	ByteBuffer complexBlocksBuffer = BufferUtils.createByteBuffer(0x600000);
+
 	@SuppressWarnings("unused")
 	private void renderChunk(CubicChunk work, int byteBufferId)
 	{
 		ByteBuffer byteBuffer = buffersPool.accessByteBuffer(byteBufferId);
-		
+
 		// Update lightning as well if needed
 		if (work == null)
 		{
@@ -1005,11 +1004,8 @@ public class ChunksRenderer extends Thread
 
 		// Expensive bullshit
 
-		vertices.clear();
-		texcoords.clear();
-		colors.clear();
-		isWavy.clear();
-		normals.clear();
+		rawBlocksBuffer.clear();
+		RenderByteBuffer rawRBBF = new RenderByteBuffer(rawBlocksBuffer);
 
 		vertices_water.clear();
 		texcoords_water.clear();
@@ -1056,11 +1052,6 @@ public class ChunksRenderer extends Thread
 					// System.out.println(blockID);
 					if (vox.isVoxelLiquid())
 					{
-						/*if ((k < world.getMaxHeight() && shallBuildWallArround(renderInfo, 4)))
-						{
-							if (!(k == 31 && !chunkTopLoaded))
-								addQuadTop(work, vertices_water, texcoords_water, colors_water, normals_water, i, k, j, vox.getVoxelTexture(src, 0, renderInfo));
-						}*/
 						addVoxelUsingCustomModel(work, vertices_water, texcoords_water, colors_water, normals_water, null, i, k, j, renderInfo);
 					}
 					else if (vox.isVoxelUsingCustomModel())
@@ -1074,48 +1065,42 @@ public class ChunksRenderer extends Thread
 						{
 							if (!(k == 0 && !chunkBotLoaded))
 							{
-								addQuadBottom(work, vertices, texcoords, colors, normals, i, k - 1, j, vox.getVoxelTexture(src, 1, renderInfo));
-								this.isWavy.add(renderInfo.isWavy());
+								addQuadBottom(work, rawRBBF, i, k - 1, j, vox.getVoxelTexture(src, 1, renderInfo), renderInfo.isWavy());
 							}
 						}
-						if (k < world.getMaxHeight() && shallBuildWallArround(renderInfo, 4))
+						if (shallBuildWallArround(renderInfo, 4))
 						{
 							if (!(k == 31 && !chunkTopLoaded))
 							{
-								addQuadTop(work, vertices, texcoords, colors, normals, i, k, j, vox.getVoxelTexture(src, 0, renderInfo));
-								this.isWavy.add(renderInfo.isWavy());
+								addQuadTop(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, 0, renderInfo), renderInfo.isWavy());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 2))
 						{
 							if (!(i == 31 && !chunkRightLoaded))
 							{
-								addQuadRight(work, vertices, texcoords, colors, normals, i + 1, k, j, vox.getVoxelTexture(src, 2, renderInfo));
-								this.isWavy.add(renderInfo.isWavy());
+								addQuadRight(work, rawRBBF, i + 1, k, j, vox.getVoxelTexture(src, 2, renderInfo), renderInfo.isWavy());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 0))
 						{
 							if (!(i == 0 && !chunkLeftLoaded))
 							{
-								addQuadLeft(work, vertices, texcoords, colors, normals, i, k, j, vox.getVoxelTexture(src, 3, renderInfo));
-								this.isWavy.add(renderInfo.isWavy());
+								addQuadLeft(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, 3, renderInfo), renderInfo.isWavy());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 1))
 						{
 							if (!(j == 31 && !chunkFrontLoaded))
 							{
-								addQuadFront(work, vertices, texcoords, colors, normals, i, k, j + 1, vox.getVoxelTexture(src, 4, renderInfo));
-								this.isWavy.add(renderInfo.isWavy());
+								addQuadFront(work, rawRBBF, i, k, j + 1, vox.getVoxelTexture(src, 4, renderInfo), renderInfo.isWavy());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 3))
 						{
 							if (!(j == 0 && !chunkBackLoaded))
 							{
-								addQuadBack(work, vertices, texcoords, colors, normals, i, k, j, vox.getVoxelTexture(src, 5, renderInfo));
-								this.isWavy.add(renderInfo.isWavy());
+								addQuadBack(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, 5, renderInfo), renderInfo.isWavy());
 							}
 						}
 					}
@@ -1131,91 +1116,21 @@ public class ChunksRenderer extends Thread
 		rslt.y = work.chunkY;
 		rslt.z = work.chunkZ;
 
-		// Compressed data ftw
-		int bufferTotalSize = 0;
-		int VOXEL_ONLY_BITS_PER_VERTEX = 16;
-		int COMPLEX_SHAPES_BITS_PER_VERTEX = 24;
-
-		bufferTotalSize += vertices.size() * VOXEL_ONLY_BITS_PER_VERTEX;
-		bufferTotalSize += vertices_water.size() * COMPLEX_SHAPES_BITS_PER_VERTEX;
-		bufferTotalSize += vertices_complex.size() * COMPLEX_SHAPES_BITS_PER_VERTEX;
-
-		int rsltSize = (vertices.size() + 0) * (16);
-		rsltSize += (vertices_complex.size() + +vertices_water.size()) * (24);
-
 		byteBuffer.clear();
 		rslt.bufferId = byteBufferId;// = byteBuffer;//BufferUtils.createByteBuffer(bufferTotalSize);
-		
-		//System.out.println(bufferTotalSize);
 
 		long cr_buffer = System.nanoTime();
-
-		rslt.s_normal = vertices.size();
+		
+		rslt.s_normal = rawBlocksBuffer.position()/(16);
 		rslt.s_complex = vertices_complex.size();
 		rslt.s_water = vertices_water.size();
-		for (float[] f : vertices)
-		{
-			// Packed 2_10_10_10
-			int a = (int) ((f[0])) & 0x3FF;
-			int b = ((int) ((f[1])) & 0x3FF) << 10;
-			int c = ((int) ((f[2])) & 0x3FF) << 20;
-			int kek = a | b | c;
-			byteBuffer.putInt(kek);
-		}
-		for (int[] f : texcoords)
-		{
-			for (int z : f)
-			{
-				// z*= 32768; not needed anymore, done b4
-				byteBuffer.put((byte) ((z) & 0xFF));
-				byteBuffer.put((byte) ((z >> 8) & 0xFF));
-			}
-		}
-		for (float[] f : colors)
-		{
-			for (float z : f)
-				byteBuffer.put((byte) (z * 255));
-			// Padding
-			byteBuffer.put((byte) 0);
-		}
-		int count = 0;
-		for (int[] f : normals)
-		{
-			//for (i = 0; i < 6; i++)
-			//{
 
-			int a = (int) f[0] & 0x3FF;
-			int b = (int) ((f[1] & 0x3FF) << 10);
-			int c = (int) ((f[2] & 0x3FF) << 20);
-
-			boolean booleanProp = isWavy.get(count);
-			int d = (booleanProp ? 1 : 0) << 30;
-			int kek = a | b | c | d;
-
-			// Loop unrolling
-			byteBuffer.putInt(kek);
-			byteBuffer.putInt(kek);
-			byteBuffer.putInt(kek);
-
-			byteBuffer.putInt(kek);
-			byteBuffer.putInt(kek);
-			byteBuffer.putInt(kek);
-
-			//}
-			count++;
-		}
-		// Water
-
-		/*for (float[] f : vertices_water)
-		{
-			// Packed 2_10_10_10
+		rawBlocksBuffer.limit(rawBlocksBuffer.position());
+		rawBlocksBuffer.position(0);
 		
-			int a = (int) ((f[0])) & 0x3FF;
-			int b = ((int) ((f[1])) & 0x3FF) << 10;
-			int c = ((int) ((f[2])) & 0x3FF) << 20;
-			int kek = a | b | c;
-			byteBuffer.putInt(kek);
-		}*/
+		byteBuffer.put(rawBlocksBuffer);
+
+		int count = 0;
 
 		for (float[] f : vertices_water)
 		{
@@ -1273,7 +1188,7 @@ public class ChunksRenderer extends Thread
 		count = 0;
 		for (float[] f : normals_complex)
 		{
-			int a = (int) ((f[0] + 1) *  .5f) & 0x3FF;
+			int a = (int) ((f[0] + 1) * .5f) & 0x3FF;
 			int b = ((int) ((f[1] + 1) * 511.5f) & 0x3FF) << 10;
 			int c = ((int) ((f[2] + 1) * 511.5f) & 0x3FF) << 20;
 			boolean booleanProp = isWavy_complex.get(count);
@@ -1287,7 +1202,6 @@ public class ChunksRenderer extends Thread
 		long lol = 0;
 		//System.out.println("Took "+(System.nanoTime() - cr_start)+"ms total ; "+(cr_iter-cr_start)+" init, "+(cr_convert-cr_iter)+" iter, "
 		//		+(cr_buffer-cr_convert)+" buffer, "+(System.nanoTime()-cr_buffer)+" convert since RS:"+(System.nanoTime()-ChunksRenderer.renderStart)+" ratio S/C : "+(1f+vertices.size())/(1f+vertices_complex.size())) ;
-
 
 		done.add(rslt);
 
@@ -1304,11 +1218,11 @@ public class ChunksRenderer extends Thread
 
 	public AtomicInteger totalChunksRendered = new AtomicInteger();
 
-	List<float[]> vertices = new ArrayList<float[]>();
+	/*List<float[]> vertices = new ArrayList<float[]>();
 	List<int[]> texcoords = new ArrayList<int[]>();
 	List<float[]> colors = new ArrayList<float[]>();
 	List<Boolean> isWavy = new ArrayList<Boolean>();
-	List<int[]> normals = new ArrayList<int[]>();
+	List<int[]> normals = new ArrayList<int[]>();*/
 
 	List<float[]> vertices_water = new ArrayList<float[]>();
 	List<int[]> texcoords_water = new ArrayList<int[]>();
