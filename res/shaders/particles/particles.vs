@@ -1,3 +1,5 @@
+#version 130
+
 varying vec4 texcoord;
 varying vec2 lightMapCoords;
 

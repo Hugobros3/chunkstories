@@ -1,3 +1,5 @@
+#version 130
+
 //Entry attributes
 attribute vec4 vertexIn;
 

@@ -1041,7 +1041,7 @@ public class WorldRenderer
 
 				if (geometrySize > 0)
 				{
-					//glDrawArrays(GL_TRIANGLES, 0, geometrySize);
+					glDrawArrays(GL_TRIANGLES, 0, geometrySize);
 					// if(FastConfig.debugGBuffers ) System.out.println(geometrySize+":"+dekal);
 					renderedVertices += geometrySize;
 				}
