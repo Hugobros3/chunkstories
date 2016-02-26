@@ -131,7 +131,7 @@ void main(){
 	
 	nt = normalize(nt);
 	
-	float i = 0.125;
+	float i = 0.5;
 	
 	normal.x += nt.r*i;
 	normal.y += nt.g*i;

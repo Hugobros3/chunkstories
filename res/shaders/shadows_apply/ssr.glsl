@@ -122,5 +122,5 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 		color = computeLight(color, pixelNormal.xyz, cameraSpacePosition, pixelMeta, pixelNormal.w);
 		//color.rgb = mix(color, skyColor, pixelNormal.w);
 	}
-    return color;
+	return color;
 }

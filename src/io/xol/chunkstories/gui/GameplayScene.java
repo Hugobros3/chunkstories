@@ -405,6 +405,8 @@ public class GameplayScene extends OverlayableScene
 		{
 			c = i.next();
 
+			if(c == null)
+				continue;
 			nbChunks++;
 			octelsTotal += c.vbo_size_normal * 16 + (c.vbo_size_water + c.vbo_size_complex) * 24;	
 		}

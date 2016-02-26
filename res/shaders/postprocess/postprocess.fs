@@ -66,6 +66,13 @@ float linearizeDepth(float z)
 
 vec4 getDebugShit(vec2 coords);
 
+vec4 convertScreenSpaceToWorldSpace(vec2 co) {
+
+    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2.0-1.0, texture2D(depthBuffer, co, 0.0).x * 2.0 - 1.0), 1.0);
+    fragposition /= fragposition.w;
+    return fragposition;
+}
+
 void main() {
 	vec2 finalCoords = f_texcoord;
 	
@@ -87,6 +94,18 @@ void main() {
 	<endif doBloom>
 	
 	compositeColor.rgb = pow(compositeColor.rgb, vec3(gammaInv));
+	
+	vec4 cameraSpacePosition = convertScreenSpaceToWorldSpace(finalCoords);
+	vec4 pixelNormal = texture2D(normalBuffer, finalCoords);
+	pixelNormal.rgb = pixelNormal.rgb * 2.0 - vec3(1.0);
+    vec3 cameraSpaceViewDir = normalize(cameraSpacePosition.xyz);
+    vec3 cameraSpaceVector = normalize(reflect(cameraSpaceViewDir, pixelNormal.xyz));
+	vec3 normSkyDirection = normalMatrixInv * cameraSpaceVector;
+	
+	//Debug water surface (we don't want negative -dark- values for reflection)
+	
+	//compositeColor.rgb = vec3(0.0, normSkyDirection.y * 40, 0.0);
+    
 	
 	gl_FragColor = compositeColor;
 	
