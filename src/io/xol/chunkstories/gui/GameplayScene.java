@@ -88,11 +88,11 @@ public class GameplayScene extends OverlayableScene
 		if (player instanceof EntityControllable)
 			((EntityControllable) player).controls(focus);
 
-		int[] selectedBlock = null;
+		/*int[] selectedBlock = null;
 		if (player instanceof EntityPlayer)
 		{
 			selectedBlock = ((EntityPlayer) player).rayTraceSelectedBlock(true);
-		}
+		}*/
 		if (player != null)
 			player.setupCamera(camera);
 		else

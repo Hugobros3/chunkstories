@@ -158,7 +158,7 @@ void main(){
 	<endif perPixelFresnel>
 	
 	baseColor = texture2D(readbackShadedBufferTemp, gl_FragCoord.xy / screenSize);
-	baseColor.a = 1.0;
+	//baseColor.a = 1.0;
 	
 	spec *= 1-underwater;
 	
