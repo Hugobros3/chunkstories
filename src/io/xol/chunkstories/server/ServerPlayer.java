@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.plugin.server.Player;
-import io.xol.chunkstories.entity.Controller;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityNameable;

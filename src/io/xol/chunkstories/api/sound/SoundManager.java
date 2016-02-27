@@ -94,4 +94,9 @@ public abstract class SoundManager
 	 * Internal to the engine
 	 */
 	public abstract void update();
+
+	public void setListenerPosition(double d, double e, double f, FloatBuffer listenerOrientation)
+	{
+		setListenerPosition((float)d, (float)e, (float)f, listenerOrientation);
+	}
 }

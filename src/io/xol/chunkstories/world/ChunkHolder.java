@@ -86,7 +86,7 @@ public class ChunkHolder
 		return localEntities;
 	}*/
 	
-	public void tick()
+	/*public void tick()
 	{
 		try{
 			synchronized(world.entities)
@@ -94,7 +94,7 @@ public class ChunkHolder
 				for(Entity entity : world.entities)
 				{
 					if(entity != null)
-						entity.update();
+						entity.tick();
 				}
 			}
 		}
@@ -104,7 +104,7 @@ public class ChunkHolder
 			System.out.println("bou bouh :'( ");
 		}
 	
-	}
+	}*/
 	
 	public void save()
 	{

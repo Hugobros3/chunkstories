@@ -115,7 +115,7 @@ public class Packet04Entity extends Packet
 			if (entity instanceof EntityNameable)
 				((EntityNameable) entity).setName(nBuffered);
 		}
-		//System.out.println("apply 2 "+entity+" posx"+XBuffered+" -> "+entity.posX);
+		//System.out.println("apply 2 "+entity+" posx"+XBuffered+" -> "+XBuffered);
 	}
 
 	public void applyFromEntity(Entity entity)

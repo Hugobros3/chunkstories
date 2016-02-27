@@ -73,7 +73,14 @@ public class GameplayScene extends OverlayableScene
 		focus(true);
 	}
 	
-	 int selectedInventorySlot = 0;
+	public boolean hasFocus()
+	{
+		if(this.currentOverlay != null)
+			return false;
+		return focus;
+	}
+	
+	int selectedInventorySlot = 0;
 
 	public void update()
 	{
@@ -85,8 +92,8 @@ public class GameplayScene extends OverlayableScene
 		}
 		inventoryDrawer.inventory = player.inventory;
 		// Update the player
-		if (player instanceof EntityControllable)
-			((EntityControllable) player).controls(focus);
+		//if (player instanceof EntityControllable)
+		//	((EntityControllable) player).tick(Client.clientController);
 
 		/*int[] selectedBlock = null;
 		if (player instanceof EntityPlayer)
@@ -95,8 +102,6 @@ public class GameplayScene extends OverlayableScene
 		}*/
 		if (player != null)
 			player.setupCamera(camera);
-		else
-			camera.justSetup();
 		if (flashLight)
 		{
 			float transformedViewH = (float) ((camera.view_rotx) / 180 * Math.PI);
@@ -174,13 +179,13 @@ public class GameplayScene extends OverlayableScene
 
 	private void focus(boolean f)
 	{
-		focus = f;
 		Mouse.setGrabbed(f);
-		if (f)
+		if (f && !focus)
 		{
 			Mouse.setCursorPosition(XolioWindow.frameW / 2, XolioWindow.frameH / 2);
 			this.changeOverlay(null);
 		}
+		focus = f;
 	}
 
 	boolean flashLight = false;

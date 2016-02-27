@@ -39,7 +39,8 @@ public abstract class EntityImplementation implements Entity
 
 	public Vector3d blockedMomentum = new Vector3d();
 	
-	public boolean inWater = false;
+	//public boolean inWater = false;
+	public Voxel voxelIn;
 	public Inventory inventory;
 	public ChunkHolder parentHolder;
 
@@ -56,6 +57,8 @@ public abstract class EntityImplementation implements Entity
 		posZ = z;
 		accelerationVector = new Vector3d();
 		updatePosition();
+		//To avoid NPEs
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY), (int) (posZ))));
 	}
 	
 	/**
@@ -65,7 +68,6 @@ public abstract class EntityImplementation implements Entity
 	 * @param y
 	 * @param z
 	 */
-	@SuppressWarnings("unchecked")
 	public synchronized void setPosition(double x, double y, double z)
 	{
 		posX = x;
@@ -101,6 +103,11 @@ public abstract class EntityImplementation implements Entity
 		return world;
 	}
 	
+	public ChunkHolder getChunkHolder()
+	{
+		return parentHolder;
+	}
+	
 	public void setVelocity(double x, double y, double z)
 	{
 		velX = x;
@@ -115,14 +122,14 @@ public abstract class EntityImplementation implements Entity
 		velZ += z;
 	}
 
-	// Server-side updating
-	public void update()
+	// Ran each tick
+	public void tick()
 	{
 		posX %= world.getSizeSide();
 		posZ %= world.getSizeSide();
 		
-		Voxel voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY + 1), (int) (posZ))));
-		inWater = voxelIn.isVoxelLiquid();
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY + 1.0), (int) (posZ))));
+		boolean inWater = voxelIn.isVoxelLiquid();
 
 		// velZ=Math.cos(a)*hSpeed*0.1;
 		if (collision_left || collision_right)
@@ -488,7 +495,6 @@ public abstract class EntityImplementation implements Entity
 	public short getEID()
 	{
 		return EntitiesList.getIdForClass(getClass().getName());
-		//return allocatedID;
 	}
 	
 	public static short allocatedID = 0;

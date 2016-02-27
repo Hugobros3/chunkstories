@@ -137,7 +137,7 @@ public class MainMenu extends OverlayableScene
 		
 		// Render this shit boy
 		unblurredFBO.bind();
-		cam.justSetup();
+		cam.justSetup(XolioWindow.frameW, XolioWindow.frameH);
 		menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);
 		menuSkyBox.setUniformSamplerCubemap(0, "skyBox", TexturesHandler.getCubemapID(skyBox));

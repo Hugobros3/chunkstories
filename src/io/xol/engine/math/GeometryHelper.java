@@ -38,19 +38,10 @@ public class GeometryHelper
 		GL11.glGetInteger(GL11.GL_VIEWPORT, viewport);
 		float winX = (float) mouseX;
 		float winY = (float) mouseY;
-		GL11.glReadPixels(mouseX, (int) winY, 1, 1, GL11.GL_DEPTH_COMPONENT,
-				GL11.GL_FLOAT, winZ);
+		GL11.glReadPixels(mouseX, (int) winY, 1, 1, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, winZ);
 		float zz = winZ.get();
-		GLU.gluUnProject(winX, winY, zz, modelview, projection, viewport,
-				position);
-		Vector3f v = new Vector3f(position.get(0), position.get(1),
-				position.get(2));
-
-		// projection.clear();
-		/*
-		 * float f; while(modelview.hasRemaining()) { f = modelview.get();
-		 * System.out.print(f+" "); } System.out.println("");
-		 */
+		GLU.gluUnProject(winX, winY, zz, modelview, projection, viewport, position);
+		Vector3f v = new Vector3f(position.get(0), position.get(1), position.get(2));
 		return v;
 	}
 
@@ -59,7 +50,7 @@ public class GeometryHelper
 	{
 		Vector3f position = getMousePositionIn3dCoords(mx, my);
 		// System.out.println("position : "+position.x+":"+position.y+":"+position.z);
-		Vector3f camera = new Vector3f(-cam.camPosX, -cam.camPosY, -cam.camPosZ);
+		Vector3f camera = new Vector3f((float) -cam.camPosX, (float) -cam.camPosY, (float) -cam.camPosZ);
 		// System.out.println("camera : "+camera.x+":"+camera.y+":"+camera.z);
 		// position.normalise();
 		// camera.normalise();
@@ -69,5 +60,5 @@ public class GeometryHelper
 		// System.out.println("vec : "+v.x+":"+v.y+":"+v.z);
 		return v;
 	}
-	
+
 }

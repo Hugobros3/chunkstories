@@ -98,7 +98,7 @@ void main()
 	v.xz += chunkPosition.xy;
 	
 	//fresnelTerm = 1.0 - clamp(dot(normalHeightmap, normalize(v.xyz)), 0.0, 1.0);
-	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), normalHeightmap), 0.0, 1.0);
+	fresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(v.xyz - camPos), normalHeightmap), 0.0, 1.0);
 	
 	vertex = v.xyz;
 	eye = v.xyz-camPos;

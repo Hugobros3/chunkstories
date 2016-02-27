@@ -18,13 +18,15 @@ import org.lwjgl.util.vector.Vector4f;
 
 public class Camera
 {
+	public int width, height;
+	
 	public float view_rotx = 30.0f;
 	public float view_roty = 30.0f;
 	public float view_rotz = 0f;
 
-	public float camPosX = 10;
-	public float camPosY = -75;
-	public float camPosZ = -18;
+	public double camPosX = 10;
+	public double camPosY = -75;
+	public double camPosZ = -18;
 
 	float lastPX = -1f;
 	float lastPY = -1f;
@@ -147,12 +149,14 @@ public class Camera
 		modelViewProjectionMatrix4fInverted.store(modelViewProjectionMatrixInverse);
 	}
 
-	public void justSetup()
+	public void justSetup(int width, int height)
 	{
+		this.width = width;
+		this.height = height;
 		// Frustrum values
 		float fovRad = (float) toRad(fov);
 
-		float aspect = (float) XolioWindow.frameW / (float) XolioWindow.frameH;
+		float aspect = (float) width / (float) height;
 		float top = (float) Math.tan(fovRad) * 0.1f;
 		float bottom = -top;
 		float left = aspect * bottom;
@@ -184,7 +188,7 @@ public class Camera
 		modelViewMatrix4f.rotate((float) (view_roty / 180 * Math.PI), new Vector3f( 0.0f, 1.0f, 0.0f));
 		modelViewMatrix4f.rotate((float) (view_rotz / 180 * Math.PI), new Vector3f( 0.0f, 0.0f, 1.0f));
 		
-		Vector3f position = new Vector3f(-camPosX, -camPosY, -camPosZ);
+		Vector3f position = new Vector3f((float)-camPosX, (float)-camPosY, (float)-camPosZ);
 		
 		float rotH = view_roty;
 		float rotV = view_rotx;
@@ -238,14 +242,14 @@ public class Camera
 		Vector3f temp = new Vector3f();
 		//Init values
 		float tang = (float)Math.tan(toRad(fov)) ;
-		float ratio = (float) XolioWindow.frameW / (float) XolioWindow.frameH;
+		float ratio = (float) width / (float) height;
 		float nh = 0.1f * tang;
 		float nw = nh * ratio;
 		float fh = 3000f  * tang;
 		float fw = fh * ratio;
 		
 		// Recreate the 3 vectors for the algorithm
-		Vector3f position = new Vector3f(-camPosX, -camPosY, -camPosZ);
+		Vector3f position = new Vector3f((float)-camPosX, (float)-camPosY, (float)-camPosZ);
 		
 		float rotH = view_roty;
 		float rotV = view_rotx;
@@ -405,10 +409,10 @@ public class Camera
 	public void translate()
 	{
 		untranslatedMVP4f.load(modelViewMatrix4f);
-		untranslatedMVP4f.translate(new Vector3f((float) (camPosX-Math.floor(camPosX)), (float) (camPosY-Math.floor(camPosY)), (float) (camPosZ-Math.floor(camPosZ))));
+		//untranslatedMVP4f.translate(new Vector3f((float) (camPosX-Math.floor(camPosX)), (float) (camPosY-Math.floor(camPosY)), (float) (camPosZ-Math.floor(camPosZ))));
 		Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
 
-		modelViewMatrix4f.translate(new Vector3f(camPosX, camPosY, camPosZ));
+		modelViewMatrix4f.translate(new Vector3f((float)camPosX, (float)camPosY, (float)camPosZ));
 		//glTranslatef(camPosX, camPosY, camPosZ);
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
@@ -459,8 +463,8 @@ public class Camera
 		float scale = 1/in.z;
 		posOnScreen.scale(scale);
 
-		posOnScreen.x = (posOnScreen.x * 0.5f + 0.5f) * XolioWindow.frameW;
-		posOnScreen.y = ((posOnScreen.y * 0.5f + 0.5f)) * XolioWindow.frameH;
+		posOnScreen.x = (posOnScreen.x * 0.5f + 0.5f) * width;
+		posOnScreen.y = ((posOnScreen.y * 0.5f + 0.5f)) * height;
 		posOnScreen.z = scale;
 		return posOnScreen;
 	}

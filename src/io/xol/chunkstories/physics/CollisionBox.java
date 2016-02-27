@@ -1,6 +1,8 @@
 package io.xol.chunkstories.physics;
 
 import static io.xol.chunkstories.renderer.OverlayRenderer.*;
+
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
 
@@ -8,7 +10,7 @@ import io.xol.chunkstories.world.World;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class CollisionBox
+public class CollisionBox implements Collidable
 {
 
 	public double xpos, ypos, zpos;
@@ -39,39 +41,23 @@ public class CollisionBox
 		return this;
 	}
 
-	public boolean collide(World world)
+	public boolean collidesWith(World world)
 	{
-		if (VoxelTypes.get(
-				world.getDataAt((int) (xpos + xw / 2), (int) (ypos + h),
-						(int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getDataAt((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(
-				world.getDataAt((int) (xpos + xw / 2), (int) (ypos),
-						(int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getDataAt((int) (xpos + xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(
-				world.getDataAt((int) (xpos - xw / 2), (int) (ypos + h),
-						(int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getDataAt((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(
-				world.getDataAt((int) (xpos - xw / 2), (int) (ypos),
-						(int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getDataAt((int) (xpos - xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(
-				world.getDataAt((int) (xpos + xw / 2), (int) (ypos + h),
-						(int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getDataAt((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(
-				world.getDataAt((int) (xpos + xw / 2), (int) (ypos),
-						(int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getDataAt((int) (xpos + xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(
-				world.getDataAt((int) (xpos - xw / 2), (int) (ypos + h),
-						(int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getDataAt((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(
-				world.getDataAt((int) (xpos - xw / 2), (int) (ypos),
-						(int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getDataAt((int) (xpos - xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
 		return false;
 	}
@@ -137,17 +123,12 @@ public class CollisionBox
 
 	public String toString()
 	{
-		return "Collision Box : position = [" + xpos + ", " + ypos + ", "
-				+ zpos + "] size = [" + xw + ", " + h + ", " + zw + "]";
+		return "Collision Box : position = [" + xpos + ", " + ypos + ", " + zpos + "] size = [" + xw + ", " + h + ", " + zw + "]";
 	}
 
 	public boolean collidesWith(CollisionBox b)
 	{
-		if (ypos + h <= b.ypos || ypos >= b.ypos + b.h
-				|| xpos + xw / 2.0 <= b.xpos - b.xw / 2.0
-				|| xpos - xw / 2.0 >= b.xpos + b.xw / 2.0
-				|| zpos + zw / 2.0 <= b.zpos - b.zw / 2.0
-				|| zpos - zw / 2.0 >= b.zpos + b.zw / 2.0)
+		if (ypos + h <= b.ypos || ypos >= b.ypos + b.h || xpos + xw / 2.0 <= b.xpos - b.xw / 2.0 || xpos - xw / 2.0 >= b.xpos + b.xw / 2.0 || zpos + zw / 2.0 <= b.zpos - b.zw / 2.0 || zpos - zw / 2.0 >= b.zpos + b.zw / 2.0)
 		{
 			return false;
 		}
@@ -157,13 +138,21 @@ public class CollisionBox
 
 	public boolean isPointInside(double posX, double posY, double posZ)
 	{
-		if (ypos + h < posY || ypos > posY || xpos + xw / 2.0 < posX
-				|| xpos - xw / 2.0 > posX || zpos + zw / 2.0 < posZ
-				|| zpos - zw / 2.0 > posZ)
+		if (ypos + h < posY || ypos > posY || xpos + xw / 2.0 < posX || xpos - xw / 2.0 > posX || zpos + zw / 2.0 < posZ || zpos - zw / 2.0 > posZ)
 		{
 			return false;
 		}
 
+		return false;
+	}
+
+	public boolean collidesWith(Entity entity)
+	{
+		CollisionBox[] entityBoxes = entity.getTranslatedCollisionBoxes();
+		if (entityBoxes != null)
+			for (CollisionBox entityBox : entityBoxes)
+				if (entityBox.collidesWith(entityBox))
+					return true;
 		return false;
 	}
 }

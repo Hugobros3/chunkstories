@@ -86,7 +86,7 @@ void main(){
 	//v.y += (sin(time/15.0+v.x+v.z)*0.0);
 	varyingVertex = v;
 	
-	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(0, 1.0 , 0)), 0.0, 1.0);
+	fresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(0, 1.0 , 0)), 0.0, 1.0);
 	
 	//Compute lightmap coords
 	lightMapCoords = vec4(colorIn.r, colorIn.g, colorIn.b, 0);

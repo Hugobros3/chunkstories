@@ -5,6 +5,7 @@ import io.xol.chunkstories.item.inventory.InventoryHolder;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.DefferedLight;
+import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.RenderingContext;
@@ -29,9 +30,11 @@ public interface Entity extends InventoryHolder
 	 */
 	public void setLocation(Location loc);
 	
+	public ChunkHolder getChunkHolder();
+	
 	public World getWorld();
 
-	public void update();
+	public void tick();
 
 	public boolean updatePosition();
 	

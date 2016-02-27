@@ -52,8 +52,6 @@ public class TerrainSummarizer
 					vboContents[dx][dy][lod][0] = generateFloatBuffer(lod, dx * 32, dy * 32, false);
 					vboContents[dx][dy][lod][1] = generateFloatBuffer(lod, dx * 32, dy * 32, true);
 				}
-
-		// fillVbos();
 	}
 
 	class RegionSummary
@@ -327,23 +325,17 @@ public class TerrainSummarizer
 		return rs;
 	}
 
-	public void generateArround(float posX, float posZ)
+	public void generateArround(double camPosX, double camPosZ)
 	{
 		long time = System.currentTimeMillis();
-
-		// if(time-lastGen < 2000)
-		// return;
-
-		cx = (int) (posX / 32);
-		cz = (int) (posZ / 32);
-
-		//System.out.println("GA"+posX+":"+posZ);
+		
+		cx = (int) (camPosX / 32);
+		cz = (int) (camPosZ / 32);
 		
 		totalSize = 0;
 
 		for (RegionSummary rs : regionsToRender)
 		{
-			// System.out.println("DELETE ???");
 			rs.delete();
 		}
 		regionsToRender.clear();

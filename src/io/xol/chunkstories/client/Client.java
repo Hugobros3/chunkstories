@@ -17,16 +17,17 @@ import io.xol.engine.sound.ALSoundManager;
 import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.client.net.ServerConnection;
-import io.xol.chunkstories.entity.Controller;
+import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.World;
 
-public class Client implements Controller
+public class Client implements ClientController
 {
 	public static ConfigFile clientConfig = new ConfigFile("config/client.cfg");
 
@@ -43,10 +44,12 @@ public class Client implements Controller
 	public static String session_key = "nopeMLG";
 
 	public static DebugProfiler profiler = new DebugProfiler();
+	
+	public static Client clientController;
 
 	public static void main(String[] args)
 	{
-		// FastConfig.define();
+		clientController = new Client();
 		GameDirectory.initClientPath();
 		for (String s : args) // Debug arguments
 		{
@@ -112,11 +115,24 @@ public class Client implements Controller
 		GuiDrawer.free();
 		soundManager.destroy();
 		clientConfig.save();
-		//ChunkStoriesLogger.getInstance().close();
 	}
 
 	public static ConfigFile getConfig()
 	{
 		return clientConfig;
+	}
+
+	public static Client getInstance()
+	{
+		return clientController;
+	}
+	
+	public boolean hasFocus()
+	{
+		if(windows.getCurrentScene() instanceof GameplayScene)
+		{
+			return ((GameplayScene)windows.getCurrentScene()).hasFocus();
+		}
+		return false;
 	}
 }

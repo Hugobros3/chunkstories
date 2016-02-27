@@ -66,7 +66,8 @@ public class WorldRenderer
 	public ChunksRenderer chunksRenderer;
 
 	// Current camera position
-	public float viewX, viewY, viewZ, viewRotH, viewRotV;
+	public double viewX, viewY, viewZ;
+	public float viewRotH, viewRotV;
 	//Chunk space position
 	public int pCX, pCY, pCZ;
 
@@ -242,7 +243,7 @@ public class WorldRenderer
 		if (FastConfig.doShadows && chunksToRenderLimit == -1)
 			shadowPass();
 		// Prepare matrices
-		camera.justSetup();
+		camera.justSetup(scrW, scrH);
 
 		// Clear G-Buffers and bind shaded HDR rendertarget
 		composite_pass_gbuffers.bind();
@@ -304,7 +305,7 @@ public class WorldRenderer
 			// Vertical pass
 			blurFBO.bind();
 			blurV.use(true);
-			blurV.setUniformFloat2("screenSize", XolioWindow.frameW / 2f, XolioWindow.frameH / 2f);
+			blurV.setUniformFloat2("screenSize", scrW / 2f, scrH / 2f);
 			blurV.setUniformFloat("lookupScale", 1);
 			blurV.setUniformSampler(0, "inputTexture", this.composite_bloom);
 			//drawFSQuad();
@@ -313,7 +314,7 @@ public class WorldRenderer
 			// Horizontal pass
 			this.composite_pass_bloom.bind();
 			blurH.use(true);
-			blurH.setUniformFloat2("screenSize", XolioWindow.frameW / 2f, XolioWindow.frameH / 2f);
+			blurH.setUniformFloat2("screenSize", scrW / 2f, scrH / 2f);
 			blurH.setUniformSampler(0, "inputTexture", blurTemp);
 			//drawFSQuad();
 			ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
@@ -336,7 +337,7 @@ public class WorldRenderer
 		return x < xi ? xi - 1 : xi;
 	}
 
-	public void updateRender(float x, float y, float z, float view_rotx, float view_roty)
+	public void updateRender(double camPosX, double camPosY, double camPosZ, float view_rotx, float view_roty)
 	{
 		// Called every frame, this method takes care of updating the world :
 		// It will keep up to date the camera position, as well as a list of
@@ -385,14 +386,14 @@ public class WorldRenderer
 			vbo2freeI.remove();
 		}
 		// Update view
-		viewX = x;
-		viewY = y;
-		viewZ = z;
+		viewX = camPosX;
+		viewY = camPosY;
+		viewZ = camPosZ;
 		viewRotH = view_rotx;
 		viewRotV = view_roty;
-		int npCX = fastfloor((x - 0) / 32);
-		int npCY = fastfloor((y) / 32);
-		int npCZ = fastfloor((z - 0) / 32);
+		int npCX = fastfloor((camPosX - 0) / 32);
+		int npCY = fastfloor((camPosY) / 32);
+		int npCZ = fastfloor((camPosZ - 0) / 32);
 		// Fill the VBO array with chunks VBO ids if the player changed chunk
 		if (pCX != npCX || pCY != npCY || pCZ != npCZ || chunksChanged || true)
 		{
@@ -411,8 +412,8 @@ public class WorldRenderer
 				//i++;
 				chunk = it.next();
 
-				if (LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, world.getSizeInChunks()) <= chunksViewDistance)
-					if (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, world.getSizeInChunks()) <= chunksViewDistance)
+				if (LoopingMathHelper.moduloDistance(chunk.chunkX, npCX, world.getSizeInChunks()) <= chunksViewDistance)
+					if (LoopingMathHelper.moduloDistance(chunk.chunkZ, npCZ, world.getSizeInChunks()) <= chunksViewDistance)
 					{
 
 						if (chunk.need_render.get() && chunk.dataPointer != -1)
@@ -429,29 +430,28 @@ public class WorldRenderer
 				@Override
 				public int compare(CubicChunk a, CubicChunk b)
 				{
-					int distanceA = LoopingMathHelper.moduloDistance(a.chunkX, pCX, world.getSizeInChunks()) + LoopingMathHelper.moduloDistance(a.chunkZ, pCZ, world.getSizeInChunks());
-					int distanceB = LoopingMathHelper.moduloDistance(b.chunkX, pCX, world.getSizeInChunks()) + LoopingMathHelper.moduloDistance(b.chunkZ, pCZ, world.getSizeInChunks());
+					int distanceA = LoopingMathHelper.moduloDistance(a.chunkX, npCX, world.getSizeInChunks()) + LoopingMathHelper.moduloDistance(a.chunkZ, npCZ, world.getSizeInChunks());
+					int distanceB = LoopingMathHelper.moduloDistance(b.chunkX, npCX, world.getSizeInChunks()) + LoopingMathHelper.moduloDistance(b.chunkZ, npCZ, world.getSizeInChunks());
 					return distanceA - distanceB;
 					//return distanceB - distanceA;
 				}
 			});
 
 			// Now delete from the worker threads what we won't need anymore
-			chunksRenderer.purgeUselessWork(pCX, pCY, pCZ, sizeInChunks, chunksViewDistance);
-			world.ioHandler.requestChunksUnload(pCX, pCY, pCZ, sizeInChunks, chunksViewDistance + 1);
-			// Update far terrain
-			if (pCX != npCX || pCZ != npCZ)
-				terrain.generateArround(x, z);
+			chunksRenderer.purgeUselessWork(npCX, npCY, npCZ, sizeInChunks, chunksViewDistance);
+			world.ioHandler.requestChunksUnload(npCX, npCY, npCZ, sizeInChunks, chunksViewDistance + 1);
+			
+			if(npCX != pCX || npCZ != pCZ)
+				terrain.generateArround(-camera.camPosX, -camera.camPosZ);
 			terrain.updateData();
-			world.chunkSummaries.removeFurther(pCX, pCZ, 33);
+			world.chunkSummaries.removeFurther(npCX, npCZ, 33);
 
 			chunksChanged = false;
 			// Load nearby chunks
-			for (int t = (pCX - chunksViewDistance - 1); t < pCX + chunksViewDistance + 1; t++)
+			for (int t = (npCX - chunksViewDistance - 1); t < npCX + chunksViewDistance + 1; t++)
 			{
-				//System.out.println(t +" "+ chunksViewDistance + " " + (pCX - chunksViewDistance) + " < " + pCX + " < " + (pCX + chunksViewDistance));
-				for (int g = (pCZ - chunksViewDistance + 1); g < pCZ + chunksViewDistance + 1; g++)
-					for (int b = pCY - 3; b < pCY + 3; b++)
+				for (int g = (npCZ - chunksViewDistance + 1); g < npCZ + chunksViewDistance + 1; g++)
+					for (int b = npCY - 3; b < npCY + 3; b++)
 					{
 						chunk = world.getChunk(t, b, g, true);
 					}
@@ -499,8 +499,8 @@ public class WorldRenderer
 		Matrix4f shadowMVP = new Matrix4f(depthMatrix);
 
 		//depthMatrix.translate(new Vector3f((float) Math.floor(camera.camPosX), (float) Math.floor(camera.camPosY), (float) Math.floor(camera.camPosZ)));
-		shadowMVP.translate(new Vector3f((float) Math.floor(camera.camPosX), (float) Math.floor(camera.camPosY), (float) Math.floor(camera.camPosZ)));
-		//shadowMVP.translate(new Vector3f((float)camera.camPosX, (float)camera.camPosY, (float)camera.camPosZ));
+		//shadowMVP.translate(new Vector3f((float) Math.floor(camera.camPosX), (float) Math.floor(camera.camPosY), (float) Math.floor(camera.camPosZ)));
+		shadowMVP.translate(new Vector3f((float)camera.camPosX, (float)camera.camPosY, (float)camera.camPosZ));
 
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
 		shadowsPassShader.setUniformMatrix4f("localTransform", new Matrix4f());
@@ -675,7 +675,7 @@ public class WorldRenderer
 		glEnableVertexAttribArray(texCoordIn);
 
 		// Culling vectors
-		viewerPosVector = new Vector3f(viewX, viewY, viewZ);
+		viewerPosVector = new Vector3f((float)viewX, (float)viewY, (float)viewZ);
 		float transformedViewH = (float) ((viewRotH) / 180 * Math.PI);
 		// if(FastConfig.debugGBuffers ) System.out.println(Math.sin(transformedViewV)+"f");
 		viewerCamDirVector = new Vector3f((float) (Math.sin((180 + viewRotV) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)), (float) (Math.cos((180 + viewRotV) / 180 * Math.PI) * Math.cos(transformedViewH)));
@@ -741,7 +741,19 @@ public class WorldRenderer
 					continue;
 			}
 			if (!shadowPass)
-				opaqueBlocksShader.setUniformFloat3("borderShift", vboDekalX, chunk.chunkY * 32f, vboDekalZ);
+			{
+				int camIntPartX = (int) Math.floor(camera.camPosX);
+				int camIntPartY = (int) Math.floor(camera.camPosY);
+				int camIntPartZ = (int) Math.floor(camera.camPosZ);
+				double fractPartX = camera.camPosX - Math.floor(camera.camPosX);
+				double fractPartY = camera.camPosY - Math.floor(camera.camPosY);
+				double fractPartZ = camera.camPosZ - Math.floor(camera.camPosZ);
+				double diffChunkX = (double)(vboDekalX + camIntPartX);
+				double diffChunkY = (double)(chunk.chunkY * 32 + camIntPartY);
+				double diffChunkZ = (double)(vboDekalZ + camIntPartZ);
+				opaqueBlocksShader.setUniformFloat3("borderShift", vboDekalX + camera.camPosX, chunk.chunkY * 32f + camera.camPosY, vboDekalZ + camera.camPosZ);
+				opaqueBlocksShader.setUniformFloat3("borderShift", diffChunkX + fractPartX, diffChunkY + fractPartY, diffChunkZ + fractPartZ);
+			}
 			else
 				shadowsPassShader.setUniformFloat3("borderShift", vboDekalX, chunk.chunkY * 32f, vboDekalZ);
 
@@ -1168,7 +1180,7 @@ public class WorldRenderer
 		// Vertical pass
 		blurFBO.bind();
 		blurV.use(true);
-		blurV.setUniformFloat2("screenSize", XolioWindow.frameW * 2, XolioWindow.frameH * 2);
+		blurV.setUniformFloat2("screenSize", scrW * 2, scrH * 2);
 		blurV.setUniformFloat("lookupScale", 2);
 		blurV.setUniformSampler(0, "inputTexture", this.composite_ssao);
 		ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
@@ -1177,7 +1189,7 @@ public class WorldRenderer
 		// Horizontal pass
 		this.composite_pass_ssao.bind();
 		blurH.use(true);
-		blurH.setUniformFloat2("screenSize", XolioWindow.frameW * 2, XolioWindow.frameH * 2);
+		blurH.setUniformFloat2("screenSize", scrW * 2, scrH * 2);
 		blurH.setUniformSampler(0, "inputTexture", blurTemp);
 		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 		//drawFSQuad();
@@ -1454,8 +1466,6 @@ public class WorldRenderer
 		FastConfig.doBloom = false;
 		int oldW = scrW;
 		int oldH = scrH;
-		XolioWindow.frameH = resolution;
-		XolioWindow.frameW = resolution;
 		float camX = camera.view_rotx;
 		float camY = camera.view_roty;
 		float camZ = camera.view_rotz;
@@ -1579,9 +1589,7 @@ public class WorldRenderer
 		camera.view_roty = camY;
 		camera.view_rotz = camZ;
 		camera.fov = fov;
-		XolioWindow.frameH = oldH;
-		XolioWindow.frameW = oldW;
-		camera.justSetup();
+		camera.justSetup(oldW, oldH);
 		this.setupRenderSize(oldW, oldH);
 	}
 

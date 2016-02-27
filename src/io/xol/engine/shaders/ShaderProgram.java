@@ -216,6 +216,11 @@ public class ShaderProgram
 	{
 		glUniform3f(getUniformLocation(name), f, f2, f3);
 	}
+
+	public void setUniformFloat3(String name, double d1, double d2, double d3)
+	{
+		glUniform3f(getUniformLocation(name), (float)d1, (float)d2, (float)d3);
+	}
 	
 	public void setUniformFloat4(String name, org.lwjgl.util.vector.Vector4f vec4)
 	{

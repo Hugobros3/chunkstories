@@ -6,10 +6,11 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
+import io.xol.chunkstories.api.entity.ClientController;
+import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.entity.Controller;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.entity.EntityImplementation;
@@ -17,8 +18,10 @@ import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.net.packets.Packet04Entity;
+import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.core.VoxelClimbable;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.base.font.TrueTypeFont;
@@ -74,7 +77,8 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	}
 
 	// Server-side updating
-	public void update()
+	@Override
+	public void tick()
 	{
 		if (jump > 0)
 		{
@@ -96,40 +100,39 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			accelerationVector.scale(modifySpd);
 		}
 
-		// if (!flying)
 		if (flying)
 		{
 			this.velX = 0;
 			this.velY = 0;
 			this.velZ = 0;
 		}
-		super.update();
+		super.tick();
 		// Sound stuff
 		if (collision_bot && !l)
 		{
 			landed = true;
 			walked = 0;
 		}
-
+		//Bobbing
 		if (collision_bot)
 			walked += Math.abs(hSpeed);
 		eyePosition = 1.6 + Math.sin(walked * 5d) * 0.035d;
 	}
 
 	// client-side method for updating the player movement
-	public void controls(boolean focus)
+	public void tick(ClientController controller)
 	{
 		// super.changeChunk();
 		// Null-out acceleration, until modified by controls
-		if (focus)
+		if (controller.hasFocus())
 		{
 			moveCamera();
-			if (flying)
-				flyMove();
-			else
-				normalMove();
-			super.updatePosition();
 		}
+		if (flying)
+			flyMove(controller.hasFocus());
+		else
+			normalMove(controller.hasFocus());
+		super.updatePosition();
 
 		if (Client.connection != null)
 		{
@@ -156,8 +159,23 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	boolean jumped = false;
 	boolean landed = false;
 
-	public void normalMove()
+	public void normalMove(boolean focus)
 	{
+		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY + 1), (int) (posZ))));
+		boolean inWater = voxelIn.isVoxelLiquid();
+		boolean onLadder = voxelIn instanceof VoxelClimbable;
+		if (onLadder)
+		{
+			onLadder = false;
+			CollisionBox[] boxes = voxelIn.getTranslatedCollisionBoxes(world, (int) (posX), (int) (posY), (int) (posZ));
+			if (boxes != null)
+				for (CollisionBox box : boxes)
+				{
+					if (box.collidesWith(this))
+						onLadder = true;
+				}
+		}
+
 		if (jumped)
 		{
 			jumped = false;
@@ -172,7 +190,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		if (walked > 0.2 * Math.PI * 2)
 		{
 			walked %= 0.2 * Math.PI * 2;
-			Client.getSoundManager().playSoundEffect("footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3)))+".ogg", posX, posY, posZ, (float) (0.9f + Math.sqrt(velX * velX + velY * velY) * 0.1f), 1f);
+			Client.getSoundManager().playSoundEffect("footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", posX, posY, posZ, (float) (0.9f + Math.sqrt(velX * velX + velY * velY) * 0.1f), 1f);
 			// System.out.println("footstep");
 		}
 
@@ -188,7 +206,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 
 		// Movement
 		// Run ?
-		if (Keyboard.isKeyDown(FastConfig.FORWARD_KEY))
+		if (focus && Keyboard.isKeyDown(FastConfig.FORWARD_KEY))
 		{
 			if (Keyboard.isKeyDown(FastConfig.RUN_KEY))
 				running = true;
@@ -197,10 +215,15 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			running = false;
 
 		double modif = 0;
-		if (Keyboard.isKeyDown(FastConfig.FORWARD_KEY) || Keyboard.isKeyDown(FastConfig.LEFT_KEY) || Keyboard.isKeyDown(FastConfig.RIGHT_KEY))
-			hSpeed = (running ? 0.09 : 0.06);
-		else if (Keyboard.isKeyDown(FastConfig.BACK_KEY))
-			hSpeed = -0.05;
+		if (focus)
+		{
+			if (Keyboard.isKeyDown(FastConfig.FORWARD_KEY) || Keyboard.isKeyDown(FastConfig.LEFT_KEY) || Keyboard.isKeyDown(FastConfig.RIGHT_KEY))
+				hSpeed = (running ? 0.09 : 0.06);
+			else if (Keyboard.isKeyDown(FastConfig.BACK_KEY))
+				hSpeed = -0.05;
+			else
+				hSpeed = 0.0;
+		}
 		else
 			hSpeed = 0.0;
 		// Water slows you down
@@ -227,6 +250,11 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 				this.moveWithCollisionRestrain(blockedMomentum);
 				this.moveWithCollisionRestrain(0, -0.55, 0, false);
 			}
+			if (onLadder)
+			{
+				//moveWithCollisionRestrain(0, (float)(Math.sin(((rotV) / 180f * Math.PI)) * hSpeed), 0, false);
+				this.velY = (float)(Math.sin((-(rotV) / 180f * Math.PI)) * hSpeed);
+			}
 		}
 
 		targetVectorX = Math.sin((180 - rotH + modif) / 180f * Math.PI) * hSpeed;
@@ -234,8 +262,10 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 
 	}
 
-	public void flyMove()
+	public void flyMove(boolean focus)
 	{
+		if (!focus)
+			return;
 		velX = velY = velZ = 0;
 		eyePosition = 1.6;
 		float camspeed = 0.125f;
@@ -254,7 +284,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		}
 		if (Keyboard.isKeyDown(FastConfig.FORWARD_KEY))
 		{
-			float a = (float) ((180-rotH) / 180f * Math.PI);
+			float a = (float) ((180 - rotH) / 180f * Math.PI);
 			float b = (float) ((-rotV) / 180f * Math.PI);
 			if (noclip)
 				moveWithoutCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b));
@@ -335,7 +365,6 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			{
 				if (!inside)
 				{
-
 					double length = Math.sqrt(bModX * bModX + bModY * bModY + bModZ * bModZ);
 
 					double modifier = 1.0 / length;
@@ -344,8 +373,6 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 					bModX *= modifier;
 					bModY *= modifier;
 					bModZ *= modifier;
-
-					// System.out.println(bModX+":"+bModY+":"+bModZ+" length:"+length);
 
 					if (Math.abs(bModX) > Math.abs(bModY))
 					{
@@ -402,26 +429,26 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	{
 		noclip = !noclip;
 	}
-	
+
 	@Override
 	public void drawHUD(Camera camera)
 	{
-		if(this.equals(Client.controller))
+		if (this.equals(Client.controller))
 			return; // Don't render yourself
-		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float)posX, (float)posY + 2.5f, (float)posZ));
-		
+		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float) posX, (float) posY + 2.5f, (float) posZ));
+
 		float scale = posOnScreen.z;
 		String txt = name;// + rotH;
-		float dekal = TrueTypeFont.arial12.getWidth(txt)*16*scale;
-		if(scale > 0)
-			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x-dekal/2, posOnScreen.y, txt, 16*scale, 16*scale, new Vector4f(1,1,1,1));
+		float dekal = TrueTypeFont.arial12.getWidth(txt) * 16 * scale;
+		if (scale > 0)
+			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x - dekal / 2, posOnScreen.y, txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
 	}
-	
+
 	public void render(RenderingContext renderingContext)
 	{
-		if(this.equals(Client.controller))
+		if (this.equals(Client.controller))
 			return; // Don't render yourself
-		
+
 		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("models/hogubrus3.png"));
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
 		renderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
@@ -430,8 +457,8 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 		Matrix4f mutrix = new Matrix4f();
-		mutrix.rotate((90-rotH) / 180 * 3.14159f, new Vector3f(0,1,0));
-		
+		mutrix.rotate((90 - rotH) / 180 * 3.14159f, new Vector3f(0, 1, 0));
+
 		renderingContext.renderingShader.setUniformMatrix4f("localTransform", mutrix);
 		//debugDraw();
 		ModelLibrary.getMesh("res/models/human.obj").render(renderingContext);
@@ -450,9 +477,9 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		this.inventory.name = this.name + "'s Inventory";
 		name = n;
 	}
-	
+
 	Controller controller;
-	
+
 	@Override
 	public Controller getController()
 	{

@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityIterator;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
@@ -173,11 +174,12 @@ public abstract class World
 			while (iter.hasNext())
 			{
 				entity = iter.next();
-				if (((EntityImplementation)entity).parentHolder != null && ((EntityImplementation)entity).parentHolder.isLoaded())
-					entity.update();
+				if (entity instanceof EntityControllable)
+					((EntityControllable)entity).tick(Client.getInstance());
+				if (entity.getChunkHolder() != null &&entity.getChunkHolder().isLoaded())
+					entity.tick();
 				//System.out.println(entity);
 			}
-			//
 			if (particlesHolder != null)
 				particlesHolder.updatePhysics();
 			// worldTime++;
@@ -187,18 +189,6 @@ public abstract class World
 			e.printStackTrace();
 		}
 	}
-
-	/*public List<Entity> getAllLoadedEntities()
-	{
-		List<Entity> entitiesToReturn = new ArrayList<Entity>();
-		
-		Iterator<Entity> iter = entities.iterator();
-		while (iter.hasNext())
-		{
-			entitiesToReturn.add(iter.next());
-		}
-		return entitiesToReturn;
-	}*/
 
 	public Iterator<Entity> getAllLoadedEntities()
 	{
@@ -210,7 +200,6 @@ public abstract class World
 		Iterator<Entity> ie = getAllLoadedEntities();
 		Entity e;
 		while (ie.hasNext())
-		//for (Entity e : getAllLoadedEntities())
 		{
 			e = ie.next();
 			if (e.getUUID() == entityID)
