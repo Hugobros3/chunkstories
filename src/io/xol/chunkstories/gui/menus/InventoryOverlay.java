@@ -8,6 +8,7 @@ import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.Inventory;
+import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.net.packets.Packet06InventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldClient;
 import io.xol.chunkstories.world.WorldLocalClient;
@@ -45,19 +46,22 @@ public class InventoryOverlay extends Overlay
 		for (int i = 0; i < drawers.length; i++)
 		{
 			int thisWidth = inventories[i].width;
-			drawers[i].drawInventoryCentered(XolioWindow.frameW / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, XolioWindow.frameH / 2, 2, false, 4 - i*4);
+			drawers[i].drawInventoryCentered(mainScene.eng.renderingContext, XolioWindow.frameW / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, XolioWindow.frameH / 2, 2, false, 4 - i*4);
 			widthAccumulation += 1 + thisWidth;
 		}
 
 		if (selectedItem != null)
 		{
 			int slotSize = 24 * 2;
-			int textureId = TexturesHandler.getTextureID(selectedItem.getTextureName());
+			/*int textureId = TexturesHandler.getTextureID(selectedItem.getTextureName());
 			if(textureId == -1)
-				textureId = TexturesHandler.getTexture("res/items/icons/notex.png").getID();
+				textureId = TexturesHandler.getTexture("res/items/icons/notex.png").getID();*/
 			int width = slotSize * selectedItem.item.getSlotsWidth();
 			int height = slotSize * selectedItem.item.getSlotsHeight();
-			GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX() - width / 2, Mouse.getY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
+			//GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX() - width / 2, Mouse.getY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
+			
+			//
+			selectedItem.getItem().getItemRenderer().renderItemInInventory(mainScene.eng.renderingContext, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
 		}
 	}
 

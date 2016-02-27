@@ -1,6 +1,7 @@
 package io.xol.chunkstories.renderer;
 
 import io.xol.engine.base.ObjectRenderer;
+import io.xol.engine.base.XolioWindow;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
 import io.xol.engine.textures.Texture;
@@ -92,7 +93,8 @@ public class SkyDome
 		double[] sunpos = { sunPosVector.x, sunPosVector.y, sunPosVector.z };
 
 		// TexturesHandler.bindTexture("res/textures/environement/sky.png");
-		skyShader.use(true);
+		XolioWindow.getInstance().getRenderingContext().setCurrentShader(skyShader);
+		//skyShader.use(true);
 		skyShader.setUniformSampler(9, "cloudsNoise", TexturesHandler.getTexture("environement/cloudsStatic.png"));
 		Texture glowTexture = TexturesHandler.getTexture("environement/glow.png");
 		skyShader.setUniformSampler(1, "glowSampler", glowTexture);
@@ -115,12 +117,13 @@ public class SkyDome
 
 		ObjectRenderer.drawFSQuad(skyShader.getVertexAttributeLocation("vertexIn"));
 
-		skyShader.use(false);
+		//skyShader.use(false);
 		
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPointSize(1f);
-		starsShader.use(true);
+		XolioWindow.getInstance().getRenderingContext().setCurrentShader(starsShader);
+		//starsShader.use(true);
 		starsShader.setUniformFloat3("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
 		starsShader.setUniformFloat3("color", 1f, 1f, 1f);
 		camera.setupShader(starsShader);
@@ -145,7 +148,7 @@ public class SkyDome
 			glVertexAttribPointer(vertexIn, 3, false, 0, stars);
 			glDrawArrays(GL_POINTS, 0, NB_STARS);
 			glDisableVertexAttribArray(vertexIn);
-			starsShader.use(false);
+			//starsShader.use(false);
 		}
 		glDisable(GL_BLEND);
 		glDepthMask(true);

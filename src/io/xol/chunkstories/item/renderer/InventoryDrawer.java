@@ -1,13 +1,15 @@
-package io.xol.chunkstories.gui.menus;
+package io.xol.chunkstories.item.renderer;
 
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector4f;
 
+import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.engine.base.font.TrueTypeFont;
 import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.model.RenderingContext;
 import io.xol.engine.textures.Texture;
 import io.xol.engine.textures.TexturesHandler;
 
@@ -24,11 +26,11 @@ public class InventoryDrawer
 		this.inventory = inventory;
 	}
 	
-	public void drawInventoryCentered(int x, int y, int scale, boolean summary, int blankLines)
+	public void drawInventoryCentered(RenderingContext context, int x, int y, int scale, boolean summary, int blankLines)
 	{
 		if(inventory == null)
 			return;
-		drawInventory(x - slotsWidth(inventory.width, scale) / 2, y - slotsHeight(inventory.height, scale, summary, blankLines) / 2, scale, summary, blankLines, -1);
+		drawInventory(context, x - slotsWidth(inventory.width, scale) / 2, y - slotsHeight(inventory.height, scale, summary, blankLines) / 2, scale, summary, blankLines, -1);
 	}
 	
 	int[] selectedSlot;
@@ -44,14 +46,14 @@ public class InventoryDrawer
 		return closedButton;
 	}
 	
-	public void drawPlayerInventorySummary(int x, int y, int selectedSlot)
+	public void drawPlayerInventorySummary(RenderingContext context, int x, int y, int selectedSlot)
 	{
 		if(inventory == null)
 			return;
-		drawInventory(x - slotsWidth(inventory.width, 2) / 2, y - slotsHeight(inventory.height, 2, true, 0) / 2, 2, true, 0, selectedSlot);
+		drawInventory(context, x - slotsWidth(inventory.width, 2) / 2, y - slotsHeight(inventory.height, 2, true, 0) / 2, 2, true, 0, selectedSlot);
 	}
 	
-	public void drawInventory(int x, int y, int scale, boolean summary, int blankLines, int highlightSlot)
+	public void drawInventory(RenderingContext context, int x, int y, int scale, boolean summary, int blankLines, int highlightSlot)
 	{
 		if(inventory == null)
 			return;
@@ -165,24 +167,27 @@ public class InventoryDrawer
 			TrueTypeFont.haettenschweiler.drawStringWithShadow(x + cornerSize, y + cornerSize + internalHeight - slotSize + 2 * scale, inventory.name, scale, scale, new Vector4f(1,1,1,1));
 		}
 		//Inventory contents
-		Texture itemTexture;
+		
+		//Texture itemTexture;
 		for (int i = 0; i < inventory.width; i++)
 		{
 			for (int j = 0; j < height; j++)
 			{
 				ItemPile pile = inventory.getContents()[i][j];
+				//If an item is present and we're not dragging it somewhere else
 				if(pile != null && !(InventoryOverlay.selectedItem != null && InventoryOverlay.selectedItem.inventory != null && inventory.equals(InventoryOverlay.selectedItem.inventory) && InventoryOverlay.selectedItem.x == i && InventoryOverlay.selectedItem.y == j ))
 				{
-					itemTexture = TexturesHandler.getTexture(pile.getTextureName());
+					/*itemTexture = TexturesHandler.getTexture(pile.getTextureName());
 					if(itemTexture.getID() == -1)
 						itemTexture = TexturesHandler.getTexture("res/items/icons/notex.png");
 					//
-					itemTexture.setLinearFiltering(false);
+					itemTexture.setLinearFiltering(false);*/
 					//textureId = TexturesHandler.idTexture(pile.getTextureName());
 					//TexturesHandler.mipmapLevel(pile.getTextureName(), -1);
 					//System.out.println(textureId);
 					int center = summary ? slotSize * (pile.item.getSlotsHeight()-1) / 2 : 0;
-					GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, slotSize * pile.item.getSlotsWidth(), slotSize * pile.item.getSlotsHeight(), 0, 1, 1, 0, itemTexture.getID(), true, true, null);
+					pile.getItem().getItemRenderer().renderItemInInventory(context, pile, x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, scale);
+					//GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, slotSize * pile.item.getSlotsWidth(), slotSize * pile.item.getSlotsHeight(), 0, 1, 1, 0, itemTexture.getID(), true, true, null);
 				}
 			}
 		}

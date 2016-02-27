@@ -138,7 +138,8 @@ public class MainMenu extends OverlayableScene
 		// Render this shit boy
 		unblurredFBO.bind();
 		cam.justSetup(XolioWindow.frameW, XolioWindow.frameH);
-		menuSkyBox.use(true);
+		XolioWindow.getInstance().getRenderingContext().setCurrentShader(menuSkyBox);
+		//menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);
 		menuSkyBox.setUniformSamplerCubemap(0, "skyBox", TexturesHandler.getCubemapID(skyBox));
 		cam.view_rotx = 35 + (float) (Math.sin(cam.view_roty / 15)) * 5f;
@@ -147,7 +148,8 @@ public class MainMenu extends OverlayableScene
 		
 		// Blurring to H
 		blurredHFBO.bind();
-		blurH.use(true);
+		XolioWindow.getInstance().getRenderingContext().setCurrentShader(blurH);
+		//blurH.use(true);
 		blurH.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
 		blurH.setUniformSampler(0, "inputTexture", unblurred.getID());
 		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
@@ -155,32 +157,36 @@ public class MainMenu extends OverlayableScene
 		for (int i = 0; i < 1; i++)
 		{
 			blurredVFBO.bind();
-			blurV.use(true);
+			XolioWindow.getInstance().getRenderingContext().setCurrentShader(blurV);
+			//blurV.use(true);
 			blurV.setUniformFloat("lookupScale", 1);
 			blurV.setUniformFloat2("screenSize", XolioWindow.frameW / 2, XolioWindow.frameH / 2);
 			blurV.setUniformSampler(0, "inputTexture", blurredH.getID());
 			ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 
 			blurredHFBO.bind();
-			blurH.use(true);
+			XolioWindow.getInstance().getRenderingContext().setCurrentShader(blurH);
+			//blurH.use(true);
 			blurH.setUniformFloat2("screenSize", XolioWindow.frameW / 2, XolioWindow.frameH / 2);
 			blurH.setUniformSampler(0, "inputTexture", blurredV.getID());
 			ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 		}
 
 		blurredVFBO.bind();
-		blurV.use(true);
+		XolioWindow.getInstance().getRenderingContext().setCurrentShader(blurV);
+		//blurV.use(true);
 		blurV.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
 		blurV.setUniformSampler(0, "inputTexture", blurredH.getID());
 		ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
-		blurV.use(false);
+		//blurV.use(false);
 
 		FBO.unbind();
-		blit.use(true);
+		XolioWindow.getInstance().getRenderingContext().setCurrentShader(blit);
+		//blit.use(true);
 		blit.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
 		blit.setUniformSampler(0, "inputTexture", blurredV.getID());
 		ObjectRenderer.drawFSQuad(blit.getVertexAttributeLocation("vertexIn"));
-		blit.use(false);
+		//blit.use(false);
 
 		//XolioWindow.setup2d();
 		// ObjectRenderer.renderTexturedRectAlpha(256,XolioWindow.frameH/2,

@@ -254,12 +254,9 @@ public class ShaderProgram
 		}
 	}
 
-	public void use(boolean b)
+	public void use()
 	{
-		if (b)
-			glUseProgram(shaderP);
-		else
-			glUseProgram(0);
+		glUseProgram(shaderP);
 	}
 
 	protected void free()
@@ -278,9 +275,8 @@ public class ShaderProgram
 		load(parameters);
 	}
 
-	/*protected void reload()
+	public String toString()
 	{
-		free();
-		load(null);
-	}*/
+		return "[ShaderProgram : " + this.filename + "]";
+	}
 }

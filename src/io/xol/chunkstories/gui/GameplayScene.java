@@ -17,11 +17,11 @@ import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.core.EntityPlayer;
-import io.xol.chunkstories.gui.menus.InventoryDrawer;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.Inventory;
+import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.physics.particules.ParticleLight;
 import io.xol.chunkstories.physics.particules.ParticleSetupLight;
@@ -152,7 +152,7 @@ public class GameplayScene extends OverlayableScene
 		chat.draw();
 
 		if (player != null && player.inventory != null)
-				inventoryDrawer.drawPlayerInventorySummary(XolioWindow.frameW / 2, 64 + 64, selectedInventorySlot);
+				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, XolioWindow.frameW / 2, 64 + 64, selectedInventorySlot);
 
 		if (Keyboard.isKeyDown(78))
 			Client.world.worldTime += 10;

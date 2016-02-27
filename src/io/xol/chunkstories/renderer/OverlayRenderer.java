@@ -11,6 +11,7 @@ import org.lwjgl.util.vector.Vector4f;
 
 import static org.lwjgl.opengl.GL11.glDrawArrays;
 
+import io.xol.engine.base.XolioWindow;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
 
@@ -89,7 +90,8 @@ public class OverlayRenderer
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glDepthFunc(GL11.GL_LEQUAL);
 		ShaderProgram overlayProgram = ShadersLibrary.getShaderProgram("overlay");
-		overlayProgram.use(true);
+		XolioWindow.getInstance().getRenderingContext().setCurrentShader(overlayProgram);
+		//overlayProgram.use(true);
 		camera.setupShader(overlayProgram);
 		int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");
 		glEnableVertexAttribArray(vertexIn);

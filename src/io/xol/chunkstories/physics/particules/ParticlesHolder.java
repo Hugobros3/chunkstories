@@ -132,7 +132,8 @@ public class ParticlesHolder
 	public int render(Camera camera)
 	{
 		int totalDrawn = 0;
-		particlesShader.use(true);
+		XolioWindow.getInstance().getRenderingContext().setCurrentShader(particlesShader);
+		//particlesShader.use(true);
 		// TexturesHandler.bindTexture("./res/textures/smoke.png");
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

@@ -146,7 +146,8 @@ public class GuiDrawer
 		glBufferData(GL_ARRAY_BUFFER, buf, GL_STREAM_DRAW);
 
 		buf.clear();
-		shader.use(true);
+		XolioWindow.getInstance().getRenderingContext().setCurrentShader(shader);
+		//shader.use(true);
 		// Get attributes locations
 		int vertexIn = shader.getVertexAttributeLocation("vertexIn");
 		int texCoordIn = shader.getVertexAttributeLocation("texCoordIn");
@@ -182,7 +183,7 @@ public class GuiDrawer
 		// Clean up
 		glDisableVertexAttribArray(vertexIn);
 		glDisableVertexAttribArray(texCoordIn);
-		shader.use(false);
+		//shader.use(false);
 
 		elementsToDraw = 0;
 	}

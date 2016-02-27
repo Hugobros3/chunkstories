@@ -181,8 +181,9 @@ public class WorldRenderer
 		resizeShadowMaps();
 		environmentMap = new Cubemap(Cubemap.CubemapType.RGBA_8BPP);
 
-		renderingContext = new RenderingContext(this);
-
+		renderingContext = XolioWindow.getInstance().getRenderingContext();
+		XolioWindow.instance.renderingContext = renderingContext;
+		
 		//Pre-load shaders
 		opaqueBlocksShader = ShadersLibrary.getShaderProgram("blocks_opaque");
 		entitiesShader = ShadersLibrary.getShaderProgram("entities");
@@ -255,7 +256,8 @@ public class WorldRenderer
 			glFinish();
 		long t = System.nanoTime();
 		sky.time = (world.worldTime % 10000) / 10000f;
-		sky.skyShader.use(true);
+		renderingContext.setCurrentShader(sky.skyShader);
+		//sky.skyShader.use(true);
 		//sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
 		glViewport(0, 0, scrW, scrH);
 		sky.render(camera);
@@ -291,7 +293,8 @@ public class WorldRenderer
 			this.composite_bloom.setLinearFiltering(true);
 			this.blurTemp.setLinearFiltering(true);
 
-			bloomShader.use(true);
+			renderingContext.setCurrentShader(bloomShader);
+			//bloomShader.use(true);
 			bloomShader.setUniformSampler(0, "shadedBuffer", this.composite_shaded);
 			bloomShader.setUniformFloat("apertureModifier", apertureModifier);
 
@@ -304,7 +307,8 @@ public class WorldRenderer
 
 			// Vertical pass
 			blurFBO.bind();
-			blurV.use(true);
+			renderingContext.setCurrentShader(blurV);
+			//blurV.use(true);
 			blurV.setUniformFloat2("screenSize", scrW / 2f, scrH / 2f);
 			blurV.setUniformFloat("lookupScale", 1);
 			blurV.setUniformSampler(0, "inputTexture", this.composite_bloom);
@@ -313,13 +317,14 @@ public class WorldRenderer
 
 			// Horizontal pass
 			this.composite_pass_bloom.bind();
-			blurH.use(true);
+			renderingContext.setCurrentShader(blurH);
+			//blurH.use(true);
 			blurH.setUniformFloat2("screenSize", scrW / 2f, scrH / 2f);
 			blurH.setUniformSampler(0, "inputTexture", blurTemp);
 			//drawFSQuad();
 			ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 
-			opaqueBlocksShader.use(false);
+			//opaqueBlocksShader.use(false);
 
 			// Done blooming
 			glViewport(0, 0, scrW, scrH);
@@ -328,7 +333,7 @@ public class WorldRenderer
 		composite_pass_shaded.setEnabledRenderTargets();
 
 		Client.profiler.startSection("done");
-		opaqueBlocksShader.use(false);
+		//opaqueBlocksShader.use(false);
 	}
 
 	private int fastfloor(double x)
@@ -482,7 +487,8 @@ public class WorldRenderer
 		shadow_map_renderer_near.bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		shadowsPassShader.use(true);
+		renderingContext.setCurrentShader(shadowsPassShader);
+		//shadowsPassShader.use(true);
 		Vector3f lightPosition = sky.getSunPos();
 		lightPosition.normalise(normSunPosition);
 		int fun = 10;// / hdPass ? 3 : 8;
@@ -506,7 +512,7 @@ public class WorldRenderer
 		shadowsPassShader.setUniformMatrix4f("localTransform", new Matrix4f());
 		shadowsPassShader.setUniformFloat("entity", 0);
 		renderWorld(true, -1);
-		shadowsPassShader.use(false);
+		//shadowsPassShader.use(false);
 		glViewport(0, 0, scrW, scrH);
 	}
 
@@ -552,7 +558,8 @@ public class WorldRenderer
 				vegetationTexture = TexturesHandler.getTexture("./res/textures/environement/grassColor.png");
 			vegetationTexture.setMipMapping(true);
 			vegetationTexture.setLinearFiltering(true);
-			terrainShader.use(true);
+			renderingContext.setCurrentShader(terrainShader);
+			//terrainShader.use(true);
 			camera.setupShader(terrainShader);
 			//terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
 			terrainShader.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
@@ -593,7 +600,8 @@ public class WorldRenderer
 			Client.profiler.startSection("blocks");
 			this.composite_pass_gbuffers.setEnabledRenderTargets();
 
-			opaqueBlocksShader.use(true);
+			renderingContext.setCurrentShader(opaqueBlocksShader);
+			//opaqueBlocksShader.use(true);
 
 			//Set materials
 			opaqueBlocksShader.setUniformSampler(0, "diffuseTexture", blocksDiffuseTexture);
@@ -640,7 +648,8 @@ public class WorldRenderer
 		}
 		else
 		{
-			shadowsPassShader.use(true);
+			renderingContext.setCurrentShader(shadowsPassShader);
+			//shadowsPassShader.use(true);
 			shadowsPassShader.setUniformFloat("time", animationTimer);
 			opaqueBlocksShader.setUniformSampler(0, "albedoTexture", blocksDiffuseTexture);
 		}
@@ -820,7 +829,8 @@ public class WorldRenderer
 			glDisableVertexAttribArray(normalIn);
 
 			// Select shader
-			entitiesShader.use(true);
+			renderingContext.setCurrentShader(entitiesShader);
+			//entitiesShader.use(true);
 
 			vertexIn = entitiesShader.getVertexAttributeLocation("vertexIn");
 			texCoordIn = entitiesShader.getVertexAttributeLocation("texCoordIn");
@@ -891,7 +901,8 @@ public class WorldRenderer
 		for (int pass = 1; pass < 3; pass++)
 		{
 			liquidBlocksShader = ShadersLibrary.getShaderProgram("blocks_liquid_pass" + (pass));
-			liquidBlocksShader.use(true);
+			renderingContext.setCurrentShader(liquidBlocksShader);
+			//liquidBlocksShader.use(true);
 
 			liquidBlocksShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
 
@@ -1030,7 +1041,8 @@ public class WorldRenderer
 		// Disable depth read/write
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(false);
-		lightShader.use(true);
+		renderingContext.setCurrentShader(lightShader);
+		//lightShader.use(true);
 
 		//Required info
 		lightShader.setUniformSampler(0, "albedoBuffer", this.composite_albedo);
@@ -1065,7 +1077,8 @@ public class WorldRenderer
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
-		lightShader.use(false);
+		renderingContext.setCurrentShader(lightShader);
+		//lightShader.use(false);
 		lights.clear();
 		//Go back to G-buffer accumulation
 		// this.composite_pass_gbuffers.setEnabledRenderTargets();
@@ -1138,7 +1151,8 @@ public class WorldRenderer
 		composite_pass_ssao.bind();
 		composite_pass_ssao.setEnabledRenderTargets();
 
-		ssaoShader.use(true);
+		renderingContext.setCurrentShader(ssaoShader);
+		//ssaoShader.use(true);
 
 		ssaoShader.setUniformSampler(1, "normalTexture", this.composite_normal);
 		ssaoShader.setUniformSampler(0, "depthTexture", this.composite_zbuffer);
@@ -1173,13 +1187,14 @@ public class WorldRenderer
 		}
 
 		ObjectRenderer.drawFSQuad(ssaoShader.getVertexAttributeLocation("vertexIn"));
-		ssaoShader.use(false);
+		//ssaoShader.use(false);
 
 		// Blur the thing
 
 		// Vertical pass
 		blurFBO.bind();
-		blurV.use(true);
+		renderingContext.setCurrentShader(blurV);
+		//blurV.use(true);
 		blurV.setUniformFloat2("screenSize", scrW * 2, scrH * 2);
 		blurV.setUniformFloat("lookupScale", 2);
 		blurV.setUniformSampler(0, "inputTexture", this.composite_ssao);
@@ -1188,7 +1203,8 @@ public class WorldRenderer
 
 		// Horizontal pass
 		this.composite_pass_ssao.bind();
-		blurH.use(true);
+		renderingContext.setCurrentShader(blurH);
+		//blurH.use(true);
 		blurH.setUniformFloat2("screenSize", scrW * 2, scrH * 2);
 		blurH.setUniformSampler(0, "inputTexture", blurTemp);
 		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
@@ -1206,7 +1222,8 @@ public class WorldRenderer
 				glFinish();
 		long t = System.nanoTime();
 
-		applyShadowsShader.use(true);
+		renderingContext.setCurrentShader(applyShadowsShader);
+		//applyShadowsShader.use(true);
 		setupShadowColors(applyShadowsShader);
 		applyShadowsShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
 		// Sun position
@@ -1290,7 +1307,8 @@ public class WorldRenderer
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 		glDisable(GL_CULL_FACE);
-		postProcess.use(true);
+		renderingContext.setCurrentShader(postProcess);
+		//postProcess.use(true);
 
 		postProcess.setUniformSampler(0, "shadedBuffer", this.composite_shaded);
 		postProcess.setUniformSampler(1, "albedoBuffer", this.composite_albedo);
@@ -1325,7 +1343,7 @@ public class WorldRenderer
 		if (FastConfig.debugGBuffers)
 			System.out.println("final blit took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
-		postProcess.use(false);
+		//postProcess.use(false);
 
 		if (FastConfig.doBloom)
 		{

@@ -21,6 +21,7 @@ import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.FrametimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.misc.CPUModelDetection;
+import io.xol.engine.model.RenderingContext;
 import io.xol.engine.scene.Scene;
 
 import org.lwjgl.Sys;
@@ -33,6 +34,7 @@ import org.lwjgl.opengl.PixelFormat;
 
 public class XolioWindow
 {
+	public RenderingContext renderingContext;
 	Scene currentScene = null;
 
 	public String name;
@@ -58,6 +60,7 @@ public class XolioWindow
 		if (fh != -1)
 			frameH = fh;
 		this.name = name;
+		instance = this;
 	}
 
 	private void systemInfo()
@@ -127,6 +130,8 @@ public class XolioWindow
 			switchResolution();
 
 			Keyboard.enableRepeatEvents(true);
+			
+			renderingContext = new RenderingContext(this);
 		}
 		catch (Exception e)
 		{
@@ -450,5 +455,15 @@ public class XolioWindow
 			Client.getConfig().setProp("fullScreenResolution", fsReso);
 			switchResolution();
 		}
+	}
+
+	public static XolioWindow getInstance()
+	{
+		return instance;
+	}
+
+	public RenderingContext getRenderingContext()
+	{
+		return renderingContext;
 	}
 }

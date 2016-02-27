@@ -23,7 +23,7 @@ public abstract class Item
 
 	private int maxStackSize = 100;
 	
-	private ItemRenderer itemRenderer;
+	protected ItemRenderer itemRenderer;
 
 	public Item(int id)
 	{

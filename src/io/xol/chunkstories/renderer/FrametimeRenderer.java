@@ -42,7 +42,8 @@ public class FrametimeRenderer
 		glDisable(GL_CULL_FACE);
 		glDepthFunc(GL11.GL_LEQUAL);
 		ShaderProgram overlayProgram = ShadersLibrary.getShaderProgram("fps_graph");
-		overlayProgram.use(true);
+		XolioWindow.getInstance().getRenderingContext().setCurrentShader(overlayProgram);
+		//overlayProgram.use(true);
 		overlayProgram.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
 		//System.out.println(XolioWindow.frameW);
 		int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");

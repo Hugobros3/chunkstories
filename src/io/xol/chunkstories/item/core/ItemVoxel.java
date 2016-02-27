@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.item.Item;
 import io.xol.chunkstories.item.ItemData;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 import io.xol.chunkstories.voxel.VoxelTypes;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -12,7 +13,6 @@ import io.xol.chunkstories.voxel.VoxelTypes;
 
 /**
  * An item that contains voxels
- * @author Hugo
  *
  */
 public class ItemVoxel extends Item
@@ -26,6 +26,7 @@ public class ItemVoxel extends Item
 	public ItemVoxel(int id)
 	{
 		super(id);
+		itemRenderer = new VoxelItemRenderer(this);
 	}
 	
 	public ItemData getItemData()
