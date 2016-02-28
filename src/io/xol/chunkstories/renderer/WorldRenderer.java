@@ -324,8 +324,6 @@ public class WorldRenderer
 			//drawFSQuad();
 			ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 
-			//opaqueBlocksShader.use(false);
-
 			// Done blooming
 			glViewport(0, 0, scrW, scrH);
 		}
@@ -333,7 +331,6 @@ public class WorldRenderer
 		composite_pass_shaded.setEnabledRenderTargets();
 
 		Client.profiler.startSection("done");
-		//opaqueBlocksShader.use(false);
 	}
 
 	private int fastfloor(double x)
@@ -512,7 +509,6 @@ public class WorldRenderer
 		shadowsPassShader.setUniformMatrix4f("localTransform", new Matrix4f());
 		shadowsPassShader.setUniformFloat("entity", 0);
 		renderWorld(true, -1);
-		//shadowsPassShader.use(false);
 		glViewport(0, 0, scrW, scrH);
 	}
 
@@ -1078,10 +1074,7 @@ public class WorldRenderer
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		renderingContext.setCurrentShader(lightShader);
-		//lightShader.use(false);
 		lights.clear();
-		//Go back to G-buffer accumulation
-		// this.composite_pass_gbuffers.setEnabledRenderTargets();
 	}
 
 	private void setupShadowColors(ShaderProgram shader)
@@ -1187,7 +1180,6 @@ public class WorldRenderer
 		}
 
 		ObjectRenderer.drawFSQuad(ssaoShader.getVertexAttributeLocation("vertexIn"));
-		//ssaoShader.use(false);
 
 		// Blur the thing
 
@@ -1342,8 +1334,6 @@ public class WorldRenderer
 
 		if (FastConfig.debugGBuffers)
 			System.out.println("final blit took " + (System.nanoTime() - t) / 1000000.0 + "ms");
-
-		//postProcess.use(false);
 
 		if (FastConfig.doBloom)
 		{

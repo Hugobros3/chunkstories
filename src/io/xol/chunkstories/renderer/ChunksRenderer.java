@@ -883,11 +883,11 @@ public class ChunksRenderer extends Thread
 		if (model.jitterZ != 0.0f)
 			dz = (float) ((Math.random() * 2.0 - 1.0) * model.jitterZ);
 
-		for (int i = 0; i < model.vertices.length; i++)
+		for (int i = 0; i < model.vertices.length / 3; i++)
 		{
-			vert = model.vertices[i];
-			tex = model.texCoords[i];
-			normal = model.normals[i];
+			//vert = model.vertices[i];
+			//tex = model.texCoords[i];
+			//normal = model.normals[i];
 
 			/*
 			 * How culling works :
@@ -916,13 +916,13 @@ public class ChunksRenderer extends Thread
 
 			if (drawFace)
 			{
-				rbbf.addVerticeFloat(vert[0] + sx + dx, vert[1] + sy + dy, vert[2] + sz + dz);
+				rbbf.addVerticeFloat(model.vertices[i*3+0] + sx + dx, model.vertices[i*3+1] + sy + dy, model.vertices[i*3+2] + sz + dz);
 				//vertices.add(new float[] { vert[0] + sx + dx, vert[1] + sy + dy, vert[2] + sz + dz });
-				rbbf.addTexCoordInt((int) (textureS + tex[0] * texture.atlasOffset), (int) (textureT + tex[1] * texture.atlasOffset));
+				rbbf.addTexCoordInt((int) (textureS + model.texCoords[i*2+0] * texture.atlasOffset), (int) (textureT + model.texCoords[i*2+1] * texture.atlasOffset));
 				//texcoords.add(new int[] { (int) (textureS + tex[0] * texture.atlasOffset), (int) (textureT + tex[1] * texture.atlasOffset) });
 				rbbf.addColors(lightColors);
 				//colors.add(lightColors);
-				rbbf.addNormalsInt(intifyNormal(normal[0]), intifyNormal(normal[1]), intifyNormal(normal[2]), info.isWavy());
+				rbbf.addNormalsInt(intifyNormal(model.normals[i*3+0]), intifyNormal(model.normals[i*3+1]), intifyNormal(model.normals[i*3+2]), info.isWavy());
 				//normals.add(normal);
 				//if (isWavy != null)
 				//	isWavy.add(info.isWavy());

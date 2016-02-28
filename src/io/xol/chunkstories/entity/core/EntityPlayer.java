@@ -194,12 +194,12 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			// System.out.println("footstep");
 		}
 
-		if (!inWater && Keyboard.isKeyDown(FastConfig.JUMP_KEY) && collision_bot)
+		if (focus && !inWater && Keyboard.isKeyDown(FastConfig.JUMP_KEY) && collision_bot)
 		{
 			// System.out.println("jumpin");
 			jump = 0.15;
 		}
-		else if (inWater && Keyboard.isKeyDown(FastConfig.JUMP_KEY))
+		else if (focus && inWater && Keyboard.isKeyDown(FastConfig.JUMP_KEY))
 			jump = 0.05;
 		else
 			jump = 0.0;

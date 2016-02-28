@@ -73,7 +73,7 @@ void main(){
 	varyingVertex = v + vec4(camPos, 0.0);
 	varyingNormal =  (normalIn.xyz-0.5)*2.0;//normalIn;
 	
-	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(varyingNormal)), 0.0, 1.0);
+	fresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(varyingNormal)), 0.0, 1.0);
 	
 	texcoord /= 32768.0;
 	
@@ -86,7 +86,7 @@ void main(){
 	gl_Position = projectionMatrix * untranslatedMVP * v;
 	
 	//Eye transform
-	eye = v.xyz-camPos;
+	eye = v.xyz;
 	
 	//Fog calculation
 	

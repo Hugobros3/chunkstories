@@ -15,9 +15,9 @@ public class VoxelModel
 	
 	public boolean[][] culling;
 	
-	public float[][] vertices;
-	public float[][] texCoords;
-	public float[][] normals;
+	public float[] vertices;
+	public float[] texCoords;
+	public float[] normals;
 
 	public float jitterX = 0;
 	public float jitterY = 0;

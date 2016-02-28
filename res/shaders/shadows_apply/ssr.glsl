@@ -124,3 +124,4 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	}
 	return color;
 }
+

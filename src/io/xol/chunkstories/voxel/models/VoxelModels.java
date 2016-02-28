@@ -75,15 +75,20 @@ public class VoxelModels
 					{
 						if (model != null)
 						{
-							model.vertices = new float[vertices.size()][3];
-							model.texCoords = new float[vertices.size()][2];
-							model.normals = new float[vertices.size()][3];
-							model.culling = new boolean[vertices.size()/3][6];
+							model.vertices = new float[vertices.size() * 3];
+							model.texCoords = new float[vertices.size() * 2];
+							model.normals = new float[vertices.size() * 3];
+							model.culling = new boolean[vertices.size()][6];
 							for (int i = 0; i < vertices.size(); i++)
 							{
-								model.vertices[i] = vertices.get(i);
-								model.texCoords[i] = texcoord.get(i);
-								model.normals[i] = normal.get(i);
+								model.vertices[i * 3 + 0] = vertices.get(i)[0];
+								model.vertices[i * 3 + 1] = vertices.get(i)[1];
+								model.vertices[i * 3 + 2] = vertices.get(i)[2];
+								model.texCoords[i * 2 + 0] = texcoord.get(i)[0];
+								model.texCoords[i * 2 + 1] = texcoord.get(i)[1];
+								model.normals[i * 3 + 0] = normal.get(i)[0];
+								model.normals[i * 3 + 1] = normal.get(i)[1];
+								model.normals[i * 3 + 2] = normal.get(i)[2];
 							}
 							for (int i = 0; i < vertices.size() / 3; i++)
 							{
@@ -105,7 +110,7 @@ public class VoxelModels
 					else if (line.startsWith("jitter"))
 					{
 						String[] splitted = line.split(" ");
-						if(model == null)
+						if (model == null)
 							continue;
 						model.jitterX = Float.parseFloat(splitted[1]);
 						model.jitterY = Float.parseFloat(splitted[2]);
@@ -124,9 +129,9 @@ public class VoxelModels
 							texcoord.add(new float[] { Float.parseFloat(tex[0]), Float.parseFloat(tex[1]) });
 							Vector3f normalizeMe = new Vector3f(Float.parseFloat(nor[0]), Float.parseFloat(nor[1]), Float.parseFloat(nor[2]));
 							normalizeMe.normalize();
-							normal.add(new float[] { normalizeMe.x, normalizeMe.y, normalizeMe.z  });
+							normal.add(new float[] { normalizeMe.x, normalizeMe.y, normalizeMe.z });
 							c++;
-							if(c >= 3)
+							if (c >= 3)
 							{
 								culling.add(currentCull);
 								c = 0;
@@ -135,12 +140,12 @@ public class VoxelModels
 						else
 							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected parameter.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 					}
-					else if(line.startsWith("cull"))
+					else if (line.startsWith("cull"))
 					{
 						currentCull = new boolean[6];
-						for(String face : line.split(" "))
+						for (String face : line.split(" "))
 						{
-							switch(face)
+							switch (face)
 							{
 							case "bottom":
 								//System.out.println("bottom"+f);
@@ -164,30 +169,36 @@ public class VoxelModels
 							}
 						}
 					}
-					else if(line.startsWith("require"))
+					else if (line.startsWith("require"))
 					{
 						if (model != null)
 						{
 							String[] splitted = line.split(" ");
-							if(splitted.length == 2)
+							if (splitted.length == 2)
 							{
 								String toInclude = splitted[1];
 								toInclude = toInclude.replace("~", model.name.contains(".") ? model.name.split("\\.")[0] : model.name);
 								VoxelModel includeMeh = getVoxelModel(toInclude);
-								if(includeMeh != null)
+								if (includeMeh != null)
 								{
-									for(float v[] : includeMeh.vertices)
-										vertices.add(v);
-									for(float t[] : includeMeh.texCoords)
-										texcoord.add(t);
-									for(float n[] : includeMeh.normals)
-										normal.add(n);
-									for(boolean cul[] : includeMeh.culling)
+									for (int i = 0; i < includeMeh.vertices.length / 3; i++)
+									{
+										vertices.add(new float[] { includeMeh.vertices[i * 3 + 0], includeMeh.vertices[i * 3 + 1], includeMeh.vertices[i * 3 + 2] });
+										texcoord.add(new float[] { includeMeh.texCoords[i * 2 + 0], includeMeh.texCoords[i * 2 + 1] });
+										normal.add(new float[] { includeMeh.normals[i * 3 + 0], includeMeh.normals[i * 3 + 1], includeMeh.normals[i * 3 + 2] });
+									}
+									/*for(float v[] : includeMeh.vertices)
+										vertices.add(includeMeh.vertices);
+									//for(float t[] : includeMeh.texCoords)
+										texcoord.add(includeMeh.texCoords);
+									//for(float n[] : includeMeh.normals)
+										normal.add(includeMeh.normals);*/
+									for (boolean cul[] : includeMeh.culling)
 										culling.add(cul);
 								}
 								else
-									ChunkStoriesLogger.getInstance().log("Warning ! Can't require '"+toInclude+"'", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
-								
+									ChunkStoriesLogger.getInstance().log("Warning ! Can't require '" + toInclude + "'", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
+
 							}
 							else
 							{

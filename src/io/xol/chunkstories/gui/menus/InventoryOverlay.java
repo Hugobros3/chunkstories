@@ -117,7 +117,7 @@ public class InventoryOverlay extends Overlay
 				}
 			}
 		}
-		if(selectedItem != null)
+		if(selectedItem != null && Client.world instanceof WorldClient)
 		{
 			Packet06InventoryMoveItemPile packetMove = new Packet06InventoryMoveItemPile(true);
 			packetMove.from = selectedItem.inventory;

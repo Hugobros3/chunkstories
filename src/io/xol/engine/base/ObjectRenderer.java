@@ -20,7 +20,6 @@ import org.lwjgl.util.vector.Vector4f;
 
 public class ObjectRenderer
 {
-
 	static FloatBuffer buffer = null;
 	
 	public static void drawFSQuad(int vertexAttribLocation)
@@ -29,19 +28,21 @@ public class ObjectRenderer
 			return;
 		if(buffer == null)
 		{
-			buffer = BufferUtils.createFloatBuffer(4 * 2);
+			buffer = BufferUtils.createFloatBuffer(6 * 2);
 			buffer.put(new float[] {
 				1f, 1f,
 				1f, -1f,
 				-1f, -1f,
-				-1f, 1f
+				1f, 1f,
+				-1f, 1f,
+				-1f, -1f
 			});
 		}
-		buffer.rewind();
+		buffer.flip();
 		glEnableVertexAttribArray(vertexAttribLocation);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glVertexAttribPointer(vertexAttribLocation, 2, false, 0, buffer);
-        glDrawArrays(GL_QUADS, 0, 4);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDisableVertexAttribArray(vertexAttribLocation);
         //buffer = null;
 	}

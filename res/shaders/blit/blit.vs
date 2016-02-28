@@ -1,6 +1,6 @@
 uniform vec2 screenSize;
 
-attribute vec2 vertexIn;
+attribute vec3 vertexIn;
 varying vec2 texCoord;
 
 void main()

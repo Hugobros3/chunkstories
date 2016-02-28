@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.item.Item;
 import io.xol.chunkstories.item.ItemData;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
+import io.xol.chunkstories.item.renderer.VoxelItemRenderer;
 import io.xol.chunkstories.voxel.VoxelTypes;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -48,6 +48,16 @@ public class ItemVoxel extends Item
 		if(idv.voxel != null)
 			return "res/voxels/textures/"+idv.voxel.getName()+".png";
 		return "res/items/icons/notex.png";
+	}
+
+	public Voxel getVoxel(ItemPile pile)
+	{
+		return ((ItemDataVoxel)pile.getData()).voxel;
+	}
+
+	public int getVoxelMeta(ItemPile pile)
+	{
+		return ((ItemDataVoxel)pile.getData()).voxelMeta;
 	}
 
 }

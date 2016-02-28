@@ -184,7 +184,7 @@ public class MainMenu extends OverlayableScene
 		XolioWindow.getInstance().getRenderingContext().setCurrentShader(blit);
 		//blit.use(true);
 		blit.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
-		blit.setUniformSampler(0, "inputTexture", blurredV.getID());
+		blit.setUniformSampler(0, "diffuseTexture", blurredV.getID());
 		ObjectRenderer.drawFSQuad(blit.getVertexAttributeLocation("vertexIn"));
 		//blit.use(false);
 

@@ -152,4 +152,9 @@ public class ItemPile implements CSFSerializable
 		this.amount = amount;
 		return this;
 	}
+
+	public ItemData getData()
+	{
+		return data;
+	}
 }
