@@ -479,9 +479,9 @@ public abstract class EntityImplementation implements Entity
 	{
 		synchronized(this)
 		{
-			camera.camPosX = (float) -posX;
-			camera.camPosY = (float) -posY;
-			camera.camPosZ = (float) -posZ;
+			camera.camPosX = -posX;
+			camera.camPosY = -posY;
+			camera.camPosZ = -posZ;
 	
 			camera.view_rotx = rotV;
 			camera.view_roty = rotH;

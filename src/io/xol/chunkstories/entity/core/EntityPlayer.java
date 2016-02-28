@@ -132,6 +132,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			flyMove(controller.hasFocus());
 		else
 			normalMove(controller.hasFocus());
+		//System.out.println("focus");
 		super.updatePosition();
 
 		if (Client.connection != null)
