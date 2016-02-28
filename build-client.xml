@@ -3,18 +3,18 @@
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="create_run_jar">
-        <jar destfile="C:/Users/gobrosse/git/chunkstories/chunkstories.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="chunkstories.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="io.xol.chunkstories.client.Client"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
-            <fileset dir="C:/Users/gobrosse/git/chunkstories/bin"/>
-            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/lwjgl/jar/jinput.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/lwjgl/jar/lwjgl_util.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/lwjgl/jar/lwjgl.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/lz4-1.3.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/PNGDecoder.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="C:/Users/gobrosse/git/chunkstories/lib/jorbis.jar"/>
+            <fileset dir="bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="lib/lwjgl/jar/jinput.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="lib/lwjgl/jar/lwjgl_util.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="lib/lwjgl/jar/lwjgl.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="lib/lz4-1.3.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="lib/PNGDecoder.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="lib/jorbis.jar"/>
         </jar>
     </target>
 </project>
