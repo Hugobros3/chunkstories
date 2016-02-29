@@ -17,7 +17,6 @@ public class ServerConsole
 	public static void handleCommand(String cmd, CommandEmitter emitter)
 	{
 		ChunkStoriesLogger.getInstance().info(("[" + emitter.getName() + "] ") + "Entered command : " + cmd);
-
 		try
 		{
 			//First handle the plugins commands
@@ -41,6 +40,7 @@ public class ServerConsole
 			{
 				emitter.sendMessage("#00FFD0The server's ip is " + ServerConnectionsHandler.ip);
 				emitter.sendMessage("#00FFD0It's running version " + VersionInfo.version + " of the server software.");
+				emitter.sendMessage("#00FFD0"+Server.getInstance().world.chunksHolder.toString());
 				return;
 			}
 			else if (cmd.equals("help"))

@@ -112,7 +112,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	
 	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
 	{
-		float bias = (1.0 - meta.a) * 0.0020 + clamp(0.0070*tan(acos(NdotL)) * clamp(shadowMapBiasMultiplier, 1.0, 2.0) ,-0.000,0.0010 )*(1.0+2.0*coordinatesInShadowmap.w);
+		float bias = (1.0 - meta.a) * 0.0020 + clamp(0.0035*tan(acos(NdotL)) - 0.0075, 0.0010,0.0020 );//*(1.0+2.0*coordinatesInShadowmap.w);
 		edgeSmoother = 1.0-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5)-0.25)*4.0+max(0,abs(coordinatesInShadowmap.y-0.5)-0.25)*4.0, 3.0), 0.0, 1.0);
 		opacity += edgeSmoother * (1.0-shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0).r);
 	}

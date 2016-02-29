@@ -49,6 +49,8 @@ public class IOTasks extends Thread
 
 	public void addTask(IOTask task)
 	{
+		if(die.get())
+			return;
 		//synchronized (tasks)
 		{
 			tasks.add(task);
@@ -142,7 +144,7 @@ public class IOTasks extends Thread
 					{
 						if (!ok)
 						{
-							System.out.println("rescheduling"+task);
+							//System.out.println("rescheduling"+task);
 							tasks.add(task);
 						}
 					}
@@ -155,15 +157,6 @@ public class IOTasks extends Thread
 			}
 		}
 		System.out.println("WorldLoader worker thread stopped");
-	}
-
-	public void kill()
-	{
-		die.set(true);
-		synchronized (this)
-		{
-			notifyAll();
-		}
 	}
 
 	public int getSize()
@@ -242,7 +235,7 @@ public class IOTasks extends Thread
 				catch (LZ4Exception e)
 				{
 					System.out.println("Fail @ " + holder + " chunk " + c);
-					System.out.println("k why man" + holder.isChunkLoaded(x, y, z) + " holder:" + holder + Thread.currentThread().getName());
+					//System.out.println("k why man" + holder.isChunkLoaded(x, y, z) + " holder:" + holder + Thread.currentThread().getName());
 				}
 				for (int i = 0; i < 32 * 32 * 32; i++)
 				{
@@ -582,7 +575,7 @@ public class IOTasks extends Thread
 			}
 			else
 			{
-				System.out.println("Couldn't find file : " + summary.handler.getAbsolutePath());
+				// System.out.println("Couldn't find file : " + summary.handler.getAbsolutePath());
 				// Generate summary according to generator heightmap
 				int h, t;
 				for (int x = 0; x < 256; x++)
@@ -793,5 +786,35 @@ public class IOTasks extends Thread
 	{
 		IOTaskRunWithHolder task = new IOTaskRunWithHolder(holder, job);
 		addTask(task);
+	}
+
+	public void kill()
+	{
+		die.set(true);
+		synchronized (this)
+		{
+			notifyAll();
+		}
+	}
+	
+	public void shutdown()
+	{
+		synchronized (this)
+		{
+			notifyAll();
+		}
+		while(this.tasks.size() > 0)
+		{
+			try
+			{
+				sleep(150L);
+			}
+			catch (InterruptedException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		die.set(true);
 	}
 }

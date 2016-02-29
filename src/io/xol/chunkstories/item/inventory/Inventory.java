@@ -5,11 +5,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.item.Item;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
+import io.xol.chunkstories.net.packets.Packet07ItemUsage;
+import io.xol.chunkstories.net.packets.Packet07ItemUsage.ItemUsage;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -235,6 +239,8 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 					contents[i][j].y = j;
 				}
 			}
+		//Load selected item
+		selectedSlot = stream.readByte();
 	}
 
 	@Override
@@ -259,18 +265,19 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 					pile.save(stream);
 				}
 			}
+		//Save selected item
+		stream.writeByte(selectedSlot);
 	}
 
 	/**
 	 * Removes all itempiles in the inventory.
 	 */
-	@SuppressWarnings("unchecked")
-	public <CE extends Entity & EntityControllable> void clear()
+	public void clear()
 	{
 		contents = new ItemPile[width][height];
 		if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
 		{
-			((EntityControllable)this.holder).getController().notifyInventoryChange((CE)this.holder);
+			((EntityControllable)this.holder).getController().notifyInventoryChange((Entity)this.holder);
 		}
 	}
 
@@ -288,5 +295,45 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 			size++;
 		}
 		return size;
+	}
+
+	int selectedSlot = 0;
+	
+	/**
+	 * Selects the slot given
+	 * @param newSlot
+	 */
+	public void setSelectedSlot(int newSlot)
+	{
+		while(newSlot < 0)
+			newSlot += this.width;
+		selectedSlot = newSlot % this.width;
+		if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null
+				&& ((EntityControllable)this.holder).getController() instanceof ClientController)
+		{
+			Packet07ItemUsage packet = new Packet07ItemUsage(true);
+			packet.usage = ItemUsage.SELECT;
+			packet.complementInfo = (byte) newSlot;
+			Client.connection.sendPacket(packet);
+			//((ClientController)((EntityControllable)this.holder).getController()).notifySelectedItemChange();
+		}
+	}
+	
+	/**
+	 * Returns the selected slot
+	 * @return
+	 */
+	public int getSelectedSlot()
+	{
+		return selectedSlot;
+	}
+
+	/**
+	 * Returns the selected item
+	 * @return
+	 */
+	public ItemPile getSelectedItem()
+	{
+		return contents[selectedSlot][0];
 	}
 }

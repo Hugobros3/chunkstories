@@ -393,9 +393,9 @@ public class WorldRenderer
 		viewZ = camPosZ;
 		viewRotH = view_rotx;
 		viewRotV = view_roty;
-		int npCX = fastfloor((camPosX - 0) / 32);
+		int npCX = fastfloor((camPosX + 16) / 32);
 		int npCY = fastfloor((camPosY) / 32);
-		int npCZ = fastfloor((camPosZ - 0) / 32);
+		int npCZ = fastfloor((camPosZ + 16) / 32);
 		// Fill the VBO array with chunks VBO ids if the player changed chunk
 		if (pCX != npCX || pCY != npCY || pCZ != npCZ || chunksChanged || true)
 		{
@@ -452,7 +452,7 @@ public class WorldRenderer
 			// Load nearby chunks
 			for (int t = (npCX - chunksViewDistance - 1); t < npCX + chunksViewDistance + 1; t++)
 			{
-				for (int g = (npCZ - chunksViewDistance + 1); g < npCZ + chunksViewDistance + 1; g++)
+				for (int g = (npCZ - chunksViewDistance - 1); g < npCZ + chunksViewDistance + 1; g++)
 					for (int b = npCY - 3; b < npCY + 3; b++)
 					{
 						chunk = world.getChunk(t, b, g, true);

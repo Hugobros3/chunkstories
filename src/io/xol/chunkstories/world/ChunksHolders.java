@@ -194,4 +194,10 @@ public class ChunksHolders
 	{
 		chunkHolders.clear();
 	}
+	
+	@Override
+	public String toString()
+	{
+		return "[ChunksHolder: "+chunkHolders.size()+" Chunk Holders loaded]";
+	}
 }

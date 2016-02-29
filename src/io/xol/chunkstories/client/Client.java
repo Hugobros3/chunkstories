@@ -37,7 +37,7 @@ public class Client implements ClientController
 
 	public static XolioWindow windows;
 	public static World world;
-	public static Entity controller;
+	public static Entity controlledEntity;
 	public static ServerConnection connection;
 
 	public static String username = "Unknow";

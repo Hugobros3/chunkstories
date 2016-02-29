@@ -90,7 +90,7 @@ public class Packet06InventoryMoveItemPile extends Packet
 	@Override
 	public void process(PacketsProcessor processor)
 	{
-		System.out.println(eIdFrom+"="+eIdTo +"   " + holderTypeFrom+":"+holderTypeTo);
+		//System.out.println(eIdFrom+"="+eIdTo +"   " + holderTypeFrom+":"+holderTypeTo);
 		
 		if(holderTypeFrom == 0x01)
 		{

@@ -1,5 +1,7 @@
 package io.xol.chunkstories.item;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -32,7 +34,7 @@ public class ItemPile implements CSFSerializable
 	{
 		this(ItemsList.getItemByName(itemName));
 	}
-	
+
 	public ItemPile(String itemName, String[] info)
 	{
 		this(ItemsList.getItemByName(itemName), info);
@@ -49,22 +51,23 @@ public class ItemPile implements CSFSerializable
 		this.data = item.getItemData();
 		item.onCreate(this, null);
 	}
-	
+
 	public ItemPile(Item item, String[] info)
 	{
 		this.item = item;
 		this.data = item.getItemData();
 		item.onCreate(this, info);
 	}
-	
+
 	/**
 	 * For items that require special arguments, you can call setInfo on them to apply onCreate once more with proper arguments
+	 * 
 	 * @param info
 	 * @return
 	 */
 	public ItemPile setInfo(String[] info)
 	{
-		item.onCreate(this, null);
+		item.onCreate(this, info);
 		return this;
 	}
 
@@ -128,7 +131,7 @@ public class ItemPile implements CSFSerializable
 		if (inventory != null)
 			inventory.setItemPileAt(this.x, this.y, null);
 		//Moving an item to a null inventory destroys it
-		if(inventory2 == null)
+		if (inventory2 == null)
 			return null;
 		if (inventory2.canPlaceItemAt(x2, y2, this))
 		{
@@ -156,5 +159,26 @@ public class ItemPile implements CSFSerializable
 	public ItemData getData()
 	{
 		return data;
+	}
+
+	/**
+	 * Returns an exact copy of this pile
+	 * 
+	 * @return
+	 */
+	public ItemPile duplicate()
+	{
+		ItemPile pile = new ItemPile(this.item, this.amount);
+		ByteArrayOutputStream data = new ByteArrayOutputStream();
+		try
+		{
+			this.save(new DataOutputStream(data));
+			ByteArrayInputStream stream = new ByteArrayInputStream(data.toByteArray());
+			pile.load(new DataInputStream(stream));
+		}
+		catch (IOException e)
+		{
+		}
+		return pile;
 	}
 }

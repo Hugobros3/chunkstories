@@ -434,7 +434,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	@Override
 	public void drawHUD(Camera camera)
 	{
-		if (this.equals(Client.controller))
+		if (this.equals(Client.controlledEntity))
 			return; // Don't render yourself
 		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float) posX, (float) posY + 2.5f, (float) posZ));
 
@@ -447,7 +447,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 
 	public void render(RenderingContext renderingContext)
 	{
-		if (this.equals(Client.controller))
+		if (this.equals(Client.controlledEntity))
 			return; // Don't render yourself
 
 		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("models/hogubrus3.png"));

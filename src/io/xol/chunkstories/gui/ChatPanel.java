@@ -94,7 +94,7 @@ public class ChatPanel
 					{
 						int id = Integer.parseInt(inputBox.text.split(" ")[1]);
 						Entity test = EntitiesList.newEntity(Client.world, (short) id);
-						Entity player = Client.controller;
+						Entity player = Client.controlledEntity;
 						test.setLocation(player.getLocation());
 						Client.world.addEntity(test);
 					}
@@ -106,7 +106,7 @@ public class ChatPanel
 					{
 						Entity e = ie.next();
 						System.out.println("checking "+e);
-						if(!e.equals(Client.controller))
+						if(!e.equals(Client.controlledEntity))
 						{	
 							System.out.println("removing");
 							ie.remove();

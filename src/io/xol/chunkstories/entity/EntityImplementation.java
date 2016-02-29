@@ -1,6 +1,5 @@
 package io.xol.chunkstories.entity;
 
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -300,7 +299,7 @@ public abstract class EntityImplementation implements Entity
 				for (int j = ((int) posY); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
 					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
 					{
-						data = Client.world.getDataAt(i, j, k);
+						data = this.world.getDataAt(i, j, k);
 						id = VoxelFormat.id(data);
 						vox = VoxelTypes.get(id);
 						if (vox.isVoxelSolid())
@@ -349,7 +348,7 @@ public abstract class EntityImplementation implements Entity
 				for (int j = ((int) posY); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
 					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
 					{
-						data = Client.world.getDataAt(i, j, k);
+						data = this.world.getDataAt(i, j, k);
 						id = VoxelFormat.id(data);
 						vox = VoxelTypes.get(id);
 						if (vox.isVoxelSolid())
@@ -399,7 +398,7 @@ public abstract class EntityImplementation implements Entity
 				for (int j = ((int) posY); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
 					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
 					{
-						data = Client.world.getDataAt(i, j, k);
+						data = this.world.getDataAt(i, j, k);
 						id = VoxelFormat.id(data);
 						vox = VoxelTypes.get(id);
 						if (vox.isVoxelSolid())

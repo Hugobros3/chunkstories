@@ -10,14 +10,11 @@ import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.misc.ByteBufferPool;
-import io.xol.engine.misc.FloatBufferPool;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -856,10 +853,6 @@ public class ChunksRenderer extends Thread
 
 		sy--;
 
-		float[] vert;
-		float[] tex;
-		float[] normal;
-
 		boolean[] cullingCache = new boolean[6];
 		for (int j = 0; j < 6; j++)
 		{
@@ -1138,77 +1131,9 @@ public class ChunksRenderer extends Thread
 
 		int count = 0;
 
-		/*for (float[] f : vertices_water)
-		{
-			for (float z : f)
-				byteBuffer.putFloat(z);
-		}
-		for (int[] f : texcoords_water)
-		{
-			for (int z : f)
-			{
-				byteBuffer.put((byte) (z & 0xFF));
-				byteBuffer.put((byte) ((z >> 8) & 0xFF));
-			}
-		}
-		for (float[] f : colors_water)
-		{
-			for (float z : f)
-				byteBuffer.put((byte) (z * 255));
-			// Padding
-			byteBuffer.put((byte) 0);
-		}
-		for (float[] f : normals_water)
-		{
-			int a = (int) ((f[0] + 1) * 511.5f) & 0x3FF;
-			int b = ((int) ((f[1] + 1) * 511.5f) & 0x3FF) << 10;
-			int c = ((int) ((f[2] + 1) * 511.5f) & 0x3FF) << 20;
-			int kek = a | b | c;
-			byteBuffer.putInt(kek);
-			count++;
-		}
-
-		// Complex objects
-		for (float[] f : vertices_complex)
-		{
-			for (float z : f)
-				byteBuffer.putFloat(z);
-		}
-		for (int[] f : texcoords_complex)
-		{
-			for (int z : f)
-			{
-				byteBuffer.put((byte) ((z) & 0xFF));
-				byteBuffer.put((byte) ((z >> 8) & 0xFF));
-			}
-			// 2x2
-		}
-		for (float[] f : colors_complex)
-		{
-			for (float z : f)
-				byteBuffer.put((byte) (z * 255));
-			// Padding
-			byteBuffer.put((byte) 0);
-			// 3x1 + 1
-		}
-		count = 0;
-		for (float[] f : normals_complex)
-		{
-			int a = (int) ((f[0] + 1) * .5f) & 0x3FF;
-			int b = ((int) ((f[1] + 1) * 511.5f) & 0x3FF) << 10;
-			int c = ((int) ((f[2] + 1) * 511.5f) & 0x3FF) << 20;
-			boolean booleanProp = isWavy_complex.get(count);
-			int d = (booleanProp ? 1 : 0) << 30;
-			int kek = a | b | c | d;
-			byteBuffer.putInt(kek);
-			count++;
-		}*/
 		byteBuffer.flip();
-		// System.out.println("Final vbo size = "+rsltSize*4);
 		long lol = 0;
-		//System.out.println("Took "+(System.nanoTime() - cr_start)+"ms total ; "+(cr_iter-cr_start)+" init, "+(cr_convert-cr_iter)+" iter, "
-		//		+(cr_buffer-cr_convert)+" buffer, "+(System.nanoTime()-cr_buffer)+" convert since RS:"+(System.nanoTime()-ChunksRenderer.renderStart)+" ratio S/C : "+(1f+vertices.size())/(1f+vertices_complex.size())) ;
-
+		
 		done.add(rslt);
 
 		totalChunksRendered.incrementAndGet();
@@ -1223,23 +1148,6 @@ public class ChunksRenderer extends Thread
 	}
 
 	public AtomicInteger totalChunksRendered = new AtomicInteger();
-
-	/*List<float[]> vertices = new ArrayList<float[]>();
-	List<int[]> texcoords = new ArrayList<int[]>();
-	List<float[]> colors = new ArrayList<float[]>();
-	List<Boolean> isWavy = new ArrayList<Boolean>();
-	List<int[]> normals = new ArrayList<int[]>();*/
-
-	/*List<float[]> vertices_water = new ArrayList<float[]>();
-	List<int[]> texcoords_water = new ArrayList<int[]>();
-	List<float[]> colors_water = new ArrayList<float[]>();
-	List<float[]> normals_water = new ArrayList<float[]>();
-
-	List<float[]> vertices_complex = new ArrayList<float[]>();
-	List<int[]> texcoords_complex = new ArrayList<int[]>();
-	List<float[]> colors_complex = new ArrayList<float[]>();
-	List<Boolean> isWavy_complex = new ArrayList<Boolean>();
-	List<float[]> normals_complex = new ArrayList<float[]>();*/
 
 	public void die()
 	{

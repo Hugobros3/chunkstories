@@ -1,7 +1,6 @@
 package io.xol.chunkstories.gui;
 
 import org.lwjgl.util.vector.Vector3f;
-
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -21,6 +20,7 @@ import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.Inventory;
+import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.physics.particules.ParticleLight;
@@ -62,8 +62,9 @@ public class GameplayScene extends OverlayableScene
 
 		if (!multiPlayer)
 		{
-			Client.controller = new EntityPlayer(Client.world, 0, 100, 0, Client.username);
-			Client.world.addEntity(Client.controller);
+			Client.controlledEntity = new EntityPlayer(Client.world, 0, 100, 0, Client.username);
+			((EntityControllable) Client.controlledEntity).setController(Client.getInstance());
+			Client.world.addEntity(Client.controlledEntity);
 		}
 
 		worldRenderer = new WorldRenderer(Client.world);
@@ -80,14 +81,14 @@ public class GameplayScene extends OverlayableScene
 		return focus;
 	}
 	
-	int selectedInventorySlot = 0;
+	//int selectedInventorySlot = 0;
 
 	public void update()
 	{
 		// Update client entity
-		if (player == null || player != Client.controller && Client.controller != null)
+		if (player == null || player != Client.controlledEntity && Client.controlledEntity != null)
 		{
-			player = (EntityImplementation) Client.controller;
+			player = (EntityImplementation) Client.controlledEntity;
 			inventoryDrawer = player.inventory == null ? null : new InventoryDrawer(player.inventory);
 		}
 		inventoryDrawer.inventory = player.inventory;
@@ -152,7 +153,7 @@ public class GameplayScene extends OverlayableScene
 		chat.draw();
 
 		if (player != null && player.inventory != null)
-				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, XolioWindow.frameW / 2, 64 + 64, selectedInventorySlot);
+				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, XolioWindow.frameW / 2, 64 + 64);
 
 		if (Keyboard.isKeyDown(78))
 			Client.world.worldTime += 10;
@@ -225,7 +226,7 @@ public class GameplayScene extends OverlayableScene
 			if (player != null)
 			{
 				focus(false);
-				this.changeOverlay(new InventoryOverlay(this, null, new Inventory[]{player.inventory}));
+				this.changeOverlay(new InventoryOverlay(this, null, new Inventory[]{player.inventory, new InventoryAllVoxels()}));
 			}
 		}
 		else if (k == Keyboard.KEY_F1)
@@ -271,7 +272,10 @@ public class GameplayScene extends OverlayableScene
 			return currentOverlay.onClick(x, y, button);
 		if (!(player instanceof EntityPlayer))
 			return false;
-
+		
+		ItemPile itemSelected = this.player.getInventory().getSelectedItem();
+		
+		
 		//EntityPlayer player2 = (EntityPlayer) player;
 		/*if (button == 1)
 		{
@@ -312,6 +316,8 @@ public class GameplayScene extends OverlayableScene
 		if(player != null && player.inventory != null)
 		{
 			ItemPile selected = null;
+			int selectedInventorySlot = player.inventory.getSelectedSlot();
+			int originalSlot = selectedInventorySlot;
 			if(a < 0)
 			{
 				selectedInventorySlot %= player.inventory.width;
@@ -330,6 +336,9 @@ public class GameplayScene extends OverlayableScene
 				if(selected != null)
 					selectedInventorySlot = selected.x;
 			}
+			//Switch slot
+			if(originalSlot != selectedInventorySlot)
+				player.inventory.setSelectedSlot(selectedInventorySlot);
 		}
 		return true;
 	}

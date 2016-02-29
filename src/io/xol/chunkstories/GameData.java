@@ -32,9 +32,9 @@ public class GameData
 		buildModsFileSystem();
 		VoxelTextures.buildTextureAtlas();
 		VoxelModels.resetAndLoadModels();
+		ItemsList.reload();
 		VoxelTypes.loadVoxelTypes();
 		EntitiesList.reload();
-		ItemsList.reload();
 		PacketsProcessor.loadPacketsTypes();
 	}
 

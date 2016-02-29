@@ -1,5 +1,9 @@
 package io.xol.chunkstories.item.core;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.item.Item;
 import io.xol.chunkstories.item.ItemData;
@@ -39,6 +43,8 @@ public class ItemVoxel extends Item
 		ItemDataVoxel idv = (ItemDataVoxel)pile.data;
 		if(info != null && info.length > 0)
 			idv.voxel = VoxelTypes.get(Integer.parseInt(info[0]));
+		if(info != null && info.length > 1)
+			idv.voxelMeta = Integer.parseInt(info[1]) % 16;
 	}
 	
 	@Override
@@ -58,6 +64,22 @@ public class ItemVoxel extends Item
 	public int getVoxelMeta(ItemPile pile)
 	{
 		return ((ItemDataVoxel)pile.getData()).voxelMeta;
+	}
+
+	@Override
+	public void load(ItemPile itemPile, DataInputStream stream) throws IOException
+	{
+		((ItemDataVoxel)itemPile.data).voxel = VoxelTypes.get(stream.readInt());
+		((ItemDataVoxel)itemPile.data).voxelMeta = (int)stream.readByte();
+	}
+	
+	@Override
+	public void save(ItemPile itemPile, DataOutputStream stream) throws IOException
+	{
+		//System.out.println(itemPile.item);
+		//System.out.println(itemPile.data);
+		stream.writeInt(((ItemDataVoxel)itemPile.data).voxel.getId());
+		stream.writeByte((byte)((ItemDataVoxel)itemPile.data).voxelMeta);
 	}
 
 }

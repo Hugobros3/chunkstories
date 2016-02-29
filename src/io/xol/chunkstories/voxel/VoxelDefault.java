@@ -3,6 +3,7 @@ package io.xol.chunkstories.voxel;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.voxel.models.VoxelModel;
@@ -186,5 +187,13 @@ public class VoxelDefault extends Voxel
 	public boolean isAffectedByWind()
 	{
 		return affectedByWind;
+	}
+
+	@Override
+	public ItemPile[] getItems()
+	{
+		return new ItemPile[] {
+
+		new ItemPile("item_voxel", new String[] { "" + this.voxelID }).duplicate() };
 	}
 }

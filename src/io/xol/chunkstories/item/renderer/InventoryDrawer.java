@@ -46,11 +46,11 @@ public class InventoryDrawer
 		return closedButton;
 	}
 	
-	public void drawPlayerInventorySummary(RenderingContext context, int x, int y, int selectedSlot)
+	public void drawPlayerInventorySummary(RenderingContext context, int x, int y)
 	{
 		if(inventory == null)
 			return;
-		drawInventory(context, x - slotsWidth(inventory.width, 2) / 2, y - slotsHeight(inventory.height, 2, true, 0) / 2, 2, true, 0, selectedSlot);
+		drawInventory(context, x - slotsWidth(inventory.width, 2) / 2, y - slotsHeight(inventory.height, 2, true, 0) / 2, 2, true, 0, inventory.getSelectedSlot());
 	}
 	
 	public void drawInventory(RenderingContext context, int x, int y, int scale, boolean summary, int blankLines, int highlightSlot)
@@ -118,7 +118,7 @@ public class InventoryDrawer
 				}
 				else
 				{
-					if(/*thisPile == null && */mouseOver || (selectedPile != null && thisPile != null && selectedPile.x == thisPile.x && selectedPile.y == thisPile.y))
+					if(mouseOver || (selectedPile != null && thisPile != null && selectedPile.x == thisPile.x && selectedPile.y == thisPile.y))
 					{
 						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 32f / 256f, 176 / 256f, 56 / 256f, 152 / 256f, textureId, true, true, color);
 					}

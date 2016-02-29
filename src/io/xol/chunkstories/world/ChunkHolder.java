@@ -1,13 +1,11 @@
 package io.xol.chunkstories.world;
 
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.chunkstories.world.iterators.ChunkHolderIterator;
 import io.xol.engine.concurrency.SimpleLock;
 
 import java.io.File;
-import java.util.ConcurrentModificationException;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;

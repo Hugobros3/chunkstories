@@ -1,5 +1,6 @@
 package io.xol.chunkstories.voxel.core;
 
+import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelTexture;
@@ -23,5 +24,14 @@ public class VoxelMeta16 extends VoxelDefault
 		int meta = info.getMetaData();
 		// System.out.println("swag");
 		return colors[meta];
+	}
+	
+	@Override
+	public ItemPile[] getItems()
+	{
+		ItemPile[] items = new ItemPile[16];
+		for(int i = 0; i < 16; i++)
+			items[i] = new ItemPile("item_voxel", new String[]{""+this.voxelID, ""+i});
+		return items;
 	}
 }

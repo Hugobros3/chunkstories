@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.EntitiesList;
+import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityNameable;
 
@@ -159,7 +160,11 @@ public class Packet04Entity extends Packet
 					Client.world.addEntity(entity);
 					//System.out.println("Added entity "+entity);
 					if(this.defineControl)
-						Client.controller = entity;
+					{
+						Client.controlledEntity = entity;
+						if(entity instanceof EntityControllable)
+							((EntityControllable) entity).setController(Client.getInstance());
+					}
 				}
 				else
 					this.applyToEntity(entity);

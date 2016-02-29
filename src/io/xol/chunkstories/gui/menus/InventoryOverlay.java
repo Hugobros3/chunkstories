@@ -13,8 +13,6 @@ import io.xol.chunkstories.net.packets.Packet06InventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldClient;
 import io.xol.chunkstories.world.WorldLocalClient;
 import io.xol.engine.base.XolioWindow;
-import io.xol.engine.gui.GuiDrawer;
-import io.xol.engine.textures.TexturesHandler;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

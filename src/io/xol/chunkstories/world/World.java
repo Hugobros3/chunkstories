@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.ChunksIterator;
@@ -174,9 +175,9 @@ public abstract class World
 			while (iter.hasNext())
 			{
 				entity = iter.next();
-				if (entity instanceof EntityControllable)
-					((EntityControllable)entity).tick(Client.getInstance());
-				if (entity.getChunkHolder() != null &&entity.getChunkHolder().isLoaded())
+				if (entity instanceof EntityControllable && ((EntityControllable) entity).getController() != null && ((EntityControllable) entity).getController() instanceof ClientController)
+					((EntityControllable) entity).tick(Client.getInstance());
+				if (entity.getChunkHolder() != null && entity.getChunkHolder().isLoaded())
 					entity.tick();
 				//System.out.println(entity);
 			}
@@ -456,13 +457,12 @@ public abstract class World
 
 	public void save()
 	{
+		System.out.println("Saving world");
 		chunksHolder.saveAll();
 		chunkSummaries.saveAll();
-		//if (!client)
 
 		this.internalData.setProp("entities-ids-counter", veryLong.get());
 		this.internalData.save();
-		System.out.println("Saving world");
 	}
 
 	public enum WorldSize
@@ -568,12 +568,12 @@ public abstract class World
 				continue;
 			}
 			boolean keep = false;
-			if (!keep && Client.controller != null)
+			if (!keep && Client.controlledEntity != null)
 			{
 				keep = true;
 				int sizeInChunks = this.getSizeInChunks();
 				int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
-				Location loc = Client.controller.getLocation();
+				Location loc = Client.controlledEntity.getLocation();
 				int pCX = (int) loc.x / 32;
 				int pCY = (int) loc.y / 32;
 				int pCZ = (int) loc.z / 32;
@@ -582,8 +582,7 @@ public abstract class World
 				int pCY = (int) (Client.controller.posY / 32);
 				int pCZ = (int) (Client.controller.posZ / 32);
 				*/
-				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 1) || (chunk.chunkY - pCY) > 3
-						|| (chunk.chunkY - pCY) < -3))
+				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 1) || (chunk.chunkY - pCY) > 3 || (chunk.chunkY - pCY) < -3))
 				{
 					if (chunk.vbo_id != -1 && this.renderer != null)
 						renderer.deleteVBO(chunk.vbo_id);
@@ -622,5 +621,10 @@ public abstract class World
 		double dy = internalData.getDoubleProp("defaultSpawnY", 100.0);
 		double dz = internalData.getDoubleProp("defaultSpawnZ", 0.0);
 		return new Location(this, dx, dy, dz);
+	}
+
+	public void setTime(long time)
+	{
+		this.worldTime = time;
 	}
 }
