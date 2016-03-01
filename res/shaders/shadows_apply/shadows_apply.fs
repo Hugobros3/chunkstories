@@ -40,7 +40,7 @@ uniform vec3 camPos;
 
 uniform float powFactor;
 
-const float distScale = 0.5;
+const float distScale = 0.75;
 
 uniform float pass;
 uniform float sunIntensity;
@@ -108,7 +108,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	float clamped = clamp(NdotL, 0.0, 0.1);
 	//if(NdotL < 0.1)
 	//if(meta.a > 0.5)
-		opacity = mix(opacity, clamp(10.0-(100.0*clamped), 0.0, 1.0), meta.a);
+		opacity = mix(opacity, clamp(1.0-(10.0*clamped), 0.0, 1.0), meta.a);
 	
 	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
 	{

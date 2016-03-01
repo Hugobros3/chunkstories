@@ -11,7 +11,7 @@ uniform float time;
 
 uniform float vegetation;
 
-const float distScale = 0.5;
+const float distScale = 0.75;
 
 uniform vec3 borderShift;
 

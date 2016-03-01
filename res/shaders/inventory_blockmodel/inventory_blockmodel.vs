@@ -5,7 +5,7 @@ attribute vec3 normalIn;
 
 varying vec2 texCoord;
 
-uniform vec4 colorIn;
+//uniform vec4 colorIn;
 
 varying vec4 interpolatedColor;
 
@@ -19,7 +19,7 @@ uniform vec2 texBase;
 uniform vec2 texScaling;
 
 void main(){
-	interpolatedColor = colorIn;
+	//interpolatedColor = colorIn;
 	
 	texCoord = texBase + texCoordIn * texScaling;
 	

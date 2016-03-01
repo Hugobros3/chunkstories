@@ -1,8 +1,8 @@
 package io.xol.engine.model;
 
+import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.shaders.ShaderProgram;
-
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -20,6 +20,8 @@ public class RenderingContext
 	XolioWindow engine;
 
 	public ShaderProgram renderingShader = null;
+	
+	private Camera camera;
 
 	public boolean verticesAttribMode = false;
 
@@ -36,6 +38,16 @@ public class RenderingContext
 			tempVBO[i] = glGenBuffers();
 	}
 
+	public void setCamera(Camera camera)
+	{
+		this.camera = camera;
+	}
+	
+	public Camera getCamera()
+	{
+		return camera;
+	}
+	
 	public void setIsShadowPass(boolean isShadowPass)
 	{
 		shadow = isShadowPass;
@@ -75,7 +87,7 @@ public class RenderingContext
 			return;
 		
 		//glDisable(GL_CULL_FACE);
-		//glDisable(GL_DEPTH_TEST);
+		//glDisable(GL_DEPTH_TEST)
 		
 		//Parse inputs, grab vertex attribute locations
 		int pointsToDraw = vertexCoords.length / 3;
@@ -138,7 +150,6 @@ public class RenderingContext
 			glVertexAttribPointer(normalIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
 		
-		//System.out.println("Drew "+pointsToDraw + " points "+vertexIn + " " + texCoordIn + " " + colorIn + " " + normalIn);
 		glDrawArrays(GL_TRIANGLES, 0, pointsToDraw);
 
 		//Disable vertex arrays (to be moved in doneWithVertexInputs)

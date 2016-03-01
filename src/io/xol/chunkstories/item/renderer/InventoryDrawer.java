@@ -162,13 +162,15 @@ public class InventoryDrawer
 			GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + (inventory.width - 2) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 200f / 256f, 32f / 256f, 224 / 256f, 8f / 256f, textureId, true, true, color);
 			closedButton = Mouse.getX() > x + cornerSize + (inventory.width - 1) * slotSize && Mouse.getX() <= x + cornerSize + (inventory.width - 1) * slotSize + slotSize
 					&& Mouse.getY() > y + cornerSize + internalHeight - slotSize && Mouse.getY() <= y + cornerSize + internalHeight;
-			//if(!closedButton)
+			
 			GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + (inventory.width - 1) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 224f / 256f, 32f / 256f, 248f / 256f, 8f / 256f, textureId, true, true, color);
 			TrueTypeFont.haettenschweiler.drawStringWithShadow(x + cornerSize, y + cornerSize + internalHeight - slotSize + 2 * scale, inventory.name, scale, scale, new Vector4f(1,1,1,1));
 		}
-		//Inventory contents
+
+		//Get rid of any remaining GUI elements or else they will draw on top of the items
+		GuiDrawer.drawBuffer();
 		
-		//Texture itemTexture;
+		//Draw the actual items
 		for (int i = 0; i < inventory.width; i++)
 		{
 			for (int j = 0; j < height; j++)
@@ -177,17 +179,8 @@ public class InventoryDrawer
 				//If an item is present and we're not dragging it somewhere else
 				if(pile != null && !(InventoryOverlay.selectedItem != null && InventoryOverlay.selectedItem.inventory != null && inventory.equals(InventoryOverlay.selectedItem.inventory) && InventoryOverlay.selectedItem.x == i && InventoryOverlay.selectedItem.y == j ))
 				{
-					/*itemTexture = TexturesHandler.getTexture(pile.getTextureName());
-					if(itemTexture.getID() == -1)
-						itemTexture = TexturesHandler.getTexture("res/items/icons/notex.png");
-					//
-					itemTexture.setLinearFiltering(false);*/
-					//textureId = TexturesHandler.idTexture(pile.getTextureName());
-					//TexturesHandler.mipmapLevel(pile.getTextureName(), -1);
-					//System.out.println(textureId);
 					int center = summary ? slotSize * (pile.item.getSlotsHeight()-1) / 2 : 0;
 					pile.getItem().getItemRenderer().renderItemInInventory(context, pile, x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, scale);
-					//GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, slotSize * pile.item.getSlotsWidth(), slotSize * pile.item.getSlotsHeight(), 0, 1, 1, 0, itemTexture.getID(), true, true, null);
 				}
 			}
 		}

@@ -16,6 +16,7 @@ import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
+import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.net.packets.Packet04Entity;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -124,10 +125,6 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	{
 		// super.changeChunk();
 		// Null-out acceleration, until modified by controls
-		if (controller.hasFocus())
-		{
-			moveCamera();
-		}
 		if (flying)
 			flyMove(controller.hasFocus());
 		else
@@ -163,7 +160,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	public void normalMove(boolean focus)
 	{
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY + 1), (int) (posZ))));
-		boolean inWater = voxelIn.isVoxelLiquid();
+		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
 		boolean onLadder = voxelIn instanceof VoxelClimbable;
 		if (onLadder)
 		{
@@ -447,6 +444,14 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 
 	public void render(RenderingContext renderingContext)
 	{
+		ItemPile selectedItemPile = this.getInventory().getSelectedItem();
+		if(selectedItemPile != null)
+		{
+			Matrix4f transformation = new Matrix4f();
+			transformation.setIdentity();
+			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, getWorld(), transformation);
+		}
+		
 		if (this.equals(Client.controlledEntity))
 			return; // Don't render yourself
 
@@ -491,5 +496,14 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	public void setController(Controller controller)
 	{
 		this.controller = controller;
+	}
+
+	@Override
+	public void moveCamera(ClientController controller)
+	{
+		if (controller.hasFocus())
+		{
+			moveCamera();
+		}
 	}
 }

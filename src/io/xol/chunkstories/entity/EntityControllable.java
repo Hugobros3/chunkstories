@@ -19,5 +19,7 @@ public interface EntityControllable
 	
 	public void setController(Controller controller);
 	
+	public void moveCamera(ClientController controller);
+	
 	public void tick(ClientController controller);
 }

@@ -56,5 +56,4 @@ public class EntityRenderer
 		glEnable(GL_TEXTURE_2D);
 		glDisable(GL_BLEND);
 	}
-
 }

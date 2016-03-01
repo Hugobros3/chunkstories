@@ -9,6 +9,10 @@ import io.xol.engine.base.XolioWindow;
 import io.xol.engine.base.font.BitmapFont;
 import io.xol.engine.base.font.FontRenderer2;
 import io.xol.chunkstories.GameData;
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.events.actions.ClientActionMouseClick;
+import io.xol.chunkstories.api.events.actions.ClientActionMouseClick.MouseButton;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
@@ -45,21 +49,21 @@ public class GameplayScene extends OverlayableScene
 	InventoryDrawer inventoryDrawer;
 
 	Camera camera = new Camera();
-	public ChatPanel chat = new ChatPanel();
+	ChatPanel chat = new ChatPanel();
 	boolean focus = true;
 
-	public boolean multiPlayer;
-	EntityImplementation player;
+	Entity player;
 
 	public GameplayScene(XolioWindow w, boolean multiPlayer)
 	{
 		super(w);
+		w.renderingContext.setCamera(camera);
 
-		this.multiPlayer = multiPlayer;
-
+		//We need a world to work on
 		if (Client.world == null)
 			w.changeScene(new MainMenu(w, false));
 
+		//Spawn manually the player if we're in SP debug
 		if (!multiPlayer)
 		{
 			Client.controlledEntity = new EntityPlayer(Client.world, 0, 100, 0, Client.username);
@@ -67,10 +71,13 @@ public class GameplayScene extends OverlayableScene
 			Client.world.addEntity(Client.controlledEntity);
 		}
 
+		//Creates the rendering stuff
 		worldRenderer = new WorldRenderer(Client.world);
 		worldRenderer.setupRenderSize(XolioWindow.frameW, XolioWindow.frameH);
+		//TODO wtf is this
 		entityRenderer = new EntityRenderer(Client.world, worldRenderer);
 
+		//Give focus
 		focus(true);
 	}
 	
@@ -89,43 +96,53 @@ public class GameplayScene extends OverlayableScene
 		if (player == null || player != Client.controlledEntity && Client.controlledEntity != null)
 		{
 			player = (EntityImplementation) Client.controlledEntity;
-			inventoryDrawer = player.inventory == null ? null : new InventoryDrawer(player.inventory);
+			inventoryDrawer = player.getInventory() == null ? null : new InventoryDrawer(player.getInventory());
 		}
-		inventoryDrawer.inventory = player.inventory;
+		inventoryDrawer.inventory = player.getInventory();
+		
+		//Get the player location
+		Location loc = player.getLocation();
+		
 		// Update the player
-		//if (player instanceof EntityControllable)
-		//	((EntityControllable) player).tick(Client.clientController);
+		if (player instanceof EntityControllable)
+			((EntityControllable) player).moveCamera(Client.clientController);
 
-		/*int[] selectedBlock = null;
+		int[] selectedBlock = null;
 		if (player instanceof EntityPlayer)
 		{
 			selectedBlock = ((EntityPlayer) player).rayTraceSelectedBlock(true);
-		}*/
+		}
 		if (player != null)
 			player.setupCamera(camera);
+		
+		//Temp
 		if (flashLight)
 		{
+			
 			float transformedViewH = (float) ((camera.view_rotx) / 180 * Math.PI);
 			// System.out.println(Math.sin(transformedViewV)+"f");
 			Vector3f viewerCamDirVector = new Vector3f((float) (Math.sin((-camera.view_roty) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)),
 					(float) (Math.cos((-camera.view_roty) / 180 * Math.PI) * Math.cos(transformedViewH)));
 
-			worldRenderer.lights.add(new DefferedLight(new Vector3f(1f, 1f, 0.9f), new Vector3f((float) player.posX, (float) player.posY + 1.5f, (float) player.posZ), 75f, 40f, viewerCamDirVector));
+			worldRenderer.lights.add(new DefferedLight(new Vector3f(1f, 1f, 0.9f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 40f, viewerCamDirVector));
 			if (Keyboard.isKeyDown(Keyboard.KEY_F5))
-				Client.world.particlesHolder.addParticle(new ParticleSetupLight(Client.world, player.posX, player.posY + 1.0f, player.posZ, new DefferedLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) player.posX, (float) player.posY + 1.5f,
-						(float) player.posZ), 75f, 40f, viewerCamDirVector)));
+				Client.world.particlesHolder.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f,
+						(float) loc.z), 75f, 40f, viewerCamDirVector)));
 		}
+		//Main render call
 		worldRenderer.renderWorldAtCamera(camera);
-		//if (selectedBlock != null)
-		//	entityRenderer.drawSelectionBox(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
 		
+		if (selectedBlock != null)
+			entityRenderer.drawSelectionBox(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
+		
+		//Debug draws
 		if (FastConfig.physicsVisualization && player != null)
 		{
 			int id, data;
 			int drawDebugDist = 6;
-			for (int i = ((int) player.posX) - drawDebugDist; i <= ((int) player.posX) + drawDebugDist; i++)
-				for (int j = ((int) player.posY) - drawDebugDist; j <= ((int) player.posY) + drawDebugDist; j++)
-					for (int k = ((int) player.posZ) - drawDebugDist; k <= ((int) player.posZ) + drawDebugDist; k++)
+			for (int i = ((int) loc.x) - drawDebugDist; i <= ((int) loc.x) + drawDebugDist; i++)
+				for (int j = ((int) loc.y) - drawDebugDist; j <= ((int) loc.y) + drawDebugDist; j++)
+					for (int k = ((int) loc.z) - drawDebugDist; k <= ((int) loc.z) + drawDebugDist; k++)
 					{
 						data = Client.world.getDataAt(i, j, k);
 						id = VoxelFormat.id(data);
@@ -135,13 +152,13 @@ public class GameplayScene extends OverlayableScene
 			for (CollisionBox b : player.getTranslatedCollisionBoxes())
 				b.debugDraw(0, 1, 1, 1);
 		}
-		
+		//Cubemap rendering trigger (can't run it while main render is occuring)
 		if (shouldCM)
 		{
 			shouldCM = false;
 			worldRenderer.screenCubeMap(512, null);
 		}
-		// THEN THE GUI
+		//Blit the final 3d image
 		worldRenderer.postProcess();
 		
 		if (FastConfig.showDebugInfo)
@@ -152,7 +169,7 @@ public class GameplayScene extends OverlayableScene
 		chat.update();
 		chat.draw();
 
-		if (player != null && player.inventory != null)
+		if (player != null && player.getInventory() != null)
 				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, XolioWindow.frameW / 2, 64 + 64);
 
 		if (Keyboard.isKeyDown(78))
@@ -196,6 +213,7 @@ public class GameplayScene extends OverlayableScene
 	
 	public boolean onKeyPress(int k)
 	{
+		Location loc = player.getLocation();
 		if (currentOverlay != null && currentOverlay.handleKeypress(k))
 			return true;
 		if (!chat.chatting)
@@ -215,10 +233,10 @@ public class GameplayScene extends OverlayableScene
 			ChunksRenderer.renderStart = System.currentTimeMillis();
 			worldRenderer.modified();
 		}
+		//Temp, to rework
 		else if (k == FastConfig.GRABUSE_KEY)
 		{
-			Client.getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float)player.posX, (float)player.posY, (float)player.posZ, 1.0f, 1.0f);
-
+			Client.getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float)loc.x, (float)loc.y, (float)loc.z, 1.0f, 1.0f);
 			flashLight = !flashLight;
 		}
 		else if (k == FastConfig.INVENTORY_KEY)
@@ -226,7 +244,7 @@ public class GameplayScene extends OverlayableScene
 			if (player != null)
 			{
 				focus(false);
-				this.changeOverlay(new InventoryOverlay(this, null, new Inventory[]{player.inventory, new InventoryAllVoxels()}));
+				this.changeOverlay(new InventoryOverlay(this, null, new Inventory[]{player.getInventory(), new InventoryAllVoxels()}));
 			}
 		}
 		else if (k == Keyboard.KEY_F1)
@@ -238,12 +256,12 @@ public class GameplayScene extends OverlayableScene
 			chat.insert(worldRenderer.screenShot());
 		else if (k == Keyboard.KEY_F3)
 		{
-			//Client.getSoundManager().playSoundEffect("music/menu3.ogg", (float)player.posX, (float)player.posY, (float)player.posZ, 1.0f, 1.0f);
+			//Client.getSoundManager().playSoundEffect("music/menu3.ogg", (float)loc.x, (float)loc.y, (float)loc.z, 1.0f, 1.0f);
 			Client.getSoundManager().stopAnySound();
-			Client.getSoundManager().playMusic("music/radio/horse.ogg", (float)player.posX, (float)player.posY, (float)player.posZ, 1.0f, 1.0f, false).setAttenuationEnd(50f);
+			Client.getSoundManager().playMusic("music/radio/horse.ogg", (float)loc.x, (float)loc.y, (float)loc.z, 1.0f, 1.0f, false).setAttenuationEnd(50f);
 		}
 		else if (k == Keyboard.KEY_F4)
-			Client.world.particlesHolder.addParticle(new ParticleLight(Client.world, player.posX + (Math.random() - 0.5) * 30, player.posY + (Math.random()) * 10, player.posZ + (Math.random() - 0.5) * 30));
+			Client.world.particlesHolder.addParticle(new ParticleLight(Client.world, loc.x + (Math.random() - 0.5) * 30, loc.y + (Math.random()) * 10, loc.z + (Math.random() - 0.5) * 30));
 		
 		else if (k == Keyboard.KEY_F6)
 		{
@@ -274,37 +292,24 @@ public class GameplayScene extends OverlayableScene
 			return false;
 		
 		ItemPile itemSelected = this.player.getInventory().getSelectedItem();
-		
-		
-		//EntityPlayer player2 = (EntityPlayer) player;
-		/*if (button == 1)
+		if(itemSelected != null)
 		{
-			int[] selectedBlock = player2.rayTraceSelectedBlock(false);
-			if (selectedBlock != null)
+			MouseButton mButton = null;
+			switch(button)
 			{
-				Client.world.setDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2], VoxelFormat.format(voxelId, meta, 0, 0), true);
-				worldRenderer.modified();
+			case 0:
+				mButton = MouseButton.MOUSE_LEFT;
+				break;
+			case 1:
+				mButton = MouseButton.MOUSE_RIGHT;
+				break;
+			case 2:
+				mButton = MouseButton.MOUSE_MIDDLE;
+				break;
 			}
+			if(mButton != null)
+				itemSelected.getItem().onUse(player, itemSelected, new ClientActionMouseClick(mButton));
 		}
-		else if (button == 0)
-		{
-			int[] selectedBlock = player2.rayTraceSelectedBlock(true);
-			if (selectedBlock != null)
-			{
-				Client.world.setDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2], 0, true);
-				worldRenderer.modified();
-			}
-		}
-		else if (button == 2)
-		{
-			int[] selectedBlock = player2.rayTraceSelectedBlock(true);
-			if (selectedBlock != null)
-			{
-				int data = Client.world.getDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
-				voxelId = VoxelFormat.id(data);
-				meta = VoxelFormat.meta(data);
-			}
-		}*/
 		return false;
 	}
 
@@ -313,15 +318,15 @@ public class GameplayScene extends OverlayableScene
 		if (currentOverlay != null && currentOverlay.onScroll(a))
 			return true;
 		//Scroll trought the items
-		if(player != null && player.inventory != null)
+		if(player != null && player.getInventory() != null)
 		{
 			ItemPile selected = null;
-			int selectedInventorySlot = player.inventory.getSelectedSlot();
+			int selectedInventorySlot = player.getInventory().getSelectedSlot();
 			int originalSlot = selectedInventorySlot;
 			if(a < 0)
 			{
-				selectedInventorySlot %= player.inventory.width;
-				selected = player.inventory.getItem(selectedInventorySlot, 0);
+				selectedInventorySlot %= player.getInventory().width;
+				selected = player.getInventory().getItem(selectedInventorySlot, 0);
 				if(selected != null)
 					selectedInventorySlot+= selected.item.getSlotsWidth();
 				else
@@ -331,14 +336,14 @@ public class GameplayScene extends OverlayableScene
 			{
 				selectedInventorySlot--;
 				if(selectedInventorySlot < 0)
-					selectedInventorySlot += player.inventory.width;
-				selected = player.inventory.getItem(selectedInventorySlot, 0);
+					selectedInventorySlot += player.getInventory().width;
+				selected = player.getInventory().getItem(selectedInventorySlot, 0);
 				if(selected != null)
 					selectedInventorySlot = selected.x;
 			}
 			//Switch slot
 			if(originalSlot != selectedInventorySlot)
-				player.inventory.setSelectedSlot(selectedInventorySlot);
+				player.getInventory().setSelectedSlot(selectedInventorySlot);
 		}
 		return true;
 	}
@@ -382,7 +387,7 @@ public class GameplayScene extends OverlayableScene
 		int csh = Client.world.chunkSummaries.getHeightAt(bx, bz);
 		CubicChunk current = Client.world.getChunk(cx, cy, cz, false);
 		// FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 20,
-		// 0, 16, "X:" + player.posX + " Y:" + player.posY + " Z:" + player.posZ
+		// 0, 16, "X:" + loc.x + " Y:" + loc.y + " Z:" + loc.z
 		// + "rotH" + camera.view_roty + " worldtime:" + Client.world.worldTime
 		// % 1000, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 36, 0, 16, "Position : x:" + bx + " y:" + by + " z:" + bz + " bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);

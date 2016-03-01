@@ -4,7 +4,6 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
-
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.item.ItemPile;
@@ -12,6 +11,8 @@ import io.xol.chunkstories.item.core.ItemVoxel;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.chunkstories.voxel.models.VoxelModels;
+import io.xol.chunkstories.world.World;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
@@ -71,7 +72,10 @@ public class VoxelItemRenderer implements ItemRenderer
 		context.setDiffuseTexture(texture.getID());
 		VoxelModel model = voxel.getVoxelModel(bri);
 		if(model == null || !voxel.isVoxelUsingCustomModel())
-		context.renderDirect(new float[]{
+		{
+			model = VoxelModels.getVoxelModel("default");
+		}
+		/*context.renderDirect(new float[]{
 				1f, 1f, 0f,
 				0f, 0f, 0f,
 				1f, 0f, 0f,
@@ -136,10 +140,10 @@ public class VoxelItemRenderer implements ItemRenderer
 				0f, 0f, 1f,
 		});
 		else
-		{
+		{*/
 			//System.out.println(model.vertices.length);
 			context.renderDirect(model.vertices, model.texCoords, null, model.normals);
-		}
+		//}
 	}
 
 	private float toRad(float f)
@@ -148,10 +152,9 @@ public class VoxelItemRenderer implements ItemRenderer
 	}
 
 	@Override
-	public void renderItemInWorld(RenderingContext context, ItemPile pile, Matrix4f handTransformation)
+	public void renderItemInWorld(RenderingContext context, ItemPile pile, World world, Matrix4f handTransformation)
 	{
-		// TODO Auto-generated method stub
-
+		
 	}
 
 }
