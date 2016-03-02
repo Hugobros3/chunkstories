@@ -21,6 +21,8 @@ public class CPUModelDetection
 		{
 			command = "cmd /C WMIC CPU Get /Format:List";
 		}
+		else
+			return "Mac, not implemented, workarround";
 		Process process = null;
 		try
 		{
