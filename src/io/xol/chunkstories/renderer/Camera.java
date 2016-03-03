@@ -7,7 +7,6 @@ package io.xol.chunkstories.renderer;
 import java.nio.FloatBuffer;
 
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.base.XolioWindow;
 import io.xol.engine.shaders.ShaderProgram;
 
 import org.lwjgl.BufferUtils;
@@ -18,31 +17,24 @@ import org.lwjgl.util.vector.Vector4f;
 
 public class Camera
 {
+	//Viewport size
 	public int width, height;
 	
-	public float view_rotx = 30.0f;
-	public float view_roty = 30.0f;
-	public float view_rotz = 0f;
+	//Camera rotations
+	public float view_rotx = 0.0f;
+	public float view_roty = 0.0f;
+	public float view_rotz = 0.0f;
 
+	//Camera positions
 	public double camPosX = 10;
 	public double camPosY = -75;
 	public double camPosZ = -18;
 
+	//Mouse pointer tracking
 	float lastPX = -1f;
 	float lastPY = -1f;
 
-	public FloatBuffer projectionMatrix = BufferUtils.createFloatBuffer(16);
-	public FloatBuffer projectionMatrixInverse = BufferUtils.createFloatBuffer(16);
-
-	public FloatBuffer modelViewMatrix = BufferUtils.createFloatBuffer(16);
-	public FloatBuffer modelViewMatrixInverse = BufferUtils.createFloatBuffer(16);
-
-	public FloatBuffer normalMatrix = BufferUtils.createFloatBuffer(9);
-	public FloatBuffer normalMatrixInverse = BufferUtils.createFloatBuffer(9);
-
-	public FloatBuffer modelViewProjectionMatrix = BufferUtils.createFloatBuffer(16);
-	public FloatBuffer modelViewProjectionMatrixInverse = BufferUtils.createFloatBuffer(16);
-	
+	//Matrices
 	public Matrix4f projectionMatrix4f = new Matrix4f();
 	public Matrix4f projectionMatrix4fInverted = new Matrix4f();
 
@@ -74,6 +66,9 @@ public class Camera
 		return buf;
 	}
 
+	/**
+	 * Updates the sound engine position and listener orientation
+	 */
 	public void alUpdate()
 	{
 		float rotH = view_roty;
@@ -97,31 +92,14 @@ public class Camera
 
 	public void updateMatricesForShaderUniforms()
 	{
-		projectionMatrixInverse.position(0);
-		projectionMatrix.position(0);
-		
-		projectionMatrix4f.store(projectionMatrix);
-		
-		// projectionMatrix.position(0);
-		// projectionMatrix4f.store(projectionMatrix);
+		//Invert two main patrices
 		Matrix4f.invert(projectionMatrix4f, projectionMatrix4fInverted);
-		// Matrix4f invertedProjection = (Matrix4f) projectionMatrix4f.invert();
-		projectionMatrixInverse.position(0);
-		projectionMatrix4fInverted.store(projectionMatrixInverse);
-		
-		// Allow for read in shader
-		modelViewMatrix.position(0);
-		modelViewMatrix4f.store(modelViewMatrix);
-		
 		Matrix4f.invert(modelViewMatrix4f, modelViewMatrix4fInverted);
-		modelViewMatrixInverse.position(0);
-		modelViewMatrix4fInverted.store(modelViewMatrixInverse);
-
-		Matrix4f tempMatrix = new Matrix4f();
 		
+		//Build normal matrix
+		Matrix4f tempMatrix = new Matrix4f();
 		Matrix4f.invert(modelViewMatrix4f, tempMatrix);
 		Matrix4f.transpose(tempMatrix, tempMatrix);
-
 		normalMatrix3f.m00 = tempMatrix.m00;
 		normalMatrix3f.m01 = tempMatrix.m01;
 		normalMatrix3f.m02 = tempMatrix.m02;
@@ -133,20 +111,12 @@ public class Camera
 		normalMatrix3f.m20 = tempMatrix.m20;
 		normalMatrix3f.m21 = tempMatrix.m21;
 		normalMatrix3f.m22 = tempMatrix.m22;
-
-		normalMatrix.clear();
-		normalMatrix3f.store(normalMatrix);
+		//Invert it
 		Matrix3f.invert(normalMatrix3f, normalMatrix3fInverted);
-		normalMatrixInverse.clear();
-		normalMatrix3fInverted.store(normalMatrixInverse);
-		// projectionMatrix.position(0);
-		// projectionMatrixInverse.position(0);
+		
+		//Premultiplied versions ( optimization for poor drivers that don't figure it out themselves )
 		Matrix4f.mul(projectionMatrix4f, modelViewMatrix4f, modelViewProjectionMatrix4f);
 		Matrix4f.invert(modelViewProjectionMatrix4f, modelViewProjectionMatrix4fInverted);
-		modelViewProjectionMatrix.clear();
-		modelViewProjectionMatrix4f.store(modelViewProjectionMatrix);
-		modelViewProjectionMatrixInverse.clear();
-		modelViewProjectionMatrix4fInverted.store(modelViewProjectionMatrixInverse);
 	}
 
 	public void justSetup(int width, int height)
@@ -163,8 +133,8 @@ public class Camera
 		float right = aspect * top;
 		float near = 0.1f;
 		float far = 3000f;
-		// Generate the projection matrix
 		
+		// Generate the projection matrix
 		projectionMatrix4f.setIdentity();
 		projectionMatrix4f.m00 = (near * 2) / (right - left);
 		projectionMatrix4f.m11 = (near * 2) / (top - bottom);
@@ -178,7 +148,6 @@ public class Camera
 		projectionMatrix4f.m32 = D;
 		projectionMatrix4f.m23 = -1;
 		projectionMatrix4f.m33 = 0;
-		//System.out.println(projectionMatrix4f);
 		
 		// Grab the generated matrix
 		
@@ -201,10 +170,7 @@ public class Camera
 		Vector3f.cross(up, lookAt, up);
 		
 		Vector3f.add(position, lookAt, lookAt);
-		//modelViewMatrix4f = MatrixHelper.getLookAtMatrix(position, lookAt, up);
 		
-		
-		//System.out.println(modelViewMatrix4f);
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
 	}
@@ -295,26 +261,6 @@ public class Camera
 		Vector3f farTopRight = vadd(farCenterPoint, vadd(smult(Y, fh), smult(X, fw)));
 		Vector3f farBottomLeft = vsub(farCenterPoint, vadd(smult(Y, fh), smult(X, fw)));
 		Vector3f farBottomRight = vsub(farCenterPoint, vsub(smult(Y, fh), smult(X, fw)));
-		/*
-		// compute the 4 corners of the frustum on the near plane
-		ntl = nc + Y * nh - X * nw;
-		ntr = nc + Y * nh + X * nw;
-		nbl = nc - Y * nh - X * nw;
-		nbr = nc - Y * nh + X * nw;
-	
-		// compute the 4 corners of the frustum on the far plane
-		ftl = fc + Y * fh - X * fw;
-		ftr = fc + Y * fh + X * fw;
-		fbl = fc - Y * fh - X * fw;
-		fbr = fc - Y * fh + X * fw;
-		
-		pl[TOP].set3Points(ntr,ntl,ftl);
-		pl[BOTTOM].set3Points(nbl,nbr,fbr);
-		pl[LEFT].set3Points(ntl,nbl,fbl);
-		pl[RIGHT].set3Points(nbr,ntr,fbr);
-		pl[NEARP].set3Points(ntl,ntr,nbr);
-		pl[FARP].set3Points(ftr,ftl,fbl);
-		 */
 		
 		cameraPlanes[0].setup(nearTopRight, nearTopLeft, farTopLeft);
 		cameraPlanes[1].setup(nearBottomLeft, nearBottomRight, farBottomRight);
@@ -336,6 +282,7 @@ public class Camera
 		}
 	}
 	
+	//Convinience methods, why wouldn't java allow operator overloading is beyond me.
 	private Vector3f vadd(Vector3f a, Vector3f b)
 	{
 		Vector3f out = new Vector3f();

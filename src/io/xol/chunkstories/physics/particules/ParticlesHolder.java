@@ -144,8 +144,7 @@ public class ParticlesHolder
 
 		particlesShader.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
 
-		particlesShader.setUniformMatrix4f("modelViewMatrix", camera.modelViewMatrix);
-		particlesShader.setUniformMatrix4f("modelViewMatrixInv", camera.modelViewMatrixInverse);
+		camera.setupShader(particlesShader);
 		// glDisable(GL_DEPTH_TEST);
 
 		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
