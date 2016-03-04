@@ -4,7 +4,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.chunkstories.VersionInfo;
-import io.xol.engine.misc.HttpRequests;
+import io.xol.engine.net.HttpRequests;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

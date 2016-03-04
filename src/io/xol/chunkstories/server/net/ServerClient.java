@@ -13,8 +13,8 @@ import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.engine.misc.HttpRequestThread;
-import io.xol.engine.misc.HttpRequester;
+import io.xol.engine.net.HttpRequestThread;
+import io.xol.engine.net.HttpRequester;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

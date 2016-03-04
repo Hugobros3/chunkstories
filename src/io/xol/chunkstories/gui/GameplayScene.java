@@ -6,8 +6,8 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
 import io.xol.engine.base.XolioWindow;
-import io.xol.engine.base.font.BitmapFont;
-import io.xol.engine.base.font.FontRenderer2;
+import io.xol.engine.font.BitmapFont;
+import io.xol.engine.font.FontRenderer2;
 import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;

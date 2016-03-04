@@ -5,9 +5,9 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
-import io.xol.engine.base.font.BitmapFont;
-import io.xol.engine.base.font.FontRenderer2;
-import io.xol.engine.base.font.TrueTypeFont;
+import io.xol.engine.font.BitmapFont;
+import io.xol.engine.font.FontRenderer2;
+import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.gui.ClickableButton;
 import io.xol.engine.gui.FocusableObjectsHandler;
 

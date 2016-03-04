@@ -1,4 +1,4 @@
-package io.xol.engine.misc;
+package io.xol.engine.net;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

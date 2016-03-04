@@ -1,11 +1,7 @@
 package io.xol.chunkstories.gui;
 
-//(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
-
-import io.xol.engine.base.font.BitmapFont;
-import io.xol.engine.base.font.TrueTypeFont;
+import io.xol.engine.font.BitmapFont;
+import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.gui.InputText;
 import io.xol.engine.misc.ColorsTools;
 

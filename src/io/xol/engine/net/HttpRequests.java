@@ -1,4 +1,4 @@
-package io.xol.engine.misc;
+package io.xol.engine.net;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

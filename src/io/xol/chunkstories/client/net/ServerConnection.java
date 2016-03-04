@@ -1,12 +1,12 @@
 package io.xol.chunkstories.client.net;
 
-import io.xol.engine.misc.HttpRequestThread;
-import io.xol.engine.misc.HttpRequester;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.net.packets.Packet00Text;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
+import io.xol.engine.net.HttpRequestThread;
+import io.xol.engine.net.HttpRequester;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

@@ -18,7 +18,7 @@ import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.world.World;
-import io.xol.engine.base.font.TrueTypeFont;
+import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.model.animation.BVHAnimation;

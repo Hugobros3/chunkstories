@@ -22,14 +22,14 @@ import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
-import io.xol.engine.base.font.BitmapFont;
-import io.xol.engine.base.font.FontRenderer2;
+import io.xol.engine.font.BitmapFont;
+import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.gui.ClickableButton;
 import io.xol.engine.gui.Focusable;
 import io.xol.engine.gui.FocusableObjectsHandler;
 import io.xol.engine.gui.InputText;
-import io.xol.engine.misc.HttpRequestThread;
-import io.xol.engine.misc.HttpRequester;
+import io.xol.engine.net.HttpRequestThread;
+import io.xol.engine.net.HttpRequester;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

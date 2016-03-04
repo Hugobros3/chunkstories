@@ -1,4 +1,4 @@
-package io.xol.engine.base.font;
+package io.xol.engine.font;
 
 import io.xol.engine.math.HexTools;
 import io.xol.engine.misc.ColorsTools;

@@ -5,7 +5,7 @@ import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.tech.ServerConsole;
 import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.engine.misc.ColorsTools;
-import io.xol.engine.misc.HttpRequests;
+import io.xol.engine.net.HttpRequests;
 
 import java.io.IOException;
 import java.net.ServerSocket;

@@ -25,7 +25,7 @@ import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.core.VoxelClimbable;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.base.XolioWindow;
-import io.xol.engine.base.font.TrueTypeFont;
+import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;

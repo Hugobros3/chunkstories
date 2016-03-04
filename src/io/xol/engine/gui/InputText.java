@@ -1,10 +1,10 @@
 package io.xol.engine.gui;
 
-import io.xol.engine.base.font.BitmapFont;
-import io.xol.engine.base.font.FontRenderer2;
-
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+
+import io.xol.engine.font.BitmapFont;
+import io.xol.engine.font.FontRenderer2;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

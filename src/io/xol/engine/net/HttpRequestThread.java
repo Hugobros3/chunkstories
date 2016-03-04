@@ -1,10 +1,6 @@
-package io.xol.engine.misc;
+package io.xol.engine.net;
 
-//(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
-
-import io.xol.engine.misc.HttpRequester;
+import io.xol.engine.net.HttpRequester;
 
 public class HttpRequestThread extends Thread
 {

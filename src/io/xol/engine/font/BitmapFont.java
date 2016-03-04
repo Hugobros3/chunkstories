@@ -1,4 +1,4 @@
-package io.xol.engine.base.font;
+package io.xol.engine.font;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

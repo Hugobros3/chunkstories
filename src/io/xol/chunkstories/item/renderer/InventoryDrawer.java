@@ -7,7 +7,7 @@ import org.lwjgl.util.vector.Vector4f;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.Inventory;
-import io.xol.engine.base.font.TrueTypeFont;
+import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.textures.Texture;
