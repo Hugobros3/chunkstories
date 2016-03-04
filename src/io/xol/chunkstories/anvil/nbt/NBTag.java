@@ -6,6 +6,11 @@ import java.io.ByteArrayInputStream;
 // http://chunkstories.xyz
 // http://xol.io
 
+/**
+ * Clean code is for suckers anyway
+ * @author Gobrosse
+ *
+ */
 public abstract class NBTag {
 
 	public abstract void feed(ByteArrayInputStream is);

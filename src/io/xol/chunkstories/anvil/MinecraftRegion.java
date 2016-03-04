@@ -12,6 +12,10 @@ import java.util.zip.Inflater;
 
 public class MinecraftRegion {
 	
+	/**
+	 * Unit test
+	 * @param a
+	 */
 	public static void main(String a[])
 	{
 		MinecraftRegion r = new MinecraftRegion(new File("world/region/r.0.1.mca"));//"r.0.0.mca.in"));
@@ -39,12 +43,8 @@ public class MinecraftRegion {
 				locations[i] += is.read();
 				
 				sizes[i] += is.read();
-				//if(sizes[i] > 0)
-				//	n++;
-				//System.out.println("Size is : "+sizes[i]+" location is : "+locations[i]);
 			}
-			//System.out.println("Total in this region : "+n+" chunks.");
-			//Discard the timestamp bytes, we don't fucking care.
+			//Discard the timestamp bytes, we don't care.
 			byte[] osef = new byte[4];
 			for(int i = 0; i < 1024; i++)
 			{
@@ -53,7 +53,7 @@ public class MinecraftRegion {
 		}
 		catch(Exception e)
 		{
-			
+			e.printStackTrace();
 		}
 	}
 
@@ -68,7 +68,6 @@ public class MinecraftRegion {
 		if(sizes[l] > 0)
 		{
 			try{
-				//System.out.println("chunk "+x+":"+z+" requested ["+l+","+sizes[l]+"]");
 				//Chunk non-void, load it
 				is.seek(locations[l]*4096);
 				//Read 4-bytes of data length
@@ -115,7 +114,6 @@ public class MinecraftRegion {
 	
 	public void close()
 	{
-		//System.out.println("closing.");
 		try {
 			is.close();
 		} catch (IOException e) {
