@@ -99,12 +99,14 @@ public class XolioWindow
 			}
 			else
 			{
-				// bien le moyen-ï¿½ge ?
+				// bien le moyen-âge ?
 				ChunkStoriesLogger.getInstance().log("Pre-OpenGL 3.0 Hardware without needed extensions support detected.");
 				ChunkStoriesLogger.getInstance().log("This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
 				JOptionPane.showMessageDialog(null, "Pre-OpenGL 3.0 Hardware without needed extensions support detected.\n"
 						+ "This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
-				Runtime.getRuntime().exit(0);
+				// If you feel brave after all
+				if(!FastConfig.ignoreObsoleteHardware)
+					Runtime.getRuntime().exit(0);
 			}
 		}
 		else

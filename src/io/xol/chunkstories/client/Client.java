@@ -32,7 +32,7 @@ public class Client implements ClientController
 	public static ConfigFile clientConfig = new ConfigFile("config/client.cfg");
 
 	public static SoundManager soundManager;
-	
+
 	public static boolean offline = false;
 
 	public static XolioWindow windows;
@@ -44,7 +44,7 @@ public class Client implements ClientController
 	public static String session_key = "nopeMLG";
 
 	public static DebugProfiler profiler = new DebugProfiler();
-	
+
 	public static Client clientController;
 
 	public static void main(String[] args)
@@ -59,25 +59,35 @@ public class Client implements ClientController
 				FastConfig.doShadows = false;
 				System.out.println("Legacy OpenGL mode enabled");
 			}
+			else if (s.equals("-forceobsolete"))
+			{
+				FastConfig.ignoreObsoleteHardware = false;
+				System.out.println("Legacy OpenGL mode enabled");
+			}
 			else if (s.contains("-vd"))
 			{
 				int vd = Integer.parseInt(s.replace("-vd=", "")) * 2;
-				// WorldRenderer.VBO_ARRAY_SIZE = vd;
 				FastConfig.viewDistance = vd * 16;
 				System.out.println("View distance = " + Integer.parseInt(s.replace("-vd=", "")));
 			}
-			/*if (s.contains("-cd"))
+			else if (s.contains("-mods"))
 			{
-				int cd = Integer.parseInt(s.replace("-cd=", "")) * 2;
-				// WorldRenderer.VBO_ARRAY_SIZE = vd;
-				ChunksData.CACHE_SIZE = cd;
-				System.out.println("Chunk cache size = " + Integer.parseInt(s.replace("-cd=", "")));
-			}*/
+				String[] modsString = s.replace("-mods=", "").split(",");
+				GameData.setEnabledMods(modsString);
+			}
 			else if (s.contains("-dir"))
 			{
 				GameDirectory.set(s.replace("-dir=", ""));
 			}
-			// System.out.println("Argument : "+s);
+			else
+			{
+				System.out.println(
+						"Comandline arguments : \n" +
+						"-oldgl Disables OpenGL 3.0+ stuff\n" +
+						"-forceobsolete Forces the game to run even if requirements aren't met\n"+
+						"-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n"+
+						"-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument");
+			}
 		}
 		// Check for folder
 		GameDirectory.check();
@@ -109,7 +119,7 @@ public class Client implements ClientController
 	{
 		return soundManager;
 	}
-	
+
 	public static void onClose()
 	{
 		GuiDrawer.free();
@@ -126,12 +136,12 @@ public class Client implements ClientController
 	{
 		return clientController;
 	}
-	
+
 	public boolean hasFocus()
 	{
-		if(windows.getCurrentScene() instanceof GameplayScene)
+		if (windows.getCurrentScene() instanceof GameplayScene)
 		{
-			return ((GameplayScene)windows.getCurrentScene()).hasFocus();
+			return ((GameplayScene) windows.getCurrentScene()).hasFocus();
 		}
 		return false;
 	}

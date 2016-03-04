@@ -104,6 +104,7 @@ public class FastConfig
 	public static float fov = 1f;
 	
 	public static boolean doDynamicCubemaps = true;
+	public static boolean ignoreObsoleteHardware = false;
 
 	public static String[] getShaderConfig()
 	{

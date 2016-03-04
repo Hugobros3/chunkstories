@@ -49,20 +49,33 @@ public class GameData
 	
 	static ConcurrentHashMap<String, Deque<File>> fileSystem = new ConcurrentHashMap<String, Deque<File>>();
 
+	static Set<String> mods = new HashSet<String>();
+	static boolean allModsEnabled = false;
+	
+	public static void setEnabledMods(String... modsEnabled)
+	{
+		//Build a set of required mods
+		mods.clear();
+		allModsEnabled = false;
+		for (String s : modsEnabled)
+		{
+			if(s.equals("*"))
+				allModsEnabled = true;
+			else
+				mods.add(s);
+		}
+	}
+	
 	/**
 	 * Creates and fill the fileSystem hashmap of deque of files
 	 * @param modsEnabled
 	 */
-	private static void buildModsFileSystem(String... modsEnabled)
+	private static void buildModsFileSystem()
 	{
 		fileSystem.clear();
 		//Load vanilla ressources
 		for(File f : new File(GameDirectory.getGameFolderPath() + "/res/").listFiles())
 				recursiveScan(f, new File(GameDirectory.getGameFolderPath() + "/"));
-		//Build a set of required mods
-		Set<String> mods = new HashSet<String>();
-		for (String s : modsEnabled)
-			mods.add(s);
 		//Get the mods/ dir
 		File modsDir = new File(GameDirectory.getGameFolderPath() + "/mods/");
 		if (!modsDir.exists())
@@ -70,7 +83,7 @@ public class GameData
 		//Load needed mods
 		for (File f : modsDir.listFiles())
 		{
-			if (modsEnabled.length == 0 || mods.contains(f.getName()))
+			if (allModsEnabled || mods.contains(f.getName()))
 			{
 				if (f.isDirectory())
 					recursiveScan(f, f);
