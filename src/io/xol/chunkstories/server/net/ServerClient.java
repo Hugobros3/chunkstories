@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.events.core.PlayerLogoutEvent;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.Packet;
-import io.xol.chunkstories.net.packets.Packet00Text;
+import io.xol.chunkstories.net.packets.PacketText;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.server.Server;
@@ -215,7 +215,7 @@ public class ServerClient extends Thread implements HttpRequester
 	public void send(String msg)
 	{
 		// Text flag
-		Packet00Text packet = new Packet00Text(false);
+		PacketText packet = new PacketText(false);
 		packet.text = msg;
 		sendPacket(packet);
 	}

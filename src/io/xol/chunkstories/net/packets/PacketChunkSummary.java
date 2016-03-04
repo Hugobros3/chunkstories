@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Packet03ChunkSummary extends Packet
+public class PacketChunkSummary extends Packet
 {
 	// Server-side
 	public ChunkSummary summary;
@@ -22,7 +22,7 @@ public class Packet03ChunkSummary extends Packet
 	public int rx, rz;
 	public byte[] compressedData;
 	
-	public Packet03ChunkSummary(boolean client)
+	public PacketChunkSummary(boolean client)
 	{
 		super(client);
 	}

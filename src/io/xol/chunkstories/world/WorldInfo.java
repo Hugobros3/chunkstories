@@ -10,7 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import io.xol.chunkstories.api.world.WorldGenerator;
-import io.xol.chunkstories.net.packets.Packet01WorldInfo;
+import io.xol.chunkstories.net.packets.PacketWorldInfo;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.World.WorldSize;
 import io.xol.chunkstories.world.generator.BlankWorldAccessor;
@@ -129,7 +129,7 @@ public class WorldInfo
 
 	public void sendInfo(ServerClient sender)
 	{
-		Packet01WorldInfo packet = new Packet01WorldInfo(false);
+		PacketWorldInfo packet = new PacketWorldInfo(false);
 		packet.info = this;
 		sender.sendPacket(packet);
 	}

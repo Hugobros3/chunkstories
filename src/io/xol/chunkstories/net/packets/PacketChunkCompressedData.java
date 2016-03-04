@@ -11,10 +11,10 @@ import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Packet02ChunkCompressedData extends Packet
+public class PacketChunkCompressedData extends Packet
 {
 
-	public Packet02ChunkCompressedData(boolean client)
+	public PacketChunkCompressedData(boolean client)
 	{
 		super(client);
 	}

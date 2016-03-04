@@ -3,7 +3,7 @@ package io.xol.chunkstories.client.net;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.Packet;
-import io.xol.chunkstories.net.packets.Packet00Text;
+import io.xol.chunkstories.net.packets.PacketText;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
@@ -140,7 +140,7 @@ public class ServerConnection extends Thread implements HttpRequester
 	{
 		try
 		{
-			Packet00Text packet = new Packet00Text(true);
+			PacketText packet = new PacketText(true);
 			packet.text = msg;
 			sendQueue.queue(packet);
 		}

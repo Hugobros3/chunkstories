@@ -3,8 +3,8 @@ package io.xol.chunkstories.world.io;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import io.xol.chunkstories.net.packets.Packet02ChunkCompressedData;
-import io.xol.chunkstories.net.packets.Packet03ChunkSummary;
+import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
+import io.xol.chunkstories.net.packets.PacketChunkSummary;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.World;
@@ -49,7 +49,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 					//CubicChunk c = world.getChunk(chunkX, chunkY, chunkZ, true);
 					//ChunkHolder holder = c.holder;
 					
-					Packet02ChunkCompressedData packet = new Packet02ChunkCompressedData(false);
+					PacketChunkCompressedData packet = new PacketChunkCompressedData(false);
 					packet.setPosition(chunkX, chunkY, chunkZ);
 					packet.data = holder.getCompressedData(chunkX, chunkY, chunkZ);
 					client.sendPacket(packet);
@@ -121,7 +121,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 				//System.out.println("Asking for summary at : "+rx+":"+rz);
 				if(summary.loaded.get())
 				{
-					Packet03ChunkSummary packet = new Packet03ChunkSummary(false);
+					PacketChunkSummary packet = new PacketChunkSummary(false);
 					packet.summary = summary;
 					client.sendPacket(packet);
 					return true;

@@ -59,7 +59,7 @@ public class WorldServer extends World
 			/*
 			if(sender.profile.entity != null)
 			{
-				Packet04Entity packet = new Packet04Entity(false);
+				PacketEntity packet = new PacketEntity(false);
 				packet.defineControl = true;
 				packet.includeName = true;
 				packet.includeRotation = true;

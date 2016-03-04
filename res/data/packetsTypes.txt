@@ -1,12 +1,12 @@
 # This files defines what packets are understood by the game
 # packet Hex_id PACKET_NAME class.path.full all/client/server
-packet 0x00 PACKET_UTF_TEXT io.xol.chunkstories.net.packets.Packet00Text all
+packet 0x00 PACKET_UTF_TEXT io.xol.chunkstories.net.packets.PacketText all
 # Sent by the server to the client
-packet 0x01 PACKET_WORLD_INFO io.xol.chunkstories.net.packets.Packet01WorldInfo server
-packet 0x02 PACKET_CHUNK_DATA io.xol.chunkstories.net.packets.Packet02ChunkCompressedData server
-packet 0x03 PACKET_CHUNK_SUMMARY io.xol.chunkstories.net.packets.Packet03ChunkSummary server
-packet 0x04 PACKET_ENTITY io.xol.chunkstories.net.packets.Packet04Entity all
-packet 0x05 PACKET_SERIALIZED_INVENTORY io.xol.chunkstories.net.packets.Packet05SerializedInventory server
-packet 0x06 PACKET_MOVE_ITEM io.xol.chunkstories.net.packets.Packet06InventoryMoveItemPile client
-packet 0x07 PACKET_USE_ITEM io.xol.chunkstories.net.packets.Packet07ItemUsage client
-packet 0x08 PACKET_TIME io.xol.chunkstories.net.packets.Packet08Time server
+packet 0x01 PACKET_WORLD_INFO io.xol.chunkstories.net.packets.PacketWorldInfo server
+packet 0x02 PACKET_CHUNK_DATA io.xol.chunkstories.net.packets.PacketChunkCompressedData server
+packet 0x03 PACKET_CHUNK_SUMMARY io.xol.chunkstories.net.packets.PacketChunkSummary server
+packet 0x04 PACKET_ENTITY io.xol.chunkstories.net.packets.PacketEntity all
+packet 0x05 PACKET_SERIALIZED_INVENTORY io.xol.chunkstories.net.packets.PacketSerializedInventory server
+packet 0x06 PACKET_MOVE_ITEM io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile client
+packet 0x07 PACKET_USE_ITEM io.xol.chunkstories.net.packets.PacketItemUsage client
+packet 0x08 PACKET_TIME io.xol.chunkstories.net.packets.PacketTime server

@@ -9,7 +9,7 @@ import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
-import io.xol.chunkstories.net.packets.Packet06InventoryMoveItemPile;
+import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldClient;
 import io.xol.chunkstories.world.WorldLocalClient;
 import io.xol.engine.base.XolioWindow;
@@ -97,7 +97,7 @@ public class InventoryOverlay extends Overlay
 							selectedItem = selectedItem.moveTo(inventories[i], x, y);
 						else if(Client.world instanceof WorldClient)
 						{
-							Packet06InventoryMoveItemPile packetMove = new Packet06InventoryMoveItemPile(true);
+							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(true);
 							packetMove.from = selectedItem.inventory;
 							packetMove.oldX = selectedItem.x;
 							packetMove.oldY = selectedItem.y;
@@ -117,7 +117,7 @@ public class InventoryOverlay extends Overlay
 		}
 		if(selectedItem != null && Client.world instanceof WorldClient)
 		{
-			Packet06InventoryMoveItemPile packetMove = new Packet06InventoryMoveItemPile(true);
+			PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(true);
 			packetMove.from = selectedItem.inventory;
 			packetMove.oldX = selectedItem.x;
 			packetMove.oldY = selectedItem.y;

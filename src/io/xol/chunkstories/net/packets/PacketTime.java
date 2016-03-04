@@ -16,11 +16,11 @@ import java.io.IOException;
  * @author gobrosse
  *
  */
-public class Packet08Time extends Packet
+public class PacketTime extends Packet
 {
 	public long time;
 	
-	public Packet08Time(boolean client)
+	public PacketTime(boolean client)
 	{
 		super(client);
 	}

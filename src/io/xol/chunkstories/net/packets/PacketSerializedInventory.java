@@ -12,10 +12,10 @@ import java.io.IOException;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Packet05SerializedInventory extends Packet
+public class PacketSerializedInventory extends Packet
 {
 	//This packets defines an entire inventory (player's or else)
-	public Packet05SerializedInventory(boolean client)
+	public PacketSerializedInventory(boolean client)
 	{
 		super(client);
 	}

@@ -16,7 +16,7 @@ import java.io.IOException;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Packet04Entity extends Packet
+public class PacketEntity extends Packet
 {
 	/**
 	 * Transfers essential data about entities
@@ -35,7 +35,7 @@ public class Packet04Entity extends Packet
 	public boolean includeName = false; // This is a nameable entity
 	public boolean deleteFlag = false; // Tells client to stop tracking this entity and delete it
 
-	public Packet04Entity(boolean client)
+	public PacketEntity(boolean client)
 	{
 		super(client);
 	}

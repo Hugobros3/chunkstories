@@ -17,7 +17,7 @@ import java.io.IOException;
  * @author gobrosse
  *
  */
-public class Packet07ItemUsage extends Packet
+public class PacketItemUsage extends Packet
 {
 
 	public enum ItemUsage {
@@ -28,7 +28,7 @@ public class Packet07ItemUsage extends Packet
 	public ItemUsage usage;
 	public byte complementInfo;
 	
-	public Packet07ItemUsage(boolean client)
+	public PacketItemUsage(boolean client)
 	{
 		super(client);
 	}

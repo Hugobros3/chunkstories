@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.plugin.server.Player;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.net.packets.Packet06InventoryMoveItemPile;
+import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -29,10 +29,10 @@ public class PlayerMoveItemEvent extends Event
 	// Specific event code
 	
 	public Player player;
-	public Packet06InventoryMoveItemPile packet;
+	public PacketInventoryMoveItemPile packet;
 	public ItemPile pile;
 	
-	public PlayerMoveItemEvent(Player player, Packet06InventoryMoveItemPile packet)
+	public PlayerMoveItemEvent(Player player, PacketInventoryMoveItemPile packet)
 	{
 		this.player = player;
 		this.packet = packet;

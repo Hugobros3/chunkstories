@@ -10,9 +10,9 @@ import io.xol.chunkstories.server.Server;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Packet00Text extends Packet
+public class PacketText extends Packet
 {
-	public Packet00Text(boolean client)
+	public PacketText(boolean client)
 	{
 		super(client);
 	}

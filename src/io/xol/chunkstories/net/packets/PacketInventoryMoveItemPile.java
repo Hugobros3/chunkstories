@@ -16,9 +16,9 @@ import java.io.IOException;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Packet06InventoryMoveItemPile extends Packet
+public class PacketInventoryMoveItemPile extends Packet
 {
-	public Packet06InventoryMoveItemPile(boolean client)
+	public PacketInventoryMoveItemPile(boolean client)
 	{
 		super(client);
 	}

@@ -14,8 +14,8 @@ import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
-import io.xol.chunkstories.net.packets.Packet04Entity;
-import io.xol.chunkstories.net.packets.Packet05SerializedInventory;
+import io.xol.chunkstories.net.packets.PacketEntity;
+import io.xol.chunkstories.net.packets.PacketSerializedInventory;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.engine.math.LoopingMathHelper;
@@ -108,7 +108,7 @@ public class ServerPlayer implements Player, Controller
 	
 	public void trackEntity(Entity e, boolean first, boolean delete)
 	{
-		Packet04Entity packet = new Packet04Entity(false);
+		PacketEntity packet = new PacketEntity(false);
 		//First time tracking we send the name if there's one
 		if(first)
 		{
@@ -179,7 +179,7 @@ public class ServerPlayer implements Player, Controller
 		//Tells the player we assignated him an entity.
 		if(controlledEntity != null)
 		{
-			Packet04Entity packet = new Packet04Entity(false);
+			PacketEntity packet = new PacketEntity(false);
 			packet.defineControl = true;
 			packet.includeName = true;
 			packet.includeRotation = true;
@@ -238,7 +238,7 @@ public class ServerPlayer implements Player, Controller
 	public void notifyTeleport(Entity entity)
 	{
 		//Send teleport packet
-		Packet04Entity packet = new Packet04Entity(false);
+		PacketEntity packet = new PacketEntity(false);
 		packet.applyFromEntity(controlledEntity);
 		System.out.println("!!!Sending packet with position "+entity);
 		playerConnection.sendPacket(packet);
@@ -248,7 +248,7 @@ public class ServerPlayer implements Player, Controller
 	public void notifyInventoryChange(Entity entity)
 	{
 		System.out.println(this+" inventory changed sending packet");
-		Packet05SerializedInventory packetInventory = new Packet05SerializedInventory(false);
+		PacketSerializedInventory packetInventory = new PacketSerializedInventory(false);
 		packetInventory.inventory = entity.getInventory();
 		playerConnection.sendPacket(packetInventory);
 	}

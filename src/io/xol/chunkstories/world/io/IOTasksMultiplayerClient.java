@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.net.packets.Packet02ChunkCompressedData;
-import io.xol.chunkstories.net.packets.Packet03ChunkSummary;
+import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
+import io.xol.chunkstories.net.packets.PacketChunkSummary;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.CubicChunk;
@@ -114,7 +114,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		}
 	}
 
-	public void requestChunkCompressedDataProcess(Packet02ChunkCompressedData data)
+	public void requestChunkCompressedDataProcess(PacketChunkCompressedData data)
 	{
 		IOTaskProcessCompressedChunkArrival task = new IOTaskProcessCompressedChunkArrival(data.x, data.y, data.z, data.data);
 		addTask(task);
@@ -181,9 +181,9 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 	public class IOTaskProcessCompressedChunkSummaryArrival extends IOTask
 	{
-		Packet03ChunkSummary packet;
+		PacketChunkSummary packet;
 
-		public IOTaskProcessCompressedChunkSummaryArrival(Packet03ChunkSummary packet)
+		public IOTaskProcessCompressedChunkSummaryArrival(PacketChunkSummary packet)
 		{
 			this.packet = packet;
 		}
@@ -231,7 +231,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		}
 	}
 
-	public void requestChunkSummaryProcess(Packet03ChunkSummary packet)
+	public void requestChunkSummaryProcess(PacketChunkSummary packet)
 	{
 		IOTaskProcessCompressedChunkSummaryArrival task = new IOTaskProcessCompressedChunkSummaryArrival(packet);
 		addTask(task);

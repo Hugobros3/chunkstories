@@ -18,7 +18,7 @@ import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.Inventory;
-import io.xol.chunkstories.net.packets.Packet04Entity;
+import io.xol.chunkstories.net.packets.PacketEntity;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.voxel.VoxelTypes;
@@ -134,7 +134,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 
 		if (Client.connection != null)
 		{
-			Packet04Entity packet = new Packet04Entity(true);
+			PacketEntity packet = new PacketEntity(true);
 			packet.includeRotation = true;
 			packet.applyFromEntity(this);
 			Client.connection.sendPacket(packet);

@@ -12,8 +12,8 @@ import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.item.Item;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
-import io.xol.chunkstories.net.packets.Packet07ItemUsage;
-import io.xol.chunkstories.net.packets.Packet07ItemUsage.ItemUsage;
+import io.xol.chunkstories.net.packets.PacketItemUsage;
+import io.xol.chunkstories.net.packets.PacketItemUsage.ItemUsage;
 import io.xol.chunkstories.world.WorldClient;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -312,7 +312,7 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null
 				&& ((EntityControllable)this.holder).getController() instanceof ClientController)
 		{
-			Packet07ItemUsage packet = new Packet07ItemUsage(true);
+			PacketItemUsage packet = new PacketItemUsage(true);
 			packet.usage = ItemUsage.SELECT;
 			packet.complementInfo = (byte) newSlot;
 			if(((Entity) this.holder).getWorld() instanceof WorldClient)

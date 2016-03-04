@@ -12,9 +12,9 @@ import java.io.IOException;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Packet01WorldInfo extends Packet
+public class PacketWorldInfo extends Packet
 {
-	public Packet01WorldInfo(boolean client)
+	public PacketWorldInfo(boolean client)
 	{
 		super(client);
 	}
