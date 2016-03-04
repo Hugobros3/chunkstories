@@ -38,8 +38,7 @@ public class Bone
 			txt = txt + "\t";
 			p = p.parent;
 		}
-		txt += name + " " + channels + " channels, offset=" + offset.toString()
-				+ ", dest=" + dest + "\n";
+		txt += name + " " + channels + " channels, offset=" + offset.toString() + ", dest=" + dest + "\n";
 		for (Bone c : childs)
 			txt += c.toString();
 
@@ -68,7 +67,7 @@ public class Bone
 		float rotX = toRad(animationData[frame][0]);
 		float rotY = toRad(animationData[frame][1]);
 		float rotZ = toRad(animationData[frame][2]);
-		
+
 		if (channels == 6)
 		{
 			rotX = toRad(animationData[frame][3]);
@@ -77,7 +76,7 @@ public class Bone
 		}
 
 		Matrix4f matrix = new Matrix4f();
-		
+
 		Vector3f totalOffset = new Vector3f();
 		Bone kekzer = this;
 		while (kekzer != null)
@@ -85,7 +84,7 @@ public class Bone
 			Vector3f.add(totalOffset, kekzer.offset, totalOffset);
 			kekzer = kekzer.parent;
 		}
-		
+
 		matrix.rotate(rotX, new Vector3f(1, 0, 0));
 		matrix.rotate(rotY, new Vector3f(0, 1, 0));
 		matrix.rotate(rotZ, new Vector3f(0, 0, 1));
@@ -102,10 +101,11 @@ public class Bone
 			matrix.m31 += offset.y;
 			matrix.m32 += offset.z;
 		}
-		
+
 		//if (parent != null) Matrix4f.mul(matrix, parent.getTransformationMatrix(frame, dekaled), matrix);
-		
-		if(parent != null) Matrix4f.mul(parent.getTransformationMatrix(frame, false), matrix, matrix);
+
+		if (parent != null)
+			Matrix4f.mul(parent.getTransformationMatrix(frame, false), matrix, matrix);
 		return matrix;
 	}
 

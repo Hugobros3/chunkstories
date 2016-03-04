@@ -49,7 +49,6 @@ public class PacketsProcessor
 			return;
 		try (FileReader fileReader = new FileReader(f); BufferedReader reader = new BufferedReader(fileReader);)
 		{
-
 			String line = "";
 			int ln = 0;
 			while ((line = reader.readLine()) != null)

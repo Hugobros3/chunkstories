@@ -7,6 +7,9 @@ import org.lwjgl.util.vector.Vector3f;
 // http://chunkstories.xyz
 // http://xol.io
 
+/**
+ * Various helper functions to build matrices
+ */
 public class MatrixHelper
 {
 	public static Matrix4f getOrthographicMatrix(float left, float right, float bottom, float top, float near, float far)

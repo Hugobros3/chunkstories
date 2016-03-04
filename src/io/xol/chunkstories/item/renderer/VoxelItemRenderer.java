@@ -4,6 +4,8 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
+
+import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.item.ItemPile;
@@ -75,75 +77,8 @@ public class VoxelItemRenderer implements ItemRenderer
 		{
 			model = VoxelModels.getVoxelModel("default");
 		}
-		/*context.renderDirect(new float[]{
-				1f, 1f, 0f,
-				0f, 0f, 0f,
-				1f, 0f, 0f,
-				1f, 1f, 0f,
-				0f, 1f, 0f,
-				0f, 0f, 0f,
-				
-				1f, 1f, 1f,
-				0f, 1f, 0f,
-				1f, 1f, 0f,
-				1f, 1f, 1f,
-				0f, 1f, 1f,
-				0f, 1f, 0f,
-				
-				1f, 1f, 1f,
-				1f, 0f, 0f,
-				1f, 0f, 1f,
-				1f, 1f, 1f,
-				1f, 1f, 0f,
-				1f, 0f, 0f,
-		}, new float[] {
-				1f, 1f,
-				0f, 0f,
-				1f, 0f,
-				1f, 1f,
-				0f, 1f,
-				0f, 0f,
-				
-				1f, 1f,
-				0f, 0f,
-				1f, 0f,
-				1f, 1f,
-				0f, 1f,
-				0f, 0f,
-				
-				1f, 1f,
-				0f, 0f,
-				1f, 0f,
-				1f, 1f,
-				0f, 1f,
-				0f, 0f,
-		}, null, new float[]{
-				1f, 0f, 0f,
-				1f, 0f, 0f,
-				1f, 0f, 0f,
-				1f, 0f, 0f,
-				1f, 0f, 0f,
-				1f, 0f, 0f,
-				
-				0f, 1f, 0f,
-				0f, 1f, 0f,
-				0f, 1f, 0f,
-				0f, 1f, 0f,
-				0f, 1f, 0f,
-				0f, 1f, 0f,
-				
-				0f, 0f, 1f,
-				0f, 0f, 1f,
-				0f, 0f, 1f,
-				0f, 0f, 1f,
-				0f, 0f, 1f,
-				0f, 0f, 1f,
-		});
-		else
-		{*/
-			//System.out.println(model.vertices.length);
-			context.renderDirect(model.vertices, model.texCoords, null, model.normals);
-		//}
+		assert model != null;
+		context.renderDirect(model.vertices, model.texCoords, null, model.normals);
 	}
 
 	private float toRad(float f)

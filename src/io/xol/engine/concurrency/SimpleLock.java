@@ -6,19 +6,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 //http://chunkstories.xyz
 //http://xol.io
 
+/**
+ * Simple blocking lock
+ * @author Gobrosse
+ *
+ */
 public class SimpleLock
 {
 	// Dead-simple lock
 	AtomicBoolean locked = new AtomicBoolean();
-	
-	//boolean locked = false;
-	
-	/*long maxWait;
-	
-	public SimpleLock(long maxWait)
-	{
-		this.maxWait = maxWait;
-	}*/
 	
 	public synchronized void lock()
 	{

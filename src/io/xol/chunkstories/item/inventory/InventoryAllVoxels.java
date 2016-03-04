@@ -26,7 +26,6 @@ public class InventoryAllVoxels extends Inventory
 			{
 				allItems.add(item);
 			}
-			//this.addItemPile(new ItemPile("item_voxel", new String[]{""+id}));
 		}
 		this.height = (int)Math.ceil(allItems.size() / 10.0);
 		this.width = 10;

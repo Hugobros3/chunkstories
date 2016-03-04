@@ -4,6 +4,11 @@ package io.xol.engine.math;
 // http://chunkstories.xyz
 // http://xol.io
 
+/**
+ * As chunkstories uses fixed-size, wrapping-around-themselves worlds, we need some convinience methods
+ * @author Gobrosse
+ *
+ */
 public class LoopingMathHelper
 {
 	public static int moduloDistance(int a, int b, int mod)

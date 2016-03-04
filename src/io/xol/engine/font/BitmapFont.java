@@ -34,6 +34,7 @@ public class BitmapFont
 	{
 		try
 		{
+			//TODO this is ancient, remake it !
 			InputStream ips = new FileInputStream(new File(System.getProperty("user.dir") + "/res/textures/font/" + name + ".xfd"));
 			InputStreamReader ipsr = new InputStreamReader(ips, "UTF-8");
 			BufferedReader br = new BufferedReader(ipsr);

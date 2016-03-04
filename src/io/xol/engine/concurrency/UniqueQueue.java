@@ -11,6 +11,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 //http://chunkstories.xyz
 //http://xol.io
 
+/**
+ * A queue that garantees uniqueness AND order while still being concurrent access
+ * @author Gobrosse
+ *
+ * @param <T>
+ */
 public class UniqueQueue<T> implements Queue<T>
 {
 	Queue<T> internalQueue = new ConcurrentLinkedQueue<T>();

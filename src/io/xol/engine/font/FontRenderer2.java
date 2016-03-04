@@ -204,6 +204,4 @@ public class FontRenderer2
 		cutLongText = on;
 		lengthCutoff = width;
 	}
-
-	// 3d
 }

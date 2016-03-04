@@ -1,6 +1,6 @@
 package io.xol.chunkstories.item.core;
 
-import io.xol.chunkstories.item.Item;
+import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.item.ItemPile;
 
 //(c) 2015-2016 XolioWare Interactive

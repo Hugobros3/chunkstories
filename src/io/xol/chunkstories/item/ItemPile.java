@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
 import io.xol.chunkstories.item.inventory.Inventory;

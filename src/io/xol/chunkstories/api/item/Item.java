@@ -1,4 +1,4 @@
-package io.xol.chunkstories.item;
+package io.xol.chunkstories.api.item;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -6,8 +6,9 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.actions.ClientAction;
+import io.xol.chunkstories.item.ItemData;
+import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
-import io.xol.chunkstories.item.renderer.ItemRenderer;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -41,6 +42,13 @@ public abstract class Item
 		this.itemRenderer = itemRenderer;
 	}
 	
+	/**
+	 * Called on creation of an itemPile of this object (you should override this if you need something in particular in your ItemData,
+	 * and/or if you want to specify subtypes to your item using the info[] tags
+	 * @param pile
+	 * @param info When spawning an item it parses everything after itemname: and returns an array of strings separated by ':'
+	 * ie : myitem:prout:22 infers an String[] info = {"prout", "22"};
+	 */
 	public void onCreate(ItemPile pile, String[] info)
 	{
 		
@@ -129,7 +137,7 @@ public abstract class Item
 		return internalName;
 	}
 
-	protected void setInternalName(String internalName)
+	public void setInternalName(String internalName)
 	{
 		this.internalName = internalName;
 	}

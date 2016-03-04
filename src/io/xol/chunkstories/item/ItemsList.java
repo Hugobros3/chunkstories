@@ -1,5 +1,6 @@
 package io.xol.chunkstories.item;
 
+import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.BufferedReader;

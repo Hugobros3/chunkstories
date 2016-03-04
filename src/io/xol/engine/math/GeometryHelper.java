@@ -16,7 +16,8 @@ import org.lwjgl.util.vector.Vector3f;
 
 public class GeometryHelper
 {
-
+	//TODO : This is ancient and hidious. Remake it using Camera class and it's vectors, we don't use fixed pipeline anymore it's 2016 !
+	
 	// CREDIT: teletubo on java-gaming.org for original code
 	// Cleaned it up and added some code to get a normalized vector
 
@@ -45,19 +46,13 @@ public class GeometryHelper
 		return v;
 	}
 
-	// my part
 	static public Vector3f getVectorMouseIn3d(int mx, int my, Camera cam)
 	{
 		Vector3f position = getMousePositionIn3dCoords(mx, my);
-		// System.out.println("position : "+position.x+":"+position.y+":"+position.z);
 		Vector3f camera = new Vector3f((float) -cam.camPosX, (float) -cam.camPosY, (float) -cam.camPosZ);
-		// System.out.println("camera : "+camera.x+":"+camera.y+":"+camera.z);
-		// position.normalise();
-		// camera.normalise();
 		Vector3f v = new Vector3f(0, 0, 0);
 		Vector3f.sub(position, camera, v);
 		v.normalise();
-		// System.out.println("vec : "+v.x+":"+v.y+":"+v.z);
 		return v;
 	}
 

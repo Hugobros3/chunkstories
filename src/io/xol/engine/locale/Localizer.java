@@ -13,9 +13,13 @@ import java.util.Map;
 // http://chunkstories.xyz
 // http://xol.io
 
+/**
+ * Loads .locale files and is used for internationalization of the game
+ * @author Gobrosse
+ *
+ */
 public class Localizer
 {
-
 	static Map<String, String> locale = new HashMap<String, String>();
 
 	public static void loadLocale(String locale)
@@ -30,7 +34,6 @@ public class Localizer
 			loadLocale(new File("./res/locale/en.locale.txt"));
 			System.out.println("Loaded fallback locale \"en\".");
 		}
-
 	}
 
 	private static void loadLocale(File localeFile)

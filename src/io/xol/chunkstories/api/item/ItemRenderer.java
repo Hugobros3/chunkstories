@@ -1,4 +1,4 @@
-package io.xol.chunkstories.item.renderer;
+package io.xol.chunkstories.api.item;
 
 import org.lwjgl.util.vector.Matrix4f;
 

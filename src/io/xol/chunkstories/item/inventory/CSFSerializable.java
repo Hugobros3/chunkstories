@@ -8,6 +8,11 @@ import java.io.IOException;
 //http://chunkstories.xyz
 //http://xol.io
 
+/**
+ * Describes objects that can be serialized in .csf files (or on the network)
+ * @author Gobrosse
+ *
+ */
 public interface CSFSerializable
 {
 	public void load(DataInputStream stream) throws IOException;

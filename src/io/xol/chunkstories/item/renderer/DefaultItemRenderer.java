@@ -1,6 +1,7 @@
 package io.xol.chunkstories.item.renderer;
 
-import io.xol.chunkstories.item.Item;
+import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.gui.GuiDrawer;
