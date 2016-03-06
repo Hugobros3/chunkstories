@@ -24,6 +24,7 @@ import io.xol.engine.model.RenderingContext;
 import io.xol.engine.model.animation.BVHAnimation;
 import io.xol.engine.model.animation.BVHLibrary;
 import io.xol.engine.model.animation.Bone;
+import io.xol.engine.textures.Texture;
 import io.xol.engine.textures.TexturesHandler;
 
 public class EntityTest extends EntityImplementation implements EntityHUD
@@ -48,8 +49,11 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		// if(Math.random() > 0.9)
 		//i++;
 		i %= 80;
-		// System.out.println("rendering entity test");
-		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("models/hogubrus3.png"));
+		
+		Texture playerTexture = TexturesHandler.getTexture("models/hogubrus3.png");
+		playerTexture.setLinearFiltering(false);
+		
+		renderingContext.setDiffuseTexture(playerTexture.getID());
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
 		renderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
 		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
@@ -58,21 +62,21 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 
 		renderingContext.renderingShader.setUniformMatrix4f("localTransform", new Matrix4f());
-		//debugDraw();
-		//ModelLibrary.loadAndRenderMesh("res/models/human.obj");
-		ModelLibrary.getMesh("./res/models/human.obj").renderUsingBVHTree(renderingContext, BVHLibrary.getAnimation("res/models/human-fixed-standstill.bvh"), i);
+		
+		ModelLibrary.getMesh("./res/models/human.obj").renderUsingBVHTree(renderingContext, BVHLibrary.getAnimation("res/models/human-viewport.bvh"), i);
 	}
 
 	public void debugDraw()
 	{
 		// Debug this shit
-		// System.out.println("Debug draw");
-		BVHAnimation anim = BVHLibrary.getAnimation("res/models/human-fixed-standstill.bvh");
+		//System.out.println("Debug draw");
+		BVHAnimation anim = BVHLibrary.getAnimation("res/models/human-viewport.bvh");
 		
 		for (Bone b : anim.bones)
 		{
 			Matrix4f transform = anim.getTransformationForBone(b.name, i);
 			debugDraw(0.2f, 0.2f, 0.2f, (float) posX, (float) posY , (float) posZ, transform);
+			//debugDraw(0.2f, 0.2f, 0.2f, (float) posX, (float) posY , (float) posZ, transform);
 		}
 	}
 	
@@ -84,17 +88,23 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		b -= y;
 		c -= z;
 		Vector4f vertex = new Vector4f(a, b, c, 1);
+		if(Math.abs(b) > 0.0)
+		{
+			vertex.x = 0.0f;
+			vertex.z = 0.0f;
+		}
 		Matrix4f.transform(m, vertex, vertex);
-		kek.add(new float[]{vertex.x + x, vertex.y + y, -vertex.z + z});
+		kek.add(new float[]{vertex.x + x, vertex.y + y, vertex.z + z});
 	}
 	
 	public void debugDraw(float r, float g, float b, float xpos, float ypos, float zpos, Matrix4f transform)
 	{
 		kek.clear();
+		
 		// glTranslated(xpos-xw/2,ypos,zpos-zw/2);
 		float xw = 0.05f;
 		float zw = 0.05f;
-		float h = 0.0f;
+		float h = 0.15f;
 		//System.out.println("Debug drawing at "+xpos+" y:"+ypos+" z:"+(zpos-zw/2));
 
 		//glDisable(GL_TEXTURE_2D);

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.util.vector.Matrix3f;
 import org.lwjgl.util.vector.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -189,6 +190,7 @@ public class ObjMesh
 
 	public void render(RenderingContext renderingContext)
 	{
+		glEnable(GL_CULL_FACE);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		if (renderingContext.verticesAttribMode)
 		{
@@ -210,25 +212,40 @@ public class ObjMesh
 
 	public void renderUsingBVHTree(RenderingContext renderingContext, BVHAnimation animationData, int frame)
 	{
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		
-		//EntityTest debug = new EntityTest(null, 0, 0, 0);
+		Matrix4f matrix;
+		Matrix3f normal = new Matrix3f();
 		if (renderingContext.verticesAttribMode)
 		{
 			glVertexAttribPointer(renderingContext.vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
 			glVertexAttribPointer(renderingContext.texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
 			glVertexAttribPointer(renderingContext.normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
 			int totalSize = 0;
-			Matrix4f matrix;
 			for (String currentVertexGroup : groups.keySet())
 			{
 				int i = groups.get(currentVertexGroup);
 				matrix = animationData.getTransformationForBonePlusOffset(currentVertexGroup, frame);
-				renderingContext.renderingShader.setUniformMatrix4f("localTransform", matrix);
-				matrix.m30 = 0;
-				matrix.m31 = 0;
-				matrix.m32 = 0;
-				renderingContext.renderingShader.setUniformMatrix4f("localTransformNormal", matrix);
+				renderingContext.renderingShader.setUniformMatrix4f("boneTransformation", matrix);
+				//
+
+				Matrix4f.invert(matrix, matrix);
+				Matrix4f.transpose(matrix, matrix);
+				normal.m00 = matrix.m00;
+				normal.m01 = matrix.m01;
+				normal.m02 = matrix.m02;
+
+				normal.m10 = matrix.m10;
+				normal.m11 = matrix.m11;
+				normal.m12 = matrix.m12;
+
+				normal.m20 = matrix.m20;
+				normal.m21 = matrix.m21;
+				normal.m22 = matrix.m22;
+				//
+				renderingContext.renderingShader.setUniformMatrix3f("boneTransformationNormal", normal);
 				glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 				totalSize += i;
 			}

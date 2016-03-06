@@ -48,7 +48,11 @@ uniform mat3 normalMatrixInv;
 uniform vec3 givenLightmapCoords;
 
 uniform mat4 localTransform;
-uniform mat4 localTransformNormal;
+uniform mat3 localTransformNormal;
+
+uniform mat4 boneTransformation;
+uniform mat3 boneTransformNormal;
+
 uniform mat4 offsetTransform;
 
 //Weather
@@ -58,12 +62,12 @@ varying float rainWetness;
 void main(){
 	//Usual variable passing
 	texcoord = texCoordIn;
-	vec4 v = localTransform * vec4(vertexIn.xyz, 1.0);
+	vec4 v = localTransform * boneTransformation * vec4(vertexIn.xyz, 1.0);
 	
 	v+=vec4(borderShift,0);
 	
 	varyingVertex = v;
-	varyingNormal = (localTransformNormal * normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
+	varyingNormal =  localTransformNormal * boneTransformNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
 	
 	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(varyingNormal)), 0.0, 1.0);
 	

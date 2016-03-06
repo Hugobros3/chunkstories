@@ -1,9 +1,13 @@
 package io.xol.chunkstories.gui;
 
 import org.lwjgl.util.vector.Vector3f;
+
+import java.util.Iterator;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
+import static org.lwjgl.opengl.GL11.*;
 
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
@@ -36,6 +40,7 @@ import io.xol.chunkstories.renderer.EntityRenderer;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.CubicChunk;
+
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -151,6 +156,11 @@ public class GameplayScene extends OverlayableScene
 
 			for (CollisionBox b : player.getTranslatedCollisionBoxes())
 				b.debugDraw(0, 1, 1, 1);
+			glDisable(GL_DEPTH_TEST);
+			Iterator<Entity> ie = Client.world.getAllLoadedEntities();
+			while(ie.hasNext())
+				ie.next().debugDraw();
+			glEnable(GL_DEPTH_TEST);
 		}
 		//Cubemap rendering trigger (can't run it while main render is occuring)
 		if (shouldCM)

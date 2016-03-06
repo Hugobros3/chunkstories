@@ -29,6 +29,9 @@ import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;
+import io.xol.engine.model.animation.BVHAnimation;
+import io.xol.engine.model.animation.BVHLibrary;
+import io.xol.engine.textures.Texture;
 import io.xol.engine.textures.TexturesHandler;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -117,7 +120,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		//Bobbing
 		if (collision_bot)
 			walked += Math.abs(hSpeed);
-		eyePosition = 1.6 + Math.sin(walked * 5d) * 0.035d;
+		eyePosition = 1.8 + Math.sin(walked * 5d) * 0.035d;
 	}
 
 	// client-side method for updating the player movement
@@ -455,7 +458,10 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		if (this.equals(Client.controlledEntity))
 			return; // Don't render yourself
 
-		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("models/hogubrus3.png"));
+		Texture playerTexture = TexturesHandler.getTexture("models/hogubrus3.png");
+		playerTexture.setLinearFiltering(false);
+		
+		renderingContext.setDiffuseTexture(playerTexture.getID());
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
 		renderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
 		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
@@ -463,12 +469,12 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 		Matrix4f mutrix = new Matrix4f();
-		mutrix.rotate((90 - rotH) / 180 * 3.14159f, new Vector3f(0, 1, 0));
+		mutrix.rotate((90 - rotH) / 180f * 3.14159f, new Vector3f(0, 1, 0));
 
 		renderingContext.renderingShader.setUniformMatrix4f("localTransform", mutrix);
-		//debugDraw();
-		ModelLibrary.getMesh("res/models/human.obj").render(renderingContext);
-		//ModelLibrary.loadAndRenderAnimatedMesh("res/models/human.obj", "res/models/human-fixed-standstill.bvh", 0);
+		
+		BVHAnimation viewPortBVH = BVHLibrary.getAnimation("res/models/human-fixed-standstill.bvh");
+		ModelLibrary.getMesh("res/models/human.obj").renderUsingBVHTree(renderingContext, viewPortBVH, 0);
 	}
 
 	@Override

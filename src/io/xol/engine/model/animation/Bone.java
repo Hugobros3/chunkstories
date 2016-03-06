@@ -77,14 +77,6 @@ public class Bone
 
 		Matrix4f matrix = new Matrix4f();
 
-		Vector3f totalOffset = new Vector3f();
-		Bone kekzer = this;
-		while (kekzer != null)
-		{
-			Vector3f.add(totalOffset, kekzer.offset, totalOffset);
-			kekzer = kekzer.parent;
-		}
-
 		matrix.rotate(rotX, new Vector3f(1, 0, 0));
 		matrix.rotate(rotY, new Vector3f(0, 1, 0));
 		matrix.rotate(rotZ, new Vector3f(0, 0, 1));
@@ -106,6 +98,7 @@ public class Bone
 
 		if (parent != null)
 			Matrix4f.mul(parent.getTransformationMatrix(frame, false), matrix, matrix);
+		//matrix.m31 *= -1;
 		return matrix;
 	}
 

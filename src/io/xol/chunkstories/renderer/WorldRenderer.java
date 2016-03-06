@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.util.vector.Matrix3f;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -837,8 +838,9 @@ public class WorldRenderer
 			glEnableVertexAttribArray(normalIn);
 
 			renderingContext.setupVertexInputs(vertexIn, texCoordIn, -1, normalIn);
-			renderingContext.setCurrentShader(entitiesShader);
-			entitiesShader.setUniformMatrix4f("localTransformNormal", new Matrix4f());
+			
+			entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
+			entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
 
 			entitiesShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
 			entitiesShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
@@ -869,12 +871,18 @@ public class WorldRenderer
 		//for (Entity e : getAllLoadedEntities())
 		{
 			e = ie.next();
-			e.render(renderingContext);
-			// Also populate lights buffer
-			el = e.getLights();
-			if (el != null)
-				for (DefferedLight l : el)
-					lights.add(l);
+			//Reset transformations
+			entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
+			entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
+			if(e!= null)
+			{
+				e.render(renderingContext);
+				// Also populate lights buffer
+				el = e.getLights();
+				if (el != null)
+					for (DefferedLight l : el)
+						lights.add(l);
+			}
 		}
 		// Particles rendering
 		Client.world.particlesHolder.render(camera);

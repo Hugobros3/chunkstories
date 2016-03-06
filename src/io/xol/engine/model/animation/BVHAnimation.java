@@ -42,23 +42,33 @@ public class BVHAnimation
 			System.out.println("fack you");
 			return matrix;
 		}
-		Matrix4f rotMatrix = new Matrix4f();
-		rotMatrix.m11 = 0;
-		rotMatrix.m22 = 0;
-		rotMatrix.m12 = 1;
-		rotMatrix.m21 = 1;
-
+		
 		frame %= frames;
 		for (Bone b : bones)
 			if (b.name.equals(boneName))
 			{
-				Matrix4f.mul(b.getTransformationMatrix(frame, false), matrix, matrix);
+				matrix = b.getTransformationMatrix(frame, false);
 			}
-
-		Matrix4f.mul(rotMatrix, matrix, matrix);
-		Matrix4f.mul(matrix, rotMatrix, matrix);
-
-		// System.out.println(rotMatrix.toString());
+		
+		Matrix4f blender2ingame = new Matrix4f();
+		blender2ingame.m11 = 0;
+		blender2ingame.m22 = 0;
+		blender2ingame.m12 = 1;
+		blender2ingame.m21 = 1;
+		
+		//Rotate the matrix first to apply the transformation in blender space
+		Matrix4f.mul(blender2ingame, matrix, matrix);
+		
+		//Mirror it
+		Matrix4f mirror = new Matrix4f();
+		mirror.m22 = -1;
+		Matrix4f.mul(mirror, matrix, matrix);
+		
+		//Rotate again after so it's back the correct way arround
+		Matrix4f.mul(matrix, blender2ingame, matrix);
+		
+		Matrix4f.mul(matrix, mirror, matrix);
+		
 		return matrix;
 	}
 
@@ -73,10 +83,10 @@ public class BVHAnimation
 		Matrix4f offsetMatrix = new Matrix4f();
 		Matrix4f rotMatrix = new Matrix4f();
 
-		rotMatrix.m11 = 0;
+		/*rotMatrix.m11 = 0;
 		rotMatrix.m22 = 0;
 		rotMatrix.m12 = 1;
-		rotMatrix.m21 = 1;
+		rotMatrix.m21 = 1;*/
 
 		Vector3f offsetTotal = new Vector3f();
 
@@ -89,34 +99,42 @@ public class BVHAnimation
 				{
 					offsetTotal.x += kek.offset.x;
 					offsetTotal.y += kek.offset.z;
-					offsetTotal.z += kek.offset.y;
+					offsetTotal.z += -kek.offset.y;
 					kek = kek.parent;
 				}
 				offsetTotal.negate();
-
 				offsetMatrix.m30 += offsetTotal.x;
 				offsetMatrix.m31 += offsetTotal.y;
 				offsetMatrix.m32 += offsetTotal.z;
 			}
 		
+		//Matrix4f.invert(offsetMatrix, offsetMatrix);
 		matrix = getTransformationForBone(boneName, frame);
 		
-		// Matrix4f.mul(matrix, offsetMatrix, matrix);
+
+		/*matrix.m30 += offsetTotal.x;
+		matrix.m31 += offsetTotal.y;
+		matrix.m32 += offsetTotal.z;*/
+		//Matrix4f.invert(matrix, matrix);
+		
+		//Matrix4f.mul(matrix, offsetMatrix, matrix);
 
 		// matrix = new Matrix4f();
 
 		// offsetMatrix.rotate((float)Math.PI/2, new Vector3f(0, 0, 1));
 
-		// Matrix4f.mul(offsetMatrix, rotMatrix, offsetMatrix);
 
 		// float kekZERBORDEL_TARACE = 0.1f;
 		// offsetMatrix.m31 += -kekZERBORDEL_TARACE;
 
 		Matrix4f.mul(matrix, offsetMatrix, matrix);
+		
+		Matrix4f.mul(matrix, rotMatrix, matrix);
+		//Matrix4f.mul(rotMatrix, matrix, matrix);
 
 		// matrix.m30 += offsetTotal.x;
 		// matrix.m31 += -kekZERBORDEL_TARACE+0.0;
-		matrix.m31 += -0.0f;
+		// matrix.m31 += -0.0f;
 		// matrix.m32 += offsetTotal.y;
 
 		return matrix;
