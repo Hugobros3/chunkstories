@@ -472,7 +472,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		renderingContext.renderingShader.setUniformMatrix4f("localTransform", mutrix);
 		
 		BVHAnimation viewPortBVH = BVHLibrary.getAnimation("res/models/human-fixed-standstill.bvh");
-		ModelLibrary.getMesh("res/models/human.obj").renderUsingBVHTree(renderingContext, viewPortBVH, 0);
+		ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, viewPortBVH, 0);
 	}
 
 	@Override

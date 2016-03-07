@@ -43,13 +43,15 @@ public class BVHAnimation
 			return matrix;
 		}
 		
+		//Sanity check
 		frame %= frames;
 		for (Bone b : bones)
 			if (b.name.equals(boneName))
 			{
-				matrix = b.getTransformationMatrix(frame, false);
+				matrix = b.getTransformationMatrix(frame);
 			}
 		
+		//Swaps Y and Z axises arround
 		Matrix4f blender2ingame = new Matrix4f();
 		blender2ingame.m11 = 0;
 		blender2ingame.m22 = 0;
@@ -74,69 +76,41 @@ public class BVHAnimation
 
 	public Matrix4f getTransformationForBonePlusOffset(String boneName, int frame)
 	{
-		Matrix4f matrix = new Matrix4f();
+		Matrix4f matrix = null;
 		if (frames == 0)
 		{
-			System.out.println("fack you");
-			return matrix;
+			System.out.println("Invalid bone : "+boneName + "in animation" + this);
+			return new Matrix4f();
 		}
 		Matrix4f offsetMatrix = new Matrix4f();
-		Matrix4f rotMatrix = new Matrix4f();
-
-		/*rotMatrix.m11 = 0;
-		rotMatrix.m22 = 0;
-		rotMatrix.m12 = 1;
-		rotMatrix.m21 = 1;*/
-
 		Vector3f offsetTotal = new Vector3f();
 
+		//Sanity checking
 		frame %= frames;
 		for (Bone b : bones)
 			if (b.name.equals(boneName))
 			{
+				//Accumulate the transformation offset
 				Bone kek = b;
 				while (kek != null)
 				{
 					offsetTotal.x += kek.offset.x;
-					offsetTotal.y += kek.offset.z;
+					offsetTotal.y += kek.offset.z; //Swap yz arround and negate input Y to apply blender -> ingame transformation
 					offsetTotal.z += -kek.offset.y;
 					kek = kek.parent;
 				}
+				//Negate it and build the offset matrix
 				offsetTotal.negate();
 				offsetMatrix.m30 += offsetTotal.x;
 				offsetMatrix.m31 += offsetTotal.y;
 				offsetMatrix.m32 += offsetTotal.z;
 			}
 		
-		//Matrix4f.invert(offsetMatrix, offsetMatrix);
-		matrix = getTransformationForBone(boneName, frame);
-		
+		//Get the normal bone transformation
+		matrix = getTransformationForBone(boneName, frame);		
 
-		/*matrix.m30 += offsetTotal.x;
-		matrix.m31 += offsetTotal.y;
-		matrix.m32 += offsetTotal.z;*/
-		//Matrix4f.invert(matrix, matrix);
-		
-		//Matrix4f.mul(matrix, offsetMatrix, matrix);
-
-		// matrix = new Matrix4f();
-
-		// offsetMatrix.rotate((float)Math.PI/2, new Vector3f(0, 0, 1));
-
-
-		// float kekZERBORDEL_TARACE = 0.1f;
-		// offsetMatrix.m31 += -kekZERBORDEL_TARACE;
-
-		Matrix4f.mul(matrix, offsetMatrix, matrix);
-		
-		Matrix4f.mul(matrix, rotMatrix, matrix);
-		//Matrix4f.mul(rotMatrix, matrix, matrix);
-
-		// matrix.m30 += offsetTotal.x;
-		// matrix.m31 += -kekZERBORDEL_TARACE+0.0;
-		// matrix.m31 += -0.0f;
-		// matrix.m32 += offsetTotal.y;
-
+		//Apply the offset matrix
+		Matrix4f.mul(matrix, offsetMatrix, matrix);		
 		return matrix;
 	}
 

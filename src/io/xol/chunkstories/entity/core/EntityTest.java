@@ -63,7 +63,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 
 		renderingContext.renderingShader.setUniformMatrix4f("localTransform", new Matrix4f());
 		
-		ModelLibrary.getMesh("./res/models/human.obj").renderUsingBVHTree(renderingContext, BVHLibrary.getAnimation("res/models/human-viewport.bvh"), i);
+		ModelLibrary.getMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/models/human-viewport.bvh"), i);
 	}
 
 	public void debugDraw()

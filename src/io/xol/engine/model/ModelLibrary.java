@@ -10,9 +10,13 @@ import java.util.Map;
 public class ModelLibrary
 {
 	// This class holds static model info
-
 	static Map<String, ObjMesh> models = new HashMap<String, ObjMesh>();
 
+	/**
+	 * Returns the ObjMesh found within the game's filesystem matching the given path.
+	 * @param name
+	 * @return
+	 */
 	public static ObjMesh getMesh(String name)
 	{
 		ObjMesh mesh = null;
@@ -30,6 +34,8 @@ public class ModelLibrary
 			}
 		}
 		models.put(name, mesh);
+		//Source style error mesh
+		//We learn from the best
 		if (mesh == null)
 			mesh = getMesh("./res/models/error.obj");
 		return mesh;

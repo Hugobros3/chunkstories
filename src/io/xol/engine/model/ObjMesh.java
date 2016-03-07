@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Matrix3f;
@@ -27,8 +28,8 @@ import static org.lwjgl.opengl.GL20.*;
 
 /**
  * An appoling mess of an Obj loader
- * @author Hugo
- *
+ * 
+ * @author Hugo TODO fix
  */
 public class ObjMesh
 {
@@ -128,16 +129,6 @@ public class ObjMesh
 								tempGroups.get(group).add(new float[] { v[0], v[1], v[2], t[0], t[1], n[0], n[1], n[2] });
 							}
 						}
-						/*
-						 * if(splitted.length == 5) { groupSize++; for(int i :
-						 * new int[]{1,2,3, 1,3,4}) { e =
-						 * splitted[i].split("/"); v =
-						 * vertices.get(Integer.parseInt(e[0])-1); t =
-						 * texcoords.get(Integer.parseInt(e[1])-1); n =
-						 * normals.get(Integer.parseInt(e[2])-1); // XYZTSNLO -
-						 * 8 components of float. vboData.add( new float[]{v[0],
-						 * v[1], v[2], t[0], t[1], n[0], n[1], n[2]} ); } }
-						 */
 					}
 				}
 			}
@@ -173,49 +164,101 @@ public class ObjMesh
 			// Upload it
 			glBindBuffer(GL_ARRAY_BUFFER, vboId);
 			glBufferData(GL_ARRAY_BUFFER, fb, GL_STATIC_DRAW);
-
-			//System.out.println("loaded " + faces + " faces. in vbo" + vboId);
+			//Please work for years without asking questions
 		}
 		catch (Exception e)
 		{
-			System.out.println("Error loading model at line "+line);
+			//God damnit
+			System.out.println("Error loading model at line " + line);
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Destroys the ObjMesh and frees it's ressources on the GPU
+	 */
 	public void destroy()
 	{
 		glDeleteBuffers(vboId);
 	}
 
+	/**
+	 * Renders the model in the given renderingContext
+	 * 
+	 * @param renderingContext
+	 */
 	public void render(RenderingContext renderingContext)
 	{
 		glEnable(GL_CULL_FACE);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		if (renderingContext.verticesAttribMode)
 		{
-			// glDisableVertexAttribArray(colorIn);
-			// vboData.add( new float[]{v[0], v[1], v[2], t[0], t[1], n[0],
-			// n[1], n[2]} );
 			glVertexAttribPointer(renderingContext.vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
 			glVertexAttribPointer(renderingContext.texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
 			glVertexAttribPointer(renderingContext.normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
 			int totalSize = 0;
 			for (int i : groups.values())
 			{
-				//System.out.println("nsm : "+i+" "+groups.containsValue(i)+" s");
 				glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 				totalSize += i;
 			}
 		}
 	}
 
-	public void renderUsingBVHTree(RenderingContext renderingContext, BVHAnimation animationData, int frame)
+	/**
+	 * Renders only subparts of the model in the given renderingContext
+	 * 
+	 * @param renderingContext
+	 * @param bonesToDraw
+	 */
+	public void render(RenderingContext renderingContext, Set<String> bonesToDraw)
 	{
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
-		
+
+		if (renderingContext.verticesAttribMode)
+		{
+			glVertexAttribPointer(renderingContext.vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
+			glVertexAttribPointer(renderingContext.texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
+			glVertexAttribPointer(renderingContext.normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
+			int totalSize = 0;
+			for (String currentVertexGroup : groups.keySet())
+			{
+				int i = groups.get(currentVertexGroup);
+				if (bonesToDraw.contains(currentVertexGroup))
+					glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
+				totalSize += i;
+			}
+		}
+	}
+
+	/**
+	 * Renders the model using a BVH tree for animations data
+	 * 
+	 * @param renderingContext
+	 * @param animationData
+	 * @param frame
+	 */
+	public void render(RenderingContext renderingContext, BVHAnimation animationData, int frame)
+	{
+		this.render(renderingContext, null, animationData, frame);
+	}
+
+	/**
+	 * Renders only subparts of the model using a BVHTree for animations data
+	 * 
+	 * @param renderingContext
+	 * @param bonesToDraw
+	 * @param animationData
+	 * @param frame
+	 */
+	public void render(RenderingContext renderingContext, Set<String> bonesToDraw, BVHAnimation animationData, int frame)
+	{
+		glEnable(GL_CULL_FACE);
+		//glCullFace(GL_BACK);
+		glBindBuffer(GL_ARRAY_BUFFER, vboId);
+
 		Matrix4f matrix;
 		Matrix3f normal = new Matrix3f();
 		if (renderingContext.verticesAttribMode)
@@ -229,8 +272,7 @@ public class ObjMesh
 				int i = groups.get(currentVertexGroup);
 				matrix = animationData.getTransformationForBonePlusOffset(currentVertexGroup, frame);
 				renderingContext.renderingShader.setUniformMatrix4f("boneTransformation", matrix);
-				//
-
+				//Normal transformation matrix creation
 				Matrix4f.invert(matrix, matrix);
 				Matrix4f.transpose(matrix, matrix);
 				normal.m00 = matrix.m00;
@@ -244,9 +286,10 @@ public class ObjMesh
 				normal.m20 = matrix.m20;
 				normal.m21 = matrix.m21;
 				normal.m22 = matrix.m22;
-				//
 				renderingContext.renderingShader.setUniformMatrix3f("boneTransformationNormal", normal);
-				glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
+				//Only what we can care about
+				if (bonesToDraw == null || bonesToDraw.contains(currentVertexGroup))
+					glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 				totalSize += i;
 			}
 		}
@@ -255,6 +298,6 @@ public class ObjMesh
 	public static List<float[]> vertices = new ArrayList<float[]>();
 	public static List<float[]> texcoords = new ArrayList<float[]>();
 	public static List<float[]> normals = new ArrayList<float[]>();
-
+	
 	public static List<float[]> vboData = new ArrayList<float[]>();
 }
