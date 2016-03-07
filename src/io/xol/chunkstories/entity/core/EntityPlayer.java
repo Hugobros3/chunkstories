@@ -120,28 +120,24 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		//Bobbing
 		if (collision_bot)
 			walked += Math.abs(hSpeed);
-		eyePosition = 1.8 + Math.sin(walked * 5d) * 0.035d;
 	}
 
 	// client-side method for updating the player movement
 	public void tick(ClientController controller)
 	{
-		// super.changeChunk();
 		// Null-out acceleration, until modified by controls
 		if (flying)
 			flyMove(controller.hasFocus());
 		else
 			normalMove(controller.hasFocus());
-		//System.out.println("focus");
+		
 		super.updatePosition();
-
 		if (Client.connection != null)
 		{
 			PacketEntity packet = new PacketEntity(true);
 			packet.includeRotation = true;
 			packet.applyFromEntity(this);
 			Client.connection.sendPacket(packet);
-			// Client.connection.sendTextMessage("player/position:"+posX+":"+posY+":"+posZ);
 		}
 	}
 
@@ -261,6 +257,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		targetVectorX = Math.sin((180 - rotH + modif) / 180f * Math.PI) * hSpeed;
 		targetVectorZ = Math.cos((180 - rotH + modif) / 180f * Math.PI) * hSpeed;
 
+		eyePosition = 1.8 + Math.sin(walked * 5d) * 0.035d;
 	}
 
 	public void flyMove(boolean focus)
@@ -314,15 +311,16 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	{
 		synchronized (this)
 		{
-			camera.camPosX = (float) -posX;
-			camera.camPosY = (float) -(posY + eyePosition);
-			camera.camPosZ = (float) -posZ;
+			camera.camPosX = -posX;
+			camera.camPosY = -(posY + eyePosition);
+			camera.camPosZ = -posZ;
 
 			camera.view_rotx = rotV;
 			camera.view_roty = rotH;
 
 			camera.fov = (float) (FastConfig.fov + ((velX * velX + velZ * velZ) > 0.07 * 0.07 ? ((velX * velX + velZ * velZ) - 0.07 * 0.07) * 500 : 0));
 
+			
 			camera.alUpdate();
 		}
 	}

@@ -140,8 +140,8 @@ public abstract class EntityImplementation implements Entity
 			velY = 0;
 		else if (collision_top)
 			velY = 0;
+		
 		// Gravity
-
 		if(!flying)
 		{
 			double terminalVelocity = inWater ? -0.02 : -0.5;
@@ -486,7 +486,7 @@ public abstract class EntityImplementation implements Entity
 			camera.view_roty = rotH;
 	
 			camera.fov = FastConfig.fov;
-	
+
 			camera.alUpdate();
 		}
 	}
