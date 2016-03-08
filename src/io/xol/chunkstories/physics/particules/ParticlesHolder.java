@@ -170,7 +170,6 @@ public class ParticlesHolder
 			{
 				if (list.size() > 0)
 				{
-					System.out.println(list.get(0).getTextureName());
 					particlesShader.setUniformSampler(0, "diffuseTexture", TexturesHandler.getTexture(list.get(0).getTextureName()));
 					particlesShader.setUniformFloat("billboardSize", list.get(0).getSize());
 

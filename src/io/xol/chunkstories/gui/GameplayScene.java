@@ -128,8 +128,12 @@ public class GameplayScene extends OverlayableScene
 			// System.out.println(Math.sin(transformedViewV)+"f");
 			Vector3f viewerCamDirVector = new Vector3f((float) (Math.sin((-camera.view_roty) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)),
 					(float) (Math.cos((-camera.view_roty) / 180 * Math.PI) * Math.cos(transformedViewH)));
-
-			worldRenderer.lights.add(new DefferedLight(new Vector3f(1f, 1f, 0.9f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 40f, viewerCamDirVector));
+			Vector3f lightPosition = new Vector3f((float) loc.x, (float) loc.y + (float)((EntityPlayer)this.player).eyePosition, (float) loc.z);
+			viewerCamDirVector.scale(-0.5f);
+			Vector3f.add(viewerCamDirVector, lightPosition, lightPosition);
+			viewerCamDirVector.scale(-1f);
+			viewerCamDirVector.normalise();
+			worldRenderer.lights.add(new DefferedLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 75f, 40f, viewerCamDirVector));
 			if (Keyboard.isKeyDown(Keyboard.KEY_F5))
 				Client.world.particlesHolder.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f,
 						(float) loc.z), 75f, 40f, viewerCamDirVector)));
