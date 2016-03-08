@@ -20,6 +20,7 @@ import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.core.ItemAk47;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.net.packets.PacketEntity;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -449,65 +450,53 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 
 	public void render(RenderingContext renderingContext)
 	{
+		Camera cam = renderingContext.getCamera();
 		ItemPile selectedItemPile = this.getInventory().getSelectedItem();
+		BVHAnimation animation = BVHLibrary.getAnimation("res/models/human-standstill.bvh");
 		if(selectedItemPile != null)
 		{
-			Matrix4f transformation = new Matrix4f();
-			transformation.setIdentity();
-			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, getWorld(), transformation);
+			if(selectedItemPile.getItem() instanceof ItemAk47)
+				animation = BVHLibrary.getAnimation("res/models/human-rifle-holding.bvh");
+			else
+				animation = BVHLibrary.getAnimation("res/models/human-holding.bvh");
 		}
-
-		Camera cam = renderingContext.getCamera();
-		//if (this.equals(Client.controlledEntity))
-		//	return; // Don't render yourself
-
+		//Player textures
 		Texture playerTexture = TexturesHandler.getTexture("models/hogubrus3.png");
 		playerTexture.setLinearFiltering(false);
-		
 		renderingContext.setDiffuseTexture(playerTexture.getID());
+		//Players models have no normal mapping
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
-		synchronized(this)
-		{
-			renderingContext.renderingShader.setUniformFloat3("borderShift", (float)posX, (float)posY+1.6f, (float)posZ);
-			if(this.equals(Client.controlledEntity))
-				renderingContext.renderingShader.setUniformFloat3("borderShift", -(float)cam.camPosX, -(float)cam.camPosY, -(float)cam.camPosZ);
-		}
+		
+		renderingContext.renderingShader.setUniformFloat3("borderShift", (float)posX, (float)posY+eyePosition, (float)posZ);
+		//Prevents laggy behaviour
+		if(this.equals(Client.controlledEntity))
+			renderingContext.renderingShader.setUniformFloat3("borderShift", -(float)cam.camPosX, -(float)cam.camPosY, -(float)cam.camPosZ);
+	
+		//TODO use some function in World
 		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
-		Matrix4f mutrix = new Matrix4f();
-		mutrix.rotate((90 - rotH) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-		//mutrix.translate(new Vector3f(0f, (float)this.eyePosition, 0f), mutrix);
+		//Player rotations to the viewmodel
+		Matrix4f playerRotationMatrix = new Matrix4f();
+		playerRotationMatrix.rotate((90 - rotH) / 180f * 3.14159f, new Vector3f(0, 1, 0));
 		if (this.equals(Client.controlledEntity) && !renderingContext.shadow)
-		{
-			mutrix.rotate(( - rotV) / 180f * 3.14159f, new Vector3f(0, 0, 1));
-		}
-		mutrix.translate(new Vector3f(0f, -(float)this.eyePosition, 0f), mutrix);
-		
-		renderingContext.sendTransformationMatrix(mutrix);
-		BVHAnimation viewPortBVH = BVHLibrary.getAnimation("res/models/human-viewport.bvh");
+			playerRotationMatrix.rotate(( - rotV) / 180f * 3.14159f, new Vector3f(0, 0, 1));
+		playerRotationMatrix.translate(new Vector3f(0f, -(float)this.eyePosition, 0f), playerRotationMatrix);
+		renderingContext.sendTransformationMatrix(playerRotationMatrix);
+		//Render parts of the body
 		if(!renderingContext.shadow && this.equals(Client.controlledEntity))
-			ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, fp_elements, viewPortBVH, 0);
+			ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, fp_elements, animation, 0);
 		else
-			ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, viewPortBVH, 0);
+			ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, animation, 0);
 		
+		//Matrix to itemInHand bone in the player's bvh
 		Matrix4f itemMatrix = new Matrix4f();
-		itemMatrix = BVHLibrary.getAnimation("res/models/human-viewport.bvh").getTransformationForBone("boneItemInHand", 0);
-		Matrix4f.mul(mutrix, itemMatrix, itemMatrix);
-
-		//itemMatrix.rotate((90 - rotH) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-		/*itemMatrix.translate(new Vector3f(0f, (float)this.eyePosition, 0f), itemMatrix);
-		if (this.equals(Client.controlledEntity) && !renderingContext.shadow)
-		{
-			itemMatrix.rotate(( - rotV) / 180f * 3.14159f, new Vector3f(0, 0, 1));
-		}
-		itemMatrix.translate(new Vector3f(0f, -(float)this.eyePosition, 0f), itemMatrix);*/
+		itemMatrix = animation.getTransformationForBone("boneItemInHand", 0);
+		Matrix4f.mul(playerRotationMatrix, itemMatrix, itemMatrix);
 		
-		renderingContext.sendTransformationMatrix(itemMatrix);
-		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/ak47.hq.png"));
-		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
-		ModelLibrary.getMesh("./res/models/ak47.hq.obj").render(renderingContext);
+		if(selectedItemPile != null)
+			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, itemMatrix);
 	}
 
 	static Set<String> fp_elements = new HashSet<String>();

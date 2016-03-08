@@ -134,7 +134,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	<endif !shadows>
 	opacity = clamp(opacity, 0.0, 1.0);
 	
-	float sunSpec = specular * pow(clamp(dot(normalize(reflect(worldSpacePosition.xyz, normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),1750.0);
+	float sunSpec = specular * pow(clamp(dot(normalize(reflect(worldSpacePosition.xyz, normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),750.0);
 	
 	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0.0, meta.y * sunIntensity)).rgb;
 	vec3 finalLight = baseLight * pow(mix(shadowColor, sunColor, (1.0 - opacity * shadowStrength) * shadowVisiblity), vec3(gamma));

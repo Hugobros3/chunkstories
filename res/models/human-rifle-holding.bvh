@@ -1,0 +1,94 @@
+HIERARCHY
+ROOT boneTorso
+{
+	OFFSET 0.000000 -0.000000 0.798061
+	CHANNELS 6 Xposition Yposition Zposition Xrotation Yrotation Zrotation
+	JOINT boneHead
+	{
+		OFFSET 0.000000 0.000000 0.675000
+		CHANNELS 3 Xrotation Yrotation Zrotation
+		End Site
+		{
+			OFFSET 0.000000 -0.000000 0.500000
+		}
+	}
+	JOINT boneLegRU
+	{
+		OFFSET 0.000000 0.125000 0.000000
+		CHANNELS 6 Xposition Yposition Zposition Xrotation Yrotation Zrotation
+		JOINT boneLegRD
+		{
+			OFFSET 0.000000 0.000000 -0.375000
+			CHANNELS 3 Xrotation Yrotation Zrotation
+			JOINT boneFootR
+			{
+				OFFSET 0.000000 0.000000 -0.375000
+				CHANNELS 3 Xrotation Yrotation Zrotation
+				End Site
+				{
+					OFFSET 0.000000 0.000000 -0.075000
+				}
+			}
+		}
+	}
+	JOINT boneLegLU
+	{
+		OFFSET 0.000000 -0.125000 0.000000
+		CHANNELS 6 Xposition Yposition Zposition Xrotation Yrotation Zrotation
+		JOINT boneLegLD
+		{
+			OFFSET 0.000000 0.000000 -0.375000
+			CHANNELS 3 Xrotation Yrotation Zrotation
+			JOINT boneFootL
+			{
+				OFFSET 0.000000 0.000000 -0.375000
+				CHANNELS 3 Xrotation Yrotation Zrotation
+				End Site
+				{
+					OFFSET 0.000000 0.000000 -0.075000
+				}
+			}
+		}
+	}
+	JOINT boneArmRU
+	{
+		OFFSET 0.000000 0.350000 0.675000
+		CHANNELS 6 Xposition Yposition Zposition Xrotation Yrotation Zrotation
+		JOINT boneArmRD
+		{
+			OFFSET 0.000000 0.000000 -0.375000
+			CHANNELS 3 Xrotation Yrotation Zrotation
+			End Site
+			{
+				OFFSET 0.000000 0.000000 -0.300000
+			}
+		}
+	}
+	JOINT boneArmLU
+	{
+		OFFSET 0.000000 -0.350000 0.675000
+		CHANNELS 6 Xposition Yposition Zposition Xrotation Yrotation Zrotation
+		JOINT boneArmLD
+		{
+			OFFSET 0.000000 0.000000 -0.375000
+			CHANNELS 3 Xrotation Yrotation Zrotation
+			End Site
+			{
+				OFFSET 0.000000 0.000000 -0.300000
+			}
+		}
+		JOINT boneItemInHand
+		{
+			OFFSET 0.000000 0.000000 -0.673061
+			CHANNELS 6 Xposition Yposition Zposition Xrotation Yrotation Zrotation
+			End Site
+			{
+				OFFSET 0.000000 0.000000 -0.140000
+			}
+		}
+	}
+}
+MOTION
+Frames: 1
+Frame Time: 0.016667
+0.000000 -0.000000 0.798061 0.000000 0.000000 -0.000000 -0.000000 0.000000 -0.000000 -0.000000 0.125000 0.000000 0.000000 -0.000000 -0.000000 0.000000 -0.000000 -0.000000 -0.000000 0.000000 -0.000000 -0.000000 -0.125000 0.000000 -0.000000 0.000000 -0.000000 -0.000000 0.000000 0.000000 -0.000000 0.000000 -0.000000 -0.000000 0.350000 0.675000 -101.614883 -51.759416 -105.008851 -16.551585 5.954299 5.736670 -0.000000 -0.350000 0.675000 -80.755225 -96.409513 -76.515686 10.877038 -0.830816 -0.117162 0.109647 0.130521 -0.600112 -76.534940 94.417298 70.246549 

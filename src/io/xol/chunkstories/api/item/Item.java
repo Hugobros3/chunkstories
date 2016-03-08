@@ -37,10 +37,10 @@ public abstract class Item
 		return itemRenderer;
 	}
 	
-	public void setItemRenderer(ItemRenderer itemRenderer)
+	/*public void setItemRenderer(ItemRenderer itemRenderer)
 	{
 		this.itemRenderer = itemRenderer;
-	}
+	}*/
 	
 	/**
 	 * Called on creation of an itemPile of this object (you should override this if you need something in particular in your ItemData,

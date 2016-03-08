@@ -147,7 +147,7 @@ void main()
 		
 		//spec = fresnelTerm;
 		
-		specular = spec * pow(clamp(dot(normalize(reflect(normalMatrix * eye,normalMatrix * normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),1750.0);
+		specular = spec * pow(clamp(dot(normalize(reflect(normalMatrix * eye,normalMatrix * normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),750.0);
 	
 		//vec3 reflection = texture(skybox, reflect(eye, normal)).rgb;
 		

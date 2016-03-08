@@ -144,7 +144,7 @@ void main(){
 	gl_FragData[1] = vec4(normal*0.5+0.5, spec);
 	//Metadata color G-buffer
 	
-	gl_FragData[2] = vec4(lightMapCoords, 0.0f);
+	gl_FragData[2] = vec4(lightMapCoords, 1.0f);
 	
 	//gl_FragData[2] = vec4(finalLight, 1.0);
 	

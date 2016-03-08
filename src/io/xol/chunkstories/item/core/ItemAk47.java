@@ -9,16 +9,17 @@ import io.xol.chunkstories.item.ItemPile;
 
 public class ItemAk47 extends Item
 {
+	
 	public ItemAk47(int id)
 	{
 		super(id);
+		itemRenderer = new Ak47ViewModelRenderer(this);
 	}
 
 	@Override
 	public String getTextureName(ItemPile pile)
 	{
-		// TODO Auto-generated method stub
-		return "res/items/icons/ak47.png";
+		return "./res/items/icons/ak47.png";
 	}
 
 }

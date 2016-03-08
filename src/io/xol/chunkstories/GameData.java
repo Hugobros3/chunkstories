@@ -59,11 +59,13 @@ public class GameData
 		allModsEnabled = false;
 		for (String s : modsEnabled)
 		{
+			System.out.println("MODS"+s);
 			if(s.equals("*"))
 				allModsEnabled = true;
 			else
 				mods.add(s);
 		}
+		System.out.println("MODS"+allModsEnabled);
 	}
 	
 	/**
@@ -73,22 +75,24 @@ public class GameData
 	private static void buildModsFileSystem()
 	{
 		fileSystem.clear();
-		//Load vanilla ressources
-		for(File f : new File(GameDirectory.getGameFolderPath() + "/res/").listFiles())
-				recursiveScan(f, new File(GameDirectory.getGameFolderPath() + "/"));
 		//Get the mods/ dir
 		File modsDir = new File(GameDirectory.getGameFolderPath() + "/mods/");
 		if (!modsDir.exists())
 			modsDir.mkdirs();
-		//Load needed mods
+		//Load needed mods by order of priority
 		for (File f : modsDir.listFiles())
 		{
+			System.out.println("FFFF"+allModsEnabled);
 			if (allModsEnabled || mods.contains(f.getName()))
 			{
+				System.out.println("FFFF"+f.getAbsolutePath());
 				if (f.isDirectory())
 					recursiveScan(f, f);
 			}
 		}
+		//Load vanilla ressources (lowest priority)
+		for(File f : new File(GameDirectory.getGameFolderPath() + "/res/").listFiles())
+				recursiveScan(f, new File(GameDirectory.getGameFolderPath() + "/"));
 	}
 
 	private static void recursiveScan(File directory, File modsDir)

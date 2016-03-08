@@ -21,3 +21,5 @@ plugins/*
 .classpath
 .project
 .*
+mods/*
+screenshots/*
