@@ -43,7 +43,7 @@ public class EntityTest2 extends EntityImplementation
 		//world.particlesHolder.addParticle(new ParticleSmoke(world, posX+0.8+(Math.random()-0.5)*0.2, posY+0.5, posZ- 3.0f));
 		Matrix4f mutrix = new Matrix4f();
 		mutrix.translate(new Vector3f(0.0f, 1.0f, 0.0f));
-		renderingContext.renderingShader.setUniformMatrix4f("localTransform", mutrix);
+		renderingContext.sendTransformationMatrix(mutrix);
 		
 		ModelLibrary.getMesh("res/models/ak47.hq.obj").render(renderingContext);;
 	}

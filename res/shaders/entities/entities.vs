@@ -28,6 +28,7 @@ varying float fogI;
 uniform float time;
 varying vec3 eye;
 uniform vec3 camPos;
+//TODO get rid of this legacy bs
 uniform vec3 borderShift;
 
 uniform float vegetation;
@@ -50,7 +51,7 @@ uniform vec3 givenLightmapCoords;
 uniform mat4 localTransform;
 uniform mat3 localTransformNormal;
 
-uniform mat4 boneTransformation;
+uniform mat4 boneTransform;
 uniform mat3 boneTransformNormal;
 
 uniform mat4 offsetTransform;
@@ -62,7 +63,7 @@ varying float rainWetness;
 void main(){
 	//Usual variable passing
 	texcoord = texCoordIn;
-	vec4 v = localTransform * boneTransformation * vec4(vertexIn.xyz, 1.0);
+	vec4 v = localTransform * boneTransform * vec4(vertexIn.xyz, 1.0);
 	
 	v+=vec4(borderShift,0);
 	

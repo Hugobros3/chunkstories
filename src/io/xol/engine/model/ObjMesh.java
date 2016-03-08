@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Matrix3f;
 import org.lwjgl.util.vector.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -214,7 +213,7 @@ public class ObjMesh
 	public void render(RenderingContext renderingContext, Set<String> bonesToDraw)
 	{
 		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
+		glCullFace(GL_FRONT);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 
 		if (renderingContext.verticesAttribMode)
@@ -256,11 +255,11 @@ public class ObjMesh
 	public void render(RenderingContext renderingContext, Set<String> bonesToDraw, BVHAnimation animationData, int frame)
 	{
 		glEnable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
+		//Backface culling because blender
+		glCullFace(GL_BACK);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 
 		Matrix4f matrix;
-		Matrix3f normal = new Matrix3f();
 		if (renderingContext.verticesAttribMode)
 		{
 			glVertexAttribPointer(renderingContext.vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
@@ -270,29 +269,17 @@ public class ObjMesh
 			for (String currentVertexGroup : groups.keySet())
 			{
 				int i = groups.get(currentVertexGroup);
+				//Get transformer matrix
 				matrix = animationData.getTransformationForBonePlusOffset(currentVertexGroup, frame);
-				renderingContext.renderingShader.setUniformMatrix4f("boneTransformation", matrix);
-				//Normal transformation matrix creation
-				Matrix4f.invert(matrix, matrix);
-				Matrix4f.transpose(matrix, matrix);
-				normal.m00 = matrix.m00;
-				normal.m01 = matrix.m01;
-				normal.m02 = matrix.m02;
-
-				normal.m10 = matrix.m10;
-				normal.m11 = matrix.m11;
-				normal.m12 = matrix.m12;
-
-				normal.m20 = matrix.m20;
-				normal.m21 = matrix.m21;
-				normal.m22 = matrix.m22;
-				renderingContext.renderingShader.setUniformMatrix3f("boneTransformationNormal", normal);
+				//Send the transformation
+				renderingContext.sendBoneTransformationMatrix(matrix);
 				//Only what we can care about
 				if (bonesToDraw == null || bonesToDraw.contains(currentVertexGroup))
 					glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 				totalSize += i;
 			}
 		}
+		renderingContext.sendBoneTransformationMatrix(null);
 	}
 
 	public static List<float[]> vertices = new ArrayList<float[]>();

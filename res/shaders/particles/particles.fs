@@ -85,8 +85,8 @@ void main(){
 	
 	vec4 source = texture2D(diffuseGBuffer, gl_FragCoord.xy);
 	
-	/*if(alpha < 1)
-		discard;*/
+	if(alpha < 1)
+		discard;
 	
 	//Diffuse G-Buffer
 	gl_FragData[0] = vec4(baseColor,alpha);

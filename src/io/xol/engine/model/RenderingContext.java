@@ -10,6 +10,8 @@ import static org.lwjgl.opengl.GL20.*;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.util.vector.Matrix3f;
+import org.lwjgl.util.vector.Matrix4f;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -188,5 +190,57 @@ public class RenderingContext
 	{
 		if (renderingShader != null)
 			renderingShader.setUniformSampler(2, "materialTexture", id);
+	}
+
+	Matrix4f temp = new Matrix4f();
+	Matrix3f normal = new Matrix3f();
+	/**
+	 * Sets the current local matrix transformation and normal 3x3 counterpart
+	 * @param matrix
+	 */
+	public void sendTransformationMatrix(Matrix4f matrix)
+	{
+		if(matrix == null)
+			matrix = new Matrix4f();
+		this.renderingShader.setUniformMatrix4f("localTransform", matrix);
+		Matrix4f.invert(matrix, temp);
+		Matrix4f.transpose(temp, temp);
+		normal.m00 = temp.m00;
+		normal.m01 = temp.m01;
+		normal.m02 = temp.m02;
+
+		normal.m10 = temp.m10;
+		normal.m11 = temp.m11;
+		normal.m12 = temp.m12;
+
+		normal.m20 = temp.m20;
+		normal.m21 = temp.m21;
+		normal.m22 = temp.m22;
+		this.renderingShader.setUniformMatrix3f("localTransformNormal", normal);
+	}
+	
+	/**
+	 * Sets the current bone matrix transformation and normal 3x3 counterpart
+	 * @param matrix
+	 */
+	public void sendBoneTransformationMatrix(Matrix4f matrix)
+	{
+		if(matrix == null)
+			matrix = new Matrix4f();
+		this.renderingShader.setUniformMatrix4f("boneTransform", matrix);
+		Matrix4f.invert(matrix, temp);
+		Matrix4f.transpose(temp, temp);
+		normal.m00 = temp.m00;
+		normal.m01 = temp.m01;
+		normal.m02 = temp.m02;
+
+		normal.m10 = temp.m10;
+		normal.m11 = temp.m11;
+		normal.m12 = temp.m12;
+
+		normal.m20 = temp.m20;
+		normal.m21 = temp.m21;
+		normal.m22 = temp.m22;
+		this.renderingShader.setUniformMatrix3f("boneTransformNormal", normal);
 	}
 }

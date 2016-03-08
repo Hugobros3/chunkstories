@@ -46,7 +46,6 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 
 	public void render(RenderingContext renderingContext)
 	{
-		// if(Math.random() > 0.9)
 		//i++;
 		i %= 80;
 		
@@ -61,22 +60,26 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 
-		renderingContext.renderingShader.setUniformMatrix4f("localTransform", new Matrix4f());
-		
+		renderingContext.sendTransformationMatrix(null);
 		ModelLibrary.getMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/models/human-viewport.bvh"), i);
+
+		
+		Matrix4f itemMatrix = BVHLibrary.getAnimation("res/models/human-viewport.bvh").getTransformationForBone("boneItemInHand", i);
+		
+		renderingContext.sendTransformationMatrix(itemMatrix);
+		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/ak47.hq.png"));
+		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
+		ModelLibrary.getMesh("./res/models/ak47.hq.obj").render(renderingContext);
 	}
 
 	public void debugDraw()
 	{
 		// Debug this shit
-		//System.out.println("Debug draw");
 		BVHAnimation anim = BVHLibrary.getAnimation("res/models/human-viewport.bvh");
-		
 		for (Bone b : anim.bones)
 		{
 			Matrix4f transform = anim.getTransformationForBone(b.name, i);
 			debugDraw(0.2f, 0.2f, 0.2f, (float) posX, (float) posY , (float) posZ, transform);
-			//debugDraw(0.2f, 0.2f, 0.2f, (float) posX, (float) posY , (float) posZ, transform);
 		}
 	}
 	
@@ -97,6 +100,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		kek.add(new float[]{vertex.x + x, vertex.y + y, vertex.z + z});
 	}
 	
+	//TODO move this to the BVHAnimation class and clean it up to use modern functions
 	public void debugDraw(float r, float g, float b, float xpos, float ypos, float zpos, Matrix4f transform)
 	{
 		kek.clear();
@@ -155,7 +159,6 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 	@Override
 	public void drawHUD(Camera camera)
 	{
-		// TODO Auto-generated method stub
 		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float)posX, (float)posY + 2.5f, (float)posZ));
 		
 		float scale = posOnScreen.z;

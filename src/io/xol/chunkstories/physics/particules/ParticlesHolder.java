@@ -139,8 +139,8 @@ public class ParticlesHolder
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glBlendEquation(GL_FUNC_ADD);
 		glDisable(GL_CULL_FACE);
-		// glEnable(GL_ALPHA_TEST);
-		// glAlphaFunc(GL_GREATER, 0.0f);
+		 glEnable(GL_ALPHA_TEST);
+		 glAlphaFunc(GL_GREATER, 0.0f);
 
 		particlesShader.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
 
@@ -170,6 +170,7 @@ public class ParticlesHolder
 			{
 				if (list.size() > 0)
 				{
+					System.out.println(list.get(0).getTextureName());
 					particlesShader.setUniformSampler(0, "diffuseTexture", TexturesHandler.getTexture(list.get(0).getTextureName()));
 					particlesShader.setUniformFloat("billboardSize", list.get(0).getSize());
 

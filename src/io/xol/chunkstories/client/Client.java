@@ -35,16 +35,16 @@ public class Client implements ClientController
 
 	public static boolean offline = false;
 
+	public static ServerConnection connection;
 	public static XolioWindow windows;
 	public static World world;
-	public static Entity controlledEntity;
-	public static ServerConnection connection;
 
 	public static String username = "Unknow";
 	public static String session_key = "nopeMLG";
 
 	public static DebugProfiler profiler = new DebugProfiler();
 
+	public static Entity controlledEntity;
 	public static Client clientController;
 
 	public static void main(String[] args)
