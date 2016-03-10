@@ -11,6 +11,7 @@ import org.lwjgl.util.vector.Vector4f;
 
 import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Controller;
+import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
@@ -332,95 +333,45 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 
 	public int[] rayTraceSelectedBlock(boolean inside)
 	{
-		double rayX = posX;
-		double rayY = posY + 1 + (eyePosition);
-		double rayZ = posZ;
-
-		double step = 0.1f;
-
+		Vector3d initialPosition = new Vector3d(posX, posY + eyePosition, posZ);
+		Vector3d position = new Vector3d(posX, posY + eyePosition, posZ);
 		Vector3d direction = new Vector3d();
 
+		
 		float a = (float) ((-rotH) / 360f * 2 * Math.PI);
 		float b = (float) ((rotV) / 360f * 2 * Math.PI);
-
 		direction.x = -(float) Math.sin(a) * (float) Math.cos(b);
 		direction.y = -(float) Math.sin(b);
 		direction.z = -(float) Math.cos(a) * (float) Math.cos(b);
 
 		direction.normalize();
-		direction.scale(step);
+		direction.scale(0.2);
 
 		float distance = 0f;
-		int i = 0;
-		while (distance < 1024)
+		Voxel vox;
+		int x,y,z;
+		do
 		{
-			int x = (int) rayX;
-			int y = (int) rayY;
-			int z = (int) rayZ;
-
-			// Distance of current point from cube center
-			double bModX = rayX % 1.0 - 0.5;
-			double bModY = rayY % 1.0 - 0.5;
-			double bModZ = rayZ % 1.0 - 0.5;
-
-			// System.out.println("not skippin");
-			int id = world.getDataAt(x, y, z);
-			if (VoxelTypes.get(id).isVoxelSelectable())
+			x = (int)Math.floor(position.x);
+			y = (int)Math.floor(position.y);
+			z = (int)Math.floor(position.z);
+			vox = VoxelTypes.get(world.getDataAt(x, y, z));
+			if(vox.isVoxelSolid() || vox.isVoxelSelectable())
 			{
-				if (!inside)
+				if(inside)
 				{
-					double length = Math.sqrt(bModX * bModX + bModY * bModY + bModZ * bModZ);
-
-					double modifier = 1.0 / length;
-
-					length *= modifier;
-					bModX *= modifier;
-					bModY *= modifier;
-					bModZ *= modifier;
-
-					if (Math.abs(bModX) > Math.abs(bModY))
-					{
-						if (Math.abs(bModX) > Math.abs(bModZ))
-						{
-							if (bModX > 0)
-								x++;
-							else
-								x--;
-						}
-						else
-						{
-							if (bModZ > 0)
-								z++;
-							else
-								z--;
-						}
-					}
-					else
-					{
-						if (Math.abs(bModZ) > Math.abs(bModY))
-						{
-							if (bModZ > 0)
-								z++;
-							else
-								z--;
-						}
-						else
-						{
-							if (bModY > 0)
-								y++;
-							else
-								y--;
-						}
-					}
+					//System.out.println(y);
+					double dx = Math.abs(x + 0.5 - position.x);
+					return new int[]{x, y, z};
 				}
-				return new int[] { x, y, z };
+				else
+					return new int[]{x, y, z};
 			}
-			rayX += direction.x * (i % 3 == 0 ? 1 : 0);
-			rayY += direction.y * (i % 3 == 1 ? 1 : 0);
-			rayZ += direction.z * (i % 3 == 2 ? 1 : 0);
-			i++;
-			distance += step;
+			
+			position.add(direction);
+			distance+=1;
 		}
+		while(distance < 256);
 		return null;
 	}
 
@@ -473,7 +424,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			renderingContext.renderingShader.setUniformFloat3("borderShift", -(float)cam.camPosX, -(float)cam.camPosY, -(float)cam.camPosZ);
 	
 		//TODO use some function in World
-		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
+		int modelBlockData = world.getDataAt((int) posX, (int) posY, (int) posZ);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);

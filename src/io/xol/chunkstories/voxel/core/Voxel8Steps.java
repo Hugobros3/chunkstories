@@ -33,7 +33,7 @@ public class Voxel8Steps extends VoxelDefault
 		//System.out.println("kek");
 		int meta = VoxelFormat.meta(info.data);
 		CollisionBox box2 = new CollisionBox(1, (meta % 8 + 1) / 8f, 1);
-		box2.translate(0.5, -1, 0.5);
+		box2.translate(0.5, -0, 0.5);
 		return new CollisionBox[] { box2 };
 		//return super.getCollisionBoxes(data);
 	}

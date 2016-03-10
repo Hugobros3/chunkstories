@@ -515,7 +515,7 @@ public class WorldRenderer
 
 	private boolean checkChunkOcclusion(CubicChunk chunk, int correctedCX, int correctedCY, int correctedCZ, Vector3f viewerPosition, Vector3f viewerDirection)
 	{
-		Vector3f centerSphere = new Vector3f(correctedCX * 32 + 16, correctedCY * 32 + 16, correctedCZ * 32 + 16);
+		Vector3f centerSphere = new Vector3f(correctedCX * 32 + 16, correctedCY * 32 + 15, correctedCZ * 32 + 16);
 		return camera.isBoxInFrustrum(centerSphere, new Vector3f(32, 32, 32));
 	}
 

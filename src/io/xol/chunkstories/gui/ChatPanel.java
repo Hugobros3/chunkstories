@@ -109,6 +109,10 @@ public class ChatPanel
 						}
 					}
 				}
+				else if (inputBox.text.startsWith("/locsave"))
+				{
+					Client.world.save();
+				}
 				else if (Client.connection != null)
 					Client.connection.sendTextMessage("chat/" + inputBox.text);
 				else

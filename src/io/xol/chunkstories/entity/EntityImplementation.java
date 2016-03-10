@@ -127,7 +127,7 @@ public abstract class EntityImplementation implements Entity
 		posX %= world.getSizeSide();
 		posZ %= world.getSizeSide();
 		
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY + 1.0), (int) (posZ))));
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY), (int) (posZ))));
 		boolean inWater = voxelIn.isVoxelLiquid();
 
 		// velZ=Math.cos(a)*hSpeed*0.1;
@@ -296,7 +296,7 @@ public abstract class EntityImplementation implements Entity
 			checkerZ = getCollisionBox().translate(posX, posY, posZ + pmz);
 			// Z part
 			for (int i = ((int) posX) - radius; i <= ((int) posX) + radius; i++)
-				for (int j = ((int) posY); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
+				for (int j = ((int) posY-1); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
 					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
 					{
 						data = this.world.getDataAt(i, j, k);
@@ -345,7 +345,7 @@ public abstract class EntityImplementation implements Entity
 			checkerX = getCollisionBox().translate(posX + pmx, posY, posZ);
 			// X-part
 			for (int i = ((int) posX) - radius; i <= ((int) posX) + radius; i++)
-				for (int j = ((int) posY); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
+				for (int j = ((int) posY-1); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
 					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
 					{
 						data = this.world.getDataAt(i, j, k);
@@ -395,7 +395,7 @@ public abstract class EntityImplementation implements Entity
 
 			checkerY = getCollisionBox().translate(posX, posY + pmy, posZ);
 			for (int i = ((int) posX) - radius; i <= ((int) posX) + radius; i++)
-				for (int j = ((int) posY); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
+				for (int j = ((int) posY)-1; j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
 					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
 					{
 						data = this.world.getDataAt(i, j, k);

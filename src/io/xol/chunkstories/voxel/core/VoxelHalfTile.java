@@ -45,9 +45,9 @@ public class VoxelHalfTile extends VoxelDefault
 		// System.out.println("kek");
 		CollisionBox box2 = new CollisionBox(1, 0.5, 1);
 		if (bottomOrTop(VoxelFormat.meta(info.data)))
-			box2.translate(0.5, -1, 0.5);
+			box2.translate(0.5, -0, 0.5);
 		else
-			box2.translate(0.5, -0.5, 0.5);
+			box2.translate(0.5, +0.5, 0.5);
 		return new CollisionBox[] { box2 };
 	}
 	

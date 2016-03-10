@@ -34,23 +34,23 @@ public class EntityRenderer
 		glVertex3f(-0.005f + x, 0.005f + y, -0.005f + z);
 		glVertex3f(-0.005f + x, 0.005f + y, 1.005f + z);
 
-		glVertex3f(-0.005f + x, -1.005f + y, -0.005f + z);
-		glVertex3f(1.005f + x, -1.005f + y, -0.005f + z);
-		glVertex3f(-0.005f + x, -1.005f + y, 1.005f + z);
-		glVertex3f(1.005f + x, -1.005f + y, 1.005f + z);
-		glVertex3f(1.005f + x, -1.005f + y, 1.005f + z);
-		glVertex3f(1.005f + x, -1.005f + y, -0.005f + z);
-		glVertex3f(-0.005f + x, -1.005f + y, -0.005f + z);
-		glVertex3f(-0.005f + x, -1.005f + y, 1.005f + z);
+		glVertex3f(-0.005f + x, +1.005f + y, -0.005f + z);
+		glVertex3f(1.005f + x, +1.005f + y, -0.005f + z);
+		glVertex3f(-0.005f + x, +1.005f + y, 1.005f + z);
+		glVertex3f(1.005f + x, +1.005f + y, 1.005f + z);
+		glVertex3f(1.005f + x, +1.005f + y, 1.005f + z);
+		glVertex3f(1.005f + x, +1.005f + y, -0.005f + z);
+		glVertex3f(-0.005f + x, +1.005f + y, -0.005f + z);
+		glVertex3f(-0.005f + x, +1.005f + y, 1.005f + z);
 
 		glVertex3f(-0.005f + x, 0.005f + y, -0.005f + z);
-		glVertex3f(-0.005f + x, -1.005f + y, -0.005f + z);
+		glVertex3f(-0.005f + x, +1.005f + y, -0.005f + z);
 		glVertex3f(-0.005f + x, 0.005f + y, 1.005f + z);
-		glVertex3f(-0.005f + x, -1.005f + y, 1.005f + z);
+		glVertex3f(-0.005f + x, +1.005f + y, 1.005f + z);
 		glVertex3f(1.005f + x, 0.005f + y, -0.005f + z);
-		glVertex3f(1.005f + x, -1.005f + y, -0.005f + z);
+		glVertex3f(1.005f + x, +1.005f + y, -0.005f + z);
 		glVertex3f(1.005f + x, 0.005f + y, 1.005f + z);
-		glVertex3f(1.005f + x, -1.005f + y, 1.005f + z);
+		glVertex3f(1.005f + x, +1.005f + y, 1.005f + z);
 		glEnd();
 		glColor4f(1, 1, 1, 1);
 		glEnable(GL_TEXTURE_2D);

@@ -114,7 +114,7 @@ public class VoxelFence extends VoxelDefault
 			boxes = new CollisionBox[] { new CollisionBox(0.4, 1, 0.7).translate(0, 0, -0.15) };
 
 		for (CollisionBox box : boxes)
-			box.translate(+0.5, -1, +0.5);
+			box.translate(+0.5, -0, +0.5);
 
 		return boxes;
 	}

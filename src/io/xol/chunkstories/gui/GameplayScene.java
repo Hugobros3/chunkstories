@@ -7,11 +7,13 @@ import java.util.Iterator;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
-import static org.lwjgl.opengl.GL11.*;
 
+import static org.lwjgl.opengl.GL11.*;
+import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
+import io.xol.engine.gui.GuiDrawer;
 import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
@@ -199,6 +201,8 @@ public class GameplayScene extends OverlayableScene
 		// Draw overlay
 		if (currentOverlay != null)
 			currentOverlay.drawToScreen(0, 0, XolioWindow.frameW, XolioWindow.frameH);
+		else
+			ObjectRenderer.renderTexturedRect(XolioWindow.frameW/2, XolioWindow.frameH/2, 16, 16, 0, 0, 16, 16, 16, "internal://./res/textures/gui/cursor.png");
 			
 		super.update();
 		// Check connection didn't died and change scene if it has

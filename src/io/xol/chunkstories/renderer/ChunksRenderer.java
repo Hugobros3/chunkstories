@@ -361,7 +361,6 @@ public class ChunksRenderer extends Thread
 
 	private void addQuadTop(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
-
 		int llMs = getSunlight(c, sx, sy + 1, sz);
 		int llMb = getBlocklight(c, sx, sy + 1, sz);
 
@@ -420,32 +419,32 @@ public class ChunksRenderer extends Thread
 		int textureS = texture.atlasS + (sx % texture.textureScale) * offset;
 		int textureT = texture.atlasT + (sz % texture.textureScale) * offset;
 
-		rbbf.addVerticeInt(sx, sy, sz);
+		rbbf.addVerticeInt(sx, sy + 1, sz);
 		rbbf.addTexCoordInt(textureS, textureT);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx + 1, sy, sz);
+		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
 		rbbf.addTexCoordInt(textureS + offset, textureT);
 		rbbf.addColors(aoB);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx + 1, sy, sz + 1);
+		rbbf.addVerticeInt(sx + 1, sy + 1, sz + 1);
 		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy, sz + 1);
+		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
 		rbbf.addTexCoordInt(textureS, textureT + offset);
 		rbbf.addColors(aoD);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy, sz);
+		rbbf.addVerticeInt(sx, sy + 1, sz);
 		rbbf.addTexCoordInt(textureS, textureT);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx + 1, sy, sz + 1);
+		rbbf.addVerticeInt(sx + 1, sy + 1, sz + 1);
 		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
@@ -453,28 +452,28 @@ public class ChunksRenderer extends Thread
 
 	private void addQuadBottom(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
-		int llMs = getSunlight(c, sx, sy, sz);
-		int llMb = getBlocklight(c, sx, sy, sz);
+		int llMs = getSunlight(c, sx, sy - 1, sz);
+		int llMb = getBlocklight(c, sx, sy - 1, sz);
 
-		int llAb = getBlocklight(c, sx + 1, sy, sz);
-		int llBb = getBlocklight(c, sx + 1, sy, sz + 1);
-		int llCb = getBlocklight(c, sx, sy, sz + 1);
-		int llDb = getBlocklight(c, sx - 1, sy, sz + 1);
+		int llAb = getBlocklight(c, sx + 1, sy - 1, sz);
+		int llBb = getBlocklight(c, sx + 1, sy - 1, sz + 1);
+		int llCb = getBlocklight(c, sx, sy - 1, sz + 1);
+		int llDb = getBlocklight(c, sx - 1, sy - 1, sz + 1);
 
-		int llEb = getBlocklight(c, sx - 1, sy, sz);
-		int llFb = getBlocklight(c, sx - 1, sy, sz - 1);
-		int llGb = getBlocklight(c, sx, sy, sz - 1);
-		int llHb = getBlocklight(c, sx + 1, sy, sz - 1);
+		int llEb = getBlocklight(c, sx - 1, sy - 1, sz);
+		int llFb = getBlocklight(c, sx - 1, sy - 1, sz - 1);
+		int llGb = getBlocklight(c, sx, sy - 1, sz - 1);
+		int llHb = getBlocklight(c, sx + 1, sy - 1, sz - 1);
 
-		int llAs = getSunlight(c, sx + 1, sy, sz);
-		int llBs = getSunlight(c, sx + 1, sy, sz + 1);
-		int llCs = getSunlight(c, sx, sy, sz + 1);
-		int llDs = getSunlight(c, sx - 1, sy, sz + 1);
+		int llAs = getSunlight(c, sx + 1, sy - 1, sz);
+		int llBs = getSunlight(c, sx + 1, sy - 1, sz + 1);
+		int llCs = getSunlight(c, sx, sy - 1, sz + 1);
+		int llDs = getSunlight(c, sx - 1, sy - 1, sz + 1);
 
-		int llEs = getSunlight(c, sx - 1, sy, sz);
-		int llFs = getSunlight(c, sx - 1, sy, sz - 1);
-		int llGs = getSunlight(c, sx, sy, sz - 1);
-		int llHs = getSunlight(c, sx + 1, sy, sz - 1);
+		int llEs = getSunlight(c, sx - 1, sy - 1, sz);
+		int llFs = getSunlight(c, sx - 1, sy - 1, sz - 1);
+		int llGs = getSunlight(c, sx, sy - 1, sz - 1);
+		int llHs = getSunlight(c, sx + 1, sy - 1, sz - 1);
 
 		float[] aoA = new float[] { 1f, 1f, 1f };
 		float[] aoB = new float[] { 1f, 1f, 1f };
@@ -568,32 +567,32 @@ public class ChunksRenderer extends Thread
 		int textureS = texture.atlasS + mod(sz, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
 		
-		rbbf.addVerticeInt(sx, sy, sz );
+		rbbf.addVerticeInt(sx, sy + 1, sz );
 		rbbf.addTexCoordInt(textureS, textureT );
 		rbbf.addColors(aoB);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addVerticeInt(sx, sy - 0, sz );
 		rbbf.addTexCoordInt(textureS, textureT + offset );
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy, sz + 1 );
+		rbbf.addVerticeInt(sx, sy + 1, sz + 1 );
 		rbbf.addTexCoordInt(textureS + offset, textureT );
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addVerticeInt(sx, sy - 0, sz );
 		rbbf.addTexCoordInt(textureS, textureT + offset );
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy - 1, sz + 1 );
+		rbbf.addVerticeInt(sx, sy - 0, sz + 1 );
 		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
 		rbbf.addColors(aoD);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy, sz + 1 );
+		rbbf.addVerticeInt(sx, sy + 1, sz + 1 );
 		rbbf.addTexCoordInt( textureS + offset, textureT );
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
@@ -652,32 +651,32 @@ public class ChunksRenderer extends Thread
 		int textureS = texture.atlasS + mod(sz, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
 		
-		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addVerticeInt(sx, sy - 0, sz );
 		rbbf.addTexCoordInt(textureS, textureT + offset );
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 		
-		rbbf.addVerticeInt(sx, sy, sz );
+		rbbf.addVerticeInt(sx, sy + 1, sz );
 		rbbf.addTexCoordInt(textureS, textureT );
 		rbbf.addColors(aoB);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 		
-		rbbf.addVerticeInt(sx, sy, sz + 1 );
+		rbbf.addVerticeInt(sx, sy + 1, sz + 1 );
 		rbbf.addTexCoordInt(textureS + offset, textureT );
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy - 1, sz + 1 );
+		rbbf.addVerticeInt(sx, sy - 0, sz + 1 );
 		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
 		rbbf.addColors(aoD);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 		
-		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addVerticeInt(sx, sy - 0, sz );
 		rbbf.addTexCoordInt(textureS, textureT + offset );
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 		
-		rbbf.addVerticeInt(sx, sy, sz + 1 );
+		rbbf.addVerticeInt(sx, sy + 1, sz + 1 );
 		rbbf.addTexCoordInt(textureS + offset, textureT );
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
@@ -727,32 +726,32 @@ public class ChunksRenderer extends Thread
 		int textureS = texture.atlasS + mod(sx, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
 		
-		rbbf.addVerticeInt(sx, sy - 1, sz);
+		rbbf.addVerticeInt(sx, sy - 0, sz);
 		rbbf.addTexCoordInt(textureS, textureT + offset );
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
 		
-		rbbf.addVerticeInt(sx, sy, sz );
+		rbbf.addVerticeInt(sx, sy + 1, sz );
 		rbbf.addTexCoordInt(textureS, textureT );
 		rbbf.addColors(aoB);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
 		
-		rbbf.addVerticeInt(sx + 1, sy, sz );
+		rbbf.addVerticeInt(sx + 1, sy + 1, sz );
 		rbbf.addTexCoordInt(textureS + offset, textureT );
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
 
-		rbbf.addVerticeInt(sx + 1, sy - 1, sz );
+		rbbf.addVerticeInt(sx + 1, sy - 0, sz );
 		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
 		rbbf.addColors(aoD);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
 		
-		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addVerticeInt(sx, sy - 0, sz );
 		rbbf.addTexCoordInt(textureS, textureT + offset );
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
 		
-		rbbf.addVerticeInt(sx + 1, sy, sz );
+		rbbf.addVerticeInt(sx + 1, sy + 1, sz );
 		rbbf.addTexCoordInt(textureS + offset, textureT );
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
@@ -803,32 +802,32 @@ public class ChunksRenderer extends Thread
 		int textureS = texture.atlasS + mod(sx, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
 		
-		rbbf.addVerticeInt(sx, sy, sz );
+		rbbf.addVerticeInt(sx, sy + 1, sz );
 		rbbf.addTexCoordInt(textureS, textureT );
 		rbbf.addColors(aoB);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 		
-		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addVerticeInt(sx, sy - 0, sz );
 		rbbf.addTexCoordInt(textureS, textureT + offset );
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 		
-		rbbf.addVerticeInt(sx + 1, sy, sz );
+		rbbf.addVerticeInt(sx + 1, sy + 1, sz );
 		rbbf.addTexCoordInt(textureS + offset, textureT );
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy - 1, sz );
+		rbbf.addVerticeInt(sx, sy - 0, sz );
 		rbbf.addTexCoordInt(textureS, textureT + offset );
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 		
-		rbbf.addVerticeInt(sx + 1, sy - 1, sz );
+		rbbf.addVerticeInt(sx + 1, sy - 0, sz );
 		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
 		rbbf.addColors(aoD);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 		
-		rbbf.addVerticeInt(sx + 1, sy, sz );
+		rbbf.addVerticeInt(sx + 1, sy + 1, sz );
 		rbbf.addTexCoordInt(textureS + offset, textureT );
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
@@ -909,6 +908,7 @@ public class ChunksRenderer extends Thread
 
 			if (drawFace)
 			{
+				System.out.println(model.vertices[i*3+1] + ": " + sy);
 				rbbf.addVerticeFloat(model.vertices[i*3+0] + sx + dx, model.vertices[i*3+1] + sy + dy, model.vertices[i*3+2] + sz + dz);
 				//vertices.add(new float[] { vert[0] + sx + dx, vert[1] + sy + dy, vert[2] + sz + dz });
 				rbbf.addTexCoordInt((int) (textureS + model.texCoords[i*2+0] * texture.atlasOffset), (int) (textureT + model.texCoords[i*2+1] * texture.atlasOffset));
@@ -1044,12 +1044,12 @@ public class ChunksRenderer extends Thread
 					// System.out.println(blockID);
 					if (vox.isVoxelLiquid())
 					{
-						addVoxelUsingCustomModel(work, waterRBBF, i, k, j, renderInfo);
+						addVoxelUsingCustomModel(work, waterRBBF, i, k + 1, j, renderInfo);
 					}
 					else if (vox.isVoxelUsingCustomModel())
 					{
 						// Prop rendering
-						addVoxelUsingCustomModel(work, complexRBBF, i, k, j, renderInfo);
+						addVoxelUsingCustomModel(work, complexRBBF, i, k + 1, j, renderInfo);
 					}
 					else if (blockID != 0)
 					{
@@ -1057,7 +1057,7 @@ public class ChunksRenderer extends Thread
 						{
 							if (!(k == 0 && !chunkBotLoaded))
 							{
-								addQuadBottom(work, rawRBBF, i, k - 1, j, vox.getVoxelTexture(src, 1, renderInfo), renderInfo.isWavy());
+								addQuadBottom(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, 1, renderInfo), renderInfo.isWavy());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 4))

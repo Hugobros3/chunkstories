@@ -14,6 +14,7 @@ import io.xol.chunkstories.net.packets.PacketWorldInfo;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.World.WorldSize;
 import io.xol.chunkstories.world.generator.BlankWorldAccessor;
+import io.xol.chunkstories.world.generator.FlatGenerator;
 import io.xol.chunkstories.world.generator.HorizonGenerator;
 import io.xol.chunkstories.world.generator.PerlinWorldAccessor;
 
@@ -124,6 +125,8 @@ public class WorldInfo
 			accessor = new PerlinWorldAccessor();
 		else if (generator.equals("horizon"))
 			accessor = new HorizonGenerator();
+		else if (generator.equals("flat"))
+			accessor = new FlatGenerator();
 		return accessor;
 	}
 

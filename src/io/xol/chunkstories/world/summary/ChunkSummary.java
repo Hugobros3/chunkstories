@@ -90,7 +90,8 @@ public class ChunkSummary
 	{
 		Voxel voxel = VoxelTypes.get(t);
 		int h = getHeight(x, z);
-		if (voxel.isVoxelSolid() || voxel.isVoxelLiquid())
+		//If we place something solid over the last solid thing
+		if (voxel.isVoxelSolid() || voxel.isVoxelLiquid() && y >= h)
 		{
 			if (y >= h)
 			{
@@ -110,8 +111,8 @@ public class ChunkSummary
 				{
 					y--;
 					loaded = world.isChunkLoaded(x / 32, y / 32, z / 32);
-					solid = VoxelTypes.get(world.getDataAt(x, h, z, false)).isVoxelSolid();
-					liquid = VoxelTypes.get(world.getDataAt(x, h, z, false)).isVoxelLiquid();
+					solid = VoxelTypes.get(world.getDataAt(x, y, z, false)).isVoxelSolid();
+					liquid = VoxelTypes.get(world.getDataAt(x, y, z, false)).isVoxelLiquid();
 				}
 				while (y >= 0 && loaded && !solid && !liquid);
 

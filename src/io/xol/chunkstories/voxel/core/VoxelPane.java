@@ -117,7 +117,7 @@ public class VoxelPane extends VoxelDefault
 			boxes = new CollisionBox[] { new CollisionBox(0.1, 1, 0.5).translate(0, 0, -0.25) };
 
 		for (CollisionBox box : boxes)
-			box.translate(+0.5, -1, +0.5);
+			box.translate(+0.5, -0, +0.5);
 
 		return boxes;
 	}

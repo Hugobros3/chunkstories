@@ -359,6 +359,8 @@ public class Camera
 		//untranslatedMVP4f.translate(new Vector3f((float) (camPosX-Math.floor(camPosX)), (float) (camPosY-Math.floor(camPosY)), (float) (camPosZ-Math.floor(camPosZ))));
 		Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
 
+		//System.out.println(-camPosY);
+		
 		modelViewMatrix4f.translate(new Vector3f((float)camPosX, (float)camPosY, (float)camPosZ));
 		//glTranslatef(camPosX, camPosY, camPosZ);
 		computeFrustrumPlanes();

@@ -75,6 +75,7 @@ public class ItemVoxel extends Item
 	{
 		if (action instanceof ClientActionMouseClick)
 		{
+			//TODO here we assumme a player, that's not correct
 			EntityPlayer player = (EntityPlayer) user;
 			ClientActionMouseClick mouseClick = (ClientActionMouseClick) action;
 			int voxelID = ((ItemDataVoxel)pile.getData()).voxel.getId();
@@ -86,21 +87,11 @@ public class ItemVoxel extends Item
 			{
 				selectedBlock = player.rayTraceSelectedBlock(false);
 				data2write = VoxelFormat.format(voxelID, voxelMeta, 0, 0);
-				/*if (selectedBlock != null)
-				{
-					user.getWorld().setDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2], VoxelFormat.format(voxelID, voxelMeta, 0, 0), true);
-					//worldRenderer.modified();
-				}*/
 			}
 			else if (mouseClick.getMouseButtonPressed() == MouseButton.MOUSE_LEFT)
 			{
 				selectedBlock = player.rayTraceSelectedBlock(true);
 				data2write = 0;
-				/*if (selectedBlock != null)
-				{
-					user.getWorld().setDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2], 0, true);
-					//worldRenderer.modified();
-				}*/
 			}
 			else if (mouseClick.getMouseButtonPressed() == MouseButton.MOUSE_MIDDLE)
 			{
@@ -124,7 +115,6 @@ public class ItemVoxel extends Item
 					data2write = VoxelFormat.changeBlocklight(data2write, VoxelFormat.blocklight(selectedBlockPreviousData));
 				}
 				user.getWorld().setDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2], data2write, true);
-				//worldRenderer.modified();
 			}
 		}
 	}
