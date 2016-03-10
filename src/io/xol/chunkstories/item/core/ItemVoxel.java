@@ -79,36 +79,52 @@ public class ItemVoxel extends Item
 			ClientActionMouseClick mouseClick = (ClientActionMouseClick) action;
 			int voxelID = ((ItemDataVoxel)pile.getData()).voxel.getId();
 			int voxelMeta = ((ItemDataVoxel)pile.getData()).voxelMeta;
+			
+			int data2write = -1;
+			int[] selectedBlock = null;
 			if (mouseClick.getMouseButtonPressed() == MouseButton.MOUSE_RIGHT)
 			{
-				int[] selectedBlock = player.rayTraceSelectedBlock(false);
-				if (selectedBlock != null)
+				selectedBlock = player.rayTraceSelectedBlock(false);
+				data2write = VoxelFormat.format(voxelID, voxelMeta, 0, 0);
+				/*if (selectedBlock != null)
 				{
 					user.getWorld().setDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2], VoxelFormat.format(voxelID, voxelMeta, 0, 0), true);
 					//worldRenderer.modified();
-				}
+				}*/
 			}
 			else if (mouseClick.getMouseButtonPressed() == MouseButton.MOUSE_LEFT)
 			{
-				int[] selectedBlock = player.rayTraceSelectedBlock(true);
-				if (selectedBlock != null)
+				selectedBlock = player.rayTraceSelectedBlock(true);
+				data2write = 0;
+				/*if (selectedBlock != null)
 				{
 					user.getWorld().setDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2], 0, true);
 					//worldRenderer.modified();
-				}
+				}*/
 			}
 			else if (mouseClick.getMouseButtonPressed() == MouseButton.MOUSE_MIDDLE)
 			{
-				int[] selectedBlock = player.rayTraceSelectedBlock(true);
+				selectedBlock = player.rayTraceSelectedBlock(true);
 				if (selectedBlock != null)
 				{
 					int data = user.getWorld().getDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
-					
 					((ItemDataVoxel)pile.getData()).voxel = VoxelTypes.get(VoxelFormat.id(data));
 					((ItemDataVoxel)pile.getData()).voxelMeta = VoxelFormat.meta(data);
 					//voxelId = VoxelFormat.id(data);
 					//meta = VoxelFormat.meta(data);
 				}
+			}
+			if (selectedBlock != null && data2write != -1)
+			{
+				int selectedBlockPreviousData = user.getWorld().getDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
+				//Adding blocks should not erase light if the block's not opaque
+				if(!VoxelTypes.get(data2write).isVoxelOpaque())
+				{
+					data2write = VoxelFormat.changeSunlight(data2write, VoxelFormat.sunlight(selectedBlockPreviousData));
+					data2write = VoxelFormat.changeBlocklight(data2write, VoxelFormat.blocklight(selectedBlockPreviousData));
+				}
+				user.getWorld().setDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2], data2write, true);
+				//worldRenderer.modified();
 			}
 		}
 	}

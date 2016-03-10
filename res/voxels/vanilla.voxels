@@ -198,6 +198,14 @@ end
 voxel glowoff 55
 end
 
+voxel wheat 56
+	solid: false
+	opaque: false
+	model: '~'
+	#collisionBox: [0.0, 0.0, 0.0, 1.0, 1.0, 1.0]
+	affectedByWind: true
+end
+
 voxel rails 66
 	solid: false
 	opaque: false
