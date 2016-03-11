@@ -412,10 +412,9 @@ public class WorldRenderer
 				if (LoopingMathHelper.moduloDistance(chunk.chunkX, npCX, world.getSizeInChunks()) <= chunksViewDistance)
 					if (LoopingMathHelper.moduloDistance(chunk.chunkZ, npCZ, world.getSizeInChunks()) <= chunksViewDistance)
 					{
-
 						if (chunk.need_render.get() && chunk.dataPointer != -1)
 						{
-							chunksRenderer.requestChunkRender(chunk);
+							//chunksRenderer.requestChunkRender(chunk);
 							//chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
 						}
 						renderList.add(chunk);

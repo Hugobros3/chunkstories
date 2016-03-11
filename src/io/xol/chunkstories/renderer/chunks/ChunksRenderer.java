@@ -7,6 +7,7 @@ import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTexture;
+import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.world.CubicChunk;
@@ -844,15 +845,24 @@ public class ChunksRenderer extends Thread
 
 		float[] lightColors = bakeLightColors(llMb, llMb, llMb, llMb, llMs, llMs, llMs, llMs);
 
-		VoxelTexture texture = info.getTexture();
-		VoxelModel model = info.getModel();
+		//Simple plan
 
+		//toInclude = toInclude.replace("~", model.name.contains(".") ? model.name.split("\\.")[0] : model.name);
+
+		VoxelModel model = info.getModel();
+		String voxelName = VoxelTypes.get(info.data).getName();
+		
+		int modelTextureIndex = 0;
+		
+		VoxelTexture texture = info.getTexture();
+		
+		if(!model.texturesNames[modelTextureIndex].equals("~"))
+			texture = VoxelTextures.getVoxelTexture(model.texturesNames[modelTextureIndex].replace("~", voxelName));
+		int useUntil = model.texturesOffsets[modelTextureIndex];
 		int textureS = texture.atlasS;// +mod(sx,texture.textureScale)*offset;
 		int textureT = texture.atlasT;// +mod(sz,texture.textureScale)*offset;
 
 		Voxel occTest;
-
-		sy--;
 
 		boolean[] cullingCache = new boolean[6];
 		for (int j = 0; j < 6; j++)
@@ -865,9 +875,6 @@ public class ChunksRenderer extends Thread
 					|| (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
 			//System.out.println("generating culling cache for voxel "+VoxelFormat.id(info.data)+"y:"+sy+"model"+model.name+" cull:"+j+":"+cullingCache[j]);
 		}
-
-		if (model == null)
-			return;
 
 		float dx = 0f, dy = 0f, dz = 0f;
 		if (model.jitterX != 0.0f)
@@ -883,6 +890,18 @@ public class ChunksRenderer extends Thread
 			//tex = model.texCoords[i];
 			//normal = model.normals[i];
 
+			if(i >= useUntil)
+			{
+				modelTextureIndex++;
+				if(!model.texturesNames[modelTextureIndex].equals("~"))
+					texture = VoxelTextures.getVoxelTexture(model.texturesNames[modelTextureIndex].replace("~", voxelName));
+				else
+					texture = info.getTexture();
+				useUntil = model.texturesOffsets[modelTextureIndex];
+				textureS = texture.atlasS;// +mod(sx,texture.textureScale)*offset;
+				textureT = texture.atlasT;// +mod(sz,texture.textureScale)*offset;
+			}
+			
 			/*
 			 * How culling works :
 			 * culling[][] array contains [vertices.len/3][faces (6)] booleans
@@ -1045,12 +1064,12 @@ public class ChunksRenderer extends Thread
 					// System.out.println(blockID);
 					if (vox.isVoxelLiquid())
 					{
-						addVoxelUsingCustomModel(work, waterRBBF, i, k + 1, j, renderInfo);
+						addVoxelUsingCustomModel(work, waterRBBF, i, k, j, renderInfo);
 					}
 					else if (vox.isVoxelUsingCustomModel())
 					{
 						// Prop rendering
-						addVoxelUsingCustomModel(work, complexRBBF, i, k + 1, j, renderInfo);
+						addVoxelUsingCustomModel(work, complexRBBF, i, k, j, renderInfo);
 					}
 					else if (blockID != 0)
 					{

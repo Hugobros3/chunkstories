@@ -75,6 +75,76 @@ public class RenderingContext
 	/**
 	 * Renders some vertices using the currently bound shader and data provided by the main memory ( kinda slow, not proper for big things )
 	 * Only accepts 32bit SP floats
+	 * @param vertexCoords An array of floats, <b>it must be of a length multiple of 9</b> ( Triangles made up of points made up of 3 coordinates ) <b>or else it silent-fails</b>
+	 * @param texCoords Must provides texturing info for *all* points given or nothing (null)
+	 * @param colors Must provides coloring info for *all* points given or nothing (null)
+	 * @param normals Must provides normal info for *all* points given or nothing (null) 
+	 */
+	public void renderDirectFromFloatBuffers(int verticesToDraw, FloatBuffer vertexCoords, FloatBuffer texCoords, FloatBuffer colors, FloatBuffer normals)
+	{
+		int vIn = renderingShader.getVertexAttributeLocation("vertexIn");
+		int tIn = renderingShader.getVertexAttributeLocation("texCoordIn");
+		if(texCoords == null)
+			tIn = -1;
+		int cIn = renderingShader.getVertexAttributeLocation("colorIn");
+		if(colors == null)
+			cIn = -1;
+		int nIn = renderingShader.getVertexAttributeLocation("normalIn");
+		if(normals == null)
+			nIn = -1;
+		setupVertexInputs(vIn, tIn, cIn, nIn);
+		
+		//Enable vertex arrays (to be moved in setupVertexInputs)
+		glEnableVertexAttribArray(vertexIn);
+		if(texCoordIn != -1)
+			glEnableVertexAttribArray(texCoordIn);
+		if(colorIn != -1)
+			glEnableVertexAttribArray(colorIn);
+		if(normalIn != -1)
+			glEnableVertexAttribArray(normalIn);
+		
+		//Upload data
+		glBindBuffer(GL_ARRAY_BUFFER, tempVBO[0]);
+		glBufferData(GL_ARRAY_BUFFER, vertexCoords, GL_STREAM_DRAW);
+		glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 12, 0);
+		if(texCoordIn != -1)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[1]);
+			glBufferData(GL_ARRAY_BUFFER, texCoords, GL_STREAM_DRAW);
+			int dimensions = texCoords.capacity() / verticesToDraw;
+			glVertexAttribPointer(texCoordIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
+		}
+		if(colorIn != -1)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[2]);
+			glBufferData(GL_ARRAY_BUFFER, colors, GL_STREAM_DRAW);
+			int dimensions = colors.capacity() / verticesToDraw;
+			glVertexAttribPointer(colorIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
+		}
+		if(normalIn != -1)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[3]);
+			glBufferData(GL_ARRAY_BUFFER, normals, GL_STREAM_DRAW);
+			int dimensions = normals.capacity() / verticesToDraw;
+			glVertexAttribPointer(normalIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
+		}
+		
+		glDrawArrays(GL_TRIANGLES, 0, verticesToDraw);
+
+		//Disable vertex arrays (to be moved in doneWithVertexInputs)
+		glDisableVertexAttribArray(vertexIn);
+		if(texCoordIn != -1)
+			glDisableVertexAttribArray(texCoordIn);
+		if(colorIn != -1)
+			glDisableVertexAttribArray(colorIn);
+		if(normalIn != -1)
+			glDisableVertexAttribArray(normalIn);
+		doneWithVertexInputs();
+	}
+	
+	/**
+	 * Renders some vertices using the currently bound shader and data provided by the main memory ( kinda slow, not proper for big things )
+	 * Only accepts 32bit SP floats
 	 * The amount of points drawn is equal to vertexCoords.length / 3 
 	 * The maximal size of any of the arguments arrays is 1 mebi floats (1024^2), that is 4mebioctels of raw bytes data <b>(silent fails else)</b>
 	 * @param vertexCoords An array of floats, <b>it must be of a length multiple of 9</b> ( Triangles made up of points made up of 3 coordinates ) <b>or else it silent-fails</b>
@@ -92,7 +162,7 @@ public class RenderingContext
 		//glDisable(GL_DEPTH_TEST)
 		
 		//Parse inputs, grab vertex attribute locations
-		int pointsToDraw = vertexCoords.length / 3;
+		int verticesToDraw = vertexCoords.length / 3;
 		int vIn = renderingShader.getVertexAttributeLocation("vertexIn");
 		int tIn = renderingShader.getVertexAttributeLocation("texCoordIn");
 		if(texCoords == null)
@@ -128,7 +198,7 @@ public class RenderingContext
 			tempBuffer.put(texCoords);
 			tempBuffer.flip();
 			glBufferData(GL_ARRAY_BUFFER, tempBuffer, GL_STREAM_DRAW);
-			int dimensions = texCoords.length / pointsToDraw;
+			int dimensions = texCoords.length / verticesToDraw;
 			glVertexAttribPointer(texCoordIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
 		if(colorIn != -1)
@@ -138,7 +208,7 @@ public class RenderingContext
 			tempBuffer.put(colors);
 			tempBuffer.flip();
 			glBufferData(GL_ARRAY_BUFFER, tempBuffer, GL_STREAM_DRAW);
-			int dimensions = colors.length / pointsToDraw;
+			int dimensions = colors.length / verticesToDraw;
 			glVertexAttribPointer(colorIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
 		if(normalIn != -1)
@@ -148,11 +218,11 @@ public class RenderingContext
 			tempBuffer.put(normals);
 			tempBuffer.flip();
 			glBufferData(GL_ARRAY_BUFFER, tempBuffer, GL_STREAM_DRAW);
-			int dimensions = normals.length / pointsToDraw;
+			int dimensions = normals.length / verticesToDraw;
 			glVertexAttribPointer(normalIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
 		
-		glDrawArrays(GL_TRIANGLES, 0, pointsToDraw);
+		glDrawArrays(GL_TRIANGLES, 0, verticesToDraw);
 
 		//Disable vertex arrays (to be moved in doneWithVertexInputs)
 		glDisableVertexAttribArray(vertexIn);

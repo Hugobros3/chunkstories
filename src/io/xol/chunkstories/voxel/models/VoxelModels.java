@@ -53,6 +53,11 @@ public class VoxelModels
 			List<float[]> texcoord = new ArrayList<float[]>();
 			List<float[]> normal = new ArrayList<float[]>();
 			List<boolean[]> culling = new ArrayList<boolean[]>();
+			
+			String currentTexture = "~";
+			List<String> texturesNames = new ArrayList<String>();
+			List<Integer> texturesOffsets = new ArrayList<Integer>();
+			
 			boolean[] currentCull = new boolean[6];
 			int c = 0;
 			while ((line = reader.readLine()) != null)
@@ -70,11 +75,29 @@ public class VoxelModels
 						if (!line.equals("default"))
 							bmName += "." + line;
 						model = new VoxelModel(bmName);
+						//Textures calculator
+						currentTexture = "~";
 					}
 					else if (line.startsWith("end"))
 					{
 						if (model != null)
 						{
+							//Add last used texture
+							texturesNames.add(currentTexture);
+							texturesOffsets.add(vertices.size());
+							
+							//Build list of them with offsets
+							model.texturesNames = new String[texturesNames.size()];
+							model.texturesOffsets = new int[texturesNames.size()];
+							int ti = 0;
+							for(String textureName : texturesNames)
+							{
+								model.texturesNames[ti] = textureName;
+								model.texturesOffsets[ti] = texturesOffsets.get(ti);
+								
+								ti++;
+							}
+							
 							model.vertices = new float[vertices.size() * 3];
 							model.texCoords = new float[vertices.size() * 2];
 							model.normals = new float[vertices.size() * 3];
@@ -100,12 +123,27 @@ public class VoxelModels
 							texcoord.clear();
 							normal.clear();
 							culling.clear();
+							texturesNames.clear();
+							texturesOffsets.clear();
 							currentCull = new boolean[6];
 							//loadedBM++;
 							model = null;
 						}
 						else
 							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
+					}
+					else if (line.startsWith("texture"))
+					{
+						if(model == null)
+							continue;
+
+						String[] splitted = line.split(" ");
+						String newTextureName = splitted[1].replace("\'", "");
+						//It can't crash from here so we can safely add the textures
+						texturesNames.add(currentTexture);
+						texturesOffsets.add(vertices.size());
+						
+						currentTexture = newTextureName;
 					}
 					else if (line.startsWith("jitter"))
 					{

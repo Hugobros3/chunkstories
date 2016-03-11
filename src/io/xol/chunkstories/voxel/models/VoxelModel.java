@@ -13,6 +13,9 @@ public class VoxelModel
 		this.name = name;
 	}
 	
+	public String texturesNames[];
+	public int texturesOffsets[];
+	
 	public boolean[][] culling;
 	
 	public float[] vertices;
