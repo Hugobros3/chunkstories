@@ -345,7 +345,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		direction.z = -(float) Math.cos(a) * (float) Math.cos(b);
 
 		direction.normalize();
-		direction.scale(0.2);
+		direction.scale(0.02);
 
 		float distance = 0f;
 		Voxel vox;
@@ -359,13 +359,44 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			if(vox.isVoxelSolid() || vox.isVoxelSelectable())
 			{
 				if(inside)
+					return new int[]{x, y, z};
+				else
 				{
-					//System.out.println(y);
-					double dx = Math.abs(x + 0.5 - position.x);
+					//Sides calculator
+					double dx = x + 0.5 - position.x;
+					double dy = y + 0.5 - position.y;
+					double dz = z + 0.5 - position.z;
+					
+					double adx = Math.abs(dx);
+					double ady = Math.abs(dy);
+					double adz = Math.abs(dz);
+					if(ady > adx && ady > adz)
+					{
+						if(dy > 0)
+							y--;
+						else
+							y++;
+					}
+					else
+					{
+						if(adx > adz)
+						{
+							if(dx > 0)
+								x--;
+							else
+								x++;
+						}
+						else
+						{
+							if(dz > 0)
+								z--;
+							else
+								z++;
+						}
+					}
+					
 					return new int[]{x, y, z};
 				}
-				else
-					return new int[]{x, y, z};
 			}
 			
 			position.add(direction);
