@@ -35,10 +35,11 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.physics.particules.ParticleLight;
 import io.xol.chunkstories.physics.particules.ParticleSetupLight;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.chunkstories.renderer.ChunksRenderer;
 import io.xol.chunkstories.renderer.DefferedLight;
 import io.xol.chunkstories.renderer.EntityRenderer;
 import io.xol.chunkstories.renderer.WorldRenderer;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
+import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.CubicChunk;
 
@@ -413,8 +414,17 @@ public class GameplayScene extends OverlayableScene
 		if (current == null)
 			FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk null", BitmapFont.SMALLFONTS);
 		else
-			FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk : vbo=" + current.vbo_id + " vboSize=" + (current.vbo_size_normal + current.vbo_size_water) + " needRender=" + current.need_render + " requestable=" + current.requestable
-					+ " dataPointer=" + current.dataPointer + " etc "+current+" etc2"+current.holder, BitmapFont.SMALLFONTS);
+		{
+			ChunkRenderData chunkRenderData = current.chunkRenderData;
+			if(chunkRenderData != null)
+			{
+				FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk : "+current + " - "+chunkRenderData.toString(), BitmapFont.SMALLFONTS);
+			}
+			else
+				FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk : "+current + " - No rendering data", BitmapFont.SMALLFONTS);
+		}
+		//	FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk : vbo=" + current.vbo_id + " vboSize=" + (current.vbo_size_normal + current.vbo_size_water) + " needRender=" + current.need_render + " requestable=" + current.requestable
+		//			+ " dataPointer=" + current.dataPointer + " etc "+current+" etc2"+current.holder, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 84, 0, 16, debugInfo, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 100, 0, 16, "View distance : " + FastConfig.viewDistance + " Vertices(N):" + formatBigAssNumber(worldRenderer.renderedVertices + "") + " Chunks in view : "
 				+ formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :" + Client.world.particlesHolder.count() + " #FF0000FPS : " + XolioWindow.getFPS(), BitmapFont.SMALLFONTS);
@@ -440,11 +450,12 @@ public class GameplayScene extends OverlayableScene
 		while(i.hasNext())
 		{
 			c = i.next();
-
 			if(c == null)
 				continue;
+			ChunkRenderData chunkRenderData = c.chunkRenderData;
 			nbChunks++;
-			octelsTotal += c.vbo_size_normal * 16 + (c.vbo_size_water + c.vbo_size_complex) * 24;	
+			if(chunkRenderData != null)
+				octelsTotal += chunkRenderData.getVramSize();
 		}
 		return nbChunks + " chunks, storing " + octelsTotal / 1024 / 1024 + "Mb of vertex data.";
 	}

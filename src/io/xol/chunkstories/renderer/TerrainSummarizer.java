@@ -12,12 +12,12 @@ import org.lwjgl.util.vector.Vector4f;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.renderer.buffers.FloatBufferPool;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.summary.ChunkSummary;
-import io.xol.engine.misc.FloatBufferPool;
 import io.xol.engine.shaders.ShaderProgram;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;

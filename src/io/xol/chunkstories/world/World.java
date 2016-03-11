@@ -434,9 +434,9 @@ public abstract class World
 			c = i.next();
 			c.need_render.set(true);
 			c.requestable.set(true);
-			c.vbo_size_normal = 0;
-			c.vbo_size_complex = 0;
-			c.vbo_size_water = 0;
+			if(c.chunkRenderData != null)
+				c.chunkRenderData.markForDeletion();
+			c.chunkRenderData = null;
 		}
 		/*
 		for (CubicChunk c : this.getAllLoadedChunks())
@@ -584,8 +584,10 @@ public abstract class World
 				*/
 				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 1) || (chunk.chunkY - pCY) > 3 || (chunk.chunkY - pCY) < -3))
 				{
-					if (chunk.vbo_id != -1 && this.renderer != null)
-						renderer.deleteVBO(chunk.vbo_id);
+					if(chunk.chunkRenderData != null)
+						chunk.chunkRenderData.markForDeletion();
+					//if (chunk.vbo_id != -1 && this.renderer != null)
+					//	renderer.deleteVBO(chunk.vbo_id);
 					//glDeleteBuffers(chunk.vbo_id);
 					chunk.need_render.set(true);
 					keep = false;

@@ -2,6 +2,7 @@ package io.xol.chunkstories.world;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.generator.structures.GenerableStructure;
 
@@ -23,16 +24,13 @@ public class CubicChunk
 	public int dataPointer = -1; // -1 means empty chunk (air)
 
 	// Used in client rendering
+	public ChunkRenderData chunkRenderData;
+	
 	public AtomicBoolean need_render = new AtomicBoolean(true);
 	public AtomicBoolean need_render_fast = new AtomicBoolean(false);
 	public AtomicBoolean requestable = new AtomicBoolean(true);
 
 	public AtomicBoolean needRelightning = new AtomicBoolean(true);
-
-	public int vbo_id = -1;
-	public int vbo_size_normal;
-	public int vbo_size_complex;
-	public int vbo_size_water;
 
 	// Terrain Generation
 	public List<GenerableStructure> structures = new ArrayList<GenerableStructure>();

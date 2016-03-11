@@ -1,6 +1,9 @@
-package io.xol.chunkstories.renderer;
+package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.RenderByteBuffer;
+import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTexture;
@@ -9,7 +12,6 @@ import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.math.LoopingMathHelper;
-import io.xol.engine.misc.ByteBufferPool;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
@@ -34,11 +36,20 @@ public class ChunksRenderer extends Thread
 	World world;
 
 	public Deque<int[]> todo = new ConcurrentLinkedDeque<int[]>();
-	public Queue<VBOData> done = new ConcurrentLinkedQueue<VBOData>();
+	public Queue<ChunkRenderData> done = new ConcurrentLinkedQueue<ChunkRenderData>();
 
 	public ByteBufferPool buffersPool;
 
-	public class VBOData
+	int worldSizeInChunks;
+
+	public ChunksRenderer(World w)
+	{
+		world = w;
+		// 8 buffers of 8Mb each (64Mb) for temp/scratch buffer memory
+		buffersPool = new ByteBufferPool(8, 0x800000);
+	}
+
+	/*public class VBOData
 	{
 		int x, y, z;
 		//ByteBuffer buf;
@@ -46,7 +57,7 @@ public class ChunksRenderer extends Thread
 		int s_normal;
 		int s_water;
 		int s_complex;
-	}
+	}*/
 
 	public void requestChunkRender(CubicChunk chunk)
 	{
@@ -108,18 +119,9 @@ public class ChunksRenderer extends Thread
 		}
 	}
 
-	public VBOData doneChunk()
+	public ChunkRenderData doneChunk()
 	{
 		return done.poll();
-	}
-
-	int worldSizeInChunks;
-
-	public ChunksRenderer(World w)
-	{
-		world = w;
-		// 8 buffers of 8Mb each (64Mb) for temp/scratch buffer memory
-		buffersPool = new ByteBufferPool(8, 0x800000);
 	}
 
 	public void run()
@@ -908,7 +910,6 @@ public class ChunksRenderer extends Thread
 
 			if (drawFace)
 			{
-				System.out.println(model.vertices[i*3+1] + ": " + sy);
 				rbbf.addVerticeFloat(model.vertices[i*3+0] + sx + dx, model.vertices[i*3+1] + sy + dy, model.vertices[i*3+2] + sz + dz);
 				//vertices.add(new float[] { vert[0] + sx + dx, vert[1] + sy + dy, vert[2] + sz + dz });
 				rbbf.addTexCoordInt((int) (textureS + model.texCoords[i*2+0] * texture.atlasOffset), (int) (textureT + model.texCoords[i*2+1] * texture.atlasOffset));
@@ -1102,21 +1103,23 @@ public class ChunksRenderer extends Thread
 
 		long cr_convert = System.nanoTime();
 
-		// Convert to floatBuffer
-		VBOData rslt = new VBOData();
-		rslt.x = work.chunkX;
-		rslt.y = work.chunkY;
-		rslt.z = work.chunkZ;
+		// Prepare output
+		ChunkRenderData rslt = new ChunkRenderData(buffersPool, work);
+		//rslt.x = work.chunkX;
+		//rslt.y = work.chunkY;
+		//rslt.z = work.chunkZ;
 
 		byteBuffer.clear();
-		rslt.bufferId = byteBufferId;// = byteBuffer;//BufferUtils.createByteBuffer(bufferTotalSize);
+		rslt.byteBufferPoolId = byteBufferId;// = byteBuffer;//BufferUtils.createByteBuffer(bufferTotalSize);
 
 		long cr_buffer = System.nanoTime();
 		
-		rslt.s_normal = rawBlocksBuffer.position()/(16);
-		rslt.s_complex = complexBlocksBuffer.position()/(24);
-		rslt.s_water = waterBlocksBuffer.position()/(24);
+		//Set sizes
+		rslt.vboSizeFullBlocks = rawBlocksBuffer.position()/(16);
+		rslt.vboSizeCustomBlocks = complexBlocksBuffer.position()/(24);
+		rslt.vboSizeWaterBlocks = waterBlocksBuffer.position()/(24);
 
+		//Move data in final buffer in correct orders
 		rawBlocksBuffer.limit(rawBlocksBuffer.position());
 		rawBlocksBuffer.position(0);
 		byteBuffer.put(rawBlocksBuffer);
@@ -1129,10 +1132,7 @@ public class ChunksRenderer extends Thread
 		complexBlocksBuffer.position(0);
 		byteBuffer.put(complexBlocksBuffer);
 
-		int count = 0;
-
 		byteBuffer.flip();
-		long lol = 0;
 		
 		done.add(rslt);
 

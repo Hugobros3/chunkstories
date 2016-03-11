@@ -17,10 +17,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 import javax.imageio.ImageIO;
 
@@ -45,7 +43,8 @@ import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.EntityHUD;
-import io.xol.chunkstories.renderer.ChunksRenderer.VBOData;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
+import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -347,47 +346,42 @@ public class WorldRenderer
 		// to-render chunks in order to fill empty VBO space
 		// Upload generated chunks data to GPU
 		updateProfiler.reset("vbo upload");
-		VBOData toload = chunksRenderer.doneChunk();
+		ChunkRenderData toLoad = chunksRenderer.doneChunk();
 		int loadLimit = 16;
-		while (toload != null)
+		while (toLoad != null)
 		{
-			CubicChunk c = world.getChunk(toload.x, toload.y, toload.z, false);
+			//CubicChunk c = world.getChunk(toload.x, toload.y, toload.z, false);
+			CubicChunk c = toLoad.chunk;
 			if (c != null)
 			{
-				if (c.vbo_id == -1)
-					c.vbo_id = glGenBuffers();
-				glBindBuffer(GL_ARRAY_BUFFER, c.vbo_id);
-				glBufferData(GL_ARRAY_BUFFER, chunksRenderer.buffersPool.accessByteBuffer(toload.bufferId), GL_STATIC_DRAW);
-
-				c.vbo_size_normal = toload.s_normal;
-				c.vbo_size_complex = toload.s_complex;
-				c.vbo_size_water = toload.s_water;
+				//Free replaced chunkRenderData if any
+				if(c.chunkRenderData != null)
+					c.chunkRenderData.free();
+				//Upload data
+				toLoad.upload();
+				//Replace it
+				c.chunkRenderData = toLoad;
 				chunksChanged = true;
 			}
 			else
 			{
 				if (FastConfig.debugGBuffers)
 					System.out.println("ChunkRenderer outputted a chunk render for a not loaded chunk : ");
-				if (FastConfig.debugGBuffers)
-					System.out.println("Chunks coordinates : X=" + toload.x + " Y=" + toload.y + " Z=" + toload.z);
-				if (FastConfig.debugGBuffers)
-					System.out.println("Render information : vbo size =" + toload.s_normal + " and water size =" + toload.s_water);
+				//if (FastConfig.debugGBuffers)
+				//	System.out.println("Chunks coordinates : X=" + toload.x + " Y=" + toload.y + " Z=" + toload.z);
+				//if (FastConfig.debugGBuffers)
+				//	System.out.println("Render information : vbo size =" + toload.s_normal + " and water size =" + toload.s_water);
+				toLoad.free();
 			}
-			this.chunksRenderer.buffersPool.releaseByteBuffer(toload.bufferId);
 			loadLimit--;
 			if (loadLimit > 0)
-				toload = chunksRenderer.doneChunk();
+				toLoad = chunksRenderer.doneChunk();
 			else
-				toload = null;
+				toLoad = null;
 		}
 		// if(FastConfig.debugGBuffers ) glFinish();
 		// Cleans free vbos
-		Iterator<Integer> vbo2freeI = vbo2delete.iterator();
-		while (vbo2freeI.hasNext())
-		{
-			glDeleteBuffers(vbo2freeI.next());
-			vbo2freeI.remove();
-		}
+		ChunkRenderData.deleteUselessVBOs();
 		// Update view
 		viewX = camPosX;
 		viewY = camPosY;
@@ -695,6 +689,7 @@ public class WorldRenderer
 		int chunksRendered = 0;
 		for (CubicChunk chunk : renderList)
 		{
+			ChunkRenderData chunkRenderData = chunk.chunkRenderData;
 			chunksRendered++;
 			if (chunksToRenderLimit != -1 && chunksRendered > chunksToRenderLimit)
 				break;
@@ -715,7 +710,7 @@ public class WorldRenderer
 			if (chunk.need_render.get() && chunk.requestable.get() && chunk.dataPointer != -1)
 				chunksRenderer.requestChunkRender(chunk);
 			// Don't bother if it don't render anything
-			if (chunk.vbo_size_normal + chunk.vbo_size_complex == 0)
+			if (chunkRenderData == null || chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)
 				continue;
 			// If we're doing shadows
 			if (shadowPass)
@@ -763,8 +758,8 @@ public class WorldRenderer
 			else
 				shadowsPassShader.setUniformFloat3("borderShift", vboDekalX, chunk.chunkY * 32f, vboDekalZ);
 
-			glBindBuffer(GL_ARRAY_BUFFER, chunk.vbo_id);
-			int geometrySize = chunk.vbo_size_normal;
+			glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
+			int geometrySize = chunkRenderData.vboSizeFullBlocks;
 
 			// We're going back to interlaced format
 			// Raw blocks ( integer faces ) alignment :
@@ -789,10 +784,10 @@ public class WorldRenderer
 				// vertice (xyz pos, ts texcoord, rgb color and lmn normal) x 3
 			}
 
-			if (chunk.vbo_size_complex > 0)
+			if (chunkRenderData.vboSizeCustomBlocks > 0)
 			{
-				geometrySize = chunk.vbo_size_complex;
-				int dekal = chunk.vbo_size_normal * 16 + chunk.vbo_size_water * 24;
+				geometrySize = chunkRenderData.vboSizeCustomBlocks;
+				int dekal = chunkRenderData.vboSizeFullBlocks * 16 + chunkRenderData.vboSizeWaterBlocks * 24;
 				// We're going back to interlaced format
 				// Complex blocks ( integer faces ) alignment :
 				// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
@@ -970,7 +965,8 @@ public class WorldRenderer
 			}
 			for (CubicChunk chunk : renderList)
 			{
-				if (chunk.vbo_size_water == 0)
+				ChunkRenderData chunkRenderData = chunk.chunkRenderData;
+				if (chunkRenderData == null || chunkRenderData.vboSizeWaterBlocks == 0)
 					continue;
 
 				int vboDekalX = chunk.chunkX * 32;
@@ -998,10 +994,10 @@ public class WorldRenderer
 
 				liquidBlocksShader.setUniformFloat3("borderShift", vboDekalX, chunk.chunkY * 32, vboDekalZ);
 
-				glBindBuffer(GL_ARRAY_BUFFER, chunk.vbo_id);
-				int geometrySize = chunk.vbo_size_water;
+				glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
+				int geometrySize = chunkRenderData.vboSizeWaterBlocks;
 
-				int dekal = chunk.vbo_size_normal * 16;
+				int dekal = chunkRenderData.vboSizeFullBlocks * 16;
 				// We're going back to interlaced format
 				// Complex blocks ( integer faces ) alignment :
 				// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
@@ -1646,10 +1642,10 @@ public class WorldRenderer
 
 	//VBO deletion queue
 
-	Deque<Integer> vbo2delete = new ConcurrentLinkedDeque<Integer>();
+	/*Deque<Integer> vbo2delete = new ConcurrentLinkedDeque<Integer>();
 
 	public void deleteVBO(int vbo_id)
 	{
 		vbo2delete.add(vbo_id);
-	}
+	}*/
 }
