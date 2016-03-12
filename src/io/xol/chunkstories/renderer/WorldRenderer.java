@@ -765,7 +765,8 @@ public class WorldRenderer
 			// We're going back to interlaced format
 			// Raw blocks ( integer faces ) alignment :
 			// Vertex data : [VERTEX_POS(4b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 16 bits
-			glVertexAttribPointer(vertexIn, 4, GL_INT_2_10_10_10_REV, false, 16, 0);
+			glVertexAttribPointer(vertexIn, 4, GL_UNSIGNED_BYTE, false, 16, 0);
+			//glVertexAttribPointer(vertexIn, 4, GL_INT_2_10_10_10_REV, false, 16, 0);
 			glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 16, 4);
 			if (!shadowPass)
 				glVertexAttribPointer(colorIn, 4, GL_UNSIGNED_BYTE, true, 16, 8);

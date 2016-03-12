@@ -92,7 +92,7 @@ public class XolioWindow
 		if (glVersionf < 3.1f)
 		{
 			FastConfig.openGL3Capable = false;
-			if (GLContext.getCapabilities().GL_EXT_framebuffer_object && GLContext.getCapabilities().GL_ARB_texture_rg && GLContext.getCapabilities().GL_ARB_vertex_type_2_10_10_10_rev)
+			if (GLContext.getCapabilities().GL_EXT_framebuffer_object && GLContext.getCapabilities().GL_ARB_texture_rg)
 			{
 				FastConfig.fbExtCapable = true;
 				ChunkStoriesLogger.getInstance().log("Pre-OpenGL 3.0 Hardware with needed extensions support detected.");

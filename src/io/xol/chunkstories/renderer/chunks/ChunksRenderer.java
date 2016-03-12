@@ -2,7 +2,6 @@ package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
-import io.xol.chunkstories.renderer.RenderByteBuffer;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
