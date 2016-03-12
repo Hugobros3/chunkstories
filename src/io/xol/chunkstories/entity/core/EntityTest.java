@@ -54,11 +54,11 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		
 		renderingContext.setDiffuseTexture(playerTexture.getID());
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
-		renderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
+		renderingContext.getCurrentShader().setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
 		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
-		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 
 		renderingContext.sendTransformationMatrix(null);
 		ModelLibrary.getMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/models/human-viewport.bvh"), i);

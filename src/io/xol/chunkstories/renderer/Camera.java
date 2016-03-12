@@ -90,6 +90,9 @@ public class Camera
 
 	public float fov = 45;
 
+	/**
+	 * Computes inverted and derived matrices
+	 */
 	public void updateMatricesForShaderUniforms()
 	{
 		//Invert two main patrices
@@ -356,17 +359,17 @@ public class Camera
 	public void translate()
 	{
 		untranslatedMVP4f.load(modelViewMatrix4f);
-		//untranslatedMVP4f.translate(new Vector3f((float) (camPosX-Math.floor(camPosX)), (float) (camPosY-Math.floor(camPosY)), (float) (camPosZ-Math.floor(camPosZ))));
 		Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
 
-		//System.out.println(-camPosY);
-		
 		modelViewMatrix4f.translate(new Vector3f((float)camPosX, (float)camPosY, (float)camPosZ));
-		//glTranslatef(camPosX, camPosY, camPosZ);
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
 	}
 
+	/**
+	 * Sends the common matrices ( projection, modelview etc) to the shaderProgram
+	 * @param shaderProgram
+	 */
 	public void setupShader(ShaderProgram shaderProgram)
 	{
 		// Helper function to clean code from messy bits :)
@@ -391,6 +394,11 @@ public class Camera
 		return transform3DCoordinate(new Vector4f(in.x, in.y, in.z, 1f));
 	}
 	
+	/**
+	 * Spits out where some point in world coordinates ends up on the screen
+	 * @param in
+	 * @return
+	 */
 	public Vector3f transform3DCoordinate(Vector4f in)
 	{
 		//position = new Vector4f(-(float)e.posX, -(float)e.posY, -(float)e.posZ, 1f);

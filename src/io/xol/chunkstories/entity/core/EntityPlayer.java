@@ -449,16 +449,16 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		//Players models have no normal mapping
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
 		
-		renderingContext.renderingShader.setUniformFloat3("borderShift", (float)posX, (float)posY+eyePosition, (float)posZ);
+		renderingContext.getCurrentShader().setUniformFloat3("borderShift", (float)posX, (float)posY+eyePosition, (float)posZ);
 		//Prevents laggy behaviour
 		if(this.equals(Client.controlledEntity))
-			renderingContext.renderingShader.setUniformFloat3("borderShift", -(float)cam.camPosX, -(float)cam.camPosY, -(float)cam.camPosZ);
+			renderingContext.getCurrentShader().setUniformFloat3("borderShift", -(float)cam.camPosX, -(float)cam.camPosY, -(float)cam.camPosZ);
 	
 		//TODO use some function in World
 		int modelBlockData = world.getDataAt((int) posX, (int) posY, (int) posZ);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
-		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 		//Player rotations to the viewmodel
 		Matrix4f playerRotationMatrix = new Matrix4f();
 		playerRotationMatrix.rotate((90 - rotH) / 180f * 3.14159f, new Vector3f(0, 1, 0));
@@ -470,7 +470,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		if(!renderingContext.shadow && this.equals(Client.controlledEntity))
 			ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, fp_elements, animation, 0);
 		else
-			ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, animation, 0);
+			ModelLibrary.getMesh("res/models/human.obj").render(renderingContext);
 		
 		//Matrix to itemInHand bone in the player's bvh
 		Matrix4f itemMatrix = new Matrix4f();

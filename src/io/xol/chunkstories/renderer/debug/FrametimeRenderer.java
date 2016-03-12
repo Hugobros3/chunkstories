@@ -1,4 +1,4 @@
-package io.xol.chunkstories.renderer;
+package io.xol.chunkstories.renderer.debug;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -10,6 +10,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import io.xol.engine.base.XolioWindow;
+import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
 
@@ -25,7 +26,7 @@ public class FrametimeRenderer
 	static int lel = 0;
 	static long lastTime;
 	
-	public static void draw()
+	public static void draw(RenderingContext renderingContext)
 	{
 		lel++;
 		lel%=1000;
@@ -42,18 +43,18 @@ public class FrametimeRenderer
 		glDisable(GL_CULL_FACE);
 		glDepthFunc(GL11.GL_LEQUAL);
 		ShaderProgram overlayProgram = ShadersLibrary.getShaderProgram("fps_graph");
-		XolioWindow.getInstance().getRenderingContext().setCurrentShader(overlayProgram);
+		renderingContext.setCurrentShader(overlayProgram);
 		//overlayProgram.use(true);
 		overlayProgram.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
 		//System.out.println(XolioWindow.frameW);
 		int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");
 		//System.out.println("ntm"+vertexIn);
-		glEnableVertexAttribArray(vertexIn);
+		renderingContext.enableVertexAttribute(vertexIn);
 		//glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		data.rewind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glVertexAttribPointer(vertexIn, 2, false, 0, data);
 		glDrawArrays(GL_LINES, 0, 2000);
-		glDisableVertexAttribArray(vertexIn);
+		renderingContext.disableVertexAttribute(vertexIn);
 	}
 }

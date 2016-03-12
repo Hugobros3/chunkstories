@@ -4,6 +4,7 @@ import io.xol.chunkstories.physics.particules.Particle.Type;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.engine.base.XolioWindow;
+import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
 import io.xol.engine.textures.TexturesHandler;
@@ -129,7 +130,7 @@ public class ParticlesHolder
 		return i;
 	}
 
-	public int render(Camera camera)
+	public int render(RenderingContext renderingContext)
 	{
 		int totalDrawn = 0;
 		XolioWindow.getInstance().getRenderingContext().setCurrentShader(particlesShader);
@@ -144,7 +145,7 @@ public class ParticlesHolder
 
 		particlesShader.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
 
-		camera.setupShader(particlesShader);
+		renderingContext.getCamera().setupShader(particlesShader);
 		// glDisable(GL_DEPTH_TEST);
 
 		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -158,9 +159,9 @@ public class ParticlesHolder
 
 		particlesShader.setUniformSampler(1, "lightColors", TexturesHandler.getTexture("environement/light.png"));
 
-		glEnableVertexAttribArray(planeVAL);
-		glEnableVertexAttribArray(billCoordVAL);
-		//glEnableVertexAttribArray(texcoordVAL);
+		renderingContext.enableVertexAttribute(planeVAL);
+		renderingContext.enableVertexAttribute(billCoordVAL);
+		//glEnablezVertexAttribArray(texcoordVAL);
 
 		// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -242,9 +243,9 @@ public class ParticlesHolder
 			}
 		}
 		// We done here
-		glDisableVertexAttribArray(planeVAL);
-		glDisableVertexAttribArray(billCoordVAL);
-		//glDisableVertexAttribArray(texcoordVAL);
+		renderingContext.disableVertexAttribute(planeVAL);
+		renderingContext.disableVertexAttribute(billCoordVAL);
+		//glDisablezVertexAttribArray(texcoordVAL);
 
 		glDepthMask(true);
 

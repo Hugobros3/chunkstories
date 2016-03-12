@@ -3,6 +3,7 @@ package io.xol.chunkstories.renderer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTexture;
+import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.world.World;
 
@@ -20,11 +21,13 @@ public class BlockRenderInfo
 	public BlockRenderInfo(int data)
 	{
 		this.data = data;
+		voxelType = VoxelTypes.get(data);
 	}
 
 	public BlockRenderInfo(World world, int x, int y, int z)
 	{
 		this.data = world.getDataAt(x, y, z);
+		voxelType = VoxelTypes.get(data);
 		if (world != null)
 		{
 			/**

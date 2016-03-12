@@ -151,8 +151,8 @@ public class GuiDrawer
 		// Get attributes locations
 		int vertexIn = shader.getVertexAttributeLocation("vertexIn");
 		int texCoordIn = shader.getVertexAttributeLocation("texCoordIn");
-		glEnableVertexAttribArray(vertexIn);
-		glEnableVertexAttribArray(texCoordIn);
+		XolioWindow.getInstance().renderingContext.enableVertexAttribute(vertexIn);
+		XolioWindow.getInstance().renderingContext.enableVertexAttribute(texCoordIn);
 		shader.setUniformFloat("useTexture", useTexture ? 1f : 0f);
 		if(currentColor != null)
 			shader.setUniformFloat4("color", currentColor);
@@ -182,8 +182,8 @@ public class GuiDrawer
 		glDrawArrays(GL_TRIANGLES, 0, elementsToDraw);
 
 		// Clean up
-		glDisableVertexAttribArray(vertexIn);
-		glDisableVertexAttribArray(texCoordIn);
+		XolioWindow.getInstance().renderingContext.disableVertexAttribute(vertexIn);
+		XolioWindow.getInstance().renderingContext.disableVertexAttribute(texCoordIn);
 		//shader.use(false);
 
 		elementsToDraw = 0;

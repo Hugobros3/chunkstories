@@ -22,6 +22,8 @@ void main(){
 	//interpolatedColor = colorIn;
 	
 	texCoord = texBase + texCoordIn * texScaling;
+	texCoord = texCoordIn;// /vec2(32768.0);
+	//texCoord /= 32768.0;
 	
 	vec4 transformed = transformation * vec4(vertexIn.xyz, 1.0);
 	

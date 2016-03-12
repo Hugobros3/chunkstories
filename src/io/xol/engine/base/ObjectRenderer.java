@@ -39,11 +39,12 @@ public class ObjectRenderer
 			});
 		}
 		buffer.flip();
-		glEnableVertexAttribArray(vertexAttribLocation);
+		XolioWindow.getInstance().renderingContext.enableVertexAttribute(vertexAttribLocation);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glVertexAttribPointer(vertexAttribLocation, 2, false, 0, buffer);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(vertexAttribLocation);
+		
+        XolioWindow.getInstance().renderingContext.disableVertexAttribute(vertexAttribLocation);
         //buffer = null;
 	}
 	

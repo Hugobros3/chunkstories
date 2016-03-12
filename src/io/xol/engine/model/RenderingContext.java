@@ -8,6 +8,9 @@ import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
 import java.nio.FloatBuffer;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Matrix3f;
@@ -21,15 +24,17 @@ public class RenderingContext
 {
 	XolioWindow engine;
 
-	public ShaderProgram renderingShader = null;
+	private ShaderProgram renderingShader = null;
 	
 	private Camera camera;
 
-	public boolean verticesAttribMode = false;
-
-	public int vertexIn, texCoordIn, colorIn, normalIn;
+	//private boolean verticesAttribMode = false;
+	//public int vertexIn, texCoordIn, colorIn, normalIn;
+	
 	public boolean shadow;
 
+	Set<Integer> enabledAttributes = new HashSet<Integer>();
+	
 	// 4 Temporary VBOs for streamed rendering
 	public int tempVBO[] = new int[4];
 	
@@ -55,18 +60,57 @@ public class RenderingContext
 		shadow = isShadowPass;
 	}
 
-	public void setupVertexInputs(int vertexIn, int texCoordIn, int colorIn, int normalIn)
+	/**
+	 * Enables if not already the vertex attribute at the said location.
+	 * Reset uppon shader switch.
+	 * @param vertexAttributeLocation
+	 */
+	public void enableVertexAttribute(int vertexAttributeLocation)
 	{
-		this.vertexIn = vertexIn;
-		this.texCoordIn = texCoordIn;
-		this.colorIn = colorIn;
-		this.normalIn = normalIn;
-		verticesAttribMode = true;
+		if(!enabledAttributes.contains(vertexAttributeLocation))
+		{
+			glEnableVertexAttribArray(vertexAttributeLocation);
+			enabledAttributes.add(vertexAttributeLocation);
+		}
+	}
+	
+	/**
+	 * Disables if not already the vertex attribute at the said location.
+	 * Reset uppon shader switch.
+	 * @param vertexAttributeLocation
+	 */
+	public void disableVertexAttribute(int vertexAttributeLocation)
+	{
+		if(enabledAttributes.contains(vertexAttributeLocation))
+		{
+			glDisableVertexAttribArray(vertexAttributeLocation);
+			enabledAttributes.remove(vertexAttributeLocation);
+		}
 	}
 
-	public void doneWithVertexInputs()
+	public void enableVertexAttribute(String string)
 	{
-		verticesAttribMode = false;
+		enableVertexAttribute(this.getCurrentShader().getVertexAttributeLocation(string));
+	}
+	
+	public void disableVertexAttribute(String string)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	
+	/**
+	 * Resets the vertex attributes enabled (disables all)
+	 */
+	public void clearVertexAttributes()
+	{
+		Iterator<Integer> i = enabledAttributes.iterator();
+		while(i.hasNext())
+		{
+			int vertexAttributeLocation = i.next();
+			glDisableVertexAttribArray(vertexAttributeLocation);
+			i.remove();
+		}
 	}
 
 	//4Megs scratch buffer
@@ -82,26 +126,28 @@ public class RenderingContext
 	 */
 	public void renderDirectFromFloatBuffers(int verticesToDraw, FloatBuffer vertexCoords, FloatBuffer texCoords, FloatBuffer colors, FloatBuffer normals)
 	{
-		int vIn = renderingShader.getVertexAttributeLocation("vertexIn");
-		int tIn = renderingShader.getVertexAttributeLocation("texCoordIn");
-		if(texCoords == null)
-			tIn = -1;
-		int cIn = renderingShader.getVertexAttributeLocation("colorIn");
-		if(colors == null)
-			cIn = -1;
-		int nIn = renderingShader.getVertexAttributeLocation("normalIn");
-		if(normals == null)
-			nIn = -1;
-		setupVertexInputs(vIn, tIn, cIn, nIn);
+		int vertexIn = renderingShader.getVertexAttributeLocation("vertexIn");
+		int texCoordIn = renderingShader.getVertexAttributeLocation("texCoordIn");
+		int colorIn = renderingShader.getVertexAttributeLocation("colorIn");
+		int normalIn = renderingShader.getVertexAttributeLocation("normalIn");
+		
+		enableVertexAttribute(vertexIn);
+		if(texCoordIn != -1)
+			enableVertexAttribute(vertexIn);
+		else
+			disableVertexAttribute(vertexIn);
+		
+		if(colorIn != -1)
+			enableVertexAttribute(colorIn);
+		else
+			disableVertexAttribute(colorIn);
+		
+		if(normalIn != -1)
+			enableVertexAttribute(normalIn);
+		else
+			disableVertexAttribute(normalIn);
 		
 		//Enable vertex arrays (to be moved in setupVertexInputs)
-		glEnableVertexAttribArray(vertexIn);
-		if(texCoordIn != -1)
-			glEnableVertexAttribArray(texCoordIn);
-		if(colorIn != -1)
-			glEnableVertexAttribArray(colorIn);
-		if(normalIn != -1)
-			glEnableVertexAttribArray(normalIn);
 		
 		//Upload data
 		glBindBuffer(GL_ARRAY_BUFFER, tempVBO[0]);
@@ -130,16 +176,6 @@ public class RenderingContext
 		}
 		
 		glDrawArrays(GL_TRIANGLES, 0, verticesToDraw);
-
-		//Disable vertex arrays (to be moved in doneWithVertexInputs)
-		glDisableVertexAttribArray(vertexIn);
-		if(texCoordIn != -1)
-			glDisableVertexAttribArray(texCoordIn);
-		if(colorIn != -1)
-			glDisableVertexAttribArray(colorIn);
-		if(normalIn != -1)
-			glDisableVertexAttribArray(normalIn);
-		doneWithVertexInputs();
 	}
 	
 	/**
@@ -163,26 +199,27 @@ public class RenderingContext
 		
 		//Parse inputs, grab vertex attribute locations
 		int verticesToDraw = vertexCoords.length / 3;
-		int vIn = renderingShader.getVertexAttributeLocation("vertexIn");
-		int tIn = renderingShader.getVertexAttributeLocation("texCoordIn");
-		if(texCoords == null)
-			tIn = -1;
-		int cIn = renderingShader.getVertexAttributeLocation("colorIn");
-		if(colors == null)
-			cIn = -1;
-		int nIn = renderingShader.getVertexAttributeLocation("normalIn");
-		if(normals == null)
-			nIn = -1;
-		setupVertexInputs(vIn, tIn, cIn, nIn);
 		
-		//Enable vertex arrays (to be moved in setupVertexInputs)
-		glEnableVertexAttribArray(vertexIn);
+		int vertexIn = renderingShader.getVertexAttributeLocation("vertexIn");
+		int texCoordIn = renderingShader.getVertexAttributeLocation("texCoordIn");
+		int colorIn = renderingShader.getVertexAttributeLocation("colorIn");
+		int normalIn = renderingShader.getVertexAttributeLocation("normalIn");
+		
+		enableVertexAttribute(vertexIn);
 		if(texCoordIn != -1)
-			glEnableVertexAttribArray(texCoordIn);
+			enableVertexAttribute(vertexIn);
+		else
+			disableVertexAttribute(vertexIn);
+		
 		if(colorIn != -1)
-			glEnableVertexAttribArray(colorIn);
+			enableVertexAttribute(colorIn);
+		else
+			disableVertexAttribute(colorIn);
+		
 		if(normalIn != -1)
-			glEnableVertexAttribArray(normalIn);
+			enableVertexAttribute(normalIn);
+		else
+			disableVertexAttribute(normalIn);
 		
 		//Upload data
 		glBindBuffer(GL_ARRAY_BUFFER, tempVBO[0]);
@@ -223,25 +260,19 @@ public class RenderingContext
 		}
 		
 		glDrawArrays(GL_TRIANGLES, 0, verticesToDraw);
-
-		//Disable vertex arrays (to be moved in doneWithVertexInputs)
-		glDisableVertexAttribArray(vertexIn);
-		if(texCoordIn != -1)
-			glDisableVertexAttribArray(texCoordIn);
-		if(colorIn != -1)
-			glDisableVertexAttribArray(colorIn);
-		if(normalIn != -1)
-			glDisableVertexAttribArray(normalIn);
-		doneWithVertexInputs();
 	}
 
-	public void setCurrentShader(ShaderProgram s)
+	public void setCurrentShader(ShaderProgram shaderProgram)
 	{
-		if (s != renderingShader)
-			s.use();
+		if (shaderProgram != renderingShader)
+		{
+			//When changing shaders, we make sure we disable whatever was enabled
+			clearVertexAttributes();
+			shaderProgram.use();
+		}
 		//else
 		//	System.out.println("Prevented useless shader switch : "+s);
-		renderingShader = s;
+		renderingShader = shaderProgram;
 	}
 
 	public void setDiffuseTexture(int id)
@@ -312,5 +343,10 @@ public class RenderingContext
 		normal.m21 = temp.m21;
 		normal.m22 = temp.m22;
 		this.renderingShader.setUniformMatrix3f("boneTransformNormal", normal);
+	}
+
+	public ShaderProgram getCurrentShader()
+	{
+		return renderingShader;
 	}
 }

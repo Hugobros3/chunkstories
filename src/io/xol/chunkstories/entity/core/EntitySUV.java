@@ -40,15 +40,15 @@ public class EntitySUV extends EntityImplementation
 		// System.out.println("rendering entity test");
 		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/rookie.png"));
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
-		renderingContext.renderingShader.setUniformFloat3("borderShift", (float) posX, (float) posY + 0.4f, (float) posZ);
+		renderingContext.getCurrentShader().setUniformFloat3("borderShift", (float) posX, (float) posY + 0.4f, (float) posZ);
 		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
-		renderingContext.renderingShader.setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 		//world.particlesHolder.addParticle(new ParticleSmoke(world, posX+0.8+(Math.random()-0.5)*0.2, posY+0.5, posZ- 3.0f));
 		Matrix4f mutrix = new Matrix4f();
 		mutrix.translate(new Vector3f(0.0f, 1.0f, 0.0f));
-		renderingContext.renderingShader.setUniformMatrix4f("localTransform", mutrix);
+		renderingContext.getCurrentShader().setUniformMatrix4f("localTransform", mutrix);
 		//debugDraw();
 		ModelLibrary.getMesh("res/models/rookie.obj").render(renderingContext);
 		//ModelLibrary.loadAndRenderAnimatedMesh("res/models/human.obj", "res/models/human-fixed-standstill.bvh", i);

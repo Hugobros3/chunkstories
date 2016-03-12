@@ -1,6 +1,6 @@
 package io.xol.chunkstories.physics;
 
-import static io.xol.chunkstories.renderer.OverlayRenderer.*;
+import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.voxel.VoxelTypes;

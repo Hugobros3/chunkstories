@@ -189,18 +189,21 @@ public class ObjMesh
 	public void render(RenderingContext renderingContext)
 	{
 		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
-		if (renderingContext.verticesAttribMode)
+
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn"));
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn"));
+		
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"), 3, GL_FLOAT, false, 8 * 4, 0);
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn"), 2, GL_FLOAT, false, 8 * 4, 3 * 4);
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn"), 3, GL_FLOAT, true, 8 * 4, 5 * 4);
+		int totalSize = 0;
+		for (int i : groups.values())
 		{
-			glVertexAttribPointer(renderingContext.vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
-			glVertexAttribPointer(renderingContext.texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
-			glVertexAttribPointer(renderingContext.normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
-			int totalSize = 0;
-			for (int i : groups.values())
-			{
-				glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
-				totalSize += i;
-			}
+			glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
+			totalSize += i;
 		}
 	}
 
@@ -213,15 +216,16 @@ public class ObjMesh
 	public void render(RenderingContext renderingContext, Set<String> bonesToDraw)
 	{
 		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
+		glCullFace(GL_BACK);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 
-		if (renderingContext.verticesAttribMode)
-		{
-			glVertexAttribPointer(renderingContext.vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
-			glVertexAttribPointer(renderingContext.texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
-			glVertexAttribPointer(renderingContext.normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
-			int totalSize = 0;
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn"));
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn"));
+
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"), 3, GL_FLOAT, false, 8 * 4, 0);
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn"), 2, GL_FLOAT, false, 8 * 4, 3 * 4);
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn"), 3, GL_FLOAT, true, 8 * 4, 5 * 4);int totalSize = 0;
 			for (String currentVertexGroup : groups.keySet())
 			{
 				int i = groups.get(currentVertexGroup);
@@ -229,7 +233,7 @@ public class ObjMesh
 					glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 				totalSize += i;
 			}
-		}
+		
 	}
 
 	/**
@@ -260,26 +264,29 @@ public class ObjMesh
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 
 		Matrix4f matrix;
-		if (renderingContext.verticesAttribMode)
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn"));
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn"));
+
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"), 3, GL_FLOAT, false, 8 * 4, 0);
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn"), 2, GL_FLOAT, false, 8 * 4, 3 * 4);
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn"), 3, GL_FLOAT, true, 8 * 4, 5 * 4);
+		int totalSize = 0;
+		for (String currentVertexGroup : groups.keySet())
 		{
-			glVertexAttribPointer(renderingContext.vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
-			glVertexAttribPointer(renderingContext.texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
-			glVertexAttribPointer(renderingContext.normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
-			int totalSize = 0;
-			for (String currentVertexGroup : groups.keySet())
-			{
-				int i = groups.get(currentVertexGroup);
-				//Get transformer matrix
-				matrix = animationData.getTransformationForBonePlusOffset(currentVertexGroup, frame);
-				//Send the transformation
-				renderingContext.sendBoneTransformationMatrix(matrix);
-				//Only what we can care about
-				if (bonesToDraw == null || bonesToDraw.contains(currentVertexGroup))
-					glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
-				totalSize += i;
-			}
+			int i = groups.get(currentVertexGroup);
+			//Get transformer matrix
+			matrix = animationData.getTransformationForBonePlusOffset(currentVertexGroup, frame);
+			//Send the transformation
+			renderingContext.sendBoneTransformationMatrix(matrix);
+			//Only what we can care about
+			if (bonesToDraw == null || bonesToDraw.contains(currentVertexGroup))
+				glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
+			totalSize += i;
 		}
+		
 		renderingContext.sendBoneTransformationMatrix(null);
+		glCullFace(GL_FRONT);
 	}
 
 	public static List<float[]> vertices = new ArrayList<float[]>();

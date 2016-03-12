@@ -12,6 +12,7 @@ import org.lwjgl.util.vector.Vector2f;
 
 import io.xol.chunkstories.world.World;
 import io.xol.engine.base.XolioWindow;
+import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
 import io.xol.engine.textures.TexturesHandler;
@@ -115,18 +116,18 @@ public class WeatherEffectsRenderer
 	long lastRender = 0L;
 	
 	// Rain falls at ~10m/s, so we prepare in advance 10 meters of rain to fall until we add some more on top
-	public void renderEffects(Camera camera)
+	public void renderEffects(RenderingContext renderingContext)
 	{
-		viewX = (int) -camera.camPosX;
-		viewY = (int) -camera.camPosY;
-		viewZ = (int) -camera.camPosZ;
+		viewX = (int) -renderingContext.getCamera().camPosX;
+		viewY = (int) -renderingContext.getCamera().camPosY;
+		viewZ = (int) -renderingContext.getCamera().camPosZ;
 		if(world.isRaining())
-			renderRain(camera);
+			renderRain(renderingContext);
 	}
 
 	int vboId = -1;
 	
-	private void renderRain(Camera camera)
+	private void renderRain(RenderingContext renderingContext)
 	{
 		if(vboId == -1)
 			vboId = glGenBuffers();
@@ -143,9 +144,9 @@ public class WeatherEffectsRenderer
 		glDisable(GL_ALPHA_TEST);
 		glDisable(GL_BLEND);
 		glDepthFunc(GL_LEQUAL);
-		camera.setupShader(weatherShader);
+		renderingContext.getCamera().setupShader(weatherShader);
 		int vertexIn = weatherShader.getVertexAttributeLocation("vertexIn");
-		glEnableVertexAttribArray(vertexIn);
+		renderingContext.enableVertexAttribute(vertexIn);
 		//glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		weatherShader.setUniformFloat("time", (System.currentTimeMillis() - lastRender) / 1000f);
 		weatherShader.setUniformSampler(0, "lightmap", TexturesHandler.getTexture("environement/light.png"));
@@ -154,7 +155,7 @@ public class WeatherEffectsRenderer
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		glVertexAttribPointer(vertexIn, 4, GL_FLOAT, false, 0, 0L);
 		glDrawArrays(GL_TRIANGLES, 0, 110000);
-		glDisableVertexAttribArray(vertexIn);
+		renderingContext.disableVertexAttribute(vertexIn);
 		glDisable(GL_BLEND);
 	}
 	

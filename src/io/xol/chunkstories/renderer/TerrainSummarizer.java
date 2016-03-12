@@ -18,6 +18,8 @@ import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.summary.ChunkSummary;
+import io.xol.engine.base.XolioWindow;
+import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -205,7 +207,7 @@ public class TerrainSummarizer
 
 	int cx, cz;
 
-	public int draw(Camera camera, ShaderProgram terrain)
+	public int draw(RenderingContext renderingContext, ShaderProgram terrain)
 	{
 		int elements = 0;
 		glDisable(GL_CULL_FACE); // culling for our glorious terrain
@@ -215,12 +217,12 @@ public class TerrainSummarizer
 		//glDisableClientState(GL_NORMAL_ARRAY);
 		//glDisableClientState(GL_COLOR_ARRAY);
 		int vertexIn = terrain.getVertexAttributeLocation("vertexIn");
-		glEnableVertexAttribArray(vertexIn);	
+		renderingContext.enableVertexAttribute(vertexIn);	
 		
 		for (RegionSummary rs : regionsToRender)
 		{
 			float height = 1024f;
-			if(!camera.isBoxInFrustrum(new Vector3f(rs.rxDisplay * 256 + 128, height / 2, rs.rzDisplay * 256 + 128), new Vector3f(256, height, 256)))
+			if(!renderingContext.getCamera().isBoxInFrustrum(new Vector3f(rs.rxDisplay * 256 + 128, height / 2, rs.rzDisplay * 256 + 128), new Vector3f(256, height, 256)))
 				continue;
 			
 			terrain.setUniformSampler(1, "groundTexture", rs.dataSource.tId);
@@ -266,7 +268,7 @@ public class TerrainSummarizer
 		//System.out.println(regionsToRender.size()+"parts");
 
 		//glDisableClientState(GL_VERTEX_ARRAY);
-		glDisableVertexAttribArray(vertexIn);	
+		renderingContext.disableVertexAttribute(vertexIn);	
 
 		return elements;
 	}

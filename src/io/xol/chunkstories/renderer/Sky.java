@@ -2,6 +2,7 @@ package io.xol.chunkstories.renderer;
 
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
+import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
 import io.xol.engine.textures.Texture;
@@ -29,7 +30,7 @@ import org.lwjgl.util.vector.Vector3f;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class SkyDome
+public class Sky
 {
 	public float time = 0;
 	float distance = 1500;
@@ -46,7 +47,7 @@ public class SkyDome
 	World world;
 	WorldRenderer worldRenderer;
 	
-	public SkyDome(World world, WorldRenderer worldRenderer)
+	public Sky(World world, WorldRenderer worldRenderer)
 	{
 		this.world = world;
 		this.worldRenderer = worldRenderer;
@@ -79,7 +80,7 @@ public class SkyDome
 		return new Vector3f((float) (400 + sundistance * Math.sin(rad(sunangle)) * Math.cos(sunloc)), (float) (height + sundistance * Math.sin(sunloc)), (float) (sundistance * Math.cos(rad(sunangle)) * Math.cos(sunloc)));
 	}
 
-	public void render(Camera camera)
+	public void render(RenderingContext renderingContext)
 	{
 		setupFog();
 
@@ -110,10 +111,10 @@ public class SkyDome
 		skyTexture.setTextureWrapping(false);
 
 		//skyShader.setUniformSamplerCube(2, "skybox", TexturesHandler.idCubemap("res/textures/skybox"));
-		skyShader.setUniformFloat3("camPos", camera.camPosX, camera.camPosY, camera.camPosZ);
+		skyShader.setUniformFloat3("camPos", renderingContext.getCamera().camPosX, renderingContext.getCamera().camPosY, renderingContext.getCamera().camPosZ);
 		skyShader.setUniformFloat3("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
 		skyShader.setUniformFloat("time", time);
-		camera.setupShader(skyShader);
+		renderingContext.getCamera().setupShader(skyShader);
 
 		ObjectRenderer.drawFSQuad(skyShader.getVertexAttributeLocation("vertexIn"));
 
@@ -126,7 +127,7 @@ public class SkyDome
 		//starsShader.use(true);
 		starsShader.setUniformFloat3("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
 		starsShader.setUniformFloat3("color", 1f, 1f, 1f);
-		camera.setupShader(starsShader);
+		renderingContext.getCamera().setupShader(starsShader);
 		int NB_STARS = 500;
 		if (stars == null)
 		{
@@ -143,11 +144,11 @@ public class SkyDome
 		int vertexIn = starsShader.getVertexAttributeLocation("vertexIn");
 		if (vertexIn >= 0)
 		{
-			glEnableVertexAttribArray(vertexIn);
+			renderingContext.enableVertexAttribute(vertexIn);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glVertexAttribPointer(vertexIn, 3, false, 0, stars);
 			glDrawArrays(GL_POINTS, 0, NB_STARS);
-			glDisableVertexAttribArray(vertexIn);
+			renderingContext.disableVertexAttribute(vertexIn);
 			//starsShader.use(false);
 		}
 		glDisable(GL_BLEND);
@@ -164,12 +165,9 @@ public class SkyDome
 		return h / 180 * Math.PI;
 	}
 
-	public void reloadShader()
+	//TODO orphan function
+	public void reloadSky()
 	{
-		//TexturesHandler.freeTexture("res/textures/environement/sky.png");
-		//TexturesHandler.freeTexture("res/textures/environement/glow.png");
-		//skyShader.reload(FastConfig.getShaderConfig());
-		//cloudsShader.reload(FastConfig.getShaderConfig());
 		try
 		{
 			colors_sunny = ImageIO.read(new File("res/textures/environement/sky.png"));
@@ -196,6 +194,7 @@ public class SkyDome
 		return new int[] { color.getRed(), color.getGreen(), color.getBlue() };
 	}
 
+	//TODO: REALLY ? This is 2016 FFS !
 	private void setupFog()
 	{
 		FloatBuffer fogColor = BufferUtils.createFloatBuffer(4);

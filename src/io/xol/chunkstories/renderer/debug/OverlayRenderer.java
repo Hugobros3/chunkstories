@@ -1,4 +1,4 @@
-package io.xol.chunkstories.renderer;
+package io.xol.chunkstories.renderer.debug;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -11,6 +11,7 @@ import org.lwjgl.util.vector.Vector4f;
 
 import static org.lwjgl.opengl.GL11.glDrawArrays;
 
+import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
@@ -94,14 +95,14 @@ public class OverlayRenderer
 		//overlayProgram.use(true);
 		camera.setupShader(overlayProgram);
 		int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");
-		glEnableVertexAttribArray(vertexIn);
+		XolioWindow.getInstance().renderingContext.enableVertexAttribute(vertexIn);
 		overlayProgram.setUniformFloat4("colorIn", color);
 		//glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		data.flip();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glVertexAttribPointer(vertexIn, 3, false, 0, data);
 		glDrawArrays(mode, 0, size);
-		glDisableVertexAttribArray(vertexIn);
+		XolioWindow.getInstance().renderingContext.disableVertexAttribute(vertexIn);
 		GL11.glDisable(GL11.GL_BLEND);
 		data.clear();
 		size = 0;

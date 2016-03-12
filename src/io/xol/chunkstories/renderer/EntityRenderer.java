@@ -1,6 +1,7 @@
 package io.xol.chunkstories.renderer;
 
-import static io.xol.chunkstories.renderer.OverlayRenderer.*;
+import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
+
 import io.xol.chunkstories.world.World;
 
 //(c) 2-0.05f15 XolioWare Interactive

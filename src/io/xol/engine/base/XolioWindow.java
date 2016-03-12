@@ -17,7 +17,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
-import io.xol.chunkstories.renderer.FrametimeRenderer;
+import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.misc.CPUModelDetection;
 import io.xol.engine.model.RenderingContext;
@@ -202,7 +202,7 @@ public class XolioWindow
 				// if (targetFPS > 0)
 				// sync(targetFPS);
 				if(Client.getConfig().getBooleanProp("frametimeGraph", false))
-					FrametimeRenderer.draw();
+					FrametimeRenderer.draw(renderingContext);
 				Display.update();
 			}
 			System.out.println("Copyright 2015 XolioWare Interactive");

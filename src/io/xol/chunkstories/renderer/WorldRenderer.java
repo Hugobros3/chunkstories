@@ -45,6 +45,7 @@ import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
+import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -148,7 +149,7 @@ public class WorldRenderer
 	private Matrix4f depthMatrix = new Matrix4f();
 
 	// Sky
-	public SkyDome sky;
+	public Sky sky;
 
 	// Debug
 	DebugProfiler updateProfiler = new DebugProfiler();
@@ -176,7 +177,7 @@ public class WorldRenderer
 		world.linkWorldRenderer(this);
 		terrain = new TerrainSummarizer(world);
 		wer = new WeatherEffectsRenderer(world, this);
-		sky = new SkyDome(world, this);
+		sky = new Sky(world, this);
 		sizeInChunks = world.getSizeInChunks();
 		resizeShadowMaps();
 		environmentMap = new Cubemap(Cubemap.CubemapType.RGBA_8BPP);
@@ -260,7 +261,7 @@ public class WorldRenderer
 		//sky.skyShader.use(true);
 		//sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
 		glViewport(0, 0, scrW, scrH);
-		sky.render(camera);
+		sky.render(renderingContext);
 
 		if (FastConfig.debugGBuffers)
 			glFinish();
@@ -276,7 +277,7 @@ public class WorldRenderer
 		// Render weather
 		composite_pass_shaded.bind();
 		composite_pass_shaded.setEnabledRenderTargets();
-		wer.renderEffects(camera);
+		wer.renderEffects(renderingContext);
 
 		// Debug
 		if (FastConfig.debugGBuffers)
@@ -580,7 +581,7 @@ public class WorldRenderer
 				glFinish();
 			t = System.nanoTime();
 			if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
-				renderedVertices += terrain.draw(camera, terrainShader);
+				renderedVertices += terrain.draw(renderingContext, terrainShader);
 
 			if (FastConfig.debugGBuffers)
 				glFinish();
@@ -655,23 +656,24 @@ public class WorldRenderer
 			texCoordIn = opaqueBlocksShader.getVertexAttributeLocation("texCoordIn");
 			colorIn = opaqueBlocksShader.getVertexAttributeLocation("colorIn");
 			normalIn = opaqueBlocksShader.getVertexAttributeLocation("normalIn");
-			glEnableVertexAttribArray(colorIn);
-			renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
+			//glEnablezVertexAttribArray(colorIn);
+			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
 			renderingContext.setCurrentShader(opaqueBlocksShader);
+			renderingContext.enableVertexAttribute(colorIn);
 		}
 		else
 		{
 			vertexIn = shadowsPassShader.getVertexAttributeLocation("vertexIn");
 			texCoordIn = shadowsPassShader.getVertexAttributeLocation("texCoordIn");
 			normalIn = shadowsPassShader.getVertexAttributeLocation("normalIn");
-			renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
+			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
 			renderingContext.setCurrentShader(shadowsPassShader);
 		}
 		renderingContext.setIsShadowPass(shadowPass);
 
-		glEnableVertexAttribArray(normalIn);
-		glEnableVertexAttribArray(vertexIn);
-		glEnableVertexAttribArray(texCoordIn);
+		renderingContext.enableVertexAttribute(normalIn);
+		renderingContext.enableVertexAttribute(vertexIn);
+		renderingContext.enableVertexAttribute(texCoordIn);
 
 		// Culling vectors
 		viewerPosVector = new Vector3f((float)viewX, (float)viewY, (float)viewZ);
@@ -814,10 +816,10 @@ public class WorldRenderer
 			if (FastConfig.debugGBuffers)
 				System.out.println("blocks took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
-			glDisableVertexAttribArray(vertexIn);
-			glDisableVertexAttribArray(texCoordIn);
-			glDisableVertexAttribArray(colorIn);
-			glDisableVertexAttribArray(normalIn);
+			renderingContext.disableVertexAttribute(vertexIn);
+			renderingContext.disableVertexAttribute(texCoordIn);
+			renderingContext.disableVertexAttribute(colorIn);
+			renderingContext.disableVertexAttribute(normalIn);
 
 			// Select shader
 			renderingContext.setCurrentShader(entitiesShader);
@@ -827,11 +829,11 @@ public class WorldRenderer
 			texCoordIn = entitiesShader.getVertexAttributeLocation("texCoordIn");
 			normalIn = entitiesShader.getVertexAttributeLocation("normalIn");
 
-			glEnableVertexAttribArray(vertexIn);
-			glEnableVertexAttribArray(texCoordIn);
-			glEnableVertexAttribArray(normalIn);
+			renderingContext.enableVertexAttribute(vertexIn);
+			renderingContext.enableVertexAttribute(texCoordIn);
+			renderingContext.enableVertexAttribute(normalIn);
 
-			renderingContext.setupVertexInputs(vertexIn, texCoordIn, -1, normalIn);
+			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, -1, normalIn);
 			
 			entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
 			entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
@@ -879,12 +881,12 @@ public class WorldRenderer
 			}
 		}
 		// Particles rendering
-		Client.world.particlesHolder.render(camera);
+		Client.world.particlesHolder.render(renderingContext);
 		glEnable(GL_CULL_FACE);
 
-		glDisableVertexAttribArray(normalIn);
-		glDisableVertexAttribArray(vertexIn);
-		glDisableVertexAttribArray(texCoordIn);
+		renderingContext.disableVertexAttribute(normalIn);
+		renderingContext.disableVertexAttribute(vertexIn);
+		renderingContext.disableVertexAttribute(texCoordIn);
 
 		if (shadowPass)
 			return;
@@ -925,17 +927,17 @@ public class WorldRenderer
 			colorIn = liquidBlocksShader.getVertexAttributeLocation("colorIn");
 			normalIn = liquidBlocksShader.getVertexAttributeLocation("normalIn");
 
-			glEnableVertexAttribArray(vertexIn);
+			renderingContext.setCurrentShader(liquidBlocksShader);
+			renderingContext.enableVertexAttribute(vertexIn);
 			if (texCoordIn != -1)
-				glEnableVertexAttribArray(texCoordIn);
+				renderingContext.enableVertexAttribute(texCoordIn);
 			if (colorIn != -1)
-				glEnableVertexAttribArray(colorIn);
+				renderingContext.enableVertexAttribute(colorIn);
 			if (normalIn != -1)
-				glEnableVertexAttribArray(normalIn);
+				renderingContext.enableVertexAttribute(normalIn);
 
 			// Set rendering context.
-			renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
-			renderingContext.setCurrentShader(liquidBlocksShader);
+			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
 
 			Voxel vox = VoxelTypes.get(world.getDataAt((int) viewX, (int) (viewY + 1.3), (int) viewZ, false));
 			liquidBlocksShader.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
@@ -1014,14 +1016,14 @@ public class WorldRenderer
 			}
 
 			// Disable vertex attributes
-			glDisableVertexAttribArray(vertexIn);
+			renderingContext.disableVertexAttribute(vertexIn);
 			if (texCoordIn != -1)
-				glDisableVertexAttribArray(texCoordIn);
+				renderingContext.disableVertexAttribute(texCoordIn);
 			if (colorIn != -1)
-				glDisableVertexAttribArray(colorIn);
+				renderingContext.disableVertexAttribute(colorIn);
 			if (normalIn != -1)
-				glDisableVertexAttribArray(normalIn);
-			renderingContext.doneWithVertexInputs();
+				renderingContext.disableVertexAttribute(normalIn);
+			//renderingContext.doneWithVertexInputs();
 		}
 
 		// Draw world shaded with sunlight and vertex light
