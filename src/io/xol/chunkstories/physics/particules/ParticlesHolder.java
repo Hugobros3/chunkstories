@@ -1,7 +1,6 @@
 package io.xol.chunkstories.physics.particules;
 
 import io.xol.chunkstories.physics.particules.Particle.Type;
-import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.model.RenderingContext;

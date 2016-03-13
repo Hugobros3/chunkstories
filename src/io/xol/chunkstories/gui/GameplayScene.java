@@ -36,7 +36,7 @@ import io.xol.chunkstories.physics.particules.ParticleLight;
 import io.xol.chunkstories.physics.particules.ParticleSetupLight;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.DefferedLight;
-import io.xol.chunkstories.renderer.EntityRenderer;
+import io.xol.chunkstories.renderer.SelectionRenderer;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
@@ -52,7 +52,7 @@ public class GameplayScene extends OverlayableScene
 {
 	// Renderer
 	public WorldRenderer worldRenderer;
-	EntityRenderer entityRenderer;
+	SelectionRenderer selectionRenderer;
 	InventoryDrawer inventoryDrawer;
 
 	Camera camera = new Camera();
@@ -82,7 +82,7 @@ public class GameplayScene extends OverlayableScene
 		worldRenderer = new WorldRenderer(Client.world);
 		worldRenderer.setupRenderSize(XolioWindow.frameW, XolioWindow.frameH);
 		//TODO wtf is this
-		entityRenderer = new EntityRenderer(Client.world, worldRenderer);
+		selectionRenderer = new SelectionRenderer(Client.world, worldRenderer);
 
 		//Give focus
 		focus(true);
@@ -144,7 +144,7 @@ public class GameplayScene extends OverlayableScene
 		worldRenderer.renderWorldAtCamera(camera);
 		
 		if (selectedBlock != null)
-			entityRenderer.drawSelectionBox(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
+			selectionRenderer.drawSelectionBox(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
 		
 		//Debug draws
 		if (FastConfig.physicsVisualization && player != null)

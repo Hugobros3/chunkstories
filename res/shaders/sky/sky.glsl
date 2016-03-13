@@ -83,8 +83,8 @@ vec4 getClouds(vec3 eyeDirection)
 	
 	<endif doClouds>
 	
-	float distantFade = clamp((length( eyeDirection.xz * ((1024.0 + camPos.y) / eyeDirection.y) ) - 3500.0) / 3500.0, 0.0, 1.0) ;
-	clouds.a -= distantFade;
+	float distantFade = clamp((13500 - length( eyeDirection.xz * ((1024.0 + camPos.y) / eyeDirection.y) )) / 13500.0, 0.0, 1.0) ;
+	clouds.a *= distantFade;
 	
 	
 	
@@ -94,7 +94,7 @@ vec4 getClouds(vec3 eyeDirection)
 		return vec4(0.0);
 	
 	if(clouds.a > 0.5)
-		clouds.rgb = mix(clouds.rgb, 0.75*clouds.rgb, (clouds.a-0.5)*0.5);
+		clouds.rgb = mix(clouds.rgb, 0.75*clouds.rgb, (clouds.a-0.25)*0.5);
 	
 	return clamp(clouds, 0.0, 1.0);
 	return vec4(0.0);

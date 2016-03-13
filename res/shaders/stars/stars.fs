@@ -19,5 +19,5 @@ uniform mat3 normalMatrixInv;
 void main()
 {
 	//Diffuse G-Buffer
-	gl_FragColor = vec4(color, blend * 0.5);
+	gl_FragColor = vec4(color, clamp(blend * 0.5, 0.0, 1.0));
 }

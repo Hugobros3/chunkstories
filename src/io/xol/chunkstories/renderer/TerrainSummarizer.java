@@ -18,7 +18,6 @@ import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.summary.ChunkSummary;
-import io.xol.engine.base.XolioWindow;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import static org.lwjgl.opengl.GL11.*;

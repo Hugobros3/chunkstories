@@ -6,7 +6,6 @@ import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static io.xol.engine.textures.Texture.TextureType.*;
-import static org.lwjgl.opengl.ARBVertexType2_10_10_10_REV.GL_INT_2_10_10_10_REV;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -1254,9 +1253,11 @@ public class WorldRenderer
 		applyShadowsShader.setUniformSampler(5, "shadowMap", shadow_map_near);
 		applyShadowsShader.setUniformSampler(6, "glowSampler", glowTexture);
 		applyShadowsShader.setUniformSampler(7, "colorSampler", skyTexture);
+		Texture lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
+		applyShadowsShader.setUniformSampler(8, "lightColors", lightColors);
 		//TODO if SSAO
-		applyShadowsShader.setUniformSampler(8, "ssaoBuffer", composite_ssao);
-		applyShadowsShader.setUniformSamplerCubemap(9, "environmentCubemap", environmentMap);
+		applyShadowsShader.setUniformSampler(9, "ssaoBuffer", composite_ssao);
+		applyShadowsShader.setUniformSamplerCubemap(10, "environmentCubemap", environmentMap);
 
 		//applyShadowsShader.setUniformSampler(4, "comp_spec", this.composite_specular);
 
@@ -1641,13 +1642,4 @@ public class WorldRenderer
 			return "#FF0000Failed to take screenshot ! (" + e.toString() + ")";
 		}
 	}
-
-	//VBO deletion queue
-
-	/*Deque<Integer> vbo2delete = new ConcurrentLinkedDeque<Integer>();
-
-	public void deleteVBO(int vbo_id)
-	{
-		vbo2delete.add(vbo_id);
-	}*/
 }

@@ -9,7 +9,7 @@ import org.lwjgl.util.vector.Vector3f;
 public class Vector3d
 {
 	// Dirty self-made replacement for vecmatch classes, castable to LWJGL's vector
-	
+
 	public double x, y, z;
 
 	public Vector3d()
@@ -117,7 +117,7 @@ public class Vector3d
 	{
 		return x * x + y * y + z * z;
 	}
-	
+
 	public Vector3f castToSP()
 	{
 		Vector3f vec = new Vector3f();
@@ -125,6 +125,18 @@ public class Vector3d
 		vec.y = (float) y;
 		vec.z = (float) z;
 		return vec;
+	}
+
+	public void set(Vector3d v)
+	{
+		this.x = v.x;
+		this.y = v.y;
+		this.z = v.z;
+	}
+
+	public String toString()
+	{
+		return "[Vector3d x:" + x + " y:" + y + " z:" + z + "]";
 	}
 
 }
