@@ -1,8 +1,8 @@
 package io.xol.chunkstories.tools;
 
 import io.xol.chunkstories.GameData;
-import io.xol.chunkstories.world.World;
-import io.xol.chunkstories.world.generator.PerlinWorldAccessor;
+import io.xol.chunkstories.world.WorldInfo;
+import io.xol.chunkstories.world.generator.core.PerlinWorldGenerator;
 
 import java.awt.Color;
 import java.awt.Transparency;
@@ -24,11 +24,11 @@ public class WorldMappingTool
 		{
 			GameData.reload();
 			String seed = "lahaine";
-			World.WorldSize worldSize = World.WorldSize.MEDIUM;
+			WorldInfo.WorldSize worldSize = WorldInfo.WorldSize.MEDIUM;
 			System.out.println("Generating " + worldSize.name
 					+ " worldmap for seed : " + seed);
 
-			PerlinWorldAccessor pwa = new PerlinWorldAccessor();
+			PerlinWorldGenerator pwa = new PerlinWorldGenerator();
 
 			BufferedImage texture = new BufferedImage(
 					worldSize.sizeInChunks * 32, worldSize.sizeInChunks * 32,

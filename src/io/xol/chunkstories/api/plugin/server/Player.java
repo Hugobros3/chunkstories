@@ -42,13 +42,13 @@ public interface Player extends CommandEmitter
 	 * Gets the location of the user
 	 * @return a {@link Location} object
 	 */
-	public Location getPosition();
+	public Location getLocation();
 	
 	/**
 	 * Sets the location of the user
 	 * @param l a {@link Location} object
 	 */
-	public void setPosition(Location l);
+	public void setLocation(Location l);
 	
 	/**
 	 * Kicks the player

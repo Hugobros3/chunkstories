@@ -12,15 +12,16 @@ import java.io.IOException;
 //http://xol.io
 
 /**
- * The server just tells the time
+ * Describes a voxel change
  * @author gobrosse
  *
  */
-public class PacketTime extends Packet
+public class PacketVoxelUpdate extends Packet
 {
-	public long time;
+	public int x, y, z;
+	public int data;
 	
-	public PacketTime(boolean client)
+	public PacketVoxelUpdate(boolean client)
 	{
 		super(client);
 	}
@@ -28,22 +29,31 @@ public class PacketTime extends Packet
 	@Override
 	public void send(DataOutputStream out) throws IOException
 	{
-		out.writeLong(time);
+		out.writeInt(x);
+		out.writeInt(y);
+		out.writeInt(z);
+		out.writeInt(data);
+		//No further information
+		out.writeByte((byte)0x00);
 	}
 
 	@Override
 	public void read(DataInputStream in) throws IOException
 	{
-		time = in.readLong();
+		x = in.readInt();
+		y = in.readInt();
+		z = in.readInt();
+		data = in.readInt();
+		byte osef = in.readByte();
+		assert osef == 0x00;
 	}
 
 	@Override
 	public void process(PacketsProcessor processor)
 	{
-		//System.out.println("Got time packet");
 		if(Client.world instanceof WorldClient)
 		{
-			Client.world.setTime(time);
+			Client.world.setDataAt(x, y, z, data);
 		}
 	}
 

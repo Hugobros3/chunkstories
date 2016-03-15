@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world.io;
 
-import io.xol.chunkstories.world.ChunkHolder;
+import io.xol.chunkstories.world.chunk.ChunkHolder;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

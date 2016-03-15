@@ -62,7 +62,10 @@ public class PacketSerializedInventory extends Packet
 		}
 		if(holder != null)
 		{
-			holder.setInventory(inventory);
+			if(holder.getInventory() != null)
+				holder.getInventory().load(inventory);
+			else
+				holder.setInventory(inventory);
 			System.out.println("Processed packet 05SerializedInventory.");
 		}
 	}

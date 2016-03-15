@@ -14,5 +14,6 @@ packet 0x05 PACKET_SERIALIZED_INVENTORY io.xol.chunkstories.net.packets.PacketSe
 packet 0x06 PACKET_MOVE_ITEM io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile client
 packet 0x07 PACKET_USE_ITEM io.xol.chunkstories.net.packets.PacketItemUsage client
 packet 0x08 PACKET_TIME io.xol.chunkstories.net.packets.PacketTime server
+packet 0x09 PACKET_VOXEL io.xol.chunkstories.net.packets.PacketVoxelUpdate server
 
 #Or be sensible and add your own ones after The game has an hardlimit of arround 32768 packet types possible

@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world.generator.structures;
 
-import io.xol.chunkstories.world.CubicChunk;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 
 public class PineTree extends GenerableStructure
 {

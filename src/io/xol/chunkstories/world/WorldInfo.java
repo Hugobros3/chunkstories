@@ -12,11 +12,7 @@ import java.io.Writer;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.net.packets.PacketWorldInfo;
 import io.xol.chunkstories.server.net.ServerClient;
-import io.xol.chunkstories.world.World.WorldSize;
-import io.xol.chunkstories.world.generator.BlankWorldAccessor;
-import io.xol.chunkstories.world.generator.FlatGenerator;
-import io.xol.chunkstories.world.generator.HorizonGenerator;
-import io.xol.chunkstories.world.generator.PerlinWorldAccessor;
+import io.xol.chunkstories.world.generator.WorldGenerators;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -118,22 +114,70 @@ public class WorldInfo
 
 	public WorldGenerator getGenerator()
 	{
-		WorldGenerator accessor = null;
-		if (generator.equals("blank"))
+		WorldGenerator generator = WorldGenerators.getWorldGenerator(this.generator);
+		
+		/*if (generator.equals("blank"))
 			accessor = new BlankWorldAccessor();
 		else if (generator.equals("perlin"))
 			accessor = new PerlinWorldAccessor();
 		else if (generator.equals("horizon"))
 			accessor = new HorizonGenerator();
 		else if (generator.equals("flat"))
-			accessor = new FlatGenerator();
-		return accessor;
+			accessor = new FlatGenerator();*/
+		
+		
+		return generator;
 	}
 
-	public void sendInfo(ServerClient sender)
+	/**
+	 * Will send a packet containing this object information to the user
+	 * @param sender
+	 */
+	public void sendInfo(ServerClient user)
 	{
 		PacketWorldInfo packet = new PacketWorldInfo(false);
 		packet.info = this;
-		sender.sendPacket(packet);
+		user.sendPacket(packet);
+	}
+	
+	public enum WorldSize
+	{
+		TINY(32, "1x1km"), SMALL(64, "2x2km"), MEDIUM(128, "4x4km"), LARGE(512, "16x16km"), HUGE(2048, "64x64km");
+
+		// Warning : this can be VERY ressource intensive as it will make a
+		// 4294km2 map,
+		// leading to enormous map sizes ( in the order of 10Gbs to 100Gbs )
+		// when fully explored.
+
+		WorldSize(int s, String n)
+		{
+			sizeInChunks = s;
+			name = n;
+		}
+
+		public int sizeInChunks;
+		public int height = 32;
+		public String name;
+
+		public static String getAllSizes()
+		{
+			String sizes = "";
+			for (WorldSize s : WorldSize.values())
+			{
+				sizes = sizes + s.name() + ", " + s.name + " ";
+			}
+			return sizes;
+		}
+
+		public static WorldSize getWorldSize(String name)
+		{
+			name.toUpperCase();
+			for (WorldSize s : WorldSize.values())
+			{
+				if (s.name().equals(name))
+					return s;
+			}
+			return null;
+		}
 	}
 }

@@ -1,9 +1,10 @@
-package io.xol.chunkstories.world;
+package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.generator.structures.GenerableStructure;
 
 import java.util.ArrayList;

@@ -23,8 +23,12 @@ import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityIterator;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
-import io.xol.chunkstories.server.WorldServer;
 import io.xol.chunkstories.tools.WorldTool;
+import io.xol.chunkstories.world.WorldInfo.WorldSize;
+import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.world.chunk.ChunksData;
+import io.xol.chunkstories.world.chunk.ChunksHolders;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.summary.ChunkSummaries;
@@ -37,7 +41,6 @@ import io.xol.engine.misc.ConfigFile;
 
 public abstract class World
 {
-
 	public String name;
 	public String seed;
 	public File folder;
@@ -48,7 +51,7 @@ public abstract class World
 	// Let's say that the game world runs at 60Ticks per second
 
 	public IOTasks ioHandler;
-	public WorldGenerator generator;
+	private WorldGenerator generator;
 	final public WorldSize size;
 
 	// RAM-eating monster
@@ -65,8 +68,7 @@ public abstract class World
 	ScheduledExecutorService logic;
 
 	// Temporary entity list
-	//public List<Entity> entities = new ArrayList<Entity>();
-	public BlockingQueue<Entity> entities = new LinkedBlockingQueue<Entity>();
+	private BlockingQueue<Entity> entities = new LinkedBlockingQueue<Entity>();
 
 	// Particles
 	public ParticlesHolder particlesHolder;
@@ -103,6 +105,7 @@ public abstract class World
 		folder = new File(GameDirectory.getGameFolderPath() + "/worlds/" + name);
 
 		internalData = new ConfigFile(GameDirectory.getGameFolderPath() + "/worlds/" + name + "/internal.dat");
+		internalData.load();
 	}
 
 	public File getFolderFile()
@@ -123,7 +126,6 @@ public abstract class World
 
 	public void startLogic()
 	{
-		// logic.start();
 		logic.scheduleAtFixedRate(new Runnable()
 		{
 			public void run()
@@ -327,6 +329,7 @@ public abstract class World
 				c.setDataAt(x % 32, y % 32, z % 32, i);
 				c.markDirty(true);
 			}
+			//Neighbour chunks updates
 			if (x % 32 == 0)
 			{
 				if (y % 32 == 0)
@@ -438,15 +441,6 @@ public abstract class World
 				c.chunkRenderData.markForDeletion();
 			c.chunkRenderData = null;
 		}
-		/*
-		for (CubicChunk c : this.getAllLoadedChunks())
-		{
-			c.need_render.set(true);
-			c.requestable.set(true);
-			c.vbo_size_normal = 0;
-			c.vbo_size_complex = 0;
-			c.vbo_size_water = 0;
-		}*/
 	}
 
 	public void clear()
@@ -463,47 +457,6 @@ public abstract class World
 
 		this.internalData.setProp("entities-ids-counter", veryLong.get());
 		this.internalData.save();
-	}
-
-	public enum WorldSize
-	{
-		TINY(32, "1x1km"), SMALL(64, "2x2km"), MEDIUM(128, "4x4km"), LARGE(512, "16x16km"), HUGE(2048, "64x64km");
-
-		// Warning : this can be VERY ressource intensive as it will make a
-		// 4294km2 map,
-		// leading to enormous map sizes ( in the order of 10Gbs to 100Gbs )
-		// when fully explored.
-
-		WorldSize(int s, String n)
-		{
-			sizeInChunks = s;
-			name = n;
-		}
-
-		public int sizeInChunks;
-		public int height = 32;
-		public String name;
-
-		public static String getAllSizes()
-		{
-			String sizes = "";
-			for (WorldSize s : WorldSize.values())
-			{
-				sizes = sizes + s.name() + ", " + s.name + " ";
-			}
-			return sizes;
-		}
-
-		public static WorldSize getWorldSize(String name)
-		{
-			name.toUpperCase();
-			for (WorldSize s : WorldSize.values())
-			{
-				if (s.name().equals(name))
-					return s;
-			}
-			return null;
-		}
 	}
 
 	public void destroy()
@@ -524,11 +477,6 @@ public abstract class World
 	{
 		return new WorldChunksIterator(this);
 	}
-
-	/*public List<CubicChunk> getAllLoadedChunks()
-	{
-		return chunksHolder.getAllLoadedChunks();
-	}*/
 
 	public boolean checkCollisionPoint(double posX, double posY, double posZ)
 	{
@@ -578,17 +526,10 @@ public abstract class World
 				int pCY = (int) loc.y / 32;
 				int pCZ = (int) loc.z / 32;
 
-				/*int pCX = (int) (Client.controller.posX / 32);
-				int pCY = (int) (Client.controller.posY / 32);
-				int pCZ = (int) (Client.controller.posZ / 32);
-				*/
 				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 1) || (chunk.chunkY - pCY) > 3 || (chunk.chunkY - pCY) < -3))
 				{
 					if(chunk.chunkRenderData != null)
 						chunk.chunkRenderData.markForDeletion();
-					//if (chunk.vbo_id != -1 && this.renderer != null)
-					//	renderer.deleteVBO(chunk.vbo_id);
-					//glDeleteBuffers(chunk.vbo_id);
 					chunk.need_render.set(true);
 					keep = false;
 				}
@@ -625,8 +566,17 @@ public abstract class World
 		return new Location(this, dx, dy, dz);
 	}
 
+	/**
+	 * Sets the time of the World. By default the time is set at 5000 and it uses a 10.000 cycle, 0 being midnight and 5000 being midday
+	 * @param time
+	 */
 	public void setTime(long time)
 	{
 		this.worldTime = time;
+	}
+
+	public WorldGenerator getGenerator()
+	{
+		return generator;
 	}
 }

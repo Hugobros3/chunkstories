@@ -5,6 +5,7 @@ package io.xol.chunkstories.voxel.core;
 // http://xol.io
 
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.voxel.VoxelDefault;
 
 public class VoxelAir extends VoxelDefault
@@ -14,8 +15,8 @@ public class VoxelAir extends VoxelDefault
 		super(id, name);
 	}
 
-	public CollisionBox[] getCollisionBoxes()
+	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
-		return null;
+		return new CollisionBox[] {};
 	}
 }

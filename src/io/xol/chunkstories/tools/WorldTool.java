@@ -2,9 +2,10 @@ package io.xol.chunkstories.tools;
 
 import java.io.File;
 
+import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.WorldInfo;
-import io.xol.chunkstories.world.generator.BlankWorldAccessor;
+import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 
 public class WorldTool extends World
@@ -23,7 +24,7 @@ public class WorldTool extends World
 		this(csWorldDir.getAbsolutePath());
 	}
 
-	public WorldTool(String csWorldName, String string, BlankWorldAccessor blankWorldAccessor, WorldSize size)
+	public WorldTool(String csWorldName, String string, WorldGenerator blankWorldAccessor, WorldSize size)
 	{
 		super(csWorldName, string, blankWorldAccessor, size);
 	}

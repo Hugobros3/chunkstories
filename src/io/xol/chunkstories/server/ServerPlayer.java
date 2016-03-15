@@ -1,11 +1,5 @@
 package io.xol.chunkstories.server;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
@@ -22,6 +16,12 @@ import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -32,18 +32,18 @@ public class ServerPlayer implements Player, Controller
 	ServerClient playerConnection;
 
 	//Entity controlled
-	public EntityImplementation controlledEntity;
+	public Entity controlledEntity;
 
 	//Streaming control
 	public Map<int[], Long> loadedChunks = new HashMap<int[], Long>();
-	public List<EntityImplementation> trackedEntities = new ArrayList<EntityImplementation>();
+	public Set<Entity> trackedEntities = new HashSet<Entity>();
 	
 	public boolean hasSpawned = false;
 
 	public ServerPlayer(ServerClient serverClient)
 	{
 		playerConnection = serverClient;
-		playerData = new ConfigFile(getConfigFilePath());
+		playerData = new ConfigFile("./players/" + playerConnection.name.toLowerCase() + ".cfg");
 		// Sets dates
 		playerData.setProp("lastlogin", "" + System.currentTimeMillis());
 		if (playerData.getProp("firstlogin", "nope").equals("nope"))
@@ -53,57 +53,61 @@ public class ServerPlayer implements Player, Controller
 
 	public void updateTrackedEntities()
 	{
-		//System.out.println("edgy");
+		//Checks ...
 		if(controlledEntity == null)
 			return;
-		//System.out.println("edgyy");
-		Iterator<Entity> iter = controlledEntity.getWorld().entities.iterator();
-		Entity e;
+		//Cache (idk if HotSpot makes it redudant but whatever)
 		double ws = controlledEntity.getWorld().getSizeSide();
+		Location controlledEntityLocation = controlledEntity.getLocation();
+		Iterator<Entity> iter = controlledEntity.getWorld().getAllLoadedEntities();
+		Entity e;
 		boolean shouldTrack = false;
+		//Let's iterate throught all of the world for now
+		//TODO Only near chunkHolders
 		while(iter.hasNext())
 		{
 			e = iter.next();
+			//Don't track ourselves
 			if(!e.equals(controlledEntity))
 			{
 				Location loc = e.getLocation();
-				double dx = LoopingMathHelper.moduloDistance(controlledEntity.posX, loc.x, ws);
-				double dy = Math.abs(controlledEntity.posY - loc.y);
-				double dz = LoopingMathHelper.moduloDistance(controlledEntity.posZ, loc.z, ws);
+				//Distance calculations
+				double dx = LoopingMathHelper.moduloDistance(controlledEntityLocation.x, loc.x, ws);
+				double dy = Math.abs(controlledEntityLocation.y - loc.y);
+				double dz = LoopingMathHelper.moduloDistance(controlledEntityLocation.z, loc.z, ws);
 				shouldTrack = (dx < 256 && dz < 256 && dy < 256);
-				boolean contains = trackedEntities.contains(e);
-				//System.out.println("[TRACKER] "+e+" shouldTrack:"+shouldTrack+" contains:"+contains+" "+this.playerConnection.name);
+				boolean contains = trackedEntities.contains(e) && e.shouldBeTrackedBy(this);
+				//Too close and untracked
 				if(shouldTrack && !contains)
 				{
 					trackedEntities.add((EntityImplementation) e);
 					trackEntity(e, true, false);
 				}
+				//Too far but still tracked
 				if(!shouldTrack && contains)
 				{
 					//Despawn the entity
 					trackEntity(e, false, true);
-					trackedEntities.remove(e);
+					trackedEntities.remove(e); // Reminder, we are iterating the world, not trackedEntities
 				}
 			}
 		}
-		Iterator<EntityImplementation> iter2 = trackedEntities.iterator();
+		Iterator<Entity> iter2 = trackedEntities.iterator();
 		while(iter.hasNext())
 		{
-			EntityImplementation e2 = iter2.next();
-			if(e2.mpSendDeletePacket)
+			e = iter2.next();
+			if(!e.shouldBeTrackedBy(this))
 			{
 				//Despawn the entity
-				trackEntity(e2, false, true);
+				trackEntity(e, false, true);
 				iter.remove();
-				//trackedEntities.remove(e);
 			}
 			else
 			{
 				// Just send new positions
-				trackEntity(e2, false, false);
+				trackEntity(e, false, false);
 			}
 		}
-		//System.out.println("edguuuy");
 	}
 	
 	public void trackEntity(Entity e, boolean first, boolean delete)
@@ -120,35 +124,23 @@ public class ServerPlayer implements Player, Controller
 		packet.applyFromEntity(e);
 		playerConnection.sendPacket(packet);
 	}
-	
-	private String getConfigFilePath()
-	{
-		return "players/" + playerConnection.name + ".cfg";
-	}
 
 	public void save()
 	{
 		long lastTime = Long.parseLong(playerData.getProp("timeplayed", "0"));
 		long lastLogin = Long.parseLong(playerData.getProp("lastlogin", "0"));
+		//TODO move along with inventory stuff
 		if(controlledEntity != null)
 		{
-			playerData.setProp("posX", controlledEntity.posX);
-			playerData.setProp("posY", controlledEntity.posY);
-			playerData.setProp("posZ", controlledEntity.posZ);
+			Location controlledEntityLocation = controlledEntity.getLocation();
+			playerData.setProp("posX", controlledEntityLocation.x);
+			playerData.setProp("posY", controlledEntityLocation.y);
+			playerData.setProp("posZ", controlledEntityLocation.z);
 		}
 		playerData.setProp("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)));
 		playerData.save();
 		System.out.println("Player profile "+playerConnection.name+" saved.");
 	}
-
-	/*public void onJoin()
-	{
-		if(controlledEntity != null)
-		{
-			Server.getInstance().world.addEntity(controlledEntity);
-			System.out.println("spawned player entity");
-		}
-	}*/
 	
 	public void destroy()
 	{
@@ -180,18 +172,19 @@ public class ServerPlayer implements Player, Controller
 		if(controlledEntity != null)
 		{
 			PacketEntity packet = new PacketEntity(false);
+			//The player will control this one
 			packet.defineControl = true;
+			//Dirty but meh
 			packet.includeName = true;
 			packet.includeRotation = true;
 			packet.applyFromEntity(controlledEntity);
 			this.playerConnection.sendPacket(packet);
 			this.hasSpawned = true;
-			//System.out.println("hasSpawned = true");
 		}
 	}
 
 	@Override
-	public Location getPosition()
+	public Location getLocation()
 	{
 		if(controlledEntity != null)
 			return controlledEntity.getLocation();
@@ -199,10 +192,10 @@ public class ServerPlayer implements Player, Controller
 	}
 
 	@Override
-	public void setPosition(Location l)
+	public void setLocation(Location l)
 	{
 		if(this.controlledEntity != null)
-			this.controlledEntity.setPosition(l.x, l.y, l.z);
+			this.controlledEntity.setLocation(l);
 	}
 
 	@Override
@@ -231,6 +224,7 @@ public class ServerPlayer implements Player, Controller
 	public String getDisplayName()
 	{
 		String name = getName();
+		//Hashed username for colour :)
 		return ColorsTools.getUniqueColorPrefix(name)+name+"#FFFFFF";
 	}
 
@@ -240,14 +234,12 @@ public class ServerPlayer implements Player, Controller
 		//Send teleport packet
 		PacketEntity packet = new PacketEntity(false);
 		packet.applyFromEntity(controlledEntity);
-		System.out.println("!!!Sending packet with position "+entity);
 		playerConnection.sendPacket(packet);
 	}
 
 	@Override
 	public void notifyInventoryChange(Entity entity)
 	{
-		System.out.println(this+" inventory changed sending packet");
 		PacketSerializedInventory packetInventory = new PacketSerializedInventory(false);
 		packetInventory.inventory = entity.getInventory();
 		playerConnection.sendPacket(packetInventory);

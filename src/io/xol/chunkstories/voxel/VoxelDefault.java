@@ -179,7 +179,7 @@ public class VoxelDefault extends Voxel
 	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
 		if (voxelID == 0)
-			return null;
+			return new CollisionBox[] {};
 		return new CollisionBox[] { new CollisionBox(box) };
 	}
 

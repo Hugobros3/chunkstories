@@ -24,7 +24,6 @@ import java.util.Set;
 
 public class ConfigFile
 {
-
 	String path;
 	Map<String, String> props = new HashMap<String, String>();
 
@@ -45,7 +44,7 @@ public class ConfigFile
 		if (!file.exists())
 			try
 			{
-				System.out.println("creating file "+file);
+				System.out.println("Creating file "+file);
 				file.createNewFile();
 			}
 			catch (IOException e)
@@ -60,7 +59,7 @@ public class ConfigFile
 		props.clear();
 		try
 		{
-			File file = new File(System.getProperty("user.dir") + "/" + path);
+			File file = new File(path);
 			if(!file.exists())
 				return;
 			InputStream ips = new FileInputStream(file);
@@ -78,11 +77,6 @@ public class ConfigFile
 		{
 			e.printStackTrace();
 		}
-		// /*Logger.getLogger("misc").info*/System.out.println("Config file " +
-		// path + " loaded OK. (" + props.size()+ ") elements inside it.");
-		/*
-		 * if(path.contains("null")) { int lol = 0/0; }
-		 */
 	}
 
 	public void save()
@@ -90,7 +84,7 @@ public class ConfigFile
 		check4Folder(path);
 		try
 		{
-			Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(System.getProperty("user.dir") + "/" + path), "UTF-8"));
+			Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path), "UTF-8"));
 			Set<String> unsortedKeys = props.keySet();
 			List<String> sortedKeys = new ArrayList<String>(unsortedKeys);
 			sortedKeys.sort(new Comparator<String>(){
@@ -114,8 +108,6 @@ public class ConfigFile
 		{
 			e.printStackTrace();
 		}
-		// /*Logger.getLogger("misc").info*/System.out.println("Config file " +
-		// path + " saved OK.");
 	}
 
 	public int getIntProp(String s, String a)

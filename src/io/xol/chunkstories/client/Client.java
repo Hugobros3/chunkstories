@@ -29,7 +29,7 @@ import io.xol.chunkstories.world.World;
 
 public class Client implements ClientController
 {
-	public static ConfigFile clientConfig = new ConfigFile("config/client.cfg");
+	public static ConfigFile clientConfig = new ConfigFile("./config/client.cfg");
 
 	public static SoundManager soundManager;
 

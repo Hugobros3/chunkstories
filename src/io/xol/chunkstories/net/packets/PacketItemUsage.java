@@ -50,7 +50,7 @@ public class PacketItemUsage extends Packet
 	@Override
 	public void process(PacketsProcessor processor)
 	{
-		System.out.println("Got packet select/use item");
+		//System.out.println("Got packet select/use item");
 		
 		Entity clientEntity = processor.getServerClient().profile.getControlledEntity();
 		if(clientEntity == null)

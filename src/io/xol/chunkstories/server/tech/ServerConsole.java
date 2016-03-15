@@ -33,7 +33,7 @@ public class ServerConsole
 			// No rights needed
 			if (cmd.equals("uptime"))
 			{
-				emitter.sendMessage("#00FFD0The server has been running for " + (System.currentTimeMillis() / 1000 - Server.getInstance().initS) + " seconds.");
+				emitter.sendMessage("#00FFD0The server has been running for " + (System.currentTimeMillis() / 1000 - Server.getInstance().initTimestamp) + " seconds.");
 				return;
 			}
 			else if (cmd.equals("info"))

@@ -1,10 +1,11 @@
-package io.xol.chunkstories.world.generator;
+package io.xol.chunkstories.world.generator.core;
 
 import java.util.Random;
 
 import io.xol.chunkstories.api.world.WorldGenerator;
-import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.generator.SeededSimplexNoiseGenerator;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

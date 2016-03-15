@@ -1,12 +1,13 @@
 package io.xol.chunkstories.api.entity;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.plugin.server.Player;
 import io.xol.chunkstories.item.inventory.InventoryHolder;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.DefferedLight;
-import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.RenderingContext;
 
@@ -16,7 +17,7 @@ import io.xol.engine.model.RenderingContext;
 
 public interface Entity extends InventoryHolder
 {
-	public void setPosition(double x, double y, double z);
+	//public void setPosition(double x, double y, double z);
 
 	/**
 	 * Returns the location of the entity
@@ -48,8 +49,6 @@ public interface Entity extends InventoryHolder
 	
 	public CollisionBox[] getTranslatedCollisionBoxes();
 
-	public boolean renderable();
-
 	public void render(RenderingContext context);
 
 	public void debugDraw();
@@ -61,4 +60,11 @@ public interface Entity extends InventoryHolder
 	public long getUUID();
 	
 	public void delete();
+
+	/**
+	 * Returns true unless it should be invisible to some players or all
+	 * Exemple : dead/removed entity, invisible admin
+	 * @return
+	 */
+	public boolean shouldBeTrackedBy(Player player);
 }

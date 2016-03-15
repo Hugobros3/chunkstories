@@ -9,8 +9,8 @@ import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
-import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.math.LoopingMathHelper;
 
 import java.nio.ByteBuffer;

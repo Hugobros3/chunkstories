@@ -26,7 +26,8 @@ import io.xol.chunkstories.server.tech.CommandEmitter;
 import io.xol.chunkstories.server.tech.ServerConsole;
 import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.world.ChunksData;
+import io.xol.chunkstories.world.WorldServer;
+import io.xol.chunkstories.world.chunk.ChunksData;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -51,10 +52,10 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 	}
 
 	// Basic server stuff init !
-	public ConfigFile serverConfig = new ConfigFile("config/server.cfg");
+	public ConfigFile serverConfig = new ConfigFile("./config/server.cfg");
 	public Logger log = Logger.getLogger("server");
-	public AtomicBoolean running = new AtomicBoolean(true);
-	public long initS = System.currentTimeMillis() / 1000; // <- uptime !
+	private AtomicBoolean running = new AtomicBoolean(true);
+	public long initTimestamp = System.currentTimeMillis() / 1000; // <- uptime !
 
 	public WorldServer world;
 
@@ -115,7 +116,6 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 		System.out.print("> ");
 		while (running.get())
 		{ // main loop
-
 			try
 			{
 				// wait until we have data to complete a readLine()
@@ -156,7 +156,6 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		pluginsManager.disablePlugins();
@@ -210,7 +209,6 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 		return running.get();
 	}
 
-	// Config shit
 	public void reloadConfig()
 	{
 		UsersPrivileges.load();

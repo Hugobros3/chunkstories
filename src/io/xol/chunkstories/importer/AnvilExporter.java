@@ -10,7 +10,7 @@ import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.World;
-import io.xol.chunkstories.world.World.WorldSize;
+import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.world.WorldInfo;
 
 //(c) 2015-2016 XolioWare Interactive
