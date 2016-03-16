@@ -156,7 +156,6 @@ public class ServerConnectionsHandler extends Thread
 		serverClient.open();
 		serverClient.start();
 		clients.add(serverClient);
-
 		// Check for banned ip
 		if (UsersPrivileges.isIpBanned(serverClient.getIp()))
 			disconnectClient(serverClient, "Banned IP address - " + serverClient.getIp());

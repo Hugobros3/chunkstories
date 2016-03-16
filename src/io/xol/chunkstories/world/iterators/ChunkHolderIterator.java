@@ -1,8 +1,8 @@
 package io.xol.chunkstories.world.iterators;
 
 import io.xol.chunkstories.api.world.ChunksIterator;
-import io.xol.chunkstories.world.ChunkHolder;
-import io.xol.chunkstories.world.CubicChunk;
+import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

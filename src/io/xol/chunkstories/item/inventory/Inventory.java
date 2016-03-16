@@ -216,6 +216,14 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		load(stream);
 	}
 
+	public void load(Inventory inventory)
+	{
+		this.width = inventory.width;
+		this.height = inventory.height;
+		name = inventory.name;
+		contents = inventory.contents;
+	}
+	
 	@Override
 	public void load(DataInputStream stream) throws IOException
 	{
@@ -338,4 +346,5 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	{
 		return contents[selectedSlot][0];
 	}
+
 }

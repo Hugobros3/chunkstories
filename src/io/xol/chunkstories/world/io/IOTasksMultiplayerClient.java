@@ -14,9 +14,9 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketChunkSummary;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.world.ChunkHolder;
-import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.summary.ChunkSummary;
 import net.jpountz.lz4.LZ4Exception;
 

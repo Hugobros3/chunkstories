@@ -41,7 +41,7 @@ import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.CubicChunk;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 
 
 //(c) 2015-2016 XolioWare Interactive

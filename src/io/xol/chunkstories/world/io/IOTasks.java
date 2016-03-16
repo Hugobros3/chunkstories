@@ -1,9 +1,9 @@
 package io.xol.chunkstories.world.io;
 
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.world.ChunkHolder;
-import io.xol.chunkstories.world.CubicChunk;
 import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.summary.ChunkSummary;
 import io.xol.engine.concurrency.UniqueQueue;
 import io.xol.engine.math.LoopingMathHelper;
@@ -581,8 +581,8 @@ public class IOTasks extends Thread
 				for (int x = 0; x < 256; x++)
 					for (int z = 0; z < 256; z++)
 					{
-						h = world.generator.getHeightAt(x + summary.rx * 256, z + summary.rz * 256);
-						t = world.generator.getDataAt(x + summary.rx * 256, z + summary.rz * 256);
+						h = world.getGenerator().getHeightAt(x + summary.rx * 256, z + summary.rz * 256);
+						t = world.getGenerator().getDataAt(x + summary.rx * 256, z + summary.rz * 256);
 						summary.heights[x * 256 + z] = h;
 						summary.ids[x * 256 + z] = t;
 					}

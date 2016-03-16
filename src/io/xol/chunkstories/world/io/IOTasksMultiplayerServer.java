@@ -6,8 +6,8 @@ import java.security.NoSuchAlgorithmException;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketChunkSummary;
 import io.xol.chunkstories.server.net.ServerClient;
-import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.summary.ChunkSummary;
 
 public class IOTasksMultiplayerServer extends IOTasks

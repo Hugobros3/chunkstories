@@ -1,4 +1,4 @@
-package io.xol.chunkstories.world;
+package io.xol.chunkstories.world.chunk;
 
 import java.util.Arrays;
 

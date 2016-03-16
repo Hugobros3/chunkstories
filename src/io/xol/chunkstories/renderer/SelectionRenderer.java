@@ -28,7 +28,14 @@ public class SelectionRenderer
 		// glBlendFunc(GL_ONE_MINUS_SRC_COLOR,GL_ONE);
 		glBegin(GL_LINES);
 		BlockRenderInfo bri = new BlockRenderInfo(world, x, y, z);
-		for(CollisionBox box : bri.voxelType.getTranslatedCollisionBoxes(world, x, y, z))
+		if(bri.voxelType == null)
+		{
+			System.out.println(bri.data);
+			return;
+		}
+		for(CollisionBox box : bri.
+				voxelType
+				.getTranslatedCollisionBoxes(world, x, y, z))
 			cubeVertices((float)box.xpos, (float)box.ypos, (float)box.zpos, (float)box.xw, (float)box.h, (float)box.zw);
 		glEnd();
 		glColor4f(1, 1, 1, 1);

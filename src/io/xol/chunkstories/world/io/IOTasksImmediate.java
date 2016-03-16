@@ -1,7 +1,7 @@
 package io.xol.chunkstories.world.io;
 
-import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.summary.ChunkSummary;
 
 public class IOTasksImmediate extends IOTasks {

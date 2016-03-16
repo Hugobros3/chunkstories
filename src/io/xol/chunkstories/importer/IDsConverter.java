@@ -23,6 +23,9 @@ public class IDsConverter {
 		//Farmland
 		else if(mcId == 60)
 			return VoxelFormat.format(36, meta, 0, 0);
+		//Wheat etc
+		else if(mcId == 59 || mcId == 141 || mcId == 142)
+			return VoxelFormat.format(56, meta, 0, 0);
 		//Vines
 		else if(mcId == 106)
 			return VoxelFormat.format(34, meta, 0, 0);

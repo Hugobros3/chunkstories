@@ -1,4 +1,4 @@
-package io.xol.chunkstories.server;
+package io.xol.chunkstories.world;
 
 import java.io.File;
 
@@ -6,10 +6,10 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.core.PlayerSpawnEvent;
 import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.net.packets.PacketTime;
+import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
-import io.xol.chunkstories.world.CubicChunk;
-import io.xol.chunkstories.world.World;
-import io.xol.chunkstories.world.WorldInfo;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerServer;
 import io.xol.engine.math.LoopingMathHelper;
 
@@ -37,13 +37,14 @@ public class WorldServer extends World
 		{
 			//System.out.println("Tast");
 			if(client.profile != null)
+			{
 				if(client.profile.hasSpawned)
 					client.profile.updateTrackedEntities();
-				//else
-				//	System.out.println("not spawned :'(");
+				PacketTime packetTime = new PacketTime(false);
+				packetTime.time = this.worldTime;
+				client.sendPacket(packetTime);
+			}
 		}
-		
-		//System.out.println("Test");
 		super.tick();
 	}
 	
@@ -53,22 +54,10 @@ public class WorldServer extends World
 		{
 			//Sends the construction info for the world, and then the player entity
 			worldInfo.sendInfo(sender);
-
+			
 			PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.profile, sender.profile.getLastPosition());
 			Server.getInstance().getPluginsManager().fireEvent(playerSpawnEvent);
-			/*
-			if(sender.profile.entity != null)
-			{
-				PacketEntity packet = new PacketEntity(false);
-				packet.defineControl = true;
-				packet.includeName = true;
-				packet.includeRotation = true;
-				packet.applyFromEntity(sender.profile.entity);
-				sender.sendPacket(packet);
-				sender.profile.hasSpawned = true;
-				//System.out.println("hasSpawned = true");
-			}
-			*/
+			
 		}
 		if(message.startsWith("getChunkCompressed"))
 		{

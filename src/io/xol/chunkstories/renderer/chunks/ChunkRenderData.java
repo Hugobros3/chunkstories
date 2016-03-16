@@ -5,9 +5,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.lwjgl.opengl.GL15.*;
-
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
-import io.xol.chunkstories.world.CubicChunk;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

@@ -1,4 +1,6 @@
-package io.xol.chunkstories.world;
+package io.xol.chunkstories.world.chunk;
+
+import io.xol.chunkstories.world.World;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;

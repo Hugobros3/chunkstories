@@ -8,11 +8,12 @@ import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.DefferedLight;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.plugin.server.Player;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.ChunkHolder;
 import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -37,17 +38,17 @@ public abstract class EntityImplementation implements Entity
 	public boolean collision_south = false;
 
 	public Vector3d blockedMomentum = new Vector3d();
-	
+
 	//public boolean inWater = false;
 	public Voxel voxelIn;
 	public Inventory inventory;
 	public ChunkHolder parentHolder;
 
 	protected boolean flying = false;
-	
+
 	//Flag set when deleted from world entities list ( to report to other refering places )
 	public boolean mpSendDeletePacket = false;
-	
+
 	public EntityImplementation(World w, double x, double y, double z)
 	{
 		world = w;
@@ -59,35 +60,21 @@ public abstract class EntityImplementation implements Entity
 		//To avoid NPEs
 		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY), (int) (posZ))));
 	}
-	
-	/**
-	 * Teleports an entity to a certain location 
-	 * NB : If this entity implements EntityControllable it will trigger the {@link Controller.notifyTeleport()} callback
-	 * @param x
-	 * @param y
-	 * @param z
-	 */
-	public synchronized void setPosition(double x, double y, double z)
-	{
-		posX = x;
-		posY = y;
-		posZ = z;
-		updatePosition();
-		if(this instanceof EntityControllable && ((EntityControllable)this).getController() != null)
-			((EntityControllable)this).getController().notifyTeleport(this);
-	}
+
 
 	/**
 	 * Returns the location of the entity
+	 * 
 	 * @return
 	 */
 	public Location getLocation()
 	{
 		return new Location(world, posX, posY, posZ);
 	}
-	
+
 	/**
 	 * Sets the location of the entity
+	 * 
 	 * @param loc
 	 */
 	public void setLocation(Location loc)
@@ -95,18 +82,22 @@ public abstract class EntityImplementation implements Entity
 		this.posX = loc.x;
 		this.posY = loc.y;
 		this.posZ = loc.z;
+		
+		updatePosition();
+		if (this instanceof EntityControllable && ((EntityControllable) this).getController() != null)
+			((EntityControllable) this).getController().notifyTeleport(this);
 	}
-	
+
 	public World getWorld()
 	{
 		return world;
 	}
-	
+
 	public ChunkHolder getChunkHolder()
 	{
 		return parentHolder;
 	}
-	
+
 	public void setVelocity(double x, double y, double z)
 	{
 		velX = x;
@@ -126,7 +117,7 @@ public abstract class EntityImplementation implements Entity
 	{
 		posX %= world.getSizeSide();
 		posZ %= world.getSizeSide();
-		
+
 		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY), (int) (posZ))));
 		boolean inWater = voxelIn.isVoxelLiquid();
 
@@ -140,9 +131,9 @@ public abstract class EntityImplementation implements Entity
 			velY = 0;
 		else if (collision_top)
 			velY = 0;
-		
+
 		// Gravity
-		if(!flying)
+		if (!flying)
 		{
 			double terminalVelocity = inWater ? -0.02 : -0.5;
 			if (velY > terminalVelocity)
@@ -155,16 +146,16 @@ public abstract class EntityImplementation implements Entity
 		velX += accelerationVector.x;
 		velY += accelerationVector.y;
 		velZ += accelerationVector.z;
-		
-		if(!world.isChunkLoaded((int)posX/32, (int)posY/32, (int)posZ/32))
+
+		if (!world.isChunkLoaded((int) posX / 32, (int) posY / 32, (int) posZ / 32))
 		{
 			velX = 0;
 			velY = 0;
 			velZ = 0;
 		}
-		
+
 		blockedMomentum = moveWithCollisionRestrain(velX, velY, velZ, true);
-		
+
 		updatePosition();
 	}
 
@@ -172,18 +163,18 @@ public abstract class EntityImplementation implements Entity
 	{
 		posX %= world.getSizeSide();
 		posZ %= world.getSizeSide();
-		if(posX < 0)
+		if (posX < 0)
 			posX += world.getSizeSide();
-		if(posZ < 0)
+		if (posZ < 0)
 			posZ += world.getSizeSide();
 		int regionX = (int) (posX / (32 * 8));
 		int regionY = (int) (posY / (32 * 8));
-		if(regionY < 0)
+		if (regionY < 0)
 			regionY = 0;
-		if(regionY > world.getMaxHeight() / (32 * 8 ))
-			regionY = world.getMaxHeight() / (32 * 8 );
+		if (regionY > world.getMaxHeight() / (32 * 8))
+			regionY = world.getMaxHeight() / (32 * 8);
 		int regionZ = (int) (posZ / (32 * 8));
-		if(parentHolder != null && parentHolder.regionX == regionX && parentHolder.regionY == regionY && parentHolder.regionZ == regionZ)
+		if (parentHolder != null && parentHolder.regionX == regionX && parentHolder.regionY == regionY && parentHolder.regionZ == regionZ)
 		{
 			return false; // Nothing to do !
 		}
@@ -201,20 +192,6 @@ public abstract class EntityImplementation implements Entity
 		}
 	}
 
-	/*public void setHolder()
-	{
-		posX %= world.getSizeSide();
-		posZ %= world.getSizeSide();
-		int regionX = (int) (posX / (32 * 8));
-		int regionY = (int) (posY / (32 * 8));
-		if(regionY < 0)
-			regionY = 0;
-		if(regionY > world.getMaxHeight() / (32 * 8 ))
-			regionY = world.getMaxHeight() / (32 * 8 );
-		int regionZ = (int) (posZ / (32 * 8));
-		parentHolder = world.chunksHolder.getChunkHolder(regionX * 8, regionY * 8, regionZ * 8, true);
-	}*/
-	
 	public void moveWithoutCollisionRestrain(double mx, double my, double mz)
 	{
 		posX += mx;
@@ -224,9 +201,9 @@ public abstract class EntityImplementation implements Entity
 
 	public String toString()
 	{
-		return "['"+this.getClass().getName()+"'] PosX : "+clampDouble(posX)+" PosY"+clampDouble(posY)+" PosZ"+clampDouble(posZ) +" UUID : "+entityID+" EID : "+this.getEID()+" Holder:"+this.parentHolder;
+		return "['" + this.getClass().getName() + "'] PosX : " + clampDouble(posX) + " PosY" + clampDouble(posY) + " PosZ" + clampDouble(posZ) + " UUID : " + entityID + " EID : " + this.getEID() + " Holder:" + this.parentHolder;
 	}
-	
+
 	double clampDouble(double d)
 	{
 		d *= 100;
@@ -234,19 +211,19 @@ public abstract class EntityImplementation implements Entity
 		d /= 100.0;
 		return d;
 	}
-	
+
 	public Vector3d moveWithCollisionRestrain(Vector3d vec)
 	{
 		return moveWithCollisionRestrain(vec.x, vec.y, vec.z, false);
 	}
-	
+
 	// Convinience method
 	public Vector3d moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions)
 	{
 		int id, data;
 
 		boolean collision = false;
-		if(writeCollisions)
+		if (writeCollisions)
 		{
 			collision_top = false;
 			collision_bot = false;
@@ -296,7 +273,7 @@ public abstract class EntityImplementation implements Entity
 			checkerZ = getCollisionBox().translate(posX, posY, posZ + pmz);
 			// Z part
 			for (int i = ((int) posX) - radius; i <= ((int) posX) + radius; i++)
-				for (int j = ((int) posY-1); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
+				for (int j = ((int) posY - 1); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
 					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
 					{
 						data = this.world.getDataAt(i, j, k);
@@ -322,16 +299,16 @@ public abstract class EntityImplementation implements Entity
 												double south = Math.min((b.zpos + b.zw / 2.0 + checkerZ.zw / 2.0) - (posZ), 0.0d);
 												// System.out.println(left+" : "+(b.xpos+b.xw/2.0+checkerX.xw/2.0)+" : "+((b.xpos+b.xw/2.0+checkerX.xw/2.0)-(checkerX.xpos)));
 												pmz = south;
-												if(writeCollisions)
-												collision_south = true;
+												if (writeCollisions)
+													collision_south = true;
 											}
 											else
 											{
 												double north = Math.max((b.zpos - b.zw / 2.0 - checkerZ.zw / 2.0) - (posZ), 0.0d);
 												// System.out.println(right);
 												pmz = north;
-												if(writeCollisions)
-												collision_north = true;
+												if (writeCollisions)
+													collision_north = true;
 											}
 											vec.z = 0;
 											checkerZ = getCollisionBox().translate(posX, posY, posZ + pmz);
@@ -345,7 +322,7 @@ public abstract class EntityImplementation implements Entity
 			checkerX = getCollisionBox().translate(posX + pmx, posY, posZ);
 			// X-part
 			for (int i = ((int) posX) - radius; i <= ((int) posX) + radius; i++)
-				for (int j = ((int) posY-1); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
+				for (int j = ((int) posY - 1); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
 					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
 					{
 						data = this.world.getDataAt(i, j, k);
@@ -372,16 +349,16 @@ public abstract class EntityImplementation implements Entity
 												double left = Math.min((b.xpos + b.xw / 2.0 + checkerX.xw / 2.0) - (posX), 0.0d);
 												// System.out.println(left+" : "+(b.xpos+b.xw/2.0+checkerX.xw/2.0)+" : "+((b.xpos+b.xw/2.0+checkerX.xw/2.0)-(checkerX.xpos)));
 												pmx = left;
-												if(writeCollisions)
-												collision_left = true;
+												if (writeCollisions)
+													collision_left = true;
 											}
 											else
 											{
 												double right = Math.max((b.xpos - b.xw / 2.0 - checkerX.xw / 2.0) - (posX), 0.0d);
 												// System.out.println(right);
 												pmx = right;
-												if(writeCollisions)
-												collision_right = true;
+												if (writeCollisions)
+													collision_right = true;
 											}
 											vec.x = 0;
 											checkerX = getCollisionBox().translate(posX + pmx, posY, posZ);
@@ -395,7 +372,7 @@ public abstract class EntityImplementation implements Entity
 
 			checkerY = getCollisionBox().translate(posX, posY + pmy, posZ);
 			for (int i = ((int) posX) - radius; i <= ((int) posX) + radius; i++)
-				for (int j = ((int) posY)-1; j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
+				for (int j = ((int) posY) - 1; j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
 					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
 					{
 						data = this.world.getDataAt(i, j, k);
@@ -419,16 +396,16 @@ public abstract class EntityImplementation implements Entity
 												double top = Math.min((b.ypos + b.h) - posY, 0.0d);
 												// System.out.println(top);
 												pmy = top;
-												if(writeCollisions)
-												collision_bot = true;
+												if (writeCollisions)
+													collision_bot = true;
 											}
 											else
 											{
 												double bot = Math.max((b.ypos) - (posY + checkerY.h), 0.0d);
 												// System.out.println(bot);
 												pmy = bot;
-												if(writeCollisions)
-												collision_top = true;
+												if (writeCollisions)
+													collision_top = true;
 											}
 											vec.y = 0;
 											checkerY = getCollisionBox().translate(posX, posY + pmy, posZ);
@@ -448,7 +425,7 @@ public abstract class EntityImplementation implements Entity
 	{
 		return null;
 	}
-	
+
 	public CollisionBox[] getTranslatedCollisionBoxes()
 	{
 		return new CollisionBox[] { getCollisionBox().translate(posX, posY, posZ) };
@@ -457,11 +434,6 @@ public abstract class EntityImplementation implements Entity
 	private CollisionBox getCollisionBox()
 	{
 		return new CollisionBox(0.75, 1.80, 0.75);
-	}
-
-	public boolean renderable()
-	{
-		return false;
 	}
 
 	public void render()
@@ -473,44 +445,44 @@ public abstract class EntityImplementation implements Entity
 	{
 		// Do nothing.
 	}
-	
+
 	public void setupCamera(Camera camera)
 	{
-		synchronized(this)
+		synchronized (this)
 		{
 			camera.camPosX = -posX;
 			camera.camPosY = -posY;
 			camera.camPosZ = -posZ;
-	
+
 			camera.view_rotx = rotV;
 			camera.view_roty = rotH;
-	
+
 			camera.fov = FastConfig.fov;
 
 			camera.alUpdate();
 		}
 	}
-	
+
 	public short getEID()
 	{
 		return EntitiesList.getIdForClass(getClass().getName());
 	}
-	
+
 	public static short allocatedID = 0;
 
 	public long getUUID()
 	{
 		return entityID;
 	}
-	
+
 	@Override
 	public boolean equals(Object o)
 	{
-		if(!(o instanceof Entity))
+		if (!(o instanceof Entity))
 			return false;
-		return ((Entity)o).getUUID() == entityID;
+		return ((Entity) o).getUUID() == entityID;
 	}
-	
+
 	public void delete()
 	{
 		mpSendDeletePacket = true;
@@ -527,5 +499,10 @@ public abstract class EntityImplementation implements Entity
 	{
 		this.inventory = inventory;
 		inventory.holder = this;
+	}
+
+	public boolean shouldBeTrackedBy(Player player)
+	{
+		return !mpSendDeletePacket;
 	}
 }

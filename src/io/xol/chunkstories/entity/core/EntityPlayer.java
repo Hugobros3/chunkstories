@@ -25,7 +25,6 @@ import io.xol.chunkstories.item.core.ItemAk47;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.net.packets.PacketEntity;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.core.VoxelClimbable;
@@ -335,7 +334,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	public int[] rayTraceSelectedBlock(boolean inside)
 	{
 		Vector3d initialPosition = new Vector3d(posX, posY + eyePosition, posZ);
-		Vector3d position = new Vector3d(posX, posY + eyePosition, posZ);
+		//Vector3d position = new Vector3d(posX, posY + eyePosition, posZ);
 		Vector3d direction = new Vector3d();
 
 		float a = (float) ((-rotH) / 360f * 2 * Math.PI);

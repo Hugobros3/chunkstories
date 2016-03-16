@@ -1,6 +1,7 @@
-package io.xol.chunkstories.world;
+package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.chunkstories.world.iterators.ChunkHolderIterator;
 import io.xol.engine.concurrency.SimpleLock;
@@ -248,7 +249,7 @@ public class ChunkHolder
 					int cx = this.regionX * 8 + a;
 					int cy = this.regionY * 8 + b;
 					int cz = this.regionZ * 8 + c;
-					chunk =	world.generator.generateChunk(cx, cy, cz);
+					chunk =	world.getGenerator().generateChunk(cx, cy, cz);
 					if(chunk == null)
 						System.out.println("hmmmmm");
 					chunk.holder = this;
