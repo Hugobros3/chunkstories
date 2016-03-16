@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
+import io.xol.chunkstories.client.Client;
+
 import static io.xol.chunkstories.tools.ChunkStoriesLogger.LogType.*;
 import static io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel.*;
 
@@ -33,7 +35,7 @@ public class ChunkStoriesLogger
 	{
 		return instance;
 	}
-	
+
 	boolean logUploadPolicy = false;
 
 	public ChunkStoriesLogger(LogLevel logConsole, LogLevel logFile, File file)
@@ -59,14 +61,14 @@ public class ChunkStoriesLogger
 	}
 
 	/*class SendReportThread extends Thread {
-
+	
 		File logFile;
 		
 		public SendReportThread(File logFile)
 		{
 			this.logFile = logFile;
 		}
-
+	
 		public void run()
 		{
 			String url = "http://chunkstories.xyz/debug/upload.php";
@@ -74,7 +76,7 @@ public class ChunkStoriesLogger
 			try
 			{
 				URLConnection la_vie = new URL(url).openConnection();
-
+	
 				//Thx stackoverflow *lenny face*
 				String bound = Long.toHexString(System.currentTimeMillis());
 				la_vie.setDoOutput(true);
@@ -127,6 +129,17 @@ public class ChunkStoriesLogger
 	{
 			info("Successfully written log");
 			fileWriter.close();
+			
+			try
+			{
+				if(Client.clientConfig.getProp("log-policy", "undefined").equals("send"))
+					Runtime.getRuntime().exec("java -jar logs-reporter.jar "+Client.username+" \""+logFile.getAbsolutePath()+"\"");
+			}
+			catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			// Report whatever happened
 
 			/*logReportThread = new SendReportThread(logFile);
@@ -165,9 +178,9 @@ public class ChunkStoriesLogger
 		}
 		if (logFile != null && logToFile.compareTo(level) <= 0)
 		{
-			
-				fileWriter.append(line + "\n");
-			
+
+			fileWriter.append(line + "\n");
+
 		}
 	}
 
@@ -183,9 +196,9 @@ public class ChunkStoriesLogger
 
 	public void save()
 	{
-		
-			fileWriter.close();
-		
+
+		fileWriter.close();
+
 	}
 
 	public void info(String string)

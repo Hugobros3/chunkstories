@@ -24,11 +24,14 @@ public class OverlayRenderer
 {
 	//Emulates legacy OpenGL 1.x pipeline for debug functions
 
-	//Dummy caps, just here for code not to complain :>
 	public static int GL_TEXTURE_2D, GL_BLEND, GL_CULL_FACE;
 
 	static Camera camera;
 
+	/**
+	 * This class requires knowledge of the camera object
+	 * @param camera
+	 */
 	public static void setCamera(Camera camera)
 	{
 		OverlayRenderer.camera = camera;

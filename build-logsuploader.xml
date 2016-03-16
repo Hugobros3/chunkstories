@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project Chunk Stories">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="logs-reporter.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="io.xol.chunkstories.bugsreporter.BugsReporter"/>
+                <attribute name="Class-Path" value="io.xol.chunkstories.bugsreporter"/>
+            </manifest>
+            <fileset dir="bin/">
+            	<!-- <include name="bin/io/xol/chunkstories/bugsreporter/" /> -->
+            </fileset>
+        </jar>
+    </target>
+</project>
