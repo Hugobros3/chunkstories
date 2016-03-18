@@ -115,17 +115,6 @@ public class WorldInfo
 	public WorldGenerator getGenerator()
 	{
 		WorldGenerator generator = WorldGenerators.getWorldGenerator(this.generator);
-		
-		/*if (generator.equals("blank"))
-			accessor = new BlankWorldAccessor();
-		else if (generator.equals("perlin"))
-			accessor = new PerlinWorldAccessor();
-		else if (generator.equals("horizon"))
-			accessor = new HorizonGenerator();
-		else if (generator.equals("flat"))
-			accessor = new FlatGenerator();*/
-		
-		
 		return generator;
 	}
 

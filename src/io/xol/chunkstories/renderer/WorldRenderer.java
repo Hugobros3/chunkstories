@@ -467,8 +467,9 @@ public class WorldRenderer
 		if (this.getShadowVisibility() == 0f)
 			return; // No shadows at night :)
 		glCullFace(GL_FRONT);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_ALPHA_TEST);
+		glEnable(GL_CULL_FACE);
+		//glDisable(GL_CULL_FACE);
+		glEnable(GL_ALPHA_TEST);
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 
