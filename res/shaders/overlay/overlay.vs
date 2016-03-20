@@ -17,5 +17,5 @@ uniform mat3 normalMatrixInv;
 void main(){
 	interpolatedColor = colorIn;
 	
-	gl_Position = projectionMatrix * modelViewMatrix * vec4(vertexIn, 1.0);
+	gl_Position = projectionMatrix * (modelViewMatrix * vec4(vertexIn, 1.0) + vec4(0.0, 0.0, 0.01, 0.0));
 }

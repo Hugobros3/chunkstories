@@ -211,6 +211,12 @@ public class GameplayScene extends OverlayableScene
 			if (!Client.connection.isAlive() || Client.connection.hasFailed())
 				eng.changeScene(new MainMenu(eng, "Connection failed : " + Client.connection.getLatestErrorMessage()));
 		}
+
+		if (!Display.isActive() && this.currentOverlay == null)
+		{
+			focus(false);
+			this.changeOverlay(new PauseOverlay(this, null));
+		}
 	}
 
 	private void focus(boolean f)
@@ -371,8 +377,9 @@ public class GameplayScene extends OverlayableScene
 		worldRenderer.setupRenderSize(XolioWindow.frameW, XolioWindow.frameH);
 	}
 
-	// CLEANING - do it properly or mum will smash the shit out of you
-
+	/**
+	 * Destroys and frees everything
+	 */
 	public void destroy()
 	{
 		Client.world.destroy();
@@ -389,7 +396,7 @@ public class GameplayScene extends OverlayableScene
 		int timeTook = Client.profiler.timeTook();
 		String debugInfo = Client.profiler.reset("gui");
 		if (timeTook > 400)
-			System.out.println(debugInfo);
+			System.out.println("Lengty frame, printing debug information : \n"+debugInfo);
 
 		long total = Runtime.getRuntime().totalMemory();
 		long used = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -404,40 +411,32 @@ public class GameplayScene extends OverlayableScene
 		int cz = bz / 32;
 		int csh = Client.world.chunkSummaries.getHeightAt(bx, bz);
 		CubicChunk current = Client.world.getChunk(cx, cy, cz, false);
-		// FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 20,
-		// 0, 16, "X:" + loc.x + " Y:" + loc.y + " Z:" + loc.z
-		// + "rotH" + camera.view_roty + " worldtime:" + Client.world.worldTime
-		// % 1000, BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 36, 0, 16, "Position : x:" + bx + " y:" + by + " z:" + bz + " bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 52, 0, 16, "CR : T : " + worldRenderer.chunksRenderer.todo.size() + " D: " + worldRenderer.chunksRenderer.done.size() + "WL : " + Client.world.ioHandler.toString()
-				+ " ChunksData" + Client.world.chunksData.size() + " WR list:" + worldRenderer.getQueueSize(), BitmapFont.SMALLFONTS);
+		int x_top = XolioWindow.frameH - 16;
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, "View distance : " + FastConfig.viewDistance + " Vertices(N):" + formatBigAssNumber(worldRenderer.renderedVertices + "") + " Chunks in view : "
+				+ formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :" + Client.world.particlesHolder.count() + " #FF0000FPS : " + XolioWindow.getFPS(), BitmapFont.SMALLFONTS);
+		
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Timings : " + debugInfo, BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + Client.world.chunksData.size(), BitmapFont.SMALLFONTS);
+		
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + getLoadedChunksVramFootprint() + ", " + getLoadedTerrainVramFootprint(), BitmapFont.SMALLFONTS);
+		
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : T : " + worldRenderer.chunksRenderer.todo.size() + "   Chunks to upload: " + worldRenderer.chunksRenderer.done.size() + "    " + Client.world.ioHandler.toString()
+		 , BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16, "Position : x:" + bx + " y:" + by + " z:" + bz + " bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
 		if (current == null)
-			FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk null", BitmapFont.SMALLFONTS);
+			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk null", BitmapFont.SMALLFONTS);
 		else
 		{
 			ChunkRenderData chunkRenderData = current.chunkRenderData;
 			if(chunkRenderData != null)
 			{
-				FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk : "+current + " - "+chunkRenderData.toString(), BitmapFont.SMALLFONTS);
+				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk : "+current + " - "+chunkRenderData.toString(), BitmapFont.SMALLFONTS);
 			}
 			else
-				FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk : "+current + " - No rendering data", BitmapFont.SMALLFONTS);
+				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk : "+current + " - No rendering data", BitmapFont.SMALLFONTS);
 		}
-		//	FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 68, 0, 16, "Current chunk : vbo=" + current.vbo_id + " vboSize=" + (current.vbo_size_normal + current.vbo_size_water) + " needRender=" + current.need_render + " requestable=" + current.requestable
-		//			+ " dataPointer=" + current.dataPointer + " etc "+current+" etc2"+current.holder, BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 84, 0, 16, debugInfo, BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 100, 0, 16, "View distance : " + FastConfig.viewDistance + " Vertices(N):" + formatBigAssNumber(worldRenderer.renderedVertices + "") + " Chunks in view : "
-				+ formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :" + Client.world.particlesHolder.count() + " #FF0000FPS : " + XolioWindow.getFPS(), BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 114, 0, 16, used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Controller : " + this.player, BitmapFont.SMALLFONTS);
 		
-		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 130, 0, 16, "VRAM usage : " + getLoadedChunksVramFootprint() + ", " + getLoadedTerrainVramFootprint(), BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, XolioWindow.frameH - 130 - 16, 0, 16, "Player model : " + this.player, BitmapFont.SMALLFONTS);
-		 
-		if (!Display.isActive() && this.currentOverlay == null)
-		{
-			focus(false);
-			this.changeOverlay(new PauseOverlay(this, null));
-		}
 	}
 
 	private String getLoadedChunksVramFootprint()
@@ -453,9 +452,11 @@ public class GameplayScene extends OverlayableScene
 			if(c == null)
 				continue;
 			ChunkRenderData chunkRenderData = c.chunkRenderData;
-			nbChunks++;
 			if(chunkRenderData != null)
+			{
+				nbChunks++;
 				octelsTotal += chunkRenderData.getVramSize();
+			}
 		}
 		return nbChunks + " chunks, storing " + octelsTotal / 1024 / 1024 + "Mb of vertex data.";
 	}

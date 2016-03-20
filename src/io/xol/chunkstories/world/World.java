@@ -505,6 +505,8 @@ public abstract class World
 	{
 		if (this instanceof WorldTool)
 			System.out.println("omg this should not happen");
+		
+		Location loc = Client.controlledEntity.getLocation();
 		ChunksIterator it = this.iterator();
 		CubicChunk chunk;
 		while (it.hasNext())
@@ -521,7 +523,6 @@ public abstract class World
 				keep = true;
 				int sizeInChunks = this.getSizeInChunks();
 				int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
-				Location loc = Client.controlledEntity.getLocation();
 				int pCX = (int) loc.x / 32;
 				int pCY = (int) loc.y / 32;
 				int pCZ = (int) loc.z / 32;

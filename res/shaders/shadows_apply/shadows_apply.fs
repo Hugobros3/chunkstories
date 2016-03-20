@@ -169,6 +169,7 @@ void main() {
 	pixelNormal.rgb = pixelNormal.rgb * 2.0 - vec3(1.0);
 	
 	vec4 shadingColor = texture2D(albedoBuffer, screenCoord);
+	//shadingColor.rgb = normalize(shadingColor.rgb);
 	
 	if(shadingColor.a > 0.0)
 	{
