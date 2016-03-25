@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.lwjgl.util.vector.Vector3f;
@@ -12,6 +13,7 @@ import org.lwjgl.util.vector.Vector4f;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.renderer.TerrainSummarizer.RegionSummary;
 import io.xol.chunkstories.renderer.buffers.FloatBufferPool;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelTextures;
@@ -210,15 +212,33 @@ public class TerrainSummarizer
 	{
 		int elements = 0;
 		glDisable(GL_CULL_FACE); // culling for our glorious terrain
-		//glEnableClientState(GL_VERTEX_ARRAY);
 		
-		//glDisableClientState(GL_TEXTURE_COORD_ARRAY); // No need for textures
-		//glDisableClientState(GL_NORMAL_ARRAY);
-		//glDisableClientState(GL_COLOR_ARRAY);
+		//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		
 		int vertexIn = terrain.getVertexAttributeLocation("vertexIn");
 		renderingContext.enableVertexAttribute(vertexIn);	
 		
-		for (RegionSummary rs : regionsToRender)
+		//Sort to draw near first
+		List<RegionSummary> regionsToRenderSorted = new ArrayList<RegionSummary>(regionsToRender);
+		//renderingContext.getCamera().getLocation;
+		Camera camera = renderingContext.getCamera();
+		int camRX = (int) (-camera.camPosX / 256);
+		int camRZ = (int) (-camera.camPosZ / 256);
+		
+		regionsToRenderSorted.sort(new Comparator<RegionSummary>() {
+
+			@Override
+			public int compare(RegionSummary a, RegionSummary b)
+			{
+				int distanceA = Math.abs(a.rxDisplay - camRX) + Math.abs(a.rzDisplay - camRZ);
+				//System.out.println(camRX + " : " + distanceA);
+				int distanceB = Math.abs(b.rxDisplay - camRX) + Math.abs(b.rzDisplay - camRZ);
+				return distanceA - distanceB;
+			}
+			
+		});
+		
+		for (RegionSummary rs : regionsToRenderSorted)
 		{
 			float height = 1024f;
 			if(!renderingContext.getCamera().isBoxInFrustrum(new Vector3f(rs.rxDisplay * 256 + 128, height / 2, rs.rzDisplay * 256 + 128), new Vector3f(256, height, 256)))
@@ -268,7 +288,8 @@ public class TerrainSummarizer
 
 		//glDisableClientState(GL_VERTEX_ARRAY);
 		renderingContext.disableVertexAttribute(vertexIn);	
-
+		
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		return elements;
 	}
 
@@ -368,11 +389,16 @@ public class TerrainSummarizer
 				int distance = Math.abs(a - cx) + Math.abs(b - cz);
 				boolean border = false;
 				int detail = 0;
-				if (distance > 3)
+				
+				double distanceScaleFactor = 1.0;
+				if(FastConfig.hqTerrain)
+					distanceScaleFactor = 0.5;
+				
+				if (distance * distanceScaleFactor > 5)
 					detail = 1;
-				if (distance > 10)
+				if (distance * distanceScaleFactor > 10)
 					detail = 2;
-				if (distance > 15)
+				if (distance * distanceScaleFactor > 15)
 					detail = 3;
 				if (distance == 4 || distance == 11 || distance == 16)
 					border = true;

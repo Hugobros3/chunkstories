@@ -537,56 +537,19 @@ public class WorldRenderer
 		Vector3f sunPos = sky.getSunPos();
 		float shadowVisiblity = getShadowVisibility();
 		chunksViewDistance = sizeInChunks / 2;
+		
+		//TODO move
+		Texture vegetationTexture = TexturesHandler.getTexture(world.folder.getAbsolutePath() + "/grassColor.png");
+		if (vegetationTexture == null || vegetationTexture.getID() == -1)
+			vegetationTexture = TexturesHandler.getTexture("./res/textures/environement/grassColor.png");
+		vegetationTexture.setMipMapping(true);
+		vegetationTexture.setLinearFiltering(true);
+		
 		if (!shadowPass)
 		{
 			this.composite_pass_shaded.bind();
 
-			Client.profiler.startSection("terrain");
-			glDisable(GL_BLEND);
-
-			Texture vegetationTexture = TexturesHandler.getTexture(world.folder.getAbsolutePath() + "/grassColor.png");
-			if (vegetationTexture == null || vegetationTexture.getID() == -1)
-				vegetationTexture = TexturesHandler.getTexture("./res/textures/environement/grassColor.png");
-			vegetationTexture.setMipMapping(true);
-			vegetationTexture.setLinearFiltering(true);
-			renderingContext.setCurrentShader(terrainShader);
-			//terrainShader.use(true);
-			camera.setupShader(terrainShader);
-			//terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
-			terrainShader.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
-			terrainShader.setUniformFloat("time", animationTimer);
-			terrainShader.setUniformFloat("terrainHeight", world.chunkSummaries.getHeightAt((int) viewX, (int) viewZ));
-			terrainShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
-			terrainShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
-			waterNormalTexture.setLinearFiltering(true);
-			waterNormalTexture.setMipMapping(true);
-			terrainShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
-			terrainShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
-			terrainShader.setUniformSampler(8, "glowSampler", glowTexture);
-			terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
-			terrainShader.setUniformSampler(6, "lightColors", lightmapTexture);
-			terrainShader.setUniformSampler(5, "normalTexture", waterNormalTexture);
-			terrainShader.setUniformSamplerCubemap(9, "environmentCubemap", environmentMap);
-			setupShadowColors(terrainShader);
-			terrainShader.setUniformFloat("time", sky.time);
-			terrainShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
-
-			terrainShader.setUniformSampler(3, "vegetationColorTexture", vegetationTexture);
-			terrainShader.setUniformFloat("mapSize", sizeInChunks * 32);
-
-			if (Client.world.name.contains("cherna"))
-				terrainShader.setUniformFloat("waterLevel", 4f);
-
-			if (FastConfig.debugGBuffers)
-				glFinish();
-			t = System.nanoTime();
-			if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
-				renderedVertices += terrain.draw(renderingContext, terrainShader);
-
-			if (FastConfig.debugGBuffers)
-				glFinish();
-			if (FastConfig.debugGBuffers)
-				System.out.println("terrain took " + (System.nanoTime() - t) / 1000000.0 + "ms");
+			
 
 			Client.profiler.startSection("blocks");
 			this.composite_pass_gbuffers.setEnabledRenderTargets();
@@ -1081,6 +1044,46 @@ public class WorldRenderer
 		glEnable(GL_DEPTH_TEST);
 		renderingContext.setCurrentShader(lightShader);
 		lights.clear();
+		
+		// Terrain
+		Client.profiler.startSection("terrain");
+		glDisable(GL_BLEND);
+		
+		renderingContext.setCurrentShader(terrainShader);
+		//terrainShader.use(true);
+		camera.setupShader(terrainShader);
+		//terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
+		terrainShader.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
+		terrainShader.setUniformFloat("time", animationTimer);
+		terrainShader.setUniformFloat("terrainHeight", world.chunkSummaries.getHeightAt((int) viewX, (int) viewZ));
+		terrainShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
+		terrainShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
+		waterNormalTexture.setLinearFiltering(true);
+		waterNormalTexture.setMipMapping(true);
+		terrainShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
+		terrainShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
+		terrainShader.setUniformSampler(8, "glowSampler", glowTexture);
+		terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
+		terrainShader.setUniformSampler(6, "lightColors", lightmapTexture);
+		terrainShader.setUniformSampler(5, "normalTexture", waterNormalTexture);
+		terrainShader.setUniformSamplerCubemap(9, "environmentCubemap", environmentMap);
+		setupShadowColors(terrainShader);
+		terrainShader.setUniformFloat("time", sky.time);
+		terrainShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
+
+		terrainShader.setUniformSampler(3, "vegetationColorTexture", vegetationTexture);
+		terrainShader.setUniformFloat("mapSize", sizeInChunks * 32);
+
+		if (FastConfig.debugGBuffers)
+			glFinish();
+		t = System.nanoTime();
+		if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
+			renderedVertices += terrain.draw(renderingContext, terrainShader);
+
+		if (FastConfig.debugGBuffers)
+			glFinish();
+		if (FastConfig.debugGBuffers)
+			System.out.println("terrain took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 	}
 
 	private void setupShadowColors(ShaderProgram shader)
