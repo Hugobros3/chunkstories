@@ -93,12 +93,11 @@ public class ServerConnectionsHandler extends Thread
 		if (in.startsWith("login/"))
 			c.handleLogin(in.substring(6, in.length()));
 		else if (in.startsWith("info"))
-			sendIntel(c);
+			sendServerMOTD(c);
 		// Checks for auth
-		if (!c.authentificated)
+		if (!c.isAuthentificated())
 			return;
-		// Any authentificated client has to have a profile.
-		assert c.profile != null;
+		
 		// Login-mandatory requests ( you need to be authentificated to use them )
 		if (in.equals("co/off"))
 		{
@@ -125,14 +124,18 @@ public class ServerConnectionsHandler extends Thread
 		// System.out.println(ColorsTools.convertToAnsi("Client " + c.getHost() + " sent " + in));
 	}
 
-	private void sendIntel(ServerClient c)
+	/**
+	 * Sends general information about the server
+	 * @param client
+	 */
+	private void sendServerMOTD(ServerClient client)
 	{
-		c.send("info/name:" + Server.getInstance().serverConfig.getProp("server-name", "unnamedserver@" + hostname));
-		c.send("info/motd:" + Server.getInstance().serverConfig.getProp("server-desc", "Default description."));
-		c.send("info/connected:" + Server.getInstance().handler.getNumberOfConnectedClients() + ":" + maxClients);
-		c.send("info/version:" + VersionInfo.version);
-		c.send("info/nogame");
-		c.send("info/done");
+		client.send("info/name:" + Server.getInstance().serverConfig.getProp("server-name", "unnamedserver@" + hostname));
+		client.send("info/motd:" + Server.getInstance().serverConfig.getProp("server-desc", "Default description."));
+		client.send("info/connected:" + Server.getInstance().handler.getNumberOfConnectedClients() + ":" + maxClients);
+		client.send("info/version:" + VersionInfo.version);
+		client.send("info/nogame");
+		client.send("info/done");
 		// disconnectClient(c, "???");
 	}
 
@@ -146,7 +149,7 @@ public class ServerConnectionsHandler extends Thread
 	{
 		for (ServerClient c : clients)
 		{
-			if (c.authentificated)
+			if (c.isAuthentificated())
 				c.send(raw);
 		}
 	}
@@ -207,7 +210,7 @@ public class ServerConnectionsHandler extends Thread
 		int i = 0;
 		for (ServerClient c : clients)
 		{
-			if (c.authentificated)
+			if (c.isAuthentificated())
 				i++;
 		}
 		return i;
@@ -218,7 +221,7 @@ public class ServerConnectionsHandler extends Thread
 		ServerClient him = null;
 		for (ServerClient c : clients)
 		{
-			if (c.authentificated)
+			if (c.isAuthentificated())
 			{
 				if (c.name.equals(name))
 					him = c;
@@ -233,7 +236,7 @@ public class ServerConnectionsHandler extends Thread
 
 		for (ServerClient c : clients)
 		{
-			if (c.authentificated)
+			if (c.isAuthentificated())
 			{
 				authClients.add(c);
 			}

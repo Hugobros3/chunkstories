@@ -38,8 +38,10 @@ public class ServerClient extends Thread implements HttpRequester
 
 	boolean validToken = false;
 	String token = "undefined";
+	
 	//Has the user provided a valid login ?
-	public boolean authentificated = false;
+	//public boolean authentificated = false;
+	
 	//Did the connection died at some point ?
 	boolean died = false;
 	//Used to pevent calling close() twice
@@ -97,7 +99,7 @@ public class ServerClient extends Thread implements HttpRequester
 			{
 				// Offline-mode !
 				System.out.println("Warning : Offline-mode is on, letting " + this.name + " connecting without verification");
-				authentificated = true;
+				//authentificated = true;
 				profile = new ServerPlayer(this);
 				Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ")" + " joined.");
 				send("login/ok");
@@ -177,22 +179,19 @@ public class ServerClient extends Thread implements HttpRequester
 		if (alreadyKilled)
 			return;
 		died = true;
-		if (authentificated)
+		if (profile != null)
 		{
 			//authentificated = true;
 			//profile = new ServerPlayer(this);
 			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(profile);
 			Server.getInstance().getPluginsManager().fireEvent(playerDisconnectionEvent);
 
-			Server.getInstance().handler.sendAllChat(playerDisconnectionEvent.connectionMessage);
+			Server.getInstance().handler.sendAllChat(playerDisconnectionEvent.getLogoutMessage());
 
 			//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
 			assert profile != null;
-			//if (profile != null)
-			//{
 			profile.destroy();
 			profile.save();
-			//}
 		}
 
 		try
@@ -231,17 +230,18 @@ public class ServerClient extends Thread implements HttpRequester
 		{
 			if (result.equals("ok"))
 			{
-				authentificated = true;
+				//authentificated = true;
 				profile = new ServerPlayer(this);
 				PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(profile);
-				boolean allowPlayerIn = Server.getInstance().getPluginsManager().fireEvent(playerConnectionEvent);
+				Server.getInstance().getPluginsManager().fireEvent(playerConnectionEvent);
+				boolean allowPlayerIn = !playerConnectionEvent.isCancelled();
 				if (!allowPlayerIn)
 				{
-					Server.getInstance().handler.disconnectClient(this, playerConnectionEvent.refusedConnectionMessage);
+					Server.getInstance().handler.disconnectClient(this, playerConnectionEvent.getRefusedConnectionMessage());
 					return;
 				}
 				//System.out.println(allowPlayerIn+"allow");
-				Server.getInstance().handler.sendAllChat(playerConnectionEvent.connectionMessage);
+				Server.getInstance().handler.sendAllChat(playerConnectionEvent.getConnectionMessage());
 				//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ")" + " joined.");
 				//profile.onJoin();
 				send("login/ok");
@@ -263,5 +263,10 @@ public class ServerClient extends Thread implements HttpRequester
 				return true;
 		}
 			return false;
+	}
+
+	public boolean isAuthentificated()
+	{
+		return profile != null;
 	}
 }

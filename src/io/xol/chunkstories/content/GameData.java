@@ -1,4 +1,4 @@
-package io.xol.chunkstories;
+package io.xol.chunkstories.content;
 
 import java.io.File;
 import java.util.ArrayDeque;
@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.gui.GameplayScene;
+import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.item.ItemsList;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.voxel.VoxelTextures;
@@ -44,6 +45,7 @@ public class GameData
 
 	public static void reloadClientContent()
 	{
+		KeyBinds.loadKeyBinds();
 		TexturesHandler.reloadAll();
 		SoundsLibrary.clean();
 		ModelLibrary.reloadAllModels();
@@ -67,13 +69,13 @@ public class GameData
 		allModsEnabled = false;
 		for (String s : modsEnabled)
 		{
-			System.out.println("MODS"+s);
+			//System.out.println("MODS"+s);
 			if(s.equals("*"))
 				allModsEnabled = true;
 			else
 				mods.add(s);
 		}
-		System.out.println("MODS"+allModsEnabled);
+		//System.out.println("MODS"+allModsEnabled);
 	}
 	
 	/**

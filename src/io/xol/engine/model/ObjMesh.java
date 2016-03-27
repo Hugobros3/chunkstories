@@ -1,6 +1,6 @@
 package io.xol.engine.model;
 
-import io.xol.chunkstories.GameData;
+import io.xol.chunkstories.content.GameData;
 import io.xol.engine.model.animation.BVHAnimation;
 
 import java.io.BufferedReader;

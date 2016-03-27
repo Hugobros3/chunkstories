@@ -1,6 +1,6 @@
 package io.xol.chunkstories.tools;
 
-import io.xol.chunkstories.GameData;
+import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.generator.core.PerlinWorldGenerator;
 

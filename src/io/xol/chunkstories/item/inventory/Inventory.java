@@ -14,7 +14,7 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
 import io.xol.chunkstories.net.packets.PacketItemUsage;
 import io.xol.chunkstories.net.packets.PacketItemUsage.ItemUsage;
-import io.xol.chunkstories.world.WorldClient;
+import io.xol.chunkstories.world.WorldRemoteClient;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -323,7 +323,7 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 			PacketItemUsage packet = new PacketItemUsage(true);
 			packet.usage = ItemUsage.SELECT;
 			packet.complementInfo = (byte) newSlot;
-			if(((Entity) this.holder).getWorld() instanceof WorldClient)
+			if(((Entity) this.holder).getWorld() instanceof WorldRemoteClient)
 				Client.connection.sendPacket(packet);
 			//((ClientController)((EntityControllable)this.holder).getController()).notifySelectedItemChange();
 		}

@@ -1,14 +1,15 @@
 package io.xol.chunkstories.api.events.core;
 
-import io.xol.chunkstories.api.events.Event;
+import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
+import io.xol.chunkstories.api.events.categories.PlayerEvent;
 import io.xol.chunkstories.api.plugin.server.Player;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PlayerLoginEvent extends Event
+public class PlayerLoginEvent extends CancellableEvent implements PlayerEvent
 {
 	// Every event class has to have this
 	
@@ -26,16 +27,36 @@ public class PlayerLoginEvent extends Event
 	
 	// Specific event code
 	
-	public Player player;
-	public String connectionMessage;
-	public String refusedConnectionMessage = "Connection was refused by a plugin.";
+	public String getConnectionMessage()
+	{
+		return connectionMessage;
+	}
+
+	public void setConnectionMessage(String connectionMessage)
+	{
+		this.connectionMessage = connectionMessage;
+	}
+
+	public String getRefusedConnectionMessage()
+	{
+		return refusedConnectionMessage;
+	}
+
+	public void setRefusedConnectionMessage(String refusedConnectionMessage)
+	{
+		this.refusedConnectionMessage = refusedConnectionMessage;
+	}
+
+	private Player player;
+	private String connectionMessage;
+	private String refusedConnectionMessage = "Connection was refused by a plugin.";
 	
 	public PlayerLoginEvent(Player player)
 	{
 		this.player = player;
 		this.connectionMessage = "#FFFF00"+player+" joined the server";
 	}
-
+	
 	public Player getPlayer()
 	{
 		return player;

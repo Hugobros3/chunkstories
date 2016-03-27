@@ -12,10 +12,10 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ServerConnection;
+import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;

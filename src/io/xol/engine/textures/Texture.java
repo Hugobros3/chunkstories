@@ -14,8 +14,8 @@ import static org.lwjgl.opengl.GL13.*;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
-import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive

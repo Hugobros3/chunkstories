@@ -98,7 +98,7 @@ public class LoginOverlay extends Overlay implements HttpRequester
 	
 	public boolean handleKeypress(int k)
 	{
-		Client.getSoundManager().playSoundEffect("shoot.ogg");
+		Client.getInstance().getSoundManager().playSoundEffect("sfx/shoot.ogg");
 		if (k == 15)
 			guiHandler.next();
 		else if (k == 28)

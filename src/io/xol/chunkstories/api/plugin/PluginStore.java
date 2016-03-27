@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import io.xol.chunkstories.api.exceptions.PluginInfoException;
-import io.xol.chunkstories.api.plugin.server.ServerInterface;
+import io.xol.chunkstories.api.server.ServerInterface;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -23,13 +23,13 @@ public class PluginStore
 		return loadedPlugins;
 	}
 	
-	public void loadPlugins(File pluginsDir, boolean reload)
+	/**
+	 * Loads all .jar files found within a directory
+	 * @param pluginsDir
+	 * @param reload
+	 */
+	public void loadPlugins(File pluginsDir)
 	{
-		if(reload)
-		{
-			for(PluginJar pj : loadedPlugins)
-				unLoadPlugin(pj);
-		}
 		if(pluginsDir.isDirectory() && pluginsDir.exists())
 		{
 			for(File f : pluginsDir.listFiles())
@@ -38,6 +38,10 @@ public class PluginStore
 		}
 	}
 
+	/**
+	 * Loads a plugin
+	 * @param file The file containing the plugin
+	 */
 	public void loadPlugin(File file)
 	{
 		try
@@ -52,9 +56,17 @@ public class PluginStore
 		}
 	}
 	
+	/**
+	 * Removes a plugin
+	 * @param pj
+	 */
 	public void unLoadPlugin(PluginJar pj)
 	{
-		//TODO ???
 		loadedPlugins.remove(pj);
+	}
+
+	public void unloadPlugins()
+	{
+		loadedPlugins.clear();
 	}
 }

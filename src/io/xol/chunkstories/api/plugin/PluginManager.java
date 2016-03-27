@@ -29,9 +29,8 @@ public interface PluginManager
 	public void registerEventListener(Listener l, ChunkStoriesPlugin plugin);
 	
 	/**
-	 * Fires an Event, pass it to all plugins that are listening for this kind of event and returns the final decision of wether or not to allow the event to happen
+	 * Fires an Event, pass it to all plugins that are listening for this kind of event
 	 * @param event
-	 * @return Whether or not it should be blocked from happening
 	 */
-	public boolean fireEvent(Event event);
+	public void fireEvent(Event event);
 }

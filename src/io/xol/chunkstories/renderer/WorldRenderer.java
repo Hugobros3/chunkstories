@@ -38,9 +38,9 @@ import io.xol.engine.textures.Cubemap;
 import io.xol.engine.textures.GBufferTexture;
 import io.xol.engine.textures.Texture;
 import io.xol.engine.textures.TexturesHandler;
-import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
@@ -548,9 +548,7 @@ public class WorldRenderer
 		if (!shadowPass)
 		{
 			this.composite_pass_shaded.bind();
-
 			
-
 			Client.profiler.startSection("blocks");
 			this.composite_pass_gbuffers.setEnabledRenderTargets();
 

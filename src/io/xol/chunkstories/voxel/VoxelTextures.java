@@ -24,7 +24,7 @@ import javax.imageio.stream.ImageInputStream;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
-import io.xol.chunkstories.GameData;
+import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive

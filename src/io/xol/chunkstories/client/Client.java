@@ -14,25 +14,28 @@ import io.xol.engine.misc.ConfigFile;
 import io.xol.engine.misc.IconLoader;
 import io.xol.engine.misc.NativesLoader;
 import io.xol.engine.sound.ALSoundManager;
-import io.xol.chunkstories.GameData;
-import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.client.net.ServerConnection;
+import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.MainMenu;
+import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.World;
 
-public class Client implements ClientController
+public class Client implements ClientController, ClientInterface
 {
 	public static ConfigFile clientConfig = new ConfigFile("./config/client.cfg");
 
 	public static SoundManager soundManager;
-
 	public static boolean offline = false;
 
 	public static ServerConnection connection;
@@ -46,6 +49,8 @@ public class Client implements ClientController
 
 	public static Entity controlledEntity;
 	public static Client clientController;
+	
+	public static PluginsManager pluginsManager;
 
 	public static void main(String[] args)
 	{
@@ -106,6 +111,8 @@ public class Client implements ClientController
 		windows = new XolioWindow("Chunk Stories " + VersionInfo.version, -1, -1);
 		windows.createContext();
 		windows.changeScene(new MainMenu(windows, true));
+		KeyBinds.loadKeyBinds();
+		pluginsManager = new PluginsManager(clientController);
 		windows.run();
 	}
 
@@ -115,7 +122,7 @@ public class Client implements ClientController
 		GuiDrawer.initGL();
 	}
 
-	public static SoundManager getSoundManager()
+	public SoundManager getSoundManager()
 	{
 		return soundManager;
 	}
@@ -144,5 +151,24 @@ public class Client implements ClientController
 			return ((GameplayScene) windows.getCurrentScene()).hasFocus();
 		}
 		return false;
+	}
+
+	@Override
+	public PluginsManager getPluginsManager()
+	{
+		return pluginsManager;
+	}
+
+	@Override
+	public void reloadAssets()
+	{
+		GameData.reload();
+		GameData.reloadClientContent();
+	}
+
+	@Override
+	public KeyBind getKeyBind(String bindName)
+	{
+		return KeyBinds.getKeyBind(bindName);
 	}
 }

@@ -6,11 +6,12 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
-import io.xol.chunkstories.world.WorldClient;
+import io.xol.chunkstories.world.WorldRemoteClient;
 import io.xol.chunkstories.world.WorldLocalClient;
 import io.xol.engine.base.XolioWindow;
 
@@ -65,7 +66,7 @@ public class InventoryOverlay extends Overlay
 
 	public boolean handleKeypress(int k)
 	{
-		if (k == FastConfig.EXIT_KEY)
+		if (KeyBinds.getKeyBind("exit").isPressed())
 			this.mainScene.changeOverlay(parent);
 		return true;
 	}
@@ -95,7 +96,7 @@ public class InventoryOverlay extends Overlay
 					{
 						if (Client.world instanceof WorldLocalClient)
 							selectedItem = selectedItem.moveTo(inventories[i], x, y);
-						else if(Client.world instanceof WorldClient)
+						else if(Client.world instanceof WorldRemoteClient)
 						{
 							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(true);
 							packetMove.from = selectedItem.inventory;
@@ -115,7 +116,7 @@ public class InventoryOverlay extends Overlay
 				}
 			}
 		}
-		if(selectedItem != null && Client.world instanceof WorldClient)
+		if(selectedItem != null && Client.world instanceof WorldRemoteClient)
 		{
 			PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(true);
 			packetMove.from = selectedItem.inventory;

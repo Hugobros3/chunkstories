@@ -90,7 +90,7 @@ public class WorldServer extends World
 			boolean neededBySomeone = false;
 			for(ServerClient client : Server.getInstance().handler.clients)
 			{
-				if(client.authentificated && client.profile != null)
+				if(client.isAuthentificated())
 				{
 					Entity clientEntity = client.profile.getControlledEntity();
 					if(clientEntity == null)

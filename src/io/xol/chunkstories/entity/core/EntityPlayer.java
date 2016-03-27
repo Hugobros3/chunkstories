@@ -29,6 +29,7 @@ import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.core.VoxelClimbable;
 import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldClient;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -134,9 +135,9 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		synchronized (this)
 		{
 			if (flying)
-				flyMove(controller.hasFocus());
+				flyMove(controller);
 			else
-				normalMove(controller.hasFocus());
+				normalMove(controller);
 		}
 
 		super.updatePosition();
@@ -164,8 +165,10 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	boolean jumped = false;
 	boolean landed = false;
 
-	public void normalMove(boolean focus)
+	public void normalMove(ClientController controller)
 	{
+		WorldClient worldClient = (WorldClient)world;
+		boolean focus = controller.hasFocus();
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY + 1), (int) (posZ))));
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
 		boolean onLadder = voxelIn instanceof VoxelClimbable;
@@ -184,36 +187,36 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		if (jumped)
 		{
 			jumped = false;
-			Client.getSoundManager().playSoundEffect("footsteps/jump.ogg", posX, posY, posZ, (float) (0.9f + Math.sqrt(velX * velX + velY * velY) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", posX, posY, posZ, (float) (0.9f + Math.sqrt(velX * velX + velY * velY) * 0.1f), 1f);
 		}
 		if (landed)
 		{
 			landed = false;
-			Client.getSoundManager().playSoundEffect("footsteps/jump.ogg", posX, posY, posZ, (float) (0.9f + Math.sqrt(velX * velX + velY * velY) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", posX, posY, posZ, (float) (0.9f + Math.sqrt(velX * velX + velY * velY) * 0.1f), 1f);
 		}
 
 		if (walked > 0.2 * Math.PI * 2)
 		{
 			walked %= 0.2 * Math.PI * 2;
-			Client.getSoundManager().playSoundEffect("footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", posX, posY, posZ, (float) (0.9f + Math.sqrt(velX * velX + velY * velY) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", posX, posY, posZ, (float) (0.9f + Math.sqrt(velX * velX + velY * velY) * 0.1f), 1f);
 			// System.out.println("footstep");
 		}
 
-		if (focus && !inWater && Keyboard.isKeyDown(FastConfig.JUMP_KEY) && collision_bot)
+		if (focus && !inWater && controller.getKeyBind("jump").isPressed() && collision_bot)
 		{
 			// System.out.println("jumpin");
 			jump = 0.15;
 		}
-		else if (focus && inWater && Keyboard.isKeyDown(FastConfig.JUMP_KEY))
+		else if (focus && inWater && controller.getKeyBind("jump").isPressed())
 			jump = 0.05;
 		else
 			jump = 0.0;
 
 		// Movement
 		// Run ?
-		if (focus && Keyboard.isKeyDown(FastConfig.FORWARD_KEY))
+		if (focus && controller.getKeyBind("forward").isPressed())
 		{
-			if (Keyboard.isKeyDown(FastConfig.RUN_KEY))
+			if (controller.getKeyBind("run").isPressed())
 				running = true;
 		}
 		else
@@ -222,9 +225,9 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		double modif = 0;
 		if (focus)
 		{
-			if (Keyboard.isKeyDown(FastConfig.FORWARD_KEY) || Keyboard.isKeyDown(FastConfig.LEFT_KEY) || Keyboard.isKeyDown(FastConfig.RIGHT_KEY))
+			if (controller.getKeyBind("forward").isPressed() || controller.getKeyBind("left").isPressed() || controller.getKeyBind("right").isPressed())
 				hSpeed = (running ? 0.09 : 0.06);
-			else if (Keyboard.isKeyDown(FastConfig.BACK_KEY))
+			else if (controller.getKeyBind("back").isPressed())
 				hSpeed = -0.05;
 			else
 				hSpeed = 0.0;
@@ -235,10 +238,10 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		if (inWater)
 			hSpeed *= 0.45;
 
-		if (Keyboard.isKeyDown(FastConfig.LEFT_KEY))
-			modif += 90 * (Keyboard.isKeyDown(FastConfig.FORWARD_KEY) ? 0.5 : 1);
-		if (Keyboard.isKeyDown(FastConfig.RIGHT_KEY))
-			modif += -90 * (Keyboard.isKeyDown(FastConfig.FORWARD_KEY) ? 0.5 : 1);
+		if (controller.getKeyBind("left").isPressed())
+			modif += 90 * (controller.getKeyBind("forward").isPressed() ? 0.5 : 1);
+		if (controller.getKeyBind("right").isPressed())
+			modif += -90 * (controller.getKeyBind("forward").isPressed() ? 0.5 : 1);
 
 		synchronized (this)
 		{
@@ -268,9 +271,9 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		eyePosition = 1.8 + Math.sin(walked * 5d) * 0.035d;
 	}
 
-	public void flyMove(boolean focus)
+	public void flyMove(ClientController controller)
 	{
-		if (!focus)
+		if (!controller.hasFocus())
 			return;
 		velX = velY = velZ = 0;
 		eyePosition = 1.8;
@@ -279,7 +282,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			camspeed = 1f;
 		if (Keyboard.isKeyDown(Keyboard.KEY_LMENU))
 			camspeed = 5f;
-		if (Keyboard.isKeyDown(FastConfig.BACK_KEY))
+		if (controller.getKeyBind("back").isPressed())
 		{
 			float a = (float) ((-rotH) / 180f * Math.PI);
 			float b = (float) ((rotV) / 180f * Math.PI);
@@ -288,7 +291,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			else
 				moveWithCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b), true);
 		}
-		if (Keyboard.isKeyDown(FastConfig.FORWARD_KEY))
+		if (controller.getKeyBind("forward").isPressed())
 		{
 			float a = (float) ((180 - rotH) / 180f * Math.PI);
 			float b = (float) ((-rotV) / 180f * Math.PI);
@@ -297,7 +300,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			else
 				moveWithCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b), true);
 		}
-		if (Keyboard.isKeyDown(32))
+		if (controller.getKeyBind("right").isPressed())
 		{
 			float a = (float) ((-rotH - 90) / 180f * Math.PI);
 			if (noclip)
@@ -305,7 +308,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			else
 				moveWithCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed, true);
 		}
-		if (Keyboard.isKeyDown(FastConfig.LEFT_KEY))
+		if (controller.getKeyBind("left").isPressed())
 		{
 			float a = (float) ((-rotH + 90) / 180f * Math.PI);
 			if (noclip)

@@ -19,6 +19,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.ConnectScene;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.input.KeyBinds;
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
@@ -125,20 +126,20 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		{
 			ipForm.text = "";
 		}
-		else if (k == FastConfig.ENTER_KEY)
+		else if (KeyBinds.getKeyBind("enter").isPressed())
 			login();
 		else if (k == 63) // F5
 			new HttpRequestThread(this, "serversList", "http://chunkstories.xyz/api/listServers.php", "").start();
 		else if (k == 64) // F6 ?
 			f6();
-		else if (k == FastConfig.EXIT_KEY)
+		else if (KeyBinds.getKeyBind("exit").isPressed())
 			this.mainScene.changeOverlay(parent);
-		else if (serverSelectionZone.focus && k == FastConfig.FORWARD_KEY)
+		else if (serverSelectionZone.focus && KeyBinds.getKeyBind("forward").isPressed())
 		{
 			movedInList = true;
 			currentServer--;
 		}
-		else if (serverSelectionZone.focus && k == FastConfig.BACK_KEY)
+		else if (serverSelectionZone.focus && KeyBinds.getKeyBind("back").isPressed())
 		{
 			movedInList = true;
 			currentServer++;

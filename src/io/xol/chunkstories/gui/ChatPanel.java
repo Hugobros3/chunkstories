@@ -16,6 +16,7 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.EntitiesList;
+import io.xol.chunkstories.input.KeyBinds;
 
 public class ChatPanel
 {
@@ -59,7 +60,7 @@ public class ChatPanel
 		
 		public boolean handleKeypress(int k)
 		{
-			if (k == FastConfig.EXIT_KEY)
+			if (KeyBinds.getKeyBind("exit").isPressed())
 			{
 				chatting = false;
 				mainScene.changeOverlay(parent);

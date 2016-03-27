@@ -8,9 +8,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldInfo;

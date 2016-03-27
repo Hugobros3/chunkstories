@@ -2,13 +2,14 @@ package io.xol.chunkstories.api.events.core;
 
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
+import io.xol.chunkstories.api.events.categories.PlayerEvent;
 import io.xol.chunkstories.api.plugin.server.Player;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PlayerLogoutEvent extends Event
+public class PlayerLogoutEvent extends Event implements PlayerEvent
 {
 	// Every event class has to have this
 	
@@ -26,13 +27,23 @@ public class PlayerLogoutEvent extends Event
 	
 	// Specific event code
 	
-	public Player player;
-	public String connectionMessage;
+	private Player player;
+	private String logoutMessage;
 	
 	public PlayerLogoutEvent(Player player)
 	{
 		this.player = player;
-		this.connectionMessage = "#FFFF00"+player+" left the server";
+		this.logoutMessage = "#FFFF00"+player+" left the server";
+	}
+
+	public String getLogoutMessage()
+	{
+		return logoutMessage;
+	}
+
+	public void setLogoutMessage(String logoutMessage)
+	{
+		this.logoutMessage = logoutMessage;
 	}
 
 	public Player getPlayer()

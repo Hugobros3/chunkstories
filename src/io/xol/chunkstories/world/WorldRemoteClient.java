@@ -1,21 +1,21 @@
 package io.xol.chunkstories.world;
 
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.world.io.IOTasks;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class WorldLocalClient extends World implements WorldClient
-{
+import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 
-	public WorldLocalClient(WorldInfo info)
+public class WorldRemoteClient extends World implements WorldClient
+{
+	public WorldRemoteClient(WorldInfo info)
 	{
 		super(info);
 		client = true;
 		
-		ioHandler = new IOTasks(this);
+		ioHandler = new IOTasksMultiplayerClient(this);
 		ioHandler.start();
 	}
 
@@ -24,5 +24,4 @@ public class WorldLocalClient extends World implements WorldClient
 	{
 		return Client.getInstance();
 	}
-
 }

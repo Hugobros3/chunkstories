@@ -1,8 +1,9 @@
-package io.xol.chunkstories.api.plugin.server;
+package io.xol.chunkstories.api.server;
 
 import java.util.Set;
 
 import io.xol.chunkstories.api.plugin.PluginManager;
+import io.xol.chunkstories.api.plugin.server.Player;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

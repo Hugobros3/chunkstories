@@ -2,9 +2,9 @@ package io.xol.chunkstories.gui.menus;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.input.KeyBinds;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
@@ -60,7 +60,7 @@ public class PauseOverlay extends Overlay
 	
 	public boolean handleKeypress(int k)
 	{
-		if (k == FastConfig.EXIT_KEY)
+		if (KeyBinds.getKeyBind("exit").isPressed())
 		{
 			mainScene.changeOverlay(parent);
 			return true;

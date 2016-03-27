@@ -1,8 +1,8 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.world.WorldClient;
 import io.xol.chunkstories.world.WorldInfo;
+import io.xol.chunkstories.world.WorldRemoteClient;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -64,7 +64,7 @@ public class PacketWorldInfo extends Packet
 	{
 		if(processor.isClient)
 		{
-			Client.world = new WorldClient(info);
+			Client.world = new WorldRemoteClient(info);
 			Client.world.startLogic();
 		}
 		

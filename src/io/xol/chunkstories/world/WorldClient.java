@@ -1,19 +1,12 @@
 package io.xol.chunkstories.world;
 
+import io.xol.chunkstories.client.Client;
+
 //(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+//http://chunkstories.xyz
+//http://xol.io
 
-import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
-
-public class WorldClient extends World
+public interface WorldClient
 {
-	public WorldClient(WorldInfo info)
-	{
-		super(info);
-		client = true;
-		
-		ioHandler = new IOTasksMultiplayerClient(this);
-		ioHandler.start();
-	}
+	public Client getClient();
 }

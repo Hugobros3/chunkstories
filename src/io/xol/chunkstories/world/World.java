@@ -9,7 +9,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Entity;
@@ -18,6 +17,7 @@ import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityIterator;

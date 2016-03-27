@@ -13,20 +13,23 @@ import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
-import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.actions.ClientActionMouseClick;
 import io.xol.chunkstories.api.events.actions.ClientActionMouseClick.MouseButton;
+import io.xol.chunkstories.api.events.core.ClientKeyBindPressedEvent;
+import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
+import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
@@ -42,7 +45,6 @@ import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -87,14 +89,14 @@ public class GameplayScene extends OverlayableScene
 		//Give focus
 		focus(true);
 	}
-	
+
 	public boolean hasFocus()
 	{
-		if(this.currentOverlay != null)
+		if (this.currentOverlay != null)
 			return false;
 		return focus;
 	}
-	
+
 	//int selectedInventorySlot = 0;
 
 	public void update()
@@ -106,10 +108,10 @@ public class GameplayScene extends OverlayableScene
 			inventoryDrawer = player.getInventory() == null ? null : new InventoryDrawer(player.getInventory());
 		}
 		inventoryDrawer.inventory = player.getInventory();
-		
+
 		//Get the player location
 		Location loc = player.getLocation();
-		
+
 		// Update the player
 		if (player instanceof EntityControllable)
 			((EntityControllable) player).moveCamera(Client.clientController);
@@ -121,31 +123,31 @@ public class GameplayScene extends OverlayableScene
 		}
 		if (player != null)
 			player.setupCamera(camera);
-		
+
 		//Temp
 		if (flashLight)
 		{
-			
+
 			float transformedViewH = (float) ((camera.view_rotx) / 180 * Math.PI);
 			// System.out.println(Math.sin(transformedViewV)+"f");
 			Vector3f viewerCamDirVector = new Vector3f((float) (Math.sin((-camera.view_roty) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)),
 					(float) (Math.cos((-camera.view_roty) / 180 * Math.PI) * Math.cos(transformedViewH)));
-			Vector3f lightPosition = new Vector3f((float) loc.x, (float) loc.y + (float)((EntityPlayer)this.player).eyePosition, (float) loc.z);
+			Vector3f lightPosition = new Vector3f((float) loc.x, (float) loc.y + (float) ((EntityPlayer) this.player).eyePosition, (float) loc.z);
 			viewerCamDirVector.scale(-0.5f);
 			Vector3f.add(viewerCamDirVector, lightPosition, lightPosition);
 			viewerCamDirVector.scale(-1f);
 			viewerCamDirVector.normalise();
 			worldRenderer.lights.add(new DefferedLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 75f, 40f, viewerCamDirVector));
 			if (Keyboard.isKeyDown(Keyboard.KEY_F5))
-				Client.world.particlesHolder.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f,
-						(float) loc.z), 75f, 40f, viewerCamDirVector)));
+				Client.world.particlesHolder
+						.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 40f, viewerCamDirVector)));
 		}
 		//Main render call
 		worldRenderer.renderWorldAtCamera(camera);
-		
+
 		if (selectedBlock != null)
 			selectionRenderer.drawSelectionBox(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
-		
+
 		//Debug draws
 		if (FastConfig.physicsVisualization && player != null)
 		{
@@ -164,7 +166,7 @@ public class GameplayScene extends OverlayableScene
 				b.debugDraw(0, 1, 1, 1);
 			glDisable(GL_DEPTH_TEST);
 			Iterator<Entity> ie = Client.world.getAllLoadedEntities();
-			while(ie.hasNext())
+			while (ie.hasNext())
 				ie.next().debugDraw();
 			glEnable(GL_DEPTH_TEST);
 		}
@@ -176,17 +178,17 @@ public class GameplayScene extends OverlayableScene
 		}
 		//Blit the final 3d image
 		worldRenderer.postProcess();
-		
+
 		if (FastConfig.showDebugInfo)
 			debug();
 		else
 			Client.profiler.reset("gui");
-		 
+
 		chat.update();
 		chat.draw();
 
 		if (player != null && player.getInventory() != null)
-				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, XolioWindow.frameW / 2, 64 + 64);
+			inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, XolioWindow.frameW / 2, 64 + 64);
 
 		if (Keyboard.isKeyDown(78))
 			Client.world.worldTime += 10;
@@ -195,15 +197,15 @@ public class GameplayScene extends OverlayableScene
 			if (Client.world.worldTime > 10)
 				Client.world.worldTime -= 10;
 		}
-		
+
 		if (currentOverlay == null && !chat.chatting)
 			focus(true);
 		// Draw overlay
 		if (currentOverlay != null)
 			currentOverlay.drawToScreen(0, 0, XolioWindow.frameW, XolioWindow.frameH);
 		else
-			ObjectRenderer.renderTexturedRect(XolioWindow.frameW/2, XolioWindow.frameH/2, 16, 16, 0, 0, 16, 16, 16, "internal://./res/textures/gui/cursor.png");
-			
+			ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2, 16, 16, 0, 0, 16, 16, 16, "internal://./res/textures/gui/cursor.png");
+
 		super.update();
 		// Check connection didn't died and change scene if it has
 		if (Client.connection != null)
@@ -234,15 +236,22 @@ public class GameplayScene extends OverlayableScene
 	boolean shouldCM = false;
 
 	byte[] inventorySerialized;
-	
+
 	public boolean onKeyPress(int k)
 	{
+		KeyBind keyBind = KeyBinds.getKeyBindForLWJGL2xKey(k);
+		ClientKeyBindPressedEvent event = new ClientKeyBindPressedEvent(keyBind);
+		if (keyBind != null)
+			Client.pluginsManager.fireEvent(event);
+		if(event.isCancelled())
+			return true;
+
 		Location loc = player.getLocation();
 		if (currentOverlay != null && currentOverlay.handleKeypress(k))
 			return true;
 		if (!chat.chatting)
 		{
-			if (k == FastConfig.CHAT_KEY)
+			if (KeyBinds.getKeyBind("chat").equals(keyBind))
 			{
 				this.changeOverlay(chat.new ChatPanelOverlay(this, null));
 				focus(false);
@@ -258,17 +267,17 @@ public class GameplayScene extends OverlayableScene
 			worldRenderer.modified();
 		}
 		//Temp, to rework
-		else if (k == FastConfig.GRABUSE_KEY)
+		else if (KeyBinds.getKeyBind("use").equals(keyBind))
 		{
-			Client.getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float)loc.x, (float)loc.y, (float)loc.z, 1.0f, 1.0f);
+			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) loc.x, (float) loc.y, (float) loc.z, 1.0f, 1.0f);
 			flashLight = !flashLight;
 		}
-		else if (k == FastConfig.INVENTORY_KEY)
+		else if (KeyBinds.getKeyBind("inventory").equals(keyBind))
 		{
 			if (player != null)
 			{
 				focus(false);
-				this.changeOverlay(new InventoryOverlay(this, null, new Inventory[]{player.getInventory(), new InventoryAllVoxels()}));
+				this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { player.getInventory(), new InventoryAllVoxels() }));
 			}
 		}
 		else if (k == Keyboard.KEY_F1)
@@ -281,12 +290,12 @@ public class GameplayScene extends OverlayableScene
 		else if (k == Keyboard.KEY_F3)
 		{
 			//Client.getSoundManager().playSoundEffect("music/menu3.ogg", (float)loc.x, (float)loc.y, (float)loc.z, 1.0f, 1.0f);
-			Client.getSoundManager().stopAnySound();
-			Client.getSoundManager().playMusic("music/radio/horse.ogg", (float)loc.x, (float)loc.y, (float)loc.z, 1.0f, 1.0f, false).setAttenuationEnd(50f);
+			//Client.getSoundManager().stopAnySound();
+			//Client.getSoundManager().playMusic("music/radio/horse.ogg", (float) loc.x, (float) loc.y, (float) loc.z, 1.0f, 1.0f, false).setAttenuationEnd(50f);
 		}
 		else if (k == Keyboard.KEY_F4)
 			Client.world.particlesHolder.addParticle(new ParticleLight(Client.world, loc.x + (Math.random() - 0.5) * 30, loc.y + (Math.random()) * 10, loc.z + (Math.random() - 0.5) * 30));
-		
+
 		else if (k == Keyboard.KEY_F6)
 		{
 			if (player instanceof EntityPlayer)
@@ -300,7 +309,7 @@ public class GameplayScene extends OverlayableScene
 			GameData.reloadClientContent();
 			worldRenderer.terrain.redoBlockTexturesSummary();
 		}
-		else if (k == FastConfig.EXIT_KEY)
+		else if (KeyBinds.getKeyBind("exit").equals(keyBind))
 		{
 			focus(false);
 			this.changeOverlay(new PauseOverlay(this, null));
@@ -314,12 +323,12 @@ public class GameplayScene extends OverlayableScene
 			return currentOverlay.onClick(x, y, button);
 		if (!(player instanceof EntityPlayer))
 			return false;
-		
+
 		ItemPile itemSelected = this.player.getInventory().getSelectedItem();
-		if(itemSelected != null)
+		if (itemSelected != null)
 		{
 			MouseButton mButton = null;
-			switch(button)
+			switch (button)
 			{
 			case 0:
 				mButton = MouseButton.MOUSE_LEFT;
@@ -331,7 +340,7 @@ public class GameplayScene extends OverlayableScene
 				mButton = MouseButton.MOUSE_MIDDLE;
 				break;
 			}
-			if(mButton != null)
+			if (mButton != null)
 				itemSelected.getItem().onUse(player, itemSelected, new ClientActionMouseClick(mButton));
 		}
 		return false;
@@ -342,31 +351,31 @@ public class GameplayScene extends OverlayableScene
 		if (currentOverlay != null && currentOverlay.onScroll(a))
 			return true;
 		//Scroll trought the items
-		if(player != null && player.getInventory() != null)
+		if (player != null && player.getInventory() != null)
 		{
 			ItemPile selected = null;
 			int selectedInventorySlot = player.getInventory().getSelectedSlot();
 			int originalSlot = selectedInventorySlot;
-			if(a < 0)
+			if (a < 0)
 			{
 				selectedInventorySlot %= player.getInventory().width;
 				selected = player.getInventory().getItem(selectedInventorySlot, 0);
-				if(selected != null)
-					selectedInventorySlot+= selected.item.getSlotsWidth();
+				if (selected != null)
+					selectedInventorySlot += selected.item.getSlotsWidth();
 				else
 					selectedInventorySlot++;
 			}
 			else
 			{
 				selectedInventorySlot--;
-				if(selectedInventorySlot < 0)
+				if (selectedInventorySlot < 0)
 					selectedInventorySlot += player.getInventory().width;
 				selected = player.getInventory().getItem(selectedInventorySlot, 0);
-				if(selected != null)
+				if (selected != null)
 					selectedInventorySlot = selected.x;
 			}
 			//Switch slot
-			if(originalSlot != selectedInventorySlot)
+			if (originalSlot != selectedInventorySlot)
 				player.getInventory().setSelectedSlot(selectedInventorySlot);
 		}
 		return true;
@@ -396,7 +405,7 @@ public class GameplayScene extends OverlayableScene
 		int timeTook = Client.profiler.timeTook();
 		String debugInfo = Client.profiler.reset("gui");
 		if (timeTook > 400)
-			System.out.println("Lengty frame, printing debug information : \n"+debugInfo);
+			System.out.println("Lengty frame, printing debug information : \n" + debugInfo);
 
 		long total = Runtime.getRuntime().totalMemory();
 		long used = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -414,29 +423,29 @@ public class GameplayScene extends OverlayableScene
 		int x_top = XolioWindow.frameH - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, "View distance : " + FastConfig.viewDistance + " Vertices(N):" + formatBigAssNumber(worldRenderer.renderedVertices + "") + " Chunks in view : "
 				+ formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :" + Client.world.particlesHolder.count() + " #FF0000FPS : " + XolioWindow.getFPS(), BitmapFont.SMALLFONTS);
-		
+
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Timings : " + debugInfo, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + Client.world.chunksData.size(), BitmapFont.SMALLFONTS);
-		
+
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + getLoadedChunksVramFootprint() + ", " + getLoadedTerrainVramFootprint(), BitmapFont.SMALLFONTS);
-		
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : T : " + worldRenderer.chunksRenderer.todo.size() + "   Chunks to upload: " + worldRenderer.chunksRenderer.done.size() + "    " + Client.world.ioHandler.toString()
-		 , BitmapFont.SMALLFONTS);
+
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16,
+				"Chunks to bake : T : " + worldRenderer.chunksRenderer.todo.size() + "   Chunks to upload: " + worldRenderer.chunksRenderer.done.size() + "    " + Client.world.ioHandler.toString(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16, "Position : x:" + bx + " y:" + by + " z:" + bz + " bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
 		if (current == null)
 			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk null", BitmapFont.SMALLFONTS);
 		else
 		{
 			ChunkRenderData chunkRenderData = current.chunkRenderData;
-			if(chunkRenderData != null)
+			if (chunkRenderData != null)
 			{
-				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk : "+current + " - "+chunkRenderData.toString(), BitmapFont.SMALLFONTS);
+				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk : " + current + " - " + chunkRenderData.toString(), BitmapFont.SMALLFONTS);
 			}
 			else
-				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk : "+current + " - No rendering data", BitmapFont.SMALLFONTS);
+				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk : " + current + " - No rendering data", BitmapFont.SMALLFONTS);
 		}
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Controller : " + this.player, BitmapFont.SMALLFONTS);
-		
+
 	}
 
 	private String getLoadedChunksVramFootprint()
@@ -446,13 +455,13 @@ public class GameplayScene extends OverlayableScene
 
 		ChunksIterator i = Client.world.iterator();
 		CubicChunk c;
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			c = i.next();
-			if(c == null)
+			if (c == null)
 				continue;
 			ChunkRenderData chunkRenderData = c.chunkRenderData;
-			if(chunkRenderData != null)
+			if (chunkRenderData != null)
 			{
 				nbChunks++;
 				octelsTotal += chunkRenderData.getVramSize();

@@ -15,11 +15,12 @@ import java.util.logging.Logger;
 
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
-import io.xol.chunkstories.GameData;
-import io.xol.chunkstories.GameDirectory;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.plugin.server.Player;
-import io.xol.chunkstories.api.plugin.server.ServerInterface;
+import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.net.ServerConnectionsHandler;
 import io.xol.chunkstories.server.tech.CommandEmitter;

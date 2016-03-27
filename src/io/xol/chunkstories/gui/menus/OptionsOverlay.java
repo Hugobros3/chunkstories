@@ -11,6 +11,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.input.KeyBinds;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
@@ -409,7 +410,7 @@ public class OptionsOverlay extends Overlay
 
 	public boolean handleKeypress(int k)
 	{
-		if (k == FastConfig.EXIT_KEY)
+		if (KeyBinds.getKeyBind("exit").isPressed())
 		{
 			Client.getConfig().save();
 			mainScene.changeOverlay(parent);

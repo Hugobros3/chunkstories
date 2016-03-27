@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
-import io.xol.chunkstories.GameData;
+import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import static org.lwjgl.opengl.GL11.*;

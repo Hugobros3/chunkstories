@@ -65,7 +65,7 @@ public class FastConfig
 		physicsVisualization = Client.getConfig().getBooleanProp("physicsVisualization", false);
 		showDebugInfo = Client.getConfig().getBooleanProp("showDebugInfo", true);
 
-		FORWARD_KEY = Client.getConfig().getIntProp("FORWARD_KEY", 44);
+		/*FORWARD_KEY = Client.getConfig().getIntProp("FORWARD_KEY", 44);
 		BACK_KEY = Client.getConfig().getIntProp("BACK_KEY", 31);
 		LEFT_KEY = Client.getConfig().getIntProp("LEFT_KEY", 16);
 		RIGHT_KEY = Client.getConfig().getIntProp("RIGHT_KEY", 32);
@@ -75,7 +75,7 @@ public class FastConfig
 		INVENTORY_KEY = Client.getConfig().getIntProp("INVENTORY_KEY", 18);
 		ENTER_KEY = Client.getConfig().getIntProp("ENTER_KEY", 28);
 		EXIT_KEY = Client.getConfig().getIntProp("EXIT_KEY", 1);
-		CHAT_KEY = Client.getConfig().getIntProp("CHAT_KEY", 20);
+		CHAT_KEY = Client.getConfig().getIntProp("CHAT_KEY", 20);*/
 
 		mouseSensitivity = Client.getConfig().getFloatProp("mouseSensitivity", 1f);
 		fov = Client.getConfig().getFloatProp("fov", 45f);
@@ -84,7 +84,8 @@ public class FastConfig
 	}
 
 	// GAME CONTROLS
-	public static int FORWARD_KEY = 44;
+	
+	/*public static int FORWARD_KEY = 44;
 	public static int BACK_KEY = 31;
 	public static int LEFT_KEY = 16;
 	public static int RIGHT_KEY = 32;
@@ -98,7 +99,7 @@ public class FastConfig
 
 	public static int ENTER_KEY = 28;
 
-	public static int EXIT_KEY = 1;
+	public static int EXIT_KEY = 1;*/
 
 	public static float mouseSensitivity = 1f;
 	public static float fov = 1f;

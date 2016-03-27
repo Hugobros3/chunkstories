@@ -1,7 +1,5 @@
 package io.xol.engine.gui;
 
-import io.xol.chunkstories.client.FastConfig;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +39,8 @@ public class FocusableObjectsHandler
 		}
 		else if (obj instanceof ClickableButton)
 		{
-			if(k == FastConfig.ENTER_KEY)
+			//TODO hard-coded enter key
+			if(k == /*FastConfig.ENTER_KEY*/ 28)
 			{
 				ClickableButton but = (ClickableButton) obj;
 				but.clicked = true;

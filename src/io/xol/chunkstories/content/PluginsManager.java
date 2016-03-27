@@ -1,4 +1,4 @@
-package io.xol.chunkstories.server;
+package io.xol.chunkstories.content;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import io.xol.chunkstories.GameDirectory;
+import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventExecutor;
 import io.xol.chunkstories.api.events.EventHandler;
@@ -19,6 +19,7 @@ import io.xol.chunkstories.api.plugin.PluginJar;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.PluginStore;
 import io.xol.chunkstories.api.plugin.server.Command;
+import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.server.tech.CommandEmitter;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
@@ -28,18 +29,27 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 public class PluginsManager implements PluginManager
 {
-	Server server;
+	ClientInterface client;
+	ServerInterface server;
 	PluginStore store = new PluginStore();
 
 	public Set<ChunkStoriesPlugin> activePlugins = new HashSet<ChunkStoriesPlugin>();
 	public Map<Command, ChunkStoriesPlugin> commandsHandlers = new HashMap<Command, ChunkStoriesPlugin>();
 
-	public PluginsManager(Server server)
+	public PluginsManager(ClientInterface client)
+	{
+		this.client = client;
+		reloadClientPlugins();
+	}
+	
+	public PluginsManager(ServerInterface server)
 	{
 		this.server = server;
 		File pluginsFolder = new File(GameDirectory.getGameFolderPath() + "/plugins/");
 		pluginsFolder.mkdirs();
-		store.loadPlugins(pluginsFolder, false);
+		
+		reloadServerPlugins();
+		//store.loadPlugins(pluginsFolder);
 	}
 
 	public void enablePlugins()
@@ -80,10 +90,29 @@ public class PluginsManager implements PluginManager
 		commandsHandlers.clear();
 	}
 
+	@Override
 	public void reloadPlugins()
 	{
+		if(client != null)
+			reloadClientPlugins();
+		if(server != null)
+			reloadServerPlugins();
+	}
+	
+	public void reloadClientPlugins()
+	{
 		disablePlugins();
-		store.loadPlugins(new File(GameDirectory.getGameFolderPath() + "/plugins/"), true);
+		store.unloadPlugins();
+		//TODO load plugins from mods/ folder
+		store.loadPlugins(new File(GameDirectory.getGameFolderPath() + "/res/client/"));
+		enablePlugins();
+	}
+
+	public void reloadServerPlugins()
+	{
+		disablePlugins();
+		store.unloadPlugins();
+		store.loadPlugins(new File(GameDirectory.getGameFolderPath() + "/plugins/"));
 		enablePlugins();
 	}
 
@@ -165,7 +194,7 @@ public class PluginsManager implements PluginManager
 	}
 
 	@Override
-	public boolean fireEvent(Event event)
+	public void fireEvent(Event event)
 	{
 		EventListeners listeners = event.getListeners();
 		
@@ -175,9 +204,8 @@ public class PluginsManager implements PluginManager
 		}
 		
 		//If we didn't surpress it's behaviour
-		if(event.isAllowedToExecute())
-			event.defaultBehaviour();
+		//if(event.isAllowedToExecute())
 		
-		return event.isAllowedToExecute();
+		event.defaultBehaviour();
 	}
 }

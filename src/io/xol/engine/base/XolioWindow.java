@@ -124,7 +124,8 @@ public class XolioWindow
 			Display.setDisplayMode(new DisplayMode(frameW, frameH));
 			Display.setTitle(name);
 			Display.setResizable(true);
-			Display.create(new PixelFormat());
+			PixelFormat pixelFormat = new PixelFormat();
+			Display.create(pixelFormat);
 			
 			systemInfo();
 			glInfo();
@@ -172,7 +173,7 @@ public class XolioWindow
 				}
 
 				// Update audio streams
-				Client.getSoundManager().update();
+				Client.getInstance().getSoundManager().update();
 
 				if (currentScene != null)
 				{
@@ -279,14 +280,6 @@ public class XolioWindow
 	private static long getTime()
 	{
 		return (Sys.getTime() * 1000000000) / Sys.getTimerResolution();
-	}
-
-	public static void setup3d()
-	{
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_DEPTH_TEST);
-
-		// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	public static void computeDisplayModes()

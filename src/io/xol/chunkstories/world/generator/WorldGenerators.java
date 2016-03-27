@@ -1,8 +1,8 @@
 package io.xol.chunkstories.world.generator;
 
-import io.xol.chunkstories.GameData;
 import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
 import io.xol.chunkstories.api.world.WorldGenerator;
+import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.generator.core.BlankWorldGenerator;
 

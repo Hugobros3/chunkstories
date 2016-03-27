@@ -1,8 +1,8 @@
 package io.xol.chunkstories.api.plugin;
 
-import io.xol.chunkstories.api.plugin.client.ClientInterface;
+import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.plugin.server.Command;
-import io.xol.chunkstories.api.plugin.server.ServerInterface;
+import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.server.tech.CommandEmitter;
 
 //(c) 2015-2016 XolioWare Interactive
