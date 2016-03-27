@@ -2,11 +2,11 @@ package io.xol.chunkstories.api.entity;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.inventory.InventoryHolder;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.DefferedLight;
-import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.RenderingContext;
@@ -33,7 +33,7 @@ public interface Entity extends InventoryHolder
 	
 	public ChunkHolder getChunkHolder();
 	
-	public World getWorld();
+	public WorldInterface getWorld();
 
 	public void tick();
 

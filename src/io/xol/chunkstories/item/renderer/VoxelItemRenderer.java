@@ -11,6 +11,7 @@ import java.util.Map;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.core.ItemVoxel;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
@@ -19,7 +20,6 @@ import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
-import io.xol.chunkstories.world.World;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
@@ -136,7 +136,7 @@ public class VoxelItemRenderer implements ItemRenderer
 	}
 
 	@Override
-	public void renderItemInWorld(RenderingContext context, ItemPile pile, World world, Matrix4f handTransformation)
+	public void renderItemInWorld(RenderingContext context, ItemPile pile, WorldInterface world, Matrix4f handTransformation)
 	{
 		float s = 0.45f;
 		handTransformation.scale(new Vector3f(s, s, s));

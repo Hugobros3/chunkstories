@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world;
 
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 
 //(c) 2015-2016 XolioWare Interactive

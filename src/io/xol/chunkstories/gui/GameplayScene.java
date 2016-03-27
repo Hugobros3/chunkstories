@@ -15,10 +15,9 @@ import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.events.actions.ClientActionMouseClick;
-import io.xol.chunkstories.api.events.actions.ClientActionMouseClick.MouseButton;
-import io.xol.chunkstories.api.events.core.ClientKeyBindPressedEvent;
+import io.xol.chunkstories.api.events.core.ClientInputPressedEvent;
 import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
@@ -60,7 +59,6 @@ public class GameplayScene extends OverlayableScene
 	Camera camera = new Camera();
 	ChatPanel chat = new ChatPanel();
 	boolean focus = true;
-
 	Entity player;
 
 	public GameplayScene(XolioWindow w, boolean multiPlayer)
@@ -83,9 +81,7 @@ public class GameplayScene extends OverlayableScene
 		//Creates the rendering stuff
 		worldRenderer = new WorldRenderer(Client.world);
 		worldRenderer.setupRenderSize(XolioWindow.frameW, XolioWindow.frameH);
-		//TODO wtf is this
 		selectionRenderer = new SelectionRenderer(Client.world, worldRenderer);
-
 		//Give focus
 		focus(true);
 	}
@@ -116,10 +112,10 @@ public class GameplayScene extends OverlayableScene
 		if (player instanceof EntityControllable)
 			((EntityControllable) player).moveCamera(Client.clientController);
 
-		int[] selectedBlock = null;
+		Location selectedBlock = null;
 		if (player instanceof EntityPlayer)
 		{
-			selectedBlock = ((EntityPlayer) player).rayTraceSelectedBlock(true);
+			selectedBlock = ((EntityPlayer) player).getBlockLookingAt(true);
 		}
 		if (player != null)
 			player.setupCamera(camera);
@@ -146,7 +142,7 @@ public class GameplayScene extends OverlayableScene
 		worldRenderer.renderWorldAtCamera(camera);
 
 		if (selectedBlock != null)
-			selectionRenderer.drawSelectionBox(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
+			selectionRenderer.drawSelectionBox(selectedBlock);
 
 		//Debug draws
 		if (FastConfig.physicsVisualization && player != null)
@@ -240,10 +236,10 @@ public class GameplayScene extends OverlayableScene
 	public boolean onKeyPress(int k)
 	{
 		KeyBind keyBind = KeyBinds.getKeyBindForLWJGL2xKey(k);
-		ClientKeyBindPressedEvent event = new ClientKeyBindPressedEvent(keyBind);
+		ClientInputPressedEvent event = new ClientInputPressedEvent(keyBind);
 		if (keyBind != null)
 			Client.pluginsManager.fireEvent(event);
-		if(event.isCancelled())
+		if (event.isCancelled())
 			return true;
 
 		Location loc = player.getLocation();
@@ -321,28 +317,32 @@ public class GameplayScene extends OverlayableScene
 	{
 		if (currentOverlay != null)
 			return currentOverlay.onClick(x, y, button);
-		if (!(player instanceof EntityPlayer))
+
+		if (player == null)
 			return false;
 
-		ItemPile itemSelected = this.player.getInventory().getSelectedItem();
-		if (itemSelected != null)
+		MouseClick mButton = null;
+		switch (button)
 		{
-			MouseButton mButton = null;
-			switch (button)
-			{
-			case 0:
-				mButton = MouseButton.MOUSE_LEFT;
-				break;
-			case 1:
-				mButton = MouseButton.MOUSE_RIGHT;
-				break;
-			case 2:
-				mButton = MouseButton.MOUSE_MIDDLE;
-				break;
-			}
-			if (mButton != null)
-				itemSelected.getItem().onUse(player, itemSelected, new ClientActionMouseClick(mButton));
+		case 0:
+			mButton = MouseClick.LEFT;
+			break;
+		case 1:
+			mButton = MouseClick.RIGHT;
+			break;
+		case 2:
+			mButton = MouseClick.MIDDLE;
+			break;
 		}
+		if (mButton != null)
+		{
+			ClientInputPressedEvent event = new ClientInputPressedEvent(mButton);
+			if (mButton != null)
+				Client.pluginsManager.fireEvent(event);
+			if (!event.isCancelled())
+				return ((EntityControllable) this.player).handleInteraction(mButton);
+		}
+		//TODO it does not handle the special clicks yet, maybye do it somewhere else, like in binds ?
 		return false;
 	}
 

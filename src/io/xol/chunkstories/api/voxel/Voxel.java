@@ -1,11 +1,11 @@
 package io.xol.chunkstories.api.voxel;
 
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.models.VoxelModel;
-import io.xol.chunkstories.world.World;
 
 public abstract class Voxel
 {
@@ -72,7 +72,7 @@ public abstract class Voxel
 	 */
 	public abstract int getLightLevelModifier(int dataFrom, int dataTo, int side);
 
-	public void debugRenderCollision(World world, int x, int y, int z)
+	public void debugRenderCollision(WorldInterface world, int x, int y, int z)
 	{
 		CollisionBox[] tboxes = getTranslatedCollisionBoxes(world, x, y, z);
 		if (tboxes != null)
@@ -101,7 +101,7 @@ public abstract class Voxel
 	 *            The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
 	 * @return An array of CollisionBox or null.
 	 */
-	public CollisionBox[] getTranslatedCollisionBoxes(World world, int x, int y, int z)
+	public CollisionBox[] getTranslatedCollisionBoxes(WorldInterface world, int x, int y, int z)
 	{
 		CollisionBox[] boxes = getCollisionBoxes(new BlockRenderInfo(world, x, y, z));
 		if (boxes != null)

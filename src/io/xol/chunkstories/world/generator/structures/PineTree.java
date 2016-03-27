@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world.generator.structures;
 
-import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.api.world.Chunk;
 
 public class PineTree extends GenerableStructure
 {
@@ -14,7 +14,7 @@ public class PineTree extends GenerableStructure
 	}
 
 	@Override
-	public void draw(CubicChunk c)
+	public void draw(Chunk c)
 	{
 		/*if (oriX - c.chunkX * 32 < -5)
 			return;

@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world.generator.structures;
 
-import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.api.world.Chunk;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -20,7 +20,7 @@ public abstract class GenerableStructure
 		oriZ = z;
 	}
 
-	public abstract void draw(CubicChunk c);
+	public abstract void draw(Chunk c);
 	// Draws as much as it can iside the chunk
 
 }

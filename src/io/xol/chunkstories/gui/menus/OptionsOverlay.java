@@ -7,10 +7,12 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.input.KeyBindImplementation;
 import io.xol.chunkstories.input.KeyBinds;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
@@ -121,11 +123,13 @@ public class OptionsOverlay extends Overlay
 
 	class ConfigButtonKey extends ConfigButton
 	{
+		KeyBindImplementation kbi;
 		OptionsOverlay options;
 
-		public ConfigButtonKey(String n, OptionsOverlay options)
+		public ConfigButtonKey(KeyBindImplementation kbi, OptionsOverlay options)
 		{
-			super(n);
+			super("bind."+kbi.getName());
+			this.kbi = kbi;
 			this.options = options;
 		}
 
@@ -145,6 +149,7 @@ public class OptionsOverlay extends Overlay
 		{
 			value = key + "";
 			apply();
+			kbi.reload();
 			//options.applyAndSave();
 		}
 
@@ -311,8 +316,31 @@ public class OptionsOverlay extends Overlay
 				new ConfigButtonMultiChoice("fullScreenResolution", XolioWindow.getDisplayModes()),
 				}));
 
-		configTabs.add(new ConfigTab("Controls", new ConfigButton[] {
+		
+		List<ConfigButton> controlsButtons = new ArrayList<ConfigButton>();
+		controlsButtons.add(new ConfigButtonScale("mouseSensitivity", 0.5f, 2f, 0.05f));
+		for(KeyBind keyBind : KeyBinds.getKeyBinds())
+		{
+			if(keyBind instanceof KeyBindImplementation)
+			{
+				KeyBindImplementation kbi = (KeyBindImplementation)keyBind;
+				controlsButtons.add(new ConfigButtonKey(kbi, this));
+			}
+		}
+		
+		ConfigButton[] controlsButtonsArray = new ConfigButton[controlsButtons.size()];
+		int i = 0;
+		for(ConfigButton cb : controlsButtons)
+		{
+			controlsButtonsArray[i] = cb;
+			i++;
+		}
+		
+		configTabs.add(new ConfigTab("Controls", controlsButtonsArray
+				
+				/*new ConfigButton[] {
 				new ConfigButtonScale("mouseSensitivity", 0.5f, 2f, 0.05f),
+				
 				new ConfigButtonKey("FORWARD_KEY", this),
 				new ConfigButtonKey("BACK_KEY", this),
 				new ConfigButtonKey("LEFT_KEY", this),
@@ -324,7 +352,8 @@ public class OptionsOverlay extends Overlay
 				new ConfigButtonKey("INVENTORY_KEY", this),
 				new ConfigButtonKey("GRABUSE_KEY", this),
 				new ConfigButtonKey("CHAT_KEY", this),
-				}));
+				}*/));
+		
 		configTabs.add(new ConfigTab("Sound", new ConfigButton[] {}));
 		configTabs.add(new ConfigTab("Debug", new ConfigButton[] { 
 				new ConfigButtonToggle("debugGBuffers").setApplyAction(new Runnable(){

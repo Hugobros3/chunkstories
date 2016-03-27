@@ -5,11 +5,12 @@ import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.Chunk;
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
-import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.math.LoopingMathHelper;
 
@@ -33,7 +34,7 @@ public class ChunksRenderer extends Thread
 {
 	AtomicBoolean die = new AtomicBoolean();
 
-	World world;
+	WorldInterface world;
 
 	public Deque<int[]> todo = new ConcurrentLinkedDeque<int[]>();
 	public Queue<ChunkRenderData> done = new ConcurrentLinkedQueue<ChunkRenderData>();
@@ -42,7 +43,7 @@ public class ChunksRenderer extends Thread
 
 	int worldSizeInChunks;
 
-	public ChunksRenderer(World w)
+	public ChunksRenderer(WorldInterface w)
 	{
 		world = w;
 		// 8 buffers of 8Mb each (64Mb) for temp/scratch buffer memory
@@ -222,7 +223,7 @@ public class ChunksRenderer extends Thread
 			int relx = x < 0 ? 0 : (x >= 32 ? 2 : 1);
 			int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
 			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
-			CubicChunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
+			Chunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
 			if (target != null)
 				data = target.getDataAt(x, y, z);
 		}
@@ -295,7 +296,7 @@ public class ChunksRenderer extends Thread
 			int relx = x < 0 ? 0 : (x >= 32 ? 2 : 1);
 			int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
 			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
-			CubicChunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
+			Chunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
 			if (target != null)
 				data = target.getDataAt(x, y, z);
 		}

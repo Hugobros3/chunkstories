@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world.chunk;
 
+import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
@@ -168,7 +169,7 @@ public class ChunkHolder
 		return rslt;
 	}
 
-	public CubicChunk set(int chunkX, int chunkY, int chunkZ, CubicChunk c)
+	public Chunk set(int chunkX, int chunkY, int chunkZ, CubicChunk c)
 	{
 		lock.lock();
 		if (data[chunkX % 8][chunkY % 8][chunkZ % 8] == null && c != null)

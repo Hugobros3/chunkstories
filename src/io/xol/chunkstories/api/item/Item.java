@@ -5,7 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.events.actions.ClientAction;
+import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.item.ItemData;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
@@ -55,14 +55,15 @@ public abstract class Item
 	}
 	
 	/**
-	 * Called when the user interacts with the item
-	 * @param user Must be of type Entity implements EntityControllable ! The entity who made use of this item
-	 * @param pile The itemPile
-	 * @param action Additional information on the action the user performed
+	 * Handles some input from the user
+	 * @param user
+	 * @param pile
+	 * @param input
+	 * @return false if the item doesn't handle the input, true if it does
 	 */
-	public void onUse(Entity user, ItemPile pile, ClientAction action)
+	public boolean handleInteraction(Entity user, ItemPile pile, Input input)
 	{
-		
+		return false;
 	}
 
 	public ItemData getItemData()

@@ -3,8 +3,8 @@ package io.xol.chunkstories.physics;
 import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.World;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -42,7 +42,7 @@ public class CollisionBox implements Collidable
 		return this;
 	}
 
-	public boolean collidesWith(World world)
+	public boolean collidesWith(WorldInterface world)
 	{
 		if (VoxelTypes.get(world.getDataAt((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;

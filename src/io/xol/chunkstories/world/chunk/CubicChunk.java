@@ -2,6 +2,7 @@ package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
@@ -16,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class CubicChunk
+public class CubicChunk implements Chunk
 {
 	public World world;
 	public ChunkHolder holder;
@@ -54,14 +55,10 @@ public class CubicChunk
 		this.chunkZ = chunkZ;
 	}
 
-	/**
-	 * Get the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
-	 * The coordinates are internally modified to map to the chunk, meaning you can access it both with world coordinates or 0-31 in-chunk coordinates
-	 * @param x 
-	 * @param y
-	 * @param z
-	 * @return
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.chunk.Chunk#getDataAt(int, int, int)
 	 */
+	@Override
 	public int getDataAt(int x, int y, int z)
 	{
 		if (dataPointer == -1)
@@ -83,14 +80,10 @@ public class CubicChunk
 		}
 	}
 
-	/**
-	 * Sets the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
-	 * The coordinates are internally modified to map to the chunk, meaning you can access it both with world coordinates or 0-31 in-chunk coordinates
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param data
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.chunk.Chunk#setDataAt(int, int, int, int)
 	 */
+	@Override
 	public void setDataAt(int x, int y, int z, int data)
 	{
 		x %= 32;
@@ -122,6 +115,10 @@ public class CubicChunk
 		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + "]";
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.chunk.Chunk#markDirty(boolean)
+	 */
+	@Override
 	public void markDirty(boolean fast)
 	{
 		need_render.set(true);
@@ -136,6 +133,10 @@ public class CubicChunk
 	}
 
 	// Now entering lightning code part, brace yourselves
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.chunk.Chunk#doLightning(boolean, java.util.Deque, java.util.Deque)
+	 */
+	@Override
 	public void doLightning(boolean adjacent, Deque<Integer> blockSources, Deque<Integer> sunSources)
 	{
 		// Whole chunk pass

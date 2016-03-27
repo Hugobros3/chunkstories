@@ -1,4 +1,4 @@
-package io.xol.chunkstories.world;
+package io.xol.chunkstories.api.world;
 
 import io.xol.chunkstories.client.Client;
 
@@ -6,6 +6,10 @@ import io.xol.chunkstories.client.Client;
 //http://chunkstories.xyz
 //http://xol.io
 
+/**
+ * A 'Client' world is one responsible of graphical and input tasks
+ * A world can be both client and master.
+ */
 public interface WorldClient
 {
 	public Client getClient();

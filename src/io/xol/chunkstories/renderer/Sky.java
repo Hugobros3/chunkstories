@@ -7,8 +7,8 @@ import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
 import io.xol.engine.textures.Texture;
 import io.xol.engine.textures.TexturesHandler;
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.world.World;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -44,10 +44,10 @@ public class Sky
 	ShaderProgram starsShader;
 	ShaderProgram cloudsShader;
 
-	World world;
+	WorldInterface world;
 	WorldRenderer worldRenderer;
 	
-	public Sky(World world, WorldRenderer worldRenderer)
+	public Sky(WorldInterface world, WorldRenderer worldRenderer)
 	{
 		this.world = world;
 		this.worldRenderer = worldRenderer;

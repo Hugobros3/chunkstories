@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world;
 
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.io.IOTasks;
 

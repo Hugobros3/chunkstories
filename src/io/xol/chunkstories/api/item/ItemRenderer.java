@@ -2,8 +2,8 @@ package io.xol.chunkstories.api.item;
 
 import org.lwjgl.util.vector.Matrix4f;
 
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.world.World;
 import io.xol.engine.model.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -33,5 +33,5 @@ public interface ItemRenderer
 	 * @param pile
 	 * @param handTransformation Can be modified
 	 */
-	public void renderItemInWorld(RenderingContext context, ItemPile pile, World world, Matrix4f handTransformation);
+	public void renderItemInWorld(RenderingContext context, ItemPile pile, WorldInterface world, Matrix4f handTransformation);
 }

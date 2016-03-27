@@ -12,9 +12,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldGenerator;
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameDirectory;
@@ -39,7 +42,7 @@ import io.xol.engine.misc.ConfigFile;
 // http://chunkstories.xyz
 // http://xol.io
 
-public abstract class World
+public abstract class World implements WorldInterface
 {
 	public String name;
 	public String seed;
@@ -143,6 +146,10 @@ public abstract class World
 		}, 0, 16666, TimeUnit.MICROSECONDS);
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#addEntity(io.xol.chunkstories.api.entity.Entity)
+	 */
+	@Override
 	public void addEntity(final Entity entity)
 	{
 		EntityImplementation impl = (EntityImplementation) entity;
@@ -152,6 +159,10 @@ public abstract class World
 		this.entities.add(entity);
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#removeEntity(io.xol.chunkstories.api.entity.Entity)
+	 */
+	@Override
 	public void removeEntity(Entity entity)
 	{
 		Iterator<Entity> iter = this.getAllLoadedEntities();
@@ -168,6 +179,10 @@ public abstract class World
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#tick()
+	 */
+	@Override
 	public void tick()
 	{
 		try
@@ -193,11 +208,19 @@ public abstract class World
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getAllLoadedEntities()
+	 */
+	@Override
 	public Iterator<Entity> getAllLoadedEntities()
 	{
 		return new EntityIterator(entities);//entities.iterator();
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getEntityByUUID(long)
+	 */
+	@Override
 	public Entity getEntityByUUID(long entityID)
 	{
 		Iterator<Entity> ie = getAllLoadedEntities();
@@ -211,21 +234,37 @@ public abstract class World
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getMaxHeight()
+	 */
+	@Override
 	public int getMaxHeight()
 	{
 		return size.height * 32;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getSizeInChunks()
+	 */
+	@Override
 	public int getSizeInChunks()
 	{
 		return size.sizeInChunks;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getSizeSide()
+	 */
+	@Override
 	public double getSizeSide()
 	{
 		return size.sizeInChunks * 32;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getChunk(int, int, int, boolean)
+	 */
+	@Override
 	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
 		chunkX = chunkX % size.sizeInChunks;
@@ -241,11 +280,19 @@ public abstract class World
 		return chunksHolder.getChunk(chunkX, chunkY, chunkZ, load);
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#removeChunk(io.xol.chunkstories.world.chunk.CubicChunk, boolean)
+	 */
+	@Override
 	public void removeChunk(CubicChunk c, boolean save)
 	{
 		removeChunk(c.chunkX, c.chunkY, c.chunkZ, save);
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#removeChunk(int, int, int, boolean)
+	 */
+	@Override
 	public void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save)
 	{
 		chunkX = chunkX % size.sizeInChunks;
@@ -260,6 +307,10 @@ public abstract class World
 		chunksHolder.removeChunk(chunkX, chunkY, chunkZ);
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#isChunkLoaded(int, int, int)
+	 */
+	@Override
 	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ)
 	{
 		chunkX = chunkX % size.sizeInChunks;
@@ -278,12 +329,38 @@ public abstract class World
 		else
 			return h.isChunkLoaded(chunkX, chunkY, chunkZ);
 	}
+	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getDataAt(io.xol.chunkstories.api.Location)
+	 */
+	@Override
+	public int getDataAt(Location location)
+	{
+		return getDataAt((int)location.x, (int)location.y, (int)location.z);
+	}
+	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getDataAt(io.xol.chunkstories.api.Location, boolean)
+	 */
+	@Override
+	public int getDataAt(Location location, boolean load)
+	{
+		return getDataAt((int)location.x, (int)location.y, (int)location.z, load);
+	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getDataAt(int, int, int)
+	 */
+	@Override
 	public int getDataAt(int x, int y, int z)
 	{
 		return getDataAt(x, y, z, true);
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getDataAt(int, int, int, boolean)
+	 */
+	@Override
 	public int getDataAt(int x, int y, int z, boolean load)
 	{
 		x = x % (size.sizeInChunks * 32);
@@ -296,17 +373,43 @@ public abstract class World
 			x += size.sizeInChunks * 32;
 		if (z < 0)
 			z += size.sizeInChunks * 32;
-		CubicChunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
+		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 			return c.getDataAt(x, y, z);
 		return 0;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#setDataAt(int, int, int, int)
+	 */
+	@Override
 	public void setDataAt(int x, int y, int z, int i)
 	{
-		setDataAt(x, y, z, i, false);
+		setDataAt(x, y, z, i, true);
+	}
+	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#setDataAt(io.xol.chunkstories.api.Location, int)
+	 */
+	@Override
+	public void setDataAt(Location location, int i)
+	{
+		setDataAt((int)location.x, (int)location.y, (int)location.z, i, true);
+	}
+	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#setDataAt(io.xol.chunkstories.api.Location, int, boolean)
+	 */
+	@Override
+	public void setDataAt(Location location, int i, boolean load)
+	{
+		setDataAt((int)location.x, (int)location.y, (int)location.z, i, load);
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#setDataAt(int, int, int, int, boolean)
+	 */
+	@Override
 	public void setDataAt(int x, int y, int z, int i, boolean load)
 	{
 		chunkSummaries.blockPlaced(x, y, z, i);
@@ -321,7 +424,7 @@ public abstract class World
 			x += size.sizeInChunks * 32;
 		if (z < 0)
 			z += size.sizeInChunks * 32;
-		CubicChunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
+		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
 			synchronized (c)
@@ -411,6 +514,10 @@ public abstract class World
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#setChunk(io.xol.chunkstories.world.chunk.CubicChunk)
+	 */
+	@Override
 	public void setChunk(CubicChunk chunk)
 	{
 		if (this.isChunkLoaded(chunk.chunkX, chunk.chunkY, chunk.chunkZ))
@@ -425,9 +532,10 @@ public abstract class World
 			renderer.modified();
 	}
 
-	/**
-	 * Call this function to force redrawing all the chunks
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#reRender()
 	 */
+	@Override
 	public synchronized void reRender()
 	{
 		ChunksIterator i = this.iterator();
@@ -443,12 +551,20 @@ public abstract class World
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#clear()
+	 */
+	@Override
 	public void clear()
 	{
 		chunksHolder.clearAll();
 		chunkSummaries.clearAll();
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#save()
+	 */
+	@Override
 	public void save()
 	{
 		System.out.println("Saving world");
@@ -459,6 +575,10 @@ public abstract class World
 		this.internalData.save();
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#destroy()
+	 */
+	@Override
 	public void destroy()
 	{
 		this.chunksData.destroy();
@@ -473,11 +593,22 @@ public abstract class World
 		ioHandler.kill();
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#iterator()
+	 */
+	@Override
 	public ChunksIterator iterator()
 	{
 		return new WorldChunksIterator(this);
 	}
 
+	/**
+	 * Legacy crap for particle system
+	 * @param posX
+	 * @param posY
+	 * @param posZ
+	 * @return
+	 */
 	public boolean checkCollisionPoint(double posX, double posY, double posZ)
 	{
 		int data = this.getDataAt((int) posX, (int) posY, (int) posZ);
@@ -498,14 +629,17 @@ public abstract class World
 		return false;
 	}
 
-	/**
-	 * Unloads bits of the map not required by anyone
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#trimRemovableChunks()
 	 */
+	@Override
 	public void trimRemovableChunks()
 	{
 		if (this instanceof WorldTool)
 			System.out.println("omg this should not happen");
 		
+		if(Client.controlledEntity == null)
+			return;
 		Location loc = Client.controlledEntity.getLocation();
 		ChunksIterator it = this.iterator();
 		CubicChunk chunk;
@@ -542,6 +676,10 @@ public abstract class World
 
 	boolean raining;
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#isRaining()
+	 */
+	@Override
 	public boolean isRaining()
 	{
 		return raining;
@@ -554,11 +692,19 @@ public abstract class World
 		return veryLong.getAndIncrement();
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#setWeather(boolean)
+	 */
+	@Override
 	public void setWeather(boolean booleanProp)
 	{
 		raining = booleanProp;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getDefaultSpawnLocation()
+	 */
+	@Override
 	public Location getDefaultSpawnLocation()
 	{
 		double dx = internalData.getDoubleProp("defaultSpawnX", 0.0);
@@ -567,17 +713,30 @@ public abstract class World
 		return new Location(this, dx, dy, dz);
 	}
 
-	/**
-	 * Sets the time of the World. By default the time is set at 5000 and it uses a 10.000 cycle, 0 being midnight and 5000 being midday
-	 * @param time
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#setTime(long)
 	 */
+	@Override
 	public void setTime(long time)
 	{
 		this.worldTime = time;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#getGenerator()
+	 */
+	@Override
 	public WorldGenerator getGenerator()
 	{
 		return generator;
+	}
+
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInterface#handleInteraction(io.xol.chunkstories.api.entity.Entity, io.xol.chunkstories.api.Location, io.xol.chunkstories.api.input.Input)
+	 */
+	@Override
+	public boolean handleInteraction(Entity entity, Location blockLocation, Input input)
+	{
+		return false;
 	}
 }

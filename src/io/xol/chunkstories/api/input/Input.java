@@ -5,11 +5,11 @@ package io.xol.chunkstories.api.input;
 //http://xol.io
 
 /**
- * Describes a key assignated to some action
+ * Describe any form of input
  * @author Hugo
  *
  */
-public interface KeyBind extends Input
+public interface Input
 {
 	/**
 	 * Returns the name of the bind

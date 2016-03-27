@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world.chunk;
 
+import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.world.World;
 
 import java.util.Iterator;
@@ -187,7 +188,7 @@ public class ChunksHolders
 			return;
 		// chunkY = chunkY % sic;
 		chunkZ = chunkZ % sic;
-		CubicChunk c = getChunk(chunkX, chunkY, chunkZ, false);
+		Chunk c = getChunk(chunkX, chunkY, chunkZ, false);
 		if (c != null)
 			c.markDirty(true);
 	}

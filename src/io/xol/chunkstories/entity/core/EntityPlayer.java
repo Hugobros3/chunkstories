@@ -9,10 +9,13 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Controller;
+import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.EntityControllable;
@@ -29,7 +32,6 @@ import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.core.VoxelClimbable;
 import io.xol.chunkstories.world.World;
-import io.xol.chunkstories.world.WorldClient;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -334,7 +336,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		}
 	}
 
-	public int[] rayTraceSelectedBlock(boolean inside)
+	public Location getBlockLookingAt(boolean inside)
 	{
 		Vector3d initialPosition = new Vector3d(posX, posY + eyePosition, posZ);
 		//Vector3d position = new Vector3d(posX, posY + eyePosition, posZ);
@@ -394,9 +396,6 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 
 		do
 		{
-			/*x = (int)Math.floor(position.x);
-			y = (int)Math.floor(position.y);
-			z = (int)Math.floor(position.z);*/
 			x = voxelCoords[0];
 			y = voxelCoords[1];
 			z = voxelCoords[2];
@@ -417,7 +416,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 				if (collides)
 				{
 					if (inside)
-						return new int[] { x, y, z };
+						return new Location(world, x, y, z);
 					else
 					{
 						//Back off a bit
@@ -433,7 +432,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 							z -= step[side];
 							break;
 						}
-						return new int[] { x, y, z };
+						return new Location(world, x, y, z);
 					}
 				}
 			}
@@ -574,5 +573,23 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		{
 			moveCamera();
 		}
+	}
+
+	@Override
+	public boolean handleInteraction(Input input)
+	{
+		ItemPile itemSelected = this.getInventory().getSelectedItem();
+		if (itemSelected != null)
+		{
+			//See if the item handles the interaction
+			if(itemSelected.getItem().handleInteraction(this, itemSelected, input))
+				return true;
+		}
+		//Here goes generic entity response to interaction
+		
+		//Then we check if the world minds being interacted with
+		Location blockLocation = this.getBlockLookingAt(true);
+		world.handleInteraction(this, blockLocation, input);
+		return false;
 	}
 }

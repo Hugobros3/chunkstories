@@ -1,6 +1,7 @@
 package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.World;
 
@@ -108,7 +109,7 @@ public class EntitiesList
 		}
 	}
 
-	public static Entity newEntity(World world, short entityType)
+	public static Entity newEntity(WorldInterface world, short entityType)
 	{
 		if(entitiesTypes.containsKey(entityType))
 		{

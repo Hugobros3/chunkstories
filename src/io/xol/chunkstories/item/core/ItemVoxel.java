@@ -4,10 +4,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.events.actions.ClientAction;
-import io.xol.chunkstories.api.events.actions.ClientActionMouseClick;
-import io.xol.chunkstories.api.events.actions.ClientActionMouseClick.MouseButton;
+import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -71,52 +71,56 @@ public class ItemVoxel extends Item
 		return ((ItemDataVoxel) pile.getData()).voxelMeta;
 	}
 
-	public void onUse(Entity user, ItemPile pile, ClientAction action)
+	@Override
+	public boolean handleInteraction(Entity user, ItemPile pile, Input input)
 	{
-		if (action instanceof ClientActionMouseClick)
+		if (input instanceof MouseClick)
 		{
 			//TODO here we assumme a player, that's not correct
 			EntityPlayer player = (EntityPlayer) user;
-			ClientActionMouseClick mouseClick = (ClientActionMouseClick) action;
-			int voxelID = ((ItemDataVoxel)pile.getData()).voxel.getId();
-			int voxelMeta = ((ItemDataVoxel)pile.getData()).voxelMeta;
-			
+			int voxelID = ((ItemDataVoxel) pile.getData()).voxel.getId();
+			int voxelMeta = ((ItemDataVoxel) pile.getData()).voxelMeta;
+
 			int data2write = -1;
-			int[] selectedBlock = null;
-			if (mouseClick.getMouseButtonPressed() == MouseButton.MOUSE_RIGHT)
+			Location selectedBlock = null;
+			if (input.equals(MouseClick.RIGHT))
 			{
-				selectedBlock = player.rayTraceSelectedBlock(false);
+				selectedBlock = player.getBlockLookingAt(false);
 				data2write = VoxelFormat.format(voxelID, voxelMeta, 0, 0);
 			}
-			else if (mouseClick.getMouseButtonPressed() == MouseButton.MOUSE_LEFT)
+			else if (input.equals(MouseClick.LEFT))
 			{
-				selectedBlock = player.rayTraceSelectedBlock(true);
+				selectedBlock = player.getBlockLookingAt(true);
 				data2write = 0;
 			}
-			else if (mouseClick.getMouseButtonPressed() == MouseButton.MOUSE_MIDDLE)
+			else if (input.equals(MouseClick.MIDDLE))
 			{
-				selectedBlock = player.rayTraceSelectedBlock(true);
+				selectedBlock = player.getBlockLookingAt(true);
 				if (selectedBlock != null)
 				{
-					int data = user.getWorld().getDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
-					((ItemDataVoxel)pile.getData()).voxel = VoxelTypes.get(VoxelFormat.id(data));
-					((ItemDataVoxel)pile.getData()).voxelMeta = VoxelFormat.meta(data);
+					int data = user.getWorld().getDataAt(selectedBlock);
+					((ItemDataVoxel) pile.getData()).voxel = VoxelTypes.get(VoxelFormat.id(data));
+					((ItemDataVoxel) pile.getData()).voxelMeta = VoxelFormat.meta(data);
 					//voxelId = VoxelFormat.id(data);
 					//meta = VoxelFormat.meta(data);
 				}
 			}
+			else
+				return false;
 			if (selectedBlock != null && data2write != -1)
 			{
-				int selectedBlockPreviousData = user.getWorld().getDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2]);
+				int selectedBlockPreviousData = user.getWorld().getDataAt(selectedBlock);
 				//Adding blocks should not erase light if the block's not opaque
-				if(!VoxelTypes.get(data2write).isVoxelOpaque())
+				if (!VoxelTypes.get(data2write).isVoxelOpaque())
 				{
 					data2write = VoxelFormat.changeSunlight(data2write, VoxelFormat.sunlight(selectedBlockPreviousData));
 					data2write = VoxelFormat.changeBlocklight(data2write, VoxelFormat.blocklight(selectedBlockPreviousData));
 				}
-				user.getWorld().setDataAt(selectedBlock[0], selectedBlock[1], selectedBlock[2], data2write, true);
+				user.getWorld().setDataAt(selectedBlock, data2write, true);
 			}
+			return true;
 		}
+		return false;
 	}
 
 	@Override
@@ -129,8 +133,6 @@ public class ItemVoxel extends Item
 	@Override
 	public void save(ItemPile itemPile, DataOutputStream stream) throws IOException
 	{
-		//System.out.println(itemPile.item);
-		//System.out.println(itemPile.data);
 		stream.writeInt(((ItemDataVoxel) itemPile.data).voxel.getId());
 		stream.writeByte((byte) ((ItemDataVoxel) itemPile.data).voxelMeta);
 	}

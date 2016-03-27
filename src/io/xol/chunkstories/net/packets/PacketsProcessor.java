@@ -13,13 +13,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.world.World;
 import io.xol.engine.math.HexTools;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -241,7 +241,7 @@ public class PacketsProcessor
 		}
 	}
 
-	public World getWorld()
+	public WorldInterface getWorld()
 	{
 		if(this.isClient)
 			return Client.world;

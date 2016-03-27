@@ -1,7 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.world.WorldClient;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

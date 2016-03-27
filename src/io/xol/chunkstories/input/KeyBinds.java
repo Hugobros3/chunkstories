@@ -57,7 +57,7 @@ public class KeyBinds
 	{
 		for(KeyBind keyBind : keyBinds)
 		{
-			if(((KeyBindImplementation)keyBind).getLWJGL2xKey() == keyCode)
+			if(keyBind instanceof KeyBindImplementation && ((KeyBindImplementation)keyBind).getLWJGL2xKey() == keyCode)
 				return keyBind;
 		}
 		return null;
@@ -102,6 +102,15 @@ public class KeyBinds
 		catch (IOException e)
 		{
 			ChunkStoriesLogger.getInstance().warning(e.getMessage());
+		}
+	}
+	
+	public static void reloadKeysFromConfig()
+	{
+		for(KeyBind keyBind : keyBinds)
+		{
+			if(keyBind instanceof KeyBindImplementation)
+				((KeyBindImplementation)keyBind).reload();
 		}
 	}
 }

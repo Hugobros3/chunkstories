@@ -48,6 +48,7 @@ import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
@@ -507,7 +508,7 @@ public class WorldRenderer
 		glViewport(0, 0, scrW, scrH);
 	}
 
-	private boolean checkChunkOcclusion(CubicChunk chunk, int correctedCX, int correctedCY, int correctedCZ, Vector3f viewerPosition, Vector3f viewerDirection)
+	private boolean checkChunkOcclusion(Chunk chunk, int correctedCX, int correctedCY, int correctedCZ, Vector3f viewerPosition, Vector3f viewerDirection)
 	{
 		Vector3f centerSphere = new Vector3f(correctedCX * 32 + 16, correctedCY * 32 + 15, correctedCZ * 32 + 16);
 		return camera.isBoxInFrustrum(centerSphere, new Vector3f(32, 32, 32));

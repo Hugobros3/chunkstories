@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.plugin.server.Player;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
@@ -88,7 +89,7 @@ public abstract class EntityImplementation implements Entity
 			((EntityControllable) this).getController().notifyTeleport(this);
 	}
 
-	public World getWorld()
+	public WorldInterface getWorld()
 	{
 		return world;
 	}

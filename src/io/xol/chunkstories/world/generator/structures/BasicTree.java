@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world.generator.structures;
 
-import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.api.world.Chunk;
 
 public class BasicTree extends GenerableStructure
 {
@@ -14,7 +14,7 @@ public class BasicTree extends GenerableStructure
 	}
 
 	@Override
-	public void draw(CubicChunk c)
+	public void draw(Chunk c)
 	{
 		// System.out.println("Drawing ");
 		/*

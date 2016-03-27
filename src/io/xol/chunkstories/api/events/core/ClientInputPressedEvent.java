@@ -2,13 +2,13 @@ package io.xol.chunkstories.api.events.core;
 
 import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.api.input.Input;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ClientKeyBindPressedEvent extends CancellableEvent
+public class ClientInputPressedEvent extends CancellableEvent
 {
 	// Every event class has to have this
 
@@ -26,16 +26,16 @@ public class ClientKeyBindPressedEvent extends CancellableEvent
 
 	// Specific event code
 	
-	public ClientKeyBindPressedEvent(KeyBind keyBind)
+	public ClientInputPressedEvent(Input input)
 	{
-		this.keyBind = keyBind;
+		this.input = input;
 	}
 	
-	KeyBind keyBind;
+	Input input;
 	
-	public KeyBind getKeyPressed()
+	public Input getKeyPressed()
 	{
-		return keyBind;
+		return input;
 	}
 
 }

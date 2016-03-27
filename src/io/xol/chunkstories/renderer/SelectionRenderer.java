@@ -2,24 +2,28 @@ package io.xol.chunkstories.renderer;
 
 import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
 
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.world.World;
 
 //(c) 2-0.05f15 XolioWare Interactive
 
 public class SelectionRenderer
 {
-	World world;
+	WorldInterface world;
 	WorldRenderer worldRenderer;
 
-	public SelectionRenderer(World w, WorldRenderer r)
+	public SelectionRenderer(WorldInterface w, WorldRenderer r)
 	{
 		world = w;
 		worldRenderer = r;
 	}
 
-	public void drawSelectionBox(int x, int y, int z)
+	public void drawSelectionBox(Location location)
 	{
+		int x = (int)location.x;
+		int y = (int)location.y;
+		int z = (int)location.z;
 		glDisable(GL_TEXTURE_2D);
 		glColor4f(1, 1, 1, 1f);
 		glLineWidth(2);

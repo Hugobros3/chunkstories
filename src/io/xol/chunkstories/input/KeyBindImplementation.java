@@ -51,6 +51,14 @@ public class KeyBindImplementation implements KeyBind
 		this.LWJGL2_key = Client.getConfig().getIntProp("bind."+name, Keyboard.getKeyIndex(defaultKeyName));
 	}
 	
+	/**
+	 * When reloading from the config file (options changed)
+	 */
+	public void reload()
+	{
+		this.LWJGL2_key = Client.getConfig().getIntProp("bind."+name, -1);
+	}
+	
 	public boolean equals(Object o)
 	{
 		if(o != null && o instanceof KeyBind)
