@@ -49,7 +49,7 @@ public class Client implements ClientController, ClientInterface
 
 	public static Entity controlledEntity;
 	public static Client clientController;
-	
+
 	public static PluginsManager pluginsManager;
 
 	public static void main(String[] args)
@@ -86,12 +86,8 @@ public class Client implements ClientController, ClientInterface
 			}
 			else
 			{
-				System.out.println(
-						"Comandline arguments : \n" +
-						"-oldgl Disables OpenGL 3.0+ stuff\n" +
-						"-forceobsolete Forces the game to run even if requirements aren't met\n"+
-						"-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n"+
-						"-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument");
+				System.out.println("Comandline arguments : \n" + "-oldgl Disables OpenGL 3.0+ stuff\n" + "-forceobsolete Forces the game to run even if requirements aren't met\n"
+						+ "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n" + "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument");
 			}
 		}
 		// Check for folder
@@ -147,9 +143,7 @@ public class Client implements ClientController, ClientInterface
 	public boolean hasFocus()
 	{
 		if (windows.getCurrentScene() instanceof GameplayScene)
-		{
 			return ((GameplayScene) windows.getCurrentScene()).hasFocus();
-		}
 		return false;
 	}
 
@@ -170,5 +164,12 @@ public class Client implements ClientController, ClientInterface
 	public KeyBind getKeyBind(String bindName)
 	{
 		return KeyBinds.getKeyBind(bindName);
+	}
+
+	@Override
+	public void printChat(String textToPrint)
+	{
+		if (windows.getCurrentScene() instanceof GameplayScene)
+			((GameplayScene) windows.getCurrentScene()).chat.insert(textToPrint);
 	}
 }

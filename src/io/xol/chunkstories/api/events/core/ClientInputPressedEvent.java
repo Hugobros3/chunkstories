@@ -2,13 +2,14 @@ package io.xol.chunkstories.api.events.core;
 
 import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
+import io.xol.chunkstories.api.events.categories.ClientEvent;
 import io.xol.chunkstories.api.input.Input;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ClientInputPressedEvent extends CancellableEvent
+public class ClientInputPressedEvent extends CancellableEvent implements ClientEvent
 {
 	// Every event class has to have this
 
@@ -33,7 +34,7 @@ public class ClientInputPressedEvent extends CancellableEvent
 	
 	Input input;
 	
-	public Input getKeyPressed()
+	public Input getInputPressed()
 	{
 		return input;
 	}

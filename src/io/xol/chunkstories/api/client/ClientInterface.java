@@ -24,4 +24,10 @@ public interface ClientInterface
 	public void reloadAssets();
 
 	public KeyBind getKeyBind(String bindName);
+
+	/**
+	 * Prints some text into the client chat
+	 * @param textToPrint
+	 */
+	public void printChat(String textToPrint);
 }

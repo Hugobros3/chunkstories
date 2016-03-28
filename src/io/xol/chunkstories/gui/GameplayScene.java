@@ -57,7 +57,7 @@ public class GameplayScene extends OverlayableScene
 	InventoryDrawer inventoryDrawer;
 
 	Camera camera = new Camera();
-	ChatPanel chat = new ChatPanel();
+	public ChatPanel chat = new ChatPanel();
 	boolean focus = true;
 	Entity player;
 
