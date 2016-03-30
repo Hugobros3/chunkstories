@@ -81,7 +81,7 @@ public class CubicChunk implements Chunk
 	 * @see io.xol.chunkstories.world.chunk.Chunk#setDataAt(int, int, int, int)
 	 */
 	@Override
-	public void setDataAt(int x, int y, int z, int data)
+	public void setDataAtWithUpdates(int x, int y, int z, int data)
 	{
 		x %= 32;
 		y %= 32;
@@ -103,7 +103,7 @@ public class CubicChunk implements Chunk
 		}
 	}
 	
-	public boolean setDataAtInternal(int x, int y, int z, int data)
+	public void setDataAtWithoutUpdates(int x, int y, int z, int data)
 	{
 		x %= 32;
 		y %= 32;
@@ -120,9 +120,7 @@ public class CubicChunk implements Chunk
 		if (dataPointer >= 0)
 		{
 			world.chunksData.grab(dataPointer)[x * 32 * 32 + y * 32 + z] = data;
-			return true;
 		}
-		return false;
 	}
 
 	@Override
@@ -173,21 +171,6 @@ public class CubicChunk implements Chunk
 		//Propagates the light
 		propagateLightning(blockSources, sunSources);
 
-		int data[] = world.chunksData.grab(dataPointer);
-		for(int x = 0; x < 32; x++)
-			for(int y = 0; y < 32; y++)
-				for(int z = 0; z < 32; z++)
-				{
-					int bdata = data[x * 1024 + y * 32 + z];
-					if(VoxelTypes.get(bdata).isVoxelOpaque())
-					{
-						if(VoxelFormat.sunlight(bdata) > 0 || VoxelFormat.blocklight(bdata) > 0)
-						{
-							System.out.println("Non-Zero data for opaque block :[");
-						}
-					}
-				}
-		
 		//Return the queues after that
 		world.dequesPool.back(blockSources);
 		world.dequesPool.back(sunSources);
@@ -601,7 +584,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & 0xF0FFFFFF | (adjacent_blo - 1) << 0x18;
-							setDataAtInternal(31, c, b, ndata);
+							setDataAtWithoutUpdates(31, c, b, ndata);
 							blockSources.push(31);
 							blockSources.push(b);
 							blockSources.push(c);
@@ -610,7 +593,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & 0xFF0FFFFF | (adjacent_sun - 1) << 0x14;
-							setDataAtInternal(31, c, b, ndata);
+							setDataAtWithoutUpdates(31, c, b, ndata);
 
 							sunSources.push(31);
 							sunSources.push(b);
@@ -635,7 +618,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & 0xF0FFFFFF | (adjacent_blo - 1) << 0x18;
-							setDataAtInternal(0, c, b, ndata);
+							setDataAtWithoutUpdates(0, c, b, ndata);
 
 							blockSources.push(0);
 							blockSources.push(b);
@@ -645,7 +628,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & 0xFF0FFFFF | (adjacent_sun - 1) << 0x14;
-							setDataAtInternal(0, c, b, ndata);
+							setDataAtWithoutUpdates(0, c, b, ndata);
 
 							sunSources.push(0);
 							sunSources.push(b);
@@ -671,7 +654,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & 0xF0FFFFFF | (adjacent_blo - 1) << 0x18;
-							setDataAtInternal(c, 31, b, ndata);
+							setDataAtWithoutUpdates(c, 31, b, ndata);
 							if (adjacent_blo > 2)
 							{
 								blockSources.push(c);
@@ -683,7 +666,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & 0xFF0FFFFF | (adjacent_sun - 1) << 0x14;
-							setDataAtInternal(c, 31, b, ndata);
+							setDataAtWithoutUpdates(c, 31, b, ndata);
 							//System.out.println(cc + " : "+adjacent_sun);
 							if (adjacent_sun > 2)
 							{
@@ -709,7 +692,7 @@ public class CubicChunk implements Chunk
 							int current_data = getDataAt(b, sourceAt, c);
 
 							int ndata = current_data & 0xFF0FFFFF | (15) << 0x14;
-							setDataAtInternal(b, sourceAt, c, ndata);
+							setDataAtWithoutUpdates(b, sourceAt, c, ndata);
 
 							sunSources.push(b);
 							sunSources.push(c);
@@ -736,7 +719,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & 0xF0FFFFFF | (adjacent_blo - 1) << 0x18;
-							setDataAtInternal(c, 0, b, ndata);
+							setDataAtWithoutUpdates(c, 0, b, ndata);
 							if (adjacent_blo > 2)
 							{
 								blockSources.push(c);
@@ -748,7 +731,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & 0xFF0FFFFF | (adjacent_sun - 1) << 0x14;
-							setDataAtInternal(c, 0, b, ndata);
+							setDataAtWithoutUpdates(c, 0, b, ndata);
 							if (adjacent_sun > 2)
 							{
 								sunSources.push(c);
@@ -776,7 +759,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & 0xF0FFFFFF | (adjacent_blo - 1) << 0x18;
-							setDataAtInternal(c, b, 31, ndata);
+							setDataAtWithoutUpdates(c, b, 31, ndata);
 							blockSources.push(c);
 							blockSources.push(31);
 							blockSources.push(b);
@@ -785,7 +768,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & 0xFF0FFFFF | (adjacent_sun - 1) << 0x14;
-							setDataAtInternal(c, b, 31, ndata);
+							setDataAtWithoutUpdates(c, b, 31, ndata);
 							sunSources.push(c);
 							sunSources.push(31);
 							sunSources.push(b);
@@ -809,7 +792,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & 0xF0FFFFFF | (adjacent_blo - 1) << 0x18;
-							setDataAtInternal(c, b, 0, ndata);
+							setDataAtWithoutUpdates(c, b, 0, ndata);
 							blockSources.push(c);
 							blockSources.push(0);
 							blockSources.push(b);
@@ -818,7 +801,7 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & 0xFF0FFFFF | (adjacent_sun - 1) << 0x14;
-							setDataAtInternal(c, b, 0, ndata);
+							setDataAtWithoutUpdates(c, b, 0, ndata);
 							sunSources.push(c);
 							sunSources.push(0);
 							sunSources.push(b);
@@ -840,11 +823,11 @@ public class CubicChunk implements Chunk
 		int csh = world.chunkSummaries.getHeightAt(bx + chunkX * 32, bz + chunkZ * 32);
 		int block_height = by + chunkY * 32;
 		//If the block is at or above (never) the topmost tile it's sunlit
-		if(block_height + 1 >= csh)
+		if(block_height >= csh)
 			sunLightAfter = 15;
 		
-		System.out.println("csh: "+csh + "y:"+block_height);
-		System.out.println("SLA"+sunLightAfter+" SLB"+sunLightBefore);
+		//System.out.println("csh: "+csh + "y:"+block_height);
+		//System.out.println("SLA"+sunLightAfter+" SLB"+sunLightBefore);
 		
 		Deque<Integer> blockSourcesRemoval = world.dequesPool.grab();
 		Deque<Integer> sunSourcesRemoval = world.dequesPool.grab();
@@ -1152,12 +1135,12 @@ public class CubicChunk implements Chunk
 	@Override
 	public void setSunLight(int x, int y, int z, int level)
 	{
-		this.setDataAtInternal(x, y, z, VoxelFormat.changeSunlight(this.getDataAt(x, y, z), level));
+		this.setDataAtWithoutUpdates(x, y, z, VoxelFormat.changeSunlight(this.getDataAt(x, y, z), level));
 	}
 
 	@Override
 	public void setBlockLight(int x, int y, int z, int level)
 	{
-		this.setDataAtInternal(x, y, z, VoxelFormat.changeBlocklight(this.getDataAt(x, y, z), level));
+		this.setDataAtWithoutUpdates(x, y, z, VoxelFormat.changeBlocklight(this.getDataAt(x, y, z), level));
 	}
 }

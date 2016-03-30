@@ -242,7 +242,7 @@ public class IOTasks extends Thread
 				for (int i = 0; i < 32 * 32 * 32; i++)
 				{
 					int data = ((unCompressedData[i * 4] & 0xFF) << 24) | ((unCompressedData[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData[i * 4 + 2] & 0xFF) << 8) | (unCompressedData[i * 4 + 3] & 0xFF);
-					c.setDataAt(i / 32 / 32, (i / 32) % 32, i % 32, data);
+					c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
 				}
 				c.bakeVoxelLightning(false);
 				holder.lock.unlock();

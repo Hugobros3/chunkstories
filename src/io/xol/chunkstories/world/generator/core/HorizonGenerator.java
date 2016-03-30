@@ -48,12 +48,12 @@ public class HorizonGenerator extends WorldGenerator
 						type = 3;
 					else
 						type = 2;
-					c.setDataAt(x, y, z, type);
+					c.setDataAtWithoutUpdates(x, y, z, type);
 					y++;
 				}
 				while(y < cy * 32 + 32 && y < 60)
 				{
-					c.setDataAt(x, y, z, 128);
+					c.setDataAtWithoutUpdates(x, y, z, 128);
 					y++;
 				}
 			}

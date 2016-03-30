@@ -430,7 +430,7 @@ public abstract class World implements WorldInterface
 		{
 			synchronized (c)
 			{
-				c.setDataAt(x % 32, y % 32, z % 32, i);
+				c.setDataAtWithUpdates(x % 32, y % 32, z % 32, i);
 				c.markDirty(true);
 			}
 			//Neighbour chunks updates

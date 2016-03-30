@@ -39,7 +39,7 @@ public class FlatGenerator extends WorldGenerator
 				int y = cy * 32;
 				while(y < cy * 32 + 32 && y <= v)
 				{
-					c.setDataAtInternal(x, y, z, type);
+					c.setDataAtWithoutUpdates(x, y, z, type);
 					y++;
 				}
 			}
