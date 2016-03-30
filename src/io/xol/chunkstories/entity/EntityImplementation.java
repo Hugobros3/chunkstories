@@ -5,6 +5,11 @@ import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.plugin.server.Player;
@@ -524,4 +529,26 @@ public abstract class EntityImplementation implements Entity
 	{
 		return !mpSendDeletePacket;
 	}
+	
+
+	/**
+	 * Loads the object state from the stream
+	 * @param stream
+	 * @throws IOException
+	 */
+	public void load(DataInputStream stream) throws IOException
+	{
+		
+	}
+
+	/**
+	 * Writes the object state to a stream
+	 * @param stream
+	 * @throws IOException
+	 */
+	public void save(DataOutputStream stream) throws IOException
+	{
+		
+	}
+	
 }

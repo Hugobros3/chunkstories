@@ -1,7 +1,5 @@
 package io.xol.chunkstories.api.world;
 
-import java.util.Deque;
-
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -20,7 +18,7 @@ public interface Chunk
 	 * @param z
 	 * @return the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
 	 */
-	int getDataAt(int x, int y, int z);
+	public int getDataAt(int x, int y, int z);
 
 	/**
 	 * Sets the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
@@ -31,7 +29,7 @@ public interface Chunk
 	 * @param z
 	 * @param data
 	 */
-	void setDataAt(int x, int y, int z, int data);
+	public void setDataAt(int x, int y, int z, int data);
 
 	/**
 	 * Marks the chunk to be re-rendered
@@ -40,13 +38,17 @@ public interface Chunk
 	void markDirty(boolean priority);
 
 	/**
-	 * Internal class for lightning updates. You may want to call it yourself, in wich case it uses two Deque as buffers.
-	 * The reason you have to supply it yourself is optimization, you generally need to avoid creating and destroying those buffers too often when you have hundreds of
-	 * chunks to recalculate.
-	 * @param adjacent
-	 * @param blockSources
-	 * @param sunSources
+	 * Recomputes and propagates all lights within the chunk
+	 * @param adjacent If set to true, the adjacent faces of the 6 adjacents chunks's data will be took in charge
 	 */
-	void doLightning(boolean adjacent, Deque<Integer> blockSources, Deque<Integer> sunSources);
+	public void bakeVoxelLightning(boolean adjacent);
+	
+	public int getSunLight(int x, int y, int z);
+	
+	public int getBlockLight(int x, int y, int z);
+	
+	public void setSunLight(int x, int y, int z, int level);
+	
+	public void setBlockLight(int x, int y, int z, int level);
 
 }

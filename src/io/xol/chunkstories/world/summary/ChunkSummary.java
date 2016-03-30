@@ -91,7 +91,7 @@ public class ChunkSummary
 		Voxel voxel = VoxelTypes.get(t);
 		int h = getHeight(x, z);
 		//If we place something solid over the last solid thing
-		if (voxel.isVoxelSolid() || voxel.isVoxelLiquid() && y >= h)
+		if ((voxel.isVoxelSolid() || voxel.isVoxelLiquid()) && y >= h)
 		{
 			if (y >= h)
 			{

@@ -90,7 +90,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 				}
 			}
 
-			c.doLightning(false, blockSources, sunSources);
+			c.bakeVoxelLightning(false);
 
 			//Remove any object preventing us from asking it again
 			ChunkLocation loc = new ChunkLocation(x, y, z);

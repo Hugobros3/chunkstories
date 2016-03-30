@@ -10,12 +10,20 @@ import java.io.IOException;
 
 /**
  * Describes objects that can be serialized in .csf files (or on the network)
- * @author Gobrosse
- *
  */
 public interface CSFSerializable
 {
+	/**
+	 * Loads the object state from the stream
+	 * @param stream
+	 * @throws IOException
+	 */
 	public void load(DataInputStream stream) throws IOException;
 
+	/**
+	 * Writes the object state to a stream
+	 * @param stream
+	 * @throws IOException
+	 */
 	public void save(DataOutputStream stream) throws IOException;	
 }

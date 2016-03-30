@@ -687,6 +687,7 @@ public abstract class World implements WorldInterface
 	}
 
 	AtomicLong veryLong = new AtomicLong();
+	public DequePool dequesPool = new DequePool();
 
 	public long nextEntityId()
 	{

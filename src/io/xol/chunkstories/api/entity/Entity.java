@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.plugin.server.Player;
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.item.inventory.CSFSerializable;
 import io.xol.chunkstories.item.inventory.InventoryHolder;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
@@ -15,7 +16,7 @@ import io.xol.engine.model.RenderingContext;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface Entity extends InventoryHolder
+public interface Entity extends InventoryHolder, CSFSerializable
 {
 	/**
 	 * Returns the location of the entity

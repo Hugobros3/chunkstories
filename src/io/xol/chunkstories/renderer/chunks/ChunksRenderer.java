@@ -989,7 +989,7 @@ public class ChunksRenderer extends Thread
 		}
 
 		if (work.needRelightning.getAndSet(false))
-			work.doLightning(true, blockSources, sunSources);
+			work.bakeVoxelLightning(true);
 
 		// Don't bother
 		if (!work.need_render.get())

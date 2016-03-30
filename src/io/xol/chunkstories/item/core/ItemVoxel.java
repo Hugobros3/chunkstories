@@ -111,13 +111,19 @@ public class ItemVoxel extends Item
 				return false;
 			if (selectedBlock != null && data2write != -1)
 			{
-				int selectedBlockPreviousData = user.getWorld().getDataAt(selectedBlock);
+				//int selectedBlockPreviousData = user.getWorld().getDataAt(selectedBlock);
 				//Adding blocks should not erase light if the block's not opaque
-				if (!VoxelTypes.get(data2write).isVoxelOpaque())
+				if (VoxelTypes.get(data2write).isVoxelOpaque())
 				{
-					data2write = VoxelFormat.changeSunlight(data2write, VoxelFormat.sunlight(selectedBlockPreviousData));
-					data2write = VoxelFormat.changeBlocklight(data2write, VoxelFormat.blocklight(selectedBlockPreviousData));
+					data2write = VoxelFormat.changeSunlight(data2write, 0);
+					data2write = VoxelFormat.changeBlocklight(data2write, 0);
+					//data2write = VoxelFormat.changeSunlight(data2write, VoxelFormat.sunlight(selectedBlockPreviousData));
+					//data2write = VoxelFormat.changeBlocklight(data2write, VoxelFormat.blocklight(selectedBlockPreviousData));
 				}
+				if(VoxelTypes.get(data2write).getLightLevel(data2write) > 0)
+					data2write = VoxelFormat.changeBlocklight(data2write, VoxelTypes.get(data2write).getLightLevel(data2write));
+					
+				//System.out.println(VoxelFormat.blocklight(data2write));
 				user.getWorld().setDataAt(selectedBlock, data2write, true);
 			}
 			return true;
