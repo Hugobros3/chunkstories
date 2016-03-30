@@ -18,6 +18,7 @@ public class Command
 		this.name = name;
 	}
 
+	@Override
 	public boolean equals(Object o)
 	{
 		if(o instanceof String)
@@ -25,6 +26,7 @@ public class Command
 		return ((Command) o).name.equals(name);
 	}
 
+	@Override
 	public int hashCode()
 	{
 		return name.hashCode();

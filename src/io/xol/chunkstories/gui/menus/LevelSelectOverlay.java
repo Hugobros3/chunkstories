@@ -58,6 +58,7 @@ public class LevelSelectOverlay extends Overlay
 
 	int scroll = 0;
 
+	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
 		if (scroll < 0)
@@ -82,7 +83,7 @@ public class LevelSelectOverlay extends Overlay
 				Client.world.startLogic();
 				this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 			}
-			int maxWidth = (int) (XolioWindow.frameW - 64 * 2);
+			int maxWidth = XolioWindow.frameW - 64 * 2;
 			worldButton.width = maxWidth;
 			worldButton.setPos(64 + worldButton.width / 2, posY);
 			worldButton.draw();
@@ -98,11 +99,13 @@ public class LevelSelectOverlay extends Overlay
 		}
 	}
 
+	@Override
 	public boolean handleKeypress(int k)
 	{
 		return false;
 	}
 	
+	@Override
 	public boolean onScroll(int dx)
 	{
 		if(dx < 0)
@@ -112,6 +115,7 @@ public class LevelSelectOverlay extends Overlay
 		return true;
 	}
 
+	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		if (button == 0)

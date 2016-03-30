@@ -10,11 +10,13 @@ import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 public class ParticleVoxelFragment extends Particle
 {
 
+	@Override
 	public Type getType()
 	{
 		return VOXEL_FRAGMENT;
 	}
 
+	@Override
 	public void update()
 	{
 		/*

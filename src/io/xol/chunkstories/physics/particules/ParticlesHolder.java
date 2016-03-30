@@ -110,7 +110,7 @@ public class ParticlesHolder
 	public int renderLights(WorldRenderer worldRenderer)
 	{
 		int i = 0;
-		for (List<Particle> list : particles.values())
+		/*for (List<Particle> list : particles.values())
 		{
 			synchronized (list)
 			{
@@ -125,7 +125,7 @@ public class ParticlesHolder
 					}
 				}
 			}
-		}
+		}*/
 		return i;
 	}
 

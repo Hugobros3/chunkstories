@@ -86,6 +86,7 @@ public class ALSoundManager extends SoundManager
 		}
 		Runtime.getRuntime().addShutdownHook(new Thread()
 		{
+			@Override
 			public void run()
 			{
 				AL.destroy();

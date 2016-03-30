@@ -110,6 +110,7 @@ public class CubicChunk implements Chunk
 		}
 	}
 
+	@Override
 	public String toString()
 	{
 		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + "]";

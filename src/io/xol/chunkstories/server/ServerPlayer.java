@@ -80,7 +80,7 @@ public class ServerPlayer implements Player, Controller
 				//Too close and untracked
 				if(shouldTrack && !contains)
 				{
-					trackedEntities.add((EntityImplementation) e);
+					trackedEntities.add(e);
 					trackEntity(e, true, false);
 				}
 				//Too far but still tracked
@@ -166,7 +166,7 @@ public class ServerPlayer implements Player, Controller
 	@Override
 	public void setControlledEntity(Entity entity)
 	{
-		controlledEntity = (EntityImplementation) entity;
+		controlledEntity = entity;
 		((EntityControllable) controlledEntity).setController(this);
 		//Tells the player we assignated him an entity.
 		if(controlledEntity != null)
@@ -216,11 +216,13 @@ public class ServerPlayer implements Player, Controller
 		Server.getInstance().handler.disconnectClient(playerConnection, reason);
 	}
 
+	@Override
 	public String toString()
 	{
 		return getName();
 	}
 	
+	@Override
 	public String getDisplayName()
 	{
 		String name = getName();

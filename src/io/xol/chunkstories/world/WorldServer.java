@@ -76,6 +76,7 @@ public class WorldServer extends World
 		}
 	}
 	
+	@Override
 	public void trimRemovableChunks()
 	{
 		int chunksViewDistance = 256/32;

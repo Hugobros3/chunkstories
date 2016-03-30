@@ -18,6 +18,7 @@ public class KeyBindSelectionOverlay extends Overlay
 		callback = configButtonKey;
 	}
 
+	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
 		parent.drawToScreen(x, y, w, h);
@@ -26,6 +27,7 @@ public class KeyBindSelectionOverlay extends Overlay
 		FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 - dekal/2, XolioWindow.frameH /2, 0, 48, "Please press a key", BitmapFont.SMALLFONTS);
 	}
 	
+	@Override
 	public boolean handleKeypress(int k)
 	{
 		callback.callBack(k);

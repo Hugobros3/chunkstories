@@ -19,12 +19,14 @@ public class VoxelStairs extends VoxelDefault
 			models[i] = VoxelModels.getVoxelModel("stairs.m" + i);
 	}
 
+	@Override
 	public VoxelModel getVoxelModel(BlockRenderInfo info)
 	{
 		int meta = info.getMetaData();
 		return models[meta % 8];
 	}
 
+	@Override
 	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
 		int meta = VoxelFormat.meta(info.data);
@@ -70,6 +72,7 @@ public class VoxelStairs extends VoxelDefault
 		// return super.getCollisionBoxes(data);
 	}
 	
+	@Override
 	public int getLightLevelModifier(int dataFrom, int dataTo, int side)
 	{
 		return super.getLightLevelModifier(dataFrom, dataTo, side);

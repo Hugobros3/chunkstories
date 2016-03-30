@@ -187,6 +187,7 @@ public class OptionsOverlay extends Overlay
 			//options.mainScene.changeOverlay(new KeyBindSelectionOverlay(options.mainScene, options, this));
 		}
 		
+		@Override
 		public int draw()
 		{
 			int textWidth = FontRenderer2.getTextLengthUsingFont(size * 16, text, font);
@@ -226,12 +227,14 @@ public class OptionsOverlay extends Overlay
 		configTabs.add(new ConfigTab("Rendering", new ConfigButton[] { 
 				new ConfigButtonMultiChoice("viewDistance",new String[] { "64", "96", "128", "144", "160", "192", "224", "256" }),
 				new ConfigButtonToggle("doRealtimeReflections").setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{
 						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonToggle("doDynamicCubemaps").setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{
 						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
@@ -239,12 +242,14 @@ public class OptionsOverlay extends Overlay
 					}
 				}),
 				new ConfigButtonToggle("doShadows").setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{
 						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }).setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{if (mainScene instanceof GameplayScene && shouldReload){
 						GameplayScene gps = ((GameplayScene) mainScene);
@@ -252,6 +257,7 @@ public class OptionsOverlay extends Overlay
 					}}
 				}),
 				new ConfigButtonToggle("dynamicGrass").setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{
 						ShadersLibrary.getShaderProgram("blocks_opaque").reload(FastConfig.getShaderConfig());
@@ -260,12 +266,14 @@ public class OptionsOverlay extends Overlay
 					}
 				}),
 				new ConfigButtonToggle("hqTerrain").setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{
 						ShadersLibrary.getShaderProgram("terrain").reload(FastConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonToggle("rainyMode").setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{
 						if(Client.world != null)
@@ -273,6 +281,7 @@ public class OptionsOverlay extends Overlay
 					}
 				}),
 				new ConfigButtonToggle("perPixelFresnel").setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{
 						ShadersLibrary.getShaderProgram("blocks_opaque").reload(FastConfig.getShaderConfig());
@@ -282,12 +291,14 @@ public class OptionsOverlay extends Overlay
 					}
 				}),
 				new ConfigButtonToggle("doClouds").setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{
 						ShadersLibrary.reloadAllShaders();
 					}
 				}),
 				new ConfigButtonMultiChoice("ssaoQuality", new String[] { "0", "1", "2"}).setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{
 						ShadersLibrary.getShaderProgram("blocks_opaque").reload(FastConfig.getShaderConfig());
@@ -295,6 +306,7 @@ public class OptionsOverlay extends Overlay
 					}
 				}),
 				new ConfigButtonToggle("doBloom").setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{if (mainScene instanceof GameplayScene && shouldReload){
 						GameplayScene gps = ((GameplayScene) mainScene);
@@ -303,6 +315,7 @@ public class OptionsOverlay extends Overlay
 					ShadersLibrary.getShaderProgram("postprocess").reload(FastConfig.getShaderConfig()); }
 				}),
 				new ConfigButtonMultiChoice("framerate",new String[] { "30", "60", "120", "-1" }).setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{
 						XolioWindow.setTargetFPS(Client.getConfig().getIntProp("framerate", -1));
@@ -357,6 +370,7 @@ public class OptionsOverlay extends Overlay
 		configTabs.add(new ConfigTab("Sound", new ConfigButton[] {}));
 		configTabs.add(new ConfigTab("Debug", new ConfigButton[] { 
 				new ConfigButtonToggle("debugGBuffers").setApplyAction(new Runnable(){
+					@Override
 					public void run()
 					{
 						ShadersLibrary.getShaderProgram("postprocess").reload(FastConfig.getShaderConfig());
@@ -380,6 +394,7 @@ public class OptionsOverlay extends Overlay
 		}
 	}
 
+	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
 		int optionsPanelSize = 320 * 2 + 32 + 64;
@@ -437,6 +452,7 @@ public class OptionsOverlay extends Overlay
 		}
 	}
 
+	@Override
 	public boolean handleKeypress(int k)
 	{
 		if (KeyBinds.getKeyBind("exit").isPressed())
@@ -449,6 +465,7 @@ public class OptionsOverlay extends Overlay
 		return true;
 	}
 
+	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		if (button == 0)

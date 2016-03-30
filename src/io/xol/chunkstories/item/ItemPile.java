@@ -53,6 +53,12 @@ public class ItemPile implements CSFSerializable
 		item.onCreate(this, null);
 	}
 
+	public ItemPile(Item item, int amount)
+	{
+		this(item);
+		this.amount = amount;
+	}
+
 	public ItemPile(Item item, String[] info)
 	{
 		this.item = item;
@@ -84,12 +90,6 @@ public class ItemPile implements CSFSerializable
 		this.item = item;
 		this.data = item.getItemData();
 		load(stream);
-	}
-
-	public ItemPile(Item type, int amount)
-	{
-		this(type);
-		this.amount = amount;
 	}
 
 	public String getTextureName()

@@ -68,6 +68,12 @@ public interface WorldInterface
 
 	void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save);
 
+	/**
+	 * @param chunkX
+	 * @param chunkY
+	 * @param chunkZ
+	 * @return True if the chunk is loaded
+	 */
 	boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ);
 
 	/**
@@ -177,7 +183,7 @@ public interface WorldInterface
 
 	boolean isRaining();
 
-	void setWeather(boolean booleanProp);
+	void setWeather(boolean isRaining);
 
 	Location getDefaultSpawnLocation();
 

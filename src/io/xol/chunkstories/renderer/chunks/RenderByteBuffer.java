@@ -65,9 +65,9 @@ public class RenderByteBuffer
 	
 	public void addNormalsInt(int i0, int i1, int i2, boolean wavy)
 	{
-		int a = (int) (i0) & 0x3FF;
-		int b = ((int) (i1) & 0x3FF) << 10;
-		int c = ((int) (i2) & 0x3FF) << 20;
+		int a = (i0) & 0x3FF;
+		int b = ((i1) & 0x3FF) << 10;
+		int c = ((i2) & 0x3FF) << 20;
 		
 		int d = (wavy ? 1 : 0) << 30;
 		int kek = a | b | c | d;

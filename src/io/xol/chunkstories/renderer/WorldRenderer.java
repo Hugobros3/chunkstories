@@ -45,8 +45,10 @@ import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
+import io.xol.chunkstories.renderer.lights.LightsRenderer;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
@@ -155,7 +157,7 @@ public class WorldRenderer
 	DebugProfiler updateProfiler = new DebugProfiler();
 
 	// Light
-	public List<DefferedLight> lights = new ArrayList<DefferedLight>();
+	// public List<DefferedLight> lights = new ArrayList<DefferedLight>();
 
 	// Terrain at distance
 	public TerrainSummarizer terrain;
@@ -184,7 +186,7 @@ public class WorldRenderer
 
 		renderingContext = XolioWindow.getInstance().getRenderingContext();
 		XolioWindow.instance.renderingContext = renderingContext;
-		
+
 		//Pre-load shaders
 		opaqueBlocksShader = ShadersLibrary.getShaderProgram("blocks_opaque");
 		entitiesShader = ShadersLibrary.getShaderProgram("entities");
@@ -356,7 +358,7 @@ public class WorldRenderer
 			if (c != null)
 			{
 				//Free replaced chunkRenderData if any
-				if(c.chunkRenderData != null)
+				if (c.chunkRenderData != null)
 					c.chunkRenderData.free();
 				//Upload data
 				toLoad.upload();
@@ -437,8 +439,8 @@ public class WorldRenderer
 			// Now delete from the worker threads what we won't need anymore
 			chunksRenderer.purgeUselessWork(npCX, npCY, npCZ, sizeInChunks, chunksViewDistance);
 			world.ioHandler.requestChunksUnload(npCX, npCY, npCZ, sizeInChunks, chunksViewDistance + 1);
-			
-			if(npCX != pCX || npCZ != pCZ)
+
+			if (npCX != pCX || npCZ != pCZ)
 				terrain.generateArround(-camera.camPosX, -camera.camPosZ);
 			terrain.updateData();
 			world.chunkSummaries.removeFurther(npCX, npCZ, 33);
@@ -482,7 +484,7 @@ public class WorldRenderer
 
 		renderingContext.setCurrentShader(shadowsPassShader);
 		//shadowsPassShader.use(true);
-		Vector3f lightPosition = sky.getSunPos();
+		Vector3f lightPosition = sky.getSunPosition();
 		lightPosition.normalise(normSunPosition);
 		int fun = 10;// / hdPass ? 3 : 8;
 		if (size > 1024)
@@ -499,7 +501,7 @@ public class WorldRenderer
 
 		//depthMatrix.translate(new Vector3f((float) Math.floor(camera.camPosX), (float) Math.floor(camera.camPosY), (float) Math.floor(camera.camPosZ)));
 		//shadowMVP.translate(new Vector3f((float) Math.floor(camera.camPosX), (float) Math.floor(camera.camPosY), (float) Math.floor(camera.camPosZ)));
-		shadowMVP.translate(new Vector3f((float)camera.camPosX, (float)camera.camPosY, (float)camera.camPosZ));
+		shadowMVP.translate(new Vector3f((float) camera.camPosX, (float) camera.camPosY, (float) camera.camPosZ));
 
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
 		shadowsPassShader.setUniformMatrix4f("localTransform", new Matrix4f());
@@ -526,6 +528,59 @@ public class WorldRenderer
 	float averageBrightness = 1f;
 	float apertureModifier = 1f;
 
+	public Texture getGrassTexture()
+	{
+		Texture vegetationTexture = TexturesHandler.getTexture(world.folder.getAbsolutePath() + "/grassColor.png");
+		if (vegetationTexture == null || vegetationTexture.getID() == -1)
+			vegetationTexture = TexturesHandler.getTexture("./res/textures/environement/grassColor.png");
+		vegetationTexture.setMipMapping(true);
+		vegetationTexture.setLinearFiltering(true);
+		return vegetationTexture;
+	}
+
+	public void renderTerrain()
+	{
+		// Terrain
+		Client.profiler.startSection("terrain");
+		glDisable(GL_BLEND);
+
+		renderingContext.setCurrentShader(terrainShader);
+		//terrainShader.use(true);
+		camera.setupShader(terrainShader);
+		//terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
+		terrainShader.setUniformFloat3("sunPos", sky.getSunPosition());
+		terrainShader.setUniformFloat("time", animationTimer);
+		terrainShader.setUniformFloat("terrainHeight", world.chunkSummaries.getHeightAt((int) viewX, (int) viewZ));
+		terrainShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
+		terrainShader.setUniformFloat("shadowVisiblity", getShadowVisibility());
+		waterNormalTexture.setLinearFiltering(true);
+		waterNormalTexture.setMipMapping(true);
+		terrainShader.setUniformFloat("sunIntensity", sky.getLightIntensity());
+		terrainShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
+		terrainShader.setUniformSampler(8, "glowSampler", glowTexture);
+		terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
+		terrainShader.setUniformSampler(6, "lightColors", lightmapTexture);
+		terrainShader.setUniformSampler(5, "normalTexture", waterNormalTexture);
+		terrainShader.setUniformSamplerCubemap(9, "environmentCubemap", environmentMap);
+		setupShadowColors(terrainShader);
+		terrainShader.setUniformFloat("time", sky.time);
+		terrainShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
+
+		terrainShader.setUniformSampler(3, "vegetationColorTexture", getGrassTexture());
+		terrainShader.setUniformFloat("mapSize", sizeInChunks * 32);
+
+		if (FastConfig.debugGBuffers)
+			glFinish();
+		long t = System.nanoTime();
+		if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
+			renderedVertices += terrain.draw(renderingContext, terrainShader);
+
+		if (FastConfig.debugGBuffers)
+			glFinish();
+		if (FastConfig.debugGBuffers)
+			System.out.println("terrain took " + (System.nanoTime() - t) / 1000000.0 + "ms");
+	}
+
 	public void renderWorld(boolean shadowPass, int chunksToRenderLimit)
 	{
 		long t;
@@ -535,21 +590,14 @@ public class WorldRenderer
 
 		skyTexture = TexturesHandler.getTexture(world.isRaining() ? "environement/sky_rain.png" : "environement/sky.png");
 
-		Vector3f sunPos = sky.getSunPos();
+		Vector3f sunPos = sky.getSunPosition();
 		float shadowVisiblity = getShadowVisibility();
 		chunksViewDistance = sizeInChunks / 2;
-		
-		//TODO move
-		Texture vegetationTexture = TexturesHandler.getTexture(world.folder.getAbsolutePath() + "/grassColor.png");
-		if (vegetationTexture == null || vegetationTexture.getID() == -1)
-			vegetationTexture = TexturesHandler.getTexture("./res/textures/environement/grassColor.png");
-		vegetationTexture.setMipMapping(true);
-		vegetationTexture.setLinearFiltering(true);
-		
+
 		if (!shadowPass)
 		{
 			this.composite_pass_shaded.bind();
-			
+
 			Client.profiler.startSection("blocks");
 			this.composite_pass_gbuffers.setEnabledRenderTargets();
 
@@ -561,7 +609,7 @@ public class WorldRenderer
 			opaqueBlocksShader.setUniformSampler(1, "normalTexture", blocksNormalTexture);
 			opaqueBlocksShader.setUniformSampler(2, "materialTexture", blocksMaterialTexture);
 			opaqueBlocksShader.setUniformSampler(3, "lightColors", lightmapTexture);
-			opaqueBlocksShader.setUniformSampler(4, "vegetationColorTexture", vegetationTexture);
+			opaqueBlocksShader.setUniformSampler(4, "vegetationColorTexture", getGrassTexture());
 
 			//Set texturing arguments
 			blocksDiffuseTexture.setTextureWrapping(false);
@@ -580,8 +628,8 @@ public class WorldRenderer
 			blocksMaterialTexture.setMipmapLevelsRange(0, 4);
 
 			//Shadows parameters
-			opaqueBlocksShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
-			opaqueBlocksShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
+			opaqueBlocksShader.setUniformFloat("shadowVisiblity", getShadowVisibility());
+			opaqueBlocksShader.setUniformFloat("sunIntensity", sky.getLightIntensity());
 
 			//Camera-related stuff
 			opaqueBlocksShader.setUniformFloat2("screenSize", scrW, scrH);
@@ -638,7 +686,7 @@ public class WorldRenderer
 		renderingContext.enableVertexAttribute(texCoordIn);
 
 		// Culling vectors
-		viewerPosVector = new Vector3f((float)viewX, (float)viewY, (float)viewZ);
+		viewerPosVector = new Vector3f((float) viewX, (float) viewY, (float) viewZ);
 		float transformedViewH = (float) ((viewRotH) / 180 * Math.PI);
 		// if(FastConfig.debugGBuffers ) System.out.println(Math.sin(transformedViewV)+"f");
 		viewerCamDirVector = new Vector3f((float) (Math.sin((180 + viewRotV) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)), (float) (Math.cos((180 + viewRotV) / 180 * Math.PI) * Math.cos(transformedViewH)));
@@ -712,9 +760,9 @@ public class WorldRenderer
 				double fractPartX = camera.camPosX - Math.floor(camera.camPosX);
 				double fractPartY = camera.camPosY - Math.floor(camera.camPosY);
 				double fractPartZ = camera.camPosZ - Math.floor(camera.camPosZ);
-				double diffChunkX = (double)(vboDekalX + camIntPartX);
-				double diffChunkY = (double)(chunk.chunkY * 32 + camIntPartY);
-				double diffChunkZ = (double)(vboDekalZ + camIntPartZ);
+				double diffChunkX = vboDekalX + camIntPartX;
+				double diffChunkY = chunk.chunkY * 32 + camIntPartY;
+				double diffChunkZ = vboDekalZ + camIntPartZ;
 				opaqueBlocksShader.setUniformFloat3("borderShift", vboDekalX + camera.camPosX, chunk.chunkY * 32f + camera.camPosY, vboDekalZ + camera.camPosZ);
 				opaqueBlocksShader.setUniformFloat3("borderShift", diffChunkX + fractPartX, diffChunkY + fractPartY, diffChunkZ + fractPartZ);
 			}
@@ -797,7 +845,7 @@ public class WorldRenderer
 			renderingContext.enableVertexAttribute(normalIn);
 
 			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, -1, normalIn);
-			
+
 			entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
 			entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
 
@@ -807,7 +855,7 @@ public class WorldRenderer
 			lightmapTexture.setTextureWrapping(false);
 			entitiesShader.setUniformFloat2("screenSize", scrW, scrH);
 			entitiesShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
-			entitiesShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
+			entitiesShader.setUniformFloat("sunIntensity", sky.getLightIntensity());
 			entitiesShader.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
 			entitiesShader.setUniformFloat3("blockColor", 1f, 1f, 1f);
 			entitiesShader.setUniformFloat("time", animationTimer);
@@ -823,7 +871,7 @@ public class WorldRenderer
 
 		glDisable(GL_CULL_FACE);
 		// Render entities
-		DefferedLight[] el;
+		Light[] el;
 		Iterator<Entity> ie = world.getAllLoadedEntities();
 		Entity e;
 		while (ie.hasNext())
@@ -833,14 +881,14 @@ public class WorldRenderer
 			//Reset transformations
 			entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
 			entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
-			if(e!= null)
+			if (e != null)
 			{
 				e.render(renderingContext);
 				// Also populate lights buffer
 				el = e.getLights();
 				if (el != null)
-					for (DefferedLight l : el)
-						lights.add(l);
+					for (Light l : el)
+						renderingContext.lights.add(l);
 			}
 		}
 		// Particles rendering
@@ -878,7 +926,7 @@ public class WorldRenderer
 			liquidBlocksShader.setUniformSampler(0, "diffuseTexture", blocksDiffuseTexture);
 			liquidBlocksShader.setUniformFloat2("screenSize", scrW, scrH);
 			liquidBlocksShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
-			liquidBlocksShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
+			liquidBlocksShader.setUniformFloat("sunIntensity", sky.getLightIntensity());
 			liquidBlocksShader.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
 			liquidBlocksShader.setUniformFloat("time", animationTimer);
 
@@ -974,7 +1022,7 @@ public class WorldRenderer
 					glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20);
 
 				glDrawArrays(GL_TRIANGLES, 0, geometrySize);
-				
+
 				renderedVertices += geometrySize;
 			}
 
@@ -991,16 +1039,24 @@ public class WorldRenderer
 
 		// Draw world shaded with sunlight and vertex light
 		glDepthMask(false);
-		addShadows();
+		renderShadedBlocks();
 		glDepthMask(true);
 
 		// Compute SSAO
 		if (FastConfig.ssaoQuality > 0)
 			this.SSAO(FastConfig.ssaoQuality);
 
-		Client.profiler.startSection("lights");
-		this.composite_pass_shaded.bind();
+		renderLightsDeffered();
 
+		renderTerrain();
+	}
+	
+	private void renderLightsDeffered()
+	{
+		Client.profiler.startSection("lights");
+		
+		//We work on the shaded buffer
+		this.composite_pass_shaded.bind();
 		// Deffered lightning
 		// Disable depth read/write
 		glDisable(GL_DEPTH_TEST);
@@ -1024,65 +1080,14 @@ public class WorldRenderer
 		glDisable(GL_DEPTH_TEST);
 		glBlendFunc(GL_ONE, GL_ONE);
 
-		lightsBuffer = 0;
-		//Render entities lights
-		for (DefferedLight light : lights)
-			renderDefferedLight(light);
-		//Render particles's lights
-		Client.world.particlesHolder.renderLights(this);
-		// Render remaining lights
-		if (lightsBuffer > 0)
-		{
-			lightShader.setUniformInt("lightsToRender", lightsBuffer);
-			ObjectRenderer.drawFSQuad(lightShader.getVertexAttributeLocation("vertexIn"));
-		}
+		LightsRenderer.renderPendingLights(renderingContext);
 		//Cleanup
 		glDepthMask(true);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		renderingContext.setCurrentShader(lightShader);
-		lights.clear();
-		
-		// Terrain
-		Client.profiler.startSection("terrain");
-		glDisable(GL_BLEND);
-		
-		renderingContext.setCurrentShader(terrainShader);
-		//terrainShader.use(true);
-		camera.setupShader(terrainShader);
-		//terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
-		terrainShader.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
-		terrainShader.setUniformFloat("time", animationTimer);
-		terrainShader.setUniformFloat("terrainHeight", world.chunkSummaries.getHeightAt((int) viewX, (int) viewZ));
-		terrainShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
-		terrainShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
-		waterNormalTexture.setLinearFiltering(true);
-		waterNormalTexture.setMipMapping(true);
-		terrainShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
-		terrainShader.setUniformFloat3("camPos", viewX, viewY, viewZ);
-		terrainShader.setUniformSampler(8, "glowSampler", glowTexture);
-		terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
-		terrainShader.setUniformSampler(6, "lightColors", lightmapTexture);
-		terrainShader.setUniformSampler(5, "normalTexture", waterNormalTexture);
-		terrainShader.setUniformSamplerCubemap(9, "environmentCubemap", environmentMap);
-		setupShadowColors(terrainShader);
-		terrainShader.setUniformFloat("time", sky.time);
-		terrainShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
-
-		terrainShader.setUniformSampler(3, "vegetationColorTexture", vegetationTexture);
-		terrainShader.setUniformFloat("mapSize", sizeInChunks * 32);
-
-		if (FastConfig.debugGBuffers)
-			glFinish();
-		t = System.nanoTime();
-		if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
-			renderedVertices += terrain.draw(renderingContext, terrainShader);
-
-		if (FastConfig.debugGBuffers)
-			glFinish();
-		if (FastConfig.debugGBuffers)
-			System.out.println("terrain took " + (System.nanoTime() - t) / 1000000.0 + "ms");
+		renderingContext.lights.clear();
 	}
 
 	private void setupShadowColors(ShaderProgram shader)
@@ -1122,17 +1127,17 @@ public class WorldRenderer
 		chunksChanged = true;
 	}
 
-	public void setupRenderSize(int w, int h)
+	public void setupRenderSize(int width, int height)
 	{
-		scrW = w;
-		scrH = h;
-		this.composite_pass_gbuffers.resizeFBO(w, h);
-		this.composite_pass_shaded.resizeFBO(w, h);
-		this.composite_pass_gbuffers_waterfp.resizeFBO(w, h);
+		scrW = width;
+		scrH = height;
+		this.composite_pass_gbuffers.resizeFBO(width, height);
+		this.composite_pass_shaded.resizeFBO(width, height);
+		this.composite_pass_gbuffers_waterfp.resizeFBO(width, height);
 		// Resize bloom components
-		blurFBO.resizeFBO(w / 2, h / 2);
-		composite_pass_bloom.resizeFBO(w / 2, h / 2);
-		composite_pass_ssao.resizeFBO(w, h);
+		blurFBO.resizeFBO(width / 2, height / 2);
+		composite_pass_bloom.resizeFBO(width / 2, height / 2);
+		composite_pass_ssao.resizeFBO(width, height);
 	}
 
 	//SSAO stuff
@@ -1210,7 +1215,7 @@ public class WorldRenderer
 
 	}
 
-	public void addShadows()
+	public void renderShadedBlocks()
 	{
 		//if(true)
 		//	return;
@@ -1234,7 +1239,7 @@ public class WorldRenderer
 		//glBlendFunc(GL_DST_COLOR, GL_ZERO);
 		//glBlendFunc(GL_ONE, GL_ONE);
 
-		Vector3f sunPos = sky.getSunPos();
+		Vector3f sunPos = sky.getSunPosition();
 
 		composite_pass_shaded.bind();
 
@@ -1264,7 +1269,7 @@ public class WorldRenderer
 
 		//applyShadowsShader.setUniformSampler(4, "comp_spec", this.composite_specular);
 
-		applyShadowsShader.setUniformFloat("sunIntensity", sky.getShadowIntensity());
+		applyShadowsShader.setUniformFloat("sunIntensity", sky.getLightIntensity());
 		applyShadowsShader.setUniformFloat("time", sky.time);
 
 		// Sky color etc
@@ -1324,7 +1329,7 @@ public class WorldRenderer
 		postProcess.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
 		postProcess.setUniformFloat("time", animationTimer);
 
-		Vector3f sunPos = sky.getSunPos();
+		Vector3f sunPos = sky.getSunPosition();
 		postProcess.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
 
 		camera.setupShader(postProcess);
@@ -1408,54 +1413,7 @@ public class WorldRenderer
 		return this.renderList.size();
 	}
 
-	int lightsBuffer = 0;
-
-	public void renderDefferedLight(DefferedLight light)
-	{
-		// Light culling
-		if (!lightInFrustrum(light))
-			return;
-
-		lightShader.setUniformFloat("lightDecay[" + lightsBuffer + "]", light.decay);
-		lightShader.setUniformFloat3("lightPos[" + lightsBuffer + "]", light.position.x, light.position.y, light.position.z);
-		lightShader.setUniformFloat3("lightColor[" + lightsBuffer + "]", light.color.x, light.color.y, light.color.z);
-		if (light.direction != null)
-		{
-			lightShader.setUniformFloat3("lightDir[" + lightsBuffer + "]", light.direction.x, light.direction.y, light.direction.z);
-			// if(FastConfig.debugGBuffers ) System.out.println("setup lightdir "+light.direction.toString());
-		}
-		lightShader.setUniformFloat("lightAngle[" + lightsBuffer + "]", (float) (light.angle / 180 * Math.PI));
-
-		//TexturesHandler.nowrap("res/textures/flashlight.png");
-
-		lightsBuffer++;
-		if (lightsBuffer == 64)
-		{
-			// if(FastConfig.debugGBuffers ) System.out.println("drawing fs quad");
-			lightShader.setUniformInt("lightsToRender", lightsBuffer);
-			ObjectRenderer.drawFSQuad(lightShader.getVertexAttributeLocation("vertexIn"));
-			//drawFSQuad();
-			lightsBuffer = 0;
-		}
-	}
-
-	public boolean lightInFrustrum(DefferedLight light)
-	{
-		Vector3f centerSphere = new Vector3f(light.position.x, light.position.y, light.position.z);
-		double coneAngle = (camera.fov) * (scrW / (scrH * 1f));
-		coneAngle = coneAngle / 180d * Math.PI;
-		Vector3f v = new Vector3f();
-		Vector3f.sub(centerSphere, this.viewerPosVector, v);
-		viewerCamDirVector.normalise(viewerCamDirVector);
-		float a = Vector3f.dot(v, viewerCamDirVector);
-		double b = a * Math.tan(coneAngle);
-		double c = Math.sqrt(Vector3f.dot(v, v) - a * a);
-		double d = c - b;
-		double e = d * Math.cos(coneAngle);
-		if (e >= Math.sqrt(light.decay * light.decay * 3)) // R
-			return false;
-		return true;
-	}
+	
 
 	public void destroy()
 	{

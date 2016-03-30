@@ -32,6 +32,7 @@ public class VoxelHalfTile extends VoxelDefault
 		return meta % 2 == 0;
 	}
 
+	@Override
 	public VoxelModel getVoxelModel(BlockRenderInfo info)
 	{
 		int meta = info.getMetaData();
@@ -40,6 +41,7 @@ public class VoxelHalfTile extends VoxelDefault
 		return top;
 	}
 
+	@Override
 	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
 		// System.out.println("kek");
@@ -51,6 +53,7 @@ public class VoxelHalfTile extends VoxelDefault
 		return new CollisionBox[] { box2 };
 	}
 	
+	@Override
 	public int getLightLevelModifier(int dataFrom, int dataTo, int side)
 	{
 		//Special cases when half-tiles meet

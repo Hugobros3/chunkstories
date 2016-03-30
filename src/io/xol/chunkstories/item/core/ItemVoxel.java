@@ -38,11 +38,13 @@ public class ItemVoxel extends Item
 		itemRenderer = new VoxelItemRenderer(this);
 	}
 
+	@Override
 	public ItemData getItemData()
 	{
 		return new ItemDataVoxel();
 	}
 
+	@Override
 	public void onCreate(ItemPile pile, String[] info)
 	{
 		ItemDataVoxel idv = (ItemDataVoxel) pile.data;
@@ -127,7 +129,7 @@ public class ItemVoxel extends Item
 	public void load(ItemPile itemPile, DataInputStream stream) throws IOException
 	{
 		((ItemDataVoxel) itemPile.data).voxel = VoxelTypes.get(stream.readInt());
-		((ItemDataVoxel) itemPile.data).voxelMeta = (int) stream.readByte();
+		((ItemDataVoxel) itemPile.data).voxelMeta = stream.readByte();
 	}
 
 	@Override

@@ -58,6 +58,7 @@ uniform mat4 modelViewProjectionMatrix;
 uniform mat4 modelViewProjectionMatrixInv;
 
 varying float waterFogI;
+varying vec2 fragPos;
 
 float getFogI(vec3 position, float fogDistance)
 {
@@ -92,6 +93,7 @@ void main(){
 	lightMapCoords = vec4(colorIn.r, colorIn.g, colorIn.b, 0);
 	
 	gl_Position = modelViewProjectionMatrix * v;
+	fragPos = (modelViewProjectionMatrix * v).xy;
 	
 	//Eye transform
 	eye = v.xyz-camPos;

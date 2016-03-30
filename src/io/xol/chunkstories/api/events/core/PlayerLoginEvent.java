@@ -15,6 +15,7 @@ public class PlayerLoginEvent extends CancellableEvent implements PlayerEvent
 	
 	static EventListeners listeners = new EventListeners();
 	
+	@Override
 	public EventListeners getListeners()
 	{
 		return listeners;
@@ -57,6 +58,7 @@ public class PlayerLoginEvent extends CancellableEvent implements PlayerEvent
 		this.connectionMessage = "#FFFF00"+player+" joined the server";
 	}
 	
+	@Override
 	public Player getPlayer()
 	{
 		return player;

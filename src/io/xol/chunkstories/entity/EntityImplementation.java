@@ -5,10 +5,10 @@ import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.chunkstories.renderer.DefferedLight;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldInterface;
@@ -68,6 +68,7 @@ public abstract class EntityImplementation implements Entity
 	 * 
 	 * @return
 	 */
+	@Override
 	public Location getLocation()
 	{
 		return new Location(world, posX, posY, posZ);
@@ -78,6 +79,7 @@ public abstract class EntityImplementation implements Entity
 	 * 
 	 * @param loc
 	 */
+	@Override
 	public void setLocation(Location loc)
 	{
 		this.posX = loc.x;
@@ -89,11 +91,13 @@ public abstract class EntityImplementation implements Entity
 			((EntityControllable) this).getController().notifyTeleport(this);
 	}
 
+	@Override
 	public WorldInterface getWorld()
 	{
 		return world;
 	}
 
+	@Override
 	public ChunkHolder getChunkHolder()
 	{
 		return parentHolder;
@@ -114,6 +118,7 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	// Ran each tick
+	@Override
 	public void tick()
 	{
 		posX %= world.getSizeSide();
@@ -160,6 +165,7 @@ public abstract class EntityImplementation implements Entity
 		updatePosition();
 	}
 
+	@Override
 	public boolean updatePosition()
 	{
 		posX %= world.getSizeSide();
@@ -193,6 +199,7 @@ public abstract class EntityImplementation implements Entity
 		}
 	}
 
+	@Override
 	public void moveWithoutCollisionRestrain(double mx, double my, double mz)
 	{
 		posX += mx;
@@ -200,6 +207,7 @@ public abstract class EntityImplementation implements Entity
 		posZ += mz;
 	}
 
+	@Override
 	public String toString()
 	{
 		return "['" + this.getClass().getName() + "'] PosX : " + clampDouble(posX) + " PosY" + clampDouble(posY) + " PosZ" + clampDouble(posZ) + " UUID : " + entityID + " EID : " + this.getEID() + " Holder:" + this.parentHolder;
@@ -213,12 +221,14 @@ public abstract class EntityImplementation implements Entity
 		return d;
 	}
 
+	@Override
 	public Vector3d moveWithCollisionRestrain(Vector3d vec)
 	{
 		return moveWithCollisionRestrain(vec.x, vec.y, vec.z, false);
 	}
 
 	// Convinience method
+	@Override
 	public Vector3d moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions)
 	{
 		int id, data;
@@ -422,11 +432,13 @@ public abstract class EntityImplementation implements Entity
 		return distanceToTravel;
 	}
 
-	public DefferedLight[] getLights()
+	@Override
+	public Light[] getLights()
 	{
 		return null;
 	}
 
+	@Override
 	public CollisionBox[] getTranslatedCollisionBoxes()
 	{
 		return new CollisionBox[] { getCollisionBox().translate(posX, posY, posZ) };
@@ -442,11 +454,13 @@ public abstract class EntityImplementation implements Entity
 		// Do nothing.
 	}
 
+	@Override
 	public void debugDraw()
 	{
 		// Do nothing.
 	}
 
+	@Override
 	public void setupCamera(Camera camera)
 	{
 		synchronized (this)
@@ -464,6 +478,7 @@ public abstract class EntityImplementation implements Entity
 		}
 	}
 
+	@Override
 	public short getEID()
 	{
 		return EntitiesList.getIdForClass(getClass().getName());
@@ -471,6 +486,7 @@ public abstract class EntityImplementation implements Entity
 
 	public static short allocatedID = 0;
 
+	@Override
 	public long getUUID()
 	{
 		return entityID;
@@ -484,6 +500,7 @@ public abstract class EntityImplementation implements Entity
 		return ((Entity) o).getUUID() == entityID;
 	}
 
+	@Override
 	public void delete()
 	{
 		mpSendDeletePacket = true;
@@ -502,6 +519,7 @@ public abstract class EntityImplementation implements Entity
 		inventory.holder = this;
 	}
 
+	@Override
 	public boolean shouldBeTrackedBy(Player player)
 	{
 		return !mpSendDeletePacket;

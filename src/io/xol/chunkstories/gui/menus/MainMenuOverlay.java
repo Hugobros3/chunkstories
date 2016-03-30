@@ -36,6 +36,7 @@ public class MainMenuOverlay extends Overlay
 		guiHandler.add(exitGame);
 	}
 
+	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
 		if(Client.clientConfig.getProp("log-policy", "undefined").equals("undefined"))
@@ -78,6 +79,7 @@ public class MainMenuOverlay extends Overlay
 		FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW - 20 - FontRenderer2.getTextLengthUsingFont(32, version, BitmapFont.SMALLFONTS), 10, 0, 32, version, BitmapFont.SMALLFONTS);
 	}
 
+	@Override
 	public boolean handleKeypress(int k)
 	{
 		if (k == Keyboard.KEY_E)
@@ -89,6 +91,7 @@ public class MainMenuOverlay extends Overlay
 		return false;
 	}
 
+	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		if (button == 0)

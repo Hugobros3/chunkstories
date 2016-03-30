@@ -118,6 +118,7 @@ public class Client implements ClientController, ClientInterface
 		GuiDrawer.initGL();
 	}
 
+	@Override
 	public SoundManager getSoundManager()
 	{
 		return soundManager;
@@ -140,6 +141,7 @@ public class Client implements ClientController, ClientInterface
 		return clientController;
 	}
 
+	@Override
 	public boolean hasFocus()
 	{
 		if (windows.getCurrentScene() instanceof GameplayScene)

@@ -33,6 +33,7 @@ public class ConnectScene extends Scene
 	
 	boolean authK = false;
 	
+	@Override
 	public void update()
 	{
 		// ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2,
@@ -85,6 +86,7 @@ public class ConnectScene extends Scene
 		this.eng.changeScene(new MainMenu(eng, false));
 	}
 
+	@Override
 	public boolean onKeyPress(int k)
 	{
 		if (k == 1)
@@ -94,6 +96,7 @@ public class ConnectScene extends Scene
 		return true;
 	}
 
+	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		if (button == 0)

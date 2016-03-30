@@ -23,11 +23,13 @@ public class Voxel8Steps extends VoxelDefault
 		// System.out.println("kekzer");
 	}
 
+	@Override
 	public VoxelModel getVoxelModel(BlockRenderInfo info)
 	{
 		return steps[info.getMetaData() % 8];
 	}
 
+	@Override
 	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
 		//System.out.println("kek");

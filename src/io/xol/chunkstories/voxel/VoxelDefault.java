@@ -54,21 +54,25 @@ public class VoxelDefault extends Voxel
 	 *            A BlockRenderInfo object containing information on the voxel surroundings
 	 * @return The model used.
 	 */
+	@Override
 	public VoxelModel getVoxelModel(BlockRenderInfo info)
 	{
 		return model;
 	}
 
+	@Override
 	public boolean isVoxelLiquid()
 	{
 		return liquid;
 	}
 
+	@Override
 	public boolean isVoxelSolid()
 	{
 		return solid;
 	}
 
+	@Override
 	public boolean isVoxelSelectable()
 	{
 		return voxelID > 0 && !isVoxelLiquid();
@@ -79,16 +83,19 @@ public class VoxelDefault extends Voxel
 	 * 
 	 * @return Whether it does
 	 */
+	@Override
 	public boolean isVoxelUsingCustomModel()
 	{
 		return custom_model;
 	}
 
+	@Override
 	public boolean isVoxelOpaque()
 	{
 		return opaque;
 	}
 
+	@Override
 	public boolean isVoxelOpaqueWithItself()
 	{
 		return self_opaque;
@@ -101,6 +108,7 @@ public class VoxelDefault extends Voxel
 	 *            The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
 	 * @return The aformentioned light level
 	 */
+	@Override
 	public short getLightLevel(int data)
 	{
 		return lightLevel;
@@ -116,11 +124,13 @@ public class VoxelDefault extends Voxel
 	 * @param info
 	 * @return
 	 */
+	@Override
 	public VoxelTexture getVoxelTexture(int data, int side, BlockRenderInfo info)
 	{
 		return texture[side];
 	}
 
+	@Override
 	public int getLightLevelModifier(int dataFrom, int dataTo, int side)
 	{
 		if (this.isVoxelOpaque())
@@ -128,6 +138,7 @@ public class VoxelDefault extends Voxel
 		return shading;
 	}
 
+	@Override
 	public void debugRenderCollision(WorldInterface world, int x, int y, int z)
 	{
 		CollisionBox[] tboxes = getTranslatedCollisionBoxes(world, x, y, z);
@@ -148,6 +159,7 @@ public class VoxelDefault extends Voxel
 	 *            The data of the block connected to the one being drew by the face j
 	 * @return Whether or not that face occlude a whole face and thus we can discard it
 	 */
+	@Override
 	public boolean isFaceOpaque(int side, int data)
 	{
 		return isVoxelOpaque();
@@ -160,6 +172,7 @@ public class VoxelDefault extends Voxel
 	 *            The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
 	 * @return An array of CollisionBox or null.
 	 */
+	@Override
 	public CollisionBox[] getTranslatedCollisionBoxes(WorldInterface world, int x, int y, int z)
 	{
 		CollisionBox[] boxes = getCollisionBoxes(new BlockRenderInfo(world, x, y, z));
@@ -176,6 +189,7 @@ public class VoxelDefault extends Voxel
 	 *            full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
 	 * @return An array of CollisionBox or null.
 	 */
+	@Override
 	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
 		if (voxelID == 0)

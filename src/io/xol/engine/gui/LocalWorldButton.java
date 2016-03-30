@@ -35,6 +35,7 @@ public class LocalWorldButton extends ClickableButton
 		return (Mouse.getX() >= posx - width / 2 - 4 && Mouse.getX() < posx + width / 2 + 4 && Mouse.getY() >= posy - height / 2 - 4 && Mouse.getY() <= posy + height / 2 + 4);
 	}
 
+	@Override
 	public int draw()
 	{
 		if (focus || isMouseOver())
@@ -57,12 +58,14 @@ public class LocalWorldButton extends ClickableButton
 		return width * 2 - 12;
 	}
 
+	@Override
 	public void setPos(float f, float g)
 	{
 		posx = (int) f;
 		posy = (int) g;
 	}
 
+	@Override
 	public boolean clicked()
 	{
 		if (clicked)

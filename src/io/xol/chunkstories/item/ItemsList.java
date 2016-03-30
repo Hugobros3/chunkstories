@@ -109,7 +109,7 @@ public class ItemsList
 								@SuppressWarnings("unchecked")
 								Class<? extends Item> itemClass = (Class<? extends Item>)rawClass;
 								Class<?>[] types = { Integer.TYPE };
-								Constructor<? extends Item> constructor = (Constructor<? extends Item>) itemClass.getConstructor(types);
+								Constructor<? extends Item> constructor = itemClass.getConstructor(types);
 								//itemClass.getField("internalName").setAccessible(true);
 								//itemClass.getField("internalName").set(null, itemName);
 								//Field eId = itemClass.getField("allocatedID");

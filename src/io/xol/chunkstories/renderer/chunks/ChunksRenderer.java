@@ -125,6 +125,7 @@ public class ChunksRenderer extends Thread
 		return done.poll();
 	}
 
+	@Override
 	public void run()
 	{
 		System.out.println("Starting Chunk Renderer thread !");

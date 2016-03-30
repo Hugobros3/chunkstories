@@ -14,6 +14,7 @@ public class FlatGenerator extends WorldGenerator
 {
 	Random rnd = new Random();
 	
+	@Override
 	public void initialize(World w)
 	{
 		super.initialize(w);
@@ -49,15 +50,17 @@ public class FlatGenerator extends WorldGenerator
 	
 	private int getHeightAtInternal(int x, int z)
 	{
-		return (int) 30;
+		return 30;
 	}
 	
+	@Override
 	public int getHeightAt(int x, int z)
 	{
 		int finalHeight = getHeightAtInternal(x, z);
 		return finalHeight;
 	}
 	
+	@Override
 	public int getDataAt(int x, int z)
 	{
 		return 12;

@@ -29,6 +29,7 @@ public class WorldTool extends World
 		super(csWorldName, string, blankWorldAccessor, size);
 	}
 	
+	@Override
 	public void trimRemovableChunks()
 	{
 		

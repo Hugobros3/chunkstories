@@ -138,6 +138,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			chunkZ = z;
 		}
 		
+		@Override
 		public boolean equals(Object o)
 		{
 			if(o instanceof ChunkLocation)
@@ -149,12 +150,14 @@ public class IOTasksMultiplayerClient extends IOTasks
 			return false;
 		}
 		
+		@Override
 		public int hashCode()
 		{
 			return (chunkX * 65536 * 256 + chunkY * 65536 + chunkZ)%21000000;
 		}
 	}
 	
+	@Override
 	public void requestChunkLoad(int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
 		ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
@@ -166,12 +169,14 @@ public class IOTasksMultiplayerClient extends IOTasks
 		}
 	}
 
+	@Override
 	public void notifyChunkUnload(int chunkX, int chunkY, int chunkZ)
 	{
 		ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
 		chunksAlreadyAsked.remove(loc);
 	}
 
+	@Override
 	public void requestChunkHolderLoad(ChunkHolder holder)
 	{
 		holder.setLoaded(true);
@@ -227,7 +232,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		@Override
 		public int hashCode()
 		{
-			return (int) 8792;
+			return 8792;
 		}
 	}
 
@@ -239,6 +244,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 	List<int[]> summariesAlreadyAsked = new ArrayList<int[]>();
 
+	@Override
 	public void requestChunkSummaryLoad(ChunkSummary summary)
 	{
 		// don't spam packets !

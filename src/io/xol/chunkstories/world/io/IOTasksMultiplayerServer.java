@@ -39,6 +39,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 			this.chunkZ = z;
 		}
 		
+		@Override
 		public boolean run()
 		{
 			try
@@ -85,7 +86,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 		@Override
 		public int hashCode()
 		{
-			return (int) ((-65536 + 7777 * chunkX + 256 * chunkY + chunkZ) % 2147483647);
+			return (-65536 + 7777 * chunkX + 256 * chunkY + chunkZ) % 2147483647;
 		}
 		
 		/*private String toStr(byte[] digest)
@@ -113,6 +114,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 			this.rz = z;
 		}
 		
+		@Override
 		public boolean run()
 		{
 			try

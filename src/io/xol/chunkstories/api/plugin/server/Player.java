@@ -14,6 +14,7 @@ public interface Player extends CommandEmitter
 	 * Returns the username of the player
 	 * @return
 	 */
+	@Override
 	public String getName();
 
 	/**
@@ -36,6 +37,7 @@ public interface Player extends CommandEmitter
 	 * Sends a text message to this player chat
 	 * @param msg
 	 */
+	@Override
 	public void sendMessage(String msg);
 	
 	/**

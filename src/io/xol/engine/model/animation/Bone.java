@@ -36,6 +36,7 @@ public class Bone
 	}
 
 	// Pretty recursive debug function :D
+	@Override
 	public String toString()
 	{
 		String txt = "";

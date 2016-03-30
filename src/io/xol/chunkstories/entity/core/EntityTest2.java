@@ -31,6 +31,7 @@ public class EntityTest2 extends EntityImplementation
 
 	//BVHAnimation anim;
 
+	@Override
 	public void render(RenderingContext renderingContext)
 	{
 		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/ak47.hq.png"));

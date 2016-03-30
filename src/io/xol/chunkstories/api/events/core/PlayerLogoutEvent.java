@@ -15,6 +15,7 @@ public class PlayerLogoutEvent extends Event implements PlayerEvent
 	
 	static EventListeners listeners = new EventListeners();
 	
+	@Override
 	public EventListeners getListeners()
 	{
 		return listeners;
@@ -46,6 +47,7 @@ public class PlayerLogoutEvent extends Event implements PlayerEvent
 		this.logoutMessage = logoutMessage;
 	}
 
+	@Override
 	public Player getPlayer()
 	{
 		return player;

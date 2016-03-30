@@ -80,6 +80,7 @@ public class PluginsManager implements PluginManager
 		}
 	}
 
+	@Override
 	public void disablePlugins()
 	{
 		for (ChunkStoriesPlugin plugin : activePlugins)
@@ -116,6 +117,7 @@ public class PluginsManager implements PluginManager
 		enablePlugins();
 	}
 
+	@Override
 	public boolean dispatchCommand(String cmd, CommandEmitter emitter)
 	{
 		String cmdName = cmd.toLowerCase();
@@ -172,6 +174,7 @@ public class PluginsManager implements PluginManager
 				Class<? extends Event> parameter = method.getParameterTypes()[0].asSubclass(Event.class);
 				// Create an EventExecutor to launch the event code
 				EventExecutor executor = new EventExecutor(){
+					@Override
 					public void fireEvent(Event event) throws Exception
 					{
 						method.invoke(listener, event);

@@ -243,6 +243,7 @@ public class BVHAnimation
 		}
 	}
 
+	@Override
 	public String toString()
 	{
 		String txt = "BVH ANIMATION FILE\n";

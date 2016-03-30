@@ -425,4 +425,13 @@ public class Camera
 		posOnScreen.z = scale;
 		return posOnScreen;
 	}
+
+	public Vector3f getViewDirection()
+	{
+		float rotH = view_roty;
+		float rotV = view_rotx;
+		float a = (float) ((180-rotH) / 180f * Math.PI);
+		float b = (float) ((-rotV) / 180f * Math.PI);
+		return new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
+	}
 }

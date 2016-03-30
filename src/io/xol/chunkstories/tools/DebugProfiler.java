@@ -28,6 +28,7 @@ public class DebugProfiler
 			this.timeTookNs = timeTookNs;
 		}
 
+		@Override
 		public String toString()
 		{
 			return "[" + name + ":" + Math.floor(timeTookNs / 10000) / 100.0f + "]";

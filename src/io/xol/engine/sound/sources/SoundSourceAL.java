@@ -63,6 +63,7 @@ public class SoundSourceAL implements SoundSource
 	 * @param pitch
 	 * @return
 	 */
+	@Override
 	public SoundSource setPitch(float pitch)
 	{
 		lock.lock();
@@ -79,6 +80,7 @@ public class SoundSourceAL implements SoundSource
 	 * @param ambient
 	 * @return
 	 */
+	@Override
 	public SoundSource setAmbient(boolean ambient)
 	{
 		lock.lock();
@@ -95,6 +97,7 @@ public class SoundSourceAL implements SoundSource
 	 * @param gain
 	 * @return
 	 */
+	@Override
 	public SoundSource setGain(float gain)
 	{
 		lock.lock();
@@ -113,6 +116,7 @@ public class SoundSourceAL implements SoundSource
 	 * @param z
 	 * @return The working SoundSource
 	 */
+	@Override
 	public SoundSource setPosition(float x, float y, float z)
 	{
 		lock.lock();
@@ -176,6 +180,7 @@ public class SoundSourceAL implements SoundSource
 		}
 	}
 
+	@Override
 	public void update(SoundManager manager)
 	{
 		//Update buffered sounds
@@ -212,6 +217,7 @@ public class SoundSourceAL implements SoundSource
 	 * 
 	 * @return
 	 */
+	@Override
 	public boolean isDonePlaying()
 	{
 		if (soundData == null)
@@ -222,6 +228,7 @@ public class SoundSourceAL implements SoundSource
 	/**
 	 * Removes and stops the SoundSource. In case this source was using an unique SoundData (ie streamed/buffered) it also deletes the said source and frees ressources.
 	 */
+	@Override
 	public void destroy()
 	{
 		alSourceStop(alId);

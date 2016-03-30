@@ -32,6 +32,7 @@ public class ServerConnectionsHandler extends Thread
 
 	String hostname = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?host=1", "");
 
+	@Override
 	public void start()
 	{
 		try
@@ -64,6 +65,7 @@ public class ServerConnectionsHandler extends Thread
 		}
 	}
 
+	@Override
 	public void run()
 	{
 		while (running.get())

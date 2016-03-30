@@ -68,6 +68,7 @@ public class WorldChunksIterator implements ChunksIterator
 		return null;
 	}
 	
+	@Override
 	public void remove()
 	{
 		currentChunkHolderIterator.remove();

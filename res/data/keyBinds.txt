@@ -1,0 +1,12 @@
+#Bundled world generators
+forward Z
+back S
+left Q
+right D
+jump SPACE
+run LCONTROL
+use E
+inventory I
+exit ESCAPE
+enter RETURN
+chat T

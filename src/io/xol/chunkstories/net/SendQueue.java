@@ -47,6 +47,7 @@ public class SendQueue extends Thread
 		}
 	}
 	
+	@Override
 	public void run()
 	{
 		while(!die.get())

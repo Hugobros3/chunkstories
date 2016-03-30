@@ -47,6 +47,7 @@ public class LoginOverlay extends Overlay implements HttpRequester
 	private boolean can_next = false;
 	private boolean failed_login;
 	
+	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
 		if (can_next)
@@ -96,6 +97,7 @@ public class LoginOverlay extends Overlay implements HttpRequester
 		FontRenderer2.drawTextUsingSpecificFont(12, 12, 0, 32, "Copyright 2016 XolioWare Interactive", BitmapFont.SMALLFONTS);
 	}
 	
+	@Override
 	public boolean handleKeypress(int k)
 	{
 		Client.getInstance().getSoundManager().playSoundEffect("sfx/shoot.ogg");
@@ -110,6 +112,7 @@ public class LoginOverlay extends Overlay implements HttpRequester
 		return true;
 	}
 	
+	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		if (button == 0)
@@ -132,6 +135,7 @@ public class LoginOverlay extends Overlay implements HttpRequester
 		}
 	}
 	
+	@Override
 	public void handleHttpRequest(String info, String result)
 	{
 		if (info.equals("login"))

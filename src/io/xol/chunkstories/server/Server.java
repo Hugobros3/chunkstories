@@ -66,6 +66,7 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 	// Sleeper thread to keep servers list updated
 	public ServerAnnouncerThread announcer;
 
+	@Override
 	public void run()
 	{
 		// logger init

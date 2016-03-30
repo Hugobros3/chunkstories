@@ -349,6 +349,7 @@ public class OggInputStream extends InputStream
 	private int readIndex;
 	private ByteBuffer pcmBuffer = BufferUtils.createByteBuffer(4096 * 500);
 	
+	@Override
 	public int read() throws IOException {
 		if (readIndex >= pcmBuffer.position()) {
 			pcmBuffer.clear();
@@ -372,11 +373,13 @@ public class OggInputStream extends InputStream
 		return reachedEnd && (readIndex >= pcmBuffer.position());
 	}
 
+	@Override
 	public int read(byte[] b) throws IOException
 	{
 		return read(b, 0, b.length);
 	}
 	
+	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
 		for (int i=0;i<len;i++) {
 			try {

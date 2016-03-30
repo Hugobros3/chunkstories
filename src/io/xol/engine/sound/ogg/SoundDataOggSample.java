@@ -78,6 +78,7 @@ public class SoundDataOggSample extends SoundData
 		return alId;
 	}
 	
+	@Override
 	public void destroy()
 	{
 		alDeleteBuffers(alId);

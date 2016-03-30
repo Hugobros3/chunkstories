@@ -95,6 +95,9 @@ vec4 unprojectPixel(vec2 co) {
 }
 
 void main(){
+	//if(mod((gl_FragCoord.x + gl_FragCoord.y), 2) == 0)
+	//	discard;
+
 	vec3 normal = vec3(0.0, 1.0, 0.0);
 
 	vec3 nt = 1.0*(texture2D(normalTexture,(varyingVertex.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
@@ -153,5 +156,6 @@ void main(){
 	baseColor.rgb = mix(refracted.rgb, baseColor.rgb, clamp(waterFogI2+0.2, 0.0, 1.0));
 	
 	spec *= 1-underwater;
+	
 	gl_FragData[0] = vec4(baseColor);
 }

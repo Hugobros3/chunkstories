@@ -10,11 +10,13 @@ import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 public class ParticleRainfall extends Particle
 {
 
+	@Override
 	public Type getType()
 	{
 		return RAINFALL;
 	}
 
+	@Override
 	public void update()
 	{
 		if (!world.checkCollisionPoint(posX, posY, posZ))

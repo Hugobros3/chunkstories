@@ -116,8 +116,8 @@ public class VoxelItemRenderer implements ItemRenderer
 					textureT = voxelTexture.atlasT;// +mod(sz,texture.textureScale)*offset;
 				}
 				
-				transformTextures[i] = ((float)textureS + model.texCoords[i] * (float)voxelTexture.atlasOffset) / 32768f;
-				transformTextures[i + 1] = ((float)textureT + model.texCoords[i + 1] * (float)voxelTexture.atlasOffset) / 32768f;
+				transformTextures[i] = (textureS + model.texCoords[i] * voxelTexture.atlasOffset) / 32768f;
+				transformTextures[i + 1] = (textureT + model.texCoords[i + 1] * voxelTexture.atlasOffset) / 32768f;
 			}
 			transformedTexCoords.put(bri.getMetaData() + 16 * voxel.getId(), transformTextures);
 		}

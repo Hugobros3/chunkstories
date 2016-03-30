@@ -202,6 +202,7 @@ public class ServerConnection extends Thread implements HttpRequester
 	}
 
 	// run
+	@Override
 	public void run()
 	{
 		while (!die)
@@ -240,6 +241,7 @@ public class ServerConnection extends Thread implements HttpRequester
 		return this.latestErrorMessage;
 	}
 
+	@Override
 	public void handleHttpRequest(String info, String result)
 	{
 		// System.out.println("Request "+info+" got answered: "+result);

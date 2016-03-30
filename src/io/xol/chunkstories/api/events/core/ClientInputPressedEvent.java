@@ -15,6 +15,7 @@ public class ClientInputPressedEvent extends CancellableEvent implements ClientE
 
 	static EventListeners listeners = new EventListeners();
 
+	@Override
 	public EventListeners getListeners()
 	{
 		return listeners;

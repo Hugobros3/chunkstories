@@ -12,11 +12,13 @@ public class ParticleSmoke extends Particle
 
 	int timer = 600;// for 10sec
 
+	@Override
 	public Type getType()
 	{
 		return SMOKE;
 	}
 
+	@Override
 	public void update()
 	{
 		/*

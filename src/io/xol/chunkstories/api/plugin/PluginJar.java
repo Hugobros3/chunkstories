@@ -126,6 +126,7 @@ public class PluginJar extends URLClassLoader
 		return null;
 	}
 
+	@Override
 	protected Class<?> findClass(String name) throws ClassNotFoundException
 	{
 		System.out.println(name);

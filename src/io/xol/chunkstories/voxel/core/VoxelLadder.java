@@ -20,6 +20,7 @@ public class VoxelLadder extends VoxelDefault implements VoxelClimbable
 			models[i] = VoxelModels.getVoxelModel("dekal.m" + i);
 	}
 
+	@Override
 	public VoxelModel getVoxelModel(BlockRenderInfo info)
 	{
 		int meta = info.getMetaData();

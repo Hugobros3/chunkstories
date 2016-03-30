@@ -203,11 +203,13 @@ public class CollisionBox implements Collidable
 		glEnd();
 	}
 
+	@Override
 	public String toString()
 	{
 		return "Collision Box : position = [" + xpos + ", " + ypos + ", " + zpos + "] size = [" + xw + ", " + h + ", " + zw + "]";
 	}
 
+	@Override
 	public boolean collidesWith(CollisionBox b)
 	{
 		if (ypos + h <= b.ypos || ypos >= b.ypos + b.h || xpos + xw / 2.0 <= b.xpos - b.xw / 2.0 || xpos - xw / 2.0 >= b.xpos + b.xw / 2.0 || zpos + zw / 2.0 <= b.zpos - b.zw / 2.0 || zpos - zw / 2.0 >= b.zpos + b.zw / 2.0)

@@ -110,6 +110,7 @@ public class MainMenu extends OverlayableScene
 		return "en vrai j'ai pas joué à pokémon";
 	}
 
+	@Override
 	public void onResize()
 	{
 		unblurredFBO.resizeFBO(XolioWindow.frameW, XolioWindow.frameH);
@@ -117,6 +118,7 @@ public class MainMenu extends OverlayableScene
 		blurredVFBO.resizeFBO(XolioWindow.frameW, XolioWindow.frameH);
 	}
 
+	@Override
 	public void destroy()
 	{
 		unblurredFBO.destroy(true);
@@ -124,6 +126,7 @@ public class MainMenu extends OverlayableScene
 		blurredVFBO.destroy(true);
 	}
 
+	@Override
 	public void update()
 	{
 		try // Ugly fps caps yay
@@ -209,6 +212,7 @@ public class MainMenu extends OverlayableScene
 		// System.out.println("notnow");
 	}
 
+	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		if (currentOverlay != null)
@@ -216,6 +220,7 @@ public class MainMenu extends OverlayableScene
 		return true;
 	}
 
+	@Override
 	public boolean onKeyPress(int k)
 	{
 		if (currentOverlay != null && currentOverlay.handleKeypress(k))
@@ -225,6 +230,7 @@ public class MainMenu extends OverlayableScene
 		return false;
 	}
 	
+	@Override
 	public boolean onScroll(int dx)
 	{
 		if (currentOverlay != null && currentOverlay.onScroll(dx))

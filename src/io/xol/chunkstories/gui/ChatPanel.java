@@ -14,7 +14,6 @@ import org.lwjgl.util.vector.Vector4f;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.input.KeyBinds;
 
@@ -58,6 +57,7 @@ public class ChatPanel
 			
 		}
 		
+		@Override
 		public boolean handleKeypress(int k)
 		{
 			if (KeyBinds.getKeyBind("exit").isPressed())
@@ -128,11 +128,13 @@ public class ChatPanel
 			return true;
 		}
 
+		@Override
 		public boolean onClick(int posx, int posy, int button)
 		{
 			return false;
 		}
 		
+		@Override
 		public boolean onScroll(int dy)
 		{
 			if(dy > 0)

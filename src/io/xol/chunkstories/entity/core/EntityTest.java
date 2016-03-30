@@ -44,6 +44,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 
 	//BVHAnimation anim;
 
+	@Override
 	public void render(RenderingContext renderingContext)
 	{
 		//i++;
@@ -72,6 +73,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		ModelLibrary.getMesh("./res/models/ak47.hq.obj").render(renderingContext);
 	}
 
+	@Override
 	public void debugDraw()
 	{
 		// Debug this shit

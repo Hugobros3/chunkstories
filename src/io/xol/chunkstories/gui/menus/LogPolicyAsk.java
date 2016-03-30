@@ -87,6 +87,7 @@ public class LogPolicyAsk extends Overlay
 		}
 	}
 	
+	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		if (button == 0)

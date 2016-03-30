@@ -125,7 +125,7 @@ public class PacketsProcessor
 			Object[] parameters = { isClient };
 			try
 			{
-				Packet packet = (Packet) packetConstructor.newInstance(parameters);
+				Packet packet = packetConstructor.newInstance(parameters);
 				//Check legality
 				if(sending)
 				{

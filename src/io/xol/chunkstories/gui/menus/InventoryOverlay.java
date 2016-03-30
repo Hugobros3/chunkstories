@@ -4,7 +4,6 @@ import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.item.ItemPile;
@@ -35,6 +34,7 @@ public class InventoryOverlay extends Overlay
 			drawers[i] = new InventoryDrawer(inventories[i]);
 	}
 
+	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
 		int totalWidth = 0;
@@ -64,6 +64,7 @@ public class InventoryOverlay extends Overlay
 		}
 	}
 
+	@Override
 	public boolean handleKeypress(int k)
 	{
 		if (KeyBinds.getKeyBind("exit").isPressed())
@@ -71,6 +72,7 @@ public class InventoryOverlay extends Overlay
 		return true;
 	}
 
+	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		for (int i = 0; i < drawers.length; i++)

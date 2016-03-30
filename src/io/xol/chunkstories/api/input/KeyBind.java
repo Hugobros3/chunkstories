@@ -15,11 +15,13 @@ public interface KeyBind extends Input
 	 * Returns the name of the bind
 	 * @return
 	 */
+	@Override
 	public String getName();
 	
 	/**
 	 * Returns true if the key is pressed
 	 * @return
 	 */
+	@Override
 	public boolean isPressed();
 }

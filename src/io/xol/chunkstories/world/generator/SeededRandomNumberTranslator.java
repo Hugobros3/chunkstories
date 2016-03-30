@@ -25,7 +25,7 @@ public class SeededRandomNumberTranslator
 		Random rnd = new Random(lseed);
 		for (int i = 0; i < 10000; i++)
 		{
-			premadeRandom[i] = (int) rnd.nextInt(1000);
+			premadeRandom[i] = rnd.nextInt(1000);
 		}
 	}
 

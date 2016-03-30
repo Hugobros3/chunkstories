@@ -14,6 +14,7 @@ public class IllegalPacketException extends Exception
 		this.packet = packet;
 	}
 
+	@Override
 	public String getMessage()
 	{
 		return "Illegal packet received : "+packet.getClass().getName()+"";

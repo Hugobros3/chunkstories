@@ -1,8 +1,9 @@
 package io.xol.chunkstories.physics.particules;
 
-import io.xol.chunkstories.renderer.DefferedLight;
 import io.xol.chunkstories.world.World;
 import static io.xol.chunkstories.physics.particules.Particle.Type.*;
+
+import io.xol.chunkstories.api.rendering.Light;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -13,20 +14,22 @@ public class ParticleSetupLight extends Particle
 
 	int timer = 4800;// for 40sec
 
-	DefferedLight dl;
+	Light dl;
 
+	@Override
 	public Type getType()
 	{
 		return SLIGHT;
 	}
 
+	@Override
 	public void update()
 	{
 
 	}
 
 	public ParticleSetupLight(World world, double posX, double posY,
-			double posZ, DefferedLight dl)
+			double posZ, Light dl)
 	{
 		super(world, posX, posY, posZ);
 		this.dl = dl;
@@ -38,12 +41,14 @@ public class ParticleSetupLight extends Particle
 		return "./res/textures/light.png";
 	}
 
+	@Override
 	public boolean emitsLights()
 	{
 		return true;
 	}
 
-	public DefferedLight getLightEmited()
+	@Override
+	public Light getLightEmited()
 	{
 		return dl;
 	}

@@ -33,6 +33,7 @@ public class ChunksHolders
 			regionZ = z;
 		}
 
+		@Override
 		public boolean equals(Object o)
 		{
 			if(!(o instanceof ChunkHolderKey))
@@ -43,6 +44,7 @@ public class ChunksHolders
 			return equals;
 		}
 		
+		@Override
 		public int hashCode()
 		{
 			int address = (regionX * s + regionZ) * h + regionY;

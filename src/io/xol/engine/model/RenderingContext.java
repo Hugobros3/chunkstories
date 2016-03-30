@@ -1,5 +1,6 @@
 package io.xol.engine.model;
 
+import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.shaders.ShaderProgram;
@@ -23,9 +24,7 @@ import org.lwjgl.util.vector.Matrix4f;
 public class RenderingContext
 {
 	XolioWindow engine;
-
 	private ShaderProgram renderingShader = null;
-	
 	private Camera camera;
 
 	//private boolean verticesAttribMode = false;
@@ -34,9 +33,10 @@ public class RenderingContext
 	public boolean shadow;
 
 	Set<Integer> enabledAttributes = new HashSet<Integer>();
-	
 	// 4 Temporary VBOs for streamed rendering
 	public int tempVBO[] = new int[4];
+
+	public Set<Light> lights = new HashSet<Light>();
 	
 	public RenderingContext(XolioWindow w)
 	{

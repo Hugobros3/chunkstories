@@ -19,6 +19,7 @@ public class VoxelFence extends VoxelDefault
 		super(id, name);
 	}
 
+	@Override
 	public VoxelModel getVoxelModel(BlockRenderInfo info)
 	{
 		Voxel vox = VoxelTypes.get(info.neightborhood[0]);
@@ -65,6 +66,7 @@ public class VoxelFence extends VoxelDefault
 		return VoxelModels.getVoxelModel("wood_fence"+"."+type);
 	}
 	
+	@Override
 	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
 		// System.out.println("kek");

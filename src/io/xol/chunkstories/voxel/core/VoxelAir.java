@@ -15,6 +15,7 @@ public class VoxelAir extends VoxelDefault
 		super(id, name);
 	}
 
+	@Override
 	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
 		return new CollisionBox[] {};

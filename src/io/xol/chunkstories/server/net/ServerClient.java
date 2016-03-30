@@ -110,6 +110,7 @@ public class ServerClient extends Thread implements HttpRequester
 	}
 
 	// Just socket bullshit !
+	@Override
 	public void run()
 	{
 		// Server.getInstance().log.info("Client " + id +
@@ -224,6 +225,7 @@ public class ServerClient extends Thread implements HttpRequester
 		queue.queue(packet);
 	}
 
+	@Override
 	public void handleHttpRequest(String info, String result)
 	{
 		if (info.equals("checktoken"))

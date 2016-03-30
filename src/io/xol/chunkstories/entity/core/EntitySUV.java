@@ -3,9 +3,11 @@ package io.xol.chunkstories.entity.core;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Matrix4f;
 
+import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.chunkstories.renderer.DefferedLight;
+import io.xol.chunkstories.renderer.lights.DefferedLight;
+import io.xol.chunkstories.renderer.lights.DefferedSpotLight;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;
@@ -32,6 +34,7 @@ public class EntitySUV extends EntityImplementation
 
 	//BVHAnimation anim;
 
+	@Override
 	public void render(RenderingContext renderingContext)
 	{
 		// if(Math.random() > 0.9)
@@ -55,18 +58,19 @@ public class EntitySUV extends EntityImplementation
 
 	}
 	
-	public DefferedLight[] getLights()
+	@Override
+	public Light[] getLights()
 	{
-		return new DefferedLight[] {
+		return new Light[] {
 				
 				new DefferedLight(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f((float)posX - 1.0f, (float)posY + 1.1f, (float)posZ - 3.5f), 2f),
 				new DefferedLight(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ - 3.5f), 2f),
 
 				new DefferedLight(new Vector3f(2.0f, 2.0f, 2.0f), new Vector3f((float)posX - 1.0f, (float)posY + 1.1f, (float)posZ + 3.5f), 2f),
-				new DefferedLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX - 1.0f, (float)posY + 1.1f, (float)posZ + 1.5f), 35f, 30f, new Vector3f(0,0,-1)),
+				new DefferedSpotLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX - 1.0f, (float)posY + 1.1f, (float)posZ + 1.5f), 35f, 30f, new Vector3f(0,0,-1)),
 				
 				new DefferedLight(new Vector3f(2.0f, 2.0f, 2.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ + 3.5f), 2f),
-				new DefferedLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ + 1.5f), 35f, 30f, new Vector3f(0,0,-1)),
+				new DefferedSpotLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ + 1.5f), 35f, 30f, new Vector3f(0,0,-1)),
 				
 				//new DefferedLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ + 3.5f), 5f, 30f)
 				};

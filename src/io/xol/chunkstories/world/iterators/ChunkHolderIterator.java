@@ -55,6 +55,7 @@ public class ChunkHolderIterator implements ChunksIterator
 		return chunk;
 	}
 	
+	@Override
 	public void remove()
 	{
 		if(chunk == null)

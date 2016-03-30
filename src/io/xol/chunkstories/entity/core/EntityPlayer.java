@@ -131,6 +131,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	}
 
 	// client-side method for updating the player movement
+	@Override
 	public void tick(ClientController controller)
 	{
 		// Null-out acceleration, until modified by controls
@@ -320,6 +321,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		}
 	}
 
+	@Override
 	public void setupCamera(Camera camera)
 	{
 		synchronized (this)
@@ -336,6 +338,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		}
 	}
 
+	@Override
 	public Location getBlockLookingAt(boolean inside)
 	{
 		Vector3d initialPosition = new Vector3d(posX, posY + eyePosition, posZ);
@@ -478,6 +481,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x - dekal / 2, posOnScreen.y, txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
 	}
 
+	@Override
 	public void render(RenderingContext renderingContext)
 	{
 		Camera cam = renderingContext.getCamera();

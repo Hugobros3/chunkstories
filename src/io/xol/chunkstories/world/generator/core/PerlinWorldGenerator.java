@@ -22,6 +22,7 @@ public class PerlinWorldGenerator extends WorldGenerator
 
 	int sic = 2;
 
+	@Override
 	public void initialize(World w)
 	{
 		super.initialize(w);
@@ -44,6 +45,7 @@ public class PerlinWorldGenerator extends WorldGenerator
 		boolean[] care;
 	}
 
+	@Override
 	public int getDataAt(int a, int b)
 	{
 		int cx = a / 32;
@@ -51,8 +53,8 @@ public class PerlinWorldGenerator extends WorldGenerator
 		a %= 32;
 		b %= 32;
 
-		float humidity = (float) ((ssng.looped_noise((cx * 32 + a), (cz * 32 + b), sic * 32, 987, 148, sic / 64f, sic / 64f) + 1) / 2f);
-		float temperature = (float) ((ssng.looped_noise((cx * 32 + a), (cz * 32 + b), sic * 32, 32649, -877, sic / 128f, sic / 128f) + 1) / 2f);
+		float humidity = (ssng.looped_noise((cx * 32 + a), (cz * 32 + b), sic * 32, 987, 148, sic / 64f, sic / 64f) + 1) / 2f;
+		float temperature = (ssng.looped_noise((cx * 32 + a), (cz * 32 + b), sic * 32, 32649, -877, sic / 128f, sic / 128f) + 1) / 2f;
 
 		Biome biome = BiomeIndex.getBiomeFor(humidity, temperature, 15);
 		if (getHeightAt(a, b) <= 128)
@@ -60,6 +62,7 @@ public class PerlinWorldGenerator extends WorldGenerator
 		return biome.getGroundTile(1, 1);
 	}
 	
+	@Override
 	public int getHeightAt(int a, int b)
 	{
 		int cx = a / 32;
@@ -151,7 +154,7 @@ public class PerlinWorldGenerator extends WorldGenerator
 				float humidity = (float) ((ssng.looped_noise((cx * 32 + a), (cz * 32 + b), sic * 32, 987, 148, sic / 64f, sic / 64f) + 1) / 2d);
 				float temperature = (float) ((ssng.looped_noise((cx * 32 + a), (cz * 32 + b), sic * 32, 32649, -877, sic / 128f, sic / 128f) + 1) / 2d);
 
-				int to = (int) Math.max(5, height);
+				int to = Math.max(5, height);
 				int i;
 				int water_level = 128;
 				Biome biome = BiomeIndex.getBiomeFor(humidity, temperature, cy * 32);

@@ -16,6 +16,7 @@ public class HorizonGenerator extends WorldGenerator
 	Random rnd = new Random();
 	SeededSimplexNoiseGenerator ssng;
 	
+	@Override
 	public void initialize(World w)
 	{
 		super.initialize(w);
@@ -105,6 +106,7 @@ public class HorizonGenerator extends WorldGenerator
 		return (int) finalHeight;
 	}
 	
+	@Override
 	public int getHeightAt(int x, int z)
 	{
 		int finalHeight = getHeightAtInternal(x, z);
@@ -113,6 +115,7 @@ public class HorizonGenerator extends WorldGenerator
 		return finalHeight;
 	}
 	
+	@Override
 	public int getDataAt(int x, int z)
 	{
 		//int finalHeight = getHeightAtInternal(x, z);

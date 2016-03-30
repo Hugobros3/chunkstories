@@ -37,6 +37,7 @@ class ReportThread extends Thread implements ActionListener{
 			this.pane = pane;
 		}
 
+		@Override
 		public void run()
 		{
 			progress.setString("Uploading file "+logFile);

@@ -131,6 +131,7 @@ public abstract class World implements WorldInterface
 	{
 		logic.scheduleAtFixedRate(new Runnable()
 		{
+			@Override
 			public void run()
 			{
 				try
@@ -139,7 +140,7 @@ public abstract class World implements WorldInterface
 				}
 				catch (Exception e)
 				{
-					System.out.println("Son excellence le fils de pute de thread silencieusement suicidaire de mes couilles");
+					System.out.println("Son excellence le fils de pute de thread silencieusement suicidaire de mes couilles aurait un mot à dire: ");
 					e.printStackTrace();
 				}
 			}

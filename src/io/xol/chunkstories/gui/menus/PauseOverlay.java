@@ -28,6 +28,7 @@ public class PauseOverlay extends Overlay
 		guiHandler.add(exitButton);
 	}
 
+	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
 		ObjectRenderer.renderColoredRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2, XolioWindow.frameW, XolioWindow.frameH, 0, "000000", 0.5f);
@@ -58,6 +59,7 @@ public class PauseOverlay extends Overlay
 		}
 	}
 	
+	@Override
 	public boolean handleKeypress(int k)
 	{
 		if (KeyBinds.getKeyBind("exit").isPressed())
@@ -69,6 +71,7 @@ public class PauseOverlay extends Overlay
 		return true;
 	}
 
+	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		if (button == 0)

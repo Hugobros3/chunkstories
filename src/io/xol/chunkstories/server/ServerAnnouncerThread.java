@@ -43,6 +43,7 @@ public class ServerAnnouncerThread extends Thread
 		run.set(false);
 	}
 
+	@Override
 	public void run()
 	{
 		try

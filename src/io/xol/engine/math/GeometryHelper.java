@@ -37,8 +37,8 @@ public class GeometryHelper
 		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);
 		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
 		GL11.glGetInteger(GL11.GL_VIEWPORT, viewport);
-		float winX = (float) mouseX;
-		float winY = (float) mouseY;
+		float winX = mouseX;
+		float winY = mouseY;
 		GL11.glReadPixels(mouseX, (int) winY, 1, 1, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, winZ);
 		float zz = winZ.get();
 		GLU.gluUnProject(winX, winY, zz, modelview, projection, viewport, position);

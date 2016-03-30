@@ -37,11 +37,11 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.physics.particules.ParticleLight;
 import io.xol.chunkstories.physics.particules.ParticleSetupLight;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.chunkstories.renderer.DefferedLight;
 import io.xol.chunkstories.renderer.SelectionRenderer;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
+import io.xol.chunkstories.renderer.lights.DefferedSpotLight;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
@@ -95,12 +95,13 @@ public class GameplayScene extends OverlayableScene
 
 	//int selectedInventorySlot = 0;
 
+	@Override
 	public void update()
 	{
 		// Update client entity
 		if (player == null || player != Client.controlledEntity && Client.controlledEntity != null)
 		{
-			player = (EntityImplementation) Client.controlledEntity;
+			player = Client.controlledEntity;
 			inventoryDrawer = player.getInventory() == null ? null : new InventoryDrawer(player.getInventory());
 		}
 		inventoryDrawer.inventory = player.getInventory();
@@ -119,11 +120,9 @@ public class GameplayScene extends OverlayableScene
 		}
 		if (player != null)
 			player.setupCamera(camera);
-
 		//Temp
 		if (flashLight)
 		{
-
 			float transformedViewH = (float) ((camera.view_rotx) / 180 * Math.PI);
 			// System.out.println(Math.sin(transformedViewV)+"f");
 			Vector3f viewerCamDirVector = new Vector3f((float) (Math.sin((-camera.view_roty) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)),
@@ -133,10 +132,10 @@ public class GameplayScene extends OverlayableScene
 			Vector3f.add(viewerCamDirVector, lightPosition, lightPosition);
 			viewerCamDirVector.scale(-1f);
 			viewerCamDirVector.normalise();
-			worldRenderer.lights.add(new DefferedLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 75f, 40f, viewerCamDirVector));
+			XolioWindow.getInstance().renderingContext.lights.add(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 75f, 40f, viewerCamDirVector));
 			if (Keyboard.isKeyDown(Keyboard.KEY_F5))
 				Client.world.particlesHolder
-						.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 40f, viewerCamDirVector)));
+						.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedSpotLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 40f, viewerCamDirVector)));
 		}
 		//Main render call
 		worldRenderer.renderWorldAtCamera(camera);
@@ -233,6 +232,7 @@ public class GameplayScene extends OverlayableScene
 
 	byte[] inventorySerialized;
 
+	@Override
 	public boolean onKeyPress(int k)
 	{
 		KeyBind keyBind = KeyBinds.getKeyBindForLWJGL2xKey(k);
@@ -262,7 +262,7 @@ public class GameplayScene extends OverlayableScene
 			ChunksRenderer.renderStart = System.currentTimeMillis();
 			worldRenderer.modified();
 		}
-		//Temp, to rework
+		//TODO move this to core content plugin
 		else if (KeyBinds.getKeyBind("use").equals(keyBind))
 		{
 			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) loc.x, (float) loc.y, (float) loc.z, 1.0f, 1.0f);
@@ -313,6 +313,7 @@ public class GameplayScene extends OverlayableScene
 		return false;
 	}
 
+	@Override
 	public boolean onClick(int x, int y, int button)
 	{
 		if (currentOverlay != null)
@@ -346,6 +347,7 @@ public class GameplayScene extends OverlayableScene
 		return false;
 	}
 
+	@Override
 	public boolean onScroll(int a)
 	{
 		if (currentOverlay != null && currentOverlay.onScroll(a))
@@ -381,6 +383,7 @@ public class GameplayScene extends OverlayableScene
 		return true;
 	}
 
+	@Override
 	public void onResize()
 	{
 		worldRenderer.setupRenderSize(XolioWindow.frameW, XolioWindow.frameH);
@@ -389,6 +392,7 @@ public class GameplayScene extends OverlayableScene
 	/**
 	 * Destroys and frees everything
 	 */
+	@Override
 	public void destroy()
 	{
 		Client.world.destroy();

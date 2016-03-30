@@ -68,7 +68,7 @@ public class Sky
 		}
 	}
 
-	public Vector3f getSunPos()
+	public Vector3f getSunPosition()
 	{
 		float sunloc = (float) (time * Math.PI * 2 / 1.6 - 0.5);
 		float sunangle = 0;
@@ -90,7 +90,7 @@ public class Sky
 		glDisable(GL_BLEND);
 		glDepthMask(false);
 
-		Vector3f sunPosVector = getSunPos();
+		Vector3f sunPosVector = getSunPosition();
 		double[] sunpos = { sunPosVector.x, sunPosVector.y, sunPosVector.z };
 
 		// TexturesHandler.bindTexture("res/textures/environement/sky.png");
@@ -181,7 +181,7 @@ public class Sky
 		}
 	}
 
-	public float getShadowIntensity()
+	public float getLightIntensity()
 	{
 		Color color = new Color(light.getRGB((int) (time * 255), 0));
 		return color.getRed() / 255f;

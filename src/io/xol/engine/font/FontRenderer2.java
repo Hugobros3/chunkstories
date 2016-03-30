@@ -109,8 +109,8 @@ public class FontRenderer2
 			{
 				if (c >= 256)
 					c = '?'; // Support for UTF-8 is coming later.
-				float tx = ((int) c % 16) / ratio;
-				float ty = ((int) c / 16) / ratio;
+				float tx = (c % 16) / ratio;
+				float ty = (c / 16) / ratio;
 				float cellSize = 1 / ratio;
 				int charW = (int) (font.fontWidthData[getIntForChar(c)] * (size / 16));
 				// float cellSizeW = (float) (charW/16.0) / ratio;
@@ -190,7 +190,7 @@ public class FontRenderer2
 
 	static int getIntForChar(int c)
 	{
-		int i = (int) c;
+		int i = c;
 		if (i > 65532)
 			i = 65532;
 		return i;

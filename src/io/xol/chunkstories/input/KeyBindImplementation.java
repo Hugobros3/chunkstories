@@ -26,6 +26,7 @@ public class KeyBindImplementation implements KeyBind
 	 * Returns the name of the bind
 	 * @return
 	 */
+	@Override
 	public String getName()
 	{
 		return name;
@@ -40,6 +41,7 @@ public class KeyBindImplementation implements KeyBind
 		return LWJGL2_key;
 	}
 	
+	@Override
 	public boolean isPressed()
 	{
 		return Keyboard.isKeyDown(LWJGL2_key);
@@ -59,6 +61,7 @@ public class KeyBindImplementation implements KeyBind
 		this.LWJGL2_key = Client.getConfig().getIntProp("bind."+name, -1);
 	}
 	
+	@Override
 	public boolean equals(Object o)
 	{
 		if(o != null && o instanceof KeyBind)
@@ -68,6 +71,7 @@ public class KeyBindImplementation implements KeyBind
 		return false;
 	}
 	
+	@Override
 	public int hashCode()
 	{
 		return getName().hashCode();

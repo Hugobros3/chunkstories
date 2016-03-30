@@ -24,6 +24,7 @@ public class ChunkStoriesLogger
 		instance = log;
 		Runtime.getRuntime().addShutdownHook(new Thread()
 		{
+			@Override
 			public void run()
 			{
 				ChunkStoriesLogger.getInstance().close();

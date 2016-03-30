@@ -30,6 +30,7 @@ public class MessageBoxOverlay extends Overlay
 		guiHandler.add(okButton);
 	}
 
+	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
 		ObjectRenderer.renderTexturedRectAlpha(XolioWindow.frameW/2, XolioWindow.frameH / 2 + 256, 1024, 1024, "logo", 1f);
@@ -53,11 +54,13 @@ public class MessageBoxOverlay extends Overlay
 		}
 	}
 
+	@Override
 	public boolean handleKeypress(int k)
 	{
 		return false;
 	}
 
+	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		if (button == 0)

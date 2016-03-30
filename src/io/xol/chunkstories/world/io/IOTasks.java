@@ -71,6 +71,7 @@ public class IOTasks extends Thread
 		}
 	}
 
+	@Override
 	public String toString()
 	{
 		return "IOTasks : " + getSize() + " remaining.";
@@ -102,6 +103,7 @@ public class IOTasks extends Thread
 	LZ4Factory factory = LZ4Factory.fastestInstance();
 	LZ4FastDecompressor decompressor = factory.fastDecompressor();
 
+	@Override
 	public void run()
 	{
 		System.out.println("IO Thread started.");
@@ -249,6 +251,7 @@ public class IOTasks extends Thread
 			return true;
 		}
 
+		@Override
 		public String toString()
 		{
 			return "[IOTaskLoadChunk x=" + x + " y= " + y + " z= " + z + "]";
@@ -413,7 +416,7 @@ public class IOTasks extends Thread
 		@Override
 		public int hashCode()
 		{
-			return (int) ((874 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ ) % 2147483647);
+			return (874 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ ) % 2147483647;
 		}
 	}
 
@@ -508,7 +511,7 @@ public class IOTasks extends Thread
 		@Override
 		public int hashCode()
 		{
-			return (int) ((666778 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ ) % 2147483647);
+			return (666778 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ ) % 2147483647;
 		}
 	}
 
@@ -598,6 +601,7 @@ public class IOTasks extends Thread
 			return true;
 		}
 
+		@Override
 		public boolean equals(Object o)
 		{
 			if(o instanceof IOTaskLoadSummary)
@@ -612,7 +616,7 @@ public class IOTasks extends Thread
 		@Override
 		public int hashCode()
 		{
-			return (int) 1111 + summary.rx + summary.rz * 256;
+			return 1111 + summary.rx + summary.rz * 256;
 		}
 	}
 
@@ -675,6 +679,7 @@ public class IOTasks extends Thread
 			return true;
 		}
 
+		@Override
 		public boolean equals(Object o)
 		{
 			/*if(o instanceof IOTaskLoadSummary)
@@ -690,7 +695,7 @@ public class IOTasks extends Thread
 		@Override
 		public int hashCode()
 		{
-			return (int) 7777 + summary.rx + summary.rz * 256;
+			return 7777 + summary.rx + summary.rz * 256;
 		}
 	}
 
@@ -769,6 +774,7 @@ public class IOTasks extends Thread
 			}
 		}
 		
+		@Override
 		public boolean equals(Object o)
 		{
 			return false;
@@ -777,7 +783,7 @@ public class IOTasks extends Thread
 		@Override
 		public int hashCode()
 		{
-			return (int) -878441;
+			return -878441;
 		}
 
 	}

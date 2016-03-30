@@ -19,6 +19,7 @@ public class VoxelPane extends VoxelDefault
 		super(id, name);
 	}
 
+	@Override
 	public VoxelModel getVoxelModel(BlockRenderInfo info)
 	{
 		Voxel vox;
@@ -68,6 +69,7 @@ public class VoxelPane extends VoxelDefault
 		return VoxelModels.getVoxelModel("pane" + "." + type);
 	}
 
+	@Override
 	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
 		// System.out.println("kek");

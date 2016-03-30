@@ -61,7 +61,7 @@ public class PacketItemUsage extends Packet
 		
 		if(usage == ItemUsage.SELECT)
 		{
-			PlayerSelectItemEvent selectItemEvent = new PlayerSelectItemEvent(processor.getServerClient().profile, clientEntity, (int)complementInfo);
+			PlayerSelectItemEvent selectItemEvent = new PlayerSelectItemEvent(processor.getServerClient().profile, clientEntity, complementInfo);
 			Server.getInstance().getPluginsManager().fireEvent(selectItemEvent);
 		}
 		else if(usage == ItemUsage.USE)

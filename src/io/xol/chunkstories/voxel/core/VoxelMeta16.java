@@ -17,6 +17,7 @@ public class VoxelMeta16 extends VoxelDefault
 			colors[i] = VoxelTextures.getVoxelTexture(name + "." + i);
 	}
 
+	@Override
 	public VoxelTexture getVoxelTexture(int data, int side, BlockRenderInfo info) // 0 for top, 1 bot,
 	// 2,3,4,5
 	// north/south/east/west

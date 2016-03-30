@@ -2,11 +2,11 @@ package io.xol.chunkstories.api.entity;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.inventory.InventoryHolder;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.chunkstories.renderer.DefferedLight;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.RenderingContext;
@@ -17,8 +17,6 @@ import io.xol.engine.model.RenderingContext;
 
 public interface Entity extends InventoryHolder
 {
-	//public void setPosition(double x, double y, double z);
-
 	/**
 	 * Returns the location of the entity
 	 * @return
@@ -45,7 +43,7 @@ public interface Entity extends InventoryHolder
 	
 	public Vector3d moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions);
 
-	public DefferedLight[] getLights();
+	public Light[] getLights();
 	
 	public CollisionBox[] getTranslatedCollisionBoxes();
 

@@ -2,7 +2,8 @@ package io.xol.chunkstories.physics.particules;
 
 import org.lwjgl.util.vector.Vector3f;
 
-import io.xol.chunkstories.renderer.DefferedLight;
+import io.xol.chunkstories.api.rendering.Light;
+import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.world.World;
 import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 
@@ -17,11 +18,13 @@ public class ParticleLight extends Particle
 
 	DefferedLight dl;
 
+	@Override
 	public Type getType()
 	{
 		return LIGHT;
 	}
 
+	@Override
 	public void update()
 	{
 		if (!world.checkCollisionPoint(posX, posY, posZ))
@@ -65,12 +68,14 @@ public class ParticleLight extends Particle
 		return "./res/textures/particle.png";
 	}
 
+	@Override
 	public boolean emitsLights()
 	{
 		return true;
 	}
 
-	public DefferedLight getLightEmited()
+	@Override
+	public Light getLightEmited()
 	{
 		return dl;
 	}

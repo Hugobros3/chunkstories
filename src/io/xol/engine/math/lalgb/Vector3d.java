@@ -134,6 +134,7 @@ public class Vector3d
 		this.z = v.z;
 	}
 
+	@Override
 	public String toString()
 	{
 		return "[Vector3d x:" + x + " y:" + y + " z:" + z + "]";

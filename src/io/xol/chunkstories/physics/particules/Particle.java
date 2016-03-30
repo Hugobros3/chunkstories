@@ -1,6 +1,6 @@
 package io.xol.chunkstories.physics.particules;
 
-import io.xol.chunkstories.renderer.DefferedLight;
+import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.world.World;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -45,7 +45,7 @@ public abstract class Particle
 		return false;
 	}
 
-	public DefferedLight getLightEmited()
+	public Light getLightEmited()
 	{
 		return null;
 	}

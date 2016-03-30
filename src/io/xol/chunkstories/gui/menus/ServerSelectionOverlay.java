@@ -16,7 +16,6 @@ import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.ConnectScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBinds;
@@ -67,6 +66,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		new HttpRequestThread(this, "serversList", "http://chunkstories.xyz/api/listServers.php", "").start();
 	}
 
+	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
 		if (autologin && !ipForm.text.equals(""))
@@ -99,6 +99,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 	}
 
 	// Controls handling
+	@Override
 	public boolean handleKeypress(int k)
 	{
 		if (k == Keyboard.KEY_TAB)// FastConfig.keyTab)
@@ -171,6 +172,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		this.mainScene.eng.changeScene(new ConnectScene(mainScene.eng, ip, port));
 	}
 
+	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		ServerData sd = serverSelectionZone.click();
@@ -306,6 +308,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 				FontRenderer2.drawTextUsingSpecificFont(28, posy - 26, 0, 32, (infoError ? "#FF0000" : "") + description + " #AAAAAA (" + gameMode + ")", BitmapFont.SMALLFONTS);
 		}
 
+		@Override
 		public synchronized void run()
 		{
 			try
