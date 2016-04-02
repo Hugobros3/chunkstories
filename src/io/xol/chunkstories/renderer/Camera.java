@@ -11,10 +11,10 @@ import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.shaders.ShaderProgram;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Matrix3f;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
+import io.xol.engine.math.lalgb.Matrix3f;
+import io.xol.engine.math.lalgb.Matrix4f;
+import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 public class Camera
 {

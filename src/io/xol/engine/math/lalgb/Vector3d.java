@@ -1,6 +1,6 @@
 package io.xol.engine.math.lalgb;
 
-import org.lwjgl.util.vector.Vector3f;
+import io.xol.engine.math.lalgb.Vector3f;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

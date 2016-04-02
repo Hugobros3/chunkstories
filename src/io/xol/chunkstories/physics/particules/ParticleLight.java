@@ -1,6 +1,6 @@
 package io.xol.chunkstories.physics.particules;
 
-import org.lwjgl.util.vector.Vector3f;
+import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.renderer.lights.DefferedLight;

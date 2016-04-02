@@ -7,7 +7,7 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.vector.Vector4f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 import static org.lwjgl.opengl.GL11.glDrawArrays;
 

@@ -2,7 +2,7 @@ package io.xol.chunkstories.item.renderer;
 
 
 import org.lwjgl.input.Mouse;
-import org.lwjgl.util.vector.Vector4f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.item.ItemPile;

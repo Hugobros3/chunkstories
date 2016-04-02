@@ -23,6 +23,14 @@ public class Vector4f
 		this.w = w;
 	}
 
+	public Vector4f(Vector4f vec4)
+	{
+		this.x = vec4.x;
+		this.y = vec4.y;
+		this.z = vec4.z;
+		this.w = vec4.w;
+	}
+	
 	public Vector4f add(Vector4f b)
 	{
 		x += b.x;
@@ -40,13 +48,22 @@ public class Vector4f
 		w -= b.w;
 		return this;
 	}
+	
+	public void set(float x, float y, float z, float w)
+	{
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.w = w;
+	}
 
 	public static Vector4f add(Vector4f left, Vector4f right, Vector4f dest)
 	{
 		if (dest == null)
 			dest = new Vector4f();
-		dest.add(left);
-		dest.add(right);
+		dest.set(left.x + right.x, left.y + right.y, left.z + right.z, left.w + right.w);
+		//dest.add(left);
+		//dest.add(right);
 		return dest;
 	}
 
@@ -54,8 +71,7 @@ public class Vector4f
 	{
 		if (dest == null)
 			dest = new Vector4f();
-		dest.add(left);
-		dest.sub(right);
+		dest.set(left.x - right.x, left.y - right.y, left.z - right.z, left.w - right.w);
 		return dest;
 	}
 
@@ -88,7 +104,7 @@ public class Vector4f
 		this.x *= s;
 		this.y *= s;
 		this.z *= s;
-		this.w *= w;
+		this.w *= s;
 		return this;
 	}
 

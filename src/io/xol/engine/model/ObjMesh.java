@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Matrix4f;
+import io.xol.engine.math.lalgb.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;

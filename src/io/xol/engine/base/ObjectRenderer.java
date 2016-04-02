@@ -12,7 +12,7 @@ import static org.lwjgl.opengl.GL20.*;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Vector4f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

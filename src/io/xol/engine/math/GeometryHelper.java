@@ -10,9 +10,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
-import org.lwjgl.util.vector.Vector3f;
+import io.xol.engine.math.lalgb.Vector3f;
 
 public class GeometryHelper
 {
@@ -29,7 +27,7 @@ public class GeometryHelper
 
 	static public Vector3f getMousePositionIn3dCoords(int mouseX, int mouseY)
 	{
-		viewport.clear();
+		/*viewport.clear();
 		modelview.clear();
 		projection.clear();
 		winZ.clear();
@@ -43,18 +41,20 @@ public class GeometryHelper
 		float zz = winZ.get();
 		GLU.gluUnProject(winX, winY, zz, modelview, projection, viewport, position);
 		Vector3f v = new Vector3f(position.get(0), position.get(1), position.get(2));
-		return v;
+		return v;*/
+		return null;
 	}
 
 	static public Vector3f getVectorMouseIn3d(int mx, int my, Camera cam)
 	{
-		Vector3f position = getMousePositionIn3dCoords(mx, my);
+		/*Vector3f position = getMousePositionIn3dCoords(mx, my);
 		Vector3f camera = cam.pos.castToSP();
 		camera.negate();//new Vector3f((float) -cam.camPosX, (float) -cam.camPosY, (float) -cam.camPosZ);
 		Vector3f v = new Vector3f(0, 0, 0);
 		Vector3f.sub(position, camera, v);
 		v.normalise();
-		return v;
+		return v;*/
+		return null;
 	}
 
 }

@@ -1,6 +1,6 @@
 package io.xol.chunkstories.gui;
 
-import org.lwjgl.util.vector.Vector3f;
+import io.xol.engine.math.lalgb.Vector3f;
 
 import java.util.Iterator;
 

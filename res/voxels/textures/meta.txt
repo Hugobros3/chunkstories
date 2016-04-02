@@ -1,6 +1,6 @@
 # Special textures data
 
-texture stone
+texture rocks
 	textureScale: 2
 end
 

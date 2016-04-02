@@ -8,7 +8,7 @@ import java.nio.FloatBuffer;
 import java.util.Random;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Vector2f;
+import io.xol.engine.math.lalgb.Vector2f;
 
 import io.xol.chunkstories.world.World;
 import io.xol.engine.base.XolioWindow;

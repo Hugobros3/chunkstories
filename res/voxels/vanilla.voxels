@@ -24,7 +24,7 @@ voxel leaves 5
 	opaque: false
 	selfOpaque: false
 	affectedByWind: true
-	shading: 1
+	shading: 2
 end
 
 voxel forestgrass 6

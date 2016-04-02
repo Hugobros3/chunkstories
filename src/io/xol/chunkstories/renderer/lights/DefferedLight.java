@@ -1,6 +1,6 @@
 package io.xol.chunkstories.renderer.lights;
 
-import org.lwjgl.util.vector.Vector3f;
+import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.chunkstories.api.rendering.Light;
 
@@ -31,7 +31,7 @@ public class DefferedLight implements Light
 	}
 
 	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.Light#setColor(org.lwjgl.util.vector.Vector3f)
+	 * @see io.xol.chunkstories.renderer.Light#setColor(io.xol.engine.math.lalgb.Vector3f)
 	 */
 	@Override
 	public void setColor(Vector3f color)

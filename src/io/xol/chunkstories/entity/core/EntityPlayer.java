@@ -5,9 +5,9 @@ import java.util.Set;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
+import io.xol.engine.math.lalgb.Matrix4f;
+import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientController;
@@ -346,6 +346,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		Vector3d initialPosition = new Vector3d(pos);
 		initialPosition.add(new Vector3d(0, eyePosition, 0));
 		//Vector3d position = new Vector3d(pos.x, pos.y + eyePosition, pos.z);
+		
 		Vector3d direction = new Vector3d();
 
 		float a = (float) ((-rotH) / 360f * 2 * Math.PI);
@@ -519,7 +520,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		playerRotationMatrix.rotate((90 - rotH) / 180f * 3.14159f, new Vector3f(0, 1, 0));
 		if (this.equals(Client.controlledEntity) && !renderingContext.shadow)
 			playerRotationMatrix.rotate((-rotV) / 180f * 3.14159f, new Vector3f(0, 0, 1));
-		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f), playerRotationMatrix);
+		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
 		//Render parts of the body
 		if (!renderingContext.shadow && this.equals(Client.controlledEntity))

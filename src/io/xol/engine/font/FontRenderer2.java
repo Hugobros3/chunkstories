@@ -6,7 +6,7 @@ package io.xol.engine.font;
 
 import static org.lwjgl.opengl.GL11.*;
 
-import org.lwjgl.util.vector.Vector4f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.math.HexTools;

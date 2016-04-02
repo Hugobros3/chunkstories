@@ -22,9 +22,9 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Matrix3f;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
+import io.xol.engine.math.lalgb.Matrix3f;
+import io.xol.engine.math.lalgb.Matrix4f;
+import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.ObjectRenderer;
@@ -501,6 +501,7 @@ public class WorldRenderer
 		Matrix4f.mul(depthProjectionMatrix, depthViewMatrix, depthMatrix);
 		Matrix4f shadowMVP = new Matrix4f(depthMatrix);
 
+		//System.out.println(depthViewMatrix);
 		//depthMatrix.translate(new Vector3f((float) Math.floor(camera.pos.x), (float) Math.floor(camera.pos.y), (float) Math.floor(camera.pos.z)));
 		//shadowMVP.translate(new Vector3f((float) Math.floor(camera.pos.x), (float) Math.floor(camera.pos.y), (float) Math.floor(camera.pos.z)));
 		shadowMVP.translate(new Vector3f((float) camera.pos.x, (float) camera.pos.y, (float) camera.pos.z));

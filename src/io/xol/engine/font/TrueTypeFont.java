@@ -22,8 +22,8 @@ import java.awt.GraphicsEnvironment;
 
 import static org.lwjgl.opengl.GL11.*;
 
-import org.lwjgl.util.glu.GLU;
-import org.lwjgl.util.vector.Vector4f;
+//import org.lwjgl.util.glu.GLU;
+import io.xol.engine.math.lalgb.Vector4f;
 
 /**
  * A TrueType font implementation originally for Slick, edited for Bobjob's
@@ -591,7 +591,8 @@ public class TrueTypeFont
 
 			// glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-			GLU.gluBuild2DMipmaps(GL_TEXTURE_2D, internalFormat, width, height, format, GL_UNSIGNED_BYTE, byteBuffer);
+			glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, byteBuffer);
+			// GLU.gluBuild2DMipmaps(GL_TEXTURE_2D, internalFormat, width, height, format, GL_UNSIGNED_BYTE, byteBuffer);
 			return textureId;
 
 		}

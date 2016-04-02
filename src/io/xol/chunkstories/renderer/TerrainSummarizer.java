@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
+import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 import org.lwjgl.BufferUtils;
 

@@ -7,7 +7,7 @@ package io.xol.engine.math.lalgb;
 public class Vector3f
 {
 	// Dirty self-made replacement for vecmatch classes, castable to LWJGL's vector
-	
+
 	public float x, y, z;
 
 	public Vector3f()
@@ -16,6 +16,20 @@ public class Vector3f
 	}
 
 	public Vector3f(float x, float y, float z)
+	{
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+
+	public Vector3f(Vector3f vec3)
+	{
+		this.x = vec3.x;
+		this.y = vec3.y;
+		this.z = vec3.z;
+	}
+
+	public void set(float x, float y, float z)
 	{
 		this.x = x;
 		this.y = y;
@@ -42,8 +56,9 @@ public class Vector3f
 	{
 		if (dest == null)
 			dest = new Vector3f();
-		dest.add(left);
-		dest.add(right);
+		dest.set(left.x + right.x, left.y + right.y, left.z + right.z);
+		//dest.add(left);
+		//dest.add(right);
 		return dest;
 	}
 
@@ -51,8 +66,10 @@ public class Vector3f
 	{
 		if (dest == null)
 			dest = new Vector3f();
-		dest.add(left);
-		dest.sub(right);
+		//dest.set(0, 0, 0);
+		dest.set(left.x - right.x, left.y - right.y, left.z - right.z);
+		//dest.add(left);
+		//dest.sub(right);
 		return dest;
 	}
 
@@ -60,9 +77,14 @@ public class Vector3f
 	{
 		if (dest == null)
 			dest = new Vector3f();
-		dest.x = left.y * right.z - left.z * right.y;
-		dest.y = left.x * right.z - left.z * right.x;
-		dest.z = left.x * right.y - left.y * right.x;
+		//dest.set(left.y * right.z - left.z * right.y, right.x * left.z - right.z * left.x, left.x * right.y - left.y * right.x);
+		dest.set(left.y * right.z - left.z * right.y, right.x * left.z - right.z * left.x, left.x * right.y - left.y * right.x);
+
+		dest.set(
+				left.y * right.z - left.z * right.y,
+				right.x * left.z - right.z * left.x,
+				left.x * right.y - left.y * right.x
+				);
 		return dest;
 	}
 
@@ -89,12 +111,41 @@ public class Vector3f
 		return this;
 	}
 
+	public Vector3f negate(Vector3f out)
+	{
+		if (out == null)
+			out = new Vector3f();
+		out.x = -x;
+		out.y = -y;
+		out.z = -z;
+		return out;
+	}
+
 	public Vector3f scale(float s)
 	{
 		this.x *= s;
 		this.y *= s;
 		this.z *= s;
 		return this;
+	}
+
+	public Vector3f normalise(Vector3f destination)
+	{
+		return normalize(destination);
+	}
+
+	public Vector3f normalize(Vector3f destination)
+	{
+		float length = length();
+		if(destination == null)
+			return new Vector3f(x / length, y / length, z / length);
+		destination.set(x / length, y / length, z / length);
+		return destination;
+	}
+
+	public Vector3f normalise()
+	{
+		return normalize();
 	}
 
 	public Vector3f normalize()
@@ -115,7 +166,7 @@ public class Vector3f
 	{
 		return x * x + y * y + z * z;
 	}
-	
+
 	public Vector3d castToDP()
 	{
 		Vector3d vec = new Vector3d();

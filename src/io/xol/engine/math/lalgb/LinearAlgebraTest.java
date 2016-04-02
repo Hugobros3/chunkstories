@@ -11,7 +11,7 @@ public class LinearAlgebraTest
 {
 	public static void main(String args[])
 	{
-		org.lwjgl.util.vector.Matrix4f test = new org.lwjgl.util.vector.Matrix4f();
+		io.xol.engine.math.lalgb.Matrix4f test = new io.xol.engine.math.lalgb.Matrix4f();
 		//for(int a = 0; a < 3; a++)
 		//	for(int b = 0; b < 3; b++)
 		//		test.
@@ -30,7 +30,7 @@ public class LinearAlgebraTest
 		{
 			// This test ensures that the two matrix codes perform in the same way
 			
-			org.lwjgl.util.vector.Matrix4f a = new org.lwjgl.util.vector.Matrix4f();
+			io.xol.engine.math.lalgb.Matrix4f a = new io.xol.engine.math.lalgb.Matrix4f();
 			Matrix4f b = new Matrix4f();
 			assertEqual(a, b);
 			buf.clear();
@@ -55,7 +55,7 @@ public class LinearAlgebraTest
 		System.out.println("All checks passed ok !");
 	}
 	
-	public static void assertEqual(org.lwjgl.util.vector.Matrix4f a, Matrix4f b)
+	public static void assertEqual(io.xol.engine.math.lalgb.Matrix4f a, Matrix4f b)
 	{
 		assert a.m00 == b.m00;
 		assert a.m01 == b.m01;

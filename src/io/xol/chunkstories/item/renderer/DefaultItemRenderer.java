@@ -8,7 +8,7 @@ import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.textures.TexturesHandler;
 
-import org.lwjgl.util.vector.Matrix4f;
+import io.xol.engine.math.lalgb.Matrix4f;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

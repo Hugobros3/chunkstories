@@ -10,11 +10,11 @@ import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.lwjgl.util.vector.Matrix3f;
-import org.lwjgl.util.vector.Vector2f;
-import org.lwjgl.util.vector.Vector3f;
+import io.xol.engine.math.lalgb.Matrix3f;
+import io.xol.engine.math.lalgb.Vector2f;
+import io.xol.engine.math.lalgb.Vector3f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Matrix4f;
+import io.xol.engine.math.lalgb.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
@@ -222,7 +222,7 @@ public class ShaderProgram
 		glUniform3f(getUniformLocation(name), (float)d1, (float)d2, (float)d3);
 	}
 	
-	public void setUniformFloat4(String name, org.lwjgl.util.vector.Vector4f vec4)
+	public void setUniformFloat4(String name, io.xol.engine.math.lalgb.Vector4f vec4)
 	{
 		setUniformFloat4(name, vec4.x, vec4.y, vec4.z, vec4.w);
 	}

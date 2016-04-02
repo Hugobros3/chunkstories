@@ -9,9 +9,9 @@ import static org.lwjgl.opengl.GL11.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
+import io.xol.engine.math.lalgb.Matrix4f;
+import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.entity.EntityImplementation;

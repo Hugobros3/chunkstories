@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.item;
 
-import org.lwjgl.util.vector.Matrix4f;
+import io.xol.engine.math.lalgb.Matrix4f;
 
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.ItemPile;

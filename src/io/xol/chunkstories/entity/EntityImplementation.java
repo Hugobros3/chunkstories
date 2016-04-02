@@ -175,6 +175,9 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
+	/**
+	 * Prevents entities from going outside the world area and updates the parentHolder reference
+	 */
 	public boolean updatePosition()
 	{
 		pos.x %= world.getSizeSide();

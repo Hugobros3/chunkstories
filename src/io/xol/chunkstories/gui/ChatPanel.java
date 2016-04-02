@@ -9,7 +9,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 
-import org.lwjgl.util.vector.Vector4f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.gui.Overlay;

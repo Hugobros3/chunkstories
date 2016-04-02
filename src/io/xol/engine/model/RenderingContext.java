@@ -14,8 +14,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Matrix3f;
-import org.lwjgl.util.vector.Matrix4f;
+import io.xol.engine.math.lalgb.Matrix3f;
+import io.xol.engine.math.lalgb.Matrix4f;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

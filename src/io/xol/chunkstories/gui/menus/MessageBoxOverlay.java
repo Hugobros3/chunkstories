@@ -2,7 +2,7 @@ package io.xol.chunkstories.gui.menus;
 
 import java.util.Random;
 
-import org.lwjgl.util.vector.Vector4f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.gui.Overlay;

@@ -21,8 +21,8 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
-import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
+import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;

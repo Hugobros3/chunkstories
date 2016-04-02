@@ -1,7 +1,7 @@
 package io.xol.chunkstories.item.renderer;
 
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
+import io.xol.engine.math.lalgb.Matrix4f;
+import io.xol.engine.math.lalgb.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
 
