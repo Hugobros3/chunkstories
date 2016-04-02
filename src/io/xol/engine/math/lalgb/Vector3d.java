@@ -24,6 +24,13 @@ public class Vector3d
 		this.z = z;
 	}
 
+	public Vector3d(Vector3d vec)
+	{
+		this.x = vec.x;
+		this.y = vec.y;
+		this.z = vec.z;
+	}
+
 	public Vector3d add(Vector3d b)
 	{
 		x += b.x;
@@ -138,6 +145,22 @@ public class Vector3d
 	public String toString()
 	{
 		return "[Vector3d x:" + x + " y:" + y + " z:" + z + "]";
+	}
+
+	public Vector3d zero()
+	{
+		this.x = 0d;
+		this.y = 0d;
+		this.z = 0d;
+		return this;
+	}
+
+	public Vector3d add(double x, double y, double z)
+	{
+		this.x += x;
+		this.y += y;
+		this.z += z;
+		return this;
 	}
 
 }

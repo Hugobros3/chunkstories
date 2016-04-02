@@ -158,7 +158,7 @@ public class ChunksRenderer extends Thread
 					if (world.isChunkLoaded(task[0], task[1], task[2]))
 					{
 						CubicChunk work = world.getChunk(task[0], task[1], task[2], false);
-						if (work.need_render.get())
+						if (work.need_render.get() || work.needRelightning.get())
 						{
 							int nearChunks = 0;
 							if (world.isChunkLoaded(task[0] + 1, task[1], task[2]))
@@ -992,7 +992,7 @@ public class ChunksRenderer extends Thread
 			work.bakeVoxelLightning(true);
 
 		// Don't bother
-		if (!work.need_render.get())
+		if (!work.need_render.get() && !work.needRelightning.get())
 		{
 			buffersPool.releaseByteBuffer(byteBufferId);
 			return;

@@ -31,6 +31,7 @@ import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.MatrixHelper;
+import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
@@ -240,7 +241,7 @@ public class WorldRenderer
 
 		Client.profiler.startSection("updates");
 		// Load/Unload required parts of the world, update the display list etc
-		updateRender(-camera.camPosX, -camera.camPosY, -camera.camPosZ, -camera.view_rotx, -camera.view_roty);
+		updateRender(camera);
 
 		Client.profiler.startSection("next");
 		// Shadows pre-pass
@@ -342,8 +343,9 @@ public class WorldRenderer
 		return x < xi ? xi - 1 : xi;
 	}
 
-	public void updateRender(double camPosX, double camPosY, double camPosZ, float view_rotx, float view_roty)
+	public void updateRender(Camera camera)
 	{
+		Vector3d pos = new Vector3d(camera.pos).negate();
 		// Called every frame, this method takes care of updating the world :
 		// It will keep up to date the camera position, as well as a list of
 		// to-render chunks in order to fill empty VBO space
@@ -386,14 +388,14 @@ public class WorldRenderer
 		// Cleans free vbos
 		ChunkRenderData.deleteUselessVBOs();
 		// Update view
-		viewX = camPosX;
-		viewY = camPosY;
-		viewZ = camPosZ;
-		viewRotH = view_rotx;
-		viewRotV = view_roty;
-		int npCX = fastfloor((camPosX + 16) / 32);
-		int npCY = fastfloor((camPosY) / 32);
-		int npCZ = fastfloor((camPosZ + 16) / 32);
+		viewX = pos.x;
+		viewY = pos.y;
+		viewZ = pos.z;
+		//viewRotH = view_rotx;
+		//viewRotV = view_roty;
+		int npCX = fastfloor((pos.x + 16) / 32);
+		int npCY = fastfloor((pos.y) / 32);
+		int npCZ = fastfloor((pos.z + 16) / 32);
 		// Fill the VBO array with chunks VBO ids if the player changed chunk
 		if (pCX != npCX || pCY != npCY || pCZ != npCZ || chunksChanged || true)
 		{
@@ -441,7 +443,7 @@ public class WorldRenderer
 			world.ioHandler.requestChunksUnload(npCX, npCY, npCZ, sizeInChunks, chunksViewDistance + 1);
 
 			if (npCX != pCX || npCZ != pCZ)
-				terrain.generateArround(-camera.camPosX, -camera.camPosZ);
+				terrain.generateArround(-camera.pos.x, -camera.pos.z);
 			terrain.updateData();
 			world.chunkSummaries.removeFurther(npCX, npCZ, 33);
 
@@ -499,9 +501,9 @@ public class WorldRenderer
 		Matrix4f.mul(depthProjectionMatrix, depthViewMatrix, depthMatrix);
 		Matrix4f shadowMVP = new Matrix4f(depthMatrix);
 
-		//depthMatrix.translate(new Vector3f((float) Math.floor(camera.camPosX), (float) Math.floor(camera.camPosY), (float) Math.floor(camera.camPosZ)));
-		//shadowMVP.translate(new Vector3f((float) Math.floor(camera.camPosX), (float) Math.floor(camera.camPosY), (float) Math.floor(camera.camPosZ)));
-		shadowMVP.translate(new Vector3f((float) camera.camPosX, (float) camera.camPosY, (float) camera.camPosZ));
+		//depthMatrix.translate(new Vector3f((float) Math.floor(camera.pos.x), (float) Math.floor(camera.pos.y), (float) Math.floor(camera.pos.z)));
+		//shadowMVP.translate(new Vector3f((float) Math.floor(camera.pos.x), (float) Math.floor(camera.pos.y), (float) Math.floor(camera.pos.z)));
+		shadowMVP.translate(new Vector3f((float) camera.pos.x, (float) camera.pos.y, (float) camera.pos.z));
 
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
 		shadowsPassShader.setUniformMatrix4f("localTransform", new Matrix4f());
@@ -718,7 +720,7 @@ public class WorldRenderer
 			if (chunk.chunkZ - pCZ < -chunksViewDistance)
 				vboDekalZ += sizeInChunks * 32;
 			// Update if chunk was modified
-			if (chunk.need_render.get() && chunk.requestable.get() && chunk.dataPointer != -1)
+			if ((chunk.need_render.get() || chunk.needRelightning.get()) && chunk.requestable.get() && chunk.dataPointer != -1)
 				chunksRenderer.requestChunkRender(chunk);
 			// Don't bother if it don't render anything
 			if (chunkRenderData == null || chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)
@@ -754,16 +756,16 @@ public class WorldRenderer
 			}
 			if (!shadowPass)
 			{
-				int camIntPartX = (int) Math.floor(camera.camPosX);
-				int camIntPartY = (int) Math.floor(camera.camPosY);
-				int camIntPartZ = (int) Math.floor(camera.camPosZ);
-				double fractPartX = camera.camPosX - Math.floor(camera.camPosX);
-				double fractPartY = camera.camPosY - Math.floor(camera.camPosY);
-				double fractPartZ = camera.camPosZ - Math.floor(camera.camPosZ);
+				int camIntPartX = (int) Math.floor(camera.pos.x);
+				int camIntPartY = (int) Math.floor(camera.pos.y);
+				int camIntPartZ = (int) Math.floor(camera.pos.z);
+				double fractPartX = camera.pos.x - Math.floor(camera.pos.x);
+				double fractPartY = camera.pos.y - Math.floor(camera.pos.y);
+				double fractPartZ = camera.pos.z - Math.floor(camera.pos.z);
 				double diffChunkX = vboDekalX + camIntPartX;
 				double diffChunkY = chunk.chunkY * 32 + camIntPartY;
 				double diffChunkZ = vboDekalZ + camIntPartZ;
-				opaqueBlocksShader.setUniformFloat3("borderShift", vboDekalX + camera.camPosX, chunk.chunkY * 32f + camera.camPosY, vboDekalZ + camera.camPosZ);
+				opaqueBlocksShader.setUniformFloat3("borderShift", vboDekalX + camera.pos.x, chunk.chunkY * 32f + camera.pos.y, vboDekalZ + camera.pos.z);
 				opaqueBlocksShader.setUniformFloat3("borderShift", diffChunkX + fractPartX, diffChunkY + fractPartY, diffChunkZ + fractPartZ);
 			}
 			else
@@ -1050,11 +1052,11 @@ public class WorldRenderer
 
 		renderTerrain();
 	}
-	
+
 	private void renderLightsDeffered()
 	{
 		Client.profiler.startSection("lights");
-		
+
 		//We work on the shaded buffer
 		this.composite_pass_shaded.bind();
 		// Deffered lightning
@@ -1276,7 +1278,7 @@ public class WorldRenderer
 		int[] skyColor = sky.getSkyColor();
 
 		applyShadowsShader.setUniformFloat3("skyColor", skyColor[0] / 255f, skyColor[1] / 255f, skyColor[2] / 255f);
-		applyShadowsShader.setUniformFloat3("camPos", camera.camPosX, camera.camPosY, camera.camPosZ);
+		applyShadowsShader.setUniformFloat3("camPos", camera.pos.x, camera.pos.y, camera.pos.z);
 
 		//Matrix4f.mul(depthMatrix, camera.modelViewMatrix4fInverted, depthMatrix);
 
@@ -1412,8 +1414,6 @@ public class WorldRenderer
 	{
 		return this.renderList.size();
 	}
-
-	
 
 	public void destroy()
 	{

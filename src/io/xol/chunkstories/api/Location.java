@@ -1,6 +1,7 @@
 package io.xol.chunkstories.api;
 
 import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.world.World;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -17,6 +18,11 @@ public class Location extends Vector3d
 		this.world = world;
 	}
 	
+	public Location(World world, Vector3d position)
+	{
+		this(world, position.x, position.y, position.z);
+	}
+
 	public double getX()
 	{
 		return x;

@@ -118,9 +118,9 @@ public class WeatherEffectsRenderer
 	// Rain falls at ~10m/s, so we prepare in advance 10 meters of rain to fall until we add some more on top
 	public void renderEffects(RenderingContext renderingContext)
 	{
-		viewX = (int) -renderingContext.getCamera().camPosX;
-		viewY = (int) -renderingContext.getCamera().camPosY;
-		viewZ = (int) -renderingContext.getCamera().camPosZ;
+		viewX = (int) -renderingContext.getCamera().pos.x;
+		viewY = (int) -renderingContext.getCamera().pos.y;
+		viewZ = (int) -renderingContext.getCamera().pos.z;
 		if(world.isRaining())
 			renderRain(renderingContext);
 	}

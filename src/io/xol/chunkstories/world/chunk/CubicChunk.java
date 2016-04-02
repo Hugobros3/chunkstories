@@ -126,7 +126,7 @@ public class CubicChunk implements Chunk
 	@Override
 	public String toString()
 	{
-		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + "]";
+		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " NR:"+need_render.get()+" "+"]";
 	}
 
 	/* (non-Javadoc)
@@ -169,18 +169,21 @@ public class CubicChunk implements Chunk
 			addAdjacentChunksLightSources(blockSources, sunSources);
 		
 		//Propagates the light
-		propagateLightning(blockSources, sunSources);
-
+		int c = propagateLightning(blockSources, sunSources);
+		if(c > 0)
+			this.need_render.set(true);
+		
 		//Return the queues after that
 		world.dequesPool.back(blockSources);
 		world.dequesPool.back(sunSources);
 	}
 	
 	// Now entering lightning code part, brace yourselves
-	private void propagateLightning(Deque<Integer> blockSources, Deque<Integer> sunSources)
+	private int propagateLightning(Deque<Integer> blockSources, Deque<Integer> sunSources)
 	{
 		int data[] = world.chunksData.grab(dataPointer);
-
+		int modifiedBlocks = 0;
+		
 		// The ints are composed as : 0x0BSMIIII
 		// Second pass : loop fill bfs algo
 		CubicChunk adjacentChunkTop = world.getChunk(chunkX, chunkY + 1, chunkZ, false);
@@ -219,6 +222,7 @@ public class CubicChunk implements Chunk
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
 						data[(x + 1) * 1024 + y * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						modifiedBlocks++;
 						blockSources.push(x + 1);
 						blockSources.push(z);
 						blockSources.push(y);
@@ -240,6 +244,7 @@ public class CubicChunk implements Chunk
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
 						data[(x - 1) * 1024 + y * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						modifiedBlocks++;
 						blockSources.push(x - 1);
 						blockSources.push(z);
 						blockSources.push(y);
@@ -262,6 +267,7 @@ public class CubicChunk implements Chunk
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
 						data[x * 1024 + y * 32 + z + 1] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z + 1);
 						blockSources.push(y);
@@ -283,6 +289,7 @@ public class CubicChunk implements Chunk
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
 						data[x * 1024 + y * 32 + z - 1] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z - 1);
 						blockSources.push(y);
@@ -305,6 +312,7 @@ public class CubicChunk implements Chunk
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
 						data[x * 1024 + (y + 1) * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z);
 						blockSources.push(y + 1);
@@ -326,6 +334,7 @@ public class CubicChunk implements Chunk
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
 						data[x * 1024 + (y - 1) * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z);
 						blockSources.push(y - 1);
@@ -370,6 +379,7 @@ public class CubicChunk implements Chunk
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llRight - 1)
 					{
 						data[(x + 1) * 1024 + y * 32 + z] = adj & 0xFF0FFFFF | (llRight - 1) << 0x14;
+						modifiedBlocks++;
 						sunSources.push(x + 1);
 						sunSources.push(z);
 						sunSources.push(y);
@@ -399,6 +409,7 @@ public class CubicChunk implements Chunk
 						//if(id == 25)
 						//	System.out.println("MAIS LEL TARACE"+VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() + " -> " +((adj & 0x00F00000) >> 0x14));
 						data[(x - 1) * 1024 + y * 32 + z] = adj & 0xFF0FFFFF | (llLeft - 1) << 0x14;
+						modifiedBlocks++;
 						sunSources.push(x - 1);
 						sunSources.push(z);
 						sunSources.push(y);
@@ -424,6 +435,7 @@ public class CubicChunk implements Chunk
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llFront - 1)
 					{
 						data[x * 1024 + y * 32 + z + 1] = adj & 0xFF0FFFFF | (llFront - 1) << 0x14;
+						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z + 1);
 						sunSources.push(y);
@@ -448,6 +460,7 @@ public class CubicChunk implements Chunk
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBack - 1)
 					{
 						data[x * 1024 + y * 32 + z - 1] = adj & 0xFF0FFFFF | (llBack - 1) << 0x14;
+						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z - 1);
 						sunSources.push(y);
@@ -473,6 +486,7 @@ public class CubicChunk implements Chunk
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llTop - 1)
 					{
 						data[x * 1024 + (y + 1) * 32 + z] = adj & 0xFF0FFFFF | (llTop - 1) << 0x14;
+						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z);
 						sunSources.push(y + 1);
@@ -498,6 +512,7 @@ public class CubicChunk implements Chunk
 					{
 						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)
 						data[x * 1024 + (y - 1) * 32 + z] = adj & 0xFF0FFFFF | (llBottm /* - removed */) << 0x14;
+						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z);
 						sunSources.push(y - 1);
@@ -517,6 +532,8 @@ public class CubicChunk implements Chunk
 				}
 			}
 		}
+		
+		return modifiedBlocks;
 	}
 	
 	private void addChunkLightSources(Deque<Integer> blockSources, Deque<Integer> sunSources)
@@ -822,25 +839,54 @@ public class CubicChunk implements Chunk
 
 		int csh = world.chunkSummaries.getHeightAt(bx + chunkX * 32, bz + chunkZ * 32);
 		int block_height = by + chunkY * 32;
+		
 		//If the block is at or above (never) the topmost tile it's sunlit
 		if(block_height >= csh)
 			sunLightAfter = 15;
-		
-		//System.out.println("csh: "+csh + "y:"+block_height);
-		//System.out.println("SLA"+sunLightAfter+" SLB"+sunLightBefore);
 		
 		Deque<Integer> blockSourcesRemoval = world.dequesPool.grab();
 		Deque<Integer> sunSourcesRemoval = world.dequesPool.grab();
 		Deque<Integer> blockSources = world.dequesPool.grab();
 		Deque<Integer> sunSources = world.dequesPool.grab();
+
+		blockSourcesRemoval.push(bx);
+		blockSourcesRemoval.push(by);
+		blockSourcesRemoval.push(bz);
+		blockSourcesRemoval.push(blockLightBefore);
 		
-		//if(sunLightBefore != sunLightAfter)
+		sunSourcesRemoval.push(bx);
+		sunSourcesRemoval.push(by);
+		sunSourcesRemoval.push(bz);
+		sunSourcesRemoval.push(sunLightBefore);
+		
+		propagateLightRemovalBeyondChunks(blockSources, sunSources, blockSourcesRemoval, sunSourcesRemoval);
+		
+		//Add light sources if relevant
+		if(sunLightAfter > 0)
 		{
-			sunSourcesRemoval.push(bx);
-			sunSourcesRemoval.push(by);
-			sunSourcesRemoval.push(bz);
-			sunSourcesRemoval.push(sunLightBefore);
+			sunSources.push(bx);
+			sunSources.push(bz);
+			sunSources.push(by);
 		}
+		if(blockLightAfter > 0)
+		{
+			blockSources.push(bx);
+			blockSources.push(bz);
+			blockSources.push(by);
+		}
+		
+		//Propagate remaining light
+		this.propagateLightningBeyondChunk(blockSources, sunSources);
+		
+		//Return the queues after that
+		world.dequesPool.back(blockSourcesRemoval);
+		world.dequesPool.back(sunSourcesRemoval);
+		world.dequesPool.back(blockSources);
+		world.dequesPool.back(sunSources);
+	}
+	
+	private void propagateLightRemoval(Deque<Integer> blockSources, Deque<Integer> sunSources, Deque<Integer> blockSourcesRemoval, Deque<Integer> sunSourcesRemoval)
+	{
 		while(sunSourcesRemoval.size() > 0)
 		{
 			int sunLightLevel = sunSourcesRemoval.pop();
@@ -964,15 +1010,7 @@ public class CubicChunk implements Chunk
 			}
 		}
 		
-		//Block light changed
-		//if(blockLightBefore != blockLightAfter)
-		{
-			//System.out.println("new blockLightAfter: "+blockLightAfter);
-			blockSourcesRemoval.push(bx);
-			blockSourcesRemoval.push(by);
-			blockSourcesRemoval.push(bz);
-			blockSourcesRemoval.push(blockLightBefore);
-		}
+		
 		while(blockSourcesRemoval.size() > 0)
 		{
 			int blockLightLevel = blockSourcesRemoval.pop();
@@ -1095,52 +1133,571 @@ public class CubicChunk implements Chunk
 				}
 			}
 		}
-		
-		//Add light sources if relevant
-		if(sunLightAfter > 0)
+	}
+
+	private void propagateLightRemovalBeyondChunks(Deque<Integer> blockSources, Deque<Integer> sunSources, Deque<Integer> blockSourcesRemoval, Deque<Integer> sunSourcesRemoval)
+	{
+		int bounds = 64;
+		while(sunSourcesRemoval.size() > 0)
 		{
-			sunSources.push(bx);
-			sunSources.push(bz);
-			sunSources.push(by);
+			int sunLightLevel = sunSourcesRemoval.pop();
+			int z = sunSourcesRemoval.pop();
+			int y = sunSourcesRemoval.pop();
+			int x = sunSourcesRemoval.pop();
+			
+			int neighborSunLightLevel;
+			
+			// X Axis
+			if(x > -bounds)
+			{
+				neighborSunLightLevel = this.getSunLight(x - 1, y, z);
+				if(neighborSunLightLevel > 0 && neighborSunLightLevel < sunLightLevel)
+				{
+					this.setSunLight(x - 1, y, z, 0);
+					sunSourcesRemoval.push(x - 1);
+					sunSourcesRemoval.push(y);
+					sunSourcesRemoval.push(z);
+					sunSourcesRemoval.push(neighborSunLightLevel);
+				}
+				else if(neighborSunLightLevel >= sunLightLevel)
+				{
+					sunSources.push(x - 1);
+					sunSources.push(z);
+					sunSources.push(y);
+				}
+			}
+			if(x < bounds)
+			{
+				neighborSunLightLevel = this.getSunLight(x + 1, y, z);
+				if(neighborSunLightLevel > 0 && neighborSunLightLevel < sunLightLevel)
+				{
+					this.setSunLight(x + 1, y, z, 0);
+					sunSourcesRemoval.push(x + 1);
+					sunSourcesRemoval.push(y);
+					sunSourcesRemoval.push(z);
+					sunSourcesRemoval.push(neighborSunLightLevel);
+				}
+				else if(neighborSunLightLevel >= sunLightLevel)
+				{
+					sunSources.push(x + 1);
+					sunSources.push(z);
+					sunSources.push(y);
+				}
+			}
+			// Y axis
+			if(y > -bounds)
+			{
+				neighborSunLightLevel = this.getSunLight(x, y - 1, z);
+				if(neighborSunLightLevel > 0 && neighborSunLightLevel <= sunLightLevel)
+				{
+					this.setSunLight(x, y - 1, z, 0);
+					sunSourcesRemoval.push(x);
+					sunSourcesRemoval.push(y - 1);
+					sunSourcesRemoval.push(z);
+					sunSourcesRemoval.push(neighborSunLightLevel);
+				}
+				else if(neighborSunLightLevel >= sunLightLevel)
+				{
+					sunSources.push(x);
+					sunSources.push(z);
+					sunSources.push(y - 1);
+				}
+			}
+			if(y < bounds)
+			{
+				neighborSunLightLevel = this.getSunLight(x, y + 1, z);
+				
+				if(neighborSunLightLevel > 0 && neighborSunLightLevel < sunLightLevel)
+				{
+					this.setSunLight(x, y + 1, z, 0);
+					sunSourcesRemoval.push(x);
+					sunSourcesRemoval.push(y + 1);
+					sunSourcesRemoval.push(z);
+					sunSourcesRemoval.push(neighborSunLightLevel);
+				}
+				else if(neighborSunLightLevel >= sunLightLevel)
+				{
+					sunSources.push(x);
+					sunSources.push(z);
+					sunSources.push(y + 1);
+				}
+			}
+			// Z Axis
+			if(z > -bounds)
+			{
+				neighborSunLightLevel = this.getSunLight(x, y, z - 1);
+				if(neighborSunLightLevel > 0 && neighborSunLightLevel < sunLightLevel)
+				{
+					this.setSunLight(x, y, z - 1, 0);
+					sunSourcesRemoval.push(x);
+					sunSourcesRemoval.push(y);
+					sunSourcesRemoval.push(z - 1);
+					sunSourcesRemoval.push(neighborSunLightLevel);
+				}
+				else if(neighborSunLightLevel >= sunLightLevel)
+				{
+					sunSources.push(x);
+					sunSources.push(z - 1);
+					sunSources.push(y);
+				}
+			}
+			if(z < bounds)
+			{
+				neighborSunLightLevel = this.getSunLight(x, y, z + 1);
+				if(neighborSunLightLevel > 0 && neighborSunLightLevel < sunLightLevel)
+				{
+					this.setSunLight(x, y, z + 1, 0);
+					sunSourcesRemoval.push(x);
+					sunSourcesRemoval.push(y);
+					sunSourcesRemoval.push(z + 1);
+					sunSourcesRemoval.push(neighborSunLightLevel);
+				}
+				else if(neighborSunLightLevel >= sunLightLevel)
+				{
+					sunSources.push(x);
+					sunSources.push(z + 1);
+					sunSources.push(y);
+				}
+			}
 		}
-		if(blockLightAfter > 0)
+		
+		
+		while(blockSourcesRemoval.size() > 0)
 		{
-			blockSources.push(bx);
-			blockSources.push(bz);
-			blockSources.push(by);
+			int blockLightLevel = blockSourcesRemoval.pop();
+			int z = blockSourcesRemoval.pop();
+			int y = blockSourcesRemoval.pop();
+			int x = blockSourcesRemoval.pop();
+			
+			int neighborBlockLightLevel;
+			
+			// X Axis
+			if(x > -bounds)
+			{
+				neighborBlockLightLevel = this.getBlockLight(x - 1, y, z);
+				//System.out.println(neighborBlockLightLevel + "|" + blockLightLevel);
+				if(neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
+				{
+					this.setBlockLight(x - 1, y, z, 0);
+					blockSourcesRemoval.push(x - 1);
+					blockSourcesRemoval.push(y);
+					blockSourcesRemoval.push(z);
+					blockSourcesRemoval.push(neighborBlockLightLevel);
+				}
+				else if(neighborBlockLightLevel >= blockLightLevel)
+				{
+					blockSources.push(x - 1);
+					blockSources.push(z);
+					blockSources.push(y);
+				}
+			}
+			if(x < bounds)
+			{
+				neighborBlockLightLevel = this.getBlockLight(x + 1, y, z);
+				if(neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
+				{
+					this.setBlockLight(x + 1, y, z, 0);
+					blockSourcesRemoval.push(x + 1);
+					blockSourcesRemoval.push(y);
+					blockSourcesRemoval.push(z);
+					blockSourcesRemoval.push(neighborBlockLightLevel);
+				}
+				else if(neighborBlockLightLevel >= blockLightLevel)
+				{
+					blockSources.push(x + 1);
+					blockSources.push(z);
+					blockSources.push(y);
+				}
+			}
+			// Y axis
+			if(y > -bounds)
+			{
+				neighborBlockLightLevel = this.getBlockLight(x, y - 1, z);
+				if(neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
+				{
+					this.setBlockLight(x, y - 1, z, 0);
+					blockSourcesRemoval.push(x);
+					blockSourcesRemoval.push(y - 1);
+					blockSourcesRemoval.push(z);
+					blockSourcesRemoval.push(neighborBlockLightLevel);
+				}
+				else if(neighborBlockLightLevel >= blockLightLevel)
+				{
+					blockSources.push(x);
+					blockSources.push(z);
+					blockSources.push(y - 1);
+				}
+			}
+			if(y < bounds)
+			{
+				neighborBlockLightLevel = this.getBlockLight(x, y + 1, z);
+				if(neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
+				{
+					this.setBlockLight(x, y + 1, z, 0);
+					blockSourcesRemoval.push(x);
+					blockSourcesRemoval.push(y + 1);
+					blockSourcesRemoval.push(z);
+					blockSourcesRemoval.push(neighborBlockLightLevel);
+				}
+				else if(neighborBlockLightLevel >= blockLightLevel)
+				{
+					blockSources.push(x);
+					blockSources.push(z);
+					blockSources.push(y + 1);
+				}
+			}
+			// Z Axis
+			if(z > -bounds)
+			{
+				neighborBlockLightLevel = this.getBlockLight(x, y, z - 1);
+				if(neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
+				{
+					this.setBlockLight(x, y, z - 1, 0);
+					blockSourcesRemoval.push(x);
+					blockSourcesRemoval.push(y);
+					blockSourcesRemoval.push(z - 1);
+					blockSourcesRemoval.push(neighborBlockLightLevel);
+				}
+				else if(neighborBlockLightLevel >= blockLightLevel)
+				{
+					blockSources.push(x);
+					blockSources.push(z - 1);
+					blockSources.push(y);
+				}
+			}
+			if(z < bounds)
+			{
+				neighborBlockLightLevel = this.getBlockLight(x, y, z + 1);
+				if(neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
+				{
+					this.setBlockLight(x, y, z + 1, 0);
+					blockSourcesRemoval.push(x);
+					blockSourcesRemoval.push(y);
+					blockSourcesRemoval.push(z + 1);
+					blockSourcesRemoval.push(neighborBlockLightLevel);
+				}
+				else if(neighborBlockLightLevel >= blockLightLevel)
+				{
+					blockSources.push(x);
+					blockSources.push(z + 1);
+					blockSources.push(y);
+				}
+			}
+		}
+	}
+	
+	private int propagateLightningBeyondChunk(Deque<Integer> blockSources, Deque<Integer> sunSources)
+	{
+		//int data[] = world.chunksData.grab(dataPointer);
+		int modifiedBlocks = 0;
+		int bounds = 64;
+		
+		// The ints are composed as : 0x0BSMIIII
+		// Second pass : loop fill bfs algo
+		Voxel in;
+		while (blockSources.size() > 0)
+		{
+			int y = blockSources.pop();
+			int z = blockSources.pop();
+			int x = blockSources.pop();
+			int voxelData = getWorldData(x, y, z);
+			int ll = (voxelData & 0x0F000000) >> 0x18;
+			int cId = VoxelFormat.id(voxelData);
+
+			in = VoxelTypes.get(cId);
+			
+			if (VoxelTypes.get(cId).isVoxelOpaque())
+				ll = in.getLightLevel(voxelData);
+
+			if (ll > 1)
+			{
+				// X-propagation
+				if (x < bounds)
+				{
+					int adj = this.getWorldData(x + 1, y, z);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
+					{
+						this.setWorldData(x + 1, y, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						modifiedBlocks++;
+						blockSources.push(x + 1);
+						blockSources.push(z);
+						blockSources.push(y);
+						//blockSources.push(x + 1 << 16 | z << 8 | y);
+					}
+				}
+				if (x > -bounds)
+				{
+					int adj = this.getWorldData(x - 1, y, z);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
+					{
+						this.setWorldData(x - 1, y, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						modifiedBlocks++;
+						blockSources.push(x - 1);
+						blockSources.push(z);
+						blockSources.push(y);
+						//blockSources.push(x - 1 << 16 | z << 8 | y);
+					}
+				}
+				// Z-propagation
+				if (z < bounds)
+				{
+					int adj = this.getWorldData(x, y, z + 1);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
+					{
+						this.setWorldData(x, y, z + 1, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						modifiedBlocks++;
+						blockSources.push(x);
+						blockSources.push(z + 1);
+						blockSources.push(y);
+						//blockSources.push(x << 16 | z + 1 << 8 | y);
+					}
+				}
+				if (z > -bounds)
+				{
+					int adj = this.getWorldData(x, y, z - 1);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
+					{
+						this.setWorldData(x, y, z - 1, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						modifiedBlocks++;
+						blockSources.push(x);
+						blockSources.push(z - 1);
+						blockSources.push(y);
+						//blockSources.push(x << 16 | z - 1 << 8 | y);
+					}
+				}
+				// Y-propagation
+				if (y < bounds) // y = 254+1
+				{
+					int adj = this.getWorldData(x, y + 1, z);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
+					{
+						this.setWorldData(x, y + 1, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						modifiedBlocks++;
+						blockSources.push(x);
+						blockSources.push(z);
+						blockSources.push(y + 1);
+						//blockSources.push(x << 16 | z << 8 | y + 1);
+					}
+				}
+				if (y > -bounds)
+				{
+					int adj = this.getWorldData(x, y - 1, z);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
+					{
+						this.setWorldData(x, y - 1, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						modifiedBlocks++;
+						blockSources.push(x);
+						blockSources.push(z);
+						blockSources.push(y - 1);
+						//blockSources.push(x << 16 | z << 8 | y - 1);
+					}
+				}
+			}
+		}
+		// Sunlight propagation
+		while (sunSources.size() > 0)
+		{
+			int y = sunSources.pop();
+			int z = sunSources.pop();
+			int x = sunSources.pop();
+
+			int voxelData = this.getWorldData(x, y, z);
+			int ll = (voxelData & 0x00F00000) >> 0x14;
+			int cId = VoxelFormat.id(voxelData);
+			
+			in = VoxelTypes.get(cId);
+			
+			if (in.isVoxelOpaque())
+				ll = 0;
+
+			if (ll > 1)
+			{
+				// X-propagation
+				if (x < bounds)
+				{
+					int adj = this.getWorldData(x + 1, y, z);
+					int llRight = ll - in.getLightLevelModifier(voxelData, adj, 2);
+					
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llRight - 1)
+					{
+						this.setWorldData(x + 1, y, z, adj & 0xFF0FFFFF | (llRight - 1) << 0x14);
+						modifiedBlocks++;
+						sunSources.push(x + 1);
+						sunSources.push(z);
+						sunSources.push(y);
+					}
+				}
+				if (x > -bounds)
+				{
+					int adj = this.getWorldData(x - 1, y, z);
+					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, 0);
+					//int id = (adj & 0xFFFF);
+					//if(id == 25)
+					//	System.out.println("topikek"+VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() + " -> " +((adj & 0x00F00000) >> 0x14));
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llLeft - 1)
+					{
+						//if(id == 25)
+						//	System.out.println("MAIS LEL TARACE"+VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() + " -> " +((adj & 0x00F00000) >> 0x14));
+						this.setWorldData(x - 1, y, z, adj & 0xFF0FFFFF | (llLeft - 1) << 0x14);
+						modifiedBlocks++;
+						sunSources.push(x - 1);
+						sunSources.push(z);
+						sunSources.push(y);
+						//sunSources.push(x - 1 << 16 | z << 8 | y);
+					}
+				}
+				// Z-propagation
+				if (z < bounds)
+				{
+					int adj = this.getWorldData(x, y, z + 1);
+					int llFront = ll - in.getLightLevelModifier(voxelData, adj, 1);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llFront - 1)
+					{
+						this.setWorldData(x, y, z + 1, adj & 0xFF0FFFFF | (llFront - 1) << 0x14);
+						modifiedBlocks++;
+						sunSources.push(x);
+						sunSources.push(z + 1);
+						sunSources.push(y);
+						//sunSources.push(x << 16 | z + 1 << 8 | y);
+					}
+				}
+				if (z > -bounds)
+				{
+					int adj = this.getWorldData(x, y, z - 1);
+					int llBack = ll - in.getLightLevelModifier(voxelData, adj, 3);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBack - 1)
+					{
+						this.setWorldData(x, y, z - 1, adj & 0xFF0FFFFF | (llBack - 1) << 0x14);
+						modifiedBlocks++;
+						sunSources.push(x);
+						sunSources.push(z - 1);
+						sunSources.push(y);
+						//sunSources.push(x << 16 | z - 1 << 8 | y);
+					}
+				}
+				// Y-propagation
+				if (y < bounds) // y = 254+1
+				{
+					int adj = this.getWorldData(x, y + 1, z);
+					int llTop = ll - in.getLightLevelModifier(voxelData, adj, 4);
+					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llTop - 1)
+					{
+						this.setWorldData(x, y + 1, z, adj & 0xFF0FFFFF | (llTop - 1) << 0x14);
+						modifiedBlocks++;
+						sunSources.push(x);
+						sunSources.push(z);
+						sunSources.push(y + 1);
+						//sunSources.push(x << 16 | z << 8 | y + 1);
+					}
+				}
+				if (y > -bounds)
+				{
+					int adj = this.getWorldData(x, y - 1, z);
+					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, 5);
+					if (!VoxelTypes.get(adj).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBottm)
+					{
+						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)
+						this.setWorldData(x, y - 1, z, adj & 0xFF0FFFFF | (llBottm /* - removed */) << 0x14);
+						modifiedBlocks++;
+						sunSources.push(x);
+						sunSources.push(z);
+						sunSources.push(y - 1);
+						//sunSources.push(x << 16 | z << 8 | y - 1);
+					}
+				}
+			}
 		}
 		
-		//Propagate remaining light
-		this.propagateLightning(blockSources, sunSources);
-		
-		//Return the queues after that
-		world.dequesPool.back(blockSourcesRemoval);
-		world.dequesPool.back(sunSourcesRemoval);
-		world.dequesPool.back(blockSources);
-		world.dequesPool.back(sunSources);
+		return modifiedBlocks;
+	}
+
+	private int getWorldData(int x, int y, int z)
+	{
+		if(x > 0 && x < 31)
+			if(y > 0 && y < 31)
+				if(z > 0 && z < 31)
+					this.getDataAt(x, y, z);
+		return world.getDataAt(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, false);
+	}
+	
+	private void setWorldData(int x, int y, int z, int data)
+	{
+		if(x > 0 && x < 31)
+			if(y > 0 && y < 31)
+				if(z > 0 && z < 31)
+				{
+					this.setDataAtWithoutUpdates(x, y, z, data);
+					return;
+				}
+		world.setDataAtWithoutUpdates(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data, false);
+		CubicChunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32, false);
+		if(c != null)
+		{
+			//c.needRelightning.set(true);
+			c.need_render.set(true);
+			c.markDirty(true);
+		}
 	}
 
 	@Override
 	public int getSunLight(int x, int y, int z)
 	{
-		return VoxelFormat.sunlight(this.getDataAt(x, y, z));
+		if(x > 0 && x < 31)
+			if(y > 0 && y < 31)
+				if(z > 0 && z < 31)
+					return VoxelFormat.sunlight(this.getDataAt(x, y, z));
+		// Stronger implementation for unbound spread functions
+		return VoxelFormat.sunlight(this.getWorldData(x, y, z));
 	}
 
 	@Override
 	public int getBlockLight(int x, int y, int z)
 	{
-		return VoxelFormat.blocklight(this.getDataAt(x, y, z));
+		if(x > 0 && x < 31)
+			if(y > 0 && y < 31)
+				if(z > 0 && z < 31)
+					return VoxelFormat.blocklight(this.getDataAt(x, y, z));
+		// Stronger implementation for unbound spread functions
+		return VoxelFormat.blocklight(this.getWorldData(x, y, z));
 	}
 
 	@Override
 	public void setSunLight(int x, int y, int z, int level)
 	{
-		this.setDataAtWithoutUpdates(x, y, z, VoxelFormat.changeSunlight(this.getDataAt(x, y, z), level));
+		if(x > 0 && x < 31)
+			if(y > 0 && y < 31)
+				if(z > 0 && z < 31)
+				{
+					this.setDataAtWithoutUpdates(x, y, z, VoxelFormat.changeSunlight(this.getDataAt(x, y, z), level));
+					return;
+				}
+		// Stronger implementation for unbound spread functions
+		this.setWorldData(x, y, z, VoxelFormat.changeSunlight(this.getWorldData(x, y, z), level));CubicChunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32, false);
+		if(c != null)
+		{
+			//c.needRelightning.set(true);
+			c.need_render.set(true);
+			c.markDirty(true);
+		}
 	}
 
 	@Override
 	public void setBlockLight(int x, int y, int z, int level)
 	{
-		this.setDataAtWithoutUpdates(x, y, z, VoxelFormat.changeBlocklight(this.getDataAt(x, y, z), level));
+		if(x > 0 && x < 31)
+			if(y > 0 && y < 31)
+				if(z > 0 && z < 31)
+				{
+					this.setDataAtWithoutUpdates(x, y, z, VoxelFormat.changeBlocklight(this.getDataAt(x, y, z), level));
+					return;
+				}
+		// Stronger implementation for unbound spread functions
+		this.setWorldData(x, y, z, VoxelFormat.changeBlocklight(this.getWorldData(x, y, z), level));CubicChunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32, false);
+		if(c != null)
+		{
+			//c.needRelightning.set(true);
+			c.need_render.set(true);
+			c.markDirty(true);
+		}
 	}
 }

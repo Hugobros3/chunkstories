@@ -102,9 +102,9 @@ public class PacketEntity extends Packet
 		if(!(entity instanceof EntityImplementation))
 			return;
 		EntityImplementation impl = (EntityImplementation)entity;
-		impl.posX = XBuffered;
-		impl.posY = YBuffered;
-		impl.posZ = ZBuffered;
+		impl.pos.x = XBuffered;
+		impl.pos.y = YBuffered;
+		impl.pos.z = ZBuffered;
 		if (includeRotation)
 		{
 			impl.rotH = (float) RHBuffered;

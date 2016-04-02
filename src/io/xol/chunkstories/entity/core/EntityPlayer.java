@@ -49,11 +49,10 @@ import io.xol.engine.textures.TexturesHandler;
 public class EntityPlayer extends EntityImplementation implements EntityControllable, EntityHUD, EntityNameable, EntityRotateable
 {
 	boolean noclip = true;
+	boolean running = false;
 
 	float lastPX = -1f;
 	float lastPY = -1f;
-
-	boolean running = false;
 
 	private String name;
 
@@ -96,27 +95,27 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		{
 			jumped = true;
 			walked = 0;
-			velY = jump;
+			vel.y = jump;
 			jump = 0;
 		}
 
 		boolean l = collision_bot;
 
-		accelerationVector = new Vector3d(targetVectorX - velX, 0, targetVectorZ - velZ);
+		acc = new Vector3d(targetVectorX - vel.x, 0, targetVectorZ - vel.z);
 
 		double modifySpd = collision_bot ? 0.010 : 0.005;
 
-		if (accelerationVector.length() > modifySpd)
+		if (acc.length() > modifySpd)
 		{
-			accelerationVector.normalize();
-			accelerationVector.scale(modifySpd);
+			acc.normalize();
+			acc.scale(modifySpd);
 		}
 
 		if (flying)
 		{
-			this.velX = 0;
-			this.velY = 0;
-			this.velZ = 0;
+			this.vel.x = 0;
+			this.vel.y = 0;
+			this.vel.z = 0;
 		}
 		super.tick();
 		// Sound stuff
@@ -172,13 +171,13 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	{
 		WorldClient worldClient = (WorldClient)world;
 		boolean focus = controller.hasFocus();
-		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY + 1), (int) (posZ))));
+		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
 		boolean onLadder = voxelIn instanceof VoxelClimbable;
 		if (onLadder)
 		{
 			onLadder = false;
-			CollisionBox[] boxes = voxelIn.getTranslatedCollisionBoxes(world, (int) (posX), (int) (posY), (int) (posZ));
+			CollisionBox[] boxes = voxelIn.getTranslatedCollisionBoxes(world, (int) (pos.x), (int) (pos.y), (int) (pos.z));
 			if (boxes != null)
 				for (CollisionBox box : boxes)
 				{
@@ -190,18 +189,18 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		if (jumped)
 		{
 			jumped = false;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", posX, posY, posZ, (float) (0.9f + Math.sqrt(velX * velX + velY * velY) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", pos.x, pos.y, pos.z, (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
 		}
 		if (landed)
 		{
 			landed = false;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", posX, posY, posZ, (float) (0.9f + Math.sqrt(velX * velX + velY * velY) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", pos.x, pos.y, pos.z, (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
 		}
 
 		if (walked > 0.2 * Math.PI * 2)
 		{
 			walked %= 0.2 * Math.PI * 2;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", posX, posY, posZ, (float) (0.9f + Math.sqrt(velX * velX + velY * velY) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", pos.x, pos.y, pos.z, (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
 			// System.out.println("footstep");
 		}
 
@@ -264,22 +263,22 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			if (onLadder)
 			{
 				//moveWithCollisionRestrain(0, (float)(Math.sin(((rotV) / 180f * Math.PI)) * hSpeed), 0, false);
-				this.velY = (float) (Math.sin((-(rotV) / 180f * Math.PI)) * hSpeed);
+				this.vel.y = (float) (Math.sin((-(rotV) / 180f * Math.PI)) * hSpeed);
 			}
 		}
 
 		targetVectorX = Math.sin((180 - rotH + modif) / 180f * Math.PI) * hSpeed;
 		targetVectorZ = Math.cos((180 - rotH + modif) / 180f * Math.PI) * hSpeed;
 
-		eyePosition = 1.8 + Math.sin(walked * 5d) * 0.035d;
+		eyePosition = 1.65 + Math.sin(walked * 5d) * 0.035d;
 	}
 
 	public void flyMove(ClientController controller)
 	{
 		if (!controller.hasFocus())
 			return;
-		velX = velY = velZ = 0;
-		eyePosition = 1.8;
+		vel.zero();
+		eyePosition = 1.65;
 		float camspeed = 0.125f;
 		if (Keyboard.isKeyDown(42))
 			camspeed = 1f;
@@ -326,14 +325,17 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	{
 		synchronized (this)
 		{
-			camera.camPosX = -posX;
-			camera.camPosY = -(posY + eyePosition);
-			camera.camPosZ = -posZ;
+			//camera.campos.x = -pos.x;
+			//camera.campos.y = -(pos.y + eyePosition);
+			//camera.campos.z = -pos.z;
 
+			camera.pos = new Vector3d(pos).negate();
+			camera.pos.add(0d, -eyePosition, 0d);
+			
 			camera.view_rotx = rotV;
 			camera.view_roty = rotH;
 
-			camera.fov = (float) (FastConfig.fov + ((velX * velX + velZ * velZ) > 0.07 * 0.07 ? ((velX * velX + velZ * velZ) - 0.07 * 0.07) * 500 : 0));
+			camera.fov = (float) (FastConfig.fov + ((vel.x * vel.x + vel.z * vel.z) > 0.07 * 0.07 ? ((vel.x * vel.x + vel.z * vel.z) - 0.07 * 0.07) * 500 : 0));
 			camera.alUpdate();
 		}
 	}
@@ -341,8 +343,9 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	@Override
 	public Location getBlockLookingAt(boolean inside)
 	{
-		Vector3d initialPosition = new Vector3d(posX, posY + eyePosition, posZ);
-		//Vector3d position = new Vector3d(posX, posY + eyePosition, posZ);
+		Vector3d initialPosition = new Vector3d(pos);
+		initialPosition.add(new Vector3d(0, eyePosition, 0));
+		//Vector3d position = new Vector3d(pos.x, pos.y + eyePosition, pos.z);
 		Vector3d direction = new Vector3d();
 
 		float a = (float) ((-rotH) / 360f * 2 * Math.PI);
@@ -472,7 +475,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	{
 		if (this.equals(Client.controlledEntity))
 			return; // Don't render yourself
-		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float) posX, (float) posY + 2.5f, (float) posZ));
+		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float) pos.x, (float) pos.y + 2.5f, (float) pos.z));
 
 		float scale = posOnScreen.z;
 		String txt = name;// + rotH;
@@ -501,13 +504,13 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		//Players models have no normal mapping
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
 
-		renderingContext.getCurrentShader().setUniformFloat3("borderShift", (float) posX, (float) posY + eyePosition, (float) posZ);
+		renderingContext.getCurrentShader().setUniformFloat3("borderShift", pos.castToSP());
 		//Prevents laggy behaviour
 		if (this.equals(Client.controlledEntity))
-			renderingContext.getCurrentShader().setUniformFloat3("borderShift", -(float) cam.camPosX, -(float) cam.camPosY, -(float) cam.camPosZ);
+			renderingContext.getCurrentShader().setUniformFloat3("borderShift", -(float) cam.pos.x, -(float) cam.pos.y, -(float) cam.pos.z);
 
 		//TODO use some function in World
-		int modelBlockData = world.getDataAt((int) posX, (int) posY, (int) posZ);
+		int modelBlockData = world.getDataAt((int) pos.x, (int) pos.y, (int) pos.z);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);

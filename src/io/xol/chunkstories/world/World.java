@@ -515,6 +515,30 @@ public abstract class World implements WorldInterface
 		}
 	}
 
+	public void setDataAtWithoutUpdates(int x, int y, int z, int i, boolean load)
+	{
+		chunkSummaries.blockPlaced(x, y, z, i);
+
+		x = x % (size.sizeInChunks * 32);
+		z = z % (size.sizeInChunks * 32);
+		if (y < 0)
+			y = 0;
+		if (y > size.height * 32)
+			y = size.height * 32;
+		if (x < 0)
+			x += size.sizeInChunks * 32;
+		if (z < 0)
+			z += size.sizeInChunks * 32;
+		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
+		if (c != null)
+		{
+			synchronized (c)
+			{
+				c.setDataAtWithoutUpdates(x % 32, y % 32, z % 32, i);
+			}
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.world.WorldInterface#setChunk(io.xol.chunkstories.world.chunk.CubicChunk)
 	 */

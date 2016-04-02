@@ -221,8 +221,8 @@ public class TerrainSummarizer
 		List<RegionSummary> regionsToRenderSorted = new ArrayList<RegionSummary>(regionsToRender);
 		//renderingContext.getCamera().getLocation;
 		Camera camera = renderingContext.getCamera();
-		int camRX = (int) (-camera.camPosX / 256);
-		int camRZ = (int) (-camera.camPosZ / 256);
+		int camRX = (int) (-camera.pos.x / 256);
+		int camRZ = (int) (-camera.pos.z / 256);
 		
 		regionsToRenderSorted.sort(new Comparator<RegionSummary>() {
 

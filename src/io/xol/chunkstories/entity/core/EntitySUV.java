@@ -43,12 +43,12 @@ public class EntitySUV extends EntityImplementation
 		// System.out.println("rendering entity test");
 		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/rookie.png"));
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
-		renderingContext.getCurrentShader().setUniformFloat3("borderShift", (float) posX, (float) posY, (float) posZ);
-		int modelBlockData = world.getDataAt((int) posX, (int) posY, (int) posZ);
+		renderingContext.getCurrentShader().setUniformFloat3("borderShift", (float) pos.x, (float) pos.y, (float) pos.z);
+		int modelBlockData = world.getDataAt((int) pos.x, (int) pos.y, (int) pos.z);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
-		//world.particlesHolder.addParticle(new ParticleSmoke(world, posX+0.8+(Math.random()-0.5)*0.2, posY+0.5, posZ- 3.0f));
+		//world.particlesHolder.addParticle(new ParticleSmoke(world, pos.x+0.8+(Math.random()-0.5)*0.2, pos.y+0.5, pos.z- 3.0f));
 		Matrix4f mutrix = new Matrix4f();
 		mutrix.translate(new Vector3f(0.0f, 1.0f, 0.0f));
 		renderingContext.getCurrentShader().setUniformMatrix4f("localTransform", mutrix);
@@ -63,16 +63,16 @@ public class EntitySUV extends EntityImplementation
 	{
 		return new Light[] {
 				
-				new DefferedLight(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f((float)posX - 1.0f, (float)posY + 1.1f, (float)posZ - 3.5f), 2f),
-				new DefferedLight(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ - 3.5f), 2f),
+				new DefferedLight(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f((float)pos.x - 1.0f, (float)pos.y + 1.1f, (float)pos.z - 3.5f), 2f),
+				new DefferedLight(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f((float)pos.x + 1.0f, (float)pos.y + 1.1f, (float)pos.z - 3.5f), 2f),
 
-				new DefferedLight(new Vector3f(2.0f, 2.0f, 2.0f), new Vector3f((float)posX - 1.0f, (float)posY + 1.1f, (float)posZ + 3.5f), 2f),
-				new DefferedSpotLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX - 1.0f, (float)posY + 1.1f, (float)posZ + 1.5f), 35f, 30f, new Vector3f(0,0,-1)),
+				new DefferedLight(new Vector3f(2.0f, 2.0f, 2.0f), new Vector3f((float)pos.x - 1.0f, (float)pos.y + 1.1f, (float)pos.z + 3.5f), 2f),
+				new DefferedSpotLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)pos.x - 1.0f, (float)pos.y + 1.1f, (float)pos.z + 1.5f), 35f, 30f, new Vector3f(0,0,-1)),
 				
-				new DefferedLight(new Vector3f(2.0f, 2.0f, 2.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ + 3.5f), 2f),
-				new DefferedSpotLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ + 1.5f), 35f, 30f, new Vector3f(0,0,-1)),
+				new DefferedLight(new Vector3f(2.0f, 2.0f, 2.0f), new Vector3f((float)pos.x + 1.0f, (float)pos.y + 1.1f, (float)pos.z + 3.5f), 2f),
+				new DefferedSpotLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)pos.x + 1.0f, (float)pos.y + 1.1f, (float)pos.z + 1.5f), 35f, 30f, new Vector3f(0,0,-1)),
 				
-				//new DefferedLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)posX + 1.0f, (float)posY + 1.1f, (float)posZ + 3.5f), 5f, 30f)
+				//new DefferedLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)pos.x + 1.0f, (float)pos.y + 1.1f, (float)pos.z + 3.5f), 5f, 30f)
 				};
 	}
 }

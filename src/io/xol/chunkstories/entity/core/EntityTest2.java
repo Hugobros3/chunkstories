@@ -36,12 +36,12 @@ public class EntityTest2 extends EntityImplementation
 	{
 		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/ak47.hq.png"));
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
-		renderingContext.getCurrentShader().setUniformFloat3("borderShift", (float) posX, (float) posY + 1.4f, (float) posZ);
-		int modelBlockData = world.getDataAt((int) posX, (int) posY + 1, (int) posZ);
+		renderingContext.getCurrentShader().setUniformFloat3("borderShift", (float) pos.x, (float) pos.y + 1.4f, (float) pos.z);
+		int modelBlockData = world.getDataAt((int) pos.x, (int) pos.y + 1, (int) pos.z);
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
-		//world.particlesHolder.addParticle(new ParticleSmoke(world, posX+0.8+(Math.random()-0.5)*0.2, posY+0.5, posZ- 3.0f));
+		//world.particlesHolder.addParticle(new ParticleSmoke(world, pos.x+0.8+(Math.random()-0.5)*0.2, pos.y+0.5, pos.z- 3.0f));
 		Matrix4f mutrix = new Matrix4f();
 		mutrix.translate(new Vector3f(0.0f, 1.0f, 0.0f));
 		renderingContext.sendTransformationMatrix(mutrix);

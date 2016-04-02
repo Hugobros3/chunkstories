@@ -31,9 +31,12 @@ public abstract class EntityImplementation implements Entity
 	public long entityID;
 
 	public World world;
-	public double posX, posY, posZ;
-	public double velX, velY, velZ;
-	public Vector3d accelerationVector;
+	public Vector3d pos;
+	public Vector3d vel;
+	public Vector3d acc;
+	
+	//public double pos.x, pos.y, pos.z;
+	//public double vel.x, vel.y, vel.z;
 	public float rotH, rotV;
 
 	public boolean collision_top = false;
@@ -58,13 +61,15 @@ public abstract class EntityImplementation implements Entity
 	public EntityImplementation(World w, double x, double y, double z)
 	{
 		world = w;
-		posX = x;
-		posY = y;
-		posZ = z;
-		accelerationVector = new Vector3d();
+		pos = new Vector3d(x, y, z);
+		vel = new Vector3d();
+		acc = new Vector3d();
+		//pos.x = x;
+		//pos.y = y;
+		//pos.z = z;
 		updatePosition();
 		//To avoid NPEs
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY), (int) (posZ))));
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y), (int) (pos.z))));
 	}
 
 
@@ -76,7 +81,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public Location getLocation()
 	{
-		return new Location(world, posX, posY, posZ);
+		return new Location(world, pos);
 	}
 
 	/**
@@ -87,9 +92,9 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void setLocation(Location loc)
 	{
-		this.posX = loc.x;
-		this.posY = loc.y;
-		this.posZ = loc.z;
+		this.pos.x = loc.x;
+		this.pos.y = loc.y;
+		this.pos.z = loc.z;
 		
 		updatePosition();
 		if (this instanceof EntityControllable && ((EntityControllable) this).getController() != null)
@@ -110,62 +115,61 @@ public abstract class EntityImplementation implements Entity
 
 	public void setVelocity(double x, double y, double z)
 	{
-		velX = x;
-		velY = y;
-		velZ = z;
+		vel.x = x;
+		vel.y = y;
+		vel.z = z;
 	}
 
 	public void applyExternalForce(double x, double y, double z)
 	{
-		velX += x;
-		velY += y;
-		velZ += z;
+		vel.x += x;
+		vel.y += y;
+		vel.z += z;
 	}
 
 	// Ran each tick
 	@Override
 	public void tick()
 	{
-		posX %= world.getSizeSide();
-		posZ %= world.getSizeSide();
+		pos.x %= world.getSizeSide();
+		pos.z %= world.getSizeSide();
 
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (posX), (int) (posY), (int) (posZ))));
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y), (int) (pos.z))));
 		boolean inWater = voxelIn.isVoxelLiquid();
 
-		// velZ=Math.cos(a)*hSpeed*0.1;
+		// vel.z=Math.cos(a)*hSpeed*0.1;
 		if (collision_left || collision_right)
-			velX = 0;
+			vel.x = 0;
 		if (collision_north || collision_south)
-			velZ = 0;
+			vel.z = 0;
 		// Stap it
-		if (collision_bot && velY < 0)
-			velY = 0;
+		if (collision_bot && vel.y < 0)
+			vel.y = 0;
 		else if (collision_top)
-			velY = 0;
+			vel.y = 0;
 
 		// Gravity
 		if (!flying)
 		{
 			double terminalVelocity = inWater ? -0.02 : -0.5;
-			if (velY > terminalVelocity)
-				velY -= 0.008;
-			if (velY < terminalVelocity)
-				velY = terminalVelocity;
+			if (vel.y > terminalVelocity)
+				vel.y -= 0.008;
+			if (vel.y < terminalVelocity)
+				vel.y = terminalVelocity;
 		}
 
 		// Acceleration
-		velX += accelerationVector.x;
-		velY += accelerationVector.y;
-		velZ += accelerationVector.z;
+		vel.x += acc.x;
+		vel.y += acc.y;
+		vel.z += acc.z;
 
-		if (!world.isChunkLoaded((int) posX / 32, (int) posY / 32, (int) posZ / 32))
+		if (!world.isChunkLoaded((int) pos.x / 32, (int) pos.y / 32, (int) pos.z / 32))
 		{
-			velX = 0;
-			velY = 0;
-			velZ = 0;
+			vel.zero();
 		}
 
-		blockedMomentum = moveWithCollisionRestrain(velX, velY, velZ, true);
+		//TODO use vector3d there
+		blockedMomentum = moveWithCollisionRestrain(vel.x, vel.y, vel.z, true);
 
 		updatePosition();
 	}
@@ -173,19 +177,19 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public boolean updatePosition()
 	{
-		posX %= world.getSizeSide();
-		posZ %= world.getSizeSide();
-		if (posX < 0)
-			posX += world.getSizeSide();
-		if (posZ < 0)
-			posZ += world.getSizeSide();
-		int regionX = (int) (posX / (32 * 8));
-		int regionY = (int) (posY / (32 * 8));
+		pos.x %= world.getSizeSide();
+		pos.z %= world.getSizeSide();
+		if (pos.x < 0)
+			pos.x += world.getSizeSide();
+		if (pos.z < 0)
+			pos.z += world.getSizeSide();
+		int regionX = (int) (pos.x / (32 * 8));
+		int regionY = (int) (pos.y / (32 * 8));
 		if (regionY < 0)
 			regionY = 0;
 		if (regionY > world.getMaxHeight() / (32 * 8))
 			regionY = world.getMaxHeight() / (32 * 8);
-		int regionZ = (int) (posZ / (32 * 8));
+		int regionZ = (int) (pos.z / (32 * 8));
 		if (parentHolder != null && parentHolder.regionX == regionX && parentHolder.regionY == regionY && parentHolder.regionZ == regionZ)
 		{
 			return false; // Nothing to do !
@@ -207,15 +211,15 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void moveWithoutCollisionRestrain(double mx, double my, double mz)
 	{
-		posX += mx;
-		posY += my;
-		posZ += mz;
+		pos.x += mx;
+		pos.y += my;
+		pos.z += mz;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "['" + this.getClass().getName() + "'] PosX : " + clampDouble(posX) + " PosY" + clampDouble(posY) + " PosZ" + clampDouble(posZ) + " UUID : " + entityID + " EID : " + this.getEID() + " Holder:" + this.parentHolder;
+		return "['" + this.getClass().getName() + "'] pos.x : " + clampDouble(pos.x) + " pos.y" + clampDouble(pos.y) + " pos.z" + clampDouble(pos.z) + " UUID : " + entityID + " EID : " + this.getEID() + " Holder:" + this.parentHolder;
 	}
 
 	double clampDouble(double d)
@@ -256,11 +260,11 @@ public abstract class EntityImplementation implements Entity
 		vec.scale(0.25d);
 		// Do it block per block, face per face
 		double distanceTraveled = 0;
-		// CollisionBox checker = getCollisionBox().translate(posX, posY, posZ);
+		// CollisionBox checker = getCollisionBox().translate(pos.x, pos.y, pos.z);
 
-		CollisionBox checkerX = getCollisionBox().translate(posX, posY, posZ);
-		CollisionBox checkerY = getCollisionBox().translate(posX, posY, posZ);
-		CollisionBox checkerZ = getCollisionBox().translate(posX, posY, posZ);
+		CollisionBox checkerX = getCollisionBox().translate(pos.x, pos.y, pos.z);
+		CollisionBox checkerY = getCollisionBox().translate(pos.x, pos.y, pos.z);
+		CollisionBox checkerZ = getCollisionBox().translate(pos.x, pos.y, pos.z);
 
 		double pmx, pmy, pmz;
 
@@ -284,13 +288,13 @@ public abstract class EntityImplementation implements Entity
 
 			int radius = 2;
 
-			// checkerX = getCollisionBox().translate(posX+pmx, posY, posZ);
+			// checkerX = getCollisionBox().translate(pos.x+pmx, pos.y, pos.z);
 			Voxel vox;
-			checkerZ = getCollisionBox().translate(posX, posY, posZ + pmz);
+			checkerZ = getCollisionBox().translate(pos.x, pos.y, pos.z + pmz);
 			// Z part
-			for (int i = ((int) posX) - radius; i <= ((int) posX) + radius; i++)
-				for (int j = ((int) posY - 1); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
-					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
+			for (int i = ((int) pos.x) - radius; i <= ((int) pos.x) + radius; i++)
+				for (int j = ((int) pos.y - 1); j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
+					for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
 					{
 						data = this.world.getDataAt(i, j, k);
 						id = VoxelFormat.id(data);
@@ -312,7 +316,7 @@ public abstract class EntityImplementation implements Entity
 											pmz = 0;
 											if (mz < 0)
 											{
-												double south = Math.min((b.zpos + b.zw / 2.0 + checkerZ.zw / 2.0) - (posZ), 0.0d);
+												double south = Math.min((b.zpos + b.zw / 2.0 + checkerZ.zw / 2.0) - (pos.z), 0.0d);
 												// System.out.println(left+" : "+(b.xpos+b.xw/2.0+checkerX.xw/2.0)+" : "+((b.xpos+b.xw/2.0+checkerX.xw/2.0)-(checkerX.xpos)));
 												pmz = south;
 												if (writeCollisions)
@@ -320,26 +324,26 @@ public abstract class EntityImplementation implements Entity
 											}
 											else
 											{
-												double north = Math.max((b.zpos - b.zw / 2.0 - checkerZ.zw / 2.0) - (posZ), 0.0d);
+												double north = Math.max((b.zpos - b.zw / 2.0 - checkerZ.zw / 2.0) - (pos.z), 0.0d);
 												// System.out.println(right);
 												pmz = north;
 												if (writeCollisions)
 													collision_north = true;
 											}
 											vec.z = 0;
-											checkerZ = getCollisionBox().translate(posX, posY, posZ + pmz);
+											checkerZ = getCollisionBox().translate(pos.x, pos.y, pos.z + pmz);
 										}
 									}
 								}
 						}
 					}
 			distanceToTravel.z -= pmz;
-			posZ += pmz;
-			checkerX = getCollisionBox().translate(posX + pmx, posY, posZ);
+			pos.z += pmz;
+			checkerX = getCollisionBox().translate(pos.x + pmx, pos.y, pos.z);
 			// X-part
-			for (int i = ((int) posX) - radius; i <= ((int) posX) + radius; i++)
-				for (int j = ((int) posY - 1); j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
-					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
+			for (int i = ((int) pos.x) - radius; i <= ((int) pos.x) + radius; i++)
+				for (int j = ((int) pos.y - 1); j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
+					for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
 					{
 						data = this.world.getDataAt(i, j, k);
 						id = VoxelFormat.id(data);
@@ -362,7 +366,7 @@ public abstract class EntityImplementation implements Entity
 											pmx = 0;
 											if (mx < 0)
 											{
-												double left = Math.min((b.xpos + b.xw / 2.0 + checkerX.xw / 2.0) - (posX), 0.0d);
+												double left = Math.min((b.xpos + b.xw / 2.0 + checkerX.xw / 2.0) - (pos.x), 0.0d);
 												// System.out.println(left+" : "+(b.xpos+b.xw/2.0+checkerX.xw/2.0)+" : "+((b.xpos+b.xw/2.0+checkerX.xw/2.0)-(checkerX.xpos)));
 												pmx = left;
 												if (writeCollisions)
@@ -370,26 +374,26 @@ public abstract class EntityImplementation implements Entity
 											}
 											else
 											{
-												double right = Math.max((b.xpos - b.xw / 2.0 - checkerX.xw / 2.0) - (posX), 0.0d);
+												double right = Math.max((b.xpos - b.xw / 2.0 - checkerX.xw / 2.0) - (pos.x), 0.0d);
 												// System.out.println(right);
 												pmx = right;
 												if (writeCollisions)
 													collision_right = true;
 											}
 											vec.x = 0;
-											checkerX = getCollisionBox().translate(posX + pmx, posY, posZ);
+											checkerX = getCollisionBox().translate(pos.x + pmx, pos.y, pos.z);
 										}
 									}
 								}
 						}
 					}
-			posX += pmx;
+			pos.x += pmx;
 			distanceToTravel.x -= pmx;
 
-			checkerY = getCollisionBox().translate(posX, posY + pmy, posZ);
-			for (int i = ((int) posX) - radius; i <= ((int) posX) + radius; i++)
-				for (int j = ((int) posY) - 1; j <= ((int) posY) + (int) Math.ceil(checkerY.h) + 1; j++)
-					for (int k = ((int) posZ) - radius; k <= ((int) posZ) + radius; k++)
+			checkerY = getCollisionBox().translate(pos.x, pos.y + pmy, pos.z);
+			for (int i = ((int) pos.x) - radius; i <= ((int) pos.x) + radius; i++)
+				for (int j = ((int) pos.y) - 1; j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
+					for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
 					{
 						data = this.world.getDataAt(i, j, k);
 						id = VoxelFormat.id(data);
@@ -409,7 +413,7 @@ public abstract class EntityImplementation implements Entity
 											pmy = 0;
 											if (my < 0)
 											{
-												double top = Math.min((b.ypos + b.h) - posY, 0.0d);
+												double top = Math.min((b.ypos + b.h) - pos.y, 0.0d);
 												// System.out.println(top);
 												pmy = top;
 												if (writeCollisions)
@@ -417,21 +421,21 @@ public abstract class EntityImplementation implements Entity
 											}
 											else
 											{
-												double bot = Math.max((b.ypos) - (posY + checkerY.h), 0.0d);
+												double bot = Math.max((b.ypos) - (pos.y + checkerY.h), 0.0d);
 												// System.out.println(bot);
 												pmy = bot;
 												if (writeCollisions)
 													collision_top = true;
 											}
 											vec.y = 0;
-											checkerY = getCollisionBox().translate(posX, posY + pmy, posZ);
+											checkerY = getCollisionBox().translate(pos.x, pos.y + pmy, pos.z);
 										}
 									}
 
 								}
 						}
 					}
-			posY += pmy;
+			pos.y += pmy;
 			distanceToTravel.y -= pmy;
 		}
 		return distanceToTravel;
@@ -446,7 +450,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public CollisionBox[] getTranslatedCollisionBoxes()
 	{
-		return new CollisionBox[] { getCollisionBox().translate(posX, posY, posZ) };
+		return new CollisionBox[] { getCollisionBox().translate(pos.x, pos.y, pos.z) };
 	}
 
 	private CollisionBox getCollisionBox()
@@ -470,9 +474,10 @@ public abstract class EntityImplementation implements Entity
 	{
 		synchronized (this)
 		{
-			camera.camPosX = -posX;
-			camera.camPosY = -posY;
-			camera.camPosZ = -posZ;
+			camera.pos = new Vector3d(pos).negate();
+			//camera.pos.x = -pos.x;
+			//camera.pos.y = -pos.y;
+			//camera.pos.z = -pos.z;
 
 			camera.view_rotx = rotV;
 			camera.view_roty = rotH;

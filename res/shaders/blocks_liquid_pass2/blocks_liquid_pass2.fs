@@ -123,8 +123,6 @@ vec3 perturb_normal( vec3 N, vec3 V, vec2 texcoord, vec3 map)
 
 void main(){
 	//if(mod((gl_FragCoord.x + gl_FragCoord.y), 2) == 0)
-	//if(fract(dot(gl_FragCoord.xy, vec2(0.5, 0.5))) < 0.5)
-	//	discard;
 
 	vec3 normal = vec3(0.0, 0.0, 1.0);
 

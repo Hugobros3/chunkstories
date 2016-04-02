@@ -7,6 +7,7 @@ package io.xol.chunkstories.renderer;
 import java.nio.FloatBuffer;
 
 import io.xol.chunkstories.client.Client;
+import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.shaders.ShaderProgram;
 
 import org.lwjgl.BufferUtils;
@@ -26,9 +27,12 @@ public class Camera
 	public float view_rotz = 0.0f;
 
 	//Camera positions
-	public double camPosX = 10;
-	public double camPosY = -75;
-	public double camPosZ = -18;
+
+	public Vector3d pos = new Vector3d();
+	
+	//public double camPosX = 10;
+	//public double camPosY = -75;
+	//public double camPosZ = -18;
 
 	//Mouse pointer tracking
 	float lastPX = -1f;
@@ -85,7 +89,7 @@ public class Camera
 				lookAt.x, lookAt.y, lookAt.z, up.x, up.y, up.z
 		});
 		//FloatBuffer listenerOrientation = getFloatBuffer(new float[] { (float) Math.sin(a) * 1 * (float) Math.cos(b), (float) Math.sin(b) * 1, (float) Math.cos(a) * 1 * (float) Math.cos(b), 0.0f, 1.0f, 0.0f });
-		Client.getInstance().getSoundManager().setListenerPosition(-camPosX, -camPosY, -camPosZ, listenerOrientation);
+		Client.getInstance().getSoundManager().setListenerPosition(-pos.x, -pos.y, -pos.z, listenerOrientation);
 	}
 
 	public float fov = 45;
@@ -160,7 +164,8 @@ public class Camera
 		modelViewMatrix4f.rotate((float) (view_roty / 180 * Math.PI), new Vector3f( 0.0f, 1.0f, 0.0f));
 		modelViewMatrix4f.rotate((float) (view_rotz / 180 * Math.PI), new Vector3f( 0.0f, 0.0f, 1.0f));
 		
-		Vector3f position = new Vector3f((float)-camPosX, (float)-camPosY, (float)-camPosZ);
+		Vector3f position = pos.castToSP();
+		position = position.negate(position);
 		
 		float rotH = view_roty;
 		float rotV = view_rotx;
@@ -218,7 +223,10 @@ public class Camera
 		float fw = fh * ratio;
 		
 		// Recreate the 3 vectors for the algorithm
-		Vector3f position = new Vector3f((float)-camPosX, (float)-camPosY, (float)-camPosZ);
+
+		Vector3f position = pos.castToSP();
+		position = position.negate(position);
+		//Vector3f position = new Vector3f((float)-camPosX, (float)-camPosY, (float)-camPosZ);
 		
 		float rotH = view_roty;
 		float rotV = view_rotx;
@@ -361,7 +369,7 @@ public class Camera
 		untranslatedMVP4f.load(modelViewMatrix4f);
 		Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
 
-		modelViewMatrix4f.translate(new Vector3f((float)camPosX, (float)camPosY, (float)camPosZ));
+		modelViewMatrix4f.translate(pos.castToSP());
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
 	}

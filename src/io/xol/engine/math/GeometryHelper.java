@@ -49,7 +49,8 @@ public class GeometryHelper
 	static public Vector3f getVectorMouseIn3d(int mx, int my, Camera cam)
 	{
 		Vector3f position = getMousePositionIn3dCoords(mx, my);
-		Vector3f camera = new Vector3f((float) -cam.camPosX, (float) -cam.camPosY, (float) -cam.camPosZ);
+		Vector3f camera = cam.pos.castToSP();
+		camera.negate();//new Vector3f((float) -cam.camPosX, (float) -cam.camPosY, (float) -cam.camPosZ);
 		Vector3f v = new Vector3f(0, 0, 0);
 		Vector3f.sub(position, camera, v);
 		v.normalise();

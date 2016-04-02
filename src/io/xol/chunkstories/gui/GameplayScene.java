@@ -24,7 +24,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.entity.EntityControllable;
-import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
@@ -413,9 +412,9 @@ public class GameplayScene extends OverlayableScene
 
 		long total = Runtime.getRuntime().totalMemory();
 		long used = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		int bx = (-(int) camera.camPosX);
-		int by = (-(int) camera.camPosY);
-		int bz = (-(int) camera.camPosZ);
+		int bx = (-(int) camera.pos.x);
+		int by = (-(int) camera.pos.y);
+		int bz = (-(int) camera.pos.z);
 		int data = Client.world.getDataAt(bx, by, bz);
 		int bl = (data & 0x0F000000) >> 0x18;
 		int sl = (data & 0x00F00000) >> 0x14;
