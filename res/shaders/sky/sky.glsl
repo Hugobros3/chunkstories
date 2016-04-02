@@ -37,7 +37,17 @@ vec3 getSkyColor(float time, vec3 eyeDirection)
 	
 	vl = clamp(vl, 0.0, 1.0);
     vec4 skyGlow = texture2D(glowSampler, vec2(time, 1.0-vl));
-	vec3 skyColor = texture2D(colorSampler, vec2(time, clamp(0.99-normalize(eyeDirection).y * 0.99, 0.0, 1.0))).rgb;
+	vec3 skyColor = vec3(0.0);
+	
+	vec3 skyColorTop = texture2D(colorSampler, vec2(time, 0)).rgb;
+	vec3 skyColorBot = texture2D(colorSampler, vec2(time, 1)).rgb;
+	
+	float gradient = clamp(0.99-normalize(eyeDirection).y * 0.99, 0.0, 1.0);
+	
+	skyColor = mix(skyColorTop, skyColorBot, gradient);
+	//skyColor.rgb = vec3(rnd * 250.0);
+	
+	//texture2D(colorSampler, vec2(time, clamp(0.99-normalize(eyeDirection).y * 0.99, 0.0, 1.0))).rgb;
     
 	//skyColor = vec3(1, 1, 0) * 0.5;
 	skyColor = mix(skyColor, skyColor * 0.6 + skyGlow.rgb * 0.8, skyGlow.a * 0.5);

@@ -89,8 +89,42 @@ public class ShaderProgram
 		if (glGetShaderi(fragS, GL_COMPILE_STATUS) == GL_FALSE)
 		{
 			ChunkStoriesLogger.getInstance().log("Failed to compile shader program " + filename + " (fragment)", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.ERROR);
+			
+			String errorsSource = glGetShaderInfoLog(fragS, 5000);
+			
+			String[] errorsLines = errorsSource.split("\n");
+			String[] sourceLines = fragSource.toString().split("\n");
+			for(String line : errorsLines)
+			{
+				ChunkStoriesLogger.getInstance().log(line, ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
+				if(line.startsWith("ERROR: "))
+				{
+					String[] parsed = line.split(":");
+					if(parsed.length >= 3)
+					{
+						int lineNumber = Integer.parseInt(parsed[2]);
+						if(sourceLines.length > lineNumber)
+						{
+							System.out.println("@line: "+lineNumber+": "+sourceLines[lineNumber]);
+						}
+					}
+				}
+			}
+			
+			/*char c;
+			int i = 0;
+			int line = 0;
+			while(i < errorsChar.length)
+			{
+				c = errorsChar[i];
+				if(line == '\n')
+				{
+					
+				}
+				i++;
+			}*/
 			//ChunkStoriesLogger.getInstance().log(fragSource.toString(), ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
-			ChunkStoriesLogger.getInstance().log(glGetShaderInfoLog(fragS, 5000), ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
+			//ChunkStoriesLogger.getInstance().log(glGetShaderInfoLog(fragS, 5000), ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
 			return;
 		}
 		if (glGetShaderi(vertexS, GL_COMPILE_STATUS) == GL_FALSE)

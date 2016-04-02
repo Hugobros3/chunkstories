@@ -1,7 +1,6 @@
 package io.xol.engine.textures;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.ARBTextureFloat.GL_RGBA16F_ARB;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL14.*;
 
@@ -50,7 +49,7 @@ public class GBufferTexture extends Texture
 				if(FastConfig.openGL3Capable)
 					glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, w, h, 0, GL_RGB, GL_FLOAT, (ByteBuffer) null);
 				else
-					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F_ARB, w, h, 0, GL_RGBA, GL_FLOAT, (ByteBuffer) null);
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, (ByteBuffer) null);
 			}
 			// GL_RGBA16F_ARB for GL3
 		}
