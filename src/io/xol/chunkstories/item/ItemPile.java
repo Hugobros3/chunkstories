@@ -137,6 +137,7 @@ public class ItemPile implements CSFSerializable
 			ItemPile nextSelection = inventory2.getItem(x2, y2);
 			inventory2.placeItemPileAt(x2, y2, this);
 			//Successfull item move, then notify controller
+			
 			//if (inventory != null)
 			//	if (this.inventory.holder != null && this.inventory.holder instanceof Entity && this.inventory.holder instanceof EntityControllable && ((EntityControllable) this.inventory.holder).getController() != null)
 			//		((EntityControllable) this.inventory.holder).getController().notifyInventoryChange((CE) this.inventory.holder);

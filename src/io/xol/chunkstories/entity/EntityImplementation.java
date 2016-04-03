@@ -34,7 +34,7 @@ public abstract class EntityImplementation implements Entity
 	public Vector3d pos;
 	public Vector3d vel;
 	public Vector3d acc;
-	
+
 	//public double pos.x, pos.y, pos.z;
 	//public double vel.x, vel.y, vel.z;
 	public float rotH, rotV;
@@ -72,7 +72,6 @@ public abstract class EntityImplementation implements Entity
 		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y), (int) (pos.z))));
 	}
 
-
 	/**
 	 * Returns the location of the entity
 	 * 
@@ -95,7 +94,7 @@ public abstract class EntityImplementation implements Entity
 		this.pos.x = loc.x;
 		this.pos.y = loc.y;
 		this.pos.z = loc.z;
-		
+
 		updatePosition();
 		if (this instanceof EntityControllable && ((EntityControllable) this).getController() != null)
 			((EntityControllable) this).getController().notifyTeleport(this);
@@ -222,7 +221,8 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public String toString()
 	{
-		return "['" + this.getClass().getName() + "'] pos.x : " + clampDouble(pos.x) + " pos.y" + clampDouble(pos.y) + " pos.z" + clampDouble(pos.z) + " UUID : " + entityID + " EID : " + this.getEID() + " Holder:" + this.parentHolder;
+		return "['" + this.getClass().getName() + "'] pos.x : " + clampDouble(pos.x) + " pos.y" + clampDouble(pos.y) + " pos.z" + clampDouble(pos.z) + " UUID : " + entityID + " EID : " + this.getEID() + " Holder:" + this.parentHolder + "Inventory : "
+				+ this.inventory;
 	}
 
 	double clampDouble(double d)
@@ -537,26 +537,27 @@ public abstract class EntityImplementation implements Entity
 	{
 		return !mpSendDeletePacket;
 	}
-	
 
 	/**
 	 * Loads the object state from the stream
+	 * 
 	 * @param stream
 	 * @throws IOException
 	 */
 	public void load(DataInputStream stream) throws IOException
 	{
-		
+
 	}
 
 	/**
 	 * Writes the object state to a stream
+	 * 
 	 * @param stream
 	 * @throws IOException
 	 */
 	public void save(DataOutputStream stream) throws IOException
 	{
-		
+
 	}
-	
+
 }

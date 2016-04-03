@@ -62,6 +62,7 @@ public class InventoryOverlay extends Overlay
 			//
 			selectedItem.getItem().getItemRenderer().renderItemInInventory(mainScene.eng.renderingContext, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
 		}
+		//System.out.println(inventories[0]);
 	}
 
 	@Override

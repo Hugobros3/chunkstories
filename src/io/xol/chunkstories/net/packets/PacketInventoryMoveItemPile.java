@@ -54,7 +54,6 @@ public class PacketInventoryMoveItemPile extends Packet
 			out.writeInt(itemPile.item.getID());
 			itemPile.save(out);
 		}
-		System.out.println("from:" + from + ":" + from.holder);
 	}
 
 	@Override

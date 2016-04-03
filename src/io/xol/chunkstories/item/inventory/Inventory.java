@@ -255,6 +255,11 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		this.height = inventory.height;
 		name = inventory.name;
 		contents = inventory.contents;
+		//Update inventory references
+		for(int i = 0; i < width; i++)
+			for(int j = 0; j < height ; j++)
+				if(contents[i][j] != null)
+					contents[i][j].inventory = this;
 	}
 	
 	@Override
