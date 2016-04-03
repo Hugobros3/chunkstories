@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.item.ItemData;
 import io.xol.chunkstories.item.ItemPile;
@@ -26,7 +27,7 @@ import io.xol.chunkstories.voxel.VoxelTypes;
  */
 public class ItemVoxel extends Item
 {
-	class ItemDataVoxel implements ItemData
+	public class ItemDataVoxel implements ItemData
 	{
 		public Voxel voxel = null;
 		public int voxelMeta = 0;
@@ -39,7 +40,7 @@ public class ItemVoxel extends Item
 	}
 
 	@Override
-	public ItemData getItemData()
+	public ItemDataVoxel getItemData()
 	{
 		return new ItemDataVoxel();
 	}
@@ -63,12 +64,12 @@ public class ItemVoxel extends Item
 		return "res/items/icons/notex.png";
 	}
 
-	public Voxel getVoxel(ItemPile pile)
+	public static Voxel getVoxel(ItemPile pile)
 	{
 		return ((ItemDataVoxel) pile.getData()).voxel;
 	}
 
-	public int getVoxelMeta(ItemPile pile)
+	public static int getVoxelMeta(ItemPile pile)
 	{
 		return ((ItemDataVoxel) pile.getData()).voxelMeta;
 	}
@@ -76,7 +77,7 @@ public class ItemVoxel extends Item
 	@Override
 	public boolean handleInteraction(Entity user, ItemPile pile, Input input)
 	{
-		if (input instanceof MouseClick)
+		if (user.getWorld() instanceof WorldMaster && input instanceof MouseClick)
 		{
 			//TODO here we assumme a player, that's not correct
 			EntityPlayer player = (EntityPlayer) user;
@@ -90,23 +91,7 @@ public class ItemVoxel extends Item
 				selectedBlock = player.getBlockLookingAt(false);
 				data2write = VoxelFormat.format(voxelID, voxelMeta, 0, 0);
 			}
-			else if (input.equals(MouseClick.LEFT))
-			{
-				selectedBlock = player.getBlockLookingAt(true);
-				data2write = 0;
-			}
-			else if (input.equals(MouseClick.MIDDLE))
-			{
-				selectedBlock = player.getBlockLookingAt(true);
-				if (selectedBlock != null)
-				{
-					int data = user.getWorld().getDataAt(selectedBlock);
-					((ItemDataVoxel) pile.getData()).voxel = VoxelTypes.get(VoxelFormat.id(data));
-					((ItemDataVoxel) pile.getData()).voxelMeta = VoxelFormat.meta(data);
-					//voxelId = VoxelFormat.id(data);
-					//meta = VoxelFormat.meta(data);
-				}
-			}
+			
 			else
 				return false;
 			if (selectedBlock != null && data2write != -1)
@@ -117,8 +102,6 @@ public class ItemVoxel extends Item
 				{
 					data2write = VoxelFormat.changeSunlight(data2write, 0);
 					data2write = VoxelFormat.changeBlocklight(data2write, 0);
-					//data2write = VoxelFormat.changeSunlight(data2write, VoxelFormat.sunlight(selectedBlockPreviousData));
-					//data2write = VoxelFormat.changeBlocklight(data2write, VoxelFormat.blocklight(selectedBlockPreviousData));
 				}
 				if(VoxelTypes.get(data2write).getLightLevel(data2write) > 0)
 					data2write = VoxelFormat.changeBlocklight(data2write, VoxelTypes.get(data2write).getLightLevel(data2write));

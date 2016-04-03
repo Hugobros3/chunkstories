@@ -49,17 +49,7 @@ public class ChunksRenderer extends Thread
 		// 8 buffers of 8Mb each (64Mb) for temp/scratch buffer memory
 		buffersPool = new ByteBufferPool(8, 0x800000);
 	}
-
-	/*public class VBOData
-	{
-		int x, y, z;
-		//ByteBuffer buf;
-		int bufferId;
-		int s_normal;
-		int s_water;
-		int s_complex;
-	}*/
-
+	
 	public void requestChunkRender(CubicChunk chunk)
 	{
 		if (!chunk.requestable.get())

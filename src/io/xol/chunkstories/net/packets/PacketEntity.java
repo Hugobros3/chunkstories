@@ -22,8 +22,8 @@ public class PacketEntity extends Packet
 	 * Transfers essential data about entities
 	 */
 	//private Entity entity;
-	public short entityType;
-	public long entityID;
+	public short entityTypeID;
+	public long entityUUID;
 	//World world;
 
 	public double XBuffered, YBuffered, ZBuffered;
@@ -31,9 +31,10 @@ public class PacketEntity extends Packet
 	public String nBuffered;
 
 	public boolean defineControl = false; // Tells the client that the player entity is this one.
-	public boolean includeRotation = false; // Tells both sides to consider extra 2 doubles
+	public boolean includeRotation = false; // Tells both sides to consider extra 2 doubles for yaw and pitch
 	public boolean includeName = false; // This is a nameable entity
 	public boolean deleteFlag = false; // Tells client to stop tracking this entity and delete it
+	public boolean includeVelocity = false; // Include or not position interpolation
 
 	public PacketEntity(boolean client)
 	{
@@ -44,8 +45,8 @@ public class PacketEntity extends Packet
 	public void send(DataOutputStream out) throws IOException
 	{
 		//System.out.println("Sending entity " + entityID + " EID : " + entityType + " PosX" + XBuffered + (nBuffered == null ? "null" : nBuffered));
-		out.writeLong(entityID);
-		out.writeShort(entityType);
+		out.writeLong(entityUUID);
+		out.writeShort(entityTypeID);
 		out.writeDouble(XBuffered);
 		out.writeDouble(YBuffered);
 		out.writeDouble(ZBuffered);
@@ -72,8 +73,8 @@ public class PacketEntity extends Packet
 	@Override
 	public void read(DataInputStream in) throws IOException
 	{
-		entityID = in.readLong();
-		entityType = in.readShort();
+		entityUUID = in.readLong();
+		entityTypeID = in.readShort();
 
 		XBuffered = in.readDouble();
 		YBuffered = in.readDouble();
@@ -119,10 +120,10 @@ public class PacketEntity extends Packet
 		//System.out.println("apply 2 "+entity+" posx"+XBuffered+" -> "+XBuffered);
 	}
 
-	public void applyFromEntity(Entity entity)
+	public void createFromEntity(Entity entity)
 	{
-		entityType = entity.getEID();
-		entityID = entity.getUUID();
+		entityTypeID = entity.getEID();
+		entityUUID = entity.getUUID();
 
 		Location loc = entity.getLocation();
 		XBuffered = loc.x;
@@ -146,7 +147,7 @@ public class PacketEntity extends Packet
 	{
 		if(processor.isClient)
 		{
-			EntityImplementation entity = (EntityImplementation) Client.world.getEntityByUUID(this.entityID);
+			EntityImplementation entity = (EntityImplementation) Client.world.getEntityByUUID(this.entityUUID);
 			if(this.deleteFlag)
 				Client.world.removeEntity(entity);
 			else
@@ -154,26 +155,33 @@ public class PacketEntity extends Packet
 				//Create an entity if the servers tells you to do so
 				if(entity == null)
 				{
-					entity = (EntityImplementation) EntitiesList.newEntity(Client.world, this.entityType);
-					entity.entityID = this.entityID;
+					entity = (EntityImplementation) EntitiesList.newEntity(Client.world, this.entityTypeID);
+					entity.entityID = this.entityUUID;
 					this.applyToEntity(entity);
 					Client.world.addEntity(entity);
-					//System.out.println("Added entity "+entity);
-					if(this.defineControl)
+					//
+					
+				}
+				else
+					this.applyToEntity(entity);
+				//Moved here so we can tell the client to control an already existing entity
+				if(this.defineControl)
+				{
+					if(entity != null)
 					{
 						Client.controlledEntity = entity;
 						if(entity instanceof EntityControllable)
 							((EntityControllable) entity).setController(Client.getInstance());
 					}
+					//else
+					//	Client.getInstance().printChat("Error: Server gave control of unknown entity: "+entityUUID);
 				}
-				else
-					this.applyToEntity(entity);
 			}
 		}
 		else
 		{
 			//Client isn't allowed to force spawning or moving of anything but himself
-			if (processor.getServerClient().profile.getControlledEntity() != null && entityID == processor.getServerClient().profile.getControlledEntity().getUUID())
+			if (processor.getServerClient().profile.getControlledEntity() != null && entityUUID == processor.getServerClient().profile.getControlledEntity().getUUID())
 				applyToEntity(processor.getServerClient().profile.getControlledEntity());
 			//entity = EntitiesList.newEntity(world, entityType);
 		}

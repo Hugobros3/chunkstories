@@ -5,7 +5,7 @@ package io.xol.chunkstories.api.entity;
 // http://xol.io
 
 /**
- * Implemented both by Client and server classes, defines callbacks used for network synchronisation
+ * Implemented both by Client.class and ServerPlayer.class, defines callbacks used for network synchronisation
  * 
  * @author gobrosse
  */

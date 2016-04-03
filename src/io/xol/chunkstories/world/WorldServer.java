@@ -6,7 +6,9 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.core.PlayerSpawnEvent;
 import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.net.packets.PacketTime;
+import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -17,13 +19,13 @@ import io.xol.engine.math.LoopingMathHelper;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class WorldServer extends World
+public class WorldServer extends World implements WorldMaster
 {
 	public WorldServer(String worldDir)
 	{
-		super(new WorldInfo(new File(worldDir+"/info.txt"), new File(worldDir).getName()));
+		super(new WorldInfo(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
 		client = false;
-		
+
 		ioHandler = new IOTasksMultiplayerServer(this);
 		ioHandler.start();
 	}
@@ -33,12 +35,12 @@ public class WorldServer extends World
 	{
 		this.trimRemovableChunks();
 		//Update client tracking
-		for(ServerClient client : Server.getInstance().handler.getAuthentificatedClients())
+		for (ServerClient client : Server.getInstance().handler.getAuthentificatedClients())
 		{
 			//System.out.println("Tast");
-			if(client.profile != null)
+			if (client.profile != null)
 			{
-				if(client.profile.hasSpawned)
+				if (client.profile.hasSpawned)
 					client.profile.updateTrackedEntities();
 				PacketTime packetTime = new PacketTime(false);
 				packetTime.time = this.worldTime;
@@ -47,19 +49,19 @@ public class WorldServer extends World
 		}
 		super.tick();
 	}
-	
+
 	public void handleWorldMessage(ServerClient sender, String message)
 	{
-		if(message.equals("info"))
+		if (message.equals("info"))
 		{
 			//Sends the construction info for the world, and then the player entity
 			worldInfo.sendInfo(sender);
-			
+
 			PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.profile, sender.profile.getLastPosition());
 			Server.getInstance().getPluginsManager().fireEvent(playerSpawnEvent);
-			
+
 		}
-		if(message.startsWith("getChunkCompressed"))
+		if (message.startsWith("getChunkCompressed"))
 		{
 			String[] split = message.split(":");
 			int x = Integer.parseInt(split[1]);
@@ -67,7 +69,7 @@ public class WorldServer extends World
 			int z = Integer.parseInt(split[3]);
 			((IOTasksMultiplayerServer) ioHandler).requestCompressedChunkSend(x, y, z, sender);
 		}
-		if(message.startsWith("getChunkSummary"))
+		if (message.startsWith("getChunkSummary"))
 		{
 			String[] split = message.split(":");
 			int x = Integer.parseInt(split[1]);
@@ -75,41 +77,40 @@ public class WorldServer extends World
 			((IOTasksMultiplayerServer) ioHandler).requestChunkSummary(x, z, sender);
 		}
 	}
-	
+
 	@Override
 	public void trimRemovableChunks()
 	{
-		int chunksViewDistance = 256/32;
+		int chunksViewDistance = 256 / 32;
 		int sizeInChunks = size.sizeInChunks;
-		
+
 		//Chunks pruner
 		ChunksIterator i = Server.getInstance().world.iterator();
 		CubicChunk c;
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			c = i.next();
 			boolean neededBySomeone = false;
-			for(ServerClient client : Server.getInstance().handler.clients)
+			for (ServerClient client : Server.getInstance().handler.clients)
 			{
-				if(client.isAuthentificated())
+				if (client.isAuthentificated())
 				{
 					Entity clientEntity = client.profile.getControlledEntity();
-					if(clientEntity == null)
+					if (clientEntity == null)
 						continue;
 					Location loc = clientEntity.getLocation();
-					int pCX = (int)loc.x/32;
-					int pCY = (int)loc.y/32;
-					int pCZ = (int)loc.z/32;
+					int pCX = (int) loc.x / 32;
+					int pCY = (int) loc.y / 32;
+					int pCZ = (int) loc.z / 32;
 					//TODO use proper configurable values for this
-					if ( !((LoopingMathHelper.moduloDistance(c.chunkX, pCX, sizeInChunks) > chunksViewDistance + 2)
-							|| (LoopingMathHelper.moduloDistance(c.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 2) || (Math.abs(c.chunkY - pCY) > 4)) )
+					if (!((LoopingMathHelper.moduloDistance(c.chunkX, pCX, sizeInChunks) > chunksViewDistance + 2) || (LoopingMathHelper.moduloDistance(c.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 2) || (Math.abs(c.chunkY - pCY) > 4)))
 					{
-						 neededBySomeone = true;
+						neededBySomeone = true;
 					}
 				}
 			}
-			
-			if(!neededBySomeone)
+
+			if (!neededBySomeone)
 			{
 				//System.out.println("Removed");
 				removeChunk(c, false);
@@ -117,5 +118,36 @@ public class WorldServer extends World
 		}
 		//if(removedChunks > 0)
 		//	System.out.println("Removed "+removedChunks+" chunks.");
+	}
+
+	@Override
+	public void setDataAt(int x, int y, int z, int i, boolean load)
+	{
+		int blocksViewDistance = 256;
+		int sizeInBlocks = size.sizeInChunks * 32;
+		super.setDataAt(x, y, z, i, load);
+		PacketVoxelUpdate packet = new PacketVoxelUpdate(false);
+		packet.x = x;
+		packet.y = y;
+		packet.z = z;
+		packet.data = i;
+		for (ServerClient client : Server.getInstance().handler.clients)
+		{
+			if (client.isAuthentificated())
+			{
+				Entity clientEntity = client.profile.getControlledEntity();
+				if (clientEntity == null)
+					continue;
+				Location loc = clientEntity.getLocation();
+				int plocx = (int) loc.x;
+				int plocy = (int) loc.y;
+				int plocz = (int) loc.z;
+				//TODO use proper configurable values for this
+				if (!((LoopingMathHelper.moduloDistance(x, plocx, sizeInBlocks) > blocksViewDistance + 2) || (LoopingMathHelper.moduloDistance(z, plocz, sizeInBlocks) > blocksViewDistance + 2) || (y - plocy) > 4 * 32))
+				{
+					client.sendPacket(packet);
+				}
+			}
+		}
 	}
 }

@@ -120,7 +120,7 @@ public class ServerPlayer implements Player, Controller
 		}
 		packet.includeRotation = e instanceof EntityRotateable;
 		packet.deleteFlag = delete;
-		packet.applyFromEntity(e);
+		packet.createFromEntity(e);
 		playerConnection.sendPacket(packet);
 	}
 
@@ -176,7 +176,7 @@ public class ServerPlayer implements Player, Controller
 			//Dirty but meh
 			packet.includeName = true;
 			packet.includeRotation = true;
-			packet.applyFromEntity(controlledEntity);
+			packet.createFromEntity(controlledEntity);
 			this.playerConnection.sendPacket(packet);
 			this.hasSpawned = true;
 		}
@@ -234,7 +234,7 @@ public class ServerPlayer implements Player, Controller
 	{
 		//Send teleport packet
 		PacketEntity packet = new PacketEntity(false);
-		packet.applyFromEntity(controlledEntity);
+		packet.createFromEntity(controlledEntity);
 		playerConnection.sendPacket(packet);
 	}
 

@@ -6,9 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
 import io.xol.chunkstories.item.inventory.Inventory;
 
@@ -126,7 +124,7 @@ public class ItemPile implements CSFSerializable
 	 * @return null if successfull, this if not.
 	 */
 	//@SuppressWarnings("unchecked")
-	public <CE extends Entity & EntityControllable> ItemPile moveTo(Inventory inventory2, int x2, int y2)
+	public ItemPile moveTo(Inventory inventory2, int x2, int y2)
 	{
 		//Remove it from where we are removing it from
 		if (inventory != null)
@@ -137,7 +135,7 @@ public class ItemPile implements CSFSerializable
 		if (inventory2.canPlaceItemAt(x2, y2, this))
 		{
 			ItemPile nextSelection = inventory2.getItem(x2, y2);
-			inventory2.setItemPileAt(x2, y2, this);
+			inventory2.placeItemPileAt(x2, y2, this);
 			//Successfull item move, then notify controller
 			//if (inventory != null)
 			//	if (this.inventory.holder != null && this.inventory.holder instanceof Entity && this.inventory.holder instanceof EntityControllable && ((EntityControllable) this.inventory.holder).getController() != null)
@@ -147,7 +145,7 @@ public class ItemPile implements CSFSerializable
 		}
 		//Put it back if we can't move it
 		else if (inventory != null)
-			inventory.setItemPileAt(this.x, this.y, this);
+			inventory.placeItemPileAt(this.x, this.y, this);
 		return this;
 	}
 

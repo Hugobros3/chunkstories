@@ -13,9 +13,12 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.input.MouseClick;
+import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.EntityControllable;
@@ -25,10 +28,12 @@ import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.core.ItemAk47;
+import io.xol.chunkstories.item.core.ItemVoxel;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.net.packets.PacketEntity;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
+import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.core.VoxelClimbable;
 import io.xol.chunkstories.world.World;
@@ -147,7 +152,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		{
 			PacketEntity packet = new PacketEntity(true);
 			packet.includeRotation = true;
-			packet.applyFromEntity(this);
+			packet.createFromEntity(this);
 			Client.connection.sendPacket(packet);
 		}
 	}
@@ -169,7 +174,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 
 	public void normalMove(ClientController controller)
 	{
-		WorldClient worldClient = (WorldClient)world;
+		WorldClient worldClient = (WorldClient) world;
 		boolean focus = controller.hasFocus();
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
@@ -331,7 +336,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 
 			camera.pos = new Vector3d(pos).negate();
 			camera.pos.add(0d, -eyePosition, 0d);
-			
+
 			camera.view_rotx = rotV;
 			camera.view_roty = rotH;
 
@@ -346,7 +351,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		Vector3d initialPosition = new Vector3d(pos);
 		initialPosition.add(new Vector3d(0, eyePosition, 0));
 		//Vector3d position = new Vector3d(pos.x, pos.y + eyePosition, pos.z);
-		
+
 		Vector3d direction = new Vector3d();
 
 		float a = (float) ((-rotH) / 360f * 2 * Math.PI);
@@ -586,18 +591,59 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	@Override
 	public boolean handleInteraction(Input input)
 	{
+		Location blockLocation = this.getBlockLookingAt(true);
 		ItemPile itemSelected = this.getInventory().getSelectedItem();
 		if (itemSelected != null)
 		{
 			//See if the item handles the interaction
-			if(itemSelected.getItem().handleInteraction(this, itemSelected, input))
+			if (itemSelected.getItem().handleInteraction(this, itemSelected, input))
 				return true;
 		}
+		if (getWorld() instanceof WorldMaster)
+		{
+			if (input.equals(MouseClick.LEFT))
+			{
+				if (blockLocation != null)
+				{
+					world.setDataAt(blockLocation, 0, false);
+				}
+			}
+			else if (input.equals(MouseClick.MIDDLE))
+			{
+				if (blockLocation != null)
+				{
+					int data = this.getWorld().getDataAt(blockLocation);
+
+					int voxelID = VoxelFormat.id(data);
+					int voxelMeta = VoxelFormat.meta(data);
+
+					if (voxelID > 0)
+					{
+						ItemPile itemVoxel = new ItemPile("item_voxel", new String[] { "" + voxelID, "" + voxelMeta });
+						this.inventory.setItemPileAt(this.inventory.getSelectedSlot(), 0, itemVoxel);
+					}
+				}
+			}
+		}
+
 		//Here goes generic entity response to interaction
-		
+
 		//Then we check if the world minds being interacted with
-		Location blockLocation = this.getBlockLookingAt(true);
 		world.handleInteraction(this, blockLocation, input);
 		return false;
+	}
+
+	@Override
+	public Light[] getLights()
+	{
+		if (this.inventory.getSelectedItem() != null && this.inventory.getSelectedItem().getItem() instanceof ItemVoxel)
+		{
+			ItemPile pile = this.inventory.getSelectedItem();
+			if (ItemVoxel.getVoxel(pile).getLightLevel(0x00) > 0)
+			{
+				return new Light[] { new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.x, (float) pos.y + 1.6f, (float) pos.z), 15f), };
+			}
+		}
+		return null;
 	}
 }

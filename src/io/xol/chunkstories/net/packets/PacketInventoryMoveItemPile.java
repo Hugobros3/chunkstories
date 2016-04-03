@@ -54,6 +54,7 @@ public class PacketInventoryMoveItemPile extends Packet
 			out.writeInt(itemPile.item.getID());
 			itemPile.save(out);
 		}
+		System.out.println("from:" + from + ":" + from.holder);
 	}
 
 	@Override
@@ -90,7 +91,7 @@ public class PacketInventoryMoveItemPile extends Packet
 	@Override
 	public void process(PacketsProcessor processor)
 	{
-		//System.out.println(eIdFrom+"="+eIdTo +"   " + holderTypeFrom+":"+holderTypeTo);
+		System.out.println(eIdFrom+"="+eIdTo +"   " + holderTypeFrom+":"+holderTypeTo);
 		
 		if(holderTypeFrom == 0x01)
 		{

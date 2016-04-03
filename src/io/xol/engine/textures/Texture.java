@@ -282,4 +282,18 @@ public class Texture
 		DEPTH_SHADOWMAP,
 		DEPTH_RENDERBUFFER;
 	}
+	
+	public long getVramUsage()
+	{
+		int surface = getWidth() * getHeight();
+		if(type == TextureType.RGBA_8BPP)
+			return surface * 4;
+		if(type == TextureType.RGB_HDR)
+			return surface * 4;
+		if(type == TextureType.DEPTH_SHADOWMAP)
+			return surface * 3;
+		if(type == TextureType.DEPTH_RENDERBUFFER)
+			return surface * 4;
+		return surface;
+	}
 }

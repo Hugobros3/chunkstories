@@ -24,10 +24,11 @@ import static org.lwjgl.opengl.GL20.*;
 // http://chunkstories.xyz
 // http://xol.io
 
+/**
+ * Handles a GLSL shader
+ */
 public class ShaderProgram
 {
-	// This class holds a shader program ( vertex/frag ), loads it, appy it and
-	// free it once done.
 	String filename;
 
 	int shaderP;
@@ -110,28 +111,34 @@ public class ShaderProgram
 					}
 				}
 			}
-			
-			/*char c;
-			int i = 0;
-			int line = 0;
-			while(i < errorsChar.length)
-			{
-				c = errorsChar[i];
-				if(line == '\n')
-				{
-					
-				}
-				i++;
-			}*/
-			//ChunkStoriesLogger.getInstance().log(fragSource.toString(), ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
-			//ChunkStoriesLogger.getInstance().log(glGetShaderInfoLog(fragS, 5000), ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
 			return;
 		}
 		if (glGetShaderi(vertexS, GL_COMPILE_STATUS) == GL_FALSE)
 		{
 			ChunkStoriesLogger.getInstance().log("Failed to compile shader program " + filename + " (vertex)", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.ERROR);
+			
+			String errorsSource = glGetShaderInfoLog(vertexS, 5000);
+			
+			String[] errorsLines = errorsSource.split("\n");
+			String[] sourceLines = fragSource.toString().split("\n");
+			for(String line : errorsLines)
+			{
+				ChunkStoriesLogger.getInstance().log(line, ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
+				if(line.startsWith("ERROR: "))
+				{
+					String[] parsed = line.split(":");
+					if(parsed.length >= 3)
+					{
+						int lineNumber = Integer.parseInt(parsed[2]);
+						if(sourceLines.length > lineNumber)
+						{
+							System.out.println("@line: "+lineNumber+": "+sourceLines[lineNumber]);
+						}
+					}
+				}
+			}
 			//ChunkStoriesLogger.getInstance().log(vertexSource.toString(), ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
-			ChunkStoriesLogger.getInstance().log(glGetShaderInfoLog(vertexS, 5000), ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
+			//ChunkStoriesLogger.getInstance().log(glGetShaderInfoLog(vertexS, 5000), ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
 			return;
 		}
 		glAttachShader(shaderP, vertexS);

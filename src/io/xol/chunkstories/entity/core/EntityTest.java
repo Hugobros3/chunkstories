@@ -81,7 +81,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		for (Bone b : anim.bones)
 		{
 			Matrix4f transform = anim.getTransformationForBone(b.name, i);
-			//debugDraw(0.2f, 0.2f, 0.2f, (float) posX, (float) posY , (float) posZ, transform);
+			debugDraw(0.2f, 0.2f, 0.2f, (float) pos.x, (float) pos.y , (float) pos.z, transform);
 		}
 	}
 	

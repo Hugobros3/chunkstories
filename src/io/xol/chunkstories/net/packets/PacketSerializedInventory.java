@@ -66,7 +66,7 @@ public class PacketSerializedInventory extends Packet
 				holder.getInventory().load(inventory);
 			else
 				holder.setInventory(inventory);
-			System.out.println("Processed packet 05SerializedInventory.");
+			//System.out.println("Processed packet 05SerializedInventory.");
 		}
 	}
 

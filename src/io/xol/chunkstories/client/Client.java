@@ -174,4 +174,10 @@ public class Client implements ClientController, ClientInterface
 		if (windows.getCurrentScene() instanceof GameplayScene)
 			((GameplayScene) windows.getCurrentScene()).chat.insert(textToPrint);
 	}
+
+	@Override
+	public ServerConnection getServerConnection()
+	{
+		return connection;
+	}
 }

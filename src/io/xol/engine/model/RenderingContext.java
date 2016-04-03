@@ -29,7 +29,7 @@ public class RenderingContext
 
 	//private boolean verticesAttribMode = false;
 	//public int vertexIn, texCoordIn, colorIn, normalIn;
-	
+
 	public boolean shadow;
 
 	Set<Integer> enabledAttributes = new HashSet<Integer>();
@@ -37,11 +37,11 @@ public class RenderingContext
 	public int tempVBO[] = new int[4];
 
 	public Set<Light> lights = new HashSet<Light>();
-	
+
 	public RenderingContext(XolioWindow w)
 	{
 		engine = w;
-		for(int i = 0; i < tempVBO.length; i++)
+		for (int i = 0; i < tempVBO.length; i++)
 			tempVBO[i] = glGenBuffers();
 	}
 
@@ -49,63 +49,88 @@ public class RenderingContext
 	{
 		this.camera = camera;
 	}
-	
+
 	public Camera getCamera()
 	{
 		return camera;
 	}
-	
+
 	public void setIsShadowPass(boolean isShadowPass)
 	{
 		shadow = isShadowPass;
 	}
 
 	/**
-	 * Enables if not already the vertex attribute at the said location.
-	 * Reset uppon shader switch.
+	 * Enables if not already the vertex attribute at the said location. Reset uppon shader switch.
+	 * 
 	 * @param vertexAttributeLocation
 	 */
 	public void enableVertexAttribute(int vertexAttributeLocation)
 	{
-		if(!enabledAttributes.contains(vertexAttributeLocation))
+		if (vertexAttributeLocation < 0)
+			return;
+		if (!enabledAttributes.contains(vertexAttributeLocation))
 		{
 			glEnableVertexAttribArray(vertexAttributeLocation);
 			enabledAttributes.add(vertexAttributeLocation);
 		}
 	}
-	
+
 	/**
-	 * Disables if not already the vertex attribute at the said location.
-	 * Reset uppon shader switch.
+	 * Disables if not already the vertex attribute at the said location. Reset uppon shader switch.
+	 * 
 	 * @param vertexAttributeLocation
 	 */
 	public void disableVertexAttribute(int vertexAttributeLocation)
 	{
-		if(enabledAttributes.contains(vertexAttributeLocation))
+		if (vertexAttributeLocation < 0)
+			return;
+		if (enabledAttributes.contains(vertexAttributeLocation))
 		{
 			glDisableVertexAttribArray(vertexAttributeLocation);
 			enabledAttributes.remove(vertexAttributeLocation);
 		}
 	}
 
-	public void enableVertexAttribute(String string)
+	public void enableVertexAttribute(String vertexAttributeName)
 	{
-		enableVertexAttribute(this.getCurrentShader().getVertexAttributeLocation(string));
+		enableVertexAttribute(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName));
 	}
-	
-	public void disableVertexAttribute(String string)
+
+	public void disableVertexAttribute(String vertexAttributeName)
 	{
-		// TODO Auto-generated method stub
-		
+		disableVertexAttribute(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName));
 	}
-	
+
+	public void setVertexAttributePointer(String vertexAttributeName, int dimensions, int vertexType, boolean normalized, int stride, int offset)
+	{
+		setVertexAttributePointer(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName), dimensions, vertexType, normalized, stride, offset);
+	}
+
+	/**
+	 * If the said attribute is enabled, tells openGL where to lookup data for it within the bind buffer
+	 * @param vertexAttributeLocation
+	 * @param dimensions
+	 * @param vertexType
+	 * @param normalized
+	 * @param stride
+	 * @param offset
+	 */
+	public void setVertexAttributePointer(int vertexAttributeLocation, int dimensions, int vertexType, boolean normalized, int stride, int offset)
+	{
+		if (enabledAttributes.contains(vertexAttributeLocation))
+		{
+			glVertexAttribPointer(vertexAttributeLocation, dimensions, vertexType, normalized, stride, offset);
+		}
+	}
+
 	/**
 	 * Resets the vertex attributes enabled (disables all)
 	 */
 	public void clearVertexAttributes()
 	{
 		Iterator<Integer> i = enabledAttributes.iterator();
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			int vertexAttributeLocation = i.next();
 			glDisableVertexAttribArray(vertexAttributeLocation);
@@ -115,14 +140,18 @@ public class RenderingContext
 
 	//4Megs scratch buffer
 	FloatBuffer tempBuffer = BufferUtils.createFloatBuffer(1024 * 1024);
-	
+
 	/**
-	 * Renders some vertices using the currently bound shader and data provided by the main memory ( kinda slow, not proper for big things )
-	 * Only accepts 32bit SP floats
-	 * @param vertexCoords An array of floats, <b>it must be of a length multiple of 9</b> ( Triangles made up of points made up of 3 coordinates ) <b>or else it silent-fails</b>
-	 * @param texCoords Must provides texturing info for *all* points given or nothing (null)
-	 * @param colors Must provides coloring info for *all* points given or nothing (null)
-	 * @param normals Must provides normal info for *all* points given or nothing (null) 
+	 * Renders some vertices using the currently bound shader and data provided by the main memory ( kinda slow, not proper for big things ) Only accepts 32bit SP floats
+	 * 
+	 * @param vertexCoords
+	 *            An array of floats, <b>it must be of a length multiple of 9</b> ( Triangles made up of points made up of 3 coordinates ) <b>or else it silent-fails</b>
+	 * @param texCoords
+	 *            Must provides texturing info for *all* points given or nothing (null)
+	 * @param colors
+	 *            Must provides coloring info for *all* points given or nothing (null)
+	 * @param normals
+	 *            Must provides normal info for *all* points given or nothing (null)
 	 */
 	public void renderDirectFromFloatBuffers(int verticesToDraw, FloatBuffer vertexCoords, FloatBuffer texCoords, FloatBuffer colors, FloatBuffer normals)
 	{
@@ -130,97 +159,99 @@ public class RenderingContext
 		int texCoordIn = renderingShader.getVertexAttributeLocation("texCoordIn");
 		int colorIn = renderingShader.getVertexAttributeLocation("colorIn");
 		int normalIn = renderingShader.getVertexAttributeLocation("normalIn");
-		
+
 		enableVertexAttribute(vertexIn);
-		if(texCoordIn != -1)
+		if (texCoordIn != -1)
 			enableVertexAttribute(vertexIn);
 		else
 			disableVertexAttribute(vertexIn);
-		
-		if(colorIn != -1)
+
+		if (colorIn != -1)
 			enableVertexAttribute(colorIn);
 		else
 			disableVertexAttribute(colorIn);
-		
-		if(normalIn != -1)
+
+		if (normalIn != -1)
 			enableVertexAttribute(normalIn);
 		else
 			disableVertexAttribute(normalIn);
-		
+
 		//Enable vertex arrays (to be moved in setupVertexInputs)
-		
+
 		//Upload data
 		glBindBuffer(GL_ARRAY_BUFFER, tempVBO[0]);
 		glBufferData(GL_ARRAY_BUFFER, vertexCoords, GL_STREAM_DRAW);
 		glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 12, 0);
-		if(texCoordIn != -1)
+		if (texCoordIn != -1)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[1]);
 			glBufferData(GL_ARRAY_BUFFER, texCoords, GL_STREAM_DRAW);
 			int dimensions = texCoords.capacity() / verticesToDraw;
 			glVertexAttribPointer(texCoordIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
-		if(colorIn != -1)
+		if (colorIn != -1)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[2]);
 			glBufferData(GL_ARRAY_BUFFER, colors, GL_STREAM_DRAW);
 			int dimensions = colors.capacity() / verticesToDraw;
 			glVertexAttribPointer(colorIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
-		if(normalIn != -1)
+		if (normalIn != -1)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[3]);
 			glBufferData(GL_ARRAY_BUFFER, normals, GL_STREAM_DRAW);
 			int dimensions = normals.capacity() / verticesToDraw;
 			glVertexAttribPointer(normalIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
-		
+
 		glDrawArrays(GL_TRIANGLES, 0, verticesToDraw);
 	}
-	
+
 	/**
-	 * Renders some vertices using the currently bound shader and data provided by the main memory ( kinda slow, not proper for big things )
-	 * Only accepts 32bit SP floats
-	 * The amount of points drawn is equal to vertexCoords.length / 3 
-	 * The maximal size of any of the arguments arrays is 1 mebi floats (1024^2), that is 4mebioctels of raw bytes data <b>(silent fails else)</b>
-	 * @param vertexCoords An array of floats, <b>it must be of a length multiple of 9</b> ( Triangles made up of points made up of 3 coordinates ) <b>or else it silent-fails</b>
-	 * @param texCoords Must provides texturing info for *all* points given or nothing (null)
-	 * @param colors Must provides coloring info for *all* points given or nothing (null)
-	 * @param normals Must provides normal info for *all* points given or nothing (null) 
+	 * Renders some vertices using the currently bound shader and data provided by the main memory ( kinda slow, not proper for big things ) Only accepts 32bit SP floats The amount of points drawn is equal to vertexCoords.length / 3 The maximal size of any of the arguments arrays is 1 mebi floats (1024^2), that is 4mebioctels of raw bytes data <b>(silent fails else)</b>
+	 * 
+	 * @param vertexCoords
+	 *            An array of floats, <b>it must be of a length multiple of 9</b> ( Triangles made up of points made up of 3 coordinates ) <b>or else it silent-fails</b>
+	 * @param texCoords
+	 *            Must provides texturing info for *all* points given or nothing (null)
+	 * @param colors
+	 *            Must provides coloring info for *all* points given or nothing (null)
+	 * @param normals
+	 *            Must provides normal info for *all* points given or nothing (null)
 	 */
 	public void renderDirect(float[] vertexCoords, float[] texCoords, float[] colors, float[] normals)
 	{
 		//Sanity check
-		if(vertexCoords.length % 9 != 0)
+		if (vertexCoords.length % 9 != 0)
 			return;
-		
+
 		//glDisable(GL_CULL_FACE);
 		//glDisable(GL_DEPTH_TEST)
-		
+
 		//Parse inputs, grab vertex attribute locations
 		int verticesToDraw = vertexCoords.length / 3;
-		
+
 		int vertexIn = renderingShader.getVertexAttributeLocation("vertexIn");
 		int texCoordIn = renderingShader.getVertexAttributeLocation("texCoordIn");
 		int colorIn = renderingShader.getVertexAttributeLocation("colorIn");
 		int normalIn = renderingShader.getVertexAttributeLocation("normalIn");
-		
+
 		enableVertexAttribute(vertexIn);
-		if(texCoordIn != -1)
+		if (texCoordIn != -1)
 			enableVertexAttribute(vertexIn);
 		else
 			disableVertexAttribute(vertexIn);
-		
-		if(colorIn != -1)
+
+		if (colorIn != -1)
 			enableVertexAttribute(colorIn);
 		else
 			disableVertexAttribute(colorIn);
-		
-		if(normalIn != -1)
+
+		if (normalIn != -1)
 			enableVertexAttribute(normalIn);
 		else
 			disableVertexAttribute(normalIn);
-		
+
 		//Upload data
 		glBindBuffer(GL_ARRAY_BUFFER, tempVBO[0]);
 		tempBuffer.clear();
@@ -228,7 +259,7 @@ public class RenderingContext
 		tempBuffer.flip();
 		glBufferData(GL_ARRAY_BUFFER, tempBuffer, GL_STREAM_DRAW);
 		glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 12, 0);
-		if(texCoordIn != -1)
+		if (texCoordIn != -1)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[1]);
 			tempBuffer.clear();
@@ -238,7 +269,7 @@ public class RenderingContext
 			int dimensions = texCoords.length / verticesToDraw;
 			glVertexAttribPointer(texCoordIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
-		if(colorIn != -1)
+		if (colorIn != -1)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[2]);
 			tempBuffer.clear();
@@ -248,7 +279,7 @@ public class RenderingContext
 			int dimensions = colors.length / verticesToDraw;
 			glVertexAttribPointer(colorIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
-		if(normalIn != -1)
+		if (normalIn != -1)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[3]);
 			tempBuffer.clear();
@@ -258,20 +289,19 @@ public class RenderingContext
 			int dimensions = normals.length / verticesToDraw;
 			glVertexAttribPointer(normalIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
-		
+
 		glDrawArrays(GL_TRIANGLES, 0, verticesToDraw);
 	}
 
 	public void setCurrentShader(ShaderProgram shaderProgram)
 	{
+		//Save calls
 		if (shaderProgram != renderingShader)
 		{
 			//When changing shaders, we make sure we disable whatever was enabled
 			clearVertexAttributes();
 			shaderProgram.use();
 		}
-		//else
-		//	System.out.println("Prevented useless shader switch : "+s);
 		renderingShader = shaderProgram;
 	}
 
@@ -295,13 +325,15 @@ public class RenderingContext
 
 	Matrix4f temp = new Matrix4f();
 	Matrix3f normal = new Matrix3f();
+
 	/**
 	 * Sets the current local matrix transformation and normal 3x3 counterpart
+	 * 
 	 * @param matrix
 	 */
 	public void sendTransformationMatrix(Matrix4f matrix)
 	{
-		if(matrix == null)
+		if (matrix == null)
 			matrix = new Matrix4f();
 		this.renderingShader.setUniformMatrix4f("localTransform", matrix);
 		Matrix4f.invert(matrix, temp);
@@ -319,14 +351,15 @@ public class RenderingContext
 		normal.m22 = temp.m22;
 		this.renderingShader.setUniformMatrix3f("localTransformNormal", normal);
 	}
-	
+
 	/**
 	 * Sets the current bone matrix transformation and normal 3x3 counterpart
+	 * 
 	 * @param matrix
 	 */
 	public void sendBoneTransformationMatrix(Matrix4f matrix)
 	{
-		if(matrix == null)
+		if (matrix == null)
 			matrix = new Matrix4f();
 		this.renderingShader.setUniformMatrix4f("boneTransform", matrix);
 		Matrix4f.invert(matrix, temp);

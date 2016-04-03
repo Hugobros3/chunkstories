@@ -235,11 +235,16 @@ public class GameplayScene extends OverlayableScene
 	public boolean onKeyPress(int k)
 	{
 		KeyBind keyBind = KeyBinds.getKeyBindForLWJGL2xKey(k);
-		ClientInputPressedEvent event = new ClientInputPressedEvent(keyBind);
 		if (keyBind != null)
+		{
+			ClientInputPressedEvent event = new ClientInputPressedEvent(keyBind);
+
 			Client.pluginsManager.fireEvent(event);
-		if (event.isCancelled())
-			return true;
+			if (event.isCancelled())
+				return true;
+			else if (((EntityControllable) this.player).handleInteraction(keyBind))
+				return true;
+		}
 
 		Location loc = player.getLocation();
 		if (currentOverlay != null && currentOverlay.handleKeypress(k))
@@ -467,7 +472,7 @@ public class GameplayScene extends OverlayableScene
 			if (chunkRenderData != null)
 			{
 				nbChunks++;
-				octelsTotal += chunkRenderData.getVramSize();
+				octelsTotal += chunkRenderData.getVramUsage();
 			}
 		}
 		return nbChunks + " chunks, storing " + octelsTotal / 1024 / 1024 + "Mb of vertex data.";

@@ -4,7 +4,6 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 import static io.xol.engine.textures.Texture.TextureType.*;
 
 import java.awt.image.BufferedImage;
@@ -584,7 +583,7 @@ public class WorldRenderer
 			System.out.println("terrain took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 	}
 
-	public void renderWorld(boolean shadowPass, int chunksToRenderLimit)
+	public void renderWorld(boolean isShadowPass, int chunksToRenderLimit)
 	{
 		long t;
 		animationTimer = (float) (((System.currentTimeMillis() % 100000) / 200f) % 100.0);
@@ -597,7 +596,7 @@ public class WorldRenderer
 		float shadowVisiblity = getShadowVisibility();
 		chunksViewDistance = sizeInChunks / 2;
 
-		if (!shadowPass)
+		if (!isShadowPass)
 		{
 			this.composite_pass_shaded.bind();
 
@@ -663,7 +662,7 @@ public class WorldRenderer
 		glDisable(GL_ALPHA_TEST);
 		int vertexIn = 0, texCoordIn = 0, colorIn = 0, normalIn = 0;
 		// Init vertex attribute locations
-		if (!shadowPass)
+		if (!isShadowPass)
 		{
 			vertexIn = opaqueBlocksShader.getVertexAttributeLocation("vertexIn");
 			texCoordIn = opaqueBlocksShader.getVertexAttributeLocation("texCoordIn");
@@ -682,7 +681,7 @@ public class WorldRenderer
 			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
 			renderingContext.setCurrentShader(shadowsPassShader);
 		}
-		renderingContext.setIsShadowPass(shadowPass);
+		renderingContext.setIsShadowPass(isShadowPass);
 
 		renderingContext.enableVertexAttribute(normalIn);
 		renderingContext.enableVertexAttribute(vertexIn);
@@ -727,7 +726,7 @@ public class WorldRenderer
 			if (chunkRenderData == null || chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)
 				continue;
 			// If we're doing shadows
-			if (shadowPass)
+			if (isShadowPass)
 			{
 				// TODO : make proper orthogonal view checks etc
 				float distanceX = LoopingMathHelper.moduloDistance(pCX, chunk.chunkX, sizeInChunks);
@@ -755,7 +754,7 @@ public class WorldRenderer
 				if (!shouldShowChunk)
 					continue;
 			}
-			if (!shadowPass)
+			if (!isShadowPass)
 			{
 				int camIntPartX = (int) Math.floor(camera.pos.x);
 				int camIntPartY = (int) Math.floor(camera.pos.y);
@@ -773,57 +772,25 @@ public class WorldRenderer
 				shadowsPassShader.setUniformFloat3("borderShift", vboDekalX, chunk.chunkY * 32f, vboDekalZ);
 
 			glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
-			int geometrySize = chunkRenderData.vboSizeFullBlocks;
 
-			// We're going back to interlaced format
-			// Raw blocks ( integer faces ) alignment :
-			// Vertex data : [VERTEX_POS(4b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 16 bits
-			glVertexAttribPointer(vertexIn, 4, GL_UNSIGNED_BYTE, false, 16, 0);
-			//glVertexAttribPointer(vertexIn, 4, GL_INT_2_10_10_10_REV, false, 16, 0);
-			glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 16, 4);
-			if (!shadowPass)
-				glVertexAttribPointer(colorIn, 4, GL_UNSIGNED_BYTE, true, 16, 8);
-			glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 16, 12);
-
-			if (geometrySize > 0)
+			if (isShadowPass)
+				renderedVerticesShadow += chunkRenderData.renderCubeSolidBlocks(renderingContext);
+			else
 			{
-				if (shadowPass)
-					renderedVerticesShadow += geometrySize;
-				else
-				{
-					renderedChunks++;
-					renderedVertices += geometrySize;
-				}
-				glDrawArrays(GL_TRIANGLES, 0, geometrySize);
-				// Memory usage be geometrySize ( nb vertex ) x 11 ( nb data per
-				// vertice (xyz pos, ts texcoord, rgb color and lmn normal) x 3
+				renderedChunks++;
+				renderedVertices += chunkRenderData.renderCubeSolidBlocks(renderingContext);
 			}
-
-			if (chunkRenderData.vboSizeCustomBlocks > 0)
+			
+			if (isShadowPass)
+				renderedVerticesShadow += chunkRenderData.renderCustomSolidBlocks(renderingContext);
+			else
 			{
-				geometrySize = chunkRenderData.vboSizeCustomBlocks;
-				int dekal = chunkRenderData.vboSizeFullBlocks * 16 + chunkRenderData.vboSizeWaterBlocks * 24;
-				// We're going back to interlaced format
-				// Complex blocks ( integer faces ) alignment :
-				// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
-				glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 24, dekal + 0);
-				glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 24, dekal + 12);
-				if (!shadowPass)
-					glVertexAttribPointer(colorIn, 4, GL_UNSIGNED_BYTE, true, 24, dekal + 16);
-				glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20);
-
-				if (shadowPass)
-					renderedVerticesShadow += geometrySize;
-				else
-				{
-					renderedChunks++;
-					renderedVertices += geometrySize;
-				}
-				glDrawArrays(GL_TRIANGLES, 0, geometrySize);
+				renderedChunks++;
+				renderedVertices += chunkRenderData.renderCustomSolidBlocks(renderingContext);
 			}
 		}
 		// Done looping chunks, now entities
-		if (!shadowPass)
+		if (!isShadowPass)
 		{
 			if (FastConfig.debugGBuffers)
 				glFinish();
@@ -872,6 +839,10 @@ public class WorldRenderer
 		else
 			shadowsPassShader.setUniformFloat("entity", 1);
 
+		// Particles rendering
+		//Client.world.particlesHolder.render(renderingContext);
+		glEnable(GL_CULL_FACE);
+		
 		glDisable(GL_CULL_FACE);
 		// Render entities
 		Light[] el;
@@ -894,15 +865,12 @@ public class WorldRenderer
 						renderingContext.lights.add(l);
 			}
 		}
-		// Particles rendering
-		Client.world.particlesHolder.render(renderingContext);
-		glEnable(GL_CULL_FACE);
 
 		renderingContext.disableVertexAttribute(normalIn);
 		renderingContext.disableVertexAttribute(vertexIn);
 		renderingContext.disableVertexAttribute(texCoordIn);
-
-		if (shadowPass)
+		
+		if (isShadowPass)
 			return;
 
 		// Solid blocks done, now render water & lights
@@ -1010,23 +978,7 @@ public class WorldRenderer
 				liquidBlocksShader.setUniformFloat3("borderShift", vboDekalX, chunk.chunkY * 32, vboDekalZ);
 
 				glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
-				int geometrySize = chunkRenderData.vboSizeWaterBlocks;
-
-				int dekal = chunkRenderData.vboSizeFullBlocks * 16;
-				// We're going back to interlaced format
-				// Complex blocks ( integer faces ) alignment :
-				// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
-				glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 24, dekal + 0);
-				if (texCoordIn != -1)
-					glVertexAttribPointer(texCoordIn, 2, GL_UNSIGNED_SHORT, false, 24, dekal + 12);
-				if (colorIn != -1)
-					glVertexAttribPointer(colorIn, 3, GL_UNSIGNED_BYTE, true, 24, dekal + 16);
-				if (normalIn != -1)
-					glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20);
-
-				glDrawArrays(GL_TRIANGLES, 0, geometrySize);
-
-				renderedVertices += geometrySize;
+				renderedVertices += chunkRenderData.renderWaterBlocks(renderingContext);
 			}
 
 			// Disable vertex attributes

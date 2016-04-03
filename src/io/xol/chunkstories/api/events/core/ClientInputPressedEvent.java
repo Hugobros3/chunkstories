@@ -4,6 +4,8 @@ import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.events.categories.ClientEvent;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.client.net.ServerConnection;
+import io.xol.chunkstories.net.packets.PacketInput;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -38,6 +40,20 @@ public class ClientInputPressedEvent extends CancellableEvent implements ClientE
 	public Input getInputPressed()
 	{
 		return input;
+	}
+	
+	public void defaultBehaviour()
+	{
+		if(!this.isCancelled())
+		{
+			ServerConnection connection = this.getClient().getServerConnection();
+			if(connection != null)
+			{
+				PacketInput packet = new PacketInput(true);
+				packet.input = input;
+				connection.sendPacket(packet);
+			}
+		}
 	}
 
 }

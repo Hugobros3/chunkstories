@@ -32,6 +32,8 @@ public class LightsRenderer
 			lightShader.setUniformFloat3("lightDir[" + lightsBuffer + "]", spotlight.getDirection());
 			lightShader.setUniformFloat("lightAngle[" + lightsBuffer + "]", (float) (spotlight.getAngle() / 180 * Math.PI));
 		}
+		else
+			lightShader.setUniformFloat("lightAngle[" + lightsBuffer + "]", 0f);
 
 		//TexturesHandler.nowrap("res/textures/flashlight.png");
 

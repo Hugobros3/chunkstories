@@ -112,8 +112,7 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	 * @param pile
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public <CE extends Entity & EntityControllable> ItemPile setItemPileAt(int x, int y, ItemPile pile)
+	public ItemPile placeItemPileAt(int x, int y, ItemPile pile)
 	{
 		if (pile == null)
 		{
@@ -130,9 +129,43 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 			return pile;
 		if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
 		{
-			((EntityControllable)this.holder).getController().notifyInventoryChange((CE)this.holder);
+			((EntityControllable)this.holder).getController().notifyInventoryChange((Entity)this.holder);
 		}
 		return null;
+	}
+	
+	public boolean setItemPileAt(int x, int y, ItemPile pile)
+	{
+		if (pile == null)
+		{
+			contents[x % width][y % height] = null;
+			return true;
+		}
+		
+		ItemPile temp = null;
+		if(contents[x % width][y % height] != null)
+		{
+			temp = contents[x % width][y % height];
+			contents[x % width][y % height] = null;
+		}
+		
+		if (canPlaceItemAt(x, y, pile))
+		{
+			pile.inventory = this;
+			pile.x = x;
+			pile.y = y;
+			contents[x % width][y % height] = pile;
+		}
+		else
+		{
+			contents[x % width][y % height] = temp;
+			return false;
+		}
+		if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
+		{
+			((EntityControllable)this.holder).getController().notifyInventoryChange((Entity)this.holder);
+		}
+		return true;
 	}
 	
 	/**
@@ -144,7 +177,7 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	{
 		for(int i = 0; i < width; i++)
 			for(int j = 0; j < height; j++)
-				if(setItemPileAt(i, j, pile) == null)
+				if(placeItemPileAt(i, j, pile) == null)
 					return null;
 		return pile;
 	}

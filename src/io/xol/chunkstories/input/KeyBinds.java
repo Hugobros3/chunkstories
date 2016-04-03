@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import io.xol.chunkstories.api.input.KeyBind;
@@ -20,7 +22,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 public class KeyBinds
 {
-	MessageDigest md;
+	public static MessageDigest md;
 
 	public static void main(String[] a)
 	{
@@ -75,6 +77,7 @@ public class KeyBinds
 	}
 
 	static Set<KeyBind> keyBinds = new HashSet<KeyBind>();
+	static Map<Long, KeyBind> keyBindsMap = new HashMap<Long, KeyBind>();
 
 	public static Set<KeyBind> getKeyBinds()
 	{
@@ -112,10 +115,25 @@ public class KeyBinds
 		}
 		return null;
 	}
+	
+	public static KeyBind getKeyBindFromHash(long hash)
+	{
+		return keyBindsMap.get(hash);
+	}
 
 	public static void loadKeyBinds()
 	{
+		try
+		{
+			md = MessageDigest.getInstance("MD5");
+		}
+		catch (NoSuchAlgorithmException e)
+		{
+			e.printStackTrace();
+		}
+		
 		keyBinds.clear();
+		keyBindsMap.clear();
 		Deque<File> keyBindsFiles = GameData.getAllFileInstances("./res/data/keyBinds.txt");
 		for (File f : keyBindsFiles)
 		{
@@ -141,10 +159,11 @@ public class KeyBinds
 					String splitted[] = line.split(" ");
 					if (splitted.length >= 2)
 					{
-						KeyBind keyBind = new KeyBindImplementation(splitted[0], splitted[1]);
+						KeyBindImplementation keyBind = new KeyBindImplementation(splitted[0], splitted[1]);
 						keyBinds.add(keyBind);
+						keyBindsMap.put(keyBind.getHash(), keyBind);
 					}
-					System.out.println("added" + splitted[0]);
+					//System.out.println("added" + splitted[0]);
 				}
 			}
 			//reader.close();

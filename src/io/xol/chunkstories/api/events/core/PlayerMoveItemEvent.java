@@ -60,7 +60,7 @@ public class PlayerMoveItemEvent extends Event
 		else
 		{
 			if(packet.from != null)
-				packet.from.setItemPileAt(packet.oldX, packet.oldY, null);
+				packet.from.placeItemPileAt(packet.oldX, packet.oldY, null);
 			player.sendMessage("Notice : throwing stuff on ground is not yet implemented.");
 		}
 	}
