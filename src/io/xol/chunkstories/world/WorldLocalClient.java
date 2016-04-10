@@ -1,6 +1,7 @@
 package io.xol.chunkstories.world;
 
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.io.IOTasks;
 
@@ -8,7 +9,7 @@ import io.xol.chunkstories.world.io.IOTasks;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class WorldLocalClient extends World implements WorldClient
+public class WorldLocalClient extends World implements WorldClient, WorldMaster
 {
 
 	public WorldLocalClient(WorldInfo info)

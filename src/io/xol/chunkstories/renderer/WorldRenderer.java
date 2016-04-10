@@ -457,8 +457,8 @@ public class WorldRenderer
 					{
 						if (chunk.dataPointer == -1 || (chunk.chunkRenderData != null && chunk.chunkRenderData.isUploaded))
 						{
-							int yDistance = chunk.chunkY - world.chunkSummaries.getHeightAt(chunk.chunkX + 16, chunk.chunkZ + 16)/ 32;
-							if (yDistance <= 0 && yDistance >= 0)
+							int yDistance = chunk.chunkY - (world.chunkSummaries.getHeightAt(chunk.chunkX + 16, chunk.chunkZ + 16) / 32 + 32);
+							if (yDistance <= 0)
 							{
 								localMapCommands.put((byte) (chunk.chunkX - currentChunkX));
 								localMapCommands.put((byte) (chunk.chunkZ - currentChunkZ));
