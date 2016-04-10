@@ -52,7 +52,7 @@ public class PacketInventoryMoveItemPile extends Packet
 		if(from == null || from.holder == null)
 		{
 			out.writeInt(itemPile.item.getID());
-			itemPile.save(out);
+			itemPile.saveCSF(out);
 		}
 	}
 
@@ -105,7 +105,7 @@ public class PacketInventoryMoveItemPile extends Packet
 				to = entity.getInventory();
 		}
 		
-		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(processor.getServerClient().profile, this);
+		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(processor.getServerClient().getProfile(), this);
 		Server.getInstance().getPluginsManager().fireEvent(moveItemEvent);
 	}
 

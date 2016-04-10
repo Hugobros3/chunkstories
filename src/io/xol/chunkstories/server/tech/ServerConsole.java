@@ -77,7 +77,7 @@ public class ServerConsole
 				for (ServerClient client : Server.getInstance().handler.clients)
 				{
 					i++;
-					list += client.profile.getDisplayName() + (i == Server.getInstance().handler.clients.size() ? "" : ", ");
+					list += client.getProfile().getDisplayName() + (i == Server.getInstance().handler.clients.size() ? "" : ", ");
 				}
 				emitter.sendMessage("#00FFD0" + i + " players connected : " + list);
 				return;

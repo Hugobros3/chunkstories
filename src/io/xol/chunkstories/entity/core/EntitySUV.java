@@ -5,7 +5,7 @@ import io.xol.engine.math.lalgb.Matrix4f;
 
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.entity.EntityImplementation;
+import io.xol.chunkstories.entity.EntityImpl;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.renderer.lights.DefferedSpotLight;
 import io.xol.chunkstories.world.World;
@@ -17,7 +17,7 @@ import io.xol.engine.textures.TexturesHandler;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntitySUV extends EntityImplementation
+public class EntitySUV extends EntityImpl
 {
 	int i = 0;
 

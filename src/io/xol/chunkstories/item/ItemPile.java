@@ -87,7 +87,7 @@ public class ItemPile implements CSFSerializable
 	{
 		this.item = item;
 		this.data = item.getItemData();
-		load(stream);
+		loadCSF(stream);
 	}
 
 	public String getTextureName()
@@ -101,14 +101,14 @@ public class ItemPile implements CSFSerializable
 	}
 
 	@Override
-	public void load(DataInputStream stream) throws IOException
+	public void loadCSF(DataInputStream stream) throws IOException
 	{
 		this.amount = stream.readInt();
 		item.load(this, stream);
 	}
 
 	@Override
-	public void save(DataOutputStream stream) throws IOException
+	public void saveCSF(DataOutputStream stream) throws IOException
 	{
 		stream.writeInt(amount);
 		item.save(this, stream);
@@ -172,9 +172,9 @@ public class ItemPile implements CSFSerializable
 		ByteArrayOutputStream data = new ByteArrayOutputStream();
 		try
 		{
-			this.save(new DataOutputStream(data));
+			this.saveCSF(new DataOutputStream(data));
 			ByteArrayInputStream stream = new ByteArrayInputStream(data.toByteArray());
-			pile.load(new DataInputStream(stream));
+			pile.loadCSF(new DataInputStream(stream));
 		}
 		catch (IOException e)
 		{

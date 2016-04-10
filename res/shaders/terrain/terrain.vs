@@ -10,6 +10,7 @@ varying vec3 eye;
 uniform sampler2D heightMap;
 
 uniform vec2 chunkPosition;
+varying vec2 chunkPositionFrag;
 uniform vec2 chunkPositionActual;
 uniform vec2 regionPosition;
 varying vec2 textureCoord;
@@ -55,6 +56,8 @@ attribute vec4 vertexIn;
 
 void main()
 {
+	chunkPositionFrag = chunkPosition;
+
 	//Displacement from texture & position
 	vec4 v = vec4(vertexIn);
 	textureCoord = (v.zx)/256.0;
@@ -137,38 +140,5 @@ void main()
 	fogFactor = (dist) / (gl_Fog.end-gl_Fog.start);
 	fogI = clamp(fogFactor, 0.0, 1.0);
 	
-	//Near clipping
-	
-	/*vec3 camPosChunk = camPos;
-	camPosChunk.x = floor((camPosChunk.x+16.0)/32.0)*32.0;
-	camPosChunk.z = floor((camPosChunk.z+16.0)/32.0)*32.0;
-	
-	vec3 eyeChunk = v.xyz-camPosChunk;
-	eyeChunk.x = floor((eyeChunk.x+16.0)/32.0)*32.0;
-	eyeChunk.y = floor((eyeChunk.y+16.0)/32.0)*32.0;
-	eyeChunk.z = floor((eyeChunk.z+16.0)/32.0)*32.0;
-	
-	float fogStartDistance = clamp(floor(viewDistance/32.0)*32.0-64.0,32.0,512.0);
-	float verticalFogStartDistance = clamp(64.0,32.0,512.0);
-	
-	chunkFade = 
-	
-	clamp(abs(eyeChunk.x)-clamp(viewDistance*0.5 - 32, 0.0, 256.0), 0.0, 1.0)
-	
-	+clamp(abs(eyeChunk.z)-clamp(viewDistance*0.5 - 32, 0.0, 256.0), 0.0, 1.0)
-	
-	+clamp(abs(eyeChunk.y)-clamp(32, 0.0, 256.0), 0.0, 1.0)
-	;
-	
-	clamp(minXChunkLoaded+40 - eyeChunk.x, 0.0, 1.0)
-	+clamp(-maxXChunkLoaded+40 + eyeChunk.x, 0.0, 1.0)
-	
-	+clamp(minZChunkLoaded+40 - eyeChunk.z, 0.0, 1.0)
-	+clamp(-maxZChunkLoaded+40 + eyeChunk.z, 0.0, 1.0)
-	
-	//+clamp((abs(eyeChunk.y)/32.0-2.0)/1.0, 0.0, 1.0)
-	+clamp(minYChunkLoaded -eyeChunk.y, 0.0, 1.0)
-	+clamp(-maxYChunkLoaded + eyeChunk.y, 0.0, 1.0);
-	;*/
 	
 }

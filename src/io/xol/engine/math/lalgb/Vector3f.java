@@ -175,5 +175,10 @@ public class Vector3f
 		vec.z = z;
 		return vec;
 	}
+	
+	public Vector3f clone()
+	{
+		return new Vector3f(x, y, z);
+	}
 
 }

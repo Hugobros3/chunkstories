@@ -42,7 +42,7 @@ uniform vec3 camPos;
 
 uniform float powFactor;
 
-const float distScale = 0.75;
+const float distScale = 0.9;
 
 uniform float pass;
 uniform float sunIntensity;
@@ -114,9 +114,9 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	
 	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
 	{
-		float bias = (1.0 - meta.a) * 0.0020 + clamp(0.0035*tan(acos(NdotL)) - 0.01075, 0.0005,0.0035 )*(1.0+5.0 * clamp(2.0*coordinatesInShadowmap.w - 1.0, 0.0, 100.0));
+		float bias = (1.0 - meta.a) * 0.0010 + clamp(0.0035*tan(acos(NdotL)) - 0.01075, 0.0005,0.0025 ) * (1.0 + 3.0 * clamp(2.0 * coordinatesInShadowmap.w - 1.0, 0.0, 100.0));
 		edgeSmoother = 1.0-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5)-0.25)*4.0+max(0,abs(coordinatesInShadowmap.y-0.5)-0.25)*4.0, 3.0), 0.0, 1.0);
-		opacity += edgeSmoother * (1.0-shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0).r);
+		opacity += edgeSmoother * (1.0-clamp((shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0).r * 1.5 - 0.25), 0.0, 1.0));
 	}
 	
 	//opacity += 1-NdotL;
@@ -152,7 +152,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 		ssao *= texture2D(ssaoBuffer, screenCoord).x;
 	<endif ssao>
 	
-	finalLight *= clamp(ssao, 0.0, 1.0);
+	finalLight *= clamp(ssao * 0.5 + 0.5, 0.0, 1.0);
 	inputColor.rgb *= finalLight;
 	
 	return inputColor;

@@ -116,7 +116,7 @@ public class ChunksHolders
 		return holder;
 	}
 
-	public void removeChunk(int chunkX, int chunkY, int chunkZ)
+	public void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save)
 	{
 		ChunkHolder holder = getChunkHolder(chunkX, chunkY, chunkZ, false);
 		boolean emptyHolder = false;
@@ -126,7 +126,10 @@ public class ChunksHolders
 		}
 		if (emptyHolder)
 		{
+			if(save)
+				holder.save();
 			holder.destroy();
+			System.out.println("Remove holder: "+holder);
 			chunkHolders.remove(new ChunkHolderKey(chunkX / 8, chunkY / 8, chunkZ / 8 ));
 		}
 		//world.ioHandler.notifyChunkUnload(chunkX, chunkY, chunkZ);

@@ -71,7 +71,7 @@ public class PacketInput extends Packet
 	@Override
 	public void process(PacketsProcessor processor)
 	{
-		EntityControllable entity = (EntityControllable) processor.getServerClient().profile.getControlledEntity();
+		EntityControllable entity = (EntityControllable) processor.getServerClient().getProfile().getControlledEntity();
 		if (entity != null)
 		{
 			entity.handleInteraction(input);

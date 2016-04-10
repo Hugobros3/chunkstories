@@ -9,6 +9,7 @@ import io.xol.chunkstories.world.World;
 
 import java.util.Deque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -24,6 +25,8 @@ public class CubicChunk implements Chunk
 
 	// Used in client rendering
 	public ChunkRenderData chunkRenderData;
+	public AtomicLong lastModification = new AtomicLong();
+	public AtomicLong lastModificationSaved = new AtomicLong();
 	
 	public AtomicBoolean need_render = new AtomicBoolean(true);
 	public AtomicBoolean need_render_fast = new AtomicBoolean(false);
@@ -100,6 +103,7 @@ public class CubicChunk implements Chunk
 			int dataBefore = world.chunksData.grab(dataPointer)[x * 32 * 32 + y * 32 + z];
 			world.chunksData.grab(dataPointer)[x * 32 * 32 + y * 32 + z] = data;
 			computeLightSpread(x, y, z, dataBefore, data);
+			lastModification.set(System.currentTimeMillis());
 		}
 	}
 	
@@ -120,6 +124,7 @@ public class CubicChunk implements Chunk
 		if (dataPointer >= 0)
 		{
 			world.chunksData.grab(dataPointer)[x * 32 * 32 + y * 32 + z] = data;
+			//lastModification.set(System.currentTimeMillis());
 		}
 	}
 

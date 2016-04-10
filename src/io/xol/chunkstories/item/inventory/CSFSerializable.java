@@ -18,12 +18,12 @@ public interface CSFSerializable
 	 * @param stream
 	 * @throws IOException
 	 */
-	public void load(DataInputStream stream) throws IOException;
+	public void loadCSF(DataInputStream stream) throws IOException;
 
 	/**
 	 * Writes the object state to a stream
 	 * @param stream
 	 * @throws IOException
 	 */
-	public void save(DataOutputStream stream) throws IOException;	
+	public void saveCSF(DataOutputStream stream) throws IOException;	
 }

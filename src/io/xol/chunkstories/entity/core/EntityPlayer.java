@@ -23,7 +23,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityHUD;
-import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.item.ItemPile;
@@ -51,7 +50,7 @@ import io.xol.engine.textures.TexturesHandler;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityPlayer extends EntityImplementation implements EntityControllable, EntityHUD, EntityNameable, EntityRotateable
+public class EntityPlayer extends EntityLivingImpl implements EntityControllable, EntityHUD, EntityNameable, EntityRotateable
 {
 	boolean noclip = true;
 	boolean running = false;
@@ -96,6 +95,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 	@Override
 	public void tick()
 	{
+		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y), (int) (pos.z))));
 		if (jump > 0)
 		{
 			jumped = true;
@@ -114,13 +114,6 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 		{
 			acc.normalize();
 			acc.scale(modifySpd);
-		}
-
-		if (flying)
-		{
-			this.vel.x = 0;
-			this.vel.y = 0;
-			this.vel.z = 0;
 		}
 		super.tick();
 		// Sound stuff
@@ -196,7 +189,7 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 			jumped = false;
 			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", pos.x, pos.y, pos.z, (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
 		}
-		if (landed)
+		if (landed && !inWater)
 		{
 			landed = false;
 			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", pos.x, pos.y, pos.z, (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
@@ -322,6 +315,12 @@ public class EntityPlayer extends EntityImplementation implements EntityControll
 				moveWithoutCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed);
 			else
 				moveWithCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed, true);
+		}
+		if (flying)
+		{
+			this.vel.x = 0;
+			this.vel.y = 0;
+			this.vel.z = 0;
 		}
 	}
 

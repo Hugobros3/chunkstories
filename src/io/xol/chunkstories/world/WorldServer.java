@@ -37,15 +37,26 @@ public class WorldServer extends World implements WorldMaster
 		//Update client tracking
 		for (ServerClient client : Server.getInstance().handler.getAuthentificatedClients())
 		{
-			//System.out.println("Tast");
-			if (client.profile != null)
+			if (client.getProfile().hasSpawned())
 			{
-				if (client.profile.hasSpawned)
-					client.profile.updateTrackedEntities();
-				PacketTime packetTime = new PacketTime(false);
-				packetTime.time = this.worldTime;
-				client.sendPacket(packetTime);
+				//Load 8x4x8 chunks arround player
+				Location loc = client.getProfile().getLocation();
+				int chunkX = (int) (loc.getX() / 32f);
+				int chunkY = (int) (loc.getY() / 32f);
+				int chunkZ = (int) (loc.getZ() / 32f);
+				for(int cx = chunkX - 4 ; cx < chunkX + 4; cx ++)
+					for(int cy = chunkY - 2 ; cy < chunkY + 2; cy ++)
+						for(int cz = chunkZ - 4 ; cz < chunkZ + 4; cz ++)
+							this.getChunk(chunkX, chunkY, chunkZ, true);
+				
+				//System.out.println("chunk:"+this.getChunk(chunkX, chunkY, chunkZ, true));
+				//System.out.println("holder:"+client.getProfile().getControlledEntity().getChunkHolder());
+				//Update whatever he controls
+				client.getProfile().updateTrackedEntities();
 			}
+			PacketTime packetTime = new PacketTime(false);
+			packetTime.time = this.worldTime;
+			client.sendPacket(packetTime);
 		}
 		super.tick();
 	}
@@ -57,9 +68,13 @@ public class WorldServer extends World implements WorldMaster
 			//Sends the construction info for the world, and then the player entity
 			worldInfo.sendInfo(sender);
 
-			PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.profile, sender.profile.getLastPosition());
+			PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.getProfile(), sender.getProfile().getLastPosition());
 			Server.getInstance().getPluginsManager().fireEvent(playerSpawnEvent);
 
+		}
+		else if(message.equals("respawn"))
+		{
+			//TODO respawn request
 		}
 		if (message.startsWith("getChunkCompressed"))
 		{
@@ -95,7 +110,7 @@ public class WorldServer extends World implements WorldMaster
 			{
 				if (client.isAuthentificated())
 				{
-					Entity clientEntity = client.profile.getControlledEntity();
+					Entity clientEntity = client.getProfile().getControlledEntity();
 					if (clientEntity == null)
 						continue;
 					Location loc = clientEntity.getLocation();
@@ -112,8 +127,9 @@ public class WorldServer extends World implements WorldMaster
 
 			if (!neededBySomeone)
 			{
+				//TODO
 				//System.out.println("Removed");
-				removeChunk(c, false);
+				removeChunk(c, true);
 			}
 		}
 		//if(removedChunks > 0)
@@ -135,7 +151,7 @@ public class WorldServer extends World implements WorldMaster
 		{
 			if (client.isAuthentificated())
 			{
-				Entity clientEntity = client.profile.getControlledEntity();
+				Entity clientEntity = client.getProfile().getControlledEntity();
 				if (clientEntity == null)
 					continue;
 				Location loc = clientEntity.getLocation();

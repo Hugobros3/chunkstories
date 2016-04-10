@@ -1,5 +1,6 @@
 package io.xol.chunkstories.client.net;
 
+import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.Packet;
@@ -189,7 +190,7 @@ public class ServerConnection extends Thread implements HttpRequester
 
 			sendTextMessage("login/username:" + Client.username);
 			sendTextMessage("login/logintoken:nopenopenopenopenope");
-			// send("login/version:"+VersionInfo.version);
+			sendTextMessage("login/version:"+VersionInfo.protocolVersion);
 			sendTextMessage("login/confirm");
 		}
 		else
@@ -255,7 +256,7 @@ public class ServerConnection extends Thread implements HttpRequester
 
 				sendTextMessage("login/username:" + Client.username);
 				sendTextMessage("login/logintoken:" + token);
-				// send("login/version:"+VersionInfo.version);
+				sendTextMessage("login/version:"+VersionInfo.protocolVersion);
 				sendTextMessage("login/confirm");
 				connectionStatus = "Token obtained, logging in...";
 			}

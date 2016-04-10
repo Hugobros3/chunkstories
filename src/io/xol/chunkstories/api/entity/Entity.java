@@ -1,5 +1,9 @@
 package io.xol.chunkstories.api.entity;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.plugin.server.Player;
 import io.xol.chunkstories.api.rendering.Light;
@@ -30,13 +34,22 @@ public interface Entity extends InventoryHolder, CSFSerializable
 	 */
 	public void setLocation(Location loc);
 	
+	/**
+	 * Return the entity's current chunk holder
+	 * @return
+	 */
 	public ChunkHolder getChunkHolder();
 	
+	/**
+	 * Return the entity's world
+	 * @return
+	 */
 	public WorldInterface getWorld();
 
+	/**
+	 * Updates the entity, ran at 60Hz by default
+	 */
 	public void tick();
-
-	public boolean updatePosition();
 	
 	public void moveWithoutCollisionRestrain(double mx, double my, double mz);
 	
@@ -44,20 +57,49 @@ public interface Entity extends InventoryHolder, CSFSerializable
 	
 	public Vector3d moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions);
 
+	/**
+	 * Depreacated
+	 * @return
+	 */
+	@Deprecated
 	public Light[] getLights();
 	
+	/**
+	 * Returns the entitie's AABBs
+	 * @return
+	 */
 	public CollisionBox[] getTranslatedCollisionBoxes();
 
+	/**
+	 * Renders the entity using the context
+	 * @param context
+	 */
 	public void render(RenderingContext context);
 
 	public void debugDraw();
 	
+	/**
+	 * Called when controlling/viewing an entity
+	 * @param camera
+	 */
 	public void setupCamera(Camera camera);
 	
+	/**
+	 * Get the EntityID of this entity
+	 * ie : the number in .entities files
+	 * @return
+	 */
 	public short getEID();
 
+	/**
+	 * Get the UUID of this entity.
+	 * @return
+	 */
 	public long getUUID();
 	
+	/**
+	 * Remove the entity from it's world and mark it for deletion (since Java requires to manually remove all references)
+	 */
 	public void delete();
 
 	/**
@@ -66,4 +108,25 @@ public interface Entity extends InventoryHolder, CSFSerializable
 	 * @return
 	 */
 	public boolean shouldBeTrackedBy(Player player);
+
+	/**
+	 * Returns false once the entity has been removed from the world
+	 * @return
+	 */
+	public boolean exists();
+	
+	/**
+	 * Loads the object state from the stream, implying the ID has already been read in the stream.
+	 * If you're initializing an entity from a stream, first create the proper entity type
+	 * @param stream
+	 * @throws IOException
+	 */
+	public void loadCSF(DataInputStream stream) throws IOException;
+
+	/**
+	 * Writes the entity's description, including ID.
+	 * @param stream
+	 * @throws IOException
+	 */
+	public void saveCSF(DataOutputStream stream) throws IOException;
 }

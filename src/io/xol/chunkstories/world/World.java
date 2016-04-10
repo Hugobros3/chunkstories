@@ -18,11 +18,12 @@ import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.entity.EntityControllable;
-import io.xol.chunkstories.entity.EntityImplementation;
+import io.xol.chunkstories.entity.EntityImpl;
 import io.xol.chunkstories.entity.EntityIterator;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
@@ -42,6 +43,10 @@ import io.xol.engine.misc.ConfigFile;
 // http://chunkstories.xyz
 // http://xol.io
 
+/**
+ * @author Hugo
+ *
+ */
 public abstract class World implements WorldInterface
 {
 	public String name;
@@ -153,10 +158,12 @@ public abstract class World implements WorldInterface
 	@Override
 	public void addEntity(final Entity entity)
 	{
-		EntityImplementation impl = (EntityImplementation) entity;
-		if (this instanceof WorldServer || this instanceof WorldLocalClient)
+		EntityImpl impl = (EntityImpl) entity;
+		if (this instanceof WorldMaster)
 			impl.entityID = nextEntityId();
-		entity.updatePosition();
+		Location currLocation = entity.getLocation();
+		entity.setLocation(new Location(this, currLocation.getX(), currLocation.getY(), currLocation.getZ()));
+		//entity.updatePosition();
 		this.entities.add(entity);
 	}
 
@@ -305,7 +312,7 @@ public abstract class World implements WorldInterface
 		if (chunkY < 0)
 			chunkY = 0;
 		//ioHandler.requestChunkUnload(chunkX, chunkY, chunkZ);
-		chunksHolder.removeChunk(chunkX, chunkY, chunkZ);
+		chunksHolder.removeChunk(chunkX, chunkY, chunkZ, save);
 	}
 
 	/* (non-Javadoc)

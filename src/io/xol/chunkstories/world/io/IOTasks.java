@@ -27,14 +27,15 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 // http://chunkstories.xyz
 // http://xol.io
 
+/**
+ *	This thread does I/O work in queue.
+ *	Extended by IOTaskMultiplayerClient and IOTaskMultiplayerServer for the client/server model.
+ */
 public class IOTasks extends Thread
 {
 
 	public World world;
 	AtomicBoolean die = new AtomicBoolean();
-
-	// This thread does I/O work in queue.
-	// Extended by IOTaskMultiplayerClient and IOTaskMultiplayerServer for the client/server model.
 
 	protected UniqueQueue<IOTask> tasks = new UniqueQueue<IOTask>();
 	int s = 0;
@@ -279,6 +280,17 @@ public class IOTasks extends Thread
 
 	public void requestChunkLoad(int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
+		chunkX = chunkX % s;
+		chunkZ = chunkZ % s;
+		if (chunkX < 0)
+			chunkX += s;
+		if (chunkZ < 0)
+			chunkZ += s;
+		if (chunkY < 0)
+			return;
+		if (chunkY >= h)
+			return;
+		
 		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkX, chunkY, chunkZ, true, overwrite);
 		//System.out.println("req CL "+chunkX+":"+chunkY+":"+chunkZ);
 		//Thread.currentThread().dumpStack();

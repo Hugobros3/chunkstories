@@ -115,11 +115,11 @@ public class ServerConnectionsHandler extends Thread
 			String chatMsg = in.substring(5, in.length());
 			if (chatMsg.startsWith("/"))
 			{
-				ServerConsole.handleCommand(chatMsg.substring(1, chatMsg.length()), c.profile);
+				ServerConsole.handleCommand(chatMsg.substring(1, chatMsg.length()), c.getProfile());
 			}
 			else if (chatMsg.length() > 0)
 			{
-				sendAllChat(c.profile.getDisplayName() + " > " + chatMsg);
+				sendAllChat(c.getProfile().getDisplayName() + " > " + chatMsg);
 			}
 		}
 		// Debug

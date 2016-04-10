@@ -223,8 +223,8 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 		Set<Player> set = new HashSet<Player>();
 		if (handler != null)
 			for (ServerClient c : handler.getAuthentificatedClients())
-				if (c.profile != null)
-					set.add(c.profile);
+				if (c.getProfile() != null)
+					set.add(c.getProfile());
 		return set;
 	}
 
@@ -251,9 +251,9 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 	{
 		if (handler != null)
 			for (ServerClient c : handler.getAuthentificatedClients())
-				if (c.profile != null)
-					if (c.profile.getName().startsWith(string))
-						return c.profile;
+				if (c.getProfile() != null)
+					if (c.getProfile().getName().startsWith(string))
+						return c.getProfile();
 		return null;
 	}
 }

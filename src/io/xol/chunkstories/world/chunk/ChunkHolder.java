@@ -113,6 +113,9 @@ public class ChunkHolder
 
 	private void compressChunkData(CubicChunk chunk)
 	{
+		//System.out.println("lastMod: "+chunk.lastModification.get());
+		//System.out.println("lastSave: "+chunk.lastModificationSaved);
+		
 		int chunkX = chunk.chunkX;
 		int chunkY = chunk.chunkY;
 		int chunkZ = chunk.chunkZ;
@@ -138,6 +141,8 @@ public class ChunkHolder
 		}
 		else
 			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
+		
+		chunk.lastModificationSaved.set(System.currentTimeMillis());
 	}
 
 	public byte[] getCompressedData(int chunkX, int chunkY, int chunkZ)

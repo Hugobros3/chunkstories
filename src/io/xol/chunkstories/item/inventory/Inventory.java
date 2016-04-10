@@ -246,7 +246,7 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	
 	public Inventory(DataInputStream stream) throws IOException
 	{
-		load(stream);
+		loadCSF(stream);
 	}
 
 	public void load(Inventory inventory)
@@ -263,7 +263,7 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	}
 	
 	@Override
-	public void load(DataInputStream stream) throws IOException
+	public void loadCSF(DataInputStream stream) throws IOException
 	{
 		this.width = stream.readInt();
 		this.height = stream.readInt();
@@ -291,7 +291,7 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	}
 
 	@Override
-	public void save(DataOutputStream stream) throws IOException
+	public void saveCSF(DataOutputStream stream) throws IOException
 	{
 		stream.writeInt(width);
 		stream.writeInt(height);
@@ -309,7 +309,7 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 				else
 				{
 					stream.writeInt(pile.getItem().getID());
-					pile.save(stream);
+					pile.saveCSF(stream);
 				}
 			}
 		//Save selected item

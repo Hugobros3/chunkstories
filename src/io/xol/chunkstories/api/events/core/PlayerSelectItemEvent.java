@@ -47,7 +47,7 @@ public class PlayerSelectItemEvent extends Event
 	@Override
 	public void defaultBehaviour()
 	{
-		System.out.println("Asking to select slot "+newSlot);
+		//System.out.println("Asking to select slot "+newSlot);
 		playerEntity.getInventory().setSelectedSlot(newSlot);
 	}
 	

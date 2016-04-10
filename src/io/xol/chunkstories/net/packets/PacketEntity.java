@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.entity.EntityControllable;
-import io.xol.chunkstories.entity.EntityImplementation;
+import io.xol.chunkstories.entity.EntityImpl;
 import io.xol.chunkstories.entity.EntityNameable;
 
 import java.io.DataInputStream;
@@ -100,9 +100,9 @@ public class PacketEntity extends Packet
 
 	public void applyToEntity(Entity entity)
 	{
-		if(!(entity instanceof EntityImplementation))
+		if(!(entity instanceof EntityImpl))
 			return;
-		EntityImplementation impl = (EntityImplementation)entity;
+		EntityImpl impl = (EntityImpl)entity;
 		impl.pos.x = XBuffered;
 		impl.pos.y = YBuffered;
 		impl.pos.z = ZBuffered;
@@ -129,9 +129,9 @@ public class PacketEntity extends Packet
 		XBuffered = loc.x;
 		YBuffered = loc.y;
 		ZBuffered = loc.z;
-		if (includeRotation && entity instanceof EntityImplementation)
+		if (includeRotation && entity instanceof EntityImpl)
 		{
-			EntityImplementation impl = (EntityImplementation)entity;
+			EntityImpl impl = (EntityImpl)entity;
 			RHBuffered = impl.rotH;
 			RVBuffered = impl.rotV;
 		}
@@ -147,7 +147,7 @@ public class PacketEntity extends Packet
 	{
 		if(processor.isClient)
 		{
-			EntityImplementation entity = (EntityImplementation) Client.world.getEntityByUUID(this.entityUUID);
+			EntityImpl entity = (EntityImpl) Client.world.getEntityByUUID(this.entityUUID);
 			if(this.deleteFlag)
 				Client.world.removeEntity(entity);
 			else
@@ -155,7 +155,7 @@ public class PacketEntity extends Packet
 				//Create an entity if the servers tells you to do so
 				if(entity == null)
 				{
-					entity = (EntityImplementation) EntitiesList.newEntity(Client.world, this.entityTypeID);
+					entity = (EntityImpl) EntitiesList.newEntity(Client.world, this.entityTypeID);
 					entity.entityID = this.entityUUID;
 					this.applyToEntity(entity);
 					Client.world.addEntity(entity);
@@ -181,8 +181,8 @@ public class PacketEntity extends Packet
 		else
 		{
 			//Client isn't allowed to force spawning or moving of anything but himself
-			if (processor.getServerClient().profile.getControlledEntity() != null && entityUUID == processor.getServerClient().profile.getControlledEntity().getUUID())
-				applyToEntity(processor.getServerClient().profile.getControlledEntity());
+			if (processor.getServerClient().getProfile().getControlledEntity() != null && entityUUID == processor.getServerClient().getProfile().getControlledEntity().getUUID())
+				applyToEntity(processor.getServerClient().getProfile().getControlledEntity());
 			//entity = EntitiesList.newEntity(world, entityType);
 		}
 	}

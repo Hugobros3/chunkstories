@@ -132,10 +132,10 @@ public class GameplayScene extends OverlayableScene
 			Vector3f.add(viewerCamDirVector, lightPosition, lightPosition);
 			viewerCamDirVector.scale(-1f);
 			viewerCamDirVector.normalise();
-			XolioWindow.getInstance().renderingContext.lights.add(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 75f, 40f, viewerCamDirVector));
+			XolioWindow.getInstance().renderingContext.lights.add(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 35f, 35f, viewerCamDirVector));
 			if (Keyboard.isKeyDown(Keyboard.KEY_F5))
 				Client.world.particlesHolder
-						.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedSpotLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 40f, viewerCamDirVector)));
+						.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedSpotLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 20f, viewerCamDirVector)));
 		}
 		//Main render call
 		worldRenderer.renderWorldAtCamera(camera);

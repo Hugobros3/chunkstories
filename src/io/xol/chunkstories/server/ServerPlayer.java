@@ -36,8 +36,6 @@ public class ServerPlayer implements Player, Controller
 	//Streaming control
 	public Map<int[], Long> loadedChunks = new HashMap<int[], Long>();
 	public Set<Entity> trackedEntities = new HashSet<Entity>();
-	
-	public boolean hasSpawned = false;
 
 	public ServerPlayer(ServerClient serverClient)
 	{
@@ -178,7 +176,6 @@ public class ServerPlayer implements Player, Controller
 			packet.includeRotation = true;
 			packet.createFromEntity(controlledEntity);
 			this.playerConnection.sendPacket(packet);
-			this.hasSpawned = true;
 		}
 	}
 
@@ -261,5 +258,12 @@ public class ServerPlayer implements Player, Controller
 			return new Location(Server.getInstance().world, playerData.getDoubleProp("posX"), playerData.getDoubleProp("posY"), playerData.getDoubleProp("posZ"));
 		}
 		return null;
+	}
+
+	public boolean hasSpawned()
+	{
+		if(controlledEntity != null && controlledEntity.exists())
+			return true;
+		return false;
 	}
 }

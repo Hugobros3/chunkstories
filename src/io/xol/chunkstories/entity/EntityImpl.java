@@ -9,6 +9,7 @@ import io.xol.chunkstories.renderer.Camera;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
@@ -26,7 +27,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 // http://chunkstories.xyz
 // http://xol.io
 
-public abstract class EntityImplementation implements Entity
+public abstract class EntityImpl implements Entity
 {
 	public long entityID;
 
@@ -56,9 +57,10 @@ public abstract class EntityImplementation implements Entity
 	protected boolean flying = false;
 
 	//Flag set when deleted from world entities list ( to report to other refering places )
-	public boolean mpSendDeletePacket = false;
+	AtomicBoolean removed = new AtomicBoolean(false);
+	// public boolean mpSendDeletePacket = false;
 
-	public EntityImplementation(World w, double x, double y, double z)
+	public EntityImpl(World w, double x, double y, double z)
 	{
 		world = w;
 		pos = new Vector3d(x, y, z);
@@ -173,7 +175,6 @@ public abstract class EntityImplementation implements Entity
 		updatePosition();
 	}
 
-	@Override
 	/**
 	 * Prevents entities from going outside the world area and updates the parentHolder reference
 	 */
@@ -516,7 +517,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void delete()
 	{
-		mpSendDeletePacket = true;
+		removed.set(true);
 	}
 
 	@Override
@@ -535,7 +536,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public boolean shouldBeTrackedBy(Player player)
 	{
-		return !mpSendDeletePacket;
+		return !exists();
 	}
 
 	/**
@@ -544,7 +545,7 @@ public abstract class EntityImplementation implements Entity
 	 * @param stream
 	 * @throws IOException
 	 */
-	public void load(DataInputStream stream) throws IOException
+	public void loadCSF(DataInputStream stream) throws IOException
 	{
 
 	}
@@ -555,9 +556,14 @@ public abstract class EntityImplementation implements Entity
 	 * @param stream
 	 * @throws IOException
 	 */
-	public void save(DataOutputStream stream) throws IOException
+	public void saveCSF(DataOutputStream stream) throws IOException
 	{
 
+	}
+	
+	public boolean exists()
+	{
+		return !removed.get();
 	}
 
 }

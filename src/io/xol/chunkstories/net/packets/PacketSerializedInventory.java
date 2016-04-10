@@ -34,7 +34,7 @@ public class PacketSerializedInventory extends Packet
 			out.writeLong(((Entity)inventory.holder).getUUID());
 		}
 		//Write the inventory
-		inventory.save(out);
+		inventory.saveCSF(out);
 	}
 
 	@Override

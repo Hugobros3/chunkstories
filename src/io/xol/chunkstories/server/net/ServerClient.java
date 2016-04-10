@@ -50,7 +50,7 @@ public class ServerClient extends Thread implements HttpRequester
 	public String name = "undefined";
 	public String version = "undefined";
 	//Assert : if the player is authentificated it has a profile
-	public ServerPlayer profile;
+	private ServerPlayer profile;
 
 	ServerClient(Socket s)
 	{
@@ -77,8 +77,8 @@ public class ServerClient extends Thread implements HttpRequester
 			version = m.replace("version:", "");
 			if (Server.getInstance().serverConfig.getProp("check-version", "true").equals("true"))
 			{
-				if (!version.equals(VersionInfo.version))
-					Server.getInstance().handler.disconnectClient(this, "Wrong version ! " + version + " != " + VersionInfo.version);
+				if (Integer.parseInt(version) != VersionInfo.protocolVersion)
+					Server.getInstance().handler.disconnectClient(this, "Wrong version ! " + version + " != " + VersionInfo.protocolVersion);
 			}
 		}
 		if (m.startsWith("confirm"))
@@ -100,7 +100,7 @@ public class ServerClient extends Thread implements HttpRequester
 				// Offline-mode !
 				System.out.println("Warning : Offline-mode is on, letting " + this.name + " connecting without verification");
 				//authentificated = true;
-				profile = new ServerPlayer(this);
+				setProfile(new ServerPlayer(this));
 				Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ")" + " joined.");
 				send("login/ok");
 			}
@@ -180,19 +180,19 @@ public class ServerClient extends Thread implements HttpRequester
 		if (alreadyKilled)
 			return;
 		died = true;
-		if (profile != null)
+		if (getProfile() != null)
 		{
 			//authentificated = true;
 			//profile = new ServerPlayer(this);
-			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(profile);
+			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(getProfile());
 			Server.getInstance().getPluginsManager().fireEvent(playerDisconnectionEvent);
 
 			Server.getInstance().handler.sendAllChat(playerDisconnectionEvent.getLogoutMessage());
 
 			//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
-			assert profile != null;
-			profile.destroy();
-			profile.save();
+			assert getProfile() != null;
+			getProfile().destroy();
+			getProfile().save();
 		}
 
 		try
@@ -233,8 +233,8 @@ public class ServerClient extends Thread implements HttpRequester
 			if (result.equals("ok"))
 			{
 				//authentificated = true;
-				profile = new ServerPlayer(this);
-				PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(profile);
+				setProfile(new ServerPlayer(this));
+				PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(getProfile());
 				Server.getInstance().getPluginsManager().fireEvent(playerConnectionEvent);
 				boolean allowPlayerIn = !playerConnectionEvent.isCancelled();
 				if (!allowPlayerIn)
@@ -269,6 +269,16 @@ public class ServerClient extends Thread implements HttpRequester
 
 	public boolean isAuthentificated()
 	{
-		return profile != null;
+		return getProfile() != null;
+	}
+
+	public ServerPlayer getProfile()
+	{
+		return profile;
+	}
+
+	private void setProfile(ServerPlayer profile)
+	{
+		this.profile = profile;
 	}
 }

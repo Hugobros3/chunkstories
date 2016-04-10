@@ -52,7 +52,7 @@ public class PacketItemUsage extends Packet
 	{
 		//System.out.println("Got packet select/use item");
 		
-		Entity clientEntity = processor.getServerClient().profile.getControlledEntity();
+		Entity clientEntity = processor.getServerClient().getProfile().getControlledEntity();
 		if(clientEntity == null)
 		{
 			System.out.println("Client entity is null, it can't select an item !");
@@ -61,7 +61,7 @@ public class PacketItemUsage extends Packet
 		
 		if(usage == ItemUsage.SELECT)
 		{
-			PlayerSelectItemEvent selectItemEvent = new PlayerSelectItemEvent(processor.getServerClient().profile, clientEntity, complementInfo);
+			PlayerSelectItemEvent selectItemEvent = new PlayerSelectItemEvent(processor.getServerClient().getProfile(), clientEntity, complementInfo);
 			Server.getInstance().getPluginsManager().fireEvent(selectItemEvent);
 		}
 		else if(usage == ItemUsage.USE)
