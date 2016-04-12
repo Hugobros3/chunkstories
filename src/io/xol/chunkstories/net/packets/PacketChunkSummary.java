@@ -2,7 +2,7 @@ package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
-import io.xol.chunkstories.world.summary.ChunkSummary;
+import io.xol.chunkstories.world.summary.RegionSummary;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
 public class PacketChunkSummary extends Packet
 {
 	// Server-side
-	public ChunkSummary summary;
+	public RegionSummary summary;
 	
 	// Client-side
 	public int rx, rz;
@@ -41,7 +41,7 @@ public class PacketChunkSummary extends Packet
 		compressMe.flip();
 		byte[] unCompressed = new byte[compressMe.remaining()];
 		compressMe.get(unCompressed);
-		byte[] compressedData = ChunkSummary.compressor.compress(unCompressed);
+		byte[] compressedData = RegionSummary.compressor.compress(unCompressed);
 		out.writeInt(compressedData.length);
 		out.write(compressedData);
 	}

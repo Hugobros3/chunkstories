@@ -14,15 +14,15 @@ import io.xol.engine.math.LoopingMathHelper;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ChunkSummaries
+public class RegionSummaries
 {
 	World world;
 
 	int ws;
 
-	Map<Long, ChunkSummary> summaries = new ConcurrentHashMap<Long, ChunkSummary>();
+	Map<Long, RegionSummary> summaries = new ConcurrentHashMap<Long, RegionSummary>();
 
-	public ChunkSummaries(World w)
+	public RegionSummaries(World w)
 	{
 		world = w;
 		ws = world.getSizeInChunks() * 32;
@@ -36,7 +36,7 @@ public class ChunkSummaries
 		return x * s + z;
 	}
 
-	public ChunkSummary get(int x, int z)
+	public RegionSummary get(int x, int z)
 	{
 		x %= ws;
 		z %= ws;
@@ -49,7 +49,7 @@ public class ChunkSummaries
 		if (summaries.containsKey(i))
 			return summaries.get(i);
 
-		ChunkSummary cs = new ChunkSummary(world, x / 256, z / 256);
+		RegionSummary cs = new RegionSummary(world, x / 256, z / 256);
 		cs.load(new File(world.getFolderPath() + "/summaries/" + cs.rx + "."+ cs.rz + ".sum"));
 
 		summaries.put(i, cs);
@@ -64,10 +64,24 @@ public class ChunkSummaries
 			x += ws;
 		if (z < 0)
 			z += ws;
-		ChunkSummary cs = get(x, z);
+		RegionSummary cs = get(x, z);
 		if (cs == null)
 			return 0;
 		return cs.getHeight(x % 256, z % 256);
+	}
+
+	public int getMinChunkHeightAt(int x, int z)
+	{
+		x %= ws;
+		z %= ws;
+		if (x < 0)
+			x += ws;
+		if (z < 0)
+			z += ws;
+		RegionSummary cs = get(x, z);
+		if (cs == null)
+			return 0;
+		return cs.getMinChunkHeight(x % 256, z % 256);
 	}
 
 	public int getIdAt(int x, int z)
@@ -78,7 +92,7 @@ public class ChunkSummaries
 			x += ws;
 		if (z < 0)
 			z += ws;
-		ChunkSummary cs = get(x, z);
+		RegionSummary cs = get(x, z);
 		return cs.getID(x % 256, z % 256);
 	}
 
@@ -90,7 +104,7 @@ public class ChunkSummaries
 			x += ws;
 		if (z < 0)
 			z += ws;
-		ChunkSummary cs = get(x, z);
+		RegionSummary cs = get(x, z);
 		cs.set(x % 256, y, z % 256, id);
 	}
 
@@ -101,7 +115,7 @@ public class ChunkSummaries
 
 	public void saveAll()
 	{
-		for (ChunkSummary cs : summaries.values())
+		for (RegionSummary cs : summaries.values())
 		{
 			cs.save(new File(world.getFolderPath() + "/summaries/" + cs.rx
 					+ "." + cs.rz + ".sum"));
@@ -110,7 +124,7 @@ public class ChunkSummaries
 
 	public void clearAll()
 	{
-		for (ChunkSummary cs : summaries.values())
+		for (RegionSummary cs : summaries.values())
 		{
 			cs.free();
 		}
@@ -125,7 +139,7 @@ public class ChunkSummaries
 			x += ws;
 		if (z < 0)
 			z += ws;
-		ChunkSummary cs = get(x, z);
+		RegionSummary cs = get(x, z);
 		cs.forceSet(x % 256, y, z % 256, id);
 	}
 
@@ -138,10 +152,10 @@ public class ChunkSummaries
 		int s = world.getSizeInChunks() / 8;
 		synchronized(summaries)
 		{
-			Iterator<Entry<Long, ChunkSummary>> iterator = summaries.entrySet().iterator();
+			Iterator<Entry<Long, RegionSummary>> iterator = summaries.entrySet().iterator();
 			while (iterator.hasNext())
 			{
-				Entry<Long, ChunkSummary> entry = iterator.next();
+				Entry<Long, RegionSummary> entry = iterator.next();
 				long l = entry.getKey();
 				int lx = (int) (l / s);
 				int lz = (int) (l % s);
@@ -158,14 +172,14 @@ public class ChunkSummaries
 		}
 	}
 
-	public Collection<ChunkSummary> all()
+	public Collection<RegionSummary> all()
 	{
 		return summaries.values();
 	}
 
 	public void destroy()
 	{
-		for(ChunkSummary cs : all())
+		for(RegionSummary cs : all())
 		{
 			cs.free();
 		}

@@ -213,9 +213,9 @@ uniform sampler2D loadedChunksMap;
 uniform vec2 playerCurrentChunk;
 	*/
 	
-	float covered = texture2D(loadedChunksMap,  ( ( ( ( floor(camPos.xz/32.0)*32.0 - vertex.xz) / 32.0) + vec2(1.0) )/ 32.0) * 0.5 + 0.5 ).r;
+	float covered = texture2D(loadedChunksMap,  ( ( ( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) - vec2(0.0) )/ 32.0) * 0.5 + 0.5 ).r;
 	
-	if(covered >= 77.0/255.0)
+	if(covered > 0.0)
 		discard;
 	
 	//compositeColor.rgb = vec3(covered);

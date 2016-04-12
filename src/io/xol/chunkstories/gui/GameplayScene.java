@@ -427,7 +427,7 @@ public class GameplayScene extends OverlayableScene
 		int cx = bx / 32;
 		int cy = by / 32;
 		int cz = bz / 32;
-		int csh = Client.world.chunkSummaries.getHeightAt(bx, bz);
+		int csh = Client.world.regionSummaries.getHeightAt(bx, bz);
 		CubicChunk current = Client.world.getChunk(cx, cy, cz, false);
 		int x_top = XolioWindow.frameH - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, "View distance : " + FastConfig.viewDistance + " Vertices(N):" + formatBigAssNumber(worldRenderer.renderedVertices + "") + " Chunks in view : "
@@ -481,7 +481,7 @@ public class GameplayScene extends OverlayableScene
 
 	private String getLoadedTerrainVramFootprint()
 	{
-		int nbChunks = Client.world.chunkSummaries.all().size();
+		int nbChunks = Client.world.regionSummaries.all().size();
 		long octelsTotal = nbChunks * 256 * 256 * (1 + 1) * 4;
 
 		return nbChunks + " regions, storing " + octelsTotal / 1024 / 1024 + "Mb of data";

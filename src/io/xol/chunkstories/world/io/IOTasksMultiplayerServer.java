@@ -8,7 +8,7 @@ import io.xol.chunkstories.net.packets.PacketChunkSummary;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
-import io.xol.chunkstories.world.summary.ChunkSummary;
+import io.xol.chunkstories.world.summary.RegionSummary;
 
 public class IOTasksMultiplayerServer extends IOTasks
 {
@@ -119,7 +119,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 		{
 			try
 			{
-				ChunkSummary summary = world.chunkSummaries.get(rx * 256, rz * 256);
+				RegionSummary summary = world.regionSummaries.get(rx * 256, rz * 256);
 				//System.out.println("Asking for summary at : "+rx+":"+rz);
 				if(summary.loaded.get())
 				{

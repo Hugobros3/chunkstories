@@ -2,7 +2,7 @@ package io.xol.chunkstories.world.io;
 
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
-import io.xol.chunkstories.world.summary.ChunkSummary;
+import io.xol.chunkstories.world.summary.RegionSummary;
 
 public class IOTasksImmediate extends IOTasks {
 
@@ -46,14 +46,14 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public void requestChunkSummaryLoad(ChunkSummary summary)
+	public void requestChunkSummaryLoad(RegionSummary summary)
 	{
 		IOTask task = new IOTaskLoadSummary(summary);
 		task.run();
 	}
 
 	@Override
-	public void requestChunkSummarySave(ChunkSummary summary)
+	public void requestChunkSummarySave(RegionSummary summary)
 	{
 		IOTask task = new IOTaskSaveSummary(summary);
 		task.run();

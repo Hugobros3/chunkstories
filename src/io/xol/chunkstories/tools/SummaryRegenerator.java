@@ -67,7 +67,7 @@ public class SummaryRegenerator
 									if (id != 0)
 									{
 										hit = true;
-										world.chunkSummaries.set(rX, rZ, y, id);
+										world.regionSummaries.set(rX, rZ, y, id);
 									}
 								}
 								y--;

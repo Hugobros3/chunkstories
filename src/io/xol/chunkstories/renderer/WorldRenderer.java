@@ -451,22 +451,28 @@ public class WorldRenderer
 			{
 				//i++;
 				chunk = it.next();
-				
+
 				if (LoopingMathHelper.moduloDistance(chunk.chunkX, currentChunkX, world.getSizeInChunks()) <= chunksViewDistance)
 					if (LoopingMathHelper.moduloDistance(chunk.chunkZ, currentChunkZ, world.getSizeInChunks()) <= chunksViewDistance)
 					{
-						if (chunk.dataPointer == -1 || (chunk.chunkRenderData != null && chunk.chunkRenderData.isUploaded))
-						{
-							int yDistance = chunk.chunkY - (world.chunkSummaries.getHeightAt(chunk.chunkX + 16, chunk.chunkZ + 16) / 32 + 32);
-							if (yDistance <= 0)
+						if (LoopingMathHelper.moduloDistance(chunk.chunkX, currentChunkX, world.getSizeInChunks()) < chunksViewDistance-1)
+							if (LoopingMathHelper.moduloDistance(chunk.chunkZ, currentChunkZ, world.getSizeInChunks()) < chunksViewDistance-1)
 							{
-								localMapCommands.put((byte) (chunk.chunkX - currentChunkX));
-								localMapCommands.put((byte) (chunk.chunkZ - currentChunkZ));
+								if (chunk.dataPointer == -1 || (chunk.chunkRenderData != null && chunk.chunkRenderData.isUploaded))
+								{
+									// chunkY = 5 height = 8
+									float yDistance = chunk.chunkY*32f + 16f - (world.regionSummaries.getMinChunkHeightAt(chunk.chunkX*32 + 16, chunk.chunkZ*32 + 16)-1);
+									//System.out.println(chunk.chunkY+":"+);
+									if (Math.abs(yDistance) <= 16f)
+									{
+										localMapCommands.put((byte) (chunk.chunkX - currentChunkX));
+										localMapCommands.put((byte) (chunk.chunkZ - currentChunkZ));
 
-								localMapElements++;
+										localMapElements++;
+									}
+								}
 							}
-						}
-						
+
 						if (chunk.need_render.get() && chunk.dataPointer != -1)
 						{
 							//chunksRenderer.requestChunkRender(chunk);
@@ -509,7 +515,7 @@ public class WorldRenderer
 			world.ioHandler.requestChunksUnload(currentChunkX, currentChunkY, currentChunkZ, sizeInChunks, chunksViewDistance + 1);
 
 			terrain.updateData();
-			world.chunkSummaries.removeFurther(currentChunkX, currentChunkZ, 33);
+			world.regionSummaries.removeFurther(currentChunkX, currentChunkZ, 33);
 
 			chunksChanged = false;
 			// Load nearby chunks
@@ -532,7 +538,7 @@ public class WorldRenderer
 		// float worldTime = (world.worldTime%1000+1000)%1000;
 		if (this.getShadowVisibility() == 0f)
 			return; // No shadows at night :)
-		glCullFace(GL_FRONT);
+		glCullFace(GL_BACK);
 		glEnable(GL_CULL_FACE);
 		//glDisable(GL_CULL_FACE);
 		glEnable(GL_ALPHA_TEST);
@@ -614,7 +620,7 @@ public class WorldRenderer
 		//terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
 		terrainShader.setUniformFloat3("sunPos", sky.getSunPosition());
 		terrainShader.setUniformFloat("time", animationTimer);
-		terrainShader.setUniformFloat("terrainHeight", world.chunkSummaries.getHeightAt((int) viewX, (int) viewZ));
+		terrainShader.setUniformFloat("terrainHeight", world.regionSummaries.getHeightAt((int) viewX, (int) viewZ));
 		terrainShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
 		terrainShader.setUniformFloat("shadowVisiblity", getShadowVisibility());
 		waterNormalTexture.setLinearFiltering(true);
@@ -710,7 +716,7 @@ public class WorldRenderer
 
 			// Prepare for gbuffer pass
 			glEnable(GL_CULL_FACE);
-			glCullFace(GL_FRONT);
+			glCullFace(GL_BACK);
 			glDisable(GL_BLEND);
 		}
 		else

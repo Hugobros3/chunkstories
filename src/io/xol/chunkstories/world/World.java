@@ -35,7 +35,7 @@ import io.xol.chunkstories.world.chunk.ChunksHolders;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
-import io.xol.chunkstories.world.summary.ChunkSummaries;
+import io.xol.chunkstories.world.summary.RegionSummaries;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.misc.ConfigFile;
 
@@ -67,7 +67,7 @@ public abstract class World implements WorldInterface
 	public ChunksHolders chunksHolder;
 
 	// Heightmap management
-	public ChunkSummaries chunkSummaries;
+	public RegionSummaries regionSummaries;
 
 	// World-renderer backcall
 	WorldRenderer renderer;
@@ -108,7 +108,7 @@ public abstract class World implements WorldInterface
 		generator.initialize(this);
 		chunksData = new ChunksData();
 		chunksHolder = new ChunksHolders(this, chunksData);
-		chunkSummaries = new ChunkSummaries(this);
+		regionSummaries = new RegionSummaries(this);
 		logic = Executors.newSingleThreadScheduledExecutor();
 		folder = new File(GameDirectory.getGameFolderPath() + "/worlds/" + name);
 
@@ -420,7 +420,7 @@ public abstract class World implements WorldInterface
 	@Override
 	public void setDataAt(int x, int y, int z, int i, boolean load)
 	{
-		chunkSummaries.blockPlaced(x, y, z, i);
+		regionSummaries.blockPlaced(x, y, z, i);
 
 		x = x % (size.sizeInChunks * 32);
 		z = z % (size.sizeInChunks * 32);
@@ -524,7 +524,7 @@ public abstract class World implements WorldInterface
 
 	public void setDataAtWithoutUpdates(int x, int y, int z, int i, boolean load)
 	{
-		chunkSummaries.blockPlaced(x, y, z, i);
+		regionSummaries.blockPlaced(x, y, z, i);
 
 		x = x % (size.sizeInChunks * 32);
 		z = z % (size.sizeInChunks * 32);
@@ -590,7 +590,7 @@ public abstract class World implements WorldInterface
 	public void clear()
 	{
 		chunksHolder.clearAll();
-		chunkSummaries.clearAll();
+		regionSummaries.clearAll();
 	}
 
 	/* (non-Javadoc)
@@ -601,7 +601,7 @@ public abstract class World implements WorldInterface
 	{
 		System.out.println("Saving world");
 		chunksHolder.saveAll();
-		chunkSummaries.saveAll();
+		regionSummaries.saveAll();
 
 		this.internalData.setProp("entities-ids-counter", veryLong.get());
 		this.internalData.save();
@@ -615,7 +615,7 @@ public abstract class World implements WorldInterface
 	{
 		this.chunksData.destroy();
 		this.chunksHolder.destroy();
-		this.chunkSummaries.destroy();
+		this.regionSummaries.destroy();
 		this.logic.shutdown();
 		if (!client)
 		{

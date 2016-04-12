@@ -89,6 +89,7 @@ vec3 perturb_normal( vec3 N, vec3 V, vec2 texcoord )
     vec3 map = texture2D(normalTexture, texcoord ).xyz;
 	//vec3 map = vec3(nul.x, nul.y, nul.z);
     map = map*2.0 - 1.0;
+	map.x = -map.x;
 	mat3 TBN = cotangent_frame(N, -V, texcoord);
     return normalize(TBN * map);
 }

@@ -93,7 +93,7 @@ vec4 getClouds(vec3 eyeDirection)
 	
 	<endif doClouds>
 	
-	float distantFade = clamp((13500 - length( eyeDirection.xz * ((1024.0 + camPos.y) / eyeDirection.y) )) / 13500.0, 0.0, 1.0) ;
+	float distantFade = clamp((13500.0 - length( eyeDirection.xz * ((1024.0 + camPos.y) / eyeDirection.y) )) / 13500.0, 0.0, 1.0) ;
 	clouds.a *= distantFade;
 	
 	

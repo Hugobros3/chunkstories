@@ -189,7 +189,7 @@ public class ObjMesh
 	public void render(RenderingContext renderingContext)
 	{
 		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
+		//glCullFace(GL_BACK);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 
 		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
@@ -216,7 +216,7 @@ public class ObjMesh
 	public void render(RenderingContext renderingContext, Set<String> bonesToDraw)
 	{
 		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
+		//glCullFace(GL_BACK);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 
 		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
@@ -260,7 +260,7 @@ public class ObjMesh
 	{
 		glEnable(GL_CULL_FACE);
 		//Backface culling because blender
-		glCullFace(GL_BACK);
+		//glCullFace(GL_BACK);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 
 		Matrix4f matrix;
@@ -286,7 +286,7 @@ public class ObjMesh
 		}
 		
 		renderingContext.sendBoneTransformationMatrix(null);
-		glCullFace(GL_FRONT);
+		//glCullFace(GL_FRONT);
 	}
 
 	public static List<float[]> vertices = new ArrayList<float[]>();

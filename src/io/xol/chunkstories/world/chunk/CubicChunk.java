@@ -550,7 +550,7 @@ public class CubicChunk implements Chunk
 			{
 				int z = 31; // This is basically wrong since we work with cubic chunks
 				boolean hit = false;
-				int csh = world.chunkSummaries.getHeightAt(chunkX * 32 + a, chunkZ * 32 + b) + 1;
+				int csh = world.regionSummaries.getHeightAt(chunkX * 32 + a, chunkZ * 32 + b) + 1;
 				while (z >= 0)
 				{
 					int block = data[a * 1024 + z * 32 + b];
@@ -705,7 +705,7 @@ public class CubicChunk implements Chunk
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int heightInSummary = world.chunkSummaries.getHeightAt(chunkX * 32 + b, chunkZ * 32 + c);
+						int heightInSummary = world.regionSummaries.getHeightAt(chunkX * 32 + b, chunkZ * 32 + c);
 						// System.out.println("compute "+heightInSummary+" <= ? "+chunkY*32);
 						if (heightInSummary <= chunkY * 32)
 						{
@@ -842,7 +842,7 @@ public class CubicChunk implements Chunk
 		int sunLightAfter = VoxelFormat.sunlight(data);
 		int blockLightAfter = VoxelFormat.blocklight(data);
 
-		int csh = world.chunkSummaries.getHeightAt(bx + chunkX * 32, bz + chunkZ * 32);
+		int csh = world.regionSummaries.getHeightAt(bx + chunkX * 32, bz + chunkZ * 32);
 		int block_height = by + chunkY * 32;
 		
 		//If the block is at or above (never) the topmost tile it's sunlit

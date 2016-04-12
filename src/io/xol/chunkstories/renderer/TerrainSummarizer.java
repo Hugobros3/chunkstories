@@ -18,7 +18,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
-import io.xol.chunkstories.world.summary.ChunkSummary;
+import io.xol.chunkstories.world.summary.RegionSummary;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import static org.lwjgl.opengl.GL11.*;
@@ -40,7 +40,7 @@ public class TerrainSummarizer
 
 	FloatBuffer[][][][] vboContents = new FloatBuffer[8][8][4][2];
 
-	List<RegionSummary> regionsToRender = new ArrayList<RegionSummary>();
+	List<RegionSummaryMesh> regionsToRender = new ArrayList<RegionSummaryMesh>();
 
 	FloatBufferPool fbPool = new FloatBufferPool(96, 25000 * VERTEX_SIZE * TRIANGLE_SIZE * TRIANGLES_PER_FACE);
 
@@ -56,10 +56,10 @@ public class TerrainSummarizer
 				}
 	}
 
-	class RegionSummary
+	class RegionSummaryMesh
 	{
 
-		public RegionSummary(int rxDisplay, int rzDisplay, ChunkSummary dataSource)
+		public RegionSummaryMesh(int rxDisplay, int rzDisplay, RegionSummary dataSource)
 		{
 			this.rxDisplay = rxDisplay;
 			this.rzDisplay = rzDisplay;
@@ -70,7 +70,7 @@ public class TerrainSummarizer
 		}
 
 		int rxDisplay, rzDisplay;
-		ChunkSummary dataSource;
+		RegionSummary dataSource;
 		int fbId;
 		int vbo, vboSize;
 
@@ -218,16 +218,16 @@ public class TerrainSummarizer
 		renderingContext.enableVertexAttribute(vertexIn);	
 		
 		//Sort to draw near first
-		List<RegionSummary> regionsToRenderSorted = new ArrayList<RegionSummary>(regionsToRender);
+		List<RegionSummaryMesh> regionsToRenderSorted = new ArrayList<RegionSummaryMesh>(regionsToRender);
 		//renderingContext.getCamera().getLocation;
 		Camera camera = renderingContext.getCamera();
 		int camRX = (int) (-camera.pos.x / 256);
 		int camRZ = (int) (-camera.pos.z / 256);
 		
-		regionsToRenderSorted.sort(new Comparator<RegionSummary>() {
+		regionsToRenderSorted.sort(new Comparator<RegionSummaryMesh>() {
 
 			@Override
-			public int compare(RegionSummary a, RegionSummary b)
+			public int compare(RegionSummaryMesh a, RegionSummaryMesh b)
 			{
 				int distanceA = Math.abs(a.rxDisplay - camRX) + Math.abs(a.rzDisplay - camRZ);
 				//System.out.println(camRX + " : " + distanceA);
@@ -237,7 +237,7 @@ public class TerrainSummarizer
 			
 		});
 		
-		for (RegionSummary rs : regionsToRenderSorted)
+		for (RegionSummaryMesh rs : regionsToRenderSorted)
 		{
 			float height = 1024f;
 			if(!renderingContext.getCamera().isBoxInFrustrum(new Vector3f(rs.rxDisplay * 256 + 128, height / 2, rs.rzDisplay * 256 + 128), new Vector3f(256, height, 256)))
@@ -297,7 +297,7 @@ public class TerrainSummarizer
 
 	int lastLevelDetail = -1;
 
-	private int drawDetailIntoFloatBuffer(RegionSummary summary, int level, boolean border, boolean changedRegion, int dx, int dz)
+	private int drawDetailIntoFloatBuffer(RegionSummaryMesh summary, int level, boolean border, boolean changedRegion, int dx, int dz)
 	{
 
 		int resolution = 2 + level * 4;
@@ -327,7 +327,7 @@ public class TerrainSummarizer
 	// public FloatBuffer vboBuffer =
 	// BufferUtils.createFloatBuffer(25000*VERTEX_SIZE*TRIANGLE_SIZE*TRIANGLES_PER_FACE);
 
-	public RegionSummary getRegionSummaryAt(int cx, int cz)
+	public RegionSummaryMesh getRegionSummaryAt(int cx, int cz)
 	{
 		int rx = cx / 8;
 		int rz = cz / 8;
@@ -335,12 +335,12 @@ public class TerrainSummarizer
 			rz--;
 		if (cx < 0 && cx % 8 != 0)
 			rx--;
-		for (RegionSummary rs : regionsToRender)
+		for (RegionSummaryMesh rs : regionsToRender)
 		{
 			if (rs.rxDisplay == rx && rs.rzDisplay == rz)
 				return rs;
 		}
-		RegionSummary rs = new RegionSummary(rx, rz, world.chunkSummaries.get(cx * 32, cz * 32));
+		RegionSummaryMesh rs = new RegionSummaryMesh(rx, rz, world.regionSummaries.get(cx * 32, cz * 32));
 		//System.out.println(rs.dataSource+"");
 		regionsToRender.add(rs);
 		return rs;
@@ -355,7 +355,7 @@ public class TerrainSummarizer
 		
 		totalSize = 0;
 
-		for (RegionSummary rs : regionsToRender)
+		for (RegionSummaryMesh rs : regionsToRender)
 		{
 			rs.delete();
 		}
@@ -375,7 +375,7 @@ public class TerrainSummarizer
 					rcz += world.getSizeInChunks();
 				boolean changedRegion = false;
 
-				RegionSummary rs = getRegionSummaryAt(a, b);
+				RegionSummaryMesh rs = getRegionSummaryAt(a, b);
 				
 				if (lastRegionX != rcx / 8 || lastRegionZ != rcz / 8)
 				{
@@ -417,7 +417,7 @@ public class TerrainSummarizer
 
 		//System.out.println(regionsToRender.size()+"parts");
 		
-		for (RegionSummary rs : regionsToRender)
+		for (RegionSummaryMesh rs : regionsToRender)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, rs.vbo);
 			rs.accessFB().flip();
@@ -436,16 +436,16 @@ public class TerrainSummarizer
 	public void updateData()
 	{
 		
-		for(RegionSummary rs : regionsToRender)
+		for(RegionSummaryMesh rs : regionsToRender)
 		{
-			boolean generated = rs.dataSource.glGen();
+			boolean generated = rs.dataSource.uploadTextures();
 			if(generated)
 			{
 				//System.out.println("generated RS texture "+ rs.dataSource.hId);
 			}
 			//System.out.println(rs.dataSource.loaded.get());
 			if(!rs.dataSource.loaded.get())
-				rs.dataSource = world.chunkSummaries.get(rs.dataSource.rx * 256, rs.dataSource.rz * 256);
+				rs.dataSource = world.regionSummaries.get(rs.dataSource.rx * 256, rs.dataSource.rz * 256);
 		}
 		//System.out.println(regionsToRender.size()+"parts");
 	}

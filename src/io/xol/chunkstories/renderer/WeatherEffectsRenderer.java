@@ -55,7 +55,7 @@ public class WeatherEffectsRenderer
 			float rdY = viewY + (random.nextFloat() * 2.0f - 0.5f) * 20;
 			float rdZ = viewZ + (random.nextFloat() * 2.0f - 1.0f) * 25;
 			//Max height it can fall to before reverting to used
-			float rdMh = world.chunkSummaries.getHeightAt((int)rdX, (int)rdZ);
+			float rdMh = world.regionSummaries.getHeightAt((int)rdX, (int)rdZ);
 			//Raindrop size, change orientation to face viewer
 			view2drop.x = rdX - viewX;
 			view2drop.y = rdZ - viewZ;

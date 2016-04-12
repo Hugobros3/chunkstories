@@ -4,7 +4,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.summary.ChunkSummary;
+import io.xol.chunkstories.world.summary.RegionSummary;
 import io.xol.engine.concurrency.UniqueQueue;
 import io.xol.engine.math.LoopingMathHelper;
 
@@ -375,7 +375,7 @@ public class IOTasks extends Thread
 			}
 			else
 			{
-				ChunkSummary chunkSummary = world.chunkSummaries.get(holder.regionX * 256, holder.regionZ * 256);
+				RegionSummary chunkSummary = world.regionSummaries.get(holder.regionX * 256, holder.regionZ * 256);
 				//Require a chunk summary to be generated first !
 				if (chunkSummary == null || !chunkSummary.isLoaded())
 				{
@@ -535,9 +535,9 @@ public class IOTasks extends Thread
 
 	public class IOTaskLoadSummary extends IOTask
 	{
-		ChunkSummary summary;
+		RegionSummary summary;
 
-		public IOTaskLoadSummary(ChunkSummary summary)
+		public IOTaskLoadSummary(RegionSummary summary)
 		{
 			this.summary = summary;
 		}
@@ -578,6 +578,8 @@ public class IOTasks extends Thread
 
 					summary.uploadUpToDate.set(false);
 					summary.loaded.set(true);
+
+					summary.computeMinMaxChunksHeight();
 				}
 				catch (FileNotFoundException e)
 				{
@@ -632,7 +634,7 @@ public class IOTasks extends Thread
 		}
 	}
 
-	public void requestChunkSummaryLoad(ChunkSummary summary)
+	public void requestChunkSummaryLoad(RegionSummary summary)
 	{
 		IOTask task = new IOTaskLoadSummary(summary);
 		addTask(task);
@@ -641,9 +643,9 @@ public class IOTasks extends Thread
 	public class IOTaskSaveSummary extends IOTask
 	{
 
-		ChunkSummary summary;
+		RegionSummary summary;
 
-		public IOTaskSaveSummary(ChunkSummary summary)
+		public IOTaskSaveSummary(RegionSummary summary)
 		{
 			this.summary = summary;
 		}
@@ -662,7 +664,7 @@ public class IOTasks extends Thread
 				for (int i : summary.heights)
 					writeMe.putInt(i);
 
-				byte[] compressed = ChunkSummary.compressor.compress(writeMe.array());
+				byte[] compressed = RegionSummary.compressor.compress(writeMe.array());
 
 				int compressedSize = compressed.length;
 
@@ -674,7 +676,7 @@ public class IOTasks extends Thread
 				for (int i : summary.ids)
 					writeMe.putInt(i);
 
-				compressed = ChunkSummary.compressor.compress(writeMe.array());
+				compressed = RegionSummary.compressor.compress(writeMe.array());
 				compressedSize = compressed.length;
 
 				size = ByteBuffer.allocate(4).putInt(compressedSize).array();
@@ -711,7 +713,7 @@ public class IOTasks extends Thread
 		}
 	}
 
-	public void requestChunkSummarySave(ChunkSummary summary)
+	public void requestChunkSummarySave(RegionSummary summary)
 	{
 		IOTask task = new IOTaskSaveSummary(summary);
 		addTask(task);

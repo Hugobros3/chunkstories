@@ -27,7 +27,10 @@ import static org.lwjgl.opengl.ARBTextureRg.*;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ChunkSummary
+/**
+ * A region summary contains metadata about an 8x8 chunks ( or 256x256 blocks ) vertical slice of the world
+ */
+public class RegionSummary
 {
 	// LZ4 compressors & decompressors
 	static LZ4Factory factory = LZ4Factory.fastestInstance();
@@ -54,8 +57,10 @@ public class ChunkSummary
 	public int rx, rz;
 
 	public World world;
+	
+	int[][] minChunkHeight = new int[8][8];
 
-	public ChunkSummary(World world, int rx, int rz)
+	public RegionSummary(World world, int rx, int rz)
 	{
 		this.world = world;
 		this.rx = rx;
@@ -122,6 +127,13 @@ public class ChunkSummary
 		}
 	}
 
+	public int getMinChunkHeight(int x, int z)
+	{
+		int cx = x/32;
+		int cz = z/32;
+		return this.minChunkHeight[cx][cz];
+	}
+
 	public int getHeight(int x, int z)
 	{
 		return heights[index(x, z)];
@@ -141,7 +153,7 @@ public class ChunkSummary
 	public float dekalX;
 	public float dekalZ;
 
-	public boolean glGen()
+	public boolean uploadTextures()
 	{
 		if (!loaded.get())
 		{
@@ -236,5 +248,24 @@ public class ChunkSummary
 	public boolean isLoaded()
 	{
 		return loaded.get();
+	}
+
+	public void computeMinMaxChunksHeight()
+	{
+		//Reset
+		for(int i = 0; i < 8; i++)
+			for(int j = 0; j < 8; j++)
+			{
+				this.minChunkHeight[i][j] = world.getMaxHeight();
+			}
+		
+		for(int x = 0; x < 256; x++)
+			for(int z = 0; z < 256; z++)
+			{
+				int cx = x/32;
+				int cz = z/32;
+				if(this.getHeight(x, z) < this.minChunkHeight[cx][cz])
+					this.minChunkHeight[cx][cz] = this.getHeight(x, z);
+			}
 	}
 }

@@ -17,7 +17,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.summary.ChunkSummary;
+import io.xol.chunkstories.world.summary.RegionSummary;
 import net.jpountz.lz4.LZ4Exception;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -196,10 +196,10 @@ public class IOTasksMultiplayerClient extends IOTasks
 		@Override
 		public boolean run()
 		{
-			synchronized (Client.world.chunkSummaries)
+			synchronized (Client.world.regionSummaries)
 			{
-				ChunkSummary summary = Client.world.chunkSummaries.get(packet.rx * 256, packet.rz * 256);
-				uncompressed = ChunkSummary.decompressor.decompress(packet.compressedData, 256 * 256 * 4 * 2);
+				RegionSummary summary = Client.world.regionSummaries.get(packet.rx * 256, packet.rz * 256);
+				uncompressed = RegionSummary.decompressor.decompress(packet.compressedData, 256 * 256 * 4 * 2);
 				IntBuffer ib = ByteBuffer.wrap(uncompressed).asIntBuffer();
 				ib.get(summary.heights, 0, 256 * 256);
 				ib.get(summary.ids, 0, 256 * 256);
@@ -207,6 +207,8 @@ public class IOTasksMultiplayerClient extends IOTasks
 				// 256 * 4);
 				summary.uploadUpToDate.set(false);
 				summary.loaded.set(true);
+				
+				summary.computeMinMaxChunksHeight();
 			}
 			synchronized (summariesAlreadyAsked)
 			{
@@ -245,7 +247,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 	List<int[]> summariesAlreadyAsked = new ArrayList<int[]>();
 
 	@Override
-	public void requestChunkSummaryLoad(ChunkSummary summary)
+	public void requestChunkSummaryLoad(RegionSummary summary)
 	{
 		// don't spam packets !
 		int rx = summary.rx;
