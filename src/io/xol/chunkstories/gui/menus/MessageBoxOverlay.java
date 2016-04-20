@@ -3,7 +3,6 @@ package io.xol.chunkstories.gui.menus;
 import java.util.Random;
 
 import io.xol.engine.math.lalgb.Vector4f;
-
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -12,14 +11,14 @@ import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.font.TrueTypeFont;
-import io.xol.engine.gui.ClickableButton;
-import io.xol.engine.gui.FocusableObjectsHandler;
+import io.xol.engine.gui.GuiElementsHandler;
+import io.xol.engine.gui.elements.Button;
 
 public class MessageBoxOverlay extends Overlay
 {
 
-	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
-	ClickableButton okButton = new ClickableButton(0, 0, 300, 32, ("Ok"), BitmapFont.SMALLFONTS, 1);
+	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	Button okButton = new Button(0, 0, 300, 32, ("Ok"), BitmapFont.SMALLFONTS, 1);
 	String message;
 	
 	public MessageBoxOverlay(OverlayableScene scene, Overlay parent, String message)
@@ -45,7 +44,7 @@ public class MessageBoxOverlay extends Overlay
 
 		TrueTypeFont.arial12.drawStringWithShadow(XolioWindow.frameW/2-dekal*1.5f, XolioWindow.frameH / 2 + 64, message, 3f, 3f, new Vector4f(1,0.2f,0.2f,1));
 		
-		okButton.setPos(XolioWindow.frameW/2, XolioWindow.frameH / 2 - 32);
+		okButton.setPosition(XolioWindow.frameW/2, XolioWindow.frameH / 2 - 32);
 		okButton.draw();
 
 		if (okButton.clicked())

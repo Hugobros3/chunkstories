@@ -1,19 +1,17 @@
-package io.xol.engine.gui;
+package io.xol.engine.gui.elements;
 
 import org.lwjgl.input.Mouse;
 
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
+import io.xol.engine.gui.CorneredBoxDrawer;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ClickableButton extends Focusable
+public class Button extends GuiElement
 {
-
-	protected int posx;
-	protected int posy;
 	public boolean clicked = false;
 	public String text = "";
 	protected BitmapFont font;
@@ -21,7 +19,7 @@ public class ClickableButton extends Focusable
 
 	protected int width, height;
 
-	public ClickableButton(int x, int y, int width, int height, String t, BitmapFont f, int s)
+	public Button(int x, int y, int width, int height, String t, BitmapFont f, int s)
 	{
 		posx = x;
 		posy = y;
@@ -52,7 +50,7 @@ public class ClickableButton extends Focusable
 			width = textWidth;
 		}
 		int textDekal = -textWidth;
-		if (focus || isMouseOver())
+		if (hasFocus() || isMouseOver())
 		{
 			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 8, "gui/scalableButtonOver", 32, 2);
 		}
@@ -62,12 +60,6 @@ public class ClickableButton extends Focusable
 		}
 		FontRenderer2.drawTextUsingSpecificFont(textDekal + posx, posy - height / 2, 0, size * 32, text, font);
 		return width * 2 * size - 12;
-	}
-
-	public void setPos(float f, float g)
-	{
-		posx = (int) f;
-		posy = (int) g;
 	}
 
 	public boolean clicked()

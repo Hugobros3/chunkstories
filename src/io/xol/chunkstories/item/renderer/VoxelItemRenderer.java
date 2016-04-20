@@ -55,12 +55,12 @@ public class VoxelItemRenderer implements ItemRenderer
 		program.setUniformFloat2("dekal", screenPositionX + pile.getItem().getSlotsWidth() * slotSize / 2 , screenPositionY + pile.getItem().getSlotsHeight() * slotSize / 2);
 		program.setUniformFloat("scaling", slotSize / 1.65f);
 		transformation.setIdentity();
+		transformation.scale(new Vector3f(-1f, 1f, 1f));
 		transformation.rotate(toRad(-22.5f), new Vector3f(1.0f, 0.0f, 0.0f));
 		transformation.rotate(toRad(45f), new Vector3f(0.0f, 1.0f, 0.0f));
 		transformation.translate(new Vector3f(-0.5f, -0.5f, -0.5f));
 		//transformation.rotate(45f, new Vector3f(0.0f, 1.0f, 1.0f));
 		//transformation.m02 = -0.5f;
-		transformation.scale(new Vector3f(1f, 1f, 1f));
 		program.setUniformMatrix4f("transformation", transformation);
 		Voxel voxel = ItemVoxel.getVoxel(pile);
 		if(voxel == null)

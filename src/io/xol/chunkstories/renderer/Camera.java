@@ -395,6 +395,8 @@ public class Camera
 		
 		shaderProgram.setUniformMatrix4f("untranslatedMVP", untranslatedMVP4f);
 		shaderProgram.setUniformMatrix4f("untranslatedMVPInv", untranslatedMVP4fInv);
+		
+		shaderProgram.setUniformFloat2("screenViewportSize", this.width, this.height);
 	}
 	
 	public Vector3f transform3DCoordinate(Vector3f in)

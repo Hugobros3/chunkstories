@@ -1,23 +1,19 @@
-package io.xol.engine.gui;
+package io.xol.engine.gui.elements;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
+import io.xol.engine.gui.CorneredBoxDrawer;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class InputText extends Focusable
+public class InputText extends GuiElement
 {
-	int posx;
-	int posy;
-
 	public String text = "";
-
-	public static int charDelay = 10;
 
 	public InputText(int x, int y, int maxlen, int fontSize, BitmapFont f)
 	{
@@ -30,7 +26,7 @@ public class InputText extends Focusable
 
 	public void update()
 	{
-		if (focus)
+		if (hasFocus())
 		{
 			while (Keyboard.next())
 			{
@@ -78,17 +74,19 @@ public class InputText extends Focusable
 			if (c != 0)
 				text += c;
 		}
-
-		// System.out.println("passing input "+k+" c="+c+" txt="+text);
 	}
 
 	public void drawWithBackGround()
 	{
-		if (focus)
-			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textbox");
+		int len = maxlen;
+		int txtlen = FontRenderer2.getTextLengthUsingFont(fontSize, text+" ", font);
+		if(txtlen > len)
+			len = txtlen;
+		if (hasFocus())
+			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "gui/textbox");
 		else
-			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textboxnofocus");
-		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text + ((focus && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
+			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "gui/textboxnofocus");
+		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text + ((hasFocus() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 		// System.out.println(text);
 	}
 
@@ -98,11 +96,11 @@ public class InputText extends Focusable
 		int txtlen = FontRenderer2.getTextLengthUsingFont(fontSize, text+" ", font);
 		if(txtlen > len)
 			len = txtlen;
-		if (focus)
+		if (hasFocus())
 			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "gui/textboxtransp");
 		else
 			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "gui/textboxnofocustransp");
-		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text + ((focus && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
+		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text + ((hasFocus() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 		// System.out.println(text);
 	}
 
@@ -112,18 +110,12 @@ public class InputText extends Focusable
 		for (@SuppressWarnings("unused")
 		char c : text.toCharArray())
 			passworded += "*";
-		if (focus)
+		if (hasFocus())
 			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textbox");
 		else
 			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textboxnofocus");
-		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, passworded + ((focus && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
+		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, passworded + ((hasFocus() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 
-	}
-
-	public void setPos(float f, float g)
-	{
-		posx = (int) f;
-		posy = (int) g;
 	}
 
 	public void setText(String t)

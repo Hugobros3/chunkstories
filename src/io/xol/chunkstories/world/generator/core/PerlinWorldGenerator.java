@@ -26,8 +26,8 @@ public class PerlinWorldGenerator extends WorldGenerator
 	public void initialize(World w)
 	{
 		super.initialize(w);
-		ssng = new SeededSimplexNoiseGenerator(w.seed);
-		srnt = new SeededRandomNumberTranslator(w.seed);
+		ssng = new SeededSimplexNoiseGenerator(w.getWorldInfo().seed);
+		srnt = new SeededRandomNumberTranslator(w.getWorldInfo().seed);
 		sic = world.getSizeInChunks();
 	}
 

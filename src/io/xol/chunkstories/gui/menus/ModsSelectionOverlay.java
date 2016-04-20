@@ -3,8 +3,8 @@ package io.xol.chunkstories.gui.menus;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.font.BitmapFont;
-import io.xol.engine.gui.ClickableButton;
-import io.xol.engine.gui.FocusableObjectsHandler;
+import io.xol.engine.gui.GuiElementsHandler;
+import io.xol.engine.gui.elements.Button;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -12,8 +12,8 @@ import io.xol.engine.gui.FocusableObjectsHandler;
 
 public class ModsSelectionOverlay extends Overlay
 {
-	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
-	ClickableButton backOption = new ClickableButton(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
+	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	Button backOption = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
 	
 	public ModsSelectionOverlay(OverlayableScene scene, Overlay parent)
 	{
@@ -24,7 +24,7 @@ public class ModsSelectionOverlay extends Overlay
 	@Override
 	public void drawToScreen(int positionStartX, int positionStartY, int width, int height)
 	{
-		backOption.setPos(positionStartX + 192, 96);
+		backOption.setPosition(positionStartX + 192, 96);
 		backOption.draw();
 
 		if (backOption.clicked())

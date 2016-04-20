@@ -23,11 +23,13 @@ import java.util.Map;
 public class WorldGenerators
 {
 	public static Map<String, Constructor<? extends WorldGenerator>> generators = new HashMap<String, Constructor<? extends WorldGenerator>>();
+	public static Map<Class<? extends WorldGenerator>, String> generatorsClasses = new HashMap<Class<? extends WorldGenerator>, String>();
 
 	public static void loadWorldGenerators()
 	{
 		//Loads all generators
 		generators.clear();
+		generatorsClasses.clear();
 		Deque<File> packetsFiles = GameData.getAllFileInstances("./res/data/worldGenerators.txt");
 		for (File f : packetsFiles)
 		{
@@ -67,6 +69,7 @@ public class WorldGenerators
 							Constructor<? extends WorldGenerator> constructor = generatorClass.getConstructor(types);
 
 							generators.put(generatorName, constructor);
+							generatorsClasses.put(generatorClass, generatorName);
 						}
 						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
 						{
@@ -100,5 +103,15 @@ public class WorldGenerators
 		}
 		ChunkStoriesLogger.getInstance().warning("Couldn't find generator \"" + name + "\"; Using BlankGenerator instead.");
 		return new BlankWorldGenerator();
+	}
+	
+	public static String getWorldGeneratorName(WorldGenerator generator)
+	{
+		String classname = generator.getClass().getName();
+		if(generatorsClasses.containsKey(classname))
+		{
+			return generatorsClasses.get(classname);
+		}
+		return "unknown";
 	}
 }

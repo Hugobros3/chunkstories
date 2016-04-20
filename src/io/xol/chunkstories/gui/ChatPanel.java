@@ -2,7 +2,7 @@ package io.xol.chunkstories.gui;
 
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.TrueTypeFont;
-import io.xol.engine.gui.InputText;
+import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.misc.ColorsTools;
 
 import java.util.ArrayDeque;
@@ -10,7 +10,6 @@ import java.util.Deque;
 import java.util.Iterator;
 
 import io.xol.engine.math.lalgb.Vector4f;
-
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
@@ -187,7 +186,7 @@ public class ChatPanel
 			//TrueTypeFont.arial12.drawString(9, (-linesDrew + 1) * 24 + 100 + (chatting ? 50 : 0), line.text, 2, 2, 500, new Vector4f(1,1,1,a));
 			TrueTypeFont.arial12.drawStringWithShadow(9, (linesDrew - 1) * 26 + 100 + (chatting ? 50 : 0), line.text, 2, 2, 500, new Vector4f(1,1,1,a));
 		}
-		inputBox.setPos(12, 112);
+		inputBox.setPosition(12, 112);
 		if (chatting)
 			inputBox.drawWithBackGroundTransparent();
 	}
@@ -203,7 +202,7 @@ public class ChatPanel
 				insert(m);
 		if (!chatting)
 			inputBox.text = "<Press T to chat>";
-		inputBox.focus = true;
+		inputBox.setFocus(true);
 	}
 
 	public void insert(String t)

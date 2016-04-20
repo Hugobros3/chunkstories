@@ -57,8 +57,8 @@ public class ChunksHolders
 	{
 		this.world = world;
 		this.chunksData = chunksData;
-		h = world.size.height / 8;
-		s = world.size.sizeInChunks / 8;
+		h = world.getWorldInfo().size.height / 8;
+		s = world.getWorldInfo().size.sizeInChunks / 8;
 
 		// data = new ChunkHolder[h * s * s];
 		// dataPresent = new boolean[h * s * s];
@@ -181,7 +181,7 @@ public class ChunksHolders
 
 	public void markChunkDirty(int chunkX, int chunkY, int chunkZ)
 	{
-		int sic = world.size.sizeInChunks;
+		int sic = world.getWorldInfo().size.sizeInChunks;
 		if (chunkX < 0)
 			chunkX += sic;
 		if (chunkY < 0)

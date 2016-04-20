@@ -72,7 +72,8 @@ public class OverlayRenderer
 
 	public static void glVertex3f(float x, float y, float z)
 	{
-		//if(data.position() == data.limit())
+		if(data.position() == data.limit())
+			glEnd();
 		//	return;
 		data.put(x);
 		data.put(y);

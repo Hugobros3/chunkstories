@@ -5,18 +5,18 @@ import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
-import io.xol.engine.gui.ClickableButton;
-import io.xol.engine.gui.FocusableObjectsHandler;
+import io.xol.engine.gui.GuiElementsHandler;
+import io.xol.engine.gui.elements.Button;
 import io.xol.engine.scene.Scene;
 
 public class ConnectScene extends Scene
 {
-	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
+	GuiElementsHandler guiHandler = new GuiElementsHandler();
 
 	String message = "";
 	private boolean loginOk = false;
 
-	ClickableButton cancelButton = new ClickableButton(0, 0, 128, 32, ("Cancel"), BitmapFont.SMALLFONTS, 1);
+	Button cancelButton = new Button(0, 0, 128, 32, ("Cancel"), BitmapFont.SMALLFONTS, 1);
 	String serverName = "";
 
 	public ConnectScene(XolioWindow XolioWindow, String ip, int port)
@@ -39,7 +39,7 @@ public class ConnectScene extends Scene
 		// ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2,
 		// XolioWindow.frameH / 2 + 180, 512, 512, "logo");
 
-		cancelButton.setPos(XolioWindow.frameW / 2, XolioWindow.frameH / 2 - 80);
+		cancelButton.setPosition(XolioWindow.frameW / 2, XolioWindow.frameH / 2 - 80);
 		cancelButton.draw();
 		
 		if(!authK && Client.connection.authentificated)

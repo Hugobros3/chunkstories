@@ -4,6 +4,7 @@ import io.xol.chunkstories.world.WorldInfo;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
+import io.xol.engine.gui.elements.Button;
 
 import org.lwjgl.input.Mouse;
 
@@ -11,7 +12,7 @@ import org.lwjgl.input.Mouse;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class LocalWorldButton extends ClickableButton
+public class LocalWorldButton extends Button
 {
 
 	int posx;
@@ -38,7 +39,7 @@ public class LocalWorldButton extends ClickableButton
 	@Override
 	public int draw()
 	{
-		if (focus || isMouseOver())
+		if (hasFocus() || isMouseOver())
 		{
 			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 8, "gui/scalableButtonOver", 32, 2);
 		}
@@ -59,7 +60,7 @@ public class LocalWorldButton extends ClickableButton
 	}
 
 	@Override
-	public void setPos(float f, float g)
+	public void setPosition(float f, float g)
 	{
 		posx = (int) f;
 		posy = (int) g;

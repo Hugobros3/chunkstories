@@ -8,6 +8,10 @@ import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class KeyBindSelectionOverlay extends Overlay
 {
 	ConfigButtonKey callback;

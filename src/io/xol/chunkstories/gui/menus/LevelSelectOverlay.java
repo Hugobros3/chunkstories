@@ -18,15 +18,16 @@ import io.xol.chunkstories.world.WorldLocalClient;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
-import io.xol.engine.gui.ClickableButton;
-import io.xol.engine.gui.FocusableObjectsHandler;
+import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.LocalWorldButton;
+import io.xol.engine.gui.elements.Button;
 
 public class LevelSelectOverlay extends Overlay
 {
 
-	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
-	ClickableButton backOption = new ClickableButton(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
+	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	Button backOption = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
+	Button newWorldOption = new Button(0, 0, 300, 32, ("New..."), BitmapFont.SMALLFONTS, 1);
 	List<WorldInfo> localWorlds = new ArrayList<WorldInfo>();
 	List<LocalWorldButton> worldsButtons = new ArrayList<LocalWorldButton>();
 
@@ -35,6 +36,7 @@ public class LevelSelectOverlay extends Overlay
 		super(scene, parent);
 		// Gui buttons
 		guiHandler.add(backOption);
+		guiHandler.add(newWorldOption);
 		File worldsFolder = new File(GameDirectory.getGameFolderPath() + "/worlds");
 		if(!worldsFolder.exists())
 			worldsFolder.mkdir();
@@ -85,17 +87,24 @@ public class LevelSelectOverlay extends Overlay
 			}
 			int maxWidth = XolioWindow.frameW - 64 * 2;
 			worldButton.width = maxWidth;
-			worldButton.setPos(64 + worldButton.width / 2, posY);
+			worldButton.setPosition(64 + worldButton.width / 2, posY);
 			worldButton.draw();
 			posY -= 96;
 		}
 
-		backOption.setPos(x + 192, 96);
+		backOption.setPosition(x + 192, 48);
 		backOption.draw();
+		
+		newWorldOption.setPosition(XolioWindow.frameW - 192, 48);
+		newWorldOption.draw();
 
 		if (backOption.clicked())
 		{
 			this.mainScene.changeOverlay(this.parent);
+		}
+		if (newWorldOption.clicked())
+		{
+			this.mainScene.changeOverlay(new LevelCreateOverlay(this.mainScene, this));
 		}
 	}
 

@@ -33,6 +33,7 @@ import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.chunk.ChunksData;
 import io.xol.chunkstories.world.chunk.ChunksHolders;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.generator.WorldGenerators;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.summary.RegionSummaries;
@@ -49,18 +50,20 @@ import io.xol.engine.misc.ConfigFile;
  */
 public abstract class World implements WorldInterface
 {
-	public String name;
-	public String seed;
+	protected WorldInfo worldInfo;
 	public File folder;
 
-	public long worldTime = 5000;
+	protected boolean client;
+	public ConfigFile internalData;
+	
+	private WorldGenerator generator;
+
 	// The world age, also tick counter. Can count for billions of real-world
 	// time so we are not in trouble.
 	// Let's say that the game world runs at 60Ticks per second
+	public long worldTime = 5000;
 
 	public IOTasks ioHandler;
-	private WorldGenerator generator;
-	final public WorldSize size;
 
 	// RAM-eating monster
 	public ChunksData chunksData;
@@ -80,42 +83,51 @@ public abstract class World implements WorldInterface
 
 	// Particles
 	public ParticlesHolder particlesHolder;
-
-	protected boolean client;
-
-	protected WorldInfo worldInfo;
-
-	public ConfigFile internalData;
-
-	public World(WorldSize s)
-	{
-		size = s;
-	}
-
 	public World(WorldInfo info)
 	{
-		this(info.internalName, info.seed, info.getGenerator(), info.size);
 		worldInfo = info;
+		//Creates world generator
+		this.generator = worldInfo.getGenerator();
+
+		//Calls actual constructor
+		generalInitialization();
 	}
 
-	public World(String name, String seed, WorldGenerator access, WorldSize s)
+	public World(String name, String seed, WorldGenerator generator, WorldSize size)
 	{
-		// Called by any initialisation code.
-		this.name = name;
-		this.seed = seed;
-		size = s;
-		generator = access;
+		//Builds a new WorldInfo
+		worldInfo = new WorldInfo();
+		worldInfo.name = name;
+		worldInfo.seed = seed;
+		worldInfo.size = size;
+
+		//Gets generator name
+		worldInfo.generator = WorldGenerators.getWorldGeneratorName(generator);
+		this.generator = generator;
+	
+		//Calls actual constructor
+		generalInitialization();
+	}
+	
+	private void generalInitialization()
+	{
 		generator.initialize(this);
+		
 		chunksData = new ChunksData();
 		chunksHolder = new ChunksHolders(this, chunksData);
 		regionSummaries = new RegionSummaries(this);
 		logic = Executors.newSingleThreadScheduledExecutor();
-		folder = new File(GameDirectory.getGameFolderPath() + "/worlds/" + name);
+		folder = new File(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.name);
 
-		internalData = new ConfigFile(GameDirectory.getGameFolderPath() + "/worlds/" + name + "/internal.dat");
+		internalData = new ConfigFile(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.name + "/internal.dat");
 		internalData.load();
 	}
 
+	public WorldInfo getWorldInfo()
+	{
+		return worldInfo;
+	}
+	
 	public File getFolderFile()
 	{
 		return folder;
@@ -248,7 +260,7 @@ public abstract class World implements WorldInterface
 	@Override
 	public int getMaxHeight()
 	{
-		return size.height * 32;
+		return worldInfo.size.height * 32;
 	}
 
 	/* (non-Javadoc)
@@ -257,7 +269,7 @@ public abstract class World implements WorldInterface
 	@Override
 	public int getSizeInChunks()
 	{
-		return size.sizeInChunks;
+		return worldInfo.size.sizeInChunks;
 	}
 
 	/* (non-Javadoc)
@@ -266,7 +278,7 @@ public abstract class World implements WorldInterface
 	@Override
 	public double getSizeSide()
 	{
-		return size.sizeInChunks * 32;
+		return getSizeInChunks() * 32d;
 	}
 
 	/* (non-Javadoc)
@@ -275,15 +287,15 @@ public abstract class World implements WorldInterface
 	@Override
 	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
-		chunkX = chunkX % size.sizeInChunks;
-		chunkZ = chunkZ % size.sizeInChunks;
+		chunkX = chunkX % getSizeInChunks();
+		chunkZ = chunkZ % getSizeInChunks();
 		if (chunkX < 0)
-			chunkX += size.sizeInChunks;
+			chunkX += getSizeInChunks();
 		if (chunkZ < 0)
-			chunkZ += size.sizeInChunks;
+			chunkZ += getSizeInChunks();
 		if (chunkY < 0)
 			return null;
-		if (chunkY >= size.height)
+		if (chunkY >= worldInfo.size.height)
 			return null;
 		return chunksHolder.getChunk(chunkX, chunkY, chunkZ, load);
 	}
@@ -303,12 +315,12 @@ public abstract class World implements WorldInterface
 	@Override
 	public void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save)
 	{
-		chunkX = chunkX % size.sizeInChunks;
-		chunkZ = chunkZ % size.sizeInChunks;
+		chunkX = chunkX % getSizeInChunks();
+		chunkZ = chunkZ % getSizeInChunks();
 		if (chunkX < 0)
-			chunkX += size.sizeInChunks;
+			chunkX += getSizeInChunks();
 		if (chunkZ < 0)
-			chunkZ += size.sizeInChunks;
+			chunkZ += getSizeInChunks();
 		if (chunkY < 0)
 			chunkY = 0;
 		//ioHandler.requestChunkUnload(chunkX, chunkY, chunkZ);
@@ -321,15 +333,15 @@ public abstract class World implements WorldInterface
 	@Override
 	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ)
 	{
-		chunkX = chunkX % size.sizeInChunks;
-		chunkZ = chunkZ % size.sizeInChunks;
+		chunkX = chunkX % getSizeInChunks();
+		chunkZ = chunkZ % getSizeInChunks();
 		if (chunkX < 0)
-			chunkX += size.sizeInChunks;
+			chunkX += getSizeInChunks();
 		if (chunkZ < 0)
-			chunkZ += size.sizeInChunks;
+			chunkZ += getSizeInChunks();
 		if (chunkY < 0)
 			return false;
-		if (chunkY >= size.height)
+		if (chunkY >= worldInfo.size.height)
 			return false;
 		ChunkHolder h = chunksHolder.getChunkHolder(chunkX, chunkY, chunkZ, false);
 		if (h == null)
@@ -371,16 +383,16 @@ public abstract class World implements WorldInterface
 	@Override
 	public int getDataAt(int x, int y, int z, boolean load)
 	{
-		x = x % (size.sizeInChunks * 32);
-		z = z % (size.sizeInChunks * 32);
+		x = x % (getSizeInChunks() * 32);
+		z = z % (getSizeInChunks() * 32);
 		if (y < 0)
 			y = 0;
-		if (y > size.height * 32)
-			y = size.height * 32;
+		if (y > worldInfo.size.height * 32)
+			y = worldInfo.size.height * 32;
 		if (x < 0)
-			x += size.sizeInChunks * 32;
+			x += getSizeInChunks() * 32;
 		if (z < 0)
-			z += size.sizeInChunks * 32;
+			z += getSizeInChunks() * 32;
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 			return c.getDataAt(x, y, z);
@@ -422,16 +434,16 @@ public abstract class World implements WorldInterface
 	{
 		regionSummaries.blockPlaced(x, y, z, i);
 
-		x = x % (size.sizeInChunks * 32);
-		z = z % (size.sizeInChunks * 32);
+		x = x % (getSizeInChunks() * 32);
+		z = z % (getSizeInChunks() * 32);
 		if (y < 0)
 			y = 0;
-		if (y > size.height * 32)
-			y = size.height * 32;
+		if (y > worldInfo.size.height * 32)
+			y = worldInfo.size.height * 32;
 		if (x < 0)
-			x += size.sizeInChunks * 32;
+			x += getSizeInChunks() * 32;
 		if (z < 0)
-			z += size.sizeInChunks * 32;
+			z += getSizeInChunks() * 32;
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
@@ -526,16 +538,16 @@ public abstract class World implements WorldInterface
 	{
 		regionSummaries.blockPlaced(x, y, z, i);
 
-		x = x % (size.sizeInChunks * 32);
-		z = z % (size.sizeInChunks * 32);
+		x = x % (getSizeInChunks() * 32);
+		z = z % (getSizeInChunks() * 32);
 		if (y < 0)
 			y = 0;
-		if (y > size.height * 32)
-			y = size.height * 32;
+		if (y > worldInfo.size.height * 32)
+			y = worldInfo.size.height * 32;
 		if (x < 0)
-			x += size.sizeInChunks * 32;
+			x += getSizeInChunks() * 32;
 		if (z < 0)
-			z += size.sizeInChunks * 32;
+			z += getSizeInChunks() * 32;
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
@@ -603,6 +615,7 @@ public abstract class World implements WorldInterface
 		chunksHolder.saveAll();
 		regionSummaries.saveAll();
 
+		this.worldInfo.save(new File(this.getFolderPath()+"/info.txt"));
 		this.internalData.setProp("entities-ids-counter", veryLong.get());
 		this.internalData.save();
 	}

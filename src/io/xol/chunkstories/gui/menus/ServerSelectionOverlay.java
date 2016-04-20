@@ -24,10 +24,10 @@ import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
-import io.xol.engine.gui.ClickableButton;
-import io.xol.engine.gui.Focusable;
-import io.xol.engine.gui.FocusableObjectsHandler;
-import io.xol.engine.gui.InputText;
+import io.xol.engine.gui.GuiElementsHandler;
+import io.xol.engine.gui.elements.Button;
+import io.xol.engine.gui.elements.GuiElement;
+import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
 
@@ -38,10 +38,10 @@ import io.xol.engine.net.HttpRequester;
 public class ServerSelectionOverlay extends Overlay implements HttpRequester
 {
 
-	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
+	GuiElementsHandler guiHandler = new GuiElementsHandler();
 	InputText ipForm = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
-	ClickableButton backOption = new ClickableButton(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
-	ClickableButton connectButton = new ClickableButton(0, 0, 128, 32, "Connect", BitmapFont.SMALLFONTS, 1);
+	Button backOption = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
+	Button connectButton = new Button(0, 0, 128, 32, "Connect", BitmapFont.SMALLFONTS, 1);
 	ServerSelectionZone serverSelectionZone = new ServerSelectionZone();
 	boolean autologin;
 	private boolean movedInList = false;
@@ -76,18 +76,18 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		FontRenderer2.drawTextUsingSpecificFontRVBA(32, XolioWindow.frameH - 32 * (1 + 1), 0, 32 + 1 * 16, "Select a server", BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
 		// gui
 		int txtbox = XolioWindow.frameW - 50 - guiHandler.getButton(1).getWidth() * 2 - 75;
-		ipForm.setPos(25, XolioWindow.frameH - 50 * (1 + 1));
+		ipForm.setPosition(25, XolioWindow.frameH - 50 * (1 + 1));
 		ipForm.setMaxLength(txtbox);
 		ipForm.drawWithBackGround();
 		
-		guiHandler.getButton(1).setPos(txtbox + 96 + 12, XolioWindow.frameH - 50 - 16 - 18);
+		guiHandler.getButton(1).setPosition(txtbox + 96 + 12, XolioWindow.frameH - 50 - 16 - 18);
 		
 		guiHandler.getButton(1).draw();
 		if (guiHandler.getButton(1).clicked)
 			login();
 
 
-		backOption.setPos(x + 192, 96);
+		backOption.setPosition(x + 192, 96);
 		backOption.draw();
 
 		if (backOption.clicked())
@@ -135,12 +135,12 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 			f6();
 		else if (KeyBinds.getKeyBind("exit").isPressed())
 			this.mainScene.changeOverlay(parent);
-		else if (serverSelectionZone.focus && KeyBinds.getKeyBind("forward").isPressed())
+		else if (serverSelectionZone.hasFocus() && KeyBinds.getKeyBind("forward").isPressed())
 		{
 			movedInList = true;
 			currentServer--;
 		}
-		else if (serverSelectionZone.focus && KeyBinds.getKeyBind("back").isPressed())
+		else if (serverSelectionZone.hasFocus() && KeyBinds.getKeyBind("back").isPressed())
 		{
 			movedInList = true;
 			currentServer++;
@@ -232,7 +232,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		}
 	}
 	
-	public class ServerSelectionZone extends Focusable
+	public class ServerSelectionZone extends GuiElement
 	{
 		public void render()
 		{

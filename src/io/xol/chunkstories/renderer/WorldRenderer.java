@@ -49,7 +49,6 @@ import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.renderer.lights.LightsRenderer;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
@@ -915,7 +914,6 @@ public class WorldRenderer
 
 		glDisable(GL_CULL_FACE);
 		// Render entities
-		Light[] el;
 		Iterator<Entity> ie = world.getAllLoadedEntities();
 		Entity e;
 		while (ie.hasNext())
@@ -926,14 +924,7 @@ public class WorldRenderer
 			entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
 			entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
 			if (e != null)
-			{
 				e.render(renderingContext);
-				// Also populate lights buffer
-				el = e.getLights();
-				if (el != null)
-					for (Light l : el)
-						renderingContext.lights.add(l);
-			}
 		}
 
 		renderingContext.disableVertexAttribute(normalIn);
@@ -1074,6 +1065,20 @@ public class WorldRenderer
 		renderLightsDeffered();
 
 		renderTerrain();
+		
+		if(FastConfig.showDebugInfo)
+		{
+			OverlayRenderer.glColor4f(4, 0, 0, 1);
+			for(CubicChunk c : this.renderList)
+			{
+				ChunkRenderData crd = c.chunkRenderData;
+				if(crd != null)
+				{
+					crd.renderChunkBounds(renderingContext);
+				}
+			}
+				
+		}
 	}
 
 	private void renderLightsDeffered()

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.xol.engine.base.XolioWindow;
-import io.xol.engine.gui.Button;
 import io.xol.engine.gui.GuiDrawer;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -14,7 +13,6 @@ import io.xol.engine.gui.GuiDrawer;
 public class Scene
 {
 	public XolioWindow eng;
-	public List<Button> buttons = new ArrayList<Button>();
 	public boolean resized = false;
 
 	public Scene(XolioWindow XolioWindow)
@@ -27,11 +25,6 @@ public class Scene
 		if (resized)
 		{
 			resized = false;
-		}
-		for (Button b : buttons)
-		{
-			b.render();
-			b.update();
 		}
 
 		GuiDrawer.drawBuffer();

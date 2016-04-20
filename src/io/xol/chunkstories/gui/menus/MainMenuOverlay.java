@@ -15,16 +15,16 @@ import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 //import io.xol.engine.base.font.TrueTypeFont;
-import io.xol.engine.gui.ClickableButton;
-import io.xol.engine.gui.FocusableObjectsHandler;
+import io.xol.engine.gui.GuiElementsHandler;
+import io.xol.engine.gui.elements.Button;
 
 public class MainMenuOverlay extends Overlay
 {
-	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
-	ClickableButton singlePlayer = new ClickableButton(0, 0, 300, 32, ("Single player"), BitmapFont.SMALLFONTS, 1);
-	ClickableButton multiPlayer = new ClickableButton(0, 0, 300, 32, ("Find a server ... "), BitmapFont.SMALLFONTS, 1);
-	ClickableButton optionsMenu = new ClickableButton(0, 0, 300, 32, ("Game options"), BitmapFont.SMALLFONTS, 1);
-	ClickableButton exitGame = new ClickableButton(0, 0, 300, 32, ("Exit game"), BitmapFont.SMALLFONTS, 1);
+	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	Button singlePlayer = new Button(0, 0, 300, 32, ("Single player"), BitmapFont.SMALLFONTS, 1);
+	Button multiPlayer = new Button(0, 0, 300, 32, ("Find a server ... "), BitmapFont.SMALLFONTS, 1);
+	Button optionsMenu = new Button(0, 0, 300, 32, ("Game options"), BitmapFont.SMALLFONTS, 1);
+	Button exitGame = new Button(0, 0, 300, 32, ("Exit game"), BitmapFont.SMALLFONTS, 1);
 
 	public MainMenuOverlay(OverlayableScene scene, Overlay parent)
 	{
@@ -54,16 +54,16 @@ public class MainMenuOverlay extends Overlay
 		for (int i = 0; i < 16; i++)
 			bytes[i] = (char) ((rng.nextInt() % 512));
 
-		singlePlayer.setPos(x + 220, XolioWindow.frameH - 320);
+		singlePlayer.setPosition(x + 220, XolioWindow.frameH - 320);
 		singlePlayer.draw();
 
-		multiPlayer.setPos(x + 220, XolioWindow.frameH - 320 - 48);
+		multiPlayer.setPosition(x + 220, XolioWindow.frameH - 320 - 48);
 		multiPlayer.draw();
 
-		optionsMenu.setPos(x + 220, XolioWindow.frameH - 320 - 48 * 2);
+		optionsMenu.setPosition(x + 220, XolioWindow.frameH - 320 - 48 * 2);
 		optionsMenu.draw();
 
-		exitGame.setPos(x + 220, XolioWindow.frameH - 320 - 48 * 3);
+		exitGame.setPosition(x + 220, XolioWindow.frameH - 320 - 48 * 3);
 		exitGame.draw();
 
 		if (singlePlayer.clicked())

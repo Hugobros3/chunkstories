@@ -8,8 +8,8 @@ import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.font.TrueTypeFont;
-import io.xol.engine.gui.ClickableButton;
-import io.xol.engine.gui.FocusableObjectsHandler;
+import io.xol.engine.gui.GuiElementsHandler;
+import io.xol.engine.gui.elements.Button;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -24,9 +24,9 @@ public class LogPolicyAsk extends Overlay
 		guiHandler.add(denyButton);
 	}
 
-	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
-	ClickableButton acceptButton = new ClickableButton(0, 0, 300, 32, ("I'm ok with this"), BitmapFont.SMALLFONTS, 1);
-	ClickableButton denyButton = new ClickableButton(0, 0, 300, 32, ("No thanks."), BitmapFont.SMALLFONTS, 1);
+	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	Button acceptButton = new Button(0, 0, 300, 32, ("I'm ok with this"), BitmapFont.SMALLFONTS, 1);
+	Button denyButton = new Button(0, 0, 300, 32, ("No thanks."), BitmapFont.SMALLFONTS, 1);
 	
 	String message = "English: \n"
 			+ "Welcome to the indev version of Chunk Stories !\n"
@@ -66,7 +66,7 @@ public class LogPolicyAsk extends Overlay
 		//FontRenderer2.drawTextUsingSpecificFont(30, 100, 0, 32, message, BitmapFont.SMALLFONTS);
 		//FontRenderer2.setLengthCutoff(false, width - 128);
 		
-		acceptButton.setPos(XolioWindow.frameW/2 - 256, XolioWindow.frameH / 4 - 32);
+		acceptButton.setPosition(XolioWindow.frameW/2 - 256, XolioWindow.frameH / 4 - 32);
 		acceptButton.draw();
 
 		if (acceptButton.clicked())
@@ -76,7 +76,7 @@ public class LogPolicyAsk extends Overlay
 			Client.clientConfig.save();
 		}
 		
-		denyButton.setPos(XolioWindow.frameW/2 + 256, XolioWindow.frameH / 4 - 32);
+		denyButton.setPosition(XolioWindow.frameW/2 + 256, XolioWindow.frameH / 4 - 32);
 		denyButton.draw();
 
 		if (denyButton.clicked())

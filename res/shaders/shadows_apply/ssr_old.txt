@@ -1,0 +1,52 @@
+//return vec4(cameraSpaceVector, 1);
+    /*for (int i = 0; i < 400; i++)
+    {
+        if((currentPosition.x < 0.0) || (currentPosition.x > 1.0) ||
+           (currentPosition.y < 0.0) || (currentPosition.y > 1.0) ||
+           (currentPosition.z <= 0.0) || (currentPosition.z > 1.0) ||
+           (-cameraSpaceVectorPosition.z > 512.0) ||
+           (-cameraSpaceVectorPosition.z < 0.0f))
+			
+        { 
+			outOfViewport = true;
+			break; 
+		}
+
+        vec2 samplePos = currentPosition.xy;
+        float sampleDepth = convertScreenSpaceToWorldSpace(samplePos).z;
+
+        float currentDepth = cameraSpaceVectorPosition.z;
+        float diff = sampleDepth - currentDepth;
+        float error = length(cameraSpaceVector / pow(2.0f, numRefinements));
+
+        //If a collision was detected, refine raymarch
+        if(diff >= 0.0 && diff <= error * 2.00f && numRefinements <= maxRefinements) 
+        {
+			
+			outOfViewport = false;
+        	//Step back
+        	cameraSpaceVectorPosition -= cameraSpaceVector / pow(2.0f, numRefinements);
+        	++numRefinements;
+		//If refinements run out
+		} 
+		else if (diff >= 0.0 && diff <= error * 4.0f && numRefinements > maxRefinements)
+		{
+			outOfViewport = false;
+			finalSamplePos = samplePos;
+			break;
+		}
+		else if(diff > 0.0)
+		{
+			
+		}
+		
+        cameraSpaceVectorPosition += cameraSpaceVector / pow(2.0f, numRefinements);
+
+        if (numSteps > 1)
+			cameraSpaceVector *= 1.275f;	//Each step gets bigger
+
+		currentPosition = convertCameraSpaceToScreenSpace(cameraSpaceVectorPosition);
+        count++;
+        numSteps++;
+    }
+	*/

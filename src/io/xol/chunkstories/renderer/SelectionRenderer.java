@@ -47,7 +47,7 @@ public class SelectionRenderer
 		glDisable(GL_BLEND);
 	}
 	
-	private void cubeVertices(float x, float y, float z, float xw, float h, float zw)
+	public static void cubeVertices(float x, float y, float z, float xw, float h, float zw)
 	{
 		glVertex3f(-xw/2f + x, 0 + y, -zw/2f + z);
 		glVertex3f(xw/2f + x, 0 + y, -zw/2f + z);

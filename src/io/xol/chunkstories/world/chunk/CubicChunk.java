@@ -890,7 +890,8 @@ public class CubicChunk implements Chunk
 		world.dequesPool.back(sunSources);
 	}
 	
-	private void propagateLightRemoval(Deque<Integer> blockSources, Deque<Integer> sunSources, Deque<Integer> blockSourcesRemoval, Deque<Integer> sunSourcesRemoval)
+	@SuppressWarnings("unused")
+	private void propagateLightRemovalLocal(Deque<Integer> blockSources, Deque<Integer> sunSources, Deque<Integer> blockSourcesRemoval, Deque<Integer> sunSourcesRemoval)
 	{
 		while(sunSourcesRemoval.size() > 0)
 		{

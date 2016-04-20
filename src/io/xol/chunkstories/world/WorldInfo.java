@@ -29,6 +29,16 @@ public class WorldInfo
 	public WorldSize size;
 	public String generator;
 
+	WorldInfo()
+	{
+		
+	}
+	
+	public WorldInfo(String internalName, String seed, String description, String generator, WorldSize size)
+	{
+		
+	}
+	
 	public WorldInfo(String fileContents, String internalName)
 	{
 		this.internalName = internalName;

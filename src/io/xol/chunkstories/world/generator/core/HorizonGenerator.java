@@ -20,7 +20,7 @@ public class HorizonGenerator extends WorldGenerator
 	public void initialize(World w)
 	{
 		super.initialize(w);
-		ssng = new SeededSimplexNoiseGenerator(w.seed);
+		ssng = new SeededSimplexNoiseGenerator(w.getWorldInfo().seed);
 		ws = world.getSizeInChunks() * 32;
 	}
 	

@@ -20,6 +20,8 @@ uniform sampler2D ssaoBuffer;
 
 varying vec2 screenCoord;
 
+uniform vec2 screenViewportSize;
+
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
 

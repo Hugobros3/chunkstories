@@ -97,7 +97,7 @@ public class WorldServer extends World implements WorldMaster
 	public void trimRemovableChunks()
 	{
 		int chunksViewDistance = 256 / 32;
-		int sizeInChunks = size.sizeInChunks;
+		int sizeInChunks = getWorldInfo().size.sizeInChunks;
 
 		//Chunks pruner
 		ChunksIterator i = Server.getInstance().world.iterator();
@@ -140,7 +140,7 @@ public class WorldServer extends World implements WorldMaster
 	public void setDataAt(int x, int y, int z, int i, boolean load)
 	{
 		int blocksViewDistance = 256;
-		int sizeInBlocks = size.sizeInChunks * 32;
+		int sizeInBlocks = getWorldInfo().size.sizeInChunks * 32;
 		super.setDataAt(x, y, z, i, load);
 		PacketVoxelUpdate packet = new PacketVoxelUpdate(false);
 		packet.x = x;

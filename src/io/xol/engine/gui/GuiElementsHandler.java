@@ -1,5 +1,9 @@
 package io.xol.engine.gui;
 
+import io.xol.engine.gui.elements.Button;
+import io.xol.engine.gui.elements.GuiElement;
+import io.xol.engine.gui.elements.InputText;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,17 +11,17 @@ import java.util.List;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class FocusableObjectsHandler
+public class GuiElementsHandler
 {
-	List<Focusable> objects;
+	List<GuiElement> objects;
 	int focusedObject;
 
-	public FocusableObjectsHandler()
+	public GuiElementsHandler()
 	{
-		objects = new ArrayList<Focusable>();
+		objects = new ArrayList<GuiElement>();
 	}
 
-	public void add(Focusable f)
+	public void add(GuiElement f)
 	{
 		objects.add(f);
 	}
@@ -31,18 +35,18 @@ public class FocusableObjectsHandler
 
 	public void handleInput(int k)
 	{
-		Focusable obj = getFocusedObject();
+		GuiElement obj = getFocusedObject();
 		if (obj != null && obj instanceof InputText)
 		{
 			InputText in = (InputText) obj;
 			in.input(k);
 		}
-		else if (obj instanceof ClickableButton)
+		else if (obj instanceof Button)
 		{
 			//TODO hard-coded enter key
 			if(k == /*FastConfig.ENTER_KEY*/ 28)
 			{
-				ClickableButton but = (ClickableButton) obj;
+				Button but = (Button) obj;
 				but.clicked = true;
 			}
 		}
@@ -51,11 +55,11 @@ public class FocusableObjectsHandler
 	public void handleClick(int x, int y)
 	{
 		// int id = 0;
-		for (Focusable obj : objects)
+		for (GuiElement obj : objects)
 		{
-			if (obj instanceof ClickableButton)
+			if (obj instanceof Button)
 			{
-				ClickableButton but = (ClickableButton) obj;
+				Button but = (Button) obj;
 				if (but.isMouseOver())
 				{
 					// System.out.println("clik"+obj.toString());
@@ -73,12 +77,12 @@ public class FocusableObjectsHandler
 		}
 	}
 
-	public List<Focusable> getAllObjects()
+	public List<GuiElement> getAllObjects()
 	{
 		return objects;
 	}
 
-	public Focusable getFocusedObject()
+	public GuiElement getFocusedObject()
 	{
 		return objects.get(focusedObject);
 	}
@@ -97,14 +101,14 @@ public class FocusableObjectsHandler
 			focusedObject = 0;
 	}
 
-	public Focusable get(int i)
+	public GuiElement get(int i)
 	{
 		return objects.get(i);
 	}
 
-	public ClickableButton getButton(int i)
+	public Button getButton(int i)
 	{
-		return (ClickableButton) objects.get(i);
+		return (Button) objects.get(i);
 	}
 
 	public InputText getInputText(int i)

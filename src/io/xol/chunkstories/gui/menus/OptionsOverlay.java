@@ -18,20 +18,20 @@ import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
-import io.xol.engine.gui.ClickableButton;
 import io.xol.engine.gui.CorneredBoxDrawer;
-import io.xol.engine.gui.Focusable;
-import io.xol.engine.gui.FocusableObjectsHandler;
+import io.xol.engine.gui.GuiElementsHandler;
+import io.xol.engine.gui.elements.Button;
+import io.xol.engine.gui.elements.GuiElement;
 import io.xol.engine.shaders.ShadersLibrary;
 
 public class OptionsOverlay extends Overlay
 {
-	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
-	ClickableButton exitButton = new ClickableButton(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
+	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	Button exitButton = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
 
 	List<ConfigTab> configTabs = new ArrayList<ConfigTab>();
 
-	abstract class ConfigButton extends ClickableButton
+	abstract class ConfigButton extends Button
 	{
 		Runnable run = null;
 	
@@ -216,7 +216,7 @@ public class OptionsOverlay extends Overlay
 		}
 	}
 
-	List<ClickableButton> tabsButtons = new ArrayList<ClickableButton>();
+	List<Button> tabsButtons = new ArrayList<Button>();
 	int selectedConfigTab = 0;
 
 	public OptionsOverlay(OverlayableScene scene, Overlay parent)
@@ -384,11 +384,11 @@ public class OptionsOverlay extends Overlay
 
 		for (ConfigTab tab : configTabs)
 		{
-			for (Focusable f : tab.configButtons)
+			for (GuiElement f : tab.configButtons)
 				guiHandler.add(f);
 			String txt = tab.name;
 			int txtlen = FontRenderer2.getTextLengthUsingFont(32, txt, BitmapFont.SMALLFONTS);
-			ClickableButton tabButton = new ClickableButton(0, 0, txtlen + 32, 32, txt, BitmapFont.SMALLFONTS, 1);
+			Button tabButton = new Button(0, 0, txtlen + 32, 32, txt, BitmapFont.SMALLFONTS, 1);
 			tabsButtons.add(tabButton);
 			guiHandler.add(tabButton);
 		}
@@ -404,10 +404,10 @@ public class OptionsOverlay extends Overlay
 
 		int dekal = 0;
 		int i = 0;
-		for (ClickableButton b : tabsButtons)
+		for (Button b : tabsButtons)
 		{
 			dekal += b.getWidth() + 32 + 16;
-			b.setPos(XolioWindow.frameW / 2 - optionsPanelSize / 2 + dekal, XolioWindow.frameH - 128);
+			b.setPosition(XolioWindow.frameW / 2 - optionsPanelSize / 2 + dekal, XolioWindow.frameH - 128);
 			b.draw();
 			dekal += b.getWidth();
 			if (b.clicked())
@@ -421,7 +421,7 @@ public class OptionsOverlay extends Overlay
 		int startPosY = XolioWindow.frameH - 128 - 64;
 		for (ConfigButton c : currentConfigTab.configButtons)
 		{
-			c.setPos(startPosX + b * (320 + 32), startPosY - (float) Math.floor(a / 2) * 64);
+			c.setPosition(startPosX + b * (320 + 32), startPosY - (float) Math.floor(a / 2) * 64);
 			c.updateText();
 			c.draw();
 			if(c instanceof ConfigButtonScale && c.isMouseOver() && Mouse.isButtonDown(0))
@@ -438,7 +438,7 @@ public class OptionsOverlay extends Overlay
 
 		FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 - optionsPanelSize / 2 + 32, XolioWindow.frameH - 48 * 2, 0, 48, "Options menu", BitmapFont.SMALLFONTS);
 
-		exitButton.setPos(XolioWindow.frameW / 2, 48);
+		exitButton.setPosition(XolioWindow.frameW / 2, 48);
 		exitButton.draw();
 
 		if(currentConfigTab.name.equals("Rendering") || currentConfigTab.name.equals("") || currentConfigTab.name.equals("Debug"))

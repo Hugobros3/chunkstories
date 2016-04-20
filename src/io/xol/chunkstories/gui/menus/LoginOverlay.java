@@ -7,9 +7,9 @@ import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
-import io.xol.engine.gui.ClickableButton;
-import io.xol.engine.gui.FocusableObjectsHandler;
-import io.xol.engine.gui.InputText;
+import io.xol.engine.gui.GuiElementsHandler;
+import io.xol.engine.gui.elements.Button;
+import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
 
@@ -20,11 +20,11 @@ public class LoginOverlay extends Overlay implements HttpRequester
 		super(scene, parent);
 		
 		guiHandler.add(new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS));
-		guiHandler.getInputText(0).focus = true;
+		guiHandler.getInputText(0).setFocus(true);
 		// pass
 		guiHandler.add(new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS));
 		// ok
-		guiHandler.add(new ClickableButton(0, 0, 128, 32, ("Login"), BitmapFont.SMALLFONTS, 1));
+		guiHandler.add(new Button(0, 0, 128, 32, ("Login"), BitmapFont.SMALLFONTS, 1));
 		// check for auto-login dataaa
 		if (Client.getConfig().getProp("autologin", "ko").equals("ok"))
 		{
@@ -35,7 +35,7 @@ public class LoginOverlay extends Overlay implements HttpRequester
 		startCounter = System.currentTimeMillis();
 	}
 
-	FocusableObjectsHandler guiHandler = new FocusableObjectsHandler();
+	GuiElementsHandler guiHandler = new GuiElementsHandler();
 
 	boolean logging_in = false;
 	boolean autologin = false;
@@ -54,11 +54,11 @@ public class LoginOverlay extends Overlay implements HttpRequester
 			mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));
 		ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2 + 180, 512, 512, "logo");
 
-		guiHandler.getButton(2).setPos(XolioWindow.frameW / 2 - 245 + 58, XolioWindow.frameH / 2 - 80);
+		guiHandler.getButton(2).setPosition(XolioWindow.frameW / 2 - 245 + 58, XolioWindow.frameH / 2 - 80);
 
-		guiHandler.getInputText(0).setPos(XolioWindow.frameW / 2 - 250, XolioWindow.frameH / 2 + 40);
+		guiHandler.getInputText(0).setPosition(XolioWindow.frameW / 2 - 250, XolioWindow.frameH / 2 + 40);
 		guiHandler.getInputText(0).drawWithBackGround();
-		guiHandler.getInputText(1).setPos(XolioWindow.frameW / 2 - 250, XolioWindow.frameH / 2 - 40);
+		guiHandler.getInputText(1).setPosition(XolioWindow.frameW / 2 - 250, XolioWindow.frameH / 2 - 40);
 		guiHandler.getInputText(1).drawWithBackGroundPassworded();
 
 		FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 - 250, XolioWindow.frameH / 2 + 80, 0, 32, "Username", BitmapFont.SMALLFONTS);

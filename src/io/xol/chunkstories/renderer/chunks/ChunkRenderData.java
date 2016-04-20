@@ -4,10 +4,16 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static io.xol.chunkstories.renderer.debug.OverlayRenderer.GL_LINES;
+import static io.xol.chunkstories.renderer.debug.OverlayRenderer.GL_TEXTURE_2D;
+import static io.xol.chunkstories.renderer.debug.OverlayRenderer.glBegin;
+import static io.xol.chunkstories.renderer.debug.OverlayRenderer.glColor4f;
+import static io.xol.chunkstories.renderer.debug.OverlayRenderer.glEnable;
+import static io.xol.chunkstories.renderer.debug.OverlayRenderer.glEnd;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL15.*;
-
+import io.xol.chunkstories.renderer.SelectionRenderer;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.model.RenderingContext;
@@ -169,5 +175,10 @@ public class ChunkRenderData
 			return vboSizeWaterBlocks;
 		}
 		return 0;
+	}
+	
+	public void renderChunkBounds(RenderingContext renderingContext)
+	{
+		SelectionRenderer.cubeVertices(chunk.chunkX * 32 + 16, chunk.chunkY * 32, chunk.chunkZ * 32 + 16, 32, 32, 32);
 	}
 }
