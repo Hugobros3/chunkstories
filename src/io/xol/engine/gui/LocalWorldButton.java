@@ -50,11 +50,11 @@ public class LocalWorldButton extends Button
 		// ObjectRenderer.renderTexturedRect(posx, posy, 64, 64,
 		// "internal://res/textures/gui/info.png");
 		// if(info.hasLogo)
-		ObjectRenderer.renderTexturedRect(posx - width / 2 + 32 + 4, posy, 64, 64, "gameDir://worlds/" + info.internalName + "/info.png");
+		ObjectRenderer.renderTexturedRect(posx - width / 2 + 32 + 4, posy, 64, 64, "gameDir://worlds/" + info.getInternalName() + "/info.png");
 
 		FontRenderer2.setLengthCutoff(true, width - 72);
-		FontRenderer2.drawTextUsingSpecificFont(posx - width / 2 + 72, posy, 0, 1 * 32, info.name + "#CCCCCC    Size : " + info.size.toString() + " ( " + info.size.sizeInChunks / 32 + "x" + info.size.sizeInChunks / 32 + " km )", BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFontRVBA(posx - width / 2 + 72, posy - 32, 0, 1 * 32, info.description, BitmapFont.SMALLFONTS, 1.0f, 0.8f, 0.8f, 0.8f);
+		FontRenderer2.drawTextUsingSpecificFont(posx - width / 2 + 72, posy, 0, 1 * 32, info.getName() + "#CCCCCC    Size : " + info.getSize().toString() + " ( " + info.getSize().sizeInChunks / 32 + "x" + info.getSize().sizeInChunks / 32 + " km )", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFontRVBA(posx - width / 2 + 72, posy - 32, 0, 1 * 32, info.getDescription(), BitmapFont.SMALLFONTS, 1.0f, 0.8f, 0.8f, 0.8f);
 		FontRenderer2.setLengthCutoff(false, -1);
 		return width * 2 - 12;
 	}

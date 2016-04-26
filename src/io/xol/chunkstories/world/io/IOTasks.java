@@ -53,23 +53,23 @@ public class IOTasks extends Thread
 		if(die.get())
 			return;
 		//synchronized (tasks)
-		{
+		//{
 			tasks.add(task);
-		}
+		//}
 		synchronized (this)
 		{
 			notifyAll();
 		}
 		//long id = (long) (Math.random() *  655656);
-		synchronized(tasks)
+		/*synchronized(tasks)
 		{
-			/*Iterator<IOTask> i = tasks.iterator();
+			Iterator<IOTask> i = tasks.iterator();
 			while(i.hasNext())
 			{
 				System.out.println(id+":"+i.next());
 			}
-			System.out.println("Listed tasks");*/
-		}
+			System.out.println("Listed tasks");
+		}*/
 	}
 
 	@Override
@@ -218,13 +218,15 @@ public class IOTasks extends Thread
 			if (holder.isChunkLoaded(x, y, z))// && !overwrite)
 				return true;
 			//Look for
-			holder.lock.lock();
+			holder.compressedChunksLock.lock();
 			byte[] cd = holder.getCompressedData(x, y, z);
+			//holder.lock.lock();
 			if (cd == null || cd.length == 0)
 			{
+				holder.compressedChunksLock.unlock();
 				CubicChunk c = new CubicChunk(world, x, y, z);
 				//System.out.println("No compressed data for this chunk.");
-				holder.lock.unlock();
+				//holder.lock.unlock();
 				world.setChunk(c);
 				return true;
 			}
@@ -240,13 +242,15 @@ public class IOTasks extends Thread
 					System.out.println("Fail @ " + holder + " chunk " + c);
 					//System.out.println("k why man" + holder.isChunkLoaded(x, y, z) + " holder:" + holder + Thread.currentThread().getName());
 				}
+
+				holder.compressedChunksLock.unlock();
 				for (int i = 0; i < 32 * 32 * 32; i++)
 				{
 					int data = ((unCompressedData[i * 4] & 0xFF) << 24) | ((unCompressedData[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData[i * 4 + 2] & 0xFF) << 8) | (unCompressedData[i * 4 + 3] & 0xFF);
 					c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
 				}
 				c.bakeVoxelLightning(false);
-				holder.lock.unlock();
+				//holder.lock.unlock();
 				world.setChunk(c);
 			}
 			return true;
@@ -292,20 +296,7 @@ public class IOTasks extends Thread
 			return;
 		
 		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkX, chunkY, chunkZ, true, overwrite);
-		//System.out.println("req CL "+chunkX+":"+chunkY+":"+chunkZ);
-		//Thread.currentThread().dumpStack();
-
-		// We now do duplicate check in ChunkHolder
-
-		/*for (IOTask ioTask : tasks)
-		{
-			if (ioTask instanceof IOTaskLoadChunk)
-			{
-				IOTaskLoadChunk taskLC = (IOTaskLoadChunk) ioTask;
-				if (taskLC.x == task.x && taskLC.y == task.y && taskLC.z == task.z)
-					return;
-			}
-		}*/
+		
 		addTask(task);
 	}
 
@@ -324,8 +315,6 @@ public class IOTasks extends Thread
 			//Trim world first
 			world.trimRemovableChunks();
 			//System.out.println("Load chunk holder");
-			//Lock
-			holder.lock.lock();
 			if (holder.handler.exists())
 			{
 				//System.out.println("Loading existing chunk holder...");
@@ -342,8 +331,9 @@ public class IOTasks extends Thread
 						size += in.read();
 						chunksSizes[a] = size;
 					}
+					//Lock the holder compressed chunks array !
+					holder.compressedChunksLock.lock();
 					// Then load the chunks
-					// int i = 0;
 					for (int a = 0; a < 8; a++)
 						for (int b = 0; b < 8; b++)
 							for (int c = 0; c < 8; c++)
@@ -359,6 +349,8 @@ public class IOTasks extends Thread
 									// i++;
 								}
 							}
+					//Unlock it immediatly afterwards
+					holder.compressedChunksLock.unlock();
 					// System.out.println("read "+i+" compressed chunks");
 					in.close();
 				}
@@ -373,13 +365,13 @@ public class IOTasks extends Thread
 					return false;
 				}
 			}
+			//Else if no file exists
 			else
 			{
 				RegionSummary chunkSummary = world.regionSummaries.get(holder.regionX * 256, holder.regionZ * 256);
 				//Require a chunk summary to be generated first !
 				if (chunkSummary == null || !chunkSummary.isLoaded())
 				{
-					holder.lock.unlock();
 					return false;
 				}
 				//Generate this crap !
@@ -407,7 +399,6 @@ public class IOTasks extends Thread
 						if(!holder.isChunkLoaded(a, b, c))
 							System.out.println("FATAL. (lourd)"+a+b+c);
 					}*/
-			holder.lock.unlock();
 			//
 			world.trimRemovableChunks();
 			return true;

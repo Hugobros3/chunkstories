@@ -238,3 +238,6 @@ voxel water 128 io.xol.chunkstories.voxel.core.VoxelLiquid
 	liquid: true
 	shading: 1
 end
+
+voxel density 99 io.xol.chunkstories.voxel.core.VoxelMeta16
+end

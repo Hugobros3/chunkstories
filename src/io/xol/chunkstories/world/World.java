@@ -97,12 +97,12 @@ public abstract class World implements WorldInterface
 	{
 		//Builds a new WorldInfo
 		worldInfo = new WorldInfo();
-		worldInfo.name = name;
-		worldInfo.seed = seed;
-		worldInfo.size = size;
+		worldInfo.setName(name);
+		worldInfo.setSeed(seed);
+		worldInfo.setSize(size);
 
 		//Gets generator name
-		worldInfo.generator = WorldGenerators.getWorldGeneratorName(generator);
+		worldInfo.setGeneratorName(WorldGenerators.getWorldGeneratorName(generator));
 		this.generator = generator;
 	
 		//Calls actual constructor
@@ -117,9 +117,9 @@ public abstract class World implements WorldInterface
 		chunksHolder = new ChunksHolders(this, chunksData);
 		regionSummaries = new RegionSummaries(this);
 		logic = Executors.newSingleThreadScheduledExecutor();
-		folder = new File(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.name);
+		folder = new File(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName());
 
-		internalData = new ConfigFile(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.name + "/internal.dat");
+		internalData = new ConfigFile(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName() + "/internal.dat");
 		internalData.load();
 	}
 
@@ -260,7 +260,7 @@ public abstract class World implements WorldInterface
 	@Override
 	public int getMaxHeight()
 	{
-		return worldInfo.size.height * 32;
+		return worldInfo.getSize().height * 32;
 	}
 
 	/* (non-Javadoc)
@@ -269,7 +269,7 @@ public abstract class World implements WorldInterface
 	@Override
 	public int getSizeInChunks()
 	{
-		return worldInfo.size.sizeInChunks;
+		return worldInfo.getSize().sizeInChunks;
 	}
 
 	/* (non-Javadoc)
@@ -295,7 +295,7 @@ public abstract class World implements WorldInterface
 			chunkZ += getSizeInChunks();
 		if (chunkY < 0)
 			return null;
-		if (chunkY >= worldInfo.size.height)
+		if (chunkY >= worldInfo.getSize().height)
 			return null;
 		return chunksHolder.getChunk(chunkX, chunkY, chunkZ, load);
 	}
@@ -341,7 +341,7 @@ public abstract class World implements WorldInterface
 			chunkZ += getSizeInChunks();
 		if (chunkY < 0)
 			return false;
-		if (chunkY >= worldInfo.size.height)
+		if (chunkY >= worldInfo.getSize().height)
 			return false;
 		ChunkHolder h = chunksHolder.getChunkHolder(chunkX, chunkY, chunkZ, false);
 		if (h == null)
@@ -387,8 +387,8 @@ public abstract class World implements WorldInterface
 		z = z % (getSizeInChunks() * 32);
 		if (y < 0)
 			y = 0;
-		if (y > worldInfo.size.height * 32)
-			y = worldInfo.size.height * 32;
+		if (y > worldInfo.getSize().height * 32)
+			y = worldInfo.getSize().height * 32;
 		if (x < 0)
 			x += getSizeInChunks() * 32;
 		if (z < 0)
@@ -438,8 +438,8 @@ public abstract class World implements WorldInterface
 		z = z % (getSizeInChunks() * 32);
 		if (y < 0)
 			y = 0;
-		if (y > worldInfo.size.height * 32)
-			y = worldInfo.size.height * 32;
+		if (y > worldInfo.getSize().height * 32)
+			y = worldInfo.getSize().height * 32;
 		if (x < 0)
 			x += getSizeInChunks() * 32;
 		if (z < 0)
@@ -542,8 +542,8 @@ public abstract class World implements WorldInterface
 		z = z % (getSizeInChunks() * 32);
 		if (y < 0)
 			y = 0;
-		if (y > worldInfo.size.height * 32)
-			y = worldInfo.size.height * 32;
+		if (y > worldInfo.getSize().height * 32)
+			y = worldInfo.getSize().height * 32;
 		if (x < 0)
 			x += getSizeInChunks() * 32;
 		if (z < 0)
@@ -688,8 +688,10 @@ public abstract class World implements WorldInterface
 		Location loc = Client.controlledEntity.getLocation();
 		ChunksIterator it = this.iterator();
 		CubicChunk chunk;
+		int z = 0;
 		while (it.hasNext())
 		{
+			z++;
 			chunk = it.next();
 			if (chunk == null)
 			{
@@ -706,7 +708,7 @@ public abstract class World implements WorldInterface
 				int pCY = (int) loc.y / 32;
 				int pCZ = (int) loc.z / 32;
 
-				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 1) || (chunk.chunkY - pCY) > 3 || (chunk.chunkY - pCY) < -3))
+				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance) || (chunk.chunkY - pCY) > 3 || (chunk.chunkY - pCY) < -3))
 				{
 					if(chunk.chunkRenderData != null)
 						chunk.chunkRenderData.markForDeletion();
@@ -714,6 +716,7 @@ public abstract class World implements WorldInterface
 					keep = false;
 				}
 			}
+			//System.out.println(z);
 			if (!keep)
 				it.remove();
 		}

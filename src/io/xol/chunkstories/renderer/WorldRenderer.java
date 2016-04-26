@@ -511,16 +511,16 @@ public class WorldRenderer
 
 			// Now delete from the worker threads what we won't need anymore
 			chunksRenderer.purgeUselessWork(currentChunkX, currentChunkY, currentChunkZ, sizeInChunks, chunksViewDistance);
-			world.ioHandler.requestChunksUnload(currentChunkX, currentChunkY, currentChunkZ, sizeInChunks, chunksViewDistance + 1);
+			world.ioHandler.requestChunksUnload(currentChunkX, currentChunkY, currentChunkZ, sizeInChunks, chunksViewDistance);
 
 			terrain.updateData();
 			world.regionSummaries.removeFurther(currentChunkX, currentChunkZ, 33);
 
 			chunksChanged = false;
 			// Load nearby chunks
-			for (int t = (currentChunkX - chunksViewDistance - 1); t < currentChunkX + chunksViewDistance + 1; t++)
+			for (int t = (currentChunkX - chunksViewDistance); t < currentChunkX + chunksViewDistance; t++)
 			{
-				for (int g = (currentChunkZ - chunksViewDistance - 1); g < currentChunkZ + chunksViewDistance + 1; g++)
+				for (int g = (currentChunkZ - chunksViewDistance); g < currentChunkZ + chunksViewDistance; g++)
 					for (int b = currentChunkY - 3; b < currentChunkY + 3; b++)
 					{
 						chunk = world.getChunk(t, b, g, true);
@@ -982,7 +982,7 @@ public class WorldRenderer
 			// Set rendering context.
 			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
 
-			Voxel vox = VoxelTypes.get(world.getDataAt((int) viewX, (int) (viewY + 1.3), (int) viewZ, false));
+			Voxel vox = VoxelTypes.get(world.getDataAt((int) viewX, (int) (viewY + 0), (int) viewZ, false));
 			liquidBlocksShader.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
 
 			//liquidBlocksShader.setUniformInt("pass", pass-1);
@@ -1069,8 +1069,11 @@ public class WorldRenderer
 		if(FastConfig.showDebugInfo)
 		{
 			OverlayRenderer.glColor4f(4, 0, 0, 1);
-			for(CubicChunk c : this.renderList)
+			ChunksIterator it = world.iterator();
+			CubicChunk c;
+			while(it.hasNext())
 			{
+				c = it.next();
 				ChunkRenderData crd = c.chunkRenderData;
 				if(crd != null)
 				{
@@ -1361,7 +1364,7 @@ public class WorldRenderer
 		postProcess.setUniformSampler(7, "ssaoBuffer", this.ssaoBuffer);
 		postProcess.setUniformSampler(8, "debugBuffer", this.loadedChunksMap);
 
-		Voxel vox = VoxelTypes.get(world.getDataAt((int) viewX, (int) (viewY + 1.3), (int) viewZ, false));
+		Voxel vox = VoxelTypes.get(world.getDataAt((int) viewX, (int) (viewY + 0), (int) viewZ, false));
 		postProcess.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
 		postProcess.setUniformFloat("time", animationTimer);
 

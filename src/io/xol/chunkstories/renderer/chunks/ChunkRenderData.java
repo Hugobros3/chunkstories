@@ -4,17 +4,12 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static io.xol.chunkstories.renderer.debug.OverlayRenderer.GL_LINES;
-import static io.xol.chunkstories.renderer.debug.OverlayRenderer.GL_TEXTURE_2D;
-import static io.xol.chunkstories.renderer.debug.OverlayRenderer.glBegin;
-import static io.xol.chunkstories.renderer.debug.OverlayRenderer.glColor4f;
-import static io.xol.chunkstories.renderer.debug.OverlayRenderer.glEnable;
-import static io.xol.chunkstories.renderer.debug.OverlayRenderer.glEnd;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL15.*;
 import io.xol.chunkstories.renderer.SelectionRenderer;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
+import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.model.RenderingContext;
 
@@ -126,6 +121,7 @@ public class ChunkRenderData
 
 	public int renderCubeSolidBlocks(RenderingContext renderingContext)
 	{
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		if (this.vboSizeFullBlocks > 0)
 		{
 			// We're going back to interlaced format
@@ -136,6 +132,7 @@ public class ChunkRenderData
 			renderingContext.setVertexAttributePointer("colorIn", 4, GL_UNSIGNED_BYTE, true, 16, 8);
 			renderingContext.setVertexAttributePointer("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 16, 12);
 			glDrawArrays(GL_TRIANGLES, 0, vboSizeFullBlocks);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			return vboSizeFullBlocks;
 		}
 		return 0;
@@ -179,6 +176,9 @@ public class ChunkRenderData
 	
 	public void renderChunkBounds(RenderingContext renderingContext)
 	{
+		//if(chunk.chunkZ != 5)
+		//	return;
+		OverlayRenderer.glColor4f(5, 0, (float) Math.random() * 0.01f, 1);
 		SelectionRenderer.cubeVertices(chunk.chunkX * 32 + 16, chunk.chunkY * 32, chunk.chunkZ * 32 + 16, 32, 32, 32);
 	}
 }

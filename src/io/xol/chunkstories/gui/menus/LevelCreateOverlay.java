@@ -62,7 +62,8 @@ public class LevelCreateOverlay extends Overlay
 		}
 		if (createOption.clicked())
 		{
-			WorldInfo info = new WorldInfo("", "", "", "", WorldSize.MEDIUM);
+			String generator = "noise";
+			WorldInfo info = new WorldInfo(levelName.text, ""+System.currentTimeMillis(), "", WorldSize.MEDIUM, generator);
 			
 			Client.world = new WorldLocalClient(info);
 			Client.world.startLogic();

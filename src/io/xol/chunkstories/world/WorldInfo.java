@@ -3,9 +3,11 @@ package io.xol.chunkstories.world;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
@@ -22,23 +24,29 @@ public class WorldInfo
 {
 	File folder;
 
-	public String internalName = "";
-	public String name;
-	public String seed;
-	public String description = "";
-	public WorldSize size;
-	public String generator;
+	private String internalName = "";
+	private String name;
+	private String seed;
+	private String description = "";
+	private WorldSize size;
+	private String generatorName;
 
 	WorldInfo()
 	{
 		
 	}
 	
-	public WorldInfo(String internalName, String seed, String description, String generator, WorldSize size)
+	public WorldInfo(String name, String seed, String description, WorldSize size, String generator)
 	{
-		
+		super();
+		this.setName(name);
+		this.setSeed(seed);
+		this.setDescription(description);
+		this.setSize(size);
+		this.setGeneratorName(generator);
 	}
-	
+
+
 	public WorldInfo(String fileContents, String internalName)
 	{
 		this.internalName = internalName;
@@ -52,8 +60,8 @@ public class WorldInfo
 		{
 			this.internalName = internalName;
 
-			FileReader fileReader = new FileReader(file);
-			BufferedReader reader = new BufferedReader(fileReader);
+			//FileReader fileReader = new FileReader(file);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 			String line = "";
 			while ((line = reader.readLine()) != null)
 			{
@@ -80,19 +88,19 @@ public class WorldInfo
 			switch (parameterName)
 			{
 			case "name":
-				name = parameterValue;
+				setName(parameterValue);
 				break;
 			case "seed":
-				seed = parameterValue;
+				setSeed(parameterValue);
 				break;
 			case "worldgen":
-				generator = parameterValue;
+				setGeneratorName(parameterValue);
 				break;
 			case "size":
-				size = WorldSize.getWorldSize(parameterValue);
+				setSize(WorldSize.getWorldSize(parameterValue));
 				break;
 			case "description":
-				description = parameterValue;
+				setDescription(parameterValue);
 				break;
 			default:
 				break;
@@ -119,12 +127,12 @@ public class WorldInfo
 
 	public String[] saveText()
 	{
-		return new String[] { "name: " + name, "seed: " + seed, "worldgen: " + generator, "size: " + size.name() };
+		return new String[] { "name: " + getName(), "seed: " + getSeed(), "worldgen: " + getGeneratorName(), "size: " + getSize().name() };
 	}
 
 	public WorldGenerator getGenerator()
 	{
-		WorldGenerator generator = WorldGenerators.getWorldGenerator(this.generator);
+		WorldGenerator generator = WorldGenerators.getWorldGenerator(this.getGeneratorName());
 		return generator;
 	}
 
@@ -139,6 +147,62 @@ public class WorldInfo
 		user.sendPacket(packet);
 	}
 	
+	public String getInternalName()
+	{
+		return internalName;
+	}
+
+	public String getName()
+	{
+		return name;
+	}
+
+	public void setName(String name)
+	{
+		this.name = name;
+		this.internalName = name.replaceAll("[^\\w\\s]","_");
+	}
+
+	public String getSeed()
+	{
+		return seed;
+	}
+
+	public void setSeed(String seed)
+	{
+		this.seed = seed;
+	}
+
+	public String getDescription()
+	{
+		return description;
+	}
+
+	public void setDescription(String description)
+	{
+		this.description = description;
+	}
+
+	public WorldSize getSize()
+	{
+		return size;
+	}
+
+	public void setSize(WorldSize size)
+	{
+		this.size = size;
+	}
+
+	public String getGeneratorName()
+	{
+		return generatorName;
+	}
+
+	public void setGeneratorName(String generatorName)
+	{
+		this.generatorName = generatorName;
+	}
+
 	public enum WorldSize
 	{
 		TINY(32, "1x1km"), SMALL(64, "2x2km"), MEDIUM(128, "4x4km"), LARGE(512, "16x16km"), HUGE(2048, "64x64km");

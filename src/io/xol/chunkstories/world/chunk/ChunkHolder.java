@@ -25,7 +25,7 @@ public class ChunkHolder
 
 	// Holds 8x8x8 CubicChunks
 	private CubicChunk[][][] data = new CubicChunk[8][8][8];
-	private boolean[][][] requested = new boolean[8][8][8];
+	//private boolean[][][] requested = new boolean[8][8][8];
 	public byte[][][][] compressedChunks = new byte[8][8][8][];
 
 	AtomicInteger loadedChunks = new AtomicInteger();
@@ -134,20 +134,27 @@ public class ChunkHolder
 				z += 4;
 			}
 			compressedDataLength = compressor.compress(toCompressData, compressedData);
-			//
+			
+			// Locks the compressedChunks array so nothing freakes out
+			compressedChunksLock.lock();
 			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = new byte[compressedDataLength];
 			System.arraycopy(compressedData, 0, compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8], 0, compressedDataLength);
+			compressedChunksLock.unlock();
+			
 			//System.out.println("Generated compressed data for chunk "+chunkX+"."+chunkY+"."+chunkZ+" size="+compressedDataLength);
 		}
 		else
+		{
+			compressedChunksLock.lock();
 			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
+			compressedChunksLock.unlock();
+		}
 		
 		chunk.lastModificationSaved.set(System.currentTimeMillis());
 	}
 
 	public byte[] getCompressedData(int chunkX, int chunkY, int chunkZ)
 	{
-		//byte[] cd = compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8];
 		return compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8];
 	}
 
@@ -160,7 +167,7 @@ public class ChunkHolder
 			// chunkZ, true));
 			//if(!requested[chunkX % 8][chunkY % 8][chunkZ % 8])
 			{
-				requested[chunkX % 8][chunkY % 8][chunkZ % 8] = true;
+				//requested[chunkX % 8][chunkY % 8][chunkZ % 8] = true;
 				//System.out.println("IO REQUEST");
 				world.ioHandler.requestChunkLoad(chunkX, chunkY, chunkZ, false);
 				if(world.ioHandler instanceof IOTasksImmediate)
@@ -176,34 +183,43 @@ public class ChunkHolder
 
 	public Chunk set(int chunkX, int chunkY, int chunkZ, CubicChunk c)
 	{
-		lock.lock();
+		chunksArrayLock.lock();
+		
 		if (data[chunkX % 8][chunkY % 8][chunkZ % 8] == null && c != null)
 			loadedChunks.incrementAndGet();
+		
+		//Remove any form of cuck
+		if(data[chunkX % 8][chunkY % 8][chunkZ % 8] != null && data[chunkX % 8][chunkY % 8][chunkZ % 8].dataPointer != c.dataPointer)
+		{
+			System.out.println("Overriding existing chunk, deleting old one");
+			data[chunkX % 8][chunkY % 8][chunkZ % 8].destroy();
+		}
+		
 		data[chunkX % 8][chunkY % 8][chunkZ % 8] = c;
-		requested[chunkX % 8][chunkY % 8][chunkZ % 8] = false;
+		// requested[chunkX % 8][chunkY % 8][chunkZ % 8] = false;
 		// System.out.println("did set chunk lol");
 		c.holder = this;
-		lock.unlock();
+		chunksArrayLock.unlock();
 		return c;
 	}
 	
-	public SimpleLock lock = new SimpleLock();
+	public SimpleLock chunksArrayLock = new SimpleLock();
+	public SimpleLock compressedChunksLock = new SimpleLock();
 
 	public boolean removeChunk(int chunkX, int chunkY, int chunkZ)
 	{
-		lock.lock();
 		CubicChunk c = data[chunkX % 8][chunkY % 8][chunkZ % 8];
 		if (c != null)
 		{
-			// System.out.println("freed"+c);
-			// save(chunkX,chunkY,chunkZ);
 			compressChunkData(c);
+
+			chunksArrayLock.lock();
 			c.destroy();
 			data[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
 			//compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
 			loadedChunks.decrementAndGet();
+			chunksArrayLock.unlock();
 		}
-		lock.unlock();
 		return loadedChunks.get() == 0;
 	}
 
@@ -240,9 +256,14 @@ public class ChunkHolder
 
 	public void destroy()
 	{
-		//System.out.println("Unloaded chunk holder with "+entities.size()+" entities remaining in it.");
+		freeAll();
+		System.out.println("Unloaded chunk holder with "+" 0 entities remaining in it.");
 	}
 
+	/**
+	 * Generates all chunks in the holder (8x8x8)
+	 * Will lock loaded chunks array
+	 */
 	public void generateAll()
 	{
 		// Generate terrain for the chunk holder !
@@ -259,9 +280,11 @@ public class ChunkHolder
 					if(chunk == null)
 						System.out.println("hmmmmm");
 					chunk.holder = this;
-					data[a][b][c] = chunk;
-					compressChunkData(data[a][b][c]);
+					this.set(cx, cy, cz, chunk);
+					//compressChunkData(data[a][b][c]);
 				}
+		
+		compressAll();
 	}
 	
 	long uuid;
@@ -274,7 +297,6 @@ public class ChunkHolder
 
 	public void compressAll()
 	{
-		lock.lock();
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
@@ -284,6 +306,5 @@ public class ChunkHolder
 					//else
 					//	compressedChunks[a][b][c] = null;
 				}
-		lock.unlock();
 	}
 }

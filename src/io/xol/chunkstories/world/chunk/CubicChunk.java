@@ -97,7 +97,7 @@ public class CubicChunk implements Chunk
 			z += 32;
 		//Allocate if it makes sense
 		if (dataPointer < 0 && data != 0)
-			dataPointer = world.chunksData.malloc();
+			dataPointer = world.chunksData.malloc(this);
 		if (dataPointer >= 0)
 		{
 			int dataBefore = world.chunksData.grab(dataPointer)[x * 32 * 32 + y * 32 + z];
@@ -120,7 +120,7 @@ public class CubicChunk implements Chunk
 			z += 32;
 		//Allocate if it makes sense
 		if (dataPointer < 0 && data != 0)
-			dataPointer = world.chunksData.malloc();
+			dataPointer = world.chunksData.malloc(this);
 		if (dataPointer >= 0)
 		{
 			world.chunksData.grab(dataPointer)[x * 32 * 32 + y * 32 + z] = data;

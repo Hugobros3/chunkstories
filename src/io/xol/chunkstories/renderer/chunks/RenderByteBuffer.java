@@ -24,6 +24,8 @@ public class RenderByteBuffer
 	{
 		if(i0 < 0 || i1 < 0 || i2 < 0)
 			System.exit(0);
+		if(byteBuffer.position() == byteBuffer.capacity())
+			return;
 		byteBuffer.put((byte) i0);
 		byteBuffer.put((byte) i1);
 		byteBuffer.put((byte) i2);
@@ -37,6 +39,8 @@ public class RenderByteBuffer
 	
 	public void addVerticeFloat(float f0, float f1, float f2)
 	{
+		if(byteBuffer.position() == byteBuffer.capacity())
+			return;
 		byteBuffer.putFloat(f0);
 		byteBuffer.putFloat(f1);
 		byteBuffer.putFloat(f2);
@@ -44,6 +48,8 @@ public class RenderByteBuffer
 	
 	public void addTexCoordInt(int i0, int i1)
 	{
+		if(byteBuffer.position() == byteBuffer.capacity())
+			return;
 		byteBuffer.put((byte) ((i0) & 0xFF));
 		byteBuffer.put((byte) ((i0 >> 8) & 0xFF));
 		byteBuffer.put((byte) ((i1) & 0xFF));
@@ -57,6 +63,8 @@ public class RenderByteBuffer
 	
 	public void addColors(float f0, float f1, float f2)
 	{
+		if(byteBuffer.position() == byteBuffer.capacity())
+			return;
 		byteBuffer.put((byte) (f0 * 255));
 		byteBuffer.put((byte) (f1 * 255));
 		byteBuffer.put((byte) (f2 * 255));
@@ -65,6 +73,8 @@ public class RenderByteBuffer
 	
 	public void addNormalsInt(int i0, int i1, int i2, boolean wavy)
 	{
+		if(byteBuffer.position() == byteBuffer.capacity())
+			return;
 		int a = (i0) & 0x3FF;
 		int b = ((i1) & 0x3FF) << 10;
 		int c = ((i2) & 0x3FF) << 20;

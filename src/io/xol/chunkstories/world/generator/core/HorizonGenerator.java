@@ -16,15 +16,15 @@ public class HorizonGenerator extends WorldGenerator
 	Random rnd = new Random();
 	SeededSimplexNoiseGenerator ssng;
 	
+	int ws;
+	
 	@Override
 	public void initialize(World w)
 	{
 		super.initialize(w);
-		ssng = new SeededSimplexNoiseGenerator(w.getWorldInfo().seed);
+		ssng = new SeededSimplexNoiseGenerator(w.getWorldInfo().getSeed());
 		ws = world.getSizeInChunks() * 32;
 	}
-	
-	int ws;
 	
 	@Override
 	public CubicChunk generateChunk(int cx, int cy, int cz)

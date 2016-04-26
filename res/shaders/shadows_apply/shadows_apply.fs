@@ -107,44 +107,54 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	//Shadows sampling
 	vec4 coordinatesInShadowmap = accuratizeShadow(shadowMatrix * (untranslatedMVPInv * worldSpacePosition));
 
-	<ifdef shadows>
-	float edgeSmoother = 0.0;
-	float clamped = clamp(NdotL, 0.0, 0.1);
-	//if(NdotL < 0.1)
-	//if(meta.a > 0.5)
-		opacity = mix(opacity, clamp(1.0-(10.0*clamped), 0.0, 1.0), meta.a);
+	//Declaration here
+	vec3 finalLight = vec3(1.0, 1.0, 0.0);
 	
-	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
-	{
-		float bias = (1.0 - meta.a) * 0.0010 + clamp(0.0035*tan(acos(NdotL)) - 0.01075, 0.0005,0.0025 ) * (1.0 + 3.0 * clamp(2.0 * coordinatesInShadowmap.w - 1.0, 0.0, 100.0));
-		edgeSmoother = 1.0-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5)-0.25)*4.0+max(0,abs(coordinatesInShadowmap.y-0.5)-0.25)*4.0, 3.0), 0.0, 1.0);
-		opacity += edgeSmoother * (1.0-clamp((shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0).r * 1.5 - 0.25), 0.0, 1.0));
-	}
-	
-	//opacity += 1-NdotL;
-	
-	<endif shadows>
-	//vec4 light = texture2D(comp_light, screenCoord);
-	float sunLightMultiplier = meta.y;
-	
-	<ifdef !shadows>
-	float opacityModified = 0.0;
-	vec3 shadingDir = normalize(normalMatrixInv * normal);
-	opacityModified += 0.25 * abs(dot(vec3(1.0, 0.0, 0.0), shadingDir));
-	opacityModified += 0.45 * abs(dot(vec3(0.0, 0.0, 1.0), shadingDir));
-	opacityModified += 0.6 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
-	
-	opacity = mix(opacity, opacityModified, meta.a);
-	<endif !shadows>
-	opacity = clamp(opacity, 0.0, 1.0);
-	
-	float sunSpec = specular * pow(clamp(dot(normalize(reflect(worldSpacePosition.xyz, normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),750.0);
-	
+	//Block light input, modified linearly according to time of day
 	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0.0, meta.y)).rgb;
 	baseLight *= texture2DGammaIn(lightColors, vec2(time, 1.0)).rgb;
-	vec3 finalLight = baseLight * pow(mix(shadowColor, sunColor, (1.0 - opacity * shadowStrength) * shadowVisiblity), vec3(gamma));
+	
+	<ifdef shadows>
+	float clamped = clamp(NdotL, 0.0, 0.1);
+	
+	//How much in shadows's brightness the object is
+	float shadowIllumination = 0.0;
+	
+	//How much in shadow influence's zone the object is
+	float edgeSmoother = 0.0;
+	
+	//How much does the pixel is lit by directional light
+	float directionalLightning = clamp((10.0*clamped) + (1 - meta.a), 0.0, 1.0);
+	
+	//opacity = mix(opacity, clamp(1.0-(10.0*clamped), 0.0, 1.0), meta.a);
+	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
+	{
+		//Bias to avoid shadow acne
+		float bias = (1.0 - meta.a) * 0.0010 + clamp(0.0035*tan(acos(NdotL)) - 0.01075, 0.0005,0.0025 ) * (1.0 + 3.0 * clamp(2.0 * coordinatesInShadowmap.w - 1.0, 0.0, 100.0));
+		//Are we inside the shadowmap zone edge ?
+		edgeSmoother = 1-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5)-0.25)*4.0+max(0,abs(coordinatesInShadowmap.y-0.5)-0.25)*4.0, 3.0), 0.0, 1.0);
+		//
+		shadowIllumination += clamp((shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0).r * 1.5 - 0.25), 0.0, 1.0);
+	}
+	
+	//float sunSpec = specular * pow(clamp(dot(normalize(reflect(worldSpacePosition.xyz, normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),750.0);
+	
+	float sunlightAmount = ( directionalLightning * ( mix( shadowIllumination, meta.y, 1-edgeSmoother) ) ) * shadowStrength * shadowVisiblity;
+	
+	finalLight = mix(baseLight * pow(shadowColor, vec3(gamma)), pow(sunColor, vec3(gamma)), sunlightAmount);
+	
+	<endif shadows>
 	<ifdef !shadows>
-	//finalLight = pow(finalLight, vec3(gamma));
+		// Simple lightning for lower end machines
+		float opacityModified = 0.0;
+		vec3 shadingDir = normalize(normalMatrixInv * normal);
+		opacityModified += 0.25 * abs(dot(vec3(1.0, 0.0, 0.0), shadingDir));
+		opacityModified += 0.45 * abs(dot(vec3(0.0, 0.0, 1.0), shadingDir));
+		opacityModified += 0.6 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
+		
+		opacity = mix(opacity, opacityModified, meta.a);
+		finalLight = mix(baseLight, vec3(0.0), opacityModified);
+		//finalLight = pow(finalLight, vec3(gamma));
 	<endif !shadows>
 	
 	finalLight += texture2DGammaIn(blockLightmap, vec2(meta.x, 0.0)).rgb;
