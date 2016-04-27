@@ -72,15 +72,12 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 			if (data != null)
 			{
-				// System.out.println("Running task x:" + x + "y:" + y + "z:" +
-				// z + " data.length=" + data.length + " md5:" +
-				// toStr(md.digest(data)));
 				try
 				{
-					decompressor.decompress(data, unCompressedData);
+					decompressor.decompress(data, unCompressedData.get());
 					for (int i = 0; i < 32 * 32 * 32; i++)
 					{
-						int data = ((unCompressedData[i * 4] & 0xFF) << 24) | ((unCompressedData[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData[i * 4 + 2] & 0xFF) << 8) | (unCompressedData[i * 4 + 3] & 0xFF);
+						int data = ((unCompressedData.get()[i * 4] & 0xFF) << 24) | ((unCompressedData.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedData.get()[i * 4 + 3] & 0xFF);
 						c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
 					}
 				}

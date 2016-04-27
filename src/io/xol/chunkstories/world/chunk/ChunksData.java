@@ -59,7 +59,7 @@ public class ChunksData
 	{
 		// data[i] = new int[32][32][32];
 		// System.out.println("freeing ["+i+"] leaving "+(Runtime.getRuntime().freeMemory()/1024/1024)+"Mb of ram avaible");
-		if (used[i] != null)
+		if (used[i] == null)
 		{
 			System.out.println("Why would you free a free chunkData ?");
 			return;
