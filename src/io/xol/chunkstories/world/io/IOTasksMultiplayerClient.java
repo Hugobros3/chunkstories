@@ -35,7 +35,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 		}
 		catch (NoSuchAlgorithmException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -67,14 +66,8 @@ public class IOTasksMultiplayerClient extends IOTasks
 			if (!holder.isLoaded())
 				return false;
 
-			// if (holder.isChunkLoaded(x, y, z) && !overwrite)
-			// return true;
-
 			if (data != null)
 			{
-				// System.out.println("Running task x:" + x + "y:" + y + "z:" +
-				// z + " data.length=" + data.length + " md5:" +
-				// toStr(md.digest(data)));
 				try
 				{
 					decompressor.decompress(data, unCompressedData);
@@ -183,6 +176,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		holder.setLoaded(true);
 	}
 
+	//TODO instance this crap per thread
 	static byte[] uncompressed = new byte[256 * 256 * 4 * 2];
 
 	public class IOTaskProcessCompressedChunkSummaryArrival extends IOTask
@@ -269,8 +263,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 				summariesAlreadyAsked.add(new int[] { rx, rz });
 			}
 			Client.connection.sendTextMessage("world/getChunkSummary:" + rx + ":" + rz);
-			// System.out.println("K x" + chunkX + "y:" + chunkY + "z:" + chunkZ
-			// + "alreadyAsked" + chunksAlreadyAsked.size());
 		}
 	}
 }

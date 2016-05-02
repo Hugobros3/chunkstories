@@ -4,6 +4,10 @@ import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.summary.RegionSummary;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class IOTasksImmediate extends IOTasks {
 
 	public IOTasksImmediate(World world) {

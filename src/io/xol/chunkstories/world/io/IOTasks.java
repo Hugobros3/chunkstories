@@ -28,8 +28,7 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 // http://xol.io
 
 /**
- *	This thread does I/O work in queue.
- *	Extended by IOTaskMultiplayerClient and IOTaskMultiplayerServer for the client/server model.
+ * This thread does I/O work in queue. Extended by IOTaskMultiplayerClient and IOTaskMultiplayerServer for the client/server model.
  */
 public class IOTasks extends Thread
 {
@@ -50,9 +49,9 @@ public class IOTasks extends Thread
 
 	public void addTask(IOTask task)
 	{
-		if(die.get())
+		if (die.get())
 			return;
-		
+
 		tasks.add(task);
 		synchronized (this)
 		{
@@ -131,14 +130,12 @@ public class IOTasks extends Thread
 					//ChunkStoriesLogger.getInstance().info("processing task : "+task);
 					boolean ok = task.run();
 					// If it returns false, requeue it.
-					//synchronized (tasks)
+					if (!ok)
 					{
-						if (!ok)
-						{
-							//System.out.println("rescheduling"+task);
-							tasks.add(task);
-						}
+						//System.out.println("rescheduling"+task);
+						tasks.add(task);
 					}
+
 				}
 				catch (Exception e)
 				{
@@ -194,24 +191,22 @@ public class IOTasks extends Thread
 			// requeue the job for later.
 			if (holder == null)
 			{
-				//System.out.println("holder null");
 				return false;
 			}
 			if (!holder.isLoaded())
 			{
-				//System.out.println("holder not yet loaded");
 				return false;
 			}
 			//Already loaded
 			if (holder.isChunkLoaded(x, y, z))// && !overwrite)
 				return true;
 			//Look for
-			holder.compressedChunksLock.lock();
+			holder.compressedChunksLock.beginRead();
 			byte[] cd = holder.getCompressedData(x, y, z);
 			//holder.lock.lock();
 			if (cd == null || cd.length == 0)
 			{
-				holder.compressedChunksLock.unlock();
+				holder.compressedChunksLock.endRead();
 				CubicChunk c = new CubicChunk(world, x, y, z);
 				//System.out.println("No compressed data for this chunk.");
 				//holder.lock.unlock();
@@ -231,14 +226,13 @@ public class IOTasks extends Thread
 					//System.out.println("k why man" + holder.isChunkLoaded(x, y, z) + " holder:" + holder + Thread.currentThread().getName());
 				}
 
-				holder.compressedChunksLock.unlock();
+				holder.compressedChunksLock.endRead();
 				for (int i = 0; i < 32 * 32 * 32; i++)
 				{
 					int data = ((unCompressedData[i * 4] & 0xFF) << 24) | ((unCompressedData[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData[i * 4 + 2] & 0xFF) << 8) | (unCompressedData[i * 4 + 3] & 0xFF);
 					c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
 				}
 				c.bakeVoxelLightning(false);
-				//holder.lock.unlock();
 				world.setChunk(c);
 			}
 			return true;
@@ -249,19 +243,19 @@ public class IOTasks extends Thread
 		{
 			return "[IOTaskLoadChunk x=" + x + " y= " + y + " z= " + z + "]";
 		}
-		
+
 		@Override
 		public boolean equals(Object o)
 		{
-			if(o != null && o instanceof IOTaskLoadChunk)
+			if (o != null && o instanceof IOTaskLoadChunk)
 			{
-				IOTaskLoadChunk comp = ((IOTaskLoadChunk)o);
-				if(comp.x == this.x && comp.y == this.y && comp.z == this.z)
+				IOTaskLoadChunk comp = ((IOTaskLoadChunk) o);
+				if (comp.x == this.x && comp.y == this.y && comp.z == this.z)
 					return true;
 			}
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
@@ -282,9 +276,9 @@ public class IOTasks extends Thread
 			return;
 		if (chunkY >= h)
 			return;
-		
+
 		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkX, chunkY, chunkZ, true, overwrite);
-		
+
 		addTask(task);
 	}
 
@@ -302,10 +296,8 @@ public class IOTasks extends Thread
 		{
 			//Trim world first
 			world.trimRemovableChunks();
-			//System.out.println("Load chunk holder");
 			if (holder.handler.exists())
 			{
-				//System.out.println("Loading existing chunk holder...");
 				try
 				{
 					FileInputStream in = new FileInputStream(holder.handler);
@@ -320,7 +312,7 @@ public class IOTasks extends Thread
 						chunksSizes[a] = size;
 					}
 					//Lock the holder compressed chunks array !
-					holder.compressedChunksLock.lock();
+					holder.compressedChunksLock.beginWrite();
 					// Then load the chunks
 					for (int a = 0; a < 8; a++)
 						for (int b = 0; b < 8; b++)
@@ -338,7 +330,7 @@ public class IOTasks extends Thread
 								}
 							}
 					//Unlock it immediatly afterwards
-					holder.compressedChunksLock.unlock();
+					holder.compressedChunksLock.endWrite();
 					// System.out.println("read "+i+" compressed chunks");
 					in.close();
 				}
@@ -365,29 +357,9 @@ public class IOTasks extends Thread
 				//Generate this crap !
 				holder.generateAll();
 				//Pre bake phase 1 lightning
-
-				/*CubicChunk c;
-				ChunksIterator i = holder.iterator();
-				while(i.hasNext())
-				{
-					c = i.next();
-					if(c != null)
-						c.doLightning(false, blockSources, sunSources);
-				}*/
-				//System.out.println("Successfully generated "+holder);
 			}
 			holder.setLoaded(true);
-			//
-
-			//System.out.println("clear"+holder+Thread.currentThread().getName());
-			/*for (int a = 0; a < 8; a++)
-				for (int b = 0; b < 8; b++)
-					for (int c = 0; c < 8; c++)
-					{
-						if(!holder.isChunkLoaded(a, b, c))
-							System.out.println("FATAL. (lourd)"+a+b+c);
-					}*/
-			//
+			
 			world.trimRemovableChunks();
 			return true;
 		}
@@ -395,19 +367,19 @@ public class IOTasks extends Thread
 		@Override
 		public boolean equals(Object o)
 		{
-			if(o != null && o instanceof IOTaskLoadChunkHolder)
+			if (o != null && o instanceof IOTaskLoadChunkHolder)
 			{
-				IOTaskLoadChunkHolder comp = ((IOTaskLoadChunkHolder)o);
-				if(comp.holder.regionX == holder.regionX && comp.holder.regionY == this.holder.regionY && comp.holder.regionZ == this.holder.regionZ)
+				IOTaskLoadChunkHolder comp = ((IOTaskLoadChunkHolder) o);
+				if (comp.holder.regionX == holder.regionX && comp.holder.regionY == this.holder.regionY && comp.holder.regionZ == this.holder.regionZ)
 					return true;
 			}
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
-			return (874 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ ) % 2147483647;
+			return (874 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ) % 2147483647;
 		}
 	}
 
@@ -430,16 +402,7 @@ public class IOTasks extends Thread
 		public boolean run()
 		{
 			// First compress all loaded chunks !
-			/*ChunksIterator i = holder.iterator();
-			CubicChunk cu;
-			while(i.hasNext())
-			{
-				cu = i.next();
-				holder.compressChunkData(cu);
-			}*/
 			holder.compressAll();
-			//for (CubicChunk c : holder.getLoadedChunks())
-			//	holder.compressChunkData(c);
 			// Then write the file.
 			try
 			{
@@ -448,6 +411,7 @@ public class IOTasks extends Thread
 					holder.handler.createNewFile();
 				FileOutputStream out = new FileOutputStream(holder.handler);
 				// int[] chunksSizes = new int[8*8*8];
+				holder.compressedChunksLock.beginRead();
 				// First write the index
 				for (int a = 0; a < 8; a++)
 					for (int b = 0; b < 8; b++)
@@ -473,7 +437,7 @@ public class IOTasks extends Thread
 								out.write(holder.compressedChunks[a][b][c]);
 							}
 						}
-
+				holder.compressedChunksLock.endRead();
 				out.close();
 			}
 			catch (FileNotFoundException e)
@@ -490,19 +454,19 @@ public class IOTasks extends Thread
 		@Override
 		public boolean equals(Object o)
 		{
-			if(o != null && o instanceof IOTaskSaveChunkHolder)
+			if (o != null && o instanceof IOTaskSaveChunkHolder)
 			{
-				IOTaskSaveChunkHolder comp = ((IOTaskSaveChunkHolder)o);
-				if(comp.holder.regionX == holder.regionX && comp.holder.regionY == this.holder.regionY && comp.holder.regionZ == this.holder.regionZ)
+				IOTaskSaveChunkHolder comp = ((IOTaskSaveChunkHolder) o);
+				if (comp.holder.regionX == holder.regionX && comp.holder.regionY == this.holder.regionY && comp.holder.regionZ == this.holder.regionZ)
 					return true;
 			}
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
-			return (666778 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ ) % 2147483647;
+			return (666778 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ) % 2147483647;
 		}
 	}
 
@@ -597,15 +561,15 @@ public class IOTasks extends Thread
 		@Override
 		public boolean equals(Object o)
 		{
-			if(o instanceof IOTaskLoadSummary)
+			if (o instanceof IOTaskLoadSummary)
 			{
-				IOTaskLoadSummary comp = ((IOTaskLoadSummary)o);
-				if(comp.summary.rx == this.summary.rx && comp.summary.rz == this.summary.rz)
+				IOTaskLoadSummary comp = ((IOTaskLoadSummary) o);
+				if (comp.summary.rx == this.summary.rx && comp.summary.rz == this.summary.rz)
 					return true;
 			}
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
@@ -684,7 +648,7 @@ public class IOTasks extends Thread
 			//All saves request are unique
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
@@ -701,12 +665,12 @@ public class IOTasks extends Thread
 	/*public class IOTaskRemoveChunk extends IOTask
 	{
 		CubicChunk chunk;
-
+	
 		public IOTaskRemoveChunk(CubicChunk chunk)
 		{
 			this.chunk = chunk;
 		}
-
+	
 		@Override
 		public boolean run()
 		{
@@ -766,13 +730,13 @@ public class IOTasks extends Thread
 				return task.run(holder);
 			}
 		}
-		
+
 		@Override
 		public boolean equals(Object o)
 		{
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
@@ -795,14 +759,14 @@ public class IOTasks extends Thread
 			notifyAll();
 		}
 	}
-	
+
 	public void shutdown()
 	{
 		synchronized (this)
 		{
 			notifyAll();
 		}
-		while(this.tasks.size() > 0)
+		while (this.tasks.size() > 0)
 		{
 			try
 			{

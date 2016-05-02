@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.chunkstories.world.iterators.ChunkHolderIterator;
+import io.xol.engine.concurrency.SafeWriteLock;
 import io.xol.engine.concurrency.SimpleLock;
 
 import java.io.File;
@@ -45,10 +46,6 @@ public class ChunkHolder
 	// public static byte[] compressedData = new byte[32*32*32*4];
 	byte[] compressedData = new byte[32 * 32 * 32 * 4];
 	private int compressedDataLength = 0;
-
-	//byte[] unCompressedData = new byte[32 * 32 * 32 * 4];
-
-	//public List<Entity> entities = new ArrayList<Entity>();
 	
 	public static Random random = new Random();
 	
@@ -67,45 +64,6 @@ public class ChunkHolder
 			world.ioHandler.requestChunkHolderLoad(this);
 	}
 	
-	/*public List<Entity> getAllLoadedEntities()
-	{
-		List<Entity> localEntities  = new ArrayList<Entity>();
-		synchronized(world.entities)
-		{
-			Iterator<Entity> iterator = world.entities.iterator();
-			Entity entity;
-			while (iterator.hasNext())
-			{
-				entity = iterator.next();
-				if (entity != null && entity.parentHolder != null && entity.parentHolder.equals(this))
-				{
-					localEntities.add(entity);
-				}
-			}
-		}
-		return localEntities;
-	}*/
-	
-	/*public void tick()
-	{
-		try{
-			synchronized(world.entities)
-			{
-				for(Entity entity : world.entities)
-				{
-					if(entity != null)
-						entity.tick();
-				}
-			}
-		}
-		catch(ConcurrentModificationException e)
-		{
-			//e.printStackTrace();
-			System.out.println("bou bouh :'( ");
-		}
-	
-	}*/
-	
 	public void save()
 	{
 		world.ioHandler.requestChunkHolderSave(this);
@@ -113,9 +71,6 @@ public class ChunkHolder
 
 	private void compressChunkData(CubicChunk chunk)
 	{
-		//System.out.println("lastMod: "+chunk.lastModification.get());
-		//System.out.println("lastSave: "+chunk.lastModificationSaved);
-		
 		int chunkX = chunk.chunkX;
 		int chunkY = chunk.chunkY;
 		int chunkZ = chunk.chunkZ;
@@ -138,18 +93,18 @@ public class ChunkHolder
 			assert decompressor.decompress(compressedData, 32 * 32 * 32 * 4).length == 32 * 32 * 32 * 4;
 			
 			// Locks the compressedChunks array so nothing freakes out
-			compressedChunksLock.lock();
+			compressedChunksLock.beginWrite();
 			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = new byte[compressedDataLength];
 			System.arraycopy(compressedData, 0, compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8], 0, compressedDataLength);
-			compressedChunksLock.unlock();
+			compressedChunksLock.endWrite();
 			
 			//System.out.println("Generated compressed data for chunk "+chunkX+"."+chunkY+"."+chunkZ+" size="+compressedDataLength);
 		}
 		else
 		{
-			compressedChunksLock.lock();
+			compressedChunksLock.beginWrite();
 			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
-			compressedChunksLock.unlock();
+			compressedChunksLock.endWrite();
 		}
 		
 		chunk.lastModificationSaved.set(System.currentTimeMillis());
@@ -206,7 +161,7 @@ public class ChunkHolder
 	}
 	
 	public SimpleLock chunksArrayLock = new SimpleLock();
-	public SimpleLock compressedChunksLock = new SimpleLock();
+	public SafeWriteLock compressedChunksLock = new SafeWriteLock();
 
 	public boolean removeChunk(int chunkX, int chunkY, int chunkZ)
 	{
