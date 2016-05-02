@@ -162,7 +162,7 @@ public class CubicChunk implements Chunk
 		Deque<Integer> blockSources = world.dequesPool.grab();
 		Deque<Integer> sunSources = world.dequesPool.grab();
 
-		// Reset any eventual residual data
+		// Reset any prospective residual data
 		blockSources.clear();
 		sunSources.clear();
 		
@@ -189,14 +189,14 @@ public class CubicChunk implements Chunk
 		int data[] = world.chunksData.grab(dataPointer);
 		int modifiedBlocks = 0;
 		
-		// The ints are composed as : 0x0BSMIIII
-		// Second pass : loop fill bfs algo
+		//Checks if the adjacent chunks are done loading
 		CubicChunk adjacentChunkTop = world.getChunk(chunkX, chunkY + 1, chunkZ, false);
 		CubicChunk adjacentChunkBottom = world.getChunk(chunkX, chunkY - 1, chunkZ, false);
 		CubicChunk adjacentChunkFront = world.getChunk(chunkX, chunkY, chunkZ + 1, false);
 		CubicChunk adjacentChunkBack = world.getChunk(chunkX, chunkY, chunkZ - 1, false);
 		CubicChunk adjacentChunkLeft = world.getChunk(chunkX - 1, chunkY, chunkZ, false);
 		CubicChunk adjacentChunkRight = world.getChunk(chunkX + 1, chunkY, chunkZ, false);
+		//Don't spam the requeue requests
 		boolean checkTopBleeding = (adjacentChunkTop != null) && !adjacentChunkTop.needRelightning.get();
 		boolean checkBottomBleeding = (adjacentChunkBottom != null) && !adjacentChunkBottom.needRelightning.get();
 		boolean checkFrontBleeding = (adjacentChunkFront != null) && !adjacentChunkFront.needRelightning.get();

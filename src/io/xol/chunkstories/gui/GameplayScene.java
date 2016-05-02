@@ -439,7 +439,7 @@ public class GameplayScene extends OverlayableScene
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + getLoadedChunksVramFootprint() + ", " + getLoadedTerrainVramFootprint(), BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16,
-				"Chunks to bake : T : " + worldRenderer.chunksRenderer.todo.size() + "   Chunks to upload: " + worldRenderer.chunksRenderer.done.size() + "    " + Client.world.ioHandler.toString(), BitmapFont.SMALLFONTS);
+				"Chunks to bake : T : " + worldRenderer.chunksRenderer.todoQueue.size() + "   Chunks to upload: " + worldRenderer.chunksRenderer.doneQueue.size() + "    " + Client.world.ioHandler.toString(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16, "Position : x:" + bx + " y:" + by + " z:" + bz + " bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
 		if (current == null)
 			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk null", BitmapFont.SMALLFONTS);

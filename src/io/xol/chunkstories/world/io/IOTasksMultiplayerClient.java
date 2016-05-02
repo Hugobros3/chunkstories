@@ -72,12 +72,15 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 			if (data != null)
 			{
+				// System.out.println("Running task x:" + x + "y:" + y + "z:" +
+				// z + " data.length=" + data.length + " md5:" +
+				// toStr(md.digest(data)));
 				try
 				{
-					decompressor.decompress(data, unCompressedData.get());
+					decompressor.decompress(data, unCompressedData);
 					for (int i = 0; i < 32 * 32 * 32; i++)
 					{
-						int data = ((unCompressedData.get()[i * 4] & 0xFF) << 24) | ((unCompressedData.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedData.get()[i * 4 + 3] & 0xFF);
+						int data = ((unCompressedData[i * 4] & 0xFF) << 24) | ((unCompressedData[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData[i * 4 + 2] & 0xFF) << 8) | (unCompressedData[i * 4 + 3] & 0xFF);
 						c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
 					}
 				}
@@ -125,35 +128,36 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 	Set<ChunkLocation> chunksAlreadyAsked = ConcurrentHashMap.newKeySet();
 
-	class ChunkLocation{
+	class ChunkLocation
+	{
 		int chunkX, chunkY, chunkZ;
-		
+
 		public ChunkLocation(int x, int y, int z)
 		{
 			chunkX = x;
 			chunkY = y;
 			chunkZ = z;
 		}
-		
+
 		@Override
 		public boolean equals(Object o)
 		{
-			if(o instanceof ChunkLocation)
+			if (o instanceof ChunkLocation)
 			{
-				ChunkLocation loc = ((ChunkLocation)o);
-				if(loc.chunkX == chunkX && loc.chunkY == chunkY && loc.chunkZ == chunkZ)
+				ChunkLocation loc = ((ChunkLocation) o);
+				if (loc.chunkX == chunkX && loc.chunkY == chunkY && loc.chunkZ == chunkZ)
 					return true;
 			}
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
-			return (chunkX * 65536 * 256 + chunkY * 65536 + chunkZ)%21000000;
+			return (chunkX * 65536 * 256 + chunkY * 65536 + chunkZ) % 21000000;
 		}
 	}
-	
+
 	@Override
 	public void requestChunkLoad(int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
@@ -204,7 +208,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 				// 256 * 4);
 				summary.uploadUpToDate.set(false);
 				summary.loaded.set(true);
-				
+
 				summary.computeMinMaxChunksHeight();
 			}
 			synchronized (summariesAlreadyAsked)

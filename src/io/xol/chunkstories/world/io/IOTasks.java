@@ -41,24 +41,6 @@ public class IOTasks extends Thread
 	int s = 0;
 	int h = 0;
 
-	//Compression bullshit
-	//byte[] unCompressedData = new byte[32 * 32 * 32 * 4];
-	ThreadLocal<byte[]> unCompressedData = new ThreadLocal<byte[]>()
-			{
-				@Override
-				protected byte[] initialValue()
-				{
-					return new byte[32 * 32 * 32 * 4];
-				}
-			};
-			
-	LZ4Factory factory = LZ4Factory.fastestInstance();
-	LZ4FastDecompressor decompressor = factory.fastDecompressor();
-
-	//Used for lightning
-	Deque<Integer> blockSources = new ArrayDeque<Integer>();
-	Deque<Integer> sunSources = new ArrayDeque<Integer>();
-	
 	public IOTasks(World world)
 	{
 		this.world = world;
@@ -70,24 +52,12 @@ public class IOTasks extends Thread
 	{
 		if(die.get())
 			return;
-		//synchronized (tasks)
-		//{
-			tasks.add(task);
-		//}
+		
+		tasks.add(task);
 		synchronized (this)
 		{
 			notifyAll();
 		}
-		//long id = (long) (Math.random() *  655656);
-		/*synchronized(tasks)
-		{
-			Iterator<IOTask> i = tasks.iterator();
-			while(i.hasNext())
-			{
-				System.out.println(id+":"+i.next());
-			}
-			System.out.println("Listed tasks");
-		}*/
 	}
 
 	@Override
@@ -117,6 +87,10 @@ public class IOTasks extends Thread
 			}
 		}
 	}
+
+	byte[] unCompressedData = new byte[32 * 32 * 32 * 4];
+	LZ4Factory factory = LZ4Factory.fastestInstance();
+	LZ4FastDecompressor decompressor = factory.fastDecompressor();
 
 	@Override
 	public void run()
@@ -191,6 +165,10 @@ public class IOTasks extends Thread
 		abstract public boolean run();
 	}
 
+	//Used for lightning
+	Deque<Integer> blockSources = new ArrayDeque<Integer>();
+	Deque<Integer> sunSources = new ArrayDeque<Integer>();
+
 	public class IOTaskLoadChunk extends IOTask
 	{
 		public int x;
@@ -245,17 +223,18 @@ public class IOTasks extends Thread
 				CubicChunk c = new CubicChunk(world, x, y, z);
 				try
 				{
-					decompressor.decompress(cd, unCompressedData.get());
+					decompressor.decompress(cd, unCompressedData);
 				}
 				catch (LZ4Exception e)
 				{
-					System.out.println("Fail @ " + holder + " chunk " + c + "cdLength: " + cd.length);
+					System.out.println("Fail @ " + holder + " chunk " + c);
+					//System.out.println("k why man" + holder.isChunkLoaded(x, y, z) + " holder:" + holder + Thread.currentThread().getName());
 				}
 
 				holder.compressedChunksLock.unlock();
 				for (int i = 0; i < 32 * 32 * 32; i++)
 				{
-					int data = ((unCompressedData.get()[i * 4] & 0xFF) << 24) | ((unCompressedData.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedData.get()[i * 4 + 3] & 0xFF);
+					int data = ((unCompressedData[i * 4] & 0xFF) << 24) | ((unCompressedData[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData[i * 4 + 2] & 0xFF) << 8) | (unCompressedData[i * 4 + 3] & 0xFF);
 					c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
 				}
 				c.bakeVoxelLightning(false);

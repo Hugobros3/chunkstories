@@ -15,18 +15,6 @@ public class IOTasksImmediate extends IOTasks {
 	public void requestChunkLoad(int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
 		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkX, chunkY, chunkZ, true, overwrite);
-		/*synchronized (tasks)
-		{
-			for (IOTask ioTask : tasks)
-			{
-				if (ioTask instanceof IOTaskLoadChunk)
-				{
-					IOTaskLoadChunk taskLC = (IOTaskLoadChunk) ioTask;
-					if (taskLC.x == task.x && taskLC.y == task.y && taskLC.z == task.z)
-						return;
-				}
-			}
-		}*/
 		task.run();
 	}
 
@@ -41,7 +29,6 @@ public class IOTasksImmediate extends IOTasks {
 	public void requestChunkHolderSave(ChunkHolder holder)
 	{
 		IOTask task = new IOTaskSaveChunkHolder(holder);
-		//System.out.println("bs");
 		task.run();
 	}
 

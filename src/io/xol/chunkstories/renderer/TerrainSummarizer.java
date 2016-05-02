@@ -31,7 +31,6 @@ import static org.lwjgl.opengl.GL20.*;
 
 public class TerrainSummarizer
 {
-
 	private static final int TRIANGLES_PER_FACE = 2; // 2 triangles per face
 	private static final int TRIANGLE_SIZE = 3; // 3 vertex per triangles
 	private static final int VERTEX_SIZE = 3; // A vertex is 3 coordinates : xyz
@@ -435,7 +434,6 @@ public class TerrainSummarizer
 	
 	public void updateData()
 	{
-		
 		for(RegionSummaryMesh rs : regionsToRender)
 		{
 			boolean generated = rs.dataSource.uploadTextures();

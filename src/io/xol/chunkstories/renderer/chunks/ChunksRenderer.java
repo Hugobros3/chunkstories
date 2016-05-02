@@ -36,8 +36,8 @@ public class ChunksRenderer extends Thread
 
 	WorldInterface world;
 
-	public Deque<int[]> todo = new ConcurrentLinkedDeque<int[]>();
-	public Queue<ChunkRenderData> done = new ConcurrentLinkedQueue<ChunkRenderData>();
+	public Deque<int[]> todoQueue = new ConcurrentLinkedDeque<int[]>();
+	public Queue<ChunkRenderData> doneQueue = new ConcurrentLinkedQueue<ChunkRenderData>();
 
 	public ByteBufferPool buffersPool;
 
@@ -58,7 +58,7 @@ public class ChunksRenderer extends Thread
 		int[] request = new int[] { chunk.chunkX, chunk.chunkY, chunk.chunkZ };
 		boolean priority = chunk.need_render_fast.get();
 
-		Iterator<int[]> iter = todo.iterator();
+		Iterator<int[]> iter = todoQueue.iterator();
 		int[] lelz;
 		while (iter.hasNext())
 		{
@@ -79,9 +79,9 @@ public class ChunksRenderer extends Thread
 		//chunk.need_render.set(false);
 
 		if (priority)
-			todo.addFirst(request);
+			todoQueue.addFirst(request);
 		else
-			todo.addLast(request);
+			todoQueue.addLast(request);
 		synchronized (this)
 		{
 			notifyAll();
@@ -90,12 +90,12 @@ public class ChunksRenderer extends Thread
 
 	public void clear()
 	{
-		todo.clear();
+		todoQueue.clear();
 	}
 
 	public void purgeUselessWork(int pCX, int pCY, int pCZ, int sizeInChunks, int chunksViewDistance)
 	{
-		Iterator<int[]> iter = todo.iterator();
+		Iterator<int[]> iter = todoQueue.iterator();
 		int[] request;
 		while (iter.hasNext())
 		{
@@ -112,7 +112,7 @@ public class ChunksRenderer extends Thread
 
 	public ChunkRenderData doneChunk()
 	{
-		return done.poll();
+		return doneQueue.poll();
 	}
 
 	@Override
@@ -123,7 +123,7 @@ public class ChunksRenderer extends Thread
 		worldSizeInChunks = world.getSizeInChunks();
 		while (!die.get())
 		{
-			int[] task = todo.pollFirst();
+			int[] task = todoQueue.pollFirst();
 			if (task == null)
 			{
 				try
@@ -1114,20 +1114,17 @@ public class ChunksRenderer extends Thread
 		long cr_convert = System.nanoTime();
 
 		// Prepare output
-		ChunkRenderData rslt = new ChunkRenderData(buffersPool, work);
-		//rslt.x = work.chunkX;
-		//rslt.y = work.chunkY;
-		//rslt.z = work.chunkZ;
+		ChunkRenderData chunkRenderData = new ChunkRenderData(buffersPool, work);
 
 		byteBuffer.clear();
-		rslt.byteBufferPoolId = byteBufferId;// = byteBuffer;//BufferUtils.createByteBuffer(bufferTotalSize);
+		chunkRenderData.byteBufferPoolId = byteBufferId;// = byteBuffer;//BufferUtils.createByteBuffer(bufferTotalSize);
 
-		long cr_buffer = System.nanoTime();
+		//long cr_buffer = System.nanoTime();
 		
 		//Set sizes
-		rslt.vboSizeFullBlocks = rawBlocksBuffer.position()/(16);
-		rslt.vboSizeCustomBlocks = complexBlocksBuffer.position()/(24);
-		rslt.vboSizeWaterBlocks = waterBlocksBuffer.position()/(24);
+		chunkRenderData.vboSizeFullBlocks = rawBlocksBuffer.position()/(16);
+		chunkRenderData.vboSizeCustomBlocks = complexBlocksBuffer.position()/(24);
+		chunkRenderData.vboSizeWaterBlocks = waterBlocksBuffer.position()/(24);
 
 		//Move data in final buffer in correct orders
 		rawBlocksBuffer.limit(rawBlocksBuffer.position());
@@ -1144,7 +1141,7 @@ public class ChunksRenderer extends Thread
 
 		byteBuffer.flip();
 		
-		done.add(rslt);
+		doneQueue.add(chunkRenderData);
 
 		totalChunksRendered.incrementAndGet();
 
