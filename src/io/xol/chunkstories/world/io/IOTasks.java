@@ -87,7 +87,16 @@ public class IOTasks extends Thread
 		}
 	}
 
-	byte[] unCompressedData = new byte[32 * 32 * 32 * 4];
+	//byte[] unCompressedData = new byte[32 * 32 * 32 * 4];
+	static ThreadLocal<byte[]> unCompressedData = new ThreadLocal<byte[]>()
+	{
+		@Override
+		protected byte[] initialValue()
+		{
+			return new byte[32 * 32 * 32 * 4];
+		}
+	};
+
 	LZ4Factory factory = LZ4Factory.fastestInstance();
 	LZ4FastDecompressor decompressor = factory.fastDecompressor();
 
@@ -218,7 +227,7 @@ public class IOTasks extends Thread
 				CubicChunk c = new CubicChunk(world, x, y, z);
 				try
 				{
-					decompressor.decompress(cd, unCompressedData);
+					decompressor.decompress(cd, unCompressedData.get());
 				}
 				catch (LZ4Exception e)
 				{
@@ -229,7 +238,7 @@ public class IOTasks extends Thread
 				holder.compressedChunksLock.endRead();
 				for (int i = 0; i < 32 * 32 * 32; i++)
 				{
-					int data = ((unCompressedData[i * 4] & 0xFF) << 24) | ((unCompressedData[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData[i * 4 + 2] & 0xFF) << 8) | (unCompressedData[i * 4 + 3] & 0xFF);
+					int data = ((unCompressedData.get()[i * 4] & 0xFF) << 24) | ((unCompressedData.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedData.get()[i * 4 + 3] & 0xFF);
 					c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
 				}
 				c.bakeVoxelLightning(false);
@@ -359,7 +368,7 @@ public class IOTasks extends Thread
 				//Pre bake phase 1 lightning
 			}
 			holder.setLoaded(true);
-			
+
 			world.trimRemovableChunks();
 			return true;
 		}

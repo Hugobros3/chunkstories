@@ -44,8 +44,17 @@ public class ChunkHolder
 	public File handler;
 
 	// public static byte[] compressedData = new byte[32*32*32*4];
-	byte[] compressedData = new byte[32 * 32 * 32 * 4];
-	private int compressedDataLength = 0;
+	//byte[] compressedData = new byte[32 * 32 * 32 * 4];
+	
+	private static ThreadLocal<byte[]> compressedData = new ThreadLocal<byte[]>()
+	{
+		@Override
+		protected byte[] initialValue()
+		{
+			return new byte[32 * 32 * 32 * 4];
+		}
+	};
+	//private int compressedDataLength = 0;
 	
 	public static Random random = new Random();
 	
@@ -88,14 +97,14 @@ public class ChunkHolder
 				toCompressData[z + 3] = (byte) ((i) & 0xFF);
 				z += 4;
 			}
-			compressedDataLength = compressor.compress(toCompressData, compressedData);
+			int compressedDataLength = compressor.compress(toCompressData, compressedData.get());
 			
-			assert decompressor.decompress(compressedData, 32 * 32 * 32 * 4).length == 32 * 32 * 32 * 4;
+			assert decompressor.decompress(compressedData.get(), 32 * 32 * 32 * 4).length == 32 * 32 * 32 * 4;
 			
 			// Locks the compressedChunks array so nothing freakes out
 			compressedChunksLock.beginWrite();
 			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = new byte[compressedDataLength];
-			System.arraycopy(compressedData, 0, compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8], 0, compressedDataLength);
+			System.arraycopy(compressedData.get(), 0, compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8], 0, compressedDataLength);
 			compressedChunksLock.endWrite();
 			
 			//System.out.println("Generated compressed data for chunk "+chunkX+"."+chunkY+"."+chunkZ+" size="+compressedDataLength);

@@ -9,40 +9,31 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SafeWriteLock
 {
-	AtomicInteger readers = new AtomicInteger();
-	AtomicBoolean writing = new AtomicBoolean();
+	//AtomicInteger readers = new AtomicInteger();
+	//SimpleLock readersLock = new SimpleLock();
+	SimpleLock writersLock = new SimpleLock();
 
+	int readers = 0;
+	int writers = 0;
+	int writeRequests = 0;
 	/**
 	 * Returns as soon as reading is safe
 	 * If someone is writing it will wait until it's done
 	 */
 	public synchronized void beginRead()
 	{
-		while(true)
-		{
-			synchronized(this)
-			{
-				if(!writing.get())
-				{
-					readers.incrementAndGet();
-					return;
-				}
-			}
-			System.out.println("writing, wait" + writing.get());
+		while(writers > 0 || writeRequests > 0)
 			wait_local();
-		}
+		readers++;
 	}
 
 	/**
 	 * Marks the end of a reading process
 	 */
-	public void endRead()
+	public synchronized void endRead()
 	{
-		readers.decrementAndGet();
-		synchronized (this)
-		{
-			notifyAll();
-		}
+		readers--;
+		notifyAll();
 	}
 
 	/**
@@ -50,30 +41,23 @@ public class SafeWriteLock
 	 */
 	public synchronized void beginWrite()
 	{
-		//Obtain exclusive writing
-		while (!writing.compareAndSet(false, true))
-		{
-			System.out.println("waiting for exclusive write");
+		writeRequests++;
+
+		while(writers > 0 || readers > 0)
 			wait_local();
-		}
-			//Wait for readers to finish
-		while (readers.get() > 0)
-		{
-			System.out.println("waiting for readers to finish");
-			wait_local();
-		}
+		
+		writeRequests--;
+		writers++;
 	}
 
 	/**
 	 * Releases the write lock
 	 */
-	public void endWrite()
+	public synchronized void endWrite()
 	{
-		writing.set(false);
-		synchronized (this)
-		{
-			notifyAll();
-		}
+		writers--;
+		
+		notifyAll();
 	}
 
 	private synchronized void wait_local()

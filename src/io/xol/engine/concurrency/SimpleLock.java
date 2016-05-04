@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SimpleLock
 {
 	// Dead-simple lock
-	AtomicBoolean locked = new AtomicBoolean();
+	private AtomicBoolean locked = new AtomicBoolean();
 	
 	public synchronized void lock()
 	{
