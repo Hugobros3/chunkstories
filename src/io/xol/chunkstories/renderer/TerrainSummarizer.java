@@ -272,53 +272,8 @@ public class TerrainSummarizer
 
 	int lastLevelDetail = -1;
 
-	/*private int drawDetailIntoFloatBuffer(RegionSummaryMesh summary, int level, boolean border, boolean changedRegion, int dx, int dz)
-	{
-
-		int resolution = 2 + level * 4;
-		int nTiles = (int) Math.ceil(32f / resolution);
-		// border = true;
-		int elements = (nTiles * nTiles + nTiles * (border ? 4 : 0)) * 2 * 3;
-
-		FloatBuffer detailBuffer = vboContents[dx][dz][level][border ? 1 : 0];
-		// detailBuffer = this.generateFloatBuffer(level, dx, dz, false);
-		// detailBuffer = this.generateFloatBuffer(level, dx*32, dz*32, false);
-		detailBuffer.position(0);
-
-		// System.out.println(detailBuffer.toString());
-
-		// elements = detailBuffer.capacity();
-		summary.accessFB().put(detailBuffer);
-		// summary.vboBuffer.put(this.generateFloatBuffer(level, dx, dz,
-		// false));
-		summary.vboSize += elements;
-		return elements;
-	}*/
-
 	long lastGen = 0;
 	int totalSize = 0;
-
-	// public FloatBuffer vboBuffer =
-	// BufferUtils.createFloatBuffer(25000*VERTEX_SIZE*TRIANGLE_SIZE*TRIANGLES_PER_FACE);
-
-	/*public RegionSummaryMesh getRegionSummaryAt(int cx, int cz)
-	{
-		int rx = cx / 8;
-		int rz = cz / 8;
-		if (cz < 0 && cz % 8 != 0)
-			rz--;
-		if (cx < 0 && cx % 8 != 0)
-			rx--;
-		for (RegionSummaryMesh rs : regionsToRender)
-		{
-			if (rs.rxDisplay == rx && rs.rzDisplay == rz)
-				return rs;
-		}
-		RegionSummaryMesh rs = new RegionSummaryMesh(rx, rz, world.regionSummaries.get(cx * 32, cz * 32));
-		//System.out.println(rs.dataSource+"");
-		regionsToRender.add(rs);
-		return rs;
-	}*/
 
 	/**
 	 * Regenerates the RegionSummaryMeshes 
@@ -388,30 +343,6 @@ public class TerrainSummarizer
 				int rcz = currentChunkZ % world.getSizeInChunks();
 				if (rcz < 0)
 					rcz += world.getSizeInChunks();
-
-				// Dekal
-				// cs.dekalX = rcx-a;
-				// cs.dekalZ = rcz-b;
-
-				/*int distance = Math.abs(currentChunkX - cameraChunkX) + Math.abs(currentChunkZ - cameraChunkZ);
-				int detail = 0;
-				
-				double distanceScaleFactor = 1.0;
-				if(FastConfig.hqTerrain)
-					distanceScaleFactor = 0.5;
-				
-				if (distance * distanceScaleFactor > 5)
-					detail = 1;
-				if (distance * distanceScaleFactor > 10)
-					detail = 2;
-				if (distance * distanceScaleFactor > 15)
-					detail = 3;
-				if (distance * distanceScaleFactor > 20)
-					detail = 4;
-				
-				int cellSize = (int) Math.pow(2, detail);*/
-
-				//cellSize = 16;
 				
 				int[] heightMap = regionMesh.regionSummary.heights;
 				
@@ -426,26 +357,27 @@ public class TerrainSummarizer
 						int regionMiddleZ = currentRegionZ * 8 + scz;
 						int detail = (int) 
 								(Math.sqrt(Math.abs(regionMiddleX - cameraChunkX)*Math.abs(regionMiddleX - cameraChunkX) 
-										+ Math.abs(regionMiddleZ - cameraChunkZ)*Math.abs(regionMiddleZ - cameraChunkZ)) / (FastConfig.hqTerrain ? 6f : 2f));
+										+ Math.abs(regionMiddleZ - cameraChunkZ)*Math.abs(regionMiddleZ - cameraChunkZ)) / (FastConfig.hqTerrain ? 6f : 4f));
 						
 						if(detail > 5)
 							detail = 5;
 
-						if(!FastConfig.hqTerrain && detail < 1)
-							detail = 1;
+						if(!FastConfig.hqTerrain && detail < 2)
+							detail = 2;
 						
 						details2use[(scx+1)*10+(scz+1)] = detail;
 					}
-				//System.out.println("-/// "+(-8/32)+"/"+(int)Math.floor(-8/32f));
+				
 				for(int scx = 0; scx < 8; scx++)
 					for(int scz = 0; scz < 8; scz++)
 					{
-						int cellSize = (int) Math.pow(2, details2use[(scx+1)*10+(scz+1)]);
+						int details = details2use[(scx+1)*10+(scz+1)];
+						int cellSize = (int) Math.pow(2, details);
 						
 						for(int vx = scx*32; vx < scx*32+32; vx += cellSize)
 							for(int vz = scz*32; vz < scz*32+32; vz += cellSize)
 							{
-								int height = getHeight(heightMap, world, vx, vz, currentRegionX, currentRegionZ, details2use[(scx+1)*10+(scz+1)]);
+								int height = getHeight(heightMap, world, vx, vz, currentRegionX, currentRegionZ, details);
 								int heightXM = getHeight(heightMap, world, vx-cellSize, vz, currentRegionX, currentRegionZ, details2use[((int)Math.floor((vx-cellSize)/32f)+1)*10+(scz+1)]);
 								int heightZM = getHeight(heightMap, world, vx, vz-cellSize, currentRegionX, currentRegionZ, details2use[(scx+1)*10+((int)Math.floor((vz-cellSize)/32f)+1)]);
 								
@@ -508,6 +440,78 @@ public class TerrainSummarizer
 									vertexCount+=6;
 								}
 							}
+						
+						//If the next side has a coarser resolution we want to fill in the gaps
+						//We go alongside the two other sides of the mesh and we add another skirt to match the coarser mesh on the side
+						int nextMeshDetailsX = details2use[(scx+2)*10+(scz+1)];
+						if(nextMeshDetailsX > details)
+						{
+							int vx = scx*32 + 32;
+							for(int vz = scz*32; vz < scz*32+32; vz += cellSize)
+							{
+
+								int height = getHeight(heightMap, world, vx-1, vz, currentRegionX, currentRegionZ, details);
+								int heightNext = getHeight(heightMap, world, vx+1, vz, currentRegionX, currentRegionZ, nextMeshDetailsX);
+								
+								if(heightNext > height)
+								{
+									addVertexShort(regionMeshBuffer, vx, height, vz, 1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightNext, vz, 1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightNext, vz + cellSize, 1, 0, 0);
+									
+									addVertexShort(regionMeshBuffer, vx, height, vz, 1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, height, vz + cellSize, 1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightNext, vz + cellSize, 1, 0, 0);
+									vertexCount+=6;
+								}
+								else if(heightNext < height)
+								{
+									addVertexShort(regionMeshBuffer, vx, height, vz, -1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightNext, vz + cellSize, -1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightNext, vz, -1, 0, 0);
+									
+									addVertexShort(regionMeshBuffer, vx, height, vz, -1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightNext, vz + cellSize, -1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, height, vz + cellSize, -1, 0, 0);
+									vertexCount+=6;
+								}
+							}
+						}
+						
+						int nextMeshDetailsZ = details2use[(scx+1)*10+(scz+2)];
+						if(nextMeshDetailsZ > details)
+						{
+							int vz = scz*32 + 32;
+							for(int vx = scx*32; vx < scx*32+32; vx += cellSize)
+							{
+								int height = getHeight(heightMap, world, vx, vz-1, currentRegionX, currentRegionZ, details);
+								int heightNext = getHeight(heightMap, world, vx, vz+1, currentRegionX, currentRegionZ, nextMeshDetailsZ);
+								
+								if(heightNext > height)
+								{
+									addVertexShort(regionMeshBuffer, vx, height, vz, 0, 0, 1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, 1);
+									addVertexShort(regionMeshBuffer, vx, heightNext, vz, 0, 0, 1);
+									
+									addVertexShort(regionMeshBuffer, vx, height, vz, 0, 0, 1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, 1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, height, vz, 0, 0, 1);
+									vertexCount+=6;
+								}
+								else if(heightNext < height)
+								{
+									addVertexShort(regionMeshBuffer, vx, height, vz, 0, 0, -1);
+									addVertexShort(regionMeshBuffer, vx, heightNext, vz, 0, 0, -1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, -1);
+									
+									addVertexShort(regionMeshBuffer, vx, height, vz, 0, 0, -1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, height, vz, 0, 0, -1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, -1);
+									vertexCount+=6;
+								}
+							}
+						}
+						
 					}
 				
 				//System.out.println("vc:" + vertexCount);

@@ -153,7 +153,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 		opacityModified += 0.6 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
 		
 		opacity = mix(opacity, opacityModified, meta.a);
-		finalLight = mix(baseLight, vec3(0.0), opacityModified);
+		finalLight = mix(baseLight, vec3(0.0), opacity);
 		//finalLight = pow(finalLight, vec3(gamma));
 	<endif !shadows>
 	

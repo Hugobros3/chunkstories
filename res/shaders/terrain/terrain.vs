@@ -120,7 +120,6 @@ void main()
 	
 	lowerFactor = lowerFactorT;
 	//v.y -= 1.0 + lowerFactorT * 2 * lowerFactorT * 2 * 32.0;
-	
 	//v.y = mix(v.y, min(v.y, camPos.y-32.0), clamp(lowerFactorT * 3.0, 0.0, 1.0));
 	
 	vec4 projected = modelViewProjectionMatrix * v;

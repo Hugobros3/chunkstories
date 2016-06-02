@@ -630,7 +630,9 @@ public class WorldRenderer
 		terrainShader.setUniformSamplerCubemap(9, "environmentCubemap", environmentMap);
 		terrainShader.setUniformSampler(8, "glowSampler", glowTexture);
 		terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
-		terrainShader.setUniformSampler(6, "lightColors", lightmapTexture);
+		terrainShader.setUniformSampler(6, "blockLightmap", lightmapTexture);
+		Texture lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
+		terrainShader.setUniformSampler(11, "lightColors", lightColors);
 		terrainShader.setUniformSampler(5, "normalTexture", waterNormalTexture);
 		setupShadowColors(terrainShader);
 		terrainShader.setUniformFloat("time", sky.time);
