@@ -15,6 +15,7 @@ import org.lwjgl.LWJGLException;
 
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
@@ -150,7 +151,7 @@ public class XolioWindow
 			Client.onStart();
 			while (!Display.isCloseRequested() && !closeRequest)
 			{
-				//if (this.currentScene == null || !(currentScene instanceof GameplayScene))
+				if (this.currentScene == null || !(currentScene instanceof GameplayScene))
 					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 				if (resized)
 					resized = false;

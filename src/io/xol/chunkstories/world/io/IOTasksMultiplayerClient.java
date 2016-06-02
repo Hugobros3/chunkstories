@@ -203,7 +203,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 				summary.uploadUpToDate.set(false);
 				summary.loaded.set(true);
 
-				summary.computeMinMaxChunksHeight();
+				summary.computeHeightMetadata();
 			}
 			synchronized (summariesAlreadyAsked)
 			{

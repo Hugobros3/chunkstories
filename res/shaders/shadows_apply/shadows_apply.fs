@@ -164,6 +164,11 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 		ssao *= texture2D(ssaoBuffer, screenCoord).x;
 	<endif ssao>
 	
+	//SSAO * 0.5 + 0.5
+	//(1-Z) * 0.5 + 0.5
+	//0.5 - Z * 0.5 + 0.5
+	//1.0 - Z * 0.5
+	
 	finalLight *= clamp(ssao * 0.5 + 0.5, 0.0, 1.0);
 	inputColor.rgb *= finalLight;
 	

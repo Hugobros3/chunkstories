@@ -3,6 +3,7 @@ package io.xol.chunkstories.renderer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -37,57 +38,27 @@ public class TerrainSummarizer
 
 	World world;
 
-	FloatBuffer[][][][] vboContents = new FloatBuffer[8][8][4][2];
+	int maxLodLevels = 6;
+	FloatBuffer[][][][] vboContents = new FloatBuffer[8][8][maxLodLevels][2];
+	List<RegionMesh> regionsToRender = new ArrayList<RegionMesh>();
 
-	List<RegionSummaryMesh> regionsToRender = new ArrayList<RegionSummaryMesh>();
-
-	FloatBufferPool fbPool = new FloatBufferPool(96, 25000 * VERTEX_SIZE * TRIANGLE_SIZE * TRIANGLES_PER_FACE);
+	//FloatBufferPool fbPool = new FloatBufferPool(96, 25000 * VERTEX_SIZE * TRIANGLE_SIZE * TRIANGLES_PER_FACE);
 
 	public TerrainSummarizer(World world)
 	{
 		this.world = world;
 		for (int dx = 0; dx < 8; dx++)
 			for (int dy = 0; dy < 8; dy++)
-				for (int lod = 0; lod < 4; lod++)
+				for (int lod = 0; lod < maxLodLevels; lod++)
 				{
 					vboContents[dx][dy][lod][0] = generateFloatBuffer(lod, dx * 32, dy * 32, false);
 					vboContents[dx][dy][lod][1] = generateFloatBuffer(lod, dx * 32, dy * 32, true);
 				}
 	}
 
-	class RegionSummaryMesh
-	{
-
-		public RegionSummaryMesh(int rxDisplay, int rzDisplay, RegionSummary dataSource)
-		{
-			this.rxDisplay = rxDisplay;
-			this.rzDisplay = rzDisplay;
-			this.dataSource = dataSource;
-			fbId = fbPool.requestFloatBuffer();
-			vbo = glGenBuffers();
-			// System.out.println("Init rs "+rxDisplay+" : "+rzDisplay+" to "+fbId);
-		}
-
-		int rxDisplay, rzDisplay;
-		RegionSummary dataSource;
-		int fbId;
-		int vbo, vboSize;
-
-		public void delete()
-		{
-			fbPool.releaseFloatBuffer(fbId);
-			glDeleteBuffers(vbo);
-		}
-
-		public FloatBuffer accessFB()
-		{
-			return fbPool.accessFloatBuffer(fbId);
-		}
-	}
-
 	private FloatBuffer generateFloatBuffer(int level, int dx, int dz, boolean border)
 	{
-		int resolution = 2 + level * 4;
+		int resolution = (int) Math.pow(2, level + 1);
 		int nTiles = (int) Math.ceil(32f / resolution);
 		float resolutionf = 32f / nTiles;
 		FloatBuffer terrain = BufferUtils.createFloatBuffer(nTiles * nTiles * VERTEX_SIZE * TRIANGLE_SIZE * TRIANGLES_PER_FACE + (border ? (nTiles * 4 * VERTEX_SIZE * TRIANGLE_SIZE * TRIANGLES_PER_FACE) : 0));
@@ -204,7 +175,7 @@ public class TerrainSummarizer
 		return blocksTexturesSummaryId;
 	}
 
-	int cx, cz;
+	int cameraChunkX, cameraChunkZ;
 
 	public int draw(RenderingContext renderingContext, ShaderProgram terrain)
 	{
@@ -214,19 +185,21 @@ public class TerrainSummarizer
 		//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		
 		int vertexIn = terrain.getVertexAttributeLocation("vertexIn");
+		int normalIn = terrain.getVertexAttributeLocation("normalIn");
 		renderingContext.enableVertexAttribute(vertexIn);	
+		renderingContext.enableVertexAttribute(normalIn);	
 		
 		//Sort to draw near first
-		List<RegionSummaryMesh> regionsToRenderSorted = new ArrayList<RegionSummaryMesh>(regionsToRender);
+		List<RegionMesh> regionsToRenderSorted = new ArrayList<RegionMesh>(regionsToRender);
 		//renderingContext.getCamera().getLocation;
 		Camera camera = renderingContext.getCamera();
 		int camRX = (int) (-camera.pos.x / 256);
 		int camRZ = (int) (-camera.pos.z / 256);
 		
-		regionsToRenderSorted.sort(new Comparator<RegionSummaryMesh>() {
+		regionsToRenderSorted.sort(new Comparator<RegionMesh>() {
 
 			@Override
-			public int compare(RegionSummaryMesh a, RegionSummaryMesh b)
+			public int compare(RegionMesh a, RegionMesh b)
 			{
 				int distanceA = Math.abs(a.rxDisplay - camRX) + Math.abs(a.rzDisplay - camRZ);
 				//System.out.println(camRX + " : " + distanceA);
@@ -236,22 +209,22 @@ public class TerrainSummarizer
 			
 		});
 		
-		for (RegionSummaryMesh rs : regionsToRenderSorted)
+		for (RegionMesh rs : regionsToRenderSorted)
 		{
 			float height = 1024f;
 			if(!renderingContext.getCamera().isBoxInFrustrum(new Vector3f(rs.rxDisplay * 256 + 128, height / 2, rs.rzDisplay * 256 + 128), new Vector3f(256, height, 256)))
 				continue;
 			
-			terrain.setUniformSampler(1, "groundTexture", rs.dataSource.tId);
+			terrain.setUniformSampler(1, "groundTexture", rs.regionSummary.tId);
 
-			glBindTexture(GL_TEXTURE_2D, rs.dataSource.tId);
+			glBindTexture(GL_TEXTURE_2D, rs.regionSummary.tId);
 			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
 			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			
-			terrain.setUniformSampler(0, "heightMap", rs.dataSource.hId);
-			glBindTexture(GL_TEXTURE_2D, rs.dataSource.hId);
+			terrain.setUniformSampler(0, "heightMap", rs.regionSummary.hId);
+			glBindTexture(GL_TEXTURE_2D, rs.regionSummary.hId);
 			if(FastConfig.hqTerrain)
 			{
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,  GL_LINEAR);
@@ -264,7 +237,7 @@ public class TerrainSummarizer
 			}
 			
 			terrain.setUniformSampler1D(2, "blocksTexturesSummary", getBlocksTexturesSummaryId());
-			terrain.setUniformFloat2("regionPosition", rs.dataSource.rx, rs.dataSource.rz);
+			terrain.setUniformFloat2("regionPosition", rs.regionSummary.rx, rs.regionSummary.rz);
 
 			// terrain.setUniformFloat2("chunkPositionActual", cs.dekalX,
 			// cs.dekalZ);
@@ -272,20 +245,23 @@ public class TerrainSummarizer
 
 			glBindBuffer(GL_ARRAY_BUFFER, rs.vbo);
 			//glVertexPointer(3, GL_FLOAT, 0, 0L);
-			glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0L);
+			//glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0L);
+			glVertexAttribPointer(vertexIn, 3, GL_SHORT, false, 8, 0L);
+			glVertexAttribPointer(normalIn, 1, GL_SHORT, false, 8, 6L);
 
 			//if(rs.vbo == 840)
-			//	System.out.println("drawing cs size="+rs.vboSize+" t"+rs.dataSource.hId+"vbo"+rs.vbo);
+			//	System.out.println("drawing cs size="+rs.vboSize+"vbo"+rs.vbo);
 
 			elements += rs.vboSize;
 
-			if (rs.vboSize > 0 && rs.dataSource.hId >= 0)
+			if (rs.vboSize > 0 && rs.regionSummary.hId >= 0)
 				glDrawArrays(GL_TRIANGLES, 0, rs.vboSize);
 		}
 		//System.out.println(regionsToRender.size()+"parts");
 
 		//glDisableClientState(GL_VERTEX_ARRAY);
 		renderingContext.disableVertexAttribute(vertexIn);	
+		renderingContext.disableVertexAttribute(normalIn);	
 		
 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		return elements;
@@ -296,7 +272,7 @@ public class TerrainSummarizer
 
 	int lastLevelDetail = -1;
 
-	private int drawDetailIntoFloatBuffer(RegionSummaryMesh summary, int level, boolean border, boolean changedRegion, int dx, int dz)
+	/*private int drawDetailIntoFloatBuffer(RegionSummaryMesh summary, int level, boolean border, boolean changedRegion, int dx, int dz)
 	{
 
 		int resolution = 2 + level * 4;
@@ -317,16 +293,15 @@ public class TerrainSummarizer
 		// false));
 		summary.vboSize += elements;
 		return elements;
-	}
+	}*/
 
 	long lastGen = 0;
-
 	int totalSize = 0;
 
 	// public FloatBuffer vboBuffer =
 	// BufferUtils.createFloatBuffer(25000*VERTEX_SIZE*TRIANGLE_SIZE*TRIANGLES_PER_FACE);
 
-	public RegionSummaryMesh getRegionSummaryAt(int cx, int cz)
+	/*public RegionSummaryMesh getRegionSummaryAt(int cx, int cz)
 	{
 		int rx = cx / 8;
 		int rz = cz / 8;
@@ -343,49 +318,82 @@ public class TerrainSummarizer
 		//System.out.println(rs.dataSource+"");
 		regionsToRender.add(rs);
 		return rs;
-	}
+	}*/
 
+	/**
+	 * Regenerates the RegionSummaryMeshes 
+	 * @param camPosX
+	 * @param camPosZ
+	 */
+	//Single 6Mb Buffer
+	ShortBuffer regionMeshBuffer = BufferUtils.createShortBuffer(256 * 256 * 5 * TRIANGLE_SIZE * VERTEX_SIZE * TRIANGLES_PER_FACE);
+	
 	public void generateArround(double camPosX, double camPosZ)
 	{
 		long time = System.currentTimeMillis();
 		
-		cx = (int) (camPosX / 32);
-		cz = (int) (camPosZ / 32);
+		cameraChunkX = (int) (camPosX / 32);
+		cameraChunkZ = (int) (camPosZ / 32);
 		
 		totalSize = 0;
 
-		for (RegionSummaryMesh rs : regionsToRender)
+		for (RegionMesh rs : regionsToRender)
 		{
 			rs.delete();
 		}
 		regionsToRender.clear();
 
 		int summaryDistance = 32;
-
-		for (int a = cx - summaryDistance; a < cx + summaryDistance; a++)
+		
+		//Iterate over X chunks but skip whole regions
+		int currentChunkX = cameraChunkX - summaryDistance;
+		while (currentChunkX < cameraChunkX + summaryDistance)
 		{
-			for (int b = cz - summaryDistance; b < cz + summaryDistance; b++)
+			//Computes where are we
+			int currentRegionX = (int)Math.floor(currentChunkX / 8);
+			//if(currentChunkX < 0)
+			//	currentRegionX--;
+			int nextRegionX = currentRegionX+1;
+			int nextChunkX = nextRegionX * 8;
+
+			//System.out.println("cx:" + currentChunkX + "crx: "+ currentRegionX + "nrx: " + nextRegionX + "ncx: " + nextChunkX);
+			
+			//Iterate over Z chunks but skip whole regions
+			int currentChunkZ = cameraChunkZ - summaryDistance; 
+			while(currentChunkZ < cameraChunkZ + summaryDistance)
 			{
-				int rcx = a % world.getSizeInChunks();
+				//Computes where are we
+				int currentRegionZ = (int)Math.floor(currentChunkZ / 8);
+				int nextRegionZ = currentRegionZ+1;
+				//if(currentChunkZ < 0)
+				//	currentRegionZ--;
+				int nextChunkZ = nextRegionZ * 8;
+				
+				//System.out.println("cz:" + currentChunkZ + "crz: "+ currentRegionZ + "nrz: " + nextRegionZ + "ncz: " + nextChunkZ);
+
+				//Clear shit
+				regionMeshBuffer.clear();
+				
+				int rx = currentChunkX / 8;
+				int rz = currentChunkZ / 8;
+				if (currentChunkZ < 0 && currentChunkZ % 8 != 0)
+					rz--;
+				if (currentChunkX < 0 && currentChunkX % 8 != 0)
+					rx--;
+				RegionMesh regionMesh = new RegionMesh(rx, rz, world.regionSummaries.get(currentChunkX * 32, currentChunkZ * 32));
+				
+				int rcx = currentChunkX % world.getSizeInChunks();
 				if (rcx < 0)
 					rcx += world.getSizeInChunks();
-				int rcz = b % world.getSizeInChunks();
+				int rcz = currentChunkZ % world.getSizeInChunks();
 				if (rcz < 0)
 					rcz += world.getSizeInChunks();
-				boolean changedRegion = false;
 
-				RegionSummaryMesh rs = getRegionSummaryAt(a, b);
-				
-				if (lastRegionX != rcx / 8 || lastRegionZ != rcz / 8)
-				{
-					changedRegion = true;
-				}
 				// Dekal
 				// cs.dekalX = rcx-a;
 				// cs.dekalZ = rcz-b;
 
-				int distance = Math.abs(a - cx) + Math.abs(b - cz);
-				boolean border = false;
+				/*int distance = Math.abs(currentChunkX - cameraChunkX) + Math.abs(currentChunkZ - cameraChunkZ);
 				int detail = 0;
 				
 				double distanceScaleFactor = 1.0;
@@ -398,31 +406,126 @@ public class TerrainSummarizer
 					detail = 2;
 				if (distance * distanceScaleFactor > 15)
 					detail = 3;
-				if (distance == 4 || distance == 11 || distance == 16)
-					border = true;
+				if (distance * distanceScaleFactor > 20)
+					detail = 4;
+				
+				int cellSize = (int) Math.pow(2, detail);*/
 
-				// detail = 3;
-				// border = false;
+				//cellSize = 16;
+				
+				int[] heightMap = regionMesh.regionSummary.heights;
+				
+				int vertexCount = 0;
 
-				if (rcx % 8 == 0 || rcz % 8 == 0 || rcx % 8 == 7 || rcz % 8 == 7)
-					border = true;
+				//Details cache array
+				int[] details2use = new int[100];
+				for(int scx = -1; scx < 9; scx++)
+					for(int scz = -1; scz < 9; scz++)
+					{
+						int regionMiddleX = currentRegionX * 8 + scx;
+						int regionMiddleZ = currentRegionZ * 8 + scz;
+						int detail = (int) 
+								(Math.sqrt(Math.abs(regionMiddleX - cameraChunkX)*Math.abs(regionMiddleX - cameraChunkX) 
+										+ Math.abs(regionMiddleZ - cameraChunkZ)*Math.abs(regionMiddleZ - cameraChunkZ)) / (FastConfig.hqTerrain ? 6f : 2f));
+						
+						if(detail > 5)
+							detail = 5;
 
-				totalSize += drawDetailIntoFloatBuffer(rs, detail, border, changedRegion, rcx % 8, rcz % 8);
+						if(!FastConfig.hqTerrain && detail < 1)
+							detail = 1;
+						
+						details2use[(scx+1)*10+(scz+1)] = detail;
+					}
+				//System.out.println("-/// "+(-8/32)+"/"+(int)Math.floor(-8/32f));
+				for(int scx = 0; scx < 8; scx++)
+					for(int scz = 0; scz < 8; scz++)
+					{
+						int cellSize = (int) Math.pow(2, details2use[(scx+1)*10+(scz+1)]);
+						
+						for(int vx = scx*32; vx < scx*32+32; vx += cellSize)
+							for(int vz = scz*32; vz < scz*32+32; vz += cellSize)
+							{
+								int height = getHeight(heightMap, world, vx, vz, currentRegionX, currentRegionZ, details2use[(scx+1)*10+(scz+1)]);
+								int heightXM = getHeight(heightMap, world, vx-cellSize, vz, currentRegionX, currentRegionZ, details2use[((int)Math.floor((vx-cellSize)/32f)+1)*10+(scz+1)]);
+								int heightZM = getHeight(heightMap, world, vx, vz-cellSize, currentRegionX, currentRegionZ, details2use[(scx+1)*10+((int)Math.floor((vz-cellSize)/32f)+1)]);
+								
+								//Unused
+								//int heightZP = getHeight(heightMap, world, vx, vz+cellSize, currentRegionX, currentRegionZ, detail);
+								//int heightXP = getHeight(heightMap, world, vx+cellSize, vz, currentRegionX, currentRegionZ, detail);
+								
+								addVertexShort(regionMeshBuffer, vx, height, vz, 0, 1, 0);
+								addVertexShort(regionMeshBuffer, vx + cellSize, height, vz, 0, 1, 0);
+								addVertexShort(regionMeshBuffer, vx + cellSize, height, vz + cellSize, 0, 1, 0);
 
+								addVertexShort(regionMeshBuffer, vx, height, vz, 0, 1, 0);
+								addVertexShort(regionMeshBuffer, vx + cellSize, height, vz + cellSize, 0, 1, 0);
+								addVertexShort(regionMeshBuffer, vx, height, vz + cellSize, 0, 1, 0);
+								vertexCount+=6;
+								
+								if(heightXM > height)
+								{
+									addVertexShort(regionMeshBuffer, vx, height, vz, 1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightXM, vz, 1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightXM, vz + cellSize, 1, 0, 0);
+									
+									addVertexShort(regionMeshBuffer, vx, height, vz, 1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, height, vz + cellSize, 1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightXM, vz + cellSize, 1, 0, 0);
+									vertexCount+=6;
+								}
+								else if(heightXM < height)
+								{
+									addVertexShort(regionMeshBuffer, vx, height, vz, -1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightXM, vz + cellSize, -1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightXM, vz, -1, 0, 0);
+									
+									addVertexShort(regionMeshBuffer, vx, height, vz, -1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, heightXM, vz + cellSize, -1, 0, 0);
+									addVertexShort(regionMeshBuffer, vx, height, vz + cellSize, -1, 0, 0);
+									vertexCount+=6;
+								}
+								
+								if(heightZM > height)
+								{
+									addVertexShort(regionMeshBuffer, vx, height, vz, 0, 0, 1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, heightZM, vz, 0, 0, 1);
+									addVertexShort(regionMeshBuffer, vx, heightZM, vz, 0, 0, 1);
+									
+									addVertexShort(regionMeshBuffer, vx, height, vz, 0, 0, 1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, heightZM, vz, 0, 0, 1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, height, vz, 0, 0, 1);
+									vertexCount+=6;
+								}
+								else if(heightZM < height)
+								{
+									addVertexShort(regionMeshBuffer, vx, height, vz, 0, 0, -1);
+									addVertexShort(regionMeshBuffer, vx, heightZM, vz, 0, 0, -1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, heightZM, vz, 0, 0, -1);
+									
+									addVertexShort(regionMeshBuffer, vx, height, vz, 0, 0, -1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, height, vz, 0, 0, -1);
+									addVertexShort(regionMeshBuffer, vx + cellSize, heightZM, vz, 0, 0, -1);
+									vertexCount+=6;
+								}
+							}
+					}
+				
+				//System.out.println("vc:" + vertexCount);
+				
+				glBindBuffer(GL_ARRAY_BUFFER, regionMesh.vbo);
+				regionMeshBuffer.flip();
+				glBufferData(GL_ARRAY_BUFFER, regionMeshBuffer, GL_DYNAMIC_DRAW);
+				regionMesh.vboSize = vertexCount;
+				
 				lastRegionX = rcx / 8;
 				lastRegionZ = rcz / 8;
+				
+				regionsToRender.add(regionMesh);
+				
+				currentChunkZ = nextChunkZ;
 			}
-		}
-
-		//System.out.println(regionsToRender.size()+"parts");
-		
-		for (RegionSummaryMesh rs : regionsToRender)
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, rs.vbo);
-			rs.accessFB().flip();
-			glBufferData(GL_ARRAY_BUFFER, rs.accessFB(), GL_DYNAMIC_DRAW);
-			// System.out.println("cs init size :"+cs.vboSize);
-
+			
+			currentChunkX = nextChunkX;
 		}
 
 		lastLevelDetail = -1;
@@ -432,20 +535,68 @@ public class TerrainSummarizer
 		lastGen = time;
 	}
 	
+	private int getHeight(int[] heightMap, World world, int x, int z, int rx, int rz, int level)
+	{
+		if(x < 0 || z < 0 || x >= 256 || z >= 256)
+			return world.regionSummaries.getHeightMipmapped(rx*256+x, rz*256+z, level);
+		else
+			return getHeightMipmapped(heightMap, x, z, level);
+	}
+
+	static int[] offsets = {0, 65536, 81920, 86016, 87040, 87296, 87360, 87376, 87380, 87381};
+	
+	public int getHeightMipmapped(int[] heightMap, int x, int z, int level)
+	{
+		if(level > 8)
+			return -1;
+		int resolution = 256 >> level;
+		x >>= level;
+		z >>= level;
+		int offset = offsets[level];
+		//System.out.println(level+"l"+offset+"reso"+resolution+"x:"+x+"z:"+z);
+		return heightMap[offset + resolution * x + z];
+	}
+	
 	public void updateData()
 	{
-		for(RegionSummaryMesh rs : regionsToRender)
+		for(RegionMesh rs : regionsToRender)
 		{
-			boolean generated = rs.dataSource.uploadTextures();
+			boolean generated = rs.regionSummary.uploadTextures();
 			if(generated)
 			{
 				//System.out.println("generated RS texture "+ rs.dataSource.hId);
 			}
 			//System.out.println(rs.dataSource.loaded.get());
-			if(!rs.dataSource.loaded.get())
-				rs.dataSource = world.regionSummaries.get(rs.dataSource.rx * 256, rs.dataSource.rz * 256);
+			if(!rs.regionSummary.loaded.get())
+				rs.regionSummary = world.regionSummaries.get(rs.regionSummary.rx * 256, rs.regionSummary.rz * 256);
 		}
 		//System.out.println(regionsToRender.size()+"parts");
+	}
+
+	class RegionMesh
+	{
+
+		public RegionMesh(int rxDisplay, int rzDisplay, RegionSummary dataSource)
+		{
+			
+			this.rxDisplay = rxDisplay;
+			this.rzDisplay = rzDisplay;
+			this.regionSummary = dataSource;
+			//fbId = fbPool.requestFloatBuffer();
+			vbo = glGenBuffers();
+			// System.out.println("Init rs "+rxDisplay+" : "+rzDisplay+" to "+fbId);
+		}
+
+		int rxDisplay, rzDisplay;
+		RegionSummary regionSummary;
+		//int fbId;
+		int vbo, vboSize;
+
+		public void delete()
+		{
+			//fbPool.releaseFloatBuffer(fbId);
+			glDeleteBuffers(vbo);
+		}
 	}
 
 	private void addVertex(FloatBuffer terrain, float x, float y, float z)
@@ -453,6 +604,22 @@ public class TerrainSummarizer
 		// Add vertex coordinates
 		float[] vertexPos = new float[] { x, y, z };
 		terrain.put(vertexPos);
+	}
+	
+	private void addVertexShort(ShortBuffer terrain, int x, int y, int z, int nx, int ny, int nz)
+	{
+		addVertexShort(terrain, (short)x, (short)y, (short)z, (short)((nx+1) * 64 + (ny + 1) * 16 + (nz+1)));
+	}
+	
+	private void addVertexShort(ShortBuffer terrain, short x, short y, short z, short normal)
+	{
+		// Add vertex coordinates
+		terrain.put(x);
+		terrain.put(y);
+		terrain.put(z);
+		terrain.put(normal);
+		//float[] vertexPos = new float[] { x, y, z };
+		//terrain.put(vertexPos);
 	}
 
 	public void destroy()

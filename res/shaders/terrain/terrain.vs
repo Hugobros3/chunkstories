@@ -53,6 +53,7 @@ uniform mat4 modelViewProjectionMatrix;
 uniform mat4 modelViewProjectionMatrixInv;
 
 attribute vec4 vertexIn;
+attribute vec4 normalIn;
 
 void main()
 {
@@ -62,9 +63,12 @@ void main()
 	vec4 v = vec4(vertexIn);
 	textureCoord = (v.zx)/256.0;
 	
+	float packedNormals = normalIn.x;
+	
 	float baseHeight = texture2D(heightMap,textureCoord).r;
 	//baseHeight = 50;
-	v.y += baseHeight;
+	
+	//v.y += baseHeight;
 	
 	//Normal computation, brace yourselves
 	normalHeightmap = vec3(0.0, 1.0, 0.0); //Start with an empty vector
@@ -93,8 +97,10 @@ void main()
 	
 	normalHeightmap += normalZminus;
 	
-	//normalHeightmap = vec3(0.0, 1.0, 0.0);
+	normalHeightmap = vec3(0.0, 1.0, 0.0);
 	//I'm happy and proud to say I came up with the maths by myself :)
+	
+	normalHeightmap = vec3(floor(packedNormals / 64.0) - 1.0, floor(mod(packedNormals, 64.0) / 16.0) - 1.0, mod(packedNormals, 16.0) - 1.0);
 	
 	normalHeightmap = normalize(normalHeightmap);
 	
