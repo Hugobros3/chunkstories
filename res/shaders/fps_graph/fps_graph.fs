@@ -9,7 +9,7 @@ varying float pos;
 void main()
 {
 	//Diffuse G-Buffer
-	float alpha = 1.0 - (mod(currentTiming - pos + 1000, 1000))/1000f;
+	float alpha = 1.0 - (mod(currentTiming - pos + 1000, 1000))/1000.0f;
 	
 	float r = max(height - 0.6f, 0.0) / 33.3f;
 	float g = 1-max(height - 16.6f, 0.0) / 33.3f;

@@ -159,7 +159,7 @@ void main()
 	}
 	else if(id == 0)
 	{
-	finalColor = vec3(1, 1, 0);
+		finalColor = vec3(1, 1, 0);
 	}
 
 	
@@ -234,12 +234,6 @@ void main()
 	
 	if(covered > 0.0)
 		discard;
-	
-	
-	//compositeColor.rgb = normal * 0.5 + vec3(0.5);
-	//compositeColor.rgb = vec3(covered);
-	
-	//compositeColor.rg = ((camPos.xz - vertex.xz) / 32.0) / 64.0;
 	
 	gl_FragColor = compositeColor;
 }

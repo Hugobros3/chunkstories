@@ -26,13 +26,14 @@ public class ObjectRenderer
 	{
 		if(vertexAttribLocation < 0)
 			return;
+		buffer = null;
 		if(buffer == null)
 		{
 			buffer = BufferUtils.createFloatBuffer(6 * 2);
 			buffer.put(new float[] {
 				1f, 1f,
-				1f, -1f,
 				-1f, -1f,
+				1f, -1f,
 				1f, 1f,
 				-1f, 1f,
 				-1f, -1f

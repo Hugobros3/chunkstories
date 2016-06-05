@@ -22,6 +22,8 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.input.Keyboard;
+
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
@@ -643,7 +645,8 @@ public class WorldRenderer
 		terrainShader.setUniformSampler(4, "loadedChunksMap", loadedChunksMap);
 		terrainShader.setUniformFloat2("playerCurrentChunk", this.currentChunkX, this.currentChunkY);
 
-		//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		if(Keyboard.isKeyDown(Keyboard.KEY_F7))
+			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		
 		if (FastConfig.debugGBuffers)
 			glFinish();

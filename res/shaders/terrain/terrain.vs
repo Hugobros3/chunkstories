@@ -61,6 +61,7 @@ void main()
 
 	//Displacement from texture & position
 	vec4 v = vec4(vertexIn);
+	//v.y += 256 * normalIn.w;
 	textureCoord = (v.zx)/256.0;
 	
 	float packedNormals = normalIn.x;
@@ -97,10 +98,10 @@ void main()
 	
 	normalHeightmap += normalZminus;
 	
-	normalHeightmap = vec3(0.0, 1.0, 0.0);
+	normalHeightmap = normalIn.xyz * 0.5 - vec3(0.5);
 	//I'm happy and proud to say I came up with the maths by myself :)
 	
-	normalHeightmap = vec3(floor(packedNormals / 64.0) - 1.0, floor(mod(packedNormals, 64.0) / 16.0) - 1.0, mod(packedNormals, 16.0) - 1.0);
+	//normalHeightmap = vec3(floor(packedNormals / 64.0) - 1.0, floor(mod(packedNormals, 64.0) / 16.0) - 1.0, mod(packedNormals, 16.0) - 1.0);
 	
 	normalHeightmap = normalize(normalHeightmap);
 	
