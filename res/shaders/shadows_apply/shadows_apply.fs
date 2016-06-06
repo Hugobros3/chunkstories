@@ -153,7 +153,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 		opacityModified += 0.6 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
 		
 		opacity = mix(opacity, opacityModified, meta.a);
-		finalLight = mix(baseLight, vec3(0.0), opacityModified);
+		finalLight = mix(baseLight, vec3(0.0), opacity);
 		//finalLight = pow(finalLight, vec3(gamma));
 	<endif !shadows>
 	
@@ -163,6 +163,11 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 		//If SSAO is disabled, we use the crappy free vertex AO ( byproduct of block/sunlight merging in code )
 		ssao *= texture2D(ssaoBuffer, screenCoord).x;
 	<endif ssao>
+	
+	//SSAO * 0.5 + 0.5
+	//(1-Z) * 0.5 + 0.5
+	//0.5 - Z * 0.5 + 0.5
+	//1.0 - Z * 0.5
 	
 	finalLight *= clamp(ssao * 0.5 + 0.5, 0.0, 1.0);
 	inputColor.rgb *= finalLight;

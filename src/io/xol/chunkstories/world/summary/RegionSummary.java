@@ -66,8 +66,8 @@ public class RegionSummary
 		this.rx = rx;
 		this.rz = rz;
 
-		// 512kb per summary.
-		heights = new int[256 * 256];
+		// 512kb per summary, use of max mipmaps for heights
+		heights = new int[(int)Math.ceil(256 * 256 * ( 1 + 1/3D))];
 		ids = new int[256 * 256];
 		
 		//System.out.println("New chunk summary made");
@@ -250,7 +250,7 @@ public class RegionSummary
 		return loaded.get();
 	}
 
-	public void computeMinMaxChunksHeight()
+	public void computeHeightMetadata()
 	{
 		//Reset
 		for(int i = 0; i < 8; i++)
@@ -267,5 +267,49 @@ public class RegionSummary
 				if(this.getHeight(x, z) < this.minChunkHeight[cx][cz])
 					this.minChunkHeight[cx][cz] = this.getHeight(x, z);
 			}
+		//Max mipmaps
+		
+		int resolution = 128;
+		int offset = 0;
+		while(resolution > 1)
+		{
+			for(int x = 0; x < resolution; x++)
+				for(int z = 0; z < resolution; z++)
+				{
+					//Fetch from the current resolution
+					int v00 = heights[offset + (resolution * 2) * (x * 2    ) + (z * 2)    ];
+					int v01 = heights[offset + (resolution * 2) * (x * 2    ) + (z * 2 + 1)];
+					int v10 = heights[offset + (resolution * 2) * (x * 2 + 1) + (z * 2    )];
+					int v11 = heights[offset + (resolution * 2) * (x * 2 + 1) + (z * 2) + 1];
+					//Max out
+					int max = max(max(v00, v01), max(v10, v11));
+					
+					//Skip the already passed steps and the current resolution being sampled data to go write the next one
+					heights[offset + (resolution * 2) * ( resolution * 2 ) + resolution * x + z] = max;
+				}
+			
+			offset += resolution * 2 * resolution * 2;
+			resolution /= 2;
+		}
+	}
+	
+	private int max(int a, int b)
+	{
+		if(a > b)
+			return a;
+		return b;
+	}
+	
+	static int[] offsets = {0, 65536, 81920, 86016, 87040, 87296, 87360, 87376, 87380, 87381};
+	
+	public int getHeightMipmapped(int x, int z, int level)
+	{
+		if(level > 8)
+			return -1;
+		int resolution = 256 >> level;
+			x >>= level;
+			z >>= level;
+		int offset = offsets[level];
+		return heights[offset + resolution * x + z];
 	}
 }

@@ -220,6 +220,7 @@ public class WorldRenderer
 
 	public void renderWorldAtCamera(Camera camera)
 	{
+		Client.profiler.startSection("kekupdates");
 		this.camera = camera;
 		if (FastConfig.doDynamicCubemaps && (System.currentTimeMillis() - lastEnvmapRender) > 2000L)// * Math.pow(30.0f / XolioWindow.getFPS(), 1.0f))
 			screenCubeMap(256, environmentMap);
@@ -363,7 +364,7 @@ public class WorldRenderer
 		// It will keep up to date the camera position, as well as a list of
 		// to-render chunks in order to fill empty VBO space
 		// Upload generated chunks data to GPU
-		updateProfiler.reset("vbo upload");
+		//updateProfiler.reset("vbo upload");
 		ChunkRenderData toLoad = chunksRenderer.doneChunk();
 		int loadLimit = 16;
 		while (toLoad != null)
@@ -418,7 +419,7 @@ public class WorldRenderer
 			int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
 
 			// Unload too far chunks
-			updateProfiler.startSection("unloadFar");
+			//updateProfiler.startSection("unloadFar");
 			//long usageBefore = Runtime.getRuntime().freeMemory();
 			world.trimRemovableChunks();
 			renderList.clear();
@@ -629,7 +630,9 @@ public class WorldRenderer
 		terrainShader.setUniformSamplerCubemap(9, "environmentCubemap", environmentMap);
 		terrainShader.setUniformSampler(8, "glowSampler", glowTexture);
 		terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
-		terrainShader.setUniformSampler(6, "lightColors", lightmapTexture);
+		terrainShader.setUniformSampler(6, "blockLightmap", lightmapTexture);
+		Texture lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
+		terrainShader.setUniformSampler(11, "lightColors", lightColors);
 		terrainShader.setUniformSampler(5, "normalTexture", waterNormalTexture);
 		setupShadowColors(terrainShader);
 		terrainShader.setUniformFloat("time", sky.time);
@@ -640,12 +643,16 @@ public class WorldRenderer
 		terrainShader.setUniformSampler(4, "loadedChunksMap", loadedChunksMap);
 		terrainShader.setUniformFloat2("playerCurrentChunk", this.currentChunkX, this.currentChunkY);
 
+		//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		
 		if (FastConfig.debugGBuffers)
 			glFinish();
 		long t = System.nanoTime();
 		if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
 			renderedVertices += terrain.draw(renderingContext, terrainShader);
 
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		
 		if (FastConfig.debugGBuffers)
 			glFinish();
 		if (FastConfig.debugGBuffers)
@@ -1063,7 +1070,6 @@ public class WorldRenderer
 			this.SSAO(FastConfig.ssaoQuality);
 
 		renderLightsDeffered();
-
 		renderTerrain();
 		
 		if(FastConfig.showDebugInfo)
@@ -1077,7 +1083,7 @@ public class WorldRenderer
 				ChunkRenderData crd = c.chunkRenderData;
 				if(crd != null)
 				{
-					crd.renderChunkBounds(renderingContext);
+					//crd.renderChunkBounds(renderingContext);
 				}
 			}
 				

@@ -97,6 +97,7 @@ public class GameplayScene extends OverlayableScene
 	@Override
 	public void update()
 	{
+		
 		// Update client entity
 		if (player == null || player != Client.controlledEntity && Client.controlledEntity != null)
 		{
@@ -104,7 +105,6 @@ public class GameplayScene extends OverlayableScene
 			inventoryDrawer = player.getInventory() == null ? null : new InventoryDrawer(player.getInventory());
 		}
 		inventoryDrawer.inventory = player.getInventory();
-		
 
 		//Get the player location
 		Location loc = player.getLocation();

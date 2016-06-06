@@ -56,6 +56,20 @@ public class RegionSummaries
 		return cs;
 	}
 
+	public int getHeightMipmapped(int x, int z, int level)
+	{
+		x %= ws;
+		z %= ws;
+		if (x < 0)
+			x += ws;
+		if (z < 0)
+			z += ws;
+		RegionSummary cs = get(x, z);
+		if (cs == null)
+			return 0;
+		return cs.getHeightMipmapped(x % 256, z % 256, level);
+	}
+
 	public int getHeightAt(int x, int z)
 	{
 		x %= ws;

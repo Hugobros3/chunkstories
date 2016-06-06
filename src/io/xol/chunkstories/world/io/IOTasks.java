@@ -531,7 +531,7 @@ public class IOTasks extends Thread
 					summary.uploadUpToDate.set(false);
 					summary.loaded.set(true);
 
-					summary.computeMinMaxChunksHeight();
+					summary.computeHeightMetadata();
 				}
 				catch (FileNotFoundException e)
 				{

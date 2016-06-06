@@ -160,7 +160,7 @@ public class WorldInfo
 	public void setName(String name)
 	{
 		this.name = name;
-		this.internalName = name.replaceAll("[^\\w\\s]","_");
+		//this.internalName = name.replaceAll("[^\\w\\s]","_");
 	}
 
 	public String getSeed()
