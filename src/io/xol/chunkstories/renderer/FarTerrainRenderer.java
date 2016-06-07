@@ -28,7 +28,7 @@ import static org.lwjgl.opengl.GL20.*;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class TerrainSummarizer
+public class FarTerrainRenderer
 {
 	private static final int TRIANGLES_PER_FACE = 2; // 2 triangles per face
 	private static final int TRIANGLE_SIZE = 3; // 3 vertex per triangles
@@ -41,7 +41,7 @@ public class TerrainSummarizer
 
 	//FloatBufferPool fbPool = new FloatBufferPool(96, 25000 * VERTEX_SIZE * TRIANGLE_SIZE * TRIANGLES_PER_FACE);
 
-	public TerrainSummarizer(World world)
+	public FarTerrainRenderer(World world)
 	{
 		this.world = world;
 	}
@@ -98,7 +98,7 @@ public class TerrainSummarizer
 	public int draw(RenderingContext renderingContext, ShaderProgram terrain)
 	{
 		int elements = 0;
-		glEnable(GL_CULL_FACE); // culling for our glorious terrain
+		glDisable(GL_CULL_FACE); // culling for our glorious terrain
 		glLineWidth(1.0f);
 		
 		int vertexIn = terrain.getVertexAttributeLocation("vertexIn");
@@ -170,6 +170,7 @@ public class TerrainSummarizer
 			elements += rs.vboSize;
 
 			if (rs.vboSize > 0 && rs.regionSummary.hId >= 0)
+				//glDrawArrays(GL_QUADS, 0, rs.vboSize/6*4);
 				glDrawArrays(GL_TRIANGLES, 0, rs.vboSize);
 		}
 		renderingContext.disableVertexAttribute(vertexIn);
@@ -292,6 +293,7 @@ public class TerrainSummarizer
 						Surface surf = mesher.nextSurface();
 						while(surf != null)
 						{
+							//Top
 							addVertexBytes(regionMeshBuffer, scx*32+(surf.getX()              ) * cellSize, surf.getLevel(), scz*32+(surf.getY()              ) * cellSize, 0, 1, 0);
 							addVertexBytes(regionMeshBuffer, scx*32+(surf.getX() + surf.getW()) * cellSize, surf.getLevel(), scz*32+(surf.getY() + surf.getH()) * cellSize, 0, 1, 0);
 							addVertexBytes(regionMeshBuffer, scx*32+(surf.getX() + surf.getW()) * cellSize, surf.getLevel(), scz*32+(surf.getY()              ) * cellSize, 0, 1, 0);
@@ -301,6 +303,59 @@ public class TerrainSummarizer
 							addVertexBytes(regionMeshBuffer, scx*32+(surf.getX() + surf.getW()) * cellSize, surf.getLevel(), scz*32+(surf.getY() + surf.getH()) * cellSize, 0, 1, 0);
 							
 							vertexCount+=6;
+							
+							//Left side
+							int vx = scx*32+(surf.getX()              ) * cellSize;
+							int vz = scz*32+(surf.getY()              ) * cellSize;
+							int heightCurrent = getHeight(heightMap, world, vx-cellSize, vz, currentRegionX, currentRegionZ, details2use[((int)Math.floor((vx-cellSize)/32f)+1)*10+(scz+1)]);
+							int d = 0;
+							for(int i = 1; i < surf.getH()+1; i++)
+							{
+								int newHeight = (i < surf.getH()) ? getHeight(heightMap, world, vx-cellSize, vz + i*cellSize, currentRegionX, currentRegionZ, details2use[((int)Math.floor((vx-cellSize)/32f)+1)*10+((int)Math.floor((vz+(i)*cellSize)/32f)+1)]) : -1;
+								if(newHeight != heightCurrent)
+								{
+									if(heightCurrent != surf.getLevel())
+									{
+										int s = heightCurrent > surf.getLevel() ? 1 : -1;
+										addVertexBytes(regionMeshBuffer, vx, surf.getLevel(), vz + d * cellSize, s, 0, 0);
+										addVertexBytes(regionMeshBuffer, vx, heightCurrent, vz + d * cellSize, s, 0, 0);
+										addVertexBytes(regionMeshBuffer, vx, heightCurrent, vz + (i) * cellSize, s, 0, 0);
+										
+										addVertexBytes(regionMeshBuffer, vx, surf.getLevel(), vz + d * cellSize, s, 0, 0);
+										addVertexBytes(regionMeshBuffer, vx, heightCurrent, vz + (i) * cellSize, s, 0, 0);
+										addVertexBytes(regionMeshBuffer, vx, surf.getLevel(), vz + (i) *cellSize, s, 0, 0);
+										vertexCount+=6;
+									}
+									heightCurrent = newHeight;
+									d = i;
+								}
+							}
+							//Bot side
+							heightCurrent = getHeight(heightMap, world, vx, vz-cellSize, currentRegionX, currentRegionZ, details2use[((int)Math.floor((vx)/32f)+1)*10+((int)Math.floor((vz-cellSize)/32f)+1)]);
+							d = 0;
+							for(int i = 1; i < surf.getW()+1; i++)
+							{
+								int newHeight = (i < surf.getW()) ? getHeight(heightMap, world, vx + i*cellSize, vz - cellSize, currentRegionX, currentRegionZ, details2use[((int)Math.floor((vx+i*cellSize)/32f)+1)*10+((int)Math.floor((vz-cellSize)/32f)+1)]) : -1;
+								if(newHeight != heightCurrent)
+								{
+									if(heightCurrent != surf.getLevel())
+									{
+										int s = heightCurrent > surf.getLevel() ? 1 : -1;
+										addVertexBytes(regionMeshBuffer, vx + d * cellSize, surf.getLevel(), vz, 0, 0, s);
+										addVertexBytes(regionMeshBuffer, vx + (i) * cellSize, heightCurrent, vz, 0, 0, s);
+										addVertexBytes(regionMeshBuffer, vx + d * cellSize, heightCurrent, vz, 0, 0, s);
+
+										addVertexBytes(regionMeshBuffer, vx + (i) * cellSize, heightCurrent, vz, 0, 0, s);
+										addVertexBytes(regionMeshBuffer, vx + d * cellSize, surf.getLevel(), vz, 0, 0, s);
+										addVertexBytes(regionMeshBuffer, vx + (i) * cellSize, surf.getLevel(), vz, 0, 0, s);
+										vertexCount+=6;
+									}
+									heightCurrent = newHeight;
+									d = i;
+								}
+							}
+							
+							//Next
 							surf = mesher.nextSurface();
 							test++;
 						}
@@ -309,7 +364,7 @@ public class TerrainSummarizer
 							System.out.println("Meshing made more than reasonnable vertices");
 						}
 						
-						for(int vx = scx*32; vx < scx*32+32; vx += cellSize)
+						/*for(int vx = scx*32; vx < scx*32+32; vx += cellSize)
 							for(int vz = scz*32; vz < scz*32+32; vz += cellSize)
 							{
 								int height = getHeight(heightMap, world, vx, vz, currentRegionX, currentRegionZ, details);
@@ -320,14 +375,14 @@ public class TerrainSummarizer
 								//int heightZP = getHeight(heightMap, world, vx, vz+cellSize, currentRegionX, currentRegionZ, detail);
 								//int heightXP = getHeight(heightMap, world, vx+cellSize, vz, currentRegionX, currentRegionZ, detail);
 								
-								/*addVertexShort(regionMeshBuffer, vx, height, vz, 0, 1, 0);
+								addVertexShort(regionMeshBuffer, vx, height, vz, 0, 1, 0);
 								addVertexShort(regionMeshBuffer, vx + cellSize, height, vz, 0, 1, 0);
 								addVertexShort(regionMeshBuffer, vx + cellSize, height, vz + cellSize, 0, 1, 0);
 
 								addVertexShort(regionMeshBuffer, vx, height, vz, 0, 1, 0);
 								addVertexShort(regionMeshBuffer, vx + cellSize, height, vz + cellSize, 0, 1, 0);
 								addVertexShort(regionMeshBuffer, vx, height, vz + cellSize, 0, 1, 0);
-								vertexCount+=6;*/
+								vertexCount+=6;
 								
 								if(heightXM != height)
 								{
@@ -353,7 +408,7 @@ public class TerrainSummarizer
 									vertexCount+=6;
 								}
 							}
-						
+						*/
 						//If the next side has a coarser resolution we want to fill in the gaps
 						//We go alongside the two other sides of the mesh and we add another skirt to match the coarser mesh on the side
 						int nextMeshDetailsX = details2use[(scx+2)*10+(scz+1)];
@@ -369,8 +424,8 @@ public class TerrainSummarizer
 								if(heightNext > height)
 								{
 									addVertexBytes(regionMeshBuffer, vx, height, vz, 1, 0, 0);
-									addVertexBytes(regionMeshBuffer, vx, heightNext, vz, 1, 0, 0);
 									addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, 1, 0, 0);
+									addVertexBytes(regionMeshBuffer, vx, heightNext, vz, 1, 0, 0);
 									
 									addVertexBytes(regionMeshBuffer, vx, height, vz, 1, 0, 0);
 									addVertexBytes(regionMeshBuffer, vx, height, vz + cellSize, 1, 0, 0);
@@ -380,8 +435,8 @@ public class TerrainSummarizer
 								else if(heightNext < height)
 								{
 									addVertexBytes(regionMeshBuffer, vx, height, vz, -1, 0, 0);
-									addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, -1, 0, 0);
 									addVertexBytes(regionMeshBuffer, vx, heightNext, vz, -1, 0, 0);
+									addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, -1, 0, 0);
 									
 									addVertexBytes(regionMeshBuffer, vx, height, vz, -1, 0, 0);
 									addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, -1, 0, 0);
@@ -403,8 +458,8 @@ public class TerrainSummarizer
 								if(heightNext > height)
 								{
 									addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, 1);
-									addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, 1);
 									addVertexBytes(regionMeshBuffer, vx, heightNext, vz, 0, 0, 1);
+									addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, 1);
 									
 									addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, 1);
 									addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, 1);
@@ -414,8 +469,8 @@ public class TerrainSummarizer
 								else if(heightNext < height)
 								{
 									addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, -1);
-									addVertexBytes(regionMeshBuffer, vx, heightNext, vz, 0, 0, -1);
 									addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, -1);
+									addVertexBytes(regionMeshBuffer, vx, heightNext, vz, 0, 0, -1);
 									
 									addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, -1);
 									addVertexBytes(regionMeshBuffer, vx + cellSize, height, vz, 0, 0, -1);
@@ -513,17 +568,19 @@ public class TerrainSummarizer
 		}
 	}
 	
+	int kek = 0;
+	
 	private void addVertexBytes(ByteBuffer terrain, int x, int y, int z, int nx, int ny, int nz)
 	{
-		terrain.putShort((short) x);
-		terrain.putShort((short) y);
-		terrain.putShort((short) z);
-		terrain.putShort((short) 0x00);
-
-		terrain.put((byte)(nx+1));
-		terrain.put((byte)(ny+1));
-		terrain.put((byte)(nz+1));
-		terrain.put((byte)(0x00));
+			terrain.putShort((short) x);
+			terrain.putShort((short) y);
+			terrain.putShort((short) z);
+			terrain.putShort((short) 0x00);
+	
+			terrain.put((byte)(nx+1));
+			terrain.put((byte)(ny+1));
+			terrain.put((byte)(nz+1));
+			terrain.put((byte)(0x00));
 	}
 
 	public void destroy()

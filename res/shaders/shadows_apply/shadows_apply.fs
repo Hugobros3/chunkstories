@@ -73,6 +73,10 @@ uniform float brightnessMultiplier;
 
 <include ../sky/sky.glsl>
 
+//Fog
+uniform float fogStartDistance;
+uniform float fogEndDistance;
+
 vec4 accuratizeShadow(vec4 shadowMap)
 {
 	shadowMap.xy /= ( (1.0f - distScale) + sqrt(shadowMap.x * shadowMap.x + shadowMap.y * shadowMap.y) * distScale );
@@ -139,9 +143,9 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	
 	//float sunSpec = specular * pow(clamp(dot(normalize(reflect(worldSpacePosition.xyz, normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),750.0);
 	
-	float sunlightAmount = ( directionalLightning * ( mix( shadowIllumination, meta.y, 1-edgeSmoother) ) ) * shadowStrength * shadowVisiblity;
+	float sunlightAmount = ( directionalLightning * ( mix( shadowIllumination, meta.y, 1-edgeSmoother) ) ) * shadowVisiblity;
 	
-	finalLight = mix(baseLight * pow(shadowColor, vec3(gamma)), pow(sunColor, vec3(gamma)), sunlightAmount);
+	finalLight = mix(baseLight * pow(shadowColor, vec3(gamma)), pow(sunColor, vec3(gamma)), 1.0 - ((1.0 - sunlightAmount) * shadowStrength));
 	
 	<endif shadows>
 	<ifdef !shadows>
@@ -206,8 +210,8 @@ void main() {
 	// Apply fog
 	//vec3 sum = (modelViewMatrixInv * projectionMatrixInv * vec4(vec3(screenCoord*2.0-1.0, texture2D(depthBuffer, screenCoord, 0.0).x * 2.0 - 1.0), 1.0)).xyz;
 	vec3 sum = (cameraSpacePosition.xyz);
-	float dist = length(sum)-gl_Fog.start;
-	float fogFactor = (dist) / (gl_Fog.end-gl_Fog.start);
+	float dist = length(sum)-fogStartDistance;
+	float fogFactor = (dist) / (fogEndDistance-fogStartDistance);
 	float fogI = clamp(fogFactor, 0.0, 0.9);
 	
 	vec3 fogColor = gl_Fog.color.rgb;

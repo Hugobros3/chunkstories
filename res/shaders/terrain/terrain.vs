@@ -55,6 +55,10 @@ uniform mat4 modelViewProjectionMatrixInv;
 attribute vec4 vertexIn;
 attribute vec4 normalIn;
 
+//Fog
+uniform float fogStartDistance;
+uniform float fogEndDistance;
+
 void main()
 {
 	chunkPositionFrag = chunkPosition;
@@ -135,7 +139,7 @@ void main()
 	//Distance fog
 	
 	vec3 sum = (modelViewMatrix * v).xyz;
-	float dist = length(sum)-gl_Fog.start;
+	float dist = length(sum)-fogStartDistance;
 	const float LOG2 = 1.442695;
 	float density = 0.0025;
 	float fogFactor = exp2( -density * 
@@ -143,7 +147,7 @@ void main()
 					   dist * 
 					   dist * 
 					   LOG2 );
-	fogFactor = (dist) / (gl_Fog.end-gl_Fog.start);
+	fogFactor = (dist) / (fogEndDistance-fogStartDistance);
 	fogI = clamp(fogFactor, 0.0, 1.0);
 	
 	

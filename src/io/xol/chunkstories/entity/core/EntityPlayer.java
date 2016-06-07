@@ -336,8 +336,8 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 			camera.pos = new Vector3d(pos).negate();
 			camera.pos.add(0d, -eyePosition, 0d);
 
-			camera.view_rotx = rotV;
-			camera.view_roty = rotH;
+			camera.rotationX = rotV;
+			camera.rotationY = rotH;
 
 			camera.fov = (float) (FastConfig.fov + ((vel.x * vel.x + vel.z * vel.z) > 0.07 * 0.07 ? ((vel.x * vel.x + vel.z * vel.z) - 0.07 * 0.07) * 500 : 0));
 			camera.alUpdate();

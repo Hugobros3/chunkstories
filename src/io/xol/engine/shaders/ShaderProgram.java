@@ -12,6 +12,7 @@ import java.util.Map;
 
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Vector2f;
+import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 import org.lwjgl.BufferUtils;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -249,6 +250,11 @@ public class ShaderProgram
 	}
 
 	public void setUniformFloat3(String name, Vector3f vec3)
+	{
+		setUniformFloat3(name, vec3.x, vec3.y, vec3.z);
+	}
+
+	public void setUniformFloat3(String name, Vector3d vec3)
 	{
 		setUniformFloat3(name, vec3.x, vec3.y, vec3.z);
 	}

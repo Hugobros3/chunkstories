@@ -1,6 +1,6 @@
 <include noise2D.glsl>
 
-uniform sampler2D cloudsNoise;
+//uniform sampler2D cloudsNoise;
 
 vec4 getClouds(vec3 eyeDirection);
 

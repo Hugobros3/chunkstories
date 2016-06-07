@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.entity.EntitiesList;
-import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.item.ItemsList;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
@@ -18,7 +17,6 @@ import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.chunkstories.world.generator.WorldGenerators;
-import io.xol.engine.base.XolioWindow;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.animation.BVHLibrary;
 import io.xol.engine.shaders.ShadersLibrary;
@@ -51,10 +49,6 @@ public class GameData
 		ModelLibrary.reloadAllModels();
 		BVHLibrary.reloadAllAnimations();
 		ShadersLibrary.reloadAllShaders();
-		if(XolioWindow.getInstance().getCurrentScene() instanceof GameplayScene)
-		{
-			((GameplayScene)XolioWindow.getInstance().getCurrentScene()).worldRenderer.sky.reloadSky();
-		}
 	}
 	
 	static ConcurrentHashMap<String, Deque<File>> fileSystem = new ConcurrentHashMap<String, Deque<File>>();

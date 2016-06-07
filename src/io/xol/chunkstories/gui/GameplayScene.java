@@ -123,10 +123,10 @@ public class GameplayScene extends OverlayableScene
 		//Temp
 		if (flashLight)
 		{
-			float transformedViewH = (float) ((camera.view_rotx) / 180 * Math.PI);
+			float transformedViewH = (float) ((camera.rotationX) / 180 * Math.PI);
 			// System.out.println(Math.sin(transformedViewV)+"f");
-			Vector3f viewerCamDirVector = new Vector3f((float) (Math.sin((-camera.view_roty) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)),
-					(float) (Math.cos((-camera.view_roty) / 180 * Math.PI) * Math.cos(transformedViewH)));
+			Vector3f viewerCamDirVector = new Vector3f((float) (Math.sin((-camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)),
+					(float) (Math.cos((-camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)));
 			Vector3f lightPosition = new Vector3f((float) loc.x, (float) loc.y + (float) ((EntityPlayer) this.player).eyePosition, (float) loc.z);
 			viewerCamDirVector.scale(-0.5f);
 			Vector3f.add(viewerCamDirVector, lightPosition, lightPosition);
@@ -172,7 +172,7 @@ public class GameplayScene extends OverlayableScene
 			worldRenderer.screenCubeMap(512, null);
 		}
 		//Blit the final 3d image
-		worldRenderer.postProcess();
+		worldRenderer.blitScreen();
 
 		if (FastConfig.showDebugInfo)
 			debug();
@@ -265,7 +265,7 @@ public class GameplayScene extends OverlayableScene
 			Client.world.reRender();
 			worldRenderer.chunksRenderer.clear();
 			ChunksRenderer.renderStart = System.currentTimeMillis();
-			worldRenderer.modified();
+			worldRenderer.flagModified();
 		}
 		//TODO move this to core content plugin
 		else if (KeyBinds.getKeyBind("use").equals(keyBind))
@@ -308,7 +308,7 @@ public class GameplayScene extends OverlayableScene
 		{
 			GameData.reload();
 			GameData.reloadClientContent();
-			worldRenderer.terrain.redoBlockTexturesSummary();
+			worldRenderer.farTerrainRenderer.redoBlockTexturesSummary();
 		}
 		else if (KeyBinds.getKeyBind("exit").equals(keyBind))
 		{

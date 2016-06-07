@@ -10,13 +10,7 @@ import io.xol.engine.textures.TexturesHandler;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.client.FastConfig;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.nio.FloatBuffer;
-
-import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
 
@@ -36,14 +30,6 @@ public class Sky
 	float distance = 1500;
 	float height = -500;
 
-	BufferedImage colors_sunny;
-	BufferedImage colors_rain;
-	BufferedImage light;
-
-	ShaderProgram skyShader;
-	ShaderProgram starsShader;
-	ShaderProgram cloudsShader;
-
 	WorldInterface world;
 	WorldRenderer worldRenderer;
 	
@@ -51,21 +37,6 @@ public class Sky
 	{
 		this.world = world;
 		this.worldRenderer = worldRenderer;
-		try
-		{
-			colors_sunny = ImageIO.read(new File("res/textures/environement/sky.png"));
-			colors_rain = ImageIO.read(new File("res/textures/environement/sky_rain.png"));
-			light = ImageIO.read(new File("res/textures/environement/lightcolors.png"));
-
-			skyShader = ShadersLibrary.getShaderProgram("sky");
-			cloudsShader = ShadersLibrary.getShaderProgram("clouds");
-			starsShader = ShadersLibrary.getShaderProgram("stars");
-		}
-		catch (IOException e)
-		{
-			System.out.println("couldn't properly load colors file :(");
-			e.printStackTrace();
-		}
 	}
 
 	public Vector3f getSunPosition()
@@ -73,16 +44,12 @@ public class Sky
 		float sunloc = (float) (time * Math.PI * 2 / 1.6 - 0.5);
 		float sunangle = 0;
 		float sundistance = 1000;
-		// double[] sunpos =
-		// {sundistance*Math.sin(rad(sunangle))*Math.cos(sunloc),
-		// height+sundistance*Math.sin(sunloc),
-		// sundistance*Math.cos(rad(sunangle))*Math.cos(sunloc)};
-		return new Vector3f((float) (400 + sundistance * Math.sin(rad(sunangle)) * Math.cos(sunloc)), (float) (height + sundistance * Math.sin(sunloc)), (float) (sundistance * Math.cos(rad(sunangle)) * Math.cos(sunloc)));
+		return new Vector3f((float) (400 + sundistance * Math.sin(rad(sunangle)) * Math.cos(sunloc)), (float) (height + sundistance * Math.sin(sunloc)), (float) (sundistance * Math.cos(rad(sunangle)) * Math.cos(sunloc))).normalise();
 	}
-
+	
 	public void render(RenderingContext renderingContext)
 	{
-		setupFog();
+		//setupFog();
 
 		glDisable(GL_ALPHA_TEST);
 		glDisable(GL_DEPTH_TEST);
@@ -93,6 +60,9 @@ public class Sky
 		Vector3f sunPosVector = getSunPosition();
 		double[] sunpos = { sunPosVector.x, sunPosVector.y, sunPosVector.z };
 
+		ShaderProgram skyShader = ShadersLibrary.getShaderProgram("sky");
+		renderingContext.setCurrentShader(skyShader);
+		
 		// TexturesHandler.bindTexture("res/textures/environement/sky.png");
 		XolioWindow.getInstance().getRenderingContext().setCurrentShader(skyShader);
 		//skyShader.use(true);
@@ -123,7 +93,10 @@ public class Sky
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPointSize(1f);
-		XolioWindow.getInstance().getRenderingContext().setCurrentShader(starsShader);
+
+		ShaderProgram starsShader = skyShader = ShadersLibrary.getShaderProgram("stars");
+		
+		renderingContext.setCurrentShader(starsShader);
 		//starsShader.use(true);
 		starsShader.setUniformFloat3("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
 		starsShader.setUniformFloat3("color", 1f, 1f, 1f);
@@ -165,68 +138,9 @@ public class Sky
 		return h / 180 * Math.PI;
 	}
 
-	//TODO orphan function
-	public void reloadSky()
+	public void setupShader(ShaderProgram shader)
 	{
-		try
-		{
-			colors_sunny = ImageIO.read(new File("res/textures/environement/sky.png"));
-			colors_rain = ImageIO.read(new File("res/textures/environement/sky_rain.png"));
-			light = ImageIO.read(new File("res/textures/environement/lightcolors.png"));
-		}
-		catch (IOException e)
-		{
-			System.out.println("couldn't properly load colors file :(");
-			e.printStackTrace();
-		}
-	}
-
-	public float getLightIntensity()
-	{
-		Color color = new Color(light.getRGB((int) (time * 255), 0));
-		return color.getRed() / 255f;
-	}
-
-	public int[] getSkyColor()
-	{
-		Color color = new Color((world.isRaining() ? colors_rain : colors_sunny).getRGB((int) (time * 255), 255));
-		
-		return new int[] { color.getRed(), color.getGreen(), color.getBlue() };
-	}
-
-	//TODO: REALLY ? This is 2016 FFS !
-	private void setupFog()
-	{
-		FloatBuffer fogColor = BufferUtils.createFloatBuffer(4);
-		Color color = new Color((world.isRaining() ? colors_rain : colors_sunny).getRGB((int) (time * 256), 255));
-		fogColor.put(color.getRed() / 255f).put(color.getGreen() / 255f).put(color.getBlue() / 255f).put(1f).flip();
-		int fogMode;
-		fogMode = GL_EXP2;
-		glFogi(GL_FOG_MODE, fogMode);
-		glFog(GL_FOG_COLOR, fogColor);
-		/*
-		 * float fogFactor = exp2( -gl_Fog.density * gl_Fog.density * dist *
-		 * dist * LOG2 );
-		 * 
-		 * 1 = exp2(-x*x *distance*distance*log2) 1 = 2^(-x²*dist²*log2)
-		 * (-x²*dist²*log2) = log(2,1) = 0
-		 * 
-		 * let's say -0.005 constant LOG2 = 1.442695
-		 * 
-		 * (-x²*dist²*log2) = -0.005 (x²*dist²*log2) = 0.005 x² =
-		 * 0.005/(dist²*log2) x =
-		 * Math.sqrt(0.005d/(FastConfig.viewDistance*FastConfig
-		 * .viewDistance*1.442695*1.442695));
-		 * 
-		 * 
-		 * a = 3² 2 = log(a,3)
-		 */
-		glFogf(GL_FOG_DENSITY, (float) Math.sqrt(0.015d / (FastConfig.viewDistance * 1.442695)));
-		// System.out.println( (float)
-		// Math.sqrt(0.005d/(FastConfig.viewDistance*1.442695))+" "+0.0055f);
-		// glFogf(GL_FOG_DENSITY, 0.0055f);
-		glHint(GL_FOG_HINT, GL_DONT_CARE);
-		glFogf(GL_FOG_START, world.isRaining() ? 32 : FastConfig.viewDistance);
-		glFogf(GL_FOG_END, world.isRaining() ? 384 : FastConfig.viewDistance + 768);
+		shader.setUniformFloat("fogStartDistance", world.isRaining() ? 32 : FastConfig.viewDistance);
+		shader.setUniformFloat("fogEndDistance", world.isRaining() ? 384 : 1024);
 	}
 }

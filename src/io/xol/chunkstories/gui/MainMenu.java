@@ -80,8 +80,8 @@ public class MainMenu extends OverlayableScene
 			Random rnd = new Random();
 			skyBox = "./skyboxscreens/" + possibleSkyboxes[rnd.nextInt(possibleSkyboxes.length)];
 		}
-		cam.view_rotx = 25;
-		cam.view_roty = -45;
+		cam.rotationX = 25;
+		cam.rotationY = -45;
 	}
 
 	String getRandomSplashScreen()
@@ -145,8 +145,8 @@ public class MainMenu extends OverlayableScene
 		//menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);
 		menuSkyBox.setUniformSamplerCubemap(0, "skyBox", TexturesHandler.getCubemapID(skyBox));
-		cam.view_rotx = 35 + (float) (Math.sin(cam.view_roty / 15)) * 5f;
-		cam.view_roty = (System.currentTimeMillis()%1000000)/200.0f;
+		cam.rotationX = 35 + (float) (Math.sin(cam.rotationY / 15)) * 5f;
+		cam.rotationY = (System.currentTimeMillis()%1000000)/200.0f;
 		ObjectRenderer.drawFSQuad(menuSkyBox.getVertexAttributeLocation("vertexIn"));
 		
 		// Blurring to H

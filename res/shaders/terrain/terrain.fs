@@ -32,11 +32,10 @@ varying vec3 normalHeightmap;
 uniform sampler2D lightColors; // Sampler to lightmap
 uniform sampler2D blockLightmap;
 
-varying float lowerFactor;
-
 uniform vec3 shadowColor;
 uniform vec3 sunColor;
 uniform float shadowStrength;
+uniform float shadowVisiblity;
 
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
@@ -47,12 +46,12 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
-uniform float shadowVisiblity;
-
+//sky crap
 uniform sampler2D glowSampler;
-uniform float isRaining;
 uniform sampler2D colorSampler;
+uniform float isRaining;
 
+//gamma shit
 const float gamma = 2.2;
 const float gammaInv = 1/2.2;
 
@@ -89,7 +88,8 @@ void main()
 	float spec = 0.0;
 	
 	vec3 normal = normalHeightmap;
-	<ifdef hqTerrain>
+	
+	/*<ifdef hqTerrain>
 	float baseHeight = texture2D(heightMap,textureCoord).r;
 	
 	//Normal computation, brace yourselves
@@ -125,7 +125,7 @@ void main()
 	
 	//normal = normalize(normalHeightmap2);
 	<endif hqTerrain>
-	
+	*/
 	float specular = 0.0;
 	
 	if(id == 128)
@@ -157,7 +157,7 @@ void main()
 		//vec3 reflection = texture(skybox, reflect(eye, normal)).rgb;
 		
 	}
-	else if(id == 0)
+	else if(id < 0.5)
 	{
 		finalColor = vec3(1, 1, 0);
 	}
@@ -175,14 +175,9 @@ void main()
 	//opacity += NdotL;
 	
 	float clamped = clamp(NdotL, 0.0, 0.1);
-	if(NdotL < 0.1)
-	{
-		opacity += 1-(10*clamped);
-	}
 	
-	opacity = clamp(opacity, 0, 0.52);
-	
-	sunLight *= mix(pow(shadowColor, vec3(gamma)),  pow(sunColor, vec3(gamma)), (1-opacity) * 1);
+	opacity = clamp(clamped * 10.0, 0.0, 1.0);
+	sunLight *= mix(pow(shadowColor, vec3(gamma)),  pow(sunColor, vec3(gamma)), (opacity) * 1);
 	
 	vec3 finalLight = blockLight;// * (1-sunLight);
 	finalLight += sunLight;
@@ -200,11 +195,8 @@ void main()
 		//finalLight = pow(finalLight, vec3(gamma));
 	<endif !shadows>
 	
-	//vec3 finalLight = baseLight * mix(pow(shadowColor, vec3(gamma)), pow(sunColor, vec3(gamma)), (1 - opacity * pow(shadowStrength, gammaInv)) * shadowVisiblity);
-	//finalLight = mix(finalLight, finalLight*shadowColor, opacity * 1.0);
-	//finalColor*=finalLight;
-	
-	
+	//finalColor = vec3(0.15);
+	//finalColor = (normalMatrix * normal) * 0.5 + 0.5;
 
 	finalColor = finalColor * finalLight;
 	
@@ -230,10 +222,11 @@ void main()
 	
 	//compositeColor.rgb = pow(compositeColor.rgb, vec3(gamma));
 	
-	float covered = texture2D(loadedChunksMap,  ( ( ( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) - vec2(0.0) )/ 32.0) * 0.5 + 0.5 ).r;
+	float heightCoveredStart = texture2D(loadedChunksMap,  ( ( ( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) - vec2(0.0) )/ 32.0) * 0.5 + 0.5 ).r;
 	
-	if(covered > 0.0)
+	if(heightCoveredStart > 0 && heightCoveredStart * 32.0 * 32.0 < vertex.y)
 		discard;
 	
 	gl_FragColor = compositeColor;
+	//gl_FragColor = vec4(vec3(heightCoveredStart), 1.0);
 }

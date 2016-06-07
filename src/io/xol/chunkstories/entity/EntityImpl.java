@@ -483,8 +483,8 @@ public abstract class EntityImpl implements Entity
 			//camera.pos.y = -pos.y;
 			//camera.pos.z = -pos.z;
 
-			camera.view_rotx = rotV;
-			camera.view_roty = rotH;
+			camera.rotationX = rotV;
+			camera.rotationY = rotH;
 
 			camera.fov = FastConfig.fov;
 

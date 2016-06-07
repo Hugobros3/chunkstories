@@ -38,6 +38,7 @@ import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.summary.RegionSummaries;
 import io.xol.engine.math.LoopingMathHelper;
+import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.misc.ConfigFile;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -573,7 +574,7 @@ public abstract class World implements WorldInterface
 		}
 		chunksHolder.setChunk(chunk);
 		if (renderer != null)
-			renderer.modified();
+			renderer.flagModified();
 	}
 
 	/* (non-Javadoc)
@@ -787,5 +788,11 @@ public abstract class World implements WorldInterface
 	public boolean handleInteraction(Entity entity, Location blockLocation, Input input)
 	{
 		return false;
+	}
+
+	public int getDataAt(Vector3d pos, boolean load)
+	{
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

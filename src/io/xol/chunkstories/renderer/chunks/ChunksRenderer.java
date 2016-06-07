@@ -1156,7 +1156,7 @@ public class ChunksRenderer extends Thread
 
 	public AtomicInteger totalChunksRendered = new AtomicInteger();
 
-	public void die()
+	public void killThread()
 	{
 		die.set(true);
 		synchronized (this)

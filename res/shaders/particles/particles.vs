@@ -41,13 +41,17 @@ uniform float billboardSize;
 
 varying float back;
 
+//Fog
+uniform float fogStartDistance;
+uniform float fogEndDistance;
+
 void main(){
 	//Usual variable passing
 	texcoord = vec4(planeCoord*0.5+0.5, 0, 0);//vec4(textureCoord, 0, 0);//gl_MultiTexCoord0;
 	vec4 v = billboardCoord;//vec4(gl_Vertex);
 	
 	//TODO : Clean this shit up	
-	v+=vec4(borderShift,0);
+	v+=vec4(borderShift, 0.0);
 	
 	//v += modelViewMatrixInv * vec4(planeCoord,0,0);
 	
@@ -55,7 +59,8 @@ void main(){
 	varyingNormal = gl_Normal;
 	
 	//Compute lightmap coords
-	lightMapCoords = vec2(0,1*sunIntensity);
+	lightMapCoords = vec2(0.0, 1.0);
+	//baseLight *= texture2DGammaIn(lightColors, vec2(time, 1.0)).rgb;
 	
 	//Translate vertex
 	vec4 cameraUp = modelViewMatrixInv * vec4(0, 1, 0, 1);
@@ -63,21 +68,12 @@ void main(){
 	
 	modelview = modelViewMatrix * v;
 	
-	modelview += vec4(planeCoord*billboardSize,0,0);
+	modelview += vec4(planeCoord*billboardSize, 0.0, 0.0);
 	
-	vec4 clochard = (projectionMatrix * modelview );
+	vec4 clochard = projectionMatrix * modelview;
 	
 	gl_Position = clochard;
 	
-	
-	
 	//Eye transform
 	eye = v.xyz-camPos;
-	
-	/* Exp fog - don't want that
-	vec3 sum = -gl_Position.xyz;
-	float dist = length(sum);
-	const float LOG2 = 1.442695;
-	float fogFactor = exp2( -gl_Fog.density *  gl_Fog.density * dist * dist * LOG2 );
-	fogI = clamp(fogFactor, 0.0, 1.0);*/
 }

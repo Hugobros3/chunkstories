@@ -19,12 +19,12 @@ import io.xol.engine.math.lalgb.Vector4f;
 public class Camera
 {
 	//Viewport size
-	public int width, height;
+	public int viewportWidth, viewportHeight;
 	
 	//Camera rotations
-	public float view_rotx = 0.0f;
-	public float view_roty = 0.0f;
-	public float view_rotz = 0.0f;
+	public float rotationX = 0.0f;
+	public float rotationY = 0.0f;
+	public float rotationZ = 0.0f;
 
 	//Camera positions
 
@@ -75,8 +75,8 @@ public class Camera
 	 */
 	public void alUpdate()
 	{
-		float rotH = view_roty;
-		float rotV = view_rotx;
+		float rotH = rotationY;
+		float rotV = rotationX;
 		float a = (float) ((180-rotH) / 180f * Math.PI);
 		float b = (float) ((-rotV) / 180f * Math.PI);
 		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
@@ -128,8 +128,8 @@ public class Camera
 
 	public void justSetup(int width, int height)
 	{
-		this.width = width;
-		this.height = height;
+		this.viewportWidth = width;
+		this.viewportHeight = height;
 		// Frustrum values
 		float fovRad = (float) toRad(fov);
 
@@ -160,15 +160,15 @@ public class Camera
 		
 		modelViewMatrix4f.setIdentity();
 		// Rotate the modelview matrix
-		modelViewMatrix4f.rotate((float) (view_rotx / 180 * Math.PI), new Vector3f( 1.0f, 0.0f, 0.0f));
-		modelViewMatrix4f.rotate((float) (view_roty / 180 * Math.PI), new Vector3f( 0.0f, 1.0f, 0.0f));
-		modelViewMatrix4f.rotate((float) (view_rotz / 180 * Math.PI), new Vector3f( 0.0f, 0.0f, 1.0f));
+		modelViewMatrix4f.rotate((float) (rotationX / 180 * Math.PI), new Vector3f( 1.0f, 0.0f, 0.0f));
+		modelViewMatrix4f.rotate((float) (rotationY / 180 * Math.PI), new Vector3f( 0.0f, 1.0f, 0.0f));
+		modelViewMatrix4f.rotate((float) (rotationZ / 180 * Math.PI), new Vector3f( 0.0f, 0.0f, 1.0f));
 		
 		Vector3f position = pos.castToSP();
 		position = position.negate(position);
 		
-		float rotH = view_roty;
-		float rotV = view_rotx;
+		float rotH = rotationY;
+		float rotV = rotationX;
 		float a = (float) ((180-rotH) / 180f * Math.PI);
 		float b = (float) ((-rotV) / 180f * Math.PI);
 		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
@@ -216,7 +216,7 @@ public class Camera
 		Vector3f temp = new Vector3f();
 		//Init values
 		float tang = (float)Math.tan(toRad(fov)) ;
-		float ratio = (float) width / (float) height;
+		float ratio = (float) viewportWidth / (float) viewportHeight;
 		float nh = 0.1f * tang;
 		float nw = nh * ratio;
 		float fh = 3000f  * tang;
@@ -228,8 +228,8 @@ public class Camera
 		position = position.negate(position);
 		//Vector3f position = new Vector3f((float)-camPosX, (float)-camPosY, (float)-camPosZ);
 		
-		float rotH = view_roty;
-		float rotV = view_rotx;
+		float rotH = rotationY;
+		float rotV = rotationX;
 		float a = (float) ((180-rotH) / 180f * Math.PI);
 		float b = (float) ((-rotV) / 180f * Math.PI);
 		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
@@ -396,7 +396,9 @@ public class Camera
 		shaderProgram.setUniformMatrix4f("untranslatedMVP", untranslatedMVP4f);
 		shaderProgram.setUniformMatrix4f("untranslatedMVPInv", untranslatedMVP4fInv);
 		
-		shaderProgram.setUniformFloat2("screenViewportSize", this.width, this.height);
+		shaderProgram.setUniformFloat2("screenViewportSize", this.viewportWidth, this.viewportHeight);
+
+		shaderProgram.setUniformFloat3("camPos", pos);
 	}
 	
 	public Vector3f transform3DCoordinate(Vector3f in)
@@ -430,16 +432,16 @@ public class Camera
 		float scale = 1/in.z;
 		posOnScreen.scale(scale);
 
-		posOnScreen.x = (posOnScreen.x * 0.5f + 0.5f) * width;
-		posOnScreen.y = ((posOnScreen.y * 0.5f + 0.5f)) * height;
+		posOnScreen.x = (posOnScreen.x * 0.5f + 0.5f) * viewportWidth;
+		posOnScreen.y = ((posOnScreen.y * 0.5f + 0.5f)) * viewportHeight;
 		posOnScreen.z = scale;
 		return posOnScreen;
 	}
 
 	public Vector3f getViewDirection()
 	{
-		float rotH = view_roty;
-		float rotV = view_rotx;
+		float rotH = rotationY;
+		float rotV = rotationX;
 		float a = (float) ((180-rotH) / 180f * Math.PI);
 		float b = (float) ((-rotV) / 180f * Math.PI);
 		return new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));

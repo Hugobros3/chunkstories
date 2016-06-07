@@ -151,7 +151,7 @@ public class XolioWindow
 			Client.onStart();
 			while (!Display.isCloseRequested() && !closeRequest)
 			{
-				if (this.currentScene == null || !(currentScene instanceof GameplayScene))
+				//if (this.currentScene == null || !(currentScene instanceof GameplayScene))
 					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 				if (resized)
 					resized = false;

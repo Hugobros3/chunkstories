@@ -150,7 +150,7 @@ public class WeatherEffectsRenderer
 		//glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		weatherShader.setUniformFloat("time", (System.currentTimeMillis() - lastRender) / 1000f);
 		weatherShader.setUniformSampler(0, "lightmap", TexturesHandler.getTexture("environement/light.png"));
-		weatherShader.setUniformFloat("sunIntensity", worldRenderer.sky.getLightIntensity());
+		//weatherShader.setUniformFloat("sunIntensity", worldRenderer.sky.getLightIntensity());
 		//raindropsData.flip();
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		glVertexAttribPointer(vertexIn, 4, GL_FLOAT, false, 0, 0L);
