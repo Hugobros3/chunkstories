@@ -131,8 +131,10 @@ public class WorldRenderer
 	private FBO fboBlur = new FBO(null, blurIntermediateBuffer);
 
 	// 64x64 texture used to cull distant mesh
-	private GBufferTexture loadedChunksMap = new GBufferTexture(DEPTH_RENDERBUFFER, 64, 64);
-	private FBO fboLoadedChunks = new FBO(loadedChunksMap);
+	private GBufferTexture loadedChunksMapTop = new GBufferTexture(DEPTH_RENDERBUFFER, 64, 64);
+	private FBO fboLoadedChunksTop = new FBO(loadedChunksMapTop);
+	private GBufferTexture loadedChunksMapBot = new GBufferTexture(DEPTH_RENDERBUFFER, 64, 64);
+	private FBO fboLoadedChunksBot = new FBO(loadedChunksMapBot);
 
 	// Shadow maps
 	private int shadowMapResolution = 0;
@@ -392,7 +394,7 @@ public class WorldRenderer
 		int newCY = fastfloor((pos.y) / 32);
 		int newCZ = fastfloor((pos.z) / 32);
 		// Fill the VBO array with chunks VBO ids if the player changed chunk
-		if (currentChunkX != newCX || currentChunkY != newCY || currentChunkZ != newCZ || chunksChanged || true)
+		if (currentChunkX != newCX || currentChunkY != newCY || currentChunkZ != newCZ || chunksChanged)
 		{
 			if (newCX != currentChunkX || newCZ != currentChunkZ)
 				farTerrainRenderer.generateArround(-camera.pos.x, -camera.pos.z);
@@ -409,14 +411,21 @@ public class WorldRenderer
 			renderList.clear();
 
 			//Iterates over all loaded chunks to generate list and map
-			fboLoadedChunks.bind();
+			fboLoadedChunksBot.bind();
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			
+			fboLoadedChunksTop.bind();
 			glViewport(0, 0, 64, 64);
 			glClearDepth(0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glClearDepth(1f);
-			this.loadedChunksMap.setLinearFiltering(false);
-			this.loadedChunksMap.setMipMapping(false);
-			this.loadedChunksMap.setTextureWrapping(false);
+			this.loadedChunksMapTop.setLinearFiltering(false);
+			this.loadedChunksMapTop.setMipMapping(false);
+			this.loadedChunksMapTop.setTextureWrapping(false);
+			//
+			this.loadedChunksMapBot.setLinearFiltering(false);
+			this.loadedChunksMapBot.setMipMapping(false);
+			this.loadedChunksMapBot.setTextureWrapping(false);
 			//fboLoadedChunks.resizeFBO(32, 32);
 			renderingContext.setCurrentShader(ShadersLibrary.getShaderProgram("loaded_map"));
 			localMapCommands.clear();
@@ -445,8 +454,8 @@ public class WorldRenderer
 				if (LoopingMathHelper.moduloDistance(chunk.chunkX, currentChunkX, world.getSizeInChunks()) <= chunksViewDistance)
 					if (LoopingMathHelper.moduloDistance(chunk.chunkZ, currentChunkZ, world.getSizeInChunks()) <= chunksViewDistance)
 					{
-						if (LoopingMathHelper.moduloDistance(chunk.chunkX, currentChunkX, world.getSizeInChunks()) < chunksViewDistance-1)
-							if (LoopingMathHelper.moduloDistance(chunk.chunkZ, currentChunkZ, world.getSizeInChunks()) < chunksViewDistance-1)
+						if (LoopingMathHelper.moduloDistance(chunk.chunkX, currentChunkX, world.getSizeInChunks()) < chunksViewDistance)
+							if (LoopingMathHelper.moduloDistance(chunk.chunkZ, currentChunkZ, world.getSizeInChunks()) < chunksViewDistance)
 							{
 								if ((chunk.chunkRenderData != null && chunk.chunkRenderData.isUploaded))
 								{
@@ -482,7 +491,12 @@ public class WorldRenderer
 
 			glVertexAttribPointer(vertexIn, 3, GL_BYTE, false, 4, localMapCommands);
 			glDrawArrays(GL_POINTS, 0, localMapElements);
+			//Two maps
 			glDepthFunc(GL_LEQUAL);
+			fboLoadedChunksBot.bind();
+
+			glDrawArrays(GL_POINTS, 0, localMapElements);
+			//glDepthFunc(GL_LEQUAL);
 			//glDrawArrays(GL_TRIANGLES, 0, 3);
 
 			renderingContext.disableVertexAttribute(vertexIn);
@@ -596,14 +610,15 @@ public class WorldRenderer
 		terrainShader.setUniformSampler(6, "blockLightmap", lightmapTexture);
 		Texture lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
 		terrainShader.setUniformSampler(11, "lightColors", lightColors);
-		terrainShader.setUniformSampler(5, "normalTexture", waterNormalTexture);
+		terrainShader.setUniformSampler(10, "normalTexture", waterNormalTexture);
 		setupShadowColors(terrainShader);
 		terrainShader.setUniformFloat("time", sky.time);
 		terrainShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
 
 		terrainShader.setUniformSampler(3, "vegetationColorTexture", getGrassTexture());
 		terrainShader.setUniformFloat("mapSize", sizeInChunks * 32);
-		terrainShader.setUniformSampler(4, "loadedChunksMap", loadedChunksMap);
+		terrainShader.setUniformSampler(4, "loadedChunksMapTop", loadedChunksMapTop);
+		terrainShader.setUniformSampler(5, "loadedChunksMapBot", loadedChunksMapBot);
 		terrainShader.setUniformFloat2("playerCurrentChunk", this.currentChunkX, this.currentChunkY);
 
 		if(Keyboard.isKeyDown(Keyboard.KEY_F7))
@@ -1196,7 +1211,7 @@ public class WorldRenderer
 		postProcess.setUniformSampler(6, "bloomBuffer", this.bloomBuffer);
 		postProcess.setUniformSampler(7, "ssaoBuffer", this.ssaoBuffer);
 		//postProcess.setUniformSampler(8, "debugBuffer", (System.currentTimeMillis() % 1000 < 500 ) ? this.loadedChunksMapD : this.loadedChunksMap);
-		postProcess.setUniformSampler(8, "debugBuffer", (System.currentTimeMillis() % 1000 < 500 ) ? this.loadedChunksMap : this.loadedChunksMap);
+		postProcess.setUniformSampler(8, "debugBuffer", (System.currentTimeMillis() % 1000 < 500 ) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
 
 		Voxel vox = VoxelTypes.get(world.getDataAt(camera.pos, false));
 		postProcess.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);

@@ -130,7 +130,7 @@ void main()
 	vec4 projected = modelViewProjectionMatrix * v;
 	
 	
-	projected.z += 0.1;
+	//projected.z += 0.1;
 	
     gl_Position = projected;
 	

@@ -58,7 +58,8 @@ const float gammaInv = 1/2.2;
 uniform float mapSize;
 
 varying vec2 chunkPositionFrag;
-uniform sampler2D loadedChunksMap;
+uniform sampler2D loadedChunksMapTop;
+uniform sampler2D loadedChunksMapBot;
 uniform vec2 playerCurrentChunk;
 
 vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
@@ -222,11 +223,13 @@ void main()
 	
 	//compositeColor.rgb = pow(compositeColor.rgb, vec3(gamma));
 	
-	float heightCoveredStart = texture2D(loadedChunksMap,  ( ( ( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) - vec2(0.0) )/ 32.0) * 0.5 + 0.5 ).r;
+	float heightCoveredStart = texture2D(loadedChunksMapBot,  ( ( floor( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0;
+	float heightCoveredEnd = texture2D(loadedChunksMapTop,  ( ( floor( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 + 32.0;
 	
-	if(heightCoveredStart > 0 && heightCoveredStart * 32.0 * 32.0 < vertex.y)
+	if(vertex.y > heightCoveredStart && vertex.y < heightCoveredEnd)
 		discard;
 	
 	gl_FragColor = compositeColor;
-	//gl_FragColor = vec4(vec3(heightCoveredStart), 1.0);
+	//gl_FragColor = vec4(vec3(heightCoveredStart) / 1024.0, 1.0);
+	//gl_FragColor = vec4(( ( ( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) - vec2(0.0) )/ 32.0) * 0.5 + 0.5, 0.0, 1.0);
 }

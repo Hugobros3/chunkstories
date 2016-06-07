@@ -613,8 +613,9 @@ public class IOTasks extends Thread
 				FileOutputStream out = new FileOutputStream(summary.handler);
 
 				ByteBuffer writeMe = ByteBuffer.allocate(256 * 256 * 4);
-				for (int i : summary.heights)
-					writeMe.putInt(i);
+
+				for(int i = 0; i < 256 * 256; i++)
+					writeMe.putInt(summary.heights[i]);
 
 				byte[] compressed = RegionSummary.compressor.compress(writeMe.array());
 

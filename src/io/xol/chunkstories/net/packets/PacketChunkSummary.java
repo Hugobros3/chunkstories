@@ -33,8 +33,8 @@ public class PacketChunkSummary extends Packet
 		out.writeInt(summary.rx);
 		out.writeInt(summary.rz);
 		ByteBuffer compressMe = ByteBuffer.allocateDirect(256 * 256 * 4 * 2);
-			for(int i : summary.heights)
-				compressMe.putInt(i);
+			for(int i = 0; i < 256 * 256; i++)
+				compressMe.putInt(summary.heights[i]);
 			for(int i : summary.ids)
 				compressMe.putInt(i);
 			

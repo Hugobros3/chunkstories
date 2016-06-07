@@ -98,7 +98,7 @@ public class FarTerrainRenderer
 	public int draw(RenderingContext renderingContext, ShaderProgram terrain)
 	{
 		int elements = 0;
-		glDisable(GL_CULL_FACE); // culling for our glorious terrain
+		glEnable(GL_CULL_FACE); // culling for our glorious terrain
 		glLineWidth(1.0f);
 		
 		int vertexIn = terrain.getVertexAttributeLocation("vertexIn");

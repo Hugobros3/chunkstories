@@ -398,7 +398,7 @@ public class Camera
 		
 		shaderProgram.setUniformFloat2("screenViewportSize", this.viewportWidth, this.viewportHeight);
 
-		shaderProgram.setUniformFloat3("camPos", pos);
+		shaderProgram.setUniformFloat3("camPos", pos.clone().negate());
 	}
 	
 	public Vector3f transform3DCoordinate(Vector3f in)
