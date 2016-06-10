@@ -11,17 +11,8 @@ varying float fresnelTerm;
 //Lighthing
 uniform float sunIntensity;
 uniform vec3 sunPos; // Sun position
-// The normal we're going to pass to the fragment shader.
 varying vec3 varyingNormal;
-// The vertex we're going to pass to the fragment shader.
 varying vec4 varyingVertex;
-
-//Shadow shit
-uniform mat4 shadowMatrix;
-uniform mat4 shadowMatrix2;
- 
-varying vec4 coordinatesInShadowmap;
-varying vec4 coordinatesInShadowmap2;
 
 varying float fogI;
 
@@ -46,7 +37,7 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
-uniform vec3 givenLightmapCoords;
+uniform vec2 worldLight;
 
 uniform mat4 localTransform;
 uniform mat3 localTransformNormal;
@@ -76,8 +67,8 @@ void main(){
 	
 	//Compute lightmap coords
 	rainWetness = wetness;//wetness*clamp((colorIn.g-15.0/16.0)*16,0,0.5);
-	lightMapCoords = givenLightmapCoords;
-	lightMapCoords.y *= sunIntensity;
+	lightMapCoords = vec3(worldLight / 15.0, 0);
+	//lightMapCoords.y *= sunIntensity;
 	
 	//Translate vertex
 	modelview = modelViewMatrix * v;

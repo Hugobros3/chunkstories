@@ -54,7 +54,7 @@ public class PauseOverlay extends Overlay
 		if(exitButton.clicked())
 		{
 			if(Client.world != null)
-				Client.world.clear();
+				Client.world.unloadEverything();
 			mainScene.eng.changeScene(new MainMenu(mainScene.eng, false));
 		}
 	}

@@ -62,6 +62,8 @@ uniform sampler2D loadedChunksMapTop;
 uniform sampler2D loadedChunksMapBot;
 uniform vec2 playerCurrentChunk;
 
+uniform float ignoreWorldCulling;
+
 vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
 {
 	return pow(texture2D(sampler, coords), vec4(gamma));
@@ -171,17 +173,21 @@ void main()
 	vec3 sunLight = texture2DGammaIn(blockLightmap,vec2(0, lightMapCoords.y)).rgb;
 	
 	float opacity = 0.0;
-	float NdotL = clamp(dot(normal, normalize(sunPos)), -1.0, 1.0);
+	float NdotL = clamp(dot(normal, normalize(sunPos)), 0.0, 1.0);
 	
 	//opacity += NdotL;
 	
 	float clamped = clamp(NdotL, 0.0, 0.1);
 	
 	opacity = clamp(clamped * 10.0, 0.0, 1.0);
-	sunLight *= mix(pow(shadowColor, vec3(gamma)),  pow(sunColor, vec3(gamma)), (opacity) * 1);
+	sunLight *= mix(pow(shadowColor, vec3(gamma)),  pow(sunColor, vec3(gamma)), (NdotL) * 1);
 	
-	vec3 finalLight = blockLight;// * (1-sunLight);
-	finalLight += sunLight;
+	//vec3 finalLight = blockLight;// * (1-sunLight);
+	//finalLight += sunLight;
+	
+	
+	float sunlightAmount = NdotL * shadowVisiblity;
+	vec3 finalLight = mix(pow(sunColor, vec3(gamma)), baseLight * pow(shadowColor, vec3(gamma)), (1.0 - sunlightAmount) * shadowStrength);
 	
 	<ifdef !shadows>
 		// Simple lightning for lower end machines
@@ -226,7 +232,7 @@ void main()
 	float heightCoveredStart = texture2D(loadedChunksMapBot,  ( ( floor( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0;
 	float heightCoveredEnd = texture2D(loadedChunksMapTop,  ( ( floor( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 + 32.0;
 	
-	if(vertex.y > heightCoveredStart && vertex.y < heightCoveredEnd)
+	if(vertex.y-5.0 > heightCoveredStart && vertex.y+5.0-32.0 < heightCoveredEnd && ignoreWorldCulling < 1.0)
 		discard;
 	
 	gl_FragColor = compositeColor;

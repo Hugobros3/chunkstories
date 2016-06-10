@@ -54,7 +54,7 @@ public class ServerPlayer implements Player, Controller
 		if(controlledEntity == null)
 			return;
 		//Cache (idk if HotSpot makes it redudant but whatever)
-		double ws = controlledEntity.getWorld().getSizeSide();
+		double ws = controlledEntity.getWorld().getWorldSize();
 		Location controlledEntityLocation = controlledEntity.getLocation();
 		Iterator<Entity> iter = controlledEntity.getWorld().getAllLoadedEntities();
 		Entity e;

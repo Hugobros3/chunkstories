@@ -7,6 +7,7 @@ import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
 
+import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -47,6 +48,41 @@ public class CubicChunk implements Chunk
 	boolean occludedLeft = false;
 	boolean occludedRight = false;
 
+	//These wonderfull things does magic for us, they are unique per-thread so they won't ever clog memory neither will they have contigency issues
+	//Seriously awesome
+	static ThreadLocal<Deque<Integer>> blockSources = new ThreadLocal<Deque<Integer>>()
+	{
+		@Override
+		protected Deque<Integer> initialValue()
+		{
+			return new ArrayDeque<Integer>();
+		}
+	};
+	static ThreadLocal<Deque<Integer>> sunSources = new ThreadLocal<Deque<Integer>>()
+	{
+		@Override
+		protected Deque<Integer> initialValue()
+		{
+			return new ArrayDeque<Integer>();
+		}
+	};
+	static ThreadLocal<Deque<Integer>> blockSourcesRemoval = new ThreadLocal<Deque<Integer>>()
+	{
+		@Override
+		protected Deque<Integer> initialValue()
+		{
+			return new ArrayDeque<Integer>();
+		}
+	};
+	static ThreadLocal<Deque<Integer>> sunSourcesRemoval = new ThreadLocal<Deque<Integer>>()
+	{
+		@Override
+		protected Deque<Integer> initialValue()
+		{
+			return new ArrayDeque<Integer>();
+		}
+	};
+	
 	public CubicChunk(World world, int chunkX, int chunkY, int chunkZ)
 	{
 		this.world = world;
@@ -159,8 +195,8 @@ public class CubicChunk implements Chunk
 			return; // Nothing to do
 		
 		//Lock the chunk & grab 2 queues
-		Deque<Integer> blockSources = world.dequesPool.grab();
-		Deque<Integer> sunSources = world.dequesPool.grab();
+		Deque<Integer> blockSources = CubicChunk.blockSources.get();
+		Deque<Integer> sunSources = CubicChunk.sunSources.get();
 
 		// Reset any prospective residual data
 		blockSources.clear();
@@ -179,8 +215,9 @@ public class CubicChunk implements Chunk
 			this.need_render.set(true);
 		
 		//Return the queues after that
-		world.dequesPool.back(blockSources);
-		world.dequesPool.back(sunSources);
+		//world.dequesPool.back(blockSources);
+		//world.dequesPool.back(sunSources);
+		//Not really jk
 	}
 	
 	// Now entering lightning code part, brace yourselves
@@ -550,7 +587,7 @@ public class CubicChunk implements Chunk
 			{
 				int z = 31; // This is basically wrong since we work with cubic chunks
 				boolean hit = false;
-				int csh = world.regionSummaries.getHeightAt(chunkX * 32 + a, chunkZ * 32 + b) + 1;
+				int csh = world.getRegionSummaries().getHeightAt(chunkX * 32 + a, chunkZ * 32 + b) + 1;
 				while (z >= 0)
 				{
 					int block = data[a * 1024 + z * 32 + b];
@@ -705,7 +742,7 @@ public class CubicChunk implements Chunk
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int heightInSummary = world.regionSummaries.getHeightAt(chunkX * 32 + b, chunkZ * 32 + c);
+						int heightInSummary = world.getRegionSummaries().getHeightAt(chunkX * 32 + b, chunkZ * 32 + c);
 						// System.out.println("compute "+heightInSummary+" <= ? "+chunkY*32);
 						if (heightInSummary <= chunkY * 32)
 						{
@@ -842,17 +879,23 @@ public class CubicChunk implements Chunk
 		int sunLightAfter = VoxelFormat.sunlight(data);
 		int blockLightAfter = VoxelFormat.blocklight(data);
 
-		int csh = world.regionSummaries.getHeightAt(bx + chunkX * 32, bz + chunkZ * 32);
+		int csh = world.getRegionSummaries().getHeightAt(bx + chunkX * 32, bz + chunkZ * 32);
 		int block_height = by + chunkY * 32;
 		
 		//If the block is at or above (never) the topmost tile it's sunlit
 		if(block_height >= csh)
 			sunLightAfter = 15;
 		
-		Deque<Integer> blockSourcesRemoval = world.dequesPool.grab();
+
+		Deque<Integer> blockSourcesRemoval = CubicChunk.blockSourcesRemoval.get();
+		Deque<Integer> sunSourcesRemoval = CubicChunk.blockSourcesRemoval.get();
+		Deque<Integer> blockSources = CubicChunk.blockSources.get();
+		Deque<Integer> sunSources = CubicChunk.sunSources.get();
+		
+		/*Deque<Integer> blockSourcesRemoval = world.dequesPool.grab();
 		Deque<Integer> sunSourcesRemoval = world.dequesPool.grab();
 		Deque<Integer> blockSources = world.dequesPool.grab();
-		Deque<Integer> sunSources = world.dequesPool.grab();
+		Deque<Integer> sunSources = world.dequesPool.grab();*/
 
 		blockSourcesRemoval.push(bx);
 		blockSourcesRemoval.push(by);
@@ -884,10 +927,11 @@ public class CubicChunk implements Chunk
 		this.propagateLightningBeyondChunk(blockSources, sunSources);
 		
 		//Return the queues after that
-		world.dequesPool.back(blockSourcesRemoval);
+		
+		/*world.dequesPool.back(blockSourcesRemoval);
 		world.dequesPool.back(sunSourcesRemoval);
 		world.dequesPool.back(blockSources);
-		world.dequesPool.back(sunSources);
+		world.dequesPool.back(sunSources);*/
 	}
 	
 	@SuppressWarnings("unused")
@@ -1648,6 +1692,9 @@ public class CubicChunk implements Chunk
 	@Override
 	public int getSunLight(int x, int y, int z)
 	{
+		//if(this.dataPointer == -1)
+		//	return y <= world.getRegionSummaries().getHeightAt(chunkX * 32 + x, chunkZ * 32 + z) ? 0 : 15;
+		
 		if(x > 0 && x < 31)
 			if(y > 0 && y < 31)
 				if(z > 0 && z < 31)
@@ -1667,6 +1714,11 @@ public class CubicChunk implements Chunk
 		return VoxelFormat.blocklight(this.getWorldData(x, y, z));
 	}
 
+	public boolean isAirChunk()
+	{
+		return dataPointer == -1;
+	}
+	
 	@Override
 	public void setSunLight(int x, int y, int z, int level)
 	{

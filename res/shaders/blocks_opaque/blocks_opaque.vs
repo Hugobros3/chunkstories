@@ -47,8 +47,6 @@ uniform mat4 untranslatedMVPInv;
 uniform mat4 modelViewProjectionMatrix;
 uniform mat4 modelViewProjectionMatrixInv;
 
-uniform vec3 givenLightmapCoords;
-
 //Weather
 uniform float wetness;
 varying float rainWetness;

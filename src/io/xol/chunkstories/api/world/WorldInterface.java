@@ -60,21 +60,7 @@ public interface WorldInterface
 	 * Return the world size (length of each square side)
 	 * @return
 	 */
-	double getSizeSide();
-
-	CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
-
-	void removeChunk(CubicChunk c, boolean save);
-
-	void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save);
-
-	/**
-	 * @param chunkX
-	 * @param chunkY
-	 * @param chunkZ
-	 * @return True if the chunk is loaded
-	 */
-	boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ);
+	double getWorldSize();
 
 	/**
 	 * Returns the block data at the specified location
@@ -149,37 +135,85 @@ public interface WorldInterface
 	void setDataAt(int x, int y, int z, int i, boolean load);
 
 	/**
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return The sun light level of the block per {@link VoxelFormat} ( 0-15 ) using either getDataAt if the chunk is loaded or
+	 * the heightmap ( y <= heightmapLevel(x, z) ? 0 : 15 )
+	 */
+	int getSunlightLevel(int x, int y, int z);
+	
+	int getSunlightLevel(Location location);
+	
+	/**
+	 * 
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return Returns the block light level of the block per {@link VoxelFormat} ( 0-15 ) using getDataAt ( if the chunk isn't loaded it will return a zero. )
+	 */
+	int getBlocklightLevel(int x, int y, int z);
+
+	int getBlocklightLevel(Location location);
+	
+	/**
+	 * Returns null or a chunk. If the load flag is set to true, it will also try to load it ingame
+	 * @param chunkX
+	 * @param chunkY
+	 * @param chunkZ
+	 * @param load
+	 * @return
+	 */
+	CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
+
+	ChunksIterator getAllLoadedChunks();
+	
+	/**
+	 * Unloads forcefully a chunk
+	 * @param c
+	 * @param save
+	 */
+	void removeChunk(CubicChunk c, boolean save);
+
+	void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save);
+
+	/**
+	 * Unloads bits of the map not required by anyone
+	 */
+	void trimRemovableChunks();
+	/**
+	 * @param chunkX
+	 * @param chunkY
+	 * @param chunkZ
+	 * @return True if the chunk is loaded
+	 */
+	boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ);
+	
+	/**
 	 * Loads or replaces an entire chunk with another
 	 * @param chunk
 	 */
 	void setChunk(CubicChunk chunk);
 
 	/**
-	 * Call this function to force redrawing all the chunks
+	 * For dirty hacks that need so
 	 */
-	void reRender();
+	void redrawAllChunks();
 
 	/**
 	 * Unloads everything
 	 */
-	void clear();
+	void unloadEverything();
 
 	/**
 	 * Blocking method saving all loaded chunks
 	 */
-	void save();
+	void saveEverything();
 
 	/**
 	 * Destroys the world, kill threads and frees stuff
 	 */
 	void destroy();
-
-	ChunksIterator iterator();
-
-	/**
-	 * Unloads bits of the map not required by anyone
-	 */
-	void trimRemovableChunks();
 
 	boolean isRaining();
 
@@ -196,7 +230,7 @@ public interface WorldInterface
 	WorldGenerator getGenerator();
 
 	/**
-	 * Called when some controllable entity try to interact with the map
+	 * Called when some controllable entity try to interact with the world
 	 * @param entity
 	 * @param blockLocation
 	 * @param input

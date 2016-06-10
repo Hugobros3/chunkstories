@@ -36,7 +36,7 @@ public class RenderingContext
 	// 4 Temporary VBOs for streamed rendering
 	public int tempVBO[] = new int[4];
 
-	public Set<Light> lights = new HashSet<Light>();
+	private Set<Light> lights = new HashSet<Light>();
 
 	public RenderingContext(XolioWindow w)
 	{
@@ -381,5 +381,16 @@ public class RenderingContext
 	public ShaderProgram getCurrentShader()
 	{
 		return renderingShader;
+	}
+	
+	public void addLight(Light light)
+	{
+		if(!this.shadow)
+			lights.add(light);
+	}
+	
+	public Iterator<Light> getAllLights()
+	{
+		return lights.iterator();
 	}
 }

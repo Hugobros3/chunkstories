@@ -2,6 +2,8 @@ package io.xol.chunkstories.renderer.lights;
 
 import io.xol.engine.math.lalgb.Vector3f;
 
+import java.util.Iterator;
+
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.rendering.SpotLight;
 import io.xol.engine.base.ObjectRenderer;
@@ -50,24 +52,6 @@ public class LightsRenderer
 	public static boolean lightInFrustrum(RenderingContext renderingContext, Light light)
 	{
 		return renderingContext.getCamera().isBoxInFrustrum(light.getPosition(), new Vector3f(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
-		
-		/*Vector3f centerSphere = new Vector3f(light.getPosition());
-		Camera camera = renderingContext.getCamera();
-		double coneAngle = (camera.fov) * (camera.width / (camera.height * 1f));
-		coneAngle = coneAngle / 180d * Math.PI;
-		Vector3f v = new Vector3f();
-		Vector3f.sub(centerSphere, new Vector3f((float)camera.camPosX, (float)camera.camPosY, (float)camera.camPosZ), v);
-		Vector3f viewerCamDirVector = camera.getViewDirection();
-		
-		viewerCamDirVector.normalise(viewerCamDirVector);
-		float a = Vector3f.dot(v, viewerCamDirVector);
-		double b = a * Math.tan(coneAngle);
-		double c = Math.sqrt(Vector3f.dot(v, v) - a * a);
-		double d = c - b;
-		double e = d * Math.cos(coneAngle);
-		if (e >= Math.sqrt(light.getDecay() * light.getDecay() * 3)) // R
-			return false;
-		return true;*/
 	}
 
 	static ShaderProgram lightShader;
@@ -77,8 +61,12 @@ public class LightsRenderer
 		lightShader = ShadersLibrary.getShaderProgram("light");
 		lightsBuffer = 0;
 		//Render entities lights
-		for (Light light : renderingContext.lights)
-			renderDefferedLight(renderingContext, light);
+		Iterator<Light> lights = renderingContext.getAllLights();
+		while(lights.hasNext())
+		{
+			renderDefferedLight(renderingContext, lights.next());
+			lights.remove();
+		}
 		//Render particles's lights
 		//Client.world.particlesHolder.renderLights(this);
 		// Render remaining lights

@@ -52,7 +52,6 @@ uniform mat3 normalMatrixInv;
 
 varying float fresnelTerm;
 
-uniform vec3 givenLightmapCoords;
 uniform vec2 screenSize;
 
 const float gamma = 2.2;

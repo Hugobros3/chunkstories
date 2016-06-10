@@ -59,6 +59,8 @@ public interface Chunk
 	
 	public int getBlockLight(int x, int y, int z);
 	
+	public boolean isAirChunk();
+	
 	public void setSunLight(int x, int y, int z, int level);
 	
 	public void setBlockLight(int x, int y, int z, int level);

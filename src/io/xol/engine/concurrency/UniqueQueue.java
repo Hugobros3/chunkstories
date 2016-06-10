@@ -27,7 +27,7 @@ public class UniqueQueue<T> implements Queue<T>
 	{
 		for(T e : c)
 			add(e);
-		return false;
+		return true;
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class UniqueQueue<T> implements Queue<T>
 	public boolean remove(Object o)
 	{
 		if(internalSet.remove(o))
-			internalQueue.remove(o);
+			return internalQueue.remove(o); //True
 		return false;
 	}
 

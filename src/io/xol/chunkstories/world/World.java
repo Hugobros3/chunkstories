@@ -45,17 +45,13 @@ import io.xol.engine.misc.ConfigFile;
 // http://chunkstories.xyz
 // http://xol.io
 
-/**
- * @author Hugo
- *
- */
 public abstract class World implements WorldInterface
 {
 	protected WorldInfo worldInfo;
-	public File folder;
+	private File folder;
 
 	protected boolean client;
-	public ConfigFile internalData;
+	private ConfigFile internalData;
 	
 	private WorldGenerator generator;
 
@@ -64,26 +60,35 @@ public abstract class World implements WorldInterface
 	// Let's say that the game world runs at 60Ticks per second
 	public long worldTime = 5000;
 
+	//Who does the actual work
 	public IOTasks ioHandler;
 
-	// RAM-eating monster
+	// RAM-eating depreacated monster
 	public ChunksData chunksData;
-	public ChunksHolders chunksHolder;
+	
+	private ChunksHolders chunksHolder;
 
 	// Heightmap management
-	public RegionSummaries regionSummaries;
+	private RegionSummaries regionSummaries;
 
 	// World-renderer backcall
-	WorldRenderer renderer;
+	private WorldRenderer renderer;
 
 	// World logic thread
-	ScheduledExecutorService logic;
+	private ScheduledExecutorService logic;
 
 	// Temporary entity list
 	private BlockingQueue<Entity> entities = new LinkedBlockingQueue<Entity>();
 
 	// Particles
-	public ParticlesHolder particlesHolder;
+	private ParticlesHolder particlesHolder;
+	
+	//Entity IDS counter
+	AtomicLong veryLong = new AtomicLong();
+	
+	//Ugly primitive crap
+	boolean raining;
+	
 	public World(WorldInfo info)
 	{
 		worldInfo = info;
@@ -115,8 +120,8 @@ public abstract class World implements WorldInterface
 		generator.initialize(this);
 		
 		chunksData = new ChunksData();
-		chunksHolder = new ChunksHolders(this, chunksData);
-		regionSummaries = new RegionSummaries(this);
+		setChunksHolder(new ChunksHolders(this, chunksData));
+		setRegionSummaries(new RegionSummaries(this));
 		logic = Executors.newSingleThreadScheduledExecutor();
 		folder = new File(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName());
 
@@ -134,6 +139,10 @@ public abstract class World implements WorldInterface
 		return folder;
 	}
 
+	/**
+	 * Returns where this world resides on actual disk
+	 * @return
+	 */
 	public String getFolderPath()
 	{
 		return folder.getAbsolutePath();
@@ -142,7 +151,7 @@ public abstract class World implements WorldInterface
 	public void linkWorldRenderer(WorldRenderer renderer)
 	{
 		this.renderer = renderer;
-		particlesHolder = new ParticlesHolder();
+		setParticlesHolder(new ParticlesHolder());
 	}
 
 	public void startLogic()
@@ -219,8 +228,8 @@ public abstract class World implements WorldInterface
 					entity.tick();
 				//System.out.println(entity);
 			}
-			if (particlesHolder != null)
-				particlesHolder.updatePhysics();
+			if (getParticlesHolder() != null)
+				getParticlesHolder().updatePhysics();
 			// worldTime++;
 		}
 		catch (Exception e)
@@ -277,7 +286,7 @@ public abstract class World implements WorldInterface
 	 * @see io.xol.chunkstories.world.WorldInterface#getSizeSide()
 	 */
 	@Override
-	public double getSizeSide()
+	public double getWorldSize()
 	{
 		return getSizeInChunks() * 32d;
 	}
@@ -298,7 +307,7 @@ public abstract class World implements WorldInterface
 			return null;
 		if (chunkY >= worldInfo.getSize().height)
 			return null;
-		return chunksHolder.getChunk(chunkX, chunkY, chunkZ, load);
+		return getChunksHolder().getChunk(chunkX, chunkY, chunkZ, load);
 	}
 
 	/* (non-Javadoc)
@@ -325,7 +334,7 @@ public abstract class World implements WorldInterface
 		if (chunkY < 0)
 			chunkY = 0;
 		//ioHandler.requestChunkUnload(chunkX, chunkY, chunkZ);
-		chunksHolder.removeChunk(chunkX, chunkY, chunkZ, save);
+		getChunksHolder().removeChunk(chunkX, chunkY, chunkZ, save);
 	}
 
 	/* (non-Javadoc)
@@ -344,13 +353,23 @@ public abstract class World implements WorldInterface
 			return false;
 		if (chunkY >= worldInfo.getSize().height)
 			return false;
-		ChunkHolder h = chunksHolder.getChunkHolder(chunkX, chunkY, chunkZ, false);
+		ChunkHolder h = getChunksHolder().getChunkHolder(chunkX, chunkY, chunkZ, false);
 		if (h == null)
 			return false;
 		else
 			return h.isChunkLoaded(chunkX, chunkY, chunkZ);
 	}
 	
+	public RegionSummaries getRegionSummaries()
+	{
+		return regionSummaries;
+	}
+
+	public void setRegionSummaries(RegionSummaries regionSummaries)
+	{
+		this.regionSummaries = regionSummaries;
+	}
+
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.world.WorldInterface#getDataAt(io.xol.chunkstories.api.Location)
 	 */
@@ -365,6 +384,11 @@ public abstract class World implements WorldInterface
 	 */
 	@Override
 	public int getDataAt(Location location, boolean load)
+	{
+		return getDataAt(location, load);
+	}
+	
+	public int getDataAt(Vector3d location, boolean load)
 	{
 		return getDataAt((int)location.x, (int)location.y, (int)location.z, load);
 	}
@@ -384,7 +408,10 @@ public abstract class World implements WorldInterface
 	@Override
 	public int getDataAt(int x, int y, int z, boolean load)
 	{
-		x = x % (getSizeInChunks() * 32);
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		/*x = x % (getSizeInChunks() * 32);
 		z = z % (getSizeInChunks() * 32);
 		if (y < 0)
 			y = 0;
@@ -393,8 +420,8 @@ public abstract class World implements WorldInterface
 		if (x < 0)
 			x += getSizeInChunks() * 32;
 		if (z < 0)
-			z += getSizeInChunks() * 32;
-		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
+			z += getSizeInChunks() * 32;*/
+		Chunk c = getChunksHolder().getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 			return c.getDataAt(x, y, z);
 		return 0;
@@ -433,9 +460,13 @@ public abstract class World implements WorldInterface
 	@Override
 	public void setDataAt(int x, int y, int z, int i, boolean load)
 	{
-		regionSummaries.blockPlaced(x, y, z, i);
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		getRegionSummaries().blockPlaced(x, y, z, i);
 
-		x = x % (getSizeInChunks() * 32);
+		/*x = x % (getSizeInChunks() * 32);
 		z = z % (getSizeInChunks() * 32);
 		if (y < 0)
 			y = 0;
@@ -444,8 +475,8 @@ public abstract class World implements WorldInterface
 		if (x < 0)
 			x += getSizeInChunks() * 32;
 		if (z < 0)
-			z += getSizeInChunks() * 32;
-		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
+			z += getSizeInChunks() * 32;*/
+		Chunk c = getChunksHolder().getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
 			synchronized (c)
@@ -459,26 +490,26 @@ public abstract class World implements WorldInterface
 				if (y % 32 == 0)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y - 1) / 32, (z - 1) / 32);
+						getChunksHolder().markChunkDirty((x - 1) / 32, (y - 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y - 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x - 1) / 32, (y - 1) / 32, (z) / 32);
+						getChunksHolder().markChunkDirty((x - 1) / 32, (y - 1) / 32, (z + 1) / 32);
+					getChunksHolder().markChunkDirty((x - 1) / 32, (y - 1) / 32, (z) / 32);
 				}
 				else if (y % 32 == 31)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y + 1) / 32, (z - 1) / 32);
+						getChunksHolder().markChunkDirty((x - 1) / 32, (y + 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y + 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x - 1) / 32, (y + 1) / 32, (z) / 32);
+						getChunksHolder().markChunkDirty((x - 1) / 32, (y + 1) / 32, (z + 1) / 32);
+					getChunksHolder().markChunkDirty((x - 1) / 32, (y + 1) / 32, (z) / 32);
 				}
 				else
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y) / 32, (z - 1) / 32);
+						getChunksHolder().markChunkDirty((x - 1) / 32, (y) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x - 1) / 32, (y) / 32, (z) / 32);
+						getChunksHolder().markChunkDirty((x - 1) / 32, (y) / 32, (z + 1) / 32);
+					getChunksHolder().markChunkDirty((x - 1) / 32, (y) / 32, (z) / 32);
 				}
 			}
 			else if (x % 32 == 31)
@@ -486,60 +517,64 @@ public abstract class World implements WorldInterface
 				if (y % 32 == 0)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y - 1) / 32, (z - 1) / 32);
+						getChunksHolder().markChunkDirty((x + 1) / 32, (y - 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y - 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x + 1) / 32, (y - 1) / 32, (z) / 32);
+						getChunksHolder().markChunkDirty((x + 1) / 32, (y - 1) / 32, (z + 1) / 32);
+					getChunksHolder().markChunkDirty((x + 1) / 32, (y - 1) / 32, (z) / 32);
 				}
 				else if (y % 32 == 31)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y + 1) / 32, (z - 1) / 32);
+						getChunksHolder().markChunkDirty((x + 1) / 32, (y + 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y + 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x + 1) / 32, (y + 1) / 32, (z) / 32);
+						getChunksHolder().markChunkDirty((x + 1) / 32, (y + 1) / 32, (z + 1) / 32);
+					getChunksHolder().markChunkDirty((x + 1) / 32, (y + 1) / 32, (z) / 32);
 				}
 				else
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y) / 32, (z - 1) / 32);
+						getChunksHolder().markChunkDirty((x + 1) / 32, (y) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x + 1) / 32, (y) / 32, (z) / 32);
+						getChunksHolder().markChunkDirty((x + 1) / 32, (y) / 32, (z + 1) / 32);
+					getChunksHolder().markChunkDirty((x + 1) / 32, (y) / 32, (z) / 32);
 				}
 			}
 			if (y % 32 == 0)
 			{
 				if (z % 32 == 0)
-					chunksHolder.markChunkDirty((x) / 32, (y - 1) / 32, (z - 1) / 32);
+					getChunksHolder().markChunkDirty((x) / 32, (y - 1) / 32, (z - 1) / 32);
 				else if (z % 32 == 31)
-					chunksHolder.markChunkDirty((x) / 32, (y - 1) / 32, (z + 1) / 32);
-				chunksHolder.markChunkDirty((x) / 32, (y - 1) / 32, (z) / 32);
+					getChunksHolder().markChunkDirty((x) / 32, (y - 1) / 32, (z + 1) / 32);
+				getChunksHolder().markChunkDirty((x) / 32, (y - 1) / 32, (z) / 32);
 			}
 			else if (y % 32 == 31)
 			{
 				if (z % 32 == 0)
-					chunksHolder.markChunkDirty((x) / 32, (y + 1) / 32, (z - 1) / 32);
+					getChunksHolder().markChunkDirty((x) / 32, (y + 1) / 32, (z - 1) / 32);
 				else if (z % 32 == 31)
-					chunksHolder.markChunkDirty((x) / 32, (y + 1) / 32, (z + 1) / 32);
-				chunksHolder.markChunkDirty((x) / 32, (y + 1) / 32, (z) / 32);
+					getChunksHolder().markChunkDirty((x) / 32, (y + 1) / 32, (z + 1) / 32);
+				getChunksHolder().markChunkDirty((x) / 32, (y + 1) / 32, (z) / 32);
 			}
 			else
 			{
 				if (z % 32 == 0)
-					chunksHolder.markChunkDirty((x) / 32, (y) / 32, (z - 1) / 32);
+					getChunksHolder().markChunkDirty((x) / 32, (y) / 32, (z - 1) / 32);
 				else if (z % 32 == 31)
-					chunksHolder.markChunkDirty((x) / 32, (y) / 32, (z + 1) / 32);
-				chunksHolder.markChunkDirty((x) / 32, (y) / 32, (z) / 32);
+					getChunksHolder().markChunkDirty((x) / 32, (y) / 32, (z + 1) / 32);
+				getChunksHolder().markChunkDirty((x) / 32, (y) / 32, (z) / 32);
 			}
 		}
 	}
 
 	public void setDataAtWithoutUpdates(int x, int y, int z, int i, boolean load)
 	{
-		regionSummaries.blockPlaced(x, y, z, i);
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		getRegionSummaries().blockPlaced(x, y, z, i);
 
-		x = x % (getSizeInChunks() * 32);
+		/*x = x % (getSizeInChunks() * 32);
 		z = z % (getSizeInChunks() * 32);
 		if (y < 0)
 			y = 0;
@@ -548,8 +583,8 @@ public abstract class World implements WorldInterface
 		if (x < 0)
 			x += getSizeInChunks() * 32;
 		if (z < 0)
-			z += getSizeInChunks() * 32;
-		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
+			z += getSizeInChunks() * 32;*/
+		Chunk c = getChunksHolder().getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
 			synchronized (c)
@@ -557,6 +592,42 @@ public abstract class World implements WorldInterface
 				c.setDataAtWithoutUpdates(x % 32, y % 32, z % 32, i);
 			}
 		}
+	}
+
+	@Override
+	public int getSunlightLevel(int x, int y, int z)
+	{
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		if(this.isChunkLoaded(x/32, y/32, z/32) && !this.getChunk(x/32, y/32, z/32, false).isAirChunk())
+			return VoxelFormat.sunlight(this.getDataAt(x, y, z));
+		else
+			return y <= this.getRegionSummaries().getHeightAt(x, z) ? 0 : 15;
+	}
+	
+	@Override
+	public int getSunlightLevel(Location location)
+	{
+		return getSunlightLevel((int)location.x, (int)location.y, (int)location.z);
+	}
+		
+	@Override
+	public int getBlocklightLevel(int x, int y, int z)
+	{
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		if(this.isChunkLoaded(x/32, y/32, z/32))
+			return VoxelFormat.blocklight(this.getDataAt(x, y, z));
+		else
+			return 0;
+	}
+	
+	@Override
+	public int getBlocklightLevel(Location location)
+	{
+		return getBlocklightLevel((int)location.x, (int)location.y, (int)location.z);
 	}
 
 	/* (non-Javadoc)
@@ -572,7 +643,7 @@ public abstract class World implements WorldInterface
 				oldchunk.destroy();
 			// System.out.println("Removed chunk "+chunk.toString());
 		}
-		chunksHolder.setChunk(chunk);
+		getChunksHolder().setChunk(chunk);
 		if (renderer != null)
 			renderer.flagModified();
 	}
@@ -581,9 +652,9 @@ public abstract class World implements WorldInterface
 	 * @see io.xol.chunkstories.world.WorldInterface#reRender()
 	 */
 	@Override
-	public synchronized void reRender()
+	public synchronized void redrawAllChunks()
 	{
-		ChunksIterator i = this.iterator();
+		ChunksIterator i = this.getAllLoadedChunks();
 		CubicChunk c;
 		while (i.hasNext())
 		{
@@ -600,21 +671,21 @@ public abstract class World implements WorldInterface
 	 * @see io.xol.chunkstories.world.WorldInterface#clear()
 	 */
 	@Override
-	public void clear()
+	public void unloadEverything()
 	{
-		chunksHolder.clearAll();
-		regionSummaries.clearAll();
+		getChunksHolder().clearAll();
+		getRegionSummaries().clearAll();
 	}
 
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.world.WorldInterface#save()
 	 */
 	@Override
-	public void save()
+	public void saveEverything()
 	{
 		System.out.println("Saving world");
-		chunksHolder.saveAll();
-		regionSummaries.saveAll();
+		getChunksHolder().saveAll();
+		getRegionSummaries().saveAll();
 
 		this.worldInfo.save(new File(this.getFolderPath()+"/info.txt"));
 		this.internalData.setProp("entities-ids-counter", veryLong.get());
@@ -628,8 +699,8 @@ public abstract class World implements WorldInterface
 	public void destroy()
 	{
 		this.chunksData.destroy();
-		this.chunksHolder.destroy();
-		this.regionSummaries.destroy();
+		this.getChunksHolder().destroy();
+		this.getRegionSummaries().destroy();
 		this.logic.shutdown();
 		if (!client)
 		{
@@ -643,7 +714,7 @@ public abstract class World implements WorldInterface
 	 * @see io.xol.chunkstories.world.WorldInterface#iterator()
 	 */
 	@Override
-	public ChunksIterator iterator()
+	public ChunksIterator getAllLoadedChunks()
 	{
 		return new WorldChunksIterator(this);
 	}
@@ -687,12 +758,10 @@ public abstract class World implements WorldInterface
 		if(Client.controlledEntity == null)
 			return;
 		Location loc = Client.controlledEntity.getLocation();
-		ChunksIterator it = this.iterator();
+		ChunksIterator it = this.getAllLoadedChunks();
 		CubicChunk chunk;
-		int z = 0;
 		while (it.hasNext())
 		{
-			z++;
 			chunk = it.next();
 			if (chunk == null)
 			{
@@ -723,8 +792,6 @@ public abstract class World implements WorldInterface
 		}
 	}
 
-	boolean raining;
-
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.world.WorldInterface#isRaining()
 	 */
@@ -733,9 +800,6 @@ public abstract class World implements WorldInterface
 	{
 		return raining;
 	}
-
-	AtomicLong veryLong = new AtomicLong();
-	public DequePool dequesPool = new DequePool();
 
 	public long nextEntityId()
 	{
@@ -789,10 +853,41 @@ public abstract class World implements WorldInterface
 	{
 		return false;
 	}
-
-	public int getDataAt(Vector3d pos, boolean load)
+	
+	private int sanitizeHorizontalCoordinate(int coordinate)
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		coordinate = coordinate % (getSizeInChunks() * 32);
+		if (coordinate < 0)
+			coordinate += getSizeInChunks() * 32;
+		return coordinate;
+	}
+	
+	private int sanitizeVerticalCoordinate(int coordinate)
+	{
+		if (coordinate < 0)
+			coordinate = 0;
+		if (coordinate > worldInfo.getSize().height * 32)
+			coordinate = worldInfo.getSize().height * 32;
+		return coordinate;
+	}
+
+	public ParticlesHolder getParticlesHolder()
+	{
+		return particlesHolder;
+	}
+
+	public void setParticlesHolder(ParticlesHolder particlesHolder)
+	{
+		this.particlesHolder = particlesHolder;
+	}
+
+	public ChunksHolders getChunksHolder()
+	{
+		return chunksHolder;
+	}
+
+	public void setChunksHolder(ChunksHolders chunksHolder)
+	{
+		this.chunksHolder = chunksHolder;
 	}
 }

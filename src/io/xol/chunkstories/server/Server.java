@@ -176,7 +176,7 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 		// When stopped, close sockets and save config.
 		//Thread.currentThread().notify();
 		log.info("Saving map...");
-		world.save();
+		world.saveEverything();
 		world.ioHandler.shutdown();
 		handler.closeAll();
 		serverConfig.save();

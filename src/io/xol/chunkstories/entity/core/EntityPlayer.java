@@ -513,12 +513,7 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 		//Prevents laggy behaviour
 		if (this.equals(Client.controlledEntity))
 			renderingContext.getCurrentShader().setUniformFloat3("borderShift", -(float) cam.pos.x, -(float) cam.pos.y, -(float) cam.pos.z);
-
-		//TODO use some function in World
-		int modelBlockData = world.getDataAt((int) pos.x, (int) pos.y, (int) pos.z);
-		int lightSky = VoxelFormat.sunlight(modelBlockData);
-		int lightBlock = VoxelFormat.blocklight(modelBlockData);
-		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+		
 		//Player rotations to the viewmodel
 		Matrix4f playerRotationMatrix = new Matrix4f();
 		playerRotationMatrix.rotate((90 - rotH) / 180f * 3.14159f, new Vector3f(0, 1, 0));
@@ -539,6 +534,17 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 
 		if (selectedItemPile != null)
 			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, itemMatrix);
+		
+		
+		if (this.inventory.getSelectedItem() != null && this.inventory.getSelectedItem().getItem() instanceof ItemVoxel)
+		{
+			ItemPile pile = this.inventory.getSelectedItem();
+			if (ItemVoxel.getVoxel(pile).getLightLevel(0x00) > 0)
+			{
+				Light heldBlockLight =  new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.x, (float) pos.y + 1.6f, (float) pos.z), 15f);
+				renderingContext.addLight(heldBlockLight);
+			}
+		}
 	}
 
 	static Set<String> fp_elements = new HashSet<String>();
@@ -630,19 +636,5 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 		//Then we check if the world minds being interacted with
 		world.handleInteraction(this, blockLocation, input);
 		return false;
-	}
-
-	@Override
-	public Light[] getLights()
-	{
-		if (this.inventory.getSelectedItem() != null && this.inventory.getSelectedItem().getItem() instanceof ItemVoxel)
-		{
-			ItemPile pile = this.inventory.getSelectedItem();
-			if (ItemVoxel.getVoxel(pile).getLightLevel(0x00) > 0)
-			{
-				return new Light[] { new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.x, (float) pos.y + 1.6f, (float) pos.z), 15f), };
-			}
-		}
-		return null;
 	}
 }

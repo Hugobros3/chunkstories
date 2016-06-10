@@ -58,7 +58,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		public boolean run()
 		{
 			CubicChunk c = new CubicChunk(world, x, y, z);
-			ChunkHolder holder = world.chunksHolder.getChunkHolder(x, y, z, true);
+			ChunkHolder holder = world.getChunksHolder().getChunkHolder(x, y, z, true);
 			// If for some reasons the chunks holder's are still not loaded, we
 			// requeue the job for later.
 			if (holder == null)
@@ -191,9 +191,9 @@ public class IOTasksMultiplayerClient extends IOTasks
 		@Override
 		public boolean run()
 		{
-			synchronized (Client.world.regionSummaries)
+			synchronized (Client.world.getRegionSummaries())
 			{
-				RegionSummary summary = Client.world.regionSummaries.get(packet.rx * 256, packet.rz * 256);
+				RegionSummary summary = Client.world.getRegionSummaries().get(packet.rx * 256, packet.rz * 256);
 				uncompressed = RegionSummary.decompressor.decompress(packet.compressedData, 256 * 256 * 4 * 2);
 				IntBuffer ib = ByteBuffer.wrap(uncompressed).asIntBuffer();
 				ib.get(summary.heights, 0, 256 * 256);

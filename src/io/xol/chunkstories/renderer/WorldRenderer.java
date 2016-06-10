@@ -104,7 +104,7 @@ public class WorldRenderer
 	private ShaderProgram blurV;
 
 	//Rendering context
-	RenderingContext renderingContext;
+	private RenderingContext renderingContext;
 
 	// Main Rendertarget (HDR)
 	private GBufferTexture shadedBuffer = new GBufferTexture(RGB_HDR, XolioWindow.frameW, XolioWindow.frameH);
@@ -142,7 +142,8 @@ public class WorldRenderer
 	private FBO shadowMapFBO = new FBO(shadowMapBuffer);
 
 	//Environment map
-	Cubemap environmentMap;
+	private Cubemap environmentMap = new Cubemap(Cubemap.CubemapType.RGBA_8BPP);
+	private FBO environmentMapFBO = new FBO(null, environmentMap.getFace(0));
 
 	// Shadow transformation matrix
 	private Matrix4f depthMatrix = new Matrix4f();
@@ -205,7 +206,6 @@ public class WorldRenderer
 		sky = new Sky(world, this);
 		sizeInChunks = world.getSizeInChunks();
 		resizeShadowMaps();
-		environmentMap = new Cubemap(Cubemap.CubemapType.RGBA_8BPP);
 
 		renderingContext = XolioWindow.getInstance().getRenderingContext();
 		XolioWindow.instance.renderingContext = renderingContext;
@@ -253,6 +253,11 @@ public class WorldRenderer
 	public void flagModified()
 	{
 		chunksChanged = true;
+	}
+	
+	public RenderingContext getRenderingContext()
+	{
+		return renderingContext;
 	}
 	
 	//Rendering main calls
@@ -440,7 +445,7 @@ public class WorldRenderer
 			//glEnable(GL_BLEND);
 			//glBlendFunc(GL_ONE, GL_ONE);
 
-			ChunksIterator it = Client.world.iterator();
+			ChunksIterator it = Client.world.getAllLoadedChunks();
 			CubicChunk chunk;
 			int localMapElements = 0;
 			//int i = 0;
@@ -522,13 +527,13 @@ public class WorldRenderer
 			world.ioHandler.requestChunksUnload(currentChunkX, currentChunkY, currentChunkZ, sizeInChunks, chunksViewDistance);
 
 			farTerrainRenderer.updateData();
-			world.regionSummaries.removeFurther(currentChunkX, currentChunkZ, 33);
+			world.getRegionSummaries().removeFurther(currentChunkX, currentChunkZ, 33);
 
 			chunksChanged = false;
 			// Load nearby chunks
-			for (int t = (currentChunkX - chunksViewDistance); t < currentChunkX + chunksViewDistance; t++)
+			for (int t = (currentChunkX - chunksViewDistance - 1); t < currentChunkX + chunksViewDistance + 1; t++)
 			{
-				for (int g = (currentChunkZ - chunksViewDistance); g < currentChunkZ + chunksViewDistance; g++)
+				for (int g = (currentChunkZ - chunksViewDistance - 1); g < currentChunkZ + chunksViewDistance + 1; g++)
 					for (int b = currentChunkY - 3; b < currentChunkY + 3; b++)
 					{
 						chunk = world.getChunk(t, b, g, true);
@@ -585,7 +590,7 @@ public class WorldRenderer
 		glViewport(0, 0, scrW, scrH);
 	}
 
-	public void renderTerrain()
+	public void renderTerrain(boolean ignoreWorldCulling)
 	{
 		// Terrain
 		Client.profiler.startSection("terrain");
@@ -599,7 +604,7 @@ public class WorldRenderer
 		//terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
 		terrainShader.setUniformFloat3("sunPos", sky.getSunPosition());
 		terrainShader.setUniformFloat("time", animationTimer);
-		terrainShader.setUniformFloat("terrainHeight", world.regionSummaries.getHeightAt((int) camera.pos.x, (int) camera.pos.z));
+		terrainShader.setUniformFloat("terrainHeight", world.getRegionSummaries().getHeightAt((int) camera.pos.x, (int) camera.pos.z));
 		terrainShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
 		terrainShader.setUniformFloat("shadowVisiblity", getShadowVisibility());
 		waterNormalTexture.setLinearFiltering(true);
@@ -620,6 +625,7 @@ public class WorldRenderer
 		terrainShader.setUniformSampler(4, "loadedChunksMapTop", loadedChunksMapTop);
 		terrainShader.setUniformSampler(5, "loadedChunksMapBot", loadedChunksMapBot);
 		terrainShader.setUniformFloat2("playerCurrentChunk", this.currentChunkX, this.currentChunkY);
+		terrainShader.setUniformFloat("ignoreWorldCulling", ignoreWorldCulling ? 1f : 0f);
 
 		if(Keyboard.isKeyDown(Keyboard.KEY_F7))
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -908,6 +914,7 @@ public class WorldRenderer
 			//Reset transformations
 			entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
 			entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
+			entitiesShader.setUniformFloat2("worldLight", world.getBlocklightLevel(e.getLocation()), world.getSunlightLevel(e.getLocation()));
 			if (e != null)
 				e.render(renderingContext);
 		}
@@ -1046,12 +1053,12 @@ public class WorldRenderer
 			this.SSAO(FastConfig.ssaoQuality);
 
 		renderLightsDeffered();
-		renderTerrain();
+		renderTerrain(chunksToRenderLimit != -1);
 		
 		if(FastConfig.showDebugInfo)
 		{
 			OverlayRenderer.glColor4f(4, 0, 0, 1);
-			ChunksIterator it = world.iterator();
+			ChunksIterator it = world.getAllLoadedChunks();
 			CubicChunk c;
 			while(it.hasNext())
 			{
@@ -1100,8 +1107,7 @@ public class WorldRenderer
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
-		renderingContext.setCurrentShader(lightShader);
-		renderingContext.lights.clear();
+		//renderingContext.lights.clear();
 	}
 
 	/**
@@ -1442,7 +1448,6 @@ public class WorldRenderer
 		String time = sdf.format(cal.getTime());
 
 		// byte[] buf = new byte[1024 * 1024 * 4];
-		ByteBuffer bbuf = ByteBuffer.allocateDirect(resolution * resolution * 4).order(ByteOrder.nativeOrder());
 
 		for (int z = 0; z < 6; z++)
 		{
@@ -1484,11 +1489,10 @@ public class WorldRenderer
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			// Scene rendering
-			this.renderWorldAtCameraInternal(camera, cubemap == null ? -1 : 128);
+			this.renderWorldAtCameraInternal(camera, cubemap == null ? -1 : 0);
 
 			// GL access
 			glBindTexture(GL_TEXTURE_2D, shadedBuffer.getID());
-			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
 
 			if (cubemap != null)
 			{
@@ -1498,12 +1502,24 @@ public class WorldRenderer
 				//String[] names = { "right", "left", "top", "bottom", "front", "back" };
 				int t[] = new int[] { 4, 5, 3, 2, 0, 1 };
 				int f = t[z];
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + f, 0, GL_RGBA, resolution, resolution, 0, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
+				
+				/*glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + f, 0, GL_RGBA, resolution, resolution, 0, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				// Anti seam
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
+				renderingContext.setCurrentShader(ShadersLibrary.getShaderProgram("blit"));
+				
+				this.environmentMapFBO.bind();
+				//glDisable(GL_DEPTH_TEST);
+				this.environmentMapFBO.setColorAttachement(0, cubemap.getFace(f));
+				
+				renderingContext.getCurrentShader().setUniformSampler(0, "diffuseTexture", shadedBuffer);
+				renderingContext.getCurrentShader().setUniformFloat2("screenSize", resolution, resolution);
+				
+				//renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoord"));
+				ObjectRenderer.drawFSQuad(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
 				//glFinish();
 			}
 			else
@@ -1514,6 +1530,10 @@ public class WorldRenderer
 
 				// Saving
 				// bbuf.get(buf);
+				ByteBuffer bbuf = ByteBuffer.allocateDirect(resolution * resolution * 4).order(ByteOrder.nativeOrder());
+				
+				glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
+				
 				BufferedImage pixels = new BufferedImage(resolution, resolution, BufferedImage.TYPE_INT_RGB);
 				for (int x = 0; x < resolution; x++)
 					for (int y = 0; y < resolution; y++)
@@ -1590,10 +1610,9 @@ public class WorldRenderer
 	}
 
 	//Visual properties functions
-	
 	public Texture getGrassTexture()
 	{
-		Texture vegetationTexture = TexturesHandler.getTexture(world.folder.getAbsolutePath() + "/grassColor.png");
+		Texture vegetationTexture = TexturesHandler.getTexture(world.getFolderPath() + "/grassColor.png");
 		if (vegetationTexture == null || vegetationTexture.getID() == -1)
 			vegetationTexture = TexturesHandler.getTexture("./res/textures/environement/grassColor.png");
 		vegetationTexture.setMipMapping(true);

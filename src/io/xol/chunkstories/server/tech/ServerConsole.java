@@ -40,7 +40,7 @@ public class ServerConsole
 			{
 				emitter.sendMessage("#00FFD0The server's ip is " + ServerConnectionsHandler.ip);
 				emitter.sendMessage("#00FFD0It's running version " + VersionInfo.version + " of the server software.");
-				emitter.sendMessage("#00FFD0"+Server.getInstance().world.chunksHolder.toString());
+				emitter.sendMessage("#00FFD0"+Server.getInstance().world.getChunksHolder().toString());
 				return;
 			}
 			else if (cmd.equals("help"))

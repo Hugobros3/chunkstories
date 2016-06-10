@@ -48,7 +48,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 		{
 			try
 			{
-				ChunkHolder holder = world.chunksHolder.getChunkHolder(chunkX, chunkY, chunkZ, true);
+				ChunkHolder holder = world.getChunksHolder().getChunkHolder(chunkX, chunkY, chunkZ, true);
 				if(holder.isLoaded())
 				{
 					//CubicChunk c = world.getChunk(chunkX, chunkY, chunkZ, true);
@@ -123,7 +123,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 		{
 			try
 			{
-				RegionSummary summary = world.regionSummaries.get(rx * 256, rz * 256);
+				RegionSummary summary = world.getRegionSummaries().get(rx * 256, rz * 256);
 				//System.out.println("Asking for summary at : "+rx+":"+rz);
 				if(summary.loaded.get())
 				{

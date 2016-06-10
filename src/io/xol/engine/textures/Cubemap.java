@@ -14,6 +14,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL30.*;
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -22,6 +23,7 @@ public class Cubemap
 {
 	String name;
 	CubemapType type;
+	Face faces[] = new Face[6];
 	int size;
 	int glId = -1;
 	
@@ -35,6 +37,9 @@ public class Cubemap
 		// Anti seam
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		
+		for(int i = 0; i < 6; i++)
+			faces[i] = new Face(i);
 	}
 	
 	public Cubemap(String name)
@@ -102,6 +107,8 @@ public class Cubemap
 	
 	public void free()
 	{
+		if(glId == -1)
+			return;
 		glDeleteTextures(glId);
 		glId = -1;
 	}
@@ -109,4 +116,49 @@ public class Cubemap
 	public enum CubemapType {
 		RGBA_8BPP;
 	}
+	
+	public class Face implements FBOAttachement {
+		
+		int face;
+		int textureType;
+
+		public Face(int i)
+		{
+			face = i;
+			textureType = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
+		}
+		
+		@Override
+		public void attachDepth()
+		{
+			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureType, getID(), 0);
+		}
+
+		@Override
+		public void attachColor(int colorAttachement)
+		{
+			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachement, textureType, getID(), 0);
+		}
+
+		@Override
+		public void resize(int w, int h)
+		{
+			
+		}
+
+		@Override
+		public void free()
+		{
+			if(glId == -1)
+				return;
+			glDeleteTextures(glId);
+			glId = -1;
+		}
+	}
+
+	public FBOAttachement getFace(int f)
+	{
+		return faces[f];
+	}
+	
 }

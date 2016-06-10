@@ -14,16 +14,17 @@ import java.util.List;
 
 import org.lwjgl.BufferUtils;
 
+import io.xol.engine.textures.FBOAttachement;
 import io.xol.engine.textures.GBufferTexture;
 
 public class FBO
 {
-	GBufferTexture[] colorAttachements;
-	GBufferTexture depthAttachement;
+	FBOAttachement[] colorAttachements;
+	FBOAttachement depthAttachement;
 
 	int fbo_id;
 
-	public FBO(GBufferTexture depth, GBufferTexture... colors)
+	public FBO(GBufferTexture depth, FBOAttachement... colors)
 	{
 		fbo_id = glGenFramebuffers();
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
@@ -36,9 +37,10 @@ public class FBO
 		{
 			scratchBuffer = BufferUtils.createIntBuffer(colors.length);
 			int i = 0;
-			for (GBufferTexture texture : colors)
+			for (FBOAttachement texture : colors)
 			{
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
+				texture.attachColor(i);
+				//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
 				scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
 				i++;
 			}
@@ -50,7 +52,8 @@ public class FBO
 		}
 		// Initialize depth output buffer
 		if (depthAttachement != null)
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthAttachement.getID(), 0);
+			depthAttachement.attachDepth();
+			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthAttachement.getID(), 0);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -63,16 +66,16 @@ public class FBO
 		bind();
 		// ???
 		if (depthAttachement != null)
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthAttachement.getID(), 0);
+			depthAttachement.attachDepth();
 		if (targets.length == 0)
 		{
 			// If no arguments set ALL to renderable
 			scratchBuffer.clear();
 			int i = 0;
-			for (GBufferTexture texture : colorAttachements)
+			for (FBOAttachement texture : colorAttachements)
 			{
-				
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
+				texture.attachColor(i);
+				//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
 				scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
 				i++;
 			}
@@ -103,6 +106,34 @@ public class FBO
 				glDrawBuffers(GL_NONE);
 		}
 	}
+	
+	public void setDepthAttachement(FBOAttachement depthAttachement)
+	{
+		this.depthAttachement = depthAttachement;
+		if(depthAttachement != null)
+			depthAttachement.attachDepth();
+	}
+	
+	public void setColorAttachement(int index, FBOAttachement colorAttachement)
+	{
+		this.colorAttachements[index] = colorAttachement;
+		if(colorAttachement != null)
+			colorAttachement.attachColor(index);
+	}
+	
+	public void setColorAttachements(FBOAttachement[] colorAttachements)
+	{
+		this.colorAttachements = colorAttachements;
+		
+		int i = 0;
+		for (FBOAttachement colorAttachement : colorAttachements)
+		{
+			colorAttachement.attachColor(i);
+			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
+			scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
+			i++;
+		}
+	}
 
 	public void resizeFBO(int w, int h)
 	{
@@ -112,7 +143,7 @@ public class FBO
 		}
 		if (colorAttachements != null)
 		{
-			for (GBufferTexture t : colorAttachements)
+			for (FBOAttachement t : colorAttachements)
 			{
 				t.resize(w, h);
 			}
@@ -121,13 +152,19 @@ public class FBO
 
 	public void bind()
 	{
+		if(fbo_id == bound)
+			return;
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+		bound = fbo_id;
 	}
 
 	public static void unbind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		bound = 0;
 	}
+	
+	static int bound = 0;
 
 	public void destroy(boolean texturesToo)
 	{
@@ -136,7 +173,7 @@ public class FBO
 		{
 			if (depthAttachement != null)
 				depthAttachement.free();
-			for (GBufferTexture tex : colorAttachements)
+			for (FBOAttachement tex : colorAttachements)
 			{
 				if (tex != null)
 					tex.free();

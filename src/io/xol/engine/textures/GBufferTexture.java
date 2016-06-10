@@ -14,7 +14,7 @@ import static org.lwjgl.opengl.GL30.*;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class GBufferTexture extends Texture
+public class GBufferTexture extends Texture implements FBOAttachement
 {
 	public GBufferTexture(TextureType type, int w, int h)
 	{
@@ -78,5 +78,17 @@ public class GBufferTexture extends Texture
 		}
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+
+	@Override
+	public void attachDepth()
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this.getID(), 0);
+	}
+
+	@Override
+	public void attachColor(int colorAttachement)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachement, GL_TEXTURE_2D, this.getID(), 0);
 	}
 }

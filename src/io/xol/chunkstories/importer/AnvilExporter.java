@@ -181,8 +181,8 @@ public class AnvilExporter {
 								{
 									//Save world
 									verbose("Almost no chunk cache free, saving and clearing !");
-									exported.save();
-									exported.clear();
+									exported.saveEverything();
+									exported.unloadEverything();
 								}
 							}
 						}
@@ -198,8 +198,8 @@ public class AnvilExporter {
 				e.printStackTrace();
 			}
 
-			exported.save();
-			exported.clear();
+			exported.saveEverything();
+			exported.unloadEverything();
 			
 			exported.destroy();
 			

@@ -119,7 +119,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	baseLight *= texture2DGammaIn(lightColors, vec2(time, 1.0)).rgb;
 	
 	<ifdef shadows>
-	float clamped = clamp(NdotL, 0.0, 0.1);
+	float clamped = 10 * clamp(NdotL, 0.0, 0.1);
 	
 	//How much in shadows's brightness the object is
 	float shadowIllumination = 0.0;
@@ -128,15 +128,15 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	float edgeSmoother = 0.0;
 	
 	//How much does the pixel is lit by directional light
-	float directionalLightning = clamp((10.0*clamped) + (1 - meta.a), 0.0, 1.0);
+	float directionalLightning = clamp((NdotL) + (1 - meta.a), 0.0, 1.0);
 	
 	//opacity = mix(opacity, clamp(1.0-(10.0*clamped), 0.0, 1.0), meta.a);
 	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
 	{
 		//Bias to avoid shadow acne
-		float bias = (1.0 - meta.a) * 0.0010 + clamp(0.0035*tan(acos(NdotL)) - 0.01075, 0.0005,0.0025 ) * (1.0 + 1.0 * clamp(2.0 * coordinatesInShadowmap.w - 1.0, 0.0, 100.0));
+		float bias = (1.0 - meta.a) * 0.0010 + clamp(0.0035*tan(acos(NdotL)) - 0.01075, 0.0005,0.0025 ) * (0.0 + 1.0 * clamp(2.0 * coordinatesInShadowmap.w - 1.0, 1.0, 100.0));
 		//Are we inside the shadowmap zone edge ?
-		edgeSmoother = 1-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5)-0.25)*4.0+max(0,abs(coordinatesInShadowmap.y-0.5)-0.25)*4.0, 3.0), 0.0, 1.0);
+		edgeSmoother = 1.0-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5) - 0.45)*20.0+max(0,abs(coordinatesInShadowmap.y-0.5) - 0.45)*20.0, 1.0), 0.0, 1.0);
 		//
 		shadowIllumination += clamp((shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0).r * 1.5 - 0.25), 0.0, 1.0);
 	}
@@ -145,7 +145,8 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	
 	float sunlightAmount = ( directionalLightning * ( mix( shadowIllumination, meta.y, 1-edgeSmoother) ) ) * shadowVisiblity;
 	
-	finalLight = mix(baseLight * pow(shadowColor, vec3(gamma)), pow(sunColor, vec3(gamma)), 1.0 - ((1.0 - sunlightAmount) * shadowStrength));
+	//finalLight = mix(baseLight * pow(shadowColor, vec3(gamma)), pow(sunColor, vec3(gamma)), 1.0 - ((1.0 - sunlightAmount) * shadowStrength));
+	finalLight = mix(pow(sunColor, vec3(gamma)), baseLight * pow(shadowColor, vec3(gamma)), (1.0 - sunlightAmount) * shadowStrength);
 	
 	<endif shadows>
 	<ifdef !shadows>

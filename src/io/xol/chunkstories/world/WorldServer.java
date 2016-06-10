@@ -100,7 +100,7 @@ public class WorldServer extends World implements WorldMaster
 		int sizeInChunks = getWorldInfo().getSize().sizeInChunks;
 
 		//Chunks pruner
-		ChunksIterator i = Server.getInstance().world.iterator();
+		ChunksIterator i = Server.getInstance().world.getAllLoadedChunks();
 		CubicChunk c;
 		while (i.hasNext())
 		{

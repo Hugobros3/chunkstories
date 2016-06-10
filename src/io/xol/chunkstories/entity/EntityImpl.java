@@ -132,8 +132,8 @@ public abstract class EntityImpl implements Entity
 	@Override
 	public void tick()
 	{
-		pos.x %= world.getSizeSide();
-		pos.z %= world.getSizeSide();
+		pos.x %= world.getWorldSize();
+		pos.z %= world.getWorldSize();
 
 		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y), (int) (pos.z))));
 		boolean inWater = voxelIn.isVoxelLiquid();
@@ -180,12 +180,12 @@ public abstract class EntityImpl implements Entity
 	 */
 	public boolean updatePosition()
 	{
-		pos.x %= world.getSizeSide();
-		pos.z %= world.getSizeSide();
+		pos.x %= world.getWorldSize();
+		pos.z %= world.getWorldSize();
 		if (pos.x < 0)
-			pos.x += world.getSizeSide();
+			pos.x += world.getWorldSize();
 		if (pos.z < 0)
-			pos.z += world.getSizeSide();
+			pos.z += world.getWorldSize();
 		int regionX = (int) (pos.x / (32 * 8));
 		int regionY = (int) (pos.y / (32 * 8));
 		if (regionY < 0)
@@ -201,7 +201,7 @@ public abstract class EntityImpl implements Entity
 		{
 			//if(parentHolder != null)
 			//	parentHolder.removeEntity(this);
-			parentHolder = world.chunksHolder.getChunkHolder(regionX * 8, regionY * 8, regionZ * 8, true);
+			parentHolder = world.getChunksHolder().getChunkHolder(regionX * 8, regionY * 8, regionZ * 8, true);
 			//parentHolder.addEntity(this);
 			/*System.out.println("Had to move entity "+this+" to a new holder :");
 			System.out.println("RegionX : "+regionX+" PH: "+parentHolder.regionX);

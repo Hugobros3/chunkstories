@@ -246,6 +246,7 @@ public class OptionsOverlay extends Overlay
 					public void run()
 					{
 						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("terrain").reload(FastConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }).setApplyAction(new Runnable(){
@@ -297,14 +298,14 @@ public class OptionsOverlay extends Overlay
 						ShadersLibrary.reloadAllShaders();
 					}
 				}),
-				new ConfigButtonMultiChoice("ssaoQuality", new String[] { "0", "1", "2"}).setApplyAction(new Runnable(){
+				/*new ConfigButtonMultiChoice("ssaoQuality", new String[] { "0", "1", "2"}).setApplyAction(new Runnable(){
 					@Override
 					public void run()
 					{
 						ShadersLibrary.getShaderProgram("blocks_opaque").reload(FastConfig.getShaderConfig());
 						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
 					}
-				}),
+				}),*/
 				new ConfigButtonToggle("doBloom").setApplyAction(new Runnable(){
 					@Override
 					public void run()
@@ -487,37 +488,4 @@ public class OptionsOverlay extends Overlay
 	}
 	
 	boolean shouldReload = false;
-
-	/*private void applyAndSave()
-	{
-		boolean reloadChunks = false;
-		// boolean interleavedBefore = FastConfig.interleavedRendering;
-		for (ConfigTab tab : this.configTabs)
-		{
-			for (ConfigButton b : tab.configButtons)
-				b.save();
-		}
-		Client.getConfig().save();
-		FastConfig.define();
-		// if(FastConfig.interleavedRendering != interleavedBefore)
-		// reloadChunks = true;
-		XolioWindow.setTargetFPS(Client.getConfig().getIntProp("framerate", -1));
-		if (this.mainScene instanceof GameplayScene && shouldReload)
-		{
-			GameplayScene gps = ((GameplayScene) mainScene);
-			//gps.worldRenderer.reloadShaders();
-			ShadersLibrary.reloadAllShaders();
-			gps.worldRenderer.resizeShadowMaps();
-			if (reloadChunks)
-			{
-				Client.world.reRender();
-				gps.worldRenderer.modified();
-			}
-		}
-		if(Client.world != null)
-			Client.world.setWeather(Client.getConfig().getBooleanProp("rainyMode", false));
-		XolioWindow.switchResolution();
-		//XolioWindow.setDisplayMode(Client.getConfig().getBooleanProp("fullscreen", false), Client.getConfig().getProp(fullScreenResolution));
-		shouldReload = false;
-	}*/
 }

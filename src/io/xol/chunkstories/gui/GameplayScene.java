@@ -132,9 +132,11 @@ public class GameplayScene extends OverlayableScene
 			Vector3f.add(viewerCamDirVector, lightPosition, lightPosition);
 			viewerCamDirVector.scale(-1f);
 			viewerCamDirVector.normalise();
-			XolioWindow.getInstance().renderingContext.lights.add(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 35f, 35f, viewerCamDirVector));
+			
+			worldRenderer.getRenderingContext().addLight(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 35f, 35f, viewerCamDirVector));
+			//XolioWindow.getInstance().renderingContext.lights.add(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 35f, 35f, viewerCamDirVector));
 			if (Keyboard.isKeyDown(Keyboard.KEY_F5))
-				Client.world.particlesHolder
+				Client.world.getParticlesHolder()
 						.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedSpotLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 20f, viewerCamDirVector)));
 		}
 		//Main render call
@@ -261,8 +263,8 @@ public class GameplayScene extends OverlayableScene
 		}
 		if (k == 19)
 		{
-			Client.world.particlesHolder.cleanAllParticles();
-			Client.world.reRender();
+			Client.world.getParticlesHolder().cleanAllParticles();
+			Client.world.redrawAllChunks();
 			worldRenderer.chunksRenderer.clear();
 			ChunksRenderer.renderStart = System.currentTimeMillis();
 			worldRenderer.flagModified();
@@ -295,7 +297,7 @@ public class GameplayScene extends OverlayableScene
 			//Client.getSoundManager().playMusic("music/radio/horse.ogg", (float) loc.x, (float) loc.y, (float) loc.z, 1.0f, 1.0f, false).setAttenuationEnd(50f);
 		}
 		else if (k == Keyboard.KEY_F4)
-			Client.world.particlesHolder.addParticle(new ParticleLight(Client.world, loc.x + (Math.random() - 0.5) * 30, loc.y + (Math.random()) * 10, loc.z + (Math.random() - 0.5) * 30));
+			Client.world.getParticlesHolder().addParticle(new ParticleLight(Client.world, loc.x + (Math.random() - 0.5) * 30, loc.y + (Math.random()) * 10, loc.z + (Math.random() - 0.5) * 30));
 
 		else if (k == Keyboard.KEY_F6)
 		{
@@ -427,11 +429,11 @@ public class GameplayScene extends OverlayableScene
 		int cx = bx / 32;
 		int cy = by / 32;
 		int cz = bz / 32;
-		int csh = Client.world.regionSummaries.getHeightAt(bx, bz);
+		int csh = Client.world.getRegionSummaries().getHeightAt(bx, bz);
 		CubicChunk current = Client.world.getChunk(cx, cy, cz, false);
 		int x_top = XolioWindow.frameH - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, "View distance : " + FastConfig.viewDistance + " Vertices(N):" + formatBigAssNumber(worldRenderer.renderedVertices + "") + " Chunks in view : "
-				+ formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :" + Client.world.particlesHolder.count() + " #FF0000FPS : " + XolioWindow.getFPS() + " avg: " + Math.floor(10000.0/XolioWindow.getFPS()) / 10.0, BitmapFont.SMALLFONTS);
+				+ formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :" + Client.world.getParticlesHolder().count() + " #FF0000FPS : " + XolioWindow.getFPS() + " avg: " + Math.floor(10000.0/XolioWindow.getFPS()) / 10.0, BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Timings : " + debugInfo, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + Client.world.chunksData.size(), BitmapFont.SMALLFONTS);
@@ -462,7 +464,7 @@ public class GameplayScene extends OverlayableScene
 		int nbChunks = 0;
 		long octelsTotal = 0;
 
-		ChunksIterator i = Client.world.iterator();
+		ChunksIterator i = Client.world.getAllLoadedChunks();
 		CubicChunk c;
 		while (i.hasNext())
 		{
@@ -481,7 +483,7 @@ public class GameplayScene extends OverlayableScene
 
 	private String getLoadedTerrainVramFootprint()
 	{
-		int nbChunks = Client.world.regionSummaries.all().size();
+		int nbChunks = Client.world.getRegionSummaries().all().size();
 		long octelsTotal = nbChunks * 256 * 256 * (1 + 1) * 4;
 
 		return nbChunks + " regions, storing " + octelsTotal / 1024 / 1024 + "Mb of data";

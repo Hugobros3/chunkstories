@@ -55,8 +55,6 @@ uniform mat3 normalMatrixInv;
 
 uniform vec3 vegetationColor;
 
-uniform vec3 givenLightmapCoords;
-
 const vec3 shadowColor = vec3(0.20, 0.20, 0.31);
 const float shadowStrength = 0.75;
 

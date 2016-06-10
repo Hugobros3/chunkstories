@@ -246,7 +246,7 @@ public class FarTerrainRenderer
 					rz--;
 				if (currentChunkX < 0 && currentChunkX % 8 != 0)
 					rx--;
-				RegionMesh regionMesh = new RegionMesh(rx, rz, world.regionSummaries.get(currentChunkX * 32, currentChunkZ * 32));
+				RegionMesh regionMesh = new RegionMesh(rx, rz, world.getRegionSummaries().get(currentChunkX * 32, currentChunkZ * 32));
 				
 				int rcx = currentChunkX % world.getSizeInChunks();
 				if (rcx < 0)
@@ -510,7 +510,7 @@ public class FarTerrainRenderer
 	private int getHeight(int[] heightMap, World world, int x, int z, int rx, int rz, int level)
 	{
 		if(x < 0 || z < 0 || x >= 256 || z >= 256)
-			return world.regionSummaries.getHeightMipmapped(rx*256+x, rz*256+z, level);
+			return world.getRegionSummaries().getHeightMipmapped(rx*256+x, rz*256+z, level);
 		else
 			return getHeightMipmapped(heightMap, x, z, level);
 	}
@@ -540,7 +540,7 @@ public class FarTerrainRenderer
 			}
 			//System.out.println(rs.dataSource.loaded.get());
 			if(!rs.regionSummary.loaded.get())
-				rs.regionSummary = world.regionSummaries.get(rs.regionSummary.rx * 256, rs.regionSummary.rz * 256);
+				rs.regionSummary = world.getRegionSummaries().get(rs.regionSummary.rx * 256, rs.regionSummary.rz * 256);
 		}
 	}
 

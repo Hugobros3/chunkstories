@@ -24,7 +24,7 @@ public class WorldChunksIterator implements ChunksIterator
 	
 	public WorldChunksIterator(World world)
 	{
-		chIterator = world.chunksHolder.chunkHolders.values().iterator();
+		chIterator = world.getChunksHolder().chunkHolders.values().iterator();
 	}
 	
 	@Override

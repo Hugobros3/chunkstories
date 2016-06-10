@@ -67,20 +67,20 @@ public class SummaryRegenerator
 									if (id != 0)
 									{
 										hit = true;
-										world.regionSummaries.set(rX, rZ, y, id);
+										world.getRegionSummaries().set(rX, rZ, y, id);
 									}
 								}
 								y--;
 							}
 							System.out.println(world.chunksData.free());
-							world.save();
-							world.chunksHolder.clearAll();
-							world.clear();
+							world.saveEverything();
+							world.getChunksHolder().clearAll();
+							world.unloadEverything();
 						}
 					}
 				}
 			}
-			world.save();
+			world.saveEverything();
 
 			System.out.println("Done, took " + (System.currentTimeMillis() - timestampStart) / 1000 + "s");
 		}
