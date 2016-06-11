@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.plugin.server.Player;
-import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
 import io.xol.chunkstories.item.inventory.InventoryHolder;
@@ -56,13 +55,10 @@ public interface Entity extends InventoryHolder, CSFSerializable
 	public Vector3d moveWithCollisionRestrain(Vector3d vec);
 	
 	public Vector3d moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions);
+	
+	public boolean isFlying();
 
-	/**
-	 * Depreacated
-	 * @return
-	 */
-	@Deprecated
-	public Light[] getLights();
+	public void setFlying(boolean flying);
 	
 	/**
 	 * Returns the entitie's AABBs

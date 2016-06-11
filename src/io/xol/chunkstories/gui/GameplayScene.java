@@ -285,8 +285,8 @@ public class GameplayScene extends OverlayableScene
 		}
 		else if (k == Keyboard.KEY_F1)
 		{
-			if (player instanceof EntityPlayer)
-				((EntityPlayer) player).toogleFly();
+			//if (player instanceof EntityPlayer)
+			//	((EntityPlayer) player).toogleFly();
 		}
 		else if (k == Keyboard.KEY_F2)
 			chat.insert(worldRenderer.screenShot());
@@ -301,8 +301,8 @@ public class GameplayScene extends OverlayableScene
 
 		else if (k == Keyboard.KEY_F6)
 		{
-			if (player instanceof EntityPlayer)
-				((EntityPlayer) player).toggleNoclip();
+			//if (player instanceof EntityPlayer)
+			//	((EntityPlayer) player).toggleNoclip();
 		}
 		else if (k == Keyboard.KEY_F8)
 			shouldCM = true;

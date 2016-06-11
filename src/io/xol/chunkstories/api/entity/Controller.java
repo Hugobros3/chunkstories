@@ -20,6 +20,16 @@ public interface Controller
 	{
 		// Do nothing
 	}
+	
+	/**
+	 * Called whenever an entity's flying state is changed
+	 * 
+	 * @param entity
+	 */
+	default public void notifyFlyingStateChange(Entity entity)
+	{
+		// Do nothing
+	}
 
 	/**
 	 * Called whenever the entity's inventory is changed

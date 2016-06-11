@@ -5,7 +5,7 @@ import io.xol.engine.math.lalgb.Matrix4f;
 
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.entity.EntityImpl;
+import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.renderer.lights.DefferedSpotLight;
 import io.xol.chunkstories.world.World;
@@ -17,7 +17,7 @@ import io.xol.engine.textures.TexturesHandler;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntitySUV extends EntityImpl
+public class EntitySUV extends EntityImplementation
 {
 	int i = 0;
 
@@ -58,7 +58,7 @@ public class EntitySUV extends EntityImpl
 
 	}
 	
-	@Override
+	/*@Override
 	public Light[] getLights()
 	{
 		return new Light[] {
@@ -74,5 +74,5 @@ public class EntitySUV extends EntityImpl
 				
 				//new DefferedLight(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float)pos.x + 1.0f, (float)pos.y + 1.1f, (float)pos.z + 3.5f), 5f, 30f)
 				};
-	}
+	}*/
 }

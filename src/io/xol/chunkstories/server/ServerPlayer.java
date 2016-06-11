@@ -193,6 +193,13 @@ public class ServerPlayer implements Player, Controller
 		if(this.controlledEntity != null)
 			this.controlledEntity.setLocation(l);
 	}
+	
+	@Override
+	public void setFlying(boolean flying)
+	{
+		if(this.controlledEntity != null)
+			this.controlledEntity.setFlying(flying);
+	}
 
 	@Override
 	public boolean isConnected()
@@ -230,11 +237,23 @@ public class ServerPlayer implements Player, Controller
 	public void notifyTeleport(Entity entity)
 	{
 		//Send teleport packet
+		 updateControlledEntity();
+	}
+	
+	@Override
+	public void notifyFlyingStateChange(Entity entity)
+	{
+		//Send teleport packet
+		 updateControlledEntity();
+	}
+
+	private void updateControlledEntity()
+	{
 		PacketEntity packet = new PacketEntity(false);
 		packet.createFromEntity(controlledEntity);
 		playerConnection.sendPacket(packet);
 	}
-
+	
 	@Override
 	public void notifyInventoryChange(Entity entity)
 	{

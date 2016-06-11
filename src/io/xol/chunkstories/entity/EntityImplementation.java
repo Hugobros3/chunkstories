@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.plugin.server.Player;
-import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldInterface;
@@ -27,7 +26,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 // http://chunkstories.xyz
 // http://xol.io
 
-public abstract class EntityImpl implements Entity
+public abstract class EntityImplementation implements Entity
 {
 	public long entityID;
 
@@ -35,6 +34,8 @@ public abstract class EntityImpl implements Entity
 	public Vector3d pos;
 	public Vector3d vel;
 	public Vector3d acc;
+	
+	protected boolean flying = false;
 
 	//public double pos.x, pos.y, pos.z;
 	//public double vel.x, vel.y, vel.z;
@@ -54,13 +55,11 @@ public abstract class EntityImpl implements Entity
 	public Inventory inventory;
 	public ChunkHolder parentHolder;
 
-	protected boolean flying = false;
-
 	//Flag set when deleted from world entities list ( to report to other refering places )
 	AtomicBoolean removed = new AtomicBoolean(false);
 	// public boolean mpSendDeletePacket = false;
 
-	public EntityImpl(World w, double x, double y, double z)
+	public EntityImplementation(World w, double x, double y, double z)
 	{
 		world = w;
 		pos = new Vector3d(x, y, z);
@@ -150,7 +149,7 @@ public abstract class EntityImpl implements Entity
 			vel.y = 0;
 
 		// Gravity
-		if (!flying)
+		if (!isFlying())
 		{
 			double terminalVelocity = inWater ? -0.02 : -0.5;
 			if (vel.y > terminalVelocity)
@@ -446,12 +445,6 @@ public abstract class EntityImpl implements Entity
 	}
 
 	@Override
-	public Light[] getLights()
-	{
-		return null;
-	}
-
-	@Override
 	public CollisionBox[] getTranslatedCollisionBoxes()
 	{
 		return new CollisionBox[] { getCollisionBox().translate(pos.x, pos.y, pos.z) };
@@ -541,9 +534,6 @@ public abstract class EntityImpl implements Entity
 
 	/**
 	 * Loads the object state from the stream
-	 * 
-	 * @param stream
-	 * @throws IOException
 	 */
 	public void loadCSF(DataInputStream stream) throws IOException
 	{
@@ -552,9 +542,6 @@ public abstract class EntityImpl implements Entity
 
 	/**
 	 * Writes the object state to a stream
-	 * 
-	 * @param stream
-	 * @throws IOException
 	 */
 	public void saveCSF(DataOutputStream stream) throws IOException
 	{
@@ -564,6 +551,19 @@ public abstract class EntityImpl implements Entity
 	public boolean exists()
 	{
 		return !removed.get();
+	}
+
+	public boolean isFlying()
+	{
+		return flying;
+	}
+
+	public void setFlying(boolean flying)
+	{
+		this.flying = flying;
+
+		if (this instanceof EntityControllable && ((EntityControllable) this).getController() != null)
+			((EntityControllable) this).getController().notifyFlyingStateChange(this);
 	}
 
 }

@@ -5,9 +5,11 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.entity.EntityControllable;
-import io.xol.chunkstories.entity.EntityImpl;
+import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityNameable;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -36,6 +38,9 @@ public class PacketEntity extends Packet
 	public boolean deleteFlag = false; // Tells client to stop tracking this entity and delete it
 	public boolean includeVelocity = false; // Include or not position interpolation
 
+	private byte[] csfData;
+	//private Entity entity;
+	
 	public PacketEntity(boolean client)
 	{
 		super(client);
@@ -68,6 +73,9 @@ public class PacketEntity extends Packet
 				name = ((EntityNameable)entity).getName();*/
 			out.writeUTF(nBuffered);
 		}
+		
+		out.writeLong(csfData.length);
+		out.write(csfData);
 	}
 
 	@Override
@@ -96,13 +104,17 @@ public class PacketEntity extends Packet
 			nBuffered = in.readUTF();
 			System.out.println(nBuffered);
 		}
+		
+		long csfDataLength = in.readLong();
+		csfData = new byte[(int) csfDataLength];
+		in.read(csfData);
 	}
 
 	public void applyToEntity(Entity entity)
 	{
-		if(!(entity instanceof EntityImpl))
+		if(!(entity instanceof EntityImplementation))
 			return;
-		EntityImpl impl = (EntityImpl)entity;
+		EntityImplementation impl = (EntityImplementation)entity;
 		impl.pos.x = XBuffered;
 		impl.pos.y = YBuffered;
 		impl.pos.z = ZBuffered;
@@ -117,7 +129,19 @@ public class PacketEntity extends Packet
 			if (entity instanceof EntityNameable)
 				((EntityNameable) entity).setName(nBuffered);
 		}
-		//System.out.println("apply 2 "+entity+" posx"+XBuffered+" -> "+XBuffered);
+		
+		ByteArrayInputStream bais = new ByteArrayInputStream(csfData);
+		DataInputStream dis = new DataInputStream(bais);
+		try
+		{
+			entity.loadCSF(dis);
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("apply 2 "+entity+" posx"+XBuffered+" -> "+XBuffered);
 	}
 
 	public void createFromEntity(Entity entity)
@@ -129,9 +153,9 @@ public class PacketEntity extends Packet
 		XBuffered = loc.x;
 		YBuffered = loc.y;
 		ZBuffered = loc.z;
-		if (includeRotation && entity instanceof EntityImpl)
+		if (includeRotation && entity instanceof EntityImplementation)
 		{
-			EntityImpl impl = (EntityImpl)entity;
+			EntityImplementation impl = (EntityImplementation)entity;
 			RHBuffered = impl.rotH;
 			RVBuffered = impl.rotV;
 		}
@@ -140,6 +164,18 @@ public class PacketEntity extends Packet
 			if (entity instanceof EntityNameable)
 				nBuffered = ((EntityNameable) entity).getName();
 		}
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		try
+		{
+			entity.saveCSF(dos);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		csfData = baos.toByteArray();
 	}
 
 	@Override
@@ -147,7 +183,7 @@ public class PacketEntity extends Packet
 	{
 		if(processor.isClient)
 		{
-			EntityImpl entity = (EntityImpl) Client.world.getEntityByUUID(this.entityUUID);
+			EntityImplementation entity = (EntityImplementation) Client.world.getEntityByUUID(this.entityUUID);
 			if(this.deleteFlag)
 				Client.world.removeEntity(entity);
 			else
@@ -155,7 +191,7 @@ public class PacketEntity extends Packet
 				//Create an entity if the servers tells you to do so
 				if(entity == null)
 				{
-					entity = (EntityImpl) EntitiesList.newEntity(Client.world, this.entityTypeID);
+					entity = (EntityImplementation) EntitiesList.newEntity(Client.world, this.entityTypeID);
 					entity.entityID = this.entityUUID;
 					this.applyToEntity(entity);
 					Client.world.addEntity(entity);

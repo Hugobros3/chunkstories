@@ -39,8 +39,6 @@ public class FarTerrainRenderer
 	int maxLodLevels = 6;
 	List<RegionMesh> regionsToRender = new ArrayList<RegionMesh>();
 
-	//FloatBufferPool fbPool = new FloatBufferPool(96, 25000 * VERTEX_SIZE * TRIANGLE_SIZE * TRIANGLES_PER_FACE);
-
 	public FarTerrainRenderer(World world)
 	{
 		this.world = world;

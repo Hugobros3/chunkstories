@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL30;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL14.*;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
@@ -186,11 +187,15 @@ public class Texture
 		//System.out.println("Computing mipmap for "+name);
 		//mipmapsUpToDate = true;
 		glBindTexture(GL_TEXTURE_2D, glId);
+		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 		//Regenerate the mipmaps only when necessary
 		if (FastConfig.openGL3Capable)
 			GL30.glGenerateMipmap(GL_TEXTURE_2D);
 		else if (FastConfig.fbExtCapable)
 			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
+
+		//setFiltering();
+		//setFiltering();
 	}
 	
 	public void setLinearFiltering(boolean on)

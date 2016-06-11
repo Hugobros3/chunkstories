@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -231,11 +232,21 @@ public interface WorldInterface
 
 	/**
 	 * Called when some controllable entity try to interact with the world
-	 * @param entity
-	 * @param blockLocation
-	 * @param input
 	 * @return
 	 */
 	boolean handleInteraction(Entity entity, Location blockLocation, Input input);
-
+	
+	/**
+	 * Raytraces throught the world to find a solid block
+	 * @param limit Limits how far to raycast
+	 * @return The exact location of the intersection or null if it didn't found one
+	 */
+	Location raytraceSolid(Location initialPosition, Vector3d direction, double limit);
+	
+	/**
+	 * Raytraces throught the world to find a solid block
+	 * @param limit Limits how far to raycast
+	 * @return The exact location of the step just before the intersection ( as to get the adjacent block ) or null if it didn't found one
+	 */
+	Location raytraceSolidOuter(Location initialPosition, Vector3d direction, double limit);
 }

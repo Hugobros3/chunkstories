@@ -1,7 +1,6 @@
 package io.xol.chunkstories.renderer;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -32,6 +31,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
+import io.xol.engine.concurrency.PBOPacker;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.MatrixHelper;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -108,6 +108,10 @@ public class WorldRenderer
 
 	// Main Rendertarget (HDR)
 	private GBufferTexture shadedBuffer = new GBufferTexture(RGB_HDR, XolioWindow.frameW, XolioWindow.frameH);
+	private int illDownIndex = 0;
+	private int illDownBuffers = 1;
+	private long lastIllCalc = 8;
+	private PBOPacker illuminationDownloader[] = new PBOPacker[illDownBuffers];
 	
 	// G-Buffers
 	private GBufferTexture albedoBuffer = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
@@ -116,9 +120,8 @@ public class WorldRenderer
 	private GBufferTexture materialBuffer = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
 
 	// Bloom texture
-	private GBufferTexture bloomBuffer = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW / 2, XolioWindow.frameH / 2);
+	private GBufferTexture bloomBuffer = new GBufferTexture(RGB_HDR, XolioWindow.frameW / 2, XolioWindow.frameH / 2);
 	private GBufferTexture ssaoBuffer = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
-
 
 	// FBOs
 	private FBO fboGBuffers = new FBO(zBuffer, albedoBuffer, normalBuffer, materialBuffer);
@@ -127,7 +130,7 @@ public class WorldRenderer
 	private FBO fboBloom = new FBO(null, bloomBuffer);
 	private FBO fboSSAO = new FBO(null, ssaoBuffer);
 
-	private GBufferTexture blurIntermediateBuffer = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW / 2, XolioWindow.frameH / 2);
+	private GBufferTexture blurIntermediateBuffer = new GBufferTexture(RGB_HDR, XolioWindow.frameW / 2, XolioWindow.frameH / 2);
 	private FBO fboBlur = new FBO(null, blurIntermediateBuffer);
 
 	// 64x64 texture used to cull distant mesh
@@ -169,7 +172,7 @@ public class WorldRenderer
 	public int renderedChunks = 0;
 	
 	//Bloom avg color buffer
-	ByteBuffer shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(4 * 3);
+	ByteBuffer shadedMipmapZeroLevelColor = null;//BufferUtils.createByteBuffer(4 * 3);
 	//Bloom aperture
 	float apertureModifier = 1f;
 
@@ -224,6 +227,9 @@ public class WorldRenderer
 		blurH = ShadersLibrary.getShaderProgram("blurH");
 		blurV = ShadersLibrary.getShaderProgram("blurV");
 
+		for(int i = 0; i < illDownBuffers; i++)
+			illuminationDownloader[i] = new PBOPacker();
+		
 		chunksRenderer = new ChunksRenderer(world);
 		chunksRenderer.start();
 	}
@@ -556,7 +562,7 @@ public class WorldRenderer
 		glEnable(GL_ALPHA_TEST);
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
-
+		
 		int size = (shadowMapBuffer).getWidth();
 		glViewport(0, 0, size, size);
 
@@ -800,6 +806,7 @@ public class WorldRenderer
 				if (shadowMapResolution >= 4096)
 					maxShadowDistance = 6;
 
+				
 				if (distanceX > maxShadowDistance || distanceZ > maxShadowDistance)
 					continue;
 			}
@@ -897,12 +904,15 @@ public class WorldRenderer
 			TexturesHandler.bindTexture("res/textures/normal.png");
 		}
 		else
+		{
 			shadowsPassShader.setUniformFloat("entity", 1);
+		}
 
 		// Particles rendering
 		//Client.world.particlesHolder.render(renderingContext);
 		glEnable(GL_CULL_FACE);
 
+		
 		glDisable(GL_CULL_FACE);
 		// Render entities
 		Iterator<Entity> ie = world.getAllLoadedEntities();
@@ -912,9 +922,9 @@ public class WorldRenderer
 		{
 			e = ie.next();
 			//Reset transformations
-			entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
-			entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
-			entitiesShader.setUniformFloat2("worldLight", world.getBlocklightLevel(e.getLocation()), world.getSunlightLevel(e.getLocation()));
+			renderingContext.getCurrentShader().setUniformMatrix4f("localTansform", new Matrix4f());
+			renderingContext.getCurrentShader().setUniformMatrix3f("localTransformNormal", new Matrix3f());
+			renderingContext.getCurrentShader().setUniformFloat2("worldLight", world.getBlocklightLevel(e.getLocation()), world.getSunlightLevel(e.getLocation()));
 			if (e != null)
 				e.render(renderingContext);
 		}
@@ -923,6 +933,7 @@ public class WorldRenderer
 		renderingContext.disableVertexAttribute(vertexIn);
 		renderingContext.disableVertexAttribute(texCoordIn);
 
+		
 		if (isShadowPass)
 			return;
 
@@ -1200,6 +1211,7 @@ public class WorldRenderer
 			glFinish();
 		long t = System.nanoTime();
 
+		
 		// We render to the screen.
 		FBO.unbind();
 		glDisable(GL_DEPTH_TEST);
@@ -1246,39 +1258,83 @@ public class WorldRenderer
 		{
 			glBindTexture(GL_TEXTURE_2D, shadedBuffer.getID());
 			shadedBuffer.setMipMapping(true);
+			int max_mipmap = (int) (Math.ceil(Math.log(Math.max(scrH, scrW)) / Math.log(2))) - 1;
+			shadedBuffer.setMipmapLevelsRange(0, max_mipmap);
 			try
 			{
-				int max_mipmap = (int) (Math.floor(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
+				//int max_mipmap = (int) (Math.floor(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
 				//System.out.println(fBuffer + " " + max_mipmap);
-				shadedMipmapZeroLevelColor.rewind();
-				if (Math.random() > 0.9)
+				//shadedMipmapZeroLevelColor.rewind();
+				
+				//illDownIndex++;
+				//if (illDownIndex % 50 == 0)
+				if(System.currentTimeMillis() - lastIllCalc > 1000)
 				{
-					glGetTexImage(GL_TEXTURE_2D, max_mipmap, GL_RGB, GL_FLOAT, shadedMipmapZeroLevelColor);
-					this.shadedBuffer.computeMipmaps();
+					lastIllCalc = System.currentTimeMillis();
+					//shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(12);
+					//if(!shadedMipmapZeroLevelColor.hasRemaining())
+					//	shadedMipmapZeroLevelColor.rewind();
+					//glGetTexImage(GL_TEXTURE_2D, max_mipmap, GL_RGB, GL_FLOAT, shadedMipmapZeroLevelColor);
+					//System.out.println("ill");
+					illDownBuffers = 1;
+					//long nanoC = System.nanoTime();
+					illuminationDownloader[(illDownIndex/50 + illDownBuffers - 1 ) % illDownBuffers].copyTexure(shadedBuffer, max_mipmap);
+					//long nanoR = System.nanoTime();
+					//System.out.println("copy took "+Math.floor((nanoR-nanoC)/10f)/100f+"µs ");
+					if(illDownIndex / 10 >= illDownBuffers)
+					{
+						//ByteBuffer tmpBuffer = illuminationDownloader[illDownIndex/10 % illDownBuffers].readPBO();
+						//shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(tmpBuffer.capacity());
+						//shadedMipmapZeroLevelColor.put(tmpBuffer);
+						shadedMipmapZeroLevelColor = illuminationDownloader[illDownIndex/50 % illDownBuffers].readPBO();
+						//System.out.println("read took "+Math.floor((System.nanoTime()-nanoR)/10f)/100f+"µs ");
+						//System.out.println("Read "+shadedMipmapZeroLevelColor.capacity() + "bytes.");
+						//System.out.println("glError : "+glGetError());
+						illuminationDownloader[illDownIndex/10 % illDownBuffers].doneWithReading();
+						//shadedMipmapZeroLevelColor.rewind();
+						
+						//float luma = shadedMipmapZeroLevelColor.getFloat() * 0.2125f + shadedMipmapZeroLevelColor.getFloat() * 0.7154f + shadedMipmapZeroLevelColor.getFloat() * 0.0721f;
+						//System.out.println("read luma : "+luma);
+					}
 				}
-				//System.out.println(fBuffer);
-				float luma = shadedMipmapZeroLevelColor.getFloat() * 0.2125f + shadedMipmapZeroLevelColor.getFloat() * 0.7154f + shadedMipmapZeroLevelColor.getFloat() * 0.0721f;
-				luma *= apertureModifier;
-				luma = (float) Math.pow(luma, 1d / 2.2);
-				//System.out.println("luma:"+luma + " aperture:"+ this.apertureModifier);
-
-				float targetLuma = 0.55f;
-				float lumaMargin = 0.15f;
-
-				if (luma < targetLuma - lumaMargin)
+				else if(shadedMipmapZeroLevelColor != null)
+					shadedMipmapZeroLevelColor.rewind();
+				
+				this.shadedBuffer.computeMipmaps();
+				
+				if(shadedMipmapZeroLevelColor != null)
 				{
-					if (apertureModifier < 2.0)
-						apertureModifier *= 1.001;
-				}
-				else if (luma > targetLuma + lumaMargin)
-				{
-					if (apertureModifier > 1.0)
-						apertureModifier *= 0.999;
-				}
-				else
-				{
-					float clamped = (float) Math.min(Math.max(1 / apertureModifier, 0.998), 1.002);
-					apertureModifier *= clamped;
+					if(!shadedMipmapZeroLevelColor.hasRemaining())
+						shadedMipmapZeroLevelColor.rewind();
+					//System.out.println(shadedMipmapZeroLevelColor);
+					float luma = 0.0f;
+					for(int i = 0; i < 1; i++)
+						luma += shadedMipmapZeroLevelColor.getFloat() * 0.2125f + shadedMipmapZeroLevelColor.getFloat() * 0.7154f + shadedMipmapZeroLevelColor.getFloat() * 0.0721f;
+	
+					//System.out.println(luma);
+					//luma /= 4;
+					luma *= apertureModifier;
+					luma = (float) Math.pow(luma, 1d / 2.2);
+					//System.out.println("luma:"+luma + " aperture:"+ this.apertureModifier);
+	
+					float targetLuma = 0.55f;
+					float lumaMargin = 0.15f;
+	
+					if (luma < targetLuma - lumaMargin)
+					{
+						if (apertureModifier < 2.0)
+							apertureModifier *= 1.001;
+					}
+					else if (luma > targetLuma + lumaMargin)
+					{
+						if (apertureModifier > 1.0)
+							apertureModifier *= 0.999;
+					}
+					else
+					{
+						float clamped = (float) Math.min(Math.max(1 / apertureModifier, 0.998), 1.002);
+						apertureModifier *= clamped;
+					}
 				}
 			}
 			catch (Throwable th)
@@ -1375,6 +1431,10 @@ public class WorldRenderer
 		//bloomShader.use(true);
 		bloomShader.setUniformSampler(0, "shadedBuffer", this.shadedBuffer);
 		bloomShader.setUniformFloat("apertureModifier", apertureModifier);
+		bloomShader.setUniformFloat2("screenSize", scrW / 2f, scrH / 2f);
+
+		int max_mipmap = (int) (Math.ceil(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
+		bloomShader.setUniformFloat("max_mipmap", max_mipmap);
 
 		this.fboBloom.bind();
 		this.fboBloom.setEnabledRenderTargets();

@@ -1,6 +1,5 @@
 package io.xol.chunkstories.world.generator.core;
 
-import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.biomes.Biome;
@@ -8,7 +7,6 @@ import io.xol.chunkstories.world.biomes.BiomeIndex;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.generator.SeededRandomNumberTranslator;
 import io.xol.chunkstories.world.generator.SeededSimplexNoiseGenerator;
-import io.xol.chunkstories.world.generator.structures.GenerableStructure;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

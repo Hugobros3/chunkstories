@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
@@ -23,11 +24,13 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.entity.EntityControllable;
-import io.xol.chunkstories.entity.EntityImpl;
+import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityIterator;
+import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.tools.WorldTool;
+import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.chunk.ChunksData;
@@ -180,7 +183,7 @@ public abstract class World implements WorldInterface
 	@Override
 	public void addEntity(final Entity entity)
 	{
-		EntityImpl impl = (EntityImpl) entity;
+		EntityImplementation impl = (EntityImplementation) entity;
 		if (this instanceof WorldMaster)
 			impl.entityID = nextEntityId();
 		Location currLocation = entity.getLocation();
@@ -852,6 +855,124 @@ public abstract class World implements WorldInterface
 	public boolean handleInteraction(Entity entity, Location blockLocation, Input input)
 	{
 		return false;
+	}
+	
+	public Location raytraceSolid(Location initialPosition, Vector3d direction, double limit)
+	{
+		return raytraceSolid(initialPosition, direction, limit, false);
+	}
+	
+	public Location raytraceSolidOuter(Location initialPosition, Vector3d direction, double limit)
+	{
+		return raytraceSolid(initialPosition, direction, limit, true);
+	}
+	
+	private Location raytraceSolid(Location initialPosition, Vector3d direction, double limit, boolean outer)
+	{
+		direction.normalize();
+		//direction.scale(0.02);
+
+		float distance = 0f;
+		Voxel vox;
+		int x, y, z;
+		x = (int) Math.floor(initialPosition.x);
+		y = (int) Math.floor(initialPosition.y);
+		z = (int) Math.floor(initialPosition.z);
+
+		//DDA algorithm
+
+		//It requires double arrays because it works using loops over each dimension
+		double[] rayOrigin = new double[3];
+		double[] rayDirection = new double[3];
+		rayOrigin[0] = initialPosition.x;
+		rayOrigin[1] = initialPosition.y;
+		rayOrigin[2] = initialPosition.z;
+		rayDirection[0] = direction.x;
+		rayDirection[1] = direction.y;
+		rayDirection[2] = direction.z;
+		int voxelCoords[] = new int[] { x, y, z };
+		double[] deltaDist = new double[3];
+		double[] next = new double[3];
+		int step[] = new int[3];
+
+		int side = 0;
+		//Prepare distances
+		for (int i = 0; i < 3; ++i)
+		{
+			double deltaX = rayDirection[0] / rayDirection[i];
+			double deltaY = rayDirection[1] / rayDirection[i];
+			double deltaZ = rayDirection[2] / rayDirection[i];
+			deltaDist[i] = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+			if (rayDirection[i] < 0.f)
+			{
+				step[i] = -1;
+				next[i] = (rayOrigin[i] - voxelCoords[i]) * deltaDist[i];
+			}
+			else
+			{
+				step[i] = 1;
+				next[i] = (voxelCoords[i] + 1.f - rayOrigin[i]) * deltaDist[i];
+			}
+		}
+
+		do
+		{
+			x = voxelCoords[0];
+			y = voxelCoords[1];
+			z = voxelCoords[2];
+			vox = VoxelTypes.get(this.getDataAt(x, y, z));
+			if (vox.isVoxelSolid() || vox.isVoxelSelectable())
+			{
+				boolean collides = false;
+				for (CollisionBox box : vox.getTranslatedCollisionBoxes(this, x, y, z))
+				{
+					//System.out.println(box);
+					Vector3d collisionPoint = box.collidesWith(initialPosition, direction);
+					if (collisionPoint != null)
+					{
+						collides = true;
+						//System.out.println("collides @ "+collisionPoint);
+					}
+				}
+				if (collides)
+				{
+					if (!outer)
+						return new Location(this, x, y, z);
+					else
+					{
+						//Back off a bit
+						switch (side)
+						{
+						case 0:
+							x -= step[side];
+							break;
+						case 1:
+							y -= step[side];
+							break;
+						case 2:
+							z -= step[side];
+							break;
+						}
+						return new Location(this, x, y, z);
+					}
+				}
+			}
+			//DDA steps
+			side = 0;
+			for (int i = 1; i < 3; ++i)
+			{
+				if (next[side] > next[i])
+				{
+					side = i;
+				}
+			}
+			next[side] += deltaDist[side];
+			voxelCoords[side] += step[side];
+
+			distance += 1;
+		}
+		while (distance < limit);
+		return null;
 	}
 	
 	private int sanitizeHorizontalCoordinate(int coordinate)

@@ -1,5 +1,8 @@
 package io.xol.chunkstories.entity.core;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,7 +18,6 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.rendering.Light;
-import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -33,7 +35,6 @@ import io.xol.chunkstories.net.packets.PacketEntity;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
-import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.core.VoxelClimbable;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.base.XolioWindow;
@@ -50,9 +51,10 @@ import io.xol.engine.textures.TexturesHandler;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityPlayer extends EntityLivingImpl implements EntityControllable, EntityHUD, EntityNameable, EntityRotateable
+public class EntityPlayer extends EntityLivingImplentation implements EntityControllable, EntityHUD, EntityNameable, EntityRotateable
 {
-	boolean noclip = true;
+	protected boolean noclip = true;
+	
 	boolean running = false;
 
 	float lastPX = -1f;
@@ -60,6 +62,33 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 
 	private String name;
 
+	static Set<String> fp_elements = new HashSet<String>();
+
+	static
+	{
+		fp_elements.add("boneArmLU");
+		fp_elements.add("boneArmRU");
+		fp_elements.add("boneArmLD");
+		fp_elements.add("boneArmRD");
+	}
+	
+	private Controller controller;
+	
+	public double maxSpeedRunning = 0.25;
+	public double maxSpeed = 0.15;
+
+	public double hSpeed = 0;
+
+	public double eyePosition = 1.6;
+	public double walked = 0d;
+
+	double jump = 0;
+	double targetVectorX;
+	double targetVectorZ;
+
+	boolean jumped = false;
+	boolean landed = false;
+	
 	public EntityPlayer(World w, double x, double y, double z)
 	{
 		this(w, x, y, z, "");
@@ -70,7 +99,7 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 		super(w, x, y, z);
 		this.name = name;
 		inventory = new Inventory(this, 10, 4, this.name + "'s Inventory");
-		flying = false;
+		setFlying(false);
 	}
 
 	public void moveCamera()
@@ -134,7 +163,7 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 		// Null-out acceleration, until modified by controls
 		synchronized (this)
 		{
-			if (flying)
+			if (isFlying())
 				flyMove(controller);
 			else
 				normalMove(controller);
@@ -150,20 +179,6 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 		}
 	}
 
-	public double maxSpeedRunning = 0.25;
-	public double maxSpeed = 0.15;
-
-	public double hSpeed = 0;
-
-	public double eyePosition = 1.6;
-	public double walked = 0d;
-
-	double jump = 0;
-	double targetVectorX;
-	double targetVectorZ;
-
-	boolean jumped = false;
-	boolean landed = false;
 
 	public void normalMove(ClientController controller)
 	{
@@ -316,7 +331,7 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 			else
 				moveWithCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed, true);
 		}
-		if (flying)
+		if (isFlying())
 		{
 			this.vel.x = 0;
 			this.vel.y = 0;
@@ -349,8 +364,17 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 	{
 		Vector3d initialPosition = new Vector3d(pos);
 		initialPosition.add(new Vector3d(0, eyePosition, 0));
-		//Vector3d position = new Vector3d(pos.x, pos.y + eyePosition, pos.z);
 
+		Vector3d direction = getDirectionLookingAt();
+		
+		if(inside)
+			return world.raytraceSolid(new Location(world, initialPosition), direction, 256.0);
+		else
+			return world.raytraceSolidOuter(new Location(world, initialPosition), direction, 256.0);
+	}
+	
+	public Vector3d getDirectionLookingAt()
+	{
 		Vector3d direction = new Vector3d();
 
 		float a = (float) ((-rotH) / 360f * 2 * Math.PI);
@@ -359,120 +383,7 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 		direction.y = -(float) Math.sin(b);
 		direction.z = -(float) Math.cos(a) * (float) Math.cos(b);
 
-		direction.normalize();
-		//direction.scale(0.02);
-
-		float distance = 0f;
-		Voxel vox;
-		int x, y, z;
-		x = (int) Math.floor(initialPosition.x);
-		y = (int) Math.floor(initialPosition.y);
-		z = (int) Math.floor(initialPosition.z);
-
-		//DDA algorithm
-
-		//It requires double arrays because it works using loops over each dimension
-		double[] rayOrigin = new double[3];
-		double[] rayDirection = new double[3];
-		rayOrigin[0] = initialPosition.x;
-		rayOrigin[1] = initialPosition.y;
-		rayOrigin[2] = initialPosition.z;
-		rayDirection[0] = direction.x;
-		rayDirection[1] = direction.y;
-		rayDirection[2] = direction.z;
-		int voxelCoords[] = new int[] { x, y, z };
-		double[] deltaDist = new double[3];
-		double[] next = new double[3];
-		int step[] = new int[3];
-
-		int side = 0;
-		//Prepare distances
-		for (int i = 0; i < 3; ++i)
-		{
-			double deltaX = rayDirection[0] / rayDirection[i];
-			double deltaY = rayDirection[1] / rayDirection[i];
-			double deltaZ = rayDirection[2] / rayDirection[i];
-			deltaDist[i] = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-			if (rayDirection[i] < 0.f)
-			{
-				step[i] = -1;
-				next[i] = (rayOrigin[i] - voxelCoords[i]) * deltaDist[i];
-			}
-			else
-			{
-				step[i] = 1;
-				next[i] = (voxelCoords[i] + 1.f - rayOrigin[i]) * deltaDist[i];
-			}
-		}
-
-		do
-		{
-			x = voxelCoords[0];
-			y = voxelCoords[1];
-			z = voxelCoords[2];
-			vox = VoxelTypes.get(world.getDataAt(x, y, z));
-			if (vox.isVoxelSolid() || vox.isVoxelSelectable())
-			{
-				boolean collides = false;
-				for (CollisionBox box : vox.getTranslatedCollisionBoxes(world, x, y, z))
-				{
-					//System.out.println(box);
-					Vector3d collisionPoint = box.collidesWith(initialPosition, direction);
-					if (collisionPoint != null)
-					{
-						collides = true;
-						//System.out.println("collides @ "+collisionPoint);
-					}
-				}
-				if (collides)
-				{
-					if (inside)
-						return new Location(world, x, y, z);
-					else
-					{
-						//Back off a bit
-						switch (side)
-						{
-						case 0:
-							x -= step[side];
-							break;
-						case 1:
-							y -= step[side];
-							break;
-						case 2:
-							z -= step[side];
-							break;
-						}
-						return new Location(world, x, y, z);
-					}
-				}
-			}
-			//DDA steps
-			side = 0;
-			for (int i = 1; i < 3; ++i)
-			{
-				if (next[side] > next[i])
-				{
-					side = i;
-				}
-			}
-			next[side] += deltaDist[side];
-			voxelCoords[side] += step[side];
-
-			distance += 1;
-		}
-		while (distance < 256);
-		return null;
-	}
-
-	public void toogleFly()
-	{
-		flying = !flying;
-	}
-
-	public void toggleNoclip()
-	{
-		noclip = !noclip;
+		return direction.normalize();
 	}
 
 	@Override
@@ -547,15 +458,6 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 		}
 	}
 
-	static Set<String> fp_elements = new HashSet<String>();
-
-	static
-	{
-		fp_elements.add("boneArmLU");
-		fp_elements.add("boneArmRU");
-		fp_elements.add("boneArmLD");
-		fp_elements.add("boneArmRD");
-	}
 
 	@Override
 	public String getName()
@@ -569,8 +471,6 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 		this.inventory.name = this.name + "'s Inventory";
 		name = n;
 	}
-
-	Controller controller;
 
 	@Override
 	public Controller getController()
@@ -636,5 +536,22 @@ public class EntityPlayer extends EntityLivingImpl implements EntityControllable
 		//Then we check if the world minds being interacted with
 		world.handleInteraction(this, blockLocation, input);
 		return false;
+	}
+	
+	public void loadCSF(DataInputStream stream) throws IOException
+	{
+		super.loadCSF(stream);
+		noclip = stream.readBoolean();
+		flying = stream.readBoolean();
+	}
+
+	/**
+	 * Writes the object state to a stream
+	 */
+	public void saveCSF(DataOutputStream stream) throws IOException
+	{
+		super.saveCSF(stream);
+		stream.writeBoolean(noclip);
+		stream.writeBoolean(isFlying());
 	}
 }

@@ -1,8 +1,11 @@
 package io.xol.chunkstories.server.tech;
 
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.server.Command;
+import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.net.packets.PacketEntity;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.net.ServerConnectionsHandler;
@@ -81,6 +84,23 @@ public class ServerConsole
 				}
 				emitter.sendMessage("#00FFD0" + i + " players connected : " + list);
 				return;
+			}
+			else if(cmd.equals("fly"))
+			{
+				if(emitter instanceof Player)
+				{
+					Player client = ((Player)emitter);
+
+					Entity controlledEntity = client.getControlledEntity();
+					if(controlledEntity != null)
+					{
+						boolean state = controlledEntity.isFlying();
+						state = !state;
+						client.sendMessage("Flying : "+state);
+						controlledEntity.setFlying(state);
+						return;
+					}
+				}
 			}
 			// Rights check
 			if (emitter.hasPermission("server.admin"))

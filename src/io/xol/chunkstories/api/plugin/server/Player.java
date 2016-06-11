@@ -52,6 +52,8 @@ public interface Player extends CommandEmitter
 	 */
 	public void setLocation(Location l);
 	
+	public void setFlying(boolean flying);
+	
 	/**
 	 * Kicks the player
 	 * @param reason
