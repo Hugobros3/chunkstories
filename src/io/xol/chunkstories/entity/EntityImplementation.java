@@ -1,10 +1,9 @@
 package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.entity.core.components.EntityComponentController;
 import io.xol.chunkstories.entity.core.components.EntityComponentExistence;
 import io.xol.chunkstories.entity.core.components.EntityComponentPosition;
-import io.xol.chunkstories.item.inventory.Inventory;
+import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
@@ -54,7 +53,7 @@ public abstract class EntityImplementation implements Entity
 
 	//public double pos.x, pos.y, pos.z;
 	//public double vel.x, vel.y, vel.z;
-	public float rotH, rotV;
+	//public float rotH, rotV;
 
 	public boolean collision_top = false;
 	public boolean collision_bot = false;
@@ -67,7 +66,7 @@ public abstract class EntityImplementation implements Entity
 
 	//public boolean inWater = false;
 	public Voxel voxelIn;
-	public Inventory inventory;
+	public EntityComponentInventory inventory;
 
 	//Flag set when deleted from world entities list ( to report to other refering places )
 	
@@ -464,13 +463,15 @@ public abstract class EntityImplementation implements Entity
 		synchronized (this)
 		{
 			camera.pos = new Vector3d(position.getLocation()).negate();
+			
 			//camera.pos.x = -pos.x;
 			//camera.pos.y = -pos.y;
 			//camera.pos.z = -pos.z;
 
-			camera.rotationX = rotV;
-			camera.rotationY = rotH;
+			//camera.rotationX = rotV;
+			//camera.rotationY = rotH;
 
+			//Default FOV
 			camera.fov = FastConfig.fov;
 
 			camera.alUpdate();
@@ -503,21 +504,6 @@ public abstract class EntityImplementation implements Entity
 	public void delete()
 	{
 		existence.destroyEntity();
-	}
-
-	@Override
-	public Inventory getInventory()
-	{
-		//TODO wip
-		return new Inventory(this, 5, 5, "ok");
-		//return inventory;
-	}
-
-	@Override
-	public void setInventory(Inventory inventory)
-	{
-		this.inventory = inventory;
-		inventory.holder = this;
 	}
 
 	@Override

@@ -1,8 +1,6 @@
-package io.xol.chunkstories.entity;
+package io.xol.chunkstories.api.entity;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.ClientController;
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.entity.core.components.EntityComponentController;
 
@@ -13,19 +11,16 @@ import io.xol.chunkstories.entity.core.components.EntityComponentController;
 /**
  * Defines an entity as controllable by players, this is used to allow the Client to send controls to the entity and the
  * server to update the client about it's entity status.
- * @author hugo@xol.io
- *
  */
 public interface EntityControllable extends Entity
 {
 	public EntityComponentController getControllerComponent();
 	
-	/*public Controller getController();
-	
-	public void setController(Controller controller);*/
-	
 	public void moveCamera(ClientController controller);
 	
+	/**
+	 * Clientside controller tick, called before
+	 */
 	public void tick(ClientController controller);
 	
 	/**

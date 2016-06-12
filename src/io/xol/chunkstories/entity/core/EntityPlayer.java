@@ -1,8 +1,5 @@
 package io.xol.chunkstories.entity.core;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,6 +11,8 @@ import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientController;
+import io.xol.chunkstories.api.entity.EntityControllable;
+import io.xol.chunkstories.api.entity.EntityWithInventory;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.rendering.Light;
@@ -22,15 +21,14 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.entity.EntityNameable;
-import io.xol.chunkstories.entity.EntityRotateable;
 import io.xol.chunkstories.entity.core.components.EntityComponentController;
+import io.xol.chunkstories.entity.core.components.EntityComponentSelectedItem;
+import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.core.ItemAk47;
 import io.xol.chunkstories.item.core.ItemVoxel;
-import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
@@ -50,7 +48,10 @@ import io.xol.engine.textures.TexturesHandler;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityPlayer extends EntityLivingImplentation implements EntityControllable, EntityHUD, EntityNameable, EntityRotateable
+/**
+ * Core/Vanilla player, has all the functionality you'd want from it
+ */
+public class EntityPlayer extends EntityLivingImplentation implements EntityControllable, EntityHUD, EntityNameable, EntityWithInventory, EntityWithSelectedItem
 {
 	//Add the controller component to whatever else the superclass may have
 	EntityComponentController controllerComponent = new EntityComponentController(this, this.getComponents().getLastComponent());
@@ -64,6 +65,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 	private String name;
 
+	//Body parts to render in first person
 	static Set<String> fp_elements = new HashSet<String>();
 
 	static
@@ -91,17 +93,20 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	boolean jumped = false;
 	boolean landed = false;
 	
+	EntityComponentInventory inventoryComponent;
+	EntityComponentSelectedItem selectedItemComponent;
+	
 	public EntityPlayer(World w, double x, double y, double z)
 	{
 		this(w, x, y, z, "");
-		inventory = new Inventory(this, 10, 4, "k.");
 	}
 
 	public EntityPlayer(World w, double x, double y, double z, String name)
 	{
 		super(w, x, y, z);
 		this.name = name;
-		inventory = new Inventory(this, 10, 4, this.name + "'s Inventory");
+		inventoryComponent = new EntityComponentInventory(this, 10, 4);
+		selectedItemComponent = new EntityComponentSelectedItem(this, inventoryComponent);
 		setFlying(false);
 	}
 
@@ -109,6 +114,10 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	{
 		float cPX = Mouse.getX();
 		float cPY = Mouse.getY();
+		
+		float rotH = this.getEntityRotationComponent().getRotH();
+		float rotV = this.getEntityRotationComponent().getRotV();
+		
 		if (lastPX != -1f)
 		{
 			rotH += (cPX - XolioWindow.frameW / 2) / 3f * FastConfig.mouseSensitivity;
@@ -118,8 +127,11 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			rotV = 90;
 		if (rotV < -90)
 			rotV = -90;
+		
 		lastPX = cPX;
 		lastPY = cPY;
+		
+		this.getEntityRotationComponent().setRotation(rotH, rotV);
 		Mouse.setCursorPosition(XolioWindow.frameW / 2, XolioWindow.frameH / 2);
 	}
 
@@ -284,12 +296,12 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			if (onLadder)
 			{
 				//moveWithCollisionRestrain(0, (float)(Math.sin(((rotV) / 180f * Math.PI)) * hSpeed), 0, false);
-				this.vel.y = (float) (Math.sin((-(rotV) / 180f * Math.PI)) * hSpeed);
+				this.vel.y = (float) (Math.sin((-(this.getEntityRotationComponent().getRotV()) / 180f * Math.PI)) * hSpeed);
 			}
 		}
 
-		targetVectorX = Math.sin((180 - rotH + modif) / 180f * Math.PI) * hSpeed;
-		targetVectorZ = Math.cos((180 - rotH + modif) / 180f * Math.PI) * hSpeed;
+		targetVectorX = Math.sin((180 - this.getEntityRotationComponent().getRotH() + modif) / 180f * Math.PI) * hSpeed;
+		targetVectorZ = Math.cos((180 - this.getEntityRotationComponent().getRotH() + modif) / 180f * Math.PI) * hSpeed;
 
 		eyePosition = 1.65 + Math.sin(walked * 5d) * 0.035d;
 	}
@@ -307,8 +319,8 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			camspeed = 5f;
 		if (controller.getKeyBind("back").isPressed())
 		{
-			float a = (float) ((-rotH) / 180f * Math.PI);
-			float b = (float) ((rotV) / 180f * Math.PI);
+			float a = (float) ((-this.getEntityRotationComponent().getRotH()) / 180f * Math.PI);
+			float b = (float) ((this.getEntityRotationComponent().getRotV()) / 180f * Math.PI);
 			if (noclip)
 				moveWithoutCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b));
 			else
@@ -316,8 +328,8 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		}
 		if (controller.getKeyBind("forward").isPressed())
 		{
-			float a = (float) ((180 - rotH) / 180f * Math.PI);
-			float b = (float) ((-rotV) / 180f * Math.PI);
+			float a = (float) ((180 - this.getEntityRotationComponent().getRotH()) / 180f * Math.PI);
+			float b = (float) ((-this.getEntityRotationComponent().getRotV()) / 180f * Math.PI);
 			if (noclip)
 				moveWithoutCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b));
 			else
@@ -325,7 +337,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		}
 		if (controller.getKeyBind("right").isPressed())
 		{
-			float a = (float) ((-rotH - 90) / 180f * Math.PI);
+			float a = (float) ((-this.getEntityRotationComponent().getRotH() - 90) / 180f * Math.PI);
 			if (noclip)
 				moveWithoutCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed);
 			else
@@ -333,7 +345,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		}
 		if (controller.getKeyBind("left").isPressed())
 		{
-			float a = (float) ((-rotH + 90) / 180f * Math.PI);
+			float a = (float) ((-this.getEntityRotationComponent().getRotH() + 90) / 180f * Math.PI);
 			if (noclip)
 				moveWithoutCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed);
 			else
@@ -359,8 +371,8 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			camera.pos = new Vector3d(getLocation()).negate();
 			camera.pos.add(0d, -eyePosition, 0d);
 
-			camera.rotationX = rotV;
-			camera.rotationY = rotH;
+			camera.rotationX = this.getEntityRotationComponent().getRotV();
+			camera.rotationY = this.getEntityRotationComponent().getRotH();
 
 			camera.fov = (float) (FastConfig.fov + ((vel.x * vel.x + vel.z * vel.z) > 0.07 * 0.07 ? ((vel.x * vel.x + vel.z * vel.z) - 0.07 * 0.07) * 500 : 0));
 			camera.alUpdate();
@@ -385,8 +397,8 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	{
 		Vector3d direction = new Vector3d();
 
-		float a = (float) ((-rotH) / 360f * 2 * Math.PI);
-		float b = (float) ((rotV) / 360f * 2 * Math.PI);
+		float a = (float) ((-this.getEntityRotationComponent().getRotH()) / 360f * 2 * Math.PI);
+		float b = (float) ((this.getEntityRotationComponent().getRotV()) / 360f * 2 * Math.PI);
 		direction.x = -(float) Math.sin(a) * (float) Math.cos(b);
 		direction.y = -(float) Math.sin(b);
 		direction.z = -(float) Math.cos(a) * (float) Math.cos(b);
@@ -413,7 +425,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	public void render(RenderingContext renderingContext)
 	{
 		Camera cam = renderingContext.getCamera();
-		ItemPile selectedItemPile = this.getInventory().getSelectedItem();
+		ItemPile selectedItemPile = getSelectedItemComponent().getSelectedItem();
 		BVHAnimation animation = BVHLibrary.getAnimation("res/models/human-standstill.bvh");
 		if (selectedItemPile != null)
 		{
@@ -436,9 +448,9 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		
 		//Player rotations to the viewmodel
 		Matrix4f playerRotationMatrix = new Matrix4f();
-		playerRotationMatrix.rotate((90 - rotH) / 180f * 3.14159f, new Vector3f(0, 1, 0));
+		playerRotationMatrix.rotate((90 - this.getEntityRotationComponent().getRotH()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
 		if (this.equals(Client.controlledEntity) && !renderingContext.shadow)
-			playerRotationMatrix.rotate((-rotV) / 180f * 3.14159f, new Vector3f(0, 0, 1));
+			playerRotationMatrix.rotate((-this.getEntityRotationComponent().getRotV()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
 		
 		//playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
@@ -457,9 +469,9 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, itemMatrix);
 		
 		
-		if (this.inventory.getSelectedItem() != null && this.inventory.getSelectedItem().getItem() instanceof ItemVoxel)
+		if (getSelectedItemComponent().getSelectedItem() != null && getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemVoxel)
 		{
-			ItemPile pile = this.inventory.getSelectedItem();
+			ItemPile pile = getSelectedItemComponent().getSelectedItem();
 			if (ItemVoxel.getVoxel(pile).getLightLevel(0x00) > 0)
 			{
 				Vector3d pos = getLocation();
@@ -479,7 +491,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	@Override
 	public void setName(String n)
 	{
-		this.inventory.name = this.name + "'s Inventory";
+		//this.inventory.name = this.name + "'s Inventory";
 		name = n;
 	}
 
@@ -496,7 +508,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	public boolean handleInteraction(Input input)
 	{
 		Location blockLocation = this.getBlockLookingAt(true);
-		ItemPile itemSelected = this.getInventory().getSelectedItem();
+		ItemPile itemSelected = getSelectedItemComponent().getSelectedItem();
 		if (itemSelected != null)
 		{
 			//See if the item handles the interaction
@@ -524,7 +536,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 					if (voxelID > 0)
 					{
 						ItemPile itemVoxel = new ItemPile("item_voxel", new String[] { "" + voxelID, "" + voxelMeta });
-						this.inventory.setItemPileAt(this.inventory.getSelectedSlot(), 0, itemVoxel);
+						this.inventoryComponent.setItemPileAt(getSelectedItemComponent().getSelectedSlot(), 0, itemVoxel);
 					}
 				}
 			}
@@ -536,27 +548,22 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		world.handleInteraction(this, blockLocation, input);
 		return false;
 	}
-	
-	public void loadCSF(DataInputStream stream) throws IOException
-	{
-		super.loadCSF(stream);
-		noclip = stream.readBoolean();
-		flying = stream.readBoolean();
-	}
-
-	/**
-	 * Writes the object state to a stream
-	 */
-	public void saveCSF(DataOutputStream stream) throws IOException
-	{
-		super.saveCSF(stream);
-		stream.writeBoolean(noclip);
-		stream.writeBoolean(isFlying());
-	}
 
 	@Override
 	public EntityComponentController getControllerComponent()
 	{
 		return this.controllerComponent;
+	}
+
+	@Override
+	public EntityComponentInventory getInventory()
+	{
+		return inventoryComponent;
+	}
+
+	@Override
+	public EntityComponentSelectedItem getSelectedItemComponent()
+	{
+		return this.selectedItemComponent;
 	}
 }

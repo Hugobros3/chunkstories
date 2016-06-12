@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.events.core;
 
-import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityWithInventory;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.plugin.server.Player;
@@ -29,13 +29,13 @@ public class PlayerSelectItemEvent extends Event
 	// Specific event code
 	
 	public Player player;
-	public Entity playerEntity;
+	public EntityWithInventory entity;
 	public int newSlot;
 	
-	public PlayerSelectItemEvent(Player player, Entity playerEntity, int newSlot)
+	public PlayerSelectItemEvent(Player player, EntityWithInventory playerEntity, int newSlot)
 	{
 		this.player = player;
-		this.playerEntity = playerEntity;
+		this.entity = playerEntity;
 		this.newSlot = newSlot;
 	}
 
@@ -47,8 +47,8 @@ public class PlayerSelectItemEvent extends Event
 	@Override
 	public void defaultBehaviour()
 	{
-		//System.out.println("Asking to select slot "+newSlot);
-		playerEntity.getInventory().setSelectedSlot(newSlot);
+		System.out.println("Asking to select slot "+newSlot);
+		//entity.getInventory().setSelectedSlot(newSlot);
 	}
 	
 }

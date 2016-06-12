@@ -4,10 +4,10 @@ import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldRemoteClient;
@@ -20,12 +20,12 @@ import io.xol.engine.base.XolioWindow;
 
 public class InventoryOverlay extends Overlay
 {
-	Inventory[] inventories;
+	EntityComponentInventory[] inventories;
 	InventoryDrawer[] drawers;
 
 	public static ItemPile selectedItem;
 
-	public InventoryOverlay(OverlayableScene scene, Overlay parent, Inventory[] inventories)
+	public InventoryOverlay(OverlayableScene scene, Overlay parent, EntityComponentInventory[] inventories)
 	{
 		super(scene, parent);
 		this.inventories = inventories;
@@ -38,7 +38,7 @@ public class InventoryOverlay extends Overlay
 	public void drawToScreen(int x, int y, int w, int h)
 	{
 		int totalWidth = 0;
-		for (Inventory inv : inventories)
+		for (EntityComponentInventory inv : inventories)
 			totalWidth += 2 + inv.width;
 		totalWidth -= 2;
 		int widthAccumulation = 0;

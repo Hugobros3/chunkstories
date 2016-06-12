@@ -1,9 +1,9 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityWithInventory;
 import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.item.inventory.Inventory;
-import io.xol.chunkstories.item.inventory.InventoryHolder;
+import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,7 +13,7 @@ import java.io.IOException;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PacketSerializedInventory extends Packet
+/*public class PacketSerializedInventory extends Packet
 {
 	//This packets defines an entire inventory (player's or else)
 	public PacketSerializedInventory(boolean client)
@@ -74,4 +74,4 @@ public class PacketSerializedInventory extends Packet
 		}
 	}
 
-}
+}*/

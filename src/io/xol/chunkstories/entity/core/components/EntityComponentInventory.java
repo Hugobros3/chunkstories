@@ -1,12 +1,15 @@
-package io.xol.chunkstories.item.inventory;
+package io.xol.chunkstories.entity.core.components;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.entity.EntityWithInventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.net.StreamTarget;
+import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
 
@@ -14,24 +17,22 @@ import io.xol.chunkstories.item.ItemsList;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Inventory implements Iterable<ItemPile>,  CSFSerializable
+public class EntityComponentInventory extends EntityComponent implements Iterable<ItemPile>
 {
-	public String name;
-
 	public int width;
 	public int height;
 	
 	//What does this inventory belong to ?
-	public InventoryHolder holder;
+	public EntityWithInventory holder;
 
 	protected ItemPile[][] contents;
 
-	public Inventory(InventoryHolder holder, int width, int height, String name)
+	public EntityComponentInventory(EntityWithInventory holder, int width, int height)
 	{
+		super(holder, holder == null ? null : holder.getComponents().getLastComponent());
 		this.holder = holder;
 		this.width = width;
 		this.height = height;
-		this.name = name;
 		contents = new ItemPile[width][height];
 	}
 
@@ -128,6 +129,9 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		{
 			((EntityControllable)this.holder).getController().notifyInventoryChange((Entity)this.holder);
 		}*/
+		
+		if(this.holder != null)
+			this.pushComponentEveryone();
 		return null;
 	}
 	
@@ -164,6 +168,9 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		{
 			((EntityControllable)this.holder).getController().notifyInventoryChange((Entity)this.holder);
 		}*/
+
+		if(this.holder != null)
+			this.pushComponentEveryone();
 		return true;
 	}
 	
@@ -182,6 +189,9 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	}
 
 	@Override
+	/**
+	 * Iterates over every ItemPile
+	 */
 	public Iterator<ItemPile> iterator()
 	{
 		Iterator<ItemPile> it = new Iterator<ItemPile>()
@@ -242,17 +252,15 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		return it;
 
 	}
-	
-	public Inventory(DataInputStream stream) throws IOException
-	{
-		loadCSF(stream);
-	}
 
-	public void load(Inventory inventory)
+	/**
+	 * Copy the contents of another Inventory.
+	 * @param inventory
+	 */
+	public void load(EntityComponentInventory inventory)
 	{
 		this.width = inventory.width;
 		this.height = inventory.height;
-		name = inventory.name;
 		contents = inventory.contents;
 		//Update inventory references
 		for(int i = 0; i < width; i++)
@@ -262,13 +270,39 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	}
 	
 	@Override
-	public void loadCSF(DataInputStream stream) throws IOException
+	protected void push(StreamTarget destinator, DataOutputStream stream) throws IOException
+	{
+		stream.writeInt(width);
+		stream.writeInt(height);
+		/*boolean hasName = name != null;
+		stream.writeBoolean(hasName);
+		if(hasName)
+			stream.writeUTF(name);*/
+		ItemPile pile;
+		for(int i = 0; i < width; i++)
+			for(int j = 0; j < height ; j++)
+			{
+				pile = contents[i][j];
+				if(pile == null)
+					stream.writeInt(0);
+				else
+				{
+					stream.writeInt(pile.getItem().getID());
+					pile.saveCSF(stream);
+				}
+			}
+		//Save selected item
+		//stream.writeByte(selectedSlot);
+	}
+
+	@Override
+	protected void pull(DataInputStream stream) throws IOException
 	{
 		this.width = stream.readInt();
 		this.height = stream.readInt();
-		boolean hasName = stream.readBoolean();
+		/*boolean hasName = stream.readBoolean();
 		if(hasName)
-			name = stream.readUTF();
+			name = stream.readUTF();*/
 		contents = new ItemPile[width][height];
 		int id;
 		Item item;
@@ -286,35 +320,9 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 				}
 			}
 		//Load selected item
-		selectedSlot = stream.readByte();
+		//selectedSlot = stream.readByte();
 	}
-
-	@Override
-	public void saveCSF(DataOutputStream stream) throws IOException
-	{
-		stream.writeInt(width);
-		stream.writeInt(height);
-		boolean hasName = name != null;
-		stream.writeBoolean(hasName);
-		if(hasName)
-			stream.writeUTF(name);
-		ItemPile pile;
-		for(int i = 0; i < width; i++)
-			for(int j = 0; j < height ; j++)
-			{
-				pile = contents[i][j];
-				if(pile == null)
-					stream.writeInt(0);
-				else
-				{
-					stream.writeInt(pile.getItem().getID());
-					pile.saveCSF(stream);
-				}
-			}
-		//Save selected item
-		stream.writeByte(selectedSlot);
-	}
-
+	
 	/**
 	 * Removes all itempiles in the inventory.
 	 */
@@ -322,6 +330,8 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	{
 		contents = new ItemPile[width][height];
 
+		if(this.holder != null)
+			this.pushComponentEveryone();
 		//TODO rebuild with components
 		
 		/*if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
@@ -346,48 +356,15 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		return size;
 	}
 
-	int selectedSlot = 0;
-	
-	/**
-	 * Selects the slot given
-	 * @param newSlot
-	 */
-	public void setSelectedSlot(int newSlot)
+	public String getHolderName()
 	{
-		while(newSlot < 0)
-			newSlot += this.width;
-		selectedSlot = newSlot % this.width;
-		
-		//TODO rebuild with components
-		
-		/*if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null
-				&& ((EntityControllable)this.holder).getController() instanceof ClientController)
+		if(holder != null)
 		{
-			PacketItemUsage packet = new PacketItemUsage(true);
-			packet.usage = ItemUsage.SELECT;
-			packet.complementInfo = (byte) newSlot;
-			if(((Entity) this.holder).getWorld() instanceof WorldRemoteClient)
-				Client.connection.sendPacket(packet);
-			//((ClientController)((EntityControllable)this.holder).getController()).notifySelectedItemChange();
-		}*/
-	}
-	
-	/**
-	 * Returns the selected slot
-	 * @return
-	 */
-	public int getSelectedSlot()
-	{
-		return selectedSlot;
-	}
-
-	/**
-	 * Returns the selected item
-	 * @return
-	 */
-	public ItemPile getSelectedItem()
-	{
-		return contents[selectedSlot][0];
+			if(holder instanceof EntityNameable)
+				return ((EntityNameable) holder).getName();
+			return holder.getClass().getSimpleName();
+		}
+		return "/dev/null";
 	}
 
 }

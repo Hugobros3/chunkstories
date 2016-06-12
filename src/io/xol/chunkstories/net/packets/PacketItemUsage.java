@@ -1,9 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.events.core.PlayerSelectItemEvent;
 import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.server.Server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -15,14 +13,11 @@ import java.io.IOException;
 
 /**
  * The client uses that to signal to the server wich item it wants to use and when it does make use of it.
- * @author gobrosse
- *
  */
 public class PacketItemUsage extends Packet
 {
-
 	public enum ItemUsage {
-		SELECT,
+		//SELECT,
 		USE,
 	}
 	
@@ -64,12 +59,13 @@ public class PacketItemUsage extends Packet
 			return;
 		}
 		
-		if(usage == ItemUsage.SELECT)
+		/*if(usage == ItemUsage.SELECT)
 		{
-			PlayerSelectItemEvent selectItemEvent = new PlayerSelectItemEvent(processor.getServerClient().getProfile(), clientEntity, complementInfo);
+			PlayerSelectItemEvent selectItemEvent = new PlayerSelectItemEvent(processor.getServerClient().getProfile(), (EntityWithInventory) clientEntity, complementInfo);
 			Server.getInstance().getPluginsManager().fireEvent(selectItemEvent);
 		}
-		else if(usage == ItemUsage.USE)
+		else */
+		if(usage == ItemUsage.USE)
 		{
 			
 		}

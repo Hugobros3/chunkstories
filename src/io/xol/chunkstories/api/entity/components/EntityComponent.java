@@ -7,9 +7,9 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityControllable;
 import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.entity.EntityComponents;
-import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.net.packets.PacketEntity;
 
 //(c) 2015-2016 XolioWare Interactive

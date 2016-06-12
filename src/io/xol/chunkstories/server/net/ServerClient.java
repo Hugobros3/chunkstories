@@ -21,6 +21,8 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
 import java.net.Socket;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -99,12 +101,8 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			{
 				// Offline-mode !
 				System.out.println("Warning : Offline-mode is on, letting " + this.name + " connecting without verification");
-				//authentificated = true;
 				
 				postTokenCheck();
-				/*setProfile(new ServerPlayer(this));
-				Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ")" + " joined.");
-				send("login/ok");*/
 			}
 			else
 				new HttpRequestThread(this, "checktoken", "http://chunkstories.xyz/api/serverTokenChecker.php", "username=" + this.name + "&token=" + token).start();
@@ -128,6 +126,13 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 				ChunkStoriesLogger.getInstance().info("Disconnected "+this+" for causing an "+e.getClass().getSimpleName());
 				e.printStackTrace();
 				Server.getInstance().handler.disconnectClient(this, "Exception : "+e.getMessage());
+			}
+			catch (IOException e)
+			{
+				if(this.isAuthentificated())
+					ChunkStoriesLogger.getInstance().info("Connection lost to "+this.getProfile().getDisplayName()+" ("+this.getName()+").");
+				
+				Server.getInstance().handler.disconnectClient(this, "");
 			}
 			catch(Exception e)
 			{

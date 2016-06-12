@@ -7,8 +7,8 @@ import org.lwjgl.input.Keyboard;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
@@ -83,7 +83,7 @@ public class MainMenuOverlay extends Overlay
 	public boolean handleKeypress(int k)
 	{
 		if (k == Keyboard.KEY_E)
-			mainScene.changeOverlay(new InventoryOverlay(mainScene, this, new Inventory[]{new Inventory(null, 10, 4, "Inventaire")
+			mainScene.changeOverlay(new InventoryOverlay(mainScene, this, new EntityComponentInventory[]{new EntityComponentInventory(null, 10, 4)
 			, new InventoryAllVoxels()})); // new Inventory(null, 10, 4, "La chatte à ta mère")
 
 		if (k == Keyboard.KEY_R)

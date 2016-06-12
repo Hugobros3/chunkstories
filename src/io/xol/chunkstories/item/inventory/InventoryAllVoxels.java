@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.voxel.VoxelTypes;
 
@@ -12,11 +13,11 @@ import io.xol.chunkstories.voxel.VoxelTypes;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class InventoryAllVoxels extends Inventory
+public class InventoryAllVoxels extends EntityComponentInventory
 {
 	public InventoryAllVoxels()
 	{
-		super(null, 0, 0, "All voxels");
+		super(null, 0, 0);
 		List<ItemPile> allItems = new ArrayList<ItemPile>();
 		Set<Integer> allIds = VoxelTypes.getAllLoadedVoxelIds();
 		for(int id : allIds)
@@ -32,6 +33,5 @@ public class InventoryAllVoxels extends Inventory
 		this.contents = new ItemPile[width][height];
 		for(ItemPile pile : allItems)
 			this.addItemPile(pile);
-		
 	}
 }

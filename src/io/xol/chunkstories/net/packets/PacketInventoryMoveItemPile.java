@@ -1,12 +1,13 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityWithInventory;
 import io.xol.chunkstories.api.events.core.PlayerMoveItemEvent;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
-import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.server.Server;
 
 import java.io.DataInputStream;
@@ -86,7 +87,7 @@ public class PacketInventoryMoveItemPile extends Packet
 	}
 	
 	public ItemPile itemPile;
-	public Inventory from, to;
+	public EntityComponentInventory from, to;
 	public int oldX, oldY, newX, newY;
 
 	byte holderTypeFrom, holderTypeTo;
@@ -99,13 +100,13 @@ public class PacketInventoryMoveItemPile extends Packet
 		
 		if(holderTypeFrom == 0x01)
 		{
-			Entity entity = processor.getWorld().getEntityByUUID(eIdFrom);
+			EntityWithInventory entity = (EntityWithInventory) processor.getWorld().getEntityByUUID(eIdFrom);
 			if(entity != null)
 				from = entity.getInventory();
 		}
 		if(holderTypeTo == 0x01)
 		{
-			Entity entity = processor.getWorld().getEntityByUUID(eIdTo);
+			EntityWithInventory entity = (EntityWithInventory) processor.getWorld().getEntityByUUID(eIdTo);
 			if(entity != null)
 				to = entity.getInventory();
 		}

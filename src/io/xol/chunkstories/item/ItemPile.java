@@ -7,8 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
-import io.xol.chunkstories.item.inventory.Inventory;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -19,7 +19,7 @@ public class ItemPile implements CSFSerializable
 	public int amount = 1;
 	public Item item;
 
-	public Inventory inventory;
+	public EntityComponentInventory inventory;
 	public int x, y;
 
 	public ItemData data = null;
@@ -124,7 +124,7 @@ public class ItemPile implements CSFSerializable
 	 * @return null if successfull, this if not.
 	 */
 	//@SuppressWarnings("unchecked")
-	public ItemPile moveTo(Inventory inventory2, int x2, int y2)
+	public ItemPile moveTo(EntityComponentInventory inventory2, int x2, int y2)
 	{
 		//Remove it from where we are removing it from
 		if (inventory != null)

@@ -1,10 +1,10 @@
 package io.xol.chunkstories.net.packets;
 
+import io.xol.chunkstories.api.entity.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.input.KeyBindVirtual;
 
 import java.io.DataInputStream;

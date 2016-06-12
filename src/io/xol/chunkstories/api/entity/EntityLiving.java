@@ -1,10 +1,12 @@
 package io.xol.chunkstories.api.entity;
 
+import io.xol.chunkstories.entity.EntityRotateable;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface EntityLiving extends Entity, DamageCause
+public interface EntityLiving extends Entity, EntityRotateable, DamageCause
 {
 	public float getMaxHealth();
 	
