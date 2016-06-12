@@ -5,16 +5,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.entity.ClientController;
-import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
-import io.xol.chunkstories.net.packets.PacketItemUsage;
-import io.xol.chunkstories.net.packets.PacketItemUsage.ItemUsage;
-import io.xol.chunkstories.world.WorldRemoteClient;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -127,10 +121,13 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		}
 		else
 			return pile;
-		if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
+		
+		//TODO rebuild with components
+		
+		/*if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
 		{
 			((EntityControllable)this.holder).getController().notifyInventoryChange((Entity)this.holder);
-		}
+		}*/
 		return null;
 	}
 	
@@ -161,10 +158,12 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 			contents[x % width][y % height] = temp;
 			return false;
 		}
-		if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
+		//TODO rebuild with components
+		
+		/*if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
 		{
 			((EntityControllable)this.holder).getController().notifyInventoryChange((Entity)this.holder);
-		}
+		}*/
 		return true;
 	}
 	
@@ -322,10 +321,13 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 	public void clear()
 	{
 		contents = new ItemPile[width][height];
-		if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
+
+		//TODO rebuild with components
+		
+		/*if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
 		{
 			((EntityControllable)this.holder).getController().notifyInventoryChange((Entity)this.holder);
-		}
+		}*/
 	}
 
 	/**
@@ -355,7 +357,10 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 		while(newSlot < 0)
 			newSlot += this.width;
 		selectedSlot = newSlot % this.width;
-		if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null
+		
+		//TODO rebuild with components
+		
+		/*if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null
 				&& ((EntityControllable)this.holder).getController() instanceof ClientController)
 		{
 			PacketItemUsage packet = new PacketItemUsage(true);
@@ -364,7 +369,7 @@ public class Inventory implements Iterable<ItemPile>,  CSFSerializable
 			if(((Entity) this.holder).getWorld() instanceof WorldRemoteClient)
 				Client.connection.sendPacket(packet);
 			//((ClientController)((EntityControllable)this.holder).getController()).notifySelectedItemChange();
-		}
+		}*/
 	}
 	
 	/**

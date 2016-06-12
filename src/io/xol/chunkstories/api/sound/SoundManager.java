@@ -2,6 +2,8 @@ package io.xol.chunkstories.api.sound;
 
 import java.nio.FloatBuffer;
 
+import io.xol.engine.math.lalgb.Vector3d;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -13,18 +15,19 @@ public abstract class SoundManager
 	public abstract void setListenerPosition(float x, float y, float z, FloatBuffer rot);
 	
 	/**
-	 * Overloads playSoundEffect with double/float conversion.
-	 * @param soundEffect
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param pitch
-	 * @param gain
-	 * @return
+	 * Overloads playSoundEffect with doubles instead of floats
 	 */
 	public SoundSource playSoundEffect(String soundEffect, double x, double y, double z, float pitch, float gain)
 	{
 		return playSoundEffect(soundEffect, (float)x, (float)y, (float)z, pitch, gain);
+	}
+
+	/**
+	 * Overloads playSoundEffect with a vector3d instead of individual components
+	 */
+	public SoundSource playSoundEffect(String soundEffect, Vector3d location, float pitch, float gain)
+	{
+		return playSoundEffect(soundEffect, location.x, location.y, location.z, pitch, gain);
 	}
 
 	/**

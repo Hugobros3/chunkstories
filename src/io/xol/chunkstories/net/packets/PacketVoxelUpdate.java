@@ -1,5 +1,6 @@
 package io.xol.chunkstories.net.packets;
 
+import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 
@@ -27,7 +28,7 @@ public class PacketVoxelUpdate extends Packet
 	}
 
 	@Override
-	public void send(DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeInt(x);
 		out.writeInt(y);
@@ -37,7 +38,12 @@ public class PacketVoxelUpdate extends Packet
 		out.writeByte((byte)0x00);
 	}
 
-	@Override
+	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	{
+		read(in);
+		process(processor);
+	}
+	
 	public void read(DataInputStream in) throws IOException
 	{
 		x = in.readInt();
@@ -48,7 +54,6 @@ public class PacketVoxelUpdate extends Packet
 		assert osef == 0x00;
 	}
 
-	@Override
 	public void process(PacketsProcessor processor)
 	{
 		if(Client.world instanceof WorldClient)

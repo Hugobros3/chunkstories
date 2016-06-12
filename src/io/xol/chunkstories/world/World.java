@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -185,7 +186,11 @@ public abstract class World implements WorldInterface
 	{
 		EntityImplementation impl = (EntityImplementation) entity;
 		if (this instanceof WorldMaster)
-			impl.entityID = nextEntityId();
+		{
+			long nextUUID = nextEntityId();
+			entity.setUUID(nextUUID);
+			System.out.println("given "+nextUUID+" to "+entity);
+		}
 		Location currLocation = entity.getLocation();
 		entity.setLocation(new Location(this, currLocation.getX(), currLocation.getY(), currLocation.getZ()));
 		//entity.updatePosition();
@@ -205,7 +210,7 @@ public abstract class World implements WorldInterface
 			entity2 = iter.next();
 			if (entity2.equals(entity))
 			{
-				//entity.delete();
+				entity.delete();
 				iter.remove();
 				//System.out.println("entity effectivly removed");
 			}
@@ -224,12 +229,23 @@ public abstract class World implements WorldInterface
 			Entity entity;
 			while (iter.hasNext())
 			{
+				//System.out.println("normal mv");
 				entity = iter.next();
-				if (entity instanceof EntityControllable && ((EntityControllable) entity).getController() != null && ((EntityControllable) entity).getController() instanceof ClientController)
+				if (entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null 
+						&& Client.controlledEntity != null && Client.controlledEntity.equals(entity))
+				{
+					//System.out.println("mdr");
 					((EntityControllable) entity).tick(Client.getInstance());
-				if (entity.getChunkHolder() != null && entity.getChunkHolder().isLoaded())
+				}
+					
+				//if (entity.getChunkHolder() != null && entity.getChunkHolder().isLoaded())
+				if(entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && this instanceof WorldMaster)
+				{
+					//Don't tick if it's controlled
+					//System.out.println("don't tick if it ticks");
+				}
+				else
 					entity.tick();
-				//System.out.println(entity);
 			}
 			if (getParticlesHolder() != null)
 				getParticlesHolder().updatePhysics();

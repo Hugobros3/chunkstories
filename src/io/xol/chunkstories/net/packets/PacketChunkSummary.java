@@ -1,5 +1,6 @@
 package io.xol.chunkstories.net.packets;
 
+import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 import io.xol.chunkstories.world.summary.RegionSummary;
@@ -28,7 +29,7 @@ public class PacketChunkSummary extends Packet
 	}
 
 	@Override
-	public void send(DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeInt(summary.rx);
 		out.writeInt(summary.rz);
@@ -45,8 +46,13 @@ public class PacketChunkSummary extends Packet
 		out.writeInt(compressedData.length);
 		out.write(compressedData);
 	}
-
-	@Override
+	
+	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	{
+		read(in);
+		process(processor);
+	}
+	
 	public void read(DataInputStream in) throws IOException
 	{
 		rx = in.readInt();
@@ -57,7 +63,6 @@ public class PacketChunkSummary extends Packet
 		in.readFully(compressedData);
 	}
 
-	@Override
 	public void process(PacketsProcessor processor)
 	{
 		if(processor.isClient)

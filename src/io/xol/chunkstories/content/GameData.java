@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.entity.EntitiesList;
+import io.xol.chunkstories.entity.EntityComponents;
 import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.item.ItemsList;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
@@ -37,6 +38,7 @@ public class GameData
 		ItemsList.reload();
 		VoxelTypes.loadVoxelTypes();
 		EntitiesList.reload();
+		EntityComponents.reload();
 		PacketsProcessor.loadPacketsTypes();
 		WorldGenerators.loadWorldGenerators();
 	}

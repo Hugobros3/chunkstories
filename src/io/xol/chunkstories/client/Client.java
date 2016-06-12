@@ -7,6 +7,7 @@ package io.xol.chunkstories.client;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Iterator;
 
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.gui.GuiDrawer;
@@ -20,13 +21,14 @@ import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.sound.SoundManager;
-import io.xol.chunkstories.client.net.ServerConnection;
+import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.input.KeyBinds;
+import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.World;
@@ -38,7 +40,7 @@ public class Client implements ClientController, ClientInterface
 	public static SoundManager soundManager;
 	public static boolean offline = false;
 
-	public static ServerConnection connection;
+	public static ClientToServerConnection connection;
 	public static XolioWindow windows;
 	public static World world;
 
@@ -176,8 +178,53 @@ public class Client implements ClientController, ClientInterface
 	}
 
 	@Override
-	public ServerConnection getServerConnection()
+	public ClientToServerConnection getServerConnection()
 	{
 		return connection;
+	}
+
+	@Override
+	public long getUUID()
+	{
+		return Client.username.hashCode();
+	}
+
+	@Override
+	public Iterator<Entity> getSubscribedToList()
+	{
+		return null;
+	}
+
+	@Override
+	public boolean subscribe(Entity entity)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean unsubscribe(Entity entity)
+	{
+		return false;
+	}
+
+	@Override
+	public void unsubscribeAll()
+	{
+		
+	}
+
+	@Override
+	public void pushPacket(Packet packet)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isSubscribedTo(Entity entity)
+	{
+		if(entity == controlledEntity)
+			return true;
+		return false;
 	}
 }

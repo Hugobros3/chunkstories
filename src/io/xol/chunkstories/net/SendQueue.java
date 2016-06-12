@@ -1,5 +1,6 @@
 package io.xol.chunkstories.net;
 
+import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
@@ -23,12 +24,19 @@ public class SendQueue extends Thread
 	
 	PacketsProcessor processor;
 	DataOutputStream out;
+	PacketDestinator destinator;
 
-	public SendQueue(DataOutputStream out, PacketsProcessor processor)
+	public SendQueue(PacketDestinator destinator, DataOutputStream out, PacketsProcessor processor)
 	{
+		this.destinator = destinator;
 		this.out = out;
 		this.processor = processor;
 		this.setName("Send queue thread");
+	}
+	
+	public void setDestinator(PacketDestinator destinator)
+	{
+		this.destinator = destinator;
 	}
 	
 	public void queue(Packet packet)
@@ -76,7 +84,7 @@ public class SendQueue extends Thread
 				try
 				{
 					processor.sendPacketHeader(out, packet);
-					packet.send(out);
+					packet.send(destinator, out);
 					out.flush();
 				}
 				catch (IOException e)

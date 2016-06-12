@@ -3,12 +3,10 @@ package io.xol.chunkstories.server;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.plugin.server.Player;
 import io.xol.chunkstories.entity.EntityControllable;
-import io.xol.chunkstories.entity.EntityNameable;
-import io.xol.chunkstories.entity.EntityRotateable;
-import io.xol.chunkstories.net.packets.PacketEntity;
-import io.xol.chunkstories.net.packets.PacketSerializedInventory;
+import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.engine.math.LoopingMathHelper;
@@ -25,17 +23,17 @@ import java.util.Set;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerPlayer implements Player, Controller
+public class ServerPlayer implements Player, PacketDestinator
 {
 	ConfigFile playerData;
 	ServerClient playerConnection;
 
 	//Entity controlled
-	public Entity controlledEntity;
+	public EntityControllable controlledEntity;
 
 	//Streaming control
 	public Map<int[], Long> loadedChunks = new HashMap<int[], Long>();
-	public Set<Entity> trackedEntities = new HashSet<Entity>();
+	private Set<Entity> subscribedEntities = new HashSet<Entity>();
 
 	public ServerPlayer(ServerClient serverClient)
 	{
@@ -60,12 +58,14 @@ public class ServerPlayer implements Player, Controller
 		Entity e;
 		boolean shouldTrack = false;
 		//Let's iterate throught all of the world for now
-		//TODO Only near chunkHolders
+		//TODO don't
+		
 		while(iter.hasNext())
 		{
 			e = iter.next();
+			
 			//Don't track ourselves
-			if(!e.equals(controlledEntity))
+			//if(!e.equals(controlledEntity))
 			{
 				Location loc = e.getLocation();
 				//Distance calculations
@@ -73,41 +73,50 @@ public class ServerPlayer implements Player, Controller
 				double dy = Math.abs(controlledEntityLocation.y - loc.y);
 				double dz = LoopingMathHelper.moduloDistance(controlledEntityLocation.z, loc.z, ws);
 				shouldTrack = (dx < 256 && dz < 256 && dy < 256);
-				boolean contains = trackedEntities.contains(e) && e.shouldBeTrackedBy(this);
+				boolean contains = subscribedEntities.contains(e) && e.shouldBeTrackedBy(this);
 				//Too close and untracked
 				if(shouldTrack && !contains)
 				{
-					trackedEntities.add(e);
-					trackEntity(e, true, false);
+					this.subscribe(e);
+					//trackEntity(e, true, false);
 				}
 				//Too far but still tracked
 				if(!shouldTrack && contains)
 				{
 					//Despawn the entity
-					trackEntity(e, false, true);
-					trackedEntities.remove(e); // Reminder, we are iterating the world, not trackedEntities
+					System.out.println("Unsubscribed "+this+" from "+e+" because of distance");
+					
+					this.unsubscribe(e);
+					//trackEntity(e, false, true);
+					
+					subscribedEntities.remove(e); // Reminder, we are iterating the world, not trackedEntities
 				}
 			}
 		}
-		Iterator<Entity> iter2 = trackedEntities.iterator();
+		Iterator<Entity> iter2 = subscribedEntities.iterator();
 		while(iter.hasNext())
 		{
 			e = iter2.next();
+			//Reasons other than distance to stop tracking this entity
 			if(!e.shouldBeTrackedBy(this))
 			{
 				//Despawn the entity
-				trackEntity(e, false, true);
+				//trackEntity(e, false, true);
+				System.out.println("Unsubscribed "+this+" from "+e+" because of IM A MORON");
+				this.unsubscribe(e);
 				iter.remove();
 			}
 			else
 			{
 				// Just send new positions
-				trackEntity(e, false, false);
+				
+				//trackEntity(e, false, false);
+				//No need to do anything as the component system handles the updates
 			}
 		}
 	}
 	
-	public void trackEntity(Entity e, boolean first, boolean delete)
+	/*public void trackEntity(Entity e, boolean first, boolean delete)
 	{
 		PacketEntity packet = new PacketEntity(false);
 		//First time tracking we send the name if there's one
@@ -120,7 +129,7 @@ public class ServerPlayer implements Player, Controller
 		packet.deleteFlag = delete;
 		packet.createFromEntity(e);
 		playerConnection.sendPacket(packet);
-	}
+	}*/
 
 	public void save()
 	{
@@ -146,6 +155,7 @@ public class ServerPlayer implements Player, Controller
 			Server.getInstance().world.removeEntity(controlledEntity);
 			System.out.println("removed player entity");
 		}
+		unsubscribeAll();
 	}
 
 	@Override
@@ -163,10 +173,20 @@ public class ServerPlayer implements Player, Controller
 	@Override
 	public void setControlledEntity(Entity entity)
 	{
-		controlledEntity = entity;
-		((EntityControllable) controlledEntity).setController(this);
+		if(entity instanceof EntityControllable)
+		{
+			this.subscribe(entity);
+			
+			EntityControllable controllableEntity = (EntityControllable)entity;
+			controllableEntity.getControllerComponent().setController(this);
+			controlledEntity = controllableEntity;
+		}
+		//((EntityControllable) controlledEntity).setController(this);
+		
+		
 		//Tells the player we assignated him an entity.
-		if(controlledEntity != null)
+		
+		/*if(controlledEntity != null)
 		{
 			PacketEntity packet = new PacketEntity(false);
 			//The player will control this one
@@ -176,7 +196,7 @@ public class ServerPlayer implements Player, Controller
 			packet.includeRotation = true;
 			packet.createFromEntity(controlledEntity);
 			this.playerConnection.sendPacket(packet);
-		}
+		}*/
 	}
 
 	@Override
@@ -233,7 +253,7 @@ public class ServerPlayer implements Player, Controller
 		return ColorsTools.getUniqueColorPrefix(name)+name+"#FFFFFF";
 	}
 
-	@Override
+	/*@Override
 	public void notifyTeleport(Entity entity)
 	{
 		//Send teleport packet
@@ -245,22 +265,22 @@ public class ServerPlayer implements Player, Controller
 	{
 		//Send teleport packet
 		 updateControlledEntity();
-	}
+	}*/
 
-	private void updateControlledEntity()
+	/*private void updateControlledEntity()
 	{
 		PacketEntity packet = new PacketEntity(false);
 		packet.createFromEntity(controlledEntity);
 		playerConnection.sendPacket(packet);
-	}
+	}*/
 	
-	@Override
+	/*@Override
 	public void notifyInventoryChange(Entity entity)
 	{
 		PacketSerializedInventory packetInventory = new PacketSerializedInventory(false);
 		packetInventory.inventory = entity.getInventory();
 		playerConnection.sendPacket(packetInventory);
-	}
+	}*/
 
 	@Override
 	public boolean hasPermission(String permissionNode)
@@ -284,5 +304,75 @@ public class ServerPlayer implements Player, Controller
 		if(controlledEntity != null && controlledEntity.exists())
 			return true;
 		return false;
+	}
+
+	@Override
+	public long getUUID()
+	{
+		return this.getName().hashCode();
+	}
+
+	@Override
+	public Iterator<Entity> getSubscribedToList()
+	{
+		return subscribedEntities.iterator();
+	}
+
+	@Override
+	public boolean subscribe(Entity entity)
+	{
+		if(subscribedEntities.add(entity))
+		{
+			entity.subscribe(this);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean unsubscribe(Entity entity)
+	{
+		if(entity.unsubscribe(this))
+		{
+			subscribedEntities.remove(entity);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public void unsubscribeAll()
+	{
+		Iterator<Entity> iterator = getSubscribedToList();
+		while(iterator.hasNext())
+		{
+			Entity entity = iterator.next();
+			//If one of the entities is controllable ...
+			if(entity instanceof EntityControllable)
+			{
+				EntityControllable controllableEntity = (EntityControllable)entity;
+				Controller entityController = controllableEntity.getControllerComponent().getController();
+				//If said entity is controlled by this subscriber/player
+				if(entityController == this)
+				{
+					//Set the controller to null
+					controllableEntity.getControllerComponent().setController(null);
+				}
+			}
+			entity.unsubscribe(this);
+			iterator.remove();
+		}
+	}
+
+	@Override
+	public void pushPacket(Packet packet)
+	{
+		this.playerConnection.sendPacket(packet);
+	}
+
+	@Override
+	public boolean isSubscribedTo(Entity entity)
+	{
+		return subscribedEntities.contains(entity);
 	}
 }

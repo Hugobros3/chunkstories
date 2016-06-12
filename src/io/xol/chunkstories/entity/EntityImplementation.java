@@ -1,6 +1,9 @@
 package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.entity.core.components.EntityComponentController;
+import io.xol.chunkstories.entity.core.components.EntityComponentExistence;
+import io.xol.chunkstories.entity.core.components.EntityComponentPosition;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
@@ -9,10 +12,15 @@ import io.xol.chunkstories.renderer.Camera;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.entity.components.Subscriber;
+import io.xol.chunkstories.api.exceptions.IllegalUUIDChangeException;
 import io.xol.chunkstories.api.plugin.server.Player;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -28,10 +36,17 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public abstract class EntityImplementation implements Entity
 {
-	public long entityID;
+	public long entityUUID = -1;
+	
+	Set<Subscriber> subscribers = new HashSet<Subscriber>();
+
+	protected EntityComponentExistence existence = new EntityComponentExistence(this, null);
+	protected EntityComponentPosition position = new EntityComponentPosition(this, existence);
 
 	public World world;
-	public Vector3d pos;
+	
+	//public Vector3d pos;
+	
 	public Vector3d vel;
 	public Vector3d acc;
 	
@@ -53,24 +68,26 @@ public abstract class EntityImplementation implements Entity
 	//public boolean inWater = false;
 	public Voxel voxelIn;
 	public Inventory inventory;
-	public ChunkHolder parentHolder;
 
 	//Flag set when deleted from world entities list ( to report to other refering places )
-	AtomicBoolean removed = new AtomicBoolean(false);
+	
+	//AtomicBoolean removed = new AtomicBoolean(false);
 	// public boolean mpSendDeletePacket = false;
 
 	public EntityImplementation(World w, double x, double y, double z)
 	{
 		world = w;
-		pos = new Vector3d(x, y, z);
+		
+		position.setPositionXYZ(x, y, z);
+		//pos = new Vector3d(x, y, z);
 		vel = new Vector3d();
 		acc = new Vector3d();
 		//pos.x = x;
 		//pos.y = y;
 		//pos.z = z;
-		updatePosition();
+		//checkPositionAndUpdateHolder();
 		//To avoid NPEs
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y), (int) (pos.z))));
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt(position.getLocation())));
 	}
 
 	/**
@@ -81,7 +98,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public Location getLocation()
 	{
-		return new Location(world, pos);
+		return position.getLocation();
 	}
 
 	/**
@@ -92,13 +109,14 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void setLocation(Location loc)
 	{
-		this.pos.x = loc.x;
+		position.setLocation(loc);
+		/*this.pos.x = loc.x;
 		this.pos.y = loc.y;
-		this.pos.z = loc.z;
+		this.pos.z = loc.z;*/
 
-		updatePosition();
-		if (this instanceof EntityControllable && ((EntityControllable) this).getController() != null)
-			((EntityControllable) this).getController().notifyTeleport(this);
+		//checkPositionAndUpdateHolder();
+		//if (this instanceof EntityControllable && ((EntityControllable) this).getController() != null)
+		//	((EntityControllable) this).getController().notifyTeleport(this);
 	}
 
 	@Override
@@ -110,7 +128,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public ChunkHolder getChunkHolder()
 	{
-		return parentHolder;
+		return null;
 	}
 
 	public void setVelocity(double x, double y, double z)
@@ -131,10 +149,11 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void tick()
 	{
-		pos.x %= world.getWorldSize();
-		pos.z %= world.getWorldSize();
+		//Irrelevant.
+		//pos.x %= world.getWorldSize();
+		//pos.z %= world.getWorldSize();
 
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y), (int) (pos.z))));
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt(position.getLocation())));
 		boolean inWater = voxelIn.isVoxelLiquid();
 
 		// vel.z=Math.cos(a)*hSpeed*0.1;
@@ -163,7 +182,8 @@ public abstract class EntityImplementation implements Entity
 		vel.y += acc.y;
 		vel.z += acc.z;
 
-		if (!world.isChunkLoaded((int) pos.x / 32, (int) pos.y / 32, (int) pos.z / 32))
+		//TODO ugly
+		if (!world.isChunkLoaded((int) position.getLocation().x / 32, (int) position.getLocation().y / 32, (int) position.getLocation().z / 32))
 		{
 			vel.zero();
 		}
@@ -171,57 +191,23 @@ public abstract class EntityImplementation implements Entity
 		//TODO use vector3d there
 		blockedMomentum = moveWithCollisionRestrain(vel.x, vel.y, vel.z, true);
 
-		updatePosition();
-	}
-
-	/**
-	 * Prevents entities from going outside the world area and updates the parentHolder reference
-	 */
-	public boolean updatePosition()
-	{
-		pos.x %= world.getWorldSize();
-		pos.z %= world.getWorldSize();
-		if (pos.x < 0)
-			pos.x += world.getWorldSize();
-		if (pos.z < 0)
-			pos.z += world.getWorldSize();
-		int regionX = (int) (pos.x / (32 * 8));
-		int regionY = (int) (pos.y / (32 * 8));
-		if (regionY < 0)
-			regionY = 0;
-		if (regionY > world.getMaxHeight() / (32 * 8))
-			regionY = world.getMaxHeight() / (32 * 8);
-		int regionZ = (int) (pos.z / (32 * 8));
-		if (parentHolder != null && parentHolder.regionX == regionX && parentHolder.regionY == regionY && parentHolder.regionZ == regionZ)
-		{
-			return false; // Nothing to do !
-		}
-		else
-		{
-			//if(parentHolder != null)
-			//	parentHolder.removeEntity(this);
-			parentHolder = world.getChunksHolder().getChunkHolder(regionX * 8, regionY * 8, regionZ * 8, true);
-			//parentHolder.addEntity(this);
-			/*System.out.println("Had to move entity "+this+" to a new holder :");
-			System.out.println("RegionX : "+regionX+" PH: "+parentHolder.regionX);
-			System.out.println("RegionY : "+regionY+" PH: "+parentHolder.regionY);
-			System.out.println("RegionZ : "+regionZ+" PH: "+parentHolder.regionZ);*/
-			return true;
-		}
+		//checkPositionAndUpdateHolder();
 	}
 
 	@Override
 	public void moveWithoutCollisionRestrain(double mx, double my, double mz)
 	{
+		Vector3d pos = new Vector3d(position.getLocation());
 		pos.x += mx;
 		pos.y += my;
 		pos.z += mz;
+		position.setPosition(pos);
 	}
 
 	@Override
 	public String toString()
 	{
-		return "['" + this.getClass().getName() + "'] pos.x : " + clampDouble(pos.x) + " pos.y" + clampDouble(pos.y) + " pos.z" + clampDouble(pos.z) + " UUID : " + entityID + " EID : " + this.getEID() + " Holder:" + this.parentHolder + "Inventory : "
+		return "['" + this.getClass().getName() + "'] pos : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Holder:" + "WIP" + "Inventory : "
 				+ this.inventory;
 	}
 
@@ -265,6 +251,9 @@ public abstract class EntityImplementation implements Entity
 		double distanceTraveled = 0;
 		// CollisionBox checker = getCollisionBox().translate(pos.x, pos.y, pos.z);
 
+		//Extract the current position
+		Vector3d pos = new Vector3d(position.getLocation());
+		
 		CollisionBox checkerX = getCollisionBox().translate(pos.x, pos.y, pos.z);
 		CollisionBox checkerY = getCollisionBox().translate(pos.x, pos.y, pos.z);
 		CollisionBox checkerZ = getCollisionBox().translate(pos.x, pos.y, pos.z);
@@ -441,13 +430,16 @@ public abstract class EntityImplementation implements Entity
 			pos.y += pmy;
 			distanceToTravel.y -= pmy;
 		}
+		//Set the new position after computations have been done
+		this.position.setPosition(pos);
+		
 		return distanceToTravel;
 	}
 
 	@Override
 	public CollisionBox[] getTranslatedCollisionBoxes()
 	{
-		return new CollisionBox[] { getCollisionBox().translate(pos.x, pos.y, pos.z) };
+		return new CollisionBox[] { getCollisionBox().translate(position.getLocation()) };
 	}
 
 	private CollisionBox getCollisionBox()
@@ -471,7 +463,7 @@ public abstract class EntityImplementation implements Entity
 	{
 		synchronized (this)
 		{
-			camera.pos = new Vector3d(pos).negate();
+			camera.pos = new Vector3d(position.getLocation()).negate();
 			//camera.pos.x = -pos.x;
 			//camera.pos.y = -pos.y;
 			//camera.pos.z = -pos.z;
@@ -496,7 +488,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public long getUUID()
 	{
-		return entityID;
+		return entityUUID;
 	}
 
 	@Override
@@ -504,19 +496,21 @@ public abstract class EntityImplementation implements Entity
 	{
 		if (!(o instanceof Entity))
 			return false;
-		return ((Entity) o).getUUID() == entityID;
+		return ((Entity) o).getUUID() == entityUUID;
 	}
 
 	@Override
 	public void delete()
 	{
-		removed.set(true);
+		existence.destroyEntity();
 	}
 
 	@Override
 	public Inventory getInventory()
 	{
-		return inventory;
+		//TODO wip
+		return new Inventory(this, 5, 5, "ok");
+		//return inventory;
 	}
 
 	@Override
@@ -550,7 +544,7 @@ public abstract class EntityImplementation implements Entity
 	
 	public boolean exists()
 	{
-		return !removed.get();
+		return existence.exists();
 	}
 
 	public boolean isFlying()
@@ -562,8 +556,61 @@ public abstract class EntityImplementation implements Entity
 	{
 		this.flying = flying;
 
-		if (this instanceof EntityControllable && ((EntityControllable) this).getController() != null)
-			((EntityControllable) this).getController().notifyFlyingStateChange(this);
+		//if (this instanceof EntityControllable && ((EntityControllable) this).getController() != null)
+		//	((EntityControllable) this).getController().notifyFlyingStateChange(this);
 	}
 
+	@Override
+	public void setUUID(long uuid)
+	{
+		if(entityUUID == -1)
+			this.entityUUID = uuid;
+		else
+			throw new IllegalUUIDChangeException();
+	}
+
+	@Override
+	public Iterator<Subscriber> getAllSubscribers()
+	{
+		return subscribers.iterator();
+	}
+
+	@Override
+	public boolean subscribe(Subscriber subscriber)
+	{
+		//If it didn't already contain the subscriber ...
+		if(subscribers.add(subscriber))
+		{
+			//TODO send complete info about subscribed entity ... or do it in ServerPlayer ?
+			//Re : let's try
+			this.getComponents().pushAllComponents(subscriber);
+			System.out.println(subscriber + " subscribed to "+this);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean unsubscribe(Subscriber subscriber)
+	{
+		//If it did contain the subscriber
+		if(subscribers.remove(subscriber))
+		{
+			//Push an update to the subscriber telling him to forget about the entity :
+			this.existence.pushComponent(subscriber);
+			//The existence component checks for the subscriber being present in the subscribees of the entity and if it doesn't find it it will
+			//say the entity no longer exists
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	/**
+	 * Returns first component : existence, all other components are linked to it via a chained list
+	 */
+	public EntityComponent getComponents()
+	{
+		return existence;
+	}
 }

@@ -1,15 +1,12 @@
 package io.xol.chunkstories.net.packets;
 
-import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.exceptions.UnknownComponentException;
+import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.EntitiesList;
-import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.chunkstories.entity.EntityNameable;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -26,9 +23,15 @@ public class PacketEntity extends Packet
 	//private Entity entity;
 	public short entityTypeID;
 	public long entityUUID;
+	
+	public EntityComponent updateOneComponent;
+	public EntityComponent updateManyComponents;
+
+	//public boolean deleteFlag = false; // Tells client to stop tracking this entity and delete it
+	
 	//World world;
 
-	public double XBuffered, YBuffered, ZBuffered;
+	/*public double XBuffered, YBuffered, ZBuffered;
 	public double RHBuffered, RVBuffered;
 	public String nBuffered;
 
@@ -39,6 +42,7 @@ public class PacketEntity extends Packet
 	public boolean includeVelocity = false; // Include or not position interpolation
 
 	private byte[] csfData;
+	*/
 	//private Entity entity;
 	
 	public PacketEntity(boolean client)
@@ -47,44 +51,65 @@ public class PacketEntity extends Packet
 	}
 
 	@Override
-	public void send(DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		//System.out.println("Sending entity " + entityID + " EID : " + entityType + " PosX" + XBuffered + (nBuffered == null ? "null" : nBuffered));
 		out.writeLong(entityUUID);
 		out.writeShort(entityTypeID);
-		out.writeDouble(XBuffered);
-		out.writeDouble(YBuffered);
-		out.writeDouble(ZBuffered);
-		byte byteField = 0x00;
-		byteField = (byte) (byteField | ((defineControl ? 0x01 : 0x00) << 0));
-		byteField = (byte) (byteField | ((includeRotation ? 0x01 : 0x00) << 1));
-		byteField = (byte) (byteField | ((includeName ? 0x01 : 0x00) << 2));
-		byteField = (byte) (byteField | ((deleteFlag ? 0x01 : 0x00) << 3));
-		out.writeByte(byteField);
-		if (includeRotation)
-		{
-			out.writeDouble(RHBuffered);
-			out.writeDouble(RVBuffered);
-		}
-		if (includeName)
-		{
-			/*String name = "ERROR-NOTNAMEABLE";
-			if(entity instanceof EntityNameable)
-				name = ((EntityNameable)entity).getName();*/
-			out.writeUTF(nBuffered);
-		}
 		
-		out.writeLong(csfData.length);
-		out.write(csfData);
+		//Write all components we wanna update
+		if(updateOneComponent != null)
+		{
+			updateOneComponent.pushComponentInStream(destinator, out);
+		}
+		else
+			updateManyComponents.pushAllComponentsInStream(destinator, out);
+		
+		//Then write 0
+		out.writeInt((int)0);
 	}
 
-	@Override
-	public void read(DataInputStream in) throws IOException
+	public void process(DataInputStream in, PacketsProcessor processor) throws IOException, UnknownComponentException
+	{
+		entityUUID = in.readLong();
+		entityTypeID = in.readShort();
+		
+		Entity entity = processor.getWorld().getEntityByUUID(this.entityUUID);
+		
+		boolean addToWorld = false;
+		//Create an entity if the servers tells you to do so
+		if(entity == null)
+		{
+			entity = EntitiesList.newEntity(processor.getWorld(), this.entityTypeID);
+			entity.setUUID(entityUUID);
+			
+			addToWorld = true;
+		}
+		
+		int componentId = in.readInt();
+		//Loop throught all components
+		while(componentId != 0)
+		{
+			//System.out.println("got component : "+componentId);
+			if(!entity.getComponents().tryPull(componentId, in))
+				throw new UnknownComponentException(componentId, entity.getClass());
+			componentId = in.readInt();
+		}
+		
+		if(addToWorld)
+		{
+			//Only the WorldMaster is allowed to spawn new entities in the world
+			if(processor.isClient)
+				processor.getWorld().addEntity(entity);
+		}
+	}
+	
+	private void read(DataInputStream in) throws IOException
 	{
 		entityUUID = in.readLong();
 		entityTypeID = in.readShort();
 
-		XBuffered = in.readDouble();
+		/*XBuffered = in.readDouble();
 		YBuffered = in.readDouble();
 		ZBuffered = in.readDouble();
 
@@ -107,14 +132,15 @@ public class PacketEntity extends Packet
 		
 		long csfDataLength = in.readLong();
 		csfData = new byte[(int) csfDataLength];
-		in.read(csfData);
+		in.read(csfData);*/
 	}
 
-	public void applyToEntity(Entity entity)
+	private void applyToEnytity(Entity entity)
 	{
 		if(!(entity instanceof EntityImplementation))
 			return;
-		EntityImplementation impl = (EntityImplementation)entity;
+		
+		/*EntityImplementation impl = (EntityImplementation)entity;
 		impl.pos.x = XBuffered;
 		impl.pos.y = YBuffered;
 		impl.pos.z = ZBuffered;
@@ -141,15 +167,15 @@ public class PacketEntity extends Packet
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("apply 2 "+entity+" posx"+XBuffered+" -> "+XBuffered);
+		System.out.println("apply 2 "+entity+" posx"+XBuffered+" -> "+XBuffered);*/
 	}
 
-	public void createFromEntity(Entity entity)
+	private void createFryomEntity(Entity entity)
 	{
 		entityTypeID = entity.getEID();
 		entityUUID = entity.getUUID();
 
-		Location loc = entity.getLocation();
+		/*Location loc = entity.getLocation();
 		XBuffered = loc.x;
 		YBuffered = loc.y;
 		ZBuffered = loc.z;
@@ -175,33 +201,33 @@ public class PacketEntity extends Packet
 		{
 			e.printStackTrace();
 		}
-		csfData = baos.toByteArray();
+		csfData = baos.toByteArray();*/
 	}
 
-	@Override
-	public void process(PacketsProcessor processor)
+	private void process(PacketsProcessor processor)
 	{
 		if(processor.isClient)
 		{
 			EntityImplementation entity = (EntityImplementation) Client.world.getEntityByUUID(this.entityUUID);
-			if(this.deleteFlag)
-				Client.world.removeEntity(entity);
-			else
+			//if(this.deleteFlag)
+			//	Client.world.removeEntity(entity);
+			//else
 			{
 				//Create an entity if the servers tells you to do so
-				if(entity == null)
+				/*if(entity == null)
 				{
 					entity = (EntityImplementation) EntitiesList.newEntity(Client.world, this.entityTypeID);
-					entity.entityID = this.entityUUID;
+					entity.entityUUID = this.entityUUID;
 					this.applyToEntity(entity);
 					Client.world.addEntity(entity);
 					//
 					
 				}
 				else
-					this.applyToEntity(entity);
+					this.applyToEntity(entity);*/
+				
 				//Moved here so we can tell the client to control an already existing entity
-				if(this.defineControl)
+				/*if(this.defineControl)
 				{
 					if(entity != null)
 					{
@@ -211,14 +237,16 @@ public class PacketEntity extends Packet
 					}
 					//else
 					//	Client.getInstance().printChat("Error: Server gave control of unknown entity: "+entityUUID);
-				}
+				}*/
 			}
 		}
 		else
 		{
 			//Client isn't allowed to force spawning or moving of anything but himself
-			if (processor.getServerClient().getProfile().getControlledEntity() != null && entityUUID == processor.getServerClient().getProfile().getControlledEntity().getUUID())
-				applyToEntity(processor.getServerClient().getProfile().getControlledEntity());
+			
+			//if (processor.getServerClient().getProfile().getControlledEntity() != null && entityUUID == processor.getServerClient().getProfile().getControlledEntity().getUUID())
+			//	applyToEntity(processor.getServerClient().getProfile().getControlledEntity());
+			
 			//entity = EntitiesList.newEntity(world, entityType);
 		}
 	}

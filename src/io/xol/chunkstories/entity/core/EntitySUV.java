@@ -43,8 +43,8 @@ public class EntitySUV extends EntityImplementation
 		// System.out.println("rendering entity test");
 		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/rookie.png"));
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
-		renderingContext.getCurrentShader().setUniformFloat3("borderShift", (float) pos.x, (float) pos.y, (float) pos.z);
-		int modelBlockData = world.getDataAt((int) pos.x, (int) pos.y, (int) pos.z);
+		renderingContext.getCurrentShader().setUniformFloat3("borderShift", getLocation());
+		int modelBlockData = world.getDataAt(getLocation());
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);

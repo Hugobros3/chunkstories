@@ -41,6 +41,14 @@ public class CollisionBox implements Collidable
 		zpos += z;
 		return this;
 	}
+	
+	public CollisionBox translate(Vector3d vec3)
+	{
+		xpos += vec3.x;
+		ypos += vec3.y;
+		zpos += vec3.z;
+		return this;
+	}
 
 	public boolean collidesWith(WorldInterface world)
 	{

@@ -1,6 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.item.inventory.Inventory;
 import io.xol.chunkstories.item.inventory.InventoryHolder;
 
@@ -21,7 +22,7 @@ public class PacketSerializedInventory extends Packet
 	}
 
 	@Override
-	public void send(DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		//Inventory existing is a requirement
 		assert inventory != null;
@@ -37,7 +38,12 @@ public class PacketSerializedInventory extends Packet
 		inventory.saveCSF(out);
 	}
 
-	@Override
+	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	{
+		read(in);
+		process(processor);
+	}
+	
 	public void read(DataInputStream in) throws IOException
 	{
 		holderType = in.readByte();
@@ -52,7 +58,6 @@ public class PacketSerializedInventory extends Packet
 	byte holderType;
 	long eId;
 	
-	@Override
 	public void process(PacketsProcessor processor)
 	{
 		InventoryHolder holder = null;

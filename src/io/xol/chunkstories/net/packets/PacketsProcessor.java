@@ -15,7 +15,7 @@ import java.util.Map;
 import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.net.ServerConnection;
+import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
@@ -154,10 +154,10 @@ public class PacketsProcessor
 	}
 
 	//Both clients and server use this class
-	ServerConnection serverConnection;
+	ClientToServerConnection serverConnection;
 	ServerClient serverClient;
 
-	public ServerConnection getServerConnection()
+	public ClientToServerConnection getServerConnection()
 	{
 		return serverConnection;
 	}
@@ -169,7 +169,7 @@ public class PacketsProcessor
 
 	boolean isClient = false;
 
-	public PacketsProcessor(ServerConnection serverConnection)
+	public PacketsProcessor(ClientToServerConnection serverConnection)
 	{
 		this.serverConnection = serverConnection;
 		isClient = true;
@@ -198,7 +198,7 @@ public class PacketsProcessor
 	 * @throws IllegalPacketException
 	 *             If the packet we obtain is illegal ( if we're not supposed to receive or send it )
 	 */
-	public Packet getPacket(DataInputStream in, boolean client, boolean sending) throws IOException, UnknowPacketException, IllegalPacketException
+	public Packet getPacket(DataInputStream in, boolean client) throws IOException, UnknowPacketException, IllegalPacketException
 	{
 		int firstByte = in.readByte();
 		int packetType = 0;
@@ -212,7 +212,7 @@ public class PacketsProcessor
 			secondByte = secondByte & 0xFF;
 			packetType = secondByte | (firstByte & 0x7F) << 8;
 		}
-		Packet packet = packetTypes[packetType].createNew(client, sending);
+		Packet packet = packetTypes[packetType].createNew(client, false);
 
 		if (packet == null)
 			throw new UnknowPacketException(packetType);

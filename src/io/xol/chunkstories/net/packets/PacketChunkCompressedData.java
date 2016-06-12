@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 
@@ -30,7 +31,7 @@ public class PacketChunkCompressedData extends Packet
 	public byte[] data = null;
 
 	@Override
-	public void send(DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeInt(x);
 		out.writeInt(y);
@@ -44,7 +45,12 @@ public class PacketChunkCompressedData extends Packet
 		}
 	}
 
-	@Override
+	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	{
+		read(in);
+		process(processor);
+	}
+	
 	public void read(DataInputStream in) throws IOException
 	{
 		x = in.readInt();
@@ -62,7 +68,6 @@ public class PacketChunkCompressedData extends Packet
 		}
 	}
 
-	@Override
 	public void process(PacketsProcessor processor)
 	{
 		if(processor.isClient)		

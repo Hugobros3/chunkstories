@@ -3,8 +3,11 @@ package io.xol.chunkstories.api.entity;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.plugin.server.Player;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
@@ -94,6 +97,12 @@ public interface Entity extends InventoryHolder, CSFSerializable
 	public long getUUID();
 	
 	/**
+	 * Sets the UUID of the entity. Reserved for internals, trying to set/change the UUID after it's been results in an exception.
+	 * @return
+	 */
+	public void setUUID(long uuid);
+	
+	/**
 	 * Remove the entity from it's world and mark it for deletion (since Java requires to manually remove all references)
 	 */
 	public void delete();
@@ -125,4 +134,12 @@ public interface Entity extends InventoryHolder, CSFSerializable
 	 * @throws IOException
 	 */
 	public void saveCSF(DataOutputStream stream) throws IOException;
+	
+	public Iterator<Subscriber> getAllSubscribers();
+	
+	public boolean subscribe(Subscriber subscriber);
+	public boolean unsubscribe(Subscriber subscriber);
+	
+	public EntityComponent getComponents();
+	
 }

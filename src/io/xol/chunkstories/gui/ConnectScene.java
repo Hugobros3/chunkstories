@@ -1,7 +1,7 @@
 package io.xol.chunkstories.gui;
 
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.net.ServerConnection;
+import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
@@ -22,7 +22,7 @@ public class ConnectScene extends Scene
 	public ConnectScene(XolioWindow XolioWindow, String ip, int port)
 	{
 		super(XolioWindow);
-		Client.connection = new ServerConnection(ip, port);
+		Client.connection = new ClientToServerConnection(ip, port);
 		serverName = ip;
 		if (port != 30410)
 			serverName += ":" + port;

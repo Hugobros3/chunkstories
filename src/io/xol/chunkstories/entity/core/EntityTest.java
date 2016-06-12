@@ -55,8 +55,8 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		
 		renderingContext.setDiffuseTexture(playerTexture.getID());
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
-		renderingContext.getCurrentShader().setUniformFloat3("borderShift", pos.castToSP());
-		int modelBlockData = world.getDataAt((int) pos.x, (int) pos.y + 1, (int) pos.z);
+		renderingContext.getCurrentShader().setUniformFloat3("borderShift", getLocation().castToSP());
+		int modelBlockData = world.getDataAt(getLocation());
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
@@ -81,7 +81,8 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		for (Bone b : anim.bones)
 		{
 			Matrix4f transform = anim.getTransformationForBone(b.name, i);
-			debugDraw(0.2f, 0.2f, 0.2f, (float) pos.x, (float) pos.y , (float) pos.z, transform);
+			//TODO broken
+			//debugDraw(0.2f, 0.2f, 0.2f, (float) pos.x, (float) pos.y , (float) pos.z, transform);
 		}
 	}
 	
@@ -161,7 +162,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 	@Override
 	public void drawHUD(Camera camera)
 	{
-		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float) pos.x, (float) pos.y + 2.5f, (float) pos.z));
+		Vector3f posOnScreen = camera.transform3DCoordinate(getLocation().castToSP());
 		
 		float scale = posOnScreen.z;
 		float dekal = TrueTypeFont.arial12.getWidth("Player")*16*scale;

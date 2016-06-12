@@ -3,6 +3,7 @@ package io.xol.chunkstories.net.packets;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseClick;
+import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.input.KeyBindVirtual;
 
@@ -29,7 +30,7 @@ public class PacketInput extends Packet
 	}
 
 	@Override
-	public void send(DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		if (input instanceof MouseClick)
 		{
@@ -49,8 +50,13 @@ public class PacketInput extends Packet
 			//System.out.println("sent: "+input+" code"+((KeyBindImplementation) input).getHash());
 		}
 	}
-
-	@Override
+	
+	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	{
+		read(in);
+		process(processor);
+	}
+	
 	public void read(DataInputStream in) throws IOException
 	{
 		long code = in.readLong();
@@ -68,7 +74,6 @@ public class PacketInput extends Packet
 		//System.out.println("received input: "+input+" code"+code);
 	}
 
-	@Override
 	public void process(PacketsProcessor processor)
 	{
 		EntityControllable entity = (EntityControllable) processor.getServerClient().getProfile().getControlledEntity();

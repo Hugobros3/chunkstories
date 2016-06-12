@@ -69,11 +69,14 @@ public class GameplayScene extends OverlayableScene
 		if (Client.world == null)
 			w.changeScene(new MainMenu(w, false));
 
-		//Spawn manually the player if we're in SP debug
+		//Spawn manually the player if we're in Singleplayer
+		//TODO this should be managed by a proper localhost server rather than this appalling hack
 		if (!multiPlayer)
 		{
+			//TODO remember a proper spawn location
 			Client.controlledEntity = new EntityPlayer(Client.world, 0, 100, 0, Client.username);
-			((EntityControllable) Client.controlledEntity).setController(Client.getInstance());
+			
+			((EntityControllable) Client.controlledEntity).getControllerComponent().setController(Client.getInstance());
 			Client.world.addEntity(Client.controlledEntity);
 		}
 
@@ -97,7 +100,6 @@ public class GameplayScene extends OverlayableScene
 	@Override
 	public void update()
 	{
-		
 		// Update client entity
 		if (player == null || player != Client.controlledEntity && Client.controlledEntity != null)
 		{
@@ -269,6 +271,7 @@ public class GameplayScene extends OverlayableScene
 			ChunksRenderer.renderStart = System.currentTimeMillis();
 			worldRenderer.flagModified();
 		}
+		
 		//TODO move this to core content plugin
 		else if (KeyBinds.getKeyBind("use").equals(keyBind))
 		{

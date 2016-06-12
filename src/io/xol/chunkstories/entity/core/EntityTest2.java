@@ -36,8 +36,8 @@ public class EntityTest2 extends EntityImplementation
 	{
 		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/ak47.hq.png"));
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
-		renderingContext.getCurrentShader().setUniformFloat3("borderShift", (float) pos.x, (float) pos.y + 1.4f, (float) pos.z);
-		int modelBlockData = world.getDataAt((int) pos.x, (int) pos.y + 1, (int) pos.z);
+		renderingContext.getCurrentShader().setUniformFloat3("borderShift", getLocation());
+		int modelBlockData = world.getDataAt(getLocation());
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);

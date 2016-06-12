@@ -14,7 +14,6 @@ import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientController;
-import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.rendering.Light;
@@ -27,11 +26,11 @@ import io.xol.chunkstories.entity.EntityControllable;
 import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.EntityRotateable;
+import io.xol.chunkstories.entity.core.components.EntityComponentController;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.core.ItemAk47;
 import io.xol.chunkstories.item.core.ItemVoxel;
 import io.xol.chunkstories.item.inventory.Inventory;
-import io.xol.chunkstories.net.packets.PacketEntity;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
@@ -53,6 +52,9 @@ import io.xol.engine.textures.TexturesHandler;
 
 public class EntityPlayer extends EntityLivingImplentation implements EntityControllable, EntityHUD, EntityNameable, EntityRotateable
 {
+	//Add the controller component to whatever else the superclass may have
+	EntityComponentController controllerComponent = new EntityComponentController(this, this.getComponents().getLastComponent());
+	
 	protected boolean noclip = true;
 	
 	boolean running = false;
@@ -72,7 +74,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		fp_elements.add("boneArmRD");
 	}
 	
-	private Controller controller;
+	//private Controller controller;
 	
 	public double maxSpeedRunning = 0.25;
 	public double maxSpeed = 0.15;
@@ -92,6 +94,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	public EntityPlayer(World w, double x, double y, double z)
 	{
 		this(w, x, y, z, "");
+		inventory = new Inventory(this, 10, 4, "k.");
 	}
 
 	public EntityPlayer(World w, double x, double y, double z, String name)
@@ -169,19 +172,24 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 				normalMove(controller);
 		}
 
-		super.updatePosition();
-		if (Client.connection != null)
+		//super.checkPositionAndUpdateHolder();
+		/*if (Client.connection != null)
 		{
 			PacketEntity packet = new PacketEntity(true);
 			packet.includeRotation = true;
 			packet.createFromEntity(this);
 			Client.connection.sendPacket(packet);
-		}
+		}*/
+		
+		//Instead of creating a packet and dealing with it ourselves, we instead push the relevant components
+		this.position.pushComponentEveryoneButController();
+		//In that case that means pushing to the server.
 	}
 
 
 	public void normalMove(ClientController controller)
 	{
+		//System.out.println("tck");
 		WorldClient worldClient = (WorldClient) world;
 		boolean focus = controller.hasFocus();
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
@@ -190,7 +198,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		if (onLadder)
 		{
 			onLadder = false;
-			CollisionBox[] boxes = voxelIn.getTranslatedCollisionBoxes(world, (int) (pos.x), (int) (pos.y), (int) (pos.z));
+			CollisionBox[] boxes = voxelIn.getTranslatedCollisionBoxes(world, getLocation());
 			if (boxes != null)
 				for (CollisionBox box : boxes)
 				{
@@ -202,18 +210,18 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		if (jumped)
 		{
 			jumped = false;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", pos.x, pos.y, pos.z, (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
 		}
 		if (landed && !inWater)
 		{
 			landed = false;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", pos.x, pos.y, pos.z, (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
 		}
 
 		if (walked > 0.2 * Math.PI * 2)
 		{
 			walked %= 0.2 * Math.PI * 2;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", pos.x, pos.y, pos.z, (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", getLocation(), (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
 			// System.out.println("footstep");
 		}
 
@@ -348,7 +356,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			//camera.campos.y = -(pos.y + eyePosition);
 			//camera.campos.z = -pos.z;
 
-			camera.pos = new Vector3d(pos).negate();
+			camera.pos = new Vector3d(getLocation()).negate();
 			camera.pos.add(0d, -eyePosition, 0d);
 
 			camera.rotationX = rotV;
@@ -362,7 +370,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	@Override
 	public Location getBlockLookingAt(boolean inside)
 	{
-		Vector3d initialPosition = new Vector3d(pos);
+		Vector3d initialPosition = new Vector3d(getLocation());
 		initialPosition.add(new Vector3d(0, eyePosition, 0));
 
 		Vector3d direction = getDirectionLookingAt();
@@ -391,6 +399,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	{
 		if (this.equals(Client.controlledEntity))
 			return; // Don't render yourself
+		Vector3d pos = getLocation();
 		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float) pos.x, (float) pos.y + 2.5f, (float) pos.z));
 
 		float scale = posOnScreen.z;
@@ -420,7 +429,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		//Players models have no normal mapping
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
 
-		renderingContext.getCurrentShader().setUniformFloat3("borderShift", pos.castToSP());
+		renderingContext.getCurrentShader().setUniformFloat3("borderShift", getLocation().castToSP());
 		//Prevents laggy behaviour
 		if (this.equals(Client.controlledEntity))
 			renderingContext.getCurrentShader().setUniformFloat3("borderShift", -(float) cam.pos.x, -(float) cam.pos.y, -(float) cam.pos.z);
@@ -430,7 +439,8 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		playerRotationMatrix.rotate((90 - rotH) / 180f * 3.14159f, new Vector3f(0, 1, 0));
 		if (this.equals(Client.controlledEntity) && !renderingContext.shadow)
 			playerRotationMatrix.rotate((-rotV) / 180f * 3.14159f, new Vector3f(0, 0, 1));
-		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
+		
+		//playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
 		//Render parts of the body
 		if (!renderingContext.shadow && this.equals(Client.controlledEntity))
@@ -452,6 +462,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			ItemPile pile = this.inventory.getSelectedItem();
 			if (ItemVoxel.getVoxel(pile).getLightLevel(0x00) > 0)
 			{
+				Vector3d pos = getLocation();
 				Light heldBlockLight =  new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.x, (float) pos.y + 1.6f, (float) pos.z), 15f);
 				renderingContext.addLight(heldBlockLight);
 			}
@@ -470,18 +481,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	{
 		this.inventory.name = this.name + "'s Inventory";
 		name = n;
-	}
-
-	@Override
-	public Controller getController()
-	{
-		return controller;
-	}
-
-	@Override
-	public void setController(Controller controller)
-	{
-		this.controller = controller;
 	}
 
 	@Override
@@ -553,5 +552,11 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		super.saveCSF(stream);
 		stream.writeBoolean(noclip);
 		stream.writeBoolean(isFlying());
+	}
+
+	@Override
+	public EntityComponentController getControllerComponent()
+	{
+		return this.controllerComponent;
 	}
 }

@@ -1,6 +1,8 @@
 package io.xol.chunkstories.client.net;
 
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.Packet;
@@ -13,13 +15,16 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerConnection extends Thread implements HttpRequester
+public class ClientToServerConnection extends Thread implements HttpRequester, RemoteServer
 {
 	//This objects connects to a server
 	public String ip = "";
@@ -49,7 +54,7 @@ public class ServerConnection extends Thread implements HttpRequester
 	boolean die = false;
 	boolean dead = false;
 	
-	public ServerConnection(String i, int p)
+	public ClientToServerConnection(String i, int p)
 	{
 		ip = i;
 		port = p;
@@ -68,7 +73,7 @@ public class ServerConnection extends Thread implements HttpRequester
 			socket = new Socket(ip, port);
 			in = new DataInputStream(socket.getInputStream());
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-			sendQueue = new SendQueue(out, packetsProcessor);
+			sendQueue = new SendQueue(this, out, packetsProcessor);
 			sendQueue.start();
 			connectionStatus = "Established, waiting for login token...";
 			this.start();
@@ -127,6 +132,7 @@ public class ServerConnection extends Thread implements HttpRequester
 		{
 			latestErrorMessage = msg.replace("disconnect/", "");
 			failed = true;
+			System.out.println("Disconnected by server : "+msg.replace("disconnect/", ""));
 			close();
 		}
 		if (msg.equals("login/ok"))
@@ -211,9 +217,8 @@ public class ServerConnection extends Thread implements HttpRequester
 			// Just wait for the goddamn packets to come !
 			try
 			{
-				Packet packet = packetsProcessor.getPacket(in, true, false);
-				packet.read(in);
-				packet.process(packetsProcessor);
+				Packet packet = packetsProcessor.getPacket(in, true);
+				packet.process(in, packetsProcessor);
 			}
 			catch (Exception e)
 			{
@@ -268,5 +273,54 @@ public class ServerConnection extends Thread implements HttpRequester
 				System.out.println("no token");
 			}
 		}
+	}
+
+	@Override
+	public long getUUID()
+	{
+		return -1;
+	}
+
+	Set<Entity> controlledEntity = new HashSet<Entity>(1);
+	
+	@Override
+	public Iterator<Entity> getSubscribedToList()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean subscribe(Entity entity)
+	{
+		assert controlledEntity.size() == 0;
+		entity.subscribe(this);
+		return controlledEntity.add(entity);
+	}
+
+	@Override
+	public boolean unsubscribe(Entity entity)
+	{
+		assert controlledEntity.size() == 1;
+		entity.unsubscribe(this);
+		return controlledEntity.remove(entity);
+	}
+
+	@Override
+	public void unsubscribeAll()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void pushPacket(Packet packet)
+	{
+		this.sendQueue.queue(packet);
+	}
+
+	@Override
+	public boolean isSubscribedTo(Entity entity)
+	{
+		return controlledEntity.contains(entity);
 	}
 }

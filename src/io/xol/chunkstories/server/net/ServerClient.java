@@ -3,6 +3,7 @@ package io.xol.chunkstories.server.net;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.events.core.PlayerLoginEvent;
 import io.xol.chunkstories.api.events.core.PlayerLogoutEvent;
+import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.Packet;
@@ -26,21 +27,18 @@ import java.net.Socket;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerClient extends Thread implements HttpRequester
+public class ServerClient extends Thread implements HttpRequester, PacketDestinator
 {
-	int id = 0;
+	int socketPort = 0;
 
 	//Streams.
-	Socket sock;
+	Socket socket;
 	PacketsProcessor packetsProcessor;
 	DataInputStream in = null;
-	SendQueue queue;
+	SendQueue sendQueue;
 
 	boolean validToken = false;
 	String token = "undefined";
-	
-	//Has the user provided a valid login ?
-	//public boolean authentificated = false;
 	
 	//Did the connection died at some point ?
 	boolean died = false;
@@ -48,16 +46,18 @@ public class ServerClient extends Thread implements HttpRequester
 	boolean alreadyKilled = false;
 
 	public String name = "undefined";
+	//Version of the client he uses
 	public String version = "undefined";
-	//Assert : if the player is authentificated it has a profile
+	
+	//Assertion : if the player is authentificated it has a profile
 	private ServerPlayer profile;
 
 	ServerClient(Socket s)
 	{
 		packetsProcessor = new PacketsProcessor(this);
-		sock = s;
-		id = s.getPort();
-		this.setName("Client thread " + id);
+		socket = s;
+		socketPort = s.getPort();
+		this.setName("Client thread on port" + socketPort);
 	}
 
 	// Here's the usefull things !
@@ -78,7 +78,7 @@ public class ServerClient extends Thread implements HttpRequester
 			if (Server.getInstance().serverConfig.getProp("check-version", "true").equals("true"))
 			{
 				if (Integer.parseInt(version) != VersionInfo.protocolVersion)
-					Server.getInstance().handler.disconnectClient(this, "Wrong version ! " + version + " != " + VersionInfo.protocolVersion);
+					Server.getInstance().handler.disconnectClient(this, "Wrong protocol version ! " + version + " != " + VersionInfo.protocolVersion +" \n Update your game !");
 			}
 		}
 		if (m.startsWith("confirm"))
@@ -100,9 +100,11 @@ public class ServerClient extends Thread implements HttpRequester
 				// Offline-mode !
 				System.out.println("Warning : Offline-mode is on, letting " + this.name + " connecting without verification");
 				//authentificated = true;
-				setProfile(new ServerPlayer(this));
+				
+				postTokenCheck();
+				/*setProfile(new ServerPlayer(this));
 				Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ")" + " joined.");
-				send("login/ok");
+				send("login/ok");*/
 			}
 			else
 				new HttpRequestThread(this, "checktoken", "http://chunkstories.xyz/api/serverTokenChecker.php", "username=" + this.name + "&token=" + token).start();
@@ -113,38 +115,25 @@ public class ServerClient extends Thread implements HttpRequester
 	@Override
 	public void run()
 	{
-		// Server.getInstance().log.info("Client " + id +
-		// " handling thread started properly.");
 		while (!died)
 		{
 			try
 			{
-				//byte type = in.readByte();
-				//handlePacket(type, in);
-				
-				Packet packet = packetsProcessor.getPacket(in, false, false);
-				packet.read(in);
-				packet.process(packetsProcessor);
-				
-				/*if (type == 0x00)
-					Server.getInstance().handler.handle(this, in.readUTF());
-				else
-					handleBinary(type, in);*/
+				//Process incomming packets
+				Packet packet = packetsProcessor.getPacket(in, false);
+				packet.process(in, packetsProcessor);
 			}
-			
-			/*catch (IOException e)
-			{
-				died = true;
-				System.out.println("Socket " + id + " (" + getIp() + ") died (" + e.getClass().getName() + ")");
-			}*/
 			catch (IllegalPacketException | UnknowPacketException e)
 			{
 				ChunkStoriesLogger.getInstance().info("Disconnected "+this+" for causing an "+e.getClass().getSimpleName());
-				Server.getInstance().handler.disconnectClient(this, e.getMessage());
+				e.printStackTrace();
+				Server.getInstance().handler.disconnectClient(this, "Exception : "+e.getMessage());
 			}
 			catch(Exception e)
 			{
-				Server.getInstance().handler.disconnectClient(this, e.getMessage());
+				ChunkStoriesLogger.getInstance().info("Disconnected "+this+" for causing an "+e.getClass().getSimpleName());
+				e.printStackTrace();
+				Server.getInstance().handler.disconnectClient(this, "Exception : "+e.getMessage());
 			}
 		}
 		Server.getInstance().handler.disconnectClient(this);
@@ -152,22 +141,25 @@ public class ServerClient extends Thread implements HttpRequester
 
 	public String getIp()
 	{
-		return sock.getInetAddress().getHostAddress();
+		return socket.getInetAddress().getHostAddress();
 	}
 
 	public String getHost()
 	{
-		return sock.getInetAddress().getHostName();
+		return socket.getInetAddress().getHostName();
 	}
 
 	public void open()
 	{
 		try
 		{
-			in = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
-			queue = new SendQueue(new DataOutputStream(new BufferedOutputStream(sock.getOutputStream())), packetsProcessor);
-			queue.start();
-			//out = );
+			in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+			
+			//The sendQueue is initialized with 'this' as the destinator, 'this', the ServerClient class does not implement the Subscriber interface
+			//but provides the PacketDestinator interface so outgoing packets can know what kind of client they are talking to ( in this very case, an unauthentificated client )
+			//See : postTokenCheck() for more information
+			sendQueue = new SendQueue(this, new DataOutputStream(new BufferedOutputStream(socket.getOutputStream())), packetsProcessor);
+			sendQueue.start();
 		}
 		catch (Exception e)
 		{
@@ -199,7 +191,7 @@ public class ServerClient extends Thread implements HttpRequester
 		{
 			if (in != null)
 				in.close();
-			queue.kill();
+			sendQueue.kill();
 		}
 		catch (Exception e)
 		{
@@ -222,36 +214,43 @@ public class ServerClient extends Thread implements HttpRequester
 
 	public void sendPacket(Packet packet)
 	{
-		queue.queue(packet);
+		sendQueue.queue(packet);
 	}
 
-	@Override
-	public void handleHttpRequest(String info, String result)
+	/**
+	 * Called after the login token has been checked, or in the case of an offline-mode server, after the client requested to login.
+	 */
+	private void postTokenCheck()
 	{
-		if (info.equals("checktoken"))
+		setProfile(new ServerPlayer(this));
+		//This changes the destinator from a ServerClient to a ServerPlayer, letting know outgoing packets and especially entity components about all the
+		//specifics of the player : name, entity he subscribed to, etc
+		this.sendQueue.setDestinator(this.getProfile());
+		//Fire the login event
+		PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(getProfile());
+		Server.getInstance().getPluginsManager().fireEvent(playerConnectionEvent);
+		boolean allowPlayerIn = !playerConnectionEvent.isCancelled();
+		//Do we allow him in ?
+		if (!allowPlayerIn)
+		{
+			Server.getInstance().handler.disconnectClient(this, playerConnectionEvent.getRefusedConnectionMessage());
+			return;
+		}
+		//Announce
+		Server.getInstance().handler.sendAllChat(playerConnectionEvent.getConnectionMessage());
+		//Aknowledge the login
+		send("login/ok");
+	}
+	
+	@Override
+	public void handleHttpRequest(String tag, String result)
+	{
+		if (tag.equals("checktoken"))
 		{
 			if (result.equals("ok"))
-			{
-				//authentificated = true;
-				setProfile(new ServerPlayer(this));
-				PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(getProfile());
-				Server.getInstance().getPluginsManager().fireEvent(playerConnectionEvent);
-				boolean allowPlayerIn = !playerConnectionEvent.isCancelled();
-				if (!allowPlayerIn)
-				{
-					Server.getInstance().handler.disconnectClient(this, playerConnectionEvent.getRefusedConnectionMessage());
-					return;
-				}
-				//System.out.println(allowPlayerIn+"allow");
-				Server.getInstance().handler.sendAllChat(playerConnectionEvent.getConnectionMessage());
-				//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ")" + " joined.");
-				//profile.onJoin();
-				send("login/ok");
-			}
+				postTokenCheck();
 			else
-			{
 				Server.getInstance().handler.disconnectClient(this, "Invalid session id !");
-			}
 		}
 	}
 	
@@ -261,7 +260,7 @@ public class ServerClient extends Thread implements HttpRequester
 		if(o != null && o instanceof ServerClient)
 		{
 			ServerClient c = (ServerClient)o;
-			if(c.name.equals(name) && id == c.id)
+			if(c.name.equals(name) && socketPort == c.socketPort)
 				return true;
 		}
 			return false;
@@ -277,7 +276,10 @@ public class ServerClient extends Thread implements HttpRequester
 		return profile;
 	}
 
-	private void setProfile(ServerPlayer profile)
+	/**
+	 * Called once the user has providen valid authentification
+	 */
+	private final void setProfile(ServerPlayer profile)
 	{
 		this.profile = profile;
 	}

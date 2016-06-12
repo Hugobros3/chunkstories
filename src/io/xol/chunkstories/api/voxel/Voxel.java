@@ -1,11 +1,14 @@
 package io.xol.chunkstories.api.voxel;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.chunkstories.world.World;
+import io.xol.engine.math.lalgb.Vector3d;
 
 public abstract class Voxel
 {
@@ -110,6 +113,14 @@ public abstract class Voxel
 		return boxes;
 	}
 
+	/**
+	 * Overload of getTranslatedCollisionBoxes with a vector3d
+	 */
+	public CollisionBox[] getTranslatedCollisionBoxes(World world, Vector3d position)
+	{
+		return getTranslatedCollisionBoxes(world, (int)position.x, (int)position.y, (int)position.z);
+	}
+	
 	/**
 	 * Get the collision boxes for this object, centered as if the block was in 0,0,0
 	 * 
