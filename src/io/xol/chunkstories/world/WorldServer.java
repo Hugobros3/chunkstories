@@ -7,8 +7,10 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.core.PlayerSpawnEvent;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
+import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -19,7 +21,7 @@ import io.xol.engine.math.LoopingMathHelper;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class WorldServer extends World implements WorldMaster
+public class WorldServer extends World implements WorldMaster, WorldNetworked
 {
 	public WorldServer(String worldDir)
 	{
@@ -37,8 +39,10 @@ public class WorldServer extends World implements WorldMaster
 		//Update client tracking
 		for (ServerClient client : Server.getInstance().handler.getAuthentificatedClients())
 		{
+			System.out.println("client: "+client);
 			if (client.getProfile().hasSpawned())
 			{
+				System.out.println(client.getProfile().hasSpawned());
 				//Load 8x4x8 chunks arround player
 				Location loc = client.getProfile().getLocation();
 				int chunkX = (int) (loc.getX() / 32f);
@@ -162,6 +166,24 @@ public class WorldServer extends World implements WorldMaster
 				if (!((LoopingMathHelper.moduloDistance(x, plocx, sizeInBlocks) > blocksViewDistance + 2) || (LoopingMathHelper.moduloDistance(z, plocz, sizeInBlocks) > blocksViewDistance + 2) || (y - plocy) > 4 * 32))
 				{
 					client.sendPacket(packet);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void processIncommingPackets()
+	{
+		for (ServerClient client : Server.getInstance().handler.clients)
+		{
+			if(client.isAuthentificated())
+			{
+				//System.out.println("processing queued packets of "+client);
+				PendingSynchPacket packet = client.getPacketsProcessor().getPendingSynchPacket();
+				while(packet != null)
+				{
+					packet.process(client, client.getPacketsProcessor());
+					packet = client.getPacketsProcessor().getPendingSynchPacket();
 				}
 			}
 		}

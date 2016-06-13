@@ -36,24 +36,20 @@ import io.xol.engine.math.lalgb.Vector3d;
 public abstract class EntityImplementation implements Entity
 {
 	public long entityUUID = -1;
-	
+
 	Set<Subscriber> subscribers = new HashSet<Subscriber>();
 
 	protected EntityComponentExistence existence = new EntityComponentExistence(this, null);
 	protected EntityComponentPosition position = new EntityComponentPosition(this, existence);
 
 	public World world;
-	
+
 	//public Vector3d pos;
-	
+
 	public Vector3d vel;
 	public Vector3d acc;
-	
-	protected boolean flying = false;
 
-	//public double pos.x, pos.y, pos.z;
-	//public double vel.x, vel.y, vel.z;
-	//public float rotH, rotV;
+	protected boolean flying = false;
 
 	public boolean collision_top = false;
 	public boolean collision_bot = false;
@@ -69,14 +65,14 @@ public abstract class EntityImplementation implements Entity
 	public EntityInventory inventory;
 
 	//Flag set when deleted from world entities list ( to report to other refering places )
-	
+
 	//AtomicBoolean removed = new AtomicBoolean(false);
 	// public boolean mpSendDeletePacket = false;
 
 	public EntityImplementation(World w, double x, double y, double z)
 	{
 		world = w;
-		
+
 		position.setPositionXYZ(x, y, z);
 		//pos = new Vector3d(x, y, z);
 		vel = new Vector3d();
@@ -190,7 +186,7 @@ public abstract class EntityImplementation implements Entity
 		//TODO use vector3d there
 		blockedMomentum = moveWithCollisionRestrain(vel.x, vel.y, vel.z, true);
 
-		//checkPositionAndUpdateHolder();
+		//position.checkPositionAndUpdateHolder();
 	}
 
 	@Override
@@ -206,8 +202,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public String toString()
 	{
-		return "['" + this.getClass().getName() + "'] pos : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Holder:" + "WIP" + "Inventory : "
-				+ this.inventory;
+		return "['" + this.getClass().getName() + "'] pos : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Holder:" + "WIP" + "Inventory : " + this.inventory;
 	}
 
 	double clampDouble(double d)
@@ -221,12 +216,44 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public Vector3d moveWithCollisionRestrain(Vector3d vec)
 	{
-		return moveWithCollisionRestrain(vec.x, vec.y, vec.z, false);
+		return moveWithCollisionRestrain(vec, false);
+	}
+
+	public Vector3d moveWithCollisionRestrain(Vector3d vec, boolean writeCollisions)
+	{
+		return moveWithCollisionRestrain(this.getLocation(), vec, writeCollisions, false);
+	}
+
+	@Override
+	public Vector3d moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions)
+	{
+		return moveWithCollisionRestrain(new Vector3d(mx, my, mz), writeCollisions);
+	}
+
+	/**
+	 * Does the hitboxes computations to determine if that entity could move that delta
+	 * 
+	 * @return The remaining distance in each dimension if he got stuck ( with vec3(0.0, 0.0, 0.0) meaning it can move without colliding with anything )
+	 */
+	public Vector3d canMoveWithCollisionRestrain(Vector3d delta)
+	{
+		return moveWithCollisionRestrain(this.getLocation(), delta, false, true);
+	}
+
+	/**
+	 * Does the hitboxes computations to determine if that entity could move that delta
+	 * 
+	 * @param from
+	 *            Change the origin of the movement from the default ( current entity position )
+	 * @return The remaining distance in each dimension if he got stuck ( with vec3(0.0, 0.0, 0.0) meaning it can move without colliding with anything )
+	 */
+	public Vector3d canMoveWithCollisionRestrain(Vector3d from, Vector3d delta)
+	{
+		return moveWithCollisionRestrain(from, delta, false, true);
 	}
 
 	// Convinience method
-	@Override
-	public Vector3d moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions)
+	private Vector3d moveWithCollisionRestrain(Vector3d from, Vector3d delta, boolean writeCollisions, boolean onlyTest)
 	{
 		int id, data;
 
@@ -240,210 +267,263 @@ public abstract class EntityImplementation implements Entity
 			collision_north = false;
 			collision_south = false;
 		}
-		// Make a normalized double vector and keep the original length
-		Vector3d vec = new Vector3d(mx, my, mz);
-		Vector3d distanceToTravel = new Vector3d(mx, my, mz);
-		double len = vec.length();
-		vec.normalize();
-		vec.scale(0.25d);
-		// Do it block per block, face per face
-		double distanceTraveled = 0;
-		// CollisionBox checker = getCollisionBox().translate(pos.x, pos.y, pos.z);
-
 		//Extract the current position
-		Vector3d pos = new Vector3d(position.getLocation());
+		Vector3d pos = new Vector3d(from);
+
+		//Keep biggest distanceToTravel in each dimension
+		Vector3d maxDistanceToTravel = new Vector3d(0.0);
 		
-		CollisionBox checkerX = getCollisionBox().translate(pos.x, pos.y, pos.z);
-		CollisionBox checkerY = getCollisionBox().translate(pos.x, pos.y, pos.z);
-		CollisionBox checkerZ = getCollisionBox().translate(pos.x, pos.y, pos.z);
-
-		double pmx, pmy, pmz;
-
-		while (distanceTraveled < len)
+		//Iterate over every box
+		//CollisionBox[] translatedBoxes = getCollisionBoxes();
+		for (int r = 0; r < getCollisionBoxes().length; r++)
 		{
-			if (len - distanceTraveled > 0.25)
+			// Make a normalized double vector and keep the original length
+			Vector3d vec = new Vector3d(delta);
+			Vector3d distanceToTravel = new Vector3d(delta);
+			double len = vec.length();
+			vec.normalize();
+			vec.scale(0.25d);
+			// Do it block per block, face per face
+			double distanceTraveled = 0;
+			
+			CollisionBox checkerX = getCollisionBoxes()[r].translate(pos.x, pos.y, pos.z);
+			CollisionBox checkerY = getCollisionBoxes()[r].translate(pos.x, pos.y, pos.z);
+			CollisionBox checkerZ = getCollisionBoxes()[r].translate(pos.x, pos.y, pos.z);
+
+			//translateAll(checkerX, pos);
+			//translateAll(checkerY, pos);
+			//translateAll(checkerZ, pos);
+
+			double pmx, pmy, pmz;
+
+			while (distanceTraveled < len)
 			{
-				distanceTraveled += 0.25;
+				if (len - distanceTraveled > 0.25)
+				{
+					distanceTraveled += 0.25;
+				}
+				else
+				{
+					vec = new Vector3d(delta);
+					vec.normalize();
+					vec.scale(len - distanceTraveled);
+					distanceTraveled = len;
+				}
+
+				pmx = vec.x;
+				pmy = vec.y;
+				pmz = vec.z;
+
+				int radius = 2;
+
+				// checkerX = getCollisionBox().translate(pos.x+pmx, pos.y, pos.z);
+				Voxel vox;
+				checkerZ = getCollisionBoxes()[r].translate(pos.x, pos.y, pos.z + pmz);
+				// Z part
+				for (int i = ((int) pos.x) - radius; i <= ((int) pos.x) + radius; i++)
+					for (int j = ((int) pos.y - 1); j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
+						for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
+						{
+							data = this.world.getDataAt(i, j, k);
+							id = VoxelFormat.id(data);
+							vox = VoxelTypes.get(id);
+							if (vox.isVoxelSolid())
+							{
+								CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
+								if (boxes != null)
+									for (CollisionBox b : boxes)
+									{
+										b.translate(i, j, k);
+										if (delta.z != 0.0)
+										{
+											if (checkerZ.collidesWith(b))
+											{
+												collision = true;
+												if (collision == false)
+													break;
+												pmz = 0;
+												if (delta.z < 0)
+												{
+													double south = Math.min((b.zpos + b.zw / 2.0 + checkerZ.zw / 2.0) - (pos.z), 0.0d);
+													// System.out.println(left+" : "+(b.xpos+b.xw/2.0+checkerX.xw/2.0)+" : "+((b.xpos+b.xw/2.0+checkerX.xw/2.0)-(checkerX.xpos)));
+													pmz = south;
+													if (writeCollisions)
+														collision_south = true;
+												}
+												else
+												{
+													double north = Math.max((b.zpos - b.zw / 2.0 - checkerZ.zw / 2.0) - (pos.z), 0.0d);
+													// System.out.println(right);
+													pmz = north;
+													if (writeCollisions)
+														collision_north = true;
+												}
+												vec.z = 0;
+												checkerZ = getCollisionBoxes()[r].translate(pos.x, pos.y, pos.z + pmz);
+											}
+										}
+									}
+							}
+						}
+				distanceToTravel.z -= pmz;
+				pos.z += pmz;
+				checkerX = getCollisionBoxes()[r].translate(pos.x + pmx, pos.y, pos.z);
+				// X-part
+				for (int i = ((int) pos.x) - radius; i <= ((int) pos.x) + radius; i++)
+					for (int j = ((int) pos.y - 1); j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
+						for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
+						{
+							data = this.world.getDataAt(i, j, k);
+							id = VoxelFormat.id(data);
+							vox = VoxelTypes.get(id);
+							if (vox.isVoxelSolid())
+							{
+								CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
+								if (boxes != null)
+									for (CollisionBox b : boxes)
+									{
+										b.translate(i, j, k);
+
+										if (delta.x != 0.0)
+										{
+											if (checkerX.collidesWith(b))
+											{
+												collision = true;
+												if (collision == false)
+													break;
+												pmx = 0;
+												if (delta.x < 0)
+												{
+													double left = Math.min((b.xpos + b.xw / 2.0 + checkerX.xw / 2.0) - (pos.x), 0.0d);
+													// System.out.println(left+" : "+(b.xpos+b.xw/2.0+checkerX.xw/2.0)+" : "+((b.xpos+b.xw/2.0+checkerX.xw/2.0)-(checkerX.xpos)));
+													pmx = left;
+													if (writeCollisions)
+														collision_left = true;
+												}
+												else
+												{
+													double right = Math.max((b.xpos - b.xw / 2.0 - checkerX.xw / 2.0) - (pos.x), 0.0d);
+													// System.out.println(right);
+													pmx = right;
+													if (writeCollisions)
+														collision_right = true;
+												}
+												vec.x = 0;
+												checkerX = getCollisionBoxes()[r].translate(pos.x + pmx, pos.y, pos.z);
+											}
+										}
+									}
+							}
+						}
+				pos.x += pmx;
+				distanceToTravel.x -= pmx;
+
+				checkerY = getCollisionBoxes()[r].translate(pos.x, pos.y + pmy, pos.z);
+				for (int i = ((int) pos.x) - radius; i <= ((int) pos.x) + radius; i++)
+					for (int j = ((int) pos.y) - 1; j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
+						for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
+						{
+							data = this.world.getDataAt(i, j, k);
+							id = VoxelFormat.id(data);
+							vox = VoxelTypes.get(id);
+							if (vox.isVoxelSolid())
+							{
+								CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
+								if (boxes != null)
+									for (CollisionBox b : boxes)
+									{
+										b.translate(i, j, k);
+										if (delta.y != 0.0)
+										{
+											if (checkerY.collidesWith(b))
+											{
+												collision = true;
+												pmy = 0;
+												if (delta.y < 0)
+												{
+													double top = Math.min((b.ypos + b.h) - pos.y, 0.0d);
+													// System.out.println(top);
+													pmy = top;
+													if (writeCollisions)
+														collision_bot = true;
+												}
+												else
+												{
+													double bot = Math.max((b.ypos) - (pos.y + checkerY.h), 0.0d);
+													// System.out.println(bot);
+													pmy = bot;
+													if (writeCollisions)
+														collision_top = true;
+												}
+												vec.y = 0;
+												checkerY = getCollisionBoxes()[r].translate(pos.x, pos.y + pmy, pos.z);
+											}
+										}
+
+									}
+							}
+						}
+				pos.y += pmy;
+				distanceToTravel.y -= pmy;
 			}
-			else
-			{
-				vec = new Vector3d(mx, my, mz);
-				vec.normalize();
-				vec.scale(len - distanceTraveled);
-				distanceTraveled = len;
-			}
 
-			pmx = vec.x;
-			pmy = vec.y;
-			pmz = vec.z;
+			if(Math.abs(distanceToTravel.x) > Math.abs(maxDistanceToTravel.x))
+				maxDistanceToTravel.x = distanceToTravel.x;
 
-			int radius = 2;
+			if(Math.abs(distanceToTravel.y) > Math.abs(maxDistanceToTravel.y))
+				maxDistanceToTravel.y = distanceToTravel.y;
 
-			// checkerX = getCollisionBox().translate(pos.x+pmx, pos.y, pos.z);
-			Voxel vox;
-			checkerZ = getCollisionBox().translate(pos.x, pos.y, pos.z + pmz);
-			// Z part
-			for (int i = ((int) pos.x) - radius; i <= ((int) pos.x) + radius; i++)
-				for (int j = ((int) pos.y - 1); j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
-					for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
-					{
-						data = this.world.getDataAt(i, j, k);
-						id = VoxelFormat.id(data);
-						vox = VoxelTypes.get(id);
-						if (vox.isVoxelSolid())
-						{
-							CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
-							if (boxes != null)
-								for (CollisionBox b : boxes)
-								{
-									b.translate(i, j, k);
-									if (mz != 0.0)
-									{
-										if (checkerZ.collidesWith(b))
-										{
-											collision = true;
-											if (collision == false)
-												break;
-											pmz = 0;
-											if (mz < 0)
-											{
-												double south = Math.min((b.zpos + b.zw / 2.0 + checkerZ.zw / 2.0) - (pos.z), 0.0d);
-												// System.out.println(left+" : "+(b.xpos+b.xw/2.0+checkerX.xw/2.0)+" : "+((b.xpos+b.xw/2.0+checkerX.xw/2.0)-(checkerX.xpos)));
-												pmz = south;
-												if (writeCollisions)
-													collision_south = true;
-											}
-											else
-											{
-												double north = Math.max((b.zpos - b.zw / 2.0 - checkerZ.zw / 2.0) - (pos.z), 0.0d);
-												// System.out.println(right);
-												pmz = north;
-												if (writeCollisions)
-													collision_north = true;
-											}
-											vec.z = 0;
-											checkerZ = getCollisionBox().translate(pos.x, pos.y, pos.z + pmz);
-										}
-									}
-								}
-						}
-					}
-			distanceToTravel.z -= pmz;
-			pos.z += pmz;
-			checkerX = getCollisionBox().translate(pos.x + pmx, pos.y, pos.z);
-			// X-part
-			for (int i = ((int) pos.x) - radius; i <= ((int) pos.x) + radius; i++)
-				for (int j = ((int) pos.y - 1); j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
-					for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
-					{
-						data = this.world.getDataAt(i, j, k);
-						id = VoxelFormat.id(data);
-						vox = VoxelTypes.get(id);
-						if (vox.isVoxelSolid())
-						{
-							CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
-							if (boxes != null)
-								for (CollisionBox b : boxes)
-								{
-									b.translate(i, j, k);
-
-									if (mx != 0.0)
-									{
-										if (checkerX.collidesWith(b))
-										{
-											collision = true;
-											if (collision == false)
-												break;
-											pmx = 0;
-											if (mx < 0)
-											{
-												double left = Math.min((b.xpos + b.xw / 2.0 + checkerX.xw / 2.0) - (pos.x), 0.0d);
-												// System.out.println(left+" : "+(b.xpos+b.xw/2.0+checkerX.xw/2.0)+" : "+((b.xpos+b.xw/2.0+checkerX.xw/2.0)-(checkerX.xpos)));
-												pmx = left;
-												if (writeCollisions)
-													collision_left = true;
-											}
-											else
-											{
-												double right = Math.max((b.xpos - b.xw / 2.0 - checkerX.xw / 2.0) - (pos.x), 0.0d);
-												// System.out.println(right);
-												pmx = right;
-												if (writeCollisions)
-													collision_right = true;
-											}
-											vec.x = 0;
-											checkerX = getCollisionBox().translate(pos.x + pmx, pos.y, pos.z);
-										}
-									}
-								}
-						}
-					}
-			pos.x += pmx;
-			distanceToTravel.x -= pmx;
-
-			checkerY = getCollisionBox().translate(pos.x, pos.y + pmy, pos.z);
-			for (int i = ((int) pos.x) - radius; i <= ((int) pos.x) + radius; i++)
-				for (int j = ((int) pos.y) - 1; j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
-					for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
-					{
-						data = this.world.getDataAt(i, j, k);
-						id = VoxelFormat.id(data);
-						vox = VoxelTypes.get(id);
-						if (vox.isVoxelSolid())
-						{
-							CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
-							if (boxes != null)
-								for (CollisionBox b : boxes)
-								{
-									b.translate(i, j, k);
-									if (my != 0.0)
-									{
-										if (checkerY.collidesWith(b))
-										{
-											collision = true;
-											pmy = 0;
-											if (my < 0)
-											{
-												double top = Math.min((b.ypos + b.h) - pos.y, 0.0d);
-												// System.out.println(top);
-												pmy = top;
-												if (writeCollisions)
-													collision_bot = true;
-											}
-											else
-											{
-												double bot = Math.max((b.ypos) - (pos.y + checkerY.h), 0.0d);
-												// System.out.println(bot);
-												pmy = bot;
-												if (writeCollisions)
-													collision_top = true;
-											}
-											vec.y = 0;
-											checkerY = getCollisionBox().translate(pos.x, pos.y + pmy, pos.z);
-										}
-									}
-
-								}
-						}
-					}
-			pos.y += pmy;
-			distanceToTravel.y -= pmy;
+			if(Math.abs(distanceToTravel.z) > Math.abs(maxDistanceToTravel.z))
+				maxDistanceToTravel.z = distanceToTravel.z;
+			
+			//System.out.println("cuck'd"+distanceToTravel);
 		}
 		//Set the new position after computations have been done
-		this.position.setPosition(pos);
 		
-		return distanceToTravel;
+		if (!onlyTest)
+			this.moveWithoutCollisionRestrain(delta.x - maxDistanceToTravel.x, delta.y - maxDistanceToTravel.y, delta.z - maxDistanceToTravel.z);
+			//this.position.setPosition(pos);
+
+		//System.out.println("cuck'd"+maxDistanceToTravel);
+		return maxDistanceToTravel;
+	}
+
+	private CollisionBox[] translateAll(CollisionBox[] boxes, Vector3d vec)
+	{
+		for (CollisionBox box : boxes)
+			box.translate(vec);
+		return boxes;
+	}
+
+	private CollisionBox[] translateAll(CollisionBox[] boxes, double x, double y, double z)
+	{
+		for (CollisionBox box : boxes)
+			box.translate(x, y, z);
+		return boxes;
+	}
+
+	private boolean collidesWith(CollisionBox[] boxes, CollisionBox b)
+	{
+		for (CollisionBox box : boxes)
+			if (box.collidesWith(b))
+				return true;
+		return false;
 	}
 
 	@Override
 	public CollisionBox[] getTranslatedCollisionBoxes()
 	{
-		return new CollisionBox[] { getCollisionBox().translate(position.getLocation()) };
+		CollisionBox[] boxes = getCollisionBoxes();
+		for (CollisionBox box : boxes)
+			box.translate(getLocation());
+		return boxes;
+		//return new CollisionBox[] { getCollisionBox().translate(position.getLocation()) };
 	}
 
-	private CollisionBox getCollisionBox()
+	@Override
+	public CollisionBox[] getCollisionBoxes()
 	{
-		return new CollisionBox(0.75, 1.80, 0.75);
+		return new CollisionBox[] { new CollisionBox(0.75, 1.80, 0.75) };
 	}
 
 	public void render()
@@ -463,7 +543,7 @@ public abstract class EntityImplementation implements Entity
 		synchronized (this)
 		{
 			camera.pos = new Vector3d(position.getLocation()).negate();
-			
+
 			//camera.pos.x = -pos.x;
 			//camera.pos.y = -pos.y;
 			//camera.pos.z = -pos.z;
@@ -527,7 +607,7 @@ public abstract class EntityImplementation implements Entity
 	{
 
 	}
-	
+
 	public boolean exists()
 	{
 		return existence.exists();
@@ -549,7 +629,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void setUUID(long uuid)
 	{
-		if(entityUUID == -1)
+		if (entityUUID == -1)
 			this.entityUUID = uuid;
 		else
 			throw new IllegalUUIDChangeException();
@@ -565,12 +645,8 @@ public abstract class EntityImplementation implements Entity
 	public boolean subscribe(Subscriber subscriber)
 	{
 		//If it didn't already contain the subscriber ...
-		if(subscribers.add(subscriber))
+		if (subscribers.add(subscriber))
 		{
-			//TODO send complete info about subscribed entity ... or do it in ServerPlayer ?
-			//Re : let's try
-			this.getComponents().pushAllComponents(subscriber);
-			System.out.println(subscriber + " subscribed to "+this);
 			return true;
 		}
 		return false;
@@ -580,7 +656,7 @@ public abstract class EntityImplementation implements Entity
 	public boolean unsubscribe(Subscriber subscriber)
 	{
 		//If it did contain the subscriber
-		if(subscribers.remove(subscriber))
+		if (subscribers.remove(subscriber))
 		{
 			//Push an update to the subscriber telling him to forget about the entity :
 			this.existence.pushComponent(subscriber);

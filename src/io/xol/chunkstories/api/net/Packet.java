@@ -1,12 +1,11 @@
-package io.xol.chunkstories.net.packets;
+package io.xol.chunkstories.api.net;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
-import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.net.packets.PacketsProcessor;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

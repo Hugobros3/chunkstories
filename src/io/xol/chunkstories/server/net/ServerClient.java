@@ -3,11 +3,11 @@ package io.xol.chunkstories.server.net;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.events.core.PlayerLoginEvent;
 import io.xol.chunkstories.api.events.core.PlayerLogoutEvent;
+import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
-import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.net.packets.PacketText;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
@@ -285,6 +285,11 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		return profile;
 	}
 
+	public PacketsProcessor getPacketsProcessor()
+	{
+		return packetsProcessor;
+	}
+	
 	/**
 	 * Called once the user has providen valid authentification
 	 */

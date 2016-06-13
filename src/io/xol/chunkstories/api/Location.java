@@ -18,7 +18,7 @@ public class Location extends Vector3d
 		this.world = world;
 	}
 	
-	public Location(World world, Vector3d position)
+	public Location(WorldInterface world, Vector3d position)
 	{
 		this(world, position.x, position.y, position.z);
 	}

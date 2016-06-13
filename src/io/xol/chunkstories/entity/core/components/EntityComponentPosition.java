@@ -9,7 +9,10 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.engine.concurrency.SafeWriteLock;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -23,6 +26,7 @@ public class EntityComponentPosition extends EntityComponent
 		super(entity, next);
 	}
 
+	SafeWriteLock safetyLock = new SafeWriteLock();
 	private Location pos = new Location(entity.getWorld(), 0, 0, 0);
 	
 	//TODO remake-me
@@ -30,9 +34,12 @@ public class EntityComponentPosition extends EntityComponent
 
 	public Location getLocation()
 	{
-		return pos;
+		//safetyLock.beginRead();
+		Location pos = this.pos;
+		//safetyLock.endRead();
+		return new Location(pos.getWorld(), pos);
 	}
-
+	
 	public void setLocation(Location location)
 	{	
 		assert location != null;
@@ -51,6 +58,8 @@ public class EntityComponentPosition extends EntityComponent
 		this.pos.x = x;
 		this.pos.y = y;
 		this.pos.z = z;
+		
+		checkPositionAndUpdateHolder();
 
 		//Same logic as above, refactoring should be done for clarity tho
 		this.pushComponentEveryone();
@@ -61,6 +70,8 @@ public class EntityComponentPosition extends EntityComponent
 		this.pos.x = position.x;
 		this.pos.y = position.y;
 		this.pos.z = position.z;
+		
+		checkPositionAndUpdateHolder();
 
 		//Same logic as above, refactoring should be done for clarity tho
 		this.pushComponentEveryone();
@@ -83,6 +94,13 @@ public class EntityComponentPosition extends EntityComponent
 		pos.setX(dis.readDouble());
 		pos.setY(dis.readDouble());
 		pos.setZ(dis.readDouble());
+		
+		//System.out.println(entity.getUUID() + Client.username);
+		
+		//if(entity.getUUID() == 0)
+		//	System.out.println("being cucked" + pos);
+		
+		checkPositionAndUpdateHolder();
 		
 		//Position updates received by the server should be told to everyone but the controller
 		if(entity.getWorld() instanceof WorldMaster)

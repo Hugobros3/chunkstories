@@ -2,6 +2,8 @@ package io.xol.chunkstories.world;
 
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.net.packets.PacketsProcessor;
+import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -9,20 +11,41 @@ import io.xol.chunkstories.client.Client;
 
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 
-public class WorldRemoteClient extends World implements WorldClient
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
+public class WorldRemoteClient extends World implements WorldClient, WorldNetworked
 {
-	public WorldRemoteClient(WorldInfo info)
+	private PacketsProcessor packetsProcessor;
+	
+	public WorldRemoteClient(WorldInfo info, PacketsProcessor packetsProcessor)
 	{
 		super(info);
+		
+		this.packetsProcessor = packetsProcessor;
+		
 		client = true;
 		
 		ioHandler = new IOTasksMultiplayerClient(this);
 		ioHandler.start();
+		
 	}
 
 	@Override
 	public Client getClient()
 	{
 		return Client.getInstance();
+	}
+
+	@Override
+	public void processIncommingPackets()
+	{
+		PendingSynchPacket packet = packetsProcessor.getPendingSynchPacket();
+		while(packet != null)
+		{
+			packet.process(Client.getInstance().getServerConnection(), packetsProcessor);
+			packet = packetsProcessor.getPendingSynchPacket();
+		}
 	}
 }

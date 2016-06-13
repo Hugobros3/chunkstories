@@ -63,10 +63,16 @@ public interface Entity extends CSFSerializable
 	public void setFlying(boolean flying);
 	
 	/**
-	 * Returns the entitie's AABBs
+	 * Returns the entitie's AABBs to their position
 	 * @return
 	 */
 	public CollisionBox[] getTranslatedCollisionBoxes();
+	
+	/**
+	 * Returns the entitie's AABBs
+	 * @return
+	 */
+	public CollisionBox[] getCollisionBoxes();
 
 	/**
 	 * Renders the entity using the context

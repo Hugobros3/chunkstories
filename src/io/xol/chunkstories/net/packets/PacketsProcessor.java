@@ -1,6 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -11,8 +12,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
+import io.xol.chunkstories.api.net.Packet;
+import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
@@ -31,6 +37,9 @@ public class PacketsProcessor
 	//There is 2^15 possible packets
 	static PacketType[] packetTypes = new PacketType[32768];
 	static Map<String, Short> packetIds = new HashMap<String, Short>();
+	
+	
+	Queue<PendingSynchPacket> pendingSynchPackets = new ConcurrentLinkedQueue<PendingSynchPacket>();
 
 	public static void loadPacketsTypes()
 	{
@@ -127,19 +136,19 @@ public class PacketsProcessor
 			{
 				Packet packet = packetConstructor.newInstance(parameters);
 				//Check legality
-				if(sending)
+				if (sending)
 				{
-					if(isClient && !clientCanSendIt)
+					if (isClient && !clientCanSendIt)
 						throw new IllegalPacketException(packet);
-					if(!isClient && !serverCanSendIt)
+					if (!isClient && !serverCanSendIt)
 						throw new IllegalPacketException(packet);
 				}
 				//When receiving a packet
 				else
 				{
-					if(isClient && !serverCanSendIt)
+					if (isClient && !serverCanSendIt)
 						throw new IllegalPacketException(packet);
-					if(!isClient && !clientCanSendIt)
+					if (!isClient && !clientCanSendIt)
 						throw new IllegalPacketException(packet);
 				}
 				return packet;
@@ -200,28 +209,51 @@ public class PacketsProcessor
 	 */
 	public Packet getPacket(DataInputStream in, boolean client) throws IOException, UnknowPacketException, IllegalPacketException
 	{
-		int firstByte = in.readByte();
-		int packetType = 0;
-		//If it is under 127 unsigned it's a 1-byte packet [0.firstByte(1.7)]
-		if ((firstByte & 0x80) == 0)
-			packetType = firstByte;
-		else
+		while (true)
 		{
-			//It's a 2-byte packet [0.firstByte(1.7)][secondByte(0.8)]
-			int secondByte = in.readByte();
-			secondByte = secondByte & 0xFF;
-			packetType = secondByte | (firstByte & 0x7F) << 8;
-		}
-		Packet packet = packetTypes[packetType].createNew(client, false);
+			int firstByte = in.readByte();
+			int packetType = 0;
+			//If it is under 127 unsigned it's a 1-byte packet [0.firstByte(1.7)]
+			if ((firstByte & 0x80) == 0)
+				packetType = firstByte;
+			else
+			{
+				//It's a 2-byte packet [0.firstByte(1.7)][secondByte(0.8)]
+				int secondByte = in.readByte();
+				secondByte = secondByte & 0xFF;
+				packetType = secondByte | (firstByte & 0x7F) << 8;
+			}
+			Packet packet = packetTypes[packetType].createNew(client, false);
 
-		if (packet == null)
-			throw new UnknowPacketException(packetType);
-		else
-			return packet;
+			//When we get a packetSynch
+			if (packet instanceof PacketSynch)
+			{
+				//Read it's meta
+				int packetSynchLength = in.readInt();
+
+				//Read it entirely
+				byte[] bufferedIncommingPacket = new byte[packetSynchLength];
+				in.readFully(bufferedIncommingPacket);
+
+				//Queue result
+				pendingSynchPackets.add(new PendingSynchPacket(packet, bufferedIncommingPacket));
+				
+				//Skip this packet ( don't return it )
+				continue;
+			}
+
+			if (packet == null)
+				throw new UnknowPacketException(packetType);
+			else
+				return packet;
+		}
+		//System.out.println("could not find packut");
+		//throw new EOFException();
 	}
-	
+
 	/**
 	 * Sends the packets header ( ID )
+	 * 
 	 * @param out
 	 * @param packet
 	 * @throws UnknowPacketException
@@ -229,23 +261,72 @@ public class PacketsProcessor
 	 */
 	public void sendPacketHeader(DataOutputStream out, Packet packet) throws UnknowPacketException, IOException
 	{
-		if(packet == null || !packetIds.containsKey(packet.getClass().getName()))
-			throw new UnknowPacketException(-1);
-		short id = packetIds.get(packet.getClass().getName());
-		if(id < 127)
-			out.writeByte((byte)id);
+		short id = getPacketId(packet);
+		if (id < 127)
+			out.writeByte((byte) id);
 		else
 		{
-			out.writeByte((byte)(0x80 | id >> 8));
-			out.writeByte((byte)(id % 256));
+			out.writeByte((byte) (0x80 | id >> 8));
+			out.writeByte((byte) (id % 256));
 		}
+	}
+
+	public short getPacketId(Packet packet) throws UnknowPacketException
+	{
+		if (packet == null || !packetIds.containsKey(packet.getClass().getName()))
+			throw new UnknowPacketException(-1);
+		short id = packetIds.get(packet.getClass().getName());
+		return id;
 	}
 
 	public WorldInterface getWorld()
 	{
-		if(this.isClient)
+		if (this.isClient)
 			return Client.world;
 		else
 			return Server.getInstance().world;
+	}
+	
+	public PendingSynchPacket getPendingSynchPacket()
+	{
+		return pendingSynchPackets.poll();
+	}
+
+	public class PendingSynchPacket
+	{
+		Packet packet;
+
+		ByteArrayInputStream bais;
+		DataInputStream dis;
+
+		public PendingSynchPacket(Packet packet, byte[] buffer)
+		{
+			this.packet = packet;
+
+			this.bais = new ByteArrayInputStream(buffer);
+			this.dis = new DataInputStream(bais);
+		}
+
+		public void process(PacketSender sender, PacketsProcessor processor)
+		{
+			try
+			{
+				packet.process(sender, dis, processor);
+			}
+			catch (Exception e)
+			{
+				/*if (!die) // If the thread was killed then there is no point
+							// handling the error.
+				{
+					// close();
+					failed = true;
+					latestErrorMessage = "Fatal error while handling connection to " + ip + ":" + port + ". (" + e.getClass().getName() + ")";
+					System.out.println(latestErrorMessage);
+					close();
+					e.printStackTrace();
+				}*/
+				e.printStackTrace();
+			}
+		}
 	}
 }

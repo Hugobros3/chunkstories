@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.events.core.PlayerMoveItemEvent;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
 import io.xol.chunkstories.server.Server;
@@ -19,7 +20,7 @@ import java.io.IOException;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PacketInventoryMoveItemPile extends Packet
+public class PacketInventoryMoveItemPile extends PacketSynch
 {
 	public PacketInventoryMoveItemPile(boolean client)
 	{

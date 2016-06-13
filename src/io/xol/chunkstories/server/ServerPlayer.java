@@ -4,8 +4,8 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityControllable;
+import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.server.Player;
-import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.engine.math.LoopingMathHelper;
@@ -323,6 +323,9 @@ public class ServerPlayer implements Player
 		if(subscribedEntities.add(entity))
 		{
 			entity.subscribe(this);
+			
+			//Only the server should ever push all components to a client
+			entity.getComponents().pushAllComponents(this);
 			return true;
 		}
 		return false;

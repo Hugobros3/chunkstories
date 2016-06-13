@@ -31,6 +31,11 @@ public class Vector3d
 		this.z = vec.z;
 	}
 
+	public Vector3d(double d)
+	{
+		this(d, d, d);
+	}
+
 	public Vector3d add(Vector3d b)
 	{
 		x += b.x;

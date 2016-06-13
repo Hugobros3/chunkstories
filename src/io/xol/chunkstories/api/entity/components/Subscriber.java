@@ -3,7 +3,7 @@ package io.xol.chunkstories.api.entity.components;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.net.packets.Packet;
+import io.xol.chunkstories.api.net.Packet;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

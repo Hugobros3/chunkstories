@@ -2,10 +2,10 @@ package io.xol.chunkstories.client.net;
 
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.SendQueue;
-import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.net.packets.PacketText;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.engine.net.HttpRequestThread;

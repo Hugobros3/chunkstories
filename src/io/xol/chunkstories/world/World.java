@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.ClientController;
+import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
@@ -18,7 +18,6 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
-import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -27,9 +26,11 @@ import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.EntityIterator;
+import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
+import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
@@ -41,6 +42,7 @@ import io.xol.chunkstories.world.generator.WorldGenerators;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.summary.RegionSummaries;
+import io.xol.engine.concurrency.SimpleLock;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.misc.ConfigFile;
@@ -83,6 +85,7 @@ public abstract class World implements WorldInterface
 
 	// Temporary entity list
 	private BlockingQueue<Entity> entities = new LinkedBlockingQueue<Entity>();
+	public SimpleLock entitiesLock = new SimpleLock();
 
 	// Particles
 	private ParticlesHolder particlesHolder;
@@ -223,6 +226,14 @@ public abstract class World implements WorldInterface
 	@Override
 	public void tick()
 	{
+		if(this instanceof WorldNetworked)
+		{
+			//TODO net logic has nothing to do in world logic, it should be handled elsewere !!!
+			//Deal with packets we received
+			((WorldNetworked)this).processIncommingPackets();
+		}
+		
+		entitiesLock.lock();
 		try
 		{
 			Iterator<Entity> iter = this.getAllLoadedEntities();
@@ -239,13 +250,21 @@ public abstract class World implements WorldInterface
 				}
 					
 				//if (entity.getChunkHolder() != null && entity.getChunkHolder().isLoaded())
-				if(entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && this instanceof WorldMaster)
+				if(entity instanceof EntityControllable)
 				{
-					//Don't tick if it's controlled
-					//System.out.println("don't tick if it ticks");
+					Controller controller = ((EntityControllable) entity).getControllerComponent().getController();
+					if(controller instanceof ServerPlayer)
+					{
+						//no
+					}
+					else if(controller instanceof Client)
+						entity.tick();
+						
 				}
 				else
 					entity.tick();
+				
+				
 			}
 			if (getParticlesHolder() != null)
 				getParticlesHolder().updatePhysics();
@@ -255,6 +274,7 @@ public abstract class World implements WorldInterface
 		{
 			e.printStackTrace();
 		}
+		entitiesLock.unlock();
 	}
 
 	/* (non-Javadoc)

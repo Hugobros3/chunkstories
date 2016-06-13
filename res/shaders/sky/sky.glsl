@@ -54,7 +54,7 @@ vec3 getSkyColor(float time, vec3 eyeDirection)
 	
 	vec4 cloudsColor = getClouds(eyeDirection);
 	
-	skyColor +=  (1.0-isRaining)*max(vec3(150.0)*pow(clamp(dot(V, L), 0.0, 1.0), 750.0), 0.0);
+	skyColor +=  (1.0-isRaining)*max(vec3(5.0)*pow(clamp(dot(V, L), 0.0, 1.0), 750.0), 0.0);
 	
 	vec3 combined = mix(skyColor, cloudsColor.rgb, clamp(cloudsColor.a, 0.0, 1.0));
 	

@@ -60,9 +60,9 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	//Declared in constructor, makes no difference at the end of the day
 	EntityComponentInventory inventoryComponent;
 	EntityComponentSelectedItem selectedItemComponent;
-	
+
 	protected boolean noclip = true;
-	
+
 	boolean running = false;
 
 	float lastPX = -1f;
@@ -80,9 +80,9 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		fp_elements.add("boneArmLD");
 		fp_elements.add("boneArmRD");
 	}
-	
+
 	//private Controller controller;
-	
+
 	public double maxSpeedRunning = 0.25;
 	public double maxSpeed = 0.15;
 
@@ -97,7 +97,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 	boolean jumped = false;
 	boolean landed = false;
-	
+
 	public EntityPlayer(World w, double x, double y, double z)
 	{
 		this(w, x, y, z, "");
@@ -116,10 +116,10 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	{
 		float cPX = Mouse.getX();
 		float cPY = Mouse.getY();
-		
+
 		float rotH = this.getEntityRotationComponent().getRotH();
 		float rotV = this.getEntityRotationComponent().getRotV();
-		
+
 		if (lastPX != -1f)
 		{
 			rotH += (cPX - XolioWindow.frameW / 2) / 3f * FastConfig.mouseSensitivity;
@@ -129,10 +129,10 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			rotV = 90;
 		if (rotV < -90)
 			rotV = -90;
-		
+
 		lastPX = cPX;
 		lastPY = cPY;
-		
+
 		this.getEntityRotationComponent().setRotation(rotH, rotV);
 		Mouse.setCursorPosition(XolioWindow.frameW / 2, XolioWindow.frameH / 2);
 	}
@@ -186,20 +186,10 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 				normalMove(controller);
 		}
 
-		//super.checkPositionAndUpdateHolder();
-		/*if (Client.connection != null)
-		{
-			PacketEntity packet = new PacketEntity(true);
-			packet.includeRotation = true;
-			packet.createFromEntity(this);
-			Client.connection.sendPacket(packet);
-		}*/
-		
 		//Instead of creating a packet and dealing with it ourselves, we instead push the relevant components
 		this.position.pushComponentEveryoneButController();
 		//In that case that means pushing to the server.
 	}
-
 
 	public void normalMove(ClientController controller)
 	{
@@ -280,32 +270,54 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		if (controller.getKeyBind("right").isPressed())
 			modif += -90 * (controller.getKeyBind("forward").isPressed() ? 0.5 : 1);
 
-		synchronized (this)
+		//Auto-step logic
+		if (collision_bot && (Math.abs(this.blockedMomentum.x) > 0.0005d || Math.abs(this.blockedMomentum.z) > 0.0005d))
 		{
-			if (collision_bot && (Math.abs(this.blockedMomentum.x) > 0.0005d || Math.abs(this.blockedMomentum.z) > 0.0005d))
+			blockedMomentum.y = 0;
+			if (blockedMomentum.length() > 0.20d)
 			{
-				blockedMomentum.y = 0;
-				if (blockedMomentum.length() > 0.20d)
+				blockedMomentum.normalize();
+				blockedMomentum.scale(0.20);
+			}
+
+			//I don't want any of this to reflect on the object, because it causes ugly jumps in the animation
+			Vector3d canMoveUp = this.canMoveWithCollisionRestrain(new Vector3d(0.0, 0.55, 0.0));
+			//It can go up that bit
+			if (canMoveUp.length() == 0.0f)
+			{
+				//Would it help with being stuck ?
+				Vector3d tryFromHigher = new Vector3d(this.getLocation());
+				tryFromHigher.add(new Vector3d(0.0, 0.55, 0.0));
+				Vector3d blockedMomentumRemaining = this.canMoveWithCollisionRestrain(tryFromHigher, blockedMomentum);
+				//If length of remaining momentum < of what we requested it to do, that means it *did* go a bit further away
+				if (blockedMomentumRemaining.length() < blockedMomentum.length())
 				{
-					blockedMomentum.normalize();
-					blockedMomentum.scale(0.20);
+					//Where would this land ?
+					Vector3d afterJump = new Vector3d(tryFromHigher);
+					afterJump.add(blockedMomentum);
+					afterJump.sub(blockedMomentumRemaining);
+
+					//land distance = whatever is left of our -0.55 delta when it hits the ground
+					Vector3d landDistance = this.canMoveWithCollisionRestrain(afterJump, new Vector3d(0.0, -0.55, 0.0));
+					afterJump.add(new Vector3d(0.0, -0.55, 0.0));
+					afterJump.sub(landDistance);
+
+					this.setLocation(new Location(world, afterJump));
 				}
-				// System.out.println("trying 2 complete"+blockedMomentum);
-				this.moveWithCollisionRestrain(0, 0.55, 0, false);
-				this.moveWithCollisionRestrain(blockedMomentum);
-				this.moveWithCollisionRestrain(0, -0.55, 0, false);
 			}
-			if (onLadder)
-			{
-				//moveWithCollisionRestrain(0, (float)(Math.sin(((rotV) / 180f * Math.PI)) * hSpeed), 0, false);
-				this.vel.y = (float) (Math.sin((-(this.getEntityRotationComponent().getRotV()) / 180f * Math.PI)) * hSpeed);
-			}
+		}
+		if (onLadder)
+		{
+			//moveWithCollisionRestrain(0, (float)(Math.sin(((rotV) / 180f * Math.PI)) * hSpeed), 0, false);
+			this.vel.y = (float) (Math.sin((-(this.getEntityRotationComponent().getRotV()) / 180f * Math.PI)) * hSpeed);
 		}
 
 		targetVectorX = Math.sin((180 - this.getEntityRotationComponent().getRotH() + modif) / 180f * Math.PI) * hSpeed;
 		targetVectorZ = Math.cos((180 - this.getEntityRotationComponent().getRotH() + modif) / 180f * Math.PI) * hSpeed;
 
 		eyePosition = 1.65 + Math.sin(walked * 5d) * 0.035d;
+		
+		//System.out.println("nrml mv");
 	}
 
 	public void flyMove(ClientController controller)
@@ -388,13 +400,13 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		initialPosition.add(new Vector3d(0, eyePosition, 0));
 
 		Vector3d direction = getDirectionLookingAt();
-		
-		if(inside)
+
+		if (inside)
 			return world.raytraceSolid(new Location(world, initialPosition), direction, 256.0);
 		else
 			return world.raytraceSolidOuter(new Location(world, initialPosition), direction, 256.0);
 	}
-	
+
 	public Vector3d getDirectionLookingAt()
 	{
 		Vector3d direction = new Vector3d();
@@ -445,16 +457,18 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 		renderingContext.getCurrentShader().setUniformFloat3("borderShift", getLocation().castToSP());
 		//Prevents laggy behaviour
+
 		if (this.equals(Client.controlledEntity))
-			renderingContext.getCurrentShader().setUniformFloat3("borderShift", -(float) cam.pos.x, -(float) cam.pos.y, -(float) cam.pos.z);
-		
+			renderingContext.getCurrentShader().setUniformFloat3("borderShift", -(float) cam.pos.x, -(float) cam.pos.y-eyePosition, -(float) cam.pos.z);
+
 		//Player rotations to the viewmodel
 		Matrix4f playerRotationMatrix = new Matrix4f();
+		playerRotationMatrix.translate(new Vector3f(0f, (float) this.eyePosition, 0f));
 		playerRotationMatrix.rotate((90 - this.getEntityRotationComponent().getRotH()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
 		if (this.equals(Client.controlledEntity) && !renderingContext.shadow)
 			playerRotationMatrix.rotate((-this.getEntityRotationComponent().getRotV()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
-		
-		//playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
+
+		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
 		//Render parts of the body
 		if (!renderingContext.shadow && this.equals(Client.controlledEntity))
@@ -469,20 +483,18 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 		if (selectedItemPile != null)
 			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, itemMatrix);
-		
-		
+
 		if (getSelectedItemComponent().getSelectedItem() != null && getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemVoxel)
 		{
 			ItemPile pile = getSelectedItemComponent().getSelectedItem();
 			if (ItemVoxel.getVoxel(pile).getLightLevel(0x00) > 0)
 			{
 				Vector3d pos = getLocation();
-				Light heldBlockLight =  new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.x, (float) pos.y + 1.6f, (float) pos.z), 15f);
+				Light heldBlockLight = new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.x, (float) pos.y + 1.6f, (float) pos.z), 15f);
 				renderingContext.addLight(heldBlockLight);
 			}
 		}
 	}
-
 
 	@Override
 	public String getName()

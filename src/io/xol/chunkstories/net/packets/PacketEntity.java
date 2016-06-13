@@ -5,7 +5,10 @@ import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.exceptions.UnknownComponentException;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.entity.EntitiesList;
+import io.xol.chunkstories.world.World;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,7 +17,7 @@ import java.io.IOException;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class PacketEntity extends Packet
+public class PacketEntity extends PacketSynch
 {
 	public short entityTypeID;
 	public long entityUUID;
@@ -51,6 +54,7 @@ public class PacketEntity extends Packet
 		entityUUID = in.readLong();
 		entityTypeID = in.readShort();
 		
+		((World)processor.getWorld()).entitiesLock.lock();
 		Entity entity = processor.getWorld().getEntityByUUID(this.entityUUID);
 		
 		boolean addToWorld = false;
@@ -67,17 +71,21 @@ public class PacketEntity extends Packet
 		//Loop throught all components
 		while(componentId != 0)
 		{
-			//System.out.println("got component : "+componentId);
+			if(componentId != 2 && componentId != 6)
+				System.out.println("got component : "+componentId + "on "+entityUUID);
+			
 			if(!entity.getComponents().tryPullComponentInStream(componentId, sender, in))
 				throw new UnknownComponentException(componentId, entity.getClass());
 			componentId = in.readInt();
 		}
 		
-		if(addToWorld)
+		if(addToWorld && entity.exists())
 		{
+			System.out.println("add entity");
 			//Only the WorldMaster is allowed to spawn new entities in the world
 			if(processor.isClient)
 				processor.getWorld().addEntity(entity);
 		}
+		((World)processor.getWorld()).entitiesLock.unlock();
 	}
 }
