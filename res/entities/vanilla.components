@@ -1,0 +1,12 @@
+# 0 means end of components
+# Ids before 1024 are reserved for the game core
+1 io.xol.chunkstories.entity.core.components.EntityComponentExistence
+2 io.xol.chunkstories.entity.core.components.EntityComponentPosition
+3 io.xol.chunkstories.entity.core.components.EntityComponentController
+4 io.xol.chunkstories.entity.core.components.EntityComponentInventory
+5 io.xol.chunkstories.entity.core.components.EntityComponentSelectedItem
+6 io.xol.chunkstories.entity.core.components.EntityComponentRotation
+7 io.xol.chunkstories.entity.core.components.EntityComponentName
+8 io.xol.chunkstories.entity.core.components.EntityComponentFlying
+9 io.xol.chunkstories.entity.core.components.EntityComponentCreativeMode
+10 io.xol.chunkstories.entity.core.components.EntityComponentHealth
