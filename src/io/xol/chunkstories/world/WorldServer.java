@@ -39,10 +39,10 @@ public class WorldServer extends World implements WorldMaster, WorldNetworked
 		//Update client tracking
 		for (ServerClient client : Server.getInstance().handler.getAuthentificatedClients())
 		{
-			System.out.println("client: "+client);
+			//System.out.println("client: "+client);
 			if (client.getProfile().hasSpawned())
 			{
-				System.out.println(client.getProfile().hasSpawned());
+				//System.out.println(client.getProfile().hasSpawned());
 				//Load 8x4x8 chunks arround player
 				Location loc = client.getProfile().getLocation();
 				int chunkX = (int) (loc.getX() / 32f);

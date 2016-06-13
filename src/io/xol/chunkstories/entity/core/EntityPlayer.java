@@ -27,6 +27,7 @@ import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.core.components.EntityComponentController;
 import io.xol.chunkstories.entity.core.components.EntityComponentSelectedItem;
 import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
+import io.xol.chunkstories.entity.core.components.EntityComponentName;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.core.ItemAk47;
 import io.xol.chunkstories.item.core.ItemVoxel;
@@ -60,6 +61,8 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	//Declared in constructor, makes no difference at the end of the day
 	EntityComponentInventory inventoryComponent;
 	EntityComponentSelectedItem selectedItemComponent;
+	
+	EntityComponentName name = new EntityComponentName(this, this.getComponents().getLastComponent());
 
 	protected boolean noclip = true;
 
@@ -67,9 +70,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 	float lastPX = -1f;
 	float lastPY = -1f;
-
-	private String name;
-
+	
 	//Body parts to render in first person
 	static Set<String> fp_elements = new HashSet<String>();
 
@@ -100,13 +101,16 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 	public EntityPlayer(World w, double x, double y, double z)
 	{
-		this(w, x, y, z, "");
+		super(w, x, y, z);
+		inventoryComponent = new EntityComponentInventory(this, 10, 4);
+		selectedItemComponent = new EntityComponentSelectedItem(this, inventoryComponent);
+		setFlying(false);
 	}
 
 	public EntityPlayer(World w, double x, double y, double z, String name)
 	{
 		super(w, x, y, z);
-		this.name = name;
+		this.name.setName(name);
 		inventoryComponent = new EntityComponentInventory(this, 10, 4);
 		selectedItemComponent = new EntityComponentSelectedItem(this, inventoryComponent);
 		setFlying(false);
@@ -426,11 +430,12 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		if (this.equals(Client.controlledEntity))
 			return; // Don't render yourself
 		Vector3d pos = getLocation();
-		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float) pos.x, (float) pos.y + 2.5f, (float) pos.z));
+		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float) pos.x, (float) pos.y + 2.0f, (float) pos.z));
 
 		float scale = posOnScreen.z;
-		String txt = name;// + rotH;
+		String txt = name.getName();// + rotH;
 		float dekal = TrueTypeFont.arial12.getWidth(txt) * 16 * scale;
+		//System.out.println("dekal"+dekal);
 		if (scale > 0)
 			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x - dekal / 2, posOnScreen.y, txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
 	}
@@ -499,14 +504,14 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	@Override
 	public String getName()
 	{
-		return name;
+		return name.getName();
 	}
 
 	@Override
 	public void setName(String n)
 	{
 		//this.inventory.name = this.name + "'s Inventory";
-		name = n;
+		name.setName(n);
 	}
 
 	@Override
@@ -579,5 +584,11 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	public EntityComponentSelectedItem getSelectedItemComponent()
 	{
 		return this.selectedItemComponent;
+	}
+
+	@Override
+	public EntityComponentName getNameComponent()
+	{
+		return name;
 	}
 }

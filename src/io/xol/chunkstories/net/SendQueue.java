@@ -165,8 +165,8 @@ public class SendQueue extends Thread
 				}
 				catch (IOException e)
 				{
-					//We don't care about that
-					ChunkStoriesLogger.getInstance().error("Error : unable to send Packet");
+					//We don't care about that, it's the motd thing mostly
+					//ChunkStoriesLogger.getInstance().error("Error : unable to send Packet");
 				}
 				catch (UnknowPacketException e)
 				{
