@@ -1,6 +1,5 @@
-package io.xol.chunkstories.entity.core;
+package io.xol.chunkstories.api.entity;
 
-import io.xol.chunkstories.api.entity.EntityWithInventory;
 import io.xol.chunkstories.entity.core.components.EntityComponentSelectedItem;
 
 //(c) 2015-2016 XolioWare Interactive

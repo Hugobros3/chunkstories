@@ -3,7 +3,6 @@ package io.xol.chunkstories.entity;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.entity.core.components.EntityComponentExistence;
 import io.xol.chunkstories.entity.core.components.EntityComponentPosition;
-import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
@@ -17,10 +16,11 @@ import java.util.Set;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.exceptions.IllegalUUIDChangeException;
-import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldInterface;
@@ -66,7 +66,7 @@ public abstract class EntityImplementation implements Entity
 
 	//public boolean inWater = false;
 	public Voxel voxelIn;
-	public EntityComponentInventory inventory;
+	public EntityInventory inventory;
 
 	//Flag set when deleted from world entities list ( to report to other refering places )
 	

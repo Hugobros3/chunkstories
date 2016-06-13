@@ -8,7 +8,7 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
-import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
 import io.xol.chunkstories.physics.CollisionBox;

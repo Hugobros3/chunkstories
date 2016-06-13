@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.EntityWithInventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.item.Item;
@@ -17,7 +18,7 @@ import io.xol.chunkstories.item.ItemsList;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityComponentInventory extends EntityComponent implements Iterable<ItemPile>
+public class EntityComponentInventory extends EntityComponent implements Iterable<ItemPile>, EntityInventory
 {
 	public int width;
 	public int height;
@@ -41,6 +42,10 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		return contents;
 	}
 	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#getItem(int, int)
+	 */
+	@Override
 	public ItemPile getItem(int x, int y)
 	{
 		if (contents[x % width][y % height] != null)
@@ -70,6 +75,10 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#canPlaceItemAt(int, int, io.xol.chunkstories.item.ItemPile)
+	 */
+	@Override
 	public boolean canPlaceItemAt(int x, int y, ItemPile pile)
 	{
 		if (contents[x % width][y % height] != null)
@@ -99,14 +108,10 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		}
 	}
 
-	/**
-	 * Returns null if the item was put in this inventory, the item if it wasn't
-	 * 
-	 * @param x
-	 * @param y
-	 * @param pile
-	 * @return
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#placeItemPileAt(int, int, io.xol.chunkstories.item.ItemPile)
 	 */
+	@Override
 	public ItemPile placeItemPileAt(int x, int y, ItemPile pile)
 	{
 		if (pile == null)
@@ -135,6 +140,10 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		return null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#setItemPileAt(int, int, io.xol.chunkstories.item.ItemPile)
+	 */
+	@Override
 	public boolean setItemPileAt(int x, int y, ItemPile pile)
 	{
 		if (pile == null)
@@ -174,11 +183,10 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		return true;
 	}
 	
-	/**
-	 * Try to add a pile to this inventory.
-	 * @param pile
-	 * @return Null if it succeeds or the input pile if it fails
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#addItemPile(io.xol.chunkstories.item.ItemPile)
 	 */
+	@Override
 	public ItemPile addItemPile(ItemPile pile)
 	{
 		for(int i = 0; i < width; i++)
@@ -188,6 +196,9 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		return pile;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#iterator()
+	 */
 	@Override
 	/**
 	 * Iterates over every ItemPile
@@ -323,9 +334,10 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		//selectedSlot = stream.readByte();
 	}
 	
-	/**
-	 * Removes all itempiles in the inventory.
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#clear()
 	 */
+	@Override
 	public void clear()
 	{
 		contents = new ItemPile[width][height];
@@ -340,10 +352,10 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		}*/
 	}
 
-	/**
-	 * Counts the ammount of stuff this inventory contains.
-	 * @return
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#size()
 	 */
+	@Override
 	public int size()
 	{
 		int size = 0;
@@ -356,6 +368,10 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		return size;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#getHolderName()
+	 */
+	@Override
 	public String getHolderName()
 	{
 		if(holder != null)
@@ -365,6 +381,24 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			return holder.getClass().getSimpleName();
 		}
 		return "/dev/null";
+	}
+
+	@Override
+	public EntityWithInventory getHolder()
+	{
+		return holder;
+	}
+
+	@Override
+	public int getWidth()
+	{
+		return width;
+	}
+
+	@Override
+	public int getHeight()
+	{
+		return height;
 	}
 
 }

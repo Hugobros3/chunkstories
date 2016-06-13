@@ -18,7 +18,7 @@ import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.PluginJar;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.PluginStore;
-import io.xol.chunkstories.api.plugin.server.Command;
+import io.xol.chunkstories.api.server.Command;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.server.tech.CommandEmitter;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -138,6 +138,7 @@ public class PluginsManager implements PluginManager
 			catch (Throwable t)
 			{
 				emitter.sendMessage("#FF4040 An exception was throwed when handling your command "+t.getMessage());
+				t.printStackTrace();
 			}
 			return true;
 		}

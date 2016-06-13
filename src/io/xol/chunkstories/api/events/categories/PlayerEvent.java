@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.events.categories;
 
-import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.server.Player;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

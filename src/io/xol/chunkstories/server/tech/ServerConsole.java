@@ -3,8 +3,8 @@ package io.xol.chunkstories.server.tech;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
-import io.xol.chunkstories.api.plugin.server.Command;
-import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.server.Command;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.net.packets.PacketEntity;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
@@ -24,8 +24,8 @@ public class ServerConsole
 		{
 			//First handle the plugins commands
 			try{
-			if (Server.getInstance().pluginsManager.dispatchCommand(cmd, emitter))
-				return;
+				if (Server.getInstance().pluginsManager.dispatchCommand(cmd, emitter))
+					return;
 			}
 			catch(Exception e)
 			{

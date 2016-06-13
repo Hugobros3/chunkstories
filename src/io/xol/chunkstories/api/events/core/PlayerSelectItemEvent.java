@@ -3,7 +3,7 @@ package io.xol.chunkstories.api.events.core;
 import io.xol.chunkstories.api.entity.EntityWithInventory;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.server.Player;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

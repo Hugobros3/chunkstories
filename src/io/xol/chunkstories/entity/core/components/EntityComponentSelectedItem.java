@@ -32,8 +32,6 @@ public class EntityComponentSelectedItem extends EntityComponent
 	 */
 	public void setSelectedSlot(int newSlot)
 	{
-		
-		
 		while (newSlot < 0)
 			newSlot += inventory.width;
 		selectedSlot = newSlot % inventory.width;

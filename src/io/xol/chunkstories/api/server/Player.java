@@ -1,4 +1,4 @@
-package io.xol.chunkstories.api.plugin.server;
+package io.xol.chunkstories.api.server;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;

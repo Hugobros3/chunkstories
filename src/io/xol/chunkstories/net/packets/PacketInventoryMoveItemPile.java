@@ -1,11 +1,11 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.EntityWithInventory;
 import io.xol.chunkstories.api.events.core.PlayerMoveItemEvent;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
 import io.xol.chunkstories.server.Server;
@@ -35,23 +35,23 @@ public class PacketInventoryMoveItemPile extends Packet
 		out.writeInt(newY);
 		//Describe the inventories
 		//A lone itemPile or a holderless inventory is described by 0x00
-		if(from == null || from.holder == null)
+		if(from == null || from.getHolder() == null)
 			out.writeByte(0x00);
-		else if(from.holder instanceof Entity)
+		else if(from.getHolder() instanceof Entity)
 		{
 			out.writeByte(0x01);
-			out.writeLong(((Entity)from.holder).getUUID());
+			out.writeLong(((Entity)from.getHolder()).getUUID());
 		}
-		if(to == null || to.holder == null)
+		if(to == null || to.getHolder() == null)
 			out.writeByte(0x00);
-		else if(to.holder instanceof Entity)
+		else if(to.getHolder() instanceof Entity)
 		{
 			out.writeByte(0x01);
-			out.writeLong(((Entity)to.holder).getUUID());
+			out.writeLong(((Entity)to.getHolder()).getUUID());
 			//System.out.println("writing uuid"+((Entity)to.holder).getUUID());
 		}
 		//Describe the itemPile if we are trying to spawn an item from nowhere
-		if(from == null || from.holder == null)
+		if(from == null || from.getHolder() == null)
 		{
 			out.writeInt(itemPile.item.getID());
 			itemPile.saveCSF(out);
@@ -87,7 +87,7 @@ public class PacketInventoryMoveItemPile extends Packet
 	}
 	
 	public ItemPile itemPile;
-	public EntityComponentInventory from, to;
+	public EntityInventory from, to;
 	public int oldX, oldY, newX, newY;
 
 	byte holderTypeFrom, holderTypeTo;

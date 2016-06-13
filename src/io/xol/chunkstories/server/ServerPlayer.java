@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityControllable;
 import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.tech.UsersPrivileges;

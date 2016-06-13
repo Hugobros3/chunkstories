@@ -1,10 +1,9 @@
 package io.xol.chunkstories.item.renderer;
 
-
 import org.lwjgl.input.Mouse;
 import io.xol.engine.math.lalgb.Vector4f;
-import io.xol.chunkstories.entity.core.EntityWithSelectedItem;
-import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
+import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.EntityWithSelectedItem;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.engine.font.TrueTypeFont;
@@ -19,12 +18,12 @@ import io.xol.engine.textures.TexturesHandler;
 
 public class InventoryDrawer
 {
-	private EntityComponentInventory inventory;
+	private EntityInventory inventory;
 	private EntityWithSelectedItem entity;
 	
-	public InventoryDrawer(EntityComponentInventory inventory)
+	public InventoryDrawer(EntityInventory entityInventories)
 	{
-		this.inventory = inventory;
+		this.inventory = entityInventories;
 	}
 
 	public InventoryDrawer(EntityWithSelectedItem entity)
@@ -34,7 +33,7 @@ public class InventoryDrawer
 	
 	public void drawInventoryCentered(RenderingContext context, int x, int y, int scale, boolean summary, int blankLines)
 	{
-		drawInventory(context, x - slotsWidth(getInventory().width, scale) / 2, y - slotsHeight(getInventory().height, scale, summary, blankLines) / 2, scale, summary, blankLines, -1);
+		drawInventory(context, x - slotsWidth(getInventory().getWidth(), scale) / 2, y - slotsHeight(getInventory().getHeight(), scale, summary, blankLines) / 2, scale, summary, blankLines, -1);
 	}
 	
 	int[] selectedSlot;
@@ -55,7 +54,7 @@ public class InventoryDrawer
 		//Don't draw inventory only
 		if(entity == null)
 			return;
-		drawInventory(context, x - slotsWidth(getInventory().width, 2) / 2, y - slotsHeight(getInventory().height, 2, true, 0) / 2, 2, true, 0, entity.getSelectedItemComponent().getSelectedSlot());
+		drawInventory(context, x - slotsWidth(getInventory().getWidth(), 2) / 2, y - slotsHeight(getInventory().getHeight(), 2, true, 0) / 2, 2, true, 0, entity.getSelectedItemComponent().getSelectedSlot());
 	}
 	
 	public void drawInventory(RenderingContext context, int x, int y, int scale, boolean summary, int blankLines, int highlightSlot)
@@ -63,9 +62,9 @@ public class InventoryDrawer
 		if(getInventory() == null)
 			return;
 		int cornerSize = 8 * scale;
-		int internalWidth = getInventory().width * 24 * scale;
+		int internalWidth = getInventory().getWidth() * 24 * scale;
 		
-		int height = summary ? 1 : getInventory().height;
+		int height = summary ? 1 : getInventory().getHeight();
 		
 		int internalHeight = (height + (summary ? 0 : 1) + blankLines) * 24 * scale;
 		int slotSize = 24 * scale;
@@ -87,7 +86,7 @@ public class InventoryDrawer
 		//Actual inventory slots
 		int sumSlots2HL = 0;
 		boolean foundTheVegan = false;
-		for (int i = 0; i < getInventory().width; i++)
+		for (int i = 0; i < getInventory().getWidth(); i++)
 		{
 			for (int j = 0; j < height; j++)
 			{
@@ -136,20 +135,20 @@ public class InventoryDrawer
 		if(!foundTheVegan)
 			selectedSlot = null;
 		//Blank part ( usefull for special inventories, ie player )
-		for (int j = getInventory().height; j < getInventory().height+blankLines; j++)
+		for (int j = getInventory().getHeight(); j < getInventory().getHeight()+blankLines; j++)
 		{
-			for (int i = 0; i < getInventory().width; i++)
+			for (int i = 0; i < getInventory().getWidth(); i++)
 			{
-				if(j == getInventory().height)
+				if(j == getInventory().getHeight())
 				{
-					if(i == getInventory().width-1)
+					if(i == getInventory().getWidth()-1)
 						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 224f / 256f, 152 / 256f, 248 / 256f, 128 / 256f, textureId, true, true, color);
 					else
 						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 152 / 256f, 32f / 256f, 128 / 256f, textureId, true, true, color);
 				}
 				else
 				{
-					if(i == getInventory().width-1)
+					if(i == getInventory().getWidth()-1)
 						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 224f / 256f, 56 / 256f, 248 / 256f, 32 / 256f, textureId, true, true, color);
 					else
 						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 56 / 256f, 32f / 256f, 32 / 256f, textureId, true, true, color);
@@ -160,15 +159,15 @@ public class InventoryDrawer
 		if(!summary)
 		{
 			GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 8f / 256f, 32f / 256f, 32f / 256f, 8f / 256f, textureId, true, true, color);
-			for (int i = 1; i < getInventory().width - 2; i++)
+			for (int i = 1; i < getInventory().getWidth() - 2; i++)
 			{
 				GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 32f / 256f, 32f / 256f, 56f / 256f, 8f / 256f, textureId, true, true, color);
 			}
-			GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().width - 2) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 200f / 256f, 32f / 256f, 224 / 256f, 8f / 256f, textureId, true, true, color);
-			closedButton = Mouse.getX() > x + cornerSize + (getInventory().width - 1) * slotSize && Mouse.getX() <= x + cornerSize + (getInventory().width - 1) * slotSize + slotSize
+			GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().getWidth() - 2) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 200f / 256f, 32f / 256f, 224 / 256f, 8f / 256f, textureId, true, true, color);
+			closedButton = Mouse.getX() > x + cornerSize + (getInventory().getWidth() - 1) * slotSize && Mouse.getX() <= x + cornerSize + (getInventory().getWidth() - 1) * slotSize + slotSize
 					&& Mouse.getY() > y + cornerSize + internalHeight - slotSize && Mouse.getY() <= y + cornerSize + internalHeight;
 			
-			GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().width - 1) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 224f / 256f, 32f / 256f, 248f / 256f, 8f / 256f, textureId, true, true, color);
+			GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().getWidth() - 1) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 224f / 256f, 32f / 256f, 248f / 256f, 8f / 256f, textureId, true, true, color);
 			TrueTypeFont.haettenschweiler.drawStringWithShadow(x + cornerSize, y + cornerSize + internalHeight - slotSize + 2 * scale, getInventory().getHolderName(), scale, scale, new Vector4f(1,1,1,1));
 		}
 
@@ -176,7 +175,7 @@ public class InventoryDrawer
 		GuiDrawer.drawBuffer();
 		
 		//Draw the actual items
-		for (int i = 0; i < getInventory().width; i++)
+		for (int i = 0; i < getInventory().getWidth(); i++)
 		{
 			for (int j = 0; j < height; j++)
 			{
@@ -201,7 +200,7 @@ public class InventoryDrawer
 		return (8 + (slots+(summary ? 0 : 1)+blankLines) * 24) * scale;
 	}
 
-	public EntityComponentInventory getInventory()
+	public EntityInventory getInventory()
 	{
 		if(entity == null)
 			return inventory;

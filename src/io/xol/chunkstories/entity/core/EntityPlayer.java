@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.EntityControllable;
 import io.xol.chunkstories.api.entity.EntityWithInventory;
+import io.xol.chunkstories.api.entity.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.rendering.Light;
@@ -55,6 +56,10 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 {
 	//Add the controller component to whatever else the superclass may have
 	EntityComponentController controllerComponent = new EntityComponentController(this, this.getComponents().getLastComponent());
+
+	//Declared in constructor, makes no difference at the end of the day
+	EntityComponentInventory inventoryComponent;
+	EntityComponentSelectedItem selectedItemComponent;
 	
 	protected boolean noclip = true;
 	
@@ -92,9 +97,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 	boolean jumped = false;
 	boolean landed = false;
-	
-	EntityComponentInventory inventoryComponent;
-	EntityComponentSelectedItem selectedItemComponent;
 	
 	public EntityPlayer(World w, double x, double y, double z)
 	{

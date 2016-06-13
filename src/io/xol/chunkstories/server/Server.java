@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.content.GameDirectory;
@@ -106,7 +106,6 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 			handler.start();
 			// Load plugins
 			pluginsManager = new PluginsManager(this);
-			pluginsManager.enablePlugins();
 		}
 		catch (Exception e)
 		{ // Exceptions stuff

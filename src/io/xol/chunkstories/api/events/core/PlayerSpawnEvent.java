@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.api.plugin.server.Player;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.server.Server;
 

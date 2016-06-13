@@ -2,9 +2,9 @@ package io.xol.chunkstories.gui.menus;
 
 import org.lwjgl.input.Mouse;
 
+import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.item.ItemPile;
@@ -20,31 +20,31 @@ import io.xol.engine.base.XolioWindow;
 
 public class InventoryOverlay extends Overlay
 {
-	EntityComponentInventory[] inventories;
+	EntityInventory[] inventories;
 	InventoryDrawer[] drawers;
 
 	public static ItemPile selectedItem;
 
-	public InventoryOverlay(OverlayableScene scene, Overlay parent, EntityComponentInventory[] inventories)
+	public InventoryOverlay(OverlayableScene scene, Overlay parent, EntityInventory[] entityInventories)
 	{
 		super(scene, parent);
-		this.inventories = inventories;
-		this.drawers = new InventoryDrawer[inventories.length];
+		this.inventories = entityInventories;
+		this.drawers = new InventoryDrawer[entityInventories.length];
 		for (int i = 0; i < drawers.length; i++)
-			drawers[i] = new InventoryDrawer(inventories[i]);
+			drawers[i] = new InventoryDrawer(entityInventories[i]);
 	}
 
 	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
 		int totalWidth = 0;
-		for (EntityComponentInventory inv : inventories)
-			totalWidth += 2 + inv.width;
+		for (EntityInventory inv : inventories)
+			totalWidth += 2 + inv.getWidth();
 		totalWidth -= 2;
 		int widthAccumulation = 0;
 		for (int i = 0; i < drawers.length; i++)
 		{
-			int thisWidth = inventories[i].width;
+			int thisWidth = inventories[i].getWidth();
 			drawers[i].drawInventoryCentered(mainScene.eng.renderingContext, XolioWindow.frameW / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, XolioWindow.frameH / 2, 2, false, 4 - i*4);
 			widthAccumulation += 1 + thisWidth;
 		}

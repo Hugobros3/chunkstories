@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
@@ -124,7 +125,7 @@ public class ItemPile implements CSFSerializable
 	 * @return null if successfull, this if not.
 	 */
 	//@SuppressWarnings("unchecked")
-	public ItemPile moveTo(EntityComponentInventory inventory2, int x2, int y2)
+	public ItemPile moveTo(EntityInventory inventory2, int x2, int y2)
 	{
 		//Remove it from where we are removing it from
 		if (inventory != null)

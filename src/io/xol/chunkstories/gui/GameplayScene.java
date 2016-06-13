@@ -16,7 +16,9 @@ import io.xol.engine.font.FontRenderer2;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityControllable;
+import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.EntityWithInventory;
+import io.xol.chunkstories.api.entity.EntityWithSelectedItem;
 import io.xol.chunkstories.api.events.core.ClientInputPressedEvent;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseClick;
@@ -26,8 +28,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.entity.core.EntityPlayer;
-import io.xol.chunkstories.entity.core.EntityWithSelectedItem;
-import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
 import io.xol.chunkstories.input.KeyBinds;
@@ -291,7 +291,7 @@ public class GameplayScene extends OverlayableScene
 			if (player != null)
 			{
 				focus(false);
-				this.changeOverlay(new InventoryOverlay(this, null, new EntityComponentInventory[] { ((EntityWithInventory) player).getInventory(), new InventoryAllVoxels() }));
+				this.changeOverlay(new InventoryOverlay(this, null, new EntityInventory[] { ((EntityWithInventory) player).getInventory(), new InventoryAllVoxels() }));
 			}
 		}
 		else if (k == Keyboard.KEY_F1)
@@ -378,7 +378,7 @@ public class GameplayScene extends OverlayableScene
 			int originalSlot = selectedInventorySlot;
 			if (a < 0)
 			{
-				selectedInventorySlot %= ((EntityWithInventory) player).getInventory().width;
+				selectedInventorySlot %= ((EntityWithInventory) player).getInventory().getWidth();
 				selected = ((EntityWithInventory) player).getInventory().getItem(selectedInventorySlot, 0);
 				if (selected != null)
 					selectedInventorySlot += selected.item.getSlotsWidth();
@@ -389,7 +389,7 @@ public class GameplayScene extends OverlayableScene
 			{
 				selectedInventorySlot--;
 				if (selectedInventorySlot < 0)
-					selectedInventorySlot += ((EntityWithInventory) player).getInventory().width;
+					selectedInventorySlot += ((EntityWithInventory) player).getInventory().getWidth();
 				selected = ((EntityWithInventory) player).getInventory().getItem(selectedInventorySlot, 0);
 				if (selected != null)
 					selectedInventorySlot = selected.x;
