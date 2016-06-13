@@ -1,6 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 import io.xol.chunkstories.world.summary.RegionSummary;
@@ -47,7 +48,7 @@ public class PacketChunkSummary extends Packet
 		out.write(compressedData);
 	}
 	
-	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
 		read(in);
 		process(processor);

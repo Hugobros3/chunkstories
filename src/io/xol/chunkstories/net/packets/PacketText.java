@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.server.Server;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -27,7 +28,7 @@ public class PacketText extends Packet
 		out.writeUTF(text);
 	}
 
-	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
 		read(in);
 		process(processor);

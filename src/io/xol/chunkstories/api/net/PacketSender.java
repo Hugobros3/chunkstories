@@ -5,9 +5,9 @@ package io.xol.chunkstories.api.net;
 //http://xol.io
 
 /**
- * Someone we can send packets to
+ * Someone we can receive packets from
  */
-public interface PacketDestinator extends StreamTarget
+public interface PacketSender extends StreamSource
 {
 
 }

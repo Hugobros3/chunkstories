@@ -1,6 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.WorldRemoteClient;
@@ -44,7 +45,7 @@ public class PacketWorldInfo extends Packet
 		out.write(bytes);
 	}
 
-	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
 		read(in);
 		process(processor);

@@ -1,6 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 
@@ -32,7 +33,7 @@ public class PacketTime extends Packet
 		out.writeLong(time);
 	}
 
-	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
 		read(in);
 		process(processor);

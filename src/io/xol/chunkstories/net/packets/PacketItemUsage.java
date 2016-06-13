@@ -2,6 +2,7 @@ package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSender;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -36,7 +37,7 @@ public class PacketItemUsage extends Packet
 		out.writeByte(complementInfo);
 	}
 	
-	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
 		read(in);
 		process(processor);

@@ -4,6 +4,7 @@ import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.events.core.PlayerLoginEvent;
 import io.xol.chunkstories.api.events.core.PlayerLogoutEvent;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.Packet;
@@ -21,7 +22,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -29,7 +29,7 @@ import java.net.Socket;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerClient extends Thread implements HttpRequester, PacketDestinator
+public class ServerClient extends Thread implements HttpRequester, PacketDestinator, PacketSender
 {
 	int socketPort = 0;
 
@@ -53,6 +53,8 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 	
 	//Assertion : if the player is authentificated it has a profile
 	private ServerPlayer profile;
+	
+	private PacketSender sender = this;
 
 	ServerClient(Socket s)
 	{
@@ -119,7 +121,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			{
 				//Process incomming packets
 				Packet packet = packetsProcessor.getPacket(in, false);
-				packet.process(in, packetsProcessor);
+				packet.process(sender, in, packetsProcessor);
 			}
 			catch (IllegalPacketException | UnknowPacketException e)
 			{
@@ -231,6 +233,8 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		//This changes the destinator from a ServerClient to a ServerPlayer, letting know outgoing packets and especially entity components about all the
 		//specifics of the player : name, entity he subscribed to, etc
 		this.sendQueue.setDestinator(this.getProfile());
+		this.sender = this.getProfile();
+		
 		//Fire the login event
 		PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(getProfile());
 		Server.getInstance().getPluginsManager().fireEvent(playerConnectionEvent);

@@ -5,7 +5,7 @@ package io.xol.chunkstories.api.net;
 //http://xol.io
 
 /**
- * Some<i>thing</i> we can send stuff to
+ * Some<i>thing</i> we can send data to
  */
 public interface StreamTarget
 {

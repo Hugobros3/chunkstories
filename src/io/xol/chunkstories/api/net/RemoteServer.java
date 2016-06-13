@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.entity.components.Subscriber;
  * The remote server interface is used as a virtual subscriber ( the server being the 'subscriber' ) to the controlled entity of the client
  * so it receives updates from the client.
  */
-public interface RemoteServer extends Subscriber, PacketDestinator
+public interface RemoteServer extends Subscriber, PacketDestinator, PacketSender
 {
 
 }

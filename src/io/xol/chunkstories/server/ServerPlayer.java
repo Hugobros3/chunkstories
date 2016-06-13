@@ -4,7 +4,6 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityControllable;
-import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.net.packets.Packet;
 import io.xol.chunkstories.server.net.ServerClient;
@@ -23,7 +22,7 @@ import java.util.Set;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerPlayer implements Player, PacketDestinator
+public class ServerPlayer implements Player
 {
 	ConfigFile playerData;
 	ServerClient playerConnection;

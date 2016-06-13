@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.entity.EntityWithInventory;
 import io.xol.chunkstories.api.events.core.PlayerMoveItemEvent;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
 import io.xol.chunkstories.server.Server;
@@ -58,7 +59,7 @@ public class PacketInventoryMoveItemPile extends Packet
 		}
 	}
 
-	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
 		read(in);
 		process(processor);

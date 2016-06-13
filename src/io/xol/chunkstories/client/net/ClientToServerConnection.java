@@ -218,7 +218,7 @@ public class ClientToServerConnection extends Thread implements HttpRequester, R
 			try
 			{
 				Packet packet = packetsProcessor.getPacket(in, true);
-				packet.process(in, packetsProcessor);
+				packet.process(this, in, packetsProcessor);
 			}
 			catch (Exception e)
 			{

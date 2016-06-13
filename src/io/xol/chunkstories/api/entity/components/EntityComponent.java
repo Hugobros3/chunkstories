@@ -8,6 +8,7 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityControllable;
+import io.xol.chunkstories.api.net.StreamSource;
 import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.entity.EntityComponents;
 import io.xol.chunkstories.net.packets.PacketEntity;
@@ -16,6 +17,9 @@ import io.xol.chunkstories.net.packets.PacketEntity;
 //http://chunkstories.xyz
 //http://xol.io
 
+/**
+ * To make a new entity component, just extend this class and mention your class a .components file in the entity/ directory so it gets an unique id
+ */
 public abstract class EntityComponent
 {
 	protected Entity entity;
@@ -73,8 +77,6 @@ public abstract class EntityComponent
 		{
 			Subscriber subscriber = iterator.next();
 			
-			//System.out.println("pushing2"+subscriber);
-			
 			//Don't push the update to the controller.
 			if(controller != null && subscriber.equals(controller))
 				continue;
@@ -90,8 +92,8 @@ public abstract class EntityComponent
 	
 	public void pushComponent(Subscriber subscriber)
 	{
-		//TODO check that subscriber has subscribed to said entity ?
-		//Re : nope because we send the EntityExistence (hint: false) component to [just] unsubscribed guys
+		//You may check that subscriber has subscribed to said entity ?
+		//Re : nope because we send the EntityExistence (hint: false) component to [just] unsubscribed guys so it wouldn't work
 		
 		PacketEntity packet = new PacketEntity(subscriber.getUUID() == -1);
 		packet.entityUUID = entity.getUUID();
@@ -126,7 +128,7 @@ public abstract class EntityComponent
 		subscriber.pushPacket(packet);
 	}
 	
-	public boolean tryPull(int componentId, DataInputStream dis) throws IOException
+	public boolean tryPullComponentInStream(int componentId, StreamSource from, DataInputStream dis) throws IOException
 	{
 		//Does the Id match ?
 		if(this.getEntityComponentId() == componentId)
@@ -136,7 +138,7 @@ public abstract class EntityComponent
 		}
 		//Chain next component
 		if(next != null)
-			return next.tryPull(componentId, dis);
+			return next.tryPullComponentInStream(componentId, from, dis);
 		return false;
 	}
 

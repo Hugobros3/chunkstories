@@ -1,6 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 
@@ -38,7 +39,7 @@ public class PacketVoxelUpdate extends Packet
 		out.writeByte((byte)0x00);
 	}
 
-	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
 		read(in);
 		process(processor);

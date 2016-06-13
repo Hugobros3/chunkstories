@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.input.KeyBindVirtual;
 
 import java.io.DataInputStream;
@@ -51,7 +52,7 @@ public class PacketInput extends Packet
 		}
 	}
 	
-	public void process(DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
 		read(in);
 		process(processor);
