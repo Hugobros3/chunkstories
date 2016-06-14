@@ -1,6 +1,8 @@
-package io.xol.chunkstories.api.entity;
+package io.xol.chunkstories.api.entity.interfaces;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.ClientController;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.entity.core.components.EntityComponentController;
 

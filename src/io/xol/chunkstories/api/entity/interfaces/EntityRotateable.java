@@ -1,4 +1,4 @@
-package io.xol.chunkstories.entity;
+package io.xol.chunkstories.api.entity.interfaces;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.entity.core.components.EntityComponentRotation;

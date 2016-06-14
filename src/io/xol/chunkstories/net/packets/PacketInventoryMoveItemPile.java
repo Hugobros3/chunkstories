@@ -2,7 +2,7 @@ package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityInventory;
-import io.xol.chunkstories.api.entity.EntityWithInventory;
+import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.events.core.PlayerMoveItemEvent;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;

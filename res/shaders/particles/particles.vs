@@ -16,7 +16,7 @@ varying float fogI;
 uniform float time;
 varying vec3 eye;
 uniform vec3 camPos;
-uniform vec3 borderShift;
+uniform vec3 objectPosition;
 
 uniform float vegetation;
 varying float chunkFade;
@@ -51,7 +51,7 @@ void main(){
 	vec4 v = billboardCoord;//vec4(gl_Vertex);
 	
 	//TODO : Clean this shit up	
-	v+=vec4(borderShift, 0.0);
+	v+=vec4(objectPosition, 0.0);
 	
 	//v += modelViewMatrixInv * vec4(planeCoord,0,0);
 	

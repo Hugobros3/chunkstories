@@ -11,9 +11,13 @@ import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientController;
-import io.xol.chunkstories.api.entity.EntityControllable;
-import io.xol.chunkstories.api.entity.EntityWithInventory;
-import io.xol.chunkstories.api.entity.EntityWithSelectedItem;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
+import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
+import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
+import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
+import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
+import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.rendering.Light;
@@ -22,9 +26,9 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.entity.EntityHUD;
-import io.xol.chunkstories.entity.EntityNameable;
 import io.xol.chunkstories.entity.core.components.EntityComponentController;
+import io.xol.chunkstories.entity.core.components.EntityComponentCreativeMode;
+import io.xol.chunkstories.entity.core.components.EntityComponentFlying;
 import io.xol.chunkstories.entity.core.components.EntityComponentSelectedItem;
 import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
 import io.xol.chunkstories.entity.core.components.EntityComponentName;
@@ -53,7 +57,7 @@ import io.xol.engine.textures.TexturesHandler;
 /**
  * Core/Vanilla player, has all the functionality you'd want from it
  */
-public class EntityPlayer extends EntityLivingImplentation implements EntityControllable, EntityHUD, EntityNameable, EntityWithInventory, EntityWithSelectedItem
+public class EntityPlayer extends EntityLivingImplentation implements EntityControllable, EntityHUD, EntityNameable, EntityWithInventory, EntityWithSelectedItem, EntityCreative, EntityFlying
 {
 	//Add the controller component to whatever else the superclass may have
 	EntityComponentController controllerComponent = new EntityComponentController(this, this.getComponents().getLastComponent());
@@ -61,8 +65,10 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	//Declared in constructor, makes no difference at the end of the day
 	EntityComponentInventory inventoryComponent;
 	EntityComponentSelectedItem selectedItemComponent;
-	
+
 	EntityComponentName name = new EntityComponentName(this, this.getComponents().getLastComponent());
+	EntityComponentCreativeMode creativeMode = new EntityComponentCreativeMode(this, this.getComponents().getLastComponent());
+	EntityComponentFlying flying = new EntityComponentFlying(this, this.getComponents().getLastComponent());
 
 	protected boolean noclip = true;
 
@@ -70,7 +76,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 	float lastPX = -1f;
 	float lastPY = -1f;
-	
+
 	//Body parts to render in first person
 	static Set<String> fp_elements = new HashSet<String>();
 
@@ -320,7 +326,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		targetVectorZ = Math.cos((180 - this.getEntityRotationComponent().getRotH() + modif) / 180f * Math.PI) * hSpeed;
 
 		eyePosition = 1.65 + Math.sin(walked * 5d) * 0.035d;
-		
+
 		//System.out.println("nrml mv");
 	}
 
@@ -459,12 +465,10 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		renderingContext.setDiffuseTexture(playerTexture.getID());
 		//Players models have no normal mapping
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
-
-		renderingContext.getCurrentShader().setUniformFloat3("borderShift", getLocation().castToSP());
 		//Prevents laggy behaviour
 
 		if (this.equals(Client.controlledEntity))
-			renderingContext.getCurrentShader().setUniformFloat3("borderShift", -(float) cam.pos.x, -(float) cam.pos.y-eyePosition, -(float) cam.pos.z);
+			renderingContext.getCurrentShader().setUniformFloat3("objectPosition", -(float) cam.pos.x, -(float) cam.pos.y - eyePosition, -(float) cam.pos.z);
 
 		//Player rotations to the viewmodel
 		Matrix4f playerRotationMatrix = new Matrix4f();
@@ -536,26 +540,30 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		}
 		if (getWorld() instanceof WorldMaster)
 		{
-			if (input.equals(MouseClick.LEFT))
+			//Creative mode features building and picking.
+			if (this.getCreativeModeComponent().isCreativeMode())
 			{
-				if (blockLocation != null)
+				if (input.equals(MouseClick.LEFT))
 				{
-					world.setDataAt(blockLocation, 0, false);
-				}
-			}
-			else if (input.equals(MouseClick.MIDDLE))
-			{
-				if (blockLocation != null)
-				{
-					int data = this.getWorld().getDataAt(blockLocation);
-
-					int voxelID = VoxelFormat.id(data);
-					int voxelMeta = VoxelFormat.meta(data);
-
-					if (voxelID > 0)
+					if (blockLocation != null)
 					{
-						ItemPile itemVoxel = new ItemPile("item_voxel", new String[] { "" + voxelID, "" + voxelMeta });
-						this.inventoryComponent.setItemPileAt(getSelectedItemComponent().getSelectedSlot(), 0, itemVoxel);
+						world.setDataAt(blockLocation, 0, false);
+					}
+				}
+				else if (input.equals(MouseClick.MIDDLE))
+				{
+					if (blockLocation != null)
+					{
+						int data = this.getWorld().getDataAt(blockLocation);
+
+						int voxelID = VoxelFormat.id(data);
+						int voxelMeta = VoxelFormat.meta(data);
+
+						if (voxelID > 0)
+						{
+							ItemPile itemVoxel = new ItemPile("item_voxel", new String[] { "" + voxelID, "" + voxelMeta });
+							this.inventoryComponent.setItemPileAt(getSelectedItemComponent().getSelectedSlot(), 0, itemVoxel);
+						}
 					}
 				}
 			}
@@ -590,5 +598,17 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	public EntityComponentName getNameComponent()
 	{
 		return name;
+	}
+
+	@Override
+	public EntityComponentFlying getFlyingComponent()
+	{
+		return flying;
+	}
+
+	@Override
+	public EntityComponentCreativeMode getCreativeModeComponent()
+	{
+		return creativeMode;
 	}
 }

@@ -3,7 +3,8 @@ package io.xol.chunkstories.server;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityControllable;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.server.net.ServerClient;
@@ -216,8 +217,8 @@ public class ServerPlayer implements Player
 	@Override
 	public void setFlying(boolean flying)
 	{
-		if(this.controlledEntity != null)
-			this.controlledEntity.setFlying(flying);
+		if(this.controlledEntity != null && this instanceof EntityFlying)
+			((EntityFlying) this.controlledEntity).getFlyingComponent().setFlying(flying);
 	}
 
 	@Override

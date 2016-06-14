@@ -13,7 +13,7 @@ uniform float vegetation;
 
 const float distScale = 0.9;
 
-uniform vec3 borderShift;
+uniform vec3 objectPosition;
 
 uniform float entity;
 
@@ -44,7 +44,7 @@ void main(){
 	}
 	<endif dynamicGrass>
 	
-	v.xyz += borderShift;
+	v.xyz += objectPosition;
 	gl_Position = accuratizeShadow(depthMVP * v);
 }
 

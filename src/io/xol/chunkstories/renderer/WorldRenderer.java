@@ -45,12 +45,12 @@ import io.xol.engine.textures.TexturesHandler;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.renderer.lights.LightsRenderer;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
@@ -834,11 +834,11 @@ public class WorldRenderer
 				double diffChunkX = vboDekalX + camIntPartX;
 				double diffChunkY = chunk.chunkY * 32 + camIntPartY;
 				double diffChunkZ = vboDekalZ + camIntPartZ;
-				opaqueBlocksShader.setUniformFloat3("borderShift", vboDekalX + camera.pos.x, chunk.chunkY * 32f + camera.pos.y, vboDekalZ + camera.pos.z);
-				opaqueBlocksShader.setUniformFloat3("borderShift", diffChunkX + fractPartX, diffChunkY + fractPartY, diffChunkZ + fractPartZ);
+				opaqueBlocksShader.setUniformFloat3("objectPosition", vboDekalX + camera.pos.x, chunk.chunkY * 32f + camera.pos.y, vboDekalZ + camera.pos.z);
+				opaqueBlocksShader.setUniformFloat3("objectPosition", diffChunkX + fractPartX, diffChunkY + fractPartY, diffChunkZ + fractPartZ);
 			}
 			else
-				shadowsPassShader.setUniformFloat3("borderShift", vboDekalX, chunk.chunkY * 32f, vboDekalZ);
+				shadowsPassShader.setUniformFloat3("objectPosition", vboDekalX, chunk.chunkY * 32f, vboDekalZ);
 
 			glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
 
@@ -916,17 +916,22 @@ public class WorldRenderer
 		glDisable(GL_CULL_FACE);
 		// Render entities
 		Iterator<Entity> ie = world.getAllLoadedEntities();
-		Entity e;
+		Entity entity;
 		while (ie.hasNext())
 		//for (Entity e : getAllLoadedEntities())
 		{
-			e = ie.next();
-			//Reset transformations
+			entity = ie.next();
+
+			//Set the context
+			renderingContext.getCurrentShader().setUniformFloat3("objectPosition", entity.getLocation());
+			renderingContext.getCurrentShader().setUniformFloat2("worldLight", world.getBlocklightLevel(entity.getLocation()), world.getSunlightLevel(entity.getLocation()));
+			
+			//Reset animations transformations
 			renderingContext.getCurrentShader().setUniformMatrix4f("localTansform", new Matrix4f());
 			renderingContext.getCurrentShader().setUniformMatrix3f("localTransformNormal", new Matrix3f());
-			renderingContext.getCurrentShader().setUniformFloat2("worldLight", world.getBlocklightLevel(e.getLocation()), world.getSunlightLevel(e.getLocation()));
-			if (e != null)
-				e.render(renderingContext);
+			
+			if (entity != null)
+				entity.render(renderingContext);
 		}
 
 		renderingContext.disableVertexAttribute(normalIn);
@@ -1037,7 +1042,7 @@ public class WorldRenderer
 				if (!shouldShowChunk)
 					continue;
 
-				liquidBlocksShader.setUniformFloat3("borderShift", vboDekalX, chunk.chunkY * 32, vboDekalZ);
+				liquidBlocksShader.setUniformFloat3("objectPosition", vboDekalX, chunk.chunkY * 32, vboDekalZ);
 
 				glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
 				renderedVertices += chunkRenderData.renderWaterBlocks(renderingContext);

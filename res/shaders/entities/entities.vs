@@ -20,7 +20,7 @@ uniform float time;
 varying vec3 eye;
 uniform vec3 camPos;
 //TODO get rid of this legacy bs
-uniform vec3 borderShift;
+uniform vec3 objectPosition;
 
 uniform float vegetation;
 varying float chunkFade;
@@ -56,7 +56,7 @@ void main(){
 	texcoord = texCoordIn;
 	vec4 v = localTransform * boneTransform * vec4(vertexIn.xyz, 1.0);
 	
-	v+=vec4(borderShift,0);
+	v+=vec4(objectPosition,0);
 	
 	varyingVertex = v;
 	varyingNormal =  localTransformNormal * boneTransformNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;

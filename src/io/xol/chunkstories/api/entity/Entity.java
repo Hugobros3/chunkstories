@@ -58,10 +58,6 @@ public interface Entity extends CSFSerializable
 	
 	public Vector3d moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions);
 	
-	public boolean isFlying();
-
-	public void setFlying(boolean flying);
-	
 	/**
 	 * Returns the entitie's AABBs to their position
 	 * @return

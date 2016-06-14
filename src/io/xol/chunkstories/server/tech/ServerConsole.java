@@ -2,10 +2,11 @@ package io.xol.chunkstories.server.tech;
 
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
+import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.server.Command;
 import io.xol.chunkstories.api.server.Player;
-import io.xol.chunkstories.net.packets.PacketEntity;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.net.ServerConnectionsHandler;
@@ -92,12 +93,29 @@ public class ServerConsole
 					Player client = ((Player)emitter);
 
 					Entity controlledEntity = client.getControlledEntity();
-					if(controlledEntity != null)
+					if(controlledEntity != null && controlledEntity instanceof EntityFlying)
 					{
-						boolean state = controlledEntity.isFlying();
+						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().isFlying();
 						state = !state;
-						client.sendMessage("Flying : "+state);
-						controlledEntity.setFlying(state);
+						client.sendMessage("flying : "+state);
+						((EntityFlying) controlledEntity).getFlyingComponent().setFlying(state);
+						return;
+					}
+				}
+			}
+			else if(cmd.equals("creative"))
+			{
+				if(emitter instanceof Player)
+				{
+					Player client = ((Player)emitter);
+
+					Entity controlledEntity = client.getControlledEntity();
+					if(controlledEntity != null && controlledEntity instanceof EntityCreative)
+					{
+						boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().isCreativeMode();
+						state = !state;
+						client.sendMessage("creative : "+state);
+						((EntityCreative) controlledEntity).getCreativeModeComponent().setCreativeMode(state);
 						return;
 					}
 				}

@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.entity;
 
-import io.xol.chunkstories.entity.EntityRotateable;
+import io.xol.chunkstories.api.entity.interfaces.EntityRotateable;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

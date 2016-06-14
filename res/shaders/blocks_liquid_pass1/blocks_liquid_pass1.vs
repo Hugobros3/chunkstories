@@ -34,7 +34,7 @@ varying vec3 eye;
 varying float fresnelTerm;
 
 uniform vec3 camPos;
-uniform vec3 borderShift;
+uniform vec3 objectPosition;
 
 uniform float vegetation;
 
@@ -81,7 +81,7 @@ void main(){
 	vec4 v = vec4(vertexIn.xyz, 1);
 	//Move vertex if needed
 	
-	v+=vec4(borderShift,0);
+	v+=vec4(objectPosition,0);
 	
 	varyingVertex = v;
 	

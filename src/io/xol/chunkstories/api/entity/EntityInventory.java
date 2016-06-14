@@ -2,6 +2,7 @@ package io.xol.chunkstories.api.entity;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.item.ItemPile;
 
 public interface EntityInventory

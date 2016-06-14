@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.events.core;
 
-import io.xol.chunkstories.api.entity.EntityWithInventory;
+import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.server.Player;

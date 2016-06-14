@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api.events.core;
 
+import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.server.Player;
@@ -51,9 +52,21 @@ public class PlayerMoveItemEvent extends Event
 	@Override
 	public void defaultBehaviour()
 	{
-		System.out.println("Asking to move "+pile+" to "+packet.newX+":"+packet.newY);
+		//System.out.println("Asking to move "+pile+" to "+packet.newX+":"+packet.newY);
 		if(packet.from == null)
-			player.sendMessage("Notice : dragging stuff from /dev/null to your inventory should be limited by permission.");
+		{
+			//player.sendMessage("Notice : dragging stuff from /dev/null to your inventory should be limited by permission.");
+			if(player.hasPermission("items.spawn") || (player.getControlledEntity() != null 
+					&& player.getControlledEntity() instanceof EntityCreative && ((EntityCreative) player.getControlledEntity()).getCreativeModeComponent().isCreativeMode()))
+			{
+				
+			}
+			else
+			{
+				player.sendMessage("#C00000You are neither in creative mode nor have the items.spawn permission.");
+				return;
+			}
+		}
 		
 		if(packet.to != null)
 			pile.moveTo(packet.to, packet.newX, packet.newY);

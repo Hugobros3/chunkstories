@@ -12,10 +12,9 @@ import java.util.List;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
-
+import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.chunkstories.entity.EntityHUD;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.world.World;
 import io.xol.engine.font.TrueTypeFont;
@@ -55,7 +54,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		
 		renderingContext.setDiffuseTexture(playerTexture.getID());
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
-		renderingContext.getCurrentShader().setUniformFloat3("borderShift", getLocation().castToSP());
+		renderingContext.getCurrentShader().setUniformFloat3("objectPosition", getLocation().castToSP());
 		int modelBlockData = world.getDataAt(getLocation());
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);

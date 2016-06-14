@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityControllable;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.net.StreamSource;
 import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.entity.EntityComponents;
@@ -63,6 +63,24 @@ public abstract class EntityComponent
 		}
 	}
 	
+	/**
+	 * Push the component to the controller, if such one exists
+	 */
+	public void pushComponentController()
+	{
+		if(this.entity instanceof EntityControllable)
+		{
+			Controller controller = ((EntityControllable) this.entity).getControllerComponent().getController();
+			if(controller != null)
+			{
+				pushComponent(controller);
+			}
+		}
+	}
+	
+	/**
+	 * Push the component to everyone but the controller, if such one exists
+	 */
 	public void pushComponentEveryoneButController()
 	{
 		//System.out.println("pushing2all");

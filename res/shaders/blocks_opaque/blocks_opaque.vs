@@ -24,7 +24,7 @@ varying float fogI;
 uniform float time;
 varying vec3 eye;
 uniform vec3 camPos;
-uniform vec3 borderShift;
+uniform vec3 objectPosition;
 
 uniform float vegetation;
 varying float chunkFade;
@@ -66,7 +66,7 @@ void main(){
 	}
 	<endif dynamicGrass>
 	
-	v+=vec4(borderShift,0);
+	v+=vec4(objectPosition,0);
 	
 	varyingVertex = v + vec4(camPos, 0.0);
 	varyingNormal =  (normalIn.xyz-0.5)*2.0;//normalIn;
