@@ -888,7 +888,7 @@ public class CubicChunk implements Chunk
 		
 
 		Deque<Integer> blockSourcesRemoval = CubicChunk.blockSourcesRemoval.get();
-		Deque<Integer> sunSourcesRemoval = CubicChunk.blockSourcesRemoval.get();
+		Deque<Integer> sunSourcesRemoval = CubicChunk.sunSourcesRemoval.get();
 		Deque<Integer> blockSources = CubicChunk.blockSources.get();
 		Deque<Integer> sunSources = CubicChunk.sunSources.get();
 		

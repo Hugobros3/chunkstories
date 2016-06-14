@@ -110,7 +110,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		super(w, x, y, z);
 		inventoryComponent = new EntityComponentInventory(this, 10, 4);
 		selectedItemComponent = new EntityComponentSelectedItem(this, inventoryComponent);
-		setFlying(false);
 	}
 
 	public EntityPlayer(World w, double x, double y, double z, String name)
@@ -119,7 +118,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		this.name.setName(name);
 		inventoryComponent = new EntityComponentInventory(this, 10, 4);
 		selectedItemComponent = new EntityComponentSelectedItem(this, inventoryComponent);
-		setFlying(false);
 	}
 
 	public void moveCamera()
@@ -190,7 +188,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		// Null-out acceleration, until modified by controls
 		synchronized (this)
 		{
-			if (isFlying())
+			if (this.getFlyingComponent().isFlying())
 				flyMove(controller);
 			else
 				normalMove(controller);
@@ -221,12 +219,12 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 				}
 		}
 
-		if (jumped)
+		if (jumped && !inWater)
 		{
 			jumped = false;
 			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
 		}
-		if (landed && !inWater)
+		if (landed)
 		{
 			landed = false;
 			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(vel.x * vel.x + vel.y * vel.y) * 0.1f), 1f);
@@ -375,7 +373,8 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			else
 				moveWithCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed, true);
 		}
-		if (isFlying())
+		
+		if (this.getFlyingComponent().isFlying())
 		{
 			this.vel.x = 0;
 			this.vel.y = 0;
@@ -460,7 +459,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 				animation = BVHLibrary.getAnimation("res/models/human-holding.bvh");
 		}
 		//Player textures
-		Texture playerTexture = TexturesHandler.getTexture("models/hogubrus3.png");
+		Texture playerTexture = TexturesHandler.getTexture("models/guyA.png");
 		playerTexture.setLinearFiltering(false);
 		renderingContext.setDiffuseTexture(playerTexture.getID());
 		//Players models have no normal mapping
@@ -490,8 +489,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		itemMatrix = animation.getTransformationForBone("boneItemInHand", 0);
 		Matrix4f.mul(playerRotationMatrix, itemMatrix, itemMatrix);
 
-		if (selectedItemPile != null)
-			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, itemMatrix);
 
 		if (getSelectedItemComponent().getSelectedItem() != null && getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemVoxel)
 		{
@@ -500,8 +497,16 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			{
 				Vector3d pos = getLocation();
 				Light heldBlockLight = new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.x, (float) pos.y + 1.6f, (float) pos.z), 15f);
-				renderingContext.addLight(heldBlockLight);
+				renderingContext.addLight(heldBlockLight);	
+				
+				renderingContext.getCurrentShader().setUniformFloat2("worldLight", ItemVoxel.getVoxel(pile).getLightLevel(0x00), world.getSunlightLevel(this.getLocation()));
+				
 			}
+		}
+		
+		if (selectedItemPile != null)
+		{
+			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, itemMatrix);
 		}
 	}
 
@@ -530,6 +535,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	@Override
 	public boolean handleInteraction(Input input)
 	{
+		
 		Location blockLocation = this.getBlockLookingAt(true);
 		ItemPile itemSelected = getSelectedItemComponent().getSelectedItem();
 		if (itemSelected != null)

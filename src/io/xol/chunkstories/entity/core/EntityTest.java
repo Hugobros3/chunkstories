@@ -46,10 +46,10 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 	@Override
 	public void render(RenderingContext renderingContext)
 	{
-		//i++;
+		i++;
 		i %= 80;
 		
-		Texture playerTexture = TexturesHandler.getTexture("models/hogubrus3.png");
+		Texture playerTexture = TexturesHandler.getTexture("models/guyA.png");
 		playerTexture.setLinearFiltering(false);
 		
 		renderingContext.setDiffuseTexture(playerTexture.getID());
@@ -65,7 +65,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 
 		
 		Matrix4f itemMatrix = BVHLibrary.getAnimation("res/models/human-viewport.bvh").getTransformationForBone("boneItemInHand", i);
-		
+
 		renderingContext.sendTransformationMatrix(itemMatrix);
 		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/ak47.hq.png"));
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
@@ -161,11 +161,11 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 	@Override
 	public void drawHUD(Camera camera)
 	{
-		Vector3f posOnScreen = camera.transform3DCoordinate(getLocation().castToSP());
+		Vector3f posOnScreen = camera.transform3DCoordinate(getLocation().castToSP().add(new Vector3f(0.0f, 2.5f, 0.0f)));
 		
 		float scale = posOnScreen.z;
 		float dekal = TrueTypeFont.arial12.getWidth("Player")*16*scale;
 		if(scale > 0)
-			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x-dekal/2, posOnScreen.y, "Player", 16*scale, 16*scale, new Vector4f(1,1,1,1));
+			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x-dekal/2, posOnScreen.y, "", 16*scale, 16*scale, new Vector4f(1,1,1,1));
 	}
 }

@@ -11,7 +11,10 @@ import java.util.Iterator;
 
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
+import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.input.KeyBinds;
@@ -41,7 +44,7 @@ public class ChatPanel
 			//TODO clickable text
 		}
 	}
-	
+
 	public class ChatPanelOverlay extends Overlay
 	{
 		public ChatPanelOverlay(OverlayableScene scene, Overlay parent)
@@ -53,9 +56,9 @@ public class ChatPanel
 		@Override
 		public void drawToScreen(int positionStartX, int positionStartY, int width, int height)
 		{
-			
+
 		}
-		
+
 		@Override
 		public boolean handleKeypress(int k)
 		{
@@ -86,7 +89,7 @@ public class ChatPanel
 				}
 				else if (inputBox.text.startsWith("/locspawn"))
 				{
-					if(inputBox.text.contains(" "))
+					if (inputBox.text.contains(" "))
 					{
 						int id = Integer.parseInt(inputBox.text.split(" ")[1]);
 						Entity test = EntitiesList.newEntity(Client.world, (short) id);
@@ -98,12 +101,12 @@ public class ChatPanel
 				else if (inputBox.text.startsWith("/locbutcher"))
 				{
 					Iterator<Entity> ie = Client.world.getAllLoadedEntities();
-					while(ie.hasNext())
+					while (ie.hasNext())
 					{
 						Entity e = ie.next();
-						System.out.println("checking "+e);
-						if(!e.equals(Client.controlledEntity))
-						{	
+						System.out.println("checking " + e);
+						if (!e.equals(Client.controlledEntity))
+						{
 							System.out.println("removing");
 							ie.remove();
 						}
@@ -113,12 +116,38 @@ public class ChatPanel
 				{
 					Client.world.saveEverything();
 				}
+				else if (inputBox.text.startsWith("/locfly"))
+				{
+
+					Entity controlledEntity = Client.getInstance().controlledEntity;
+					if (controlledEntity != null && controlledEntity instanceof EntityFlying)
+					{
+						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().isFlying();
+						state = !state;
+						Client.getInstance().printChat("flying : " + state);
+						((EntityFlying) controlledEntity).getFlyingComponent().setFlying(state);
+						//return;
+					}
+				}
+				else if (inputBox.text.startsWith("/loccrea"))
+				{
+
+					Entity controlledEntity = Client.getInstance().controlledEntity;
+					if (controlledEntity != null && controlledEntity instanceof EntityCreative)
+					{
+						boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().isCreativeMode();
+						state = !state;
+						Client.getInstance().printChat("creative : " + state);
+						((EntityCreative) controlledEntity).getCreativeModeComponent().setCreativeMode(state);
+					}
+				}
 				else if (Client.connection != null)
 					Client.connection.sendTextMessage("chat/" + inputBox.text);
 				else
 					insert(ColorsTools.getUniqueColorPrefix(Client.username) + Client.username + "#FFFFFF > " + inputBox.text);
+				
+				System.out.println(Client.username+" > "+inputBox.text);
 				inputBox.text = "";
-
 				chatting = false;
 				mainScene.changeOverlay(parent);
 			}
@@ -132,18 +161,18 @@ public class ChatPanel
 		{
 			return false;
 		}
-		
+
 		@Override
 		public boolean onScroll(int dy)
 		{
-			if(dy > 0)
+			if (dy > 0)
 				scroll++;
 			else
 				scroll--;
 			return true;
 		}
 	}
-	
+
 	private void openChatbox()
 	{
 		inputBox.text = "";
@@ -152,14 +181,14 @@ public class ChatPanel
 	}
 
 	int scroll = 0;
-	
+
 	public void draw()
 	{
 		while (chat.size() > chatHistorySize)
 			chat.removeLast();
-		if(scroll < 0 || !chatting)
+		if (scroll < 0 || !chatting)
 			scroll = 0;
-		if(scroll > chatHistorySize)
+		if (scroll > chatHistorySize)
 			scroll = chatHistorySize;
 		int ST = scroll;
 		int linesDrew = 0;
@@ -169,7 +198,7 @@ public class ChatPanel
 		{
 			//if (a >= chatHistorySize - lines)
 			ChatLine line = i.next();
-			if(ST > 0)
+			if (ST > 0)
 			{
 				ST--;
 				continue;
@@ -184,13 +213,13 @@ public class ChatPanel
 				a = 1;
 			//FontRenderer2.drawTextUsingSpecificFont(9, (linesDrew + 0 * maxLines - 1) * 24 + 100 + (chatting ? 50 : 0), 0, 32, line.text, BitmapFont.SMALLFONTS, a);
 			//TrueTypeFont.arial12.drawString(9, (-linesDrew + 1) * 24 + 100 + (chatting ? 50 : 0), line.text, 2, 2, 500, new Vector4f(1,1,1,a));
-			TrueTypeFont.arial12.drawStringWithShadow(9, (linesDrew - 1) * 26 + 100 + (chatting ? 50 : 0), line.text, 2, 2, 500, new Vector4f(1,1,1,a));
+			TrueTypeFont.arial12.drawStringWithShadow(9, (linesDrew - 1) * 26 + 100 + (chatting ? 50 : 0), line.text, 2, 2, 500, new Vector4f(1, 1, 1, a));
 		}
 		inputBox.setPosition(12, 112);
 		if (chatting)
 			inputBox.drawWithBackGroundTransparent();
 	}
-	
+
 	/**
 	 * Fetches message from the connection
 	 */

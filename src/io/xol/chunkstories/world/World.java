@@ -187,7 +187,7 @@ public abstract class World implements WorldInterface
 	@Override
 	public void addEntity(final Entity entity)
 	{
-		EntityImplementation impl = (EntityImplementation) entity;
+		//EntityImplementation impl = (EntityImplementation) entity;
 		if (this instanceof WorldMaster)
 		{
 			long nextUUID = nextEntityId();

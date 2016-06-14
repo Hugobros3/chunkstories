@@ -19,6 +19,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
+import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.exceptions.IllegalUUIDChangeException;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -48,8 +49,6 @@ public abstract class EntityImplementation implements Entity
 
 	public Vector3d vel;
 	public Vector3d acc;
-
-	protected boolean flying = false;
 
 	public boolean collision_top = false;
 	public boolean collision_bot = false;
@@ -163,7 +162,7 @@ public abstract class EntityImplementation implements Entity
 			vel.y = 0;
 
 		// Gravity
-		if (!isFlying())
+		if (!(this instanceof EntityFlying && ((EntityFlying)this).getFlyingComponent().isFlying()))
 		{
 			double terminalVelocity = inWater ? -0.02 : -0.5;
 			if (vel.y > terminalVelocity)
@@ -488,6 +487,7 @@ public abstract class EntityImplementation implements Entity
 		return maxDistanceToTravel;
 	}
 
+	/*
 	private CollisionBox[] translateAll(CollisionBox[] boxes, Vector3d vec)
 	{
 		for (CollisionBox box : boxes)
@@ -508,7 +508,7 @@ public abstract class EntityImplementation implements Entity
 			if (box.collidesWith(b))
 				return true;
 		return false;
-	}
+	}*/
 
 	@Override
 	public CollisionBox[] getTranslatedCollisionBoxes()
@@ -611,19 +611,6 @@ public abstract class EntityImplementation implements Entity
 	public boolean exists()
 	{
 		return existence.exists();
-	}
-
-	public boolean isFlying()
-	{
-		return flying;
-	}
-
-	public void setFlying(boolean flying)
-	{
-		this.flying = flying;
-
-		//if (this instanceof EntityControllable && ((EntityControllable) this).getController() != null)
-		//	((EntityControllable) this).getController().notifyFlyingStateChange(this);
 	}
 
 	@Override

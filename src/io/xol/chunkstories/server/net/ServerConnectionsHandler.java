@@ -156,7 +156,7 @@ public class ServerConnectionsHandler extends Thread
 		}
 	}
 
-	public void addClient(ServerClient serverClient)
+	private void addClient(ServerClient serverClient)
 	{
 		serverClient.open();
 		serverClient.start();
