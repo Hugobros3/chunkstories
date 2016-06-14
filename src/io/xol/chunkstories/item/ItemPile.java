@@ -17,7 +17,7 @@ import io.xol.chunkstories.item.inventory.CSFSerializable;
 
 public class ItemPile implements CSFSerializable
 {
-	public int amount = 1;
+	private int amount = 1;
 	public Item item;
 
 	public EntityComponentInventory inventory;
@@ -74,6 +74,8 @@ public class ItemPile implements CSFSerializable
 	public ItemPile setInfo(String[] info)
 	{
 		item.onCreate(this, info);
+		if (inventory != null)
+			this.inventory.pushComponentController();
 		return this;
 	}
 
@@ -118,48 +120,66 @@ public class ItemPile implements CSFSerializable
 	/**
 	 * Try to move an item to another slot
 	 * 
-	 * @param inventory2
+	 * @param destinationInventory
 	 *            new slot's inventory
-	 * @param x2
-	 * @param y2
+	 * @param destinationX
+	 * @param destinationY
 	 * @return null if successfull, this if not.
 	 */
 	//@SuppressWarnings("unchecked")
-	public ItemPile moveTo(EntityInventory inventory2, int x2, int y2)
+	public boolean moveTo(EntityInventory destinationInventory, int destinationX, int destinationY, int amountToTransfer)
 	{
-		//Remove it from where we are removing it from
-		if (inventory != null)
-			inventory.setItemPileAt(this.x, this.y, null);
-		//Moving an item to a null inventory destroys it
-		if (inventory2 == null)
-			return null;
-		if (inventory2.canPlaceItemAt(x2, y2, this))
-		{
-			ItemPile nextSelection = inventory2.getItem(x2, y2);
-			inventory2.placeItemPileAt(x2, y2, this);
-			//Successfull item move, then notify controller
-			
-			//if (inventory != null)
-			//	if (this.inventory.holder != null && this.inventory.holder instanceof Entity && this.inventory.holder instanceof EntityControllable && ((EntityControllable) this.inventory.holder).getController() != null)
-			//		((EntityControllable) this.inventory.holder).getController().notifyInventoryChange((CE) this.inventory.holder);
+		//We duplicate the pile and limit it's amount
+		ItemPile pileToSend = this.duplicate();
+		pileToSend.setAmount(amountToTransfer);
 
-			return nextSelection;
-		}
-		//Put it back if we can't move it
+		//The amount we're not trying to transfer
+		int leftAmountBeforeTransaction = this.getAmount() - amountToTransfer;
+
+		ItemPile leftFromTransaction = null;
+		//Moving an item to a null inventory would destroy it so it stays nulls
+		if (destinationInventory != null)
+			leftFromTransaction = destinationInventory.placeItemPileAt(destinationX, destinationY, pileToSend);
+
+		//If something was left from the transaction ( incomplete )
+		if (leftFromTransaction != null)
+			this.setAmount(leftAmountBeforeTransaction + leftFromTransaction.getAmount());
+
+		//If nothing was left but we only moved part of the stuff
+		else if (leftAmountBeforeTransaction > 0)
+			this.setAmount(leftAmountBeforeTransaction);
+
+		//If everything was moved we destroy this pile ... if it ever existed ( /dev/null inventories, creative mode etc )
 		else if (inventory != null)
-			inventory.placeItemPileAt(this.x, this.y, this);
-		return this;
+			inventory.setItemPileAt(this.x, this.y, null);
+
+		//Success conditions : either we transfered all or we transfered at least one
+		return leftFromTransaction == null || leftFromTransaction.getAmount() < amountToTransfer;
 	}
 
 	public ItemPile setAmount(int amount)
 	{
 		this.amount = amount;
+
+		if (inventory != null)
+			this.inventory.pushComponentController();
+
 		return this;
+	}
+
+	public int getAmount()
+	{
+		return amount;
 	}
 
 	public ItemData getData()
 	{
 		return data;
+	}
+
+	public boolean canMergeWith(ItemPile itemPile)
+	{
+		return this.getItem().comparePiles(this, itemPile);
 	}
 
 	/**
@@ -181,5 +201,10 @@ public class ItemPile implements CSFSerializable
 		{
 		}
 		return pile;
+	}
+	
+	public String toString()
+	{
+		return "[ItemPile t:"+getItem()+" a:"+amount+" i:"+inventory+" x:"+x+" y:"+y+" ]";
 	}
 }

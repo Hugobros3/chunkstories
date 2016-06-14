@@ -46,7 +46,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#getItem(int, int)
 	 */
 	@Override
-	public ItemPile getItem(int x, int y)
+	public ItemPile getItemPileAt(int x, int y)
 	{
 		if (contents[x % width][y % height] != null)
 			return contents[x % width][y % height] ;
@@ -79,23 +79,27 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#canPlaceItemAt(int, int, io.xol.chunkstories.item.ItemPile)
 	 */
 	@Override
-	public boolean canPlaceItemAt(int x, int y, ItemPile pile)
+	public boolean canPlaceItemAt(int x, int y, ItemPile itemPile)
 	{
 		if (contents[x % width][y % height] != null)
+		{
 			return false;
+		}
 		else
 		{
 			ItemPile p;
-			for (int i = 0; i < x + (pile.item.getSlotsWidth()); i++)
+			//Iterate the inventory up to the new pile x end ( position + width - 1 )
+			for (int i = 0; i < x + (itemPile.item.getSlotsWidth()); i++)
 			{
-				// If overflow in width
+				// If the item width would overflow the limits of the inventory
 				if (i >= width)
 					return false;
-				for (int j = 0; j < y + (pile.item.getSlotsHeight()); j++)
+				for (int j = 0; j < y + (itemPile.item.getSlotsHeight()); j++)
 				{
 					// If overflow in height
 					if (j >= height)
 						return false;
+					// Check nearby items don't overlap our pile
 					p = contents[i % width][j % height];
 					if (p != null)
 					{
@@ -112,32 +116,63 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#placeItemPileAt(int, int, io.xol.chunkstories.item.ItemPile)
 	 */
 	@Override
-	public ItemPile placeItemPileAt(int x, int y, ItemPile pile)
+	public ItemPile placeItemPileAt(int x, int y, ItemPile itemPile)
 	{
-		if (pile == null)
+		ItemPile currentPileAtLocation = this.getItemPileAt(x, y);
+		//If empty and has space, put it in.
+		if(currentPileAtLocation == null && canPlaceItemAt(x, y, itemPile))
 		{
-			contents[x % width][y % height] = null;
+			itemPile.inventory = this;
+			itemPile.x = x;
+			itemPile.y = y;
+			contents[x % width][y % height] = itemPile;
+			
+			//Push changes
+			if(this.holder != null)
+				this.pushComponentController();
+			
+			//There is nothing left
+			return null;
 		}
-		else if (canPlaceItemAt(x, y, pile))
+		//If the two piles are similar we can try to merge them
+		if(currentPileAtLocation != null && currentPileAtLocation.canMergeWith(itemPile))
 		{
-			pile.inventory = this;
-			pile.x = x;
-			pile.y = y;
-			contents[x % width][y % height] = pile;
+			Item item = currentPileAtLocation.getItem();
+			int currentAmount = currentPileAtLocation.getAmount();
+			int wouldBeAddedAmount = itemPile.getAmount();
+			
+			//The existing pile is not already full
+			if(currentAmount < item.getMaxStackSize())
+			{
+				int totalAmount = currentAmount + wouldBeAddedAmount;
+				//How much can we add ?
+				int addableAmmount = Math.min(totalAmount, item.getMaxStackSize()) - currentAmount;
+				
+				currentPileAtLocation.setAmount(currentAmount + addableAmmount);
+				//If we could add all to the first stack, discard the second pile
+				if(addableAmmount == wouldBeAddedAmount)
+				{
+					//Push changes
+					if(this.holder != null)
+						this.pushComponentController();
+					
+					return null;
+				}
+				//If we couldn't, reduce it's size
+				else
+				{
+					itemPile.setAmount(wouldBeAddedAmount - addableAmmount);
+					
+					//Push changes
+					if(this.holder != null)
+						this.pushComponentController();
+					
+					return itemPile;
+				}
+			}
 		}
-		else
-			return pile;
-		
-		//TODO rebuild with components
-		
-		/*if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
-		{
-			((EntityControllable)this.holder).getController().notifyInventoryChange((Entity)this.holder);
-		}*/
-		
-		if(this.holder != null)
-			this.pushComponentEveryone();
-		return null;
+		//If none of the above can be done, return the original pile.
+		return itemPile;
 	}
 	
 	/* (non-Javadoc)
@@ -149,9 +184,12 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		if (pile == null)
 		{
 			contents[x % width][y % height] = null;
+			
+			if(this.holder != null)
+				this.pushComponentController();
+			
 			return true;
 		}
-		
 		ItemPile temp = null;
 		if(contents[x % width][y % height] != null)
 		{
@@ -171,15 +209,9 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			contents[x % width][y % height] = temp;
 			return false;
 		}
-		//TODO rebuild with components
-		
-		/*if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
-		{
-			((EntityControllable)this.holder).getController().notifyInventoryChange((Entity)this.holder);
-		}*/
 
 		if(this.holder != null)
-			this.pushComponentEveryone();
+			this.pushComponentController();
 		return true;
 	}
 	
@@ -343,7 +375,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		contents = new ItemPile[width][height];
 
 		if(this.holder != null)
-			this.pushComponentEveryone();
+			this.pushComponentController();
 		//TODO rebuild with components
 		
 		/*if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)

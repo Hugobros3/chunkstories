@@ -41,7 +41,7 @@ public class PlayerMoveItemEvent extends Event
 
 		pile = packet.itemPile;
 		if(pile == null && packet.from != null)
-			pile = packet.from.getItem(packet.oldX, packet.oldY);
+			pile = packet.from.getItemPileAt(packet.oldX, packet.oldY);
 	}
 
 	public Player getPlayer()
@@ -68,14 +68,11 @@ public class PlayerMoveItemEvent extends Event
 			}
 		}
 		
-		if(packet.to != null)
-			pile.moveTo(packet.to, packet.newX, packet.newY);
-		else
-		{
-			if(packet.from != null)
-				packet.from.placeItemPileAt(packet.oldX, packet.oldY, null);
+		if(packet.to == null)
 			player.sendMessage("Notice : throwing stuff on ground is not yet implemented.");
-		}
+		
+		
+		pile.moveTo(packet.to, packet.newX, packet.newY, packet.amount);
 	}
 	
 }

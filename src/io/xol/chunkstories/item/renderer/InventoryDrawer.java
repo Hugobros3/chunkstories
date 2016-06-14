@@ -61,6 +61,7 @@ public class InventoryDrawer
 	{
 		if(getInventory() == null)
 			return;
+		
 		int cornerSize = 8 * scale;
 		int internalWidth = getInventory().getWidth() * 24 * scale;
 		
@@ -101,12 +102,12 @@ public class InventoryDrawer
 				
 				ItemPile selectedPile = null;
 				if(selectedSlot != null)
-					selectedPile = getInventory().getItem(selectedSlot[0], selectedSlot[1]);
-				ItemPile thisPile = getInventory().getItem(i, j);
+					selectedPile = getInventory().getItemPileAt(selectedSlot[0], selectedSlot[1]);
+				ItemPile thisPile = getInventory().getItemPileAt(i, j);
 				
 				if(summary)
 				{
-					ItemPile summaryBarSelected = getInventory().getItem(highlightSlot, 0);
+					ItemPile summaryBarSelected = getInventory().getItemPileAt(highlightSlot, 0);
 					if(summaryBarSelected != null && i == summaryBarSelected.x)
 					{
 						sumSlots2HL = summaryBarSelected.item.getSlotsWidth();
@@ -180,11 +181,28 @@ public class InventoryDrawer
 			for (int j = 0; j < height; j++)
 			{
 				ItemPile pile = getInventory().getContents()[i][j];
-				//If an item is present and we're not dragging it somewhere else
-				if(pile != null && !(InventoryOverlay.selectedItem != null && InventoryOverlay.selectedItem.inventory != null && getInventory().equals(InventoryOverlay.selectedItem.inventory) && InventoryOverlay.selectedItem.x == i && InventoryOverlay.selectedItem.y == j ))
+				if(pile != null)
 				{
+					int amountToDisplay = pile.getAmount();
+					//If we selected this item
+					if((InventoryOverlay.selectedItem != null 
+							&& InventoryOverlay.selectedItem.inventory != null 
+							&& getInventory().equals(InventoryOverlay.selectedItem.inventory) 
+							&& InventoryOverlay.selectedItem.x == i 
+							&& InventoryOverlay.selectedItem.y == j ))
+					{
+						amountToDisplay -= InventoryOverlay.selectedItemAmount;
+					}
+					if(amountToDisplay <= 0)
+						continue;
+					
 					int center = summary ? slotSize * (pile.item.getSlotsHeight()-1) / 2 : 0;
 					pile.getItem().getItemRenderer().renderItemInInventory(context, pile, x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, scale);
+					
+					//System.out.println(""+(x + cornerSize + ((pile.getItem().getSlotsWidth() - 0.5f) + i) * slotSize));
+
+					if(amountToDisplay > 1)
+						TrueTypeFont.arial12.drawStringWithShadow(x + cornerSize + ((pile.getItem().getSlotsWidth() - 1.0f) + i) * slotSize , y + cornerSize + j * slotSize, amountToDisplay+"", scale, scale, new Vector4f(1,1,1,1));
 				}
 			}
 		}

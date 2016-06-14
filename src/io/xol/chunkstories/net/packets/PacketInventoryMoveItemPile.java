@@ -35,6 +35,9 @@ public class PacketInventoryMoveItemPile extends PacketSynch
 		out.writeInt(oldY);
 		out.writeInt(newX);
 		out.writeInt(newY);
+		
+		out.writeInt(amount);
+		
 		//Describe the inventories
 		//A lone itemPile or a holderless inventory is described by 0x00
 		if(from == null || from.getHolder() == null)
@@ -73,6 +76,8 @@ public class PacketInventoryMoveItemPile extends PacketSynch
 		newX = in.readInt();
 		newY = in.readInt();
 		
+		amount = in.readInt();
+		
 		holderTypeFrom = in.readByte();
 		if(holderTypeFrom == 0x01)
 			eIdFrom = in.readLong();
@@ -91,6 +96,7 @@ public class PacketInventoryMoveItemPile extends PacketSynch
 	public ItemPile itemPile;
 	public EntityInventory from, to;
 	public int oldX, oldY, newX, newY;
+	public int amount;
 
 	byte holderTypeFrom, holderTypeTo;
 	
@@ -98,7 +104,7 @@ public class PacketInventoryMoveItemPile extends PacketSynch
 	
 	public void process(PacketsProcessor processor)
 	{
-		System.out.println(eIdFrom+"="+eIdTo +"   " + holderTypeFrom+":"+holderTypeTo);
+		//System.out.println(eIdFrom+"="+eIdTo +"   " + holderTypeFrom+":"+holderTypeTo);
 		
 		if(holderTypeFrom == 0x01)
 		{

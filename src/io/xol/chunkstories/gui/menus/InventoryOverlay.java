@@ -13,6 +13,8 @@ import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldRemoteClient;
 import io.xol.chunkstories.world.WorldLocalClient;
 import io.xol.engine.base.XolioWindow;
+import io.xol.engine.font.TrueTypeFont;
+import io.xol.engine.math.lalgb.Vector4f;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -23,7 +25,9 @@ public class InventoryOverlay extends Overlay
 	EntityInventory[] inventories;
 	InventoryDrawer[] drawers;
 
+	
 	public static ItemPile selectedItem;
+	public static int selectedItemAmount;
 
 	public InventoryOverlay(OverlayableScene scene, Overlay parent, EntityInventory[] entityInventories)
 	{
@@ -61,6 +65,10 @@ public class InventoryOverlay extends Overlay
 			
 			//
 			selectedItem.getItem().getItemRenderer().renderItemInInventory(mainScene.eng.renderingContext, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
+			
+			if(selectedItemAmount > 1)
+				TrueTypeFont.arial12.drawStringWithShadow(Mouse.getX() - width / 2 + (selectedItem.getItem().getSlotsWidth() - 1.0f) * slotSize , Mouse.getY() - height / 2, selectedItemAmount+"", 2, 2, new Vector4f(1,1,1,1));
+				
 		}
 		//System.out.println(inventories[0]);
 	}
@@ -92,13 +100,41 @@ public class InventoryOverlay extends Overlay
 					int y = c[1];
 					if (selectedItem == null)
 					{
-						selectedItem = inventories[i].getItem(x, y);
+						if(button == 0)
+						{
+							selectedItem = inventories[i].getItemPileAt(x, y);
+							selectedItemAmount = selectedItem == null ? 0 : selectedItem.getAmount();
+						}
+						else if(button == 1)
+						{
+							selectedItem = inventories[i].getItemPileAt(x, y);
+							selectedItemAmount = selectedItem == null ? 0 : 1;
+						}
 						//selectedItemInv = inventory;
 					}
-					else
+					else if(button == 1)
 					{
+						if(selectedItem.equals(inventories[i].getItemPileAt(x, y)))
+						{
+							if(selectedItemAmount < inventories[i].getItemPileAt(x, y).getAmount())
+								selectedItemAmount++;
+						}
+					}
+					else if(button == 0)
+					{
+						if(x == selectedItem.x && y == selectedItem.y)
+						{
+							//System.out.println("item put back into place so meh");
+							selectedItem = null;
+							return true;
+						}
+						
 						if (Client.world instanceof WorldLocalClient)
-							selectedItem = selectedItem.moveTo(inventories[i], x, y);
+						{
+							//If move was successfull
+							if(selectedItem.moveTo(inventories[i], x, y, selectedItemAmount))
+								selectedItem = null;
+						}
 						else if(Client.world instanceof WorldRemoteClient)
 						{
 							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(true);
@@ -109,11 +145,15 @@ public class InventoryOverlay extends Overlay
 							packetMove.newX = x;
 							packetMove.newY = y;
 							packetMove.itemPile = selectedItem;
+							packetMove.amount = selectedItemAmount;
 							Client.connection.sendPacket(packetMove);
-							selectedItem = selectedItem.moveTo(inventories[i], x, y);
+							//selectedItem = selectedItem.moveTo(inventories[i], x, y, selectedItemAmount);
+							//if(selectedItem.moveTo(inventories[i], x, y, selectedItemAmount))
+								selectedItem = null;
 						}
 						else
-							selectedItem = selectedItem.moveTo(inventories[i], x, y);
+							if(selectedItem.moveTo(inventories[i], x, y, selectedItemAmount))
+								selectedItem = null;
 					}
 					return true;
 				}
@@ -128,6 +168,7 @@ public class InventoryOverlay extends Overlay
 			packetMove.to = null;
 			packetMove.newX = 0;
 			packetMove.newY = 0;
+			packetMove.amount = selectedItemAmount;
 			packetMove.itemPile = selectedItem;
 			Client.connection.sendPacket(packetMove);
 			selectedItem = null;//selectedItem.moveTo(inventories[i], x, y);

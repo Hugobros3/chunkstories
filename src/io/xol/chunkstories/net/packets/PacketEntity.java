@@ -71,9 +71,6 @@ public class PacketEntity extends PacketSynch
 		//Loop throught all components
 		while(componentId != 0)
 		{
-			if(componentId != 2 && componentId != 6)
-				System.out.println("got component : "+componentId + "on "+entityUUID);
-			
 			if(!entity.getComponents().tryPullComponentInStream(componentId, sender, in))
 				throw new UnknownComponentException(componentId, entity.getClass());
 			componentId = in.readInt();

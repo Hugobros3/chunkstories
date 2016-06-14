@@ -383,7 +383,7 @@ public class GameplayScene extends OverlayableScene
 			if (a < 0)
 			{
 				selectedInventorySlot %= ((EntityWithInventory) player).getInventory().getWidth();
-				selected = ((EntityWithInventory) player).getInventory().getItem(selectedInventorySlot, 0);
+				selected = ((EntityWithInventory) player).getInventory().getItemPileAt(selectedInventorySlot, 0);
 				if (selected != null)
 					selectedInventorySlot += selected.item.getSlotsWidth();
 				else
@@ -394,7 +394,7 @@ public class GameplayScene extends OverlayableScene
 				selectedInventorySlot--;
 				if (selectedInventorySlot < 0)
 					selectedInventorySlot += ((EntityWithInventory) player).getInventory().getWidth();
-				selected = ((EntityWithInventory) player).getInventory().getItem(selectedInventorySlot, 0);
+				selected = ((EntityWithInventory) player).getInventory().getItemPileAt(selectedInventorySlot, 0);
 				if (selected != null)
 					selectedInventorySlot = selected.x;
 			}

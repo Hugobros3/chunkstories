@@ -14,7 +14,6 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.gui.Overlay;
-import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.input.KeyBinds;
@@ -118,8 +117,7 @@ public class ChatPanel
 				}
 				else if (inputBox.text.startsWith("/locfly"))
 				{
-
-					Entity controlledEntity = Client.getInstance().controlledEntity;
+					Entity controlledEntity = Client.controlledEntity;
 					if (controlledEntity != null && controlledEntity instanceof EntityFlying)
 					{
 						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().isFlying();
@@ -131,8 +129,7 @@ public class ChatPanel
 				}
 				else if (inputBox.text.startsWith("/loccrea"))
 				{
-
-					Entity controlledEntity = Client.getInstance().controlledEntity;
+					Entity controlledEntity = Client.controlledEntity;
 					if (controlledEntity != null && controlledEntity instanceof EntityCreative)
 					{
 						boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().isCreativeMode();

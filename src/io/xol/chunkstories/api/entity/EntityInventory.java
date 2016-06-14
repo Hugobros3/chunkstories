@@ -8,20 +8,21 @@ import io.xol.chunkstories.item.ItemPile;
 public interface EntityInventory
 {
 
-	ItemPile getItem(int x, int y);
+	ItemPile getItemPileAt(int x, int y);
 
 	boolean canPlaceItemAt(int x, int y, ItemPile pile);
 
 	/**
-	 * Returns null if the item was put in this inventory, the item if it wasn't
-	 * 
-	 * @param x
-	 * @param y
-	 * @param pile
-	 * @return
+	 * Tries to place an item at that location, it returns the argument 'pile' if it can't place it.
 	 */
 	ItemPile placeItemPileAt(int x, int y, ItemPile pile);
 
+	/**
+	 * Tries to replace the pile in the inventory with another pile
+	 * The failure condition is that if replacing the pile would cause it to 'overlap' neightbours and to prevent
+	 * that the game will not let you do so.
+	 * @return true if it succeeds, false else
+	 */
 	boolean setItemPileAt(int x, int y, ItemPile pile);
 
 	/**

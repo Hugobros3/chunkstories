@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.core.PlayerSpawnEvent;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
