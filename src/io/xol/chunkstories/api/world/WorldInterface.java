@@ -19,49 +19,49 @@ public interface WorldInterface
 	 * Adds an entity to the world, the entity location is supposed to be already defined
 	 * @param entity
 	 */
-	void addEntity(Entity entity);
+	public void addEntity(Entity entity);
 
 	/**
 	 * Removes an entity from the world, based on UUID
 	 * @param entity
 	 */
-	void removeEntity(Entity entity);
+	public void removeEntity(Entity entity);
 
 	/**
 	 * Game-logic function. Not something you'd be supposed to call
 	 */
-	void tick();
+	public void tick();
 
 	/**
 	 * Returns an iterator containing all the loaded entities.
 	 * Supposedly thread-safe
 	 * @return
 	 */
-	Iterator<Entity> getAllLoadedEntities();
+	public Iterator<Entity> getAllLoadedEntities();
 
 	/**
 	 * @param entityID a valid UUID
 	 * @return null if it can't be found
 	 */
-	Entity getEntityByUUID(long entityID);
+	public Entity getEntityByUUID(long entityID);
 
 	/**
 	 * As of the current version of the game, this is internally set to 1024
 	 * @return
 	 */
-	int getMaxHeight();
+	public int getMaxHeight();
 
 	/**
 	 * Return the world size devided by 32.
 	 * @return
 	 */
-	int getSizeInChunks();
+	public int getSizeInChunks();
 
 	/**
 	 * Return the world size (length of each square side)
 	 * @return
 	 */
-	double getWorldSize();
+	public double getWorldSize();
 
 	/**
 	 * Returns the block data at the specified location
@@ -69,7 +69,7 @@ public interface WorldInterface
 	 * @param location
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
-	int getDataAt(Location location);
+	public int getDataAt(Location location);
 
 	/**
 	 * Returns the block data at the specified location
@@ -77,7 +77,7 @@ public interface WorldInterface
 	 * @param load If set to false, will *not* try to load the chunk if it's not present and will instead return 0
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
-	int getDataAt(Location location, boolean load);
+	public int getDataAt(Location location, boolean load);
 
 	/**
 	 * Returns the block data at the specified location
@@ -87,7 +87,7 @@ public interface WorldInterface
 	 * @param z
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
-	int getDataAt(int x, int y, int z);
+	public int getDataAt(int x, int y, int z);
 
 	/**
 	 * Returns the block data at the specified location
@@ -97,7 +97,7 @@ public interface WorldInterface
 	 * @param load If set to false, will *not* try to load the chunk if it's not present and will instead return 0
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
-	int getDataAt(int x, int y, int z, boolean load);
+	public int getDataAt(int x, int y, int z, boolean load);
 
 	/**
 	 * Sets the block data at the specified location
@@ -107,7 +107,7 @@ public interface WorldInterface
 	 * @param z
 	 * @param i The new data to set the block to, see {@link VoxelFormat}
 	 */
-	void setDataAt(int x, int y, int z, int i);
+	public void setDataAt(int x, int y, int z, int i);
 
 	/**
 	 * Sets the block data at the specified location
@@ -115,7 +115,7 @@ public interface WorldInterface
 	 * @param location
 	 * @param i The new data to set the block to, see {@link VoxelFormat}
 	 */
-	void setDataAt(Location location, int i);
+	public void setDataAt(Location location, int i);
 
 	/**
 	 * Sets the block data at the specified location
@@ -123,7 +123,7 @@ public interface WorldInterface
 	 * @param i The new data to set the block to, see {@link VoxelFormat}
 	 * @param load If set to false, will *not* try to load the chunk if it's not present
 	 */
-	void setDataAt(Location location, int i, boolean load);
+	public void setDataAt(Location location, int i, boolean load);
 
 	/**
 	 * Sets the block data at the specified location
@@ -133,7 +133,7 @@ public interface WorldInterface
 	 * @param i The new data to set the block to, see {@link VoxelFormat}
 	 * @param load If set to false, will *not* try to load the chunk if it's not present
 	 */
-	void setDataAt(int x, int y, int z, int i, boolean load);
+	public void setDataAt(int x, int y, int z, int i, boolean load);
 
 	/**
 	 * @param x
@@ -142,9 +142,9 @@ public interface WorldInterface
 	 * @return The sun light level of the block per {@link VoxelFormat} ( 0-15 ) using either getDataAt if the chunk is loaded or
 	 * the heightmap ( y <= heightmapLevel(x, z) ? 0 : 15 )
 	 */
-	int getSunlightLevel(int x, int y, int z);
+	public int getSunlightLevel(int x, int y, int z);
 	
-	int getSunlightLevel(Location location);
+	public int getSunlightLevel(Location location);
 	
 	/**
 	 * 
@@ -153,9 +153,9 @@ public interface WorldInterface
 	 * @param z
 	 * @return Returns the block light level of the block per {@link VoxelFormat} ( 0-15 ) using getDataAt ( if the chunk isn't loaded it will return a zero. )
 	 */
-	int getBlocklightLevel(int x, int y, int z);
+	public int getBlocklightLevel(int x, int y, int z);
 
-	int getBlocklightLevel(Location location);
+	public int getBlocklightLevel(Location location);
 	
 	/**
 	 * Returns null or a chunk. If the load flag is set to true, it will also try to load it ingame
@@ -165,88 +165,102 @@ public interface WorldInterface
 	 * @param load
 	 * @return
 	 */
-	CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
+	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
 
-	ChunksIterator getAllLoadedChunks();
+	public ChunksIterator getAllLoadedChunks();
 	
 	/**
 	 * Unloads forcefully a chunk
 	 * @param c
 	 * @param save
 	 */
-	void removeChunk(CubicChunk c, boolean save);
+	public void removeChunk(CubicChunk c, boolean save);
 
-	void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save);
+	public void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save);
 
 	/**
 	 * Unloads bits of the map not required by anyone
 	 */
-	void trimRemovableChunks();
+	public void trimRemovableChunks();
 	/**
 	 * @param chunkX
 	 * @param chunkY
 	 * @param chunkZ
 	 * @return True if the chunk is loaded
 	 */
-	boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ);
+	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ);
 	
 	/**
 	 * Loads or replaces an entire chunk with another
 	 * @param chunk
 	 */
-	void setChunk(CubicChunk chunk);
+	public void setChunk(CubicChunk chunk);
 
 	/**
 	 * For dirty hacks that need so
 	 */
-	void redrawAllChunks();
+	public void redrawAllChunks();
 
 	/**
 	 * Unloads everything
 	 */
-	void unloadEverything();
+	public void unloadEverything();
 
 	/**
 	 * Blocking method saving all loaded chunks
 	 */
-	void saveEverything();
+	public void saveEverything();
 
 	/**
 	 * Destroys the world, kill threads and frees stuff
 	 */
-	void destroy();
+	public void destroy();
 
-	boolean isRaining();
+	public boolean isRaining();
 
-	void setWeather(boolean isRaining);
+	public void setWeather(boolean isRaining);
 
-	Location getDefaultSpawnLocation();
+	public Location getDefaultSpawnLocation();
 
 	/**
 	 * Sets the time of the World. By default the time is set at 5000 and it uses a 10.000 cycle, 0 being midnight and 5000 being midday
 	 * @param time
 	 */
-	void setTime(long time);
+	public void setTime(long time);
 
-	WorldGenerator getGenerator();
+	public WorldGenerator getGenerator();
 
 	/**
 	 * Called when some controllable entity try to interact with the world
-	 * @return
+	 * @return true if the interaction was handled
 	 */
-	boolean handleInteraction(Entity entity, Location blockLocation, Input input);
+	public boolean handleInteraction(Entity entity, Location blockLocation, Input input);
 	
 	/**
 	 * Raytraces throught the world to find a solid block
-	 * @param limit Limits how far to raycast
+	 * @param limit Between 0 and a finite number
 	 * @return The exact location of the intersection or null if it didn't found one
 	 */
-	Location raytraceSolid(Location initialPosition, Vector3d direction, double limit);
+	public Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit);
 	
 	/**
 	 * Raytraces throught the world to find a solid block
-	 * @param limit Limits how far to raycast
+	 * @param limit Between 0 and a finite number
 	 * @return The exact location of the step just before the intersection ( as to get the adjacent block ) or null if it didn't found one
 	 */
-	Location raytraceSolidOuter(Location initialPosition, Vector3d direction, double limit);
+	public Location raytraceSolidOuter(Vector3d initialPosition, Vector3d direction, double limit);
+	
+	/**
+	 * Takes into account the voxel terrain and will stop at a solid block, <b>warning</b> limit can't be == -1 !
+	 * @param limit Between 0 and a finite number
+	 * @return Returns all entities that intersects with the ray within the limit, ordered nearest to furthest
+	 */
+	public Iterator<Entity> rayTraceEntities(Vector3d initialPosition, Vector3d direction, double limit);
+
+	/**
+	 * Ignores any terrain
+	 * @param limit Either -1 or between 0 and a finite number
+	 * @return Returns all entities that intersects with the ray within the limit, ordered nearest to furthest
+	 */
+	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3d initialPosition, Vector3d direction, double limit);
 }

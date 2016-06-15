@@ -416,19 +416,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			return world.raytraceSolidOuter(new Location(world, initialPosition), direction, 256.0);
 	}
 
-	public Vector3d getDirectionLookingAt()
-	{
-		Vector3d direction = new Vector3d();
-
-		float a = (float) ((-this.getEntityRotationComponent().getRotH()) / 360f * 2 * Math.PI);
-		float b = (float) ((this.getEntityRotationComponent().getRotV()) / 360f * 2 * Math.PI);
-		direction.x = -(float) Math.sin(a) * (float) Math.cos(b);
-		direction.y = -(float) Math.sin(b);
-		direction.z = -(float) Math.cos(a) * (float) Math.cos(b);
-
-		return direction.normalize();
-	}
-
 	@Override
 	public void drawHUD(Camera camera)
 	{
@@ -545,7 +532,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	@Override
 	public boolean handleInteraction(Input input)
 	{
-		
 		Location blockLocation = this.getBlockLookingAt(true);
 		ItemPile itemSelected = getSelectedItemComponent().getSelectedItem();
 		if (itemSelected != null)

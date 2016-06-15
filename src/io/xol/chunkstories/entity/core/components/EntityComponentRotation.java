@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.net.StreamSource;
 import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -31,6 +32,22 @@ public class EntityComponentRotation extends EntityComponent
 	public float getRotV()
 	{
 		return rotV;
+	}
+
+	/**
+	 * @return A vector3d for the direction
+	 */
+	public Vector3d getDirectionLookingAt()
+	{
+		Vector3d direction = new Vector3d();
+
+		float a = (float) ((-getRotH()) / 360f * 2 * Math.PI);
+		float b = (float) ((getRotV()) / 360f * 2 * Math.PI);
+		direction.x = -(float) Math.sin(a) * (float) Math.cos(b);
+		direction.y = -(float) Math.sin(b);
+		direction.z = -(float) Math.cos(a) * (float) Math.cos(b);
+
+		return direction.normalize();
 	}
 	
 	public void setRotation(float rotH, float rotV)

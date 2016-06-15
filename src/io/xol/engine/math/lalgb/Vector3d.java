@@ -168,6 +168,11 @@ public class Vector3d
 		return this;
 	}
 
+	public double distanceTo(Vector3d vec)
+	{
+		return Math.sqrt((x - vec.x) * (x - vec.x) + (y - vec.y) * (y - vec.y) + (z - vec.z) * (z - vec.z));
+	}
+	
 	public Vector3d clone()
 	{
 		return new Vector3d(x, y, z);

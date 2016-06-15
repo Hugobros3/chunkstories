@@ -38,6 +38,7 @@ import io.xol.chunkstories.world.chunk.ChunksHolders;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.generator.WorldGenerators;
 import io.xol.chunkstories.world.io.IOTasks;
+import io.xol.chunkstories.world.iterators.EntityRayIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.summary.RegionSummaries;
 import io.xol.engine.concurrency.SimpleLock;
@@ -882,26 +883,23 @@ public abstract class World implements WorldInterface
 		return generator;
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#handleInteraction(io.xol.chunkstories.api.entity.Entity, io.xol.chunkstories.api.Location, io.xol.chunkstories.api.input.Input)
-	 */
 	@Override
 	public boolean handleInteraction(Entity entity, Location blockLocation, Input input)
 	{
 		return false;
 	}
 	
-	public Location raytraceSolid(Location initialPosition, Vector3d direction, double limit)
+	public Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit)
 	{
 		return raytraceSolid(initialPosition, direction, limit, false);
 	}
 	
-	public Location raytraceSolidOuter(Location initialPosition, Vector3d direction, double limit)
+	public Location raytraceSolidOuter(Vector3d initialPosition, Vector3d direction, double limit)
 	{
 		return raytraceSolid(initialPosition, direction, limit, true);
 	}
 	
-	private Location raytraceSolid(Location initialPosition, Vector3d direction, double limit, boolean outer)
+	private Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit, boolean outer)
 	{
 		direction.normalize();
 		//direction.scale(0.02);
@@ -1007,6 +1005,22 @@ public abstract class World implements WorldInterface
 		}
 		while (distance < limit);
 		return null;
+	}
+	
+	public Iterator<Entity> rayTraceEntities(Vector3d initialPosition, Vector3d direction, double limit)
+	{
+		double blocksLimit = limit;
+		
+		Vector3d blocksCollision = this.raytraceSolid(initialPosition, direction, limit);
+		if(blocksCollision != null)
+			blocksLimit = blocksCollision.distanceTo(initialPosition);
+		
+		return raytraceEntitiesIgnoringVoxels(initialPosition, direction, blocksLimit);
+	}
+	
+	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3d initialPosition, Vector3d direction, double limit)
+	{
+		return new EntityRayIterator(this, initialPosition, direction, limit);
 	}
 	
 	private int sanitizeHorizontalCoordinate(int coordinate)

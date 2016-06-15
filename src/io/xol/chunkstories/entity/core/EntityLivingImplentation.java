@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.entity.core.components.EntityComponentRotation;
 import io.xol.chunkstories.world.World;
+import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -58,5 +59,10 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	public EntityComponentRotation getEntityRotationComponent()
 	{
 		return entityRotationComponent;
+	}
+	
+	public Vector3d getDirectionLookingAt()
+	{
+		return getEntityRotationComponent().getDirectionLookingAt();
 	}
 }

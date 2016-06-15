@@ -524,7 +524,6 @@ public class WorldRenderer
 					int distanceA = LoopingMathHelper.moduloDistance(a.chunkX, currentChunkX, world.getSizeInChunks()) + LoopingMathHelper.moduloDistance(a.chunkZ, currentChunkZ, world.getSizeInChunks());
 					int distanceB = LoopingMathHelper.moduloDistance(b.chunkX, currentChunkX, world.getSizeInChunks()) + LoopingMathHelper.moduloDistance(b.chunkZ, currentChunkZ, world.getSizeInChunks());
 					return distanceA - distanceB;
-					//return distanceB - distanceA;
 				}
 			});
 
