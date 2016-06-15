@@ -9,6 +9,8 @@ import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.physics.particules.ParticleBlood;
+import io.xol.chunkstories.physics.particules.ParticleMuzzleFlash;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -17,7 +19,6 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public class ItemAk47 extends Item
 {
-	
 	public ItemAk47(int id)
 	{
 		super(id);
@@ -37,19 +38,42 @@ public class ItemAk47 extends Item
 			if(user instanceof EntityLiving)
 			{
 				EntityLiving shooter = (EntityLiving)user;
+				shooter.getWorld().playSoundEffect("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f);
+				
 				Vector3d eyeLocation = new Vector3d(shooter.getLocation());
 				if(shooter instanceof EntityPlayer)
 					eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
 				if (input.equals(MouseClick.LEFT))
 				{
 					Iterator<Entity> shotEntities = user.getWorld().rayTraceEntities(eyeLocation, shooter.getDirectionLookingAt(), 256f);
-					System.out.println("Intersections : ");
 					while(shotEntities.hasNext())
 					{
 						Entity shotEntity = shotEntities.next();
-						System.out.println("Shot : "+shotEntity);
+						//Don't shoot itself
+						if(!shotEntity.equals(shooter))
+						{
+							Vector3d hitPoint = shotEntity.collidesWith(eyeLocation, shooter.getDirectionLookingAt());
+							/*shooter.getWorld().addParticle(
+									new ParticleBlood(shooter.getWorld(), 
+											hitPoint, 
+											shooter.getDirectionLookingAt().normalize().scale(1.0)));*/
+							Vector3d bloodDir = shooter.getDirectionLookingAt().normalize().scale(0.25);
+							for(int i = 0; i < 25; i++)
+							{
+								Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+								random.scale(0.25);
+								random.add(bloodDir);
+								shooter.getWorld().addParticle(
+										new ParticleBlood(shooter.getWorld(), 
+												hitPoint, 
+												random));
+							}
+							
+						}
 					}
 				}
+				
+				shooter.getWorld().addParticle(new ParticleMuzzleFlash(shooter.getWorld(), eyeLocation));
 			}
 		}
 		return false;

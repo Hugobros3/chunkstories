@@ -487,28 +487,31 @@ public abstract class EntityImplementation implements Entity
 		return maxDistanceToTravel;
 	}
 
-	/*
-	private CollisionBox[] translateAll(CollisionBox[] boxes, Vector3d vec)
+	public boolean collidesWith(CollisionBox box)
 	{
-		for (CollisionBox box : boxes)
-			box.translate(vec);
-		return boxes;
+		return box.collidesWith(this);
 	}
-
-	private CollisionBox[] translateAll(CollisionBox[] boxes, double x, double y, double z)
+	
+	public boolean collidesWith(Entity entity)
 	{
-		for (CollisionBox box : boxes)
-			box.translate(x, y, z);
-		return boxes;
-	}
-
-	private boolean collidesWith(CollisionBox[] boxes, CollisionBox b)
-	{
-		for (CollisionBox box : boxes)
-			if (box.collidesWith(b))
+		for(CollisionBox box : this.getTranslatedCollisionBoxes())
+		{
+			if(box.collidesWith(entity))
 				return true;
+		}
 		return false;
-	}*/
+	}
+	
+	public Vector3d collidesWith(Vector3d lineStart, Vector3d lineDirection)
+	{
+		for(CollisionBox box : this.getTranslatedCollisionBoxes())
+		{
+			Vector3d collides = box.collidesWith(lineStart, lineDirection);
+			if(collides != null)
+				return collides;
+		}
+		return null;
+	}
 
 	@Override
 	public CollisionBox[] getTranslatedCollisionBoxes()

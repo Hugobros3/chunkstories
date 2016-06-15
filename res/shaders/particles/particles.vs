@@ -51,7 +51,7 @@ void main(){
 	vec4 v = billboardCoord;//vec4(gl_Vertex);
 	
 	//TODO : Clean this shit up	
-	v+=vec4(objectPosition, 0.0);
+	//v+=vec4(objectPosition, 0.0);
 	
 	//v += modelViewMatrixInv * vec4(planeCoord,0,0);
 	
@@ -62,9 +62,6 @@ void main(){
 	lightMapCoords = vec2(0.0, 1.0);
 	//baseLight *= texture2DGammaIn(lightColors, vec2(time, 1.0)).rgb;
 	
-	//Translate vertex
-	vec4 cameraUp = modelViewMatrixInv * vec4(0, 1, 0, 1);
-	vec4 cameraRight = modelViewMatrixInv * vec4(1, 0, 1, 1);
 	
 	modelview = modelViewMatrix * v;
 	
@@ -73,7 +70,8 @@ void main(){
 	vec4 clochard = projectionMatrix * modelview;
 	
 	gl_Position = clochard;
+	//gl_Position = vec4(planeCoord, 0.0, 1.0);
 	
 	//Eye transform
-	eye = v.xyz-camPos;
+	//eye = v.xyz-camPos;
 }

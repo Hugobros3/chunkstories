@@ -1,7 +1,6 @@
 package io.xol.chunkstories.physics.particules;
 
 import io.xol.chunkstories.physics.particules.Particle.Type;
-import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
@@ -107,10 +106,10 @@ public class ParticlesHolder
 
 	}
 
-	public int renderLights(WorldRenderer worldRenderer)
+	public int renderLights(RenderingContext renderingContext)
 	{
 		int i = 0;
-		/*for (List<Particle> list : particles.values())
+		for (List<Particle> list : particles.values())
 		{
 			synchronized (list)
 			{
@@ -120,12 +119,13 @@ public class ParticlesHolder
 					{
 						for (Particle p : list)
 						{
-							worldRenderer.renderDefferedLight(p.getLightEmited());
+							renderingContext.addLight(p.getLightEmited());
+							//worldRenderer.renderDefferedLight(p.getLightEmited());
 						}
 					}
 				}
 			}
-		}*/
+		}
 		return i;
 	}
 
@@ -135,12 +135,12 @@ public class ParticlesHolder
 		XolioWindow.getInstance().getRenderingContext().setCurrentShader(particlesShader);
 		//particlesShader.use(true);
 		// TexturesHandler.bindTexture("./res/textures/smoke.png");
-		glEnable(GL_BLEND);
+		//glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glBlendEquation(GL_FUNC_ADD);
 		glDisable(GL_CULL_FACE);
-		 glEnable(GL_ALPHA_TEST);
-		 glAlphaFunc(GL_GREATER, 0.0f);
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.0f);
 
 		particlesShader.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
 
@@ -232,7 +232,7 @@ public class ParticlesHolder
 						glVertexAttribPointer(planeVAL, 2, GL_FLOAT, false, 8, 0);
 						// glDrawElements(GL_POINTS, elements, GL_UNSIGNED_BYTE,
 						// 0);
-						glPointSize(4f);
+						//glPointSize(4f);
 						glDrawArrays(GL_QUADS, 0, elements);
 						totalDrawn += elements;
 					}
@@ -246,6 +246,8 @@ public class ParticlesHolder
 		renderingContext.disableVertexAttribute(billCoordVAL);
 		//glDisablezVertexAttribArray(texcoordVAL);
 
+		//ObjectRenderer.drawFSQuad(billCoordVAL);
+		
 		glDepthMask(true);
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -254,6 +256,8 @@ public class ParticlesHolder
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+		renderLights(renderingContext);
+		
 		return totalDrawn;
 	}
 

@@ -1,8 +1,7 @@
 package io.xol.chunkstories.physics.particules;
 
 import io.xol.chunkstories.api.rendering.Light;
-import io.xol.chunkstories.world.World;
-
+import io.xol.chunkstories.api.world.WorldInterface;
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -10,7 +9,7 @@ import io.xol.chunkstories.world.World;
 public abstract class Particle
 {
 
-	public World world;
+	public WorldInterface world;
 	public double posX, posY, posZ;
 
 	public boolean dead = false;
@@ -20,9 +19,8 @@ public abstract class Particle
 		dead = true;
 	}
 
-	public Particle(World world, double posX, double posY, double posZ)
+	public Particle(WorldInterface world, double posX, double posY, double posZ)
 	{
-		super();
 		this.world = world;
 		this.posX = posX;
 		this.posY = posY;
@@ -52,7 +50,7 @@ public abstract class Particle
 
 	public enum Type
 	{
-		VOXEL_FRAGMENT, SMOKE, RAINFALL, RAINSMASH, LIGHT, SLIGHT;
+		VOXEL_FRAGMENT, SMOKE, RAINFALL, RAINSMASH, LIGHT, SLIGHT, MUZZLE, BLOOD;
 		;
 	}
 }

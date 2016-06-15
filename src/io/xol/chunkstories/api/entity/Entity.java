@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
+import io.xol.chunkstories.physics.Collidable;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
@@ -21,7 +22,7 @@ import io.xol.engine.model.RenderingContext;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface Entity extends CSFSerializable
+public interface Entity extends Collidable, CSFSerializable
 {
 	/**
 	 * Returns the location of the entity

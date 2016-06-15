@@ -1,54 +1,48 @@
 package io.xol.chunkstories.physics.particules;
 
+import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.chunkstories.api.rendering.Light;
+import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
-import io.xol.chunkstories.world.World;
 import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ParticleLight extends Particle
+public class ParticleMuzzleFlash extends Particle
 {
-
-	int timer = 2400;// for 40sec
+	int timer = 1;// for 40sec
 
 	DefferedLight dl;
 
 	@Override
 	public Type getType()
 	{
-		return LIGHT;
+		return MUZZLE;
 	}
 
 	@Override
 	public void update()
 	{
-		if (!((World) world).checkCollisionPoint(posX, posY, posZ))
-			posY += -0.25;
-		// posX+=Math.sin(timer/30f)*0.5;
-		// posZ+=Math.cos(timer/30f)*0.5;
-		// posY+=Math.cos(timer/15f)*0.1;
 		timer--;
-		/*
-		 * if(timer < 0) kill();
-		 */
-		dl.position = new Vector3f((float) posX, (float) posY, (float) posZ);
-		// dl.decay = timer/360f;
-		// dl.decay = 8f+(float)Math.sin(timer/20f)*4f;
-		// dl.decay = 8f+1f;
+		if(timer < 0)
+			kill();
 	}
 
-	public ParticleLight(World world, double posX, double posY, double posZ)
+	public ParticleMuzzleFlash(WorldInterface world, Vector3d vec)
+	{
+		this(world, vec.x, vec.y, vec.z);
+	}
+	
+	public ParticleMuzzleFlash(WorldInterface world, double posX, double posY, double posZ)
 	{
 		super(world, posX, posY, posZ);
-		dl = new DefferedLight(new Vector3f(0.5f + (float) Math.random(),
-				0.5f + (float) Math.random(), 0.5f + (float) Math.random()),
+		dl = new DefferedLight(new Vector3f(1.0f, 181f/255f, 79/255f),
 				new Vector3f((float) posX, (float) posY, (float) posZ),
-				05f + (float) Math.random() * 15f);
+				15f + (float) Math.random() * 5f);
 		/*
 		 * if(Math.random() > 0.5) { dl.angle = 22; float rotx = (float)
 		 * (Math.random()*45f); float roty = (float) (Math.random()*360f); float

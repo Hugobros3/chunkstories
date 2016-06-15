@@ -85,17 +85,13 @@ void main(){
 	
 	vec4 source = texture2D(diffuseGBuffer, gl_FragCoord.xy);
 	
-	if(alpha < 1)
+	if(alpha < 1.0)
 		discard;
 	
 	//Diffuse G-Buffer
 	gl_FragData[0] = vec4(baseColor,alpha);
-	//Normal G-Buffer
-	gl_FragData[1] = vec4(0.5,0.5,1,1);
+	//Normal G-Buffer + reflections
+	gl_FragData[1] = vec4(0.5, 0.5, 1.0, 0.0);
 	//Light color G-buffer
-	gl_FragData[2] = vec4(finalLight,alpha);
-	//Specular G-Buffer
-	gl_FragData[3] = vec4(specular, specular, specular, 1);
-	//Modelview buffer (discard)
-	//gl_FragData[4] = vec4(modelview.rgb,modelview.a);
+	gl_FragData[2] = vec4(lightMapCoords, 0.0,1.0);
 }

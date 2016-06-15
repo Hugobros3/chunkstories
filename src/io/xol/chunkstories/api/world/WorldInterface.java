@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.physics.particules.Particle;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.math.lalgb.Vector3d;
 
@@ -263,4 +264,8 @@ public interface WorldInterface
 	 * @return Returns all entities that intersects with the ray within the limit, ordered nearest to furthest
 	 */
 	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3d initialPosition, Vector3d direction, double limit);
+	
+	public void addParticle(Particle particle);
+
+	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain);
 }

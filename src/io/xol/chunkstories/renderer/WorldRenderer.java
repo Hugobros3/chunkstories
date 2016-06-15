@@ -907,7 +907,6 @@ public class WorldRenderer
 			shadowsPassShader.setUniformFloat("entity", 1);
 		}
 
-		// Particles rendering
 		//Client.world.particlesHolder.render(renderingContext);
 		glEnable(GL_CULL_FACE);
 
@@ -936,7 +935,6 @@ public class WorldRenderer
 		renderingContext.disableVertexAttribute(normalIn);
 		renderingContext.disableVertexAttribute(vertexIn);
 		renderingContext.disableVertexAttribute(texCoordIn);
-
 		
 		if (isShadowPass)
 			return;
@@ -1058,6 +1056,9 @@ public class WorldRenderer
 			//renderingContext.doneWithVertexInputs();
 		}
 
+		// Particles rendering
+		this.world.getParticlesHolder().render(renderingContext);
+		
 		// Draw world shaded with sunlight and vertex light
 		glDepthMask(false);
 		renderShadedBlocks();
@@ -1066,7 +1067,7 @@ public class WorldRenderer
 		// Compute SSAO
 		if (FastConfig.ssaoQuality > 0)
 			this.SSAO(FastConfig.ssaoQuality);
-
+		
 		renderLightsDeffered();
 		renderTerrain(chunksToRenderLimit != -1);
 		

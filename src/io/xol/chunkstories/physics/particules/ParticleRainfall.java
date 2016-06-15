@@ -19,7 +19,7 @@ public class ParticleRainfall extends Particle
 	@Override
 	public void update()
 	{
-		if (!world.checkCollisionPoint(posX, posY, posZ))
+		if (!((World) world).checkCollisionPoint(posX, posY, posZ))
 		{
 			posY -= 0.15;
 		} else

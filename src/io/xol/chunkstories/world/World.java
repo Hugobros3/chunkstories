@@ -18,6 +18,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -26,6 +27,7 @@ import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.entity.EntityIterator;
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.physics.particules.Particle;
 import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.server.ServerPlayer;
@@ -770,15 +772,16 @@ public abstract class World implements WorldInterface
 		int id = VoxelFormat.id(data);
 		if (id > 0)
 		{
-
-			/*Voxel v = VoxelTypes.get(id);
-			CollisionBox[] boxes = v.getCollisionBoxes(data);
+			
+			Voxel v = VoxelTypes.get(id);
+			/*CollisionBox[] boxes = v.getCollisionBoxes(data);
 			if (boxes != null)
 				for (CollisionBox box : boxes)
 					if (box.isPointInside(posX, posY, posZ))
-						return true;
-			*/
-			return true;
+						return true;*/
+			
+			if(v.isVoxelSolid())
+				return true;
 
 		}
 		return false;
@@ -1049,7 +1052,20 @@ public abstract class World implements WorldInterface
 	{
 		this.particlesHolder = particlesHolder;
 	}
+	
+	public void addParticle(Particle particle)
+	{
+		particlesHolder.addParticle(particle);
+	}
 
+	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain)
+	{
+		if(this instanceof WorldClient)
+		{
+			Client.getInstance().getSoundManager().playSoundEffect(soundEffect, location, pitch, gain);
+		}
+	}
+	
 	public ChunksHolders getChunksHolder()
 	{
 		return chunksHolder;

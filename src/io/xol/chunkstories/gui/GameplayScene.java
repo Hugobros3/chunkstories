@@ -36,8 +36,6 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.physics.particules.ParticleLight;
-import io.xol.chunkstories.physics.particules.ParticleSetupLight;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.SelectionRenderer;
 import io.xol.chunkstories.renderer.WorldRenderer;
@@ -62,6 +60,8 @@ public class GameplayScene extends OverlayableScene
 	public ChatPanel chat = new ChatPanel();
 	boolean focus = true;
 	Entity player;
+	
+	private boolean guiHidden = false;
 
 	public GameplayScene(XolioWindow w, boolean multiPlayer)
 	{
@@ -145,10 +145,10 @@ public class GameplayScene extends OverlayableScene
 			viewerCamDirVector.normalise();
 			
 			worldRenderer.getRenderingContext().addLight(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 35f, 35f, viewerCamDirVector));
-			//XolioWindow.getInstance().renderingContext.lights.add(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 35f, 35f, viewerCamDirVector));
-			if (Keyboard.isKeyDown(Keyboard.KEY_F5))
-				Client.world.getParticlesHolder()
-						.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedSpotLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 20f, viewerCamDirVector)));
+			
+			//if (Keyboard.isKeyDown(Keyboard.KEY_F5))
+			//	Client.world.getParticlesHolder()
+			//			.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedSpotLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 20f, viewerCamDirVector)));
 		}
 		//Main render call
 		worldRenderer.renderWorldAtCamera(camera);
@@ -187,33 +187,36 @@ public class GameplayScene extends OverlayableScene
 		//Blit the final 3d image
 		worldRenderer.blitScreen();
 
-		if (FastConfig.showDebugInfo)
-			debug();
-		else
-			Client.profiler.reset("gui");
-
-		chat.update();
-		chat.draw();
-
-		if (player != null && inventoryDrawer != null)
-			inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, XolioWindow.frameW / 2, 64 + 64);
-
-		if (Keyboard.isKeyDown(78))
-			Client.world.worldTime += 10;
-		if (Keyboard.isKeyDown(74))
+		if(!guiHidden)
 		{
-			if (Client.world.worldTime > 10)
-				Client.world.worldTime -= 10;
-		}
-
-		if (currentOverlay == null && !chat.chatting)
-			focus(true);
-		// Draw overlay
-		if (currentOverlay != null)
-			currentOverlay.drawToScreen(0, 0, XolioWindow.frameW, XolioWindow.frameH);
-		else
-			ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2, 16, 16, 0, 0, 16, 16, 16, "internal://./res/textures/gui/cursor.png");
-
+			if (FastConfig.showDebugInfo)
+				debug();
+			else
+				Client.profiler.reset("gui");
+	
+			chat.update();
+			chat.draw();
+	
+			if (player != null && inventoryDrawer != null)
+				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, XolioWindow.frameW / 2, 64 + 64);
+	
+			if (Keyboard.isKeyDown(78))
+				Client.world.worldTime += 10;
+			if (Keyboard.isKeyDown(74))
+			{
+				if (Client.world.worldTime > 10)
+					Client.world.worldTime -= 10;
+			}
+	
+			if (currentOverlay == null && !chat.chatting)
+				focus(true);
+			// Draw overlay
+			if (currentOverlay != null)
+				currentOverlay.drawToScreen(0, 0, XolioWindow.frameW, XolioWindow.frameH);
+			else
+				ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2, 16, 16, 0, 0, 16, 16, 16, "internal://./res/textures/gui/cursor.png");
+	
+			}
 		super.update();
 		// Check connection didn't died and change scene if it has
 		if (Client.connection != null)
@@ -298,10 +301,10 @@ public class GameplayScene extends OverlayableScene
 					this.changeOverlay(new InventoryOverlay(this, null, new EntityInventory[] { ((EntityWithInventory) player).getInventory() }));
 			}
 		}
+		//Function keys
 		else if (k == Keyboard.KEY_F1)
 		{
-			//if (player instanceof EntityPlayer)
-			//	((EntityPlayer) player).toogleFly();
+			guiHidden = !guiHidden;
 		}
 		else if (k == Keyboard.KEY_F2)
 			chat.insert(worldRenderer.screenShot());
@@ -312,8 +315,10 @@ public class GameplayScene extends OverlayableScene
 			//Client.getSoundManager().playMusic("music/radio/horse.ogg", (float) loc.x, (float) loc.y, (float) loc.z, 1.0f, 1.0f, false).setAttenuationEnd(50f);
 		}
 		else if (k == Keyboard.KEY_F4)
-			Client.world.getParticlesHolder().addParticle(new ParticleLight(Client.world, loc.x + (Math.random() - 0.5) * 30, loc.y + (Math.random()) * 10, loc.z + (Math.random() - 0.5) * 30));
-
+		{
+			//Client.world.getParticlesHolder().addParticle(new ParticleSmoke(Client.world, loc.x + (Math.random() - 0.5) * 30, loc.y + (Math.random()) * 10, loc.z + (Math.random() - 0.5) * 30));
+			//Client.world.getParticlesHolder().addParticle(new ParticleLight(Client.world, loc.x + (Math.random() - 0.5) * 30, loc.y + (Math.random()) * 10, loc.z + (Math.random() - 0.5) * 30));
+		}
 		else if (k == Keyboard.KEY_F6)
 		{
 			//if (player instanceof EntityPlayer)

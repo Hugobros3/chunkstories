@@ -13,7 +13,6 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public class CollisionBox implements Collidable
 {
-
 	public double xpos, ypos, zpos;
 	public double xw, h, zw;
 
