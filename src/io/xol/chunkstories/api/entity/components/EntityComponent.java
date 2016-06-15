@@ -151,7 +151,7 @@ public abstract class EntityComponent
 		//Does the Id match ?
 		if(this.getEntityComponentId() == componentId)
 		{
-			pull(dis);
+			pull(from, dis);
 			return true;
 		}
 		//Chain next component
@@ -162,7 +162,7 @@ public abstract class EntityComponent
 
 	protected abstract void push(StreamTarget destinator, DataOutputStream dos) throws IOException;
 	
-	protected abstract void pull(DataInputStream dis) throws IOException;
+	protected abstract void pull(StreamSource from, DataInputStream dis) throws IOException;
 
 	public int getEntityComponentId(){
 		//System.out.println("debug : "+this.getClass().getName()+" id = "+EntityComponents.getIdForClass(this.getClass().getName()));

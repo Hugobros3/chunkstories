@@ -132,7 +132,7 @@ public class InventoryOverlay extends Overlay
 						if (Client.world instanceof WorldLocalClient)
 						{
 							//If move was successfull
-							if(selectedItem.moveTo(inventories[i], x, y, selectedItemAmount))
+							if(selectedItem.moveItemPileTo(inventories[i], x, y, selectedItemAmount))
 								selectedItem = null;
 						}
 						else if(Client.world instanceof WorldRemoteClient)
@@ -152,7 +152,7 @@ public class InventoryOverlay extends Overlay
 								selectedItem = null;
 						}
 						else
-							if(selectedItem.moveTo(inventories[i], x, y, selectedItemAmount))
+							if(selectedItem.moveItemPileTo(inventories[i], x, y, selectedItemAmount))
 								selectedItem = null;
 					}
 					return true;

@@ -18,6 +18,7 @@ uniform vec3 objectPosition;
 uniform float entity;
 
 uniform mat4 localTransform;
+uniform mat4 boneTransform;
 
 vec4 accuratizeShadow(vec4 shadowMap)
 {
@@ -33,7 +34,7 @@ vec4 accuratizeShadow(vec4 shadowMap)
 void main(){
 	texcoord = vec4(texCoordIn/32768.0,0,0);
 	//gl_Position = ftransform();
-	vec4 v = localTransform * vec4(vertexIn.xyz, 1);
+	vec4 v = localTransform * boneTransform * vec4(vertexIn.xyz, 1);
 	
 	float movingness = normalIn.w * (1-entity);
 	<ifdef dynamicGrass>

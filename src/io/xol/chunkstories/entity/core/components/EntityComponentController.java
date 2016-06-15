@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.exceptions.UnauthorizedClientActionException;
+import io.xol.chunkstories.api.net.StreamSource;
 import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -57,7 +58,7 @@ public class EntityComponentController extends EntityComponent
 	}
 
 	@Override
-	public void pull(DataInputStream dis) throws IOException
+	public void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
 		boolean isControllerNotNull = dis.readBoolean();
 		if(isControllerNotNull)

@@ -988,7 +988,7 @@ public class WorldRenderer
 			// Set rendering context.
 			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
 
-			Voxel vox = VoxelTypes.get(world.getDataAt((int) camera.pos.x, (int) (camera.pos.y + 0), (int) camera.pos.z, false));
+			Voxel vox = VoxelTypes.get(world.getDataAt((int) -camera.pos.x, (int) (-camera.pos.y + 0), (int) -camera.pos.z, false));
 			liquidBlocksShader.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
 
 			//liquidBlocksShader.setUniformInt("pass", pass-1);
@@ -1236,7 +1236,7 @@ public class WorldRenderer
 		//postProcess.setUniformSampler(8, "debugBuffer", (System.currentTimeMillis() % 1000 < 500 ) ? this.loadedChunksMapD : this.loadedChunksMap);
 		postProcess.setUniformSampler(8, "debugBuffer", (System.currentTimeMillis() % 1000 < 500 ) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
 
-		Voxel vox = VoxelTypes.get(world.getDataAt(camera.pos, false));
+		Voxel vox = VoxelTypes.get(world.getDataAt(camera.pos.negate(), false));
 		postProcess.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
 		postProcess.setUniformFloat("time", animationTimer);
 
@@ -1409,7 +1409,7 @@ public class WorldRenderer
 		fboBlur.bind();
 		renderingContext.setCurrentShader(blurV);
 		//blurV.use(true);
-		blurV.setUniformFloat2("screenSize", scrW * 2, scrH * 2);
+		blurV.setUniformFloat2("screenSize", scrW, scrH );
 		blurV.setUniformFloat("lookupScale", 2);
 		blurV.setUniformSampler(0, "inputTexture", this.ssaoBuffer);
 		ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
@@ -1419,7 +1419,7 @@ public class WorldRenderer
 		this.fboSSAO.bind();
 		renderingContext.setCurrentShader(blurH);
 		//blurH.use(true);
-		blurH.setUniformFloat2("screenSize", scrW * 2, scrH * 2);
+		blurH.setUniformFloat2("screenSize", scrW , scrH);
 		blurH.setUniformSampler(0, "inputTexture", blurIntermediateBuffer);
 		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 		//drawFSQuad();
@@ -1463,6 +1463,24 @@ public class WorldRenderer
 		renderingContext.setCurrentShader(blurH);
 		//blurH.use(true);
 		blurH.setUniformFloat2("screenSize", scrW / 2f, scrH / 2f);
+		blurH.setUniformSampler(0, "inputTexture", blurIntermediateBuffer);
+		//drawFSQuad();
+		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
+		
+		fboBlur.bind();
+		renderingContext.setCurrentShader(blurV);
+		//blurV.use(true);
+		blurV.setUniformFloat2("screenSize", scrW / 4f, scrH / 4f);
+		blurV.setUniformFloat("lookupScale", 1);
+		blurV.setUniformSampler(0, "inputTexture", this.bloomBuffer);
+		//drawFSQuad();
+		ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
+
+		// Horizontal pass
+		this.fboBloom.bind();
+		renderingContext.setCurrentShader(blurH);
+		//blurH.use(true);
+		blurH.setUniformFloat2("screenSize", scrW / 4f, scrH / 4f);
 		blurH.setUniformSampler(0, "inputTexture", blurIntermediateBuffer);
 		//drawFSQuad();
 		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));

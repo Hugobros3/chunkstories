@@ -124,7 +124,10 @@ public class ItemVoxel extends Item
 	@Override
 	public void save(ItemPile itemPile, DataOutputStream stream) throws IOException
 	{
-		stream.writeInt(((ItemDataVoxel) itemPile.data).voxel.getId());
+		if(((ItemDataVoxel) itemPile.data).voxel != null)
+			stream.writeInt(((ItemDataVoxel) itemPile.data).voxel.getId());
+		else
+			stream.writeInt(1);
 		stream.writeByte((byte) ((ItemDataVoxel) itemPile.data).voxelMeta);
 	}
 

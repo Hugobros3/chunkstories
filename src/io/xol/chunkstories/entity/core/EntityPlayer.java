@@ -464,48 +464,58 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		renderingContext.setDiffuseTexture(playerTexture.getID());
 		//Players models have no normal mapping
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
-		//Prevents laggy behaviour
 
+		//Prevents laggy behaviour
 		if (this.equals(Client.controlledEntity))
 			renderingContext.getCurrentShader().setUniformFloat3("objectPosition", -(float) cam.pos.x, -(float) cam.pos.y - eyePosition, -(float) cam.pos.z);
 
-		//Player rotations to the viewmodel
+		//Renders normal limbs
 		Matrix4f playerRotationMatrix = new Matrix4f();
 		playerRotationMatrix.translate(new Vector3f(0f, (float) this.eyePosition, 0f));
 		playerRotationMatrix.rotate((90 - this.getEntityRotationComponent().getRotH()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-		if (this.equals(Client.controlledEntity) && !renderingContext.shadow)
-			playerRotationMatrix.rotate((-this.getEntityRotationComponent().getRotV()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
-
+		
 		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
-		//Render parts of the body
-		if (!renderingContext.shadow && this.equals(Client.controlledEntity))
-			ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, fp_elements, animation, 0);
-		else
-			ModelLibrary.getMesh("res/models/human.obj").render(renderingContext);
+		//Except in fp 
+		if (!this.equals(Client.controlledEntity) || renderingContext.shadow)
+			ModelLibrary.getMesh("res/models/human.obj").renderBut(renderingContext, fp_elements, animation, 0);
+		
+		
+		//Render rotated limbs
+		playerRotationMatrix = new Matrix4f();
+		playerRotationMatrix.translate(new Vector3f(0f, (float) this.eyePosition, 0f));
+		playerRotationMatrix.rotate((90 - this.getEntityRotationComponent().getRotH()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
+		
+		if(selectedItemPile != null)
+			playerRotationMatrix.rotate((-this.getEntityRotationComponent().getRotV()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
+		
+		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
+		renderingContext.sendTransformationMatrix(playerRotationMatrix);
 
+		if(selectedItemPile != null || !this.equals(Client.controlledEntity) || renderingContext.shadow)
+		ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, fp_elements, animation, 0);
+	
 		//Matrix to itemInHand bone in the player's bvh
 		Matrix4f itemMatrix = new Matrix4f();
 		itemMatrix = animation.getTransformationForBone("boneItemInHand", 0);
 		Matrix4f.mul(playerRotationMatrix, itemMatrix, itemMatrix);
 
-
-		if (getSelectedItemComponent().getSelectedItem() != null && getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemVoxel)
-		{
-			ItemPile pile = getSelectedItemComponent().getSelectedItem();
-			if (ItemVoxel.getVoxel(pile).getLightLevel(0x00) > 0)
-			{
-				Vector3d pos = getLocation();
-				Light heldBlockLight = new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.x, (float) pos.y + 1.6f, (float) pos.z), 15f);
-				renderingContext.addLight(heldBlockLight);	
-				
-				renderingContext.getCurrentShader().setUniformFloat2("worldLight", ItemVoxel.getVoxel(pile).getLightLevel(0x00), world.getSunlightLevel(this.getLocation()));
-				
-			}
-		}
 		
 		if (selectedItemPile != null)
 		{
+			if (selectedItemPile.getItem() instanceof ItemVoxel)
+			{
+				if (ItemVoxel.getVoxel(selectedItemPile).getLightLevel(0x00) > 0)
+				{
+					Vector3d pos = getLocation();
+					Light heldBlockLight = new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.x, (float) pos.y + 1.6f, (float) pos.z), 15f);
+					renderingContext.addLight(heldBlockLight);	
+					
+					//If we hold a light source, prepare the shader accordingly
+					renderingContext.getCurrentShader().setUniformFloat2("worldLight", ItemVoxel.getVoxel(selectedItemPile).getLightLevel(0x00), world.getSunlightLevel(this.getLocation()));
+					
+				}
+			}
 			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, itemMatrix);
 		}
 	}

@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.net.StreamSource;
 import io.xol.chunkstories.api.net.StreamTarget;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -37,7 +38,7 @@ public class EntityComponentName extends EntityComponent
 	}
 
 	@Override
-	protected void pull(DataInputStream dis) throws IOException
+	protected void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
 		name = dis.readUTF();
 	}

@@ -7,6 +7,7 @@ import java.io.IOException;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
+import io.xol.chunkstories.api.net.StreamSource;
 import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.api.world.WorldMaster;
 
@@ -53,7 +54,7 @@ public class EntityComponentExistence extends EntityComponent
 	}
 
 	@Override
-	public void pull(DataInputStream dis) throws IOException
+	public void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
 		boolean existedBefore = exists;
 		exists = dis.readBoolean();

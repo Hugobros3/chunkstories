@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.net.StreamSource;
 import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
@@ -135,7 +136,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			return null;
 		}
 		//If the two piles are similar we can try to merge them
-		if(currentPileAtLocation != null && currentPileAtLocation.canMergeWith(itemPile))
+		if(currentPileAtLocation != null && currentPileAtLocation.canMergeWith(itemPile) && !currentPileAtLocation.equals(itemPile))
 		{
 			Item item = currentPileAtLocation.getItem();
 			int currentAmount = currentPileAtLocation.getAmount();
@@ -339,7 +340,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	}
 
 	@Override
-	protected void pull(DataInputStream stream) throws IOException
+	protected void pull(StreamSource from, DataInputStream stream) throws IOException
 	{
 		this.width = stream.readInt();
 		this.height = stream.readInt();

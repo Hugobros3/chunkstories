@@ -110,6 +110,7 @@ void main() {
 	compositeColor.rgb = pow(compositeColor.rgb, vec3(gammaInv));
 	
 	vec4 cameraSpacePosition = convertScreenSpaceToWorldSpace(finalCoords);
+	compositeColor = mix(compositeColor, vec4(0.0), underwater * clamp(length(cameraSpacePosition) / 32.0, 0.0, 1.0));
 	vec4 pixelNormal = texture2D(normalBuffer, finalCoords);
 	pixelNormal.rgb = pixelNormal.rgb * 2.0 - vec3(1.0);
     vec3 cameraSpaceViewDir = normalize(cameraSpacePosition.xyz);

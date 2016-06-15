@@ -7,6 +7,7 @@ import java.io.IOException;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.net.StreamSource;
 import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
@@ -86,7 +87,7 @@ public class EntityComponentPosition extends EntityComponent
 	}
 
 	@Override
-	public void pull(DataInputStream dis) throws IOException
+	public void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
 		if(pos == null)
 			pos = new Location(this.entity.getWorld(), 0, 0, 0);

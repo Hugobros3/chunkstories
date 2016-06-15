@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.net.StreamSource;
 import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.item.ItemPile;
 
@@ -78,7 +79,7 @@ public class EntityComponentSelectedItem extends EntityComponent
 	}
 
 	@Override
-	protected void pull(DataInputStream dis) throws IOException
+	protected void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
 		selectedSlot = dis.readInt();
 	}

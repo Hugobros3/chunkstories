@@ -49,7 +49,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		i++;
 		i %= 80;
 		
-		Texture playerTexture = TexturesHandler.getTexture("models/guyA.png");
+		Texture playerTexture = TexturesHandler.getTexture("models/zombie_s3.png");
 		playerTexture.setLinearFiltering(false);
 		
 		renderingContext.setDiffuseTexture(playerTexture.getID());
@@ -61,7 +61,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 
 		renderingContext.sendTransformationMatrix(null);
-		ModelLibrary.getMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/models/human-viewport.bvh"), i);
+		ModelLibrary.getMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/models/human-standstill.bvh"), i);
 
 		
 		Matrix4f itemMatrix = BVHLibrary.getAnimation("res/models/human-viewport.bvh").getTransformationForBone("boneItemInHand", i);
@@ -69,7 +69,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		renderingContext.sendTransformationMatrix(itemMatrix);
 		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/ak47.hq.png"));
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
-		ModelLibrary.getMesh("./res/models/ak47.hq.obj").render(renderingContext);
+		//ModelLibrary.getMesh("./res/models/ak47.hq.obj").render(renderingContext);
 	}
 
 	@Override

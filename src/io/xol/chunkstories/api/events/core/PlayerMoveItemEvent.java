@@ -72,7 +72,7 @@ public class PlayerMoveItemEvent extends Event
 			player.sendMessage("Notice : throwing stuff on ground is not yet implemented.");
 		
 		
-		pile.moveTo(packet.to, packet.newX, packet.newY, packet.amount);
+		pile.moveItemPileTo(packet.to, packet.newX, packet.newY, packet.amount);
 	}
 	
 }

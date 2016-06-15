@@ -127,7 +127,7 @@ public class ItemPile implements CSFSerializable
 	 * @return null if successfull, this if not.
 	 */
 	//@SuppressWarnings("unchecked")
-	public boolean moveTo(EntityInventory destinationInventory, int destinationX, int destinationY, int amountToTransfer)
+	public boolean moveItemPileTo(EntityInventory destinationInventory, int destinationX, int destinationY, int amountToTransfer)
 	{
 		//We duplicate the pile and limit it's amount
 		ItemPile pileToSend = this.duplicate();

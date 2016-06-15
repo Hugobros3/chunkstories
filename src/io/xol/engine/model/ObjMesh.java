@@ -258,7 +258,7 @@ public class ObjMesh
 	 */
 	public void render(RenderingContext renderingContext, Set<String> bonesToDraw, BVHAnimation animationData, int frame)
 	{
-		glEnable(GL_CULL_FACE);
+		//glEnable(GL_CULL_FACE);
 		//Backface culling because blender
 		//glCullFace(GL_BACK);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
@@ -294,4 +294,33 @@ public class ObjMesh
 	public static List<float[]> normals = new ArrayList<float[]>();
 	
 	public static List<float[]> vboData = new ArrayList<float[]>();
+
+	public void renderBut(RenderingContext renderingContext, Set<String> bonesToNotDraw, BVHAnimation animationData, int frame)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vboId);
+
+		Matrix4f matrix;
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn"));
+		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn"));
+
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"), 3, GL_FLOAT, false, 8 * 4, 0);
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn"), 2, GL_FLOAT, false, 8 * 4, 3 * 4);
+		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn"), 3, GL_FLOAT, true, 8 * 4, 5 * 4);
+		int totalSize = 0;
+		for (String currentVertexGroup : groups.keySet())
+		{
+			int i = groups.get(currentVertexGroup);
+			//Get transformer matrix
+			matrix = animationData.getTransformationForBonePlusOffset(currentVertexGroup, frame);
+			//Send the transformation
+			renderingContext.sendBoneTransformationMatrix(matrix);
+			//Only what we can care about
+			if (bonesToNotDraw == null || !bonesToNotDraw.contains(currentVertexGroup))
+				glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
+			totalSize += i;
+		}
+		
+		renderingContext.sendBoneTransformationMatrix(null);
+	}
 }
