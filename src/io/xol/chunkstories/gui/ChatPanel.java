@@ -6,8 +6,12 @@ import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.misc.ColorsTools;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.List;
+
+import org.lwjgl.input.Keyboard;
 
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.chunkstories.api.entity.Entity;
@@ -21,11 +25,14 @@ import io.xol.chunkstories.input.KeyBinds;
 public class ChatPanel
 {
 	int chatHistorySize = 150;
-	//String[] chatHistory = new String[chatHistorySize];
+	
 	InputText inputBox = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
+	
 	public boolean chatting = false;
-
 	Deque<ChatLine> chat = new ArrayDeque<ChatLine>();
+	List<String> sent = new ArrayList<String>();
+	int sentMessages = 0;
+	int sentHistory = 0;
 
 	class ChatLine
 	{
@@ -40,7 +47,7 @@ public class ChatPanel
 
 		public void clickRelative(int x, int y)
 		{
-			//TODO clickable text
+			//TODO clickable text, urls etc
 		}
 	}
 
@@ -66,6 +73,30 @@ public class ChatPanel
 				chatting = false;
 				mainScene.changeOverlay(parent);
 				return true;
+			}
+			else if (k == Keyboard.KEY_UP)
+			{
+				//sentHistory = 0 : empty message, = 1 last message, 2 last message before etc
+				if(sentMessages > sentHistory)
+				{
+					sentHistory++;
+				}
+				if(sentHistory > 0)
+					inputBox.text = sent.get(sentHistory-1);
+				else
+					inputBox.text = "";
+			}
+			else if (k == Keyboard.KEY_DOWN)
+			{
+				//sentHistory = 0 : empty message, = 1 last message, 2 last message before etc
+				if(sentHistory > 0)
+				{
+					sentHistory--;
+				}
+				if(sentHistory > 0)
+					inputBox.text = sent.get(sentHistory-1);
+				else
+					inputBox.text = "";
 			}
 			else if (k == 28)
 			{
@@ -144,12 +175,20 @@ public class ChatPanel
 					insert(ColorsTools.getUniqueColorPrefix(Client.username) + Client.username + "#FFFFFF > " + inputBox.text);
 				
 				System.out.println(Client.username+" > "+inputBox.text);
+				
+				sent.add(0, inputBox.text);
+				sentMessages++;
+				
 				inputBox.text = "";
 				chatting = false;
+				sentHistory = 0;
 				mainScene.changeOverlay(parent);
 			}
 			else
+			{
+				sentHistory = 0;
 				inputBox.input(k);
+			}
 			return true;
 		}
 
