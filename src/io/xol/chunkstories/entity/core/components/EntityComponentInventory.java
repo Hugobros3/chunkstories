@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.net.StreamSource;
 import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.item.ItemPile;
@@ -352,9 +353,10 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			for(int j = 0; j < height ; j++)
 			{
 				id = stream.readInt() & 0x00FFFFFF;
-				item = ItemsList.getItemTypeById(id).newItem();
-				if(item != null)
+				ItemType itemType = ItemsList.getItemTypeById(id);
+				if(itemType != null)
 				{
+					item = itemType.newItem();
 					contents[i][j] = new ItemPile(item, stream);
 					contents[i][j].inventory = this;
 					contents[i][j].x = i;
