@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.entity.ClientController;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.entity.core.components.EntityComponentController;
+import io.xol.chunkstories.core.entity.components.EntityComponentController;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
+import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.voxel.VoxelTypes;
 

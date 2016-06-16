@@ -1,8 +1,8 @@
 package io.xol.chunkstories.tools;
 
 import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.core.generator.PerlinWorldGenerator;
 import io.xol.chunkstories.world.WorldInfo;
-import io.xol.chunkstories.world.generator.core.PerlinWorldGenerator;
 
 import java.awt.Color;
 import java.awt.Transparency;

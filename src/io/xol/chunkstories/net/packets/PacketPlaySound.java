@@ -49,7 +49,6 @@ public class PacketPlaySound extends PacketSynch
 		if(processor.isClient)
 			Client.getInstance().getSoundManager().playSoundEffect(soundName, position, pitch, gain);
 		
-		System.out.println("rcvd snd");
 	}
 
 }

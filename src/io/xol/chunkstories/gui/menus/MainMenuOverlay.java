@@ -7,7 +7,7 @@ import org.lwjgl.input.Keyboard;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
+import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.engine.base.ObjectRenderer;

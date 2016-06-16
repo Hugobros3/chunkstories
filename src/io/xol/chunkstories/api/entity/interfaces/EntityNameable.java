@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.entity.interfaces;
 
-import io.xol.chunkstories.entity.core.components.EntityComponentName;
+import io.xol.chunkstories.core.entity.components.EntityComponentName;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

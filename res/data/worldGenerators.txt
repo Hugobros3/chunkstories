@@ -1,7 +1,7 @@
 #Bundled world generators
-blank io.xol.chunkstories.world.generator.core.BlankWorldGenerator
-perlin io.xol.chunkstories.world.generator.core.PerlinWorldGenerator
-horizon io.xol.chunkstories.world.generator.core.HorizonGenerator
-flat io.xol.chunkstories.world.generator.core.FlatGenerator
-noise io.xol.chunkstories.world.generator.core.NoiseWorldGenerator
+blank io.xol.chunkstories.core.generator.BlankWorldGenerator
+perlin io.xol.chunkstories.core.generator.PerlinWorldGenerator
+horizon io.xol.chunkstories.core.generator.HorizonGenerator
+flat io.xol.chunkstories.core.generator.FlatGenerator
+noise io.xol.chunkstories.core.generator.NoiseWorldGenerator
 

@@ -3,10 +3,10 @@ package io.xol.chunkstories.tools;
 import java.io.File;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.core.generator.BlankWorldGenerator;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.generator.core.BlankWorldGenerator;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

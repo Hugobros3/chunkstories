@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.entity.core.components.EntityComponentInventory;
+import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
 
 //(c) 2015-2016 XolioWare Interactive

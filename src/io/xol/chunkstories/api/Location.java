@@ -1,7 +1,6 @@
 package io.xol.chunkstories.api;
 
 import io.xol.chunkstories.api.world.WorldInterface;
-import io.xol.chunkstories.world.World;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive

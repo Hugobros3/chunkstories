@@ -28,7 +28,7 @@ import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameData;
-import io.xol.chunkstories.entity.core.EntityPlayer;
+import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
 import io.xol.chunkstories.input.KeyBinds;

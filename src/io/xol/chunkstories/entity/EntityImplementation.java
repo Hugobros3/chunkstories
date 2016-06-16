@@ -1,8 +1,8 @@
 package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.entity.core.components.EntityComponentExistence;
-import io.xol.chunkstories.entity.core.components.EntityComponentPosition;
+import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
+import io.xol.chunkstories.core.entity.components.EntityComponentPosition;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;

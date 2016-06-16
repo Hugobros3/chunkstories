@@ -15,9 +15,6 @@ public class ChunksHolders
 	World world;
 	ChunksData chunksData;
 
-	// private ChunkHolder[] data;
-	// private boolean[] dataPresent;
-
 	public ConcurrentHashMap<ChunkHolderKey, ChunkHolder> chunkHolders = new ConcurrentHashMap<ChunkHolderKey, ChunkHolder>(8, 0.9f, 1);
 
 	final int s, h;
@@ -130,7 +127,7 @@ public class ChunksHolders
 			if(save)
 				holder.save();
 			holder.destroy();
-			System.out.println("Remove holder: "+holder);
+			//System.out.println("Remove holder: "+holder);
 			chunkHolders.remove(new ChunkHolderKey(chunkX / 8, chunkY / 8, chunkZ / 8 ));
 		}
 		//world.ioHandler.notifyChunkUnload(chunkX, chunkY, chunkZ);

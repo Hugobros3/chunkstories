@@ -1,7 +1,7 @@
 package io.xol.chunkstories.world.biomes;
 
-import io.xol.chunkstories.world.generator.SeededRandomNumberTranslator;
 import io.xol.chunkstories.world.generator.structures.GenerableStructure;
+import io.xol.chunkstories.world.generator.util.SeededRandomNumberTranslator;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
