@@ -1,5 +1,8 @@
 package io.xol.chunkstories.api.world;
 
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.components.Subscriber;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -9,5 +12,5 @@ package io.xol.chunkstories.api.world;
  */
 public interface WorldMaster
 {
-
+	public void playSoundEffectExcluding(String soundEffect, Location location, float pitch, float gain, Subscriber subscriber);
 }

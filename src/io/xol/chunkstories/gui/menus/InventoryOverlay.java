@@ -110,6 +110,11 @@ public class InventoryOverlay extends Overlay
 							selectedItem = inventories[i].getItemPileAt(x, y);
 							selectedItemAmount = selectedItem == null ? 0 : 1;
 						}
+						else if(button == 2)
+						{
+							selectedItem = inventories[i].getItemPileAt(x, y);
+							selectedItemAmount = selectedItem == null ? 0 : (selectedItem.getAmount() > 1 ? selectedItem.getAmount()/2 : 1);
+						}
 						//selectedItemInv = inventory;
 					}
 					else if(button == 1)

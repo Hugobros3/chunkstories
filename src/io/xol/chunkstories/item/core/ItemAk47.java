@@ -2,12 +2,15 @@ package io.xol.chunkstories.item.core;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.particules.ParticleBlood;
@@ -31,15 +34,19 @@ public class ItemAk47 extends Item
 	{
 		return "./res/items/icons/ak47.png";
 	}
-
-	public boolean handleInteraction(Entity user, ItemPile pile, Input input)
+	
+	@Override
+	public boolean handleInteraction(Entity user, ItemPile pile, Input input, Controller controller)
 	{
 		if (/*user.getWorld() instanceof WorldMaster && */input instanceof MouseClick)
 		{
 			if(user instanceof EntityLiving)
 			{
 				EntityLiving shooter = (EntityLiving)user;
-				shooter.getWorld().playSoundEffect("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f);
+				if(shooter.getWorld() instanceof WorldClient)
+					shooter.getWorld().playSoundEffect("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f);
+				if(shooter.getWorld() instanceof WorldMaster)
+					((WorldMaster) shooter.getWorld()).playSoundEffectExcluding("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f, controller);
 				
 				Vector3d eyeLocation = new Vector3d(shooter.getLocation());
 				if(shooter instanceof EntityPlayer)

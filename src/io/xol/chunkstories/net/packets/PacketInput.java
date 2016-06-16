@@ -56,7 +56,13 @@ public class PacketInput extends Packet
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
 		read(in);
-		process(processor);
+
+		EntityControllable entity = (EntityControllable) processor.getServerClient().getProfile().getControlledEntity();
+		if (entity != null)
+		{
+			entity.handleInteraction(input, entity.getControllerComponent().getController());
+			//System.out.println("handle interaction");
+		}
 	}
 	
 	public void read(DataInputStream in) throws IOException
@@ -75,15 +81,4 @@ public class PacketInput extends Packet
 		//input = KeyBinds.getKeyBindFromHash(code);
 		//System.out.println("received input: "+input+" code"+code);
 	}
-
-	public void process(PacketsProcessor processor)
-	{
-		EntityControllable entity = (EntityControllable) processor.getServerClient().getProfile().getControlledEntity();
-		if (entity != null)
-		{
-			entity.handleInteraction(input);
-			//System.out.println("handle interaction");
-		}
-	}
-
 }

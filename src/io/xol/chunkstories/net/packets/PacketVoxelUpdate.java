@@ -1,8 +1,8 @@
 package io.xol.chunkstories.net.packets;
 
-import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 
@@ -19,7 +19,7 @@ import java.io.IOException;
  * @author gobrosse
  *
  */
-public class PacketVoxelUpdate extends Packet
+public class PacketVoxelUpdate extends PacketSynch
 {
 	public int x, y, z;
 	public int data;

@@ -11,6 +11,7 @@ import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientController;
+import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
@@ -530,14 +531,14 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	}
 
 	@Override
-	public boolean handleInteraction(Input input)
+	public boolean handleInteraction(Input input, Controller controller)
 	{
 		Location blockLocation = this.getBlockLookingAt(true);
 		ItemPile itemSelected = getSelectedItemComponent().getSelectedItem();
 		if (itemSelected != null)
 		{
 			//See if the item handles the interaction
-			if (itemSelected.getItem().handleInteraction(this, itemSelected, input))
+			if (itemSelected.getItem().handleInteraction(this, itemSelected, input, controller))
 				return true;
 		}
 		if (getWorld() instanceof WorldMaster)

@@ -4,12 +4,15 @@ import java.io.File;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.events.core.PlayerSpawnEvent;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.net.packets.PacketPlaySound;
 import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
+import io.xol.chunkstories.physics.particules.Particle;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -184,6 +187,41 @@ public class WorldServer extends World implements WorldMaster, WorldNetworked
 					packet.process(client, client.getPacketsProcessor());
 					packet = client.getPacketsProcessor().getPendingSynchPacket();
 				}
+			}
+		}
+	}
+	
+	public void addParticle(Particle particle)
+	{
+		
+	}
+
+	@Override
+	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain)
+	{
+		this.playSoundEffectExcluding(soundEffect, location, pitch, gain, null);
+	}
+	
+	@Override
+	public void playSoundEffectExcluding(String soundEffect, Location location, float pitch, float gain, Subscriber subscriber)
+	{
+		PacketPlaySound packetSound = new PacketPlaySound(false);
+		packetSound.soundName = soundEffect;
+		packetSound.position = location;
+		packetSound.gain = gain;
+		packetSound.pitch = pitch;
+		
+		for (ServerClient client : Server.getInstance().handler.clients)
+		{
+			if (client.isAuthentificated())
+			{
+				Entity clientEntity = client.getProfile().getControlledEntity();
+				if (clientEntity == null)
+					continue;
+				if(subscriber != null && subscriber.equals(client.getProfile()))
+					continue;
+				
+				client.sendPacket(packetSound);
 			}
 		}
 	}
