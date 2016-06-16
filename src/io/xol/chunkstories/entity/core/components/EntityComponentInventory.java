@@ -335,8 +335,6 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 					pile.saveCSF(stream);
 				}
 			}
-		//Save selected item
-		//stream.writeByte(selectedSlot);
 	}
 
 	@Override
@@ -354,7 +352,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			for(int j = 0; j < height ; j++)
 			{
 				id = stream.readInt() & 0x00FFFFFF;
-				item = ItemsList.get(id);
+				item = ItemsList.getItemTypeById(id).newItem();
 				if(item != null)
 				{
 					contents[i][j] = new ItemPile(item, stream);
@@ -363,8 +361,6 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 					contents[i][j].y = j;
 				}
 			}
-		//Load selected item
-		//selectedSlot = stream.readByte();
 	}
 	
 	/* (non-Javadoc)
@@ -377,12 +373,6 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 
 		if(this.holder != null)
 			this.pushComponentController();
-		//TODO rebuild with components
-		
-		/*if(this.holder != null && this.holder instanceof Entity && this.holder instanceof EntityControllable && ((EntityControllable)this.holder).getController() != null)
-		{
-			((EntityControllable)this.holder).getController().notifyInventoryChange((Entity)this.holder);
-		}*/
 	}
 
 	/* (non-Javadoc)

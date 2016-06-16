@@ -1,4 +1,4 @@
-# Here you get/have to assign entities their ID and class.
+# Here you assign entities their ID and class.
 
 1 io.xol.chunkstories.entity.core.EntityPlayer
 2 io.xol.chunkstories.entity.core.EntityTest

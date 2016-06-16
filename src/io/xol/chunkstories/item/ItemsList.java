@@ -1,6 +1,7 @@
 package io.xol.chunkstories.item;
 
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.BufferedReader;
@@ -8,7 +9,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,17 +19,17 @@ import java.util.Map;
 
 public class ItemsList
 {
-	public static Item[] items = new Item[65536];
-	public static Map<String, Item> dictionary = new HashMap<String, Item>();
+	public static ItemType[] items = new ItemType[65536];
+	static Map<Short, Constructor<? extends Item>> itemsTypes = new HashMap<Short, Constructor<? extends Item>>();
+	public static Map<String, ItemType> dictionary = new HashMap<String, ItemType>();
 	public static int itemTypes = 0;
 	public static int lastAllocatedId;
-	
-	
+
 	public static void reload()
 	{
 		Arrays.fill(items, null);
 		dictionary.clear();
-		
+
 		File vanillaFolder = new File("./" + "res/items/");
 		for (File f : vanillaFolder.listFiles())
 		{
@@ -50,8 +50,8 @@ public class ItemsList
 			FileReader fileReader = new FileReader(f);
 			BufferedReader reader = new BufferedReader(fileReader);
 			String line = "";
-			
-			Item currentItem = null;
+
+			ItemTypeImpl currentItemType = null;
 			while ((line = reader.readLine()) != null)
 			{
 				line = line.replace("\t", "");
@@ -59,78 +59,78 @@ public class ItemsList
 				{
 					// It's a comment, ignore.
 				}
-				else if(line.startsWith("end"))
+				else if (line.startsWith("end"))
 				{
-					if(currentItem == null)
+					if (currentItemType == null)
 					{
-						ChunkStoriesLogger.getInstance().warning("Syntax error in file : "+f+" : ");
+						ChunkStoriesLogger.getInstance().warning("Syntax error in file : " + f + " : ");
 						continue;
 					}
 					//Eventually add the item
-					items[currentItem.getID()] = currentItem;
-					dictionary.put(currentItem.getInternalName(), currentItem);
+
+					items[currentItemType.getID()] = currentItemType;
+					dictionary.put(currentItemType.getInternalName(), currentItemType);
 				}
-				else if(line.startsWith("width"))
+				else if (line.startsWith("maxStackSize"))
 				{
 					String[] split = line.replaceAll(" ", "").split(":");
 					int value = Integer.parseInt(split[1]);
-					if(currentItem != null)
-						currentItem.setSlotsWidth(value);
+					if (currentItemType != null)
+						currentItemType.setMaxStackSize(value);
 				}
-				else if(line.startsWith("height"))
+				else if (line.startsWith("width"))
 				{
 					String[] split = line.replaceAll(" ", "").split(":");
 					int value = Integer.parseInt(split[1]);
-					if(currentItem != null)
-						currentItem.setSlotsHeight(value);
+					if (currentItemType != null)
+						currentItemType.setSlotsWidth(value);
 				}
-				else if(line.startsWith("item"))
+				else if (line.startsWith("height"))
 				{
-					if(line.contains(" "))
+					String[] split = line.replaceAll(" ", "").split(":");
+					int value = Integer.parseInt(split[1]);
+					if (currentItemType != null)
+						currentItemType.setSlotsHeight(value);
+				}
+				else if (line.startsWith("item"))
+				{
+					if (line.contains(" "))
 					{
 						String[] split = line.split(" ");
 						int id = Integer.parseInt(split[1]);
 						String itemName = split[2];
 						String className = split[3];
-						
+
 						try
 						{
 							Class<?> rawClass = Class.forName(className);
-							if(rawClass == null)
+							if (rawClass == null)
 							{
-								ChunkStoriesLogger.getInstance().warning("item "+className+" does not exist in codebase.");
+								ChunkStoriesLogger.getInstance().warning("item " + className + " does not exist in codebase.");
 							}
-							else if(!(Item.class.isAssignableFrom(rawClass)))
+							else if (!(Item.class.isAssignableFrom(rawClass)))
 							{
-								ChunkStoriesLogger.getInstance().warning("item "+className+" is not extending the Item class.");
+								ChunkStoriesLogger.getInstance().warning("item " + className + " is not extending the Item class.");
 							}
 							else
 							{
 								@SuppressWarnings("unchecked")
-								Class<? extends Item> itemClass = (Class<? extends Item>)rawClass;
-								Class<?>[] types = { Integer.TYPE };
+								Class<? extends Item> itemClass = (Class<? extends Item>) rawClass;
+								Class<?>[] types = { ItemType.class };
 								Constructor<? extends Item> constructor = itemClass.getConstructor(types);
-								//itemClass.getField("internalName").setAccessible(true);
-								//itemClass.getField("internalName").set(null, itemName);
-								//Field eId = itemClass.getField("allocatedID");
-								//System.out.println("Setting "+className+" id to : "+id);
-								//eId.setShort(null, id);
-								Object[] parameters = { id };
-								if(constructor == null)
+								
+								if (constructor == null)
 								{
-									System.out.println("item "+className+" does not provide a valid constructor.");
+									System.out.println("item " + className + " does not provide a valid constructor.");
 									continue;
 								}
-								currentItem = constructor.newInstance(parameters);
-								currentItem.setInternalName(itemName);
-								
-								
-								//Object[] parameters = { id, name };
-								//voxel = (Voxel) constructor.newInstance(parameters);
+								currentItemType = new ItemTypeImpl(id);
+								currentItemType.setInternalName(itemName);
+								currentItemType.setConstructor(constructor);
 							}
 
 						}
-						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException e)
+						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
 						{
 							e.printStackTrace();
 						}
@@ -144,17 +144,17 @@ public class ItemsList
 			e.printStackTrace();
 		}
 	}
-	
-	public static Item get(int id)
+
+	public static ItemType getItemTypeById(int id)
 	{
 		//Quick & dirty sanitization
 		id = id & 0x00FFFFFF;
 		return items[id];
 	}
-	
-	public static Item getItemByName(String itemName)
+
+	public static ItemType getItemTypeByName(String itemName)
 	{
-		if(dictionary.containsKey(itemName))
+		if (dictionary.containsKey(itemName))
 			return dictionary.get(itemName);
 		return null;
 	}

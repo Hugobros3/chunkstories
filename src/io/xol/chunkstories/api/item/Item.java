@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.item.ItemData;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 
@@ -16,20 +15,19 @@ import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 
 public abstract class Item
 {
-	private final int id;
-	private String internalName;
-	
-	private int slotsWidth = 1;
-	private int slotsHeight = 1;
-
-	private int maxStackSize = 100;
+	private final ItemType type;
 	
 	protected ItemRenderer itemRenderer;
 
-	public Item(int id)
+	public Item(ItemType type)
 	{
-		this.id = id;
+		this.type = type;
 		itemRenderer = new DefaultItemRenderer(this);
+	}
+	
+	public ItemType getType()
+	{
+		return type;
 	}
 	
 	public ItemRenderer getItemRenderer()
@@ -37,13 +35,8 @@ public abstract class Item
 		return itemRenderer;
 	}
 	
-	/*public void setItemRenderer(ItemRenderer itemRenderer)
-	{
-		this.itemRenderer = itemRenderer;
-	}*/
-	
 	/**
-	 * Called on creation of an itemPile of this object (you should override this if you need something in particular in your ItemData,
+	 * Called on creation of an itemPile of this object (you should override this if you need something in particular in your item data,
 	 * and/or if you want to specify subtypes to your item using the info[] tags
 	 * @param pile
 	 * @param info When spawning an item it parses everything after itemname: and returns an array of strings separated by ':'
@@ -65,24 +58,14 @@ public abstract class Item
 	{
 		return false;
 	}
-
-	public ItemData getItemData()
-	{
-		return null;
-	}
 	
 	/**
-	 * This method is used to determine if two items piles can be stacked together in one.
-	 * Default behavior only checks the ids.
-	 * @param a The first ItemPile
-	 * @param b The second ItemPile
-	 * @return Wether they are stackable together without loss of information.
+	 * Use : determine if two stacks can be merged together, should be overriden when items have extra info.
+	 * @return Returns true if the two items are similar and can share a stack without loosing information.
 	 */
-	public boolean comparePiles(ItemPile a, ItemPile b)
+	public boolean canMergeWith(Item item)
 	{
-		if(a.getItem().getID() == b.getItem().getID())
-			return true;
-		return false;
+		return type.equals(item.getType());
 	}
 	
 	/**
@@ -91,7 +74,7 @@ public abstract class Item
 	 */
 	public String getTextureName(ItemPile pile)
 	{
-		return "res/items/icons/"+internalName+".png";
+		return "res/items/icons/"+getInternalName()+".png";
 	}
 	
 	/**
@@ -100,7 +83,7 @@ public abstract class Item
 	 */
 	public final int getID()
 	{
-		return id;
+		return type.getID();
 	}
 	
 	// ----- Begin get/set hell -----
@@ -111,12 +94,7 @@ public abstract class Item
 	 */
 	public int getSlotsWidth()
 	{
-		return slotsWidth;
-	}
-
-	public void setSlotsWidth(int slotsWidth)
-	{
-		this.slotsWidth = slotsWidth;
+		return type.getSlotsHeight();
 	}
 
 	/**
@@ -125,22 +103,12 @@ public abstract class Item
 	 */
 	public int getSlotsHeight()
 	{
-		return slotsHeight;
+		return type.getSlotsHeight();
 	}
-
-	public void setSlotsHeight(int slotsHeight)
-	{
-		this.slotsHeight = slotsHeight;
-	}
-
+	
 	public String getInternalName()
 	{
-		return internalName;
-	}
-
-	public void setInternalName(String internalName)
-	{
-		this.internalName = internalName;
+		return type.getInternalName();
 	}
 
 	/**
@@ -149,32 +117,25 @@ public abstract class Item
 	 */
 	public int getMaxStackSize()
 	{
-		return maxStackSize;
-	}
-
-	public void setMaxStackSize(int maxStackSize)
-	{
-		this.maxStackSize = maxStackSize;
+		return type.getMaxStackSize();
 	}
 
 	/**
 	 * Called on loading an ItemPile containing this item, usefull for loading stuff into the itemData of the pile.
-	 * @param itemPile
 	 * @param stream
 	 * @throws IOException
 	 */
-	public void load(ItemPile itemPile, DataInputStream stream) throws IOException
+	public void load(DataInputStream stream) throws IOException
 	{
 		
 	}
 	
 	/**
 	 * See load()
-	 * @param itemPile
 	 * @param stream
 	 * @throws IOException
 	 */
-	public void save(ItemPile itemPile, DataOutputStream stream) throws IOException
+	public void save(DataOutputStream stream) throws IOException
 	{
 		
 	}

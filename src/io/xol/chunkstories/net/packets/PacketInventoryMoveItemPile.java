@@ -88,7 +88,7 @@ public class PacketInventoryMoveItemPile extends PacketSynch
 		
 		if(holderTypeFrom == 0x00)
 		{
-			Item item = ItemsList.get(in.readInt());
+			Item item = ItemsList.getItemTypeById(in.readInt()).newItem();
 			itemPile = new ItemPile(item, in);
 		}
 	}

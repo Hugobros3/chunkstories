@@ -492,14 +492,14 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		{
 			if (selectedItemPile.getItem() instanceof ItemVoxel)
 			{
-				if (ItemVoxel.getVoxel(selectedItemPile).getLightLevel(0x00) > 0)
+				if (((ItemVoxel) selectedItemPile.getItem()).getVoxel().getLightLevel(0x00) > 0)
 				{
 					Vector3d pos = getLocation();
 					Light heldBlockLight = new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.x, (float) pos.y + 1.6f, (float) pos.z), 15f);
 					renderingContext.addLight(heldBlockLight);	
 					
 					//If we hold a light source, prepare the shader accordingly
-					renderingContext.getCurrentShader().setUniformFloat2("worldLight", ItemVoxel.getVoxel(selectedItemPile).getLightLevel(0x00), world.getSunlightLevel(this.getLocation()));
+					renderingContext.getCurrentShader().setUniformFloat2("worldLight", ((ItemVoxel) selectedItemPile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevel(this.getLocation()));
 					
 				}
 			}

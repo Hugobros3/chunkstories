@@ -9,11 +9,11 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.entity.core.EntityPlayer;
-import io.xol.chunkstories.item.ItemData;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.VoxelItemRenderer;
 import io.xol.chunkstories.voxel.VoxelTypes;
@@ -27,51 +27,50 @@ import io.xol.chunkstories.voxel.VoxelTypes;
  */
 public class ItemVoxel extends Item
 {
-	public class ItemDataVoxel implements ItemData
-	{
-		public Voxel voxel = null;
-		public int voxelMeta = 0;
-	}
+	public Voxel voxel = null;
+	public int voxelMeta = 0;
 
-	public ItemVoxel(int id)
+	public ItemVoxel(ItemType type)
 	{
-		super(id);
+		super(type);
 		itemRenderer = new VoxelItemRenderer(this);
 	}
 
-	@Override
+	/*@Override
 	public ItemDataVoxel getItemData()
 	{
 		return new ItemDataVoxel();
-	}
+	}*/
 
 	@Override
 	public void onCreate(ItemPile pile, String[] info)
 	{
-		ItemDataVoxel idv = (ItemDataVoxel) pile.data;
+		//ItemDataVoxel idv = (ItemDataVoxel) pile.data;
 		if (info != null && info.length > 0)
-			idv.voxel = VoxelTypes.get(Integer.parseInt(info[0]));
+			voxel = VoxelTypes.get(Integer.parseInt(info[0]));
 		if (info != null && info.length > 1)
-			idv.voxelMeta = Integer.parseInt(info[1]) % 16;
+			voxelMeta = Integer.parseInt(info[1]) % 16;
 	}
 
 	@Override
 	public String getTextureName(ItemPile pile)
 	{
-		ItemDataVoxel idv = (ItemDataVoxel) pile.data;
-		if (idv.voxel != null)
-			return "res/voxels/textures/" + idv.voxel.getName() + ".png";
+		//ItemDataVoxel idv = (ItemDataVoxel) pile.data;
+		if (voxel != null)
+			return "res/voxels/textures/" + voxel.getName() + ".png";
 		return "res/items/icons/notex.png";
 	}
 
-	public static Voxel getVoxel(ItemPile pile)
+	public Voxel getVoxel()
 	{
-		return ((ItemDataVoxel) pile.getData()).voxel;
+		return voxel;
+		//((ItemDataVoxel) pile.getData()).voxel;
 	}
 
-	public static int getVoxelMeta(ItemPile pile)
+	public int getVoxelMeta()
 	{
-		return ((ItemDataVoxel) pile.getData()).voxelMeta;
+		return voxelMeta;
+		//((ItemDataVoxel) pile.getData()).voxelMeta;
 	}
 
 	@Override
@@ -81,8 +80,8 @@ public class ItemVoxel extends Item
 		{
 			//TODO here we assumme a player, that's not correct
 			EntityPlayer player = (EntityPlayer) user;
-			int voxelID = ((ItemDataVoxel) pile.getData()).voxel.getId();
-			int voxelMeta = ((ItemDataVoxel) pile.getData()).voxelMeta;
+			int voxelID = voxel.getId();// ((ItemDataVoxel) pile.getData()).voxel.getId();
+			//int voxelMeta = ((ItemDataVoxel) pile.getData()).voxelMeta;
 
 			int data2write = -1;
 			Location selectedBlock = null;
@@ -115,20 +114,37 @@ public class ItemVoxel extends Item
 	}
 
 	@Override
-	public void load(ItemPile itemPile, DataInputStream stream) throws IOException
+	public void load(DataInputStream stream) throws IOException
 	{
-		((ItemDataVoxel) itemPile.data).voxel = VoxelTypes.get(stream.readInt());
-		((ItemDataVoxel) itemPile.data).voxelMeta = stream.readByte();
+		voxel = VoxelTypes.get(stream.readInt());
+		voxelMeta = stream.readByte();
+		//((ItemDataVoxel) itemPile.data).voxel = VoxelTypes.get(stream.readInt());
+		//((ItemDataVoxel) itemPile.data).voxelMeta = stream.readByte();
 	}
 
 	@Override
-	public void save(ItemPile itemPile, DataOutputStream stream) throws IOException
+	public void save(DataOutputStream stream) throws IOException
 	{
-		if(((ItemDataVoxel) itemPile.data).voxel != null)
+		/*if(((ItemDataVoxel) itemPile.data).voxel != null)
 			stream.writeInt(((ItemDataVoxel) itemPile.data).voxel.getId());
 		else
 			stream.writeInt(1);
-		stream.writeByte((byte) ((ItemDataVoxel) itemPile.data).voxelMeta);
+		stream.writeByte((byte) ((ItemDataVoxel) itemPile.data).voxelMeta);*/
+		if(voxel != null)
+			stream.writeInt(voxel.getId());
+		else
+			stream.writeInt(1);
+		stream.writeByte(voxelMeta);
 	}
 
+	@Override
+	public boolean canMergeWith(Item item)
+	{
+		if(item instanceof ItemVoxel)
+		{
+			ItemVoxel itemVoxel = (ItemVoxel)item;
+			return super.canMergeWith(itemVoxel) && itemVoxel.getVoxel().getId() == this.getVoxel().getId() && itemVoxel.getVoxelMeta() == this.getVoxelMeta();
+		}
+		return false;
+	}
 }

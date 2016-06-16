@@ -1,6 +1,7 @@
 package io.xol.chunkstories.item.core;
 
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.item.ItemPile;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -9,10 +10,9 @@ import io.xol.chunkstories.item.ItemPile;
 
 public class ItemAk47Magazine extends Item
 {
-
-	public ItemAk47Magazine(int id)
+	public ItemAk47Magazine(ItemType type)
 	{
-		super(id);
+		super(type);
 	}
 
 	@Override

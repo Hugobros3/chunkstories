@@ -23,7 +23,7 @@ public class ItemPile implements CSFSerializable
 	public EntityComponentInventory inventory;
 	public int x, y;
 
-	public ItemData data = null;
+	//public ItemData data = null;
 
 	/**
 	 * Creates an item pile of the item type named 'itemName'
@@ -32,23 +32,18 @@ public class ItemPile implements CSFSerializable
 	 */
 	public ItemPile(String itemName)
 	{
-		this(ItemsList.getItemByName(itemName));
+		this(ItemsList.getItemTypeByName(itemName).newItem());
 	}
 
 	public ItemPile(String itemName, String[] info)
 	{
-		this(ItemsList.getItemByName(itemName), info);
+		this(ItemsList.getItemTypeByName(itemName).newItem(), info);
 	}
-
-	/**
-	 * Creates an item pile of this item
-	 * 
-	 * @param item
-	 */
+	
 	public ItemPile(Item item)
 	{
 		this.item = item;
-		this.data = item.getItemData();
+		//this.data = item.getItemData();
 		item.onCreate(this, null);
 	}
 
@@ -61,7 +56,7 @@ public class ItemPile implements CSFSerializable
 	public ItemPile(Item item, String[] info)
 	{
 		this.item = item;
-		this.data = item.getItemData();
+		//this.data = item.getItemData();
 		item.onCreate(this, info);
 	}
 
@@ -89,7 +84,7 @@ public class ItemPile implements CSFSerializable
 	public ItemPile(Item item, DataInputStream stream) throws IOException
 	{
 		this.item = item;
-		this.data = item.getItemData();
+		//this.data = item.getItemData();
 		loadCSF(stream);
 	}
 
@@ -107,14 +102,14 @@ public class ItemPile implements CSFSerializable
 	public void loadCSF(DataInputStream stream) throws IOException
 	{
 		this.amount = stream.readInt();
-		item.load(this, stream);
+		item.load(stream);
 	}
 
 	@Override
 	public void saveCSF(DataOutputStream stream) throws IOException
 	{
 		stream.writeInt(amount);
-		item.save(this, stream);
+		item.save(stream);
 	}
 
 	/**
@@ -172,14 +167,9 @@ public class ItemPile implements CSFSerializable
 		return amount;
 	}
 
-	public ItemData getData()
-	{
-		return data;
-	}
-
 	public boolean canMergeWith(ItemPile itemPile)
 	{
-		return this.getItem().comparePiles(this, itemPile);
+		return this.getItem().canMergeWith(itemPile.getItem());
 	}
 
 	/**

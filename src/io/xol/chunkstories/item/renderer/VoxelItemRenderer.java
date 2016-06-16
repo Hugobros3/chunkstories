@@ -62,7 +62,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		//transformation.rotate(45f, new Vector3f(0.0f, 1.0f, 1.0f));
 		//transformation.m02 = -0.5f;
 		program.setUniformMatrix4f("transformation", transformation);
-		Voxel voxel = ItemVoxel.getVoxel(pile);
+		Voxel voxel = ((ItemVoxel) pile.getItem()).getVoxel();
 		if(voxel == null)
 		{
 			int width = slotSize * pile.item.getSlotsWidth();
@@ -75,7 +75,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		context.setDiffuseTexture(texture.getID());
 		
 		BlockRenderInfo bri = new BlockRenderInfo(0);
-		bri.data = VoxelFormat.format(voxel.getId(), ItemVoxel.getVoxelMeta(pile), 15, voxel.getLightLevel(0));
+		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));
 		bri.voxelType = VoxelTypes.get(bri.data);
 		VoxelModel model = voxel.getVoxelModel(bri);
 		if(model == null || !voxel.isVoxelUsingCustomModel())
@@ -142,7 +142,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		handTransformation.scale(new Vector3f(s, s, s));
 		handTransformation.translate(new Vector3f(-0.25f, -0.5f, -0.5f));
 		context.sendTransformationMatrix(handTransformation);
-		Voxel voxel = ItemVoxel.getVoxel(pile);
+		Voxel voxel = ((ItemVoxel) pile.getItem()).getVoxel();
 		if(voxel == null)
 		{
 			return;
@@ -152,7 +152,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		context.setDiffuseTexture(texture.getID());
 		
 		BlockRenderInfo bri = new BlockRenderInfo(0);
-		bri.data = VoxelFormat.format(voxel.getId(), ItemVoxel.getVoxelMeta(pile), 15, voxel.getLightLevel(0));
+		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));
 		bri.voxelType = VoxelTypes.get(bri.data);
 		VoxelModel model = voxel.getVoxelModel(bri);
 		if(model == null || !voxel.isVoxelUsingCustomModel())

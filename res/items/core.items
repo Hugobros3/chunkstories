@@ -1,17 +1,19 @@
 # Here you get/have to assign items their ID and class.
 
 item 1 item_voxel io.xol.chunkstories.item.core.ItemVoxel
-	
+	maxStackSize: 100
 end
 
 item 128 weapon_ak47 io.xol.chunkstories.item.core.ItemAk47
 	width: 3
 	height: 3
+	maxStackSize: 1
 end
 
 item 129 mag_ak47 io.xol.chunkstories.item.core.ItemAk47Magazine
 	width: 2
 	height: 2
+	maxStackSize: 30
 end
 
 item 130 he_grenade io.xol.chunkstories.item.core.ItemHeGrenade

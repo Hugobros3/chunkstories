@@ -1,6 +1,7 @@
 package io.xol.chunkstories.item.core;
 
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.item.ItemPile;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -9,9 +10,9 @@ import io.xol.chunkstories.item.ItemPile;
 
 public class ItemHeGrenade extends Item
 {
-	public ItemHeGrenade(int id)
+	public ItemHeGrenade(ItemType type)
 	{
-		super(id);
+		super(type);
 	}
 
 	@Override

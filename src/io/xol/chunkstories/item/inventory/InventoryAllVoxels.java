@@ -33,7 +33,7 @@ public class InventoryAllVoxels extends EntityComponentInventory
 		this.contents = new ItemPile[width][height];
 		for(ItemPile pile : allItems)
 		{
-			pile.setAmount(64);
+			pile.setAmount(pile.getItem().getMaxStackSize());
 			this.addItemPile(pile);
 		}
 	}

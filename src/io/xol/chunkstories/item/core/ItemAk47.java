@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.entity.core.EntityPlayer;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.particules.ParticleBlood;
@@ -19,9 +20,9 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public class ItemAk47 extends Item
 {
-	public ItemAk47(int id)
+	public ItemAk47(ItemType type)
 	{
-		super(id);
+		super(type);
 		itemRenderer = new Ak47ViewModelRenderer(this);
 	}
 
@@ -53,10 +54,7 @@ public class ItemAk47 extends Item
 						if(!shotEntity.equals(shooter))
 						{
 							Vector3d hitPoint = shotEntity.collidesWith(eyeLocation, shooter.getDirectionLookingAt());
-							/*shooter.getWorld().addParticle(
-									new ParticleBlood(shooter.getWorld(), 
-											hitPoint, 
-											shooter.getDirectionLookingAt().normalize().scale(1.0)));*/
+						
 							Vector3d bloodDir = shooter.getDirectionLookingAt().normalize().scale(0.25);
 							for(int i = 0; i < 25; i++)
 							{
