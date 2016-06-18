@@ -1,13 +1,14 @@
 package io.xol.chunkstories.world;
 
 import java.io.File;
+import java.util.Iterator;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.Subscriber;
-import io.xol.chunkstories.api.events.core.PlayerSpawnEvent;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.core.events.PlayerSpawnEvent;
 import io.xol.chunkstories.net.packets.PacketPlaySound;
 import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
@@ -15,6 +16,7 @@ import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
 import io.xol.chunkstories.physics.particules.Particle;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerServer;
 import io.xol.engine.math.LoopingMathHelper;
@@ -28,7 +30,6 @@ public class WorldServer extends World implements WorldMaster, WorldNetworked
 	public WorldServer(String worldDir)
 	{
 		super(new WorldInfo(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
-		client = false;
 
 		ioHandler = new IOTasksMultiplayerServer(this);
 		ioHandler.start();
@@ -74,13 +75,14 @@ public class WorldServer extends World implements WorldMaster, WorldNetworked
 			//Sends the construction info for the world, and then the player entity
 			worldInfo.sendInfo(sender);
 
-			PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.getProfile(), sender.getProfile().getLastPosition());
+			PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.getProfile(), this);
 			Server.getInstance().getPluginsManager().fireEvent(playerSpawnEvent);
 
 		}
 		else if(message.equals("respawn"))
 		{
 			//TODO respawn request
+			
 		}
 		if (message.startsWith("getChunkCompressed"))
 		{
@@ -106,7 +108,7 @@ public class WorldServer extends World implements WorldMaster, WorldNetworked
 		int sizeInChunks = getWorldInfo().getSize().sizeInChunks;
 
 		//Chunks pruner
-		ChunksIterator i = Server.getInstance().world.getAllLoadedChunks();
+		ChunksIterator i = this.getAllLoadedChunks();
 		CubicChunk c;
 		while (i.hasNext())
 		{
@@ -133,13 +135,50 @@ public class WorldServer extends World implements WorldMaster, WorldNetworked
 
 			if (!neededBySomeone)
 			{
-				//TODO
-				//System.out.println("Removed");
 				removeChunk(c, true);
 			}
 		}
-		//if(removedChunks > 0)
-		//	System.out.println("Removed "+removedChunks+" chunks.");
+		
+		//4 of margin bc we need to be far enought of the center of the holder
+		chunksViewDistance += 4;
+		
+		Iterator<ChunkHolder> chunksHoldersIterator = this.getChunksHolder().getLoadedChunkHolders();
+		while(chunksHoldersIterator.hasNext())
+		{
+			ChunkHolder chunkHolder = chunksHoldersIterator.next();
+			int chunkHolderCenterX = chunkHolder.regionX * 8 + 4;
+			int chunkHolderCenterY = chunkHolder.regionY * 8 + 4;
+			int chunkHolderCenterZ = chunkHolder.regionZ * 8 + 4;
+			
+			boolean neededBySomeone = false;
+			for (ServerClient client : Server.getInstance().handler.clients)
+			{
+				if (client.isAuthentificated())
+				{
+					Entity clientEntity = client.getProfile().getControlledEntity();
+					if (clientEntity == null)
+						continue;
+					Location loc = clientEntity.getLocation();
+					int pCX = (int) loc.x / 32;
+					int pCY = (int) loc.y / 32;
+					int pCZ = (int) loc.z / 32;
+					//TODO use proper configurable values for this
+					if (!((LoopingMathHelper.moduloDistance(chunkHolderCenterX, pCX, sizeInChunks) > chunksViewDistance + 2)
+							|| (LoopingMathHelper.moduloDistance(chunkHolderCenterZ, pCZ, sizeInChunks) > chunksViewDistance + 2)
+							|| (Math.abs(chunkHolderCenterY - pCY) > 4+4)))
+					{
+						neededBySomeone = true;
+					}
+				}
+			}
+			
+			if(chunkHolder.getNumberOfLoadedChunks() == 0 && !neededBySomeone)
+			{
+				//TODO saves
+				chunkHolder.unload();
+				chunksHoldersIterator.remove();
+			}
+		}
 	}
 
 	@Override

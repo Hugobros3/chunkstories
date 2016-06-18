@@ -5,13 +5,13 @@ import java.util.concurrent.BlockingQueue;
 
 import io.xol.chunkstories.api.entity.Entity;
 
-public class EntityIterator implements Iterator<Entity>
+public class EntityWorldIterator implements Iterator<Entity>
 {
 	BlockingQueue<Entity> entities;
 	Iterator<Entity> ie;
 	Entity currentEntity;
 
-	public EntityIterator(BlockingQueue<Entity> entities)
+	public EntityWorldIterator(BlockingQueue<Entity> entities)
 	{
 		this.entities = entities;
 		ie = entities.iterator();
@@ -33,11 +33,7 @@ public class EntityIterator implements Iterator<Entity>
 	@Override
 	public void remove()
 	{
-		if(currentEntity != null)
-		{
-			//System.out.println("Iterator removal !");
-			currentEntity.delete();
-		}
+		//Remove it from the world set
 		ie.remove();
 	}
 }

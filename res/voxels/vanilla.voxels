@@ -73,7 +73,7 @@ voxel glowing 16
 	emitting: 15
 end
 
-voxel snow 17 io.xol.chunkstories.voxel.core.Voxel8Steps
+voxel snow 17 io.xol.chunkstories.core.voxel.Voxel8Steps
 	opaque: false
 	selfOpaque: true
 	model: 'steps.m0'
@@ -89,24 +89,24 @@ voxel birchleaves 19
 	shading: 1
 end
 
-voxel whool 20 io.xol.chunkstories.voxel.core.VoxelMeta16
+voxel whool 20 io.xol.chunkstories.core.voxel.VoxelMeta16
 end
 
 voxel redBricks 23
 	texture: redbricks16
 end
 
-voxel colored 24 io.xol.chunkstories.voxel.core.VoxelMeta16
+voxel colored 24 io.xol.chunkstories.core.voxel.VoxelMeta16
 end
 
-voxel ironGrill 25 io.xol.chunkstories.voxel.core.VoxelPane
+voxel ironGrill 25 io.xol.chunkstories.core.voxel.VoxelPane
 	opaque: false
 	usesCustomModel: true
 	selfOpaque: true
 	#texture: debug
 end
 
-voxel woodFence 26 io.xol.chunkstories.voxel.core.VoxelFence
+voxel woodFence 26 io.xol.chunkstories.core.voxel.VoxelFence
 	opaque: false
 	usesCustomModel: true
 	selfOpaque: true
@@ -128,20 +128,20 @@ end
 voxel stonebrickmossy 31
 end
 
-voxel glassPane 32 io.xol.chunkstories.voxel.core.VoxelPane
+voxel glassPane 32 io.xol.chunkstories.core.voxel.VoxelPane
 	opaque: false
 	usesCustomModel: true
 	texture: glass
 	selfOpaque: true
 end
 
-voxel ladder 33 io.xol.chunkstories.voxel.core.VoxelLadder
+voxel ladder 33 io.xol.chunkstories.core.voxel.VoxelLadder
 	opaque: false
 	usesCustomModel: true
 	solid: false
 end
 
-voxel vine 34 io.xol.chunkstories.voxel.core.VoxelVine
+voxel vine 34 io.xol.chunkstories.core.voxel.VoxelVine
 	opaque: false
 	usesCustomModel: true
 	solid: false
@@ -230,7 +230,7 @@ voxel forestgrass_prop 65
 	affectedByWind: true
 end
 
-voxel water 128 io.xol.chunkstories.voxel.core.VoxelLiquid
+voxel water 128 io.xol.chunkstories.core.voxel.VoxelLiquid
 	selfOpaque: true
 	solid: false
 	opaque: false
@@ -239,5 +239,5 @@ voxel water 128 io.xol.chunkstories.voxel.core.VoxelLiquid
 	shading: 1
 end
 
-voxel density 99 io.xol.chunkstories.voxel.core.VoxelMeta16
+voxel density 99 io.xol.chunkstories.core.voxel.VoxelMeta16
 end

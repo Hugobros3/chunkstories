@@ -2,6 +2,7 @@ package io.xol.chunkstories.world.summary;
 
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
 
@@ -52,7 +53,7 @@ public class RegionSummary
 	public AtomicBoolean loaded = new AtomicBoolean(false);
 
 	public AtomicBoolean uploadUpToDate = new AtomicBoolean(false);
-	public File handler;
+	public final File handler;
 
 	public int rx, rz;
 
@@ -70,19 +71,21 @@ public class RegionSummary
 		heights = new int[(int)Math.ceil(256 * 256 * ( 1 + 1/3D))];
 		ids = new int[256 * 256];
 		
-		//System.out.println("New chunk summary made");
-		//Thread.currentThread().dumpStack();
+		if(world instanceof WorldMaster)
+			handler = new File(world.getFolderPath() + "/summaries/" + rx + "."+ rz + ".sum");
+		else
+			handler = null;
 	}
 
-	public void load(File handler)
+	public void load()
 	{
-		this.handler = handler;
+		//this.handler = handler;
 		this.world.ioHandler.requestChunkSummaryLoad(this);
 	}
 
-	public void save(File handler)
+	public void save()
 	{
-		this.handler = handler;
+		//this.handler = handler;
 		this.world.ioHandler.requestChunkSummarySave(this);
 	}
 

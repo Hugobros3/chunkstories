@@ -12,6 +12,9 @@ import java.io.IOException;
 //http://chunkstories.xyz
 //http://xol.io
 
+/**
+ * Reverses the winding order of a model in .model
+ */
 public class ModelOrderSwapper
 {
 	public static void main(String a[])

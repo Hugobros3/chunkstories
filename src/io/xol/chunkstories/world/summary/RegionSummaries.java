@@ -1,6 +1,5 @@
 package io.xol.chunkstories.world.summary;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -16,16 +15,15 @@ import io.xol.engine.math.LoopingMathHelper;
 
 public class RegionSummaries
 {
-	World world;
-
-	int ws;
-
-	Map<Long, RegionSummary> summaries = new ConcurrentHashMap<Long, RegionSummary>();
+	private final World world;
+	
+	private final int worldSize;
+	private Map<Long, RegionSummary> summaries = new ConcurrentHashMap<Long, RegionSummary>();
 
 	public RegionSummaries(World w)
 	{
 		world = w;
-		ws = world.getSizeInChunks() * 32;
+		worldSize = world.getSizeInChunks() * 32;
 	}
 
 	long index(int x, int z)
@@ -38,19 +36,19 @@ public class RegionSummaries
 
 	public RegionSummary get(int x, int z)
 	{
-		x %= ws;
-		z %= ws;
+		x %= worldSize;
+		z %= worldSize;
 		if (x < 0)
-			x += ws;
+			x += worldSize;
 		if (z < 0)
-			z += ws;
+			z += worldSize;
 
 		long i = index(x, z);
 		if (summaries.containsKey(i))
 			return summaries.get(i);
 
 		RegionSummary cs = new RegionSummary(world, x / 256, z / 256);
-		cs.load(new File(world.getFolderPath() + "/summaries/" + cs.rx + "."+ cs.rz + ".sum"));
+		cs.load();
 
 		summaries.put(i, cs);
 		return cs;
@@ -58,12 +56,12 @@ public class RegionSummaries
 
 	public int getHeightMipmapped(int x, int z, int level)
 	{
-		x %= ws;
-		z %= ws;
+		x %= worldSize;
+		z %= worldSize;
 		if (x < 0)
-			x += ws;
+			x += worldSize;
 		if (z < 0)
-			z += ws;
+			z += worldSize;
 		RegionSummary cs = get(x, z);
 		if (cs == null)
 			return 0;
@@ -72,12 +70,12 @@ public class RegionSummaries
 
 	public int getHeightAt(int x, int z)
 	{
-		x %= ws;
-		z %= ws;
+		x %= worldSize;
+		z %= worldSize;
 		if (x < 0)
-			x += ws;
+			x += worldSize;
 		if (z < 0)
-			z += ws;
+			z += worldSize;
 		RegionSummary cs = get(x, z);
 		if (cs == null)
 			return 0;
@@ -86,12 +84,12 @@ public class RegionSummaries
 
 	public int getMinChunkHeightAt(int x, int z)
 	{
-		x %= ws;
-		z %= ws;
+		x %= worldSize;
+		z %= worldSize;
 		if (x < 0)
-			x += ws;
+			x += worldSize;
 		if (z < 0)
-			z += ws;
+			z += worldSize;
 		RegionSummary cs = get(x, z);
 		if (cs == null)
 			return 0;
@@ -100,24 +98,24 @@ public class RegionSummaries
 
 	public int getIdAt(int x, int z)
 	{
-		x %= ws;
-		z %= ws;
+		x %= worldSize;
+		z %= worldSize;
 		if (x < 0)
-			x += ws;
+			x += worldSize;
 		if (z < 0)
-			z += ws;
+			z += worldSize;
 		RegionSummary cs = get(x, z);
 		return cs.getID(x % 256, z % 256);
 	}
 
 	public void blockPlaced(int x, int y, int z, int id)
 	{
-		x %= ws;
-		z %= ws;
+		x %= worldSize;
+		z %= worldSize;
 		if (x < 0)
-			x += ws;
+			x += worldSize;
 		if (z < 0)
-			z += ws;
+			z += worldSize;
 		RegionSummary cs = get(x, z);
 		cs.set(x % 256, y, z % 256, id);
 	}
@@ -131,8 +129,7 @@ public class RegionSummaries
 	{
 		for (RegionSummary cs : summaries.values())
 		{
-			cs.save(new File(world.getFolderPath() + "/summaries/" + cs.rx
-					+ "." + cs.rz + ".sum"));
+			cs.save();
 		}
 	}
 
@@ -147,12 +144,12 @@ public class RegionSummaries
 
 	public void set(int x, int z, int y, int id)
 	{
-		x %= ws;
-		z %= ws;
+		x %= worldSize;
+		z %= worldSize;
 		if (x < 0)
-			x += ws;
+			x += worldSize;
 		if (z < 0)
-			z += ws;
+			z += worldSize;
 		RegionSummary cs = get(x, z);
 		cs.forceSet(x % 256, y, z % 256, id);
 	}

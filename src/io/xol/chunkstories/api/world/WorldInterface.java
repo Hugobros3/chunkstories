@@ -23,10 +23,16 @@ public interface WorldInterface
 	public void addEntity(Entity entity);
 
 	/**
+	 * Removes an entity from the world, matches the object
+	 * @param entity
+	 */
+	public boolean removeEntity(Entity entity);
+	
+	/**
 	 * Removes an entity from the world, based on UUID
 	 * @param entity
 	 */
-	public void removeEntity(Entity entity);
+	public boolean removeEntity(long uuid);
 
 	/**
 	 * Game-logic function. Not something you'd be supposed to call
@@ -44,7 +50,7 @@ public interface WorldInterface
 	 * @param entityID a valid UUID
 	 * @return null if it can't be found
 	 */
-	public Entity getEntityByUUID(long entityID);
+	public Entity getEntityByUUID(long uuid);
 
 	/**
 	 * As of the current version of the game, this is internally set to 1024
@@ -268,4 +274,6 @@ public interface WorldInterface
 	public void addParticle(Particle particle);
 
 	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain);
+
+	public Region getRegion(int regionX, int regionY, int regionZ);
 }

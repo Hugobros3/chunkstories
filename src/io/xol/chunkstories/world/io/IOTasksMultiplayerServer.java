@@ -48,6 +48,10 @@ public class IOTasksMultiplayerServer extends IOTasks
 		{
 			try
 			{
+				//Don't bother if the client died.
+				if(!client.isAlive())
+					return true;
+				
 				ChunkHolder holder = world.getChunksHolder().getChunkHolder(chunkX, chunkY, chunkZ, true);
 				if(holder.isLoaded())
 				{
@@ -92,12 +96,6 @@ public class IOTasksMultiplayerServer extends IOTasks
 		{
 			return (-65536 + 7777 * chunkX + 256 * chunkY + chunkZ) % 2147483647;
 		}
-		
-		/*private String toStr(byte[] digest)
-		{
-			BigInteger bigInt = new BigInteger(1,digest);
-			return bigInt.toString(16);
-		}*/
 	}
 
 	public void requestCompressedChunkSend(int x, int y, int z, ServerClient sender)

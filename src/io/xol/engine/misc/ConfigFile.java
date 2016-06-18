@@ -124,7 +124,6 @@ public class ConfigFile
 			if(a != null)
 				props.put(s, a);
 		}
-		// System.out.println("getting prop"+s+"size:"+this.props.size());
 		return a;
 	}
 
@@ -175,6 +174,16 @@ public class ConfigFile
 		return Double.parseDouble(getProp(s, d+""));
 	}
 
+	public long getLongProp(String s, long l)
+	{
+		return Long.parseLong(getProp(s, l+""));
+	}
+
+	public void setProp(String p, long l)
+	{
+		setProp(p, l + "");
+	}
+	
 	public void setProp(String p, double d)
 	{
 		setProp(p, d + "");

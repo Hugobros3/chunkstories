@@ -5,14 +5,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.csf.StreamSource;
+import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
-import io.xol.chunkstories.api.net.StreamSource;
-import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemsList;
 

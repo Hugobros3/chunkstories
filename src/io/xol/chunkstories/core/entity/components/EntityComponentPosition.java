@@ -5,14 +5,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.csf.StreamSource;
+import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
-import io.xol.chunkstories.api.net.StreamSource;
-import io.xol.chunkstories.api.net.StreamTarget;
+import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.world.World;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
+
 import io.xol.engine.concurrency.SafeWriteLock;
 import io.xol.engine.math.lalgb.Vector3d;
 
@@ -30,8 +29,7 @@ public class EntityComponentPosition extends EntityComponent
 	SafeWriteLock safetyLock = new SafeWriteLock();
 	private Location pos = new Location(entity.getWorld(), 0, 0, 0);
 	
-	//TODO remake-me
-	private ChunkHolder parentHolder;
+	private Region regionWithin;
 
 	public Location getLocation()
 	{
@@ -96,11 +94,6 @@ public class EntityComponentPosition extends EntityComponent
 		pos.setY(dis.readDouble());
 		pos.setZ(dis.readDouble());
 		
-		//System.out.println(entity.getUUID() + Client.username);
-		
-		//if(entity.getUUID() == 0)
-		//	System.out.println("being cucked" + pos);
-		
 		checkPositionAndUpdateHolder();
 		
 		//Position updates received by the server should be told to everyone but the controller
@@ -126,26 +119,32 @@ public class EntityComponentPosition extends EntityComponent
 		if (regionY > entity.getWorld().getMaxHeight() / (32 * 8))
 			regionY = entity.getWorld().getMaxHeight() / (32 * 8);
 		int regionZ = (int) (pos.z / (32 * 8));
-		if (parentHolder != null && parentHolder.regionX == regionX && parentHolder.regionY == regionY && parentHolder.regionZ == regionZ)
+		
+		//Don't touch updates once the entity was removed
+		if(!entity.exists())
+			return false;
+		
+		if (regionWithin != null && regionWithin.getRegionX() == regionX && regionWithin.getRegionY() == regionY && regionWithin.getRegionZ() == regionZ)
 		{
 			return false; // Nothing to do !
 		}
 		else
 		{
-			//if(parentHolder != null)
-			//	parentHolder.removeEntity(this);
+			if(regionWithin != null)
+				assert regionWithin.removeEntity(entity);
+		
+			regionWithin = entity.getWorld().getRegion(regionX * 8, regionY * 8, regionZ * 8);
 			
-			//TODO refactor using regions
+			//When the region is loaded, add this entity to it.
+			if(regionWithin != null && regionWithin.isLoaded())
+				assert regionWithin.addEntity(entity);
 			
-			//parentHolder = entity.getWorld().getChunkHolder(regionX * 8, regionY * 8, regionZ * 8, true);
-			
-			//parentHolder.addEntity(this);
-			/*System.out.println("Had to move entity "+this+" to a new holder :");
-			System.out.println("RegionX : "+regionX+" PH: "+parentHolder.regionX);
-			System.out.println("RegionY : "+regionY+" PH: "+parentHolder.regionY);
-			System.out.println("RegionZ : "+regionZ+" PH: "+parentHolder.regionZ);*/
 			return true;
 		}
 	}
-
+	
+	public Region getRegionWithin()
+	{
+		return regionWithin;
+	}
 }

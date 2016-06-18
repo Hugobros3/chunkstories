@@ -1,4 +1,4 @@
-package io.xol.chunkstories.item.renderer;
+package io.xol.chunkstories.core.item.renderers;
 
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;

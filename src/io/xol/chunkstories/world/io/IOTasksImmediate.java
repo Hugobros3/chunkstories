@@ -16,9 +16,9 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public void requestChunkLoad(int chunkX, int chunkY, int chunkZ, boolean overwrite)
+	public void requestChunkLoad(ChunkHolder holder, int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
-		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkX, chunkY, chunkZ, true, overwrite);
+		IOTaskLoadChunk task = new IOTaskLoadChunk(holder, chunkX, chunkY, chunkZ, true, overwrite);
 		task.run();
 	}
 

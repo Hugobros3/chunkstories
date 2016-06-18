@@ -1,6 +1,6 @@
 # Here you assign entities their ID and class.
 
-1 io.xol.chunkstories.entity.core.EntityPlayer
-2 io.xol.chunkstories.entity.core.EntityTest
-3 io.xol.chunkstories.entity.core.EntityTest2
-4 io.xol.chunkstories.entity.core.EntitySUV
+1 io.xol.chunkstories.core.entity.EntityPlayer
+2 io.xol.chunkstories.core.entity.EntityTest
+3 io.xol.chunkstories.core.entity.EntityTest2
+4 io.xol.chunkstories.core.entity.EntitySUV

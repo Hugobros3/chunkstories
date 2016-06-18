@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world.io;
 
-import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.api.world.Region;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -8,7 +8,7 @@ import io.xol.chunkstories.world.chunk.ChunkHolder;
 
 public class IORequiringTask
 {
-	public boolean run(ChunkHolder holder)
+	public boolean run(Region holder)
 	{
 		System.out.println("Unparameteized IORequiringTask was ran !");
 		return true;

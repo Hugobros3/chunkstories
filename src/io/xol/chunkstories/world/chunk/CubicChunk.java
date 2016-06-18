@@ -3,6 +3,7 @@ package io.xol.chunkstories.world.chunk;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Chunk;
+import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
@@ -19,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CubicChunk implements Chunk
 {
 	public World world;
-	public ChunkHolder holder;
+	public Region holder;
 	public int chunkX, chunkY, chunkZ;
 
 	public int dataPointer = -1; // -1 means empty chunk (air)

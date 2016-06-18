@@ -51,7 +51,7 @@ public class DebugProfiler
 
 	public LinkedList<ProfileSection> sections = new LinkedList<ProfileSection>();
 
-	public String reset(String name)
+	public StringBuilder reset(String name)
 	{
 		//Timings
 		long took = System.nanoTime() - currentSection;
@@ -61,10 +61,12 @@ public class DebugProfiler
 		lastReset = System.nanoTime();
 
 		//Build string and reset sections
-		String txt = "";
+		StringBuilder txt = new StringBuilder("");
 		for (ProfileSection section : sections)
 		{
-			txt += section + " ";
+			txt.append(section);
+			txt.append(" ");
+			//txt += section + " ";
 		}
 		sections.clear();
 		//Add new section
@@ -74,7 +76,7 @@ public class DebugProfiler
 		return txt;
 	}
 
-	public String reset()
+	public StringBuilder reset()
 	{
 		return reset("default");
 	}

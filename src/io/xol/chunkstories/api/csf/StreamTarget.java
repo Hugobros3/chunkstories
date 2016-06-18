@@ -1,4 +1,4 @@
-package io.xol.chunkstories.api.net;
+package io.xol.chunkstories.api.csf;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

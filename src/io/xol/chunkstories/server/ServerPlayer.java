@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.core.events.SerializedEntityFile;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.engine.math.LoopingMathHelper;
@@ -38,7 +39,9 @@ public class ServerPlayer implements Player
 	public ServerPlayer(ServerClient serverClient)
 	{
 		playerConnection = serverClient;
+		
 		playerData = new ConfigFile("./players/" + playerConnection.name.toLowerCase() + ".cfg");
+		
 		// Sets dates
 		playerData.setProp("lastlogin", "" + System.currentTimeMillis());
 		if (playerData.getProp("firstlogin", "nope").equals("nope"))
@@ -115,26 +118,12 @@ public class ServerPlayer implements Player
 			}
 		}
 	}
-	
-	/*public void trackEntity(Entity e, boolean first, boolean delete)
-	{
-		PacketEntity packet = new PacketEntity(false);
-		//First time tracking we send the name if there's one
-		if(first)
-		{
-			if(e instanceof EntityNameable)
-				packet.includeName = true;
-		}
-		packet.includeRotation = e instanceof EntityRotateable;
-		packet.deleteFlag = delete;
-		packet.createFromEntity(e);
-		playerConnection.sendPacket(packet);
-	}*/
 
 	public void save()
 	{
 		long lastTime = Long.parseLong(playerData.getProp("timeplayed", "0"));
 		long lastLogin = Long.parseLong(playerData.getProp("lastlogin", "0"));
+		
 		//TODO move along with inventory stuff
 		if(controlledEntity != null)
 		{
@@ -142,9 +131,16 @@ public class ServerPlayer implements Player
 			playerData.setProp("posX", controlledEntityLocation.x);
 			playerData.setProp("posY", controlledEntityLocation.y);
 			playerData.setProp("posZ", controlledEntityLocation.z);
+			
+			//Serializes the whole player entity !!!
+			SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + this.getName().toLowerCase() + ".csf");
+			playerEntityFile.write(controlledEntity);
 		}
 		playerData.setProp("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)));
 		playerData.save();
+		
+
+		
 		System.out.println("Player profile "+playerConnection.name+" saved.");
 	}
 	
@@ -181,22 +177,6 @@ public class ServerPlayer implements Player
 			controllableEntity.getControllerComponent().setController(this);
 			controlledEntity = controllableEntity;
 		}
-		//((EntityControllable) controlledEntity).setController(this);
-		
-		
-		//Tells the player we assignated him an entity.
-		
-		/*if(controlledEntity != null)
-		{
-			PacketEntity packet = new PacketEntity(false);
-			//The player will control this one
-			packet.defineControl = true;
-			//Dirty but meh
-			packet.includeName = true;
-			packet.includeRotation = true;
-			packet.createFromEntity(controlledEntity);
-			this.playerConnection.sendPacket(packet);
-		}*/
 	}
 
 	@Override
@@ -252,35 +232,6 @@ public class ServerPlayer implements Player
 		//Hashed username for colour :)
 		return ColorsTools.getUniqueColorPrefix(name)+name+"#FFFFFF";
 	}
-
-	/*@Override
-	public void notifyTeleport(Entity entity)
-	{
-		//Send teleport packet
-		 updateControlledEntity();
-	}
-	
-	@Override
-	public void notifyFlyingStateChange(Entity entity)
-	{
-		//Send teleport packet
-		 updateControlledEntity();
-	}*/
-
-	/*private void updateControlledEntity()
-	{
-		PacketEntity packet = new PacketEntity(false);
-		packet.createFromEntity(controlledEntity);
-		playerConnection.sendPacket(packet);
-	}*/
-	
-	/*@Override
-	public void notifyInventoryChange(Entity entity)
-	{
-		PacketSerializedInventory packetInventory = new PacketSerializedInventory(false);
-		packetInventory.inventory = entity.getInventory();
-		playerConnection.sendPacket(packetInventory);
-	}*/
 
 	@Override
 	public boolean hasPermission(String permissionNode)

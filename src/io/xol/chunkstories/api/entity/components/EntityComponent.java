@@ -5,11 +5,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.csf.StreamSource;
+import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.net.StreamSource;
-import io.xol.chunkstories.api.net.StreamTarget;
 import io.xol.chunkstories.entity.EntityComponents;
 import io.xol.chunkstories.net.packets.PacketEntity;
 
@@ -24,6 +24,11 @@ public abstract class EntityComponent
 {
 	protected Entity entity;
 	EntityComponent next;
+	
+	public EntityComponent(Entity entity)
+	{
+		this(entity, entity.getComponents().getLastComponent());
+	}
 	
 	public EntityComponent(Entity entity, EntityComponent previous)
 	{

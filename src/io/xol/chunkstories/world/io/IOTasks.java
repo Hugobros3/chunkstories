@@ -172,14 +172,16 @@ public class IOTasks extends Thread
 	
 	public class IOTaskLoadChunk extends IOTask
 	{
+		ChunkHolder holder;
 		public int x;
 		public int y;
 		public int z;
 		boolean shouldLoadCH;
 		boolean overwrite;
 
-		public IOTaskLoadChunk(int x, int y, int z, boolean shouldLoadCH, boolean overwrite)
+		public IOTaskLoadChunk(ChunkHolder holder, int x, int y, int z, boolean shouldLoadCH, boolean overwrite)
 		{
+			this.holder = holder;
 			this.x = x;
 			this.y = y;
 			this.z = z;
@@ -190,7 +192,8 @@ public class IOTasks extends Thread
 		@Override
 		public boolean run()
 		{
-			ChunkHolder holder = world.getChunksHolder().getChunkHolder(x, y, z, shouldLoadCH);
+			//ChunkHolder holder = world.getChunksHolder().getChunkHolder(x, y, z, shouldLoadCH);
+			
 			// If for some reasons the chunks holder's are still not loaded, we
 			// requeue the job for later.
 			if (holder == null)
@@ -268,7 +271,7 @@ public class IOTasks extends Thread
 
 	}
 
-	public void requestChunkLoad(int chunkX, int chunkY, int chunkZ, boolean overwrite)
+	public void requestChunkLoad(ChunkHolder holder, int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
 		chunkX = chunkX % worldSizeInChunks;
 		chunkZ = chunkZ % worldSizeInChunks;
@@ -281,7 +284,7 @@ public class IOTasks extends Thread
 		if (chunkY >= worldHeightInChunks)
 			return;
 
-		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkX, chunkY, chunkZ, true, overwrite);
+		IOTaskLoadChunk task = new IOTaskLoadChunk(holder, chunkX, chunkY, chunkZ, true, overwrite);
 
 		addTask(task);
 	}
@@ -672,7 +675,7 @@ public class IOTasks extends Thread
 
 	}
 
-	public class IOTaskRunWithHolder extends IOTask
+	/*public class IOTaskRunWithHolder extends IOTask
 	{
 		ChunkHolder holder;
 		IORequiringTask task;
@@ -716,7 +719,7 @@ public class IOTasks extends Thread
 	{
 		IOTaskRunWithHolder task = new IOTaskRunWithHolder(holder, job);
 		addTask(task);
-	}
+	}*/
 
 	public void kill()
 	{

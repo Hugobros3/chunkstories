@@ -8,7 +8,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import static org.lwjgl.opengl.GL11.*;
 import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.BitmapFont;
@@ -20,7 +19,6 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
-import io.xol.chunkstories.api.events.core.ClientInputPressedEvent;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseClick;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -29,6 +27,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.core.entity.EntityPlayer;
+import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
 import io.xol.chunkstories.input.KeyBinds;
@@ -98,8 +97,6 @@ public class GameplayScene extends OverlayableScene
 		return focus;
 	}
 
-	//int selectedInventorySlot = 0;
-
 	@Override
 	public void update()
 	{
@@ -108,11 +105,7 @@ public class GameplayScene extends OverlayableScene
 		{
 			player = Client.controlledEntity;
 			if(player instanceof EntityWithSelectedItem)
-			{
 				inventoryDrawer = ((EntityWithSelectedItem)player).getInventory() == null ? null : new InventoryDrawer((EntityWithSelectedItem) player);
-				
-				//inventoryDrawer.setInventory(((EntityWithInventory)player).getInventory());
-			}
 			else
 				inventoryDrawer = null;
 		}
@@ -153,7 +146,7 @@ public class GameplayScene extends OverlayableScene
 		//Main render call
 		worldRenderer.renderWorldAtCamera(camera);
 
-		if (selectedBlock != null)
+		if (selectedBlock != null && player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().isCreativeMode())
 			selectionRenderer.drawSelectionBox(selectedBlock);
 
 		//Debug draws
@@ -172,11 +165,17 @@ public class GameplayScene extends OverlayableScene
 
 			for (CollisionBox b : player.getTranslatedCollisionBoxes())
 				b.debugDraw(0, 1, 1, 1);
-			glDisable(GL_DEPTH_TEST);
+			//glDisable(GL_DEPTH_TEST);
+			
 			Iterator<Entity> ie = Client.world.getAllLoadedEntities();
 			while (ie.hasNext())
-				ie.next().debugDraw();
-			glEnable(GL_DEPTH_TEST);
+			{
+				for(CollisionBox b : ie.next().getTranslatedCollisionBoxes())
+					b.debugDraw(0, 1, 1, 1);
+			}
+			
+			//ie.next().debugDraw();
+			//glEnable(GL_DEPTH_TEST);
 		}
 		//Cubemap rendering trigger (can't run it while main render is occuring)
 		if (shouldCM)
@@ -434,7 +433,7 @@ public class GameplayScene extends OverlayableScene
 	private void debug()
 	{
 		int timeTook = Client.profiler.timeTook();
-		String debugInfo = Client.profiler.reset("gui");
+		String debugInfo = Client.profiler.reset("gui").toString();
 		if (timeTook > 400)
 			System.out.println("Lengty frame, printing debug information : \n" + debugInfo);
 

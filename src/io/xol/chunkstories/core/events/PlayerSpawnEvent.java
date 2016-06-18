@@ -1,12 +1,12 @@
-package io.xol.chunkstories.api.events.core;
+package io.xol.chunkstories.core.events;
 
-import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.world.World;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -32,14 +32,13 @@ public class PlayerSpawnEvent extends Event
 	// Specific event code
 	
 	public Player player;
-	public Location spawnLocation;
-	public Entity entity;
+	public World world;
 	
-	public PlayerSpawnEvent(Player player, Location location)
+	public PlayerSpawnEvent(Player player, World world)
 	{
 		this.player = player;
-		this.spawnLocation = location;
-		this.entity = new EntityPlayer(Server.getInstance().world, 0d, 0d, 0d, player.getName());
+		this.world = world;
+		//this.entity = new EntityPlayer(Server.getInstance().world, 0d, 0d, 0d, player.getName());
 	}
 
 	public Player getPlayer()
@@ -50,13 +49,22 @@ public class PlayerSpawnEvent extends Event
 	@Override
 	public void defaultBehaviour()
 	{
-		if(spawnLocation == null)
-			spawnLocation = entity.getWorld().getDefaultSpawnLocation();
-		entity.setLocation(spawnLocation);
+		Entity entity = null;
+		
+		SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + player.getName().toLowerCase() + ".csf");
+		if(playerEntityFile.exists())
+			entity = playerEntityFile.read(world);
+		
+		if(entity == null)
+		{
+			System.out.println("Created entity named "+entity+":"+player.getDisplayName());
+			entity = new EntityPlayer(world, 0d, 0d, 0d, player.getName());
+			entity.setLocation(world.getDefaultSpawnLocation());
+		}
+		
 		Server.getInstance().world.addEntity(entity);
-		System.out.println("set entity controll");
 		player.setControlledEntity(entity);
-		System.out.println("Created entity named "+entity+":"+player.getDisplayName());
+		System.out.println("Added player entity");
 	}
 	
 }

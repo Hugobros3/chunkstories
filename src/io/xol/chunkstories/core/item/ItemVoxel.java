@@ -15,8 +15,8 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.EntityPlayer;
+import io.xol.chunkstories.core.item.renderers.VoxelItemRenderer;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.renderer.VoxelItemRenderer;
 import io.xol.chunkstories.voxel.VoxelTypes;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -36,12 +36,6 @@ public class ItemVoxel extends Item
 		super(type);
 		itemRenderer = new VoxelItemRenderer(this);
 	}
-
-	/*@Override
-	public ItemDataVoxel getItemData()
-	{
-		return new ItemDataVoxel();
-	}*/
 
 	@Override
 	public void onCreate(ItemPile pile, String[] info)

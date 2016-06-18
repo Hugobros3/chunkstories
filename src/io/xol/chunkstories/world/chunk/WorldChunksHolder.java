@@ -1,7 +1,9 @@
 package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.world.Chunk;
+import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.world.World;
+import io.xol.engine.concurrency.SimpleLock;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,14 +12,14 @@ import java.util.concurrent.ConcurrentHashMap;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ChunksHolders
+public class WorldChunksHolder
 {
-	World world;
-	ChunksData chunksData;
+	private World world;
 
-	public ConcurrentHashMap<ChunkHolderKey, ChunkHolder> chunkHolders = new ConcurrentHashMap<ChunkHolderKey, ChunkHolder>(8, 0.9f, 1);
+	private SimpleLock worldDataLock = new SimpleLock();
+	private ConcurrentHashMap<ChunkHolderKey, ChunkHolder> chunkHolders = new ConcurrentHashMap<ChunkHolderKey, ChunkHolder>(8, 0.9f, 1);
 
-	final int s, h;
+	private final int s, h;
 
 	private class ChunkHolderKey
 	{
@@ -50,100 +52,78 @@ public class ChunksHolders
 		}
 	}
 
-	public ChunksHolders(World world, ChunksData chunksData)
+	public WorldChunksHolder(World world)
 	{
 		this.world = world;
-		this.chunksData = chunksData;
+		//this.chunksData = chunksData;
 		h = world.getWorldInfo().getSize().height / 8;
 		s = world.getWorldInfo().getSize().sizeInChunks / 8;
-
-		// data = new ChunkHolder[h * s * s];
-		// dataPresent = new boolean[h * s * s];
 	}
 
-	public void setChunk(CubicChunk c)
+	public Iterator<ChunkHolder> getLoadedChunkHolders()
 	{
-		ChunkHolder holder = getChunkHolder(c.chunkX, c.chunkY, c.chunkZ, false);
-		if (holder != null)
-		{
-			// dataPresent[getAddress(c.chunkX,c.chunkY,c.chunkZ)] = true;
-			holder.set(c.chunkX, c.chunkY, c.chunkZ, c);
-			// System.out.println("did set chunk lol dp="+c.dataPointer);
-		}
-		else
-		{
-			if (c != null)
-				c.destroy();
-			// System.out.println("Chunk Holder doesn't exist for " +
-			// c.toString());
-		}
+		return chunkHolders.values().iterator();
 	}
-
-	int getAddress(int chunkX, int chunkY, int chunkZ)
-	{
-		// Linearize
-		int regionX = chunkX / 8;
-		int regionY = chunkY / 8;
-		int regionZ = chunkZ / 8;
-
-		int address = (regionX * s + regionZ) * h + regionY;
-		return address;
-	}
-
-	public ChunkHolder getChunkHolder(int chunkX, int chunkY, int chunkZ, boolean load)
+	
+	/**
+	 * This method is set to private because it creates an empty ChunkHolder and all ChunkHolders should always contain at least one chunk.
+	 * @return
+	 */
+	public ChunkHolder getChunkHolder(int chunkX, int chunkY, int chunkZ, boolean requestLoadIfAbsent)
 	{
 		ChunkHolder holder = null;
-		// if (chunkY > world.size.sizeInChunks)
-		// return null;
 		ChunkHolderKey key = new ChunkHolderKey(chunkX / 8, chunkY / 8, chunkZ / 8 );
 		
+		//Lock to avoid any issues with another thread making another holder while we handle this
+		worldDataLock.lock();
 		holder = chunkHolders.get(key);
-		if (holder == null && chunkY < h * 8 && chunkY >= 0 && load)
+		
+		//Make a new chunkHolder if we can't find it
+		if (requestLoadIfAbsent && holder == null && chunkY < h * 8 && chunkY >= 0)
 		{
-			holder = new ChunkHolder(world, chunkX / 8, chunkY / 8, chunkZ / 8, false);
+			holder = new ChunkHolder(world, chunkX / 8, chunkY / 8, chunkZ / 8);
 			chunkHolders.putIfAbsent(key, holder);
 		}
-		//if(chunkX / 8 == 3 && chunkY / 8 == 0 && chunkZ / 8 == 3)
-		//	System.out.println("holder"+holder);
-		
-		//if(holder != null && !holder.isLoaded())
-		//	world.ioHandler.requestChunkHolderLoad(holder);
-		
-			//	removeChunkHolder(chunkX / 8, chunkY / 8, chunkZ / 8);
+		worldDataLock.unlock();
 		
 		return holder;
 	}
-
-	public void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save)
+	
+	public void setChunk(CubicChunk c)
+	{
+		ChunkHolder holder = getChunkHolder(c.chunkX, c.chunkY, c.chunkZ, true);
+		if (holder != null)
+			holder.set(c.chunkX, c.chunkY, c.chunkZ, c);
+		else //destroy it to avoid memory leaks
+			if (c != null)
+				c.destroy();
+	}
+	
+	public void removeChunk(int chunkX, int chunkY, int chunkZ, boolean saveBeforeRemoving)
 	{
 		ChunkHolder holder = getChunkHolder(chunkX, chunkY, chunkZ, false);
+		//Has removing the chunk made the holder empty ?
 		boolean emptyHolder = false;
 		if (holder != null)
-		{
 			emptyHolder = holder.removeChunk(chunkX, chunkY, chunkZ);
-		}
+		
 		if (emptyHolder)
 		{
-			if(save)
+			if(saveBeforeRemoving)
 				holder.save();
-			holder.destroy();
+			holder.unload();
 			//System.out.println("Remove holder: "+holder);
 			chunkHolders.remove(new ChunkHolderKey(chunkX / 8, chunkY / 8, chunkZ / 8 ));
 		}
 		//world.ioHandler.notifyChunkUnload(chunkX, chunkY, chunkZ);
 	}
-
-	public void removeChunkHolder(int regionX, int regionY, int regionZ)
-	{
-		chunkHolders.remove(new ChunkHolderKey(regionX, regionY, regionZ));
-	}
 	
-	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load)
+	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean requestLoadIfAbsent)
 	{
-		ChunkHolder holder = getChunkHolder(chunkX, chunkY, chunkZ, load);
+		ChunkHolder holder = getChunkHolder(chunkX, chunkY, chunkZ, requestLoadIfAbsent);
 		if (holder != null)
 		{
-			return holder.get(chunkX, chunkY, chunkZ, load);
+			return holder.get(chunkX, chunkY, chunkZ, requestLoadIfAbsent);
 		}
 		return null;
 	}
@@ -151,7 +131,7 @@ public class ChunksHolders
 	public void saveAll()
 	{
 		Iterator<ChunkHolder> i = chunkHolders.values().iterator();
-		ChunkHolder holder;
+		Region holder;
 		while(i.hasNext())
 		{
 			holder = i.next();
@@ -171,7 +151,7 @@ public class ChunksHolders
 			holder = i.next();
 			if (holder != null)
 			{
-				holder.freeAll();
+				holder.unloadAll();
 			}
 		}
 		chunkHolders.clear();
@@ -187,7 +167,7 @@ public class ChunksHolders
 		if (chunkZ < 0)
 			chunkZ += sic;
 		chunkX = chunkX % sic;
-		if (chunkY >= sic)
+		if (chunkY < 0 || chunkY >= sic)
 			return;
 		// chunkY = chunkY % sic;
 		chunkZ = chunkZ % sic;

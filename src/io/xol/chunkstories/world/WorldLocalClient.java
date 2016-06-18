@@ -16,7 +16,6 @@ public class WorldLocalClient extends World implements WorldClient, WorldMaster
 	public WorldLocalClient(WorldInfo info)
 	{
 		super(info);
-		client = true;
 		
 		ioHandler = new IOTasks(this);
 		ioHandler.start();

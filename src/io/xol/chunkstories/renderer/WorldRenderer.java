@@ -1695,7 +1695,9 @@ public class WorldRenderer
 	//Visual properties functions
 	public Texture getGrassTexture()
 	{
-		Texture vegetationTexture = TexturesHandler.getTexture(world.getFolderPath() + "/grassColor.png");
+		Texture vegetationTexture = null;
+		if(world.getFolderPath() != null)
+			vegetationTexture = TexturesHandler.getTexture(world.getFolderPath() + "/grassColor.png");
 		if (vegetationTexture == null || vegetationTexture.getID() == -1)
 			vegetationTexture = TexturesHandler.getTexture("./res/textures/environement/grassColor.png");
 		vegetationTexture.setMipMapping(true);

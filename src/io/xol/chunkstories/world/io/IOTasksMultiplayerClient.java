@@ -58,13 +58,18 @@ public class IOTasksMultiplayerClient extends IOTasks
 		public boolean run()
 		{
 			CubicChunk c = new CubicChunk(world, x, y, z);
-			ChunkHolder holder = world.getChunksHolder().getChunkHolder(x, y, z, true);
+			
+			//In any client scenario we don't need to check for a chunk holder to be already present neither do we need
+			//to let it load.
+			
+			/*ChunkHolder holder = world.getChunksHolder().getChunkHolder(x, y, z, true);
+			
 			// If for some reasons the chunks holder's are still not loaded, we
 			// requeue the job for later.
 			if (holder == null)
 				return false;
 			if (!holder.isLoaded())
-				return false;
+				return false;*/
 
 			if (data != null)
 			{
@@ -152,14 +157,14 @@ public class IOTasksMultiplayerClient extends IOTasks
 	}
 
 	@Override
-	public void requestChunkLoad(int chunkX, int chunkY, int chunkZ, boolean overwrite)
+	public void requestChunkLoad(ChunkHolder holder, int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
 		ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
+		//Only asks server once about the load request
 		if (!this.chunksAlreadyAsked.contains(loc))
 		{
 			chunksAlreadyAsked.add(loc);
 			Client.connection.sendTextMessage("world/getChunkCompressed:" + chunkX + ":" + chunkY + ":" + chunkZ);
-			//System.out.println("K x" + chunkX + "y:" + chunkY + "z:" + chunkZ + "alreadyAsked" + chunksAlreadyAsked.size());
 		}
 	}
 

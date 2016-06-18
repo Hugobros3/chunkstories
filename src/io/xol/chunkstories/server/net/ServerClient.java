@@ -1,11 +1,11 @@
 package io.xol.chunkstories.server.net;
 
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.api.events.core.PlayerLoginEvent;
-import io.xol.chunkstories.api.events.core.PlayerLogoutEvent;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.core.events.PlayerLoginEvent;
+import io.xol.chunkstories.core.events.PlayerLogoutEvent;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.PacketText;

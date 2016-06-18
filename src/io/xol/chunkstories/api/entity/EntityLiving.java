@@ -14,6 +14,8 @@ public interface EntityLiving extends Entity, EntityRotateable, DamageCause
 	
 	public void setHealth(float health);
 	
+	public float getHealth();
+	
 	/**
 	 * Damages the entity. Overriding this method may allow the entity to resist better to certain types of damages
 	 * @param cause

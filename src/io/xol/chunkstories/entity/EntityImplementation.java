@@ -24,10 +24,10 @@ import io.xol.chunkstories.api.exceptions.IllegalUUIDChangeException;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.World;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -120,7 +120,7 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public ChunkHolder getChunkHolder()
+	public Region getChunkHolder()
 	{
 		return null;
 	}
@@ -584,9 +584,25 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public void delete()
+	public boolean removeFromWorld()
 	{
-		existence.destroyEntity();
+		//Only once
+		if(existence.exists())
+		{
+			//Destroys it
+			existence.destroyEntity();
+		
+			//Removes it's reference within the region
+			if(this.position.getRegionWithin() != null)
+				this.position.getRegionWithin().removeEntity(this);
+			
+			//Actually removes it from the world list
+			if(this.world != null)
+				this.world.removeEntityFromList(this);
+			
+			return true;
+		}
+		return false;
 	}
 
 	@Override

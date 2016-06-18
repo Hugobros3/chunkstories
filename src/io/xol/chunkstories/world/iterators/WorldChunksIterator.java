@@ -13,30 +13,30 @@ import io.xol.chunkstories.world.chunk.CubicChunk;
 
 /**
  * Iterates over an entire world and gives all *loaded* chunks of it
+ * 
  * @author Hugo
- *
  */
 public class WorldChunksIterator implements ChunksIterator
-{	
+{
 	Iterator<ChunkHolder> chIterator;
 	ChunkHolder currentChunkHolder;
 	ChunksIterator currentChunkHolderIterator;
-	
+
 	public WorldChunksIterator(World world)
 	{
-		chIterator = world.getChunksHolder().chunkHolders.values().iterator();
+		chIterator = world.getChunksHolder().getLoadedChunkHolders();
 	}
-	
+
 	@Override
 	public boolean hasNext()
 	{
 		//We always want to ask a non-null, non-empty chunk holder
-		while(currentChunkHolder == null || !currentChunkHolderIterator.hasNext())
+		while (currentChunkHolder == null || !currentChunkHolderIterator.hasNext())
 		{
-			if(chIterator.hasNext())
+			if (chIterator.hasNext())
 			{
 				currentChunkHolder = chIterator.next();
-				if(!(currentChunkHolder == null))
+				if (!(currentChunkHolder == null))
 					currentChunkHolderIterator = currentChunkHolder.iterator();
 			}
 			//We ran out of chunks holder
@@ -51,23 +51,23 @@ public class WorldChunksIterator implements ChunksIterator
 	public CubicChunk next()
 	{
 		//We always want to ask a non-null, non-empty chunk holder
-		while(currentChunkHolder == null || !currentChunkHolderIterator.hasNext())
+		while (currentChunkHolder == null || !currentChunkHolderIterator.hasNext())
 		{
-			if(chIterator.hasNext())
+			if (chIterator.hasNext())
 			{
 				currentChunkHolder = chIterator.next();
-				if(!(currentChunkHolder == null))
+				if (!(currentChunkHolder == null))
 					currentChunkHolderIterator = currentChunkHolder.iterator();
 			}
 			//We ran out of chunks holder
 			else
 				break;
 		}
-		if(currentChunkHolder != null && currentChunkHolderIterator.hasNext())
+		if (currentChunkHolder != null && currentChunkHolderIterator.hasNext())
 			return currentChunkHolderIterator.next();
 		return null;
 	}
-	
+
 	@Override
 	public void remove()
 	{

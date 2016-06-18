@@ -24,16 +24,17 @@ public class ServerConsole
 		try
 		{
 			//First handle the plugins commands
-			try{
+			try
+			{
 				if (Server.getInstance().pluginsManager.dispatchCommand(cmd, emitter))
 					return;
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
-				emitter.sendMessage("An exception happened while handling your command : "+e.getLocalizedMessage());
+				emitter.sendMessage("An exception happened while handling your command : " + e.getLocalizedMessage());
 				e.printStackTrace();
 			}
-			
+
 			// No rights needed
 			if (cmd.equals("uptime"))
 			{
@@ -44,7 +45,7 @@ public class ServerConsole
 			{
 				emitter.sendMessage("#00FFD0The server's ip is " + ServerConnectionsHandler.ip);
 				emitter.sendMessage("#00FFD0It's running version " + VersionInfo.version + " of the server software.");
-				emitter.sendMessage("#00FFD0"+Server.getInstance().world.getChunksHolder().toString());
+				emitter.sendMessage("#00FFD0" + Server.getInstance().world.getChunksHolder().toString());
 				return;
 			}
 			else if (cmd.equals("help"))
@@ -86,35 +87,35 @@ public class ServerConsole
 				emitter.sendMessage("#00FFD0" + i + " players connected : " + list);
 				return;
 			}
-			else if(cmd.equals("fly"))
+			else if (cmd.equals("fly"))
 			{
-				if(emitter instanceof Player)
+				if (emitter instanceof Player)
 				{
-					Player client = ((Player)emitter);
+					Player client = ((Player) emitter);
 
 					Entity controlledEntity = client.getControlledEntity();
-					if(controlledEntity != null && controlledEntity instanceof EntityFlying)
+					if (controlledEntity != null && controlledEntity instanceof EntityFlying)
 					{
 						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().isFlying();
 						state = !state;
-						client.sendMessage("flying : "+state);
+						client.sendMessage("flying : " + state);
 						((EntityFlying) controlledEntity).getFlyingComponent().setFlying(state);
 						return;
 					}
 				}
 			}
-			else if(cmd.equals("creative"))
+			else if (cmd.equals("creative"))
 			{
-				if(emitter instanceof Player)
+				if (emitter instanceof Player)
 				{
-					Player client = ((Player)emitter);
+					Player client = ((Player) emitter);
 
 					Entity controlledEntity = client.getControlledEntity();
-					if(controlledEntity != null && controlledEntity instanceof EntityCreative)
+					if (controlledEntity != null && controlledEntity instanceof EntityCreative)
 					{
 						boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().isCreativeMode();
 						state = !state;
-						client.sendMessage("creative : "+state);
+						client.sendMessage("creative : " + state);
 						((EntityCreative) controlledEntity).getCreativeModeComponent().setCreativeMode(state);
 						return;
 					}

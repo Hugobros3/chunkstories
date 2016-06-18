@@ -1,7 +1,10 @@
 package io.xol.chunkstories.world.chunk;
 
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.api.world.Region;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.World;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.chunkstories.world.iterators.ChunkHolderIterator;
@@ -9,7 +12,10 @@ import io.xol.engine.concurrency.SafeWriteLock;
 import io.xol.engine.concurrency.SimpleLock;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,31 +27,35 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ChunkHolder
+public class ChunkHolder implements Region
 {
+	public final World world;
+	public final int regionX, regionY, regionZ;
+	public final long uuid;
+
+	//Only relevant on Master worlds
+	public final File handler;
 
 	// Holds 8x8x8 CubicChunks
 	private CubicChunk[][][] data = new CubicChunk[8][8][8];
-	//private boolean[][][] requested = new boolean[8][8][8];
+
+	private AtomicInteger loadedChunks = new AtomicInteger();
+
+	//TODO find a clean way to let IOTaks fiddle with this
+	public SimpleLock chunksArrayLock = new SimpleLock();
+	public SafeWriteLock compressedChunksLock = new SafeWriteLock();
+
 	public byte[][][][] compressedChunks = new byte[8][8][8][];
-
-	AtomicInteger loadedChunks = new AtomicInteger();
-	AtomicBoolean isLoaded = new AtomicBoolean(false);
-
-	public World world;
-	// World coordinates / 256
-	public int regionX, regionY, regionZ;
-
-	// LZ4 compressors & decompressors
-	static LZ4Factory factory = LZ4Factory.fastestInstance();
-	public static LZ4Compressor compressor = factory.fastCompressor();
-	public static LZ4FastDecompressor decompressor = factory.fastDecompressor();
-
-	public File handler;
-
-	// public static byte[] compressedData = new byte[32*32*32*4];
-	//byte[] compressedData = new byte[32 * 32 * 32 * 4];
+	private AtomicBoolean isDiskDataLoaded = new AtomicBoolean(false);
 	
+	//Local entities
+	private BlockingQueue<Entity> localEntities = new LinkedBlockingQueue<Entity>();
+
+	// LZ4 compressors & decompressors stuff
+	private static LZ4Factory factory = LZ4Factory.fastestInstance();
+	private static LZ4Compressor compressor = factory.fastCompressor();
+	private static LZ4FastDecompressor decompressor = factory.fastDecompressor();
+
 	private static ThreadLocal<byte[]> compressedData = new ThreadLocal<byte[]>()
 	{
 		@Override
@@ -54,28 +64,27 @@ public class ChunkHolder
 			return new byte[32 * 32 * 32 * 4];
 		}
 	};
-	//private int compressedDataLength = 0;
-	
-	public static Random random = new Random();
-	
-	public ChunkHolder(World world, int regionX, int regionY, int regionZ, boolean dontLoad)
+
+	private static Random random = new Random();
+
+	public ChunkHolder(World world, int regionX, int regionY, int regionZ)
 	{
 		this.world = world;
 		this.regionX = regionX;
 		this.regionY = regionY;
 		this.regionZ = regionZ;
 
-		handler = new File(world.getFolderPath() + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf");
-
+		//Unique UUID
 		uuid = random.nextLong();
-		
-		if(!dontLoad)
+
+		//Only the WorldMaster has a concept of files
+		if (world instanceof WorldMaster)
+		{
+			handler = new File(world.getFolderPath() + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf");
 			world.ioHandler.requestChunkHolderLoad(this);
-	}
-	
-	public void save()
-	{
-		world.ioHandler.requestChunkHolderSave(this);
+		}
+		else
+			handler = null;
 	}
 
 	private void compressChunkData(CubicChunk chunk)
@@ -86,7 +95,7 @@ public class ChunkHolder
 		if (chunk.dataPointer >= 0)
 		{
 			byte[] toCompressData = new byte[32 * 32 * 32 * 4];
-			
+
 			int[] data = world.chunksData.grab(chunk.dataPointer);
 			int z = 0;
 			for (int i : data)
@@ -98,15 +107,15 @@ public class ChunkHolder
 				z += 4;
 			}
 			int compressedDataLength = compressor.compress(toCompressData, compressedData.get());
-			
+
 			assert decompressor.decompress(compressedData.get(), 32 * 32 * 32 * 4).length == 32 * 32 * 32 * 4;
-			
+
 			// Locks the compressedChunks array so nothing freakes out
 			compressedChunksLock.beginWrite();
 			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = new byte[compressedDataLength];
 			System.arraycopy(compressedData.get(), 0, compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8], 0, compressedDataLength);
 			compressedChunksLock.endWrite();
-			
+
 			//System.out.println("Generated compressed data for chunk "+chunkX+"."+chunkY+"."+chunkZ+" size="+compressedDataLength);
 		}
 		else
@@ -115,7 +124,7 @@ public class ChunkHolder
 			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
 			compressedChunksLock.endWrite();
 		}
-		
+
 		chunk.lastModificationSaved.set(System.currentTimeMillis());
 	}
 
@@ -124,54 +133,54 @@ public class ChunkHolder
 		return compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8];
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.chunk.Region#get(int, int, int, boolean)
+	 */
+	@Override
 	public CubicChunk get(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
 		CubicChunk rslt = data[chunkX % 8][chunkY % 8][chunkZ % 8];
 		if (load && rslt == null)
 		{
-			// world.ioHandler.addTaskTodo(new IOTaskLoadChunk(chunkX, chunkY,
-			// chunkZ, true));
-			//if(!requested[chunkX % 8][chunkY % 8][chunkZ % 8])
+			world.ioHandler.requestChunkLoad(this, chunkX, chunkY, chunkZ, false);
+			if (world.ioHandler instanceof IOTasksImmediate)
 			{
-				//requested[chunkX % 8][chunkY % 8][chunkZ % 8] = true;
-				//System.out.println("IO REQUEST");
-				world.ioHandler.requestChunkLoad(chunkX, chunkY, chunkZ, false);
-				if(world.ioHandler instanceof IOTasksImmediate)
-				{
-					return get(chunkX, chunkY, chunkZ, false);
-				}
+				return get(chunkX, chunkY, chunkZ, false);
 			}
 			return null;
-			// check for compressed version avaible
 		}
 		return rslt;
 	}
 
-	public Chunk set(int chunkX, int chunkY, int chunkZ, CubicChunk c)
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.chunk.Region#set(int, int, int, io.xol.chunkstories.world.chunk.CubicChunk)
+	 */
+	public Chunk set(int chunkX, int chunkY, int chunkZ, CubicChunk chunk)
 	{
 		chunksArrayLock.lock();
-		
-		if (data[chunkX % 8][chunkY % 8][chunkZ % 8] == null && c != null)
+
+		if (data[chunkX % 8][chunkY % 8][chunkZ % 8] == null && chunk != null)
 			loadedChunks.incrementAndGet();
-		
+
 		//Remove any form of cuck
-		if(data[chunkX % 8][chunkY % 8][chunkZ % 8] != null && data[chunkX % 8][chunkY % 8][chunkZ % 8].dataPointer != c.dataPointer)
+		if (data[chunkX % 8][chunkY % 8][chunkZ % 8] != null && data[chunkX % 8][chunkY % 8][chunkZ % 8].dataPointer != chunk.dataPointer)
 		{
 			System.out.println("Overriding existing chunk, deleting old one");
 			data[chunkX % 8][chunkY % 8][chunkZ % 8].destroy();
 		}
-		
-		data[chunkX % 8][chunkY % 8][chunkZ % 8] = c;
-		// requested[chunkX % 8][chunkY % 8][chunkZ % 8] = false;
-		// System.out.println("did set chunk lol");
-		c.holder = this;
-		chunksArrayLock.unlock();
-		return c;
-	}
-	
-	public SimpleLock chunksArrayLock = new SimpleLock();
-	public SafeWriteLock compressedChunksLock = new SafeWriteLock();
 
+		data[chunkX % 8][chunkY % 8][chunkZ % 8] = chunk;
+		
+		//Change chunk holder to this
+		chunk.holder = this;
+		chunksArrayLock.unlock();
+		return chunk;
+	}
+
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.chunk.Region#removeChunk(int, int, int)
+	 */
+	@Override
 	public boolean removeChunk(int chunkX, int chunkY, int chunkZ)
 	{
 		CubicChunk c = data[chunkX % 8][chunkY % 8][chunkZ % 8];
@@ -189,17 +198,21 @@ public class ChunkHolder
 		return loadedChunks.get() == 0;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.chunk.Region#isChunkLoaded(int, int, int)
+	 */
+	@Override
 	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ)
 	{
 		return data[chunkX % 8][chunkY % 8][chunkZ % 8] != null;
 	}
-	
+
 	public ChunksIterator iterator()
 	{
 		return new ChunkHolderIterator(this);
 	}
 
-	public void freeAll()
+	public void unloadAll()
 	{
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
@@ -210,55 +223,65 @@ public class ChunkHolder
 				}
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.chunk.Region#isLoaded()
+	 */
+	@Override
 	public boolean isLoaded()
 	{
-		return isLoaded.get();
+		return isDiskDataLoaded.get();
 	}
 
 	public void setLoaded(boolean b)
 	{
-		isLoaded.set(b);
+		isDiskDataLoaded.set(b);
 	}
 
-	public void destroy()
+	public void unload()
 	{
-		freeAll();
-		System.out.println("Unloaded chunk holder with "+" 0 entities remaining in it.");
+		unloadAll();
+		System.out.println("Unloaded chunk holder with " + " 0 entities remaining in it.");
 	}
 
-	/**
-	 * Generates all chunks in the holder (8x8x8)
-	 * Will lock loaded chunks array
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.chunk.Region#generateAll()
 	 */
 	public void generateAll()
 	{
 		// Generate terrain for the chunk holder !
 		CubicChunk chunk;
-		for(int a = 0; a <8; a++)
-			for(int b = 0; b <8; b++)
-				for(int c = 0; c <8; c++)
+		for (int a = 0; a < 8; a++)
+			for (int b = 0; b < 8; b++)
+				for (int c = 0; c < 8; c++)
 				{
 					//CubicChunk chunk = data[a][b][c];
 					int cx = this.regionX * 8 + a;
 					int cy = this.regionY * 8 + b;
 					int cz = this.regionZ * 8 + c;
-					chunk =	world.getGenerator().generateChunk(cx, cy, cz);
-					if(chunk == null)
+					chunk = world.getGenerator().generateChunk(cx, cy, cz);
+					if (chunk == null)
 						System.out.println("hmmmmm");
 					chunk.holder = this;
 					this.set(cx, cy, cz, chunk);
 					//compressChunkData(data[a][b][c]);
 				}
-		
+
 		compressAll();
 	}
 	
-	long uuid;
-	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.chunk.Region#save()
+	 */
+	@Override
+	public void save()
+	{
+		world.ioHandler.requestChunkHolderSave(this);
+	}
+
 	@Override
 	public String toString()
 	{
-		return "[ChunkHolder rx:"+regionX+" ry:"+regionY+" rz:"+regionZ+" uuid: "+uuid+"loaded:"+isLoaded.get()+"]";
+		return "[ChunkHolder rx:" + regionX + " ry:" + regionY + " rz:" + regionZ + " uuid: " + uuid + "loaded:" + isDiskDataLoaded.get() + "]";
 	}
 
 	public void compressAll()
@@ -272,5 +295,47 @@ public class ChunkHolder
 					//else
 					//	compressedChunks[a][b][c] = null;
 				}
+	}
+
+	@Override
+	public int getNumberOfLoadedChunks()
+	{
+		return loadedChunks.get();
+	}
+
+	@Override
+	public int getRegionX()
+	{
+		return regionX;
+	}
+
+	@Override
+	public int getRegionY()
+	{
+		return regionY;
+	}
+
+	@Override
+	public int getRegionZ()
+	{
+		return regionZ;
+	}
+
+	@Override
+	public Iterator<Entity> getEntitiesWithinRegion()
+	{
+		return localEntities.iterator();
+	}
+
+	@Override
+	public boolean removeEntity(Entity entity)
+	{
+		return localEntities.remove(entity);
+	}
+
+	@Override
+	public boolean addEntity(Entity entity)
+	{
+		return localEntities.add(entity);
 	}
 }

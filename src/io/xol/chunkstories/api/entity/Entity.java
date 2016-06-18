@@ -9,12 +9,12 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.WorldInterface;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
 import io.xol.chunkstories.physics.Collidable;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.RenderingContext;
 
@@ -40,7 +40,7 @@ public interface Entity extends Collidable, CSFSerializable
 	 * Return the entity's current chunk holder
 	 * @return
 	 */
-	public ChunkHolder getChunkHolder();
+	public Region getChunkHolder();
 	
 	/**
 	 * Return the entity's world
@@ -106,8 +106,9 @@ public interface Entity extends Collidable, CSFSerializable
 	
 	/**
 	 * Remove the entity from it's world and mark it for deletion (since Java requires to manually remove all references)
+	 * @return false if already removed
 	 */
-	public void delete();
+	public boolean removeFromWorld();
 
 	/**
 	 * Returns true unless it should be invisible to some players or all
