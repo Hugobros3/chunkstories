@@ -11,9 +11,9 @@ public abstract class WorldGenerator
 {
 	protected WorldImplementation world;
 
-	public void initialize(WorldImplementation w)
+	public void initialize(WorldImplementation world)
 	{
-		world = w;
+		this.world = world;
 	}
 
 	/**
@@ -28,13 +28,13 @@ public abstract class WorldGenerator
 	/**
 	 * Returns the data {@link VoxelFormat} for summary generation
 	 * @param x coordinates in world-space
-	 * @param y
+	 * @param z
 	 * @return
 	 */
-	public abstract int getDataAt(int x, int y);
+	public abstract int getTopDataAt(int x, int z);
 
 	/**
-	 * Returns the height for summary generation
+	 * Returns the initial height for summary generation
 	 * @param x
 	 * @param z
 	 * @return

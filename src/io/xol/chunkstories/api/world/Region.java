@@ -8,6 +8,9 @@ import io.xol.chunkstories.api.entity.Entity;
 //http://chunkstories.xyz
 //http://xol.io
 
+/**
+ * A region holds 8x8x8 chunks, it's used to hold their entities
+ */
 public interface Region
 {
 	public int getRegionX();
@@ -33,16 +36,16 @@ public interface Region
 	 */
 	public boolean addEntity(Entity entity);
 	
-	int getNumberOfLoadedChunks();
+	public int getNumberOfLoadedChunks();
 
-	boolean isLoaded();
+	public boolean isLoaded();
 	
-	Chunk get(int chunkX, int chunkY, int chunkZ, boolean load);
+	public Chunk get(int chunkX, int chunkY, int chunkZ, boolean load);
 
-	boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ);
+	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ);
 
-	boolean removeChunk(int chunkX, int chunkY, int chunkZ);
+	public boolean removeChunk(int chunkX, int chunkY, int chunkZ);
 
-	void save();
+	public void save();
 
 }

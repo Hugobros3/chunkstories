@@ -61,7 +61,7 @@ public class FlatGenerator extends WorldGenerator
 	}
 	
 	@Override
-	public int getDataAt(int x, int z)
+	public int getTopDataAt(int x, int z)
 	{
 		return 12;
 	}

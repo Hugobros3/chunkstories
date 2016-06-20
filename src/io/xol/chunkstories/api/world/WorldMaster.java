@@ -12,5 +12,9 @@ import io.xol.chunkstories.api.entity.components.Subscriber;
  */
 public interface WorldMaster
 {
+	/**
+	 * Plays a soundEffect to all clients except once, typical use if sounds played locally by a player that can't suffer any lag for him
+	 * but still need others to hear it as well
+	 */
 	public void playSoundEffectExcluding(String soundEffect, Location location, float pitch, float gain, Subscriber subscriber);
 }

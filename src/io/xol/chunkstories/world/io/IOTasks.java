@@ -558,7 +558,7 @@ public class IOTasks extends Thread
 					for (int z = 0; z < 256; z++)
 					{
 						h = world.getGenerator().getHeightAt(x + summary.rx * 256, z + summary.rz * 256);
-						t = world.getGenerator().getDataAt(x + summary.rx * 256, z + summary.rz * 256);
+						t = world.getGenerator().getTopDataAt(x + summary.rx * 256, z + summary.rz * 256);
 						summary.heights[x * 256 + z] = h;
 						summary.ids[x * 256 + z] = t;
 					}

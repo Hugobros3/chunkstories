@@ -136,6 +136,18 @@ public interface World
 	 * @param load If set to false, will *not* try to load the chunk if it's not present
 	 */
 	public void setDataAt(int x, int y, int z, int data, boolean load);
+	
+	/**
+	 * Method to call when it's an entity that do the action to set the voxel data
+	 * @param data The new data to set the block to, see {@link VoxelFormat}
+	 */
+	public void setDataAt(Location location, int data, Entity entity);
+
+	/**
+	 * Method to call when it's an entity that do the action to set the voxel data
+	 * @param data The new data to set the block to, see {@link VoxelFormat}
+	 */
+	public void setDataAt(int x, int y, int z, int data, Entity entity);
 
 	/**
 	 * Only sets the data, don't trigger any logic, rendering etc
@@ -149,9 +161,6 @@ public interface World
 	 */
 	
 	/**
-	 * @param x
-	 * @param y
-	 * @param z
 	 * @return The sun light level of the block per {@link VoxelFormat} ( 0-15 ) using either getDataAt if the chunk is loaded or
 	 * the heightmap ( y <= heightmapLevel(x, z) ? 0 : 15 )
 	 */
@@ -160,10 +169,6 @@ public interface World
 	public int getSunlightLevel(Location location);
 	
 	/**
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
 	 * @return Returns the block light level of the block per {@link VoxelFormat} ( 0-15 ) using getDataAt ( if the chunk isn't loaded it will return a zero. )
 	 */
 	public int getBlocklightLevel(int x, int y, int z);

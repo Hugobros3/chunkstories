@@ -44,7 +44,7 @@ public class PerlinWorldGenerator extends WorldGenerator
 	}
 
 	@Override
-	public int getDataAt(int a, int b)
+	public int getTopDataAt(int a, int b)
 	{
 		int cx = a / 32;
 		int cz = b / 32;

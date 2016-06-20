@@ -100,8 +100,7 @@ public class ItemVoxel extends Item
 				if(VoxelTypes.get(data2write).getLightLevel(data2write) > 0)
 					data2write = VoxelFormat.changeBlocklight(data2write, VoxelTypes.get(data2write).getLightLevel(data2write));
 					
-				//System.out.println(VoxelFormat.blocklight(data2write));
-				user.getWorld().setDataAt(selectedBlock, data2write, true);
+				user.getWorld().setDataAt(selectedBlock, data2write, user);
 			}
 			return true;
 		}

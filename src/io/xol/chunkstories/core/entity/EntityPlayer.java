@@ -488,7 +488,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		itemMatrix = animation.getTransformationForBone("boneItemInHand", 0);
 		Matrix4f.mul(playerRotationMatrix, itemMatrix, itemMatrix);
 
-		
 		if (selectedItemPile != null)
 		{
 			if (selectedItemPile.getItem() instanceof ItemVoxel)
@@ -550,7 +549,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 				{
 					if (blockLocation != null)
 					{
-						world.setDataAt(blockLocation, 0, false);
+						world.setDataAt(blockLocation, 0, this);
 					}
 				}
 				else if (input.equals(MouseClick.MIDDLE))
@@ -564,6 +563,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 						if (voxelID > 0)
 						{
+							//Spawn new itemPile in his inventory
 							ItemPile itemVoxel = new ItemPile("item_voxel", new String[] { "" + voxelID, "" + voxelMeta });
 							this.inventoryComponent.setItemPileAt(getSelectedItemComponent().getSelectedSlot(), 0, itemVoxel);
 						}
@@ -571,8 +571,8 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 				}
 			}
 		}
-
 		//Here goes generic entity response to interaction
+		
 
 		//Then we check if the world minds being interacted with
 		world.handleInteraction(this, blockLocation, input);

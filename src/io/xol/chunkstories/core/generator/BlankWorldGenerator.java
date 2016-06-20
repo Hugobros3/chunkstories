@@ -18,7 +18,7 @@ public class BlankWorldGenerator extends WorldGenerator
 	}
 
 	@Override
-	public int getDataAt(int x, int y)
+	public int getTopDataAt(int x, int y)
 	{
 		return 0;
 	}

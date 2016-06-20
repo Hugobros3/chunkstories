@@ -116,7 +116,7 @@ public class HorizonGenerator extends WorldGenerator
 	}
 	
 	@Override
-	public int getDataAt(int x, int z)
+	public int getTopDataAt(int x, int z)
 	{
 		//int finalHeight = getHeightAtInternal(x, z);
 		//if(finalHeight < 60)

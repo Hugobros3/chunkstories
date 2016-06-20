@@ -16,6 +16,8 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelInteractive;
+import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.Region;
@@ -463,38 +465,66 @@ public abstract class WorldImplementation implements World
 	}
 	
 	@Override
-	public void setDataAt(int x, int y, int z, int i)
+	public void setDataAt(int x, int y, int z, int data)
 	{
-		setDataAt(x, y, z, i, true);
+		setDataAt(x, y, z, data, true);
 	}
 	
 	@Override
-	public void setDataAt(Location location, int i)
+	public void setDataAt(Location location, int data)
 	{
-		setDataAt((int)location.x, (int)location.y, (int)location.z, i, true);
+		setDataAt((int)location.x, (int)location.y, (int)location.z, data, true);
 	}
 	
 	@Override
-	public void setDataAt(Location location, int i, boolean load)
+	public void setDataAt(Location location, int data, boolean load)
 	{
-		setDataAt((int)location.x, (int)location.y, (int)location.z, i, load);
+		setDataAt((int)location.x, (int)location.y, (int)location.z, data, load);
 	}
 	
 	@Override
-	public void setDataAt(int x, int y, int z, int i, boolean load)
+	public void setDataAt(int x, int y, int z, int data, boolean load)
+	{
+		actuallySetsDataAt(x, y, z, data, load, null);
+	}
+
+	@Override
+	public void setDataAt(Location location, int data, Entity entity)
+	{
+		actuallySetsDataAt((int)location.x, (int)location.y, (int)location.z, data, false, entity);
+	}
+
+	@Override
+	public void setDataAt(int x, int y, int z, int data, Entity entity)
+	{
+		actuallySetsDataAt(x, y, z, data, false, entity);
+	}
+	
+	private void actuallySetsDataAt(int x, int y, int z, int newData, boolean load, Entity entity)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
 		
-		getRegionSummaries().blockPlaced(x, y, z, i);
+		getRegionSummaries().blockPlaced(x, y, z, newData);
 		
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
 			synchronized (c)
 			{
-				c.setDataAtWithUpdates(x % 32, y % 32, z % 32, i);
+				//Optionally runs whatever the voxel requires to run when removed
+				int formerData = c.getDataAt(x % 32, y % 32, z % 32);
+				Voxel formerVoxel = VoxelTypes.get(formerData);
+				if(formerVoxel != null && formerVoxel instanceof VoxelLogic)
+					((VoxelLogic)formerVoxel).onRemove(x, y, z, formerData, entity);
+				
+				//Optionally runs whatever the voxel requires to run when placed
+				Voxel newVoxel = VoxelTypes.get(newData);
+				if(newVoxel != null && newVoxel instanceof VoxelLogic)
+					newData = ((VoxelLogic)newVoxel).onPlace(x, y, z, newData, entity);
+				
+				c.setDataAtWithUpdates(x % 32, y % 32, z % 32, newData);
 				c.markDirty(true);
 			}
 			//Neighbour chunks updates
@@ -844,19 +874,13 @@ public abstract class WorldImplementation implements World
 		double dz = internalData.getDoubleProp("defaultSpawnZ", 0.0);
 		return new Location(this, dx, dy, dz);
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#setTime(long)
-	 */
+	
 	@Override
 	public void setTime(long time)
 	{
 		this.worldTime = time;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#getGenerator()
-	 */
+	
 	@Override
 	public WorldGenerator getGenerator()
 	{
@@ -864,8 +888,15 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public boolean handleInteraction(Entity entity, Location blockLocation, Input input)
+	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input)
 	{
+		if(voxelLocation == null)
+			return false;
+		
+		int dataAtLocation = this.getDataAt(voxelLocation);
+		Voxel voxel = VoxelTypes.get(dataAtLocation);
+		if(voxel != null && voxel instanceof VoxelInteractive)
+			return ((VoxelInteractive)voxel).handleInteraction(entity, voxelLocation, input, dataAtLocation);
 		return false;
 	}
 	

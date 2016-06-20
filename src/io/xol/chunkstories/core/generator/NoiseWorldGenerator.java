@@ -154,7 +154,7 @@ public class NoiseWorldGenerator extends WorldGenerator
 		return total / maxAmplitude;
 	}
 	@Override
-	public int getDataAt(int x, int y)
+	public int getTopDataAt(int x, int y)
 	{
 		//Stones
 		return 1;
