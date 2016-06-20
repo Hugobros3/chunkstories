@@ -25,7 +25,7 @@ import io.xol.engine.math.LoopingMathHelper;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class WorldServer extends World implements WorldMaster, WorldNetworked
+public class WorldServer extends WorldImplementation implements WorldMaster, WorldNetworked
 {
 	public WorldServer(String worldDir)
 	{
@@ -86,6 +86,7 @@ public class WorldServer extends World implements WorldMaster, WorldNetworked
 		}
 		if (message.startsWith("getChunkCompressed"))
 		{
+			//System.out.println(message);
 			String[] split = message.split(":");
 			int x = Integer.parseInt(split[1]);
 			int y = Integer.parseInt(split[2]);
@@ -126,7 +127,7 @@ public class WorldServer extends World implements WorldMaster, WorldNetworked
 					int pCY = (int) loc.y / 32;
 					int pCZ = (int) loc.z / 32;
 					//TODO use proper configurable values for this
-					if (!((LoopingMathHelper.moduloDistance(c.chunkX, pCX, sizeInChunks) > chunksViewDistance + 2) || (LoopingMathHelper.moduloDistance(c.chunkZ, pCZ, sizeInChunks) > chunksViewDistance + 2) || (Math.abs(c.chunkY - pCY) > 4)))
+					if (((LoopingMathHelper.moduloDistance(c.chunkX, pCX, sizeInChunks) < chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(c.chunkZ, pCZ, sizeInChunks) < chunksViewDistance + 1) || (Math.abs(c.chunkY - pCY) < 4)))
 					{
 						neededBySomeone = true;
 					}
@@ -163,9 +164,9 @@ public class WorldServer extends World implements WorldMaster, WorldNetworked
 					int pCY = (int) loc.y / 32;
 					int pCZ = (int) loc.z / 32;
 					//TODO use proper configurable values for this
-					if (!((LoopingMathHelper.moduloDistance(chunkHolderCenterX, pCX, sizeInChunks) > chunksViewDistance + 2)
-							|| (LoopingMathHelper.moduloDistance(chunkHolderCenterZ, pCZ, sizeInChunks) > chunksViewDistance + 2)
-							|| (Math.abs(chunkHolderCenterY - pCY) > 4+4)))
+					if (((LoopingMathHelper.moduloDistance(chunkHolderCenterX, pCX, sizeInChunks) < chunksViewDistance + 2)
+							&& (LoopingMathHelper.moduloDistance(chunkHolderCenterZ, pCZ, sizeInChunks) < chunksViewDistance + 2)
+							&& (Math.abs(chunkHolderCenterY - pCY) < 4+4)))
 					{
 						neededBySomeone = true;
 					}

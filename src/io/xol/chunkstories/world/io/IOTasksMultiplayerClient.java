@@ -14,7 +14,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketChunkSummary;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.summary.RegionSummary;
@@ -26,7 +26,7 @@ import net.jpountz.lz4.LZ4Exception;
 
 public class IOTasksMultiplayerClient extends IOTasks
 {
-	public IOTasksMultiplayerClient(World world)
+	public IOTasksMultiplayerClient(WorldImplementation world)
 	{
 		super(world);
 		try
@@ -87,6 +87,8 @@ public class IOTasksMultiplayerClient extends IOTasks
 					ChunkStoriesLogger.getInstance().warning("Invalid chunk data received for : " + c);
 				}
 			}
+			//else
+			//	System.out.println("got null data for chunk");
 
 			c.bakeVoxelLightning(false);
 
@@ -164,6 +166,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		if (!this.chunksAlreadyAsked.contains(loc))
 		{
 			chunksAlreadyAsked.add(loc);
+			//Thread.currentThread().dumpStack();
 			Client.connection.sendTextMessage("world/getChunkCompressed:" + chunkX + ":" + chunkY + ":" + chunkZ);
 		}
 	}

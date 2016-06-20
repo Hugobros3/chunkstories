@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.server.Server;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -32,9 +32,9 @@ public class PlayerSpawnEvent extends Event
 	// Specific event code
 	
 	public Player player;
-	public World world;
+	public WorldImplementation world;
 	
-	public PlayerSpawnEvent(Player player, World world)
+	public PlayerSpawnEvent(Player player, WorldImplementation world)
 	{
 		this.player = player;
 		this.world = world;

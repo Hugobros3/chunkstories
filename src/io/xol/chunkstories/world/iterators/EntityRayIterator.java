@@ -7,7 +7,7 @@ import java.util.List;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -16,14 +16,14 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public class EntityRayIterator implements Iterator<Entity>
 {
-	World world;
+	WorldImplementation world;
 	Vector3d initialPosition;
 	Vector3d direction;
 	
 	List<Entity> sortedEntities = new ArrayList<Entity>();
 	Iterator<Entity> lazyFuck;
 	
-	public EntityRayIterator(World world, Vector3d initialPosition, Vector3d direction, double limit)
+	public EntityRayIterator(WorldImplementation world, Vector3d initialPosition, Vector3d direction, double limit)
 	{
 		this.world = world;
 		this.initialPosition = initialPosition;

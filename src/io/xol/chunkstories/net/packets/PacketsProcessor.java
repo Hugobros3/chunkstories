@@ -19,7 +19,7 @@ import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.content.GameData;
@@ -279,7 +279,7 @@ public class PacketsProcessor
 		return id;
 	}
 
-	public WorldInterface getWorld()
+	public World getWorld()
 	{
 		if (this.isClient)
 			return Client.world;

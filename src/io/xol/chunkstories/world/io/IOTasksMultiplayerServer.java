@@ -6,7 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketChunkSummary;
 import io.xol.chunkstories.server.net.ServerClient;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.summary.RegionSummary;
 
@@ -16,7 +16,7 @@ import io.xol.chunkstories.world.summary.RegionSummary;
 
 public class IOTasksMultiplayerServer extends IOTasks
 {
-	public IOTasksMultiplayerServer(World world)
+	public IOTasksMultiplayerServer(WorldImplementation world)
 	{
 		super(world);
 		try
@@ -55,6 +55,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 				ChunkHolder holder = world.getChunksHolder().getChunkHolder(chunkX, chunkY, chunkZ, true);
 				if(holder.isLoaded())
 				{
+					//System.out.println("snding actly: "+chunkX+":"+chunkY+":"+chunkZ);
 					//CubicChunk c = world.getChunk(chunkX, chunkY, chunkZ, true);
 					//ChunkHolder holder = c.holder;
 					
@@ -62,7 +63,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 					packet.setPosition(chunkX, chunkY, chunkZ);
 					packet.data = holder.getCompressedData(chunkX, chunkY, chunkZ);
 					client.sendPacket(packet);
-					//System.out.println("Replying with chunk "+c);
+					//System.out.println("Replying with chunk ");
 					
 					return true;
 				}

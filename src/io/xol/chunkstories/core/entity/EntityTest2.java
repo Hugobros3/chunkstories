@@ -5,7 +5,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.textures.TexturesHandler;
@@ -19,7 +19,7 @@ public class EntityTest2 extends EntityImplementation
 
 	int i = 0;
 
-	public EntityTest2(World w, double x, double y, double z)
+	public EntityTest2(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 	}

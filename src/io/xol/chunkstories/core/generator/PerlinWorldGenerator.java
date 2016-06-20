@@ -1,7 +1,7 @@
 package io.xol.chunkstories.core.generator;
 
 import io.xol.chunkstories.api.world.WorldGenerator;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.biomes.Biome;
 import io.xol.chunkstories.world.biomes.BiomeIndex;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -21,7 +21,7 @@ public class PerlinWorldGenerator extends WorldGenerator
 	int sic = 2;
 
 	@Override
-	public void initialize(World w)
+	public void initialize(WorldImplementation w)
 	{
 		super.initialize(w);
 		ssng = new SeededSimplexNoiseGenerator(w.getWorldInfo().getSeed());

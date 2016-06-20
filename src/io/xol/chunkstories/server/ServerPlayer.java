@@ -139,8 +139,6 @@ public class ServerPlayer implements Player
 		playerData.setProp("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)));
 		playerData.save();
 		
-
-		
 		System.out.println("Player profile "+playerConnection.name+" saved.");
 	}
 	

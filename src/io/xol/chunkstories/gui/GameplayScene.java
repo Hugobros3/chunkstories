@@ -277,7 +277,7 @@ public class GameplayScene extends OverlayableScene
 		if (k == 19)
 		{
 			Client.world.getParticlesHolder().cleanAllParticles();
-			Client.world.redrawAllChunks();
+			Client.world.redrawEverything();
 			worldRenderer.chunksRenderer.clear();
 			ChunksRenderer.renderStart = System.currentTimeMillis();
 			worldRenderer.flagModified();
@@ -439,9 +439,9 @@ public class GameplayScene extends OverlayableScene
 
 		long total = Runtime.getRuntime().totalMemory();
 		long used = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		int bx = (-(int) camera.pos.x);
-		int by = (-(int) camera.pos.y);
-		int bz = (-(int) camera.pos.z);
+		int bx = ((int) camera.pos.x);
+		int by = ((int) camera.pos.y);
+		int bz = ((int) camera.pos.z);
 		int data = Client.world.getDataAt(bx, by, bz);
 		int bl = (data & 0x0F000000) >> 0x18;
 		int sl = (data & 0x00F00000) >> 0x14;

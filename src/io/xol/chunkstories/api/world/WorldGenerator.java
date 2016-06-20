@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.world;
 
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -9,9 +9,9 @@ import io.xol.chunkstories.world.chunk.CubicChunk;
 
 public abstract class WorldGenerator
 {
-	protected World world;
+	protected WorldImplementation world;
 
-	public void initialize(World w)
+	public void initialize(WorldImplementation w)
 	{
 		world = w;
 	}

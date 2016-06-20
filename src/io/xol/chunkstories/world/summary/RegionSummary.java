@@ -4,7 +4,7 @@ import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -57,11 +57,11 @@ public class RegionSummary
 
 	public int rx, rz;
 
-	public World world;
+	public WorldImplementation world;
 	
 	int[][] minChunkHeight = new int[8][8];
 
-	public RegionSummary(World world, int rx, int rz)
+	public RegionSummary(WorldImplementation world, int rx, int rz)
 	{
 		this.world = world;
 		this.rx = rx;

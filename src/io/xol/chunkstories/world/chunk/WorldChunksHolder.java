@@ -2,7 +2,7 @@ package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.Region;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.concurrency.SimpleLock;
 
 import java.util.Iterator;
@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class WorldChunksHolder
 {
-	private World world;
+	private WorldImplementation world;
 
 	private SimpleLock worldDataLock = new SimpleLock();
 	private ConcurrentHashMap<ChunkHolderKey, ChunkHolder> chunkHolders = new ConcurrentHashMap<ChunkHolderKey, ChunkHolder>(8, 0.9f, 1);
@@ -52,7 +52,7 @@ public class WorldChunksHolder
 		}
 	}
 
-	public WorldChunksHolder(World world)
+	public WorldChunksHolder(WorldImplementation world)
 	{
 		this.world = world;
 		//this.chunksData = chunksData;
@@ -81,6 +81,7 @@ public class WorldChunksHolder
 		//Make a new chunkHolder if we can't find it
 		if (requestLoadIfAbsent && holder == null && chunkY < h * 8 && chunkY >= 0)
 		{
+			//Thread.currentThread().dumpStack();
 			holder = new ChunkHolder(world, chunkX / 8, chunkY / 8, chunkZ / 8);
 			chunkHolders.putIfAbsent(key, holder);
 		}
@@ -92,6 +93,7 @@ public class WorldChunksHolder
 	public void setChunk(CubicChunk c)
 	{
 		ChunkHolder holder = getChunkHolder(c.chunkX, c.chunkY, c.chunkZ, true);
+
 		if (holder != null)
 			holder.set(c.chunkX, c.chunkY, c.chunkZ, c);
 		else //destroy it to avoid memory leaks

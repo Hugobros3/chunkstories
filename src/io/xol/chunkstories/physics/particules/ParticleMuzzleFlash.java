@@ -4,7 +4,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.chunkstories.api.rendering.Light;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 
@@ -32,12 +32,12 @@ public class ParticleMuzzleFlash extends Particle
 			kill();
 	}
 
-	public ParticleMuzzleFlash(WorldInterface world, Vector3d vec)
+	public ParticleMuzzleFlash(World world, Vector3d vec)
 	{
 		this(world, vec.x, vec.y, vec.z);
 	}
 	
-	public ParticleMuzzleFlash(WorldInterface world, double posX, double posY, double posZ)
+	public ParticleMuzzleFlash(World world, double posX, double posY, double posZ)
 	{
 		super(world, posX, posY, posZ);
 		dl = new DefferedLight(new Vector3f(1.0f, 181f/255f, 79/255f),

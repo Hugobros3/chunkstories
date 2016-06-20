@@ -3,7 +3,7 @@ package io.xol.chunkstories.voxel;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
@@ -139,7 +139,7 @@ public class VoxelDefault extends Voxel
 	}
 
 	@Override
-	public void debugRenderCollision(WorldInterface world, int x, int y, int z)
+	public void debugRenderCollision(World world, int x, int y, int z)
 	{
 		CollisionBox[] tboxes = getTranslatedCollisionBoxes(world, x, y, z);
 		if (tboxes != null)
@@ -173,7 +173,7 @@ public class VoxelDefault extends Voxel
 	 * @return An array of CollisionBox or null.
 	 */
 	@Override
-	public CollisionBox[] getTranslatedCollisionBoxes(WorldInterface world, int x, int y, int z)
+	public CollisionBox[] getTranslatedCollisionBoxes(World world, int x, int y, int z)
 	{
 		CollisionBox[] boxes = getCollisionBoxes(new BlockRenderInfo(world, x, y, z));
 		if (boxes != null)

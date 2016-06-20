@@ -1,7 +1,7 @@
 package io.xol.chunkstories.world.io;
 
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.summary.RegionSummary;
@@ -30,7 +30,7 @@ import net.jpountz.lz4.LZ4FastDecompressor;
  */
 public class IOTasks extends Thread
 {
-	protected World world;
+	protected WorldImplementation world;
 
 	protected UniqueQueue<IOTask> tasks = new UniqueQueue<IOTask>();
 	private AtomicBoolean die = new AtomicBoolean();
@@ -52,7 +52,7 @@ public class IOTasks extends Thread
 	LZ4Factory factory = LZ4Factory.fastestInstance();
 	LZ4FastDecompressor decompressor = factory.fastDecompressor();
 
-	public IOTasks(World world)
+	public IOTasks(WorldImplementation world)
 	{
 		this.world = world;
 		worldSizeInChunks = world.getSizeInChunks();
@@ -303,6 +303,15 @@ public class IOTasks extends Thread
 		{
 			//Trim world first
 			world.trimRemovableChunks();
+			
+			//Check no saving operations are occuring
+			IOTaskSaveChunkHolder saveChunkHolder = new IOTaskSaveChunkHolder(holder);
+			if(tasks.contains(saveChunkHolder))
+			{
+				System.out.println("A save operation is still running on "+holder+", waiting for it to complete.");
+				return false;
+			}
+			
 			if (holder.handler.exists())
 			{
 				try

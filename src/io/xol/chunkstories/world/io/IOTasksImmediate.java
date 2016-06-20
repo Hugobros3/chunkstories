@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world.io;
 
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.summary.RegionSummary;
 
@@ -10,7 +10,7 @@ import io.xol.chunkstories.world.summary.RegionSummary;
 
 public class IOTasksImmediate extends IOTasks {
 
-	public IOTasksImmediate(World world) {
+	public IOTasksImmediate(WorldImplementation world) {
 		super(world);
 		this.tasks = null;
 	}

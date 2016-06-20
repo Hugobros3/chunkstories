@@ -55,7 +55,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -65,7 +65,7 @@ import io.xol.chunkstories.world.chunk.CubicChunk;
 public class WorldRenderer
 {
 	// World pointer
-	World world;
+	WorldImplementation world;
 
 	// Worker thread
 	public ChunksRenderer chunksRenderer;
@@ -199,7 +199,7 @@ public class WorldRenderer
 	
 	//Constructor and modificators
 	
-	public WorldRenderer(World w)
+	public WorldRenderer(WorldImplementation w)
 	{
 		// Link world
 		world = w;

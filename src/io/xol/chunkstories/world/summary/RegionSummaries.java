@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.LoopingMathHelper;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -15,12 +15,12 @@ import io.xol.engine.math.LoopingMathHelper;
 
 public class RegionSummaries
 {
-	private final World world;
+	private final WorldImplementation world;
 	
 	private final int worldSize;
 	private Map<Long, RegionSummary> summaries = new ConcurrentHashMap<Long, RegionSummary>();
 
-	public RegionSummaries(World w)
+	public RegionSummaries(WorldImplementation w)
 	{
 		world = w;
 		worldSize = world.getSizeInChunks() * 32;

@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.generator;
 import java.util.Random;
 
 import io.xol.chunkstories.api.world.WorldGenerator;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -15,7 +15,7 @@ public class FlatGenerator extends WorldGenerator
 	Random rnd = new Random();
 	
 	@Override
-	public void initialize(World w)
+	public void initialize(WorldImplementation w)
 	{
 		super.initialize(w);
 		ws = world.getSizeInChunks() * 32;

@@ -1,6 +1,6 @@
 package io.xol.chunkstories.physics.particules;
 
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 
 import io.xol.chunkstories.api.rendering.Light;
@@ -28,7 +28,7 @@ public class ParticleSetupLight extends Particle
 
 	}
 
-	public ParticleSetupLight(World world, double posX, double posY,
+	public ParticleSetupLight(WorldImplementation world, double posX, double posY,
 			double posZ, Light dl)
 	{
 		super(world, posX, posY, posZ);

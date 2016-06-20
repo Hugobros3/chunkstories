@@ -2,7 +2,7 @@ package io.xol.chunkstories.renderer;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
@@ -24,7 +24,7 @@ public class BlockRenderInfo
 		voxelType = VoxelTypes.get(data);
 	}
 
-	public BlockRenderInfo(WorldInterface world, int x, int y, int z)
+	public BlockRenderInfo(World world, int x, int y, int z)
 	{
 		this.data = world.getDataAt(x, y, z);
 		voxelType = VoxelTypes.get(data);

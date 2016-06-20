@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;
@@ -30,7 +30,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 {
 	int i = 0;
 
-	public EntityTest(World w, double x, double y, double z)
+	public EntityTest(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 		//anim = new BVHAnimation(new File("res/models/human.bvh"));

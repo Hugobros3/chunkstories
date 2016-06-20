@@ -1,6 +1,6 @@
 package io.xol.chunkstories.physics.particules;
 
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -34,7 +34,7 @@ public class ParticleSmoke extends Particle
 		posZ += (Math.random() - 0.5) * 0.015;
 	}
 
-	public ParticleSmoke(World world, double posX, double posY, double posZ)
+	public ParticleSmoke(WorldImplementation world, double posX, double posY, double posZ)
 	{
 		super(world, posX, posY, posZ);
 	}

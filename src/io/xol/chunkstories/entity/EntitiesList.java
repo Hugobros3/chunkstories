@@ -1,9 +1,9 @@
 package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -72,7 +72,7 @@ public class EntitiesList
 							else
 							{
 								@SuppressWarnings("rawtypes")
-								Class[] types = { World.class, Double.TYPE, Double.TYPE , Double.TYPE  };
+								Class[] types = { WorldImplementation.class, Double.TYPE, Double.TYPE , Double.TYPE  };
 								@SuppressWarnings("unchecked")
 								Constructor<? extends Entity> constructor = (Constructor<? extends Entity>) entityClass.getConstructor(types);
 								
@@ -109,7 +109,7 @@ public class EntitiesList
 		}
 	}
 
-	public static Entity newEntity(WorldInterface world, short entityType)
+	public static Entity newEntity(World world, short entityType)
 	{
 		if(entitiesTypes.containsKey(entityType))
 		{

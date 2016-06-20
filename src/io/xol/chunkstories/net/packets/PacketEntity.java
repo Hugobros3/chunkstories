@@ -7,7 +7,7 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.entity.EntitiesList;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -54,7 +54,7 @@ public class PacketEntity extends PacketSynch
 		entityUUID = in.readLong();
 		entityTypeID = in.readShort();
 		
-		((World)processor.getWorld()).entitiesLock.lock();
+		((WorldImplementation)processor.getWorld()).entitiesLock.lock();
 		Entity entity = processor.getWorld().getEntityByUUID(this.entityUUID);
 		
 		boolean addToWorld = false;
@@ -83,6 +83,6 @@ public class PacketEntity extends PacketSynch
 			if(processor.isClient)
 				processor.getWorld().addEntity(entity);
 		}
-		((World)processor.getWorld()).entitiesLock.unlock();
+		((WorldImplementation)processor.getWorld()).entitiesLock.unlock();
 	}
 }

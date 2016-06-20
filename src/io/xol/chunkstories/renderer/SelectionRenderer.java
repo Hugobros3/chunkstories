@@ -3,17 +3,17 @@ package io.xol.chunkstories.renderer;
 import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.physics.CollisionBox;
 
 //(c) 2-0.05f15 XolioWare Interactive
 
 public class SelectionRenderer
 {
-	WorldInterface world;
+	World world;
 	WorldRenderer worldRenderer;
 
-	public SelectionRenderer(WorldInterface w, WorldRenderer r)
+	public SelectionRenderer(World w, WorldRenderer r)
 	{
 		world = w;
 		worldRenderer = r;

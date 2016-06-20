@@ -4,9 +4,9 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseClick;
-import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.input.KeyBindVirtual;
 
 import java.io.DataInputStream;
@@ -18,11 +18,9 @@ import java.io.IOException;
 //http://xol.io
 
 /**
- * Describes a voxel change
- * 
- * @author gobrosse
+ * Transfers client's input to the server
  */
-public class PacketInput extends Packet
+public class PacketInput extends PacketSynch
 {
 	public Input input;
 

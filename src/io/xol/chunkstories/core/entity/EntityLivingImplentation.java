@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.core.entity.components.EntityComponentHealth;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -20,7 +20,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	EntityComponentRotation entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
 	EntityComponentHealth entityHealthComponent;// = new EntityComponentHealth(this);
 	
-	public EntityLivingImplentation(World w, double x, double y, double z)
+	public EntityLivingImplentation(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 		entityHealthComponent = new EntityComponentHealth(this, getStartHealth());

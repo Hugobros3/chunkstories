@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class CubicChunk implements Chunk
 {
-	public World world;
+	public WorldImplementation world;
 	public Region holder;
 	public int chunkX, chunkY, chunkZ;
 
@@ -84,7 +84,7 @@ public class CubicChunk implements Chunk
 		}
 	};
 	
-	public CubicChunk(World world, int chunkX, int chunkY, int chunkZ)
+	public CubicChunk(WorldImplementation world, int chunkX, int chunkY, int chunkZ)
 	{
 		this.world = world;
 		this.chunkX = chunkX;

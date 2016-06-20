@@ -11,7 +11,7 @@ import io.xol.chunkstories.world.io.IOTasks;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class WorldLocalClient extends World implements WorldClient, WorldMaster
+public class WorldLocalClient extends WorldImplementation implements WorldClient, WorldMaster
 {
 	public WorldLocalClient(WorldInfo info)
 	{

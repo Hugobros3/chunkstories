@@ -16,7 +16,7 @@ import io.xol.chunkstories.renderer.HeightmapMeshSummarizer.Surface;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.summary.RegionSummary;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
@@ -34,12 +34,12 @@ public class FarTerrainRenderer
 	private static final int TRIANGLE_SIZE = 3; // 3 vertex per triangles
 	private static final int VERTEX_SIZE = 3; // A vertex is 3 coordinates : xyz
 
-	World world;
+	WorldImplementation world;
 
 	int maxLodLevels = 6;
 	List<RegionMesh> regionsToRender = new ArrayList<RegionMesh>();
 
-	public FarTerrainRenderer(World world)
+	public FarTerrainRenderer(WorldImplementation world)
 	{
 		this.world = world;
 	}
@@ -505,7 +505,7 @@ public class FarTerrainRenderer
 		lastGen = time;
 	}
 	
-	private int getHeight(int[] heightMap, World world, int x, int z, int rx, int rz, int level)
+	private int getHeight(int[] heightMap, WorldImplementation world, int x, int z, int rx, int rz, int level)
 	{
 		if(x < 0 || z < 0 || x >= 256 || z >= 256)
 			return world.getRegionSummaries().getHeightMipmapped(rx*256+x, rz*256+z, level);
@@ -571,7 +571,7 @@ public class FarTerrainRenderer
 	private void addVertexBytes(ByteBuffer terrain, int x, int y, int z, int nx, int ny, int nz)
 	{
 			terrain.putShort((short) x);
-			terrain.putShort((short) y);
+			terrain.putShort((short) (y+1));
 			terrain.putShort((short) z);
 			terrain.putShort((short) 0x00);
 	

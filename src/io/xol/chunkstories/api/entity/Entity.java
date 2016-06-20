@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.Region;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
 import io.xol.chunkstories.physics.Collidable;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -46,7 +46,7 @@ public interface Entity extends Collidable, CSFSerializable
 	 * Return the entity's world
 	 * @return
 	 */
-	public WorldInterface getWorld();
+	public World getWorld();
 
 	/**
 	 * Updates the entity, ran at 60Hz by default

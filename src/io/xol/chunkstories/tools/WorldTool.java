@@ -2,7 +2,7 @@ package io.xol.chunkstories.tools;
 
 import java.io.File;
 
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 
@@ -10,7 +10,7 @@ import io.xol.chunkstories.world.io.IOTasksImmediate;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class WorldTool extends World
+public class WorldTool extends WorldImplementation
 {
 	public WorldTool(String worldDir)
 	{

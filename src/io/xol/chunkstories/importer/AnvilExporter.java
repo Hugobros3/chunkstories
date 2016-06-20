@@ -9,7 +9,7 @@ import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.WorldTool;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.world.WorldInfo;
 
@@ -106,7 +106,7 @@ public class AnvilExporter {
 					+"worldgen: blank\n"
 					+"size: "+size.name(), csWorldName);
 			info.save(new File(csWorldDir+"/info.txt"));
-			World exported = new WorldTool(csWorldDir);
+			WorldImplementation exported = new WorldTool(csWorldDir);
 			
 			int mcRegionStartX = c2r(x_start);
 			int mcRegionStartZ = c2r(z_start);

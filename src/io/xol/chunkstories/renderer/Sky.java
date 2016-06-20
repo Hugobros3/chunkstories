@@ -7,7 +7,7 @@ import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
 import io.xol.engine.textures.Texture;
 import io.xol.engine.textures.TexturesHandler;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.FastConfig;
 
 import java.nio.FloatBuffer;
@@ -30,10 +30,10 @@ public class Sky
 	float distance = 1500;
 	float height = -500;
 
-	WorldInterface world;
+	World world;
 	WorldRenderer worldRenderer;
 	
-	public Sky(WorldInterface world, WorldRenderer worldRenderer)
+	public Sky(World world, WorldRenderer worldRenderer)
 	{
 		this.world = world;
 		this.worldRenderer = worldRenderer;

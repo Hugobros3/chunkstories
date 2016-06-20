@@ -8,7 +8,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.renderer.lights.DefferedSpotLight;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.textures.TexturesHandler;
@@ -21,7 +21,7 @@ public class EntitySUV extends EntityImplementation
 {
 	int i = 0;
 
-	public EntitySUV(World w, double x, double y, double z)
+	public EntitySUV(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 		//anim = new BVHAnimation(new File("res/models/human.bvh"));

@@ -1,7 +1,7 @@
 package io.xol.chunkstories.physics.particules;
 
 import io.xol.chunkstories.api.rendering.Light;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.world.WorldInterface;
 public abstract class Particle
 {
 
-	public WorldInterface world;
+	public World world;
 	public double posX, posY, posZ;
 
 	public boolean dead = false;
@@ -19,7 +19,7 @@ public abstract class Particle
 		dead = true;
 	}
 
-	public Particle(WorldInterface world, double posX, double posY, double posZ)
+	public Particle(World world, double posX, double posY, double posZ)
 	{
 		this.world = world;
 		this.posX = posX;

@@ -25,9 +25,9 @@ import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Region;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -43,7 +43,7 @@ public abstract class EntityImplementation implements Entity
 	protected EntityComponentExistence existence = new EntityComponentExistence(this, null);
 	protected EntityComponentPosition position = new EntityComponentPosition(this, existence);
 
-	public World world;
+	public WorldImplementation world;
 
 	//public Vector3d pos;
 
@@ -68,7 +68,7 @@ public abstract class EntityImplementation implements Entity
 	//AtomicBoolean removed = new AtomicBoolean(false);
 	// public boolean mpSendDeletePacket = false;
 
-	public EntityImplementation(World w, double x, double y, double z)
+	public EntityImplementation(WorldImplementation w, double x, double y, double z)
 	{
 		world = w;
 
@@ -114,7 +114,7 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public WorldInterface getWorld()
+	public World getWorld()
 	{
 		return world;
 	}

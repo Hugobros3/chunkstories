@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.generator;
 import java.util.Random;
 
 import io.xol.chunkstories.api.world.WorldGenerator;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.generator.util.SeededSimplexNoiseGenerator;
 
@@ -19,7 +19,7 @@ public class HorizonGenerator extends WorldGenerator
 	int ws;
 	
 	@Override
-	public void initialize(World w)
+	public void initialize(WorldImplementation w)
 	{
 		super.initialize(w);
 		ssng = new SeededSimplexNoiseGenerator(w.getWorldInfo().getSeed());

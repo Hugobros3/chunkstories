@@ -1,6 +1,6 @@
 package io.xol.chunkstories.physics.particules;
 
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -29,7 +29,7 @@ public class ParticleVoxelFragment extends Particle
 		posZ += (Math.random() - 0.5) * 0.005;
 	}
 
-	public ParticleVoxelFragment(World world, double posX, double posY,
+	public ParticleVoxelFragment(WorldImplementation world, double posX, double posY,
 			double posZ)
 	{
 		super(world, posX, posY, posZ);

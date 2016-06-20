@@ -3,8 +3,8 @@ package io.xol.chunkstories.physics.particules;
 import io.xol.engine.math.lalgb.Vector3d;
 
 import io.xol.chunkstories.api.rendering.Light;
-import io.xol.chunkstories.api.world.WorldInterface;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 
 import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 
@@ -31,7 +31,7 @@ public class ParticleBlood extends Particle
 		this.posY += vel.y;
 		this.posZ += vel.z;
 		
-		if (!((World) world).checkCollisionPoint(posX, posY, posZ))
+		if (!((WorldImplementation) world).checkCollisionPoint(posX, posY, posZ))
 			vel.y += -0.89/60.0;
 		else
 			vel.zero();
@@ -45,13 +45,13 @@ public class ParticleBlood extends Particle
 			kill();
 	}
 
-	public ParticleBlood(WorldInterface world, Vector3d pos, Vector3d vel)
+	public ParticleBlood(World world, Vector3d pos, Vector3d vel)
 	{
 		this(world, pos.x, pos.y, pos.z);
 		this.vel = vel;
 	}
 	
-	private ParticleBlood(WorldInterface world, double posX, double posY, double posZ)
+	private ParticleBlood(World world, double posX, double posY, double posZ)
 	{
 		super(world, posX, posY, posZ);
 	}

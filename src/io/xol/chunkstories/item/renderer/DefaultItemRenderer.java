@@ -2,7 +2,7 @@ package io.xol.chunkstories.item.renderer;
 
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemRenderer;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
@@ -37,7 +37,7 @@ public class DefaultItemRenderer implements ItemRenderer
 	}
 
 	@Override
-	public void renderItemInWorld(RenderingContext context, ItemPile pile, WorldInterface world, Matrix4f handTransformation)
+	public void renderItemInWorld(RenderingContext context, ItemPile pile, World world, Matrix4f handTransformation)
 	{
 		
 	}

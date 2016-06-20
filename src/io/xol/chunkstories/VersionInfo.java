@@ -6,6 +6,6 @@ package io.xol.chunkstories;
 
 public class VersionInfo
 {
-	public static String version = "2016.06.16";
+	public static String version = "2016.06.20";
 	public static int protocolVersion = 14;
 }

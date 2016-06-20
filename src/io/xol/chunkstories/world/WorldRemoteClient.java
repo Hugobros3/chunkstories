@@ -15,7 +15,7 @@ import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class WorldRemoteClient extends World implements WorldClient, WorldNetworked
+public class WorldRemoteClient extends WorldImplementation implements WorldClient, WorldNetworked
 {
 	private PacketsProcessor packetsProcessor;
 	

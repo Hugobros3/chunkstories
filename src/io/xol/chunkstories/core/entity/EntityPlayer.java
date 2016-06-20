@@ -40,7 +40,7 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -106,14 +106,14 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	boolean jumped = false;
 	boolean landed = false;
 
-	public EntityPlayer(World w, double x, double y, double z)
+	public EntityPlayer(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 		inventoryComponent = new EntityComponentInventory(this, 10, 4);
 		selectedItemComponent = new EntityComponentSelectedItem(this, inventoryComponent);
 	}
 
-	public EntityPlayer(World w, double x, double y, double z, String name)
+	public EntityPlayer(WorldImplementation w, double x, double y, double z, String name)
 	{
 		super(w, x, y, z);
 		this.name.setName(name);
@@ -410,7 +410,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		initialPosition.add(new Vector3d(0, eyePosition, 0));
 
 		Vector3d direction = getDirectionLookingAt();
-
+		
 		if (inside)
 			return world.raytraceSolid(new Location(world, initialPosition), direction, 256.0);
 		else

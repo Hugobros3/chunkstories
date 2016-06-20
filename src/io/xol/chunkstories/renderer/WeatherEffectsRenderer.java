@@ -10,7 +10,7 @@ import java.util.Random;
 import org.lwjgl.BufferUtils;
 import io.xol.engine.math.lalgb.Vector2f;
 
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.XolioWindow;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
@@ -24,10 +24,10 @@ import io.xol.engine.textures.TexturesHandler;
 public class WeatherEffectsRenderer
 {
 	Random random = new Random();
-	World world;
+	WorldImplementation world;
 	WorldRenderer worldRenderer;
 	
-	public WeatherEffectsRenderer(World world, WorldRenderer worldRenderer)
+	public WeatherEffectsRenderer(WorldImplementation world, WorldRenderer worldRenderer)
 	{
 		this.world = world;
 		this.worldRenderer = worldRenderer;

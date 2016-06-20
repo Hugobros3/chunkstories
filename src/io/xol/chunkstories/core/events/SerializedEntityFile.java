@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.csf.OfflineSerializedData;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.UnknownComponentException;
 import io.xol.chunkstories.entity.EntitiesList;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -31,7 +31,7 @@ public class SerializedEntityFile implements OfflineSerializedData
 		return file.exists();
 	}
 	
-	public Entity read(World world)
+	public Entity read(WorldImplementation world)
 	{
 		try
 		{

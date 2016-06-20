@@ -1,6 +1,6 @@
 package io.xol.chunkstories.physics.particules;
 
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -19,7 +19,7 @@ public class ParticleRainfall extends Particle
 	@Override
 	public void update()
 	{
-		if (!((World) world).checkCollisionPoint(posX, posY, posZ))
+		if (!((WorldImplementation) world).checkCollisionPoint(posX, posY, posZ))
 		{
 			posY -= 0.15;
 		} else
@@ -33,7 +33,7 @@ public class ParticleRainfall extends Particle
 		 */
 	}
 
-	public ParticleRainfall(World world, double posX, double posY, double posZ)
+	public ParticleRainfall(WorldImplementation world, double posX, double posY, double posZ)
 	{
 		super(world, posX, posY, posZ);
 	}

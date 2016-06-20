@@ -31,7 +31,7 @@ import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 
 public class Client implements ClientController, ClientInterface
 {
@@ -42,7 +42,7 @@ public class Client implements ClientController, ClientInterface
 
 	public static ClientToServerConnection connection;
 	public static XolioWindow windows;
-	public static World world;
+	public static WorldImplementation world;
 
 	public static String username = "Unknow";
 	public static String session_key = "nopeMLG";

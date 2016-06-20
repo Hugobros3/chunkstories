@@ -6,7 +6,7 @@ import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Chunk;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
@@ -34,7 +34,7 @@ public class ChunksRenderer extends Thread
 {
 	AtomicBoolean die = new AtomicBoolean();
 
-	WorldInterface world;
+	World world;
 
 	public Deque<int[]> todoQueue = new ConcurrentLinkedDeque<int[]>();
 	public Queue<ChunkRenderData> doneQueue = new ConcurrentLinkedQueue<ChunkRenderData>();
@@ -43,7 +43,7 @@ public class ChunksRenderer extends Thread
 
 	int worldSizeInChunks;
 
-	public ChunksRenderer(WorldInterface w)
+	public ChunksRenderer(World w)
 	{
 		world = w;
 		// 8 buffers of 8Mb each (64Mb) for temp/scratch buffer memory

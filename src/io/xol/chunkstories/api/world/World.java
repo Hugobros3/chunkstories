@@ -14,8 +14,12 @@ import io.xol.engine.math.lalgb.Vector3d;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface WorldInterface
+public interface World
 {
+	/*
+	 * Entities management
+	 */
+	
 	/**
 	 * Adds an entity to the world, the entity location is supposed to be already defined
 	 * @param entity
@@ -35,11 +39,6 @@ public interface WorldInterface
 	public boolean removeEntity(long uuid);
 
 	/**
-	 * Game-logic function. Not something you'd be supposed to call
-	 */
-	public void tick();
-
-	/**
 	 * Returns an iterator containing all the loaded entities.
 	 * Supposedly thread-safe
 	 * @return
@@ -52,6 +51,10 @@ public interface WorldInterface
 	 */
 	public Entity getEntityByUUID(long uuid);
 
+	/*
+	 * World parameters
+	 */
+	
 	/**
 	 * As of the current version of the game, this is internally set to 1024
 	 * @return
@@ -70,17 +73,19 @@ public interface WorldInterface
 	 */
 	public double getWorldSize();
 
+	/*
+	 * Get data
+	 */
+	
 	/**
 	 * Returns the block data at the specified location
 	 * Will try to load/generate the chunks if not alreay in ram
-	 * @param location
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
 	public int getDataAt(Location location);
 
 	/**
 	 * Returns the block data at the specified location
-	 * @param location
 	 * @param load If set to false, will *not* try to load the chunk if it's not present and will instead return 0
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
@@ -89,59 +94,60 @@ public interface WorldInterface
 	/**
 	 * Returns the block data at the specified location
 	 * Will try to load/generate the chunks if not alreay in ram
-	 * @param x
-	 * @param y
-	 * @param z
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
 	public int getDataAt(int x, int y, int z);
 
 	/**
 	 * Returns the block data at the specified location
-	 * @param x
-	 * @param y
-	 * @param z
 	 * @param load If set to false, will *not* try to load the chunk if it's not present and will instead return 0
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
 	public int getDataAt(int x, int y, int z, boolean load);
 
+	/*
+	 * Set data
+	 */
+	
 	/**
 	 * Sets the block data at the specified location
 	 * Will try to load/generate the chunks if not alreay in ram
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param i The new data to set the block to, see {@link VoxelFormat}
+	 * @param data The new data to set the block to, see {@link VoxelFormat}
 	 */
-	public void setDataAt(int x, int y, int z, int i);
+	public void setDataAt(int x, int y, int z, int data);
 
 	/**
 	 * Sets the block data at the specified location
 	 * Will try to load/generate the chunks if not alreay in ram
-	 * @param location
-	 * @param i The new data to set the block to, see {@link VoxelFormat}
+	 * @param data The new data to set the block to, see {@link VoxelFormat}
 	 */
-	public void setDataAt(Location location, int i);
+	public void setDataAt(Location location, int data);
 
 	/**
 	 * Sets the block data at the specified location
-	 * @param location
-	 * @param i The new data to set the block to, see {@link VoxelFormat}
+	 * @param data The new data to set the block to, see {@link VoxelFormat}
 	 * @param load If set to false, will *not* try to load the chunk if it's not present
 	 */
-	public void setDataAt(Location location, int i, boolean load);
+	public void setDataAt(Location location, int data, boolean load);
 
 	/**
 	 * Sets the block data at the specified location
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param i The new data to set the block to, see {@link VoxelFormat}
+	 * @param data The new data to set the block to, see {@link VoxelFormat}
 	 * @param load If set to false, will *not* try to load the chunk if it's not present
 	 */
-	public void setDataAt(int x, int y, int z, int i, boolean load);
+	public void setDataAt(int x, int y, int z, int data, boolean load);
 
+	/**
+	 * Only sets the data, don't trigger any logic, rendering etc
+	 * @param data
+	 * @param load
+	 */
+	public void setDataAtWithoutUpdates(int x, int y, int z, int data, boolean load);
+	
+	/*
+	 * Voxel light
+	 */
+	
 	/**
 	 * @param x
 	 * @param y
@@ -163,17 +169,11 @@ public interface WorldInterface
 	public int getBlocklightLevel(int x, int y, int z);
 
 	public int getBlocklightLevel(Location location);
-	
-	/**
-	 * Returns null or a chunk. If the load flag is set to true, it will also try to load it ingame
-	 * @param chunkX
-	 * @param chunkY
-	 * @param chunkZ
-	 * @param load
-	 * @return
-	 */
-	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
 
+	/*
+	 * Chunks
+	 */
+	
 	public ChunksIterator getAllLoadedChunks();
 	
 	/**
@@ -202,11 +202,24 @@ public interface WorldInterface
 	 * @param chunk
 	 */
 	public void setChunk(CubicChunk chunk);
+	
+	/**
+	 * Returns null or a chunk. If the load flag is set to true, it will also try to load it ingame
+	 * @param load
+	 * @return
+	 */
+	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
 
+	public Region getRegion(int regionX, int regionY, int regionZ);
+	
+	/*
+	 * Global methods
+	 */
+	
 	/**
 	 * For dirty hacks that need so
 	 */
-	public void redrawAllChunks();
+	public void redrawEverything();
 
 	/**
 	 * Unloads everything
@@ -235,6 +248,11 @@ public interface WorldInterface
 	 */
 	public void setTime(long time);
 
+	/**
+	 * Game-logic function. Not something you'd be supposed to call
+	 */
+	public void tick();
+
 	public WorldGenerator getGenerator();
 
 	/**
@@ -242,6 +260,10 @@ public interface WorldInterface
 	 * @return true if the interaction was handled
 	 */
 	public boolean handleInteraction(Entity entity, Location blockLocation, Input input);
+	
+	/*
+	 * Raytracers and methods to grab entities
+	 */
 	
 	/**
 	 * Raytraces throught the world to find a solid block
@@ -271,9 +293,11 @@ public interface WorldInterface
 	 */
 	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3d initialPosition, Vector3d direction, double limit);
 	
+	/*
+	 * Fx
+	 */
+	
 	public void addParticle(Particle particle);
 
 	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain);
-
-	public Region getRegion(int regionX, int regionY, int regionZ);
 }

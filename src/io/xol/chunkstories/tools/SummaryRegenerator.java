@@ -3,7 +3,7 @@ package io.xol.chunkstories.tools;
 import java.io.File;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
@@ -40,7 +40,7 @@ public class SummaryRegenerator
 				return;
 			}
 
-			World world = new WorldTool(csWorldName);//, "", new BlankWorldGenerator(), size);
+			WorldImplementation world = new WorldTool(csWorldName);//, "", new BlankWorldGenerator(), size);
 			for (int i = 0; i < world.getSizeInChunks() / 8; i++)
 			{
 				for (int j = 0; j < world.getSizeInChunks() / 8; j++)

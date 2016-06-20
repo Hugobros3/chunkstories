@@ -4,7 +4,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -27,7 +27,7 @@ public class ParticleLight extends Particle
 	@Override
 	public void update()
 	{
-		if (!((World) world).checkCollisionPoint(posX, posY, posZ))
+		if (!((WorldImplementation) world).checkCollisionPoint(posX, posY, posZ))
 			posY += -0.25;
 		// posX+=Math.sin(timer/30f)*0.5;
 		// posZ+=Math.cos(timer/30f)*0.5;
@@ -42,7 +42,7 @@ public class ParticleLight extends Particle
 		// dl.decay = 8f+1f;
 	}
 
-	public ParticleLight(World world, double posX, double posY, double posZ)
+	public ParticleLight(WorldImplementation world, double posX, double posY, double posZ)
 	{
 		super(world, posX, posY, posZ);
 		dl = new DefferedLight(new Vector3f(0.5f + (float) Math.random(),

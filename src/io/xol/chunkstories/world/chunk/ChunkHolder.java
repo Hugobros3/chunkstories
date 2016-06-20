@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.world.World;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.chunkstories.world.iterators.ChunkHolderIterator;
 import io.xol.engine.concurrency.SafeWriteLock;
@@ -29,7 +29,7 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 
 public class ChunkHolder implements Region
 {
-	public final World world;
+	public final WorldImplementation world;
 	public final int regionX, regionY, regionZ;
 	public final long uuid;
 
@@ -67,7 +67,7 @@ public class ChunkHolder implements Region
 
 	private static Random random = new Random();
 
-	public ChunkHolder(World world, int regionX, int regionY, int regionZ)
+	public ChunkHolder(WorldImplementation world, int regionX, int regionY, int regionZ)
 	{
 		this.world = world;
 		this.regionX = regionX;
@@ -169,6 +169,8 @@ public class ChunkHolder implements Region
 			data[chunkX % 8][chunkY % 8][chunkZ % 8].destroy();
 		}
 
+
+		//System.out.println("set chunk"+chunk);
 		data[chunkX % 8][chunkY % 8][chunkZ % 8] = chunk;
 		
 		//Change chunk holder to this
@@ -183,6 +185,9 @@ public class ChunkHolder implements Region
 	@Override
 	public boolean removeChunk(int chunkX, int chunkY, int chunkZ)
 	{
+		//Thread.currentThread().dumpStack();
+		//System.out.println("remove chunk "+chunkX+":"+chunkY+":"+chunkZ);
+		
 		CubicChunk c = data[chunkX % 8][chunkY % 8][chunkZ % 8];
 		if (c != null)
 		{
@@ -240,7 +245,7 @@ public class ChunkHolder implements Region
 	public void unload()
 	{
 		unloadAll();
-		System.out.println("Unloaded chunk holder with " + " 0 entities remaining in it.");
+		System.out.println("Unloaded chunk holder "+this+" with " + " 0 entities remaining in it.");
 	}
 
 	/* (non-Javadoc)

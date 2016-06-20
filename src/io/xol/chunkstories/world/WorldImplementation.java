@@ -21,7 +21,7 @@ import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldGenerator;
-import io.xol.chunkstories.api.world.WorldInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
@@ -50,7 +50,7 @@ import io.xol.engine.misc.ConfigFile;
 // http://chunkstories.xyz
 // http://xol.io
 
-public abstract class World implements WorldInterface
+public abstract class WorldImplementation implements World
 {
 	protected WorldInfo worldInfo;
 	private final File folder;
@@ -96,7 +96,7 @@ public abstract class World implements WorldInterface
 	//Ugly primitive crap
 	boolean raining;
 	
-	public World(WorldInfo info)
+	public WorldImplementation(WorldInfo info)
 	{
 		worldInfo = info;
 		//Creates world generator
@@ -449,61 +449,37 @@ public abstract class World implements WorldInterface
 		return getDataAt(x, y, z, true);
 	}
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#getDataAt(int, int, int, boolean)
-	 */
 	@Override
 	public int getDataAt(int x, int y, int z, boolean load)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		/*x = x % (getSizeInChunks() * 32);
-		z = z % (getSizeInChunks() * 32);
-		if (y < 0)
-			y = 0;
-		if (y > worldInfo.getSize().height * 32)
-			y = worldInfo.getSize().height * 32;
-		if (x < 0)
-			x += getSizeInChunks() * 32;
-		if (z < 0)
-			z += getSizeInChunks() * 32;*/
+		
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 			return c.getDataAt(x, y, z);
 		return 0;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#setDataAt(int, int, int, int)
-	 */
+	
 	@Override
 	public void setDataAt(int x, int y, int z, int i)
 	{
 		setDataAt(x, y, z, i, true);
 	}
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#setDataAt(io.xol.chunkstories.api.Location, int)
-	 */
 	@Override
 	public void setDataAt(Location location, int i)
 	{
 		setDataAt((int)location.x, (int)location.y, (int)location.z, i, true);
 	}
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#setDataAt(io.xol.chunkstories.api.Location, int, boolean)
-	 */
 	@Override
 	public void setDataAt(Location location, int i, boolean load)
 	{
 		setDataAt((int)location.x, (int)location.y, (int)location.z, i, load);
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#setDataAt(int, int, int, int, boolean)
-	 */
+	
 	@Override
 	public void setDataAt(int x, int y, int z, int i, boolean load)
 	{
@@ -512,17 +488,7 @@ public abstract class World implements WorldInterface
 		z = sanitizeHorizontalCoordinate(z);
 		
 		getRegionSummaries().blockPlaced(x, y, z, i);
-
-		/*x = x % (getSizeInChunks() * 32);
-		z = z % (getSizeInChunks() * 32);
-		if (y < 0)
-			y = 0;
-		if (y > worldInfo.getSize().height * 32)
-			y = worldInfo.getSize().height * 32;
-		if (x < 0)
-			x += getSizeInChunks() * 32;
-		if (z < 0)
-			z += getSizeInChunks() * 32;*/
+		
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
@@ -683,12 +649,14 @@ public abstract class World implements WorldInterface
 	@Override
 	public void setChunk(CubicChunk chunk)
 	{
+		
 		if (this.isChunkLoaded(chunk.chunkX, chunk.chunkY, chunk.chunkZ))
 		{
 			CubicChunk oldchunk = this.getChunk(chunk.chunkX, chunk.chunkY, chunk.chunkZ, false);
 			if (oldchunk.dataPointer != chunk.dataPointer)
 				oldchunk.destroy();
-			// System.out.println("Removed chunk "+chunk.toString());
+			
+			System.out.println("Removed chunk "+chunk.toString());
 		}
 		chunksHolder.setChunk(chunk);
 		if (renderer != null)
@@ -699,7 +667,7 @@ public abstract class World implements WorldInterface
 	 * @see io.xol.chunkstories.world.WorldInterface#reRender()
 	 */
 	@Override
-	public synchronized void redrawAllChunks()
+	public synchronized void redrawEverything()
 	{
 		ChunksIterator i = this.getAllLoadedChunks();
 		CubicChunk c;
@@ -821,12 +789,14 @@ public abstract class World implements WorldInterface
 			{
 				keep = true;
 				int sizeInChunks = this.getSizeInChunks();
-				int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
-				int pCX = (int) loc.x / 32;
-				int pCY = (int) loc.y / 32;
-				int pCZ = (int) loc.z / 32;
+				int chunksViewDistance = (int) (FastConfig.viewDistance / 32) + 1;
+				int pCX = (int) Math.floor(loc.x / 32);
+				int pCY = (int) Math.floor(loc.y / 32);
+				int pCZ = (int) Math.floor(loc.z / 32);
 
-				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance) || (chunk.chunkY - pCY) > 3 || (chunk.chunkY - pCY) < -3))
+				//System.out.println("chunkX:"+chunk.chunkX+":"+chunk.chunkY+":"+chunk.chunkZ);
+				
+				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance) || Math.abs(chunk.chunkY - pCY) > 3 + 1))
 				{
 					if(chunk.chunkRenderData != null)
 						chunk.chunkRenderData.markForDeletion();

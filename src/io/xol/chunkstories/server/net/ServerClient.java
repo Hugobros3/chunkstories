@@ -190,8 +190,8 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 
 			//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
 			assert getProfile() != null;
-			getProfile().destroy();
 			getProfile().save();
+			getProfile().destroy();
 		}
 
 		try
