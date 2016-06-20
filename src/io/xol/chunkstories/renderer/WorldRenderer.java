@@ -2,6 +2,7 @@ package io.xol.chunkstories.renderer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
@@ -1569,6 +1570,7 @@ public class WorldRenderer
 			//viewerCamDirVector = new Vector3f((float) (Math.sin((180 + camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)), (float) (Math.cos((180 + camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)));
 
 			this.fboShadedBuffer.bind();
+			//glDisable(GL_DEPTH_TEST);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			// Scene rendering
@@ -1586,22 +1588,33 @@ public class WorldRenderer
 				int t[] = new int[] { 4, 5, 3, 2, 0, 1 };
 				int f = t[z];
 				
-				/*glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + f, 0, GL_RGBA, resolution, resolution, 0, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
+				//System.out.println("face"+f);
+				
+				//ByteBuffer bbuf = ByteBuffer.allocateDirect(resolution * resolution * 4).order(ByteOrder.nativeOrder());
+				
+				//glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
+				
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + f, 0, GL_RGBA, resolution, resolution, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer)null);
+				
+				//glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + f, 0, GL_RGBA, resolution, resolution, 0, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				// Anti seam
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				
 				renderingContext.setCurrentShader(ShadersLibrary.getShaderProgram("blit"));
 				
 				this.environmentMapFBO.bind();
 				//glDisable(GL_DEPTH_TEST);
+				//glDisable(GL_ALPHA_TEST);
+				//glDisable(GL_CULL_FACE);
 				this.environmentMapFBO.setColorAttachement(0, cubemap.getFace(f));
 				
 				renderingContext.getCurrentShader().setUniformSampler(0, "diffuseTexture", shadedBuffer);
 				renderingContext.getCurrentShader().setUniformFloat2("screenSize", resolution, resolution);
 				
-				//renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoord"));
+				renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoord"));
 				ObjectRenderer.drawFSQuad(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
 				//glFinish();
 			}
