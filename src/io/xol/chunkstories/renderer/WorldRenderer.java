@@ -1722,9 +1722,9 @@ public class WorldRenderer
 	{
 		if (world.isRaining())
 		{
-			shader.setUniformFloat("shadowStrength", 0.75f);
+			shader.setUniformFloat("shadowStrength", 1.0f);
 			shader.setUniformFloat3("sunColor", 1.0f, 1.0f, 1.0f);
-			shader.setUniformFloat3("shadowColor", 0.20f, 0.20f, 0.20f);
+			shader.setUniformFloat3("shadowColor", 0.50f, 0.50f, 0.50f);
 		}
 		else
 		{

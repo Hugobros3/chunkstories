@@ -2,6 +2,9 @@ package io.xol.chunkstories.tools;
 
 import java.io.File;
 
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.components.Subscriber;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
@@ -10,7 +13,7 @@ import io.xol.chunkstories.world.io.IOTasksImmediate;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class WorldTool extends WorldImplementation
+public class WorldTool extends WorldImplementation implements WorldMaster
 {
 	public WorldTool(String worldDir)
 	{
@@ -27,6 +30,12 @@ public class WorldTool extends WorldImplementation
 	
 	@Override
 	public void trimRemovableChunks()
+	{
+		
+	}
+
+	@Override
+	public void playSoundEffectExcluding(String soundEffect, Location location, float pitch, float gain, Subscriber subscriber)
 	{
 		
 	}

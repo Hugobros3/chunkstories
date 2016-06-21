@@ -306,7 +306,7 @@ public class IOTasks extends Thread
 			
 			//Check no saving operations are occuring
 			IOTaskSaveChunkHolder saveChunkHolder = new IOTaskSaveChunkHolder(holder);
-			if(tasks.contains(saveChunkHolder))
+			if(tasks != null && tasks.contains(saveChunkHolder))
 			{
 				System.out.println("A save operation is still running on "+holder+", waiting for it to complete.");
 				return false;

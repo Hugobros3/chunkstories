@@ -90,7 +90,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			//else
 			//	System.out.println("got null data for chunk");
 
-			c.bakeVoxelLightning(false);
+			c.bakeVoxelLightning(true);
 
 			//Remove any object preventing us from asking it again
 			ChunkLocation loc = new ChunkLocation(x, y, z);
