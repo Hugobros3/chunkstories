@@ -1,5 +1,13 @@
 package io.xol.chunkstories.renderer;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
+/**
+ * Inspired by "greedy meshing" code
+ * It's simpler, provides an "ok" mesh
+ */
 public class FloodMesh2D
 {
 	public static void main(String[] a)

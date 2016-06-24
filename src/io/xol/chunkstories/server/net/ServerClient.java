@@ -81,8 +81,8 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			version = m.replace("version:", "");
 			if (Server.getInstance().serverConfig.getProp("check-version", "true").equals("true"))
 			{
-				if (Integer.parseInt(version) != VersionInfo.protocolVersion)
-					Server.getInstance().handler.disconnectClient(this, "Wrong protocol version ! " + version + " != " + VersionInfo.protocolVersion +" \n Update your game !");
+				if (Integer.parseInt(version) != VersionInfo.networkProtocolVersion)
+					Server.getInstance().handler.disconnectClient(this, "Wrong protocol version ! " + version + " != " + VersionInfo.networkProtocolVersion +" \n Update your game !");
 			}
 		}
 		if (m.startsWith("confirm"))

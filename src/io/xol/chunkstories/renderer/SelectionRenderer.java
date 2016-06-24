@@ -6,7 +6,9 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.physics.CollisionBox;
 
-//(c) 2-0.05f15 XolioWare Interactive
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 public class SelectionRenderer
 {

@@ -34,12 +34,15 @@ public class IOTasks extends Thread
 
 	protected UniqueQueue<IOTask> tasks = new UniqueQueue<IOTask>();
 	private AtomicBoolean die = new AtomicBoolean();
+
+	protected LZ4Factory factory = LZ4Factory.fastestInstance();
+	protected LZ4FastDecompressor decompressor = factory.fastDecompressor();
 	
-	int worldSizeInChunks = 0;
-	int worldHeightInChunks = 0;
+	protected int worldSizeInChunks = 0;
+	protected int worldHeightInChunks = 0;
 
 	//Per-thread buffer
-	static ThreadLocal<byte[]> unCompressedData = new ThreadLocal<byte[]>()
+	protected static ThreadLocal<byte[]> unCompressedData = new ThreadLocal<byte[]>()
 	{
 		@Override
 		protected byte[] initialValue()
@@ -48,9 +51,6 @@ public class IOTasks extends Thread
 			return new byte[32 * 32 * 32 * 4];
 		}
 	};
-
-	LZ4Factory factory = LZ4Factory.fastestInstance();
-	LZ4FastDecompressor decompressor = factory.fastDecompressor();
 
 	public IOTasks(WorldImplementation world)
 	{
@@ -106,18 +106,14 @@ public class IOTasks extends Thread
 		Thread.currentThread().setName("IO Tasks");
 		while (!die.get())
 		{
-			//int count = 0;
 			IOTask task = null;
+			
 			//synchronized (tasks)
 			{
-				//count = tasks.size();
-				// Get first task in queue
-				//if (count > 0)
 				task = tasks.poll();
 			}
 			if (task == null)
 			{
-				//System.out.println("poll == null");
 				try
 				{
 					synchronized (this)
@@ -140,7 +136,6 @@ public class IOTasks extends Thread
 					// If it returns false, requeue it.
 					if (!ok)
 					{
-						//System.out.println("rescheduling"+task);
 						tasks.add(task);
 					}
 
@@ -229,8 +224,7 @@ public class IOTasks extends Thread
 				}
 				catch (LZ4Exception e)
 				{
-					System.out.println("Fail @ " + holder + " chunk " + c);
-					//System.out.println("k why man" + holder.isChunkLoaded(x, y, z) + " holder:" + holder + Thread.currentThread().getName());
+					System.out.println("Failed to decompress chunk data (corrupted?) holder:" + holder + " chunk:" + c + "task: "+this);
 				}
 
 				holder.compressedChunksLock.endRead();
@@ -683,52 +677,6 @@ public class IOTasks extends Thread
 	{
 
 	}
-
-	/*public class IOTaskRunWithHolder extends IOTask
-	{
-		ChunkHolder holder;
-		IORequiringTask task;
-
-		public IOTaskRunWithHolder(ChunkHolder holder, IORequiringTask task)
-		{
-			this.holder = holder;
-			this.task = task;
-		}
-
-		@Override
-		public boolean run()
-		{
-			if (!holder.isLoaded())
-			{
-				System.out.println("Trying to load chunk holder for requiring task");
-				world.getChunksHolder().getChunkHolder(holder.regionX * 8, holder.regionY * 8, holder.regionZ * 8, true);
-				return false;
-			}
-			else
-			{
-				return task.run(holder);
-			}
-		}
-
-		@Override
-		public boolean equals(Object o)
-		{
-			return false;
-		}
-
-		@Override
-		public int hashCode()
-		{
-			return -878441;
-		}
-
-	}
-
-	public void requestChunkHolderRequest(ChunkHolder holder, IORequiringTask job)
-	{
-		IOTaskRunWithHolder task = new IOTaskRunWithHolder(holder, job);
-		addTask(task);
-	}*/
 
 	public void kill()
 	{

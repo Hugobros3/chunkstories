@@ -14,7 +14,8 @@ public class VoxelFormat
 	//	 16->19 4-bit metadata for simple objects
 	//	 20->23 4-bit sunlight
 	//	 24-28> 4-bit blocklight
-
+	//   The last 4 bits remain unused as of the current version of the specification.
+	
 	public static void main(String a[])
 	{
 		// Demo-debug

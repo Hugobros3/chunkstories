@@ -41,6 +41,19 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 	MessageDigest md = null;
 
+	Set<ChunkLocation> chunksAlreadyAsked = ConcurrentHashMap.newKeySet();
+	List<int[]> summariesAlreadyAsked = new ArrayList<int[]>();
+
+	static ThreadLocal<byte[]> unCompressedSummariesData = new ThreadLocal<byte[]>()
+	{
+		@Override
+		protected byte[] initialValue()
+		{
+			//Buffer for summaries
+			return new byte[256 * 256 * 4 * 2];
+		}
+	};
+
 	public class IOTaskProcessCompressedChunkArrival extends IOTask
 	{
 		int x, y, z;
@@ -61,15 +74,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 			
 			//In any client scenario we don't need to check for a chunk holder to be already present neither do we need
 			//to let it load.
-			
-			/*ChunkHolder holder = world.getChunksHolder().getChunkHolder(x, y, z, true);
-			
-			// If for some reasons the chunks holder's are still not loaded, we
-			// requeue the job for later.
-			if (holder == null)
-				return false;
-			if (!holder.isLoaded())
-				return false;*/
 
 			if (data != null)
 			{
@@ -110,7 +114,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		@Override
 		public int hashCode()
 		{
-			return 6792;
+			return 324028;
 		}
 	}
 
@@ -125,8 +129,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 		IOTaskProcessCompressedChunkArrival task = new IOTaskProcessCompressedChunkArrival(x, y, z, data);
 		addTask(task);
 	}
-
-	Set<ChunkLocation> chunksAlreadyAsked = ConcurrentHashMap.newKeySet();
 
 	class ChunkLocation
 	{
@@ -184,9 +186,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 		holder.setLoaded(true);
 	}
 
-	//TODO instance this crap per thread
-	static byte[] uncompressed = new byte[256 * 256 * 4 * 2];
-
 	public class IOTaskProcessCompressedChunkSummaryArrival extends IOTask
 	{
 		PacketChunkSummary packet;
@@ -202,8 +201,9 @@ public class IOTasksMultiplayerClient extends IOTasks
 			synchronized (Client.world.getRegionSummaries())
 			{
 				RegionSummary summary = Client.world.getRegionSummaries().get(packet.rx * 256, packet.rz * 256);
-				uncompressed = RegionSummary.decompressor.decompress(packet.compressedData, 256 * 256 * 4 * 2);
-				IntBuffer ib = ByteBuffer.wrap(uncompressed).asIntBuffer();
+				byte[] unCompressedSummaries = unCompressedSummariesData.get();
+				unCompressedSummaries = RegionSummary.decompressor.decompress(packet.compressedData, 256 * 256 * 4 * 2);
+				IntBuffer ib = ByteBuffer.wrap(unCompressedSummaries).asIntBuffer();
 				ib.get(summary.heights, 0, 256 * 256);
 				ib.get(summary.ids, 0, 256 * 256);
 				// System.arraycopy(uncompressed, 0, summary.heights, 0, 256 *
@@ -246,8 +246,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 		IOTaskProcessCompressedChunkSummaryArrival task = new IOTaskProcessCompressedChunkSummaryArrival(packet);
 		addTask(task);
 	}
-
-	List<int[]> summariesAlreadyAsked = new ArrayList<int[]>();
 
 	@Override
 	public void requestChunkSummaryLoad(RegionSummary summary)

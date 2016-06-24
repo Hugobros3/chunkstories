@@ -115,8 +115,6 @@ public class ChunkHolder implements Region
 			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = new byte[compressedDataLength];
 			System.arraycopy(compressedData.get(), 0, compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8], 0, compressedDataLength);
 			compressedChunksLock.endWrite();
-
-			//System.out.println("Generated compressed data for chunk "+chunkX+"."+chunkY+"."+chunkZ+" size="+compressedDataLength);
 		}
 		else
 		{
@@ -124,7 +122,7 @@ public class ChunkHolder implements Region
 			compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
 			compressedChunksLock.endWrite();
 		}
-
+		
 		chunk.lastModificationSaved.set(System.currentTimeMillis());
 	}
 

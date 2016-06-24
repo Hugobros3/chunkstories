@@ -196,7 +196,7 @@ public class ClientToServerConnection extends Thread implements HttpRequester, R
 
 			sendTextMessage("login/username:" + Client.username);
 			sendTextMessage("login/logintoken:nopenopenopenopenope");
-			sendTextMessage("login/version:"+VersionInfo.protocolVersion);
+			sendTextMessage("login/version:"+VersionInfo.networkProtocolVersion);
 			sendTextMessage("login/confirm");
 		}
 		else
@@ -261,7 +261,7 @@ public class ClientToServerConnection extends Thread implements HttpRequester, R
 
 				sendTextMessage("login/username:" + Client.username);
 				sendTextMessage("login/logintoken:" + token);
-				sendTextMessage("login/version:"+VersionInfo.protocolVersion);
+				sendTextMessage("login/version:"+VersionInfo.networkProtocolVersion);
 				sendTextMessage("login/confirm");
 				connectionStatus = "Token obtained, logging in...";
 			}

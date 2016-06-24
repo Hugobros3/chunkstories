@@ -3,6 +3,8 @@ package io.xol.chunkstories.renderer;
 import java.util.ArrayList;
 import java.util.List;
 
+//No copyright notice, it's a direct transcribe of 0fps's JS greedy meshing example
+
 public class GreedyMesher3D
 {
 	public static List<int[][]> greedy(int[] volume, int[] dims)
