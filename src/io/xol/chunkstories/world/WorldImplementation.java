@@ -189,6 +189,8 @@ public abstract class WorldImplementation implements World
 			System.out.println("given "+nextUUID+" to "+entity);
 		}
 		
+		entity.getLocation().setWorld(this);
+		
 		//Location currLocation = entity.getLocation();
 		//entity.setLocation(new Location(this, currLocation.getX(), currLocation.getY(), currLocation.getZ()));
 		

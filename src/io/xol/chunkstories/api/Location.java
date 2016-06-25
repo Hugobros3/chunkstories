@@ -56,4 +56,9 @@ public class Location extends Vector3d
 	{
 		return world;
 	}
+
+	public void setWorld(World world)
+	{
+		this.world = world;
+	}
 }
