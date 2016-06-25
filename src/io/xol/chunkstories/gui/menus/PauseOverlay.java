@@ -6,7 +6,7 @@ import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBinds;
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.gui.GuiElementsHandler;
@@ -31,12 +31,12 @@ public class PauseOverlay extends Overlay
 	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
-		ObjectRenderer.renderColoredRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2, XolioWindow.frameW, XolioWindow.frameH, 0, "000000", 0.5f);
-		FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 - FontRenderer2.getTextLengthUsingFont(48, "In-game menu", BitmapFont.SMALLFONTS) / 2, XolioWindow.frameH / 2 + 48 * 3, 0, 48, "In-game menu", BitmapFont.SMALLFONTS);
+		ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
+		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(48, "In-game menu", BitmapFont.SMALLFONTS) / 2, GameWindowOpenGL.windowHeight / 2 + 48 * 3, 0, 48, "In-game menu", BitmapFont.SMALLFONTS);
 
-		resumeButton.setPosition(XolioWindow.frameW/2, XolioWindow.frameH/2 + 48 * 2);
-		optionsButton.setPosition(XolioWindow.frameW/2, XolioWindow.frameH/2 + 48);
-		exitButton.setPosition(XolioWindow.frameW/2, XolioWindow.frameH/2 - 48);
+		resumeButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight/2 + 48 * 2);
+		optionsButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight/2 + 48);
+		exitButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight/2 - 48);
 		
 		resumeButton.draw();
 		optionsButton.draw();

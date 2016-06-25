@@ -144,7 +144,7 @@ void main(){
 	finalLight *= (1-meta.z);
 
 	//coords += 15.0 * (1 - length(worldspaceFragment) / viewDistance) * vec2( normal.xz ) / screenSize;
-	vec4 refracted = texture2D(readbackAlbedoBufferTemp, coords);;
+	vec4 refracted = texture2D(readbackAlbedoBufferTemp, coords);
 	
 	float waterFogI2 = length(worldspaceFragment) / viewDistance;
 	//if(refracted.a <= 0.1)

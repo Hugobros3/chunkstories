@@ -1,3 +1,4 @@
+#version 120
 varying vec2 screenCoord;
 
 attribute vec2 vertexIn;

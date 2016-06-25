@@ -9,7 +9,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.chunkstories.api.Location;
@@ -62,7 +62,7 @@ public class GameplayScene extends OverlayableScene
 	
 	private boolean guiHidden = false;
 
-	public GameplayScene(XolioWindow w, boolean multiPlayer)
+	public GameplayScene(GameWindowOpenGL w, boolean multiPlayer)
 	{
 		super(w);
 		w.renderingContext.setCamera(camera);
@@ -84,7 +84,7 @@ public class GameplayScene extends OverlayableScene
 
 		//Creates the rendering stuff
 		worldRenderer = new WorldRenderer(Client.world);
-		worldRenderer.setupRenderSize(XolioWindow.frameW, XolioWindow.frameH);
+		worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		selectionRenderer = new SelectionRenderer(Client.world, worldRenderer);
 		//Give focus
 		focus(true);
@@ -197,7 +197,7 @@ public class GameplayScene extends OverlayableScene
 			chat.draw();
 	
 			if (player != null && inventoryDrawer != null)
-				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, XolioWindow.frameW / 2, 64 + 64);
+				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, GameWindowOpenGL.windowWidth / 2, 64 + 64);
 	
 			if (Keyboard.isKeyDown(78))
 				Client.world.worldTime += 10;
@@ -211,9 +211,9 @@ public class GameplayScene extends OverlayableScene
 				focus(true);
 			// Draw overlay
 			if (currentOverlay != null)
-				currentOverlay.drawToScreen(0, 0, XolioWindow.frameW, XolioWindow.frameH);
+				currentOverlay.drawToScreen(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 			else
-				ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2, 16, 16, 0, 0, 16, 16, 16, "internal://./res/textures/gui/cursor.png");
+				ObjectRenderer.renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "internal://./res/textures/gui/cursor.png");
 	
 			}
 		super.update();
@@ -236,7 +236,7 @@ public class GameplayScene extends OverlayableScene
 		Mouse.setGrabbed(f);
 		if (f && !focus)
 		{
-			Mouse.setCursorPosition(XolioWindow.frameW / 2, XolioWindow.frameH / 2);
+			Mouse.setCursorPosition(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
 			this.changeOverlay(null);
 		}
 		focus = f;
@@ -412,7 +412,7 @@ public class GameplayScene extends OverlayableScene
 	@Override
 	public void onResize()
 	{
-		worldRenderer.setupRenderSize(XolioWindow.frameW, XolioWindow.frameH);
+		worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	}
 
 	/**
@@ -450,9 +450,9 @@ public class GameplayScene extends OverlayableScene
 		int cz = bz / 32;
 		int csh = Client.world.getRegionSummaries().getHeightAt(bx, bz);
 		CubicChunk current = Client.world.getChunk(cx, cy, cz, false);
-		int x_top = XolioWindow.frameH - 16;
+		int x_top = GameWindowOpenGL.windowHeight - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, "View distance : " + FastConfig.viewDistance + " Vertices(N):" + formatBigAssNumber(worldRenderer.renderedVertices + "") + " Chunks in view : "
-				+ formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :" + Client.world.getParticlesHolder().count() + " #FF0000FPS : " + XolioWindow.getFPS() + " avg: " + Math.floor(10000.0/XolioWindow.getFPS()) / 10.0, BitmapFont.SMALLFONTS);
+				+ formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :" + Client.world.getParticlesHolder().count() + " #FF0000FPS : " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0/GameWindowOpenGL.getFPS()) / 10.0, BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Timings : " + debugInfo, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + Client.world.chunksData.size(), BitmapFont.SMALLFONTS);

@@ -7,7 +7,7 @@ import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.font.TrueTypeFont;
@@ -32,8 +32,8 @@ public class MessageBoxOverlay extends Overlay
 	@Override
 	public void drawToScreen(int x, int y, int w, int h)
 	{
-		ObjectRenderer.renderTexturedRectAlpha(XolioWindow.frameW/2, XolioWindow.frameH / 2 + 256, 1024, 1024, "logo", 1f);
-		FontRenderer2.drawTextUsingSpecificFontRVBA(XolioWindow.frameW/2+192, XolioWindow.frameH / 2 + 160, 0, 48, "Indev " + VersionInfo.version, BitmapFont.SMALLFONTS, 1, 0.5f, 1, 1);
+		ObjectRenderer.renderTexturedRectAlpha(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight / 2 + 256, 1024, 1024, "logo", 1f);
+		FontRenderer2.drawTextUsingSpecificFontRVBA(GameWindowOpenGL.windowWidth/2+192, GameWindowOpenGL.windowHeight / 2 + 160, 0, 48, "Indev " + VersionInfo.version, BitmapFont.SMALLFONTS, 1, 0.5f, 1, 1);
 
 		Random rng = new Random();
 		rng.setSeed(System.currentTimeMillis() / 100);
@@ -42,9 +42,9 @@ public class MessageBoxOverlay extends Overlay
 		
 		//FontRenderer2.drawTextUsingSpecificFontRVBA(XolioWindow.frameW/2-dekal, XolioWindow.frameH - 256 , 0, 32, message, BitmapFont.SMALLFONTS, 1, 0.5f, 1, 1);
 
-		TrueTypeFont.arial12.drawStringWithShadow(XolioWindow.frameW/2-dekal*1.5f, XolioWindow.frameH / 2 + 64, message, 3f, 3f, new Vector4f(1,0.2f,0.2f,1));
+		TrueTypeFont.arial12.drawStringWithShadow(GameWindowOpenGL.windowWidth/2-dekal*1.5f, GameWindowOpenGL.windowHeight / 2 + 64, message, 3f, 3f, new Vector4f(1,0.2f,0.2f,1));
 		
-		okButton.setPosition(XolioWindow.frameW/2, XolioWindow.frameH / 2 - 32);
+		okButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight / 2 - 32);
 		okButton.draw();
 
 		if (okButton.clicked())

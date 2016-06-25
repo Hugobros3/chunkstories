@@ -7,7 +7,7 @@ import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.world.WorldLocalClient;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.gui.CorneredBoxDrawer;
 import io.xol.engine.gui.GuiElementsHandler;
@@ -53,7 +53,7 @@ public class LevelCreateOverlay extends Overlay
 		createOption.setPosition(width - 192, 96);
 		createOption.draw();
 
-		levelName.setPosition(x + 48, XolioWindow.frameH - 256);
+		levelName.setPosition(x + 48, GameWindowOpenGL.windowHeight - 256);
 		levelName.drawWithBackGround();
 		
 		if (cancelOption.clicked())

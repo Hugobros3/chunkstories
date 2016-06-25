@@ -4,12 +4,13 @@ package io.xol.chunkstories.core.entity;
 // http://chunkstories.xyz
 // http://xol.io
 
-import static org.lwjgl.opengl.GL11.*;
+import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.xol.engine.math.lalgb.Matrix4f;
+import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
@@ -81,7 +82,8 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		{
 			Matrix4f transform = anim.getTransformationForBone(b.name, i);
 			//TODO broken
-			//debugDraw(0.2f, 0.2f, 0.2f, (float) pos.x, (float) pos.y , (float) pos.z, transform);
+			Vector3d pos = this.getLocation();
+			debugDraw(0.2f, 0.2f, 0.2f, (float) pos.x, (float) pos.y , (float) pos.z, transform);
 		}
 	}
 	
@@ -117,7 +119,6 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		glColor4f(r, g, b, 1f);
 		glLineWidth(2);
 		glDisable(GL_CULL_FACE);
-		glDepthFunc(GL_LEQUAL);
 		// glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		// glBlendFunc(GL_ONE_MINUS_SRC_COLOR,GL_ONE);

@@ -2,7 +2,7 @@ package io.xol.chunkstories.gui;
 
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.gui.GuiElementsHandler;
@@ -19,7 +19,7 @@ public class ConnectScene extends Scene
 	Button cancelButton = new Button(0, 0, 128, 32, ("Cancel"), BitmapFont.SMALLFONTS, 1);
 	String serverName = "";
 
-	public ConnectScene(XolioWindow XolioWindow, String ip, int port)
+	public ConnectScene(GameWindowOpenGL XolioWindow, String ip, int port)
 	{
 		super(XolioWindow);
 		Client.connection = new ClientToServerConnection(ip, port);
@@ -39,7 +39,7 @@ public class ConnectScene extends Scene
 		// ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2,
 		// XolioWindow.frameH / 2 + 180, 512, 512, "logo");
 
-		cancelButton.setPosition(XolioWindow.frameW / 2, XolioWindow.frameH / 2 - 80);
+		cancelButton.setPosition(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2 - 80);
 		cancelButton.draw();
 		
 		if(!authK && Client.connection.authentificated)
@@ -58,9 +58,9 @@ public class ConnectScene extends Scene
 			this.eng.changeScene(new GameplayScene(eng, true));
 		}
 		float c = 1.0f;
-		drawCenteredText("Connecting to " + serverName, XolioWindow.frameH / 2, 64, c, c, c, 1f);
+		drawCenteredText("Connecting to " + serverName, GameWindowOpenGL.windowHeight / 2, 64, c, c, c, 1f);
 		c = 0.5f;
-		drawCenteredText(message, XolioWindow.frameH / 2 - 32, 32, c, c, c, 1f);
+		drawCenteredText(message, GameWindowOpenGL.windowHeight / 2 - 32, 32, c, c, c, 1f);
 		FontRenderer2.drawTextUsingSpecificFontRVBA(12, 12, 0, 32, "Copyright 2015 XolioWare Interactive", BitmapFont.SMALLFONTS, 1f, 0.3f, 0.3f, 0.3f);
 		super.update();
 		if (cancelButton.clicked())
@@ -71,7 +71,7 @@ public class ConnectScene extends Scene
 
 	void drawCenteredText(String t, float height, int basesize, float r, float v, float b, float a)
 	{
-		FontRenderer2.drawTextUsingSpecificFontRVBA(XolioWindow.frameW / 2 - FontRenderer2.getTextLengthUsingFont(basesize, t, BitmapFont.SMALLFONTS) / 2, height, 0, basesize, t, BitmapFont.SMALLFONTS, a, r, v, b);
+		FontRenderer2.drawTextUsingSpecificFontRVBA(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(basesize, t, BitmapFont.SMALLFONTS) / 2, height, 0, basesize, t, BitmapFont.SMALLFONTS, a, r, v, b);
 	}
 
 	void cancel()

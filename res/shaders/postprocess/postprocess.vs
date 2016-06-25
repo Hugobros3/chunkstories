@@ -1,3 +1,4 @@
+#version 120
 attribute vec2 vertexIn;
 varying vec2 f_texcoord;
 varying vec4 texcoord;

@@ -15,7 +15,6 @@ import org.lwjgl.LWJGLException;
 
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
@@ -32,35 +31,64 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.opengl.PixelFormat;
 
-public class XolioWindow
+public class GameWindowOpenGL
 {
 	public RenderingContext renderingContext;
-	Scene currentScene = null;
+	private Scene currentScene = null;
 
-	public String name;
-	public static int frameW = 1024;
-	public static int frameH = 640;
+	public String windowName;
+	public static int windowWidth = 1024;
+	public static int windowHeight = 640;
 	public static boolean resized = false;
 	public static boolean forceResize = false;
 
 	public static int targetFPS = 60;
 
-	public static String engineVersion = "2.2a";
+	public static String engineVersion = "2.2b";
 
-	public static XolioWindow instance;
+	public static GameWindowOpenGL instance;
 
 	static boolean closeRequest = false;
 
 	static String[] modes;
 
-	public XolioWindow(String name, int fw, int fh)
+	public GameWindowOpenGL(String name, int width, int height)
 	{
-		if (fw != -1)
-			frameW = fw;
-		if (fh != -1)
-			frameH = fh;
-		this.name = name;
+		if (width != -1)
+			windowWidth = width;
+		if (height != -1)
+			windowHeight = height;
+		this.windowName = name;
 		instance = this;
+	}
+
+	public void createContext()
+	{
+		System.out.println("Initializing XolioWare Interactive 3D Engine v" + engineVersion + " [game:" + windowName + ", width:" + windowWidth + ", height:" + windowHeight + "]");
+		try
+		{
+			computeDisplayModes();
+
+			Display.setDisplayMode(new DisplayMode(windowWidth, windowHeight));
+			Display.setTitle(windowName);
+			Display.setResizable(true);
+			PixelFormat pixelFormat = new PixelFormat();
+			Display.create(pixelFormat);
+			
+			systemInfo();
+			glInfo();
+			switchResolution();
+
+			Keyboard.enableRepeatEvents(true);
+			
+			renderingContext = new RenderingContext(this);
+		}
+		catch (Exception e)
+		{
+			System.out.println("A fatal error occured ! If you see the dev, show him this message !");
+			e.printStackTrace();
+			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
+		}
 	}
 
 	private void systemInfo()
@@ -71,12 +99,12 @@ public class XolioWindow
 		ChunkStoriesLogger.getInstance().log("Trying cpu detection : "+CPUModelDetection.detectModel());
 		long allocatedRam = Runtime.getRuntime().maxMemory();
 		ChunkStoriesLogger.getInstance().log("Allocated ram : "+allocatedRam);
-		if(allocatedRam < 900 * 1000 *1000L)
+		if(allocatedRam < 1073741824L)
 		{
+			//Warn user if he gave the game too few ram
 			ChunkStoriesLogger.getInstance().log("Less than 1Gb of ram detected");
 			JOptionPane.showMessageDialog(null, "Not enought ram, we will offer NO support for crashes and issues when launching the game with less than 1Gb of ram allocated to it."
 					+ "\n Use the official launcher to launch the game properly, or add -Xmx1G to the java command.");
-			//Runtime.getRuntime().exit(0);
 		}
 	}
 	
@@ -115,35 +143,6 @@ public class XolioWindow
 
 	}
 
-	public void createContext()
-	{
-		System.out.println("Initializing XolioWare Interactive 3D Engine v" + engineVersion + " [Game:" + name + ",Width:" + frameW + ",Height:" + frameH + "]");
-		try
-		{
-			computeDisplayModes();
-
-			Display.setDisplayMode(new DisplayMode(frameW, frameH));
-			Display.setTitle(name);
-			Display.setResizable(true);
-			PixelFormat pixelFormat = new PixelFormat();
-			Display.create(pixelFormat);
-			
-			systemInfo();
-			glInfo();
-			switchResolution();
-
-			Keyboard.enableRepeatEvents(true);
-			
-			renderingContext = new RenderingContext(this);
-		}
-		catch (Exception e)
-		{
-			System.out.println("A fatal error occured ! If you see the dev, show him this message !");
-			e.printStackTrace();
-			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
-		}
-	}
-
 	public void run()
 	{
 		try
@@ -159,8 +158,8 @@ public class XolioWindow
 				{
 					if (forceResize)
 						forceResize = false;
-					XolioWindow.frameW = Display.getWidth();
-					XolioWindow.frameH = Display.getHeight();
+					GameWindowOpenGL.windowWidth = Display.getWidth();
+					GameWindowOpenGL.windowHeight = Display.getHeight();
 
 					glViewport(0, 0, Display.getWidth(), Display.getHeight());
 
@@ -179,7 +178,7 @@ public class XolioWindow
 				if (currentScene != null)
 				{
 					// update inputs first
-					InputAbstractor.update(this);
+					InputAbstractor.update(this, currentScene);
 					// then do the game logic
 					currentScene.update();
 				}
@@ -191,13 +190,14 @@ public class XolioWindow
 					long sleep = milisToWait - timeTookLastTime;
 					if (sleep > milisToWait)
 						sleep = milisToWait;
-					if (sleep > 0)
-						Thread.sleep(sleep);
-					glFinish();
+					
+					//if (sleep > 0)
+					//	Thread.sleep(sleep);
+					
+					sync(targetFPS);
+					
+					//glFinish();
 					long timeTook = System.currentTimeMillis() - time;
-					// System.out.println("Finishing frame took "+timeTook+"ms,
-					// last time it was "+timeTookLastTime+"ms slept "+sleep+"ms
-					// target fps:"+targetFPS);
 					timeTookLastTime = timeTook;
 				}
 				// System.out.println("target fps:"+targetFPS);
@@ -205,6 +205,8 @@ public class XolioWindow
 				// sync(targetFPS);
 				if(Client.getConfig().getBooleanProp("frametimeGraph", false))
 					FrametimeRenderer.draw(renderingContext);
+				
+				//Update the screen
 				Display.update();
 			}
 			System.out.println("Copyright 2015 XolioWare Interactive");
@@ -335,7 +337,7 @@ public class XolioWindow
 				int h = Integer.parseInt(str[1]);
 
 				//String newDM = Client.getConfig().getProp("fullScreenResolution", "800x600");
-				if (Display.isFullscreen() && frameW == w && frameH == h)
+				if (Display.isFullscreen() && windowWidth == w && windowHeight == h)
 					return;
 				//if (newDM.equals(currentDM))
 				//	return;
@@ -360,9 +362,9 @@ public class XolioWindow
 					}
 					catch (LWJGLException e)
 					{
-						frameW = 800;
-						frameH = 600;
-						current = new DisplayMode(frameW, frameH);
+						windowWidth = 800;
+						windowHeight = 600;
+						current = new DisplayMode(windowWidth, windowHeight);
 						ChunkStoriesLogger.getInstance().warning("Couldnt set display to " + displayMode + "reverting to default resolution");
 						Client.getConfig().setProp("fullScreenResolution", current.getWidth() + "x" + current.getHeight());
 						Client.getConfig().save();
@@ -375,7 +377,7 @@ public class XolioWindow
 						}
 					}
 				}
-				XolioWindow.forceResize = true;
+				GameWindowOpenGL.forceResize = true;
 			}
 			else
 			{
@@ -384,7 +386,7 @@ public class XolioWindow
 					Display.setFullscreen(false);
 					Display.setLocation(0, 0);
 					Display.setDisplayMode(Display.getDesktopDisplayMode());
-					XolioWindow.forceResize = true;
+					GameWindowOpenGL.forceResize = true;
 				}
 			}
 		}
@@ -401,17 +403,12 @@ public class XolioWindow
 	public static void tick()
 	{
 		framesSinceLS++;
-		//lastTimeMS = 0;
 		if (lastTimeMS + 1000 < System.currentTimeMillis())
 		{
 			lastFPS = framesSinceLS;
 			lastTimeMS = System.currentTimeMillis();
 			framesSinceLS = 0;
 		}
-		/*float frameTime = (float)(System.nanoTime() - lastTimeMS);
-		System.out.println(frameTime / 1000000f);
-		lastFPS = (int) (1000000000f / frameTime);
-		lastTimeMS = System.nanoTime();*/
 	}
 
 	public static void setTargetFPS(int target)
@@ -453,7 +450,7 @@ public class XolioWindow
 		}
 	}
 
-	public static XolioWindow getInstance()
+	public static GameWindowOpenGL getInstance()
 	{
 		return instance;
 	}

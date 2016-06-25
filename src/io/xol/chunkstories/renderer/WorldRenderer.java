@@ -31,7 +31,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.concurrency.PBOPacker;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.MatrixHelper;
@@ -108,21 +108,21 @@ public class WorldRenderer
 	private RenderingContext renderingContext;
 
 	// Main Rendertarget (HDR)
-	private GBufferTexture shadedBuffer = new GBufferTexture(RGB_HDR, XolioWindow.frameW, XolioWindow.frameH);
+	private GBufferTexture shadedBuffer = new GBufferTexture(RGB_HDR, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private int illDownIndex = 0;
 	private int illDownBuffers = 1;
 	private long lastIllCalc = 8;
 	private PBOPacker illuminationDownloader[] = new PBOPacker[illDownBuffers];
 	
 	// G-Buffers
-	private GBufferTexture albedoBuffer = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
-	private GBufferTexture zBuffer = new GBufferTexture(DEPTH_RENDERBUFFER, XolioWindow.frameW, XolioWindow.frameH);
-	private GBufferTexture normalBuffer = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
-	private GBufferTexture materialBuffer = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
+	private GBufferTexture albedoBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture zBuffer = new GBufferTexture(DEPTH_RENDERBUFFER, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture normalBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture materialBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	// Bloom texture
-	private GBufferTexture bloomBuffer = new GBufferTexture(RGB_HDR, XolioWindow.frameW / 2, XolioWindow.frameH / 2);
-	private GBufferTexture ssaoBuffer = new GBufferTexture(RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
+	private GBufferTexture bloomBuffer = new GBufferTexture(RGB_HDR, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
+	private GBufferTexture ssaoBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	// FBOs
 	private FBO fboGBuffers = new FBO(zBuffer, albedoBuffer, normalBuffer, materialBuffer);
@@ -131,7 +131,7 @@ public class WorldRenderer
 	private FBO fboBloom = new FBO(null, bloomBuffer);
 	private FBO fboSSAO = new FBO(null, ssaoBuffer);
 
-	private GBufferTexture blurIntermediateBuffer = new GBufferTexture(RGB_HDR, XolioWindow.frameW / 2, XolioWindow.frameH / 2);
+	private GBufferTexture blurIntermediateBuffer = new GBufferTexture(RGB_HDR, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
 	private FBO fboBlur = new FBO(null, blurIntermediateBuffer);
 
 	// 64x64 texture used to cull distant mesh
@@ -211,8 +211,8 @@ public class WorldRenderer
 		sizeInChunks = world.getSizeInChunks();
 		resizeShadowMaps();
 
-		renderingContext = XolioWindow.getInstance().getRenderingContext();
-		XolioWindow.instance.renderingContext = renderingContext;
+		renderingContext = GameWindowOpenGL.getInstance().getRenderingContext();
+		GameWindowOpenGL.instance.renderingContext = renderingContext;
 
 		//Pre-load shaders
 		opaqueBlocksShader = ShadersLibrary.getShaderProgram("blocks_opaque");

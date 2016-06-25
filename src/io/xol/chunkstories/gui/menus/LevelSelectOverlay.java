@@ -15,7 +15,7 @@ import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.WorldLocalClient;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.gui.GuiElementsHandler;
@@ -66,9 +66,9 @@ public class LevelSelectOverlay extends Overlay
 		if (scroll < 0)
 			scroll = 0;
 
-		int posY = XolioWindow.frameH - 128;
+		int posY = GameWindowOpenGL.windowHeight - 128;
 		FontRenderer2.drawTextUsingSpecificFont(64, posY + 64, 0, 48, "Select a level ...", BitmapFont.SMALLFONTS);
-		int remainingSpace = (int)Math.floor(XolioWindow.frameH/96 - 2);
+		int remainingSpace = (int)Math.floor(GameWindowOpenGL.windowHeight/96 - 2);
 		while(scroll + remainingSpace >= worldsButtons.size())
 			scroll--;
 		
@@ -85,7 +85,7 @@ public class LevelSelectOverlay extends Overlay
 				Client.world.startLogic();
 				this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 			}
-			int maxWidth = XolioWindow.frameW - 64 * 2;
+			int maxWidth = GameWindowOpenGL.windowWidth - 64 * 2;
 			worldButton.width = maxWidth;
 			worldButton.setPosition(64 + worldButton.width / 2, posY);
 			worldButton.draw();
@@ -95,7 +95,7 @@ public class LevelSelectOverlay extends Overlay
 		backOption.setPosition(x + 192, 48);
 		backOption.draw();
 		
-		newWorldOption.setPosition(XolioWindow.frameW - 192, 48);
+		newWorldOption.setPosition(GameWindowOpenGL.windowWidth - 192, 48);
 		newWorldOption.draw();
 
 		if (backOption.clicked())

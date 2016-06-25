@@ -3,6 +3,8 @@ package io.xol.engine.base;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import io.xol.engine.scene.Scene;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -29,7 +31,7 @@ public class InputAbstractor
 	 * Polls input and call input functions
 	 * @param engine
 	 */
-	public static void update(XolioWindow engine)
+	public static void update(GameWindowOpenGL engine, Scene scene)
 	{
 		// Keyboard events handling
 		while (Keyboard.next())
@@ -38,11 +40,11 @@ public class InputAbstractor
 			if (Keyboard.getEventKeyState())
 			{
 				engine.handleSpecialKey(k);
-				engine.currentScene.onKeyPress(k);
+				scene.onKeyPress(k);
 			}
 			else
 			{
-				engine.currentScene.onKeyRelease(k);
+				scene.onKeyRelease(k);
 			}
 		}
 		// Mouse events
@@ -51,14 +53,14 @@ public class InputAbstractor
 			if (Mouse.getEventButtonState())
 			{
 				//Client.getSoundManager().playSoundEffect("sfx/shoot.ogg", 0, 0, 0, 1, 1);
-				engine.currentScene.onClick(Mouse.getX(), Mouse.getY(), Mouse.getEventButton());
+				scene.onClick(Mouse.getX(), Mouse.getY(), Mouse.getEventButton());
 			}
 		}
 		// Mouse scroll
 		int dx = Mouse.getDWheel();
 		if (dx != 0)
 		{
-			engine.currentScene.onScroll(dx);
+			scene.onScroll(dx);
 		}
 
 	}

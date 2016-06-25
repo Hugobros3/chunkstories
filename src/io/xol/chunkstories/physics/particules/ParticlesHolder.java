@@ -1,7 +1,7 @@
 package io.xol.chunkstories.physics.particules;
 
 import io.xol.chunkstories.physics.particules.Particle.Type;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
@@ -132,7 +132,7 @@ public class ParticlesHolder
 	public int render(RenderingContext renderingContext)
 	{
 		int totalDrawn = 0;
-		XolioWindow.getInstance().getRenderingContext().setCurrentShader(particlesShader);
+		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(particlesShader);
 		//particlesShader.use(true);
 		// TexturesHandler.bindTexture("./res/textures/smoke.png");
 		//glEnable(GL_BLEND);
@@ -142,7 +142,7 @@ public class ParticlesHolder
 		glEnable(GL_ALPHA_TEST);
 		glAlphaFunc(GL_GREATER, 0.0f);
 
-		particlesShader.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
+		particlesShader.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 		renderingContext.getCamera().setupShader(particlesShader);
 		// glDisable(GL_DEPTH_TEST);

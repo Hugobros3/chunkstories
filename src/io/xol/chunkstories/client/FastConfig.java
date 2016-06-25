@@ -1,6 +1,6 @@
 package io.xol.chunkstories.client;
 
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,7 @@ public class FastConfig
 		mouseSensitivity = Client.getConfig().getFloatProp("mouseSensitivity", 1f);
 		fov = Client.getConfig().getFloatProp("fov", 45f);
 
-		XolioWindow.setTargetFPS(Client.getConfig().getIntProp("framerate", -1));
+		GameWindowOpenGL.setTargetFPS(Client.getConfig().getIntProp("framerate", -1));
 	}
 
 	public static float mouseSensitivity = 1f;

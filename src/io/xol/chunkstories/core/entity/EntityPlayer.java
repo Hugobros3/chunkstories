@@ -41,7 +41,7 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.ModelLibrary;
@@ -131,8 +131,8 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 		if (lastPX != -1f)
 		{
-			rotH += (cPX - XolioWindow.frameW / 2) / 3f * FastConfig.mouseSensitivity;
-			rotV -= (cPY - XolioWindow.frameH / 2) / 3f * FastConfig.mouseSensitivity;
+			rotH += (cPX - GameWindowOpenGL.windowWidth / 2) / 3f * FastConfig.mouseSensitivity;
+			rotV -= (cPY - GameWindowOpenGL.windowHeight / 2) / 3f * FastConfig.mouseSensitivity;
 		}
 		if (rotV > 90)
 			rotV = 90;
@@ -143,7 +143,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		lastPY = cPY;
 
 		this.getEntityRotationComponent().setRotation(rotH, rotV);
-		Mouse.setCursorPosition(XolioWindow.frameW / 2, XolioWindow.frameH / 2);
+		Mouse.setCursorPosition(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
 	}
 
 	// Server-side updating

@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.font.TrueTypeFont;
@@ -52,21 +52,21 @@ public class LogPolicyAsk extends Overlay
 	@Override
 	public void drawToScreen(int positionStartX, int positionStartY, int width, int height)
 	{
-		ObjectRenderer.renderColoredRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2, XolioWindow.frameW, XolioWindow.frameH, 0, "000000", 0.5f);
+		ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
 		
-		FontRenderer2.drawTextUsingSpecificFont(30, XolioWindow.frameH-64, 0, 64, "Chunk Stories indev log policy", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(30, GameWindowOpenGL.windowHeight-64, 0, 64, "Chunk Stories indev log policy", BitmapFont.SMALLFONTS);
 		
 		int linesTaken = TrueTypeFont.arial12.getLinesHeight(message, (width-128) / 2 );
 		float scaling = 2;
 		if(linesTaken*32 > height)
 			scaling  = 1f;
 		
-		TrueTypeFont.arial12.drawString(30, XolioWindow.frameH-128, message, scaling, width-128, scaling);
+		TrueTypeFont.arial12.drawString(30, GameWindowOpenGL.windowHeight-128, message, scaling, width-128, scaling);
 		
 		//FontRenderer2.drawTextUsingSpecificFont(30, 100, 0, 32, message, BitmapFont.SMALLFONTS);
 		//FontRenderer2.setLengthCutoff(false, width - 128);
 		
-		acceptButton.setPosition(XolioWindow.frameW/2 - 256, XolioWindow.frameH / 4 - 32);
+		acceptButton.setPosition(GameWindowOpenGL.windowWidth/2 - 256, GameWindowOpenGL.windowHeight / 4 - 32);
 		acceptButton.draw();
 
 		if (acceptButton.clicked())
@@ -76,7 +76,7 @@ public class LogPolicyAsk extends Overlay
 			Client.clientConfig.save();
 		}
 		
-		denyButton.setPosition(XolioWindow.frameW/2 + 256, XolioWindow.frameH / 4 - 32);
+		denyButton.setPosition(GameWindowOpenGL.windowWidth/2 + 256, GameWindowOpenGL.windowHeight / 4 - 32);
 		denyButton.draw();
 
 		if (denyButton.clicked())

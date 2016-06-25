@@ -11,7 +11,7 @@ import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 //import io.xol.engine.base.font.TrueTypeFont;
@@ -44,8 +44,8 @@ public class MainMenuOverlay extends Overlay
 			this.mainScene.changeOverlay(new LogPolicyAsk(mainScene, this));
 		}
 		
-		ObjectRenderer.renderTexturedRectAlpha(384 - 32 - 4, XolioWindow.frameH - 192, 768, 768, "logo", 1f);
-		FontRenderer2.drawTextUsingSpecificFontRVBA(384 + 192, XolioWindow.frameH - 256 - 16, 0, 48, "Indev " + VersionInfo.version, BitmapFont.SMALLFONTS, 1, 0.5f, 1, 1);
+		ObjectRenderer.renderTexturedRectAlpha(384 - 32 - 4, GameWindowOpenGL.windowHeight - 192, 768, 768, "logo", 1f);
+		FontRenderer2.drawTextUsingSpecificFontRVBA(384 + 192, GameWindowOpenGL.windowHeight - 256 - 16, 0, 48, "Indev " + VersionInfo.version, BitmapFont.SMALLFONTS, 1, 0.5f, 1, 1);
 
 		Random rng = new Random();
 		rng.setSeed(System.currentTimeMillis() / 100);
@@ -54,16 +54,16 @@ public class MainMenuOverlay extends Overlay
 		for (int i = 0; i < 16; i++)
 			bytes[i] = (char) ((rng.nextInt() % 512));
 
-		singlePlayer.setPosition(x + 220, XolioWindow.frameH - 320);
+		singlePlayer.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320);
 		singlePlayer.draw();
 
-		multiPlayer.setPosition(x + 220, XolioWindow.frameH - 320 - 48);
+		multiPlayer.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320 - 48);
 		multiPlayer.draw();
 
-		optionsMenu.setPosition(x + 220, XolioWindow.frameH - 320 - 48 * 2);
+		optionsMenu.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320 - 48 * 2);
 		optionsMenu.draw();
 
-		exitGame.setPosition(x + 220, XolioWindow.frameH - 320 - 48 * 3);
+		exitGame.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320 - 48 * 3);
 		exitGame.draw();
 
 		if (singlePlayer.clicked())
@@ -76,7 +76,7 @@ public class MainMenuOverlay extends Overlay
 			this.mainScene.eng.close();
 
 		String version = "ChunkStories " + VersionInfo.version + " - (c) 2016 XolioWare Interactive";
-		FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW - 20 - FontRenderer2.getTextLengthUsingFont(32, version, BitmapFont.SMALLFONTS), 10, 0, 32, version, BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth - 20 - FontRenderer2.getTextLengthUsingFont(32, version, BitmapFont.SMALLFONTS), 10, 0, 32, version, BitmapFont.SMALLFONTS);
 	}
 
 	@Override

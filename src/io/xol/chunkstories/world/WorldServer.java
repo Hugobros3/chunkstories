@@ -182,17 +182,17 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		}
 	}
 
-	@Override
-	public void setDataAt(int x, int y, int z, int i, boolean load)
+	protected void actuallySetsDataAt(int x, int y, int z, int newData, boolean load, Entity entity)
 	{
+		super.actuallySetsDataAt(x, y, z, newData, load, entity);
+		
 		int blocksViewDistance = 256;
 		int sizeInBlocks = getWorldInfo().getSize().sizeInChunks * 32;
-		super.setDataAt(x, y, z, i, load);
 		PacketVoxelUpdate packet = new PacketVoxelUpdate(false);
 		packet.x = x;
 		packet.y = y;
 		packet.z = z;
-		packet.data = i;
+		packet.data = newData;
 		for (ServerClient client : Server.getInstance().handler.clients)
 		{
 			if (client.isAuthentificated())

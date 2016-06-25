@@ -500,7 +500,7 @@ public abstract class WorldImplementation implements World
 		actuallySetsDataAt(x, y, z, data, false, entity);
 	}
 	
-	private void actuallySetsDataAt(int x, int y, int z, int newData, boolean load, Entity entity)
+	protected void actuallySetsDataAt(int x, int y, int z, int newData, boolean load, Entity entity)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);

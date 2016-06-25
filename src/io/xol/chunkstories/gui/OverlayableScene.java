@@ -1,7 +1,7 @@
 package io.xol.chunkstories.gui;
 
 import io.xol.chunkstories.api.gui.Overlay;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.scene.Scene;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -10,7 +10,7 @@ import io.xol.engine.scene.Scene;
 
 public abstract class OverlayableScene extends Scene
 {
-	public OverlayableScene(XolioWindow XolioWindow)
+	public OverlayableScene(GameWindowOpenGL XolioWindow)
 	{
 		super(XolioWindow);
 	}

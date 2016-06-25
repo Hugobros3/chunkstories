@@ -20,7 +20,7 @@ import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
@@ -51,7 +51,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
 		
-		program.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
+		program.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		program.setUniformFloat2("dekal", screenPositionX + pile.getItem().getSlotsWidth() * slotSize / 2 , screenPositionY + pile.getItem().getSlotsHeight() * slotSize / 2);
 		program.setUniformFloat("scaling", slotSize / 1.65f);
 		transformation.setIdentity();

@@ -21,7 +21,7 @@ import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBinds;
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.gui.GuiElementsHandler;
@@ -73,14 +73,14 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 			login();
 
 		// title
-		FontRenderer2.drawTextUsingSpecificFontRVBA(32, XolioWindow.frameH - 32 * (1 + 1), 0, 32 + 1 * 16, "Select a server", BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
+		FontRenderer2.drawTextUsingSpecificFontRVBA(32, GameWindowOpenGL.windowHeight - 32 * (1 + 1), 0, 32 + 1 * 16, "Select a server", BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
 		// gui
-		int txtbox = XolioWindow.frameW - 50 - guiHandler.getButton(1).getWidth() * 2 - 75;
-		ipForm.setPosition(25, XolioWindow.frameH - 50 * (1 + 1));
+		int txtbox = GameWindowOpenGL.windowWidth - 50 - guiHandler.getButton(1).getWidth() * 2 - 75;
+		ipForm.setPosition(25, GameWindowOpenGL.windowHeight - 50 * (1 + 1));
 		ipForm.setMaxLength(txtbox);
 		ipForm.drawWithBackGround();
 		
-		guiHandler.getButton(1).setPosition(txtbox + 96 + 12, XolioWindow.frameH - 50 - 16 - 18);
+		guiHandler.getButton(1).setPosition(txtbox + 96 + 12, GameWindowOpenGL.windowHeight - 50 - 16 - 18);
 		
 		guiHandler.getButton(1).draw();
 		if (guiHandler.getButton(1).clicked)
@@ -188,7 +188,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 
 	void drawRightedText(String t, float decx, float height, int basesize, float r, float v, float b, float a)
 	{
-		FontRenderer2.drawTextUsingSpecificFontRVBA(XolioWindow.frameW - decx - FontRenderer2.getTextLengthUsingFont(basesize, t, BitmapFont.SMALLFONTS), height, 0, basesize, t, BitmapFont.SMALLFONTS, a, r, v, b);
+		FontRenderer2.drawTextUsingSpecificFontRVBA(GameWindowOpenGL.windowWidth - decx - FontRenderer2.getTextLengthUsingFont(basesize, t, BitmapFont.SMALLFONTS), height, 0, basesize, t, BitmapFont.SMALLFONTS, a, r, v, b);
 	}
 
 	// Load-save server's list
@@ -236,7 +236,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 	{
 		public void render()
 		{
-			int posy = XolioWindow.frameH - 100 * (1 + 1);
+			int posy = GameWindowOpenGL.windowHeight - 100 * (1 + 1);
 			int i = 0;
 			boolean focus;
 			for (ServerData sd : servers)
@@ -244,7 +244,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 				focus = i == currentServer;
 				//focus = false;
 				posy +=  - i * 70;
-				if(Mouse.getX() > 20 && Mouse.getX() < XolioWindow.frameW - 52
+				if(Mouse.getX() > 20 && Mouse.getX() < GameWindowOpenGL.windowWidth - 52
 						&& Mouse.getY() > posy - 32 && Mouse.getY() < posy + 32)
 				{
 					focus = true;
@@ -256,13 +256,13 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		
 		public ServerData click()
 		{
-			int posy = XolioWindow.frameH - 100 * (1 + 1);
+			int posy = GameWindowOpenGL.windowHeight - 100 * (1 + 1);
 			int i = 0;
 			for (ServerData sd : servers)
 			{
 				//focus = false;
 				posy +=  - i * 70;
-				if(Mouse.getX() > 20 && Mouse.getX() < XolioWindow.frameW - 52
+				if(Mouse.getX() > 20 && Mouse.getX() < GameWindowOpenGL.windowWidth - 52
 						&& Mouse.getY() > posy - 32 && Mouse.getY() < posy + 32)
 				{
 					return sd;
@@ -299,7 +299,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		{
 			int offset = focus ? 32 : 0;
 			ObjectRenderer.renderTexturedRect(52, posy, 64, 64, 0, 0 + offset, 31, 32 + offset, 64f, "gui/server_data");
-			int width = XolioWindow.frameW - 52 - 32 - 64;
+			int width = GameWindowOpenGL.windowWidth - 52 - 32 - 64;
 			ObjectRenderer.renderTexturedRect(36 + width / 2, posy, width, 64, 16, 0 + offset, 31, 32 + offset, 64f, "gui/server_data");
 			ObjectRenderer.renderTexturedRect(width + 64, posy, 33 * 2, 64, 31, 0 + offset, 64, 32 + offset, 64f, "gui/server_data");
 			// text

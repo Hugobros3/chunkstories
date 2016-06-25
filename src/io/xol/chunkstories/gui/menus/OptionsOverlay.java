@@ -15,7 +15,7 @@ import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBindImplementation;
 import io.xol.chunkstories.input.KeyBinds;
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.gui.CorneredBoxDrawer;
@@ -311,7 +311,7 @@ public class OptionsOverlay extends Overlay
 					public void run()
 					{if (mainScene instanceof GameplayScene && shouldReload){
 						GameplayScene gps = ((GameplayScene) mainScene);
-						gps.worldRenderer.setupRenderSize(XolioWindow.frameW, XolioWindow.frameH);
+						gps.worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 					}
 					ShadersLibrary.getShaderProgram("postprocess").reload(FastConfig.getShaderConfig()); }
 				}),
@@ -319,7 +319,7 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{
-						XolioWindow.setTargetFPS(Client.getConfig().getIntProp("framerate", -1));
+						GameWindowOpenGL.setTargetFPS(Client.getConfig().getIntProp("framerate", -1));
 					}
 				}),
 				}));
@@ -327,7 +327,7 @@ public class OptionsOverlay extends Overlay
 		configTabs.add(new ConfigTab("Video", new ConfigButton[] {
 				new ConfigButtonScale("fov", 25f, 85f, 1f),
 				new ConfigButtonToggle("fullScreen"),
-				new ConfigButtonMultiChoice("fullScreenResolution", XolioWindow.getDisplayModes()),
+				new ConfigButtonMultiChoice("fullScreenResolution", GameWindowOpenGL.getDisplayModes()),
 				}));
 
 		
@@ -400,15 +400,15 @@ public class OptionsOverlay extends Overlay
 	{
 		int optionsPanelSize = 320 * 2 + 32 + 64;
 
-		ObjectRenderer.renderColoredRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2, XolioWindow.frameW, XolioWindow.frameH, 0, "000000", 0.5f);
-		ObjectRenderer.renderColoredRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2, optionsPanelSize, XolioWindow.frameH, 0, "000000", 0.25f);
+		ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
+		ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, optionsPanelSize, GameWindowOpenGL.windowHeight, 0, "000000", 0.25f);
 
 		int dekal = 0;
 		int i = 0;
 		for (Button b : tabsButtons)
 		{
 			dekal += b.getWidth() + 32 + 16;
-			b.setPosition(XolioWindow.frameW / 2 - optionsPanelSize / 2 + dekal, XolioWindow.frameH - 128);
+			b.setPosition(GameWindowOpenGL.windowWidth / 2 - optionsPanelSize / 2 + dekal, GameWindowOpenGL.windowHeight - 128);
 			b.draw();
 			dekal += b.getWidth();
 			if (b.clicked())
@@ -418,8 +418,8 @@ public class OptionsOverlay extends Overlay
 
 		ConfigTab currentConfigTab = configTabs.get(selectedConfigTab);
 		int a = 0, b = 0;
-		int startPosX = XolioWindow.frameW / 2 - optionsPanelSize / 2 + 160 + 32;
-		int startPosY = XolioWindow.frameH - 128 - 64;
+		int startPosX = GameWindowOpenGL.windowWidth / 2 - optionsPanelSize / 2 + 160 + 32;
+		int startPosY = GameWindowOpenGL.windowHeight - 128 - 64;
 		for (ConfigButton c : currentConfigTab.configButtons)
 		{
 			c.setPosition(startPosX + b * (320 + 32), startPosY - (float) Math.floor(a / 2) * 64);
@@ -437,9 +437,9 @@ public class OptionsOverlay extends Overlay
 			b = a % 2;
 		}
 
-		FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 - optionsPanelSize / 2 + 32, XolioWindow.frameH - 48 * 2, 0, 48, "Options menu", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - optionsPanelSize / 2 + 32, GameWindowOpenGL.windowHeight - 48 * 2, 0, 48, "Options menu", BitmapFont.SMALLFONTS);
 
-		exitButton.setPosition(XolioWindow.frameW / 2, 48);
+		exitButton.setPosition(GameWindowOpenGL.windowWidth / 2, 48);
 		exitButton.draw();
 
 		if(currentConfigTab.name.equals("Rendering") || currentConfigTab.name.equals("") || currentConfigTab.name.equals("Debug"))

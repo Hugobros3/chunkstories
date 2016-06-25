@@ -2,7 +2,7 @@ package io.xol.engine.model;
 
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.shaders.ShaderProgram;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -23,7 +23,7 @@ import io.xol.engine.math.lalgb.Matrix4f;
 
 public class RenderingContext
 {
-	XolioWindow engine;
+	GameWindowOpenGL engine;
 	private ShaderProgram renderingShader = null;
 	private Camera camera;
 
@@ -38,7 +38,7 @@ public class RenderingContext
 
 	private Set<Light> lights = new HashSet<Light>();
 
-	public RenderingContext(XolioWindow w)
+	public RenderingContext(GameWindowOpenGL w)
 	{
 		engine = w;
 		for (int i = 0; i < tempVBO.length; i++)

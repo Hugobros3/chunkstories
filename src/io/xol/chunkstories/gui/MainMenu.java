@@ -17,7 +17,7 @@ import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.FBO;
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
@@ -39,9 +39,9 @@ public class MainMenu extends OverlayableScene
 	String skyBox;
 	Camera cam = new Camera();
 
-	private GBufferTexture unblurred = new GBufferTexture(Texture.TextureType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
-	private GBufferTexture blurredH = new GBufferTexture(Texture.TextureType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
-	private GBufferTexture blurredV = new GBufferTexture(Texture.TextureType.RGBA_8BPP, XolioWindow.frameW, XolioWindow.frameH);
+	private GBufferTexture unblurred = new GBufferTexture(Texture.TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture blurredH = new GBufferTexture(Texture.TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture blurredV = new GBufferTexture(Texture.TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	private FBO unblurredFBO = new FBO(null, unblurred);
 	private FBO blurredHFBO = new FBO(null, blurredH);
@@ -49,7 +49,7 @@ public class MainMenu extends OverlayableScene
 
 	// private String splashText = getRandomSplashScreen();
 
-	public MainMenu(XolioWindow XolioWindow, boolean askForLogin)
+	public MainMenu(GameWindowOpenGL XolioWindow, boolean askForLogin)
 	{
 		super(XolioWindow);
 		menuSkyBox = ShadersLibrary.getShaderProgram("mainMenuSkyBox");
@@ -61,7 +61,7 @@ public class MainMenu extends OverlayableScene
 			currentOverlay = new LoginOverlay(this, null);
 	}
 
-	public MainMenu(XolioWindow eng, String string)
+	public MainMenu(GameWindowOpenGL eng, String string)
 	{
 		this(eng, false);
 		this.changeOverlay(new MessageBoxOverlay(this, currentOverlay, string));
@@ -113,9 +113,9 @@ public class MainMenu extends OverlayableScene
 	@Override
 	public void onResize()
 	{
-		unblurredFBO.resizeFBO(XolioWindow.frameW, XolioWindow.frameH);
-		blurredHFBO.resizeFBO(XolioWindow.frameW, XolioWindow.frameH);
-		blurredVFBO.resizeFBO(XolioWindow.frameW, XolioWindow.frameH);
+		unblurredFBO.resizeFBO(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		blurredHFBO.resizeFBO(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		blurredVFBO.resizeFBO(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	}
 
 	@Override
@@ -140,8 +140,8 @@ public class MainMenu extends OverlayableScene
 		
 		// Render this shit boy
 		unblurredFBO.bind();
-		cam.justSetup(XolioWindow.frameW, XolioWindow.frameH);
-		XolioWindow.getInstance().getRenderingContext().setCurrentShader(menuSkyBox);
+		cam.justSetup(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(menuSkyBox);
 		//menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);
 		menuSkyBox.setUniformSamplerCubemap(0, "skyBox", TexturesHandler.getCubemapID(skyBox));
@@ -151,42 +151,42 @@ public class MainMenu extends OverlayableScene
 		
 		// Blurring to H
 		blurredHFBO.bind();
-		XolioWindow.getInstance().getRenderingContext().setCurrentShader(blurH);
+		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blurH);
 		//blurH.use(true);
-		blurH.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
+		blurH.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		blurH.setUniformSampler(0, "inputTexture", unblurred.getID());
 		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 
 		for (int i = 0; i < 1; i++)
 		{
 			blurredVFBO.bind();
-			XolioWindow.getInstance().getRenderingContext().setCurrentShader(blurV);
+			GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blurV);
 			//blurV.use(true);
 			blurV.setUniformFloat("lookupScale", 1);
-			blurV.setUniformFloat2("screenSize", XolioWindow.frameW / 2, XolioWindow.frameH / 2);
+			blurV.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
 			blurV.setUniformSampler(0, "inputTexture", blurredH.getID());
 			ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 
 			blurredHFBO.bind();
-			XolioWindow.getInstance().getRenderingContext().setCurrentShader(blurH);
+			GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blurH);
 			//blurH.use(true);
-			blurH.setUniformFloat2("screenSize", XolioWindow.frameW / 2, XolioWindow.frameH / 2);
+			blurH.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
 			blurH.setUniformSampler(0, "inputTexture", blurredV.getID());
 			ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 		}
 
 		blurredVFBO.bind();
-		XolioWindow.getInstance().getRenderingContext().setCurrentShader(blurV);
+		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blurV);
 		//blurV.use(true);
-		blurV.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
+		blurV.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		blurV.setUniformSampler(0, "inputTexture", blurredH.getID());
 		ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 		//blurV.use(false);
 
 		FBO.unbind();
-		XolioWindow.getInstance().getRenderingContext().setCurrentShader(blit);
+		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blit);
 		//blit.use(true);
-		blit.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
+		blit.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		blit.setUniformSampler(0, "diffuseTexture", blurredV.getID());
 		ObjectRenderer.drawFSQuad(blit.getVertexAttributeLocation("vertexIn"));
 		//blit.use(false);
@@ -196,7 +196,7 @@ public class MainMenu extends OverlayableScene
 		// 512,XolioWindow.frameH,"gui/menufade", 1f);
 		// Place buttons
 
-		currentOverlay.drawToScreen(0, 0, XolioWindow.frameW, XolioWindow.frameH);
+		currentOverlay.drawToScreen(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 		// float time2 = ((System.currentTimeMillis()%5000)/100f);
 		// CorneredBoxDrawer.drawCorneredBoxTiled(550, 250,

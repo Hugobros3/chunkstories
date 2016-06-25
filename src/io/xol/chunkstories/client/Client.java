@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Iterator;
 
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.GuiDrawer;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.engine.misc.IconLoader;
@@ -41,7 +41,7 @@ public class Client implements ClientController, ClientInterface
 	public static boolean offline = false;
 
 	public static ClientToServerConnection connection;
-	public static XolioWindow windows;
+	public static GameWindowOpenGL windows;
 	public static WorldImplementation world;
 
 	public static String username = "Unknow";
@@ -63,19 +63,12 @@ public class Client implements ClientController, ClientInterface
 			if (s.equals("-oldgl"))
 			{
 				FastConfig.openGL3Capable = false;
-				FastConfig.doShadows = false;
 				System.out.println("Legacy OpenGL mode enabled");
 			}
 			else if (s.equals("-forceobsolete"))
 			{
 				FastConfig.ignoreObsoleteHardware = false;
 				System.out.println("Legacy OpenGL mode enabled");
-			}
-			else if (s.contains("-vd"))
-			{
-				int vd = Integer.parseInt(s.replace("-vd=", "")) * 2;
-				FastConfig.viewDistance = vd * 16;
-				System.out.println("View distance = " + Integer.parseInt(s.replace("-vd=", "")));
 			}
 			else if (s.contains("-mods"))
 			{
@@ -88,8 +81,16 @@ public class Client implements ClientController, ClientInterface
 			}
 			else
 			{
-				System.out.println("Comandline arguments : \n" + "-oldgl Disables OpenGL 3.0+ stuff\n" + "-forceobsolete Forces the game to run even if requirements aren't met\n"
-						+ "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n" + "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument");
+				System.out.println(
+						"Chunk Stories arguments : \n"
+						+ "-oldgl Disables OpenGL 3.0+ stuff\n"
+						+ "-forceobsolete Forces the game to run even if requirements aren't met\n"
+						+ "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n"
+						+ "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument"
+						+ ""
+						+ "");
+				
+				Runtime.getRuntime().exit(0);
 			}
 		}
 		// Check for folder
@@ -104,12 +105,15 @@ public class Client implements ClientController, ClientInterface
 		NativesLoader.load();
 		// Load last gamemode
 		GameData.reload();
+		//Initialize sound
 		soundManager = new ALSoundManager();
 		// Gl init
-		windows = new XolioWindow("Chunk Stories " + VersionInfo.version, -1, -1);
+		windows = new GameWindowOpenGL("Chunk Stories " + VersionInfo.version, -1, -1);
 		windows.createContext();
+		
+		GameData.reloadClientContent();
 		windows.changeScene(new MainMenu(windows, true));
-		KeyBinds.loadKeyBinds();
+		//Load 
 		pluginsManager = new PluginsManager(clientController);
 		windows.run();
 	}

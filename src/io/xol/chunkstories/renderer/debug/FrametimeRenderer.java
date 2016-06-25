@@ -9,7 +9,7 @@ import java.nio.FloatBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
@@ -46,7 +46,7 @@ public class FrametimeRenderer
 		renderingContext.setCurrentShader(overlayProgram);
 		//overlayProgram.use(true);
 		overlayProgram.setUniformFloat("currentTiming", lel);
-		overlayProgram.setUniformFloat2("screenSize", XolioWindow.frameW, XolioWindow.frameH);
+		overlayProgram.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		//System.out.println(XolioWindow.frameW);
 		int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");
 		//System.out.println("ntm"+vertexIn);

@@ -11,7 +11,7 @@ import org.lwjgl.BufferUtils;
 import io.xol.engine.math.lalgb.Vector2f;
 
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
@@ -132,7 +132,7 @@ public class WeatherEffectsRenderer
 		if(vboId == -1)
 			vboId = glGenBuffers();
 		ShaderProgram weatherShader = ShadersLibrary.getShaderProgram("weather");
-		XolioWindow.getInstance().getRenderingContext().setCurrentShader(weatherShader);
+		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(weatherShader);
 		//weatherShader.use(true);
 		if((System.currentTimeMillis() - lastRender) >= 1000 || Math.abs(viewX - lastX) > 10  || Math.abs(viewZ - lastZ) > 10)
 		{

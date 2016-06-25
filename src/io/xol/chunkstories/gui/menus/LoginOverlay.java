@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.gui.GuiElementsHandler;
@@ -52,40 +52,40 @@ public class LoginOverlay extends Overlay implements HttpRequester
 	{
 		if (can_next)
 			mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));
-		ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2, XolioWindow.frameH / 2 + 180, 512, 512, "logo");
+		ObjectRenderer.renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2 + 180, 512, 512, "logo");
 
-		guiHandler.getButton(2).setPosition(XolioWindow.frameW / 2 - 245 + 58, XolioWindow.frameH / 2 - 80);
+		guiHandler.getButton(2).setPosition(GameWindowOpenGL.windowWidth / 2 - 245 + 58, GameWindowOpenGL.windowHeight / 2 - 80);
 
-		guiHandler.getInputText(0).setPosition(XolioWindow.frameW / 2 - 250, XolioWindow.frameH / 2 + 40);
+		guiHandler.getInputText(0).setPosition(GameWindowOpenGL.windowWidth / 2 - 250, GameWindowOpenGL.windowHeight / 2 + 40);
 		guiHandler.getInputText(0).drawWithBackGround();
-		guiHandler.getInputText(1).setPosition(XolioWindow.frameW / 2 - 250, XolioWindow.frameH / 2 - 40);
+		guiHandler.getInputText(1).setPosition(GameWindowOpenGL.windowWidth / 2 - 250, GameWindowOpenGL.windowHeight / 2 - 40);
 		guiHandler.getInputText(1).drawWithBackGroundPassworded();
 
-		FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 - 250, XolioWindow.frameH / 2 + 80, 0, 32, "Username", BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 - 250, XolioWindow.frameH / 2 + 0, 0, 32, "Password", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 250, GameWindowOpenGL.windowHeight / 2 + 80, 0, 32, "Username", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 250, GameWindowOpenGL.windowHeight / 2 + 0, 0, 32, "Password", BitmapFont.SMALLFONTS);
 
 		if (logging_in)
 		{
-			FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 - 230, XolioWindow.frameH / 2 - 90, 0, 32, "Logging in...", BitmapFont.SMALLFONTS);
+			FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 230, GameWindowOpenGL.windowHeight / 2 - 90, 0, 32, "Logging in...", BitmapFont.SMALLFONTS);
 		}
 		else
 		{
 			int decal_lb = guiHandler.getButton(2).draw();
 
-			FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 - 245 - 58 + decal_lb, XolioWindow.frameH / 2 - 95, 0, 32, "Register at http://chunkstories.xyz", BitmapFont.SMALLFONTS);
+			FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 245 - 58 + decal_lb, GameWindowOpenGL.windowHeight / 2 - 95, 0, 32, "Register at http://chunkstories.xyz", BitmapFont.SMALLFONTS);
 			// FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 -
 			// 250, XolioWindow.frameH / 2 - 150 + 18, 0, 32,
 			// "You currently need hugobros3 to provide you an account.",
 			// BitmapFont.SMALLFONTS);
 			if (failed_login)
-				FontRenderer2.drawTextUsingSpecificFontRVBA(XolioWindow.frameW / 2 - 250, XolioWindow.frameH / 2 - 160, 0, 32, message, BitmapFont.SMALLFONTS, 1, 1, 0, 0);
+				FontRenderer2.drawTextUsingSpecificFontRVBA(GameWindowOpenGL.windowWidth / 2 - 250, GameWindowOpenGL.windowHeight / 2 - 160, 0, 32, message, BitmapFont.SMALLFONTS, 1, 1, 0, 0);
 		}
 
 		if (autologin)
 		{
 			int seconds = 10;
 			String autologin2 = "Autologin in "+(seconds-(System.currentTimeMillis()-startCounter)/1000)+" seconds...";
-			FontRenderer2.drawTextUsingSpecificFontRVBA(XolioWindow.frameW / 2 - FontRenderer2.getTextLengthUsingFont(32, autologin2, BitmapFont.SMALLFONTS) / 2, XolioWindow.frameH / 2 - 170, 0, 32, autologin2, BitmapFont.SMALLFONTS, 1, 0, 1, 0);
+			FontRenderer2.drawTextUsingSpecificFontRVBA(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(32, autologin2, BitmapFont.SMALLFONTS) / 2, GameWindowOpenGL.windowHeight / 2 - 170, 0, 32, autologin2, BitmapFont.SMALLFONTS, 1, 0, 1, 0);
 			if ((System.currentTimeMillis()-startCounter)/1000 > seconds)
 			{
 				connect();

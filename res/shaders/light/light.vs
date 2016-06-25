@@ -1,3 +1,4 @@
+#version 120
 varying vec4 f_texcoord;
 varying vec2 screenCoord;
  

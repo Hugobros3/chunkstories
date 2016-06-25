@@ -1,3 +1,4 @@
+#version 120
 //Entry attributes
 attribute vec3 vertexIn;
 

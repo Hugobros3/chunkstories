@@ -32,6 +32,8 @@ public class Cubemap
 		this.type = type;
 		
 		glId = glGenTextures();
+		glBindTexture(GL_TEXTURE_CUBE_MAP, glId);
+		
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		// Anti seam
@@ -126,6 +128,8 @@ public class Cubemap
 		{
 			face = i;
 			textureType = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
+
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, size, size, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer)null);
 		}
 		
 		@Override

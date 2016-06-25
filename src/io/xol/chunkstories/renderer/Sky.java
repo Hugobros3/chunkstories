@@ -1,7 +1,7 @@
 package io.xol.chunkstories.renderer;
 
 import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
@@ -64,7 +64,7 @@ public class Sky
 		renderingContext.setCurrentShader(skyShader);
 		
 		// TexturesHandler.bindTexture("res/textures/environement/sky.png");
-		XolioWindow.getInstance().getRenderingContext().setCurrentShader(skyShader);
+		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(skyShader);
 		//skyShader.use(true);
 		skyShader.setUniformSampler(9, "cloudsNoise", TexturesHandler.getTexture("environement/cloudsStatic.png"));
 		Texture glowTexture = TexturesHandler.getTexture("environement/glow.png");

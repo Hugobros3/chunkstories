@@ -1,3 +1,4 @@
+#version 120
 attribute vec2 vertexIn;
 attribute vec2 texCoordIn;
 

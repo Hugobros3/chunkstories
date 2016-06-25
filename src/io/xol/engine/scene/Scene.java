@@ -3,7 +3,7 @@ package io.xol.engine.scene;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.GuiDrawer;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -12,10 +12,10 @@ import io.xol.engine.gui.GuiDrawer;
 
 public class Scene
 {
-	public XolioWindow eng;
+	public GameWindowOpenGL eng;
 	public boolean resized = false;
 
-	public Scene(XolioWindow XolioWindow)
+	public Scene(GameWindowOpenGL XolioWindow)
 	{
 		eng = XolioWindow;
 	}
@@ -28,7 +28,7 @@ public class Scene
 		}
 
 		GuiDrawer.drawBuffer();
-		XolioWindow.tick();
+		GameWindowOpenGL.tick();
 	}
 
 	public void onResize()

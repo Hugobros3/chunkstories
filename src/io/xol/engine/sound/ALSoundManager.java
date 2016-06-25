@@ -78,21 +78,22 @@ public class ALSoundManager extends SoundManager
 				auxEffectsSlots = new SoundEffect[auxSlotsIds.size()];
 				ChunkStoriesLogger.getInstance().info(auxEffectsSlots.length+" avaible auxiliary effects slots.");
 			}
+			
+			Runtime.getRuntime().addShutdownHook(new Thread()
+			{
+				@Override
+				public void run()
+				{
+					AL.destroy();
+					System.out.println("OpenAL context successfully destroyed.");
+				}
+			});
 		}
 		catch (LWJGLException e)
 		{
 			System.out.println("Failed to start sound system !");
 			e.printStackTrace();
 		}
-		Runtime.getRuntime().addShutdownHook(new Thread()
-		{
-			@Override
-			public void run()
-			{
-				AL.destroy();
-				System.out.println("OpenAL context successfully destroyed.");
-			}
-		});
 	}
 
 	@Override

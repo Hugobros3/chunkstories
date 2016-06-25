@@ -12,7 +12,7 @@ import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldRemoteClient;
 import io.xol.chunkstories.world.WorldLocalClient;
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.math.lalgb.Vector4f;
 
@@ -49,7 +49,7 @@ public class InventoryOverlay extends Overlay
 		for (int i = 0; i < drawers.length; i++)
 		{
 			int thisWidth = inventories[i].getWidth();
-			drawers[i].drawInventoryCentered(mainScene.eng.renderingContext, XolioWindow.frameW / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, XolioWindow.frameH / 2, 2, false, 4 - i*4);
+			drawers[i].drawInventoryCentered(mainScene.eng.renderingContext, GameWindowOpenGL.windowWidth / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, GameWindowOpenGL.windowHeight / 2, 2, false, 4 - i*4);
 			widthAccumulation += 1 + thisWidth;
 		}
 

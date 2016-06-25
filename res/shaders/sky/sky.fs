@@ -1,3 +1,4 @@
+#version 120
 uniform sampler2D glowSampler;
 uniform float isRaining;
 uniform sampler2D colorSampler;

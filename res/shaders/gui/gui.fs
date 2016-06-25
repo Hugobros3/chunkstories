@@ -1,3 +1,4 @@
+#version 120
 //(c) 2015 XolioWare Interactive
 
 uniform sampler2D sampler;

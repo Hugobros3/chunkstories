@@ -1,6 +1,6 @@
 package io.xol.engine.gui;
 
-import io.xol.engine.base.XolioWindow;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.shaders.ShaderProgram;
 import io.xol.engine.shaders.ShadersLibrary;
 import io.xol.engine.textures.TexturesHandler;
@@ -42,14 +42,14 @@ public class GuiDrawer
 
 	public static void drawBoxWindowsSpace(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, int textureID, boolean alpha, boolean textured, Vector4f color)
 	{
-		drawBox((startX / XolioWindow.frameW) * 2 - 1, (startY / XolioWindow.frameH) * 2 - 1, (endX / XolioWindow.frameW) * 2 - 1, (endY / XolioWindow.frameH) * 2 - 1, textureStartX, textureStartY, textureEndX, textureEndY, textureID, alpha, textured, color);
+		drawBox((startX / GameWindowOpenGL.windowWidth) * 2 - 1, (startY / GameWindowOpenGL.windowHeight) * 2 - 1, (endX / GameWindowOpenGL.windowWidth) * 2 - 1, (endY / GameWindowOpenGL.windowHeight) * 2 - 1, textureStartX, textureStartY, textureEndX, textureEndY, textureID, alpha, textured, color);
 	}
 	
 	public static void drawBoxWindowsSpaceWithSize(float startX, float startY, float width, float height, float textureStartX, float textureStartY, float textureEndX, float textureEndY, int textureID, boolean alpha, boolean textured, Vector4f color)
 	{
 		float endX = startX + width;
 		float endY = startY + height;
-		drawBox((startX / XolioWindow.frameW) * 2 - 1, (startY / XolioWindow.frameH) * 2 - 1, (endX / XolioWindow.frameW) * 2 - 1, (endY / XolioWindow.frameH) * 2 - 1, textureStartX, textureStartY, textureEndX, textureEndY, textureID, alpha, textured, color);
+		drawBox((startX / GameWindowOpenGL.windowWidth) * 2 - 1, (startY / GameWindowOpenGL.windowHeight) * 2 - 1, (endX / GameWindowOpenGL.windowWidth) * 2 - 1, (endY / GameWindowOpenGL.windowHeight) * 2 - 1, textureStartX, textureStartY, textureEndX, textureEndY, textureID, alpha, textured, color);
 	}
 
 	public static void drawBox(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, int textureID, boolean alpha, boolean textured, Vector4f color)
@@ -146,13 +146,13 @@ public class GuiDrawer
 		glBufferData(GL_ARRAY_BUFFER, buf, GL_STREAM_DRAW);
 
 		buf.clear();
-		XolioWindow.getInstance().getRenderingContext().setCurrentShader(shader);
+		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(shader);
 		//shader.use(true);
 		// Get attributes locations
 		int vertexIn = shader.getVertexAttributeLocation("vertexIn");
 		int texCoordIn = shader.getVertexAttributeLocation("texCoordIn");
-		XolioWindow.getInstance().renderingContext.enableVertexAttribute(vertexIn);
-		XolioWindow.getInstance().renderingContext.enableVertexAttribute(texCoordIn);
+		GameWindowOpenGL.getInstance().renderingContext.enableVertexAttribute(vertexIn);
+		GameWindowOpenGL.getInstance().renderingContext.enableVertexAttribute(texCoordIn);
 		shader.setUniformFloat("useTexture", useTexture ? 1f : 0f);
 		if(currentColor != null)
 			shader.setUniformFloat4("color", currentColor);
@@ -182,8 +182,8 @@ public class GuiDrawer
 		glDrawArrays(GL_TRIANGLES, 0, elementsToDraw);
 
 		// Clean up
-		XolioWindow.getInstance().renderingContext.disableVertexAttribute(vertexIn);
-		XolioWindow.getInstance().renderingContext.disableVertexAttribute(texCoordIn);
+		GameWindowOpenGL.getInstance().renderingContext.disableVertexAttribute(vertexIn);
+		GameWindowOpenGL.getInstance().renderingContext.disableVertexAttribute(texCoordIn);
 		//shader.use(false);
 
 		elementsToDraw = 0;
