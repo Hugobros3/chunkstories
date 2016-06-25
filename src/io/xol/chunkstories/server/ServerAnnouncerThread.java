@@ -23,18 +23,18 @@ public class ServerAnnouncerThread extends Thread
 
 	public void init()
 	{
-		lolcode = Server.getInstance().serverConfig.getIntProp("lolcode", "0");
+		lolcode = Server.getInstance().getServerConfig().getIntProp("lolcode", "0");
 		if (lolcode == 0L)
 		{
 			// System.out.println("lolcode = 0");
 			Random rnd = new Random();
 			lolcode = rnd.nextInt(100000);
-			Server.getInstance().serverConfig.setProp("lolcode", lolcode);
+			Server.getInstance().getServerConfig().setProp("lolcode", lolcode);
 		}
-		updatedelay = Long.parseLong(Server.getInstance().serverConfig.getProp("update-delay", "10000"));
+		updatedelay = Long.parseLong(Server.getInstance().getServerConfig().getProp("update-delay", "10000"));
 		String hostname = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?host=1", "");
-		srv_name = Server.getInstance().serverConfig.getProp("server-name", "unnamedserver@" + hostname);
-		srv_desc = Server.getInstance().serverConfig.getProp("server-desc", "Default description.");
+		srv_name = Server.getInstance().getServerConfig().getProp("server-name", "unnamedserver@" + hostname);
+		srv_desc = Server.getInstance().getServerConfig().getProp("server-desc", "Default description.");
 		setName("Multiverse thread");
 	}
 
@@ -52,10 +52,10 @@ public class ServerAnnouncerThread extends Thread
 			while (run.get())
 			{
 				// System.out.println("Updating server data on Multiverse.");
-				if (Server.getInstance().serverConfig.getProp("enable-multiverse", "false").equals("true"))
+				if (Server.getInstance().getServerConfig().getProp("enable-multiverse", "false").equals("true"))
 				{
-					HttpRequests.sendPost("http://chunkstories.xyz/api/serverAnnounce.php", "srvname=" + srv_name + "&desc=" + srv_desc + "&ip=" + ip + "&mu=" + Server.getInstance().handler.maxClients + "&u=" + Server.getInstance().handler.getNumberOfConnectedClients()
-							+ "&n=0&w=default&p=1&v=" + VersionInfo.version + "&lolcode=" + lolcode);
+					HttpRequests.sendPost("http://chunkstories.xyz/api/serverAnnounce.php", "srvname=" + srv_name + "&desc=" + srv_desc + "&ip=" + ip + "&mu=" + Server.getInstance().getHandler().getMaxClients() + "&u="
+							+ Server.getInstance().getHandler().getNumberOfConnectedClients() + "&n=0&w=default&p=1&v=" + VersionInfo.version + "&lolcode=" + lolcode);
 					sleep(updatedelay);
 				}
 				else
@@ -64,7 +64,7 @@ public class ServerAnnouncerThread extends Thread
 		}
 		catch (Exception e)
 		{
-			Server.getInstance().log.severe("An unexpected error happened during multiverse stuff. More info below.");
+			Server.getInstance().getLogger().error("An unexpected error happened during multiverse stuff. More info below.");
 			e.printStackTrace();
 		}
 	}

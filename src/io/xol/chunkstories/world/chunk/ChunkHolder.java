@@ -18,6 +18,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
@@ -40,6 +41,8 @@ public class ChunkHolder implements Region
 	private CubicChunk[][][] data = new CubicChunk[8][8][8];
 
 	private AtomicInteger loadedChunks = new AtomicInteger();
+	
+	private AtomicLong unloadCooldown = new AtomicLong();
 
 	//TODO find a clean way to let IOTaks fiddle with this
 	public SimpleLock chunksArrayLock = new SimpleLock();
@@ -76,6 +79,9 @@ public class ChunkHolder implements Region
 
 		//Unique UUID
 		uuid = random.nextLong();
+		
+		//Set the initial cooldown delay
+		unloadCooldown.set(System.currentTimeMillis());
 
 		//Only the WorldMaster has a concept of files
 		if (world instanceof WorldMaster)
@@ -84,7 +90,10 @@ public class ChunkHolder implements Region
 			world.ioHandler.requestChunkHolderLoad(this);
 		}
 		else
+		{
 			handler = null;
+			isDiskDataLoaded.set(true);
+		}
 	}
 
 	private void compressChunkData(CubicChunk chunk)
@@ -92,11 +101,11 @@ public class ChunkHolder implements Region
 		int chunkX = chunk.chunkX;
 		int chunkY = chunk.chunkY;
 		int chunkZ = chunk.chunkZ;
-		if (chunk.dataPointer >= 0)
+		if (!chunk.isAirChunk())
 		{
 			byte[] toCompressData = new byte[32 * 32 * 32 * 4];
 
-			int[] data = world.chunksData.grab(chunk.dataPointer);
+			int[] data = chunk.chunkVoxelData;// world.chunksData.grab(chunk.dataPointer);
 			int z = 0;
 			for (int i : data)
 			{
@@ -161,7 +170,7 @@ public class ChunkHolder implements Region
 			loadedChunks.incrementAndGet();
 
 		//Remove any form of cuck
-		if (data[chunkX % 8][chunkY % 8][chunkZ % 8] != null && data[chunkX % 8][chunkY % 8][chunkZ % 8].dataPointer != chunk.dataPointer)
+		if (data[chunkX % 8][chunkY % 8][chunkZ % 8] != null )// && data[chunkX % 8][chunkY % 8][chunkZ % 8].dataPointer != chunk.dataPointer)
 		{
 			System.out.println("Overriding existing chunk, deleting old one");
 			data[chunkX % 8][chunkY % 8][chunkZ % 8].destroy();
@@ -340,5 +349,16 @@ public class ChunkHolder implements Region
 	public boolean addEntity(Entity entity)
 	{
 		return localEntities.add(entity);
+	}
+
+	public void resetUnloadCooldown()
+	{
+		unloadCooldown.set(System.currentTimeMillis());
+	}
+	
+	public boolean canBeUnloaded()
+	{
+		//Don't unload it until it has been loaded for 10s
+		return this.isLoaded() && (System.currentTimeMillis() - this.unloadCooldown.get() > 10*1000L);
 	}
 }

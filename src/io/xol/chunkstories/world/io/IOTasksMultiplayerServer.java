@@ -62,7 +62,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 					PacketChunkCompressedData packet = new PacketChunkCompressedData(false);
 					packet.setPosition(chunkX, chunkY, chunkZ);
 					packet.data = holder.getCompressedData(chunkX, chunkY, chunkZ);
-					client.sendPacket(packet);
+					client.pushPacket(packet);
 					//System.out.println("Replying with chunk ");
 					
 					return true;
@@ -128,7 +128,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 				{
 					PacketChunkSummary packet = new PacketChunkSummary(false);
 					packet.summary = summary;
-					client.sendPacket(packet);
+					client.pushPacket(packet);
 					return true;
 				}
 				else

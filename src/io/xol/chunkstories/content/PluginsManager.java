@@ -18,9 +18,9 @@ import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.PluginJar;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.PluginStore;
-import io.xol.chunkstories.api.server.Command;
+import io.xol.chunkstories.api.plugin.commands.Command;
+import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.server.ServerInterface;
-import io.xol.chunkstories.server.tech.CommandEmitter;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -118,29 +118,30 @@ public class PluginsManager implements PluginManager
 	}
 
 	@Override
-	public boolean dispatchCommand(String cmd, CommandEmitter emitter)
+	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments)
 	{
-		String cmdName = cmd.toLowerCase();
+		/*String cmdName = unparsedCommandText.toLowerCase();
 		String[] args = {};
-		if (cmd.contains(" "))
+		if (unparsedCommandText.contains(" "))
 		{
-			cmdName = cmd.substring(0, cmd.indexOf(" "));
-			args = cmd.substring(cmd.indexOf(" ")+1, cmd.length()).split(" ");
-		}
+			cmdName = unparsedCommandText.substring(0, unparsedCommandText.indexOf(" "));
+			args = unparsedCommandText.substring(unparsedCommandText.indexOf(" ")+1, unparsedCommandText.length()).split(" ");
+		}*/
+		
 		//System.out.println("debug looking for plugin to handle cmd" + cmdName + " args:" + args.length);
-		Command command = new Command(cmdName);
+		
+		//Command command = new Command(cmdName);
 		if (commandsHandlers.containsKey(command))
 		{
 			try
 			{
-				commandsHandlers.get(command).handleCommand(emitter, command, args, cmd);
+				return commandsHandlers.get(command).handleCommand(emitter, command, arguments);
 			}
 			catch (Throwable t)
 			{
 				emitter.sendMessage("#FF4040 An exception was throwed when handling your command "+t.getMessage());
 				t.printStackTrace();
 			}
-			return true;
 		}
 		return false;
 	}

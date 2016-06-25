@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.server.tech.CommandEmitter;
+import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -68,4 +68,8 @@ public interface Player extends CommandEmitter, Controller, Subscriber, PacketDe
 	public void kickPlayer(String reason);
 	
 	public boolean isConnected();
+
+	public boolean hasSpawned();
+
+	public void updateTrackedEntities();
 }

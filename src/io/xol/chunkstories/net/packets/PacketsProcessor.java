@@ -284,7 +284,7 @@ public class PacketsProcessor
 		if (this.isClient)
 			return Client.world;
 		else
-			return Server.getInstance().world;
+			return Server.getInstance().getWorld();
 	}
 	
 	public PendingSynchPacket getPendingSynchPacket()

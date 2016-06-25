@@ -1,4 +1,4 @@
-package io.xol.chunkstories.api.server;
+package io.xol.chunkstories.api.plugin.commands;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -6,16 +6,16 @@ package io.xol.chunkstories.api.server;
 
 public class Command
 {
-	public String name;
-
-	public String getName()
-	{
-		return name;
-	}
+	private String name;
 
 	public Command(String name)
 	{
 		this.name = name;
+	}
+	
+	public String getName()
+	{
+		return name;
 	}
 
 	@Override

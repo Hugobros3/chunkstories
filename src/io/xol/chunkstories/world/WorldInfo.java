@@ -144,7 +144,7 @@ public class WorldInfo
 	{
 		PacketWorldInfo packet = new PacketWorldInfo(false);
 		packet.info = this;
-		user.sendPacket(packet);
+		user.pushPacket(packet);
 	}
 	
 	public String getInternalName()

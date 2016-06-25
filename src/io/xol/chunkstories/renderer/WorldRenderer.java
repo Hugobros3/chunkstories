@@ -487,7 +487,7 @@ public class WorldRenderer
 								}
 							}
 
-						if (chunk.need_render.get() && chunk.dataPointer != -1)
+						if (chunk.need_render.get() && !chunk.isAirChunk())
 						{
 							//chunksRenderer.requestChunkRender(chunk);
 							//chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
@@ -788,7 +788,7 @@ public class WorldRenderer
 			if (chunk.chunkZ - currentChunkZ < -chunksViewDistance)
 				vboDekalZ += sizeInChunks * 32;
 			// Update if chunk was modified
-			if ((chunk.need_render.get() || chunk.needRelightning.get()) && chunk.requestable.get() && chunk.dataPointer != -1)
+			if ((chunk.need_render.get() || chunk.needRelightning.get()) && chunk.requestable.get() && !chunk.isAirChunk())
 				chunksRenderer.requestChunkRender(chunk);
 			// Don't bother if it don't render anything
 			if (chunkRenderData == null || chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)

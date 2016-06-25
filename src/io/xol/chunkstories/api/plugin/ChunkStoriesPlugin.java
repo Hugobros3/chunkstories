@@ -1,15 +1,16 @@
 package io.xol.chunkstories.api.plugin;
 
 import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.chunkstories.api.server.Command;
+import io.xol.chunkstories.api.plugin.commands.Command;
+import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
+import io.xol.chunkstories.api.plugin.commands.CommandHandler;
 import io.xol.chunkstories.api.server.ServerInterface;
-import io.xol.chunkstories.server.tech.CommandEmitter;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public abstract class ChunkStoriesPlugin
+public abstract class ChunkStoriesPlugin implements CommandHandler
 {
 	protected ServerInterface serverI;
 	protected ClientInterface clientI;
@@ -32,7 +33,7 @@ public abstract class ChunkStoriesPlugin
 		return pluginManager;
 	}
 	
-	public boolean handleCommand(CommandEmitter sender, Command cmd, String[] a, String rawText)
+	public boolean handleCommand(CommandEmitter sender, Command cmd, String[] arguments)
 	{
 		System.out.println("Someone left the default command handler !");
 		return false;

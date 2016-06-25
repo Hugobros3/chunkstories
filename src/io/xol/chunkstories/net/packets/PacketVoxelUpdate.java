@@ -54,8 +54,6 @@ public class PacketVoxelUpdate extends PacketSynch
 		data = in.readInt();
 		byte osef = in.readByte();
 		assert osef == 0x00;
-		
-		System.out.println("kek");
 	}
 
 	public void process(PacketsProcessor processor)

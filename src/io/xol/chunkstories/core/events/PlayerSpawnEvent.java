@@ -62,7 +62,7 @@ public class PlayerSpawnEvent extends Event
 			entity.setLocation(world.getDefaultSpawnLocation());
 		}
 		
-		Server.getInstance().world.addEntity(entity);
+		Server.getInstance().getWorld().addEntity(entity);
 		player.setControlledEntity(entity);
 		System.out.println("Added player entity");
 	}

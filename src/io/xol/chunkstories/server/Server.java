@@ -6,89 +6,85 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Logger;
 
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.server.net.ServerClient;
-import io.xol.chunkstories.server.net.ServerConnectionsHandler;
-import io.xol.chunkstories.server.tech.CommandEmitter;
+import io.xol.chunkstories.server.net.ServerConnectionsManager;
 import io.xol.chunkstories.server.tech.ServerConsole;
-import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldServer;
-import io.xol.chunkstories.world.chunk.ChunksData;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Server implements Runnable, ServerInterface, CommandEmitter
+public class Server implements Runnable, ServerInterface
 {
 	// The server class handles and make the link between all server components
 	// It also takes care of the command line input as it's the main thread,
 	// thought the processing of command lines is handled by ServerConsole.java
 	static Server server;
 
-	public static Server getInstance()
-	{
-		return server;
-	}
-
 	public static void main(String a[])
 	{
 		server = new Server();
 		server.run();
 	}
+	
+	public static Server getInstance()
+	{
+		return server;
+	}
 
 	// Basic server stuff init !
-	public ConfigFile serverConfig = new ConfigFile("./config/server.cfg");
-	public Logger log = Logger.getLogger("server");
+	private ConfigFile serverConfig = new ConfigFile("./config/server.cfg");
+	private ChunkStoriesLogger log = null;
+	
 	private AtomicBoolean running = new AtomicBoolean(true);
-	public long initTimestamp = System.currentTimeMillis() / 1000; // <- uptime !
+	private long initTimestamp = System.currentTimeMillis() / 1000; // <- uptime !
 
-	public WorldServer world;
+	private WorldServer world;
 
-	public ServerConnectionsHandler handler;
-	public PluginsManager pluginsManager;
+	private ServerConnectionsManager handler;
+	private ServerConsole console = new ServerConsole(this);
+
+	private PluginsManager pluginsManager;
 
 	// Sleeper thread to keep servers list updated
-	public ServerAnnouncerThread announcer;
+	private ServerAnnouncerThread announcer;
 
 	@Override
 	public void run()
 	{
-		// logger init
-		initLog();
 		// Start server services
 		try
 		{
-			log.info("Starting ChunkStories server ");
-			handler = new ServerConnectionsHandler();
-			// TODO make this a configurable thing
-			ChunksData.CACHE_SIZE = 2048;
+			log.info("Starting ChunkStories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
+			handler = new ServerConnectionsManager(this);
+			
 			Calendar cal = Calendar.getInstance();
 			SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 			String time = sdf.format(cal.getTime());
 			ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/serverlogs/" + time + ".log")));
+			log = ChunkStoriesLogger.getInstance();
+			
 			GameData.reload();
 			// Load world
 			String worldName = serverConfig.getProp("world", "world");
 			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
 			if (new File(worldDir).exists())
 			{
-				world = new WorldServer(worldDir);
+				world = new WorldServer(this, worldDir);
 				world.startLogic();
 			}
 			else
@@ -109,7 +105,7 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 		}
 		catch (Exception e)
 		{ // Exceptions stuff
-			log.severe("Could not initalize server. Stacktrace below");
+			log.error("Could not initalize server. Stacktrace below");
 			e.printStackTrace();
 			System.exit(-1);
 		}
@@ -126,12 +122,22 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 				}
 				if (!running.get())
 					break;
-				String cmd = br.readLine();
-				if (cmd == null)
+				String unparsedCommandText = br.readLine();
+				if (unparsedCommandText == null)
 					continue;
 				try
 				{
-					ServerConsole.handleCommand(cmd, this); // Process it
+					//Parse and fire
+					String cmdName = unparsedCommandText.toLowerCase();
+					String[] args = {};
+					if (unparsedCommandText.contains(" "))
+					{
+						cmdName = unparsedCommandText.substring(0, unparsedCommandText.indexOf(" "));
+						args = unparsedCommandText.substring(unparsedCommandText.indexOf(" ") + 1, unparsedCommandText.length()).split(" ");
+					}
+
+					console.handleCommand(this, new Command(cmdName), args);
+					
 					System.out.print("> ");
 				}
 				catch (Exception e)
@@ -164,6 +170,16 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 		ChunkStoriesLogger.getInstance().save();
 	}
 
+	public WorldServer getWorld()
+	{
+		return world;
+	}
+
+	public ConfigFile getServerConfig()
+	{
+		return serverConfig;
+	}
+
 	@Override
 	public PluginsManager getPluginsManager()
 	{
@@ -173,31 +189,24 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 	private void closeServer()
 	{
 		// When stopped, close sockets and save config.
-		//Thread.currentThread().notify();
+		log.info("Killing all connections");
+		handler.closeAll();
+		handler.closeConnection();
+		
 		log.info("Saving map...");
 		world.saveEverything();
+		log.info("Done, shutting down threads");
+		
 		world.ioHandler.shutdown();
-		handler.closeAll();
+		world.stopLogic();
+
+		log.info("Saving configuration");
 		serverConfig.save();
-		handler.close();
 		UsersPrivileges.save();
 		log.info("Good night sweet prince");
 		Runtime.getRuntime().exit(0);
 	}
-
-	// log
-	private void initLog()
-	{
-		// Dirty class for having proper log formatting.
-		Handler h = new ConsoleHandler();
-		h.setFormatter(new LogFormatter());
-		for (Handler iHandler : log.getParent().getHandlers())
-		{
-			log.getParent().removeHandler(iHandler);
-		}
-		log.addHandler(h);
-	}
-
+	
 	public void stop()
 	{
 		// When stopped, close sockets and save config.
@@ -217,20 +226,31 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 	}
 
 	@Override
-	public Set<Player> getConnectedPlayers()
+	public Iterator<Player> getConnectedPlayers()
 	{
-		Set<Player> set = new HashSet<Player>();
-		if (handler != null)
-			for (ServerClient c : handler.getAuthentificatedClients())
-				if (c.getProfile() != null)
-					set.add(c.getProfile());
-		return set;
+		return new Iterator<Player>()
+		{
+			Iterator<ServerClient> authClients = handler.getAuthentificatedClients();
+
+			@Override
+			public boolean hasNext()
+			{
+				return authClients.hasNext();
+			}
+
+			@Override
+			public Player next()
+			{
+				return authClients.next().getProfile();
+			}
+
+		};
 	}
 
 	@Override
 	public String getName()
 	{
-		return "Server console " + VersionInfo.version;
+		return "[Server console " + VersionInfo.version + "]";
 	}
 
 	@Override
@@ -246,13 +266,38 @@ public class Server implements Runnable, ServerInterface, CommandEmitter
 	}
 
 	@Override
-	public Player getPlayer(String string)
+	public Player getPlayer(String playerName)
 	{
-		if (handler != null)
-			for (ServerClient c : handler.getAuthentificatedClients())
-				if (c.getProfile() != null)
-					if (c.getProfile().getName().startsWith(string))
-						return c.getProfile();
+		ServerClient clientByThatName = handler.getAuthentificatedClientByName(playerName);
+		if (clientByThatName != null)
+			return clientByThatName.getProfile();
 		return null;
+	}
+
+	@Override
+	public Player getPlayerByUUID(long UUID)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ServerConsole getConsole()
+	{
+		return console;
+	}
+
+	public ServerConnectionsManager getHandler()
+	{
+		return handler;
+	}
+
+	public ChunkStoriesLogger getLogger()
+	{
+		return log;
+	}
+
+	public long getUptime()
+	{
+		return (System.currentTimeMillis() / 1000 - initTimestamp);
 	}
 }

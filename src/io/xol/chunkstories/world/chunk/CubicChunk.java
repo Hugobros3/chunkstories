@@ -23,7 +23,8 @@ public class CubicChunk implements Chunk
 	public Region holder;
 	public int chunkX, chunkY, chunkZ;
 
-	public int dataPointer = -1; // -1 means empty chunk (air)
+	public int[] chunkVoxelData = null;
+	//public int dataPointer = -1; // -1 means empty chunk (air)
 
 	// Used in client rendering
 	public ChunkRenderData chunkRenderData;
@@ -98,7 +99,7 @@ public class CubicChunk implements Chunk
 	@Override
 	public int getDataAt(int x, int y, int z)
 	{
-		if (dataPointer == -1)
+		if (chunkVoxelData == null)
 		{
 			return 0;
 		}
@@ -113,7 +114,7 @@ public class CubicChunk implements Chunk
 				y += 32;
 			if (z < 0)
 				z += 32;
-			return world.chunksData.grab(dataPointer)[x * 32 * 32 + y * 32 + z];
+			return chunkVoxelData[x * 32 * 32 + y * 32 + z];
 		}
 	}
 
@@ -133,15 +134,14 @@ public class CubicChunk implements Chunk
 		if (z < 0)
 			z += 32;
 		//Allocate if it makes sense
-		if (dataPointer < 0 && data != 0)
-			dataPointer = world.chunksData.malloc(this);
-		if (dataPointer >= 0)
-		{
-			int dataBefore = world.chunksData.grab(dataPointer)[x * 32 * 32 + y * 32 + z];
-			world.chunksData.grab(dataPointer)[x * 32 * 32 + y * 32 + z] = data;
-			computeLightSpread(x, y, z, dataBefore, data);
-			lastModification.set(System.currentTimeMillis());
-		}
+		if (chunkVoxelData == null)
+			chunkVoxelData = new int[32 * 32 * 32];
+		
+		int dataBefore = chunkVoxelData[x * 32 * 32 + y * 32 + z];
+		chunkVoxelData[x * 32 * 32 + y * 32 + z] = data;
+		computeLightSpread(x, y, z, dataBefore, data);
+		lastModification.set(System.currentTimeMillis());
+		
 	}
 	
 	public void setDataAtWithoutUpdates(int x, int y, int z, int data)
@@ -156,19 +156,17 @@ public class CubicChunk implements Chunk
 		if (z < 0)
 			z += 32;
 		//Allocate if it makes sense
-		if (dataPointer < 0 && data != 0)
-			dataPointer = world.chunksData.malloc(this);
-		if (dataPointer >= 0)
-		{
-			world.chunksData.grab(dataPointer)[x * 32 * 32 + y * 32 + z] = data;
-			//lastModification.set(System.currentTimeMillis());
-		}
+		if (chunkVoxelData == null)
+			chunkVoxelData = new int[32 * 32 * 32];
+		
+		chunkVoxelData[x * 32 * 32 + y * 32 + z] = data;
+		lastModification.set(System.currentTimeMillis());
 	}
 
 	@Override
 	public String toString()
 	{
-		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " NR:"+need_render.get()+" "+"]";
+		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk() + " NR:"+need_render.get()+" "+"]";
 	}
 
 	/* (non-Javadoc)
@@ -184,15 +182,15 @@ public class CubicChunk implements Chunk
 
 	public void destroy()
 	{
-		if (dataPointer >= 0)
-			world.chunksData.free(dataPointer);
+		//if (dataPointer >= 0)
+		//	world.chunksData.free(dataPointer);
 	}
 
 	@Override
 	public void bakeVoxelLightning(boolean adjacent)
 	{
 		// Checks first if chunk contains blocks
-		if (dataPointer < 0)
+		if (chunkVoxelData == null)
 			return; // Nothing to do
 		
 		//Lock the chunk & grab 2 queues
@@ -224,7 +222,6 @@ public class CubicChunk implements Chunk
 	// Now entering lightning code part, brace yourselves
 	private int propagateLightning(Deque<Integer> blockSources, Deque<Integer> sunSources)
 	{
-		int data[] = world.chunksData.grab(dataPointer);
 		int modifiedBlocks = 0;
 		
 		//Checks if the adjacent chunks are done loading
@@ -247,7 +244,7 @@ public class CubicChunk implements Chunk
 			int y = blockSources.pop();
 			int z = blockSources.pop();
 			int x = blockSources.pop();
-			int voxelData = data[x * 1024 + y * 32 + z];
+			int voxelData = chunkVoxelData[x * 1024 + y * 32 + z];
 			int ll = (voxelData & 0x0F000000) >> 0x18;
 			int cId = VoxelFormat.id(voxelData);
 
@@ -261,10 +258,10 @@ public class CubicChunk implements Chunk
 				// X-propagation
 				if (x < 31)
 				{
-					int adj = data[(x + 1) * 1024 + y * 32 + z];
+					int adj = chunkVoxelData[(x + 1) * 1024 + y * 32 + z];
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						data[(x + 1) * 1024 + y * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						chunkVoxelData[(x + 1) * 1024 + y * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
 						modifiedBlocks++;
 						blockSources.push(x + 1);
 						blockSources.push(z);
@@ -283,10 +280,10 @@ public class CubicChunk implements Chunk
 				}
 				if (x > 0)
 				{
-					int adj = data[(x - 1) * 1024 + y * 32 + z];
+					int adj = chunkVoxelData[(x - 1) * 1024 + y * 32 + z];
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						data[(x - 1) * 1024 + y * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						chunkVoxelData[(x - 1) * 1024 + y * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
 						modifiedBlocks++;
 						blockSources.push(x - 1);
 						blockSources.push(z);
@@ -306,10 +303,10 @@ public class CubicChunk implements Chunk
 				// Z-propagation
 				if (z < 31)
 				{
-					int adj = data[x * 1024 + y * 32 + z + 1];
+					int adj = chunkVoxelData[x * 1024 + y * 32 + z + 1];
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						data[x * 1024 + y * 32 + z + 1] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						chunkVoxelData[x * 1024 + y * 32 + z + 1] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z + 1);
@@ -328,10 +325,10 @@ public class CubicChunk implements Chunk
 				}
 				if (z > 0)
 				{
-					int adj = data[x * 1024 + y * 32 + z - 1];
+					int adj = chunkVoxelData[x * 1024 + y * 32 + z - 1];
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						data[x * 1024 + y * 32 + z - 1] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						chunkVoxelData[x * 1024 + y * 32 + z - 1] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z - 1);
@@ -351,10 +348,10 @@ public class CubicChunk implements Chunk
 				// Y-propagation
 				if (y < 31) // y = 254+1
 				{
-					int adj = data[x * 1024 + (y + 1) * 32 + z];
+					int adj = chunkVoxelData[x * 1024 + (y + 1) * 32 + z];
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						data[x * 1024 + (y + 1) * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z);
@@ -373,10 +370,10 @@ public class CubicChunk implements Chunk
 				}
 				if (y > 0)
 				{
-					int adj = data[x * 1024 + (y - 1) * 32 + z];
+					int adj = chunkVoxelData[x * 1024 + (y - 1) * 32 + z];
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						data[x * 1024 + (y - 1) * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
+						chunkVoxelData[x * 1024 + (y - 1) * 32 + z] = adj & 0xF0FFFFFF | (ll - 1) << 0x18;
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z);
@@ -402,7 +399,7 @@ public class CubicChunk implements Chunk
 			int z = sunSources.pop();
 			int x = sunSources.pop();
 
-			int voxelData = data[x * 1024 + y * 32 + z];
+			int voxelData = chunkVoxelData[x * 1024 + y * 32 + z];
 			int ll = (voxelData & 0x00F00000) >> 0x14;
 			int cId = VoxelFormat.id(voxelData);
 			
@@ -416,12 +413,12 @@ public class CubicChunk implements Chunk
 				// X-propagation
 				if (x < 31)
 				{
-					int adj = data[(x + 1) * 1024 + y * 32 + z];
+					int adj = chunkVoxelData[(x + 1) * 1024 + y * 32 + z];
 					int llRight = ll - in.getLightLevelModifier(voxelData, adj, 2);
 					
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llRight - 1)
 					{
-						data[(x + 1) * 1024 + y * 32 + z] = adj & 0xFF0FFFFF | (llRight - 1) << 0x14;
+						chunkVoxelData[(x + 1) * 1024 + y * 32 + z] = adj & 0xFF0FFFFF | (llRight - 1) << 0x14;
 						modifiedBlocks++;
 						sunSources.push(x + 1);
 						sunSources.push(z);
@@ -442,7 +439,7 @@ public class CubicChunk implements Chunk
 				}
 				if (x > 0)
 				{
-					int adj = data[(x - 1) * 1024 + y * 32 + z];
+					int adj = chunkVoxelData[(x - 1) * 1024 + y * 32 + z];
 					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, 0);
 					//int id = (adj & 0xFFFF);
 					//if(id == 25)
@@ -451,7 +448,7 @@ public class CubicChunk implements Chunk
 					{
 						//if(id == 25)
 						//	System.out.println("MAIS LEL TARACE"+VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() + " -> " +((adj & 0x00F00000) >> 0x14));
-						data[(x - 1) * 1024 + y * 32 + z] = adj & 0xFF0FFFFF | (llLeft - 1) << 0x14;
+						chunkVoxelData[(x - 1) * 1024 + y * 32 + z] = adj & 0xFF0FFFFF | (llLeft - 1) << 0x14;
 						modifiedBlocks++;
 						sunSources.push(x - 1);
 						sunSources.push(z);
@@ -473,11 +470,11 @@ public class CubicChunk implements Chunk
 				// Z-propagation
 				if (z < 31)
 				{
-					int adj = data[x * 1024 + y * 32 + z + 1];
+					int adj = chunkVoxelData[x * 1024 + y * 32 + z + 1];
 					int llFront = ll - in.getLightLevelModifier(voxelData, adj, 1);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llFront - 1)
 					{
-						data[x * 1024 + y * 32 + z + 1] = adj & 0xFF0FFFFF | (llFront - 1) << 0x14;
+						chunkVoxelData[x * 1024 + y * 32 + z + 1] = adj & 0xFF0FFFFF | (llFront - 1) << 0x14;
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z + 1);
@@ -498,11 +495,11 @@ public class CubicChunk implements Chunk
 				}
 				if (z > 0)
 				{
-					int adj = data[x * 1024 + y * 32 + z - 1];
+					int adj = chunkVoxelData[x * 1024 + y * 32 + z - 1];
 					int llBack = ll - in.getLightLevelModifier(voxelData, adj, 3);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBack - 1)
 					{
-						data[x * 1024 + y * 32 + z - 1] = adj & 0xFF0FFFFF | (llBack - 1) << 0x14;
+						chunkVoxelData[x * 1024 + y * 32 + z - 1] = adj & 0xFF0FFFFF | (llBack - 1) << 0x14;
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z - 1);
@@ -524,11 +521,11 @@ public class CubicChunk implements Chunk
 				// Y-propagation
 				if (y < 31) // y = 254+1
 				{
-					int adj = data[x * 1024 + (y + 1) * 32 + z];
+					int adj = chunkVoxelData[x * 1024 + (y + 1) * 32 + z];
 					int llTop = ll - in.getLightLevelModifier(voxelData, adj, 4);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llTop - 1)
 					{
-						data[x * 1024 + (y + 1) * 32 + z] = adj & 0xFF0FFFFF | (llTop - 1) << 0x14;
+						chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = adj & 0xFF0FFFFF | (llTop - 1) << 0x14;
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z);
@@ -549,12 +546,12 @@ public class CubicChunk implements Chunk
 				}
 				if (y > 0)
 				{
-					int adj = data[x * 1024 + (y - 1) * 32 + z];
+					int adj = chunkVoxelData[x * 1024 + (y - 1) * 32 + z];
 					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, 5);
 					if (!VoxelTypes.get(adj).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBottm)
 					{
 						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)
-						data[x * 1024 + (y - 1) * 32 + z] = adj & 0xFF0FFFFF | (llBottm /* - removed */) << 0x14;
+						chunkVoxelData[x * 1024 + (y - 1) * 32 + z] = adj & 0xFF0FFFFF | (llBottm /* - removed */) << 0x14;
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z);
@@ -581,8 +578,6 @@ public class CubicChunk implements Chunk
 	
 	private void addChunkLightSources(Deque<Integer> blockSources, Deque<Integer> sunSources)
 	{
-		int data[] = world.chunksData.grab(dataPointer);
-		
 		for (int a = 0; a < 32; a++)
 			for (int b = 0; b < 32; b++)
 			{
@@ -591,12 +586,12 @@ public class CubicChunk implements Chunk
 				int csh = world.getRegionSummaries().getHeightAt(chunkX * 32 + a, chunkZ * 32 + b) + 1;
 				while (z >= 0)
 				{
-					int block = data[a * 1024 + z * 32 + b];
+					int block = chunkVoxelData[a * 1024 + z * 32 + b];
 					int id = VoxelFormat.id(block);
 					short ll = VoxelTypes.get(id).getLightLevel(block);
 					if (ll > 0)
 					{
-						data[a * 1024 + z * 32 + b] = data[a * 1024 + z * 32 + b] & 0xF0FFFFFF | ((ll & 0xF) << 0x18);
+						chunkVoxelData[a * 1024 + z * 32 + b] = chunkVoxelData[a * 1024 + z * 32 + b] & 0xF0FFFFFF | ((ll & 0xF) << 0x18);
 						//blockSources.push(a << 16 | b << 8 | z);
 						blockSources.push(a);
 						blockSources.push(b);
@@ -606,12 +601,12 @@ public class CubicChunk implements Chunk
 					{
 						if (chunkY * 32 + z >= csh)
 						{
-							data[a * 1024 + (z) * 32 + b] = data[a * 1024 + (z) * 32 + b] & 0xFF0FFFFF | (15 << 0x14);
+							chunkVoxelData[a * 1024 + (z) * 32 + b] = chunkVoxelData[a * 1024 + (z) * 32 + b] & 0xFF0FFFFF | (15 << 0x14);
 							//sunSources.push(a << 16 | b << 8 | z);
 							sunSources.push(a);
 							sunSources.push(b);
 							sunSources.push(z);
-							if (chunkY * 32 + z < csh || VoxelTypes.get(VoxelFormat.id(data[a * 1024 + (z) * 32 + b])).getId() != 0)
+							if (chunkY * 32 + z < csh || VoxelTypes.get(VoxelFormat.id(chunkVoxelData[a * 1024 + (z) * 32 + b])).getId() != 0)
 							{
 								hit = true;
 							}
@@ -699,7 +694,7 @@ public class CubicChunk implements Chunk
 			}
 			// Top chunk
 			cc = world.getChunk(chunkX, chunkY + 1, chunkZ, false);
-			if (cc != null && cc.dataPointer != -1)
+			if (cc != null && chunkVoxelData != null)
 			{
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
@@ -1717,7 +1712,7 @@ public class CubicChunk implements Chunk
 
 	public boolean isAirChunk()
 	{
-		return dataPointer == -1;
+		return chunkVoxelData == null;
 	}
 	
 	@Override

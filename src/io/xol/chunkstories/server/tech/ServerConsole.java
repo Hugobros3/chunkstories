@@ -1,15 +1,17 @@
 package io.xol.chunkstories.server.tech;
 
+import java.util.Iterator;
+
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
-import io.xol.chunkstories.api.server.Command;
+import io.xol.chunkstories.api.plugin.commands.Command;
+import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
-import io.xol.chunkstories.server.net.ServerConnectionsHandler;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -18,16 +20,23 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 public class ServerConsole
 {
-	public static void handleCommand(String cmd, CommandEmitter emitter)
+	Server server;
+	
+	public ServerConsole(Server server)
+	{
+		this.server = server;
+	}
+	
+	public boolean handleCommand(CommandEmitter emitter, Command cmd, String[] arguments)
 	{
 		ChunkStoriesLogger.getInstance().info(("[" + emitter.getName() + "] ") + "Entered command : " + cmd);
 		try
 		{
-			//First handle the plugins commands
+			//First try to handle the plugins commands
 			try
 			{
-				if (Server.getInstance().pluginsManager.dispatchCommand(cmd, emitter))
-					return;
+				if (server.getPluginsManager().handleCommand(emitter, cmd, arguments))
+					return true;
 			}
 			catch (Exception e)
 			{
@@ -38,15 +47,15 @@ public class ServerConsole
 			// No rights needed
 			if (cmd.equals("uptime"))
 			{
-				emitter.sendMessage("#00FFD0The server has been running for " + (System.currentTimeMillis() / 1000 - Server.getInstance().initTimestamp) + " seconds.");
-				return;
+				emitter.sendMessage("#00FFD0The server has been running for " + server.getUptime() + " seconds.");
+				return true;
 			}
 			else if (cmd.equals("info"))
 			{
-				emitter.sendMessage("#00FFD0The server's ip is " + ServerConnectionsHandler.ip);
+				emitter.sendMessage("#00FFD0The server's ip is " + server.getHandler().getIP());
 				emitter.sendMessage("#00FFD0It's running version " + VersionInfo.version + " of the server software.");
-				emitter.sendMessage("#00FFD0" + Server.getInstance().world.getChunksHolder().toString());
-				return;
+				emitter.sendMessage("#00FFD0" + server.getWorld().getChunksHolder().toString());
+				return true;
 			}
 			else if (cmd.equals("help"))
 			{
@@ -55,37 +64,48 @@ public class ServerConsole
 				emitter.sendMessage("#00FFD0" + " /list");
 				emitter.sendMessage("#00FFD0" + " /info");
 				emitter.sendMessage("#00FFD0" + " /uptime");
-				for (Command command : Server.getInstance().pluginsManager.commandsHandlers.keySet())
+				for (Command command : server.getPluginsManager().commandsHandlers.keySet())
 				{
 					emitter.sendMessage("#00FFD0 /" + command.getName());
 				}
-				return;
+				return true;
 
 			}
 			else if (cmd.equals("plugins"))
 			{
 				String list = "";
 				int i = 0;
-				for (ChunkStoriesPlugin csp : Server.getInstance().pluginsManager.activePlugins)
+				for (ChunkStoriesPlugin csp : server.getPluginsManager().activePlugins)
 				{
 					i++;
-					list += csp.getName() + (i == Server.getInstance().handler.clients.size() ? "" : ", ");
+					list += csp.getName() + (i == server.getPluginsManager().activePlugins.size() ? "" : ", ");
 				}
 				emitter.sendMessage("#00FFD0" + i + " active plugins : " + list);
-				return;
+				return true;
 
 			}
 			else if (cmd.equals("list"))
 			{
 				String list = "";
-				int i = 0;
-				for (ServerClient client : Server.getInstance().handler.clients)
+				
+				int playersCount = 0;
+				Iterator<Player> iterator = server.getConnectedPlayers();
+				while(iterator.hasNext())
 				{
-					i++;
-					list += client.getProfile().getDisplayName() + (i == Server.getInstance().handler.clients.size() ? "" : ", ");
+					playersCount++;
+					
+					list += iterator.next().getDisplayName();
+					if(iterator.hasNext())
+						list += ", ";
 				}
-				emitter.sendMessage("#00FFD0" + i + " players connected : " + list);
-				return;
+				
+				emitter.sendMessage("#00FFD0" + playersCount + " players connected : " + list);
+				return true;
+			}
+			else if (cmd.equals("io"))
+			{
+				emitter.sendMessage("#00FFD0" + server.getWorld().ioHandler);
+				return true;
 			}
 			else if (cmd.equals("fly"))
 			{
@@ -100,7 +120,7 @@ public class ServerConsole
 						state = !state;
 						client.sendMessage("flying : " + state);
 						((EntityFlying) controlledEntity).getFlyingComponent().setFlying(state);
-						return;
+						return true;
 					}
 				}
 			}
@@ -117,7 +137,7 @@ public class ServerConsole
 						state = !state;
 						client.sendMessage("creative : " + state);
 						((EntityCreative) controlledEntity).getCreativeModeComponent().setCreativeMode(state);
-						return;
+						return true;
 					}
 				}
 			}
@@ -127,68 +147,68 @@ public class ServerConsole
 				if (cmd.equals("stop"))
 				{
 					emitter.sendMessage("Stopping server.");
-					Server.getInstance().stop();
-					return;
+					server.stop();
+					return true;
 				}
 				else if (cmd.equals("clients"))
 				{
 					emitter.sendMessage("==Listing clients==");
-					for (ServerClient client : Server.getInstance().handler.clients)
+					Iterator<ServerClient> connectedClientsIterator = server.getHandler().getAllConnectedClients();
+					while(connectedClientsIterator.hasNext())
 					{
+						ServerClient client = connectedClientsIterator.next();
 						emitter.sendMessage(client.getIp() + "/" + client.getHost() + " - " + client.name);
 					}
 					emitter.sendMessage("==done==");
-					return;
+					return true;
 				}
 				else if (cmd.equals("reloadconfig"))
 				{
-					Server.getInstance().reloadConfig();
+					server.reloadConfig();
 					emitter.sendMessage("Config reloaded.");
-					return;
+					return true;
 				}
-				// net
-				else if (cmd.split(" ")[0].equals("kick") && cmd.split(" ").length == 2)
+				else if (arguments[0].equals("kick") && arguments.length >= 1)
 				{
-					ServerClient tokick = Server.getInstance().handler.getClientByName(cmd.split(" ")[1]);
-					if (tokick != null)
+					ServerClient clientByName = server.getHandler().getAuthentificatedClientByName(arguments[1]);
+					String kickReason = "Donacdum";
+					//Recreate the argument
+					if(arguments.length >= 2)
 					{
-						Server.getInstance().handler.disconnectClient(tokick);
-						emitter.sendMessage("Forced disconnect for user " + cmd.split(" ")[1]);
+						kickReason = "";
+						for(int i = 1; i < arguments.length; i++)
+							kickReason += arguments[i] + (i < arguments.length -1 ? " " : "");
+					}
+					
+					if (clientByName != null)
+					{
+						clientByName.disconnect("Kicked from server. \n" + kickReason);
+						//server.handler.disconnectClient(tokick);
+						emitter.sendMessage("Forced disconnect for user " + kickReason);
 					}
 					else
 					{
-						emitter.sendMessage("User '" + tokick + "' not found.");
+						emitter.sendMessage("User '" + clientByName + "' not found.");
 					}
-					return;
-				}
-				else if (cmd.split(" ")[0].equals("kickip") && cmd.split(" ").length == 2)
-				{
-					String tokick = cmd.split(" ")[1];
-					Server.getInstance().handler.disconnectClientByIp(tokick);
-					emitter.sendMessage("Forced disconnect for ip " + tokick);
-					return;
-				}
-				// help
-				else if (cmd.equals("help"))
-				{
-					emitter.sendMessage("stop - Stops the server.");
-
-					emitter.sendMessage("kickip - Will force disconnect that ip. May kick multiple people on it.");
-					emitter.sendMessage("kick - Will force disconnect that user.");
-					emitter.sendMessage("ban - Will refuse any connection from this user. Redo to unban.");
-					emitter.sendMessage("banip - Will refuse any connection from this IP. Redo to unban.");
-					// game
-					return;
+					return true;
 				}
 				else
 				{
 					emitter.sendMessage("Unrecognized command. Try help.");
+					return true;
 				}
 			}
 		}
 		catch (Exception e)
 		{
+			//Print error stack here
+			e.printStackTrace();
+			
+			//Tell him
 			emitter.sendMessage(e.getMessage());
+			return false;
 		}
+		
+		return false;
 	}
 }

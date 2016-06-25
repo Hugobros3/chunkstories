@@ -9,15 +9,12 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.core.events.SerializedEntityFile;
 import io.xol.chunkstories.server.net.ServerClient;
-import io.xol.chunkstories.server.tech.UsersPrivileges;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -26,26 +23,25 @@ import java.util.Set;
 
 public class ServerPlayer implements Player
 {
-	ConfigFile playerData;
+	ConfigFile playerDataFile;
 	ServerClient playerConnection;
 
 	//Entity controlled
 	public EntityControllable controlledEntity;
 
 	//Streaming control
-	public Map<int[], Long> loadedChunks = new HashMap<int[], Long>();
 	private Set<Entity> subscribedEntities = new HashSet<Entity>();
 
 	public ServerPlayer(ServerClient serverClient)
 	{
 		playerConnection = serverClient;
 		
-		playerData = new ConfigFile("./players/" + playerConnection.name.toLowerCase() + ".cfg");
+		playerDataFile = new ConfigFile("./players/" + playerConnection.name.toLowerCase() + ".cfg");
 		
 		// Sets dates
-		playerData.setProp("lastlogin", "" + System.currentTimeMillis());
-		if (playerData.getProp("firstlogin", "nope").equals("nope"))
-			playerData.setProp("firstlogin", "" + System.currentTimeMillis());
+		playerDataFile.setProp("lastlogin", "" + System.currentTimeMillis());
+		if (playerDataFile.getProp("firstlogin", "nope").equals("nope"))
+			playerDataFile.setProp("firstlogin", "" + System.currentTimeMillis());
 		//Does not create a player entity yet, this is taken care of by the player spawn req
 	}
 
@@ -121,23 +117,25 @@ public class ServerPlayer implements Player
 
 	public void save()
 	{
-		long lastTime = Long.parseLong(playerData.getProp("timeplayed", "0"));
-		long lastLogin = Long.parseLong(playerData.getProp("lastlogin", "0"));
+		long lastTime = Long.parseLong(playerDataFile.getProp("timeplayed", "0"));
+		long lastLogin = Long.parseLong(playerDataFile.getProp("lastlogin", "0"));
 		
-		//TODO move along with inventory stuff
 		if(controlledEntity != null)
 		{
+			//Useless, kept for admin easyness, scripts, whatnot
 			Location controlledEntityLocation = controlledEntity.getLocation();
-			playerData.setProp("posX", controlledEntityLocation.x);
-			playerData.setProp("posY", controlledEntityLocation.y);
-			playerData.setProp("posZ", controlledEntityLocation.z);
+			playerDataFile.setProp("posX", controlledEntityLocation.x);
+			playerDataFile.setProp("posY", controlledEntityLocation.y);
+			playerDataFile.setProp("posZ", controlledEntityLocation.z);
 			
 			//Serializes the whole player entity !!!
 			SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + this.getName().toLowerCase() + ".csf");
 			playerEntityFile.write(controlledEntity);
 		}
-		playerData.setProp("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)));
-		playerData.save();
+		
+		//Telemetry (EVIL)
+		playerDataFile.setProp("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)));
+		playerDataFile.save();
 		
 		System.out.println("Player profile "+playerConnection.name+" saved.");
 	}
@@ -146,7 +144,7 @@ public class ServerPlayer implements Player
 	{
 		if(controlledEntity != null)
 		{
-			Server.getInstance().world.removeEntity(controlledEntity);
+			Server.getInstance().getWorld().removeEntity(controlledEntity);
 			System.out.println("removed player entity");
 		}
 		unsubscribeAll();
@@ -214,7 +212,7 @@ public class ServerPlayer implements Player
 	@Override
 	public void kickPlayer(String reason)
 	{
-		Server.getInstance().handler.disconnectClient(playerConnection, reason);
+		playerConnection.disconnect("Kicked : "+reason);
 	}
 
 	@Override
@@ -241,9 +239,9 @@ public class ServerPlayer implements Player
 
 	public Location getLastPosition()
 	{
-		if(this.playerData.isFieldSet("posX"))
+		if(this.playerDataFile.isFieldSet("posX"))
 		{
-			return new Location(Server.getInstance().world, playerData.getDoubleProp("posX"), playerData.getDoubleProp("posY"), playerData.getDoubleProp("posZ"));
+			return new Location(Server.getInstance().getWorld(), playerDataFile.getDoubleProp("posX"), playerDataFile.getDoubleProp("posY"), playerDataFile.getDoubleProp("posZ"));
 		}
 		return null;
 	}
@@ -319,7 +317,7 @@ public class ServerPlayer implements Player
 	@Override
 	public void pushPacket(Packet packet)
 	{
-		this.playerConnection.sendPacket(packet);
+		this.playerConnection.pushPacket(packet);
 	}
 
 	@Override

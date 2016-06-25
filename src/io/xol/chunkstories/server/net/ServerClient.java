@@ -13,7 +13,7 @@ import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.ServerPlayer;
-import io.xol.chunkstories.server.tech.UsersPrivileges;
+import io.xol.chunkstories.server.UsersPrivileges;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
@@ -31,6 +31,8 @@ import java.net.Socket;
 
 public class ServerClient extends Thread implements HttpRequester, PacketDestinator, PacketSender
 {
+	ServerConnectionsManager connectionsManager;
+	
 	int socketPort = 0;
 
 	//Streams.
@@ -56,11 +58,14 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 	
 	private PacketSender sender = this;
 
-	ServerClient(Socket s)
+	ServerClient(ServerConnectionsManager connectionsManager, Socket socket)
 	{
-		packetsProcessor = new PacketsProcessor(this);
-		socket = s;
-		socketPort = s.getPort();
+		this.connectionsManager = connectionsManager;
+
+		this.socket = socket;
+		this.socketPort = socket.getPort();
+		
+		this.packetsProcessor = new PacketsProcessor(this);
 		this.setName("Client thread on port" + socketPort);
 	}
 
@@ -79,10 +84,10 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		if (m.startsWith("version:"))
 		{
 			version = m.replace("version:", "");
-			if (Server.getInstance().serverConfig.getProp("check-version", "true").equals("true"))
+			if (Server.getInstance().getServerConfig().getProp("check-version", "true").equals("true"))
 			{
 				if (Integer.parseInt(version) != VersionInfo.networkProtocolVersion)
-					Server.getInstance().handler.disconnectClient(this, "Wrong protocol version ! " + version + " != " + VersionInfo.networkProtocolVersion +" \n Update your game !");
+					disconnect("Wrong protocol version ! " + version + " != " + VersionInfo.networkProtocolVersion +" \n Update your game !");
 			}
 		}
 		if (m.startsWith("confirm"))
@@ -91,15 +96,15 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 				return;
 			if (UsersPrivileges.isUserBanned(name))
 			{
-				Server.getInstance().handler.disconnectClient(this, "Banned username - " + name);
+				disconnect("Banned username - " + name);
 				return;
 			}
 			if (token.length() != 20)
 			{
-				Server.getInstance().handler.disconnectClient(this, "No valid token supplied");
+				disconnect("No valid token supplied");
 				return;
 			}
-			if (Server.getInstance().serverConfig.getIntProp("offline-mode", "0") == 1)
+			if (Server.getInstance().getServerConfig().getIntProp("offline-mode", "0") == 1)
 			{
 				// Offline-mode !
 				System.out.println("Warning : Offline-mode is on, letting " + this.name + " connecting without verification");
@@ -127,23 +132,23 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			{
 				ChunkStoriesLogger.getInstance().info("Disconnected "+this+" for causing an "+e.getClass().getSimpleName());
 				e.printStackTrace();
-				Server.getInstance().handler.disconnectClient(this, "Exception : "+e.getMessage());
+				disconnect("Exception : "+e.getMessage());
 			}
 			catch (IOException e)
 			{
 				if(this.isAuthentificated())
 					ChunkStoriesLogger.getInstance().info("Connection lost to "+this.getProfile().getDisplayName()+" ("+this.getName()+").");
 				
-				Server.getInstance().handler.disconnectClient(this, "");
+				disconnect("Broken socket");
 			}
 			catch(Exception e)
 			{
 				ChunkStoriesLogger.getInstance().info("Disconnected "+this+" for causing an "+e.getClass().getSimpleName());
 				e.printStackTrace();
-				Server.getInstance().handler.disconnectClient(this, "Exception : "+e.getMessage());
+				disconnect("Exception : "+e.getMessage());
 			}
 		}
-		Server.getInstance().handler.disconnectClient(this);
+		disconnect("Socket terminated");
 	}
 
 	public String getIp()
@@ -156,7 +161,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		return socket.getInetAddress().getHostName();
 	}
 
-	public void open()
+	public void openSocket()
 	{
 		try
 		{
@@ -174,7 +179,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		}
 	}
 
-	public void close()
+	public void closeSocket()
 	{
 		if (alreadyKilled)
 			return;
@@ -186,7 +191,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(getProfile());
 			Server.getInstance().getPluginsManager().fireEvent(playerDisconnectionEvent);
 
-			Server.getInstance().handler.sendAllChat(playerDisconnectionEvent.getLogoutMessage());
+			Server.getInstance().getHandler().sendAllChat(playerDisconnectionEvent.getLogoutMessage());
 
 			//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
 			assert getProfile() != null;
@@ -208,18 +213,18 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 
 	public void sendChat(String msg)
 	{
-		send("chat/" + msg);
+		sendInternalTextMessage("chat/" + msg);
 	}
 
-	public void send(String msg)
+	void sendInternalTextMessage(String msg)
 	{
 		// Text flag
 		PacketText packet = new PacketText(false);
 		packet.text = msg;
-		sendPacket(packet);
+		pushPacket(packet);
 	}
 
-	public void sendPacket(Packet packet)
+	public void pushPacket(Packet packet)
 	{
 		sendQueue.queue(packet);
 	}
@@ -242,13 +247,13 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		//Do we allow him in ?
 		if (!allowPlayerIn)
 		{
-			Server.getInstance().handler.disconnectClient(this, playerConnectionEvent.getRefusedConnectionMessage());
+			disconnect(playerConnectionEvent.getRefusedConnectionMessage());
 			return;
 		}
 		//Announce
-		Server.getInstance().handler.sendAllChat(playerConnectionEvent.getConnectionMessage());
+		Server.getInstance().getHandler().sendAllChat(playerConnectionEvent.getConnectionMessage());
 		//Aknowledge the login
-		send("login/ok");
+		sendInternalTextMessage("login/ok");
 	}
 	
 	@Override
@@ -259,7 +264,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			if (result.equals("ok"))
 				postTokenCheck();
 			else
-				Server.getInstance().handler.disconnectClient(this, "Invalid session id !");
+				disconnect("Invalid session id !");
 		}
 	}
 	
@@ -296,5 +301,13 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 	private final void setProfile(ServerPlayer profile)
 	{
 		this.profile = profile;
+	}
+
+	public void disconnect(String disconnectionMessage)
+	{
+		sendInternalTextMessage("disconnect/" + disconnectionMessage);
+		closeSocket();
+		//Remove the connection from the set in the manager
+		this.connectionsManager.removeDeadConnection(this);
 	}
 }

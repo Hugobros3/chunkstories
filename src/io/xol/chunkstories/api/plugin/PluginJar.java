@@ -13,7 +13,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import io.xol.chunkstories.api.exceptions.PluginInfoException;
-import io.xol.chunkstories.api.server.Command;
+import io.xol.chunkstories.api.plugin.commands.Command;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

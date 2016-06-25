@@ -36,7 +36,6 @@ import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.chunk.ChunksData;
 import io.xol.chunkstories.world.chunk.WorldChunksHolder;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
@@ -71,7 +70,7 @@ public abstract class WorldImplementation implements World
 	public IOTasks ioHandler;
 
 	// RAM-eating depreacated monster
-	public ChunksData chunksData;
+	// public ChunksData chunksData;
 	
 	private WorldChunksHolder chunksHolder;
 
@@ -106,7 +105,7 @@ public abstract class WorldImplementation implements World
 
 		this.generator.initialize(this);
 		
-		this.chunksData = new ChunksData();
+		//this.chunksData = new ChunksData();
 		this.chunksHolder = new WorldChunksHolder(this);
 		this.regionSummaries = new RegionSummaries(this);
 		this.logic = Executors.newSingleThreadScheduledExecutor();
@@ -173,7 +172,11 @@ public abstract class WorldImplementation implements World
 			}
 		}, 0, 16666, TimeUnit.MICROSECONDS);
 	}
-
+	
+	public void stopLogic()
+	{
+		logic.shutdown();
+	}
 	
 	@Override
 	public void addEntity(final Entity entity)
@@ -500,7 +503,11 @@ public abstract class WorldImplementation implements World
 		actuallySetsDataAt(x, y, z, data, false, entity);
 	}
 	
-	protected void actuallySetsDataAt(int x, int y, int z, int newData, boolean load, Entity entity)
+	/**
+	 * Internal method that accesses the data
+	 * @return -1 if fails, the data of the new block if succeeds
+	 */
+	protected int actuallySetsDataAt(int x, int y, int z, int newData, boolean load, Entity entity)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
@@ -511,22 +518,20 @@ public abstract class WorldImplementation implements World
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
-			synchronized (c)
-			{
-				//Optionally runs whatever the voxel requires to run when removed
-				int formerData = c.getDataAt(x % 32, y % 32, z % 32);
-				Voxel formerVoxel = VoxelTypes.get(formerData);
-				if(formerVoxel != null && formerVoxel instanceof VoxelLogic)
-					((VoxelLogic)formerVoxel).onRemove(x, y, z, formerData, entity);
-				
-				//Optionally runs whatever the voxel requires to run when placed
-				Voxel newVoxel = VoxelTypes.get(newData);
-				if(newVoxel != null && newVoxel instanceof VoxelLogic)
-					newData = ((VoxelLogic)newVoxel).onPlace(x, y, z, newData, entity);
-				
-				c.setDataAtWithUpdates(x % 32, y % 32, z % 32, newData);
-				c.markDirty(true);
-			}
+			//Optionally runs whatever the voxel requires to run when removed
+			int formerData = c.getDataAt(x % 32, y % 32, z % 32);
+			Voxel formerVoxel = VoxelTypes.get(formerData);
+			if(formerVoxel != null && formerVoxel instanceof VoxelLogic)
+				((VoxelLogic)formerVoxel).onRemove(x, y, z, formerData, entity);
+			
+			//Optionally runs whatever the voxel requires to run when placed
+			Voxel newVoxel = VoxelTypes.get(newData);
+			if(newVoxel != null && newVoxel instanceof VoxelLogic)
+				newData = ((VoxelLogic)newVoxel).onPlace(x, y, z, newData, entity);
+			
+			c.setDataAtWithUpdates(x % 32, y % 32, z % 32, newData);
+			c.markDirty(true);
+			
 			//Neighbour chunks updates
 			if (x % 32 == 0)
 			{
@@ -606,7 +611,9 @@ public abstract class WorldImplementation implements World
 					chunksHolder.markChunkDirty((x) / 32, (y) / 32, (z + 1) / 32);
 				chunksHolder.markChunkDirty((x) / 32, (y) / 32, (z) / 32);
 			}
+			return newData;
 		}
+		return -1;
 	}
 
 	public void setDataAtWithoutUpdates(int x, int y, int z, int i, boolean load)
@@ -616,24 +623,11 @@ public abstract class WorldImplementation implements World
 		z = sanitizeHorizontalCoordinate(z);
 		
 		getRegionSummaries().blockPlaced(x, y, z, i);
-
-		/*x = x % (getSizeInChunks() * 32);
-		z = z % (getSizeInChunks() * 32);
-		if (y < 0)
-			y = 0;
-		if (y > worldInfo.getSize().height * 32)
-			y = worldInfo.getSize().height * 32;
-		if (x < 0)
-			x += getSizeInChunks() * 32;
-		if (z < 0)
-			z += getSizeInChunks() * 32;*/
+		
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
-			synchronized (c)
-			{
-				c.setDataAtWithoutUpdates(x % 32, y % 32, z % 32, i);
-			}
+			c.setDataAtWithoutUpdates(x % 32, y % 32, z % 32, i);
 		}
 	}
 
@@ -683,8 +677,8 @@ public abstract class WorldImplementation implements World
 		if (this.isChunkLoaded(chunk.chunkX, chunk.chunkY, chunk.chunkZ))
 		{
 			CubicChunk oldchunk = this.getChunk(chunk.chunkX, chunk.chunkY, chunk.chunkZ, false);
-			if (oldchunk.dataPointer != chunk.dataPointer)
-				oldchunk.destroy();
+			//if (oldchunk.dataPointer != chunk.dataPointer)
+			oldchunk.destroy();
 			
 			System.out.println("Removed chunk "+chunk.toString());
 		}
@@ -743,7 +737,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void destroy()
 	{
-		this.chunksData.destroy();
+		//this.chunksData.destroy();
 		this.chunksHolder.destroy();
 		this.getRegionSummaries().destroy();
 		this.logic.shutdown();

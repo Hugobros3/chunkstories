@@ -123,9 +123,13 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 				if(((EntityPlayer)entity).getEntityRotationComponent().getRotV() < 0)
 					stairsSide += 4;
 			}
+			
+			System.out.println("tamerde"+VoxelFormat.meta(voxelData));
+			
+			voxelData = VoxelFormat.changeMeta(voxelData, stairsSide);
 		}
 
-		voxelData = VoxelFormat.changeMeta(voxelData, stairsSide);
+		System.out.println("tamer"+VoxelFormat.meta(voxelData));
 
 		//System.out.println("on place stairs"+stairsSide);
 		return voxelData;

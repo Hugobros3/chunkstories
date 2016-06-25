@@ -45,6 +45,6 @@ public class PacketText extends Packet
 		if(processor.isClient)
 			processor.getServerConnection().handleTextPacket(text);
 		else
-			Server.getInstance().handler.handle(processor.getServerClient(), text);
+			Server.getInstance().getHandler().handle(processor.getServerClient(), text);
 	}
 }

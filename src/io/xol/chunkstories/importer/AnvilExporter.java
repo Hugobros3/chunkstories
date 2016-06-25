@@ -177,7 +177,7 @@ public class AnvilExporter {
 								//exported.save();
 								//exported.clear();
 								
-								if(exported.chunksData.free() < 256)
+								if(exported.getChunksHolder().countChunksWithData() > 256)
 								{
 									//Save world
 									verbose("Almost no chunk cache free, saving and clearing !");

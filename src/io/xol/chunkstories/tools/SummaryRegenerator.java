@@ -57,7 +57,7 @@ public class SummaryRegenerator
 							{
 								int id = VoxelFormat.id(world.getDataAt(rX, y, rZ));
 								CubicChunk chunk = world.getChunk(rX / 32, y / 32, rZ / 32, true);
-								if (chunk != null && chunk.dataPointer == -1)
+								if (chunk != null && chunk.isAirChunk())
 								{
 									y -= 31;
 								}
@@ -71,7 +71,7 @@ public class SummaryRegenerator
 								}
 								y--;
 							}
-							System.out.println(world.chunksData.free());
+							//System.out.println(world.chunksData.free());
 							world.saveEverything();
 							world.getChunksHolder().clearAll();
 							world.unloadEverything();

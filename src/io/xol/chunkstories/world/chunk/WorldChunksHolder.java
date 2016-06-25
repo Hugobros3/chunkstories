@@ -188,4 +188,27 @@ public class WorldChunksHolder
 	{
 		return "[ChunksHolder: "+chunkHolders.size()+" Chunk Holders loaded]";
 	}
+	public int countChunks()
+	{
+		int c = 0;
+		Iterator<CubicChunk> i = world.getAllLoadedChunks();
+		while(i.hasNext())
+		{
+			i.next();
+			c++;
+		}
+		return c;
+	}
+	
+	public int countChunksWithData()
+	{
+		int c = 0;
+		Iterator<CubicChunk> i = world.getAllLoadedChunks();
+		while(i.hasNext())
+		{
+			if(!i.next().isAirChunk())
+				c++;
+		}
+		return c;
+	}
 }

@@ -245,7 +245,7 @@ public class ChunksRenderer extends Thread
 			int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
 			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
 			CubicChunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
-			if (target != null && target.dataPointer != -1)
+			if (target != null && !target.isAirChunk())
 			{
 				data = target.getDataAt(x, y, z);
 				int blockID = VoxelFormat.id(data);
@@ -265,7 +265,7 @@ public class ChunksRenderer extends Thread
 
 		// Look for a chunk with relevant lightning data
 		cached = Client.world.getChunk(x / 32, y / 32, z / 32, false);
-		if (cached != null && cached.dataPointer >= 0)
+		if (cached != null && !cached.isAirChunk())
 		{
 			data = cached.getDataAt(x, y, z);
 
@@ -1027,7 +1027,7 @@ public class ChunksRenderer extends Thread
 
 		int i, j, k;
 		//Don't waste time rendering void chunks m8
-		if (work.dataPointer == -1)
+		if (work.isAirChunk())
 			i = 32;
 		for (i = 0; i < 32; i++)
 		{

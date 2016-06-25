@@ -368,6 +368,9 @@ public class IOTasks extends Thread
 				holder.generateAll();
 				//Pre bake phase 1 lightning
 			}
+			
+			//Marking the holder as loaded allows the game to remove it and unload it, so we set the timer to have a time frame until it naturally unloads.
+			holder.resetUnloadCooldown();
 			holder.setLoaded(true);
 
 			world.trimRemovableChunks();
