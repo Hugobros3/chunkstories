@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.io.CSFRegionFile;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.chunkstories.world.iterators.ChunkHolderIterator;
 import io.xol.engine.concurrency.SafeWriteLock;
@@ -35,7 +36,7 @@ public class ChunkHolder implements Region
 	public final long uuid;
 
 	//Only relevant on Master worlds
-	public final File handler;
+	public final CSFRegionFile handler;
 
 	// Holds 8x8x8 CubicChunks
 	private CubicChunk[][][] data = new CubicChunk[8][8][8];
@@ -86,7 +87,7 @@ public class ChunkHolder implements Region
 		//Only the WorldMaster has a concept of files
 		if (world instanceof WorldMaster)
 		{
-			handler = new File(world.getFolderPath() + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf");
+			handler = new CSFRegionFile(this);
 			world.ioHandler.requestChunkHolderLoad(this);
 		}
 		else
@@ -270,7 +271,7 @@ public class ChunkHolder implements Region
 					int cx = this.regionX * 8 + a;
 					int cy = this.regionY * 8 + b;
 					int cz = this.regionZ * 8 + c;
-					chunk = world.getGenerator().generateChunk(cx, cy, cz);
+					chunk = (CubicChunk) world.getGenerator().generateChunk(cx, cy, cz);
 					if (chunk == null)
 						System.out.println("hmmmmm");
 					chunk.holder = this;

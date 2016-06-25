@@ -1,17 +1,14 @@
 package io.xol.chunkstories.api.world;
 
-import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.CubicChunk;
-
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
 public abstract class WorldGenerator
 {
-	protected WorldImplementation world;
+	protected World world;
 
-	public void initialize(WorldImplementation world)
+	public void initialize(World world)
 	{
 		this.world = world;
 	}
@@ -23,7 +20,7 @@ public abstract class WorldGenerator
 	 * @param cz
 	 * @return a CubicChunk object
 	 */
-	public abstract CubicChunk generateChunk(int cx, int cy, int cz);
+	public abstract Chunk generateChunk(int cx, int cy, int cz);
 
 	/**
 	 * Returns the data {@link VoxelFormat} for summary generation

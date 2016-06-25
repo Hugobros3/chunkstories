@@ -19,7 +19,7 @@ public class MinecraftRegion {
 	public static void main(String a[])
 	{
 		MinecraftRegion r = new MinecraftRegion(new File("world/region/r.0.1.mca"));//"r.0.0.mca.in"));
-		MChunk c = r.getChunk(22, 1);
+		MinecraftChunk c = r.getChunk(22, 1);
 		System.out.println("------------");
 		int block = c.getBlockID(5, 6, 9);
 		System.out.println(block);
@@ -62,7 +62,7 @@ public class MinecraftRegion {
 		return ((x & 31) + (z & 31) * 32);
 	}
 	
-	public MChunk getChunk(int x, int z)
+	public MinecraftChunk getChunk(int x, int z)
 	{
 		int l = offset(x,z);
 		if(sizes[l] > 0)
@@ -101,7 +101,7 @@ public class MinecraftRegion {
 					}
 					baos.close();
 					
-					return new MChunk(x,z, baos.toByteArray());
+					return new MinecraftChunk(x,z, baos.toByteArray());
 				}
 			}
 			catch(Exception e)
@@ -109,7 +109,7 @@ public class MinecraftRegion {
 				e.printStackTrace();
 			}
 		}
-		return new MChunk(x,z);
+		return new MinecraftChunk(x,z);
 	}
 	
 	public void close()

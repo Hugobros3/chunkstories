@@ -3,6 +3,7 @@ package io.xol.chunkstories.core.generator;
 import java.util.Random;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -17,10 +18,10 @@ public class NoiseWorldGenerator extends WorldGenerator
 	int ws;
 
 	@Override
-	public void initialize(WorldImplementation w)
+	public void initialize(World w)
 	{
 		super.initialize(w);
-		ssng = new SeededSimplexNoiseGenerator(w.getWorldInfo().getSeed());
+		ssng = new SeededSimplexNoiseGenerator(((WorldImplementation) w).getWorldInfo().getSeed());
 		ws = world.getSizeInChunks() * 32;
 	}
 
@@ -29,7 +30,7 @@ public class NoiseWorldGenerator extends WorldGenerator
 	{
 		//rnd.setSeed(cx * 32 + cz + 48716148);
 		
-		CubicChunk chunk = new CubicChunk(world, cx, cy, cz);
+		CubicChunk chunk = new CubicChunk((WorldImplementation) world, cx, cy, cz);
 		Vector3f position = new Vector3f();
 
 		int wx = 8, wy = 4, wz = 8;

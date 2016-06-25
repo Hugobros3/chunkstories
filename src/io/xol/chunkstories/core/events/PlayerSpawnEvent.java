@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.core.entity.EntityPlayer;
+import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.world.WorldImplementation;
 

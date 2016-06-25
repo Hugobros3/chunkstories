@@ -39,9 +39,7 @@ public class PacketEntity extends PacketSynch
 		
 		//Write all components we wanna update
 		if(updateOneComponent != null)
-		{
 			updateOneComponent.pushComponentInStream(destinator, out);
-		}
 		else
 			updateManyComponents.pushAllComponentsInStream(destinator, out);
 		

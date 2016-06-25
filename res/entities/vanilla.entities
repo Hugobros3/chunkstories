@@ -1,4 +1,5 @@
 # Here you assign entities their ID and class.
+# ID 0 is reserved
 
 1 io.xol.chunkstories.core.entity.EntityPlayer
 2 io.xol.chunkstories.core.entity.EntityTest

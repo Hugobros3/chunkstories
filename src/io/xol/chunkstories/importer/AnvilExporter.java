@@ -4,7 +4,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import io.xol.chunkstories.anvil.MChunk;
+import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -146,7 +146,7 @@ public class AnvilExporter {
 								{
 									//Mc chunk is in cs worldspace
 									//verbose("Chunk "+mccx+" "+mccz+" of region "+mcrX+" "+mcrZ+" is in chunk stories worldspace.");
-									MChunk chunk = null;
+									MinecraftChunk chunk = null;
 									try{
 										if(region != null)
 											chunk = region.getChunk(mccx, mccz);

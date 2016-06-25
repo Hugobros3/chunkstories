@@ -1,4 +1,4 @@
-package io.xol.chunkstories.core.events;
+package io.xol.chunkstories.entity;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -10,8 +10,7 @@ import java.io.IOException;
 import io.xol.chunkstories.api.csf.OfflineSerializedData;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.UnknownComponentException;
-import io.xol.chunkstories.entity.EntitiesList;
-import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -31,7 +30,12 @@ public class SerializedEntityFile implements OfflineSerializedData
 		return file.exists();
 	}
 	
-	public Entity read(WorldImplementation world)
+	public String toString()
+	{
+		return "[CSF File: "+file.toString()+"]";
+	}
+	
+	public Entity read(World world)
 	{
 		try
 		{

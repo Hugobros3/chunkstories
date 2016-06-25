@@ -2,6 +2,7 @@ package io.xol.chunkstories.core.generator;
 
 import java.util.Random;
 
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -19,10 +20,10 @@ public class HorizonGenerator extends WorldGenerator
 	int ws;
 	
 	@Override
-	public void initialize(WorldImplementation w)
+	public void initialize(World w)
 	{
 		super.initialize(w);
-		ssng = new SeededSimplexNoiseGenerator(w.getWorldInfo().getSeed());
+		ssng = new SeededSimplexNoiseGenerator(((WorldImplementation) w).getWorldInfo().getSeed());
 		ws = world.getSizeInChunks() * 32;
 	}
 	
@@ -31,13 +32,13 @@ public class HorizonGenerator extends WorldGenerator
 	{
 		rnd.setSeed(cx * 32 + cz + 48716148);
 		
-		CubicChunk c = new CubicChunk(world, cx, cy, cz);
+		CubicChunk c = new CubicChunk((WorldImplementation) world, cx, cy, cz);
 		int type = 0;
 		for(int x = 0; x < 32; x++)
 			for(int z = 0; z < 32; z++)
 			{
 				//int v = getHeightAt(cx * 32 + x, cz * 32 + z);
-				int v = world.getRegionSummaries().getHeightAt(cx * 32 + x, cz * 32 + z);
+				int v = ((WorldImplementation) world).getRegionSummaries().getHeightAt(cx * 32 + x, cz * 32 + z);
 				//int v = 250;
 				int y = cy * 32;
 				while(y < cy * 32 + 32 && y < v)

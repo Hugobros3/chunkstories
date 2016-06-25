@@ -310,49 +310,17 @@ public class IOTasks extends Thread
 			{
 				try
 				{
-					FileInputStream in = new FileInputStream(holder.handler);
-					int[] chunksSizes = new int[8 * 8 * 8];
-					// First load the index
-					for (int a = 0; a < 8 * 8 * 8; a++)
-					{
-						int size = in.read() << 24;
-						size += in.read() << 16;
-						size += in.read() << 8;
-						size += in.read();
-						chunksSizes[a] = size;
-					}
-					//Lock the holder compressed chunks array !
-					holder.compressedChunksLock.beginWrite();
-					// Then load the chunks
-					for (int a = 0; a < 8; a++)
-						for (int b = 0; b < 8; b++)
-							for (int c = 0; c < 8; c++)
-							{
-								int size = chunksSizes[a * 8 * 8 + b * 8 + c];
-								// if chunk present then create it's byte array
-								// and
-								// fill it
-								if (size > 0)
-								{
-									holder.compressedChunks[a][b][c] = new byte[size];
-									in.read(holder.compressedChunks[a][b][c], 0, size);
-									// i++;
-								}
-							}
-					//Unlock it immediatly afterwards
-					holder.compressedChunksLock.endWrite();
-					// System.out.println("read "+i+" compressed chunks");
-					in.close();
+					holder.handler.load();
 				}
 				catch (FileNotFoundException e)
 				{
 					e.printStackTrace();
-					return false;
+					return true;
 				}
 				catch (IOException e)
 				{
 					e.printStackTrace();
-					return false;
+					return true;
 				}
 			}
 			//Else if no file exists
@@ -419,39 +387,7 @@ public class IOTasks extends Thread
 			// Then write the file.
 			try
 			{
-				holder.handler.getParentFile().mkdirs();
-				if (!holder.handler.exists())
-					holder.handler.createNewFile();
-				FileOutputStream out = new FileOutputStream(holder.handler);
-				// int[] chunksSizes = new int[8*8*8];
-				holder.compressedChunksLock.beginRead();
-				// First write the index
-				for (int a = 0; a < 8; a++)
-					for (int b = 0; b < 8; b++)
-						for (int c = 0; c < 8; c++)
-						{
-							int chunkSize = 0;
-							if (holder.compressedChunks[a][b][c] != null)
-							{
-								chunkSize = holder.compressedChunks[a][b][c].length;
-							}
-							out.write((chunkSize >>> 24) & 0xFF);
-							out.write((chunkSize >>> 16) & 0xFF);
-							out.write((chunkSize >>> 8) & 0xFF);
-							out.write((chunkSize >>> 0) & 0xFF);
-						}
-				// Then write said chunks
-				for (int a = 0; a < 8; a++)
-					for (int b = 0; b < 8; b++)
-						for (int c = 0; c < 8; c++)
-						{
-							if (holder.compressedChunks[a][b][c] != null)
-							{
-								out.write(holder.compressedChunks[a][b][c]);
-							}
-						}
-				holder.compressedChunksLock.endRead();
-				out.close();
+				holder.handler.save();
 			}
 			catch (FileNotFoundException e)
 			{

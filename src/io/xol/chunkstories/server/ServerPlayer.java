@@ -7,7 +7,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.server.Player;
-import io.xol.chunkstories.core.events.SerializedEntityFile;
+import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.misc.ColorsTools;
