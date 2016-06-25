@@ -29,7 +29,7 @@ public class ServerConsole
 	
 	public boolean handleCommand(CommandEmitter emitter, Command cmd, String[] arguments)
 	{
-		ChunkStoriesLogger.getInstance().info(("[" + emitter.getName() + "] ") + "Entered command : " + cmd);
+		ChunkStoriesLogger.getInstance().info(("[" + emitter.getName() + "] ") + "Entered command : " + cmd.getName());
 		try
 		{
 			//First try to handle the plugins commands
@@ -168,7 +168,7 @@ public class ServerConsole
 					emitter.sendMessage("Config reloaded.");
 					return true;
 				}
-				else if (arguments[0].equals("kick") && arguments.length >= 1)
+				else if (arguments.length >= 1 && cmd.equals("kick"))
 				{
 					ServerClient clientByName = server.getHandler().getAuthentificatedClientByName(arguments[1]);
 					String kickReason = "Donacdum";

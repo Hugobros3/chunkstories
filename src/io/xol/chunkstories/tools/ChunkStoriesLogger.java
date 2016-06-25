@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import io.xol.chunkstories.client.Client;
 
@@ -36,6 +38,9 @@ public class ChunkStoriesLogger
 	{
 		return instance;
 	}
+
+	Calendar cal = Calendar.getInstance();
+	SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
 	boolean logUploadPolicy = false;
 
@@ -128,25 +133,25 @@ public class ChunkStoriesLogger
 
 	public void close()
 	{
-			info("Successfully written log");
-			fileWriter.close();
-			
-			try
-			{
-				if(Client.clientConfig.getProp("log-policy", "undefined").equals("send"))
-					Runtime.getRuntime().exec("java -jar logs-reporter.jar "+Client.username+" \""+logFile.getAbsolutePath()+"\"");
-			}
-			catch (IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// Report whatever happened
+		info("Successfully written log");
+		fileWriter.close();
 
-			/*logReportThread = new SendReportThread(logFile);
-			logReportThread.run();*/
+		try
+		{
+			if (Client.clientConfig.getProp("log-policy", "undefined").equals("send"))
+				Runtime.getRuntime().exec("java -jar logs-reporter.jar " + Client.username + " \"" + logFile.getAbsolutePath() + "\"");
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// Report whatever happened
 
-			//System.exit(0);
+		/*logReportThread = new SendReportThread(logFile);
+		logReportThread.run();*/
+
+		//System.exit(0);
 	}
 
 	LogLevel logToConsole;
@@ -170,6 +175,9 @@ public class ChunkStoriesLogger
 		if (type != UNSPECIFIED)
 			line += "[" + type.name() + "]";
 		line += text;
+
+		String time = sdf.format(cal.getTime());
+		line = "[" + time + "]" + line;
 
 		// ie NONE CRITICAL
 		// CRITICAL > NONE

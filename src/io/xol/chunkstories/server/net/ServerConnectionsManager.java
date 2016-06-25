@@ -126,6 +126,8 @@ public class ServerConnectionsManager extends Thread
 			//Console commands start with a /
 			if (chatMsg.startsWith("/"))
 			{
+				chatMsg = chatMsg.substring(1, chatMsg.length());
+				
 				String cmdName = chatMsg.toLowerCase();
 				String[] args = {};
 				if (chatMsg.contains(" "))

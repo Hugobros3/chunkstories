@@ -46,16 +46,15 @@ public class Server implements Runnable, ServerInterface
 		return server;
 	}
 
-	// Basic server stuff init !
-	private ConfigFile serverConfig = new ConfigFile("./config/server.cfg");
 	private ChunkStoriesLogger log = null;
+	private ConfigFile serverConfig = new ConfigFile("./config/server.cfg");
 	
 	private AtomicBoolean running = new AtomicBoolean(true);
-	private long initTimestamp = System.currentTimeMillis() / 1000; // <- uptime !
+	private long initTimestamp = System.currentTimeMillis() / 1000;
 
 	private WorldServer world;
 
-	private ServerConnectionsManager handler;
+	private ServerConnectionsManager connectionsManager;
 	private ServerConsole console = new ServerConsole(this);
 
 	private PluginsManager pluginsManager;
@@ -69,14 +68,16 @@ public class Server implements Runnable, ServerInterface
 		// Start server services
 		try
 		{
-			log.info("Starting ChunkStories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
-			handler = new ServerConnectionsManager(this);
-			
+			//Init logs first !
 			Calendar cal = Calendar.getInstance();
 			SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 			String time = sdf.format(cal.getTime());
+			
 			ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/serverlogs/" + time + ".log")));
 			log = ChunkStoriesLogger.getInstance();
+		
+			log.info("Starting ChunkStories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
+			connectionsManager = new ServerConnectionsManager(this);
 			
 			GameData.reload();
 			// Load world
@@ -99,7 +100,7 @@ public class Server implements Runnable, ServerInterface
 			// load users privs
 			UsersPrivileges.load();
 			// init network
-			handler.start();
+			connectionsManager.start();
 			// Load plugins
 			pluginsManager = new PluginsManager(this);
 		}
@@ -190,8 +191,8 @@ public class Server implements Runnable, ServerInterface
 	{
 		// When stopped, close sockets and save config.
 		log.info("Killing all connections");
-		handler.closeAll();
-		handler.closeConnection();
+		connectionsManager.closeAll();
+		connectionsManager.closeConnection();
 		
 		log.info("Saving map...");
 		world.saveEverything();
@@ -230,7 +231,7 @@ public class Server implements Runnable, ServerInterface
 	{
 		return new Iterator<Player>()
 		{
-			Iterator<ServerClient> authClients = handler.getAuthentificatedClients();
+			Iterator<ServerClient> authClients = connectionsManager.getAuthentificatedClients();
 
 			@Override
 			public boolean hasNext()
@@ -250,7 +251,7 @@ public class Server implements Runnable, ServerInterface
 	@Override
 	public String getName()
 	{
-		return "[Server console " + VersionInfo.version + "]";
+		return "Server console " + VersionInfo.version + "";
 	}
 
 	@Override
@@ -268,7 +269,7 @@ public class Server implements Runnable, ServerInterface
 	@Override
 	public Player getPlayer(String playerName)
 	{
-		ServerClient clientByThatName = handler.getAuthentificatedClientByName(playerName);
+		ServerClient clientByThatName = connectionsManager.getAuthentificatedClientByName(playerName);
 		if (clientByThatName != null)
 			return clientByThatName.getProfile();
 		return null;
@@ -288,7 +289,7 @@ public class Server implements Runnable, ServerInterface
 
 	public ServerConnectionsManager getHandler()
 	{
-		return handler;
+		return connectionsManager;
 	}
 
 	public ChunkStoriesLogger getLogger()
