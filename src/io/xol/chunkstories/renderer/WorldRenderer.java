@@ -476,8 +476,19 @@ public class WorldRenderer
 									//System.out.println(chunk.chunkY+":"+);
 									//if (Math.abs(yDistance) <= 16f)
 									{
-										localMapCommands.put((byte) (chunk.getChunkX() - currentChunkX));
-										localMapCommands.put((byte) (chunk.getChunkZ() - currentChunkZ));
+										int ajustedChunkX = chunk.getChunkX();
+										int ajustedChunkZ = chunk.getChunkZ();
+										if (chunk.getChunkX() - currentChunkX > chunksViewDistance)
+											ajustedChunkX += -sizeInChunks;
+										if (chunk.getChunkX() - currentChunkX < -chunksViewDistance)
+											ajustedChunkX += sizeInChunks;
+										if (chunk.getChunkZ() - currentChunkZ > chunksViewDistance)
+											ajustedChunkZ += -sizeInChunks;
+										if (chunk.getChunkZ() - currentChunkZ < -chunksViewDistance)
+											ajustedChunkZ += sizeInChunks;
+										
+										localMapCommands.put((byte) (ajustedChunkX - currentChunkX));
+										localMapCommands.put((byte) (ajustedChunkZ - currentChunkZ));
 										localMapCommands.put((byte) (chunk.getChunkY()));
 										//System.out.println(chunk.chunkY);
 										localMapCommands.put((byte) 0x00);
@@ -1074,7 +1085,7 @@ public class WorldRenderer
 		renderTerrain(chunksToRenderLimit != -1);
 		
 		//Draws chunks lines
-		if(FastConfig.showDebugInfo)
+		/*if(FastConfig.showDebugInfo)
 		{
 			OverlayRenderer.glColor4f(4, 0, 0, 1);
 			ChunksIterator it = world.getAllLoadedChunks();
@@ -1090,7 +1101,7 @@ public class WorldRenderer
 				}
 			}
 				
-		}
+		}*/
 	}
 
 	private void renderLightsDeffered()

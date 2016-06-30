@@ -38,7 +38,6 @@ import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.chunk.WorldChunksHolder;
 import io.xol.chunkstories.world.chunk.ChunkRenderable;
-import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.EntityRayIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
@@ -59,7 +58,7 @@ public abstract class WorldImplementation implements World
 
 	//protected final boolean client;
 	private final ConfigFile internalData;
-	
+
 	private WorldGenerator generator;
 
 	// The world age, also tick counter. Can count for billions of real-world
@@ -72,7 +71,7 @@ public abstract class WorldImplementation implements World
 
 	// RAM-eating depreacated monster
 	// public ChunksData chunksData;
-	
+
 	private WorldChunksHolder chunksHolder;
 
 	// Heightmap management
@@ -91,13 +90,13 @@ public abstract class WorldImplementation implements World
 
 	// Particles
 	private ParticlesHolder particlesHolder;
-	
+
 	//Entity IDS counter
 	AtomicLong entitiesUUIDGenerator = new AtomicLong();
-	
+
 	//Ugly primitive crap
 	boolean raining;
-	
+
 	public WorldImplementation(WorldInfo info)
 	{
 		worldInfo = info;
@@ -105,19 +104,19 @@ public abstract class WorldImplementation implements World
 		this.generator = worldInfo.getGenerator();
 
 		this.generator.initialize(this);
-		
+
 		//this.chunksData = new ChunksData();
 		this.chunksHolder = new WorldChunksHolder(this);
 		this.regionSummaries = new WorldHeightmapVersion(this);
 		this.logic = Executors.newSingleThreadScheduledExecutor();
-		
-		if(this instanceof WorldMaster)
+
+		if (this instanceof WorldMaster)
 		{
 			this.folder = new File(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName());
-	
+
 			this.internalData = new ConfigFile(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName() + "/internal.dat");
 			this.internalData.load();
-			
+
 			this.entitiesUUIDGenerator.set(internalData.getLongProp("entities-ids-counter", 0));
 		}
 		else
@@ -131,7 +130,7 @@ public abstract class WorldImplementation implements World
 	{
 		return worldInfo;
 	}
-	
+
 	public File getFolderFile()
 	{
 		return folder;
@@ -139,11 +138,12 @@ public abstract class WorldImplementation implements World
 
 	/**
 	 * Returns where this world resides on actual disk
+	 * 
 	 * @return
 	 */
 	public String getFolderPath()
 	{
-		if(folder != null)
+		if (folder != null)
 			return folder.getAbsolutePath();
 		return null;
 	}
@@ -173,12 +173,12 @@ public abstract class WorldImplementation implements World
 			}
 		}, 0, 16666, TimeUnit.MICROSECONDS);
 	}
-	
+
 	public void stopLogic()
 	{
 		logic.shutdown();
 	}
-	
+
 	@Override
 	public void addEntity(final Entity entity)
 	{
@@ -187,14 +187,14 @@ public abstract class WorldImplementation implements World
 		{
 			long nextUUID = nextEntityId();
 			entity.setUUID(nextUUID);
-			System.out.println("given "+nextUUID+" to "+entity);
+			System.out.println("given " + nextUUID + " to " + entity);
 		}
-		
+
 		entity.getLocation().setWorld(this);
-		
+
 		//Location currLocation = entity.getLocation();
 		//entity.setLocation(new Location(this, currLocation.getX(), currLocation.getY(), currLocation.getZ()));
-		
+
 		//Add it to the world
 		this.entities.add(entity);
 	}
@@ -214,14 +214,14 @@ public abstract class WorldImplementation implements World
 				//iter.remove();
 			}
 		}*/
-		
-		if(entity != null)
+
+		if (entity != null)
 			return entity.removeFromWorld();
-		
+
 		return false;
 		//return this.entities.remove(entity);
 	}
-	
+
 	@Override
 	public boolean removeEntity(long uuid)
 	{
@@ -237,16 +237,17 @@ public abstract class WorldImplementation implements World
 				//iter.remove();
 			}
 		}
-		
-		if(entityFound != null)
+
+		if (entityFound != null)
 			return entityFound.removeFromWorld();
-		
+
 		return false;
 		//return this.entities.remove(entity);
 	}
-	
+
 	/**
 	 * Internal methods that actually removes the entity from the list after having removed it's reference from elsewere.
+	 * 
 	 * @return
 	 */
 	public boolean removeEntityFromList(Entity entity)
@@ -257,13 +258,13 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void tick()
 	{
-		if(this instanceof WorldNetworked)
+		if (this instanceof WorldNetworked)
 		{
 			//TODO net logic has nothing to do in world logic, it should be handled elsewere !!!
 			//Deal with packets we received
-			((WorldNetworked)this).processIncommingPackets();
+			((WorldNetworked) this).processIncommingPackets();
 		}
-		
+
 		entitiesLock.lock();
 		try
 		{
@@ -273,29 +274,31 @@ public abstract class WorldImplementation implements World
 			{
 				//System.out.println("normal mv");
 				entity = iter.next();
-				if (entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null 
-						&& Client.controlledEntity != null && Client.controlledEntity.equals(entity))
+				if (entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.controlledEntity != null && Client.controlledEntity.equals(entity))
 				{
 					//System.out.println("mdr");
 					((EntityControllable) entity).tick(Client.getInstance());
 				}
-					
-				//if (entity.getChunkHolder() != null && entity.getChunkHolder().isLoaded())
-				if(entity instanceof EntityControllable)
+
+				Location entityLocation = entity.getLocation();
+				if (entity.getChunkHolder() != null && entity.getChunkHolder().isDiskDataLoaded() && 
+						entity.getChunkHolder().isChunkLoaded((int)entityLocation.getX()/32, (int)entityLocation.getY()/32, (int)entityLocation.getZ()/32))
 				{
-					Controller controller = ((EntityControllable) entity).getControllerComponent().getController();
-					if(controller instanceof ServerPlayer)
+					if (entity instanceof EntityControllable)
 					{
-						//no
+						Controller controller = ((EntityControllable) entity).getControllerComponent().getController();
+						if (controller instanceof ServerPlayer)
+						{
+							//no
+						}
+						else if (controller instanceof Client)
+							entity.tick();
+
 					}
-					else if(controller instanceof Client)
+					else
 						entity.tick();
-						
 				}
-				else
-					entity.tick();
-				
-				
+
 			}
 			if (getParticlesHolder() != null)
 				getParticlesHolder().updatePhysics();
@@ -307,13 +310,13 @@ public abstract class WorldImplementation implements World
 		}
 		entitiesLock.unlock();
 	}
-	
+
 	@Override
 	public Iterator<Entity> getAllLoadedEntities()
 	{
 		return new EntityWorldIterator(entities);
 	}
-	
+
 	@Override
 	public Entity getEntityByUUID(long entityID)
 	{
@@ -419,7 +422,7 @@ public abstract class WorldImplementation implements World
 		//If it doesn't return null then it exists
 		return this.chunksHolder.getChunk(chunkX, chunkY, chunkZ, false) != null;
 	}
-	
+
 	public WorldHeightmapVersion getRegionSummaries()
 	{
 		return regionSummaries;
@@ -431,9 +434,9 @@ public abstract class WorldImplementation implements World
 	@Override
 	public int getDataAt(Location location)
 	{
-		return getDataAt((int)location.x, (int)location.y, (int)location.z);
+		return getDataAt((int) location.x, (int) location.y, (int) location.z);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.world.WorldInterface#getDataAt(io.xol.chunkstories.api.Location, boolean)
 	 */
@@ -442,10 +445,10 @@ public abstract class WorldImplementation implements World
 	{
 		return getDataAt(location, load);
 	}
-	
+
 	public int getDataAt(Vector3d location, boolean load)
 	{
-		return getDataAt((int)location.x, (int)location.y, (int)location.z, load);
+		return getDataAt((int) location.x, (int) location.y, (int) location.z, load);
 	}
 
 	/* (non-Javadoc)
@@ -456,38 +459,38 @@ public abstract class WorldImplementation implements World
 	{
 		return getDataAt(x, y, z, true);
 	}
-	
+
 	@Override
 	public int getDataAt(int x, int y, int z, boolean load)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 			return c.getDataAt(x, y, z);
 		return 0;
 	}
-	
+
 	@Override
 	public void setDataAt(int x, int y, int z, int data)
 	{
 		setDataAt(x, y, z, data, true);
 	}
-	
+
 	@Override
 	public void setDataAt(Location location, int data)
 	{
-		setDataAt((int)location.x, (int)location.y, (int)location.z, data, true);
+		setDataAt((int) location.x, (int) location.y, (int) location.z, data, true);
 	}
-	
+
 	@Override
 	public void setDataAt(Location location, int data, boolean load)
 	{
-		setDataAt((int)location.x, (int)location.y, (int)location.z, data, load);
+		setDataAt((int) location.x, (int) location.y, (int) location.z, data, load);
 	}
-	
+
 	@Override
 	public void setDataAt(int x, int y, int z, int data, boolean load)
 	{
@@ -497,7 +500,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void setDataAt(Location location, int data, Entity entity)
 	{
-		actuallySetsDataAt((int)location.x, (int)location.y, (int)location.z, data, false, entity);
+		actuallySetsDataAt((int) location.x, (int) location.y, (int) location.z, data, false, entity);
 	}
 
 	@Override
@@ -505,9 +508,10 @@ public abstract class WorldImplementation implements World
 	{
 		actuallySetsDataAt(x, y, z, data, false, entity);
 	}
-	
+
 	/**
 	 * Internal method that accesses the data
+	 * 
 	 * @return -1 if fails, the data of the new block if succeeds
 	 */
 	protected int actuallySetsDataAt(int x, int y, int z, int newData, boolean load, Entity entity)
@@ -515,25 +519,25 @@ public abstract class WorldImplementation implements World
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		getRegionSummaries().blockPlaced(x, y, z, newData);
-		
+
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
 			//Optionally runs whatever the voxel requires to run when removed
 			int formerData = c.getDataAt(x % 32, y % 32, z % 32);
 			Voxel formerVoxel = VoxelTypes.get(formerData);
-			if(formerVoxel != null && formerVoxel instanceof VoxelLogic)
-				((VoxelLogic)formerVoxel).onRemove(x, y, z, formerData, entity);
-			
+			if (formerVoxel != null && formerVoxel instanceof VoxelLogic)
+				((VoxelLogic) formerVoxel).onRemove(x, y, z, formerData, entity);
+
 			//Optionally runs whatever the voxel requires to run when placed
 			Voxel newVoxel = VoxelTypes.get(newData);
-			if(newVoxel != null && newVoxel instanceof VoxelLogic)
-				newData = ((VoxelLogic)newVoxel).onPlace(x, y, z, newData, entity);
-			
+			if (newVoxel != null && newVoxel instanceof VoxelLogic)
+				newData = ((VoxelLogic) newVoxel).onPlace(x, y, z, newData, entity);
+
 			c.setDataAtWithUpdates(x % 32, y % 32, z % 32, newData);
-			
+
 			//Neighbour chunks updates
 			if (x % 32 == 0)
 			{
@@ -623,9 +627,9 @@ public abstract class WorldImplementation implements World
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		getRegionSummaries().blockPlaced(x, y, z, i);
-		
+
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
@@ -639,34 +643,34 @@ public abstract class WorldImplementation implements World
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		if(this.isChunkLoaded(x/32, y/32, z/32) && !this.getChunk(x/32, y/32, z/32, false).isAirChunk())
+		if (this.isChunkLoaded(x / 32, y / 32, z / 32) && !this.getChunk(x / 32, y / 32, z / 32, false).isAirChunk())
 			return VoxelFormat.sunlight(this.getDataAt(x, y, z));
 		else
 			return y <= this.getRegionSummaries().getHeightAtWorldCoordinates(x, z) ? 0 : 15;
 	}
-	
+
 	@Override
 	public int getSunlightLevel(Location location)
 	{
-		return getSunlightLevel((int)location.x, (int)location.y, (int)location.z);
+		return getSunlightLevel((int) location.x, (int) location.y, (int) location.z);
 	}
-		
+
 	@Override
 	public int getBlocklightLevel(int x, int y, int z)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		if(this.isChunkLoaded(x/32, y/32, z/32))
+		if (this.isChunkLoaded(x / 32, y / 32, z / 32))
 			return VoxelFormat.blocklight(this.getDataAt(x, y, z));
 		else
 			return 0;
 	}
-	
+
 	@Override
 	public int getBlocklightLevel(Location location)
 	{
-		return getBlocklightLevel((int)location.x, (int)location.y, (int)location.z);
+		return getBlocklightLevel((int) location.x, (int) location.y, (int) location.z);
 	}
 
 	/* (non-Javadoc)
@@ -680,8 +684,8 @@ public abstract class WorldImplementation implements World
 			Chunk oldchunk = this.getChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ(), false);
 			//if (oldchunk.dataPointer != chunk.dataPointer)
 			oldchunk.destroy();
-			
-			System.out.println("Removed chunk "+chunk.toString());
+
+			System.out.println("Removed chunk " + chunk.toString());
 		}
 		chunksHolder.setChunk(chunk);
 		if (renderer != null)
@@ -699,9 +703,9 @@ public abstract class WorldImplementation implements World
 		while (i.hasNext())
 		{
 			c = i.next();
-			if(c instanceof ChunkRenderable)
+			if (c instanceof ChunkRenderable)
 			{
-				ChunkRenderable c2 = (ChunkRenderable)c;
+				ChunkRenderable c2 = (ChunkRenderable) c;
 				c2.destroyRenderData();
 			}
 		}
@@ -727,7 +731,7 @@ public abstract class WorldImplementation implements World
 		chunksHolder.saveAll();
 		getRegionSummaries().saveAll();
 
-		this.worldInfo.save(new File(this.getFolderPath()+"/info.txt"));
+		this.worldInfo.save(new File(this.getFolderPath() + "/info.txt"));
 		this.internalData.setProp("entities-ids-counter", entitiesUUIDGenerator.get());
 		this.internalData.save();
 	}
@@ -761,6 +765,7 @@ public abstract class WorldImplementation implements World
 
 	/**
 	 * Legacy crap for particle system
+	 * 
 	 * @param posX
 	 * @param posY
 	 * @param posZ
@@ -772,15 +777,15 @@ public abstract class WorldImplementation implements World
 		int id = VoxelFormat.id(data);
 		if (id > 0)
 		{
-			
+
 			Voxel v = VoxelTypes.get(id);
 			/*CollisionBox[] boxes = v.getCollisionBoxes(data);
 			if (boxes != null)
 				for (CollisionBox box : boxes)
 					if (box.isPointInside(posX, posY, posZ))
 						return true;*/
-			
-			if(v.isVoxelSolid())
+
+			if (v.isVoxelSolid())
 				return true;
 
 		}
@@ -795,8 +800,8 @@ public abstract class WorldImplementation implements World
 	{
 		if (this instanceof WorldTool)
 			System.out.println("omg this should not happen");
-		
-		if(Client.controlledEntity == null)
+
+		if (Client.controlledEntity == null)
 			return;
 		Location loc = Client.controlledEntity.getLocation();
 		ChunksIterator it = this.getAllLoadedChunks();
@@ -821,8 +826,9 @@ public abstract class WorldImplementation implements World
 				int pCZ = (int) Math.floor(loc.z / 32);
 
 				//System.out.println("chunkX:"+chunk.chunkX+":"+chunk.chunkY+":"+chunk.chunkZ);
-				
-				if (((LoopingMathHelper.moduloDistance(chunk.getChunkX(), pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(chunk.getChunkZ(), pCZ, sizeInChunks) > chunksViewDistance) || Math.abs(chunk.getChunkY() - pCY) > 3 + 1))
+
+				if (((LoopingMathHelper.moduloDistance(chunk.getChunkX(), pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(chunk.getChunkZ(), pCZ, sizeInChunks) > chunksViewDistance)
+						|| Math.abs(chunk.getChunkY() - pCY) > 3 + 1))
 				{
 					chunk.destroy();
 					keep = false;
@@ -868,13 +874,13 @@ public abstract class WorldImplementation implements World
 		double dz = internalData.getDoubleProp("defaultSpawnZ", 0.0);
 		return new Location(this, dx, dy, dz);
 	}
-	
+
 	@Override
 	public void setTime(long time)
 	{
 		this.worldTime = time;
 	}
-	
+
 	@Override
 	public WorldGenerator getGenerator()
 	{
@@ -884,26 +890,26 @@ public abstract class WorldImplementation implements World
 	@Override
 	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input)
 	{
-		if(voxelLocation == null)
+		if (voxelLocation == null)
 			return false;
-		
+
 		int dataAtLocation = this.getDataAt(voxelLocation);
 		Voxel voxel = VoxelTypes.get(dataAtLocation);
-		if(voxel != null && voxel instanceof VoxelInteractive)
-			return ((VoxelInteractive)voxel).handleInteraction(entity, voxelLocation, input, dataAtLocation);
+		if (voxel != null && voxel instanceof VoxelInteractive)
+			return ((VoxelInteractive) voxel).handleInteraction(entity, voxelLocation, input, dataAtLocation);
 		return false;
 	}
-	
+
 	public Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit)
 	{
 		return raytraceSolid(initialPosition, direction, limit, false);
 	}
-	
+
 	public Location raytraceSolidOuter(Vector3d initialPosition, Vector3d direction, double limit)
 	{
 		return raytraceSolid(initialPosition, direction, limit, true);
 	}
-	
+
 	private Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit, boolean outer)
 	{
 		direction.normalize();
@@ -1011,23 +1017,23 @@ public abstract class WorldImplementation implements World
 		while (distance < limit);
 		return null;
 	}
-	
+
 	public Iterator<Entity> rayTraceEntities(Vector3d initialPosition, Vector3d direction, double limit)
 	{
 		double blocksLimit = limit;
-		
+
 		Vector3d blocksCollision = this.raytraceSolid(initialPosition, direction, limit);
-		if(blocksCollision != null)
+		if (blocksCollision != null)
 			blocksLimit = blocksCollision.distanceTo(initialPosition);
-		
+
 		return raytraceEntitiesIgnoringVoxels(initialPosition, direction, blocksLimit);
 	}
-	
+
 	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3d initialPosition, Vector3d direction, double limit)
 	{
 		return new EntityRayIterator(this, initialPosition, direction, limit);
 	}
-	
+
 	private int sanitizeHorizontalCoordinate(int coordinate)
 	{
 		coordinate = coordinate % (getSizeInChunks() * 32);
@@ -1035,7 +1041,7 @@ public abstract class WorldImplementation implements World
 			coordinate += getSizeInChunks() * 32;
 		return coordinate;
 	}
-	
+
 	private int sanitizeVerticalCoordinate(int coordinate)
 	{
 		if (coordinate < 0)
@@ -1054,7 +1060,7 @@ public abstract class WorldImplementation implements World
 	{
 		this.particlesHolder = particlesHolder;
 	}
-	
+
 	public void addParticle(Particle particle)
 	{
 		particlesHolder.addParticle(particle);
@@ -1062,31 +1068,31 @@ public abstract class WorldImplementation implements World
 
 	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain)
 	{
-		if(this instanceof WorldClient)
+		if (this instanceof WorldClient)
 		{
 			Client.getInstance().getSoundManager().playSoundEffect(soundEffect, location, pitch, gain);
 		}
 	}
-	
+
 	public WorldChunksHolder getChunksHolder()
 	{
 		return chunksHolder;
 	}
-	
+
 	public Region getRegionWorldCoordinates(int worldX, int worldY, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldY = sanitizeVerticalCoordinate(worldY);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
-		
+
 		return getRegion(worldX / 256, worldY / 256, worldZ / 256);
 	}
-	
+
 	public Region getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ)
 	{
 		return getRegion(chunkX / 8, chunkY / 8, chunkZ / 8);
 	}
-	
+
 	public Region getRegion(int regionX, int regionY, int regionZ)
 	{
 		return chunksHolder.getChunkHolderRegionCoordinates(regionX, regionY, regionZ, true);

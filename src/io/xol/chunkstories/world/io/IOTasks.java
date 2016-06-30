@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world.io;
 
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
@@ -37,7 +38,7 @@ public class IOTasks extends Thread
 
 	protected LZ4Factory factory = LZ4Factory.fastestInstance();
 	protected LZ4FastDecompressor decompressor = factory.fastDecompressor();
-	
+
 	protected int worldSizeInChunks = 0;
 	protected int worldHeightInChunks = 0;
 
@@ -59,16 +60,17 @@ public class IOTasks extends Thread
 		worldHeightInChunks = world.getMaxHeight() / 32;
 	}
 
-	public void addTask(IOTask task)
+	public boolean addTask(IOTask task)
 	{
 		if (die.get())
-			return;
+			return false;
 
-		tasks.add(task);
+		boolean code = tasks.add(task);
 		synchronized (this)
 		{
 			notifyAll();
 		}
+		return code;
 	}
 
 	@Override
@@ -107,7 +109,7 @@ public class IOTasks extends Thread
 		while (!die.get())
 		{
 			IOTask task = null;
-			
+
 			//synchronized (tasks)
 			{
 				task = tasks.poll();
@@ -132,12 +134,13 @@ public class IOTasks extends Thread
 				try
 				{
 					//ChunkStoriesLogger.getInstance().info("processing task : "+task);
-					boolean ok = task.run();
+					boolean taskSuccessfull = task.run();
 					// If it returns false, requeue it.
-					if (!ok)
-					{
+					if (!taskSuccessfull)
 						tasks.add(task);
-					}
+					// Runs a post-run operation
+					else if (task.postRunOperation != null)
+						task.postRunOperation.run();
 
 				}
 				catch (Exception e)
@@ -162,9 +165,16 @@ public class IOTasks extends Thread
 
 	public abstract class IOTask
 	{
+		Runnable postRunOperation = null;
+
+		public void setPostRunOperation(Runnable runnable)
+		{
+			postRunOperation = runnable;
+		}
+
 		abstract public boolean run();
 	}
-	
+
 	public class IOTaskLoadChunk extends IOTask
 	{
 		ChunkHolder holder;
@@ -188,13 +198,16 @@ public class IOTasks extends Thread
 		public boolean run()
 		{
 			//ChunkHolder holder = world.getChunksHolder().getChunkHolder(x, y, z, shouldLoadCH);
-			
+
 			// If for some reasons the chunks holder's are still not loaded, we
 			// requeue the job for later.
 			if (holder == null)
 				return false;
-			if (!holder.isLoaded())
+			if (!holder.isDiskDataLoaded())
 				return false;
+			// When a loader was removed from the world, it's remaining data is ignored
+			if (holder.isUnloaded())
+				return true;
 			//Already loaded
 			if (holder.isChunkLoaded(x, y, z))// && !overwrite)
 				return true;
@@ -213,24 +226,29 @@ public class IOTasks extends Thread
 			}
 			else
 			{
-				CubicChunk c = new CubicChunk(holder, x, y, z);
+				//CubicChunk c = new CubicChunk(holder, x, y, z);
+				int data[] = new int[32 * 32 * 32];
 				try
 				{
 					decompressor.decompress(cd, unCompressedDataBuffer.get());
 				}
 				catch (LZ4Exception e)
 				{
-					System.out.println("Failed to decompress chunk data (corrupted?) holder:" + holder + " chunk:" + c + "task: "+this);
+					System.out.println("Failed to decompress chunk data (corrupted?) holder:" + holder + " chunk:" + x + ":" + y + ":" + z + "task: " + this);
 				}
 
 				holder.compressedChunksLock.endRead();
 				for (int i = 0; i < 32 * 32 * 32; i++)
 				{
-					int data = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
-					c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
+					data[i] = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8)
+							| (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
+					//c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
 				}
+				CubicChunk c = new CubicChunk(holder, x, y, z, data);
 				c.bakeVoxelLightning(false);
-				world.setChunk(c);
+
+				holder.setChunk(x, y, z, c);
+				//world.setChunk(c);
 			}
 			return true;
 		}
@@ -274,6 +292,9 @@ public class IOTasks extends Thread
 		if (chunkY >= worldHeightInChunks)
 			return;
 
+		//System.out.println("Loading chunk " + this);
+		//Thread.currentThread().dumpStack();
+
 		IOTaskLoadChunk task = new IOTaskLoadChunk(holder, chunkX, chunkY, chunkZ, true, overwrite);
 
 		addTask(task);
@@ -293,15 +314,15 @@ public class IOTasks extends Thread
 		{
 			//Trim world first
 			world.trimRemovableChunks();
-			
+
 			//Check no saving operations are occuring
 			IOTaskSaveChunkHolder saveChunkHolder = new IOTaskSaveChunkHolder(holder);
-			if(tasks != null && tasks.contains(saveChunkHolder))
+			if (tasks != null && tasks.contains(saveChunkHolder))
 			{
-				System.out.println("A save operation is still running on "+holder+", waiting for it to complete.");
+				//System.out.println("A save operation is still running on " + holder + ", waiting for it to complete.");
 				return false;
 			}
-			
+
 			if (holder.handler.exists())
 			{
 				try
@@ -332,10 +353,10 @@ public class IOTasks extends Thread
 				holder.generateAll();
 				//Pre bake phase 1 lightning
 			}
-			
+
 			//Marking the holder as loaded allows the game to remove it and unload it, so we set the timer to have a time frame until it naturally unloads.
 			holder.resetUnloadCooldown();
-			holder.setLoaded(true);
+			holder.setDiskDataLoaded(true);
 
 			world.trimRemovableChunks();
 			return true;
@@ -360,8 +381,26 @@ public class IOTasks extends Thread
 		}
 	}
 
+	public boolean isDoneSavingChunkHolder(ChunkHolder holder)
+	{
+		if(!(this.world instanceof WorldMaster))
+			return true;
+		
+		//Check no saving operations are occuring
+		IOTaskSaveChunkHolder saveChunkHolder = new IOTaskSaveChunkHolder(holder);
+		if (tasks != null && tasks.contains(saveChunkHolder))
+		{
+			//System.out.println("A save operation is still running on " + holder + ", waiting for it to complete before allowing holder creation");
+			return false;
+		}
+		return true;
+	}
+
 	public void requestChunkHolderLoad(ChunkHolder holder)
 	{
+		if(!isDoneSavingChunkHolder(holder))
+			return;
+		
 		IOTask task = new IOTaskLoadChunkHolder(holder);
 		addTask(task);
 	}
@@ -378,6 +417,7 @@ public class IOTasks extends Thread
 		@Override
 		public boolean run()
 		{
+			holder.handler.savingOperations.incrementAndGet();
 			// First compress all loaded chunks !
 			holder.compressAll();
 			// Then write the file.
@@ -392,6 +432,15 @@ public class IOTasks extends Thread
 			catch (IOException e)
 			{
 				e.printStackTrace();
+			}
+
+			//Let go
+			//System.out.println("op b4"+this.holder.handler.savingOperations.get());
+			this.holder.handler.savingOperations.decrementAndGet();
+			//System.out.println("op aft"+this.holder.handler.savingOperations.get());
+			synchronized (holder.handler)
+			{
+				holder.handler.notifyAll();
 			}
 			return true;
 		}
@@ -417,7 +466,29 @@ public class IOTasks extends Thread
 
 	public void requestChunkHolderSave(ChunkHolder holder)
 	{
+		if (!holder.isDiskDataLoaded())
+			return;
+
 		IOTask task = new IOTaskSaveChunkHolder(holder);
+		addTask(task);
+	}
+
+	public void requestChunkHolderSaveAndUnload(ChunkHolder holder)
+	{
+		if (!holder.isDiskDataLoaded())
+			return;
+
+		IOTask task = new IOTaskSaveChunkHolder(holder);
+
+		task.setPostRunOperation(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				holder.unloadHolder();
+			}
+		});
+
 		addTask(task);
 	}
 
@@ -550,7 +621,7 @@ public class IOTasks extends Thread
 
 				ByteBuffer writeMe = ByteBuffer.allocate(256 * 256 * 4);
 
-				for(int i = 0; i < 256 * 256; i++)
+				for (int i = 0; i < 256 * 256; i++)
 					writeMe.putInt(summary.heights[i]);
 
 				byte[] compressed = RegionSummary.compressor.compress(writeMe.array());

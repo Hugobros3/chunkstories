@@ -38,10 +38,10 @@ public class ChunkHolder implements Region
 
 	// Holds 8x8x8 CubicChunks
 	private Chunk[][][] data = new CubicChunk[8][8][8];
-
 	private AtomicInteger loadedChunks = new AtomicInteger();
 
 	private AtomicLong unloadCooldown = new AtomicLong();
+	private boolean unloadedFlag = false;
 
 	//TODO find a clean way to let IOTaks fiddle with this
 	public SafeWriteLock chunksArrayLock = new SafeWriteLock();
@@ -93,6 +93,9 @@ public class ChunkHolder implements Region
 			handler = null;
 			isDiskDataLoaded.set(true);
 		}
+		
+		//System.out.println("spawning "+this);
+		//Thread.currentThread().dumpStack();
 	}
 
 	private void compressChunkData(Chunk chunk)
@@ -148,7 +151,7 @@ public class ChunkHolder implements Region
 	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean loadIfAvaible)
 	{
 		Chunk chunk = data[chunkX % 8][chunkY % 8][chunkZ % 8];
-		
+
 		if (chunk == null && loadIfAvaible)
 		{
 			world.ioHandler.requestChunkLoad(this, chunkX, chunkY, chunkZ, false);
@@ -197,12 +200,18 @@ public class ChunkHolder implements Region
 			//Save back whatever the chunk
 			compressChunkData(c);
 
+			//Locks the chunks array
 			chunksArrayLock.beginWrite();
+			//Destroys the chunk
 			data[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
 			c.destroy();
+			//Update counter
 			loadedChunks.decrementAndGet();
+			//Unlocks
 			chunksArrayLock.endWrite();
 		}
+
+		//True -> holder is now empty.
 		return loadedChunks.get() == 0;
 	}
 
@@ -220,7 +229,7 @@ public class ChunkHolder implements Region
 		return new ChunkHolderIterator(this);
 	}
 
-	public void unloadAll()
+	public void unloadAllChunks()
 	{
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
@@ -231,23 +240,32 @@ public class ChunkHolder implements Region
 				}
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.chunk.Region#isLoaded()
-	 */
 	@Override
-	public boolean isLoaded()
+	public boolean isDiskDataLoaded()
 	{
 		return isDiskDataLoaded.get();
 	}
+	
+	public boolean isUnloaded()
+	{
+		return unloadedFlag;
+	}
 
-	public void setLoaded(boolean b)
+	public void setDiskDataLoaded(boolean b)
 	{
 		isDiskDataLoaded.set(b);
 	}
 
-	public void unload()
+	public void unloadHolder()
 	{
-		unloadAll();
+		//Before unloading the holder we want to make sure we finish all saving operations
+		if (handler != null)
+			handler.finishSavingOperations();
+
+		//Set unloaded flag to true so we are not using again an unloaded holder
+		unloadedFlag = true;
+
+		unloadAllChunks();
 
 		world.entitiesLock.lock();
 
@@ -259,14 +277,19 @@ public class ChunkHolder implements Region
 			Entity entity = i.next();
 			//i.remove();
 
+			System.out.println("Removing entity"+entity+" from world.");
+			
 			//We keep the inner reference so serialization can still write entities contained within
 			world.removeEntityFromList(entity);
 			c++;
 		}
 
-		System.out.println("Unloaded chunk holder " + this + " with " + c + " entities remaining in it.");
-
 		world.entitiesLock.unlock();
+
+		//Remove the reference in the world to this
+		this.getWorld().getChunksHolder().removeHolder(this);
+
+		System.out.println("Unloaded chunk holder " + this + " with " + c + " entities remaining in it.");
 	}
 
 	/* (non-Javadoc)
@@ -306,9 +329,17 @@ public class ChunkHolder implements Region
 	}
 
 	@Override
+	public void unloadAndSave()
+	{
+		unloadHolder();
+		world.ioHandler.requestChunkHolderSave(this);
+		//world.ioHandler.requestChunkHolderSaveAndUnload(this);
+	}
+
+	@Override
 	public String toString()
 	{
-		return "[ChunkHolder rx:" + regionX + " ry:" + regionY + " rz:" + regionZ + " uuid: " + uuid + "l:" + isDiskDataLoaded.get() + " entities:" + this.localEntities.size() + "]";
+		return "[ChunkHolder rx:" + regionX + " ry:" + regionY + " rz:" + regionZ + " uuid: " + uuid + "l:" + isDiskDataLoaded.get() + " u:" + unloadedFlag + " chunks: " + this.loadedChunks.get() + " entities:" + this.localEntities.size() + "]";
 	}
 
 	public void compressAll()
@@ -374,7 +405,7 @@ public class ChunkHolder implements Region
 	public boolean canBeUnloaded()
 	{
 		//Don't unload it until it has been loaded for 10s
-		return this.isLoaded() && (System.currentTimeMillis() - this.unloadCooldown.get() > 10 * 1000L);
+		return this.isDiskDataLoaded() && (System.currentTimeMillis() - this.unloadCooldown.get() > 10 * 1000L);
 	}
 
 	public WorldImplementation getWorld()

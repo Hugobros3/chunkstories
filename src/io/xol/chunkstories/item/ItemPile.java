@@ -124,6 +124,23 @@ public class ItemPile implements CSFSerializable
 	//@SuppressWarnings("unchecked")
 	public boolean moveItemPileTo(EntityInventory destinationInventory, int destinationX, int destinationY, int amountToTransfer)
 	{
+		//If moving in the same inventory
+		if(destinationInventory != null && inventory != null && destinationInventory.equals(inventory))
+		{
+			
+			//Remove temporarily
+			destinationInventory.setItemPileAt(x, y, null);
+			
+			if(destinationInventory.canPlaceItemAt(destinationX, destinationY, this))
+			{
+				destinationInventory.setItemPileAt(destinationX, destinationY, this);
+				return true;
+			}
+
+			destinationInventory.setItemPileAt(x, y, this);
+			return false;
+		}
+		
 		//We duplicate the pile and limit it's amount
 		ItemPile pileToSend = this.duplicate();
 		pileToSend.setAmount(amountToTransfer);

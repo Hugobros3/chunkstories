@@ -136,11 +136,16 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				int pCX = (int) loc.x / 32;
 				int pCY = (int) loc.y / 32;
 				int pCZ = (int) loc.z / 32;
+				
+				
 				//TODO use proper configurable values for this
-				if (((LoopingMathHelper.moduloDistance(c.getChunkX(), pCX, sizeInChunks) < chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(c.getChunkZ(), pCZ, sizeInChunks) < chunksViewDistance + 1) || (Math.abs(c.getChunkY() - pCY) < 4)))
+				if (((LoopingMathHelper.moduloDistance(c.getChunkX(), pCX, sizeInChunks) < chunksViewDistance + 1) && (LoopingMathHelper.moduloDistance(c.getChunkZ(), pCZ, sizeInChunks) < chunksViewDistance + 1) && (Math.abs(c.getChunkY() - pCY) < 4)))
 				{
+					//System.out.println(c.getChunkX() + " vs " + pCX + "ok");
 					neededBySomeone = true;
 				}
+				//else
+				//	System.out.println(c.getChunkX() + " vs " + pCX + "ko");
 			}
 
 			if (!neededBySomeone)
@@ -180,17 +185,18 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				{
 					neededBySomeone = true;
 				}
-
 			}
+			
+			//if(chunkHolder.regionX == 2 && chunkHolder.regionZ == 3)
+			//	System.out.println(chunkHolder.canBeUnloaded()+" "+chunkHolder.getNumberOfLoadedChunks());
 
 			//Don't unload it until it's empty, done loading from disk and needed by no one.
 			if (chunkHolder.canBeUnloaded() && chunkHolder.getNumberOfLoadedChunks() == 0 && !neededBySomeone)
 			{
-				//TODO saves
-				chunkHolder.save();
+				chunkHolder.unloadAndSave();
 				
-				chunkHolder.unload();
-				chunksHoldersIterator.remove();
+				//chunkHolder.save();
+				//chunkHolder.unloadHolder();
 			}
 		}
 	}

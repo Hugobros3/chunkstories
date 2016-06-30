@@ -63,7 +63,8 @@ public class EntitySerializer
 				componentId = in.readInt();
 			}
 			
-			System.out.println("Read serialized entity from : "+source);
+			//System.out.println("Read serialized entity from : "+source);
+			//System.out.println(entity.exists()+" - "+entity);
 			
 			return entity;
 		}

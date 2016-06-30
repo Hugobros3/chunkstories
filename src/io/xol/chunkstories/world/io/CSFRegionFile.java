@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.xol.chunkstories.api.csf.OfflineSerializedData;
 import io.xol.chunkstories.api.entity.Entity;
@@ -20,8 +21,11 @@ import io.xol.chunkstories.world.chunk.ChunkHolder;
 
 public class CSFRegionFile implements OfflineSerializedData
 {
-	ChunkHolder holder;
-	File file;
+	private ChunkHolder holder;
+	private File file;
+
+	//Locks modifications to the region untils it finishes saving.
+	public AtomicInteger savingOperations = new AtomicInteger();
 
 	public CSFRegionFile(ChunkHolder holder)
 	{
@@ -72,26 +76,26 @@ public class CSFRegionFile implements OfflineSerializedData
 		//don't tick the world entities until we get this straight
 		holder.world.entitiesLock.lock();
 
-		if(in.available() <= 0)
+		if (in.available() <= 0)
 		{
 			System.out.println("Old version file, no entities to be found anyway");
 			in.close();
-			
+
 			holder.world.entitiesLock.unlock();
 			return;
 		}
-		
+
 		DataInputStream dis = new DataInputStream(in);
-		
+
 		//Read entities until we hit -1
 		Entity entity = null;
 		do
 		{
 			entity = EntitySerializer.readEntityFromStream(dis, this, holder.world);
-			if(entity != null)
+			if (entity != null)
 				holder.world.addEntity(entity);
 		}
-		while(entity != null);
+		while (entity != null);
 
 		holder.world.entitiesLock.unlock();
 
@@ -137,10 +141,10 @@ public class CSFRegionFile implements OfflineSerializedData
 		//don't tick the world entities until we get this straight
 		holder.world.entitiesLock.lock();
 
-		System.out.println("writing region file of "+holder);
-		
+		//System.out.println("writing region file of " + holder);
+
 		DataOutputStream dos = new DataOutputStream(out);
-		
+
 		Iterator<Entity> holderEntities = holder.getEntitiesWithinRegion();
 		while (holderEntities.hasNext())
 		{
@@ -149,15 +153,34 @@ public class CSFRegionFile implements OfflineSerializedData
 			if (entity.exists() && !(entity instanceof EntityControllable))
 			{
 				EntitySerializer.writeEntityToStream(dos, this, entity);
+				//System.out.println("wrote " + entity);
 			}
 		}
 		dos.writeLong(-1);
-		
-		System.out.println("done");
+
+		//System.out.println("done");
 
 		holder.world.entitiesLock.unlock();
 
 		out.close();
+	}
+
+	public void finishSavingOperations()
+	{
+		//Waits out saving operations.
+		while (savingOperations.get() > 0)
+			//System.out.println(savingOperations.get());
+			synchronized (this)
+			{
+				try
+				{
+					wait(20L);
+				}
+				catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+			}
 	}
 
 }

@@ -184,7 +184,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 	@Override
 	public void requestChunkHolderLoad(ChunkHolder holder)
 	{
-		holder.setLoaded(true);
+		holder.setDiskDataLoaded(true);
 	}
 
 	public class IOTaskProcessCompressedChunkSummaryArrival extends IOTask

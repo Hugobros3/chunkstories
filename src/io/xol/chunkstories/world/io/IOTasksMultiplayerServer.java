@@ -8,6 +8,7 @@ import io.xol.chunkstories.net.packets.PacketChunkSummary;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.world.io.IOTasks.IOTaskSaveChunkHolder;
 import io.xol.chunkstories.world.summary.RegionSummary;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -49,11 +50,12 @@ public class IOTasksMultiplayerServer extends IOTasks
 			try
 			{
 				//Don't bother if the client died.
+				
 				if(!client.isAlive())
 					return true;
 				
 				ChunkHolder holder = world.getChunksHolder().getChunkHolderChunkCoordinates(chunkX, chunkY, chunkZ, true);
-				if(holder.isLoaded())
+				if(holder.isDiskDataLoaded())
 				{
 					//System.out.println("snding actly: "+chunkX+":"+chunkY+":"+chunkZ);
 					//CubicChunk c = world.getChunk(chunkX, chunkY, chunkZ, true);
@@ -63,12 +65,27 @@ public class IOTasksMultiplayerServer extends IOTasks
 					packet.setPosition(chunkX, chunkY, chunkZ);
 					packet.data = holder.getCompressedData(chunkX, chunkY, chunkZ);
 					client.pushPacket(packet);
-					//System.out.println("Replying with chunk ");
 					
 					return true;
 				}
 				else
 				{
+					//System.out.println("holder not loaded yet "+holder);
+					
+					/*for(IOTask task : tasks)
+					{
+						if(task instanceof IOTaskLoadChunkHolder)
+							System.out.println(task);
+					}
+					
+					
+					IOTaskLoadChunkHolder saveChunkHolder = new IOTaskLoadChunkHolder(holder);
+					if (tasks != null && tasks.contains(saveChunkHolder))
+					{
+						System.out.println("A load operation is still running on " + holder + ", waiting for it to complete.");
+						return false;
+					}*/
+					
 					//world.ioHandler.requestChunkLoad(chunkX, chunkY, chunkZ, false);
 					return false;
 				}

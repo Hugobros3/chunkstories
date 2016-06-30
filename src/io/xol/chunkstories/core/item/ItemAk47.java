@@ -80,6 +80,7 @@ public class ItemAk47 extends Item
 				}
 				
 				shooter.getWorld().addParticle(new ParticleMuzzleFlash(shooter.getWorld(), eyeLocation));
+				return true;
 			}
 		}
 		return false;

@@ -38,7 +38,7 @@ public interface Region
 	
 	public int getNumberOfLoadedChunks();
 
-	public boolean isLoaded();
+	public boolean isDiskDataLoaded();
 	
 	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
 
@@ -47,6 +47,8 @@ public interface Region
 	public boolean removeChunk(int chunkX, int chunkY, int chunkZ);
 
 	public void save();
+
+	public void unloadAndSave();
 
 	public World getWorld();
 

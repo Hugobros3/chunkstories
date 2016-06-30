@@ -470,9 +470,9 @@ public class GameplayScene extends OverlayableScene
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16, "Position : x:" + bx + " y:" + by + " z:" + bz + " bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
 		if (current == null)
 			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk null", BitmapFont.SMALLFONTS);
-		else if(current instanceof ChunkRenderable)
+		else if (current instanceof ChunkRenderable)
 		{
-			ChunkRenderData chunkRenderData = ((ChunkRenderable)current).getChunkRenderData();
+			ChunkRenderData chunkRenderData = ((ChunkRenderable) current).getChunkRenderData();
 			if (chunkRenderData != null)
 			{
 				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk : " + current + " - " + chunkRenderData.toString(), BitmapFont.SMALLFONTS);
@@ -480,7 +480,8 @@ public class GameplayScene extends OverlayableScene
 			else
 				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk : " + current + " - No rendering data", BitmapFont.SMALLFONTS);
 		}
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Controller : " + this.player, BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Holder : " + this.player.getWorld().getRegionWorldCoordinates(cx, cy, cz), BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 9 * 16, 0, 16, "Controller : " + this.player, BitmapFont.SMALLFONTS);
 
 	}
 

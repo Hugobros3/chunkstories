@@ -108,6 +108,16 @@ public class ServerConsole
 				emitter.sendMessage("#00FFD0" + server.getWorld().ioHandler);
 				return true;
 			}
+			else if (cmd.equals("entities"))
+			{
+				Iterator<Entity> entities = server.getWorld().getAllLoadedEntities();
+				while(entities.hasNext())
+				{
+					Entity entity = entities.next();
+					emitter.sendMessage("#FFDD00" + entity);
+				}
+				return true;
+			}
 			else if (cmd.equals("save"))
 			{
 				server.getWorld().saveEverything();

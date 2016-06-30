@@ -35,14 +35,14 @@ public class WorldChunksHolder
 		@Override
 		public boolean equals(Object o)
 		{
-			if(!(o instanceof ChunkHolderKey))
+			if (!(o instanceof ChunkHolderKey))
 				return false;
-			ChunkHolderKey chk = (ChunkHolderKey)o;
+			ChunkHolderKey chk = (ChunkHolderKey) o;
 			boolean equals = chk.regionX == regionX && chk.regionY == regionY && chk.regionZ == regionZ;
 			//System.out.println("checking if chk == !" + equals);
 			return equals;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
@@ -64,36 +64,40 @@ public class WorldChunksHolder
 	{
 		return chunkHolders.values().iterator();
 	}
-	
+
 	public ChunkHolder getChunkHolderChunkCoordinates(int chunkX, int chunkY, int chunkZ, boolean requestLoadIfAbsent)
 	{
 		return getChunkHolderRegionCoordinates(chunkX / 8, chunkY / 8, chunkZ / 8, requestLoadIfAbsent);
 	}
-	
+
 	/**
 	 * This method is set to private because it creates an empty ChunkHolder and all ChunkHolders should always contain at least one chunk.
+	 * 
 	 * @return
 	 */
 	public ChunkHolder getChunkHolderRegionCoordinates(int regionX, int regionY, int regionZ, boolean requestLoadIfAbsent)
 	{
 		ChunkHolder holder = null;
 		ChunkHolderKey key = new ChunkHolderKey(regionX, regionY, regionZ);
-		
+
 		//Lock to avoid any issues with another thread making another holder while we handle this
 		worldDataLock.lock();
 		holder = chunkHolders.get(key);
-		
+
 		//Make a new chunkHolder if we can't find it
 		if (requestLoadIfAbsent && holder == null && regionY < heightInRegions * 8 && regionY >= 0)
 		{
 			holder = new ChunkHolder(world, regionX, regionY, regionZ);
-			chunkHolders.putIfAbsent(key, holder);
+			
+			//If it's not still saving an older version
+			if(world.ioHandler.isDoneSavingChunkHolder(holder))
+				chunkHolders.putIfAbsent(key, holder);
 		}
 		worldDataLock.unlock();
-		
+
 		return holder;
 	}
-	
+
 	public void setChunk(Chunk chunk)
 	{
 		ChunkHolder holder = getChunkHolderChunkCoordinates(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ(), true);
@@ -101,29 +105,30 @@ public class WorldChunksHolder
 		if (holder != null)
 			holder.setChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ(), chunk);
 		else //destroy it to avoid memory leaks
-			if (chunk != null)
-				chunk.destroy();
+		if (chunk != null)
+			chunk.destroy();
 	}
-	
+
 	public void removeChunk(int chunkX, int chunkY, int chunkZ, boolean saveBeforeRemoving)
 	{
 		ChunkHolder holder = getChunkHolderChunkCoordinates(chunkX, chunkY, chunkZ, false);
 		//Has removing the chunk made the holder empty ?
-		boolean emptyHolder = false;
 		if (holder != null)
-			emptyHolder = holder.removeChunk(chunkX, chunkY, chunkZ);
-		
-		if (emptyHolder)
 		{
-			if(saveBeforeRemoving)
-				holder.save();
-			holder.unload();
-			//System.out.println("Remove holder: "+holder);
-			chunkHolders.remove(new ChunkHolderKey(chunkX / 8, chunkY / 8, chunkZ / 8 ));
+			if (holder.removeChunk(chunkX, chunkY, chunkZ))
+			{
+				if (saveBeforeRemoving)
+					holder.unloadAndSave();
+				else
+					holder.unloadHolder();
+
+				// System.out.println("Remove holder: "+holder);
+				// chunkHolders.remove(new ChunkHolderKey(chunkX / 8, chunkY / 8, chunkZ / 8));
+			}
 		}
 		//world.ioHandler.notifyChunkUnload(chunkX, chunkY, chunkZ);
 	}
-	
+
 	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean requestLoadIfAbsent)
 	{
 		ChunkHolder holder = getChunkHolderChunkCoordinates(chunkX, chunkY, chunkZ, requestLoadIfAbsent);
@@ -133,12 +138,12 @@ public class WorldChunksHolder
 		}
 		return null;
 	}
-	
+
 	public void saveAll()
 	{
 		Iterator<ChunkHolder> i = chunkHolders.values().iterator();
 		Region holder;
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			holder = i.next();
 			if (holder != null)
@@ -152,12 +157,12 @@ public class WorldChunksHolder
 	{
 		Iterator<ChunkHolder> i = chunkHolders.values().iterator();
 		ChunkHolder holder;
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			holder = i.next();
 			if (holder != null)
 			{
-				holder.unloadAll();
+				holder.unloadAllChunks();
 			}
 		}
 		chunkHolders.clear();
@@ -186,33 +191,45 @@ public class WorldChunksHolder
 	{
 		chunkHolders.clear();
 	}
-	
+
 	@Override
 	public String toString()
 	{
-		return "[ChunksHolder: "+chunkHolders.size()+" Chunk Holders loaded]";
+		return "[ChunksHolder: " + chunkHolders.size() + " Chunk Holders loaded]";
 	}
+
 	public int countChunks()
 	{
 		int c = 0;
 		Iterator<Chunk> i = world.getAllLoadedChunks();
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			i.next();
 			c++;
 		}
 		return c;
 	}
-	
+
 	public int countChunksWithData()
 	{
 		int c = 0;
 		Iterator<Chunk> i = world.getAllLoadedChunks();
-		while(i.hasNext())
+		while (i.hasNext())
 		{
-			if(!i.next().isAirChunk())
+			if (!i.next().isAirChunk())
 				c++;
 		}
 		return c;
+	}
+
+	/**
+	 * Callback by the holder's unload() method to remove himself from this list.
+	 */
+	public void removeHolder(ChunkHolder chunkHolder)
+	{
+		//System.out.println("remove holder : "+chunkHolder);
+		chunkHolders.remove(new ChunkHolderKey(chunkHolder.getRegionX(), chunkHolder.getRegionY(), chunkHolder.getRegionZ()));
+		//System.out.println("after: "+chunkHolders.get(new ChunkHolderKey(chunkHolder.getRegionX(), chunkHolder.getRegionY(), chunkHolder.getRegionZ())));
+		//assert null == chunkHolders.get(new ChunkHolderKey(chunkHolder.getRegionX(), chunkHolder.getRegionY(), chunkHolder.getRegionZ()) );
 	}
 }
