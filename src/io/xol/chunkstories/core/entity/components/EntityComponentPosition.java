@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.world.Region;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 
 import io.xol.engine.concurrency.SafeWriteLock;
@@ -62,6 +63,13 @@ public class EntityComponentPosition extends EntityComponent
 
 		//Same logic as above, refactoring should be done for clarity tho
 		this.pushComponentEveryone();
+	}
+	
+	public void setWorld(World world)
+	{
+		this.pos.setWorld(world);
+
+		checkPositionAndUpdateHolder();
 	}
 	
 	public void setPosition(Vector3d position)

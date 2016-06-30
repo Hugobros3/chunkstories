@@ -187,7 +187,7 @@ public abstract class WorldImplementation implements World
 		{
 			long nextUUID = nextEntityId();
 			entity.setUUID(nextUUID);
-			System.out.println("given " + nextUUID + " to " + entity);
+			System.out.println("Attributed UUID " + nextUUID + " to " + entity);
 		}
 
 		entity.getLocation().setWorld(this);

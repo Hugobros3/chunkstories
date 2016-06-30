@@ -72,6 +72,7 @@ public abstract class EntityImplementation implements Entity
 	{
 		world = w;
 
+		position.setWorld(w);
 		position.setPositionXYZ(x, y, z);
 		//pos = new Vector3d(x, y, z);
 		vel = new Vector3d();

@@ -31,7 +31,7 @@ public class EntitySerializer
 			//Then write 0 to mark end of components
 			out.writeInt((int)0);
 			
-			System.out.println("Wrote serialized entity to : "+destination);
+			//System.out.println("Wrote serialized entity to : "+destination);
 		}
 		catch (IOException e)
 		{

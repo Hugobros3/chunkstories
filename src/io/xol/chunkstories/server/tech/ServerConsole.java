@@ -22,12 +22,12 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 public class ServerConsole
 {
 	Server server;
-	
+
 	public ServerConsole(Server server)
 	{
 		this.server = server;
 	}
-	
+
 	public boolean handleCommand(CommandEmitter emitter, Command cmd, String[] arguments)
 	{
 		ChunkStoriesLogger.getInstance().info(("[" + emitter.getName() + "] ") + "Entered command : " + cmd.getName());
@@ -88,18 +88,18 @@ public class ServerConsole
 			else if (cmd.equals("list"))
 			{
 				String list = "";
-				
+
 				int playersCount = 0;
 				Iterator<Player> iterator = server.getConnectedPlayers();
-				while(iterator.hasNext())
+				while (iterator.hasNext())
 				{
 					playersCount++;
-					
+
 					list += iterator.next().getDisplayName();
-					if(iterator.hasNext())
+					if (iterator.hasNext())
 						list += ", ";
 				}
-				
+
 				emitter.sendMessage("#00FFD0" + playersCount + " players connected : " + list);
 				return true;
 			}
@@ -111,11 +111,18 @@ public class ServerConsole
 			else if (cmd.equals("entities"))
 			{
 				Iterator<Entity> entities = server.getWorld().getAllLoadedEntities();
-				while(entities.hasNext())
+				while (entities.hasNext())
 				{
 					Entity entity = entities.next();
 					emitter.sendMessage("#FFDD00" + entity);
 				}
+				return true;
+			}
+			else if (cmd.equals("tim"))
+			{
+
+				emitter.sendMessage("#FFDD00" + ((Player) emitter).getLocation().getWorld());
+
 				return true;
 			}
 			else if (cmd.equals("save"))
@@ -125,7 +132,7 @@ public class ServerConsole
 			}
 			else if (cmd.equals("region"))
 			{
-				Player player = (Player)emitter;
+				Player player = (Player) emitter;
 
 				emitter.sendMessage("#00FFD0" + player.getControlledEntity().getChunkHolder());
 				return true;
@@ -136,8 +143,8 @@ public class ServerConsole
 				Entity test = EntitiesList.newEntity(server.getWorld(), (short) id);
 				test.setLocation(((Player) emitter).getLocation());
 				server.getWorld().addEntity(test);
-				
-				emitter.sendMessage("#00FFD0" + "Spawned "+test);
+
+				emitter.sendMessage("#00FFD0" + "Spawned " + test);
 				return true;
 			}
 			else if (cmd.equals("fly"))
@@ -187,7 +194,7 @@ public class ServerConsole
 				{
 					emitter.sendMessage("==Listing clients==");
 					Iterator<ServerClient> connectedClientsIterator = server.getHandler().getAllConnectedClients();
-					while(connectedClientsIterator.hasNext())
+					while (connectedClientsIterator.hasNext())
 					{
 						ServerClient client = connectedClientsIterator.next();
 						emitter.sendMessage(client.getIp() + "/" + client.getHost() + " - " + client.name);
@@ -206,13 +213,13 @@ public class ServerConsole
 					ServerClient clientByName = server.getHandler().getAuthentificatedClientByName(arguments[1]);
 					String kickReason = "Donacdum";
 					//Recreate the argument
-					if(arguments.length >= 2)
+					if (arguments.length >= 2)
 					{
 						kickReason = "";
-						for(int i = 1; i < arguments.length; i++)
-							kickReason += arguments[i] + (i < arguments.length -1 ? " " : "");
+						for (int i = 1; i < arguments.length; i++)
+							kickReason += arguments[i] + (i < arguments.length - 1 ? " " : "");
 					}
-					
+
 					if (clientByName != null)
 					{
 						clientByName.disconnect("Kicked from server. \n" + kickReason);
@@ -236,12 +243,12 @@ public class ServerConsole
 		{
 			//Print error stack here
 			e.printStackTrace();
-			
+
 			//Tell him
 			emitter.sendMessage(e.getMessage());
 			return false;
 		}
-		
+
 		return false;
 	}
 }

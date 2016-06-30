@@ -289,7 +289,7 @@ public class ChunkHolder implements Region
 		//Remove the reference in the world to this
 		this.getWorld().getChunksHolder().removeHolder(this);
 
-		System.out.println("Unloaded chunk holder " + this + " with " + c + " entities remaining in it.");
+		//System.out.println("Unloaded chunk holder " + this + " with " + c + " entities remaining in it.");
 	}
 
 	/* (non-Javadoc)

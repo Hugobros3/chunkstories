@@ -1744,8 +1744,8 @@ public class WorldRenderer
 		{
 			shader.setUniformFloat("shadowStrength", 1.0f);
 			float x = 1f;
-			shader.setUniformFloat3("sunColor", x * 255f / 255f, x * 240f / 255f, x * 222 / 255f);
-			shader.setUniformFloat3("shadowColor", 104 / 255f, 110 / 255f, 122 / 255f);
+			shader.setUniformFloat3("sunColor", x * 255f / 255f, x * 255f / 255f, x * 255 / 255f);
+			shader.setUniformFloat3("shadowColor", 100 / 255f, 110 / 255f, 120 / 255f);
 		}
 	}
 

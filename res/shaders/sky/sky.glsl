@@ -39,8 +39,8 @@ vec3 getSkyColor(float time, vec3 eyeDirection)
     vec4 skyGlow = texture2D(glowSampler, vec2(time, 1.0-vl));
 	vec3 skyColor = vec3(0.0);
 	
-	vec3 skyColorTop = texture2D(colorSampler, vec2(time, 0)).rgb;
-	vec3 skyColorBot = texture2D(colorSampler, vec2(time, 1)).rgb;
+	vec3 skyColorTop = texture2D(colorSampler, vec2(time, 0.0)).rgb;
+	vec3 skyColorBot = texture2D(colorSampler, vec2(time, 1.0)).rgb;
 	
 	float gradient = clamp(0.99-normalize(eyeDirection).y * 0.99, 0.0, 1.0);
 	
@@ -70,7 +70,10 @@ vec4 getClouds(vec3 eyeDirection)
 		
 	vec2 cloudsPosition = ( -camPos.xz + ( eyeDirection.xz * ((1024.0 + camPos.y) / eyeDirection.y) ) );
 	vec2 coords = 0.001 * cloudsPosition + vec2(0.0, time*25.0);
-	vec4 clouds = vec4(gl_Fog.color.rgb-vec3(0.10), 0.0);
+	
+	vec3 skyColorTop = texture2D(colorSampler, vec2(time, 1.0)).rgb;
+	
+	vec4 clouds = vec4(skyColorTop-vec3(0.10), 0.0);
 	
 	//clouds.a = texture2D(cloudsNoise, vec2(0.5) + coords / 8.0).r * 3;
 
