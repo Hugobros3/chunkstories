@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
 import io.xol.chunkstories.physics.particules.Particle;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -186,7 +187,7 @@ public interface World
 	 * @param c
 	 * @param save
 	 */
-	public void removeChunk(CubicChunk c, boolean save);
+	public void removeChunk(Chunk c, boolean save);
 
 	public void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save);
 
@@ -206,15 +207,19 @@ public interface World
 	 * Loads or replaces an entire chunk with another
 	 * @param chunk
 	 */
-	public void setChunk(CubicChunk chunk);
+	public void setChunk(Chunk chunk);
 	
 	/**
 	 * Returns null or a chunk. If the load flag is set to true, it will also try to load it ingame
 	 * @param load
 	 * @return
 	 */
-	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
+	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
+	
+	public Region getRegionWorldCoordinates(int worldX, int worldY, int worldZ);
 
+	public Region getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ);
+	
 	public Region getRegion(int regionX, int regionY, int regionZ);
 	
 	/*
@@ -305,4 +310,6 @@ public interface World
 	public void addParticle(Particle particle);
 
 	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain);
+
+	public RegionSummaries getRegionSummaries();
 }

@@ -218,7 +218,7 @@ public class WorldInfo
 		}
 
 		public int sizeInChunks;
-		public int height = 32;
+		public int heightInChunks = 32;
 		public String name;
 
 		public static String getAllSizes()

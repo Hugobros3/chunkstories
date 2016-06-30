@@ -1,8 +1,5 @@
 package io.xol.engine.concurrency;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -20,7 +17,7 @@ public class SafeWriteLock
 	 * Returns as soon as reading is safe
 	 * If someone is writing it will wait until it's done
 	 */
-	public synchronized void beginRead()
+	public void beginRead()
 	{
 		while(writers > 0 || writeRequests > 0)
 			wait_local();
@@ -30,10 +27,10 @@ public class SafeWriteLock
 	/**
 	 * Marks the end of a reading process
 	 */
-	public synchronized void endRead()
+	public void endRead()
 	{
 		readers--;
-		notifyAll();
+		//notifyAll();
 	}
 
 	/**

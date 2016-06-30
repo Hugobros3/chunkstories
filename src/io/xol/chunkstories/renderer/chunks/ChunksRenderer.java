@@ -11,6 +11,7 @@ import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.chunkstories.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.math.LoopingMathHelper;
 
@@ -50,13 +51,13 @@ public class ChunksRenderer extends Thread
 		buffersPool = new ByteBufferPool(8, 0x800000);
 	}
 	
-	public void requestChunkRender(CubicChunk chunk)
+	public void requestChunkRender(ChunkRenderable chunk)
 	{
-		if (!chunk.requestable.get())
+		if (!chunk.isMarkedForReRender() || chunk.isRenderAleadyInProgress() )
 			return;
 
-		int[] request = new int[] { chunk.chunkX, chunk.chunkY, chunk.chunkZ };
-		boolean priority = chunk.need_render_fast.get();
+		int[] request = new int[] { chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ() };
+		boolean priority = true; //chunk.need_render_fast.get();
 
 		Iterator<int[]> iter = todoQueue.iterator();
 		int[] lelz;
@@ -73,9 +74,9 @@ public class ChunksRenderer extends Thread
 		}
 
 		// If it has been queued then it can't be asked again
-		chunk.requestable.set(false);
+		chunk.markRenderInProgress(true);
 		// Reset the priority flag
-		chunk.need_render_fast.set(false);
+		
 		//chunk.need_render.set(false);
 
 		if (priority)
@@ -102,15 +103,15 @@ public class ChunksRenderer extends Thread
 			request = iter.next();
 			if ((LoopingMathHelper.moduloDistance(request[0], pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(request[2], pCZ, sizeInChunks) > chunksViewDistance + 1) || (Math.abs(request[1] - pCY) > 4))
 			{
-				CubicChunk freed = world.getChunk(request[0], request[1], request[2], false);
-				if (freed != null)
-					freed.requestable.set(true);
+				Chunk freed = world.getChunk(request[0], request[1], request[2], false);
+				if (freed != null && freed instanceof ChunkRenderable)
+					((ChunkRenderable) freed).markRenderInProgress(false);
 				iter.remove();
 			}
 		}
 	}
 
-	public ChunkRenderData doneChunk()
+	public ChunkRenderData getNextRenderedChunkData()
 	{
 		return doneQueue.poll();
 	}
@@ -147,8 +148,8 @@ public class ChunksRenderer extends Thread
 
 					if (world.isChunkLoaded(task[0], task[1], task[2]))
 					{
-						CubicChunk work = world.getChunk(task[0], task[1], task[2], false);
-						if (work.need_render.get() || work.needRelightning.get())
+						ChunkRenderable work = (ChunkRenderable) world.getChunk(task[0], task[1], task[2], false);
+						if (work.isMarkedForReRender() || work.needsLightningUpdates())
 						{
 							int nearChunks = 0;
 							if (world.isChunkLoaded(task[0] + 1, task[1], task[2]))
@@ -175,25 +176,26 @@ public class ChunksRenderer extends Thread
 									}
 									buffer_id = buffersPool.requestByteBuffer();
 								}
-								renderChunk(work, buffer_id);
+								if(work instanceof CubicChunk)
+									renderChunk((CubicChunk) work, buffer_id);
 							}
 							else
 							{
 								// Reschedule it ?
-								work.requestable.set(true);
+								work.markRenderInProgress(false);
 							}
 						}
 						else
 						{
 							System.out.println("For some reason this chunk is in the renderer todo pool, but doesnt want to be rendered.");
-							work.requestable.set(true);
+							work.markRenderInProgress(false);
 							// If can't do it, reschedule it
 							// System.out.println("Forget about "+task[0]+":"+task[1]+":"+task[2]+", not circled ");
 							/*
 							 * synchronized(todo) { todo.add(task); }
 							 */
 						}
-						work.requestable.set(true);
+						work.markRenderInProgress(false);
 					}
 				}
 				catch (NullPointerException npe)
@@ -222,7 +224,7 @@ public class ChunksRenderer extends Thread
 		{
 			System.out.println("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
 			System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
-			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
+			data = Client.world.getDataAt(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 		}
 		/*if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
 		{
@@ -234,7 +236,7 @@ public class ChunksRenderer extends Thread
 		return data;
 	}
 
-	CubicChunk cached;
+	Chunk cached;
 
 	private int getSunlight(CubicChunk c, int x, int y, int z)
 	{
@@ -244,7 +246,7 @@ public class ChunksRenderer extends Thread
 			int relx = x < 0 ? 0 : (x >= 32 ? 2 : 1);
 			int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
 			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
-			CubicChunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
+			Chunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
 			if (target != null && !target.isAirChunk())
 			{
 				data = target.getDataAt(x, y, z);
@@ -259,9 +261,9 @@ public class ChunksRenderer extends Thread
 			return 0;
 		}
 
-		x += c.chunkX * 32;
-		y += c.chunkY * 32;
-		z += c.chunkZ * 32;
+		x += c.getChunkX() * 32;
+		y += c.getChunkY() * 32;
+		z += c.getChunkZ() * 32;
 
 		// Look for a chunk with relevant lightning data
 		cached = Client.world.getChunk(x / 32, y / 32, z / 32, false);
@@ -274,7 +276,7 @@ public class ChunksRenderer extends Thread
 		}
 
 		// If all else fails, just use the heightmap information
-		return Client.world.getRegionSummaries().getHeightAt(x, z) <= y ? 15 : 0;
+		return Client.world.getRegionSummaries().getHeightAtWorldCoordinates(x, z) <= y ? 15 : 0;
 	}
 
 	private int getBlocklight(CubicChunk c, int x, int y, int z)
@@ -295,7 +297,7 @@ public class ChunksRenderer extends Thread
 		{
 			System.out.println("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
 			System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
-			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
+			data = Client.world.getDataAt(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 		}
 
 		/*if (y < 0 && c.chunkY == 0)
@@ -956,7 +958,7 @@ public class ChunksRenderer extends Thread
 
 	public static long renderStart = 0;
 
-	public CubicChunk[] cache = new CubicChunk[27];
+	public Chunk[] cache = new CubicChunk[27];
 
 	Deque<Integer> blockSources = new ArrayDeque<Integer>();
 	Deque<Integer> sunSources = new ArrayDeque<Integer>();
@@ -990,9 +992,9 @@ public class ChunksRenderer extends Thread
 
 		long cr_start = System.nanoTime();
 
-		int cx = work.chunkX;
-		int cy = work.chunkY;
-		int cz = work.chunkZ;
+		int cx = work.getChunkX();
+		int cy = work.getChunkY();
+		int cz = work.getChunkZ();
 
 		// For map borders
 		boolean chunkTopLoaded = work.world.isChunkLoaded(cx, cy + 1, cz);

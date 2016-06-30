@@ -57,6 +57,7 @@ import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -80,7 +81,7 @@ public class WorldRenderer
 	private int sizeInChunks; // cache from world
 
 	// Chunks to render
-	private List<CubicChunk> renderList = new ArrayList<CubicChunk>();
+	private List<ChunkRenderable> renderList = new ArrayList<ChunkRenderable>();
 
 	// Wheter to update the renderlist or not.
 	private boolean chunksChanged = true;
@@ -366,21 +367,18 @@ public class WorldRenderer
 		// to-render chunks in order to fill empty VBO space
 		// Upload generated chunks data to GPU
 		//updateProfiler.reset("vbo upload");
-		ChunkRenderData toLoad = chunksRenderer.doneChunk();
+		ChunkRenderData chunkRenderData = chunksRenderer.getNextRenderedChunkData();
 		int loadLimit = 16;
-		while (toLoad != null)
+		while (chunkRenderData != null)
 		{
 			//CubicChunk c = world.getChunk(toload.x, toload.y, toload.z, false);
-			CubicChunk c = toLoad.chunk;
-			if (c != null)
+			CubicChunk c = chunkRenderData.chunk;
+			if (c != null && c instanceof ChunkRenderable)
 			{
-				//Free replaced chunkRenderData if any
-				if (c.chunkRenderData != null)
-					c.chunkRenderData.free();
+				((ChunkRenderable)c).setChunkRenderData(chunkRenderData);
+				
 				//Upload data
-				toLoad.upload();
-				//Replace it
-				c.chunkRenderData = toLoad;
+				chunkRenderData.upload();
 				chunksChanged = true;
 			}
 			else
@@ -391,13 +389,13 @@ public class WorldRenderer
 				//	System.out.println("Chunks coordinates : X=" + toload.x + " Y=" + toload.y + " Z=" + toload.z);
 				//if (FastConfig.debugGBuffers)
 				//	System.out.println("Render information : vbo size =" + toload.s_normal + " and water size =" + toload.s_water);
-				toLoad.free();
+				chunkRenderData.free();
 			}
 			loadLimit--;
 			if (loadLimit > 0)
-				toLoad = chunksRenderer.doneChunk();
+				chunkRenderData = chunksRenderer.getNextRenderedChunkData();
 			else
-				toLoad = null;
+				chunkRenderData = null;
 		}
 		// Update view
 		//viewRotH = view_rotx;
@@ -453,32 +451,34 @@ public class WorldRenderer
 			//glBlendFunc(GL_ONE, GL_ONE);
 
 			ChunksIterator it = Client.world.getAllLoadedChunks();
-			CubicChunk chunk;
+			Chunk chunk;
 			int localMapElements = 0;
 			//int i = 0;
 			while (it.hasNext())
 			{
 				//i++;
 				chunk = it.next();
-				if(chunk == null)
+				if(chunk == null || !(chunk instanceof ChunkRenderable))
 					continue;
 
-				if (LoopingMathHelper.moduloDistance(chunk.chunkX, currentChunkX, world.getSizeInChunks()) <= chunksViewDistance)
-					if (LoopingMathHelper.moduloDistance(chunk.chunkZ, currentChunkZ, world.getSizeInChunks()) <= chunksViewDistance)
+				ChunkRenderable renderableChunk = (ChunkRenderable)chunk;
+				
+				if (LoopingMathHelper.moduloDistance(chunk.getChunkX(), currentChunkX, world.getSizeInChunks()) <= chunksViewDistance)
+					if (LoopingMathHelper.moduloDistance(chunk.getChunkZ(), currentChunkZ, world.getSizeInChunks()) <= chunksViewDistance)
 					{
-						if (LoopingMathHelper.moduloDistance(chunk.chunkX, currentChunkX, world.getSizeInChunks()) < chunksViewDistance)
-							if (LoopingMathHelper.moduloDistance(chunk.chunkZ, currentChunkZ, world.getSizeInChunks()) < chunksViewDistance)
+						if (LoopingMathHelper.moduloDistance(chunk.getChunkX(), currentChunkX, world.getSizeInChunks()) < chunksViewDistance)
+							if (LoopingMathHelper.moduloDistance(chunk.getChunkZ(), currentChunkZ, world.getSizeInChunks()) < chunksViewDistance)
 							{
-								if ((chunk.chunkRenderData != null && chunk.chunkRenderData.isUploaded))
+								if ((renderableChunk.getChunkRenderData() != null && renderableChunk.getChunkRenderData().isUploaded))
 								{
 									// chunkY = 5 height = 8
 									//float yDistance = chunk.chunkY*32f + 16f - (world.regionSummaries.getMinChunkHeightAt(chunk.chunkX*32 + 16, chunk.chunkZ*32 + 16)-1);
 									//System.out.println(chunk.chunkY+":"+);
 									//if (Math.abs(yDistance) <= 16f)
 									{
-										localMapCommands.put((byte) (chunk.chunkX - currentChunkX));
-										localMapCommands.put((byte) (chunk.chunkZ - currentChunkZ));
-										localMapCommands.put((byte) (chunk.chunkY));
+										localMapCommands.put((byte) (chunk.getChunkX() - currentChunkX));
+										localMapCommands.put((byte) (chunk.getChunkZ() - currentChunkZ));
+										localMapCommands.put((byte) (chunk.getChunkY()));
 										//System.out.println(chunk.chunkY);
 										localMapCommands.put((byte) 0x00);
 
@@ -487,12 +487,12 @@ public class WorldRenderer
 								}
 							}
 
-						if (chunk.need_render.get() && !chunk.isAirChunk())
+						if (renderableChunk.isMarkedForReRender() && !chunk.isAirChunk())
 						{
 							//chunksRenderer.requestChunkRender(chunk);
 							//chunksRenderer.addTask(a, b, c, chunk.need_render_fast);
 						}
-						renderList.add(chunk);
+						renderList.add(renderableChunk);
 					}
 			}
 
@@ -517,13 +517,13 @@ public class WorldRenderer
 			FBO.unbind();
 
 			//Sort 
-			renderList.sort(new Comparator<CubicChunk>()
+			renderList.sort(new Comparator<ChunkRenderable>()
 			{
 				@Override
-				public int compare(CubicChunk a, CubicChunk b)
+				public int compare(ChunkRenderable a, ChunkRenderable b)
 				{
-					int distanceA = LoopingMathHelper.moduloDistance(a.chunkX, currentChunkX, world.getSizeInChunks()) + LoopingMathHelper.moduloDistance(a.chunkZ, currentChunkZ, world.getSizeInChunks());
-					int distanceB = LoopingMathHelper.moduloDistance(b.chunkX, currentChunkX, world.getSizeInChunks()) + LoopingMathHelper.moduloDistance(b.chunkZ, currentChunkZ, world.getSizeInChunks());
+					int distanceA = LoopingMathHelper.moduloDistance(a.getChunkX(), currentChunkX, world.getSizeInChunks()) + LoopingMathHelper.moduloDistance(a.getChunkZ(), currentChunkZ, world.getSizeInChunks());
+					int distanceB = LoopingMathHelper.moduloDistance(b.getChunkX(), currentChunkX, world.getSizeInChunks()) + LoopingMathHelper.moduloDistance(b.getChunkZ(), currentChunkZ, world.getSizeInChunks());
 					return distanceA - distanceB;
 				}
 			});
@@ -610,7 +610,7 @@ public class WorldRenderer
 		//terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
 		terrainShader.setUniformFloat3("sunPos", sky.getSunPosition());
 		terrainShader.setUniformFloat("time", animationTimer);
-		terrainShader.setUniformFloat("terrainHeight", world.getRegionSummaries().getHeightAt((int) camera.pos.x, (int) camera.pos.z));
+		terrainShader.setUniformFloat("terrainHeight", world.getRegionSummaries().getHeightAtWorldCoordinates((int) camera.pos.x, (int) camera.pos.z));
 		terrainShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
 		terrainShader.setUniformFloat("shadowVisiblity", getShadowVisibility());
 		waterNormalTexture.setLinearFiltering(true);
@@ -765,40 +765,41 @@ public class WorldRenderer
 		// renderList.clear();
 		glDisable(GL_BLEND);
 		int chunksRendered = 0;
-		for (CubicChunk chunk : renderList)
+		for (ChunkRenderable chunk : renderList)
 		{
-
+			
 			if(Keyboard.isKeyDown(Keyboard.KEY_F6))
 				break;
-			ChunkRenderData chunkRenderData = chunk.chunkRenderData;
+			ChunkRenderData chunkRenderData = chunk.getChunkRenderData();
 			chunksRendered++;
 			if (chunksToRenderLimit != -1 && chunksRendered > chunksToRenderLimit)
 				break;
 			int vboDekalX = 0;
 			int vboDekalZ = 0;
 			// Adjustements so border chunks show at the correct place.
-			vboDekalX = chunk.chunkX * 32;
-			vboDekalZ = chunk.chunkZ * 32;
-			if (chunk.chunkX - currentChunkX > chunksViewDistance)
+			vboDekalX = chunk.getChunkX() * 32;
+			vboDekalZ = chunk.getChunkZ() * 32;
+			if (chunk.getChunkX() - currentChunkX > chunksViewDistance)
 				vboDekalX += -sizeInChunks * 32;
-			if (chunk.chunkX - currentChunkX < -chunksViewDistance)
+			if (chunk.getChunkX() - currentChunkX < -chunksViewDistance)
 				vboDekalX += sizeInChunks * 32;
-			if (chunk.chunkZ - currentChunkZ > chunksViewDistance)
+			if (chunk.getChunkZ() - currentChunkZ > chunksViewDistance)
 				vboDekalZ += -sizeInChunks * 32;
-			if (chunk.chunkZ - currentChunkZ < -chunksViewDistance)
+			if (chunk.getChunkZ() - currentChunkZ < -chunksViewDistance)
 				vboDekalZ += sizeInChunks * 32;
 			// Update if chunk was modified
-			if ((chunk.need_render.get() || chunk.needRelightning.get()) && chunk.requestable.get() && !chunk.isAirChunk())
+			if ((chunk.isMarkedForReRender() || chunk.needsLightningUpdates()) && !chunk.isAirChunk())
 				chunksRenderer.requestChunkRender(chunk);
 			// Don't bother if it don't render anything
 			if (chunkRenderData == null || chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)
 				continue;
+			
 			// If we're doing shadows
 			if (isShadowPass)
 			{
 				// TODO : make proper orthogonal view checks etc
-				float distanceX = LoopingMathHelper.moduloDistance(currentChunkX, chunk.chunkX, sizeInChunks);
-				float distanceZ = LoopingMathHelper.moduloDistance(currentChunkZ, chunk.chunkZ, sizeInChunks);
+				float distanceX = LoopingMathHelper.moduloDistance(currentChunkX, chunk.getChunkX(), sizeInChunks);
+				float distanceZ = LoopingMathHelper.moduloDistance(currentChunkZ, chunk.getChunkZ(), sizeInChunks);
 
 				int maxShadowDistance = 4;
 				if (shadowMapResolution >= 2048)
@@ -814,10 +815,10 @@ public class WorldRenderer
 			{
 				// Cone occlusion checking !
 				int correctedCX = vboDekalX / 32;
-				int correctedCY = chunk.chunkY;
+				int correctedCY = chunk.getChunkY();
 				int correctedCZ = vboDekalZ / 32;
 				//Always show the chunk we're standing in no matter what
-				boolean shouldShowChunk = ((int) (camera.pos.x / 32) == chunk.chunkX) && ((int) (camera.pos.y / 32) == correctedCY) && ((int) (camera.pos.z / 32) == correctedCZ);
+				boolean shouldShowChunk = ((int) (camera.pos.x / 32) == chunk.getChunkX()) && ((int) (camera.pos.y / 32) == correctedCY) && ((int) (camera.pos.z / 32) == correctedCZ);
 				if (!shouldShowChunk)
 					shouldShowChunk = checkChunkOcclusion(chunk, correctedCX, correctedCY, correctedCZ);
 				if (!shouldShowChunk)
@@ -832,13 +833,13 @@ public class WorldRenderer
 				double fractPartY = camera.pos.y - Math.floor(camera.pos.y);
 				double fractPartZ = camera.pos.z - Math.floor(camera.pos.z);
 				double diffChunkX = vboDekalX + camIntPartX;
-				double diffChunkY = chunk.chunkY * 32 + camIntPartY;
+				double diffChunkY = chunk.getChunkY() * 32 + camIntPartY;
 				double diffChunkZ = vboDekalZ + camIntPartZ;
-				opaqueBlocksShader.setUniformFloat3("objectPosition", vboDekalX + camera.pos.x, chunk.chunkY * 32f + camera.pos.y, vboDekalZ + camera.pos.z);
+				opaqueBlocksShader.setUniformFloat3("objectPosition", vboDekalX + camera.pos.x, chunk.getChunkY() * 32f + camera.pos.y, vboDekalZ + camera.pos.z);
 				opaqueBlocksShader.setUniformFloat3("objectPosition", diffChunkX + fractPartX, diffChunkY + fractPartY, diffChunkZ + fractPartZ);
 			}
 			else
-				shadowsPassShader.setUniformFloat3("objectPosition", vboDekalX, chunk.chunkY * 32f, vboDekalZ);
+				shadowsPassShader.setUniformFloat3("objectPosition", vboDekalX, chunk.getChunkY() * 32f, vboDekalZ);
 
 			glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
 
@@ -1011,36 +1012,36 @@ public class WorldRenderer
 				liquidBlocksShader.setUniformSampler(6, "readbackDepthBufferTemp", this.zBuffer);
 				glDepthMask(true);
 			}
-			for (CubicChunk chunk : renderList)
+			for (ChunkRenderable chunk : renderList)
 			{
-				ChunkRenderData chunkRenderData = chunk.chunkRenderData;
+				ChunkRenderData chunkRenderData = chunk.getChunkRenderData();
 				if (chunkRenderData == null || chunkRenderData.vboSizeWaterBlocks == 0)
 					continue;
 
-				int vboDekalX = chunk.chunkX * 32;
-				int vboDekalZ = chunk.chunkZ * 32;
+				int vboDekalX = chunk.getChunkX() * 32;
+				int vboDekalZ = chunk.getChunkZ() * 32;
 
-				if (chunk.chunkX - currentChunkX > chunksViewDistance)
+				if (chunk.getChunkX() - currentChunkX > chunksViewDistance)
 					vboDekalX += -sizeInChunks * 32;// (int) (Math.random()*50);//-sizeInChunks;
-				if (chunk.chunkX - currentChunkX < -chunksViewDistance)
+				if (chunk.getChunkX() - currentChunkX < -chunksViewDistance)
 					vboDekalX += sizeInChunks * 32;
-				if (chunk.chunkZ - currentChunkZ > chunksViewDistance)
+				if (chunk.getChunkZ() - currentChunkZ > chunksViewDistance)
 					vboDekalZ += -sizeInChunks * 32;// (int) (Math.random()*50);//-sizeInChunks;
-				if (chunk.chunkZ - currentChunkZ < -chunksViewDistance)
+				if (chunk.getChunkZ() - currentChunkZ < -chunksViewDistance)
 					vboDekalZ += sizeInChunks * 32;
 
 				// Cone occlusion checking !
 				int correctedCX = vboDekalX / 32;
-				int correctedCY = chunk.chunkY;
+				int correctedCY = chunk.getChunkY();
 				int correctedCZ = vboDekalZ / 32;
 
-				boolean shouldShowChunk = ((int) (camera.pos.x / 32) == chunk.chunkX) && ((int) (camera.pos.y / 32) == correctedCY) && ((int) (camera.pos.z / 32) == correctedCZ);
+				boolean shouldShowChunk = ((int) (camera.pos.x / 32) == chunk.getChunkX()) && ((int) (camera.pos.y / 32) == correctedCY) && ((int) (camera.pos.z / 32) == correctedCZ);
 				if (!shouldShowChunk)
 					shouldShowChunk = checkChunkOcclusion(chunk, correctedCX, correctedCY, correctedCZ);
 				if (!shouldShowChunk)
 					continue;
 
-				liquidBlocksShader.setUniformFloat3("objectPosition", vboDekalX, chunk.chunkY * 32, vboDekalZ);
+				liquidBlocksShader.setUniformFloat3("objectPosition", vboDekalX, chunk.getChunkY() * 32, vboDekalZ);
 
 				glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
 				renderedVertices += chunkRenderData.renderWaterBlocks(renderingContext);
@@ -1072,18 +1073,20 @@ public class WorldRenderer
 		renderLightsDeffered();
 		renderTerrain(chunksToRenderLimit != -1);
 		
+		//Draws chunks lines
 		if(FastConfig.showDebugInfo)
 		{
 			OverlayRenderer.glColor4f(4, 0, 0, 1);
 			ChunksIterator it = world.getAllLoadedChunks();
-			CubicChunk c;
+			Chunk chunk;
 			while(it.hasNext())
 			{
-				c = it.next();
-				ChunkRenderData crd = c.chunkRenderData;
-				if(crd != null)
+				chunk = it.next();
+				if(chunk instanceof ChunkRenderable)
 				{
-					//crd.renderChunkBounds(renderingContext);
+					ChunkRenderData crd = ((ChunkRenderable) chunk).getChunkRenderData();
+					if(crd != null)
+						crd.renderChunkBounds(renderingContext);
 				}
 			}
 				

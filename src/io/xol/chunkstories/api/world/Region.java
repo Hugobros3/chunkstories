@@ -40,12 +40,14 @@ public interface Region
 
 	public boolean isLoaded();
 	
-	public Chunk get(int chunkX, int chunkY, int chunkZ, boolean load);
+	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
 
 	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ);
 
 	public boolean removeChunk(int chunkX, int chunkY, int chunkZ);
 
 	public void save();
+
+	public World getWorld();
 
 }

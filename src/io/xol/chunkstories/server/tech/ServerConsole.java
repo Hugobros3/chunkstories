@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -105,6 +106,28 @@ public class ServerConsole
 			else if (cmd.equals("io"))
 			{
 				emitter.sendMessage("#00FFD0" + server.getWorld().ioHandler);
+				return true;
+			}
+			else if (cmd.equals("save"))
+			{
+				server.getWorld().saveEverything();
+				return true;
+			}
+			else if (cmd.equals("region"))
+			{
+				Player player = (Player)emitter;
+
+				emitter.sendMessage("#00FFD0" + player.getControlledEntity().getChunkHolder());
+				return true;
+			}
+			else if (cmd.equals("spawn"))
+			{
+				int id = Integer.parseInt(arguments[0]);
+				Entity test = EntitiesList.newEntity(server.getWorld(), (short) id);
+				test.setLocation(((Player) emitter).getLocation());
+				server.getWorld().addEntity(test);
+				
+				emitter.sendMessage("#00FFD0" + "Spawned "+test);
 				return true;
 			}
 			else if (cmd.equals("fly"))

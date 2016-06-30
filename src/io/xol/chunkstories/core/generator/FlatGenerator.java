@@ -2,6 +2,8 @@ package io.xol.chunkstories.core.generator;
 
 import java.util.Random;
 
+import io.xol.chunkstories.api.world.Chunk;
+import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -25,11 +27,11 @@ public class FlatGenerator extends WorldGenerator
 	int ws;
 	
 	@Override
-	public CubicChunk generateChunk(int cx, int cy, int cz)
+	public Chunk generateChunk(Region region, int cx, int cy, int cz)
 	{
 		rnd.setSeed(cx * 32 + cz + 48716148);
 		
-		CubicChunk c = new CubicChunk((WorldImplementation) world, cx, cy, cz);
+		CubicChunk c = new CubicChunk(region, cx, cy, cz);
 		int type = 12;
 		for(int x = 0; x < 32; x++)
 			for(int z = 0; z < 32; z++)

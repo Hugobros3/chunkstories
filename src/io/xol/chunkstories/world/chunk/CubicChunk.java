@@ -4,9 +4,9 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.Region;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.WorldImplementation;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -17,17 +17,19 @@ import java.util.concurrent.atomic.AtomicLong;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class CubicChunk implements Chunk
+public class CubicChunk implements Chunk, ChunkRenderable
 {
-	public WorldImplementation world;
+	public World world;
 	public Region holder;
-	public int chunkX, chunkY, chunkZ;
+	private int chunkX;
+	private int chunkY;
+	private int chunkZ;
 
 	public int[] chunkVoxelData = null;
 	//public int dataPointer = -1; // -1 means empty chunk (air)
 
 	// Used in client rendering
-	public ChunkRenderData chunkRenderData;
+	private ChunkRenderData chunkRenderData;
 	public AtomicLong lastModification = new AtomicLong();
 	public AtomicLong lastModificationSaved = new AtomicLong();
 	
@@ -85,17 +87,43 @@ public class CubicChunk implements Chunk
 		}
 	};
 	
-	public CubicChunk(WorldImplementation world, int chunkX, int chunkY, int chunkZ)
+	public CubicChunk(Region holder, int chunkX, int chunkY, int chunkZ)
 	{
-		this.world = world;
+		this.holder = holder;
+		this.world = holder.getWorld();
 		this.chunkX = chunkX;
 		this.chunkY = chunkY;
 		this.chunkZ = chunkZ;
 	}
+	
+	public CubicChunk(Region holder, int chunkX, int chunkY, int chunkZ, int[] data)
+	{
+		this.holder = holder;
+		this.world = holder.getWorld();
+		this.chunkX = chunkX;
+		this.chunkY = chunkY;
+		this.chunkZ = chunkZ;
+		
+		assert data.length == 32 * 32 * 32;
+		
+		this.chunkVoxelData = data;
+	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.chunk.Chunk#getDataAt(int, int, int)
-	 */
+	public int getChunkX()
+	{
+		return chunkX;
+	}
+
+	public int getChunkY()
+	{
+		return chunkY;
+	}
+
+	public int getChunkZ()
+	{
+		return chunkZ;
+	}
+
 	@Override
 	public int getDataAt(int x, int y, int z)
 	{
@@ -142,6 +170,7 @@ public class CubicChunk implements Chunk
 		computeLightSpread(x, y, z, dataBefore, data);
 		lastModification.set(System.currentTimeMillis());
 		
+		this.markForReRender();
 	}
 	
 	public void setDataAtWithoutUpdates(int x, int y, int z, int data)
@@ -168,24 +197,6 @@ public class CubicChunk implements Chunk
 	{
 		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk() + " NR:"+need_render.get()+" "+"]";
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.chunk.Chunk#markDirty(boolean)
-	 */
-	@Override
-	public void markDirty(boolean fast)
-	{
-		need_render.set(true);
-		requestable.set(true);
-		need_render_fast.set(fast);
-	}
-
-	public void destroy()
-	{
-		//if (dataPointer >= 0)
-		//	world.chunksData.free(dataPointer);
-	}
-
 	@Override
 	public void bakeVoxelLightning(boolean adjacent)
 	{
@@ -213,6 +224,7 @@ public class CubicChunk implements Chunk
 		if(c > 0)
 			this.need_render.set(true);
 		
+		needRelightning.set(false);
 		//Return the queues after that
 		//world.dequesPool.back(blockSources);
 		//world.dequesPool.back(sunSources);
@@ -225,19 +237,19 @@ public class CubicChunk implements Chunk
 		int modifiedBlocks = 0;
 		
 		//Checks if the adjacent chunks are done loading
-		CubicChunk adjacentChunkTop = world.getChunk(chunkX, chunkY + 1, chunkZ, false);
-		CubicChunk adjacentChunkBottom = world.getChunk(chunkX, chunkY - 1, chunkZ, false);
-		CubicChunk adjacentChunkFront = world.getChunk(chunkX, chunkY, chunkZ + 1, false);
-		CubicChunk adjacentChunkBack = world.getChunk(chunkX, chunkY, chunkZ - 1, false);
-		CubicChunk adjacentChunkLeft = world.getChunk(chunkX - 1, chunkY, chunkZ, false);
-		CubicChunk adjacentChunkRight = world.getChunk(chunkX + 1, chunkY, chunkZ, false);
+		Chunk adjacentChunkTop = world.getChunk(chunkX, chunkY + 1, chunkZ, false);
+		Chunk adjacentChunkBottom = world.getChunk(chunkX, chunkY - 1, chunkZ, false);
+		Chunk adjacentChunkFront = world.getChunk(chunkX, chunkY, chunkZ + 1, false);
+		Chunk adjacentChunkBack = world.getChunk(chunkX, chunkY, chunkZ - 1, false);
+		Chunk adjacentChunkLeft = world.getChunk(chunkX - 1, chunkY, chunkZ, false);
+		Chunk adjacentChunkRight = world.getChunk(chunkX + 1, chunkY, chunkZ, false);
 		//Don't spam the requeue requests
-		boolean checkTopBleeding = (adjacentChunkTop != null) && !adjacentChunkTop.needRelightning.get();
-		boolean checkBottomBleeding = (adjacentChunkBottom != null) && !adjacentChunkBottom.needRelightning.get();
-		boolean checkFrontBleeding = (adjacentChunkFront != null) && !adjacentChunkFront.needRelightning.get();
-		boolean checkBackBleeding = (adjacentChunkBack != null) && !adjacentChunkBack.needRelightning.get();
-		boolean checkLeftBleeding = (adjacentChunkLeft != null) && !adjacentChunkLeft.needRelightning.get();
-		boolean checkRightBleeding = (adjacentChunkRight != null) && !adjacentChunkRight.needRelightning.get();
+		boolean checkTopBleeding = (adjacentChunkTop != null) && !adjacentChunkTop.needsLightningUpdates();
+		boolean checkBottomBleeding = (adjacentChunkBottom != null) && !adjacentChunkBottom.needsLightningUpdates();
+		boolean checkFrontBleeding = (adjacentChunkFront != null) && !adjacentChunkFront.needsLightningUpdates();
+		boolean checkBackBleeding = (adjacentChunkBack != null) && !adjacentChunkBack.needsLightningUpdates();
+		boolean checkLeftBleeding = (adjacentChunkLeft != null) && !adjacentChunkLeft.needsLightningUpdates();
+		boolean checkRightBleeding = (adjacentChunkRight != null) && !adjacentChunkRight.needsLightningUpdates();
 		Voxel in;
 		while (blockSources.size() > 0)
 		{
@@ -274,7 +286,7 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkRight.getDataAt(0, y, z) & 0xF0FFFFFF) << 0x18;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkRight.needRelightning.set(true);
+						adjacentChunkRight.markInNeedForLightningUpdate();
 						checkRightBleeding = false;
 					}
 				}
@@ -296,7 +308,7 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkLeft.getDataAt(31, y, z) & 0xF0FFFFFF) << 0x18;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkLeft.needRelightning.set(true);
+						adjacentChunkLeft.markInNeedForLightningUpdate();
 						checkLeftBleeding = false;
 					}
 				}
@@ -319,7 +331,7 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkFront.getDataAt(x, y, 0) & 0xF0FFFFFF) << 0x18;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkFront.needRelightning.set(true);
+						adjacentChunkFront.markInNeedForLightningUpdate();
 						checkFrontBleeding = false;
 					}
 				}
@@ -341,7 +353,7 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkBack.getDataAt(x, y, 31) & 0xF0FFFFFF) << 0x18;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkBack.needRelightning.set(true);
+						adjacentChunkBack.markInNeedForLightningUpdate();
 						checkBackBleeding = false;
 					}
 				}
@@ -364,7 +376,7 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkTop.getDataAt(x, 0, z) & 0xF0FFFFFF) << 0x18;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkTop.needRelightning.set(true);
+						adjacentChunkTop.markInNeedForLightningUpdate();
 						checkTopBleeding = false;
 					}
 				}
@@ -386,7 +398,7 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkBottom.getDataAt(x, 31, z) & 0xF0FFFFFF) << 0x18;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkBottom.needRelightning.set(true);
+						adjacentChunkBottom.markInNeedForLightningUpdate();
 						checkBottomBleeding = false;
 					}
 				}
@@ -433,7 +445,7 @@ public class CubicChunk implements Chunk
 					//int adjacentSunlight = (adjacentChunkRight.getDataAt(0, y, z) & 0xFF0FFFFF) << 0x14;
 					if (((adj & 0x00F00000) >> 0x14) < llRight - 1)
 					{
-						adjacentChunkRight.needRelightning.set(true);
+						adjacentChunkRight.markInNeedForLightningUpdate();
 						checkRightBleeding = false;
 					}
 				}
@@ -463,7 +475,7 @@ public class CubicChunk implements Chunk
 					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, 0);
 					if (((adj & 0x00F00000) >> 0x14) < llLeft - 1)
 					{
-						adjacentChunkLeft.needRelightning.set(true);
+						adjacentChunkLeft.markInNeedForLightningUpdate();
 						checkLeftBleeding = false;
 					}
 				}
@@ -489,7 +501,7 @@ public class CubicChunk implements Chunk
 					//int adjacentSunlight = (adjacentChunkFront.getDataAt(x, y, 0) & 0xFF0FFFFF) << 0x14;
 					if (((adj & 0x00F00000) >> 0x14) < llFront - 1)
 					{
-						adjacentChunkFront.needRelightning.set(true);
+						adjacentChunkFront.markInNeedForLightningUpdate();
 						checkFrontBleeding = false;
 					}
 				}
@@ -514,7 +526,7 @@ public class CubicChunk implements Chunk
 					int llBack = ll - in.getLightLevelModifier(voxelData, adj, 3);
 					if(((adj & 0x00F00000) >> 0x14) < llBack - 1)
 					{
-						adjacentChunkBack.needRelightning.set(true);
+						adjacentChunkBack.markInNeedForLightningUpdate();
 						checkBackBleeding = false;
 					}
 				}
@@ -540,7 +552,7 @@ public class CubicChunk implements Chunk
 					//int adjacentSunlight = (adj & 0xFF0FFFFF) << 0x14;
 					if(((adj & 0x00F00000) >> 0x14) < llTop - 1)
 					{
-						adjacentChunkTop.needRelightning.set(true);
+						adjacentChunkTop.markInNeedForLightningUpdate();
 						checkTopBleeding = false;
 					}
 				}
@@ -566,7 +578,7 @@ public class CubicChunk implements Chunk
 					//int adjacentSunlight = (adj & 0xFF0FFFFF) << 0x14;
 					if(((adj & 0x00F00000) >> 0x14) < llBottm - 1)
 					{
-						adjacentChunkBottom.needRelightning.set(true);
+						adjacentChunkBottom.markInNeedForLightningUpdate();
 						checkBottomBleeding = false;
 					}
 				}
@@ -583,7 +595,7 @@ public class CubicChunk implements Chunk
 			{
 				int z = 31; // This is basically wrong since we work with cubic chunks
 				boolean hit = false;
-				int csh = world.getRegionSummaries().getHeightAt(chunkX * 32 + a, chunkZ * 32 + b) + 1;
+				int csh = world.getRegionSummaries().getHeightAtWorldCoordinates(chunkX * 32 + a, chunkZ * 32 + b) + 1;
 				while (z >= 0)
 				{
 					int block = chunkVoxelData[a * 1024 + z * 32 + b];
@@ -622,7 +634,7 @@ public class CubicChunk implements Chunk
 	{
 		if (world != null)
 		{
-			CubicChunk cc;
+			Chunk cc;
 			cc = world.getChunk(chunkX + 1, chunkY, chunkZ, false);
 			if (cc != null)
 			{
@@ -738,7 +750,7 @@ public class CubicChunk implements Chunk
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int heightInSummary = world.getRegionSummaries().getHeightAt(chunkX * 32 + b, chunkZ * 32 + c);
+						int heightInSummary = world.getRegionSummaries().getHeightAtWorldCoordinates(chunkX * 32 + b, chunkZ * 32 + c);
 						// System.out.println("compute "+heightInSummary+" <= ? "+chunkY*32);
 						if (heightInSummary <= chunkY * 32)
 						{
@@ -875,7 +887,7 @@ public class CubicChunk implements Chunk
 		int sunLightAfter = VoxelFormat.sunlight(data);
 		int blockLightAfter = VoxelFormat.blocklight(data);
 
-		int csh = world.getRegionSummaries().getHeightAt(bx + chunkX * 32, bz + chunkZ * 32);
+		int csh = world.getRegionSummaries().getHeightAtWorldCoordinates(bx + chunkX * 32, bz + chunkZ * 32);
 		int block_height = by + chunkY * 32;
 		
 		//If the block is at or above (never) the topmost tile it's sunlit
@@ -1446,7 +1458,7 @@ public class CubicChunk implements Chunk
 			int y = blockSources.pop();
 			int z = blockSources.pop();
 			int x = blockSources.pop();
-			int voxelData = getWorldData(x, y, z);
+			int voxelData = getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z);
 			int ll = (voxelData & 0x0F000000) >> 0x18;
 			int cId = VoxelFormat.id(voxelData);
 
@@ -1460,10 +1472,10 @@ public class CubicChunk implements Chunk
 				// X-propagation
 				if (x < bounds)
 				{
-					int adj = this.getWorldData(x + 1, y, z);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x + 1, y, z);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						this.setWorldData(x + 1, y, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x + 1, y, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
 						modifiedBlocks++;
 						blockSources.push(x + 1);
 						blockSources.push(z);
@@ -1473,10 +1485,10 @@ public class CubicChunk implements Chunk
 				}
 				if (x > -bounds)
 				{
-					int adj = this.getWorldData(x - 1, y, z);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x - 1, y, z);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						this.setWorldData(x - 1, y, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x - 1, y, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
 						modifiedBlocks++;
 						blockSources.push(x - 1);
 						blockSources.push(z);
@@ -1487,10 +1499,10 @@ public class CubicChunk implements Chunk
 				// Z-propagation
 				if (z < bounds)
 				{
-					int adj = this.getWorldData(x, y, z + 1);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z + 1);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						this.setWorldData(x, y, z + 1, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z + 1, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z + 1);
@@ -1500,10 +1512,10 @@ public class CubicChunk implements Chunk
 				}
 				if (z > -bounds)
 				{
-					int adj = this.getWorldData(x, y, z - 1);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z - 1);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						this.setWorldData(x, y, z - 1, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z - 1, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z - 1);
@@ -1514,10 +1526,10 @@ public class CubicChunk implements Chunk
 				// Y-propagation
 				if (y < bounds) // y = 254+1
 				{
-					int adj = this.getWorldData(x, y + 1, z);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y + 1, z);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						this.setWorldData(x, y + 1, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y + 1, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z);
@@ -1527,10 +1539,10 @@ public class CubicChunk implements Chunk
 				}
 				if (y > -bounds)
 				{
-					int adj = this.getWorldData(x, y - 1, z);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y - 1, z);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x0F000000) >> 0x18) < ll - 1)
 					{
-						this.setWorldData(x, y - 1, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y - 1, z, adj & 0xF0FFFFFF | (ll - 1) << 0x18);
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z);
@@ -1547,7 +1559,7 @@ public class CubicChunk implements Chunk
 			int z = sunSources.pop();
 			int x = sunSources.pop();
 
-			int voxelData = this.getWorldData(x, y, z);
+			int voxelData = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z);
 			int ll = (voxelData & 0x00F00000) >> 0x14;
 			int cId = VoxelFormat.id(voxelData);
 			
@@ -1561,12 +1573,12 @@ public class CubicChunk implements Chunk
 				// X-propagation
 				if (x < bounds)
 				{
-					int adj = this.getWorldData(x + 1, y, z);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x + 1, y, z);
 					int llRight = ll - in.getLightLevelModifier(voxelData, adj, 2);
 					
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llRight - 1)
 					{
-						this.setWorldData(x + 1, y, z, adj & 0xFF0FFFFF | (llRight - 1) << 0x14);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x + 1, y, z, adj & 0xFF0FFFFF | (llRight - 1) << 0x14);
 						modifiedBlocks++;
 						sunSources.push(x + 1);
 						sunSources.push(z);
@@ -1575,7 +1587,7 @@ public class CubicChunk implements Chunk
 				}
 				if (x > -bounds)
 				{
-					int adj = this.getWorldData(x - 1, y, z);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x - 1, y, z);
 					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, 0);
 					//int id = (adj & 0xFFFF);
 					//if(id == 25)
@@ -1584,7 +1596,7 @@ public class CubicChunk implements Chunk
 					{
 						//if(id == 25)
 						//	System.out.println("MAIS LEL TARACE"+VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() + " -> " +((adj & 0x00F00000) >> 0x14));
-						this.setWorldData(x - 1, y, z, adj & 0xFF0FFFFF | (llLeft - 1) << 0x14);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x - 1, y, z, adj & 0xFF0FFFFF | (llLeft - 1) << 0x14);
 						modifiedBlocks++;
 						sunSources.push(x - 1);
 						sunSources.push(z);
@@ -1595,11 +1607,11 @@ public class CubicChunk implements Chunk
 				// Z-propagation
 				if (z < bounds)
 				{
-					int adj = this.getWorldData(x, y, z + 1);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z + 1);
 					int llFront = ll - in.getLightLevelModifier(voxelData, adj, 1);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llFront - 1)
 					{
-						this.setWorldData(x, y, z + 1, adj & 0xFF0FFFFF | (llFront - 1) << 0x14);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z + 1, adj & 0xFF0FFFFF | (llFront - 1) << 0x14);
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z + 1);
@@ -1609,11 +1621,11 @@ public class CubicChunk implements Chunk
 				}
 				if (z > -bounds)
 				{
-					int adj = this.getWorldData(x, y, z - 1);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z - 1);
 					int llBack = ll - in.getLightLevelModifier(voxelData, adj, 3);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBack - 1)
 					{
-						this.setWorldData(x, y, z - 1, adj & 0xFF0FFFFF | (llBack - 1) << 0x14);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z - 1, adj & 0xFF0FFFFF | (llBack - 1) << 0x14);
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z - 1);
@@ -1624,11 +1636,11 @@ public class CubicChunk implements Chunk
 				// Y-propagation
 				if (y < bounds) // y = 254+1
 				{
-					int adj = this.getWorldData(x, y + 1, z);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y + 1, z);
 					int llTop = ll - in.getLightLevelModifier(voxelData, adj, 4);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llTop - 1)
 					{
-						this.setWorldData(x, y + 1, z, adj & 0xFF0FFFFF | (llTop - 1) << 0x14);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y + 1, z, adj & 0xFF0FFFFF | (llTop - 1) << 0x14);
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z);
@@ -1638,12 +1650,12 @@ public class CubicChunk implements Chunk
 				}
 				if (y > -bounds)
 				{
-					int adj = this.getWorldData(x, y - 1, z);
+					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y - 1, z);
 					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, 5);
 					if (!VoxelTypes.get(adj).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBottm)
 					{
 						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)
-						this.setWorldData(x, y - 1, z, adj & 0xFF0FFFFF | (llBottm /* - removed */) << 0x14);
+						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y - 1, z, adj & 0xFF0FFFFF | (llBottm /* - removed */) << 0x14);
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z);
@@ -1657,7 +1669,7 @@ public class CubicChunk implements Chunk
 		return modifiedBlocks;
 	}
 
-	private int getWorldData(int x, int y, int z)
+	private int getWorldDataOnlyForLightningUpdatesFuncitons(int x, int y, int z)
 	{
 		if(x > 0 && x < 31)
 			if(y > 0 && y < 31)
@@ -1666,7 +1678,7 @@ public class CubicChunk implements Chunk
 		return world.getDataAt(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, false);
 	}
 	
-	private void setWorldData(int x, int y, int z, int data)
+	private void setWorldDataOnlyForLightningUpdatesFunctions(int x, int y, int z, int data)
 	{
 		if(x > 0 && x < 31)
 			if(y > 0 && y < 31)
@@ -1676,13 +1688,10 @@ public class CubicChunk implements Chunk
 					return;
 				}
 		world.setDataAtWithoutUpdates(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data, false);
-		CubicChunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32, false);
+		Chunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32, false);
+		
 		if(c != null)
-		{
-			//c.needRelightning.set(true);
-			c.need_render.set(true);
-			c.markDirty(true);
-		}
+			c.markInNeedForLightningUpdate();
 	}
 
 	@Override
@@ -1696,7 +1705,7 @@ public class CubicChunk implements Chunk
 				if(z > 0 && z < 31)
 					return VoxelFormat.sunlight(this.getDataAt(x, y, z));
 		// Stronger implementation for unbound spread functions
-		return VoxelFormat.sunlight(this.getWorldData(x, y, z));
+		return VoxelFormat.sunlight(this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z));
 	}
 
 	@Override
@@ -1707,7 +1716,7 @@ public class CubicChunk implements Chunk
 				if(z > 0 && z < 31)
 					return VoxelFormat.blocklight(this.getDataAt(x, y, z));
 		// Stronger implementation for unbound spread functions
-		return VoxelFormat.blocklight(this.getWorldData(x, y, z));
+		return VoxelFormat.blocklight(this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z));
 	}
 
 	public boolean isAirChunk()
@@ -1726,13 +1735,7 @@ public class CubicChunk implements Chunk
 					return;
 				}
 		// Stronger implementation for unbound spread functions
-		this.setWorldData(x, y, z, VoxelFormat.changeSunlight(this.getWorldData(x, y, z), level));CubicChunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32, false);
-		if(c != null)
-		{
-			//c.needRelightning.set(true);
-			c.need_render.set(true);
-			c.markDirty(true);
-		}
+		this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z, VoxelFormat.changeSunlight(this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z), level));
 	}
 
 	@Override
@@ -1746,12 +1749,87 @@ public class CubicChunk implements Chunk
 					return;
 				}
 		// Stronger implementation for unbound spread functions
-		this.setWorldData(x, y, z, VoxelFormat.changeBlocklight(this.getWorldData(x, y, z), level));CubicChunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32, false);
-		if(c != null)
-		{
-			//c.needRelightning.set(true);
-			c.need_render.set(true);
-			c.markDirty(true);
-		}
+		this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z, VoxelFormat.changeBlocklight(this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z), level));
+	}
+
+	@Override
+	public World getWorld()
+	{
+		return world;
+	}
+
+	@Override
+	public Region getRegion()
+	{
+		return holder;
+	}
+
+	@Override
+	public boolean needsLightningUpdates()
+	{
+		return needRelightning.get();
+	}
+
+	@Override
+	public void markInNeedForLightningUpdate()
+	{
+		this.needRelightning.set(true);
+	}
+
+	@Override
+	public void markForReRender()
+	{
+		this.need_render.set(true);
+	}
+
+	@Override
+	public boolean isMarkedForReRender()
+	{
+		return this.need_render.get();
+	}
+
+	@Override
+	public void markRenderInProgress(boolean inProgress)
+	{
+		this.requestable.set(!inProgress);
+	}
+
+	@Override
+	public boolean isRenderAleadyInProgress()
+	{
+		return !requestable.get();
+	}
+
+	@Override
+	public void destroyRenderData()
+	{
+		//Add it to the deletion queue for ressources
+		if(chunkRenderData != null)
+			chunkRenderData.markForDeletion();
+		//Delete the reference
+		chunkRenderData = null;
+		
+		markForReRender();
+	}
+
+	public void destroy()
+	{
+		destroyRenderData();
+	}
+
+	@Override
+	public void setChunkRenderData(ChunkRenderData chunkRenderData)
+	{
+		//Delete old one
+		if(this.chunkRenderData != null && !this.chunkRenderData.equals(chunkRenderData))
+			this.chunkRenderData.markForDeletion();
+		//Replaces it
+		this.chunkRenderData = chunkRenderData;
+	}
+
+	@Override
+	public ChunkRenderData getChunkRenderData()
+	{
+		return chunkRenderData;
 	}
 }

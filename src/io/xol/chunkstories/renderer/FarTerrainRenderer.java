@@ -244,7 +244,7 @@ public class FarTerrainRenderer
 					rz--;
 				if (currentChunkX < 0 && currentChunkX % 8 != 0)
 					rx--;
-				RegionMesh regionMesh = new RegionMesh(rx, rz, world.getRegionSummaries().get(currentChunkX * 32, currentChunkZ * 32));
+				RegionMesh regionMesh = new RegionMesh(rx, rz, world.getRegionSummaries().getRegionSummaryWorldCoordinates(currentChunkX * 32, currentChunkZ * 32));
 				
 				int rcx = currentChunkX % world.getSizeInChunks();
 				if (rcx < 0)
@@ -538,7 +538,7 @@ public class FarTerrainRenderer
 			}
 			//System.out.println(rs.dataSource.loaded.get());
 			if(!rs.regionSummary.loaded.get())
-				rs.regionSummary = world.getRegionSummaries().get(rs.regionSummary.rx * 256, rs.regionSummary.rz * 256);
+				rs.regionSummary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(rs.regionSummary.rx * 256, rs.regionSummary.rz * 256);
 		}
 	}
 

@@ -52,7 +52,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 				if(!client.isAlive())
 					return true;
 				
-				ChunkHolder holder = world.getChunksHolder().getChunkHolder(chunkX, chunkY, chunkZ, true);
+				ChunkHolder holder = world.getChunksHolder().getChunkHolderChunkCoordinates(chunkX, chunkY, chunkZ, true);
 				if(holder.isLoaded())
 				{
 					//System.out.println("snding actly: "+chunkX+":"+chunkY+":"+chunkZ);
@@ -122,7 +122,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 		{
 			try
 			{
-				RegionSummary summary = world.getRegionSummaries().get(rx * 256, rz * 256);
+				RegionSummary summary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(rx * 256, rz * 256);
 				//System.out.println("Asking for summary at : "+rx+":"+rz);
 				if(summary.loaded.get())
 				{

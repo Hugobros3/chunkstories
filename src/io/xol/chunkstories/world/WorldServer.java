@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.events.PlayerSpawnEvent;
@@ -18,7 +19,6 @@ import io.xol.chunkstories.physics.particules.Particle;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
-import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerServer;
 import io.xol.engine.math.LoopingMathHelper;
 
@@ -118,7 +118,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 		//Chunks pruner
 		ChunksIterator i = this.getAllLoadedChunks();
-		CubicChunk c;
+		Chunk c;
 		while (i.hasNext())
 		{
 			c = i.next();
@@ -137,7 +137,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				int pCY = (int) loc.y / 32;
 				int pCZ = (int) loc.z / 32;
 				//TODO use proper configurable values for this
-				if (((LoopingMathHelper.moduloDistance(c.chunkX, pCX, sizeInChunks) < chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(c.chunkZ, pCZ, sizeInChunks) < chunksViewDistance + 1) || (Math.abs(c.chunkY - pCY) < 4)))
+				if (((LoopingMathHelper.moduloDistance(c.getChunkX(), pCX, sizeInChunks) < chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(c.getChunkZ(), pCZ, sizeInChunks) < chunksViewDistance + 1) || (Math.abs(c.getChunkY() - pCY) < 4)))
 				{
 					neededBySomeone = true;
 				}
@@ -187,6 +187,8 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			if (chunkHolder.canBeUnloaded() && chunkHolder.getNumberOfLoadedChunks() == 0 && !neededBySomeone)
 			{
 				//TODO saves
+				chunkHolder.save();
+				
 				chunkHolder.unload();
 				chunksHoldersIterator.remove();
 			}

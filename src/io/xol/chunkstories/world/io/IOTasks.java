@@ -42,7 +42,7 @@ public class IOTasks extends Thread
 	protected int worldHeightInChunks = 0;
 
 	//Per-thread buffer
-	protected static ThreadLocal<byte[]> unCompressedData = new ThreadLocal<byte[]>()
+	protected static ThreadLocal<byte[]> unCompressedDataBuffer = new ThreadLocal<byte[]>()
 	{
 		@Override
 		protected byte[] initialValue()
@@ -192,13 +192,9 @@ public class IOTasks extends Thread
 			// If for some reasons the chunks holder's are still not loaded, we
 			// requeue the job for later.
 			if (holder == null)
-			{
 				return false;
-			}
 			if (!holder.isLoaded())
-			{
 				return false;
-			}
 			//Already loaded
 			if (holder.isChunkLoaded(x, y, z))// && !overwrite)
 				return true;
@@ -209,7 +205,7 @@ public class IOTasks extends Thread
 			if (cd == null || cd.length == 0)
 			{
 				holder.compressedChunksLock.endRead();
-				CubicChunk c = new CubicChunk(world, x, y, z);
+				CubicChunk c = new CubicChunk(holder, x, y, z);
 				//System.out.println("No compressed data for this chunk.");
 				//holder.lock.unlock();
 				world.setChunk(c);
@@ -217,10 +213,10 @@ public class IOTasks extends Thread
 			}
 			else
 			{
-				CubicChunk c = new CubicChunk(world, x, y, z);
+				CubicChunk c = new CubicChunk(holder, x, y, z);
 				try
 				{
-					decompressor.decompress(cd, unCompressedData.get());
+					decompressor.decompress(cd, unCompressedDataBuffer.get());
 				}
 				catch (LZ4Exception e)
 				{
@@ -230,7 +226,7 @@ public class IOTasks extends Thread
 				holder.compressedChunksLock.endRead();
 				for (int i = 0; i < 32 * 32 * 32; i++)
 				{
-					int data = ((unCompressedData.get()[i * 4] & 0xFF) << 24) | ((unCompressedData.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedData.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedData.get()[i * 4 + 3] & 0xFF);
+					int data = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
 					c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
 				}
 				c.bakeVoxelLightning(false);
@@ -326,7 +322,7 @@ public class IOTasks extends Thread
 			//Else if no file exists
 			else
 			{
-				RegionSummary chunkSummary = world.getRegionSummaries().get(holder.regionX * 256, holder.regionZ * 256);
+				RegionSummary chunkSummary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(holder.regionX * 256, holder.regionZ * 256);
 				//Require a chunk summary to be generated first !
 				if (chunkSummary == null || !chunkSummary.isLoaded())
 				{

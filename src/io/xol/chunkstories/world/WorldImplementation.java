@@ -37,11 +37,12 @@ import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.chunk.WorldChunksHolder;
+import io.xol.chunkstories.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.EntityRayIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
-import io.xol.chunkstories.world.summary.RegionSummaries;
+import io.xol.chunkstories.world.summary.WorldHeightmapVersion;
 import io.xol.engine.concurrency.SimpleLock;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -75,7 +76,7 @@ public abstract class WorldImplementation implements World
 	private WorldChunksHolder chunksHolder;
 
 	// Heightmap management
-	private RegionSummaries regionSummaries;
+	private WorldHeightmapVersion regionSummaries;
 
 	// World-renderer backcall
 	private WorldRenderer renderer;
@@ -107,7 +108,7 @@ public abstract class WorldImplementation implements World
 		
 		//this.chunksData = new ChunksData();
 		this.chunksHolder = new WorldChunksHolder(this);
-		this.regionSummaries = new RegionSummaries(this);
+		this.regionSummaries = new WorldHeightmapVersion(this);
 		this.logic = Executors.newSingleThreadScheduledExecutor();
 		
 		if(this instanceof WorldMaster)
@@ -333,7 +334,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public int getMaxHeight()
 	{
-		return worldInfo.getSize().height * 32;
+		return worldInfo.getSize().heightInChunks * 32;
 	}
 
 	/* (non-Javadoc)
@@ -358,7 +359,7 @@ public abstract class WorldImplementation implements World
 	 * @see io.xol.chunkstories.world.WorldInterface#getChunk(int, int, int, boolean)
 	 */
 	@Override
-	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load)
+	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
 		chunkX = chunkX % getSizeInChunks();
 		chunkZ = chunkZ % getSizeInChunks();
@@ -368,7 +369,7 @@ public abstract class WorldImplementation implements World
 			chunkZ += getSizeInChunks();
 		if (chunkY < 0)
 			return null;
-		if (chunkY >= worldInfo.getSize().height)
+		if (chunkY >= worldInfo.getSize().heightInChunks)
 			return null;
 		return chunksHolder.getChunk(chunkX, chunkY, chunkZ, load);
 	}
@@ -377,9 +378,9 @@ public abstract class WorldImplementation implements World
 	 * @see io.xol.chunkstories.world.WorldInterface#removeChunk(io.xol.chunkstories.world.chunk.CubicChunk, boolean)
 	 */
 	@Override
-	public void removeChunk(CubicChunk c, boolean save)
+	public void removeChunk(Chunk c, boolean save)
 	{
-		removeChunk(c.chunkX, c.chunkY, c.chunkZ, save);
+		removeChunk(c.getChunkX(), c.getChunkY(), c.getChunkZ(), save);
 	}
 
 	/* (non-Javadoc)
@@ -413,13 +414,13 @@ public abstract class WorldImplementation implements World
 		//Out of bounds checks
 		if (chunkY < 0)
 			return false;
-		if (chunkY >= worldInfo.getSize().height)
+		if (chunkY >= worldInfo.getSize().heightInChunks)
 			return false;
 		//If it doesn't return null then it exists
 		return this.chunksHolder.getChunk(chunkX, chunkY, chunkZ, false) != null;
 	}
 	
-	public RegionSummaries getRegionSummaries()
+	public WorldHeightmapVersion getRegionSummaries()
 	{
 		return regionSummaries;
 	}
@@ -532,7 +533,6 @@ public abstract class WorldImplementation implements World
 				newData = ((VoxelLogic)newVoxel).onPlace(x, y, z, newData, entity);
 			
 			c.setDataAtWithUpdates(x % 32, y % 32, z % 32, newData);
-			c.markDirty(true);
 			
 			//Neighbour chunks updates
 			if (x % 32 == 0)
@@ -540,26 +540,26 @@ public abstract class WorldImplementation implements World
 				if (y % 32 == 0)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y - 1) / 32, (z - 1) / 32);
+						chunksHolder.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y - 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x - 1) / 32, (y - 1) / 32, (z) / 32);
+						chunksHolder.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z + 1) / 32);
+					chunksHolder.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z) / 32);
 				}
 				else if (y % 32 == 31)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y + 1) / 32, (z - 1) / 32);
+						chunksHolder.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y + 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x - 1) / 32, (y + 1) / 32, (z) / 32);
+						chunksHolder.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z + 1) / 32);
+					chunksHolder.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z) / 32);
 				}
 				else
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y) / 32, (z - 1) / 32);
+						chunksHolder.markChunkForReRender((x - 1) / 32, (y) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x - 1) / 32, (y) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x - 1) / 32, (y) / 32, (z) / 32);
+						chunksHolder.markChunkForReRender((x - 1) / 32, (y) / 32, (z + 1) / 32);
+					chunksHolder.markChunkForReRender((x - 1) / 32, (y) / 32, (z) / 32);
 				}
 			}
 			else if (x % 32 == 31)
@@ -567,51 +567,51 @@ public abstract class WorldImplementation implements World
 				if (y % 32 == 0)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y - 1) / 32, (z - 1) / 32);
+						chunksHolder.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y - 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x + 1) / 32, (y - 1) / 32, (z) / 32);
+						chunksHolder.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z + 1) / 32);
+					chunksHolder.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z) / 32);
 				}
 				else if (y % 32 == 31)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y + 1) / 32, (z - 1) / 32);
+						chunksHolder.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y + 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x + 1) / 32, (y + 1) / 32, (z) / 32);
+						chunksHolder.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z + 1) / 32);
+					chunksHolder.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z) / 32);
 				}
 				else
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y) / 32, (z - 1) / 32);
+						chunksHolder.markChunkForReRender((x + 1) / 32, (y) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkDirty((x + 1) / 32, (y) / 32, (z + 1) / 32);
-					chunksHolder.markChunkDirty((x + 1) / 32, (y) / 32, (z) / 32);
+						chunksHolder.markChunkForReRender((x + 1) / 32, (y) / 32, (z + 1) / 32);
+					chunksHolder.markChunkForReRender((x + 1) / 32, (y) / 32, (z) / 32);
 				}
 			}
 			if (y % 32 == 0)
 			{
 				if (z % 32 == 0)
-					chunksHolder.markChunkDirty((x) / 32, (y - 1) / 32, (z - 1) / 32);
+					chunksHolder.markChunkForReRender((x) / 32, (y - 1) / 32, (z - 1) / 32);
 				else if (z % 32 == 31)
-					chunksHolder.markChunkDirty((x) / 32, (y - 1) / 32, (z + 1) / 32);
-				chunksHolder.markChunkDirty((x) / 32, (y - 1) / 32, (z) / 32);
+					chunksHolder.markChunkForReRender((x) / 32, (y - 1) / 32, (z + 1) / 32);
+				chunksHolder.markChunkForReRender((x) / 32, (y - 1) / 32, (z) / 32);
 			}
 			else if (y % 32 == 31)
 			{
 				if (z % 32 == 0)
-					chunksHolder.markChunkDirty((x) / 32, (y + 1) / 32, (z - 1) / 32);
+					chunksHolder.markChunkForReRender((x) / 32, (y + 1) / 32, (z - 1) / 32);
 				else if (z % 32 == 31)
-					chunksHolder.markChunkDirty((x) / 32, (y + 1) / 32, (z + 1) / 32);
-				chunksHolder.markChunkDirty((x) / 32, (y + 1) / 32, (z) / 32);
+					chunksHolder.markChunkForReRender((x) / 32, (y + 1) / 32, (z + 1) / 32);
+				chunksHolder.markChunkForReRender((x) / 32, (y + 1) / 32, (z) / 32);
 			}
 			else
 			{
 				if (z % 32 == 0)
-					chunksHolder.markChunkDirty((x) / 32, (y) / 32, (z - 1) / 32);
+					chunksHolder.markChunkForReRender((x) / 32, (y) / 32, (z - 1) / 32);
 				else if (z % 32 == 31)
-					chunksHolder.markChunkDirty((x) / 32, (y) / 32, (z + 1) / 32);
-				chunksHolder.markChunkDirty((x) / 32, (y) / 32, (z) / 32);
+					chunksHolder.markChunkForReRender((x) / 32, (y) / 32, (z + 1) / 32);
+				chunksHolder.markChunkForReRender((x) / 32, (y) / 32, (z) / 32);
 			}
 			return newData;
 		}
@@ -642,7 +642,7 @@ public abstract class WorldImplementation implements World
 		if(this.isChunkLoaded(x/32, y/32, z/32) && !this.getChunk(x/32, y/32, z/32, false).isAirChunk())
 			return VoxelFormat.sunlight(this.getDataAt(x, y, z));
 		else
-			return y <= this.getRegionSummaries().getHeightAt(x, z) ? 0 : 15;
+			return y <= this.getRegionSummaries().getHeightAtWorldCoordinates(x, z) ? 0 : 15;
 	}
 	
 	@Override
@@ -673,12 +673,11 @@ public abstract class WorldImplementation implements World
 	 * @see io.xol.chunkstories.world.WorldInterface#setChunk(io.xol.chunkstories.world.chunk.CubicChunk)
 	 */
 	@Override
-	public void setChunk(CubicChunk chunk)
+	public void setChunk(Chunk chunk)
 	{
-		
-		if (this.isChunkLoaded(chunk.chunkX, chunk.chunkY, chunk.chunkZ))
+		if (this.isChunkLoaded(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ()))
 		{
-			CubicChunk oldchunk = this.getChunk(chunk.chunkX, chunk.chunkY, chunk.chunkZ, false);
+			Chunk oldchunk = this.getChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ(), false);
 			//if (oldchunk.dataPointer != chunk.dataPointer)
 			oldchunk.destroy();
 			
@@ -696,15 +695,15 @@ public abstract class WorldImplementation implements World
 	public synchronized void redrawEverything()
 	{
 		ChunksIterator i = this.getAllLoadedChunks();
-		CubicChunk c;
+		Chunk c;
 		while (i.hasNext())
 		{
 			c = i.next();
-			c.need_render.set(true);
-			c.requestable.set(true);
-			if(c.chunkRenderData != null)
-				c.chunkRenderData.markForDeletion();
-			c.chunkRenderData = null;
+			if(c instanceof ChunkRenderable)
+			{
+				ChunkRenderable c2 = (ChunkRenderable)c;
+				c2.destroyRenderData();
+			}
 		}
 	}
 
@@ -801,7 +800,7 @@ public abstract class WorldImplementation implements World
 			return;
 		Location loc = Client.controlledEntity.getLocation();
 		ChunksIterator it = this.getAllLoadedChunks();
-		CubicChunk chunk;
+		Chunk chunk;
 		while (it.hasNext())
 		{
 			chunk = it.next();
@@ -811,6 +810,7 @@ public abstract class WorldImplementation implements World
 				continue;
 			}
 			boolean keep = false;
+			//Iterate over possible things that hold chunks in memory
 			if (!keep && Client.controlledEntity != null)
 			{
 				keep = true;
@@ -822,11 +822,9 @@ public abstract class WorldImplementation implements World
 
 				//System.out.println("chunkX:"+chunk.chunkX+":"+chunk.chunkY+":"+chunk.chunkZ);
 				
-				if (((LoopingMathHelper.moduloDistance(chunk.chunkX, pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(chunk.chunkZ, pCZ, sizeInChunks) > chunksViewDistance) || Math.abs(chunk.chunkY - pCY) > 3 + 1))
+				if (((LoopingMathHelper.moduloDistance(chunk.getChunkX(), pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(chunk.getChunkZ(), pCZ, sizeInChunks) > chunksViewDistance) || Math.abs(chunk.getChunkY() - pCY) > 3 + 1))
 				{
-					if(chunk.chunkRenderData != null)
-						chunk.chunkRenderData.markForDeletion();
-					chunk.need_render.set(true);
+					chunk.destroy();
 					keep = false;
 				}
 			}
@@ -1042,8 +1040,8 @@ public abstract class WorldImplementation implements World
 	{
 		if (coordinate < 0)
 			coordinate = 0;
-		if (coordinate > worldInfo.getSize().height * 32)
-			coordinate = worldInfo.getSize().height * 32;
+		if (coordinate > worldInfo.getSize().heightInChunks * 32)
+			coordinate = worldInfo.getSize().heightInChunks * 32;
 		return coordinate;
 	}
 
@@ -1075,8 +1073,22 @@ public abstract class WorldImplementation implements World
 		return chunksHolder;
 	}
 	
+	public Region getRegionWorldCoordinates(int worldX, int worldY, int worldZ)
+	{
+		worldX = sanitizeHorizontalCoordinate(worldX);
+		worldY = sanitizeVerticalCoordinate(worldY);
+		worldZ = sanitizeHorizontalCoordinate(worldZ);
+		
+		return getRegion(worldX / 256, worldY / 256, worldZ / 256);
+	}
+	
+	public Region getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ)
+	{
+		return getRegion(chunkX / 8, chunkY / 8, chunkZ / 8);
+	}
+	
 	public Region getRegion(int regionX, int regionY, int regionZ)
 	{
-		return chunksHolder.getChunkHolder(regionX, regionY, regionZ, true);
+		return chunksHolder.getChunkHolderRegionCoordinates(regionX, regionY, regionZ, true);
 	}
 }

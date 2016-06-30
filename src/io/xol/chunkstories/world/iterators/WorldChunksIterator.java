@@ -2,10 +2,10 @@ package io.xol.chunkstories.world.iterators;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
-import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -48,7 +48,7 @@ public class WorldChunksIterator implements ChunksIterator
 	}
 
 	@Override
-	public CubicChunk next()
+	public Chunk next()
 	{
 		//We always want to ask a non-null, non-empty chunk holder
 		while (currentChunkHolder == null || !currentChunkHolderIterator.hasNext())

@@ -20,7 +20,7 @@ public abstract class WorldGenerator
 	 * @param cz
 	 * @return a CubicChunk object
 	 */
-	public abstract Chunk generateChunk(int cx, int cy, int cz);
+	public abstract Chunk generateChunk(Region region, int cx, int cy, int cz);
 
 	/**
 	 * Returns the data {@link VoxelFormat} for summary generation

@@ -8,7 +8,16 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 
 public interface Chunk
 {
+	public World getWorld();
+	
+	public Region getRegion();
 
+	public int getChunkX();
+	
+	public int getChunkY();
+	
+	public int getChunkZ();
+	
 	/**
 	 * Get the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
 	 * The coordinates are internally modified to map to the chunk, meaning you can access it both with world coordinates or 0-31 in-chunk coordinates
@@ -42,12 +51,6 @@ public interface Chunk
 	 * @param data
 	 */
 	public void setDataAtWithoutUpdates(int x, int y, int z, int data);
-	
-	/**
-	 * Marks the chunk to be re-rendered
-	 * @param priority May put the chunk on the top of the list of chunks to render
-	 */
-	void markDirty(boolean priority);
 
 	/**
 	 * Recomputes and propagates all lights within the chunk
@@ -55,14 +58,20 @@ public interface Chunk
 	 */
 	public void bakeVoxelLightning(boolean adjacent);
 	
+	public boolean needsLightningUpdates();
+	
+	public void markInNeedForLightningUpdate();
+	
 	public int getSunLight(int x, int y, int z);
 	
 	public int getBlockLight(int x, int y, int z);
 	
-	public boolean isAirChunk();
-	
 	public void setSunLight(int x, int y, int z, int level);
 	
 	public void setBlockLight(int x, int y, int z, int level);
+	
+	public boolean isAirChunk();
+
+	public void destroy();
 
 }

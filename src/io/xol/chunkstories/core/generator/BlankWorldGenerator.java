@@ -1,7 +1,8 @@
 package io.xol.chunkstories.core.generator;
 
+import io.xol.chunkstories.api.world.Chunk;
+import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.WorldGenerator;
-import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -12,9 +13,9 @@ public class BlankWorldGenerator extends WorldGenerator
 {
 
 	@Override
-	public CubicChunk generateChunk(int cx, int cy, int cz)
+	public Chunk generateChunk(Region region, int cx, int cy, int cz)
 	{
-		CubicChunk c = new CubicChunk((WorldImplementation) world, cx, cy, cz);
+		CubicChunk c = new CubicChunk(region, cx, cy, cz);
 		return c;
 	}
 

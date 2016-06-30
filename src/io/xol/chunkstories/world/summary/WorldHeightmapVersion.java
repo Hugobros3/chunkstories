@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.LoopingMathHelper;
 
@@ -13,14 +14,14 @@ import io.xol.engine.math.LoopingMathHelper;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class RegionSummaries
+public class WorldHeightmapVersion implements RegionSummaries
 {
 	private final WorldImplementation world;
 	
 	private final int worldSize;
 	private Map<Long, RegionSummary> summaries = new ConcurrentHashMap<Long, RegionSummary>();
 
-	public RegionSummaries(WorldImplementation w)
+	public WorldHeightmapVersion(WorldImplementation w)
 	{
 		world = w;
 		worldSize = world.getSizeInChunks() * 32;
@@ -34,7 +35,7 @@ public class RegionSummaries
 		return x * s + z;
 	}
 
-	public RegionSummary get(int x, int z)
+	public RegionSummary getRegionSummaryWorldCoordinates(int x, int z)
 	{
 		x %= worldSize;
 		z %= worldSize;
@@ -48,7 +49,6 @@ public class RegionSummaries
 			return summaries.get(i);
 
 		RegionSummary cs = new RegionSummary(world, x / 256, z / 256);
-		cs.load();
 
 		summaries.put(i, cs);
 		return cs;
@@ -62,13 +62,13 @@ public class RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummary cs = get(x, z);
+		RegionSummary cs = getRegionSummaryWorldCoordinates(x, z);
 		if (cs == null)
 			return 0;
 		return cs.getHeightMipmapped(x % 256, z % 256, level);
 	}
 
-	public int getHeightAt(int x, int z)
+	public int getHeightAtWorldCoordinates(int x, int z)
 	{
 		x %= worldSize;
 		z %= worldSize;
@@ -76,7 +76,7 @@ public class RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummary cs = get(x, z);
+		RegionSummary cs = getRegionSummaryWorldCoordinates(x, z);
 		if (cs == null)
 			return 0;
 		return cs.getHeight(x % 256, z % 256);
@@ -90,7 +90,7 @@ public class RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummary cs = get(x, z);
+		RegionSummary cs = getRegionSummaryWorldCoordinates(x, z);
 		if (cs == null)
 			return 0;
 		return cs.getMinChunkHeight(x % 256, z % 256);
@@ -104,7 +104,7 @@ public class RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummary cs = get(x, z);
+		RegionSummary cs = getRegionSummaryWorldCoordinates(x, z);
 		return cs.getID(x % 256, z % 256);
 	}
 
@@ -116,11 +116,11 @@ public class RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummary cs = get(x, z);
+		RegionSummary cs = getRegionSummaryWorldCoordinates(x, z);
 		cs.set(x % 256, y, z % 256, id);
 	}
 
-	public int amount()
+	public int countSummaries()
 	{
 		return summaries.size();
 	}
@@ -150,7 +150,7 @@ public class RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummary cs = get(x, z);
+		RegionSummary cs = getRegionSummaryWorldCoordinates(x, z);
 		cs.forceSet(x % 256, y, z % 256, id);
 	}
 

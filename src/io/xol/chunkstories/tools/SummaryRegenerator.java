@@ -3,9 +3,9 @@ package io.xol.chunkstories.tools;
 import java.io.File;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
-import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -56,7 +56,7 @@ public class SummaryRegenerator
 							while (!hit && y > 0)
 							{
 								int id = VoxelFormat.id(world.getDataAt(rX, y, rZ));
-								CubicChunk chunk = world.getChunk(rX / 32, y / 32, rZ / 32, true);
+								Chunk chunk = world.getChunk(rX / 32, y / 32, rZ / 32, true);
 								if (chunk != null && chunk.isAirChunk())
 								{
 									y -= 31;

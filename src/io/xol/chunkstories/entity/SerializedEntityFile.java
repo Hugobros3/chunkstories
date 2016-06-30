@@ -9,7 +9,6 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.csf.OfflineSerializedData;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.exceptions.UnknownComponentException;
 import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -41,28 +40,13 @@ public class SerializedEntityFile implements OfflineSerializedData
 		{
 			DataInputStream in = new DataInputStream(new FileInputStream(file));
 			
-			long entityUUID = in.readLong();
-			short entityTypeID = in.readShort();
-			
-			Entity entity = EntitiesList.newEntity(world, entityTypeID);
-			entity.setUUID(entityUUID);
-			
-			int componentId = in.readInt();
-			//Loop throught all components
-			while(componentId != 0)
-			{
-				if(!entity.getComponents().tryPullComponentInStream(componentId, this, in))
-					throw new UnknownComponentException(componentId, entity.getClass());
-				componentId = in.readInt();
-			}
-			
-			System.out.println("Read serialized entity from : "+file);
+			Entity entity = EntitySerializer.readEntityFromStream(in, this, world);
 			
 			in.close();
 			
 			return entity;
 		}
-		catch (IOException | UnknownComponentException e)
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -75,14 +59,7 @@ public class SerializedEntityFile implements OfflineSerializedData
 		{
 			DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
 			
-			out.writeLong(entity.getUUID());
-			out.writeShort(entity.getEID());
-			
-			//Write all components we wanna update
-			entity.getComponents().pushAllComponentsInStream(this, out);
-			
-			//Then write 0
-			out.writeInt((int)0);
+			EntitySerializer.writeEntityToStream(out, this, entity);
 			
 			out.flush();
 			out.close();

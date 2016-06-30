@@ -13,9 +13,12 @@ import io.xol.chunkstories.api.world.World;
 //http://chunkstories.xyz
 //http://xol.io
 
+/**
+ * The one place in the code where we serialize entities
+ */
 public class EntitySerializer
 {
-	public void writeEntityToStream(DataOutputStream out, OfflineSerializedData destination, Entity entity)
+	public static void writeEntityToStream(DataOutputStream out, OfflineSerializedData destination, Entity entity)
 	{
 		try
 		{
@@ -28,9 +31,6 @@ public class EntitySerializer
 			//Then write 0 to mark end of components
 			out.writeInt((int)0);
 			
-			out.flush();
-			out.close();
-			
 			System.out.println("Wrote serialized entity to : "+destination);
 		}
 		catch (IOException e)
@@ -39,11 +39,16 @@ public class EntitySerializer
 		}
 	}
 	
-	public Entity readEntityFromStream(DataInputStream in, OfflineSerializedData source, World world)
+	public static Entity readEntityFromStream(DataInputStream in, OfflineSerializedData source, World world)
 	{
 		try
 		{
 			long entityUUID = in.readLong();
+			
+			//When we reach -1 in a stream of entities, it means we reached the end.
+			if(entityUUID == -1)
+				return null;
+			
 			short entityTypeID = in.readShort();
 			
 			Entity entity = EntitiesList.newEntity(world, entityTypeID);

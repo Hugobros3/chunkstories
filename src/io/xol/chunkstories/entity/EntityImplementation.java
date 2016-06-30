@@ -122,7 +122,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public Region getChunkHolder()
 	{
-		return null;
+		return position.getRegionWithin();
 	}
 
 	public void setVelocity(double x, double y, double z)
@@ -201,7 +201,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public String toString()
 	{
-		return "['" + this.getClass().getName() + "'] pos : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Holder:" + "WIP" + "Inventory : " + this.inventory;
+		return "[" + this.getClass().getSimpleName() + " holder: "+position.getRegionWithin()+" pos : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Holder:" + "WIP" + "Inventory : " + this.inventory+" ]";
 	}
 
 	double clampDouble(double d)

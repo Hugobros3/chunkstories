@@ -20,8 +20,6 @@ import io.xol.engine.model.RenderingContext;
 /**
  * Responsible of holding all rendering information about one chunk
  * ie : VBO creation, uploading and deletion, as well as decals
- * @author Hugo
- *
  */
 public class ChunkRenderData
 {
@@ -179,6 +177,6 @@ public class ChunkRenderData
 		//if(chunk.chunkZ != 5)
 		//	return;
 		OverlayRenderer.glColor4f(5, 0, (float) Math.random() * 0.01f, 1);
-		SelectionRenderer.cubeVertices(chunk.chunkX * 32 + 16, chunk.chunkY * 32, chunk.chunkZ * 32 + 16, 32, 32, 32);
+		SelectionRenderer.cubeVertices(chunk.getChunkX() * 32 + 16, chunk.getChunkY() * 32, chunk.getChunkZ() * 32 + 16, 32, 32, 32);
 	}
 }

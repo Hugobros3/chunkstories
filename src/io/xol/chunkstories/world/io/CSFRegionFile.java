@@ -1,5 +1,7 @@
 package io.xol.chunkstories.world.io;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -8,6 +10,8 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.csf.OfflineSerializedData;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -18,11 +22,11 @@ public class CSFRegionFile implements OfflineSerializedData
 {
 	ChunkHolder holder;
 	File file;
-	
+
 	public CSFRegionFile(ChunkHolder holder)
 	{
 		this.holder = holder;
-		
+
 		this.file = new File(holder.world.getFolderPath() + "/regions/" + holder.regionX + "." + holder.regionY + "." + holder.regionZ + ".csf");
 	}
 
@@ -64,23 +68,35 @@ public class CSFRegionFile implements OfflineSerializedData
 				}
 		//Unlock it immediatly afterwards
 		holder.compressedChunksLock.endWrite();
-		// System.out.println("read "+i+" compressed chunks");
-		in.close();
-		
+
 		//don't tick the world entities until we get this straight
 		holder.world.entitiesLock.lock();
-		
-		Iterator<Entity> holderEntities = holder.getEntitiesWithinRegion();
-		while(holderEntities.hasNext())
+
+		if(in.available() <= 0)
 		{
-			Entity entity = holderEntities.next();
-			if(entity.exists())
-			{
-				
-			}
+			System.out.println("Old version file, no entities to be found anyway");
+			in.close();
+			
+			holder.world.entitiesLock.unlock();
+			return;
 		}
 		
+		DataInputStream dis = new DataInputStream(in);
+		
+		//Read entities until we hit -1
+		Entity entity = null;
+		do
+		{
+			entity = EntitySerializer.readEntityFromStream(dis, this, holder.world);
+			if(entity != null)
+				holder.world.addEntity(entity);
+		}
+		while(entity != null);
+
 		holder.world.entitiesLock.unlock();
+
+		// System.out.println("read "+i+" compressed chunks");
+		in.close();
 	}
 
 	public void save() throws IOException
@@ -117,8 +133,31 @@ public class CSFRegionFile implements OfflineSerializedData
 					}
 				}
 		holder.compressedChunksLock.endRead();
+
+		//don't tick the world entities until we get this straight
+		holder.world.entitiesLock.lock();
+
+		System.out.println("writing region file of "+holder);
+		
+		DataOutputStream dos = new DataOutputStream(out);
+		
+		Iterator<Entity> holderEntities = holder.getEntitiesWithinRegion();
+		while (holderEntities.hasNext())
+		{
+			Entity entity = holderEntities.next();
+			//Don't save controllable entities
+			if (entity.exists() && !(entity instanceof EntityControllable))
+			{
+				EntitySerializer.writeEntityToStream(dos, this, entity);
+			}
+		}
+		dos.writeLong(-1);
+		
+		System.out.println("done");
+
+		holder.world.entitiesLock.unlock();
+
 		out.close();
 	}
-	
-	
+
 }

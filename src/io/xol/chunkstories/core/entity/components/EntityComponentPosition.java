@@ -130,14 +130,15 @@ public class EntityComponentPosition extends EntityComponent
 		}
 		else
 		{
+			
 			if(regionWithin != null)
-				assert regionWithin.removeEntity(entity);
+				regionWithin.removeEntity(entity);
 		
-			regionWithin = entity.getWorld().getRegion(regionX * 8, regionY * 8, regionZ * 8);
+			regionWithin = entity.getWorld().getRegionChunkCoordinates(regionX * 8, regionY * 8, regionZ * 8);
 			
 			//When the region is loaded, add this entity to it.
 			if(regionWithin != null && regionWithin.isLoaded())
-				assert regionWithin.addEntity(entity);
+				regionWithin.addEntity(entity);
 			
 			return true;
 		}

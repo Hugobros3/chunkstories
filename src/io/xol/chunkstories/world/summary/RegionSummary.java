@@ -75,9 +75,11 @@ public class RegionSummary
 			handler = new File(world.getFolderPath() + "/summaries/" + rx + "."+ rz + ".sum");
 		else
 			handler = null;
+		
+		load();
 	}
 
-	public void load()
+	private void load()
 	{
 		//this.handler = handler;
 		this.world.ioHandler.requestChunkSummaryLoad(this);
@@ -89,7 +91,7 @@ public class RegionSummary
 		this.world.ioHandler.requestChunkSummarySave(this);
 	}
 
-	int index(int x, int z)
+	private int index(int x, int z)
 	{
 		return x * 256 + z;
 	}
