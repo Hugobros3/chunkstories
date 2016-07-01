@@ -57,12 +57,12 @@ public final class EntityComponentExistence extends EntityComponent
 	public void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
 		boolean existedBefore = exists;
-		exists = dis.readBoolean();
+		boolean willExist = dis.readBoolean();
 		//If the entity existedBefore and we are not the world master, we remove it from our world
-		if(!exists && existedBefore && !(entity.getWorld() instanceof WorldMaster))
+		if(!willExist && existedBefore && !(entity.getWorld() instanceof WorldMaster))
 		{
-			System.out.println("Debug : removed entity "+entity + "from world");
-			entity.getWorld().removeEntity(entity);
+			//System.out.println("Debug : removed entity "+entity + "from world");
+			entity.removeFromWorld();
 		}
 	}
 

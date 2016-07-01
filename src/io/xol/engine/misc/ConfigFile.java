@@ -176,7 +176,13 @@ public class ConfigFile
 
 	public long getLongProp(String s, long l)
 	{
+		try{
 		return Long.parseLong(getProp(s, l+""));
+		}
+		catch(NumberFormatException e)
+		{
+			return (long) Double.parseDouble(getProp(s, l+""));
+		}
 	}
 
 	public void setProp(String p, long l)

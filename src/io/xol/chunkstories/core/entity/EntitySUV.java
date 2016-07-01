@@ -3,11 +3,8 @@ package io.xol.chunkstories.core.entity;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 
-import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.chunkstories.renderer.lights.DefferedLight;
-import io.xol.chunkstories.renderer.lights.DefferedSpotLight;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;

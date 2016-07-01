@@ -1,6 +1,7 @@
 package io.xol.chunkstories.api.voxel;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -18,12 +19,12 @@ public interface VoxelLogic
 	 * 
 	 * @return The modified data to actually place there
 	 */
-	public int onPlace(int x, int y, int z, int voxelData, Entity entity);
+	public int onPlace(World world, int x, int y, int z, int voxelData, Entity entity);
 	
 	/**
 	 * Called when a voxel implementing this interface is removed
 	 * @param voxelData Complete data of the voxel being removed
 	 * @param entity If removed by an entity
 	 */
-	public void onRemove(int x, int y, int z, int voxelData, Entity entity);
+	public void onRemove(World world, int x, int y, int z, int voxelData, Entity entity);
 }

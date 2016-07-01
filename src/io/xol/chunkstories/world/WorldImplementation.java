@@ -529,12 +529,12 @@ public abstract class WorldImplementation implements World
 			int formerData = c.getDataAt(x % 32, y % 32, z % 32);
 			Voxel formerVoxel = VoxelTypes.get(formerData);
 			if (formerVoxel != null && formerVoxel instanceof VoxelLogic)
-				((VoxelLogic) formerVoxel).onRemove(x, y, z, formerData, entity);
+				((VoxelLogic) formerVoxel).onRemove(this, x, y, z, formerData, entity);
 
 			//Optionally runs whatever the voxel requires to run when placed
 			Voxel newVoxel = VoxelTypes.get(newData);
 			if (newVoxel != null && newVoxel instanceof VoxelLogic)
-				newData = ((VoxelLogic) newVoxel).onPlace(x, y, z, newData, entity);
+				newData = ((VoxelLogic) newVoxel).onPlace(this, x, y, z, newData, entity);
 
 			c.setDataAtWithUpdates(x % 32, y % 32, z % 32, newData);
 

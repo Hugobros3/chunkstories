@@ -1,6 +1,7 @@
 package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.Region;
@@ -269,7 +270,7 @@ public class ChunkHolder implements Region
 
 		world.entitiesLock.lock();
 
-		int c = 0;
+		int countRemovedEntities = 0;
 
 		Iterator<Entity> i = this.getEntitiesWithinRegion();
 		while (i.hasNext())
@@ -281,7 +282,7 @@ public class ChunkHolder implements Region
 			
 			//We keep the inner reference so serialization can still write entities contained within
 			world.removeEntityFromList(entity);
-			c++;
+			countRemovedEntities++;
 		}
 
 		world.entitiesLock.unlock();
@@ -411,5 +412,19 @@ public class ChunkHolder implements Region
 	public WorldImplementation getWorld()
 	{
 		return world;
+	}
+
+	@Override
+	public EntityVoxel getEntityVoxelAt(int worldX, int worldY, int worldZ)
+	{
+		Iterator<Entity> entities = this.getEntitiesWithinRegion();
+		while(entities.hasNext())
+		{
+			Entity entity = entities.next();
+			if(entity != null && entity instanceof EntityVoxel && ((int)entity.getLocation().getX() == worldX)
+					&& ((int)entity.getLocation().getY() == worldY) && ((int)entity.getLocation().getZ() == worldZ))
+				return (EntityVoxel) entity;
+		}
+		return null;
 	}
 }

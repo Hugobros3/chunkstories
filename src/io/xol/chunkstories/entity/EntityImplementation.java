@@ -19,7 +19,6 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
-import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.exceptions.IllegalUUIDChangeException;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -63,23 +62,15 @@ public abstract class EntityImplementation implements Entity
 	public Voxel voxelIn;
 	public EntityInventory inventory;
 
-	//Flag set when deleted from world entities list ( to report to other refering places )
-
-	//AtomicBoolean removed = new AtomicBoolean(false);
-	// public boolean mpSendDeletePacket = false;
-
 	public EntityImplementation(WorldImplementation w, double x, double y, double z)
 	{
 		world = w;
 
 		position.setWorld(w);
 		position.setPositionXYZ(x, y, z);
-		//pos = new Vector3d(x, y, z);
+		
 		vel = new Vector3d();
 		acc = new Vector3d();
-		//pos.x = x;
-		//pos.y = y;
-		//pos.z = z;
 		//checkPositionAndUpdateHolder();
 		//To avoid NPEs
 		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt(position.getLocation())));
@@ -105,13 +96,6 @@ public abstract class EntityImplementation implements Entity
 	public void setLocation(Location loc)
 	{
 		position.setLocation(loc);
-		/*this.pos.x = loc.x;
-		this.pos.y = loc.y;
-		this.pos.z = loc.z;*/
-
-		//checkPositionAndUpdateHolder();
-		//if (this instanceof EntityControllable && ((EntityControllable) this).getController() != null)
-		//	((EntityControllable) this).getController().notifyTeleport(this);
 	}
 
 	@Override
@@ -144,49 +128,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void tick()
 	{
-		//Irrelevant.
-		//pos.x %= world.getWorldSize();
-		//pos.z %= world.getWorldSize();
-
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt(position.getLocation())));
-		boolean inWater = voxelIn.isVoxelLiquid();
-
-		// vel.z=Math.cos(a)*hSpeed*0.1;
-		if (collision_left || collision_right)
-			vel.x = 0;
-		if (collision_north || collision_south)
-			vel.z = 0;
-		// Stap it
-		if (collision_bot && vel.y < 0)
-			vel.y = 0;
-		else if (collision_top)
-			vel.y = 0;
-
-		// Gravity
-		if (!(this instanceof EntityFlying && ((EntityFlying)this).getFlyingComponent().isFlying()))
-		{
-			double terminalVelocity = inWater ? -0.02 : -0.5;
-			if (vel.y > terminalVelocity)
-				vel.y -= 0.008;
-			if (vel.y < terminalVelocity)
-				vel.y = terminalVelocity;
-		}
-
-		// Acceleration
-		vel.x += acc.x;
-		vel.y += acc.y;
-		vel.z += acc.z;
-
-		//TODO ugly
-		if (!world.isChunkLoaded((int) position.getLocation().x / 32, (int) position.getLocation().y / 32, (int) position.getLocation().z / 32))
-		{
-			vel.zero();
-		}
-
-		//TODO use vector3d there
-		blockedMomentum = moveWithCollisionRestrain(vel.x, vel.y, vel.z, true);
-
-		//position.checkPositionAndUpdateHolder();
+		
 	}
 
 	@Override

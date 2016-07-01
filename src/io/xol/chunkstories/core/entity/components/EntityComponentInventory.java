@@ -139,10 +139,10 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		//If the two piles are similar we can try to merge them
 		if(currentPileAtLocation != null)
 		{
-			System.out.println("currentPileAtLocation.equals(itemPile)"+currentPileAtLocation.equals(itemPile));
-			System.out.println("=="+(currentPileAtLocation == itemPile));
-			System.out.println("currentPileAtLocation:"+currentPileAtLocation);
-			System.out.println("itemPile:"+itemPile);
+			//System.out.println("currentPileAtLocation.equals(itemPile)"+currentPileAtLocation.equals(itemPile));
+			//System.out.println("=="+(currentPileAtLocation == itemPile));
+			//System.out.println("currentPileAtLocation:"+currentPileAtLocation);
+			//System.out.println("itemPile:"+itemPile);
 		}
 		
 		if(currentPileAtLocation != null && currentPileAtLocation.canMergeWith(itemPile) && !currentPileAtLocation.equals(itemPile))

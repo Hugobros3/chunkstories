@@ -124,21 +124,41 @@ public class ItemPile implements CSFSerializable
 	//@SuppressWarnings("unchecked")
 	public boolean moveItemPileTo(EntityInventory destinationInventory, int destinationX, int destinationY, int amountToTransfer)
 	{
-		//If moving in the same inventory
-		if(destinationInventory != null && inventory != null && destinationInventory.equals(inventory))
+		EntityInventory currentInventory = this.inventory;
+		
+		//If moving to itself
+		if(destinationInventory != null && currentInventory != null && destinationInventory.equals(currentInventory))
 		{
-			
-			//Remove temporarily
-			destinationInventory.setItemPileAt(x, y, null);
-			
-			if(destinationInventory.canPlaceItemAt(destinationX, destinationY, this))
+			ItemPile alreadyHere = null;
+			int i = 0;
+			int w = this.getItem().getSlotsWidth();
+			int h = this.getItem().getSlotsHeight();
+			//Tryhard to find out if it touches itself
+			do
 			{
-				destinationInventory.setItemPileAt(destinationX, destinationY, this);
-				return true;
+				if(alreadyHere != null && alreadyHere.equals(this))
+				{
+					//System.out.println("moving into itself");
+					
+					//Remove temporarily
+					destinationInventory.setItemPileAt(x, y, null);
+					
+					//Check if can be placed now
+					if(destinationInventory.canPlaceItemAt(destinationX, destinationY, this))
+					{
+						destinationInventory.setItemPileAt(destinationX, destinationY, this);
+						return true;
+					}
+	
+					//Add back if it couldn't
+					destinationInventory.setItemPileAt(x, y, this);
+					return false;
+				}
+				
+				alreadyHere = destinationInventory.getItemPileAt(destinationX + i % w, destinationY + i / w);
+				i++;
 			}
-
-			destinationInventory.setItemPileAt(x, y, this);
-			return false;
+			while(i < w * h);
 		}
 		
 		//We duplicate the pile and limit it's amount
@@ -149,7 +169,7 @@ public class ItemPile implements CSFSerializable
 		int leftAmountBeforeTransaction = this.getAmount() - amountToTransfer;
 
 		ItemPile leftFromTransaction = null;
-		//Moving an item to a null inventory would destroy it so it stays nulls
+		//Moving an item to a null inventory would destroy it so leftFromTransaction stays nulls in that case
 		if (destinationInventory != null)
 			leftFromTransaction = destinationInventory.placeItemPileAt(destinationX, destinationY, pileToSend);
 
@@ -162,8 +182,8 @@ public class ItemPile implements CSFSerializable
 			this.setAmount(leftAmountBeforeTransaction);
 
 		//If everything was moved we destroy this pile ... if it ever existed ( /dev/null inventories, creative mode etc )
-		else if (inventory != null)
-			inventory.setItemPileAt(this.x, this.y, null);
+		else if (currentInventory != null)
+			currentInventory.setItemPileAt(this.x, this.y, null);
 
 		//Success conditions : either we transfered all or we transfered at least one
 		return leftFromTransaction == null || leftFromTransaction.getAmount() < amountToTransfer;

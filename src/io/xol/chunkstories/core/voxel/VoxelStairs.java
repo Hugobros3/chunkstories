@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
@@ -86,7 +87,7 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 	}
 
 	@Override
-	public int onPlace(int x, int y, int z, int voxelData, Entity entity)
+	public int onPlace(World world, int x, int y, int z, int voxelData, Entity entity)
 	{
 		// id+dir of slope
 		// 0LEFT x-
@@ -136,7 +137,7 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 	}
 
 	@Override
-	public void onRemove(int x, int y, int z, int voxelData, Entity entity)
+	public void onRemove(World world, int x, int y, int z, int voxelData, Entity entity)
 	{
 		//System.out.println("on remove stairs");
 	}

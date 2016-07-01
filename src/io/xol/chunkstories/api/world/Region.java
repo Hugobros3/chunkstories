@@ -3,6 +3,7 @@ package io.xol.chunkstories.api.world;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityVoxel;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -51,5 +52,7 @@ public interface Region
 	public void unloadAndSave();
 
 	public World getWorld();
+
+	public EntityVoxel getEntityVoxelAt(int worldX, int worldY, int worldZ);
 
 }
