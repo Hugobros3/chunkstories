@@ -65,18 +65,20 @@ void main()
 
 	//Displacement from texture & position
 	vec4 v = vec4(vertexIn);
-	//v.y += 256 * normalIn.w;
+	
+	v.y -= 0.2;
+	
 	textureCoord = (v.zx)/256.0;
 	
 	float packedNormals = normalIn.x;
 	
-	float baseHeight = texture2D(heightMap,textureCoord).r;
+	//float baseHeight = texture2D(heightMap,textureCoord).r;
 	//baseHeight = 50;
 	
 	//v.y += baseHeight;
 	
 	//Normal computation, brace yourselves
-	normalHeightmap = vec3(0.0, 1.0, 0.0); //Start with an empty vector
+	/*normalHeightmap = vec3(0.0, 1.0, 0.0); //Start with an empty vector
 	
 	float normalXplusHeight = texture2D(heightMap,textureCoord+vec2(1.0/256.0, 0.0)).r;
 	float alpha = atan(normalXplusHeight-baseHeight);
@@ -100,7 +102,7 @@ void main()
 	alpha = atan(normalZminusHeight-baseHeight);
 	vec3 normalZminus = vec3(sin(alpha), cos(alpha), 0.0);
 	
-	normalHeightmap += normalZminus;
+	normalHeightmap += normalZminus;*/
 	
 	normalHeightmap = normalIn.xyz * 0.5 - vec3(0.5);
 	//I'm happy and proud to say I came up with the maths by myself :)

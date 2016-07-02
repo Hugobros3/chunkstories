@@ -20,7 +20,6 @@ vec3 getSkyColorWOSun(float time, vec3 eyeDirection)
     
 	//skyColor = vec3(1, 1, 0) * 0.5;
 	skyColor = mix(skyColor, skyColor * 0.6 + skyGlow.rgb * 0.8, skyGlow.a * 0.5);
-
 	
 	return pow(skyColor, vec3(gamma));
 }

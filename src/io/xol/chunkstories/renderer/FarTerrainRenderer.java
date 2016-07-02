@@ -240,10 +240,10 @@ public class FarTerrainRenderer
 				
 				int rx = currentChunkX / 8;
 				int rz = currentChunkZ / 8;
-				if (currentChunkZ < 0 && currentChunkZ % 8 != 0)
+				/*if (currentChunkZ < 0 && currentChunkZ % 8 != 0)
 					rz--;
 				if (currentChunkX < 0 && currentChunkX % 8 != 0)
-					rx--;
+					rx--;*/
 				RegionMesh regionMesh = new RegionMesh(rx, rz, world.getRegionSummaries().getRegionSummaryWorldCoordinates(currentChunkX * 32, currentChunkZ * 32));
 				
 				int rcx = currentChunkX % world.getSizeInChunks();

@@ -26,7 +26,7 @@ public class VoxelEntityTest extends VoxelEntity
 	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input, int voxelData)
 	{
 		// TODO Auto-generated method stub
-		System.out.println("kekossorus");
+		// System.out.println("kekossorus");
 		
 		return false;
 	}
