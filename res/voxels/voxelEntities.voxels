@@ -1,0 +1,5 @@
+voxel voxelEntityTest 98 io.xol.chunkstories.core.voxel.VoxelEntityTest
+	opaque: false
+	selfOpaque: true
+	textures: 'sand2', 'sand2', 'sand2', 'sand2', 'sand2', 'sand2'
+end

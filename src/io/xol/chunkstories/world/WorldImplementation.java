@@ -78,7 +78,7 @@ public abstract class WorldImplementation implements World
 	private WorldHeightmapVersion regionSummaries;
 
 	// World-renderer backcall
-	private WorldRenderer renderer;
+	protected WorldRenderer renderer;
 
 	// World logic thread
 	private ScheduledExecutorService logic;

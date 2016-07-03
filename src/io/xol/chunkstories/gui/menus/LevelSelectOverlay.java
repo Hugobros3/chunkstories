@@ -14,7 +14,7 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldInfo;
-import io.xol.chunkstories.world.WorldLocalClient;
+import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.font.FontRenderer2;
@@ -81,7 +81,7 @@ public class LevelSelectOverlay extends Overlay
 				break;
 			if (worldButton.clicked())
 			{
-				Client.world = new WorldLocalClient(worldButton.info);
+				Client.world = new WorldClientLocal(worldButton.info);
 				Client.world.startLogic();
 				this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 			}

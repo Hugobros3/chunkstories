@@ -10,8 +10,8 @@ import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
-import io.xol.chunkstories.world.WorldRemoteClient;
-import io.xol.chunkstories.world.WorldLocalClient;
+import io.xol.chunkstories.world.WorldClientRemote;
+import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.TrueTypeFont;
 import io.xol.engine.math.lalgb.Vector4f;
@@ -134,13 +134,13 @@ public class InventoryOverlay extends Overlay
 							return true;
 						}
 						
-						if (Client.world instanceof WorldLocalClient)
+						if (Client.world instanceof WorldClientLocal)
 						{
 							//If move was successfull
 							if(selectedItem.moveItemPileTo(inventories[i], x, y, selectedItemAmount))
 								selectedItem = null;
 						}
-						else if(Client.world instanceof WorldRemoteClient)
+						else if(Client.world instanceof WorldClientRemote)
 						{
 							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(true);
 							packetMove.from = selectedItem.inventory;
@@ -164,7 +164,7 @@ public class InventoryOverlay extends Overlay
 				}
 			}
 		}
-		if(selectedItem != null && Client.world instanceof WorldRemoteClient)
+		if(selectedItem != null && Client.world instanceof WorldClientRemote)
 		{
 			PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(true);
 			packetMove.from = selectedItem.inventory;

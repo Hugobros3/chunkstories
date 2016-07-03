@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.WorldInfo;
-import io.xol.chunkstories.world.WorldRemoteClient;
+import io.xol.chunkstories.world.WorldClientRemote;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -71,7 +71,7 @@ public class PacketWorldInfo extends Packet
 	{
 		if(processor.isClient)
 		{
-			Client.world = new WorldRemoteClient(info, processor);
+			Client.world = new WorldClientRemote(info, processor);
 			Client.world.startLogic();
 		}
 		

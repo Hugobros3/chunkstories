@@ -331,7 +331,7 @@ public class GameplayScene extends OverlayableScene
 		{
 			GameData.reload();
 			GameData.reloadClientContent();
-			worldRenderer.farTerrainRenderer.redoBlockTexturesSummary();
+			worldRenderer.farTerrainRenderer.markVoxelTexturesSummaryDirty();
 		}
 		else if (KeyBinds.getKeyBind("exit").equals(keyBind))
 		{

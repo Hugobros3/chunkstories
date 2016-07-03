@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
+import io.xol.chunkstories.renderer.WorldRenderer;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -15,11 +16,11 @@ import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class WorldRemoteClient extends WorldImplementation implements WorldClient, WorldNetworked
+public class WorldClientRemote extends WorldImplementation implements WorldClient, WorldNetworked
 {
 	private PacketsProcessor packetsProcessor;
 	
-	public WorldRemoteClient(WorldInfo info, PacketsProcessor packetsProcessor)
+	public WorldClientRemote(WorldInfo info, PacketsProcessor packetsProcessor)
 	{
 		super(info);
 		
@@ -45,5 +46,11 @@ public class WorldRemoteClient extends WorldImplementation implements WorldClien
 			packet.process(Client.getInstance().getServerConnection(), packetsProcessor);
 			packet = packetsProcessor.getPendingSynchPacket();
 		}
+	}
+
+	@Override
+	public WorldRenderer getWorldRenderer()
+	{
+		return renderer;
 	}
 }

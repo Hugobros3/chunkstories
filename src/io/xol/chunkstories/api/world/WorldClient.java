@@ -1,6 +1,7 @@
 package io.xol.chunkstories.api.world;
 
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.renderer.WorldRenderer;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -13,4 +14,6 @@ import io.xol.chunkstories.client.Client;
 public interface WorldClient
 {
 	public Client getClient();
+	
+	public WorldRenderer getWorldRenderer();
 }

@@ -8,7 +8,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
 import io.xol.chunkstories.physics.particules.Particle;
-import io.xol.chunkstories.world.chunk.CubicChunk;
+
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive

@@ -209,8 +209,8 @@ public class IOTasksMultiplayerClient extends IOTasks
 				ib.get(summary.ids, 0, 256 * 256);
 				// System.arraycopy(uncompressed, 0, summary.heights, 0, 256 *
 				// 256 * 4);
-				summary.uploadUpToDate.set(false);
-				summary.loaded.set(true);
+				summary.texturesUpToDate.set(false);
+				summary.summaryLoaded.set(true);
 
 				summary.computeHeightMetadata();
 			}
@@ -252,8 +252,8 @@ public class IOTasksMultiplayerClient extends IOTasks
 	public void requestChunkSummaryLoad(RegionSummary summary)
 	{
 		// don't spam packets !
-		int rx = summary.rx;
-		int rz = summary.rz;
+		int rx = summary.regionX;
+		int rz = summary.regionZ;
 		boolean alreadyAsked = false;
 		synchronized (summariesAlreadyAsked)
 		{

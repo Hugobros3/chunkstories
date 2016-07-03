@@ -407,7 +407,7 @@ public class WorldRenderer
 		if (currentChunkX != newCX || currentChunkY != newCY || currentChunkZ != newCZ || chunksChanged)
 		{
 			if (newCX != currentChunkX || newCZ != currentChunkZ)
-				farTerrainRenderer.generateArround(-camera.pos.x, -camera.pos.z);
+				farTerrainRenderer.startAsynchSummaryRegeneration(camera);
 			//Updates current chunk location
 			currentChunkX = newCX;
 			currentChunkY = newCY;

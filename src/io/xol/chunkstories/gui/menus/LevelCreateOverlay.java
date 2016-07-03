@@ -6,7 +6,7 @@ import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
-import io.xol.chunkstories.world.WorldLocalClient;
+import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.font.BitmapFont;
 import io.xol.engine.gui.CorneredBoxDrawer;
@@ -65,7 +65,7 @@ public class LevelCreateOverlay extends Overlay
 			String generator = "noise";
 			WorldInfo info = new WorldInfo(levelName.text, ""+System.currentTimeMillis(), "", WorldSize.MEDIUM, generator);
 			
-			Client.world = new WorldLocalClient(info);
+			Client.world = new WorldClientLocal(info);
 			Client.world.startLogic();
 			this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 		}

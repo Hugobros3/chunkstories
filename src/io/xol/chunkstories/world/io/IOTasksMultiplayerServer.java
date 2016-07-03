@@ -141,7 +141,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 			{
 				RegionSummary summary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(rx * 256, rz * 256);
 				//System.out.println("Asking for summary at : "+rx+":"+rz);
-				if(summary.loaded.get())
+				if(summary.summaryLoaded.get())
 				{
 					PacketChunkSummary packet = new PacketChunkSummary(false);
 					packet.summary = summary;

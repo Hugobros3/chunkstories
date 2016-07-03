@@ -535,8 +535,8 @@ public class IOTasks extends Thread
 
 					in.close();
 
-					summary.uploadUpToDate.set(false);
-					summary.loaded.set(true);
+					summary.texturesUpToDate.set(false);
+					summary.summaryLoaded.set(true);
 
 					summary.computeHeightMetadata();
 				}
@@ -557,14 +557,14 @@ public class IOTasks extends Thread
 				for (int x = 0; x < 256; x++)
 					for (int z = 0; z < 256; z++)
 					{
-						h = world.getGenerator().getHeightAt(x + summary.rx * 256, z + summary.rz * 256);
-						t = world.getGenerator().getTopDataAt(x + summary.rx * 256, z + summary.rz * 256);
+						h = world.getGenerator().getHeightAt(x + summary.regionX * 256, z + summary.regionZ * 256);
+						t = world.getGenerator().getTopDataAt(x + summary.regionX * 256, z + summary.regionZ * 256);
 						summary.heights[x * 256 + z] = h;
 						summary.ids[x * 256 + z] = t;
 					}
 
-				summary.uploadUpToDate.set(false);
-				summary.loaded.set(true);
+				summary.texturesUpToDate.set(false);
+				summary.summaryLoaded.set(true);
 				// then save
 
 				//summary.save(summary.handler);
@@ -580,7 +580,7 @@ public class IOTasks extends Thread
 			if (o instanceof IOTaskLoadSummary)
 			{
 				IOTaskLoadSummary comp = ((IOTaskLoadSummary) o);
-				if (comp.summary.rx == this.summary.rx && comp.summary.rz == this.summary.rz)
+				if (comp.summary.regionX == this.summary.regionX && comp.summary.regionZ == this.summary.regionZ)
 					return true;
 			}
 			return false;
@@ -589,7 +589,7 @@ public class IOTasks extends Thread
 		@Override
 		public int hashCode()
 		{
-			return 1111 + summary.rx + summary.rz * 256;
+			return 1111 + summary.regionX + summary.regionZ * 256;
 		}
 	}
 
@@ -669,7 +669,7 @@ public class IOTasks extends Thread
 		@Override
 		public int hashCode()
 		{
-			return 7777 + summary.rx + summary.rz * 256;
+			return 7777 + summary.regionX + summary.regionZ * 256;
 		}
 	}
 

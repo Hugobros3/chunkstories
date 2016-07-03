@@ -5,15 +5,16 @@ import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.world.io.IOTasks;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class WorldLocalClient extends WorldImplementation implements WorldClient, WorldMaster
+public class WorldClientLocal extends WorldImplementation implements WorldClient, WorldMaster
 {
-	public WorldLocalClient(WorldInfo info)
+	public WorldClientLocal(WorldInfo info)
 	{
 		super(info);
 		
@@ -31,5 +32,11 @@ public class WorldLocalClient extends WorldImplementation implements WorldClient
 	public void playSoundEffectExcluding(String soundEffect, Location location, float pitch, float gain, Subscriber subscriber)
 	{
 		
+	}
+
+	@Override
+	public WorldRenderer getWorldRenderer()
+	{
+		return renderer;
 	}
 }
