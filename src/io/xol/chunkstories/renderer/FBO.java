@@ -172,11 +172,11 @@ public class FBO
 		if (texturesToo)
 		{
 			if (depthAttachement != null)
-				depthAttachement.free();
+				depthAttachement.destroy();
 			for (FBOAttachement tex : colorAttachements)
 			{
 				if (tex != null)
-					tex.free();
+					tex.destroy();
 			}
 		}
 	}

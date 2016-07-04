@@ -23,7 +23,7 @@ import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
-import io.xol.engine.graphics.textures.TextureObject;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
@@ -67,12 +67,12 @@ public class VoxelItemRenderer implements ItemRenderer
 		{
 			int width = slotSize * pile.item.getSlotsWidth();
 			int height = slotSize * pile.item.getSlotsHeight();
-			GuiDrawer.drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, TexturesHandler.getTexture("res/items/icons/notex.png").getID(), true, true, null);
+			GuiDrawer.drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, TexturesHandler.getTexture("res/items/icons/notex.png").getId(), true, true, null);
 			return;
 		}
-		TextureObject texture = TexturesHandler.getTexture("./res/textures/tiles_merged_diffuse.png");
+		Texture2D texture = TexturesHandler.getTexture("./res/textures/tiles_merged_diffuse.png");
 		texture.setLinearFiltering(false);
-		context.setDiffuseTexture(texture.getID());
+		context.setDiffuseTexture(texture.getId());
 		
 		BlockRenderInfo bri = new BlockRenderInfo(0);
 		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));
@@ -147,9 +147,9 @@ public class VoxelItemRenderer implements ItemRenderer
 		{
 			return;
 		}
-		TextureObject texture = TexturesHandler.getTexture("./res/textures/tiles_merged_diffuse.png");
+		Texture2D texture = TexturesHandler.getTexture("./res/textures/tiles_merged_diffuse.png");
 		texture.setLinearFiltering(false);
-		context.setDiffuseTexture(texture.getID());
+		context.setDiffuseTexture(texture.getId());
 		
 		BlockRenderInfo bri = new BlockRenderInfo(0);
 		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));

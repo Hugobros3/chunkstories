@@ -1,6 +1,6 @@
 package io.xol.chunkstories.renderer;
 
-import static io.xol.engine.graphics.textures.TextureObject.TextureType.*;
+import static io.xol.engine.graphics.textures.TextureType.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL12.*;
@@ -34,7 +34,7 @@ import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.GBufferTexture;
-import io.xol.engine.graphics.textures.TextureObject;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.graphics.util.PBOPacker;
@@ -178,15 +178,15 @@ public class WorldRenderer
 	float apertureModifier = 1f;
 
 	//Sky stuff
-	TextureObject sunGlowTexture = TexturesHandler.getTexture("environement/glow.png");
-	TextureObject skyTexture = TexturesHandler.getTexture("environement/sky.png");
+	Texture2D sunGlowTexture = TexturesHandler.getTexture("environement/glow.png");
+	Texture2D skyTexture = TexturesHandler.getTexture("environement/sky.png");
 	
-	TextureObject lightmapTexture = TexturesHandler.getTexture("environement/light.png");
-	TextureObject waterNormalTexture = TexturesHandler.getTexture("normal.png");
+	Texture2D lightmapTexture = TexturesHandler.getTexture("environement/light.png");
+	Texture2D waterNormalTexture = TexturesHandler.getTexture("normal.png");
 
-	TextureObject blocksDiffuseTexture = TexturesHandler.getTexture("tiles_merged_diffuse.png");
-	TextureObject blocksNormalTexture = TexturesHandler.getTexture("tiles_merged_normal.png");
-	TextureObject blocksMaterialTexture = TexturesHandler.getTexture("tiles_merged_material.png");
+	Texture2D blocksDiffuseTexture = TexturesHandler.getTexture("tiles_merged_diffuse.png");
+	Texture2D blocksNormalTexture = TexturesHandler.getTexture("tiles_merged_normal.png");
+	Texture2D blocksMaterialTexture = TexturesHandler.getTexture("tiles_merged_material.png");
 
 	//SSAO (disabled)
 	Vector3f ssao_kernel[];
@@ -629,7 +629,7 @@ public class WorldRenderer
 		terrainShader.setUniformSampler(8, "glowSampler", sunGlowTexture);
 		terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
 		terrainShader.setUniformSampler(6, "blockLightmap", lightmapTexture);
-		TextureObject lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
+		Texture2D lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
 		terrainShader.setUniformSampler(11, "lightColors", lightColors);
 		terrainShader.setUniformSampler(10, "normalTexture", waterNormalTexture);
 		setupShadowColors(terrainShader);
@@ -851,7 +851,7 @@ public class WorldRenderer
 			else
 				shadowsPassShader.setUniformFloat3("objectPosition", vboDekalX, chunk.getChunkY() * 32f, vboDekalZ);
 
-			glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
+			//glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
 
 			if (isShadowPass)
 				renderedVerticesShadow += chunkRenderData.renderCubeSolidBlocks(renderingContext);
@@ -1053,7 +1053,7 @@ public class WorldRenderer
 
 				liquidBlocksShader.setUniformFloat3("objectPosition", vboDekalX, chunk.getChunkY() * 32, vboDekalZ);
 
-				glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
+				//glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
 				renderedVertices += chunkRenderData.renderWaterBlocks(renderingContext);
 			}
 
@@ -1187,7 +1187,7 @@ public class WorldRenderer
 		applyShadowsShader.setUniformSampler(5, "shadowMap", shadowMapBuffer);
 		applyShadowsShader.setUniformSampler(6, "glowSampler", sunGlowTexture);
 		applyShadowsShader.setUniformSampler(7, "colorSampler", skyTexture);
-		TextureObject lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
+		Texture2D lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
 		applyShadowsShader.setUniformSampler(8, "lightColors", lightColors);
 		
 		//TODO if SSAO
@@ -1275,7 +1275,7 @@ public class WorldRenderer
 
 		if (FastConfig.doBloom)
 		{
-			glBindTexture(GL_TEXTURE_2D, shadedBuffer.getID());
+			glBindTexture(GL_TEXTURE_2D, shadedBuffer.getId());
 			shadedBuffer.setMipMapping(true);
 			int max_mipmap = (int) (Math.ceil(Math.log(Math.max(scrH, scrW)) / Math.log(2))) - 1;
 			shadedBuffer.setMipmapLevelsRange(0, max_mipmap);
@@ -1590,7 +1590,7 @@ public class WorldRenderer
 			this.renderWorldAtCameraInternal(camera, cubemap == null ? -1 : 0);
 
 			// GL access
-			glBindTexture(GL_TEXTURE_2D, shadedBuffer.getID());
+			glBindTexture(GL_TEXTURE_2D, shadedBuffer.getId());
 
 			if (cubemap != null)
 			{
@@ -1719,12 +1719,12 @@ public class WorldRenderer
 	}
 
 	//Visual properties functions
-	public TextureObject getGrassTexture()
+	public Texture2D getGrassTexture()
 	{
-		TextureObject vegetationTexture = null;
+		Texture2D vegetationTexture = null;
 		if(world.getFolderPath() != null)
 			vegetationTexture = TexturesHandler.getTexture(world.getFolderPath() + "/grassColor.png");
-		if (vegetationTexture == null || vegetationTexture.getID() == -1)
+		if (vegetationTexture == null || vegetationTexture.getId() == -1)
 			vegetationTexture = TexturesHandler.getTexture("./res/textures/environement/grassColor.png");
 		vegetationTexture.setMipMapping(true);
 		vegetationTexture.setLinearFiltering(true);

@@ -19,7 +19,7 @@ import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.graphics.textures.TextureObject;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;
@@ -50,10 +50,10 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		i++;
 		i %= 80;
 		
-		TextureObject playerTexture = TexturesHandler.getTexture("models/zombie_s3.png");
+		Texture2D playerTexture = TexturesHandler.getTexture("models/zombie_s3.png");
 		playerTexture.setLinearFiltering(false);
 		
-		renderingContext.setDiffuseTexture(playerTexture.getID());
+		renderingContext.setDiffuseTexture(playerTexture.getId());
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
 		renderingContext.getCurrentShader().setUniformFloat3("objectPosition", getLocation().castToSP());
 		int modelBlockData = world.getDataAt(getLocation());

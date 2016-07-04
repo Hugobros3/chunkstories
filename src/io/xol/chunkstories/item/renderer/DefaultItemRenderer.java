@@ -29,7 +29,7 @@ public class DefaultItemRenderer implements ItemRenderer
 		TexturesHandler.getTexture(pile.getTextureName()).setLinearFiltering(false);
 		int textureId = TexturesHandler.getTextureID(pile.getTextureName());
 		if(textureId == -1)
-			textureId = TexturesHandler.getTexture("res/items/icons/notex.png").getID();
+			textureId = TexturesHandler.getTexture("res/items/icons/notex.png").getId();
 		int width = slotSize * pile.item.getSlotsWidth();
 		int height = slotSize * pile.item.getSlotsHeight();
 		GuiDrawer.drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, textureId, true, true, null);

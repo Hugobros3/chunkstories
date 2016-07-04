@@ -1,7 +1,7 @@
 package io.xol.engine.graphics.util;
 
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.textures.TextureObject;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.misc.ColorsTools;
 
@@ -86,12 +86,12 @@ public class ObjectRenderer
 		else
 			textureName = ("./res/textures/" + textureName + ".png");
 
-		TextureObject texture = TexturesHandler.getTexture(textureName);
+		Texture2D texture = TexturesHandler.getTexture(textureName);
 		
 		texture.setLinearFiltering(false);
 		//TexturesHandler.mipmapLevel(texture, -1);
 
-		GuiDrawer.drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, texture.getID(), false, true, new Vector4f(r, v, b, a));
+		GuiDrawer.drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, texture.getId(), false, true, new Vector4f(r, v, b, a));
 	}
 
 	public static void renderColoredRect(float xpos, float ypos, float w, float h, float rot, String hex, float a)

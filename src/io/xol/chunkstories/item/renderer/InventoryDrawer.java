@@ -7,7 +7,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.graphics.textures.TextureObject;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
@@ -70,9 +70,9 @@ public class InventoryDrawer
 		int internalHeight = (height + (summary ? 0 : 1) + blankLines) * 24 * scale;
 		int slotSize = 24 * scale;
 
-		TextureObject inventoryTexture = TexturesHandler.getTexture("gui/inventory/inventory.png");
+		Texture2D inventoryTexture = TexturesHandler.getTexture("gui/inventory/inventory.png");
 		inventoryTexture.setLinearFiltering(false);
-		int textureId = inventoryTexture.getID();
+		int textureId = inventoryTexture.getId();
 		
 		Vector4f color = new Vector4f(1f, 1f, 1f, summary ? 0.5f : 1f);
 		//All 8 corners

@@ -43,7 +43,7 @@ import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.graphics.textures.TextureObject;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.ModelLibrary;
@@ -447,9 +447,9 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 				animation = BVHLibrary.getAnimation("res/models/human-holding.bvh");
 		}
 		//Player textures
-		TextureObject playerTexture = TexturesHandler.getTexture("models/guyA.png");
+		Texture2D playerTexture = TexturesHandler.getTexture("models/guyA.png");
 		playerTexture.setLinearFiltering(false);
-		renderingContext.setDiffuseTexture(playerTexture.getID());
+		renderingContext.setDiffuseTexture(playerTexture.getId());
 		//Players models have no normal mapping
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
 

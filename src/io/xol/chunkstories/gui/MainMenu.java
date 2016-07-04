@@ -19,7 +19,8 @@ import io.xol.chunkstories.renderer.FBO;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.GBufferTexture;
-import io.xol.engine.graphics.textures.TextureObject;
+import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TextureType;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
@@ -39,9 +40,9 @@ public class MainMenu extends OverlayableScene
 	String skyBox;
 	Camera cam = new Camera();
 
-	private GBufferTexture unblurred = new GBufferTexture(TextureObject.TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture blurredH = new GBufferTexture(TextureObject.TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture blurredV = new GBufferTexture(TextureObject.TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture unblurred = new GBufferTexture(TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture blurredH = new GBufferTexture(TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture blurredV = new GBufferTexture(TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	private FBO unblurredFBO = new FBO(null, unblurred);
 	private FBO blurredHFBO = new FBO(null, blurredH);
@@ -154,7 +155,7 @@ public class MainMenu extends OverlayableScene
 		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blurH);
 		//blurH.use(true);
 		blurH.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		blurH.setUniformSampler(0, "inputTexture", unblurred.getID());
+		blurH.setUniformSampler(0, "inputTexture", unblurred.getId());
 		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 
 		for (int i = 0; i < 1; i++)
@@ -164,14 +165,14 @@ public class MainMenu extends OverlayableScene
 			//blurV.use(true);
 			blurV.setUniformFloat("lookupScale", 1);
 			blurV.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
-			blurV.setUniformSampler(0, "inputTexture", blurredH.getID());
+			blurV.setUniformSampler(0, "inputTexture", blurredH.getId());
 			ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 
 			blurredHFBO.bind();
 			GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blurH);
 			//blurH.use(true);
 			blurH.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
-			blurH.setUniformSampler(0, "inputTexture", blurredV.getID());
+			blurH.setUniformSampler(0, "inputTexture", blurredV.getId());
 			ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 		}
 
@@ -179,7 +180,7 @@ public class MainMenu extends OverlayableScene
 		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blurV);
 		//blurV.use(true);
 		blurV.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		blurV.setUniformSampler(0, "inputTexture", blurredH.getID());
+		blurV.setUniformSampler(0, "inputTexture", blurredH.getId());
 		ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 		//blurV.use(false);
 
@@ -187,7 +188,7 @@ public class MainMenu extends OverlayableScene
 		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blit);
 		//blit.use(true);
 		blit.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		blit.setUniformSampler(0, "diffuseTexture", blurredV.getID());
+		blit.setUniformSampler(0, "diffuseTexture", blurredV.getId());
 		ObjectRenderer.drawFSQuad(blit.getVertexAttributeLocation("vertexIn"));
 		//blit.use(false);
 

@@ -151,7 +151,7 @@ public class Cubemap
 		}
 
 		@Override
-		public void free()
+		public void destroy()
 		{
 			if(glId == -1)
 				return;

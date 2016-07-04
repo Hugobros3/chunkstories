@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.xol.engine.graphics.textures.Cubemap;
-import io.xol.engine.graphics.textures.TextureObject;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -153,9 +153,9 @@ public class ShaderProgram
 		loadOK = true;
 	}
 
-	public void setUniformSampler(int id, String name, TextureObject texture)
+	public void setUniformSampler(int id, String name, Texture2D texture)
 	{
-		setUniformSampler(id, name, texture.getID());
+		setUniformSampler(id, name, texture.getId());
 	}
 
 	public void setUniformSampler(int id, String name, int texId)

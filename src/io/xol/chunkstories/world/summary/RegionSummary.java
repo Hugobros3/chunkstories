@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.engine.graphics.geometry.VerticesObject;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -18,7 +19,6 @@ import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.ARBTextureRg.*;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -52,8 +52,9 @@ public class RegionSummary
 	public int voxelTypesTextureId = -1;
 
 	//Mesh (client renderer)
-	public int vboId = -1;
-	public int vboSize = 0;
+	public VerticesObject verticesObject = new VerticesObject();
+	//public int vboId = -1;
+	//public int vboSize = 0;
 
 	private byte[] vboDataToUpload = null;
 
@@ -161,22 +162,26 @@ public class RegionSummary
 
 	private boolean uploadModel()
 	{
-		synchronized (this)
+		//synchronized (this)
 		{
 			if (vboDataToUpload == null)
 				return false;
 			
-			if (vboId == -1)
-				vboId = glGenBuffers();
+			//if (vboId == -1)
+			//	vboId = glGenBuffers();
 
-			vboSize = 0;
-			ByteBuffer byteBuffer = BufferUtils.createByteBuffer(vboDataToUpload.length);
-			byteBuffer.put(vboDataToUpload);
+			byte[] keep = vboDataToUpload;
+			
+			//vboSize = 0;
+			ByteBuffer byteBuffer = BufferUtils.createByteBuffer(keep.length);
+			byteBuffer.put(keep);
 			byteBuffer.flip();
+			
+			verticesObject.uploadData(byteBuffer);
 
-			glBindBuffer(GL_ARRAY_BUFFER, vboId);
-			glBufferData(GL_ARRAY_BUFFER, byteBuffer, GL_DYNAMIC_DRAW);
-			vboSize = vboDataToUpload.length / 12;
+			//glBindBuffer(GL_ARRAY_BUFFER, vboId);
+			//glBufferData(GL_ARRAY_BUFFER, byteBuffer, GL_DYNAMIC_DRAW);
+			//vboSize = vboDataToUpload.length / 12;
 
 			vboDataToUpload = null;
 		}
@@ -253,15 +258,18 @@ public class RegionSummary
 		return true;
 	}
 
-	public void free()
+	public void destroy()
 	{
 		if (voxelTypesTextureId != -1)
 		{
 			glDeleteTextures(heightsTextureId);
 			glDeleteTextures(voxelTypesTextureId);
 		}
-		if (vboId != -1)
-			glDeleteBuffers(vboId);
+		
+		verticesObject.destroy();
+		
+		//if (vboId != -1)
+		//	glDeleteBuffers(vboId);
 	}
 
 	public synchronized void sendNewModel(byte[] newModelData)

@@ -137,7 +137,7 @@ public class WorldHeightmapVersion implements RegionSummaries
 	{
 		for (RegionSummary cs : summaries.values())
 		{
-			cs.free();
+			cs.destroy();
 		}
 		summaries.clear();
 	}
@@ -176,7 +176,7 @@ public class WorldHeightmapVersion implements RegionSummaries
 				// System.out.println("Chunk Summary "+lx+":"+lz+" is "+dx+":"+dz+" away from camera max:"+distInRegions+" total:"+summaries.size());
 				if (dx > distInRegions || dz > distInRegions)
 				{
-					summaries.get(l).free();
+					summaries.get(l).destroy();
 					iterator.remove();
 				}
 			}
@@ -192,7 +192,7 @@ public class WorldHeightmapVersion implements RegionSummaries
 	{
 		for(RegionSummary cs : all())
 		{
-			cs.free();
+			cs.destroy();
 		}
 		summaries.clear();
 	}

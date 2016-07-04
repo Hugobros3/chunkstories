@@ -20,7 +20,7 @@ import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.graphics.geometry.VerticesObject;
-import io.xol.engine.graphics.textures.TextureObject;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.gui.Scene;
 import io.xol.engine.misc.CPUModelDetection;
 import io.xol.engine.model.RenderingContext;
@@ -226,7 +226,7 @@ public class GameWindowOpenGL
 				
 				//Update pending actions
 				VerticesObject.destroyPendingVerticesObjects();
-				TextureObject.destroyPendingTextureObjects();
+				Texture2D.destroyPendingTextureObjects();
 				
 				//Update the screen
 				Display.update();

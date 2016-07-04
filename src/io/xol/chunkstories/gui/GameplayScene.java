@@ -10,6 +10,8 @@ import org.lwjgl.opengl.Display;
 
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
+import io.xol.engine.graphics.geometry.VerticesObject;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.chunkstories.api.Location;
@@ -44,7 +46,6 @@ import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.lights.DefferedSpotLight;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.chunk.ChunkRenderable;
-import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -463,7 +464,11 @@ public class GameplayScene extends OverlayableScene
 
 				, BitmapFont.SMALLFONTS);
 
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + getLoadedChunksVramFootprint() + ", " + getLoadedTerrainVramFootprint(), BitmapFont.SMALLFONTS);
+		//FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + getLoadedChunksVramFootprint() + ", " + getLoadedTerrainVramFootprint(), BitmapFont.SMALLFONTS);
+		
+		long totalVram =  (VerticesObject.getTotalVramUsage() + Texture2D.getTotalVramUsage()) / 1024 / 1024;
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram +"Mb as " + Texture2D.getTotalNumberOfTextureObjects()+ " textures using " + Texture2D.getTotalVramUsage() / 1024 / 1024 + "Mb + "
+				+VerticesObject.getTotalNumberOfVerticesObjects()+" Vertices objects using " + VerticesObject.getTotalVramUsage() / 1024 / 1024 +" Mb", BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16,
 				"Chunks to bake : T : " + worldRenderer.chunksRenderer.todoQueue.size() + "   Chunks to upload: " + worldRenderer.chunksRenderer.doneQueue.size() + "    " + Client.world.ioHandler.toString(), BitmapFont.SMALLFONTS);

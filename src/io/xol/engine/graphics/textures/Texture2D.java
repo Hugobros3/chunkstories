@@ -22,12 +22,14 @@ import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class TextureObject
+public class Texture2D
 {
 	String name;
 	TextureType type;
@@ -39,41 +41,38 @@ public class TextureObject
 	boolean linearFiltering = true;
 	int baseMipmapLevel = 0;
 	int maxMipmapLevel = 1000;
-	
-	public TextureObject(TextureType type)
+
+	public Texture2D(TextureType type)
 	{
 		this.type = type;
-		
-		allTextureObjects.add(new WeakReference<TextureObject>(this));
+
+		totalTextureObjects++;
+		allTextureObjects.add(new WeakReference<Texture2D>(this));
 	}
-	
+
 	public TextureType getType()
 	{
 		return type;
 	}
-	
-	public TextureObject(String name)
+
+	public Texture2D(String name)
 	{
 		this(TextureType.RGBA_8BPP);
 		this.name = name;
 		loadTextureFromDisk();
 	}
-	
+
 	public int loadTextureFromDisk()
 	{
 		File textureFile = GameData.getTextureFileLocation(name);
-		if(textureFile == null)
+		if (textureFile == null)
 		{
-			ChunkStoriesLogger.getInstance().warning("Couldn't load texture "+name+", no file found on disk matching this name.");
+			ChunkStoriesLogger.getInstance().warning("Couldn't load texture " + name + ", no file found on disk matching this name.");
 			return -1;
 		}
-		if(glId == -1)
-			glId = glGenTextures();
-		glEnable(GL_TEXTURE_2D);
 		//TODO we probably don't need half this shit
-		glDisable(GL_TEXTURE_CUBE_MAP);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, glId);
+		//glActiveTexture(GL_TEXTURE0);
+		bind();
 		try
 		{
 			PNGDecoder decoder = new PNGDecoder(new FileInputStream(textureFile));
@@ -83,10 +82,10 @@ public class TextureObject
 			decoder.decode(temp, width * 4, Format.RGBA);
 			//ChunkStoriesLogger.getInstance().log("decoded " + width + " by " + height + " pixels (" + name + ")", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.DEBUG);
 			temp.flip();
-			glBindTexture(GL_TEXTURE_2D, glId);
+			bind();
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, temp);
-			
-			if(mipmapping)
+
+			if (mipmapping)
 			{
 				//Regenerate the mipmaps only when necessary
 				if (FastConfig.openGL3Capable)
@@ -94,7 +93,7 @@ public class TextureObject
 				else if (FastConfig.fbExtCapable)
 					ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
 			}
-			if(!wrapping)
+			if (!wrapping)
 			{
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -105,57 +104,91 @@ public class TextureObject
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 			}
 			setFiltering();
-			
+
 		}
-		catch(FileNotFoundException e)
+		catch (FileNotFoundException e)
 		{
-			ChunkStoriesLogger.getInstance().info("Clouldn't find file : "+e.getMessage());
+			ChunkStoriesLogger.getInstance().info("Clouldn't find file : " + e.getMessage());
 		}
 		catch (IOException e)
 		{
-			ChunkStoriesLogger.getInstance().warning("Error loading file : "+e.getMessage());
+			ChunkStoriesLogger.getInstance().warning("Error loading file : " + e.getMessage());
 			e.printStackTrace();
 		}
 		mipmapsUpToDate = false;
 		return glId;
 	}
+	
+
+	public boolean uploadTextureData(int width, int height, ByteBuffer data)
+	{
+		return uploadTextureData(width, height, 0, data);
+	}
+	
+	public boolean uploadTextureData(int width, int height, int level, ByteBuffer data)
+	{
+		bind();
+		this.width = width;
+		this.height = height;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+		mipmapsUpToDate = false;
+		return true;
+	}
 
 	/**
 	 * Returns the OpenGL GL_TEXTURE id of this object
+	 * 
 	 * @return
 	 */
-	public int getID()
+	public int getId()
 	{
 		return glId;
 	}
-	
-	public void free()
+
+	public void bind()
 	{
-		glDeleteTextures(glId);
-		glId = -1;
+		if (!GameWindowOpenGL.isMainGLWindow())
+			throw new IllegalRenderingThreadException();
+		
+		if (glId == -1)
+			glId = glGenTextures();
+		
+		glBindTexture(GL_TEXTURE_2D, glId);
 	}
 	
+	public synchronized void destroy()
+	{
+		if (glId >= 0)
+		{
+			glDeleteTextures(glId);
+			totalTextureObjects--;
+			glId = -2;
+		}
+	}
+
 	// Texture modifications
-	
+
 	/**
 	 * Determines if a texture will loop arround itself or clamp to it's edges
+	 * 
 	 * @param on
 	 */
 	public void setTextureWrapping(boolean on)
 	{
-		if(glId < 0) // Don't bother with invalid textures
+		if (glId < 0) // Don't bother with invalid textures
 			return;
 		boolean applyParameters = false;
-		
-		if(wrapping != on) // We changed something so we redo them
+
+		if (wrapping != on) // We changed something so we redo them
 			applyParameters = true;
-		
+
 		wrapping = on;
 
-		if(!applyParameters)
+		if (!applyParameters)
 			return;
-		glBindTexture(GL_TEXTURE_2D, glId);
-		if(!on)
+		bind();
+		if (!on)
 		{
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -166,33 +199,33 @@ public class TextureObject
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
 	}
-	
+
 	public void setMipMapping(boolean on)
 	{
-		if(glId < 0) // Don't bother with invalid textures
+		if (glId < 0) // Don't bother with invalid textures
 			return;
 		boolean applyParameters = false;
-		
-		if(mipmapping != on) // We changed something so we redo them
+
+		if (mipmapping != on) // We changed something so we redo them
 			applyParameters = true;
-		
+
 		mipmapping = on;
-		
-		if(!applyParameters)
+
+		if (!applyParameters)
 			return;
-		glBindTexture(GL_TEXTURE_2D, glId);
+		bind();
 		setFiltering();
-		if(mipmapping && !mipmapsUpToDate)
+		if (mipmapping && !mipmapsUpToDate)
 		{
 			computeMipmaps();
 		}
 	}
-	
+
 	public void computeMipmaps()
 	{
 		//System.out.println("Computing mipmap for "+name);
 		//mipmapsUpToDate = true;
-		glBindTexture(GL_TEXTURE_2D, glId);
+		bind();
 		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 		//Regenerate the mipmaps only when necessary
 		if (FastConfig.openGL3Capable)
@@ -203,39 +236,39 @@ public class TextureObject
 		//setFiltering();
 		//setFiltering();
 	}
-	
+
 	public void setLinearFiltering(boolean on)
 	{
-		if(glId < 0) // Don't bother with invalid textures
+		if (glId < 0) // Don't bother with invalid textures
 			return;
 		boolean applyParameters = false;
-		
-		if(linearFiltering != on) // We changed something so we redo them
+
+		if (linearFiltering != on) // We changed something so we redo them
 			applyParameters = true;
-		
+
 		linearFiltering = on;
-		
-		if(!applyParameters)
+
+		if (!applyParameters)
 			return;
-		glBindTexture(GL_TEXTURE_2D, glId);
+		bind();
 		setFiltering();
 	}
-	
+
 	// Private function that sets both filering scheme and mipmap usage.
 	private void setFiltering()
 	{
 		//System.out.println("Set filtering called for "+name+" "+linearFiltering);
-		if(mipmapping)
+		if (mipmapping)
 		{
-			if(linearFiltering)
+			if (linearFiltering)
 			{
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			}
 			else
 			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,  GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			}
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, baseMipmapLevel);
@@ -243,7 +276,7 @@ public class TextureObject
 		}
 		else
 		{
-			if(linearFiltering)
+			if (linearFiltering)
 			{
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -258,88 +291,81 @@ public class TextureObject
 
 	public void setMipmapLevelsRange(int baseLevel, int maxLevel)
 	{
-		if(glId < 0) // Don't bother with invalid textures
+		if (glId < 0) // Don't bother with invalid textures
 			return;
 		boolean applyParameters = false;
-		
-		if(this.baseMipmapLevel != baseLevel || this.maxMipmapLevel != maxLevel) // We changed something so we redo them
+
+		if (this.baseMipmapLevel != baseLevel || this.maxMipmapLevel != maxLevel) // We changed something so we redo them
 			applyParameters = true;
-		
+
 		baseMipmapLevel = baseLevel;
 		maxMipmapLevel = maxLevel;
-		
-		if(!applyParameters)
+
+		if (!applyParameters)
 			return;
-		glBindTexture(GL_TEXTURE_2D, glId);
+		bind();
 		setFiltering();
 	}
-	
+
 	public void uploadExplicitMipmapLevel(int level, ByteBuffer data)
 	{
 		//TODO do
 	}
-	
+
 	public int getWidth()
 	{
 		return width;
 	}
-	
+
 	public int getHeight()
 	{
 		return height;
 	}
 
-	public enum TextureType {
-		RGBA_8BPP,
-		RGB_HDR,
-		DEPTH_SHADOWMAP,
-		DEPTH_RENDERBUFFER;
-	}
-	
 	public long getVramUsage()
 	{
 		int surface = getWidth() * getHeight();
-		if(type == TextureType.RGBA_8BPP)
+		if (type == TextureType.RGBA_8BPP)
 			return surface * 4;
-		if(type == TextureType.RGB_HDR)
+		if (type == TextureType.RGB_HDR)
 			return surface * 4;
-		if(type == TextureType.DEPTH_SHADOWMAP)
+		if (type == TextureType.DEPTH_SHADOWMAP)
 			return surface * 3;
-		if(type == TextureType.DEPTH_RENDERBUFFER)
+		if (type == TextureType.DEPTH_RENDERBUFFER)
 			return surface * 4;
 		return surface;
 	}
-	
+
 	public static int destroyPendingTextureObjects()
 	{
 		return 0;
 	}
-	
+
 	public static int getTotalNumberOfTextureObjects()
 	{
 		return totalTextureObjects;
 	}
-	
+
 	public static long getTotalVramUsage()
 	{
 		long vram = 0;
 
 		//Iterates over every instance reference, removes null ones and add up valid ones
-		Iterator<WeakReference<TextureObject>> i = allTextureObjects.iterator();
+		Iterator<WeakReference<Texture2D>> i = allTextureObjects.iterator();
 		while (i.hasNext())
 		{
-			WeakReference<TextureObject> reference = i.next();
+			WeakReference<Texture2D> reference = i.next();
 
-			TextureObject object = reference.get();
-			if(object != null)
+			Texture2D object = reference.get();
+			if (object != null)
 				vram += object.getVramUsage();
 			else
 				i.remove();
 		}
-		
+
 		return vram;
 	}
-	
+
 	private static int totalTextureObjects = 0;
-	private static BlockingQueue<WeakReference<TextureObject>> allTextureObjects = new LinkedBlockingQueue<WeakReference<TextureObject>>();
+	private static BlockingQueue<WeakReference<Texture2D>> allTextureObjects = new LinkedBlockingQueue<WeakReference<Texture2D>>();
 }

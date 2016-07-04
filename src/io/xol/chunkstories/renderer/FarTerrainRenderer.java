@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.textures.Texture1D;
+import io.xol.engine.graphics.textures.TextureType;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 
@@ -23,7 +25,6 @@ import io.xol.chunkstories.world.summary.RegionSummary;
 import io.xol.engine.model.RenderingContext;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -47,7 +48,8 @@ public class FarTerrainRenderer
 
 	//TODO use a texture
 	private boolean blocksTexturesSummaryDone = false;
-	private int blocksTexturesSummaryId = -1;
+	private Texture1D blockTexturesSummary = new Texture1D(TextureType.RGBA_8BPP);
+	//private int blocksTexturesSummaryId = -1;
 
 	@SuppressWarnings("unused")
 	private int lastRegionX = -1;
@@ -64,7 +66,7 @@ public class FarTerrainRenderer
 	private AtomicBoolean renderingInProgress = new AtomicBoolean();
 	private boolean terrainDirty = false;
 
- 	public FarTerrainRenderer(WorldImplementation world)
+	public FarTerrainRenderer(WorldImplementation world)
 	{
 		this.world = world;
 	}
@@ -73,6 +75,7 @@ public class FarTerrainRenderer
 	{
 		terrainDirty = true;
 	}
+
 	public void markVoxelTexturesSummaryDirty()
 	{
 		blocksTexturesSummaryDone = false;
@@ -82,10 +85,10 @@ public class FarTerrainRenderer
 	{
 		if (!blocksTexturesSummaryDone)
 		{
-			if (blocksTexturesSummaryId == -1)
-				blocksTexturesSummaryId = glGenTextures();
+			//if (blocksTexturesSummaryId == -1)
+			//	blocksTexturesSummaryId = glGenTextures();
 
-			glBindTexture(GL_TEXTURE_1D, blocksTexturesSummaryId);
+			//glBindTexture(GL_TEXTURE_1D, blocksTexturesSummaryId);
 
 			int size = 512;
 			ByteBuffer bb = ByteBuffer.allocateDirect(size * 4);
@@ -107,24 +110,27 @@ public class FarTerrainRenderer
 				bb.put((byte) (colorAndAlpha.w * 255));
 			}
 			bb.flip();
-			glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, size, 0, GL_RGBA, GL_UNSIGNED_BYTE, bb);
+			//glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, size, 0, GL_RGBA, GL_UNSIGNED_BYTE, bb);
 
-			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			blockTexturesSummary.uploadTextureData(size, bb);
+			blockTexturesSummary.setLinearFiltering(false);
+			
+			//glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			//glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 			blocksTexturesSummaryDone = true;
 		}
-		return blocksTexturesSummaryId;
+		return blockTexturesSummary.getID();
 	}
 
 	public int draw(RenderingContext renderingContext, ShaderProgram terrain)
 	{
-		if(terrainDirty)
+		if (terrainDirty)
 		{
 			this.startAsynchSummaryRegeneration(renderingContext.getCamera());
 			terrainDirty = false;
 		}
-		
+
 		int elements = 0;
 		glEnable(GL_CULL_FACE); // culling for our glorious terrain
 		glLineWidth(1.0f);
@@ -191,17 +197,21 @@ public class FarTerrainRenderer
 			// cs.dekalZ);
 			terrain.setUniformFloat2("chunkPosition", rs.regionDisplayedX * 256, rs.regionDisplayedZ * 256);
 
-			glBindBuffer(GL_ARRAY_BUFFER, rs.regionSummary.vboId);
-			//glVertexPointer(3, GL_FLOAT, 0, 0L);
-			//glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0L);
-			glVertexAttribPointer(vertexIn, 3, GL_SHORT, false, 12, 0L);
-			glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_BYTE, false, 12, 8L);
+			if (rs.regionSummary.verticesObject.isDataPresent())
+			{
+				rs.regionSummary.verticesObject.bind();
 
-			elements += rs.regionSummary.vboSize;
+				int vertices2draw = (int) (rs.regionSummary.verticesObject.getVramUsage() / 12);
 
-			if (rs.regionSummary.vboSize > 0 && rs.regionSummary.heightsTextureId >= 0)
-				//glDrawArrays(GL_QUADS, 0, rs.vboSize/6*4);
-				glDrawArrays(GL_TRIANGLES, 0, rs.regionSummary.vboSize);
+				//glBindBuffer(GL_ARRAY_BUFFER, rs.regionSummary.vboId);
+				glVertexAttribPointer(vertexIn, 3, GL_SHORT, false, 12, 0L);
+				glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_BYTE, false, 12, 8L);
+
+				elements += vertices2draw;
+				//elements += rs.regionSummary.vboSize;
+
+				rs.regionSummary.verticesObject.drawElementsTriangles(vertices2draw);
+			}
 		}
 		renderingContext.disableVertexAttribute(vertexIn);
 		renderingContext.disableVertexAttribute(normalIn);
@@ -578,7 +588,8 @@ public class FarTerrainRenderer
 
 	public void destroy()
 	{
-		glDeleteTextures(blocksTexturesSummaryId);
+		blockTexturesSummary.destroy();
+		//glDeleteTextures(blocksTexturesSummaryId);
 	}
 
 }
