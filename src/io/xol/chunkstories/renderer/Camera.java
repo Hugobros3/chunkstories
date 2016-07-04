@@ -8,9 +8,10 @@ import java.nio.FloatBuffer;
 
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.shaders.ShaderProgram;
 
 import org.lwjgl.BufferUtils;
+
+import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;

@@ -1,4 +1,4 @@
-package io.xol.engine.font;
+package io.xol.engine.graphics.fonts;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -7,12 +7,11 @@ package io.xol.engine.font;
 import static org.lwjgl.opengl.GL11.*;
 
 import io.xol.engine.math.lalgb.Vector4f;
-
-import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.math.HexTools;
 import io.xol.engine.misc.ColorsTools;
-import io.xol.engine.textures.Texture;
-import io.xol.engine.textures.TexturesHandler;
 
 public class FontRenderer2
 {

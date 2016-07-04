@@ -2,7 +2,7 @@ package io.xol.chunkstories.gui.menus;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.engine.font.BitmapFont;
+import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
 

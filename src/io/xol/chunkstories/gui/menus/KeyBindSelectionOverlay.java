@@ -3,10 +3,10 @@ package io.xol.chunkstories.gui.menus;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.menus.OptionsOverlay.ConfigButtonKey;
-import io.xol.engine.base.ObjectRenderer;
+import io.xol.engine.graphics.fonts.BitmapFont;
+import io.xol.engine.graphics.fonts.FontRenderer2;
+import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.font.BitmapFont;
-import io.xol.engine.font.FontRenderer2;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

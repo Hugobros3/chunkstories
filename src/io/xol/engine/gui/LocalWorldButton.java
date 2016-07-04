@@ -1,9 +1,10 @@
 package io.xol.engine.gui;
 
 import io.xol.chunkstories.world.WorldInfo;
-import io.xol.engine.base.ObjectRenderer;
-import io.xol.engine.font.BitmapFont;
-import io.xol.engine.font.FontRenderer2;
+import io.xol.engine.graphics.fonts.BitmapFont;
+import io.xol.engine.graphics.fonts.FontRenderer2;
+import io.xol.engine.graphics.util.CorneredBoxDrawer;
+import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.gui.elements.Button;
 
 import org.lwjgl.input.Mouse;

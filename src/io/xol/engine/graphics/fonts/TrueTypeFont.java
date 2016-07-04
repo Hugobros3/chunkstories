@@ -1,6 +1,6 @@
-package io.xol.engine.font;
+package io.xol.engine.graphics.fonts;
 
-import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.math.HexTools;
 import io.xol.engine.misc.ColorsTools;
 

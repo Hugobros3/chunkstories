@@ -1,12 +1,12 @@
 package io.xol.chunkstories.renderer;
 
-import io.xol.engine.base.ObjectRenderer;
+import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.model.RenderingContext;
-import io.xol.engine.shaders.ShaderProgram;
-import io.xol.engine.shaders.ShadersLibrary;
-import io.xol.engine.textures.Texture;
-import io.xol.engine.textures.TexturesHandler;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.FastConfig;
 

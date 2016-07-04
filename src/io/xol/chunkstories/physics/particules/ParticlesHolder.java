@@ -2,10 +2,10 @@ package io.xol.chunkstories.physics.particules;
 
 import io.xol.chunkstories.physics.particules.Particle.Type;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.model.RenderingContext;
-import io.xol.engine.shaders.ShaderProgram;
-import io.xol.engine.shaders.ShadersLibrary;
-import io.xol.engine.textures.TexturesHandler;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL14.*;

@@ -3,7 +3,7 @@ package io.xol.engine.base;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
-import io.xol.engine.scene.Scene;
+import io.xol.engine.gui.Scene;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -11,7 +11,6 @@ import io.xol.engine.scene.Scene;
 
 public class InputAbstractor
 {
-
 	// This class is a link between the game and the game library.
 	// That way, by modifying this class to use another lib than LWJGL, it makes
 	// it easy

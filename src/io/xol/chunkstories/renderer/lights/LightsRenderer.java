@@ -1,15 +1,15 @@
 package io.xol.chunkstories.renderer.lights;
 
+import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.math.lalgb.Vector3f;
 
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.rendering.SpotLight;
-import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.model.RenderingContext;
-import io.xol.engine.shaders.ShaderProgram;
-import io.xol.engine.shaders.ShadersLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

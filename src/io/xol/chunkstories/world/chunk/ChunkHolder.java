@@ -270,7 +270,7 @@ public class ChunkHolder implements Region
 
 		world.entitiesLock.lock();
 
-		int countRemovedEntities = 0;
+		//int countRemovedEntities = 0;
 
 		Iterator<Entity> i = this.getEntitiesWithinRegion();
 		while (i.hasNext())
@@ -282,7 +282,7 @@ public class ChunkHolder implements Region
 			
 			//We keep the inner reference so serialization can still write entities contained within
 			world.removeEntityFromList(entity);
-			countRemovedEntities++;
+			//countRemovedEntities++;
 		}
 
 		world.entitiesLock.unlock();

@@ -21,12 +21,12 @@ import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
-import io.xol.engine.shaders.ShaderProgram;
-import io.xol.engine.shaders.ShadersLibrary;
-import io.xol.engine.textures.Texture;
-import io.xol.engine.textures.TexturesHandler;
 
 public class VoxelItemRenderer implements ItemRenderer
 {

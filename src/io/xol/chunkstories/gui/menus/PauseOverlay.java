@@ -5,10 +5,10 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBinds;
-import io.xol.engine.base.ObjectRenderer;
+import io.xol.engine.graphics.fonts.BitmapFont;
+import io.xol.engine.graphics.fonts.FontRenderer2;
+import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.font.BitmapFont;
-import io.xol.engine.font.FontRenderer2;
 import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
 

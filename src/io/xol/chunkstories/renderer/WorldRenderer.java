@@ -1,12 +1,11 @@
 package io.xol.chunkstories.renderer;
 
+import static io.xol.engine.graphics.textures.Texture.TextureType.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
-
-import static io.xol.engine.textures.Texture.TextureType.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -30,19 +29,19 @@ import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.engine.base.InputAbstractor;
-import io.xol.engine.base.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.concurrency.PBOPacker;
+import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.textures.Cubemap;
+import io.xol.engine.graphics.textures.GBufferTexture;
+import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.graphics.util.ObjectRenderer;
+import io.xol.engine.graphics.util.PBOPacker;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.MatrixHelper;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.RenderingContext;
-import io.xol.engine.shaders.ShaderProgram;
-import io.xol.engine.shaders.ShadersLibrary;
-import io.xol.engine.textures.Cubemap;
-import io.xol.engine.textures.GBufferTexture;
-import io.xol.engine.textures.Texture;
-import io.xol.engine.textures.TexturesHandler;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameDirectory;

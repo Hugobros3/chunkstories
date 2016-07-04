@@ -18,11 +18,11 @@ import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.chunkstories.world.generator.WorldGenerators;
+import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.animation.BVHLibrary;
-import io.xol.engine.shaders.ShadersLibrary;
 import io.xol.engine.sound.library.SoundsLibrary;
-import io.xol.engine.textures.TexturesHandler;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

@@ -14,8 +14,8 @@ import java.util.List;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.engine.textures.FBOAttachement;
-import io.xol.engine.textures.GBufferTexture;
+import io.xol.engine.graphics.textures.FBOAttachement;
+import io.xol.engine.graphics.textures.GBufferTexture;
 
 public class FBO
 {

@@ -1,4 +1,4 @@
-package io.xol.engine.concurrency;
+package io.xol.engine.graphics.util;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -10,7 +10,7 @@ import static org.lwjgl.opengl.GL21.*;
 
 import java.nio.ByteBuffer;
 
-import io.xol.engine.textures.Texture;
+import io.xol.engine.graphics.textures.Texture;
 
 public class PBOPacker
 {
@@ -19,7 +19,6 @@ public class PBOPacker
 	public PBOPacker()
 	{
 		bufferId = glGenBuffers();
-		//glBindBuffer(GL_PIXEL_PACK_BUFFER, bufferId);
 	}
 	
 	public void copyTexure(Texture texture)

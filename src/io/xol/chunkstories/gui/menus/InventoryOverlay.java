@@ -13,7 +13,7 @@ import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.font.TrueTypeFont;
+import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.math.lalgb.Vector4f;
 
 //(c) 2015-2016 XolioWare Interactive

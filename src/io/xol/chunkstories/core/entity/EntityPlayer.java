@@ -42,14 +42,14 @@ import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.font.TrueTypeFont;
+import io.xol.engine.graphics.fonts.TrueTypeFont;
+import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.engine.model.RenderingContext;
 import io.xol.engine.model.animation.BVHAnimation;
 import io.xol.engine.model.animation.BVHLibrary;
-import io.xol.engine.textures.Texture;
-import io.xol.engine.textures.TexturesHandler;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

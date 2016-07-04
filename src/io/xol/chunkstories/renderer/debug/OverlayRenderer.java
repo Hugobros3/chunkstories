@@ -13,8 +13,8 @@ import static org.lwjgl.opengl.GL11.glDrawArrays;
 
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.shaders.ShaderProgram;
-import io.xol.engine.shaders.ShadersLibrary;
+import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShadersLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

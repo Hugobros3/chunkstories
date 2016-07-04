@@ -1,4 +1,4 @@
-package io.xol.engine.textures;
+package io.xol.engine.graphics.textures;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

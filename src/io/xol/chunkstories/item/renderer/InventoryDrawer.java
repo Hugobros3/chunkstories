@@ -6,11 +6,11 @@ import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.engine.font.TrueTypeFont;
-import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.graphics.fonts.TrueTypeFont;
+import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
-import io.xol.engine.textures.Texture;
-import io.xol.engine.textures.TexturesHandler;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

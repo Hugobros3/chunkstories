@@ -3,11 +3,11 @@ package io.xol.chunkstories.gui;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.font.BitmapFont;
-import io.xol.engine.font.FontRenderer2;
+import io.xol.engine.graphics.fonts.BitmapFont;
+import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.gui.GuiElementsHandler;
+import io.xol.engine.gui.Scene;
 import io.xol.engine.gui.elements.Button;
-import io.xol.engine.scene.Scene;
 
 public class ConnectScene extends Scene
 {

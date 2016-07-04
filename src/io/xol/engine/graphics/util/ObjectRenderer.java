@@ -1,9 +1,9 @@
-package io.xol.engine.base;
+package io.xol.engine.graphics.util;
 
-import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.misc.ColorsTools;
-import io.xol.engine.textures.Texture;
-import io.xol.engine.textures.TexturesHandler;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;

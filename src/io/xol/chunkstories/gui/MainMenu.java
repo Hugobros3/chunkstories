@@ -16,14 +16,14 @@ import io.xol.chunkstories.gui.menus.MainMenuOverlay;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.FBO;
-import io.xol.engine.base.ObjectRenderer;
+import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.textures.GBufferTexture;
+import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.graphics.util.GuiDrawer;
+import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.gui.GuiDrawer;
-import io.xol.engine.shaders.ShaderProgram;
-import io.xol.engine.shaders.ShadersLibrary;
-import io.xol.engine.textures.GBufferTexture;
-import io.xol.engine.textures.Texture;
-import io.xol.engine.textures.TexturesHandler;
 
 public class MainMenu extends OverlayableScene
 {

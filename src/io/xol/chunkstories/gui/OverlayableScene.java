@@ -2,7 +2,7 @@ package io.xol.chunkstories.gui;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.scene.Scene;
+import io.xol.engine.gui.Scene;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

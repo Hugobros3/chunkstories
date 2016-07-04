@@ -8,10 +8,10 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import io.xol.engine.base.ObjectRenderer;
+import io.xol.engine.graphics.fonts.BitmapFont;
+import io.xol.engine.graphics.fonts.FontRenderer2;
+import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.font.BitmapFont;
-import io.xol.engine.font.FontRenderer2;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityInventory;

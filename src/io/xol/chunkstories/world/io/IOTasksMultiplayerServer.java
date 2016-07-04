@@ -8,7 +8,6 @@ import io.xol.chunkstories.net.packets.PacketChunkSummary;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
-import io.xol.chunkstories.world.io.IOTasks.IOTaskSaveChunkHolder;
 import io.xol.chunkstories.world.summary.RegionSummary;
 
 //(c) 2015-2016 XolioWare Interactive

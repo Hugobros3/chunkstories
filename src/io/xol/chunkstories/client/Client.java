@@ -10,7 +10,7 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.engine.misc.IconLoader;
 import io.xol.engine.misc.NativesLoader;

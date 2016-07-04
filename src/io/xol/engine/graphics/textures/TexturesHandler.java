@@ -1,4 +1,4 @@
-package io.xol.engine.textures;
+package io.xol.engine.graphics.textures;
 
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.glBindTexture;

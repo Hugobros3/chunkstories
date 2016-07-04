@@ -1,8 +1,6 @@
-package io.xol.engine.shaders;
+package io.xol.engine.graphics.shaders;
 
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.engine.textures.Cubemap;
-import io.xol.engine.textures.Texture;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +8,8 @@ import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.xol.engine.graphics.textures.Cubemap;
+import io.xol.engine.graphics.textures.Texture;
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;

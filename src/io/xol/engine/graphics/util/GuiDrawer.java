@@ -1,9 +1,9 @@
-package io.xol.engine.gui;
+package io.xol.engine.graphics.util;
 
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.shaders.ShaderProgram;
-import io.xol.engine.shaders.ShadersLibrary;
-import io.xol.engine.textures.TexturesHandler;
+import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.textures.TexturesHandler;
 
 import java.nio.FloatBuffer;
 

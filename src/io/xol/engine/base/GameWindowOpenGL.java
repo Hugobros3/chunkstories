@@ -19,9 +19,9 @@ import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.engine.gui.Scene;
 import io.xol.engine.misc.CPUModelDetection;
 import io.xol.engine.model.RenderingContext;
-import io.xol.engine.scene.Scene;
 
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;

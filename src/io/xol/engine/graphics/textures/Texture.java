@@ -1,4 +1,4 @@
-package io.xol.engine.textures;
+package io.xol.engine.graphics.textures;
 
 import java.io.File;
 import java.io.FileInputStream;

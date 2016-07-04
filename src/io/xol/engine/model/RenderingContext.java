@@ -3,7 +3,8 @@ package io.xol.engine.model;
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShaderProgram;
+
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;

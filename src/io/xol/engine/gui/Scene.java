@@ -1,10 +1,7 @@
-package io.xol.engine.scene;
-
-import java.util.ArrayList;
-import java.util.List;
+package io.xol.engine.gui;
 
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.gui.GuiDrawer;
+import io.xol.engine.graphics.util.GuiDrawer;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
