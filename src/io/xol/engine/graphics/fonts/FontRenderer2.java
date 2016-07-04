@@ -7,7 +7,7 @@ package io.xol.engine.graphics.fonts;
 import static org.lwjgl.opengl.GL11.*;
 
 import io.xol.engine.math.lalgb.Vector4f;
-import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TextureObject;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.math.HexTools;
@@ -52,7 +52,7 @@ public class FontRenderer2
 		 * double rotRad = rot / 180 * Math.PI; float rotSin = (float)
 		 * Math.sin(rotRad); float rotCos = (float) Math.cos(rotRad);
 		 */
-		Texture fontTexture = TexturesHandler.getTexture("./res/textures/font/" + font.name + ".png");
+		TextureObject fontTexture = TexturesHandler.getTexture("./res/textures/font/" + font.name + ".png");
 		fontTexture.setLinearFiltering(false);
 		//TexturesHandler.mipmapLevel("./res/textures/font/" + font.name + ".png", -1);
 		

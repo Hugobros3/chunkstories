@@ -2,7 +2,7 @@ package io.xol.chunkstories.renderer;
 
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
-import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TextureObject;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
@@ -67,13 +67,13 @@ public class Sky
 		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(skyShader);
 		//skyShader.use(true);
 		skyShader.setUniformSampler(9, "cloudsNoise", TexturesHandler.getTexture("environement/cloudsStatic.png"));
-		Texture glowTexture = TexturesHandler.getTexture("environement/glow.png");
+		TextureObject glowTexture = TexturesHandler.getTexture("environement/glow.png");
 		skyShader.setUniformSampler(1, "glowSampler", glowTexture);
 		glowTexture.setLinearFiltering(true);
 		glowTexture.setTextureWrapping(false);
 		glowTexture.setTextureWrapping(false);
 
-		Texture skyTexture = TexturesHandler.getTexture(world.isRaining() ? "environement/sky_rain.png" : "environement/sky.png");
+		TextureObject skyTexture = TexturesHandler.getTexture(world.isRaining() ? "environement/sky_rain.png" : "environement/sky.png");
 		skyShader.setUniformSampler(0, "colorSampler", skyTexture);
 		skyShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
 		skyTexture.setLinearFiltering(true);

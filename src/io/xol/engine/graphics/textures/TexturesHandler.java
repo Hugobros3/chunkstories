@@ -17,10 +17,10 @@ public class TexturesHandler
 	static ConcurrentHashMap<String, Cubemap> loadedCubemaps = new ConcurrentHashMap<String, Cubemap>();
 	static Cubemap currentCubemap;
 	
-	static ConcurrentHashMap<String, Texture> loadedTextures = new ConcurrentHashMap<String, Texture>();
-	static Texture currentTexture;
+	static ConcurrentHashMap<String, TextureObject> loadedTextures = new ConcurrentHashMap<String, TextureObject>();
+	static TextureObject currentTexture;
 
-	public static Texture getTexture(String name)
+	public static TextureObject getTexture(String name)
 	{
 		if(loadedTextures.containsKey(name))
 		{
@@ -28,7 +28,7 @@ public class TexturesHandler
 		}
 		else
 		{
-			Texture texture = new Texture(name);
+			TextureObject texture = new TextureObject(name);
 			loadedTextures.put(name, texture);
 			return texture;
 		}
@@ -203,7 +203,7 @@ public class TexturesHandler
 */
 	public static void reloadAll()
 	{
-		for(Texture texture : loadedTextures.values())
+		for(TextureObject texture : loadedTextures.values())
 		{
 			texture.loadTextureFromDisk();
 		}

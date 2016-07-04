@@ -19,6 +19,8 @@ import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.engine.graphics.geometry.VerticesObject;
+import io.xol.engine.graphics.textures.TextureObject;
 import io.xol.engine.gui.Scene;
 import io.xol.engine.misc.CPUModelDetection;
 import io.xol.engine.model.RenderingContext;
@@ -33,6 +35,8 @@ import org.lwjgl.opengl.PixelFormat;
 
 public class GameWindowOpenGL
 {
+	private final long mainGLThreadId;
+	
 	public RenderingContext renderingContext;
 	private Scene currentScene = null;
 
@@ -52,6 +56,16 @@ public class GameWindowOpenGL
 
 	static String[] modes;
 
+	private static long lastTimeMS = 0;
+	private static int framesSinceLS = 0;
+	private static int lastFPS = 0;
+
+	static String currentDM = "";
+
+	long timeTookLastTime = 0;
+
+	static long lastTime = 0;
+	
 	public GameWindowOpenGL(String name, int width, int height)
 	{
 		if (width != -1)
@@ -60,6 +74,8 @@ public class GameWindowOpenGL
 			windowHeight = height;
 		this.windowName = name;
 		instance = this;
+		
+		mainGLThreadId = Thread.currentThread().getId();
 	}
 
 	public void createContext()
@@ -150,8 +166,9 @@ public class GameWindowOpenGL
 			Client.onStart();
 			while (!Display.isCloseRequested() && !closeRequest)
 			{
-				//if (this.currentScene == null || !(currentScene instanceof GameplayScene))
-					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				
+				//Resize window logic
 				if (resized)
 					resized = false;
 				if (Display.wasResized() || forceResize)
@@ -175,6 +192,7 @@ public class GameWindowOpenGL
 				// Update audio streams
 				Client.getInstance().getSoundManager().update();
 
+				// Run scene content
 				if (currentScene != null)
 				{
 					// update inputs first
@@ -182,7 +200,8 @@ public class GameWindowOpenGL
 					// then do the game logic
 					currentScene.update();
 				}
-
+				
+				//Clamp fps
 				if (targetFPS != -1)
 				{
 					long time = System.currentTimeMillis();
@@ -200,11 +219,14 @@ public class GameWindowOpenGL
 					long timeTook = System.currentTimeMillis() - time;
 					timeTookLastTime = timeTook;
 				}
-				// System.out.println("target fps:"+targetFPS);
-				// if (targetFPS > 0)
-				// sync(targetFPS);
+				
+				//Draw graph
 				if(Client.getConfig().getBooleanProp("frametimeGraph", false))
 					FrametimeRenderer.draw(renderingContext);
+				
+				//Update pending actions
+				VerticesObject.destroyPendingVerticesObjects();
+				TextureObject.destroyPendingTextureObjects();
 				
 				//Update the screen
 				Display.update();
@@ -220,16 +242,6 @@ public class GameWindowOpenGL
 			e.printStackTrace();
 		}
 	}
-
-	long timeTookLastTime = 0;
-
-	/**
-	 * An accurate sync method Since Thread.sleep() isn't 100% accurate, we assume that it has roughly a margin of error of 1ms. This method will sleep for the sync time but burn a few CPU cycles "Thread.yield()" for the last 1 millisecond plus any remainder micro + nano's to ensure accurate sync time.
-	 * 
-	 * @param fps
-	 *            The desired frame rate, in frames per second
-	 */
-	static long lastTime = 0;
 
 	public static void sync(int fps)
 	{
@@ -250,7 +262,7 @@ public class GameWindowOpenGL
 		{
 			while (true)
 			{
-				long t = getTime() - lastTime;
+				long t = ((Sys.getTime() * 1000000000) / Sys.getTimerResolution()) - lastTime;
 
 				if (t < sleepTime - burnTime)
 				{
@@ -272,17 +284,7 @@ public class GameWindowOpenGL
 		{
 		}
 
-		lastTime = getTime() - overSleep;
-	}
-
-	/**
-	 * Get System Nano Time
-	 * 
-	 * @return will return the current time in nano's
-	 */
-	private static long getTime()
-	{
-		return (Sys.getTime() * 1000000000) / Sys.getTimerResolution();
+		lastTime = ((Sys.getTime() * 1000000000) / Sys.getTimerResolution()) - overSleep;
 	}
 
 	public static void computeDisplayModes()
@@ -323,8 +325,6 @@ public class GameWindowOpenGL
 	{
 		return modes;
 	}
-
-	static String currentDM = "";
 
 	public static void switchResolution()
 	{
@@ -396,10 +396,6 @@ public class GameWindowOpenGL
 		}
 	}
 
-	private static long lastTimeMS = 0;
-	private static int framesSinceLS = 0;
-	private static int lastFPS = 0;
-
 	public static void tick()
 	{
 		framesSinceLS++;
@@ -458,5 +454,15 @@ public class GameWindowOpenGL
 	public RenderingContext getRenderingContext()
 	{
 		return renderingContext;
+	}
+	
+	public static boolean isMainGLWindow()
+	{
+		return getInstance().isInstanceMainGLWindow();
+	}
+	
+	public boolean isInstanceMainGLWindow()
+	{
+		return Thread.currentThread().getId() == mainGLThreadId;
 	}
 }

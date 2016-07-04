@@ -1,6 +1,6 @@
 package io.xol.chunkstories.renderer;
 
-import static io.xol.engine.graphics.textures.Texture.TextureType.*;
+import static io.xol.engine.graphics.textures.TextureObject.TextureType.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL12.*;
@@ -34,7 +34,7 @@ import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.GBufferTexture;
-import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TextureObject;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.graphics.util.PBOPacker;
@@ -178,15 +178,15 @@ public class WorldRenderer
 	float apertureModifier = 1f;
 
 	//Sky stuff
-	Texture sunGlowTexture = TexturesHandler.getTexture("environement/glow.png");
-	Texture skyTexture = TexturesHandler.getTexture("environement/sky.png");
+	TextureObject sunGlowTexture = TexturesHandler.getTexture("environement/glow.png");
+	TextureObject skyTexture = TexturesHandler.getTexture("environement/sky.png");
 	
-	Texture lightmapTexture = TexturesHandler.getTexture("environement/light.png");
-	Texture waterNormalTexture = TexturesHandler.getTexture("normal.png");
+	TextureObject lightmapTexture = TexturesHandler.getTexture("environement/light.png");
+	TextureObject waterNormalTexture = TexturesHandler.getTexture("normal.png");
 
-	Texture blocksDiffuseTexture = TexturesHandler.getTexture("tiles_merged_diffuse.png");
-	Texture blocksNormalTexture = TexturesHandler.getTexture("tiles_merged_normal.png");
-	Texture blocksMaterialTexture = TexturesHandler.getTexture("tiles_merged_material.png");
+	TextureObject blocksDiffuseTexture = TexturesHandler.getTexture("tiles_merged_diffuse.png");
+	TextureObject blocksNormalTexture = TexturesHandler.getTexture("tiles_merged_normal.png");
+	TextureObject blocksMaterialTexture = TexturesHandler.getTexture("tiles_merged_material.png");
 
 	//SSAO (disabled)
 	Vector3f ssao_kernel[];
@@ -629,7 +629,7 @@ public class WorldRenderer
 		terrainShader.setUniformSampler(8, "glowSampler", sunGlowTexture);
 		terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
 		terrainShader.setUniformSampler(6, "blockLightmap", lightmapTexture);
-		Texture lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
+		TextureObject lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
 		terrainShader.setUniformSampler(11, "lightColors", lightColors);
 		terrainShader.setUniformSampler(10, "normalTexture", waterNormalTexture);
 		setupShadowColors(terrainShader);
@@ -1187,7 +1187,7 @@ public class WorldRenderer
 		applyShadowsShader.setUniformSampler(5, "shadowMap", shadowMapBuffer);
 		applyShadowsShader.setUniformSampler(6, "glowSampler", sunGlowTexture);
 		applyShadowsShader.setUniformSampler(7, "colorSampler", skyTexture);
-		Texture lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
+		TextureObject lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
 		applyShadowsShader.setUniformSampler(8, "lightColors", lightColors);
 		
 		//TODO if SSAO
@@ -1719,9 +1719,9 @@ public class WorldRenderer
 	}
 
 	//Visual properties functions
-	public Texture getGrassTexture()
+	public TextureObject getGrassTexture()
 	{
-		Texture vegetationTexture = null;
+		TextureObject vegetationTexture = null;
 		if(world.getFolderPath() != null)
 			vegetationTexture = TexturesHandler.getTexture(world.getFolderPath() + "/grassColor.png");
 		if (vegetationTexture == null || vegetationTexture.getID() == -1)

@@ -1,7 +1,7 @@
 package io.xol.engine.graphics.util;
 
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TextureObject;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.misc.ColorsTools;
 
@@ -86,7 +86,7 @@ public class ObjectRenderer
 		else
 			textureName = ("./res/textures/" + textureName + ".png");
 
-		Texture texture = TexturesHandler.getTexture(textureName);
+		TextureObject texture = TexturesHandler.getTexture(textureName);
 		
 		texture.setLinearFiltering(false);
 		//TexturesHandler.mipmapLevel(texture, -1);

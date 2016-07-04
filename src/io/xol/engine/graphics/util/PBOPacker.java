@@ -10,7 +10,7 @@ import static org.lwjgl.opengl.GL21.*;
 
 import java.nio.ByteBuffer;
 
-import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TextureObject;
 
 public class PBOPacker
 {
@@ -21,12 +21,12 @@ public class PBOPacker
 		bufferId = glGenBuffers();
 	}
 	
-	public void copyTexure(Texture texture)
+	public void copyTexure(TextureObject texture)
 	{
 		copyTexure(texture, 0);
 	}
 	
-	public void copyTexure(Texture texture, int level)
+	public void copyTexure(TextureObject texture, int level)
 	{
 		//glFinish();
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, bufferId);

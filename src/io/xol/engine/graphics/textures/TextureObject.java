@@ -4,7 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.lwjgl.opengl.ARBFramebufferObject;
 import org.lwjgl.opengl.GL30;
@@ -23,7 +27,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Texture
+public class TextureObject
 {
 	String name;
 	TextureType type;
@@ -36,9 +40,11 @@ public class Texture
 	int baseMipmapLevel = 0;
 	int maxMipmapLevel = 1000;
 	
-	public Texture(TextureType type)
+	public TextureObject(TextureType type)
 	{
 		this.type = type;
+		
+		allTextureObjects.add(new WeakReference<TextureObject>(this));
 	}
 	
 	public TextureType getType()
@@ -46,7 +52,7 @@ public class Texture
 		return type;
 	}
 	
-	public Texture(String name)
+	public TextureObject(String name)
 	{
 		this(TextureType.RGBA_8BPP);
 		this.name = name;
@@ -303,4 +309,37 @@ public class Texture
 			return surface * 4;
 		return surface;
 	}
+	
+	public static int destroyPendingTextureObjects()
+	{
+		return 0;
+	}
+	
+	public static int getTotalNumberOfTextureObjects()
+	{
+		return totalTextureObjects;
+	}
+	
+	public static long getTotalVramUsage()
+	{
+		long vram = 0;
+
+		//Iterates over every instance reference, removes null ones and add up valid ones
+		Iterator<WeakReference<TextureObject>> i = allTextureObjects.iterator();
+		while (i.hasNext())
+		{
+			WeakReference<TextureObject> reference = i.next();
+
+			TextureObject object = reference.get();
+			if(object != null)
+				vram += object.getVramUsage();
+			else
+				i.remove();
+		}
+		
+		return vram;
+	}
+	
+	private static int totalTextureObjects = 0;
+	private static BlockingQueue<WeakReference<TextureObject>> allTextureObjects = new LinkedBlockingQueue<WeakReference<TextureObject>>();
 }

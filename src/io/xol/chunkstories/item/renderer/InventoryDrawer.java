@@ -7,7 +7,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TextureObject;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
@@ -70,7 +70,7 @@ public class InventoryDrawer
 		int internalHeight = (height + (summary ? 0 : 1) + blankLines) * 24 * scale;
 		int slotSize = 24 * scale;
 
-		Texture inventoryTexture = TexturesHandler.getTexture("gui/inventory/inventory.png");
+		TextureObject inventoryTexture = TexturesHandler.getTexture("gui/inventory/inventory.png");
 		inventoryTexture.setLinearFiltering(false);
 		int textureId = inventoryTexture.getID();
 		

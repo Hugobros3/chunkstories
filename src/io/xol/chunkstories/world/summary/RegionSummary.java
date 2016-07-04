@@ -161,10 +161,11 @@ public class RegionSummary
 
 	private boolean uploadModel()
 	{
-		if (vboDataToUpload == null)
-			return false;
-		synchronized (vboDataToUpload)
+		synchronized (this)
 		{
+			if (vboDataToUpload == null)
+				return false;
+			
 			if (vboId == -1)
 				vboId = glGenBuffers();
 
@@ -263,12 +264,9 @@ public class RegionSummary
 			glDeleteBuffers(vboId);
 	}
 
-	public void sendNewModel(byte[] newModelData)
+	public synchronized void sendNewModel(byte[] newModelData)
 	{
-		synchronized(vboDataToUpload)
-		{
-			vboDataToUpload = newModelData;
-		}
+		vboDataToUpload = newModelData;
 	}
 		
 	public boolean isLoaded()

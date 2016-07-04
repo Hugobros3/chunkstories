@@ -23,7 +23,7 @@ import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
-import io.xol.engine.graphics.textures.Texture;
+import io.xol.engine.graphics.textures.TextureObject;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.model.RenderingContext;
@@ -70,7 +70,7 @@ public class VoxelItemRenderer implements ItemRenderer
 			GuiDrawer.drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, TexturesHandler.getTexture("res/items/icons/notex.png").getID(), true, true, null);
 			return;
 		}
-		Texture texture = TexturesHandler.getTexture("./res/textures/tiles_merged_diffuse.png");
+		TextureObject texture = TexturesHandler.getTexture("./res/textures/tiles_merged_diffuse.png");
 		texture.setLinearFiltering(false);
 		context.setDiffuseTexture(texture.getID());
 		
@@ -147,7 +147,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		{
 			return;
 		}
-		Texture texture = TexturesHandler.getTexture("./res/textures/tiles_merged_diffuse.png");
+		TextureObject texture = TexturesHandler.getTexture("./res/textures/tiles_merged_diffuse.png");
 		texture.setLinearFiltering(false);
 		context.setDiffuseTexture(texture.getID());
 		

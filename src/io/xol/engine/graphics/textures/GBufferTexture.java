@@ -14,7 +14,7 @@ import static org.lwjgl.opengl.GL30.*;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class GBufferTexture extends Texture implements FBOAttachement
+public class GBufferTexture extends TextureObject implements FBOAttachement
 {
 	public GBufferTexture(TextureType type, int w, int h)
 	{
