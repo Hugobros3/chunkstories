@@ -1,4 +1,4 @@
-package io.xol.chunkstories.renderer;
+package io.xol.engine.graphics.fbo;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

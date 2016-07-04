@@ -30,6 +30,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.fbo.FBO;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Cubemap;

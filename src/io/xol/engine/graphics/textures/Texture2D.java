@@ -14,7 +14,6 @@ import org.lwjgl.opengl.ARBFramebufferObject;
 import org.lwjgl.opengl.GL30;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL14.*;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
@@ -83,27 +82,10 @@ public class Texture2D
 			//ChunkStoriesLogger.getInstance().log("decoded " + width + " by " + height + " pixels (" + name + ")", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.DEBUG);
 			temp.flip();
 			bind();
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, temp);
+			glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(), (ByteBuffer) temp);
+			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, temp);
 
-			if (mipmapping)
-			{
-				//Regenerate the mipmaps only when necessary
-				if (FastConfig.openGL3Capable)
-					GL30.glGenerateMipmap(GL_TEXTURE_2D);
-				else if (FastConfig.fbExtCapable)
-					ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
-			}
-			if (!wrapping)
-			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			}
-			else
-			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			}
-			setFiltering();
+			applyTextureParameters();
 
 		}
 		catch (FileNotFoundException e)
@@ -120,6 +102,31 @@ public class Texture2D
 	}
 	
 
+	private void applyTextureParameters()
+	{
+		//Generate mipmaps
+		if (mipmapping)
+		{
+			if (FastConfig.openGL3Capable)
+				GL30.glGenerateMipmap(GL_TEXTURE_2D);
+			else if (FastConfig.fbExtCapable)
+				ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
+			
+			mipmapsUpToDate = true;
+		}
+		if (!wrapping)
+		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		}
+		else
+		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		}
+		setFiltering();
+	}
+
 	public boolean uploadTextureData(int width, int height, ByteBuffer data)
 	{
 		return uploadTextureData(width, height, 0, data);
@@ -130,9 +137,11 @@ public class Texture2D
 		bind();
 		this.width = width;
 		this.height = height;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, level, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(), (ByteBuffer) data);
 
-		mipmapsUpToDate = false;
+		applyTextureParameters();
 		return true;
 	}
 
@@ -151,8 +160,11 @@ public class Texture2D
 		if (!GameWindowOpenGL.isMainGLWindow())
 			throw new IllegalRenderingThreadException();
 		
+		//Allow creation only in intial state
 		if (glId == -1)
+		{
 			glId = glGenTextures();
+		}
 		
 		glBindTexture(GL_TEXTURE_2D, glId);
 	}
@@ -162,6 +174,10 @@ public class Texture2D
 		if (glId >= 0)
 		{
 			glDeleteTextures(glId);
+		}
+		//Only register destruction once
+		if(glId != -2)
+		{
 			totalTextureObjects--;
 			glId = -2;
 		}
@@ -171,8 +187,6 @@ public class Texture2D
 
 	/**
 	 * Determines if a texture will loop arround itself or clamp to it's edges
-	 * 
-	 * @param on
 	 */
 	public void setTextureWrapping(boolean on)
 	{
@@ -224,7 +238,6 @@ public class Texture2D
 	public void computeMipmaps()
 	{
 		//System.out.println("Computing mipmap for "+name);
-		//mipmapsUpToDate = true;
 		bind();
 		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 		//Regenerate the mipmaps only when necessary
@@ -233,6 +246,7 @@ public class Texture2D
 		else if (FastConfig.fbExtCapable)
 			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
 
+		mipmapsUpToDate = true;
 		//setFiltering();
 		//setFiltering();
 	}
@@ -305,11 +319,6 @@ public class Texture2D
 			return;
 		bind();
 		setFiltering();
-	}
-
-	public void uploadExplicitMipmapLevel(int level, ByteBuffer data)
-	{
-		//TODO do
 	}
 
 	public int getWidth()

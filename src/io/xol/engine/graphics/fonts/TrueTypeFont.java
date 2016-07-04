@@ -1,5 +1,7 @@
 package io.xol.engine.graphics.fonts;
 
+import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TextureType;
 import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.math.HexTools;
 import io.xol.engine.misc.ColorsTools;
@@ -20,9 +22,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.awt.GraphicsEnvironment;
 
-import static org.lwjgl.opengl.GL11.*;
-
-//import org.lwjgl.util.glu.GLU;
 import io.xol.engine.math.lalgb.Vector4f;
 
 /**
@@ -48,7 +47,8 @@ public class TrueTypeFont
 	public final static int ALIGN_LEFT = 0, ALIGN_RIGHT = 1, ALIGN_CENTER = 2;
 	/** Array that holds necessary information about the font characters */
 	
-	public int glTexIds[];
+	//public int glTexIds[];
+	public Texture2D glTextures[];
 	public Glyph glyphs[];
 
 	// private IntObject[] charArray = new IntObject[256];
@@ -85,9 +85,11 @@ public class TrueTypeFont
 	
 	TrueTypeFont()
 	{
-		glTexIds = new int[256];
-		for (int i = 0; i < 256; i++)
-			glTexIds[i] = -1;
+		//glTexIds = new int[256];
+		//for (int i = 0; i < 256; i++)
+		//	glTexIds[i] = -1;
+		
+		glTextures = new Texture2D[256];
 		glyphs = new Glyph[65536];
 	}
 
@@ -184,7 +186,7 @@ public class TrueTypeFont
 
 	}
 
-	private int createSet(int offset)
+	private Texture2D createSet(int offset)
 	{
 		// If there are custom chars then I expand the font texture twice
 
@@ -263,9 +265,10 @@ public class TrueTypeFont
 				fontImage = null;
 			}
 
-			glTexIds[offset] = loadImage(offset, imgTemp);
+			glTextures[offset] = loadImageIntoOpenGLTexture(offset, imgTemp);
+			//glTexIds[offset] = loadImage(offset, imgTemp);
 
-			return glTexIds[offset];
+			return glTextures[offset];
 			// .getTexture(font.toString(), imgTemp);
 
 		}
@@ -274,7 +277,7 @@ public class TrueTypeFont
 			System.err.println("Failed to create font.");
 			e.printStackTrace();
 		}
-		return -1;
+		return null;
 	}
 
 	private void drawQuad(float drawX, float drawY, float drawX2, float drawY2, float srcX, float srcY, float srcX2, float srcY2)
@@ -324,11 +327,11 @@ public class TrueTypeFont
 		{
 			charCurrent = whatchars.charAt(i);
 
-			int pageId = glTexIds[charCurrent / 256];
-			if(pageId == -1)
+			Texture2D pageTexture = glTextures[charCurrent / 256];
+			if(pageTexture == null)
 			{
 				//System.out.println("Uncached unicode page, generating");
-				pageId = createSet(charCurrent / 256);
+				pageTexture = createSet(charCurrent / 256);
 			}
 			
 			glyph = glyphs[charCurrent];
@@ -472,11 +475,11 @@ public class TrueTypeFont
 		{
 			charCurrent = whatchars.charAt(i);
 
-			int pageId = glTexIds[charCurrent / 256];
-			if(pageId == -1)
+			Texture2D pageTexture = glTextures[charCurrent / 256];
+			if(pageTexture == null)
 			{
 				//System.out.println("Uncached unicode page, generating");
-				pageId = createSet(charCurrent / 256);
+				pageTexture = createSet(charCurrent / 256);
 			}
 			
 			glyph = glyphs[charCurrent];
@@ -529,7 +532,7 @@ public class TrueTypeFont
 				}
 				else
 				{
-					GuiDrawer.setState(pageId, true, true, colorModified);
+					GuiDrawer.setState(pageTexture.getId(), true, true, colorModified);
 					drawQuad((totalwidth + glyph.width) * scaleX + x, startY * scaleY + y, totalwidth * scaleX + x, (startY + glyph.height) * scaleY + y, glyph.x + glyph.width, glyph.y + glyph.height, glyph.x, glyph.y);
 					//if (d > 0)
 					totalwidth += (glyph.width - c) * d;
@@ -541,7 +544,7 @@ public class TrueTypeFont
 		// glEnd();
 	}
 
-	public static int loadImage(int offset, BufferedImage bufferedImage)
+	public static Texture2D loadImageIntoOpenGLTexture(int offset, BufferedImage bufferedImage)
 	{
 		try
 		{
@@ -575,12 +578,18 @@ public class TrueTypeFont
 			}
 			byteBuffer.flip();
 
-			int internalFormat = GL_RGBA8, format = GL_RGBA;
+			//int internalFormat = GL_RGBA8, format = GL_RGBA;
 			// IntBuffer textureId = BufferUtils.createIntBuffer(1);
 
-			int textureId;
+			//int textureId;
 
-			textureId = glGenTextures();
+			Texture2D texture = new Texture2D(TextureType.RGBA_8BPP);
+			
+			texture.uploadTextureData(width, height, byteBuffer);
+			texture.setLinearFiltering(false);
+			texture.setTextureWrapping(false);
+			
+			/*textureId = glGenTextures();
 			glBindTexture(GL_TEXTURE_2D, textureId);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -591,9 +600,9 @@ public class TrueTypeFont
 
 			// glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-			glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, byteBuffer);
+			glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, byteBuffer);*/
 			// GLU.gluBuild2DMipmaps(GL_TEXTURE_2D, internalFormat, width, height, format, GL_UNSIGNED_BYTE, byteBuffer);
-			return textureId;
+			return texture;
 
 		}
 		catch (Exception e)
@@ -602,7 +611,7 @@ public class TrueTypeFont
 			System.exit(-1);
 		}
 
-		return -1;
+		return null;
 	}
 
 	public static boolean isSupported(String fontname)

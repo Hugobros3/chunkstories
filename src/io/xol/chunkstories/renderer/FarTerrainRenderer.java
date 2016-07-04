@@ -167,22 +167,23 @@ public class FarTerrainRenderer
 			if (!renderingContext.getCamera().isBoxInFrustrum(new Vector3f(rs.regionDisplayedX * 256 + 128, height / 2, rs.regionDisplayedZ * 256 + 128), new Vector3f(256, height, 256)))
 				continue;
 
-			terrain.setUniformSampler(1, "groundTexture", rs.regionSummary.voxelTypesTextureId);
+			terrain.setUniformSampler(1, "groundTexture", rs.regionSummary.voxelTypesTexture);
 
-			glBindTexture(GL_TEXTURE_2D, rs.regionSummary.voxelTypesTextureId);
+			//glBindTexture(GL_TEXTURE_2D, rs.regionSummary.voxelTypesTextureId);
 			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
 			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-			terrain.setUniformSampler(0, "heightMap", rs.regionSummary.heightsTextureId);
-			glBindTexture(GL_TEXTURE_2D, rs.regionSummary.heightsTextureId);
+			terrain.setUniformSampler(0, "heightMap", rs.regionSummary.heightsTexture);
+			
+			//glBindTexture(GL_TEXTURE_2D, rs.regionSummary.heightsTextureId);
 
 			//if(FastConfig.hqTerrain)
 			//{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			/*}
 			else
 			{

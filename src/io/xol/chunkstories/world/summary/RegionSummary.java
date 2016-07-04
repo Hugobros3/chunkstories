@@ -6,6 +6,8 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.geometry.VerticesObject;
+import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TextureType;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -48,8 +50,11 @@ public class RegionSummary
 	//Textures (client renderer)
 	//TODO use real textures
 	public AtomicBoolean texturesUpToDate = new AtomicBoolean(false);
-	public int heightsTextureId = -1;
-	public int voxelTypesTextureId = -1;
+	
+	public Texture2D heightsTexture = new Texture2D(TextureType.RED_32F);
+	public Texture2D voxelTypesTexture = new Texture2D(TextureType.RED_32F);
+	//public int heightsTextureId = -1;
+	//public int voxelTypesTextureId = -1;
 
 	//Mesh (client renderer)
 	public VerticesObject verticesObject = new VerticesObject();
@@ -192,16 +197,17 @@ public class RegionSummary
 	{
 		if (!summaryLoaded.get())
 			return false;
-		if (voxelTypesTextureId == -1)
+		
+		/*if (voxelTypesTextureId == -1)
 		{
 			heightsTextureId = glGenTextures();
 			voxelTypesTextureId = glGenTextures();
-		}
+		}*/
 		if (texturesUpToDate.get())
 			return false;
 
 		//Upload stuff
-		glBindTexture(GL_TEXTURE_2D, heightsTextureId);
+		//glBindTexture(GL_TEXTURE_2D, heightsTextureId);
 		ByteBuffer bb = ByteBuffer.allocateDirect(4 * 256 * 256);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 		for (int i = 0; i < 256 * 256; i++)
@@ -210,14 +216,20 @@ public class RegionSummary
 		}
 
 		bb.flip(); // 0x822e is GL_R32F, 0x8235 is GL_R32I
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F /* GL_R32F */, 256, 256, 0, GL_RED/* GL_RED_INTEGER */, GL_FLOAT, bb);
+		
+		heightsTexture.uploadTextureData(256, 256, bb);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F /* GL_R32F */, 256, 256, 0, GL_RED/* GL_RED_INTEGER */, GL_FLOAT, bb);
 
 		//Setup texture filtering
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
+		
+		heightsTexture.setTextureWrapping(false);
+		heightsTexture.setLinearFiltering(false);
+		
 
 		//Generate mipmaps
 		/*if (FastConfig.openGL3Capable)
@@ -234,15 +246,20 @@ public class RegionSummary
 			bb.putFloat(id & 0x0000FFFF);
 		}
 		bb.rewind();
-		glBindTexture(GL_TEXTURE_2D, voxelTypesTextureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F /* GL_R32F */, 256, 256, 0, GL_RED/* GL_RED_INTEGER */, GL_FLOAT, bb);
+		//glBindTexture(GL_TEXTURE_2D, voxelTypesTextureId);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F /* GL_R32F */, 256, 256, 0, GL_RED/* GL_RED_INTEGER */, GL_FLOAT, bb);
 
+		voxelTypesTexture.uploadTextureData(256, 256, bb);
+		
 		//Setup texture filtering
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);*/
+		
+		voxelTypesTexture.setTextureWrapping(false);
+		voxelTypesTexture.setLinearFiltering(false);
 
 		//Generate mipmaps
 		/*if (FastConfig.openGL3Capable)
@@ -260,11 +277,14 @@ public class RegionSummary
 
 	public void destroy()
 	{
-		if (voxelTypesTextureId != -1)
+		/*if (voxelTypesTextureId != -1)
 		{
 			glDeleteTextures(heightsTextureId);
 			glDeleteTextures(voxelTypesTextureId);
-		}
+		}*/
+		
+		heightsTexture.destroy();
+		voxelTypesTexture.destroy();
 		
 		verticesObject.destroy();
 		

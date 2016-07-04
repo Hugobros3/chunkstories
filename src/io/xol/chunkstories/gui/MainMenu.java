@@ -15,7 +15,7 @@ import io.xol.chunkstories.gui.menus.LoginOverlay;
 import io.xol.chunkstories.gui.menus.MainMenuOverlay;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.chunkstories.renderer.FBO;
+import io.xol.engine.graphics.fbo.FBO;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.GBufferTexture;
