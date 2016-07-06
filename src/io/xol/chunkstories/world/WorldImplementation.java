@@ -25,6 +25,7 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.WorldNetworked;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameDirectory;
@@ -148,12 +149,6 @@ public abstract class WorldImplementation implements World
 		return null;
 	}
 
-	public void linkWorldRenderer(WorldRenderer renderer)
-	{
-		this.renderer = renderer;
-		setParticlesHolder(new ParticlesHolder());
-	}
-
 	public void startLogic()
 	{
 		logic.scheduleAtFixedRate(new Runnable()
@@ -189,14 +184,24 @@ public abstract class WorldImplementation implements World
 			entity.setUUID(nextUUID);
 			System.out.println("Attributed UUID " + nextUUID + " to " + entity);
 		}
-
-		entity.getLocation().setWorld(this);
-
-		//Location currLocation = entity.getLocation();
-		//entity.setLocation(new Location(this, currLocation.getX(), currLocation.getY(), currLocation.getZ()));
-
+		
+		Entity check = this.getEntityByUUID(entity.getUUID());
+		if(check != null)
+		{
+			System.out.println("Added an entity twice");
+			Thread.dumpStack();
+			System.exit(-1);
+		}
+		
 		//Add it to the world
+		entity.markHasSpawned();
+		Location updatedLocation = entity.getLocation();
+		updatedLocation.setWorld(this);
+		entity.setLocation(updatedLocation);
+		
 		this.entities.add(entity);
+		
+		System.out.println("added "+entity+"to the worlde");
 	}
 
 	@Override
@@ -331,37 +336,22 @@ public abstract class WorldImplementation implements World
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#getMaxHeight()
-	 */
-	@Override
 	public int getMaxHeight()
 	{
 		return worldInfo.getSize().heightInChunks * 32;
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#getSizeInChunks()
-	 */
-	@Override
 	public int getSizeInChunks()
 	{
 		return worldInfo.getSize().sizeInChunks;
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#getSizeSide()
-	 */
 	@Override
 	public double getWorldSize()
 	{
 		return getSizeInChunks() * 32d;
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#getChunk(int, int, int, boolean)
-	 */
-	@Override
 	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
 		chunkX = chunkX % getSizeInChunks();
@@ -377,19 +367,11 @@ public abstract class WorldImplementation implements World
 		return chunksHolder.getChunk(chunkX, chunkY, chunkZ, load);
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#removeChunk(io.xol.chunkstories.world.chunk.CubicChunk, boolean)
-	 */
-	@Override
 	public void removeChunk(Chunk c, boolean save)
 	{
 		removeChunk(c.getChunkX(), c.getChunkY(), c.getChunkZ(), save);
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#removeChunk(int, int, int, boolean)
-	 */
-	@Override
 	public void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save)
 	{
 		chunkX = chunkX % getSizeInChunks();
@@ -428,40 +410,28 @@ public abstract class WorldImplementation implements World
 		return regionSummaries;
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#getDataAt(io.xol.chunkstories.api.Location)
-	 */
-	@Override
-	public int getDataAt(Location location)
+	public int getVoxelData(Location location)
 	{
-		return getDataAt((int) location.x, (int) location.y, (int) location.z);
+		return getVoxelData((int) location.x, (int) location.y, (int) location.z);
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#getDataAt(io.xol.chunkstories.api.Location, boolean)
-	 */
-	@Override
-	public int getDataAt(Location location, boolean load)
+	public int getVoxelData(Location location, boolean load)
 	{
-		return getDataAt(location, load);
+		return getVoxelData(location, load);
 	}
 
 	public int getDataAt(Vector3d location, boolean load)
 	{
-		return getDataAt((int) location.x, (int) location.y, (int) location.z, load);
+		return getVoxelData((int) location.x, (int) location.y, (int) location.z, load);
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#getDataAt(int, int, int)
-	 */
-	@Override
-	public int getDataAt(int x, int y, int z)
+	public int getVoxelData(int x, int y, int z)
 	{
-		return getDataAt(x, y, z, true);
+		return getVoxelData(x, y, z, true);
 	}
 
 	@Override
-	public int getDataAt(int x, int y, int z, boolean load)
+	public int getVoxelData(int x, int y, int z, boolean load)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
@@ -469,42 +439,42 @@ public abstract class WorldImplementation implements World
 
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
-			return c.getDataAt(x, y, z);
+			return c.getVoxelData(x, y, z);
 		return 0;
 	}
 
 	@Override
-	public void setDataAt(int x, int y, int z, int data)
+	public void setVoxelData(int x, int y, int z, int data)
 	{
-		setDataAt(x, y, z, data, true);
+		setVoxelData(x, y, z, data, true);
 	}
 
 	@Override
-	public void setDataAt(Location location, int data)
+	public void setVoxelData(Location location, int data)
 	{
-		setDataAt((int) location.x, (int) location.y, (int) location.z, data, true);
+		setVoxelData((int) location.x, (int) location.y, (int) location.z, data, true);
 	}
 
 	@Override
-	public void setDataAt(Location location, int data, boolean load)
+	public void setVoxelData(Location location, int data, boolean load)
 	{
-		setDataAt((int) location.x, (int) location.y, (int) location.z, data, load);
+		setVoxelData((int) location.x, (int) location.y, (int) location.z, data, load);
 	}
 
 	@Override
-	public void setDataAt(int x, int y, int z, int data, boolean load)
+	public void setVoxelData(int x, int y, int z, int data, boolean load)
 	{
 		actuallySetsDataAt(x, y, z, data, load, null);
 	}
 
 	@Override
-	public void setDataAt(Location location, int data, Entity entity)
+	public void setVoxelData(Location location, int data, Entity entity)
 	{
 		actuallySetsDataAt((int) location.x, (int) location.y, (int) location.z, data, false, entity);
 	}
 
 	@Override
-	public void setDataAt(int x, int y, int z, int data, Entity entity)
+	public void setVoxelData(int x, int y, int z, int data, Entity entity)
 	{
 		actuallySetsDataAt(x, y, z, data, false, entity);
 	}
@@ -526,7 +496,7 @@ public abstract class WorldImplementation implements World
 		if (c != null)
 		{
 			//Optionally runs whatever the voxel requires to run when removed
-			int formerData = c.getDataAt(x % 32, y % 32, z % 32);
+			int formerData = c.getVoxelData(x % 32, y % 32, z % 32);
 			Voxel formerVoxel = VoxelTypes.get(formerData);
 			if (formerVoxel != null && formerVoxel instanceof VoxelLogic)
 				((VoxelLogic) formerVoxel).onRemove(this, x, y, z, formerData, entity);
@@ -536,7 +506,7 @@ public abstract class WorldImplementation implements World
 			if (newVoxel != null && newVoxel instanceof VoxelLogic)
 				newData = ((VoxelLogic) newVoxel).onPlace(this, x, y, z, newData, entity);
 
-			c.setDataAtWithUpdates(x % 32, y % 32, z % 32, newData);
+			c.setVoxelDataWithUpdates(x % 32, y % 32, z % 32, newData);
 
 			//Neighbour chunks updates
 			if (x % 32 == 0)
@@ -622,7 +592,7 @@ public abstract class WorldImplementation implements World
 		return -1;
 	}
 
-	public void setDataAtWithoutUpdates(int x, int y, int z, int i, boolean load)
+	public void setVoxelDataWithoutUpdates(int x, int y, int z, int i, boolean load)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
@@ -633,7 +603,7 @@ public abstract class WorldImplementation implements World
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
-			c.setDataAtWithoutUpdates(x % 32, y % 32, z % 32, i);
+			c.setVoxelDataWithoutUpdates(x % 32, y % 32, z % 32, i);
 		}
 	}
 
@@ -644,7 +614,7 @@ public abstract class WorldImplementation implements World
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
 		if (this.isChunkLoaded(x / 32, y / 32, z / 32) && !this.getChunk(x / 32, y / 32, z / 32, false).isAirChunk())
-			return VoxelFormat.sunlight(this.getDataAt(x, y, z));
+			return VoxelFormat.sunlight(this.getVoxelData(x, y, z));
 		else
 			return y <= this.getRegionSummaries().getHeightAtWorldCoordinates(x, z) ? 0 : 15;
 	}
@@ -662,7 +632,7 @@ public abstract class WorldImplementation implements World
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
 		if (this.isChunkLoaded(x / 32, y / 32, z / 32))
-			return VoxelFormat.blocklight(this.getDataAt(x, y, z));
+			return VoxelFormat.blocklight(this.getVoxelData(x, y, z));
 		else
 			return 0;
 	}
@@ -673,10 +643,6 @@ public abstract class WorldImplementation implements World
 		return getBlocklightLevel((int) location.x, (int) location.y, (int) location.z);
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#setChunk(io.xol.chunkstories.world.chunk.CubicChunk)
-	 */
-	@Override
 	public void setChunk(Chunk chunk)
 	{
 		if (this.isChunkLoaded(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ()))
@@ -692,10 +658,6 @@ public abstract class WorldImplementation implements World
 			renderer.flagModified();
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#reRender()
-	 */
-	@Override
 	public synchronized void redrawEverything()
 	{
 		ChunksIterator i = this.getAllLoadedChunks();
@@ -711,20 +673,12 @@ public abstract class WorldImplementation implements World
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#clear()
-	 */
-	@Override
 	public void unloadEverything()
 	{
 		chunksHolder.clearAll();
 		getRegionSummaries().clearAll();
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#save()
-	 */
-	@Override
 	public void saveEverything()
 	{
 		System.out.println("Saving world");
@@ -736,10 +690,6 @@ public abstract class WorldImplementation implements World
 		this.internalData.save();
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#destroy()
-	 */
-	@Override
 	public void destroy()
 	{
 		//this.chunksData.destroy();
@@ -754,10 +704,6 @@ public abstract class WorldImplementation implements World
 		ioHandler.kill();
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#iterator()
-	 */
-	@Override
 	public ChunksIterator getAllLoadedChunks()
 	{
 		return new WorldChunksIterator(this);
@@ -765,15 +711,10 @@ public abstract class WorldImplementation implements World
 
 	/**
 	 * Legacy crap for particle system
-	 * 
-	 * @param posX
-	 * @param posY
-	 * @param posZ
-	 * @return
 	 */
 	public boolean checkCollisionPoint(double posX, double posY, double posZ)
 	{
-		int data = this.getDataAt((int) posX, (int) posY, (int) posZ);
+		int data = this.getVoxelData((int) posX, (int) posY, (int) posZ);
 		int id = VoxelFormat.id(data);
 		if (id > 0)
 		{
@@ -791,11 +732,8 @@ public abstract class WorldImplementation implements World
 		}
 		return false;
 	}
+	
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#trimRemovableChunks()
-	 */
-	@Override
 	public void trimRemovableChunks()
 	{
 		if (this instanceof WorldTool)
@@ -840,10 +778,6 @@ public abstract class WorldImplementation implements World
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#isRaining()
-	 */
-	@Override
 	public boolean isRaining()
 	{
 		return raining;
@@ -854,18 +788,12 @@ public abstract class WorldImplementation implements World
 		return entitiesUUIDGenerator.getAndIncrement();
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#setWeather(boolean)
-	 */
-	@Override
 	public void setWeather(boolean booleanProp)
 	{
 		raining = booleanProp;
 	}
+	
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInterface#getDefaultSpawnLocation()
-	 */
 	@Override
 	public Location getDefaultSpawnLocation()
 	{
@@ -893,7 +821,7 @@ public abstract class WorldImplementation implements World
 		if (voxelLocation == null)
 			return false;
 
-		int dataAtLocation = this.getDataAt(voxelLocation);
+		int dataAtLocation = this.getVoxelData(voxelLocation);
 		Voxel voxel = VoxelTypes.get(dataAtLocation);
 		if (voxel != null && voxel instanceof VoxelInteractive)
 			return ((VoxelInteractive) voxel).handleInteraction(entity, voxelLocation, input, dataAtLocation);
@@ -963,7 +891,7 @@ public abstract class WorldImplementation implements World
 			x = voxelCoords[0];
 			y = voxelCoords[1];
 			z = voxelCoords[2];
-			vox = VoxelTypes.get(this.getDataAt(x, y, z));
+			vox = VoxelTypes.get(this.getVoxelData(x, y, z));
 			if (vox.isVoxelSolid() || vox.isVoxelSelectable())
 			{
 				boolean collides = false;

@@ -41,7 +41,7 @@ public class FlatGenerator extends WorldGenerator
 				int y = cy * 32;
 				while(y < cy * 32 + 32 && y <= v)
 				{
-					c.setDataAtWithoutUpdates(x, y, z, type);
+					c.setVoxelDataWithoutUpdates(x, y, z, type);
 					y++;
 				}
 			}

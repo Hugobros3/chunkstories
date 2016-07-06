@@ -161,7 +161,7 @@ public class GameplayScene extends OverlayableScene
 				for (int j = ((int) loc.y) - drawDebugDist; j <= ((int) loc.y) + drawDebugDist; j++)
 					for (int k = ((int) loc.z) - drawDebugDist; k <= ((int) loc.z) + drawDebugDist; k++)
 					{
-						data = Client.world.getDataAt(i, j, k);
+						data = Client.world.getVoxelData(i, j, k);
 						id = VoxelFormat.id(data);
 						VoxelTypes.get(id).debugRenderCollision(Client.world, i, j, k);
 					}
@@ -277,34 +277,9 @@ public class GameplayScene extends OverlayableScene
 				return true;
 			}
 		}
-		if (k == 19)
-		{
-			Client.world.getParticlesHolder().cleanAllParticles();
-			Client.world.redrawEverything();
-			worldRenderer.chunksRenderer.clear();
-			ChunksRenderer.renderStart = System.currentTimeMillis();
-			worldRenderer.flagModified();
-		}
 
-		//TODO move this to core content plugin
-		else if (KeyBinds.getKeyBind("use").equals(keyBind))
-		{
-			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) loc.x, (float) loc.y, (float) loc.z, 1.0f, 1.0f);
-			flashLight = !flashLight;
-		}
-		else if (KeyBinds.getKeyBind("inventory").equals(keyBind))
-		{
-			if (player != null)
-			{
-				focus(false);
-				if (player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().isCreativeMode())
-					this.changeOverlay(new InventoryOverlay(this, null, new EntityInventory[] { ((EntityWithInventory) player).getInventory(), new InventoryAllVoxels() }));
-				else
-					this.changeOverlay(new InventoryOverlay(this, null, new EntityInventory[] { ((EntityWithInventory) player).getInventory() }));
-			}
-		}
 		//Function keys
-		else if (k == Keyboard.KEY_F1)
+		if (k == Keyboard.KEY_F1)
 		{
 			guiHidden = !guiHidden;
 		}
@@ -333,6 +308,32 @@ public class GameplayScene extends OverlayableScene
 			GameData.reload();
 			GameData.reloadClientContent();
 			worldRenderer.farTerrainRenderer.markVoxelTexturesSummaryDirty();
+		}
+		//Redraw chunks
+		else if (k == 19)
+		{
+			Client.world.getParticlesHolder().cleanAllParticles();
+			Client.world.redrawEverything();
+			worldRenderer.chunksRenderer.clear();
+			ChunksRenderer.renderStart = System.currentTimeMillis();
+			worldRenderer.flagModified();
+		}
+		//TODO move this to core content plugin
+		else if (KeyBinds.getKeyBind("use").equals(keyBind))
+		{
+			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) loc.x, (float) loc.y, (float) loc.z, 1.0f, 1.0f);
+			flashLight = !flashLight;
+		}
+		else if (KeyBinds.getKeyBind("inventory").equals(keyBind))
+		{
+			if (player != null)
+			{
+				focus(false);
+				if (player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().isCreativeMode())
+					this.changeOverlay(new InventoryOverlay(this, null, new EntityInventory[] { ((EntityWithInventory) player).getInventory(), new InventoryAllVoxels() }));
+				else
+					this.changeOverlay(new InventoryOverlay(this, null, new EntityInventory[] { ((EntityWithInventory) player).getInventory() }));
+			}
 		}
 		else if (KeyBinds.getKeyBind("exit").equals(keyBind))
 		{
@@ -445,7 +446,7 @@ public class GameplayScene extends OverlayableScene
 		int bx = ((int) camera.pos.x);
 		int by = ((int) camera.pos.y);
 		int bz = ((int) camera.pos.z);
-		int data = Client.world.getDataAt(bx, by, bz);
+		int data = Client.world.getVoxelData(bx, by, bz);
 		int bl = (data & 0x0F000000) >> 0x18;
 		int sl = (data & 0x00F00000) >> 0x14;
 		int cx = bx / 32;

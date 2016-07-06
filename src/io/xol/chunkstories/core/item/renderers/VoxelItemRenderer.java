@@ -20,6 +20,7 @@ import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
+import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -33,7 +34,7 @@ public class VoxelItemRenderer implements ItemRenderer
 	ItemVoxel itemVoxel;
 	Matrix4f transformation = new Matrix4f();
 	
-	Map<Integer, float[]> transformedTexCoords = new HashMap<Integer, float[]>();
+	Map<Integer, float[]> voxelItemsModelBuffer = new HashMap<Integer, float[]>();
 	
 	public VoxelItemRenderer(ItemVoxel itemVoxel)
 	{
@@ -77,7 +78,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		BlockRenderInfo bri = new BlockRenderInfo(0);
 		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));
 		bri.voxelType = VoxelTypes.get(bri.data);
-		VoxelModel model = voxel.getVoxelModel(bri);
+		VoxelRenderer model = voxel.getVoxelModel(bri);
 		if(model == null || !voxel.isVoxelUsingCustomModel())
 		{
 			model = VoxelModels.getVoxelModel("default");
@@ -85,9 +86,15 @@ public class VoxelItemRenderer implements ItemRenderer
 		renderVoxel(context, voxel, model, bri);
 	}
 	
-	private void renderVoxel(RenderingContext context, Voxel voxel, VoxelModel model, BlockRenderInfo bri)
+	private void renderVoxel(RenderingContext context, Voxel voxel, VoxelRenderer voxelRenderer, BlockRenderInfo bri)
 	{
-		if(!transformedTexCoords.containsKey(bri.getMetaData() + 16 * voxel.getId()))
+		VoxelModel model = null;
+		if(voxelRenderer instanceof VoxelModel)
+			model = (VoxelModel)voxelRenderer;
+		else
+			return;
+		
+		if(!voxelItemsModelBuffer.containsKey(bri.getMetaData() + 16 * voxel.getId()))
 		{
 			float[] transformTextures = new float[model.texCoords.length];
 
@@ -119,14 +126,14 @@ public class VoxelItemRenderer implements ItemRenderer
 				transformTextures[i] = (textureS + model.texCoords[i] * voxelTexture.atlasOffset) / 32768f;
 				transformTextures[i + 1] = (textureT + model.texCoords[i + 1] * voxelTexture.atlasOffset) / 32768f;
 			}
-			transformedTexCoords.put(bri.getMetaData() + 16 * voxel.getId(), transformTextures);
+			voxelItemsModelBuffer.put(bri.getMetaData() + 16 * voxel.getId(), transformTextures);
 		}
-		if(transformedTexCoords.containsKey(bri.getMetaData() + 16 * voxel.getId()))
+		if(voxelItemsModelBuffer.containsKey(bri.getMetaData() + 16 * voxel.getId()))
 		{
 			context.enableVertexAttribute("vertexIn");
 			context.enableVertexAttribute("texCoordIn");
 			context.enableVertexAttribute("normalIn");
-			context.renderDirect(model.vertices, transformedTexCoords.get(bri.getMetaData()  + 16 * voxel.getId()), null, model.normals);
+			context.renderDirect(model.vertices, voxelItemsModelBuffer.get(bri.getMetaData()  + 16 * voxel.getId()), null, model.normals);
 		}
 	}
 	
@@ -154,7 +161,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		BlockRenderInfo bri = new BlockRenderInfo(0);
 		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));
 		bri.voxelType = VoxelTypes.get(bri.data);
-		VoxelModel model = voxel.getVoxelModel(bri);
+		VoxelRenderer model = voxel.getVoxelModel(bri);
 		if(model == null || !voxel.isVoxelUsingCustomModel())
 		{
 			model = VoxelModels.getVoxelModel("default");

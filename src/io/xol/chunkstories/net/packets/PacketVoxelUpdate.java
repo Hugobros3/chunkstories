@@ -60,7 +60,7 @@ public class PacketVoxelUpdate extends PacketSynch
 	{
 		if(Client.world instanceof WorldClient)
 		{
-			Client.world.setDataAt(x, y, z, data);
+			Client.world.setVoxelData(x, y, z, data);
 		}
 	}
 

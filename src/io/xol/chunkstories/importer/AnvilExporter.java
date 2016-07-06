@@ -170,7 +170,7 @@ public class AnvilExporter
 														{
 															//if(meta != 0 && mcId < 0)
 															//	System.out.println("BlockID : "+mcId+" Meta: "+meta);
-															exported.setDataAtWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, IDsConverter.mc2cs(mcId, meta), true);
+															exported.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, IDsConverter.mc2cs(mcId, meta), true);
 														}
 													}
 										}

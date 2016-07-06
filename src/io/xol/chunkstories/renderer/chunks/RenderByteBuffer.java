@@ -61,6 +61,11 @@ public class RenderByteBuffer
 		addColors(t[0], t[1], t[2]);
 	}
 	
+	public void addColorsSpecial(float[] t, int extended)
+	{
+		addColorsSpecial(t[0], t[1], t[2], extended);
+	}
+	
 	public void addColors(float f0, float f1, float f2)
 	{
 		if(byteBuffer.position() == byteBuffer.capacity())
@@ -69,6 +74,16 @@ public class RenderByteBuffer
 		byteBuffer.put((byte) (f1 * 255));
 		byteBuffer.put((byte) (f2 * 255));
 		byteBuffer.put((byte) 0);
+	}
+	
+	public void addColorsSpecial(float f0, float f1, float f2, int extended)
+	{
+		if(byteBuffer.position() == byteBuffer.capacity())
+			return;
+		byteBuffer.put((byte) (f0 * 255));
+		byteBuffer.put((byte) (f1 * 255));
+		byteBuffer.put((byte) (f2 * 255));
+		byteBuffer.put((byte) extended);
 	}
 	
 	public void addNormalsInt(int i0, int i1, int i2, boolean wavy)

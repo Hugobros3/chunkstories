@@ -19,9 +19,6 @@ import org.lwjgl.BufferUtils;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.ARBTextureRg.*;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -51,15 +48,11 @@ public class RegionSummary
 	//TODO use real textures
 	public AtomicBoolean texturesUpToDate = new AtomicBoolean(false);
 	
-	public Texture2D heightsTexture = new Texture2D(TextureType.RED_32F);
-	public Texture2D voxelTypesTexture = new Texture2D(TextureType.RED_32F);
-	//public int heightsTextureId = -1;
-	//public int voxelTypesTextureId = -1;
+	public Texture2D heightsTexture;
+	public Texture2D voxelTypesTexture;
 
 	//Mesh (client renderer)
-	public VerticesObject verticesObject = new VerticesObject();
-	//public int vboId = -1;
-	//public int vboSize = 0;
+	public VerticesObject verticesObject;
 
 	private byte[] vboDataToUpload = null;
 
@@ -78,18 +71,24 @@ public class RegionSummary
 		else
 			handler = null;
 
-		load();
+		//Create rendering stuff only if we're a client world
+		if(world instanceof WorldClient)
+		{
+			heightsTexture = new Texture2D(TextureType.RED_32F);
+			voxelTypesTexture = new Texture2D(TextureType.RED_32F);
+			verticesObject = new VerticesObject();
+		}
+		
+		loadSummary();
 	}
 
-	private void load()
+	private void loadSummary()
 	{
-		//this.handler = handler;
 		this.world.ioHandler.requestChunkSummaryLoad(this);
 	}
 
-	public void save()
+	public void saveSummary()
 	{
-		//this.handler = handler;
 		this.world.ioHandler.requestChunkSummarySave(this);
 	}
 
@@ -123,8 +122,10 @@ public class RegionSummary
 				{
 					y--;
 					loaded = world.isChunkLoaded(x / 32, y / 32, z / 32);
-					solid = VoxelTypes.get(world.getDataAt(x, y, z, false)).isVoxelSolid();
-					liquid = VoxelTypes.get(world.getDataAt(x, y, z, false)).isVoxelLiquid();
+					
+					t = world.getVoxelData(x, y, z, false);
+					solid = VoxelTypes.get(t).isVoxelSolid();
+					liquid = VoxelTypes.get(t).isVoxelLiquid();
 				}
 				while (y >= 0 && loaded && !solid && !liquid);
 

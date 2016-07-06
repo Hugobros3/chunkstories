@@ -8,9 +8,8 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.math.LoopingMathHelper;
@@ -53,11 +52,11 @@ public class ChunksRenderer extends Thread
 	
 	public void requestChunkRender(ChunkRenderable chunk)
 	{
-		if (!chunk.isMarkedForReRender() || chunk.isRenderAleadyInProgress() )
+		if (!(chunk.isMarkedForReRender() /*|| chunk.needsLightningUpdates()*/) || chunk.isRenderAleadyInProgress() )
 			return;
-
+		
 		int[] request = new int[] { chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ() };
-		boolean priority = true; //chunk.need_render_fast.get();
+		boolean priority = false; //chunk.need_render_fast.get();
 
 		Iterator<int[]> iter = todoQueue.iterator();
 		int[] lelz;
@@ -69,7 +68,10 @@ public class ChunksRenderer extends Thread
 				if (!priority)
 					return;
 				else
+				{
+					//System.out.println("answer");
 					iter.remove();
+				}
 			}
 		}
 
@@ -83,6 +85,9 @@ public class ChunksRenderer extends Thread
 			todoQueue.addFirst(request);
 		else
 			todoQueue.addLast(request);
+		
+		//System.out.println("Added "+chunk);
+		
 		synchronized (this)
 		{
 			notifyAll();
@@ -106,6 +111,8 @@ public class ChunksRenderer extends Thread
 				Chunk freed = world.getChunk(request[0], request[1], request[2], false);
 				if (freed != null && freed instanceof ChunkRenderable)
 					((ChunkRenderable) freed).markRenderInProgress(false);
+				
+				//System.out.println("Removed "+freed);
 				iter.remove();
 			}
 		}
@@ -127,6 +134,7 @@ public class ChunksRenderer extends Thread
 			int[] task = todoQueue.pollFirst();
 			if (task == null)
 			{
+				//System.out.println("cuck");
 				try
 				{
 					synchronized (this)
@@ -145,7 +153,8 @@ public class ChunksRenderer extends Thread
 				// long t = System.nanoTime();
 				try
 				{
-
+					//System.out.println("cuck");
+					
 					if (world.isChunkLoaded(task[0], task[1], task[2]))
 					{
 						ChunkRenderable work = (ChunkRenderable) world.getChunk(task[0], task[1], task[2], false);
@@ -161,6 +170,7 @@ public class ChunksRenderer extends Thread
 							if (world.isChunkLoaded(task[0], task[1], task[2] - 1))
 								nearChunks++;
 
+							
 							if (nearChunks == 4)
 							{
 								int buffer_id = buffersPool.requestByteBuffer();
@@ -181,6 +191,7 @@ public class ChunksRenderer extends Thread
 							}
 							else
 							{
+								//System.out.println("unfit");
 								// Reschedule it ?
 								work.markRenderInProgress(false);
 							}
@@ -218,13 +229,13 @@ public class ChunksRenderer extends Thread
 			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
 			Chunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
 			if (target != null)
-				data = target.getDataAt(x, y, z);
+				data = target.getVoxelData(x, y, z);
 		}
 		else
 		{
 			System.out.println("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
 			System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
-			data = Client.world.getDataAt(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
+			data = Client.world.getVoxelData(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 		}
 		/*if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
 		{
@@ -249,7 +260,7 @@ public class ChunksRenderer extends Thread
 			Chunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
 			if (target != null && !target.isAirChunk())
 			{
-				data = target.getDataAt(x, y, z);
+				data = target.getVoxelData(x, y, z);
 				int blockID = VoxelFormat.id(data);
 				return VoxelTypes.get(blockID).isVoxelOpaque() ? -1 : VoxelFormat.sunlight(data);
 			}
@@ -269,7 +280,7 @@ public class ChunksRenderer extends Thread
 		cached = Client.world.getChunk(x / 32, y / 32, z / 32, false);
 		if (cached != null && !cached.isAirChunk())
 		{
-			data = cached.getDataAt(x, y, z);
+			data = cached.getVoxelData(x, y, z);
 
 			int blockID = VoxelFormat.id(data);
 			return VoxelTypes.get(blockID).isVoxelOpaque() ? -1 : VoxelFormat.sunlight(data);
@@ -291,13 +302,13 @@ public class ChunksRenderer extends Thread
 			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
 			Chunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
 			if (target != null)
-				data = target.getDataAt(x, y, z);
+				data = target.getVoxelData(x, y, z);
 		}
 		else
 		{
 			System.out.println("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
 			System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
-			data = Client.world.getDataAt(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
+			data = Client.world.getVoxelData(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 		}
 
 		/*if (y < 0 && c.chunkY == 0)
@@ -315,7 +326,7 @@ public class ChunksRenderer extends Thread
 		return VoxelTypes.get(blockID).isVoxelOpaque() ? 0 : VoxelFormat.blocklight(data);
 	}
 
-	float[] bakeLightColors(int bl1, int bl2, int bl3, int bl4, int sl1, int sl2, int sl3, int sl4)
+	public static float[] bakeLightColors(int bl1, int bl2, int bl3, int bl4, int sl1, int sl2, int sl3, int sl4)
 	{
 		float blocklightFactor = 0;
 
@@ -829,116 +840,11 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 	}
 
-	private void addVoxelUsingCustomModel(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, BlockRenderInfo info)
+	private void addVoxelUsingCustomModel(CubicChunk c, RenderByteBuffer rbbf, int x, int y, int z, BlockRenderInfo info)
 	{
-		// Basic light for now
-		// TODO interpolation
-		int llMs = getSunlight(c, sx, sy, sz);
-		int llMb = getBlocklight(c, sx, sy, sz);
-
-		float[] lightColors = bakeLightColors(llMb, llMb, llMb, llMb, llMs, llMs, llMs, llMs);
-
-		//Simple plan
-
-		//toInclude = toInclude.replace("~", model.name.contains(".") ? model.name.split("\\.")[0] : model.name);
-
-		VoxelModel model = info.getModel();
-		String voxelName = VoxelTypes.get(info.data).getName();
-		
-		int modelTextureIndex = 0;
-		
-		VoxelTexture texture = info.getTexture();
-		
-		if(!model.texturesNames[modelTextureIndex].equals("~"))
-			texture = VoxelTextures.getVoxelTexture(model.texturesNames[modelTextureIndex].replace("~", voxelName));
-		int useUntil = model.texturesOffsets[modelTextureIndex];
-		int textureS = texture.atlasS;// +mod(sx,texture.textureScale)*offset;
-		int textureT = texture.atlasT;// +mod(sz,texture.textureScale)*offset;
-
-		Voxel occTest;
-
-		boolean[] cullingCache = new boolean[6];
-		for (int j = 0; j < 6; j++)
-		{
-			int id = VoxelFormat.id(info.neightborhood[j]);
-			int meta = VoxelFormat.meta(info.neightborhood[j]);
-			occTest = VoxelTypes.get(id);
-			// If it is, don't draw it.
-			cullingCache[j] = (occTest.isVoxelOpaque() || occTest.isFaceOpaque(j, info.neightborhood[j])) || occTest.isFaceOpaque(j, info.neightborhood[j])
-					|| (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
-			//System.out.println("generating culling cache for voxel "+VoxelFormat.id(info.data)+"y:"+sy+"model"+model.name+" cull:"+j+":"+cullingCache[j]);
-		}
-
-		float dx = 0f, dy = 0f, dz = 0f;
-		if (model.jitterX != 0.0f)
-			dx = (float) ((Math.random() * 2.0 - 1.0) * model.jitterX);
-		if (model.jitterY != 0.0f)
-			dy = (float) ((Math.random() * 2.0 - 1.0) * model.jitterY);
-		if (model.jitterZ != 0.0f)
-			dz = (float) ((Math.random() * 2.0 - 1.0) * model.jitterZ);
-
-		for (int i = 0; i < model.vertices.length / 3; i++)
-		{
-			//vert = model.vertices[i];
-			//tex = model.texCoords[i];
-			//normal = model.normals[i];
-
-			if(i >= useUntil)
-			{
-				modelTextureIndex++;
-				if(!model.texturesNames[modelTextureIndex].equals("~"))
-					texture = VoxelTextures.getVoxelTexture(model.texturesNames[modelTextureIndex].replace("~", voxelName));
-				else
-					texture = info.getTexture();
-				useUntil = model.texturesOffsets[modelTextureIndex];
-				textureS = texture.atlasS;// +mod(sx,texture.textureScale)*offset;
-				textureT = texture.atlasT;// +mod(sz,texture.textureScale)*offset;
-			}
-			
-			/*
-			 * How culling works :
-			 * culling[][] array contains [vertices.len/3][faces (6)] booleans
-			 * for each triangle (vert/3) it checks for i 0 -> 6 that either ![v][i] or [v][i] && info.neightbours[i] is solid
-			 * if any cull condition fails then it doesn't render this triangle.<
-			 */
-			int cullIndex = i / 3;
-			boolean drawFace = true;
-			for (int j = 0; j < 6; j++)
-			{
-				// Should check if face occluded ?
-				if (model.culling[cullIndex][j])
-				{
-					/*int id = VoxelFormat.id(info.neightborhood[j]);
-					int meta = VoxelFormat.meta(info.neightborhood[j]);
-					occTest = VoxelTypes.get(id);
-					// If it is, don't draw it.
-					if(occTest.isVoxelOpaque() || (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData()))
-						drawFace = false;*/
-
-					if (cullingCache[j])
-						drawFace = false;
-				}
-			}
-
-			if (drawFace)
-			{
-				rbbf.addVerticeFloat(model.vertices[i*3+0] + sx + dx, model.vertices[i*3+1] + sy + dy, model.vertices[i*3+2] + sz + dz);
-				//vertices.add(new float[] { vert[0] + sx + dx, vert[1] + sy + dy, vert[2] + sz + dz });
-				rbbf.addTexCoordInt((int) (textureS + model.texCoords[i*2+0] * texture.atlasOffset), (int) (textureT + model.texCoords[i*2+1] * texture.atlasOffset));
-				//texcoords.add(new int[] { (int) (textureS + tex[0] * texture.atlasOffset), (int) (textureT + tex[1] * texture.atlasOffset) });
-				rbbf.addColors(lightColors);
-				//colors.add(lightColors);
-				rbbf.addNormalsInt(intifyNormal(model.normals[i*3+0]), intifyNormal(model.normals[i*3+1]), intifyNormal(model.normals[i*3+2]), info.isWavy());
-				//normals.add(normal);
-				//if (isWavy != null)
-				//	isWavy.add(info.isWavy());
-			}
-			else
-			{
-				//Skip the 2 other vertices
-				i += 2;
-			}
-		}
+		VoxelRenderer model = info.getVoxelRenderer();
+		if(model != null)
+			model.renderInto(rbbf, info, c, x, y, z);
 	}
 
 	private boolean shallBuildWallArround(BlockRenderInfo renderInfo, int face)
@@ -982,9 +888,11 @@ public class ChunksRenderer extends Thread
 
 		if (work.needRelightning.getAndSet(false))
 			work.bakeVoxelLightning(true);
-
+		
+		//System.out.println("k");
+			
 		// Don't bother
-		if (!work.need_render.get() && !work.needRelightning.get())
+		if (!work.need_render.get())
 		{
 			buffersPool.releaseByteBuffer(byteBufferId);
 			return;
@@ -1037,7 +945,7 @@ public class ChunksRenderer extends Thread
 			{
 				for (k = 0; k < 32; k++)
 				{
-					int src = work.getDataAt(i, k, j);
+					int src = work.getVoxelData(i, k, j);
 					int blockID = VoxelFormat.id(src);
 
 					if (blockID == 0)
@@ -1151,7 +1059,7 @@ public class ChunksRenderer extends Thread
 		work.requestable.set(true);
 	}
 
-	int intifyNormal(float n)
+	public static int intifyNormal(float n)
 	{
 		return (int) ((n + 1) * 511.5f);
 	}

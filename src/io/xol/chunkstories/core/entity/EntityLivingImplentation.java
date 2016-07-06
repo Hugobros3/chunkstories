@@ -67,7 +67,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		//pos.x %= world.getWorldSize();
 		//pos.z %= world.getWorldSize();
 
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt(position.getLocation())));
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(position.getLocation())));
 		boolean inWater = voxelIn.isVoxelLiquid();
 
 		// vel.z=Math.cos(a)*hSpeed*0.1;

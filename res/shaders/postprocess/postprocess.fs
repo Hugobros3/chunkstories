@@ -107,6 +107,7 @@ void main() {
 	//finalLight *= clamp(lum-0.8, 0.0, 10.0);
 	<endif doBloom>
 	
+	//compositeColor.rgb = compositeColor.rgb / (compositeColor.rgb + vec3(1.0)) ;
 	compositeColor.rgb = pow(compositeColor.rgb, vec3(gammaInv));
 	
 	vec4 cameraSpacePosition = convertScreenSpaceToWorldSpace(finalCoords);

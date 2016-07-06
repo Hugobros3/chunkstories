@@ -2,7 +2,7 @@
 //Entry attributes
 attribute vec4 vertexIn;
 attribute vec2 texCoordIn;
-attribute vec3 colorIn;
+attribute vec4 colorIn;
 attribute vec4 normalIn;
 
 varying vec2 texcoord;
@@ -83,6 +83,7 @@ void main(){
 	//Move vertex if needed
 	
 	v+=vec4(objectPosition,0);
+	//v.y -= colorIn.a;
 	
 	//v.y += (sin(time/15.0+v.x+v.z)*0.0);
 	varyingVertex = v;
@@ -90,7 +91,7 @@ void main(){
 	fresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(0, 1.0 , 0)), 0.0, 1.0);
 	
 	//Compute lightmap coords
-	lightMapCoords = vec4(colorIn.r, colorIn.g, colorIn.b, 0);
+	lightMapCoords = vec4(colorIn.r, colorIn.g, colorIn.b, colorIn.a);
 	
 	gl_Position = modelViewProjectionMatrix * v;
 	fragPos = (modelViewProjectionMatrix * v).xy;

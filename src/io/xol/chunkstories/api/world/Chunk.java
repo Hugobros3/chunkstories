@@ -22,41 +22,32 @@ public interface Chunk
 	 * Get the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
 	 * The coordinates are internally modified to map to the chunk, meaning you can access it both with world coordinates or 0-31 in-chunk coordinates
 	 * Just don't give it negatives
-	 * @param x 
-	 * @param y
-	 * @param z
 	 * @return the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
 	 */
-	public int getDataAt(int x, int y, int z);
+	public int getVoxelData(int x, int y, int z);
 
 	/**
 	 * Sets the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
 	 * It will also trigger lightning and such updates
 	 * The coordinates are internally modified to map to the chunk, meaning you can access it both with world coordinates or 0-31 in-chunk coordinates
 	 * Just don't give it negatives
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param data
+	 * @param data The raw block data, see {@link VoxelFormat}
 	 */
-	public void setDataAtWithUpdates(int x, int y, int z, int data);
+	public void setVoxelDataWithUpdates(int x, int y, int z, int data);
 
 	/**
 	 * Sets the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
 	 * The coordinates are internally modified to map to the chunk, meaning you can access it both with world coordinates or 0-31 in-chunk coordinates
 	 * Just don't give it negatives
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param data
+	 * @param data The raw block data, see {@link VoxelFormat}
 	 */
-	public void setDataAtWithoutUpdates(int x, int y, int z, int data);
+	public void setVoxelDataWithoutUpdates(int x, int y, int z, int data);
 
 	/**
 	 * Recomputes and propagates all lights within the chunk
-	 * @param adjacent If set to true, the adjacent faces of the 6 adjacents chunks's data will be took in charge
+	 * @param considerAdjacentChunks If set to true, the adjacent faces of the 6 adjacents chunks's data will be took in charge
 	 */
-	public void bakeVoxelLightning(boolean adjacent);
+	public void bakeVoxelLightning(boolean considerAdjacentChunks);
 	
 	public boolean needsLightningUpdates();
 	

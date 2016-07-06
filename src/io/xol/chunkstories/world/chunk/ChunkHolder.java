@@ -2,6 +2,7 @@ package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
+import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.Region;
@@ -278,7 +279,11 @@ public class ChunkHolder implements Region
 			Entity entity = i.next();
 			//i.remove();
 
-			System.out.println("Removing entity"+entity+" from world.");
+			//Skip entities that shouldn't be saved
+			if((entity instanceof EntityUnsaveable && !((EntityUnsaveable)entity).shouldSaveIntoRegion()))
+				continue;
+			
+			System.out.println("Unloading entity"+entity+" currently in chunk holder "+this);
 			
 			//We keep the inner reference so serialization can still write entities contained within
 			world.removeEntityFromList(entity);

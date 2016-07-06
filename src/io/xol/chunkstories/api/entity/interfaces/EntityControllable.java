@@ -15,7 +15,7 @@ import io.xol.chunkstories.core.entity.components.EntityComponentController;
  * Defines an entity as controllable by players, this is used to allow the Client to send controls to the entity and the
  * server to update the client about it's entity status.
  */
-public interface EntityControllable extends Entity
+public interface EntityControllable extends Entity, EntityUnsaveable
 {
 	public EntityComponentController getControllerComponent();
 	
@@ -33,5 +33,11 @@ public interface EntityControllable extends Entity
 	 */
 	public Location getBlockLookingAt(boolean inside);
 	
+	
 	public boolean handleInteraction(Input input, Controller controller);
+	
+	public default boolean shouldSaveIntoRegion()
+	{
+		return getControllerComponent().getController() == null;
+	}
 }

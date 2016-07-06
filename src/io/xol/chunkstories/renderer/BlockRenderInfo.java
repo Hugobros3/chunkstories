@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.chunkstories.voxel.models.VoxelRenderer;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -26,19 +26,19 @@ public class BlockRenderInfo
 
 	public BlockRenderInfo(World world, int x, int y, int z)
 	{
-		this.data = world.getDataAt(x, y, z);
+		this.data = world.getVoxelData(x, y, z);
 		voxelType = VoxelTypes.get(data);
 		if (world != null)
 		{
 			/**
 			 * Conventions for space in Chunk Stories 1 FRONT z+ x- LEFT 0 X 2 RIGHT x+ 3 BACK z- 4 y+ top X 5 y- bottom
 			 */
-			neightborhood[0] = world.getDataAt(x - 1, y, z);
-			neightborhood[1] = world.getDataAt(x, y, z + 1);
-			neightborhood[2] = world.getDataAt(x + 1, y, z);
-			neightborhood[3] = world.getDataAt(x, y, z - 1);
-			neightborhood[4] = world.getDataAt(x, y + 4, z);
-			neightborhood[5] = world.getDataAt(x, y - 5, z);
+			neightborhood[0] = world.getVoxelData(x - 1, y, z);
+			neightborhood[1] = world.getVoxelData(x, y, z + 1);
+			neightborhood[2] = world.getVoxelData(x + 1, y, z);
+			neightborhood[3] = world.getVoxelData(x, y, z - 1);
+			neightborhood[4] = world.getVoxelData(x, y + 4, z);
+			neightborhood[5] = world.getVoxelData(x, y - 5, z);
 		}
 	}
 
@@ -54,7 +54,7 @@ public class BlockRenderInfo
 		return false;
 	}
 
-	public VoxelModel getModel()
+	public VoxelRenderer getVoxelRenderer()
 	{
 		if (voxelType != null)
 			return voxelType.getVoxelModel(this);

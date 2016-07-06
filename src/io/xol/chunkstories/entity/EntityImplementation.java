@@ -61,6 +61,8 @@ public abstract class EntityImplementation implements Entity
 	//public boolean inWater = false;
 	public Voxel voxelIn;
 	public EntityInventory inventory;
+	
+	private boolean hasSpawned = false;
 
 	public EntityImplementation(WorldImplementation w, double x, double y, double z)
 	{
@@ -73,7 +75,7 @@ public abstract class EntityImplementation implements Entity
 		acc = new Vector3d();
 		//checkPositionAndUpdateHolder();
 		//To avoid NPEs
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt(position.getLocation())));
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(position.getLocation())));
 	}
 
 	/**
@@ -266,7 +268,7 @@ public abstract class EntityImplementation implements Entity
 					for (int j = ((int) pos.y - 1); j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
 						for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
 						{
-							data = this.world.getDataAt(i, j, k);
+							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
 							vox = VoxelTypes.get(id);
 							if (vox.isVoxelSolid())
@@ -315,7 +317,7 @@ public abstract class EntityImplementation implements Entity
 					for (int j = ((int) pos.y - 1); j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
 						for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
 						{
-							data = this.world.getDataAt(i, j, k);
+							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
 							vox = VoxelTypes.get(id);
 							if (vox.isVoxelSolid())
@@ -365,7 +367,7 @@ public abstract class EntityImplementation implements Entity
 					for (int j = ((int) pos.y) - 1; j <= ((int) pos.y) + (int) Math.ceil(checkerY.h) + 1; j++)
 						for (int k = ((int) pos.z) - radius; k <= ((int) pos.z) + radius; k++)
 						{
-							data = this.world.getDataAt(i, j, k);
+							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
 							vox = VoxelTypes.get(id);
 							if (vox.isVoxelSolid())
@@ -574,14 +576,25 @@ public abstract class EntityImplementation implements Entity
 	{
 		return existence.exists();
 	}
+	
+	public boolean hasSpawned()
+	{
+		return hasSpawned;
+	}
+	
+	public void markHasSpawned()
+	{
+		hasSpawned = true;
+	}
 
 	@Override
 	public void setUUID(long uuid)
 	{
-		if (entityUUID == -1)
-			this.entityUUID = uuid;
-		else
+		//Don't allow UUID changes once spawned !
+		if(entityUUID != -1 && this.hasSpawned())
 			throw new IllegalUUIDChangeException();
+		
+		this.entityUUID = uuid;
 	}
 
 	@Override

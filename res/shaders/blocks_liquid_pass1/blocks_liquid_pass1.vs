@@ -2,7 +2,7 @@
 //Entry attributes
 attribute vec4 vertexIn;
 attribute vec2 texCoordIn;
-attribute vec3 colorIn;
+attribute vec4 colorIn;
 attribute vec4 normalIn;
 
 varying vec2 texcoord;
@@ -82,6 +82,8 @@ void main(){
 	//Move vertex if needed
 	
 	v+=vec4(objectPosition,0);
+	
+	//v.y -= colorIn.a / 15.0;
 	
 	varyingVertex = v;
 	

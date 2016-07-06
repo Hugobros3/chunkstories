@@ -549,14 +549,14 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 				{
 					if (blockLocation != null)
 					{
-						world.setDataAt(blockLocation, 0, this);
+						world.setVoxelData(blockLocation, 0, this);
 					}
 				}
 				else if (input.equals(MouseClick.MIDDLE))
 				{
 					if (blockLocation != null)
 					{
-						int data = this.getWorld().getDataAt(blockLocation);
+						int data = this.getWorld().getVoxelData(blockLocation);
 
 						int voxelID = VoxelFormat.id(data);
 						int voxelMeta = VoxelFormat.meta(data);

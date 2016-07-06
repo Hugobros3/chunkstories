@@ -83,28 +83,28 @@ public interface World
 	 * Will try to load/generate the chunks if not alreay in ram
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
-	public int getDataAt(Location location);
+	public int getVoxelData(Location location);
 
 	/**
 	 * Returns the block data at the specified location
-	 * @param load If set to false, will *not* try to load the chunk if it's not present and will instead return 0
+	 * @param loadIfNotPresent If set to false, will *not* try to load the chunk if it's not present and will instead return 0
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
-	public int getDataAt(Location location, boolean load);
+	public int getVoxelData(Location location, boolean loadIfNotPresent);
 
 	/**
 	 * Returns the block data at the specified location
 	 * Will try to load/generate the chunks if not alreay in ram
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
-	public int getDataAt(int x, int y, int z);
+	public int getVoxelData(int x, int y, int z);
 
 	/**
 	 * Returns the block data at the specified location
-	 * @param load If set to false, will *not* try to load the chunk if it's not present and will instead return 0
+	 * @param loadIfNotPresent If set to false, will *not* try to load the chunk if it's not present and will instead return 0
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
-	public int getDataAt(int x, int y, int z, boolean load);
+	public int getVoxelData(int x, int y, int z, boolean loadIfNotPresent);
 
 	/*
 	 * Set data
@@ -115,47 +115,47 @@ public interface World
 	 * Will try to load/generate the chunks if not alreay in ram
 	 * @param data The new data to set the block to, see {@link VoxelFormat}
 	 */
-	public void setDataAt(int x, int y, int z, int data);
+	public void setVoxelData(int x, int y, int z, int data);
 
 	/**
 	 * Sets the block data at the specified location
 	 * Will try to load/generate the chunks if not alreay in ram
 	 * @param data The new data to set the block to, see {@link VoxelFormat}
 	 */
-	public void setDataAt(Location location, int data);
+	public void setVoxelData(Location location, int data);
 
 	/**
 	 * Sets the block data at the specified location
 	 * @param data The new data to set the block to, see {@link VoxelFormat}
 	 * @param load If set to false, will *not* try to load the chunk if it's not present
 	 */
-	public void setDataAt(Location location, int data, boolean load);
+	public void setVoxelData(Location location, int data, boolean load);
 
 	/**
 	 * Sets the block data at the specified location
 	 * @param data The new data to set the block to, see {@link VoxelFormat}
 	 * @param load If set to false, will *not* try to load the chunk if it's not present
 	 */
-	public void setDataAt(int x, int y, int z, int data, boolean load);
+	public void setVoxelData(int x, int y, int z, int data, boolean load);
 	
 	/**
 	 * Method to call when it's an entity that do the action to set the voxel data
 	 * @param data The new data to set the block to, see {@link VoxelFormat}
 	 */
-	public void setDataAt(Location location, int data, Entity entity);
+	public void setVoxelData(Location location, int data, Entity entity);
 
 	/**
 	 * Method to call when it's an entity that do the action to set the voxel data
 	 * @param data The new data to set the block to, see {@link VoxelFormat}
 	 */
-	public void setDataAt(int x, int y, int z, int data, Entity entity);
+	public void setVoxelData(int x, int y, int z, int data, Entity entity);
 
 	/**
 	 * Only sets the data, don't trigger any logic, rendering etc
 	 * @param data
 	 * @param load
 	 */
-	public void setDataAtWithoutUpdates(int x, int y, int z, int data, boolean load);
+	public void setVoxelDataWithoutUpdates(int x, int y, int z, int data, boolean load);
 	
 	/*
 	 * Voxel light

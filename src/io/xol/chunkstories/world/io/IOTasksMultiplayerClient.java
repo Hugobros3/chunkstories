@@ -86,7 +86,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 					for (int i = 0; i < 32 * 32 * 32; i++)
 					{
 						int data = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
-						c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
+						c.setVoxelDataWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
 					}
 				}
 				catch (LZ4Exception exception)

@@ -56,7 +56,7 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		renderingContext.setDiffuseTexture(playerTexture.getId());
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
 		renderingContext.getCurrentShader().setUniformFloat3("objectPosition", getLocation().castToSP());
-		int modelBlockData = world.getDataAt(getLocation());
+		int modelBlockData = world.getVoxelData(getLocation());
 		int lightSky = VoxelFormat.sunlight(modelBlockData);
 		int lightBlock = VoxelFormat.blocklight(modelBlockData);
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);

@@ -31,7 +31,7 @@ import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
-import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.WorldClientCommon;
 
 public class Client implements ClientController, ClientInterface
 {
@@ -42,7 +42,7 @@ public class Client implements ClientController, ClientInterface
 
 	public static ClientToServerConnection connection;
 	public static GameWindowOpenGL windows;
-	public static WorldImplementation world;
+	public static WorldClientCommon world;
 
 	public static String username = "Unknow";
 	public static String session_key = "nopeMLG";
@@ -90,7 +90,7 @@ public class Client implements ClientController, ClientInterface
 						+ ""
 						+ "");
 				
-				Runtime.getRuntime().exit(0);
+				//Runtime.getRuntime().exit(0);
 			}
 		}
 		// Check for folder

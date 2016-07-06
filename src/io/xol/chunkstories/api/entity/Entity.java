@@ -122,6 +122,14 @@ public interface Entity extends Collidable, CSFSerializable
 	 * @return
 	 */
 	public boolean exists();
+
+	/**
+	 * Returns true once the entity has been added into the world
+	 * @return
+	 */
+	public boolean hasSpawned();
+	
+	public void markHasSpawned();
 	
 	/**
 	 * Loads the object state from the stream, implying the ID has already been read in the stream.

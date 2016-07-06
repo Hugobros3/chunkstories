@@ -56,7 +56,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
@@ -67,7 +67,7 @@ import io.xol.chunkstories.world.chunk.CubicChunk;
 public class WorldRenderer
 {
 	// World pointer
-	WorldImplementation world;
+	WorldClientCommon world;
 
 	// Worker thread
 	public ChunksRenderer chunksRenderer;
@@ -183,7 +183,7 @@ public class WorldRenderer
 	Texture2D skyTexture = TexturesHandler.getTexture("environement/sky.png");
 	
 	Texture2D lightmapTexture = TexturesHandler.getTexture("environement/light.png");
-	Texture2D waterNormalTexture = TexturesHandler.getTexture("normal.png");
+	Texture2D waterNormalTexture = TexturesHandler.getTexture("water/shallow.png");
 
 	Texture2D blocksDiffuseTexture = TexturesHandler.getTexture("tiles_merged_diffuse.png");
 	Texture2D blocksNormalTexture = TexturesHandler.getTexture("tiles_merged_normal.png");
@@ -201,7 +201,7 @@ public class WorldRenderer
 	
 	//Constructor and modificators
 	
-	public WorldRenderer(WorldImplementation w)
+	public WorldRenderer(WorldClientCommon w)
 	{
 		// Link world
 		world = w;
@@ -913,7 +913,7 @@ public class WorldRenderer
 
 			camera.setupShader(entitiesShader);
 
-			TexturesHandler.bindTexture("res/textures/normal.png");
+			//TexturesHandler.bindTexture("res/textures/normal.png");
 		}
 		else
 		{
@@ -971,7 +971,8 @@ public class WorldRenderer
 			liquidBlocksShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
 			// liquidBlocksShader.setUniformSamplerCube(3, "skybox",
 			// TexturesHandler.idCubemap("textures/skybox"));
-			liquidBlocksShader.setUniformSampler(1, "normalTexture", waterNormalTexture);
+			liquidBlocksShader.setUniformSampler(1, "normalTextureDeep", TexturesHandler.getTexture("water/deep.png"));
+			liquidBlocksShader.setUniformSampler(2, "normalTextureShallow", waterNormalTexture);
 			liquidBlocksShader.setUniformSampler(3, "lightColors", lightmapTexture);
 			liquidBlocksShader.setUniformSampler(0, "diffuseTexture", blocksDiffuseTexture);
 			liquidBlocksShader.setUniformFloat2("screenSize", scrW, scrH);
@@ -998,7 +999,7 @@ public class WorldRenderer
 			// Set rendering context.
 			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
 
-			Voxel vox = VoxelTypes.get(world.getDataAt((int) -camera.pos.x, (int) (-camera.pos.y + 0), (int) -camera.pos.z, false));
+			Voxel vox = VoxelTypes.get(world.getVoxelData((int) -camera.pos.x, (int) (-camera.pos.y + 0), (int) -camera.pos.z, false));
 			liquidBlocksShader.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
 
 			//liquidBlocksShader.setUniformInt("pass", pass-1);
@@ -1743,9 +1744,14 @@ public class WorldRenderer
 		else
 		{
 			shader.setUniformFloat("shadowStrength", 1.0f);
-			float x = 1f;
-			shader.setUniformFloat3("sunColor", x * 255f / 255f, x * 255f / 255f, x * 255 / 255f);
-			shader.setUniformFloat3("shadowColor", 100 / 255f, 110 / 255f, 120 / 255f);
+			float x = 1.5f;
+			shader.setUniformFloat3("sunColor", x * 255 / 255f, x * 255 / 255f, x * 255 / 255f);
+			
+			Vector3f shadowColor = new Vector3f(0, 0, 0);
+			
+			float b = 0.50f;
+			shadowColor.add(new Vector3f(b, b, b));
+			shader.setUniformFloat3("shadowColor", shadowColor);
 		}
 	}
 

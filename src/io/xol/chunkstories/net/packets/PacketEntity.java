@@ -78,7 +78,7 @@ public class PacketEntity extends PacketSynch
 		
 		if(addToWorld && entity.exists())
 		{
-			System.out.println("add entity");
+			//System.out.println("add entity");
 			//Only the WorldMaster is allowed to spawn new entities in the world
 			if(processor.isClient)
 				processor.getWorld().addEntity(entity);

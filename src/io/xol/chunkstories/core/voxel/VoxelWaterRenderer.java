@@ -1,4 +1,4 @@
-package io.xol.chunkstories.voxel.models;
+package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -9,36 +9,32 @@ import io.xol.chunkstories.renderer.chunks.RenderByteBuffer;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.models.VoxelModel;
 
 //(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+//http://chunkstories.xyz
+//http://xol.io
 
-public class VoxelModel implements VoxelRenderer
+public class VoxelWaterRenderer extends VoxelModel
 {
-	public String name;
 
-	public VoxelModel(String name)
+	public VoxelWaterRenderer(VoxelModel model)
 	{
-		this.name = name;
+		super(model.name);
+		
+		//Copy attributes
+		this.culling = model.culling;
+		this.jitterX = model.jitterX;
+		this.jitterY = model.jitterY;
+		this.jitterZ = model.jitterZ;
+		
+		this.normals = model.normals;
+		this.texCoords = model.texCoords;
+		this.vertices = model.vertices;
+		this.texturesNames = model.texturesNames;
+		this.texturesOffsets = model.texturesOffsets;
 	}
-	
-	public String texturesNames[];
-	public int texturesOffsets[];
-	
-	public boolean[][] culling;
-	
-	public float[] vertices;
-	public float[] texCoords;
-	public float[] normals;
 
-	public float jitterX = 0;
-	public float jitterY = 0;
-	public float jitterZ = 0;
-	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelRenderer#renderInto(io.xol.chunkstories.renderer.chunks.RenderByteBuffer, io.xol.chunkstories.renderer.BlockRenderInfo, io.xol.chunkstories.api.world.Chunk, int, int, int)
-	 */
 	@Override
 	public int renderInto(RenderByteBuffer renderByteBuffer, BlockRenderInfo info, Chunk chunk, int x, int y, int z)
 	{
@@ -46,6 +42,16 @@ public class VoxelModel implements VoxelRenderer
 		int llMb = chunk.getBlockLight(x, y, z);//getBlocklight(c, x, y, z);
 
 		float[] lightColors = ChunksRenderer.bakeLightColors(llMb, llMb, llMb, llMb, llMs, llMs, llMs, llMs);
+		
+		int depth = 0;
+		for(int i = 1; i < 16; i++)
+		{
+			int id = chunk.getWorld().getVoxelData(chunk.getChunkX() * 32 + x, chunk.getChunkY() * 32 + y - i, chunk.getChunkZ() * 32 + z);
+			if(VoxelTypes.get(id) != null && VoxelTypes.get(id).isVoxelLiquid())
+				depth++;
+			else
+				break;
+		}
 		
 		String voxelName = VoxelTypes.get(info.data).getName();
 		
@@ -126,11 +132,15 @@ public class VoxelModel implements VoxelRenderer
 
 			if (drawFace)
 			{
+				//If rendering top face
+				if(this.normals[i*3+1] > 0)
+				
+				
 				renderByteBuffer.addVerticeFloat(this.vertices[i*3+0] + x + dx, this.vertices[i*3+1] + y + dy, this.vertices[i*3+2] + z + dz);
 				//vertices.add(new float[] { vert[0] + sx + dx, vert[1] + sy + dy, vert[2] + sz + dz });
 				renderByteBuffer.addTexCoordInt((int) (textureS + this.texCoords[i*2+0] * texture.atlasOffset), (int) (textureT + this.texCoords[i*2+1] * texture.atlasOffset));
 				//texcoords.add(new int[] { (int) (textureS + tex[0] * texture.atlasOffset), (int) (textureT + tex[1] * texture.atlasOffset) });
-				renderByteBuffer.addColors(lightColors);
+				renderByteBuffer.addColorsSpecial(lightColors, depth * 16);
 				//colors.add(lightColors);
 				renderByteBuffer.addNormalsInt(ChunksRenderer.intifyNormal(this.normals[i*3+0]), ChunksRenderer.intifyNormal(this.normals[i*3+1]), ChunksRenderer.intifyNormal(this.normals[i*3+2]), info.isWavy());
 				//normals.add(normal);

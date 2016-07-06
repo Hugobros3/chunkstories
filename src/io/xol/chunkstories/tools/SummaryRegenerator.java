@@ -55,7 +55,7 @@ public class SummaryRegenerator
 							int rZ = j * 256 + z;
 							while (!hit && y > 0)
 							{
-								int id = VoxelFormat.id(world.getDataAt(rX, y, rZ));
+								int id = VoxelFormat.id(world.getVoxelData(rX, y, rZ));
 								Chunk chunk = world.getChunk(rX / 32, y / 32, rZ / 32, true);
 								if (chunk != null && chunk.isAirChunk())
 								{

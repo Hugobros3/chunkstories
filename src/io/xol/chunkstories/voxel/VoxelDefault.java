@@ -8,6 +8,7 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.chunkstories.voxel.models.VoxelRenderer;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -55,7 +56,7 @@ public class VoxelDefault extends Voxel
 	 * @return The model used.
 	 */
 	@Override
-	public VoxelModel getVoxelModel(BlockRenderInfo info)
+	public VoxelRenderer getVoxelModel(BlockRenderInfo info)
 	{
 		return model;
 	}

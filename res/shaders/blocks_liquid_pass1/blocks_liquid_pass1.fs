@@ -152,8 +152,14 @@ void main(){
 	//baseColor.a = refracted.a;
 	//finalLight = mix(finalLight, vec3(1.0), clamp(1-waterFogI2*5-0.5, 0.0, 1.0));
 	//finalLight += vec3(1.0) * clamp(1-waterFogI2*5-0.5, 0.0, 1.0);
+	
 	refracted.rgb *= pow(finalLight + vec3(1.0) * (1-refracted.a*lightMapCoords.g), vec3(gammaInv));
-	baseColor.rgb = mix(refracted.rgb, baseColor.rgb, clamp(waterFogI2*underwater+0.2, 0.0, 1.0));
+	
+	baseColor.rgb = mix(refracted.rgb, baseColor.rgb, clamp(waterFogI2*(1.0-underwater), 0.0, 1.0));
+	
+	//if(refracted.a < 1.0)
+	//	discard;
+	//discard;
 	
 	spec *= 1-underwater;
 	

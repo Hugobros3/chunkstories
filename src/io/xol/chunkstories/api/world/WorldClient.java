@@ -14,6 +14,8 @@ import io.xol.chunkstories.renderer.WorldRenderer;
 public interface WorldClient
 {
 	public Client getClient();
+
+	public void linkWorldRenderer(WorldRenderer renderer);
 	
 	public WorldRenderer getWorldRenderer();
 }

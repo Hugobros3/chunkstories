@@ -5,7 +5,7 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.lalgb.Vector3d;
 
@@ -32,7 +32,7 @@ public abstract class Voxel
 	 *            A BlockRenderInfo object containing information on the voxel surroundings
 	 * @return The model used or null if none
 	 */
-	public abstract VoxelModel getVoxelModel(BlockRenderInfo info);
+	public abstract VoxelRenderer getVoxelModel(BlockRenderInfo info);
 
 	public abstract boolean isVoxelLiquid();
 

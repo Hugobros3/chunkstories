@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.xol.chunkstories.api.csf.OfflineSerializedData;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 
@@ -150,7 +151,7 @@ public class CSFRegionFile implements OfflineSerializedData
 		{
 			Entity entity = holderEntities.next();
 			//Don't save controllable entities
-			if (entity.exists() && !(entity instanceof EntityControllable))
+			if (entity.exists() && !(entity instanceof EntityUnsaveable && !((EntityUnsaveable)entity).shouldSaveIntoRegion()))
 			{
 				EntitySerializer.writeEntityToStream(dos, this, entity);
 				//System.out.println("wrote " + entity);

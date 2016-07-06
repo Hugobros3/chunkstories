@@ -51,21 +51,21 @@ public class CollisionBox implements Collidable
 
 	public boolean collidesWith(World world)
 	{
-		if (VoxelTypes.get(world.getDataAt((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(world.getDataAt((int) (xpos + xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(world.getDataAt((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(world.getDataAt((int) (xpos - xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(world.getDataAt((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(world.getDataAt((int) (xpos + xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(world.getDataAt((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
-		if (VoxelTypes.get(world.getDataAt((int) (xpos - xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelTypes.get(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
 		return false;
 	}

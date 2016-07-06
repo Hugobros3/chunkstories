@@ -44,7 +44,7 @@ uniform vec3 camPos;
 
 uniform float powFactor;
 
-const float distScale = 0.9;
+const float distScale = 0.8;
 
 uniform float pass;
 uniform float sunIntensity;
@@ -134,7 +134,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
 	{
 		//Bias to avoid shadow acne
-		float bias = (1.0 - meta.a) * 0.0010 + clamp(0.0035*tan(acos(NdotL)) - 0.01075, 0.0005,0.0025 ) * (0.0 + 1.0 * clamp(2.0 * coordinatesInShadowmap.w - 1.0, 1.0, 100.0));
+		float bias = (1.0 - meta.a) * 0.0010 + clamp(0.0035*pow(tan(acos(NdotL)), 2.0) - 0.01075, 0.0005,0.0025 ) * clamp(16.0 * pow(length(coordinatesInShadowmap.xy - vec2(0.5)), 2.0), 1.0, 16.0); // * (0.0 + 1.0 * clamp(2.0 * coordinatesInShadowmap.w - 1.0, 1.0, 100.0));
 		//Are we inside the shadowmap zone edge ?
 		edgeSmoother = 1.0-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5) - 0.45)*20.0+max(0,abs(coordinatesInShadowmap.y-0.5) - 0.45)*20.0, 1.0), 0.0, 1.0);
 		//

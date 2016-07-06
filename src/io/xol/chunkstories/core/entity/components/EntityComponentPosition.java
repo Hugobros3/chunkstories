@@ -45,6 +45,9 @@ public class EntityComponentPosition extends EntityComponent
 		assert location != null;
 		
 		this.pos = location;
+
+		checkPositionAndUpdateHolder();
+		
 		//Push updates to everyone subscribed to this
 		//In client mode it means that the controlled entity has the server subscribed so it will update it's status to the server
 		
@@ -132,16 +135,25 @@ public class EntityComponentPosition extends EntityComponent
 		if(!entity.exists())
 			return false;
 		
+		//Entities not in the world should never be added to it
+		if(!entity.hasSpawned())
+			return false;
+		
 		if (regionWithin != null && regionWithin.getRegionX() == regionX && regionWithin.getRegionY() == regionY && regionWithin.getRegionZ() == regionZ)
 		{
 			return false; // Nothing to do !
 		}
 		else
 		{
+			//Thread.currentThread().dumpStack();
+			//System.out.println(entity.getUUID() + "region changed "+pos + "wtf" + entity);
+			
 			if(regionWithin != null)
 				regionWithin.removeEntity(entity);
 		
 			regionWithin = entity.getWorld().getRegionChunkCoordinates(regionX * 8, regionY * 8, regionZ * 8);
+			
+			//System.out.println("new region="+regionWithin);
 			
 			//When the region is loaded, add this entity to it.
 			if(regionWithin != null)// && regionWithin.isDiskDataLoaded())

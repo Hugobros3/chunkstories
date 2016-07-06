@@ -129,7 +129,7 @@ public class WorldHeightmapVersion implements RegionSummaries
 	{
 		for (RegionSummary cs : summaries.values())
 		{
-			cs.save();
+			cs.saveSummary();
 		}
 	}
 

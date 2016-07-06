@@ -18,8 +18,8 @@ public class VoxelLiquid extends VoxelDefault
 	public VoxelLiquid(int id, String name)
 	{
 		super(id, name);
-		inside = VoxelModels.getVoxelModel("water.inside");
-		surface = VoxelModels.getVoxelModel("water.surface");
+		inside = new VoxelWaterRenderer(VoxelModels.getVoxelModel("water.inside"));
+		surface = new VoxelWaterRenderer(VoxelModels.getVoxelModel("water.surface"));
 	}
 
 	@Override

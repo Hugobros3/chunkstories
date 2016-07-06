@@ -22,13 +22,9 @@ varying float NdotL; // Face luminosity
 //Normal mapping
 varying vec3 varyingNormal;
 varying vec4 varyingVertex;
-uniform sampler2D normalTexture;
+uniform sampler2D normalTextureShallow;
+uniform sampler2D normalTextureDeep;
 
-//Shadow shit
-uniform sampler2D shadowMap;
-uniform sampler2D shadowMap2;
-varying vec4 coordinatesInShadowmap;
-varying vec4 coordinatesInShadowmap2;
 varying vec3 normalV;
 varying vec3 lightV;
 uniform float shadowVisiblity; // Used for night transitions ( w/o shadows as you know )
@@ -120,20 +116,26 @@ vec3 perturb_normal( vec3 N, vec3 V, vec2 texcoord, vec3 map)
     return normalize(TBN * map);
 }
 
+vec3 mixedTextures(float blend, vec2 coords)
+{
+	return mix(texture2D(normalTextureShallow, coords).rgb, texture2D(normalTextureDeep, coords * 0.125).rgb, 0);
+}
 
 void main(){
 	//if(mod((gl_FragCoord.x + gl_FragCoord.y), 2) == 0)
 
 	vec3 normal = vec3(0.0, 0.0, 1.0);
 
-	vec3 nt = 1.0*(texture2D(normalTexture,(varyingVertex.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
-	nt += 1.0*(texture2D(normalTexture,(varyingVertex.xz/2.0+vec2(-time,-2.0*time)/150.0)/2.0).rgb*2.0-1.0);
-	nt += 0.5*(texture2D(normalTexture,(varyingVertex.zx*0.8+vec2(400.0, sin(-time/5.0)+time/25.0)/350.0)/10.0).rgb*2.0-1.0);
-	nt += 0.25*(texture2D(normalTexture,(varyingVertex.zx*0.1+vec2(400.0, sin(-time/5.0)-time/25.0)/250.0)/15.0).rgb*2.0-1.0);
+	//vec3 normalTexture = normalTextureShallow
+	
+	vec3 nt = 1.0*(mixedTextures(lightMapCoords.a, (varyingVertex.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
+	nt += 1.0*(mixedTextures(lightMapCoords.a, (varyingVertex.xz/2.0+vec2(-time,-2.0*time)/150.0)/2.0).rgb*2.0-1.0);
+	nt += 0.5*(mixedTextures(lightMapCoords.a, (varyingVertex.zx*0.8+vec2(400.0, sin(-time/5.0)+time/25.0)/350.0)/10.0).rgb*2.0-1.0);
+	nt += 0.25*(mixedTextures(lightMapCoords.a, (varyingVertex.zx*0.1+vec2(400.0, sin(-time/5.0)-time/25.0)/250.0)/15.0).rgb*2.0-1.0);
 	
 	nt = normalize(nt);
 	
-	float i = 0.5;
+	float i = 1.0;
 	
 	normal.x += nt.r*i;
 	normal.y += nt.g*i;
@@ -159,12 +161,17 @@ void main(){
 	spec = dynamicFresnelTerm;
 	<endif perPixelFresnel>
 	
+	
 	baseColor = texture2D(readbackShadedBufferTemp, gl_FragCoord.xy / screenSize);
+	//baseColor.rgb *= lightMapCoords.a;
 	//baseColor.a = 1.0;
 	
 	spec *= 1-underwater;
 	
 	spec = pow(spec, gamma);
+	
+	if(baseColor.a < 1.0)
+		discard;
 	
 	gl_FragData[0] = vec4(baseColor);
 	
