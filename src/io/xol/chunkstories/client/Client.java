@@ -36,7 +36,7 @@ public class Client implements ClientSideController, ClientInterface
 {
 	public static ConfigFile clientConfig = new ConfigFile("./config/client.cfg");
 
-	public static ClientInputManager inputsManager;
+	public static ClientInputsManager inputsManager;
 	
 	public static SoundManager soundManager;
 	public static boolean offline = false;
@@ -106,7 +106,7 @@ public class Client implements ClientSideController, ClientInterface
 		NativesLoader.load();
 		// Load last gamemode
 		GameData.reload();
-		inputsManager = new ClientInputManager();
+		inputsManager = new ClientInputsManager();
 		//Initialize sound
 		soundManager = new ALSoundManager();
 		// Gl init

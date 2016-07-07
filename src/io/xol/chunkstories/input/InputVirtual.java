@@ -6,27 +6,40 @@ import io.xol.chunkstories.api.input.KeyBind;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class KeyBindVirtual implements KeyBind
+public class InputVirtual implements KeyBind
 {
-	String name;
-	long hash;
+	private String name;
+	private long hash;
+	
+	private boolean pressed = false;
 
-	public KeyBindVirtual(String name)
+	public InputVirtual(String name)
 	{
 		this.name = name;
 		computeHash();
 	}
 
+	public InputVirtual(String name, long hash)
+	{
+		this.name = name;
+		this.hash = hash;
+	}
+	
 	@Override
 	public String getName()
 	{
 		return name;
 	}
 
+	public void setPressed(boolean pressed)
+	{
+		this.pressed = pressed;
+	}
+	
 	@Override
 	public boolean isPressed()
 	{
-		return true;
+		return pressed;
 	}
 
 	public String toString()

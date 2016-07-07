@@ -9,6 +9,7 @@ import java.util.Set;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.input.Inputs;
 import io.xol.chunkstories.input.KeyBindImplementation;
 
@@ -16,12 +17,12 @@ import io.xol.chunkstories.input.KeyBindImplementation;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ClientInputManager implements InputsManager
+public class ClientInputsManager implements InputsManager
 {
-	static Set<Input> inputs = new HashSet<Input>();
-	static Map<Long, Input> inputsMap = new HashMap<Long, Input>();
+	Set<Input> inputs = new HashSet<Input>();
+	Map<Long, Input> inputsMap = new HashMap<Long, Input>();
 
-	public ClientInputManager()
+	public ClientInputsManager()
 	{
 		reload();
 	}
@@ -63,8 +64,15 @@ public class ClientInputManager implements InputsManager
 		return null;
 	}
 	
-	public static Input getInputFromHash(long hash)
+	public Input getInputFromHash(long hash)
 	{
+		if(hash == 0)
+			return MouseButton.LEFT;
+		else if(hash == 1)
+			return MouseButton.RIGHT;
+		else if(hash == 2)
+			return MouseButton.MIDDLE;
+		
 		return inputsMap.get(hash);
 	}
 	

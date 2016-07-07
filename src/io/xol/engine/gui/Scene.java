@@ -33,17 +33,27 @@ public class Scene
 
 	}
 
-	public boolean onClick(int posx, int posy, int button)
+	public boolean onKeyDown(int keyCode)
+	{
+		return false;
+	}
+	
+	public boolean onKeyRepeatEvent(int keyCode)
 	{
 		return false;
 	}
 
-	public boolean onKeyPress(int k)
+	public boolean onKeyUp(int keyCode)
 	{
 		return false;
 	}
-
-	public boolean onKeyRelease(int k)
+	
+	public boolean onMouseButtonDown(int posx, int posy, int button)
+	{
+		return false;
+	}
+	
+	public boolean onMouseButtonUp(int posx, int posy, int button)
 	{
 		return false;
 	}

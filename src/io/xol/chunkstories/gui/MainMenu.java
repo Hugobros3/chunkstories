@@ -213,7 +213,7 @@ public class MainMenu extends OverlayableScene
 	}
 
 	@Override
-	public boolean onClick(int posx, int posy, int button)
+	public boolean onMouseButtonDown(int posx, int posy, int button)
 	{
 		if (currentOverlay != null)
 			return currentOverlay.onClick(posx, posy, button);
@@ -221,7 +221,7 @@ public class MainMenu extends OverlayableScene
 	}
 
 	@Override
-	public boolean onKeyPress(int k)
+	public boolean onKeyDown(int k)
 	{
 		if (currentOverlay != null && currentOverlay.handleKeypress(k))
 		{

@@ -1,5 +1,7 @@
 package io.xol.chunkstories.api.input;
 
+import org.lwjgl.input.Mouse;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -24,7 +26,7 @@ public class MouseButton implements Input
 	@Override
 	public boolean isPressed()
 	{
-		return false;
+		return Mouse.isButtonDown(button);
 	}
 	
 	public static MouseButton LEFT = new MouseButton("mouse.left", 0);

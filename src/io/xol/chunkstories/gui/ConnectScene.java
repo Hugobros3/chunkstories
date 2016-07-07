@@ -87,7 +87,7 @@ public class ConnectScene extends Scene
 	}
 
 	@Override
-	public boolean onKeyPress(int k)
+	public boolean onKeyDown(int k)
 	{
 		if (k == 1)
 			cancel();
@@ -97,7 +97,7 @@ public class ConnectScene extends Scene
 	}
 
 	@Override
-	public boolean onClick(int posx, int posy, int button)
+	public boolean onMouseButtonDown(int posx, int posy, int button)
 	{
 		if (button == 0)
 			guiHandler.handleClick(posx, posy);

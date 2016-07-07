@@ -11,7 +11,7 @@ import io.xol.chunkstories.net.packets.PacketInput;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ClientInputPressedEvent extends CancellableEvent implements ClientEvent
+public class ClientInputReleasedEvent extends CancellableEvent implements ClientEvent
 {
 	// Every event class has to have this
 
@@ -30,7 +30,7 @@ public class ClientInputPressedEvent extends CancellableEvent implements ClientE
 
 	// Specific event code
 	
-	public ClientInputPressedEvent(Input input)
+	public ClientInputReleasedEvent(Input input)
 	{
 		this.input = input;
 	}
@@ -44,7 +44,9 @@ public class ClientInputPressedEvent extends CancellableEvent implements ClientE
 	
 	public void defaultBehaviour()
 	{
-		if(!this.isCancelled())
+		//Always tell the sever we let go the input
+		
+		//if(!this.isCancelled())
 		{
 			ClientToServerConnection connection = this.getClient().getServerConnection();
 			if(connection != null)

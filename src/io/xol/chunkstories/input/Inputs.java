@@ -7,19 +7,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.InputsManager;
-import io.xol.chunkstories.api.input.KeyBind;
-import io.xol.chunkstories.client.ClientInputManager;
+import io.xol.chunkstories.client.ClientInputsManager;
 import io.xol.chunkstories.content.GameData;
-import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.server.ServerInputsManager;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -144,7 +138,7 @@ public class Inputs
 					{
 						while ((line = reader.readLine()) != null)
 						{
-							System.out.println("Reading " + line);
+							//System.out.println("Reading " + line);
 							if (line.startsWith("#"))
 							{
 								// It's a comment, ignore.
@@ -154,13 +148,21 @@ public class Inputs
 								String splitted[] = line.split(" ");
 								if (splitted.length >= 3)
 								{
-									if (inputManager instanceof ClientInputManager)
+									/*
+									 * There goes the fun
+									 */
+									if (inputManager instanceof ClientInputsManager)
 									{
 										if (splitted[0].equals("keyBind"))
 										{
 											input = new KeyBindImplementation(splitted[1], splitted[2]);
 											return true;
 										}
+									}
+									else if(inputManager instanceof ServerInputsManager)
+									{
+										input = new InputVirtual(splitted[1]);
+										return true;
 									}
 								}
 							}

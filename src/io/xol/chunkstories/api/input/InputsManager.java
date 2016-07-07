@@ -9,6 +9,8 @@ import java.util.Iterator;
 public interface InputsManager
 {
 	public Input getInputByName(String inputName);
+	
+	public Input getInputFromHash(long hash);
 
 	public Iterator<Input> getAllInputs();
 }

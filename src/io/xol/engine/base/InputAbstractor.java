@@ -28,6 +28,7 @@ public class InputAbstractor
 
 	/**
 	 * Polls input and call input functions
+	 * 
 	 * @param engine
 	 */
 	public static void update(GameWindowOpenGL engine, Scene scene)
@@ -35,15 +36,22 @@ public class InputAbstractor
 		// Keyboard events handling
 		while (Keyboard.next())
 		{
-			int k = Keyboard.getEventKey();
+			int keyCode = Keyboard.getEventKey();
 			if (Keyboard.getEventKeyState())
 			{
-				engine.handleSpecialKey(k);
-				scene.onKeyPress(k);
+				if (Keyboard.isRepeatEvent())
+				{
+					scene.onKeyRepeatEvent(keyCode);
+				}
+				else
+				{
+					engine.handleSpecialKey(keyCode);
+					scene.onKeyDown(keyCode);
+				}
 			}
 			else
 			{
-				scene.onKeyRelease(k);
+				scene.onKeyUp(keyCode);
 			}
 		}
 		// Mouse events
@@ -51,8 +59,11 @@ public class InputAbstractor
 		{
 			if (Mouse.getEventButtonState())
 			{
-				//Client.getSoundManager().playSoundEffect("sfx/shoot.ogg", 0, 0, 0, 1, 1);
-				scene.onClick(Mouse.getX(), Mouse.getY(), Mouse.getEventButton());
+				scene.onMouseButtonDown(Mouse.getX(), Mouse.getY(), Mouse.getEventButton());
+			}
+			else
+			{
+				scene.onMouseButtonUp(Mouse.getX(), Mouse.getY(), Mouse.getEventButton());
 			}
 		}
 		// Mouse scroll

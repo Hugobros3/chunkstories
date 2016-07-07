@@ -21,17 +21,19 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
+import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.ClientInputManager;
+import io.xol.chunkstories.client.ClientInputsManager;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
+import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
 import io.xol.chunkstories.item.ItemPile;
@@ -251,12 +253,23 @@ public class GameplayScene extends OverlayableScene
 	byte[] inventorySerialized;
 
 	@Override
-	public boolean onKeyPress(int k)
+	public boolean onKeyDown(int keyCode)
 	{
-		KeyBind keyBind = ((ClientInputManager)Client.getInstance().getInputsManager()).getKeyBoundForLWJGL2xKey(k);
-		
+		if (currentOverlay != null && currentOverlay.handleKeypress(keyCode))
+			return true;
+
+		KeyBind keyBind = ((ClientInputsManager) Client.getInstance().getInputsManager()).getKeyBoundForLWJGL2xKey(keyCode);
+
 		if (keyBind != null)
 		{
+			//Block inputs if chatting
+			if (Client.getInstance().getInputsManager().getInputByName("chat").equals(keyBind))
+			{
+				this.changeOverlay(chat.new ChatPanelOverlay(this, null));
+				focus(false);
+				return true;
+			}
+			
 			ClientInputPressedEvent event = new ClientInputPressedEvent(keyBind);
 
 			Client.pluginsManager.fireEvent(event);
@@ -267,51 +280,40 @@ public class GameplayScene extends OverlayableScene
 		}
 
 		Location loc = player.getLocation();
-		if (currentOverlay != null && currentOverlay.handleKeypress(k))
-			return true;
-		if (!chat.chatting)
-		{
-			if (Client.getInstance().getInputsManager().getInputByName("chat").equals(keyBind))
-			{
-				this.changeOverlay(chat.new ChatPanelOverlay(this, null));
-				focus(false);
-				return true;
-			}
-		}
 
 		//Function keys
-		if (k == Keyboard.KEY_F1)
+		if (keyCode == Keyboard.KEY_F1)
 		{
 			guiHidden = !guiHidden;
 		}
-		else if (k == Keyboard.KEY_F2)
+		else if (keyCode == Keyboard.KEY_F2)
 			chat.insert(worldRenderer.screenShot());
-		else if (k == Keyboard.KEY_F3)
+		else if (keyCode == Keyboard.KEY_F3)
 		{
 			//Client.getSoundManager().playSoundEffect("music/menu3.ogg", (float)loc.x, (float)loc.y, (float)loc.z, 1.0f, 1.0f);
 			//Client.getSoundManager().stopAnySound();
 			//Client.getSoundManager().playMusic("music/radio/horse.ogg", (float) loc.x, (float) loc.y, (float) loc.z, 1.0f, 1.0f, false).setAttenuationEnd(50f);
 		}
-		else if (k == Keyboard.KEY_F4)
+		else if (keyCode == Keyboard.KEY_F4)
 		{
 			//Client.world.getParticlesHolder().addParticle(new ParticleSmoke(Client.world, loc.x + (Math.random() - 0.5) * 30, loc.y + (Math.random()) * 10, loc.z + (Math.random() - 0.5) * 30));
 			//Client.world.getParticlesHolder().addParticle(new ParticleLight(Client.world, loc.x + (Math.random() - 0.5) * 30, loc.y + (Math.random()) * 10, loc.z + (Math.random() - 0.5) * 30));
 		}
-		else if (k == Keyboard.KEY_F6)
+		else if (keyCode == Keyboard.KEY_F6)
 		{
 			//if (player instanceof EntityPlayer)
 			//	((EntityPlayer) player).toggleNoclip();
 		}
-		else if (k == Keyboard.KEY_F8)
+		else if (keyCode == Keyboard.KEY_F8)
 			shouldCM = true;
-		else if (k == Keyboard.KEY_F12)
+		else if (keyCode == Keyboard.KEY_F12)
 		{
 			GameData.reload();
 			GameData.reloadClientContent();
 			worldRenderer.farTerrainRenderer.markVoxelTexturesSummaryDirty();
 		}
 		//Redraw chunks
-		else if (k == 19)
+		else if (keyCode == 19)
 		{
 			Client.world.getParticlesHolder().cleanAllParticles();
 			Client.world.redrawEverything();
@@ -344,8 +346,24 @@ public class GameplayScene extends OverlayableScene
 		return false;
 	}
 
+	public boolean onKeyUp(int keyCode)
+	{
+		KeyBind keyBind = ((ClientInputsManager) Client.getInstance().getInputsManager()).getKeyBoundForLWJGL2xKey(keyCode);
+
+		if (keyBind != null)
+		{
+			ClientInputReleasedEvent event = new ClientInputReleasedEvent(keyBind);
+
+			Client.pluginsManager.fireEvent(event);
+			if (event.isCancelled())
+				return true;
+		}
+
+		return false;
+	}
+
 	@Override
-	public boolean onClick(int x, int y, int button)
+	public boolean onMouseButtonDown(int x, int y, int button)
 	{
 		if (currentOverlay != null)
 			return currentOverlay.onClick(x, y, button);
@@ -375,6 +393,32 @@ public class GameplayScene extends OverlayableScene
 				return ((EntityControllable) this.player).handleInteraction(mButton, Client.getInstance());
 		}
 		//TODO it does not handle the special clicks yet, maybye do it somewhere else, like in binds ?
+		return false;
+	}
+
+	public boolean onMouseButtonUp(int x, int y, int button)
+	{
+		Input mButton = null;
+		switch (button)
+		{
+		case 0:
+			mButton = MouseButton.LEFT;
+			break;
+		case 1:
+			mButton = MouseButton.RIGHT;
+			break;
+		case 2:
+			mButton = MouseButton.MIDDLE;
+			break;
+
+		}
+		if (mButton != null)
+		{
+			ClientInputReleasedEvent event = new ClientInputReleasedEvent(mButton);
+			if (mButton != null)
+				Client.pluginsManager.fireEvent(event);
+		}
+
 		return false;
 	}
 
@@ -467,10 +511,10 @@ public class GameplayScene extends OverlayableScene
 				, BitmapFont.SMALLFONTS);
 
 		//FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + getLoadedChunksVramFootprint() + ", " + getLoadedTerrainVramFootprint(), BitmapFont.SMALLFONTS);
-		
-		long totalVram =  (VerticesObject.getTotalVramUsage() + Texture2D.getTotalVramUsage()) / 1024 / 1024;
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram +"Mb as " + Texture2D.getTotalNumberOfTextureObjects()+ " textures using " + Texture2D.getTotalVramUsage() / 1024 / 1024 + "Mb + "
-				+VerticesObject.getTotalNumberOfVerticesObjects()+" Vertices objects using " + VerticesObject.getTotalVramUsage() / 1024 / 1024 +" Mb", BitmapFont.SMALLFONTS);
+
+		long totalVram = (VerticesObject.getTotalVramUsage() + Texture2D.getTotalVramUsage()) / 1024 / 1024;
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram + "Mb as " + Texture2D.getTotalNumberOfTextureObjects() + " textures using " + Texture2D.getTotalVramUsage() / 1024 / 1024 + "Mb + "
+				+ VerticesObject.getTotalNumberOfVerticesObjects() + " Vertices objects using " + VerticesObject.getTotalVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16,
 				"Chunks to bake : T : " + worldRenderer.chunksRenderer.todoQueue.size() + "   Chunks to upload: " + worldRenderer.chunksRenderer.doneQueue.size() + "    " + Client.world.ioHandler.toString(), BitmapFont.SMALLFONTS);
