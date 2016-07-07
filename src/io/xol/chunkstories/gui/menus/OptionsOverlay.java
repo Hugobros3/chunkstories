@@ -1,19 +1,20 @@
 package io.xol.chunkstories.gui.menus;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
-import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBindImplementation;
-import io.xol.chunkstories.input.KeyBinds;
+import io.xol.chunkstories.input.Inputs;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -333,8 +334,10 @@ public class OptionsOverlay extends Overlay
 		
 		List<ConfigButton> controlsButtons = new ArrayList<ConfigButton>();
 		controlsButtons.add(new ConfigButtonScale("mouseSensitivity", 0.5f, 2f, 0.05f));
-		for(KeyBind keyBind : KeyBinds.getKeyBinds())
+		Iterator<Input> inputsIterator = Client.getInstance().getInputsManager().getAllInputs();
+		while(inputsIterator.hasNext())
 		{
+			Input keyBind = inputsIterator.next();
 			if(keyBind instanceof KeyBindImplementation)
 			{
 				KeyBindImplementation kbi = (KeyBindImplementation)keyBind;
@@ -456,7 +459,10 @@ public class OptionsOverlay extends Overlay
 	@Override
 	public boolean handleKeypress(int k)
 	{
-		if (KeyBinds.getKeyBind("exit").isPressed())
+		//TODO handleKeypress to take KeyBind
+		
+		//if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
+		if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
 		{
 			Client.getConfig().save();
 			mainScene.changeOverlay(parent);

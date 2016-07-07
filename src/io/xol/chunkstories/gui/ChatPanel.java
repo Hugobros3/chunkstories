@@ -20,7 +20,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.EntitiesList;
-import io.xol.chunkstories.input.KeyBinds;
+import io.xol.chunkstories.input.Inputs;
 
 public class ChatPanel
 {
@@ -68,7 +68,7 @@ public class ChatPanel
 		@Override
 		public boolean handleKeypress(int k)
 		{
-			if (KeyBinds.getKeyBind("exit").isPressed())
+			if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
 			{
 				chatting = false;
 				mainScene.changeOverlay(parent);

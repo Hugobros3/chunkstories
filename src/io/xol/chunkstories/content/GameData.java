@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.entity.EntityComponents;
-import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.item.ItemsList;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.voxel.VoxelTextures;
@@ -41,11 +40,12 @@ public class GameData
 		EntityComponents.reload();
 		PacketsProcessor.loadPacketsTypes();
 		WorldGenerators.loadWorldGenerators();
+		
+		//Inputs.loadKeyBindsClient();
 	}
 
 	public static void reloadClientContent()
 	{
-		KeyBinds.loadKeyBinds();
 		TexturesHandler.reloadAll();
 		SoundsLibrary.clean();
 		ModelLibrary.reloadAllModels();
@@ -210,5 +210,47 @@ public class GameData
 		if(fileSystem.containsKey(fileName))
 			return fileSystem.get(fileName);
 		return null;
+	}
+
+	public static Iterator<File> getAllFilesByExtension(String extension)
+	{
+		return new Iterator<File>() {
+
+			Iterator<Entry<String, Deque<File>>> base = getAllUniqueEntries();
+			
+			File next = null;
+			
+			@Override
+			public boolean hasNext()
+			{
+				if(next != null)
+					return true;
+				//If next == null, try to set it
+				while(base.hasNext())
+				{
+					Entry<String, Deque<File>> entry = base.next();
+					if(entry.getKey().endsWith(extension))
+					{
+						next = entry.getValue().getFirst();
+						break;
+					}
+				}
+				//Did we suceed etc
+				return next != null;
+			}
+
+			@Override
+			public File next()
+			{
+				//Try loading
+				if(next == null)
+					hasNext();
+				//Null out reference and return it
+				File ret = next;
+				next = null;
+				return ret;
+			}
+			
+		};
 	}
 }

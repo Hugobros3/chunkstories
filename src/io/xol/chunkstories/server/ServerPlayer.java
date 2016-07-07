@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.engine.math.LoopingMathHelper;
@@ -32,11 +33,16 @@ public class ServerPlayer implements Player
 	//Streaming control
 	private Set<Entity> subscribedEntities = new HashSet<Entity>();
 
+	//Mirror of client inputs
+	private ServerInputsManager serverInputsManager;
+
 	public ServerPlayer(ServerClient serverClient)
 	{
 		playerConnection = serverClient;
 		
 		playerDataFile = new ConfigFile("./players/" + playerConnection.name.toLowerCase() + ".cfg");
+		
+		serverInputsManager = new ServerInputsManager(this);
 		
 		// Sets dates
 		playerDataFile.setProp("lastlogin", "" + System.currentTimeMillis());
@@ -259,6 +265,8 @@ public class ServerPlayer implements Player
 		return this.getName().hashCode();
 	}
 
+	// Entity tracking
+	
 	@Override
 	public Iterator<Entity> getSubscribedToList()
 	{
@@ -324,5 +332,11 @@ public class ServerPlayer implements Player
 	public boolean isSubscribedTo(Entity entity)
 	{
 		return subscribedEntities.contains(entity);
+	}
+
+	@Override
+	public InputsManager getInputsManager()
+	{
+		return serverInputsManager;
 	}
 }

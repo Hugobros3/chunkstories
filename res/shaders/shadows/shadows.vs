@@ -11,7 +11,7 @@ uniform float time;
 
 uniform float vegetation;
 
-const float distScale = 0.9;
+const float distScale = 0.8;
 
 uniform vec3 objectPosition;
 

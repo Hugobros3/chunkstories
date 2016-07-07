@@ -17,9 +17,9 @@ import io.xol.engine.misc.NativesLoader;
 import io.xol.engine.sound.ALSoundManager;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.chunkstories.api.entity.ClientController;
+import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
@@ -28,15 +28,16 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.MainMenu;
-import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.WorldClientCommon;
 
-public class Client implements ClientController, ClientInterface
+public class Client implements ClientSideController, ClientInterface
 {
 	public static ConfigFile clientConfig = new ConfigFile("./config/client.cfg");
 
+	public static ClientInputManager inputsManager;
+	
 	public static SoundManager soundManager;
 	public static boolean offline = false;
 
@@ -105,6 +106,7 @@ public class Client implements ClientController, ClientInterface
 		NativesLoader.load();
 		// Load last gamemode
 		GameData.reload();
+		inputsManager = new ClientInputManager();
 		//Initialize sound
 		soundManager = new ALSoundManager();
 		// Gl init
@@ -165,13 +167,8 @@ public class Client implements ClientController, ClientInterface
 	public void reloadAssets()
 	{
 		GameData.reload();
+		inputsManager.reload();
 		GameData.reloadClientContent();
-	}
-
-	@Override
-	public KeyBind getKeyBind(String bindName)
-	{
-		return KeyBinds.getKeyBind(bindName);
 	}
 
 	@Override
@@ -230,5 +227,11 @@ public class Client implements ClientController, ClientInterface
 		if(entity == controlledEntity)
 			return true;
 		return false;
+	}
+
+	@Override
+	public InputsManager getInputsManager()
+	{
+		return inputsManager;
 	}
 }

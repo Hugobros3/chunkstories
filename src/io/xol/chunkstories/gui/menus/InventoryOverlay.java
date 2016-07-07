@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.chunkstories.input.KeyBinds;
+import io.xol.chunkstories.input.Inputs;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
@@ -76,7 +76,7 @@ public class InventoryOverlay extends Overlay
 	@Override
 	public boolean handleKeypress(int k)
 	{
-		if (KeyBinds.getKeyBind("exit").isPressed())
+		if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
 			this.mainScene.changeOverlay(parent);
 		return true;
 	}

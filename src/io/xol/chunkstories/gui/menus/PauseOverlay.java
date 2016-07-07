@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.chunkstories.input.KeyBinds;
+import io.xol.chunkstories.input.Inputs;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.ObjectRenderer;
@@ -62,7 +62,7 @@ public class PauseOverlay extends Overlay
 	@Override
 	public boolean handleKeypress(int k)
 	{
-		if (KeyBinds.getKeyBind("exit").isPressed())
+		if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
 		{
 			mainScene.changeOverlay(parent);
 			return true;

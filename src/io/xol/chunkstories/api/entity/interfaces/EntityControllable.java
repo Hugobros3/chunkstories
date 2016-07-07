@@ -1,7 +1,7 @@
 package io.xol.chunkstories.api.entity.interfaces;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.ClientController;
+import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
@@ -19,12 +19,12 @@ public interface EntityControllable extends Entity, EntityUnsaveable
 {
 	public EntityComponentController getControllerComponent();
 	
-	public void moveCamera(ClientController controller);
+	public void moveCamera(ClientSideController controller);
 	
 	/**
 	 * Clientside controller tick, called before
 	 */
-	public void tick(ClientController controller);
+	public void tick(ClientSideController controller);
 	
 	/**
 	 * If this entity has the ability to select blocks, this method should return said block

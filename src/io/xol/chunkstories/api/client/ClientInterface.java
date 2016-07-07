@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.client;
 
-import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.content.PluginsManager;
@@ -24,7 +24,7 @@ public interface ClientInterface
 	 */
 	public void reloadAssets();
 
-	public KeyBind getKeyBind(String bindName);
+	public InputsManager getInputsManager();
 
 	/**
 	 * Prints some text into the client chat

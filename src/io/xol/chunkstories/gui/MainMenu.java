@@ -19,7 +19,6 @@ import io.xol.engine.graphics.fbo.FBO;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.GBufferTexture;
-import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureType;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.GuiDrawer;

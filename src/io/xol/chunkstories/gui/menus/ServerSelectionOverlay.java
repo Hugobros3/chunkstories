@@ -18,7 +18,6 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.ConnectScene;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.chunkstories.input.KeyBinds;
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
@@ -127,20 +126,20 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		{
 			ipForm.text = "";
 		}
-		else if (KeyBinds.getKeyBind("enter").isPressed())
+		else if (Client.getInstance().getInputsManager().getInputByName("enter").isPressed())
 			login();
 		else if (k == 63) // F5
 			new HttpRequestThread(this, "serversList", "http://chunkstories.xyz/api/listServers.php", "").start();
 		else if (k == 64) // F6 ?
 			f6();
-		else if (KeyBinds.getKeyBind("exit").isPressed())
+		else if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
 			this.mainScene.changeOverlay(parent);
-		else if (serverSelectionZone.hasFocus() && KeyBinds.getKeyBind("forward").isPressed())
+		else if (serverSelectionZone.hasFocus() && Client.getInstance().getInputsManager().getInputByName("forward").isPressed())
 		{
 			movedInList = true;
 			currentServer--;
 		}
-		else if (serverSelectionZone.hasFocus() && KeyBinds.getKeyBind("back").isPressed())
+		else if (serverSelectionZone.hasFocus() && Client.getInstance().getInputsManager().getInputByName("back").isPressed())
 		{
 			movedInList = true;
 			currentServer++;

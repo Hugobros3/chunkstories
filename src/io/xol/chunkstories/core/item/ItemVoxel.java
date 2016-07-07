@@ -8,7 +8,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.MouseClick;
+import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -71,7 +71,7 @@ public class ItemVoxel extends Item
 	@Override
 	public boolean handleInteraction(Entity user, ItemPile pile, Input input, Controller controller)
 	{
-		if (user.getWorld() instanceof WorldMaster && input instanceof MouseClick)
+		if (user.getWorld() instanceof WorldMaster && input instanceof MouseButton)
 		{
 			//TODO here we assumme a player, that's not correct
 			EntityPlayer player = (EntityPlayer) user;
@@ -80,7 +80,7 @@ public class ItemVoxel extends Item
 
 			int data2write = -1;
 			Location selectedBlock = null;
-			if (input.equals(MouseClick.RIGHT))
+			if (input.equals(MouseButton.RIGHT))
 			{
 				selectedBlock = player.getBlockLookingAt(false);
 				data2write = VoxelFormat.format(voxelID, voxelMeta, 0, 0);

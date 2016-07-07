@@ -6,8 +6,6 @@ package io.xol.chunkstories.api.input;
 
 /**
  * Describe any form of input
- * @author Hugo
- *
  */
 public interface Input
 {
@@ -22,4 +20,6 @@ public interface Input
 	 * @return
 	 */
 	public boolean isPressed();
+	
+	public long getHash();
 }

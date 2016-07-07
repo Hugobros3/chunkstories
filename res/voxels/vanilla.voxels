@@ -206,12 +206,6 @@ voxel wheat 56
 	affectedByWind: true
 end
 
-voxel rails 66
-	solid: false
-	opaque: false
-	model: 'rails'
-end
-
 voxel grass_prop 64
 	solid: false
 	opaque: false
@@ -230,6 +224,15 @@ voxel forestgrass_prop 65
 	affectedByWind: true
 end
 
+voxel rails 66
+	solid: false
+	opaque: false
+	model: 'rails'
+end
+
+voxel density 99 io.xol.chunkstories.core.voxel.VoxelMeta16
+end
+
 voxel water 128 io.xol.chunkstories.core.voxel.VoxelLiquid
 	selfOpaque: true
 	solid: false
@@ -237,7 +240,4 @@ voxel water 128 io.xol.chunkstories.core.voxel.VoxelLiquid
 	model: 'water'
 	liquid: true
 	shading: 1
-end
-
-voxel density 99 io.xol.chunkstories.core.voxel.VoxelMeta16
 end

@@ -3,7 +3,7 @@ package io.xol.chunkstories.net.packets;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
-import io.xol.chunkstories.api.input.MouseClick;
+import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
@@ -32,13 +32,13 @@ public class PacketInput extends PacketSynch
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
-		if (input instanceof MouseClick)
+		if (input instanceof MouseButton)
 		{
-			if (input.equals(MouseClick.LEFT))
+			if (input.equals(MouseButton.LEFT))
 				out.writeLong(0x01);
-			else if (input.equals(MouseClick.MIDDLE))
+			else if (input.equals(MouseButton.MIDDLE))
 				out.writeLong(0x02);
-			else if (input.equals(MouseClick.RIGHT))
+			else if (input.equals(MouseButton.RIGHT))
 				out.writeLong(0x03);
 		}
 		//TODO use unique hash codes instead of sending the whole thing
@@ -67,11 +67,11 @@ public class PacketInput extends PacketSynch
 	{
 		long code = in.readLong();
 		if (code == 0x01)
-			input = MouseClick.LEFT;
+			input = MouseButton.LEFT;
 		else if (code == 0x02)
-			input = MouseClick.MIDDLE;
+			input = MouseButton.MIDDLE;
 		else if (code == 0x03)
-			input = MouseClick.RIGHT;
+			input = MouseButton.RIGHT;
 		else if(code == 0x00)
 		{
 			input = new KeyBindVirtual(in.readUTF());

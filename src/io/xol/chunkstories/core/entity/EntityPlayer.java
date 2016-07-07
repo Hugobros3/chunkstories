@@ -10,7 +10,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.ClientController;
+import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
@@ -20,7 +20,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.MouseClick;
+import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -184,7 +184,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 	// client-side method for updating the player movement
 	@Override
-	public void tick(ClientController controller)
+	public void tick(ClientSideController controller)
 	{
 		// Null-out acceleration, until modified by controls
 		synchronized (this)
@@ -200,7 +200,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		//In that case that means pushing to the server.
 	}
 
-	public void normalMove(ClientController controller)
+	public void normalMove(ClientSideController controller)
 	{
 		//System.out.println("tck");
 		WorldClient worldClient = (WorldClient) world;
@@ -238,21 +238,21 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			// System.out.println("footstep");
 		}
 
-		if (focus && !inWater && controller.getKeyBind("jump").isPressed() && collision_bot)
+		if (focus && !inWater && controller.getInputsManager().getInputByName("jump").isPressed() && collision_bot)
 		{
 			// System.out.println("jumpin");
 			jump = 0.15;
 		}
-		else if (focus && inWater && controller.getKeyBind("jump").isPressed())
+		else if (focus && inWater && controller.getInputsManager().getInputByName("jump").isPressed())
 			jump = 0.05;
 		else
 			jump = 0.0;
 
 		// Movement
 		// Run ?
-		if (focus && controller.getKeyBind("forward").isPressed())
+		if (focus && controller.getInputsManager().getInputByName("forward").isPressed())
 		{
-			if (controller.getKeyBind("run").isPressed())
+			if (controller.getInputsManager().getInputByName("run").isPressed())
 				running = true;
 		}
 		else
@@ -261,9 +261,9 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		double modif = 0;
 		if (focus)
 		{
-			if (controller.getKeyBind("forward").isPressed() || controller.getKeyBind("left").isPressed() || controller.getKeyBind("right").isPressed())
+			if (controller.getInputsManager().getInputByName("forward").isPressed() || controller.getInputsManager().getInputByName("left").isPressed() || controller.getInputsManager().getInputByName("right").isPressed())
 				hSpeed = (running ? 0.09 : 0.06);
-			else if (controller.getKeyBind("back").isPressed())
+			else if (controller.getInputsManager().getInputByName("back").isPressed())
 				hSpeed = -0.05;
 			else
 				hSpeed = 0.0;
@@ -274,10 +274,10 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		if (inWater)
 			hSpeed *= 0.45;
 
-		if (controller.getKeyBind("left").isPressed())
-			modif += 90 * (controller.getKeyBind("forward").isPressed() ? 0.5 : 1);
-		if (controller.getKeyBind("right").isPressed())
-			modif += -90 * (controller.getKeyBind("forward").isPressed() ? 0.5 : 1);
+		if (controller.getInputsManager().getInputByName("left").isPressed())
+			modif += 90 * (controller.getInputsManager().getInputByName("forward").isPressed() ? 0.5 : 1);
+		if (controller.getInputsManager().getInputByName("right").isPressed())
+			modif += -90 * (controller.getInputsManager().getInputByName("forward").isPressed() ? 0.5 : 1);
 
 		//Auto-step logic
 		if (collision_bot && (Math.abs(this.blockedMomentum.x) > 0.0005d || Math.abs(this.blockedMomentum.z) > 0.0005d))
@@ -329,7 +329,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		//System.out.println("nrml mv");
 	}
 
-	public void flyMove(ClientController controller)
+	public void flyMove(ClientSideController controller)
 	{
 		if (!controller.hasFocus())
 			return;
@@ -340,7 +340,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			camspeed = 1f;
 		if (Keyboard.isKeyDown(Keyboard.KEY_LMENU))
 			camspeed = 5f;
-		if (controller.getKeyBind("back").isPressed())
+		if (controller.getInputsManager().getInputByName("back").isPressed())
 		{
 			float a = (float) ((-this.getEntityRotationComponent().getRotH()) / 180f * Math.PI);
 			float b = (float) ((this.getEntityRotationComponent().getRotV()) / 180f * Math.PI);
@@ -349,7 +349,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			else
 				moveWithCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b), true);
 		}
-		if (controller.getKeyBind("forward").isPressed())
+		if (controller.getInputsManager().getInputByName("forward").isPressed())
 		{
 			float a = (float) ((180 - this.getEntityRotationComponent().getRotH()) / 180f * Math.PI);
 			float b = (float) ((-this.getEntityRotationComponent().getRotV()) / 180f * Math.PI);
@@ -358,7 +358,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			else
 				moveWithCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b), true);
 		}
-		if (controller.getKeyBind("right").isPressed())
+		if (controller.getInputsManager().getInputByName("right").isPressed())
 		{
 			float a = (float) ((-this.getEntityRotationComponent().getRotH() - 90) / 180f * Math.PI);
 			if (noclip)
@@ -366,7 +366,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			else
 				moveWithCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed, true);
 		}
-		if (controller.getKeyBind("left").isPressed())
+		if (controller.getInputsManager().getInputByName("left").isPressed())
 		{
 			float a = (float) ((-this.getEntityRotationComponent().getRotH() + 90) / 180f * Math.PI);
 			if (noclip)
@@ -521,7 +521,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	}
 
 	@Override
-	public void moveCamera(ClientController controller)
+	public void moveCamera(ClientSideController controller)
 	{
 		if (controller.hasFocus())
 		{
@@ -545,14 +545,14 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			//Creative mode features building and picking.
 			if (this.getCreativeModeComponent().isCreativeMode())
 			{
-				if (input.equals(MouseClick.LEFT))
+				if (input.equals(MouseButton.LEFT))
 				{
 					if (blockLocation != null)
 					{
 						world.setVoxelData(blockLocation, 0, this);
 					}
 				}
-				else if (input.equals(MouseClick.MIDDLE))
+				else if (input.equals(MouseButton.MIDDLE))
 				{
 					if (blockLocation != null)
 					{

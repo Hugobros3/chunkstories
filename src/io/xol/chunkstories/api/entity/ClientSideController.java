@@ -1,14 +1,13 @@
 package io.xol.chunkstories.api.entity;
 
-import io.xol.chunkstories.api.input.KeyBind;
-
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface ClientController extends Controller
+public interface ClientSideController extends Controller
 {
+	/**
+	 * @return Is the game GUI in focus or obstructed by other things ?
+	 */
 	public boolean hasFocus();
-	
-	public KeyBind getKeyBind(String bindName);
 }

@@ -22,18 +22,18 @@ import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.KeyBind;
-import io.xol.chunkstories.api.input.MouseClick;
+import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientInputManager;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
-import io.xol.chunkstories.input.KeyBinds;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
@@ -253,7 +253,8 @@ public class GameplayScene extends OverlayableScene
 	@Override
 	public boolean onKeyPress(int k)
 	{
-		KeyBind keyBind = KeyBinds.getKeyBindForLWJGL2xKey(k);
+		KeyBind keyBind = ((ClientInputManager)Client.getInstance().getInputsManager()).getKeyBoundForLWJGL2xKey(k);
+		
 		if (keyBind != null)
 		{
 			ClientInputPressedEvent event = new ClientInputPressedEvent(keyBind);
@@ -270,7 +271,7 @@ public class GameplayScene extends OverlayableScene
 			return true;
 		if (!chat.chatting)
 		{
-			if (KeyBinds.getKeyBind("chat").equals(keyBind))
+			if (Client.getInstance().getInputsManager().getInputByName("chat").equals(keyBind))
 			{
 				this.changeOverlay(chat.new ChatPanelOverlay(this, null));
 				focus(false);
@@ -319,12 +320,12 @@ public class GameplayScene extends OverlayableScene
 			worldRenderer.flagModified();
 		}
 		//TODO move this to core content plugin
-		else if (KeyBinds.getKeyBind("use").equals(keyBind))
+		else if (Client.getInstance().getInputsManager().getInputByName("use").equals(keyBind))
 		{
 			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) loc.x, (float) loc.y, (float) loc.z, 1.0f, 1.0f);
 			flashLight = !flashLight;
 		}
-		else if (KeyBinds.getKeyBind("inventory").equals(keyBind))
+		else if (Client.getInstance().getInputsManager().getInputByName("inventory").equals(keyBind))
 		{
 			if (player != null)
 			{
@@ -335,7 +336,7 @@ public class GameplayScene extends OverlayableScene
 					this.changeOverlay(new InventoryOverlay(this, null, new EntityInventory[] { ((EntityWithInventory) player).getInventory() }));
 			}
 		}
-		else if (KeyBinds.getKeyBind("exit").equals(keyBind))
+		else if (Client.getInstance().getInputsManager().getInputByName("exit").equals(keyBind))
 		{
 			focus(false);
 			this.changeOverlay(new PauseOverlay(this, null));
@@ -352,17 +353,17 @@ public class GameplayScene extends OverlayableScene
 		if (player == null)
 			return false;
 
-		MouseClick mButton = null;
+		MouseButton mButton = null;
 		switch (button)
 		{
 		case 0:
-			mButton = MouseClick.LEFT;
+			mButton = MouseButton.LEFT;
 			break;
 		case 1:
-			mButton = MouseClick.RIGHT;
+			mButton = MouseButton.RIGHT;
 			break;
 		case 2:
-			mButton = MouseClick.MIDDLE;
+			mButton = MouseButton.MIDDLE;
 			break;
 		}
 		if (mButton != null)
@@ -491,6 +492,7 @@ public class GameplayScene extends OverlayableScene
 
 	}
 
+	@SuppressWarnings("unused")
 	private String getLoadedChunksVramFootprint()
 	{
 		int nbChunks = 0;
@@ -516,6 +518,7 @@ public class GameplayScene extends OverlayableScene
 		return nbChunks + " chunks, storing " + octelsTotal / 1024 / 1024 + "Mb of vertex data.";
 	}
 
+	@SuppressWarnings("unused")
 	private String getLoadedTerrainVramFootprint()
 	{
 		int nbChunks = Client.world.getRegionSummaries().all().size();

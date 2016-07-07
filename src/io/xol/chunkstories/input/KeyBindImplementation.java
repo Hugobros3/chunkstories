@@ -34,6 +34,11 @@ public class KeyBindImplementation implements KeyBind
 		return name;
 	}
 	
+	public long getHash()
+	{
+		return hash;
+	}
+	
 	/**
 	 * Internal to the engine, should not be interfered with by external mods
 	 * @return
@@ -58,7 +63,7 @@ public class KeyBindImplementation implements KeyBind
 	
 	private void computeHash(String name2)
 	{
-		byte[] digested = KeyBinds.md.digest(name2.getBytes());
+		byte[] digested = Inputs.md.digest(name2.getBytes());
 		hash = (hash & 0x0FFFFFFFFFFFFFFFL) | (((long) digested[0] & 0xF) << 60);
 		hash = (hash & 0xF0FFFFFFFFFFFFFFL) | (((long) digested[1] & 0xF) << 56);
 		hash = (hash & 0xFF0FFFFFFFFFFFFFL) | (((long) digested[2] & 0xF) << 52);
@@ -75,11 +80,6 @@ public class KeyBindImplementation implements KeyBind
 		hash = (hash & 0xFFFFFFFFFFFFF0FFL) | (((long) digested[13] & 0xF) << 8);
 		hash = (hash & 0xFFFFFFFFFFFFFF0FL) | (((long) digested[14] & 0xF) << 4);
 		hash = (hash & 0xFFFFFFFFFFFFFFF0L) | (((long) digested[15] & 0xF) << 0);
-	}
-	
-	public long getHash()
-	{
-		return hash;
 	}
 
 	/**

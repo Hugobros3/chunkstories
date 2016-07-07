@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.MouseClick;
+import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -39,7 +39,7 @@ public class ItemAk47 extends Item
 	@Override
 	public boolean handleInteraction(Entity user, ItemPile pile, Input input, Controller controller)
 	{
-		if (/*user.getWorld() instanceof WorldMaster && */input instanceof MouseClick)
+		if (/*user.getWorld() instanceof WorldMaster && */input instanceof MouseButton)
 		{
 			if(user instanceof EntityLiving)
 			{
@@ -52,7 +52,7 @@ public class ItemAk47 extends Item
 				Vector3d eyeLocation = new Vector3d(shooter.getLocation());
 				if(shooter instanceof EntityPlayer)
 					eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
-				if (input.equals(MouseClick.LEFT))
+				if (input.equals(MouseButton.LEFT))
 				{
 					Iterator<Entity> shotEntities = user.getWorld().rayTraceEntities(eyeLocation, shooter.getDirectionLookingAt(), 256f);
 					while(shotEntities.hasNext())

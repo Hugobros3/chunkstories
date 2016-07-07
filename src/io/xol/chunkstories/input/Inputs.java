@@ -2,6 +2,7 @@ package io.xol.chunkstories.input;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -9,10 +10,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.client.ClientInputManager;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
@@ -20,11 +25,181 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class KeyBinds
+public class Inputs
 {
 	public static MessageDigest md;
 
-	public static void main(String[] a)
+	static
+	{
+		try
+		{
+			md = MessageDigest.getInstance("MD5");
+		}
+		catch (NoSuchAlgorithmException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	public static Iterator<Input> loadKeyBindsIntoManager(InputsManager inputManager)
+	{
+		return new Iterator<Input>()
+		{
+
+			Iterator<File> i = GameData.getAllFilesByExtension("inputs");
+			Iterator<Input> fileInputsIterator = null;
+			Input input = null;
+
+			@Override
+			public boolean hasNext()
+			{
+				if (input != null)
+					return true;
+
+				//If there is something to load
+				if (fileInputsIterator != null && fileInputsIterator.hasNext())
+				{
+					input = fileInputsIterator.next();
+					return true;
+				}
+
+				//Load the next one
+				while (i.hasNext())
+				{
+					fileInputsIterator = loadKeyBindsFile(i.next(), inputManager);
+
+					//If we're done reading the file load another
+					if (fileInputsIterator != null && fileInputsIterator.hasNext())
+					{
+						input = fileInputsIterator.next();
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			@Override
+			public Input next()
+			{
+				if (input == null)
+					hasNext();
+
+				Input z = input;
+				input = null;
+				return z;
+			}
+
+		};
+	}
+
+	private static Iterator<Input> loadKeyBindsFile(File f, InputsManager inputManager)
+	{
+		if (!f.exists())
+			return null;
+
+		System.out.println("Reading " + f);
+
+		try
+		{
+			return new Iterator<Input>()
+			{
+
+				FileReader fileReader = new FileReader(f);
+				BufferedReader reader = new BufferedReader(fileReader);
+
+				/*String line = "";
+				while ((line = reader.readLine()) != null)
+				{
+					if (line.startsWith("#"))
+					{
+						// It's a comment, ignore.
+					}
+					else
+					{
+						String splitted[] = line.split(" ");
+						if (splitted.length >= 2)
+						{
+							KeyBindImplementation keyBind = new KeyBindImplementation(splitted[0], splitted[1]);
+				
+							//inputs.add(keyBind);
+							//inputsMap.put(keyBind.getHash(), keyBind);
+						}
+						//System.out.println("added" + splitted[0]);
+					}
+				}*/
+
+				Input input = null;
+
+				//reader.close();
+				@Override
+				public boolean hasNext()
+				{
+					if (input != null)
+						return true;
+
+					//Read until we get a good one
+					String line = "";
+					try
+					{
+						while ((line = reader.readLine()) != null)
+						{
+							System.out.println("Reading " + line);
+							if (line.startsWith("#"))
+							{
+								// It's a comment, ignore.
+							}
+							else
+							{
+								String splitted[] = line.split(" ");
+								if (splitted.length >= 3)
+								{
+									if (inputManager instanceof ClientInputManager)
+									{
+										if (splitted[0].equals("keyBind"))
+										{
+											input = new KeyBindImplementation(splitted[1], splitted[2]);
+											return true;
+										}
+									}
+								}
+							}
+						}
+						reader.close();
+						return false;
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+						System.out.println(f);
+					}
+
+					return false;
+				}
+
+				@Override
+				public Input next()
+				{
+					if (input == null)
+						hasNext();
+
+					Input z = input;
+					input = null;
+					return z;
+				}
+
+			};
+		}
+		catch (FileNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	/*public static void main(String[] a)
 	{
 		try
 		{
@@ -32,7 +207,7 @@ public class KeyBinds
 			String msg = "bind.caca";
 			byte[] digested = md.digest(msg.getBytes());
 			System.out.println(digested.length);
-
+	
 			long digestedLong = 0L;
 			digestedLong = (digestedLong & 0x0FFFFFFFFFFFFFFFL) | (((long) digested[0] & 0xF) << 60);
 			digestedLong = (digestedLong & 0xF0FFFFFFFFFFFFFFL) | (((long) digested[1] & 0xF) << 56);
@@ -50,7 +225,7 @@ public class KeyBinds
 			digestedLong = (digestedLong & 0xFFFFFFFFFFFFF0FFL) | (((long) digested[13] & 0xF) << 8);
 			digestedLong = (digestedLong & 0xFFFFFFFFFFFFFF0FL) | (((long) digested[14] & 0xF) << 4);
 			digestedLong = (digestedLong & 0xFFFFFFFFFFFFFFF0L) | (((long) digested[15] & 0xF) << 0);
-
+	
 			long digestedLong2 = 0L;
 			digestedLong2 = (digestedLong2 & 0x0FFFFFFFFFFFFFFFL) | ((((long) digested[0] & 0xF0) >> 4) << 60);
 			digestedLong2 = (digestedLong2 & 0xF0FFFFFFFFFFFFFFL) | ((((long) digested[1] & 0xF0) >> 4) << 56);
@@ -73,113 +248,7 @@ public class KeyBinds
 		}
 		catch (NoSuchAlgorithmException e)
 		{
+			
 		}
-	}
-
-	static Set<KeyBind> keyBinds = new HashSet<KeyBind>();
-	static Map<Long, KeyBind> keyBindsMap = new HashMap<Long, KeyBind>();
-
-	public static Set<KeyBind> getKeyBinds()
-	{
-		return keyBinds;
-	}
-
-	/**
-	 * Returns null or a KeyBind matching the name
-	 * 
-	 * @param keyCode
-	 * @return
-	 */
-	public static KeyBind getKeyBind(String bindName)
-	{
-		for (KeyBind keyBind : keyBinds)
-		{
-			if (keyBind.getName().equals(bindName))
-				return keyBind;
-		}
-		return null;
-	}
-
-	/**
-	 * Returns null or a KeyBind matching the pressed key
-	 * 
-	 * @param keyCode
-	 * @return
-	 */
-	public static KeyBind getKeyBindForLWJGL2xKey(int keyCode)
-	{
-		for (KeyBind keyBind : keyBinds)
-		{
-			if (keyBind instanceof KeyBindImplementation && ((KeyBindImplementation) keyBind).getLWJGL2xKey() == keyCode)
-				return keyBind;
-		}
-		return null;
-	}
-	
-	public static KeyBind getKeyBindFromHash(long hash)
-	{
-		return keyBindsMap.get(hash);
-	}
-
-	public static void loadKeyBinds()
-	{
-		try
-		{
-			md = MessageDigest.getInstance("MD5");
-		}
-		catch (NoSuchAlgorithmException e)
-		{
-			e.printStackTrace();
-		}
-		
-		keyBinds.clear();
-		keyBindsMap.clear();
-		Deque<File> keyBindsFiles = GameData.getAllFileInstances("./res/data/keyBinds.txt");
-		for (File f : keyBindsFiles)
-		{
-			loadKeyBindsFile(f);
-		}
-	}
-
-	private static void loadKeyBindsFile(File f)
-	{
-		if (!f.exists())
-			return;
-		try (FileReader fileReader = new FileReader(f); BufferedReader reader = new BufferedReader(fileReader);)
-		{
-			String line = "";
-			while ((line = reader.readLine()) != null)
-			{
-				if (line.startsWith("#"))
-				{
-					// It's a comment, ignore.
-				}
-				else
-				{
-					String splitted[] = line.split(" ");
-					if (splitted.length >= 2)
-					{
-						KeyBindImplementation keyBind = new KeyBindImplementation(splitted[0], splitted[1]);
-						keyBinds.add(keyBind);
-						keyBindsMap.put(keyBind.getHash(), keyBind);
-					}
-					//System.out.println("added" + splitted[0]);
-				}
-			}
-			//reader.close();
-		}
-		catch (IOException e)
-		{
-			ChunkStoriesLogger.getInstance().warning(e.getMessage());
-		}
-	}
-
-	public static void reloadKeysFromConfig()
-	{
-		for (KeyBind keyBind : keyBinds)
-		{
-			if (keyBind instanceof KeyBindImplementation)
-				((KeyBindImplementation) keyBind).reload();
-		}
-	}
+	}*/
 }
