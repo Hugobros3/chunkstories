@@ -10,3 +10,4 @@
 8 io.xol.chunkstories.core.entity.components.EntityComponentFlying
 9 io.xol.chunkstories.core.entity.components.EntityComponentCreativeMode
 10 io.xol.chunkstories.core.entity.components.EntityComponentHealth
+12 io.xol.chunkstories.core.entity.components.EntityComponentPublicInventory

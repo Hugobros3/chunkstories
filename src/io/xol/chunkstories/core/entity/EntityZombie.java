@@ -16,6 +16,7 @@ import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.entity.EntityImplementation;
+import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
@@ -27,11 +28,11 @@ import io.xol.engine.model.animation.BVHAnimation;
 import io.xol.engine.model.animation.BVHLibrary;
 import io.xol.engine.model.animation.Bone;
 
-public class EntityTest extends EntityImplementation implements EntityHUD
+public class EntityZombie extends EntityImplementation implements EntityHUD
 {
 	int i = 0;
 
-	public EntityTest(WorldImplementation w, double x, double y, double z)
+	public EntityZombie(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 		//anim = new BVHAnimation(new File("res/models/human.bvh"));
@@ -168,5 +169,11 @@ public class EntityTest extends EntityImplementation implements EntityHUD
 		float dekal = TrueTypeFont.arial12.getWidth("Player")*16*scale;
 		if(scale > 0)
 			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x-dekal/2, posOnScreen.y, "", 16*scale, 16*scale, new Vector4f(1,1,1,1));
+	}
+	
+	@Override
+	public CollisionBox[] getCollisionBoxes()
+	{
+		return new CollisionBox[] { new CollisionBox(0.75, 1.80, 0.75) };
 	}
 }

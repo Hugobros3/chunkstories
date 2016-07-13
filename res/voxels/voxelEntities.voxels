@@ -3,3 +3,9 @@ voxel voxelEntityTest 98 io.xol.chunkstories.core.voxel.VoxelEntityTest
 	selfOpaque: true
 	textures: 'sand2', 'sand2', 'sand2', 'sand2', 'sand2', 'sand2'
 end
+
+voxel chest 97 io.xol.chunkstories.core.voxel.VoxelChest
+	opaque: false
+	selfOpaque: true
+	textures: 'chesttop', 'chesttop', 'chestside', 'chestside', 'chestfront', 'chestside'
+end

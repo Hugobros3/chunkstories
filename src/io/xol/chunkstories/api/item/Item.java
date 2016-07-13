@@ -43,7 +43,17 @@ public abstract class Item
 	 * @param info When spawning an item it parses everything after itemname: and returns an array of strings separated by ':'
 	 * ie : myitem:prout:22 infers an String[] info = {"prout", "22"};
 	 */
+	@Deprecated
 	public void onCreate(ItemPile pile, String[] info)
+	{
+		
+	}
+	
+	/**
+	 * Should be called when the owner has this item selected
+	 * @param owner
+	 */
+	public void tickInHand(Entity owner, ItemPile itemPile)
 	{
 		
 	}
@@ -55,7 +65,7 @@ public abstract class Item
 	 * @param input
 	 * @return false if the item doesn't handle the input, true if it does
 	 */
-	public boolean handleInteraction(Entity user, ItemPile pile, Input input, Controller controller)
+	public boolean handleInteraction(Entity owner, ItemPile itemPile, Input input, Controller controller)
 	{
 		return false;
 	}

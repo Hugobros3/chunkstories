@@ -40,6 +40,12 @@ public class ClientInputsManager implements InputsManager
 	 */
 	public Input getInputByName(String bindName)
 	{
+		if(bindName.equals("mouse.left"))
+			return MouseButton.LEFT;
+		if(bindName.equals("mouse.right"))
+			return MouseButton.RIGHT;
+		if(bindName.equals("mouse.middle"))
+			return MouseButton.MIDDLE;
 		for (Input keyBind : inputs)
 		{
 			if (keyBind.getName().equals(bindName))

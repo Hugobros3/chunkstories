@@ -92,7 +92,7 @@ public class Inputs
 		if (!f.exists())
 			return null;
 
-		System.out.println("Reading " + f);
+		//System.out.println("Reading " + f);
 
 		try
 		{
@@ -102,30 +102,8 @@ public class Inputs
 				FileReader fileReader = new FileReader(f);
 				BufferedReader reader = new BufferedReader(fileReader);
 
-				/*String line = "";
-				while ((line = reader.readLine()) != null)
-				{
-					if (line.startsWith("#"))
-					{
-						// It's a comment, ignore.
-					}
-					else
-					{
-						String splitted[] = line.split(" ");
-						if (splitted.length >= 2)
-						{
-							KeyBindImplementation keyBind = new KeyBindImplementation(splitted[0], splitted[1]);
-				
-							//inputs.add(keyBind);
-							//inputsMap.put(keyBind.getHash(), keyBind);
-						}
-						//System.out.println("added" + splitted[0]);
-					}
-				}*/
-
 				Input input = null;
 
-				//reader.close();
 				@Override
 				public boolean hasNext()
 				{
@@ -160,6 +138,14 @@ public class Inputs
 										}
 									}
 									else if(inputManager instanceof ServerInputsManager)
+									{
+										input = new InputVirtual(splitted[1]);
+										return true;
+									}
+								}
+								else if(splitted.length >= 2)
+								{
+									if (splitted[0].equals("virtual"))
 									{
 										input = new InputVirtual(splitted[1]);
 										return true;

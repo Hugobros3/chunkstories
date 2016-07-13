@@ -16,7 +16,6 @@ import java.util.Set;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.exceptions.IllegalUUIDChangeException;
@@ -43,11 +42,9 @@ public abstract class EntityImplementation implements Entity
 	protected EntityComponentPosition position = new EntityComponentPosition(this, existence);
 
 	public WorldImplementation world;
-
-	//public Vector3d pos;
-
-	public Vector3d vel;
-	public Vector3d acc;
+	
+	public Vector3d velocity;
+	public Vector3d acceleration;
 
 	public boolean collision_top = false;
 	public boolean collision_bot = false;
@@ -60,7 +57,6 @@ public abstract class EntityImplementation implements Entity
 
 	//public boolean inWater = false;
 	public Voxel voxelIn;
-	public EntityInventory inventory;
 	
 	private boolean hasSpawned = false;
 
@@ -71,8 +67,8 @@ public abstract class EntityImplementation implements Entity
 		position.setWorld(w);
 		position.setPositionXYZ(x, y, z);
 		
-		vel = new Vector3d();
-		acc = new Vector3d();
+		velocity = new Vector3d();
+		acceleration = new Vector3d();
 		//checkPositionAndUpdateHolder();
 		//To avoid NPEs
 		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(position.getLocation())));
@@ -114,16 +110,16 @@ public abstract class EntityImplementation implements Entity
 
 	public void setVelocity(double x, double y, double z)
 	{
-		vel.x = x;
-		vel.y = y;
-		vel.z = z;
+		velocity.x = x;
+		velocity.y = y;
+		velocity.z = z;
 	}
 
 	public void applyExternalForce(double x, double y, double z)
 	{
-		vel.x += x;
-		vel.y += y;
-		vel.z += z;
+		velocity.x += x;
+		velocity.y += y;
+		velocity.z += z;
 	}
 
 	// Ran each tick
@@ -146,7 +142,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public String toString()
 	{
-		return "[" + this.getClass().getSimpleName() + " holder: "+position.getRegionWithin()+" pos : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Holder:" + "WIP" + "Inventory : " + this.inventory+" ]";
+		return "[" + this.getClass().getSimpleName() + " holder: "+position.getRegionWithin()+" pos : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Region:" + this.position.getRegionWithin() + " ]";
 	}
 
 	double clampDouble(double d)
@@ -471,7 +467,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public CollisionBox[] getCollisionBoxes()
 	{
-		return new CollisionBox[] { new CollisionBox(0.75, 1.80, 0.75) };
+		return new CollisionBox[] { new CollisionBox(1.0, 1.0, 1.0) };
 	}
 
 	public void render()

@@ -19,12 +19,17 @@ public interface EntityControllable extends Entity, EntityUnsaveable
 {
 	public EntityComponentController getControllerComponent();
 	
-	public void moveCamera(ClientSideController controller);
+	public default Controller getController()
+	{
+		return getControllerComponent().getController();
+	}
 	
 	/**
-	 * Clientside controller tick, called before
+	 * Clientside controller tick, called before the main tick() call on clients, supposed to handle the bulk of interactions
 	 */
-	public void tick(ClientSideController controller);
+	public void tickClient(ClientSideController controller);
+
+	public void setupCamera(ClientSideController controller);
 	
 	/**
 	 * If this entity has the ability to select blocks, this method should return said block
@@ -33,11 +38,10 @@ public interface EntityControllable extends Entity, EntityUnsaveable
 	 */
 	public Location getBlockLookingAt(boolean inside);
 	
-	
 	public boolean handleInteraction(Input input, Controller controller);
 	
 	public default boolean shouldSaveIntoRegion()
 	{
-		return getControllerComponent().getController() == null;
+		return getController() == null;
 	}
 }

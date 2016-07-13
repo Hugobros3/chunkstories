@@ -14,12 +14,12 @@ import io.xol.engine.model.RenderingContext;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityTest2 extends EntityImplementation
+public class EntityAk47ModelStandingByItself extends EntityImplementation
 {
 
 	int i = 0;
 
-	public EntityTest2(WorldImplementation w, double x, double y, double z)
+	public EntityAk47ModelStandingByItself(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 	}

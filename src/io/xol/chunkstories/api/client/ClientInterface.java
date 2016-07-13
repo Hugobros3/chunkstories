@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api.client;
 
+import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
@@ -18,11 +19,6 @@ public interface ClientInterface
 	public SoundManager getSoundManager();
 	
 	public PluginsManager getPluginsManager();
-	
-	/**
-	 * Reloads all assets, shaders, sounds and whatnot from the mods and the main game.
-	 */
-	public void reloadAssets();
 
 	public InputsManager getInputsManager();
 
@@ -31,6 +27,17 @@ public interface ClientInterface
 	 * @param textToPrint
 	 */
 	public void printChat(String textToPrint);
+	
+	/**
+	 * Opens the inventory GUI with the controlled entity's inventory, if applicable
+	 * @param otherInventory If not null, opens this other inventory as well
+	 */
+	public void openInventory(EntityInventory otherInventory);
+	
+	/**
+	 * Reloads all assets, shaders, sounds and whatnot from the mods and the main game.
+	 */
+	public void reloadAssets();
 	
 	public ClientToServerConnection getServerConnection();
 }

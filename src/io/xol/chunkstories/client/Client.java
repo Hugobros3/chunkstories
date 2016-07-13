@@ -19,6 +19,8 @@ import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.sound.SoundManager;
@@ -28,6 +30,7 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.MainMenu;
+import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -233,5 +236,19 @@ public class Client implements ClientSideController, ClientInterface
 	public InputsManager getInputsManager()
 	{
 		return inputsManager;
+	}
+
+	public void openInventory(EntityInventory otherInventory)
+	{
+		if (windows.getCurrentScene() instanceof GameplayScene)
+		{
+			GameplayScene gmp = (GameplayScene) windows.getCurrentScene();
+
+			gmp.focus(false);
+			if (otherInventory != null)
+				gmp.changeOverlay(new InventoryOverlay(gmp, null, new EntityInventory[] { ((EntityWithInventory) controlledEntity).getInventory(), otherInventory }));
+			else
+				gmp.changeOverlay(new InventoryOverlay(gmp, null, new EntityInventory[] { ((EntityWithInventory) controlledEntity).getInventory() }));
+		}
 	}
 }

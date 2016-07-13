@@ -282,7 +282,7 @@ public abstract class WorldImplementation implements World
 				if (entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.controlledEntity != null && Client.controlledEntity.equals(entity))
 				{
 					//System.out.println("mdr");
-					((EntityControllable) entity).tick(Client.getInstance());
+					((EntityControllable) entity).tickClient(Client.getInstance());
 				}
 
 				Location entityLocation = entity.getLocation();

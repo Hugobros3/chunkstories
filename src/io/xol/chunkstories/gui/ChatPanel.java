@@ -20,7 +20,10 @@ import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.EntitiesList;
-import io.xol.chunkstories.input.Inputs;
+
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 public class ChatPanel
 {

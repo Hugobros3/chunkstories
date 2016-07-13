@@ -30,7 +30,6 @@ import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientInputsManager;
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
@@ -120,7 +119,7 @@ public class GameplayScene extends OverlayableScene
 
 		// Update the player
 		if (player instanceof EntityControllable)
-			((EntityControllable) player).moveCamera(Client.clientController);
+			((EntityControllable) player).setupCamera(Client.clientController);
 
 		Location selectedBlock = null;
 		if (player instanceof EntityPlayer)
@@ -236,7 +235,7 @@ public class GameplayScene extends OverlayableScene
 		}
 	}
 
-	private void focus(boolean f)
+	public void focus(boolean f)
 	{
 		Mouse.setGrabbed(f);
 		if (f && !focus)
@@ -308,8 +307,7 @@ public class GameplayScene extends OverlayableScene
 			shouldCM = true;
 		else if (keyCode == Keyboard.KEY_F12)
 		{
-			GameData.reload();
-			GameData.reloadClientContent();
+			Client.getInstance().reloadAssets();
 			worldRenderer.farTerrainRenderer.markVoxelTexturesSummaryDirty();
 		}
 		//Redraw chunks
@@ -355,8 +353,7 @@ public class GameplayScene extends OverlayableScene
 			ClientInputReleasedEvent event = new ClientInputReleasedEvent(keyBind);
 
 			Client.pluginsManager.fireEvent(event);
-			if (event.isCancelled())
-				return true;
+			return true;
 		}
 
 		return false;

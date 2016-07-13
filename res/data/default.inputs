@@ -1,0 +1,17 @@
+#Default inputs of the game
+keyBind forward Z
+keyBind back S
+keyBind left Q
+keyBind right D
+keyBind jump SPACE
+keyBind run LCONTROL
+keyBind use E
+keyBind inventory I
+keyBind exit ESCAPE
+keyBind enter RETURN
+keyBind chat T
+
+#Those are hard coded inside the engine, you can't change them
+#mouseButton mouse.left 0
+#mouseButton mouse.middle 2
+#mouseButton mouse.right 1

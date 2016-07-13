@@ -9,6 +9,7 @@ import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -21,7 +22,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	public long damageCooldown = 0;
 
 	EntityComponentRotation entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
-	EntityComponentHealth entityHealthComponent;// = new EntityComponentHealth(this);
+	EntityComponentHealth entityHealthComponent;
 
 	public EntityLivingImplentation(WorldImplementation w, double x, double y, double z)
 	{
@@ -63,47 +64,46 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	@Override
 	public void tick()
 	{
-		//Irrelevant.
-		//pos.x %= world.getWorldSize();
-		//pos.z %= world.getWorldSize();
-
+		Vector2f imp = this.getEntityRotationComponent().tickInpulse();
+		getEntityRotationComponent().addRotation(imp.x, imp.y);
+		
 		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(position.getLocation())));
 		boolean inWater = voxelIn.isVoxelLiquid();
 
-		// vel.z=Math.cos(a)*hSpeed*0.1;
+		//Collisions
 		if (collision_left || collision_right)
-			vel.x = 0;
+			velocity.x = 0;
 		if (collision_north || collision_south)
-			vel.z = 0;
+			velocity.z = 0;
 		// Stap it
-		if (collision_bot && vel.y < 0)
-			vel.y = 0;
+		if (collision_bot && velocity.y < 0)
+			velocity.y = 0;
 		else if (collision_top)
-			vel.y = 0;
+			velocity.y = 0;
 
 		// Gravity
 		if (!(this instanceof EntityFlying && ((EntityFlying) this).getFlyingComponent().isFlying()))
 		{
 			double terminalVelocity = inWater ? -0.02 : -0.5;
-			if (vel.y > terminalVelocity)
-				vel.y -= 0.008;
-			if (vel.y < terminalVelocity)
-				vel.y = terminalVelocity;
+			if (velocity.y > terminalVelocity)
+				velocity.y -= 0.008;
+			if (velocity.y < terminalVelocity)
+				velocity.y = terminalVelocity;
 		}
 
 		// Acceleration
-		vel.x += acc.x;
-		vel.y += acc.y;
-		vel.z += acc.z;
+		velocity.x += acceleration.x;
+		velocity.y += acceleration.y;
+		velocity.z += acceleration.z;
 
 		//TODO ugly
 		if (!world.isChunkLoaded((int) position.getLocation().x / 32, (int) position.getLocation().y / 32, (int) position.getLocation().z / 32))
 		{
-			vel.zero();
+			velocity.zero();
 		}
 
-		//TODO use vector3d there
-		blockedMomentum = moveWithCollisionRestrain(vel.x, vel.y, vel.z, true);
+		//Eventually moves
+		blockedMomentum = moveWithCollisionRestrain(velocity.x, velocity.y, velocity.z, true);
 	}
 
 	@Override

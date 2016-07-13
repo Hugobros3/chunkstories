@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -17,21 +18,24 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public class EntityComponentRotation extends EntityComponent
 {
-	private float rotH = 0f, rotV = 0f;
+	private float rotationHorizontal = 0f;
+	private float rotationVertical = 0f;
+	
+	private Vector2f rotationImpulse = new Vector2f();
 	
 	public EntityComponentRotation(Entity entity, EntityComponent previous)
 	{
 		super(entity, previous);
 	}
 
-	public float getRotH()
+	public float getHorizontalRotation()
 	{
-		return rotH;
+		return rotationHorizontal;
 	}
 	
-	public float getRotV()
+	public float getVerticalRotation()
 	{
-		return rotV;
+		return rotationVertical;
 	}
 
 	/**
@@ -41,8 +45,8 @@ public class EntityComponentRotation extends EntityComponent
 	{
 		Vector3d direction = new Vector3d();
 
-		float a = (float) ((-getRotH()) / 360f * 2 * Math.PI);
-		float b = (float) ((getRotV()) / 360f * 2 * Math.PI);
+		float a = (float) ((-getHorizontalRotation()) / 360f * 2 * Math.PI);
+		float b = (float) ((getVerticalRotation()) / 360f * 2 * Math.PI);
 		direction.x = -(float) Math.sin(a) * (float) Math.cos(b);
 		direction.y = -(float) Math.sin(b);
 		direction.z = -(float) Math.cos(a) * (float) Math.cos(b);
@@ -50,30 +54,59 @@ public class EntityComponentRotation extends EntityComponent
 		return direction.normalize();
 	}
 	
-	public void setRotation(float rotH, float rotV)
+	public void setRotation(double horizontalAngle, double verticalAngle)
 	{
-		this.rotH = rotH;
-		this.rotV = rotV;
+		this.rotationHorizontal = (float)horizontalAngle;
+		this.rotationVertical = (float)verticalAngle;
+		
+		if (rotationVertical > 90)
+			rotationVertical = 90;
+		if (rotationVertical < -90)
+			rotationVertical = -90;
 		
 		this.pushComponentEveryone();
+	}
+
+	public void addRotation(float x, float y)
+	{
+		setRotation(rotationHorizontal + x, rotationVertical + y);
 	}
 	
 	@Override
 	protected void push(StreamTarget destinator, DataOutputStream dos) throws IOException
 	{
-		dos.writeFloat(rotH);
-		dos.writeFloat(rotV);
+		dos.writeFloat(rotationHorizontal);
+		dos.writeFloat(rotationVertical);
 	}
 
 	@Override
 	protected void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
-		rotH = dis.readFloat();
-		rotV = dis.readFloat();
+		rotationHorizontal = dis.readFloat();
+		rotationVertical = dis.readFloat();
 
 		//Position updates received by the server should be told to everyone but the controller
 		if(entity.getWorld() instanceof WorldMaster)
 			this.pushComponentEveryoneButController();
+	}
+
+	/**
+	 * Sends the view flying about
+	 */
+	public void applyInpulse(double inpulseHorizontal, double inpulseVertical)
+	{
+		rotationImpulse.add(new Vector2f((float)inpulseHorizontal, (float)inpulseVertical));
+	}
+	
+	/**
+	 * Reduces the acceleration and returns it
+	 */
+	public Vector2f tickInpulse()
+	{
+		rotationImpulse.scale(0.50f);
+		if(rotationImpulse.length() < 0.05)
+			rotationImpulse.set(0.0f, 0.0f);
+		return rotationImpulse;
 	}
 
 }

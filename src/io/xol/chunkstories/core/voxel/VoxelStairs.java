@@ -121,7 +121,7 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 			
 			if(entity instanceof EntityPlayer)
 			{
-				if(((EntityPlayer)entity).getEntityRotationComponent().getRotV() < 0)
+				if(((EntityPlayer)entity).getEntityRotationComponent().getVerticalRotation() < 0)
 					stairsSide += 4;
 			}
 			

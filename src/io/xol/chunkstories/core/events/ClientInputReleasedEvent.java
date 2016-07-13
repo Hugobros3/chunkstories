@@ -1,6 +1,6 @@
 package io.xol.chunkstories.core.events;
 
-import io.xol.chunkstories.api.events.CancellableEvent;
+import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.events.categories.ClientEvent;
 import io.xol.chunkstories.api.input.Input;
@@ -11,7 +11,7 @@ import io.xol.chunkstories.net.packets.PacketInput;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ClientInputReleasedEvent extends CancellableEvent implements ClientEvent
+public class ClientInputReleasedEvent extends Event implements ClientEvent
 {
 	// Every event class has to have this
 
@@ -45,16 +45,12 @@ public class ClientInputReleasedEvent extends CancellableEvent implements Client
 	public void defaultBehaviour()
 	{
 		//Always tell the sever we let go the input
-		
-		//if(!this.isCancelled())
+		ClientToServerConnection connection = this.getClient().getServerConnection();
+		if(connection != null)
 		{
-			ClientToServerConnection connection = this.getClient().getServerConnection();
-			if(connection != null)
-			{
-				PacketInput packet = new PacketInput(true);
-				packet.input = input;
-				connection.sendPacket(packet);
-			}
+			PacketInput packet = new PacketInput(true);
+			packet.input = input;
+			connection.sendPacket(packet);
 		}
 	}
 

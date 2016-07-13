@@ -9,6 +9,10 @@ import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.Scene;
 import io.xol.engine.gui.elements.Button;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class ConnectScene extends Scene
 {
 	GuiElementsHandler guiHandler = new GuiElementsHandler();

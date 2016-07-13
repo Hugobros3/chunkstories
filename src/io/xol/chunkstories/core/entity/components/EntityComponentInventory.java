@@ -39,6 +39,11 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		contents = new ItemPile[width][height];
 	}
 
+	public void sendUpdates()
+	{
+		pushComponentController();
+	}
+	
 	public ItemPile[][] getContents()
 	{
 		return contents;
@@ -131,7 +136,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			
 			//Push changes
 			if(this.holder != null)
-				this.pushComponentController();
+				this.sendUpdates();
 			
 			//There is nothing left
 			return null;
@@ -164,7 +169,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 				{
 					//Push changes
 					if(this.holder != null)
-						this.pushComponentController();
+						this.sendUpdates();
 					
 					return null;
 				}
@@ -175,7 +180,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 					
 					//Push changes
 					if(this.holder != null)
-						this.pushComponentController();
+						this.sendUpdates();
 					
 					return itemPile;
 				}
@@ -196,7 +201,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			contents[x % width][y % height] = null;
 			
 			if(this.holder != null)
-				this.pushComponentController();
+				this.sendUpdates();
 			
 			return true;
 		}
@@ -221,7 +226,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		}
 
 		if(this.holder != null)
-			this.pushComponentController();
+			this.sendUpdates();
 		return true;
 	}
 	
@@ -382,7 +387,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		contents = new ItemPile[width][height];
 
 		if(this.holder != null)
-			this.pushComponentController();
+			this.sendUpdates();
 	}
 
 	/* (non-Javadoc)

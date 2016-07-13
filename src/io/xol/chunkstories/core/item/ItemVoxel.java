@@ -71,7 +71,7 @@ public class ItemVoxel extends Item
 	@Override
 	public boolean handleInteraction(Entity user, ItemPile pile, Input input, Controller controller)
 	{
-		if (user.getWorld() instanceof WorldMaster && input instanceof MouseButton)
+		if (user.getWorld() instanceof WorldMaster && input.getName().equals("mouse.right"))
 		{
 			//TODO here we assumme a player, that's not correct
 			EntityPlayer player = (EntityPlayer) user;
@@ -80,14 +80,10 @@ public class ItemVoxel extends Item
 
 			int data2write = -1;
 			Location selectedBlock = null;
-			if (input.equals(MouseButton.RIGHT))
-			{
-				selectedBlock = player.getBlockLookingAt(false);
-				data2write = VoxelFormat.format(voxelID, voxelMeta, 0, 0);
-			}
 			
-			else
-				return false;
+			selectedBlock = player.getBlockLookingAt(false);
+			data2write = VoxelFormat.format(voxelID, voxelMeta, 0, 0);
+			
 			if (selectedBlock != null && data2write != -1)
 			{
 				//int selectedBlockPreviousData = user.getWorld().getDataAt(selectedBlock);
