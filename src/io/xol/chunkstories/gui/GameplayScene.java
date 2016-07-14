@@ -1,6 +1,7 @@
 package io.xol.chunkstories.gui;
 
 import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.Vector4f;
 
 import java.util.Iterator;
 
@@ -12,11 +13,14 @@ import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
@@ -190,26 +194,47 @@ public class GameplayScene extends OverlayableScene
 		//Blit the final 3d image
 		worldRenderer.blitScreen();
 
+		//Draw the GUI
 		if (!guiHidden)
 		{
 			if (FastConfig.showDebugInfo)
 				debug();
-			else
-				Client.profiler.reset("gui");
 
+			//Draw chat
 			chat.update();
 			chat.draw();
 
+			//Draw inventory
 			if (player != null && inventoryDrawer != null)
-				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, GameWindowOpenGL.windowWidth / 2, 64 + 64);
+				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, GameWindowOpenGL.windowWidth / 2 - 7, 64 + 64);
 
-			if (Keyboard.isKeyDown(78))
+			//Draw health
+			if(player != null && player instanceof EntityLiving)
+			{
+				EntityLiving livingPlayer = (EntityLiving)player;
+				
+				float scale = 2.0f;
+				
+				TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").setLinearFiltering(false);
+				GuiDrawer.drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale
+						, 256 * scale, 32 * scale, 0, 32f / 256f, 1, 0, TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId(), false, true, null);
+				
+				int horizontalBitsToDraw = (int) (8 + 118 * livingPlayer.getHealth() / livingPlayer.getMaxHealth());
+				GuiDrawer.drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale
+						, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f, 32f / 256f, TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId(), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
+				
+				//System.out.println(TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId());
+				
+				//ObjectRenderer.renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 256, 256, 0, 0, 16, 16, 16, "internal://./res/textures/gui/hud/hud_survival.png");
+			}
+			
+			/*if (Keyboard.isKeyDown(78))
 				Client.world.worldTime += 10;
 			if (Keyboard.isKeyDown(74))
 			{
 				if (Client.world.worldTime > 10)
 					Client.world.worldTime -= 10;
-			}
+			}*/
 
 			if (currentOverlay == null && !chat.chatting)
 				focus(true);
@@ -220,6 +245,8 @@ public class GameplayScene extends OverlayableScene
 				ObjectRenderer.renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "internal://./res/textures/gui/cursor.png");
 
 		}
+		Client.profiler.reset("gui");
+		
 		super.update();
 		// Check connection didn't died and change scene if it has
 		if (Client.connection != null)

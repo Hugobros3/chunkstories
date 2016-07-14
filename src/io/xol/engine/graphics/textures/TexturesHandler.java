@@ -14,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class TexturesHandler
 {
+	static Texture2D nullTexture;
+	
 	static ConcurrentHashMap<String, Cubemap> loadedCubemaps = new ConcurrentHashMap<String, Cubemap>();
 	static Cubemap currentCubemap;
 	
@@ -82,125 +84,6 @@ public class TexturesHandler
 		return getCubemap(name).getID();
 	}
 	
-	/*
-	public static int loadCubeMap(String name)
-	{
-		int textureID = glGenTextures();
-		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-		ByteBuffer temp;
-		String[] names = { "right", "left", "top", "bottom", "front", "back" };
-		if (!(new File(name + "/front.png")).exists())
-		{
-			ChunkStoriesLogger.getInstance().log("Can't find front.png from CS-format skybox, trying MC format.", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
-			names = new String[] { "panorama_1", "panorama_3", "panorama_4", "panorama_5", "panorama_0", "panorama_2" };
-		}
-		try
-		{
-			for (int i = 0; i < 6; i++)
-			{
-				PNGDecoder decoder = new PNGDecoder(new FileInputStream(new File(name + "/" + names[i] + ".png")));
-				temp = ByteBuffer.allocateDirect(4 * decoder.getWidth() * decoder.getHeight());
-				decoder.decode(temp, decoder.getWidth() * 4, Format.RGBA);
-				temp.flip();
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, decoder.getWidth(), decoder.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, temp);
-				// Anti alias
-				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				// Anti seam
-				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			}
-		}
-		catch(FileNotFoundException e)
-		{
-			ChunkStoriesLogger.getInstance().info("Clouldn't find file : "+e.getMessage());
-		}
-		catch (IOException e)
-		{
-			ChunkStoriesLogger.getInstance().log("Failed to load properly cubemap : " + name, ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
-
-			// ChunkStoriesLogger.getInstance().log(,
-			// ChunkStoriesLogger.LogType.RENDERING,
-			// ChunkStoriesLogger.LogLevel.WARN);
-			e.printStackTrace();
-			textureID = -1;
-		}
-		return textureID;
-	}
-
-	public static void bindCubeMap(String name)
-	{
-		if (alreadyBoundCubemap.equals(name))
-			return;
-		if (loadedCubemaps.containsKey(name))
-		{
-			glBindTexture(GL_TEXTURE_CUBE_MAP, loadedCubemaps.get(name));
-		}
-		else
-		{
-			int cubeMapID = loadCubeMap(name);
-			if (cubeMapID != -1)
-			{
-				loadedCubemaps.put(name, cubeMapID);
-				glBindTexture(GL_TEXTURE_CUBE_MAP, loadedCubemaps.get(name));
-			}
-		}
-	}
-
-	public static int idCubemap(String name)
-	{
-		if (loadedCubemaps.containsKey(name))
-		{
-			return loadedCubemaps.get(name);
-		}
-		else
-		{
-			int cubeMapID = loadCubeMap(name);
-			if (cubeMapID != -1)
-			{
-				loadedCubemaps.put(name, cubeMapID);
-				// glBindTexture(GL_TEXTURE_CUBE_MAP, loadedTextures.get(name));
-			}
-			return cubeMapID;
-		}
-	}
-	
-	public static void loadSkybox(int skyboxpart, String path)
-	{
-		try
-		{
-			BufferedImage image = ImageIO.read(new FileInputStream(new File(path)));
-			int[] pixels = new int[image.getWidth() * image.getHeight()];
-			image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
-			ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * 4); // 4
-																										// for
-																										// RGBA,
-																										// 3
-																										// for
-																										// RGB
-			for (int y = 0; y < image.getHeight(); y++)
-			{
-				for (int x = 0; x < image.getWidth(); x++)
-				{
-					int pixel = pixels[y * image.getWidth() + x];
-					buffer.put((byte) ((pixel >> 16) & 0xFF)); // Red component
-					buffer.put((byte) ((pixel >> 8) & 0xFF)); // Green component
-					buffer.put((byte) (pixel & 0xFF)); // Blue component
-					buffer.put((byte) ((pixel >> 24) & 0xFF)); // Alpha
-																// component.
-																// Only for RGBA
-				}
-			}
-			buffer.flip();
-			glTexImage2D(skyboxpart, 0, GL_RGBA, (int) image.getWidth(), (int) image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-
-*/
 	public static void reloadAll()
 	{
 		for(Texture2D texture : loadedTextures.values())
@@ -212,5 +95,12 @@ public class TexturesHandler
 		{
 			cubemap.loadCubemapFromDisk();
 		}
+	}
+
+	public static Texture2D nullTexture()
+	{
+		if(nullTexture == null)
+			nullTexture = TexturesHandler.getTexture("res/textures/notex.png");
+		return nullTexture;
 	}
 }

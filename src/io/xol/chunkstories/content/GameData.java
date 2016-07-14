@@ -13,6 +13,7 @@ import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.entity.EntityComponents;
 import io.xol.chunkstories.item.ItemsList;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
+import io.xol.chunkstories.particles.ParticleTypes;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModels;
@@ -40,6 +41,7 @@ public class GameData
 		EntityComponents.reload();
 		PacketsProcessor.loadPacketsTypes();
 		WorldGenerators.loadWorldGenerators();
+		ParticleTypes.reload();
 		
 		//Inputs.loadKeyBindsClient();
 	}

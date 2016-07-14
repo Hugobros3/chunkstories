@@ -93,7 +93,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	public double maxSpeedRunning = 0.25;
 	public double maxSpeed = 0.15;
 
-	public double hSpeed = 0;
+	public double horizontalSpeed = 0;
 
 	public double eyePosition = 1.6;
 	public double walked = 0d;
@@ -179,7 +179,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		}
 		//Bobbing
 		if (collision_bot)
-			walked += Math.abs(hSpeed);
+			walked += Math.abs(horizontalSpeed);
 	}
 
 	// client-side method for updating the player movement
@@ -262,17 +262,17 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		if (focus)
 		{
 			if (controller.getInputsManager().getInputByName("forward").isPressed() || controller.getInputsManager().getInputByName("left").isPressed() || controller.getInputsManager().getInputByName("right").isPressed())
-				hSpeed = (running ? 0.09 : 0.06);
+				horizontalSpeed = (running ? 0.09 : 0.06);
 			else if (controller.getInputsManager().getInputByName("back").isPressed())
-				hSpeed = -0.05;
+				horizontalSpeed = -0.05;
 			else
-				hSpeed = 0.0;
+				horizontalSpeed = 0.0;
 		}
 		else
-			hSpeed = 0.0;
+			horizontalSpeed = 0.0;
 		// Water slows you down
 		if (inWater)
-			hSpeed *= 0.45;
+			horizontalSpeed *= 0.45;
 
 		if (controller.getInputsManager().getInputByName("left").isPressed())
 			modif += 90 * (controller.getInputsManager().getInputByName("forward").isPressed() ? 0.5 : 1);
@@ -318,11 +318,11 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		if (onLadder)
 		{
 			//moveWithCollisionRestrain(0, (float)(Math.sin(((rotV) / 180f * Math.PI)) * hSpeed), 0, false);
-			this.velocity.y = (float) (Math.sin((-(this.getEntityRotationComponent().getVerticalRotation()) / 180f * Math.PI)) * hSpeed);
+			this.velocity.y = (float) (Math.sin((-(this.getEntityRotationComponent().getVerticalRotation()) / 180f * Math.PI)) * horizontalSpeed);
 		}
 
-		targetVectorX = Math.sin((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * hSpeed;
-		targetVectorZ = Math.cos((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * hSpeed;
+		targetVectorX = Math.sin((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed;
+		targetVectorZ = Math.cos((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed;
 
 		eyePosition = 1.65 + Math.sin(walked * 5d) * 0.035d;
 

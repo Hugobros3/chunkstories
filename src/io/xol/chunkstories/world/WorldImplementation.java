@@ -14,6 +14,8 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.particles.ParticleData;
+import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
@@ -30,9 +32,8 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.entity.EntityWorldIterator;
+import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.physics.particules.Particle;
-import io.xol.chunkstories.physics.particules.ParticlesHolder;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.tools.WorldTool;
@@ -90,7 +91,7 @@ public abstract class WorldImplementation implements World
 	public SimpleLock entitiesLock = new SimpleLock();
 
 	// Particles
-	private ParticlesHolder particlesHolder;
+	private ParticlesRenderer particlesHolder;
 
 	//Entity IDS counter
 	AtomicLong entitiesUUIDGenerator = new AtomicLong();
@@ -979,19 +980,24 @@ public abstract class WorldImplementation implements World
 		return coordinate;
 	}
 
-	public ParticlesHolder getParticlesHolder()
+	public ParticlesRenderer getParticlesHolder()
 	{
 		return particlesHolder;
 	}
 
-	public void setParticlesHolder(ParticlesHolder particlesHolder)
+	public void setParticlesHolder(ParticlesRenderer particlesHolder)
 	{
 		this.particlesHolder = particlesHolder;
 	}
 
-	public void addParticle(Particle particle)
+	public ParticleData addParticle(ParticleType particleType, ParticleData data)
 	{
-		particlesHolder.addParticle(particle);
+		return particlesHolder.addParticle(particleType, data);
+	}
+	
+	public ParticleData addParticle(ParticleType particleType, Vector3d position)
+	{
+		return particlesHolder.addParticle(particleType, new Location(this, position));
 	}
 
 	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain)

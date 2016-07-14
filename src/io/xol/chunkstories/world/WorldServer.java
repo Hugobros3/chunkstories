@@ -16,7 +16,7 @@ import io.xol.chunkstories.net.packets.PacketPlaySound;
 import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
-import io.xol.chunkstories.physics.particules.Particle;
+import io.xol.chunkstories.particles.Particle;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.chunk.ChunkHolder;

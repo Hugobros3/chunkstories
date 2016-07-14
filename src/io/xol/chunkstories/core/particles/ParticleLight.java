@@ -1,11 +1,14 @@
-package io.xol.chunkstories.physics.particules;
+package io.xol.chunkstories.core.particles;
 
 import io.xol.engine.math.lalgb.Vector3f;
 
+import static io.xol.chunkstories.particles.Particle.Type.*;
+
 import io.xol.chunkstories.api.rendering.Light;
+import io.xol.chunkstories.particles.Particle;
+import io.xol.chunkstories.particles.Particle.Type;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.world.WorldImplementation;
-import static io.xol.chunkstories.physics.particules.Particle.Type.*;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

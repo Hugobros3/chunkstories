@@ -17,6 +17,11 @@ public class EntityComponentPublicInventory extends EntityComponentInventory
 	public void sendUpdates()
 	{
 		this.pushComponentEveryone();
-		//pushComponentController();
+	}
+	
+	@Override
+	public String getHolderName()
+	{
+		return "Chest";
 	}
 }

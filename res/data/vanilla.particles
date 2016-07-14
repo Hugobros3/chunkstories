@@ -1,0 +1,8 @@
+0 voxel_frag io.xol.chunkstories.core.particles.ParticleVoxelFragment
+1 blood io.xol.chunkstories.core.particles.ParticleBlood
+2 muzzle io.xol.chunkstories.core.particles.ParticleMuzzleFlash
+3 smoke io.xol.chunkstories.core.particles.ParticleSmoke
+
+#These are here for demo/debug
+4 spotlight io.xol.chunkstories.core.particles.ParticleSetupLight
+5 light io.xol.chunkstories.core.particles.ParticleLight

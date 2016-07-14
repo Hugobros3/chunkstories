@@ -24,9 +24,11 @@ uniform float viewDistance;
 
 varying vec4 modelview;
 
-attribute vec4 billboardCoord;
-attribute vec2 planeCoord;
-attribute vec2 textureCoord;
+attribute vec4 particlesPositionIn;
+attribute vec2 billboardSquareCoordsIn;
+attribute vec2 textureCoordinatesIn;
+
+uniform float areTextureCoordinatesIninatesSupplied;
 
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
@@ -47,13 +49,18 @@ uniform float fogEndDistance;
 
 void main(){
 	//Usual variable passing
-	texcoord = vec4(planeCoord*0.5+0.5, 0, 0);//vec4(textureCoord, 0, 0);//gl_MultiTexCoord0;
-	vec4 v = billboardCoord;//vec4(gl_Vertex);
+	
+	if(areTextureCoordinatesIninatesSupplied < 0.5)
+		texcoord = vec4(billboardSquareCoordsIn*0.5+0.5, 0, 0);
+	else
+		texcoord = vec4(textureCoordinatesIn, 0, 0);
+	
+	vec4 v = particlesPositionIn;//vec4(gl_Vertex);
 	
 	//TODO : Clean this shit up	
 	//v+=vec4(objectPosition, 0.0);
 	
-	//v += modelViewMatrixInv * vec4(planeCoord,0,0);
+	//v += modelViewMatrixInv * vec4(billboardSquareCoordsIn,0,0);
 	
 	varyingVertex = v;
 	varyingNormal = gl_Normal;
@@ -65,12 +72,12 @@ void main(){
 	
 	modelview = modelViewMatrix * v;
 	
-	modelview += vec4(planeCoord*billboardSize, 0.0, 0.0);
+	modelview += vec4(billboardSquareCoordsIn*billboardSize, 0.0, 0.0);
 	
 	vec4 clochard = projectionMatrix * modelview;
 	
 	gl_Position = clochard;
-	//gl_Position = vec4(planeCoord, 0.0, 1.0);
+	//gl_Position = vec4(billboardSquareCoordsIn, 0.0, 1.0);
 	
 	//Eye transform
 	//eye = v.xyz-camPos;

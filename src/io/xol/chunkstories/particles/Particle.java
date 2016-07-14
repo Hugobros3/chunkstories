@@ -1,14 +1,14 @@
-package io.xol.chunkstories.physics.particules;
+package io.xol.chunkstories.particles;
 
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.world.World;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
 public abstract class Particle
 {
-
 	public World world;
 	public double posX, posY, posZ;
 

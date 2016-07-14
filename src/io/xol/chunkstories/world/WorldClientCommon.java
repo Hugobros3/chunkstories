@@ -2,7 +2,7 @@ package io.xol.chunkstories.world;
 
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.physics.particules.ParticlesHolder;
+import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.renderer.WorldRenderer;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -29,7 +29,7 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 	public void linkWorldRenderer(WorldRenderer renderer)
 	{
 		this.renderer = renderer;
-		setParticlesHolder(new ParticlesHolder());
+		setParticlesHolder(new ParticlesRenderer(this));
 	}
 
 	@Override

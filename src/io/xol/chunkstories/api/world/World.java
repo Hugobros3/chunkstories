@@ -5,10 +5,10 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.particles.ParticleData;
+import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
-import io.xol.chunkstories.physics.particules.Particle;
-
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -306,8 +306,10 @@ public interface World
 	/*
 	 * Fx
 	 */
+
+	public ParticleData addParticle(ParticleType particleType, Vector3d eyeLocation);
 	
-	public void addParticle(Particle particle);
+	public ParticleData addParticle(ParticleType particleType, ParticleData particleData);
 
 	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain);
 

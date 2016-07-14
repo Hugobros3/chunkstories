@@ -147,16 +147,6 @@ void main(){
 	spec = material.r*rainWetness + (material.g + rainWetness) * dynamicFresnelTerm + material.b;
 	<endif perPixelFresnel>
 	
-	/*vec3 blockLight = texture2D(lightColors,vec2(lightMapCoords.x, 0)).rgb;
-	vec3 sunLight = texture2D(lightColors,vec2(0, lightMapCoords.y)).rgb;
-	
-	sunLight = mix(sunLight, sunLight * shadowColor, shadowVisiblity * 0.75);
-	
-	vec3 finalLight = blockLight;// * (1-sunLight);
-	finalLight += sunLight;
-	*/
-	
-	
 	//ao term
 	<ifdef !ssao>
 		//If SSAO is disabled, we use the crappy free vertex AO ( byproduct of block/sunlight merging in code )
@@ -177,14 +167,4 @@ void main(){
 	gl_FragData[1] = vec4(normal*0.5+0.5, spec);
 	
 	gl_FragData[2] = vec4(lightMapCoords, material.a);
-
-	//old crap
-	//Light color G-buffer
-	//gl_FragData[2] = vec4(finalLight, clamp(spec, 0.0, 1.0));
-	
-	// Even older crap
-	
-	//gl_FragData[2] = coordinatesInShadowmap;
-	//Specular G-Buffer
-	//gl_FragData[3] = vec4(spec, lightMapCoords.xy, 1.0);
 }

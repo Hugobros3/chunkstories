@@ -2,6 +2,7 @@ package io.xol.chunkstories.core.item;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
@@ -15,9 +16,10 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.core.item.renderers.Ak47ViewModelRenderer;
+import io.xol.chunkstories.core.particles.ParticleBlood.BloodData;
+import io.xol.chunkstories.core.particles.ParticleVoxelFragment.FragmentData;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.physics.particules.ParticleBlood;
-import io.xol.chunkstories.physics.particules.ParticleMuzzleFlash;
+import io.xol.chunkstories.particles.ParticleTypes;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -70,9 +72,10 @@ public class ItemAk47 extends Item
 	@Override
 	public boolean handleInteraction(Entity user, ItemPile pile, Input input, Controller controller)
 	{
+		//Don't do anything with the left mouse click
 		if(input.getName().startsWith("mouse."))
 		{
-			System.out.println(input);
+			//System.out.println(input);
 			return true;
 		}
 		if (input.getName().equals("shootGun"))
@@ -119,13 +122,23 @@ public class ItemAk47 extends Item
 							Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
 							random.scale(0.25);
 							random.add(bloodDir);
-							shooter.getWorld().addParticle(new ParticleBlood(shooter.getWorld(), hitPoint, random));
+
+							((BloodData) shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("blood"), hitPoint)).setVelocity(random);
+							
 						}
 
 					}
 				}
-
-				shooter.getWorld().addParticle(new ParticleMuzzleFlash(shooter.getWorld(), eyeLocation));
+				
+				//Find wall collision
+				Location shotBlock = user.getWorld().raytraceSolid(eyeLocation, shooter.getDirectionLookingAt(), 256f);
+				if(shotBlock != null)
+				{
+					((FragmentData)shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("voxel_frag"), shotBlock)).setVelocity(shooter.getDirectionLookingAt().negate().scale(0.2));
+				}
+				
+				shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("muzzle"), eyeLocation);
+				//shooter.getWorld().addParticle(new ParticleMuzzleFlash(shooter.getWorld(), eyeLocation));
 				return true;
 			}
 		}
