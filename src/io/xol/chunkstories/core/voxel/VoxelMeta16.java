@@ -1,5 +1,6 @@
 package io.xol.chunkstories.core.voxel;
 
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.voxel.VoxelDefault;
@@ -22,7 +23,7 @@ public class VoxelMeta16 extends VoxelDefault
 	// 2,3,4,5
 	// north/south/east/west
 	{
-		int meta = info.getMetaData();
+		int meta = VoxelFormat.meta(data);
 		// System.out.println("swag");
 		return colors[meta];
 	}

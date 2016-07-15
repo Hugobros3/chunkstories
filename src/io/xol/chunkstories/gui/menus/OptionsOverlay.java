@@ -14,7 +14,6 @@ import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBindImplementation;
-import io.xol.chunkstories.input.Inputs;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -24,6 +23,10 @@ import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.GuiElement;
+
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 public class OptionsOverlay extends Overlay
 {
@@ -274,14 +277,14 @@ public class OptionsOverlay extends Overlay
 						ShadersLibrary.getShaderProgram("terrain").reload(FastConfig.getShaderConfig());
 					}
 				}),
-				new ConfigButtonToggle("rainyMode").setApplyAction(new Runnable(){
+				/*new ConfigButtonToggle("rainyMode").setApplyAction(new Runnable(){
 					@Override
 					public void run()
 					{
 						if(Client.world != null)
 							Client.world.setWeather(Client.getConfig().getBooleanProp("rainyMode", false));
 					}
-				}),
+				}),*/
 				new ConfigButtonToggle("perPixelFresnel").setApplyAction(new Runnable(){
 					@Override
 					public void run()

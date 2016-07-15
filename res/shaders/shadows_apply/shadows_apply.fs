@@ -6,7 +6,9 @@ uniform sampler2D albedoBuffer;
 uniform sampler2D normalBuffer;
 
 uniform sampler2D glowSampler;
-uniform sampler2D colorSampler;
+uniform sampler2D skyTextureSunny;
+uniform sampler2D skyTextureRaining;
+uniform float overcastFactor;
 
 uniform sampler2D lightColors;
 

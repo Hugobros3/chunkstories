@@ -4,6 +4,12 @@
 
 vec4 getClouds(vec3 eyeDirection);
 
+vec4 getSkyTexture(vec2 coordinates)
+{
+	float greyFactor = clamp((overcastFactor - 0.2) / 0.5, 0.0, 1.0);
+	return mix(texture2D(skyTextureSunny, coordinates), texture2D(skyTextureRaining, coordinates), greyFactor);
+}
+
 vec3 getSkyColorWOSun(float time, vec3 eyeDirection)
 {
 	vec3 V = normalize(eyeDirection);
@@ -16,7 +22,7 @@ vec3 getSkyColorWOSun(float time, vec3 eyeDirection)
 	
 	vl = clamp(vl, 0.0, 1.0);
     vec4 skyGlow = texture2D(glowSampler, vec2(time, 1.0-vl)) * 0.5;
-	vec3 skyColor = texture2D(colorSampler, vec2(time, clamp(0.99-normalize(eyeDirection).y * 0.99, 0.0, 1.0))).rgb;
+	vec3 skyColor = getSkyTexture(vec2(time, clamp(0.99-normalize(eyeDirection).y * 0.99, 0.0, 1.0))).rgb;
     
 	//skyColor = vec3(1, 1, 0) * 0.5;
 	skyColor = mix(skyColor, skyColor * 0.6 + skyGlow.rgb * 0.8, skyGlow.a * 0.5);
@@ -38,8 +44,8 @@ vec3 getSkyColor(float time, vec3 eyeDirection)
     vec4 skyGlow = texture2D(glowSampler, vec2(time, 1.0-vl));
 	vec3 skyColor = vec3(0.0);
 	
-	vec3 skyColorTop = texture2D(colorSampler, vec2(time, 0.0)).rgb;
-	vec3 skyColorBot = texture2D(colorSampler, vec2(time, 1.0)).rgb;
+	vec3 skyColorTop = getSkyTexture(vec2(time, 0.0)).rgb;
+	vec3 skyColorBot = getSkyTexture(vec2(time, 1.0)).rgb;
 	
 	float gradient = clamp(0.99-normalize(eyeDirection).y * 0.99, 0.0, 1.0);
 	
@@ -49,11 +55,11 @@ vec3 getSkyColor(float time, vec3 eyeDirection)
 	//texture2D(colorSampler, vec2(time, clamp(0.99-normalize(eyeDirection).y * 0.99, 0.0, 1.0))).rgb;
     
 	//skyColor = vec3(1, 1, 0) * 0.5;
-	skyColor = mix(skyColor, skyColor * 0.6 + skyGlow.rgb * 0.8, skyGlow.a * 0.5);
+	skyColor = mix(skyColor, skyColor * 0.6 + skyGlow.rgb * 0.8, skyGlow.a * 0.5 * clamp(1.0-overcastFactor * 2.0, 0.0, 1.0));
 	
 	vec4 cloudsColor = getClouds(eyeDirection);
 	
-	skyColor +=  (1.0-isRaining)*max(vec3(5.0)*pow(clamp(dot(V, L), 0.0, 1.0), 750.0), 0.0);
+	skyColor += clamp(1.0-overcastFactor * 2.0, 0.0, 1.0)*max(vec3(5.0)*pow(clamp(dot(V, L), 0.0, 1.0), 750.0), 0.0);
 	
 	vec3 combined = mix(skyColor, cloudsColor.rgb, clamp(cloudsColor.a, 0.0, 1.0));
 	
@@ -70,7 +76,7 @@ vec4 getClouds(vec3 eyeDirection)
 	vec2 cloudsPosition = ( -camPos.xz + ( eyeDirection.xz * ((1024.0 + camPos.y) / eyeDirection.y) ) );
 	vec2 coords = 0.001 * cloudsPosition + vec2(0.0, time*25.0);
 	
-	vec3 skyColorTop = texture2D(colorSampler, vec2(time, 1.0)).rgb;
+	vec3 skyColorTop = getSkyTexture(vec2(time, 1.0)).rgb;
 	
 	vec4 clouds = vec4(skyColorTop-vec3(0.10), 0.0);
 	

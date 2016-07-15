@@ -120,6 +120,18 @@ public class ChatPanel
 
 					}
 				}
+				else if (inputBox.text.startsWith("/locw"))
+				{
+					try
+					{
+						float overcastFactor = Float.parseFloat(inputBox.text.split(" ")[1]);
+						Client.world.setWeather(overcastFactor);
+					}
+					catch (Exception e)
+					{
+
+					}
+				}
 				else if (inputBox.text.startsWith("/locspawn"))
 				{
 					if (inputBox.text.contains(" "))

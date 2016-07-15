@@ -1,7 +1,10 @@
 #version 120
-uniform sampler2D glowSampler;
+uniform sampler2D skyTextureSunny;
+uniform sampler2D skyTextureRaining;
+uniform float overcastFactor;
+
 uniform float isRaining;
-uniform sampler2D colorSampler;
+uniform sampler2D glowSampler;
 uniform sampler2D comp_diffuse;
 uniform samplerCube environmentCubemap;
 

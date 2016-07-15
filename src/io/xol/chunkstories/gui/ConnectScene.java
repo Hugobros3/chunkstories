@@ -40,9 +40,6 @@ public class ConnectScene extends Scene
 	@Override
 	public void update()
 	{
-		// ObjectRenderer.renderTexturedRect(XolioWindow.frameW / 2,
-		// XolioWindow.frameH / 2 + 180, 512, 512, "logo");
-
 		cancelButton.setPosition(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2 - 80);
 		cancelButton.draw();
 		
@@ -65,12 +62,12 @@ public class ConnectScene extends Scene
 		drawCenteredText("Connecting to " + serverName, GameWindowOpenGL.windowHeight / 2, 64, c, c, c, 1f);
 		c = 0.5f;
 		drawCenteredText(message, GameWindowOpenGL.windowHeight / 2 - 32, 32, c, c, c, 1f);
-		FontRenderer2.drawTextUsingSpecificFontRVBA(12, 12, 0, 32, "Copyright 2015 XolioWare Interactive", BitmapFont.SMALLFONTS, 1f, 0.3f, 0.3f, 0.3f);
+		FontRenderer2.drawTextUsingSpecificFontRVBA(12, 12, 0, 32, "Copyright 2016 XolioWare Interactive", BitmapFont.SMALLFONTS, 1f, 0.3f, 0.3f, 0.3f);
 		super.update();
 		if (cancelButton.clicked())
 			cancel();
 		if(Client.connection != null && Client.connection.hasFailed())
-			message = "#FF0000Asking server for world info..."+Client.connection.getLatestErrorMessage();
+			message = "#FF0000"+Client.connection.getLatestErrorMessage();
 	}
 
 	void drawCenteredText(String t, float height, int basesize, float r, float v, float b, float a)

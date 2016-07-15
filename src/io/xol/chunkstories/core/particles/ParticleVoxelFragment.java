@@ -31,6 +31,8 @@ public class ParticleVoxelFragment extends ParticleType
 		int timer = 60 * 30; // 30s
 		Vector3d vel = new Vector3d();
 		
+		float rightX, topY, leftX, bottomY;
+		
 		public FragmentData(float x, float y, float z, int data)
 		{
 			super(x, y, z);
@@ -48,56 +50,77 @@ public class ParticleVoxelFragment extends ParticleType
 		@Override
 		public float getTextureCoordinateXTopLeft()
 		{
-			return tex.atlasS / 32768f;
+			return leftX;
+			//return tex.atlasS / 32768f;
 		}
 
 		@Override
 		public float getTextureCoordinateXTopRight()
 		{
-			// TODO Auto-generated method stub
-			return (tex.atlasS + tex.atlasOffset) / 32768f;
+			return rightX;
+			//return (tex.atlasS + tex.atlasOffset) / 32768f;
 		}
 
 		@Override
 		public float getTextureCoordinateXBottomLeft()
 		{
-			// TODO Auto-generated method stub
-			return tex.atlasS / 32768f; 
+			return leftX;
+			//return tex.atlasS / 32768f;
 		}
 
 		@Override
 		public float getTextureCoordinateXBottomRight()
 		{
-			// TODO Auto-generated method stub
-			return (tex.atlasS + tex.atlasOffset) / 32768f;
+			return rightX;
+			//return (tex.atlasS + tex.atlasOffset) / 32768f;
 		}
 
 		@Override
 		public float getTextureCoordinateYTopLeft()
 		{
-			// TODO Auto-generated method stub
-			return (tex.atlasT + tex.atlasOffset) / 32768f;
+			return topY;
 		}
 
 		@Override
 		public float getTextureCoordinateYTopRight()
 		{
-			// TODO Auto-generated method stub
-			return (tex.atlasT + tex.atlasOffset) / 32768f;
+			return topY;
 		}
 
 		@Override
 		public float getTextureCoordinateYBottomLeft()
 		{
-			// TODO Auto-generated method stub
-			return tex.atlasT / 32768f;
+			return bottomY;
 		}
 
 		@Override
 		public float getTextureCoordinateYBottomRight()
 		{
-			// TODO Auto-generated method stub
-			return tex.atlasT / 32768f;
+			return bottomY;
+		}
+
+		public void setData(int data)
+		{
+			int id = VoxelFormat.id(data);
+			VoxelTexture tex = VoxelTypes.get(id).getVoxelTexture(data, 0, null);
+			
+			int qx = (int) Math.floor(Math.random() * 4.0);
+			int rx = qx + 1;
+			int qy = (int) Math.floor(Math.random() * 4.0);
+			int ry = qy + 1;
+			
+			//System.out.println("qx:"+qx+"rx:"+rx);
+			
+			//leftX = (tex.atlasS + tex.atlasOffset) / 32768f;
+			leftX = (tex.atlasS) / 32768f + tex.atlasOffset / 32768f * (qx / 4.0f);
+			rightX = (tex.atlasS) / 32768f + tex.atlasOffset / 32768f * (rx / 4.0f);
+			
+
+			topY = (tex.atlasT) / 32768f + tex.atlasOffset / 32768f * (qy / 4.0f);
+			bottomY = (tex.atlasT) / 32768f + tex.atlasOffset / 32768f * (ry / 4.0f);
+			
+			//topY = (tex.atlasT + tex.atlasOffset) / 32768f;
+			//bottomY = (tex.atlasT) / 32768f;
 		}
 	}
 
@@ -116,7 +139,7 @@ public class ParticleVoxelFragment extends ParticleType
 	@Override
 	public float getBillboardSize()
 	{
-		return 0.125f;
+		return 0.125f / 2.0f;
 	}
 
 	@Override
@@ -136,7 +159,7 @@ public class ParticleVoxelFragment extends ParticleType
 		b.y += b.vel.y;
 		b.z += b.vel.z;
 		
-		if (!((WorldImplementation) world).checkCollisionPoint(b.x, b.y, b.z))
+		if (!((WorldImplementation) world).checkCollisionPoint(b.x, b.y - 0.1, b.z))
 			b.vel.y += -0.89/60.0;
 		else
 			b.vel.zero();

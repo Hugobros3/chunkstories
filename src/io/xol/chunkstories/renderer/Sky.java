@@ -18,6 +18,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
+import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Vector3f;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -68,17 +69,28 @@ public class Sky
 		//skyShader.use(true);
 		skyShader.setUniformSampler(9, "cloudsNoise", TexturesHandler.getTexture("environement/cloudsStatic.png"));
 		Texture2D glowTexture = TexturesHandler.getTexture("environement/glow.png");
-		skyShader.setUniformSampler(1, "glowSampler", glowTexture);
+		skyShader.setUniformSampler(2, "glowSampler", glowTexture);
 		glowTexture.setLinearFiltering(true);
 		glowTexture.setTextureWrapping(false);
 		glowTexture.setTextureWrapping(false);
 
-		Texture2D skyTexture = TexturesHandler.getTexture(world.isRaining() ? "environement/sky_rain.png" : "environement/sky.png");
-		skyShader.setUniformSampler(0, "colorSampler", skyTexture);
-		skyShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
-		skyTexture.setLinearFiltering(true);
-		skyTexture.setMipMapping(false);
-		skyTexture.setTextureWrapping(false);
+		Texture2D skyTextureSunny = TexturesHandler.getTexture("environement/sky.png");
+		Texture2D skyTextureRaining = TexturesHandler.getTexture("environement/sky_rain.png");
+		
+		//skyShader.setUniformSampler(0, "colorSampler", skyTextureSunny);
+		
+		skyShader.setUniformSampler(0, "skyTextureSunny", skyTextureSunny);
+		skyShader.setUniformSampler(1, "skyTextureRaining", skyTextureRaining);
+		
+		skyShader.setUniformFloat("overcastFactor", world.getWeather());
+		//skyShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
+		skyTextureSunny.setLinearFiltering(true);
+		skyTextureSunny.setMipMapping(false);
+		skyTextureSunny.setTextureWrapping(false);
+		
+		skyTextureRaining.setLinearFiltering(true);
+		skyTextureRaining.setMipMapping(false);
+		skyTextureRaining.setTextureWrapping(false);
 
 		//skyShader.setUniformSamplerCube(2, "skybox", TexturesHandler.idCubemap("res/textures/skybox"));
 		skyShader.setUniformFloat3("camPos", renderingContext.getCamera().pos.castToSP());
@@ -140,7 +152,10 @@ public class Sky
 
 	public void setupShader(ShaderProgram shader)
 	{
-		shader.setUniformFloat("fogStartDistance", world.isRaining() ? 32 : FastConfig.viewDistance);
-		shader.setUniformFloat("fogEndDistance", world.isRaining() ? 384 : 1024);
+		float fogFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.4f) / 0.1f, 1.0f);
+		
+		shader.setUniformFloat("fogStartDistance", Math2.mix(FastConfig.viewDistance, 32, fogFactor));
+		shader.setUniformFloat("fogEndDistance", Math2.mix(1024, 384, fogFactor));
+		shader.setUniformFloat("overcastFactor", world.getWeather());
 	}
 }

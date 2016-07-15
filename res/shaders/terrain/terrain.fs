@@ -48,8 +48,9 @@ uniform mat3 normalMatrixInv;
 
 //sky crap
 uniform sampler2D glowSampler;
-uniform sampler2D colorSampler;
-uniform float isRaining;
+uniform sampler2D skyTextureSunny;
+uniform sampler2D skyTextureRaining;
+uniform float overcastFactor;
 
 //gamma shit
 const float gamma = 2.2;

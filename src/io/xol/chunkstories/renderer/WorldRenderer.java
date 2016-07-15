@@ -40,6 +40,7 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.graphics.util.PBOPacker;
 import io.xol.engine.math.LoopingMathHelper;
+import io.xol.engine.math.Math2;
 import io.xol.engine.math.MatrixHelper;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.RenderingContext;
@@ -180,7 +181,8 @@ public class WorldRenderer
 
 	//Sky stuff
 	Texture2D sunGlowTexture = TexturesHandler.getTexture("environement/glow.png");
-	Texture2D skyTexture = TexturesHandler.getTexture("environement/sky.png");
+	Texture2D skyTextureSunny = TexturesHandler.getTexture("environement/sky.png");
+	Texture2D skyTextureRaining = TexturesHandler.getTexture("environement/sky_rain.png");
 	
 	Texture2D lightmapTexture = TexturesHandler.getTexture("environement/light.png");
 	Texture2D waterNormalTexture = TexturesHandler.getTexture("water/shallow.png");
@@ -400,9 +402,9 @@ public class WorldRenderer
 		// Update view
 		//viewRotH = view_rotx;
 		//viewRotV = view_roty;
-		int newCX = fastfloor((pos.x) / 32);
-		int newCY = fastfloor((pos.y) / 32);
-		int newCZ = fastfloor((pos.z) / 32);
+		int newCX = Math2.floor((pos.x) / 32);
+		int newCY = Math2.floor((pos.y) / 32);
+		int newCZ = Math2.floor((pos.z) / 32);
 		// Fill the VBO array with chunks VBO ids if the player changed chunk
 		if (currentChunkX != newCX || currentChunkY != newCY || currentChunkZ != newCZ || chunksChanged)
 		{
@@ -628,14 +630,16 @@ public class WorldRenderer
 		waterNormalTexture.setMipMapping(true);
 		terrainShader.setUniformSamplerCubemap(9, "environmentCubemap", environmentMap);
 		terrainShader.setUniformSampler(8, "glowSampler", sunGlowTexture);
-		terrainShader.setUniformSampler(7, "colorSampler", skyTexture);
+		terrainShader.setUniformSampler(7, "skyTextureSunny", skyTextureSunny);
+		terrainShader.setUniformSampler(12, "skyTextureRaining", skyTextureRaining);
 		terrainShader.setUniformSampler(6, "blockLightmap", lightmapTexture);
 		Texture2D lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
 		terrainShader.setUniformSampler(11, "lightColors", lightColors);
 		terrainShader.setUniformSampler(10, "normalTexture", waterNormalTexture);
 		setupShadowColors(terrainShader);
 		terrainShader.setUniformFloat("time", sky.time);
-		terrainShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
+		
+		//terrainShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
 
 		terrainShader.setUniformSampler(3, "vegetationColorTexture", getGrassTexture());
 		terrainShader.setUniformFloat("mapSize", sizeInChunks * 32);
@@ -668,7 +672,7 @@ public class WorldRenderer
 
 		int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
 
-		skyTexture = TexturesHandler.getTexture(world.isRaining() ? "environement/sky_rain.png" : "environement/sky.png");
+		//skyTextureSunny = TexturesHandler.getTexture(world.isRaining() ? "environement/sky_rain.png" : "environement/sky.png");
 
 		Vector3f sunPos = sky.getSunPosition();
 		float shadowVisiblity = getShadowVisibility();
@@ -716,7 +720,10 @@ public class WorldRenderer
 			//World stuff
 			opaqueBlocksShader.setUniformFloat("mapSize", sizeInChunks * 32);
 			opaqueBlocksShader.setUniformFloat("time", animationTimer);
-			opaqueBlocksShader.setUniformFloat("wetness", world.isRaining() ? 0.5f : 0.0f);
+			
+			opaqueBlocksShader.setUniformFloat("overcastFactor", world.getWeather());
+			opaqueBlocksShader.setUniformFloat("wetness", getWorldWetness());
+			//opaqueBlocksShader.setUniformFloat("wetness", world.isRaining() ? 0.5f : 0.0f);
 
 			camera.setupShader(opaqueBlocksShader);
 
@@ -909,7 +916,10 @@ public class WorldRenderer
 			entitiesShader.setUniformFloat3("blockColor", 1f, 1f, 1f);
 			entitiesShader.setUniformFloat("time", animationTimer);
 
-			entitiesShader.setUniformFloat("wetness", world.isRaining() ? 0.5f : 0.0f);
+
+			entitiesShader.setUniformFloat("overcastFactor", world.getWeather());
+			entitiesShader.setUniformFloat("wetness", getWorldWetness());
+			//entitiesShader.setUniformFloat("wetness", world.isRaining() ? 0.5f : 0.0f);
 
 			camera.setupShader(entitiesShader);
 
@@ -1156,7 +1166,11 @@ public class WorldRenderer
 		renderingContext.setCurrentShader(applyShadowsShader);
 		//applyShadowsShader.use(true);
 		setupShadowColors(applyShadowsShader);
-		applyShadowsShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
+		
+
+		applyShadowsShader.setUniformFloat("overcastFactor", world.getWeather());
+		applyShadowsShader.setUniformFloat("wetness", getWorldWetness());
+		//applyShadowsShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
 		// Sun position
 		// if(FastConfig.debugGBuffers ) glFinish();
 		// glFlush();
@@ -1188,7 +1202,11 @@ public class WorldRenderer
 		applyShadowsShader.setUniformSampler(4, "blockLightmap", lightmapTexture);
 		applyShadowsShader.setUniformSampler(5, "shadowMap", shadowMapBuffer);
 		applyShadowsShader.setUniformSampler(6, "glowSampler", sunGlowTexture);
-		applyShadowsShader.setUniformSampler(7, "colorSampler", skyTexture);
+		//applyShadowsShader.setUniformSampler(7, "colorSampler", skyTextureSunny);
+		
+		applyShadowsShader.setUniformSampler(7, "skyTextureSunny", skyTextureSunny);
+		applyShadowsShader.setUniformSampler(11, "skyTextureRaining", skyTextureRaining);
+		
 		Texture2D lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
 		applyShadowsShader.setUniformSampler(8, "lightColors", lightColors);
 		
@@ -1404,7 +1422,7 @@ public class WorldRenderer
 				Vector3f vec = new Vector3f((float) Math.random() * 2f - 1f, (float) Math.random() * 2f - 1f, (float) Math.random());
 				vec.normalise(vec);
 				float scale = ((float) i) / ssao_kernel_size;
-				scale = lerp(0.1f, 1.0f, scale * scale);
+				scale = Math2.mix(0.1f, 1.0f, scale * scale);
 				vec.scale(scale);
 				ssao_kernel[i] = vec;
 				if (FastConfig.debugGBuffers)
@@ -1735,11 +1753,19 @@ public class WorldRenderer
 	
 	private void setupShadowColors(ShaderProgram shader)
 	{
-		if (world.isRaining())
+		float sunLightFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.0f) / 0.5f, 1.0f);
+		
+		shader.setUniformFloat("shadowStrength", 1.0f);
+		float x = 1.5f;
+		shader.setUniformFloat3("sunColor", Math2.mix( new Vector3f(x * 255 / 255f, x * 255 / 255f, x * 255 / 255f),  new Vector3f(1.0f, 1.0f, 1.0f), sunLightFactor));
+		shader.setUniformFloat3("shadowColor", new Vector3f(0.50f, 0.50f, 0.50f));
+		
+		
+		/*if (world.isRaining())
 		{
 			shader.setUniformFloat("shadowStrength", 1.0f);
-			shader.setUniformFloat3("sunColor", 1.0f, 1.0f, 1.0f);
-			shader.setUniformFloat3("shadowColor", 0.50f, 0.50f, 0.50f);
+			shader.setUniformFloat3("sunColor", new Vector3f(1.0f, 1.0f, 1.0f));
+			shader.setUniformFloat3("shadowColor", new Vector3f(0.50f, 0.50f, 0.50f));
 		}
 		else
 		{
@@ -1752,7 +1778,7 @@ public class WorldRenderer
 			float b = 0.50f;
 			shadowColor.add(new Vector3f(b, b, b));
 			shader.setUniformFloat3("shadowColor", shadowColor);
-		}
+		}*/
 	}
 
 	private float getShadowVisibility()
@@ -1778,15 +1804,10 @@ public class WorldRenderer
 		return camera.isBoxInFrustrum(center, new Vector3f(32, 32, 32));
 	}
 	
-	private int fastfloor(double x)
+	private float getWorldWetness()
 	{
-		int xi = (int) x;
-		return x < xi ? xi - 1 : xi;
-	}
-
-	private float lerp(float a, float b, float f)
-	{
-		return (a * (1.0f - f)) + (b * f);
+		float wetFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.5f) / 0.3f, 1.0f);
+		return wetFactor;
 	}
 
 	public void destroy()

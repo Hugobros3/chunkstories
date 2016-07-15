@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.EntityPlayer;
@@ -20,6 +21,8 @@ import io.xol.chunkstories.core.particles.ParticleBlood.BloodData;
 import io.xol.chunkstories.core.particles.ParticleVoxelFragment.FragmentData;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.particles.ParticleTypes;
+import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -134,7 +137,54 @@ public class ItemAk47 extends Item
 				Location shotBlock = user.getWorld().raytraceSolid(eyeLocation, shooter.getDirectionLookingAt(), 256f);
 				if(shotBlock != null)
 				{
-					((FragmentData)shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("voxel_frag"), shotBlock)).setVelocity(shooter.getDirectionLookingAt().negate().scale(0.2));
+					Location shotBlockOuter = user.getWorld().raytraceSolidOuter(eyeLocation, shooter.getDirectionLookingAt(), 256f);
+					if(shotBlockOuter != null)
+					{
+						Vector3d normal = shotBlockOuter.sub(shotBlock);
+						
+						double NbyI2x = 2.0 * Vector3d.dot(shooter.getDirectionLookingAt(), normal);
+						Vector3d NxNbyI2x = new Vector3d(normal);
+						NxNbyI2x.scale(NbyI2x);
+						
+						Vector3d reflected = new Vector3d();
+						Vector3d.sub(shooter.getDirectionLookingAt(), NxNbyI2x, reflected);
+						
+						//System.out.println("normal: "+normal);
+						//System.out.println("reflected: "+reflected);
+						
+						int data = user.getWorld().getVoxelData(shotBlock);
+						Voxel voxel = VoxelTypes.get(data);
+						
+						Vector3d nearestLocation = null;
+						
+						for(CollisionBox box : voxel.getTranslatedCollisionBoxes(user.getWorld(), (int)shotBlock.getX(), (int)shotBlock.getY(), (int)shotBlock.getZ()))
+						{
+							Vector3d thisLocation = box.collidesWith(eyeLocation, shooter.getDirectionLookingAt());
+							if(thisLocation != null)
+							{
+								if(nearestLocation == null || nearestLocation.distanceTo(eyeLocation) > thisLocation.distanceTo(eyeLocation))
+									nearestLocation = thisLocation;
+							}
+						}
+						
+						//System.out.println("Intersection @ "+nearestLocation);
+						
+						for (int i = 0; i < 25; i++)
+						{
+							Vector3d untouchedReflection = new Vector3d(reflected);
+							
+							Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+							random.scale(0.5);
+							untouchedReflection.add(random);
+							untouchedReflection.normalize();
+							
+							untouchedReflection.scale(0.25);
+							FragmentData fragParticule = ((FragmentData)shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("voxel_frag"), nearestLocation.add(untouchedReflection)));
+							
+							fragParticule.setVelocity(untouchedReflection);
+							fragParticule.setData(data);
+						}
+					}
 				}
 				
 				shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("muzzle"), eyeLocation);

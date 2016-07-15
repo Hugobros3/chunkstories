@@ -8,6 +8,8 @@ import java.nio.FloatBuffer;
 import java.util.Random;
 
 import org.lwjgl.BufferUtils;
+
+import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Vector2f;
 
 import io.xol.chunkstories.world.WorldImplementation;
@@ -43,6 +45,8 @@ public class WeatherEffectsRenderer
 	
 	private void generateRainForOneSecond()
 	{
+		float rainIntensity = Math.min(Math.max(0.0f, world.getWeather() - 0.5f) / 0.3f, 1.0f);
+		
 		bufferOffset %= 110000;
 		bufferOffset += 10000;
 		Vector2f view2drop = new Vector2f();
@@ -51,9 +55,9 @@ public class WeatherEffectsRenderer
 			// We want to always leave alone the topmost part of the array until it has gone out of view
 			int location = (bufferOffset + i) % 110000;
 			//Randomize location
-			float rdX = viewX + (random.nextFloat() * 2.0f - 1.0f) * 25;
-			float rdY = viewY + (random.nextFloat() * 2.0f - 0.5f) * 20;
-			float rdZ = viewZ + (random.nextFloat() * 2.0f - 1.0f) * 25;
+			float rdX = viewX + (random.nextFloat() * 2.0f - 1.0f) * (int)(Math2.mix(25, 15, rainIntensity));
+			float rdY = viewY + (random.nextFloat() * 2.0f - 0.5f) * (int)(Math2.mix(20, 20, rainIntensity));
+			float rdZ = viewZ + (random.nextFloat() * 2.0f - 1.0f) * (int)(Math2.mix(25, 15, rainIntensity));
 			//Max height it can fall to before reverting to used
 			float rdMh = world.getRegionSummaries().getHeightAtWorldCoordinates((int)rdX, (int)rdZ);
 			//Raindrop size, change orientation to face viewer
@@ -121,7 +125,7 @@ public class WeatherEffectsRenderer
 		viewX = (int) -renderingContext.getCamera().pos.x;
 		viewY = (int) -renderingContext.getCamera().pos.y;
 		viewZ = (int) -renderingContext.getCamera().pos.z;
-		if(world.isRaining())
+		if(world.getWeather() > 0.5)
 			renderRain(renderingContext);
 	}
 
@@ -154,7 +158,12 @@ public class WeatherEffectsRenderer
 		//raindropsData.flip();
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		glVertexAttribPointer(vertexIn, 4, GL_FLOAT, false, 0, 0L);
-		glDrawArrays(GL_TRIANGLES, 0, 110000);
+		
+		float rainIntensity = Math.min(Math.max(0.0f, world.getWeather() - 0.5f) / 0.3f, 1.0f);
+		
+		//System.out.println("rainIntensity"+rainIntensity);
+		
+		glDrawArrays(GL_TRIANGLES, 0, 2000 + (int)(9000 * rainIntensity));
 		renderingContext.disableVertexAttribute(vertexIn);
 		glDisable(GL_BLEND);
 	}

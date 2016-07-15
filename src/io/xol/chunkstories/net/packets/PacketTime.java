@@ -22,6 +22,7 @@ import java.io.IOException;
 public class PacketTime extends Packet
 {
 	public long time;
+	public float overcastFactor;
 	
 	public PacketTime(boolean client)
 	{
@@ -32,6 +33,7 @@ public class PacketTime extends Packet
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeLong(time);
+		out.writeFloat(overcastFactor);
 	}
 
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
@@ -43,6 +45,7 @@ public class PacketTime extends Packet
 	public void read(DataInputStream in) throws IOException
 	{
 		time = in.readLong();
+		overcastFactor = in.readFloat();
 	}
 
 	public void process(PacketsProcessor processor)
@@ -51,6 +54,7 @@ public class PacketTime extends Packet
 		if(Client.world instanceof WorldClient)
 		{
 			Client.world.setTime(time);
+			Client.world.setWeather(overcastFactor);;
 		}
 	}
 

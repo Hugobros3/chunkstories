@@ -67,6 +67,7 @@ public abstract class WorldImplementation implements World
 	// time so we are not in trouble.
 	// Let's say that the game world runs at 60Ticks per second
 	public long worldTime = 5000;
+	float overcastFactor = 0.2f;
 
 	//Who does the actual work
 	public IOTasks ioHandler;
@@ -96,9 +97,6 @@ public abstract class WorldImplementation implements World
 	//Entity IDS counter
 	AtomicLong entitiesUUIDGenerator = new AtomicLong();
 
-	//Ugly primitive crap
-	boolean raining;
-
 	public WorldImplementation(WorldInfo info)
 	{
 		worldInfo = info;
@@ -120,6 +118,8 @@ public abstract class WorldImplementation implements World
 			this.internalData.load();
 
 			this.entitiesUUIDGenerator.set(internalData.getLongProp("entities-ids-counter", 0));
+			this.worldTime = internalData.getLongProp("worldTime", 5000);
+			this.overcastFactor = internalData.getFloatProp("overcastFactor", 0.2f);
 		}
 		else
 		{
@@ -688,6 +688,8 @@ public abstract class WorldImplementation implements World
 
 		this.worldInfo.save(new File(this.getFolderPath() + "/info.txt"));
 		this.internalData.setProp("entities-ids-counter", entitiesUUIDGenerator.get());
+		this.internalData.setProp("worldTime", worldTime);
+		this.internalData.setProp("overcastFactor", overcastFactor);
 		this.internalData.save();
 	}
 
@@ -779,9 +781,9 @@ public abstract class WorldImplementation implements World
 		}
 	}
 
-	public boolean isRaining()
+	public float getWeather()
 	{
-		return raining;
+		return overcastFactor;
 	}
 
 	public long nextEntityId()
@@ -789,9 +791,9 @@ public abstract class WorldImplementation implements World
 		return entitiesUUIDGenerator.getAndIncrement();
 	}
 
-	public void setWeather(boolean booleanProp)
+	public void setWeather(float overcastFactor)
 	{
-		raining = booleanProp;
+		this.overcastFactor = overcastFactor;
 	}
 	
 
@@ -831,15 +833,20 @@ public abstract class WorldImplementation implements World
 
 	public Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit)
 	{
-		return raytraceSolid(initialPosition, direction, limit, false);
+		return raytraceSolid(initialPosition, direction, limit, false, false);
 	}
 
 	public Location raytraceSolidOuter(Vector3d initialPosition, Vector3d direction, double limit)
 	{
-		return raytraceSolid(initialPosition, direction, limit, true);
+		return raytraceSolid(initialPosition, direction, limit, true, false);
 	}
 
-	private Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit, boolean outer)
+	public Location raytraceSelectable(Location initialPosition, Vector3d direction, double limit)
+	{
+		return raytraceSolid(initialPosition, direction, limit, false, true);
+	}
+
+	private Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit, boolean outer, boolean selectable)
 	{
 		direction.normalize();
 		//direction.scale(0.02);
@@ -893,7 +900,7 @@ public abstract class WorldImplementation implements World
 			y = voxelCoords[1];
 			z = voxelCoords[2];
 			vox = VoxelTypes.get(this.getVoxelData(x, y, z));
-			if (vox.isVoxelSolid() || vox.isVoxelSelectable())
+			if (vox.isVoxelSolid() || (selectable && vox.isVoxelSelectable()))
 			{
 				boolean collides = false;
 				for (CollisionBox box : vox.getTranslatedCollisionBoxes(this, x, y, z))

@@ -72,6 +72,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			}
 			PacketTime packetTime = new PacketTime(false);
 			packetTime.time = this.worldTime;
+			packetTime.overcastFactor = this.getWeather();
 			player.pushPacket(packetTime);
 		}
 		super.tick();

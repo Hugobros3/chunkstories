@@ -408,7 +408,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		Vector3d direction = getDirectionLookingAt();
 		
 		if (inside)
-			return world.raytraceSolid(new Location(world, initialPosition), direction, 256.0);
+			return world.raytraceSelectable(new Location(world, initialPosition), direction, 256.0);
 		else
 			return world.raytraceSolidOuter(new Location(world, initialPosition), direction, 256.0);
 	}

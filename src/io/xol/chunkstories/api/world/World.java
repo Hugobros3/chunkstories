@@ -246,9 +246,21 @@ public interface World
 	 */
 	public void destroy();
 
-	public boolean isRaining();
+	/**
+	 * The weather is represented by a normalised float value
+	 * 0.0 equals dead dry
+	 * 0.2 equals sunny
+	 * 0.4 equals overcast
+	 * 0.5 equals foggy/cloudy
+	 * >0.5 rains
+	 * 0.8 max rain intensity
+	 * 0.9 lightning
+	 * 1.0 hurricane
+	 * @return
+	 */
+	public float getWeather();
 
-	public void setWeather(boolean isRaining);
+	public void setWeather(float overcastFactor);
 
 	public Location getDefaultSpawnLocation();
 
@@ -288,6 +300,13 @@ public interface World
 	 * @return The exact location of the step just before the intersection ( as to get the adjacent block ) or null if it didn't found one
 	 */
 	public Location raytraceSolidOuter(Vector3d initialPosition, Vector3d direction, double limit);
+	
+	/**
+	 * Raytraces throught the world to find a solid or selectable block
+	 * @param limit Between 0 and a finite number
+	 * @return The exact location of the intersection or null if it didn't found one
+	 */
+	public Location raytraceSelectable(Location initialPosition, Vector3d direction, double limit);
 	
 	/**
 	 * Takes into account the voxel terrain and will stop at a solid block, <b>warning</b> limit can't be == -1 !
