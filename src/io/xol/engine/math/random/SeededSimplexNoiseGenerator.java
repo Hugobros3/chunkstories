@@ -1,4 +1,4 @@
-package io.xol.chunkstories.world.generator.util;
+package io.xol.engine.math.random;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -9,6 +9,8 @@ import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
+
+import io.xol.chunkstories.world.WorldInfo;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -333,4 +335,8 @@ public interface World
 	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain);
 
 	public RegionSummaries getRegionSummaries();
+
+	public WorldInfo getWorldInfo();
+
+	public long getTime();
 }

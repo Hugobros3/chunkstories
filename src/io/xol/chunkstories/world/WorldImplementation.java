@@ -1038,4 +1038,9 @@ public abstract class WorldImplementation implements World
 	{
 		return chunksHolder.getChunkHolderRegionCoordinates(regionX, regionY, regionZ, true);
 	}
+	
+	public long getTime()
+	{
+		return worldTime;
+	}
 }

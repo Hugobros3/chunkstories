@@ -1,4 +1,4 @@
-package io.xol.chunkstories.world.generator.util;
+package io.xol.engine.math.random;
 
 /*
  * A speed-improved simplex noise algorithm for 2D, 3D and 4D in Java.

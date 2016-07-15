@@ -21,7 +21,7 @@ vec3 getSkyColorWOSun(float time, vec3 eyeDirection)
 	vl *= 0.5;
 	
 	vl = clamp(vl, 0.0, 1.0);
-    vec4 skyGlow = texture2D(glowSampler, vec2(time, 1.0-vl)) * 0.5;
+    vec4 skyGlow = texture2D(glowSampler, vec2(time, 1.0-vl)) * 0.5 * clamp(1.0-overcastFactor * 2.0, 0.0, 1.0);
 	vec3 skyColor = getSkyTexture(vec2(time, clamp(0.99-normalize(eyeDirection).y * 0.99, 0.0, 1.0))).rgb;
     
 	//skyColor = vec3(1, 1, 0) * 0.5;

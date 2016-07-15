@@ -41,8 +41,8 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
-uniform mat4 untranslatedMVP;
-uniform mat4 untranslatedMVPInv;
+uniform mat4 untranslatedMV;
+uniform mat4 untranslatedMVInv;
 
 uniform mat4 modelViewProjectionMatrix;
 uniform mat4 modelViewProjectionMatrixInv;
@@ -82,7 +82,7 @@ void main(){
 	//lightMapCoords = vec3(colorIn.rgb);
 	//lightMapCoords.y *= sunIntensity;
 	
-	gl_Position = projectionMatrix * untranslatedMVP * v;
+	gl_Position = projectionMatrix * untranslatedMV * v;
 	
 	//Eye transform
 	eye = v.xyz;

@@ -9,8 +9,8 @@ uniform vec3 sunPos;
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
 
-uniform mat4 modelViewMatrix;
-uniform mat4 modelViewMatrixInv;
+uniform mat4 untranslatedMV;
+uniform mat4 untranslatedMVInv;
 
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
@@ -24,5 +24,5 @@ void main(){
 	calculatedLight = vec4(5.0) * blend;
 	
 	gl_PointSize = 1.0;
-	gl_Position = projectionMatrix * modelViewMatrix * vec4(vertexIn, 1.0);
+	gl_Position = projectionMatrix * untranslatedMV * vec4(vertexIn, 1.0);
 }

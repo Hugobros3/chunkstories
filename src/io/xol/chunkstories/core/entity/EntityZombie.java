@@ -174,6 +174,6 @@ public class EntityZombie extends EntityImplementation implements EntityHUD
 	@Override
 	public CollisionBox[] getCollisionBoxes()
 	{
-		return new CollisionBox[] { new CollisionBox(0.75, 1.80, 0.75) };
+		return new CollisionBox[] { new CollisionBox(0.5, 2.00, 0.5) };
 	}
 }

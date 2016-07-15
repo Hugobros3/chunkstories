@@ -155,7 +155,7 @@ public class WorldRenderer
 	private Matrix4f depthMatrix = new Matrix4f();
 
 	// Sky
-	private Sky sky;
+	private SkyRenderer sky;
 
 	// Debug
 	// private DebugProfiler updateProfiler = new DebugProfiler();
@@ -210,7 +210,7 @@ public class WorldRenderer
 		world.linkWorldRenderer(this);
 		farTerrainRenderer = new FarTerrainRenderer(world);
 		weatherEffectsRenderer = new WeatherEffectsRenderer(world, this);
-		sky = new Sky(world, this);
+		sky = new SkyRenderer(world, this);
 		sizeInChunks = world.getSizeInChunks();
 		resizeShadowMaps();
 
@@ -301,6 +301,7 @@ public class WorldRenderer
 			shadowPass();
 		// Prepare matrices
 		camera.justSetup(scrW, scrH);
+		camera.translate();
 
 		// Clear G-Buffers and bind shaded HDR rendertarget
 		fboGBuffers.bind();
@@ -323,7 +324,6 @@ public class WorldRenderer
 			System.out.println("sky took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		// Move camera to relevant position
-		camera.translate();
 		fboGBuffers.setEnabledRenderTargets();
 
 		// Render world
@@ -1753,11 +1753,11 @@ public class WorldRenderer
 	
 	private void setupShadowColors(ShaderProgram shader)
 	{
-		float sunLightFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.0f) / 0.5f, 1.0f);
+		float sunLightFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.0f) / 1.0f, 1.0f);
 		
 		shader.setUniformFloat("shadowStrength", 1.0f);
 		float x = 1.5f;
-		shader.setUniformFloat3("sunColor", Math2.mix( new Vector3f(x * 255 / 255f, x * 255 / 255f, x * 255 / 255f),  new Vector3f(1.0f, 1.0f, 1.0f), sunLightFactor));
+		shader.setUniformFloat3("sunColor", Math2.mix( new Vector3f(x * 255 / 255f, x * 255 / 255f, x * 255 / 255f),  new Vector3f(0.5f), sunLightFactor));
 		shader.setUniformFloat3("shadowColor", new Vector3f(0.50f, 0.50f, 0.50f));
 		
 		
@@ -1812,7 +1812,7 @@ public class WorldRenderer
 
 	public void destroy()
 	{
-		// sky.destroy();
+		sky.destroy();
 		chunksRenderer.killThread();
 		farTerrainRenderer.destroy();
 	}

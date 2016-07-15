@@ -8,7 +8,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.generator.util.SeededSimplexNoiseGenerator;
+import io.xol.engine.math.random.SeededSimplexNoiseGenerator;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

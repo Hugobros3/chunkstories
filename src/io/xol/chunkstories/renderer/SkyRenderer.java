@@ -25,7 +25,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Sky
+public class SkyRenderer
 {
 	public float time = 0;
 	float distance = 1500;
@@ -33,11 +33,13 @@ public class Sky
 
 	World world;
 	WorldRenderer worldRenderer;
+	CloudsRenderer cloudsRenderer;
 	
-	public Sky(World world, WorldRenderer worldRenderer)
+	public SkyRenderer(World world, WorldRenderer worldRenderer)
 	{
 		this.world = world;
 		this.worldRenderer = worldRenderer;
+		this.cloudsRenderer = new CloudsRenderer(world, this);
 	}
 
 	public Vector3f getSunPosition()
@@ -68,8 +70,10 @@ public class Sky
 		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(skyShader);
 		//skyShader.use(true);
 		skyShader.setUniformSampler(9, "cloudsNoise", TexturesHandler.getTexture("environement/cloudsStatic.png"));
+		
 		Texture2D glowTexture = TexturesHandler.getTexture("environement/glow.png");
 		skyShader.setUniformSampler(2, "glowSampler", glowTexture);
+		
 		glowTexture.setLinearFiltering(true);
 		glowTexture.setTextureWrapping(false);
 		glowTexture.setTextureWrapping(false);
@@ -77,13 +81,11 @@ public class Sky
 		Texture2D skyTextureSunny = TexturesHandler.getTexture("environement/sky.png");
 		Texture2D skyTextureRaining = TexturesHandler.getTexture("environement/sky_rain.png");
 		
-		//skyShader.setUniformSampler(0, "colorSampler", skyTextureSunny);
-		
 		skyShader.setUniformSampler(0, "skyTextureSunny", skyTextureSunny);
 		skyShader.setUniformSampler(1, "skyTextureRaining", skyTextureRaining);
 		
 		skyShader.setUniformFloat("overcastFactor", world.getWeather());
-		//skyShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
+		
 		skyTextureSunny.setLinearFiltering(true);
 		skyTextureSunny.setMipMapping(false);
 		skyTextureSunny.setTextureWrapping(false);
@@ -100,8 +102,6 @@ public class Sky
 
 		ObjectRenderer.drawFSQuad(skyShader.getVertexAttributeLocation("vertexIn"));
 
-		//skyShader.use(false);
-		
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPointSize(1f);
@@ -139,8 +139,8 @@ public class Sky
 		glDisable(GL_BLEND);
 		glDepthMask(true);
 		glEnable(GL_DEPTH_TEST);
-		//stars = null;
-
+		
+		cloudsRenderer.renderClouds(renderingContext);
 	}
 
 	private FloatBuffer stars = null;
@@ -157,5 +157,10 @@ public class Sky
 		shader.setUniformFloat("fogStartDistance", Math2.mix(FastConfig.viewDistance, 32, fogFactor));
 		shader.setUniformFloat("fogEndDistance", Math2.mix(1024, 384, fogFactor));
 		shader.setUniformFloat("overcastFactor", world.getWeather());
+	}
+	
+	public void destroy()
+	{
+		cloudsRenderer.destroy();
 	}
 }

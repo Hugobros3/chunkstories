@@ -394,8 +394,8 @@ public class Camera
 		shaderProgram.setUniformMatrix4f("modelViewProjectionMatrix", modelViewProjectionMatrix4f);
 		shaderProgram.setUniformMatrix4f("modelViewProjectionMatrixInv", modelViewProjectionMatrix4fInverted);
 		
-		shaderProgram.setUniformMatrix4f("untranslatedMVP", untranslatedMVP4f);
-		shaderProgram.setUniformMatrix4f("untranslatedMVPInv", untranslatedMVP4fInv);
+		shaderProgram.setUniformMatrix4f("untranslatedMV", untranslatedMVP4f);
+		shaderProgram.setUniformMatrix4f("untranslatedMVInv", untranslatedMVP4fInv);
 		
 		shaderProgram.setUniformFloat2("screenViewportSize", this.viewportWidth, this.viewportHeight);
 

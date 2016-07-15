@@ -99,7 +99,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 		
 	//float specular = clamp(pow(dot(normalize(normSkyDirection),normalize(sunPos)),16.0),0.0,1.0);
 		
-	float sunSpecular = pow(clamp(dot(normalize(normSkyDirection),normalize(sunPos)), 0.0, 1.0),750.0);
+	float sunSpecular = clamp(1.0-overcastFactor * 2.0, 0.0, 1.0) * pow(clamp(dot(normalize(normSkyDirection),normalize(sunPos)), 0.0, 1.0),750.0);
 	<ifdef doDynamicCubemaps>
 	skyColor = textureCube(environmentCubemap, vec3(normSkyDirection.x, -normSkyDirection.y, -normSkyDirection.z)).rgb;
 	<endif doDynamicCubemaps>
