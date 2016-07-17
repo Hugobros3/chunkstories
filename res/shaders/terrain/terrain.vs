@@ -53,22 +53,27 @@ uniform mat4 modelViewProjectionMatrix;
 uniform mat4 modelViewProjectionMatrixInv;
 
 attribute vec4 vertexIn;
+attribute int voxelDataIn;
 attribute vec4 normalIn;
 
 //Fog
 uniform float fogStartDistance;
 uniform float fogEndDistance;
 
+//flat out int voxelData;
+
 void main()
 {
 	chunkPositionFrag = chunkPosition;
 
 	//Displacement from texture & position
-	vec4 v = vec4(vertexIn);
+	vec4 v = vec4(vertexIn.xyz, 1.0);
+	
+	//voxelData = voxelDataIn;
 	
 	v.y -= 0.2;
 	
-	textureCoord = (v.zx)/256.0;
+	textureCoord = (v.zx + vec2(0.5))/256.0;
 	
 	float packedNormals = normalIn.x;
 	

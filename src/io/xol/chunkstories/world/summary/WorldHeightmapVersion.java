@@ -68,6 +68,20 @@ public class WorldHeightmapVersion implements RegionSummaries
 		return cs.getHeightMipmapped(x % 256, z % 256, level);
 	}
 
+	public int getDataMipmapped(int x, int z, int level)
+	{
+		x %= worldSize;
+		z %= worldSize;
+		if (x < 0)
+			x += worldSize;
+		if (z < 0)
+			z += worldSize;
+		RegionSummary cs = getRegionSummaryWorldCoordinates(x, z);
+		if (cs == null)
+			return 0;
+		return cs.getDataMipmapped(x % 256, z % 256, level);
+	}
+
 	public int getHeightAtWorldCoordinates(int x, int z)
 	{
 		x %= worldSize;
@@ -82,6 +96,18 @@ public class WorldHeightmapVersion implements RegionSummaries
 		return cs.getHeight(x % 256, z % 256);
 	}
 
+	public int getDataAtWorldCoordinates(int x, int z)
+	{
+		x %= worldSize;
+		z %= worldSize;
+		if (x < 0)
+			x += worldSize;
+		if (z < 0)
+			z += worldSize;
+		RegionSummary cs = getRegionSummaryWorldCoordinates(x, z);
+		return cs.getID(x % 256, z % 256);
+	}
+
 	public int getMinChunkHeightAt(int x, int z)
 	{
 		x %= worldSize;
@@ -94,18 +120,6 @@ public class WorldHeightmapVersion implements RegionSummaries
 		if (cs == null)
 			return 0;
 		return cs.getMinChunkHeight(x % 256, z % 256);
-	}
-
-	public int getIdAt(int x, int z)
-	{
-		x %= worldSize;
-		z %= worldSize;
-		if (x < 0)
-			x += worldSize;
-		if (z < 0)
-			z += worldSize;
-		RegionSummary cs = getRegionSummaryWorldCoordinates(x, z);
-		return cs.getID(x % 256, z % 256);
 	}
 
 	public void blockPlaced(int x, int y, int z, int id)

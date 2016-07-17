@@ -2,9 +2,10 @@ package io.xol.chunkstories.renderer;
 
 public class HeightmapMeshSummarizer
 {
-	public HeightmapMeshSummarizer(int[] heightmap, int offset, int dimension, int x0, int y0, int heightmapSize)
+	public HeightmapMeshSummarizer(int[] heightmap, int[] ids, int offset, int dimension, int x0, int y0, int heightmapSize)
 	{
 		this.heightmap = heightmap;
+		this.ids = ids;
 		this.offset = offset;
 		this.dimension = dimension;
 		
@@ -15,7 +16,7 @@ public class HeightmapMeshSummarizer
 	}
 	
 	boolean[] mask;
-	int[] heightmap;
+	int[] heightmap, ids;
 	int offset, dimension;
 	
 	int n = 0;
@@ -25,6 +26,11 @@ public class HeightmapMeshSummarizer
 	private int accessHeightmap(int x, int y)
 	{
 		return heightmap[offset + (x0 + x) * heightmapSize + (y0 + y)];
+	}
+	
+	private int accessData(int x, int y)
+	{
+		return ids[offset + (x0 + x) * heightmapSize + (y0 + y)];
 	}
 	
 	public Surface nextSurface()
@@ -95,7 +101,8 @@ public class HeightmapMeshSummarizer
 						}
 					}
 					n++;
-					return new Surface(x, y, w, h, level);
+					
+					return new Surface(x, y, w, h, level, accessData(x, y));
 					//System.out.println("Contains rectangle of "+level+" start: "+x+":"+y+" size: "+w+"x"+h);
 				}
 			}	
@@ -107,7 +114,7 @@ public class HeightmapMeshSummarizer
 	class Surface {
 		//Describes a uniform surface
 		
-		int x, y, w, h, level;
+		int x, y, w, h, level, id;
 
 		public int getX()
 		{
@@ -133,8 +140,13 @@ public class HeightmapMeshSummarizer
 		{
 			return level;
 		}
+		
+		public int getId()
+		{
+			return id;
+		}
 
-		public Surface(int x, int y, int w, int h, int level)
+		public Surface(int x, int y, int w, int h, int level, int id)
 		{
 			super();
 			this.x = x;
@@ -142,6 +154,7 @@ public class HeightmapMeshSummarizer
 			this.w = w;
 			this.h = h;
 			this.level = level;
+			this.id = id;
 		}
 	}
 }

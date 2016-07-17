@@ -263,14 +263,22 @@ public class ObjMesh
 		//glCullFace(GL_BACK);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 
+		int vertexIn = renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn");
+		int texCoordIn = renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn");
+		int normalIn = renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn");
+		
 		Matrix4f matrix;
-		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
-		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn"));
-		renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn"));
+		renderingContext.enableVertexAttribute(vertexIn);
+		renderingContext.enableVertexAttribute(texCoordIn);
+		
+		if(normalIn != -1)
+			renderingContext.enableVertexAttribute(normalIn);
 
-		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"), 3, GL_FLOAT, false, 8 * 4, 0);
-		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn"), 2, GL_FLOAT, false, 8 * 4, 3 * 4);
-		glVertexAttribPointer(renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn"), 3, GL_FLOAT, true, 8 * 4, 5 * 4);
+		glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
+		glVertexAttribPointer(texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
+		
+		if(normalIn != -1)
+			glVertexAttribPointer(normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
 		int totalSize = 0;
 		for (String currentVertexGroup : groups.keySet())
 		{

@@ -64,6 +64,7 @@ uniform sampler2D loadedChunksMapBot;
 uniform vec2 playerCurrentChunk;
 
 uniform float ignoreWorldCulling;
+//flat in int voxelData;
 
 vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
 {
@@ -79,8 +80,10 @@ vec4 gammaOutput(vec4 inputValue)
 
 void main()
 {
+	//int voxelDataActual = voxelData;
+
 	float id = texture2D(groundTexture, textureCoord).r;
-	vec3 finalColor = vec3(0.0+id*500, 0.0, 0.0);
+	vec3 finalColor = vec3(0.0+id*0.05, 0.0, 0.0);
 	
 	vec4 bs = texture1D(blocksTexturesSummary, id/512.0);
 	finalColor = bs.rgb;
@@ -161,10 +164,10 @@ void main()
 		//vec3 reflection = texture(skybox, reflect(eye, normal)).rgb;
 		
 	}
-	else if(id < 0.5)
+	/*else if(voxelDataActual == 0)
 	{
 		finalColor = vec3(1, 1, 0);
-	}
+	}*/
 
 	
 	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0.0, 1.0)).rgb;
@@ -236,7 +239,6 @@ void main()
 	if(vertex.y-5.0 > heightCoveredStart && vertex.y+5.0-32.0 < heightCoveredEnd && ignoreWorldCulling < 1.0)
 		discard;
 	
+	
 	gl_FragColor = compositeColor;
-	//gl_FragColor = vec4(vec3(heightCoveredStart) / 1024.0, 1.0);
-	//gl_FragColor = vec4(( ( ( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) - vec2(0.0) )/ 32.0) * 0.5 + 0.5, 0.0, 1.0);
 }

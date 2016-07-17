@@ -26,6 +26,7 @@ import io.xol.engine.model.RenderingContext;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -59,7 +60,6 @@ public class FarTerrainRenderer
 	@SuppressWarnings("unused")
 	private int lastLevelDetail = -1;
 
-	@SuppressWarnings("unused")
 	private long lastTerrainRegenerationTime = 0;
 	private int cameraChunkX, cameraChunkZ;
 
@@ -136,8 +136,11 @@ public class FarTerrainRenderer
 		glLineWidth(1.0f);
 
 		int vertexIn = terrain.getVertexAttributeLocation("vertexIn");
+		int voxelDataIn = -1; //terrain.getVertexAttributeLocation("voxelDataIn");
 		int normalIn = terrain.getVertexAttributeLocation("normalIn");
+		
 		renderingContext.enableVertexAttribute(vertexIn);
+		renderingContext.enableVertexAttribute(voxelDataIn);
 		renderingContext.enableVertexAttribute(normalIn);
 
 		//Sort to draw near first
@@ -169,27 +172,7 @@ public class FarTerrainRenderer
 
 			terrain.setUniformSampler(1, "groundTexture", rs.regionSummary.voxelTypesTexture);
 
-			//glBindTexture(GL_TEXTURE_2D, rs.regionSummary.voxelTypesTextureId);
-			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
-			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
-
-			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
 			terrain.setUniformSampler(0, "heightMap", rs.regionSummary.heightsTexture);
-			
-			//glBindTexture(GL_TEXTURE_2D, rs.regionSummary.heightsTextureId);
-
-			//if(FastConfig.hqTerrain)
-			//{
-			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			/*}
-			else
-			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,  GL_NEAREST_MIPMAP_NEAREST);
-			}*/
 
 			terrain.setUniformSampler1D(2, "blocksTexturesSummary", getBlocksTexturesSummaryId());
 			terrain.setUniformFloat2("regionPosition", rs.regionSummary.regionX, rs.regionSummary.regionZ);
@@ -201,20 +184,36 @@ public class FarTerrainRenderer
 			if (rs.regionSummary.verticesObject.isDataPresent())
 			{
 				rs.regionSummary.verticesObject.bind();
+				int stride = 4 * 2 + 4 + 0 * 4;
 
-				int vertices2draw = (int) (rs.regionSummary.verticesObject.getVramUsage() / 12);
+				int vertices2draw = (int) (rs.regionSummary.verticesObject.getVramUsage() / stride);
 
+				
 				//glBindBuffer(GL_ARRAY_BUFFER, rs.regionSummary.vboId);
-				glVertexAttribPointer(vertexIn, 3, GL_SHORT, false, 12, 0L);
-				glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_BYTE, false, 12, 8L);
+				glVertexAttribPointer(vertexIn, 3, GL_SHORT, false, stride, 0L);
+				//System.out.println("b4"+glGetError());
+				//System.out.println("ids:"+voxelDataIn);
+				
+				if(voxelDataIn != -1)
+					glVertexAttribIPointer(voxelDataIn, 1, GL_INT, stride, 12L);
+				
+				//System.out.println("when"+voxelDataIn);
+				
+				//int gl_Error;
+				//while((gl_Error = glGetError()) != 0)
+				//	System.out.println("errorzer : "+gl_Error);
+				
+				glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_BYTE, false, stride, 8L);
 
 				elements += vertices2draw;
 				//elements += rs.regionSummary.vboSize;
 
 				rs.regionSummary.verticesObject.drawElementsTriangles(vertices2draw);
+				
 			}
 		}
 		renderingContext.disableVertexAttribute(vertexIn);
+		renderingContext.disableVertexAttribute(voxelDataIn);
 		renderingContext.disableVertexAttribute(normalIn);
 		return elements;
 	}
@@ -226,9 +225,9 @@ public class FarTerrainRenderer
 
 		synchronized (this)
 		{
-			if (!renderingInProgress.get())
+			if (!renderingInProgress.compareAndSet(false, true) && (System.currentTimeMillis() - lastTerrainRegenerationTime) > 1000)
 			{
-				renderingInProgress.set(true);
+				//renderingInProgress.set(true);
 				Thread asynchGenerateThread = new Thread()
 				{
 					@Override
@@ -301,6 +300,7 @@ public class FarTerrainRenderer
 						rcz += world.getSizeInChunks();
 
 					int[] heightMap = regionMesh.regionSummary.heights;
+					int[] ids = regionMesh.regionSummary.ids;
 
 					@SuppressWarnings("unused")
 					int vertexCount = 0;
@@ -332,19 +332,19 @@ public class FarTerrainRenderer
 
 							int x0 = (scx * 32) / cellSize;
 							int y0 = (scz * 32) / cellSize;
-							HeightmapMeshSummarizer mesher = new HeightmapMeshSummarizer(heightMap, offsets[details], 32 / cellSize, x0, y0, 256 / cellSize);
+							HeightmapMeshSummarizer mesher = new HeightmapMeshSummarizer(heightMap, ids, offsets[details], 32 / cellSize, x0, y0, 256 / cellSize);
 							int test = 0;
 							Surface surf = mesher.nextSurface();
 							while (surf != null)
 							{
 								//Top
-								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY()) * cellSize, 0, 1, 0);
-								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX() + surf.getW()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY() + surf.getH()) * cellSize, 0, 1, 0);
-								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX() + surf.getW()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY()) * cellSize, 0, 1, 0);
+								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY()) * cellSize, 0, 1, 0, surf.getId());
+								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX() + surf.getW()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY() + surf.getH()) * cellSize, 0, 1, 0, surf.getId());
+								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX() + surf.getW()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY()) * cellSize, 0, 1, 0, surf.getId());
 
-								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY()) * cellSize, 0, 1, 0);
-								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY() + surf.getH()) * cellSize, 0, 1, 0);
-								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX() + surf.getW()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY() + surf.getH()) * cellSize, 0, 1, 0);
+								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY()) * cellSize, 0, 1, 0, surf.getId());
+								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY() + surf.getH()) * cellSize, 0, 1, 0, surf.getId());
+								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX() + surf.getW()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY() + surf.getH()) * cellSize, 0, 1, 0, surf.getId());
 
 								vertexCount += 6;
 
@@ -361,14 +361,14 @@ public class FarTerrainRenderer
 									{
 										if (heightCurrent != surf.getLevel())
 										{
-											int s = heightCurrent > surf.getLevel() ? 1 : -1;
-											addVertexBytes(regionMeshBuffer, vx, surf.getLevel(), vz + d * cellSize, s, 0, 0);
-											addVertexBytes(regionMeshBuffer, vx, heightCurrent, vz + d * cellSize, s, 0, 0);
-											addVertexBytes(regionMeshBuffer, vx, heightCurrent, vz + (i) * cellSize, s, 0, 0);
+											int side = heightCurrent > surf.getLevel() ? 1 : -1;
+											addVertexBytes(regionMeshBuffer, vx, surf.getLevel(), vz + d * cellSize, side, 0, 0, surf.getId());
+											addVertexBytes(regionMeshBuffer, vx, heightCurrent, vz + d * cellSize, side, 0, 0, surf.getId());
+											addVertexBytes(regionMeshBuffer, vx, heightCurrent, vz + (i) * cellSize, side, 0, 0, surf.getId());
 
-											addVertexBytes(regionMeshBuffer, vx, surf.getLevel(), vz + d * cellSize, s, 0, 0);
-											addVertexBytes(regionMeshBuffer, vx, heightCurrent, vz + (i) * cellSize, s, 0, 0);
-											addVertexBytes(regionMeshBuffer, vx, surf.getLevel(), vz + (i) * cellSize, s, 0, 0);
+											addVertexBytes(regionMeshBuffer, vx, surf.getLevel(), vz + d * cellSize, side, 0, 0, surf.getId());
+											addVertexBytes(regionMeshBuffer, vx, heightCurrent, vz + (i) * cellSize, side, 0, 0, surf.getId());
+											addVertexBytes(regionMeshBuffer, vx, surf.getLevel(), vz + (i) * cellSize, side, 0, 0, surf.getId());
 											vertexCount += 6;
 										}
 										heightCurrent = newHeight;
@@ -386,14 +386,14 @@ public class FarTerrainRenderer
 									{
 										if (heightCurrent != surf.getLevel())
 										{
-											int s = heightCurrent > surf.getLevel() ? 1 : -1;
-											addVertexBytes(regionMeshBuffer, vx + d * cellSize, surf.getLevel(), vz, 0, 0, s);
-											addVertexBytes(regionMeshBuffer, vx + (i) * cellSize, heightCurrent, vz, 0, 0, s);
-											addVertexBytes(regionMeshBuffer, vx + d * cellSize, heightCurrent, vz, 0, 0, s);
+											int side = heightCurrent > surf.getLevel() ? 1 : -1;
+											addVertexBytes(regionMeshBuffer, vx + d * cellSize, surf.getLevel(), vz, 0, 0, side, surf.getId());
+											addVertexBytes(regionMeshBuffer, vx + (i) * cellSize, heightCurrent, vz, 0, 0, side, surf.getId());
+											addVertexBytes(regionMeshBuffer, vx + d * cellSize, heightCurrent, vz, 0, 0, side, surf.getId());
 
-											addVertexBytes(regionMeshBuffer, vx + (i) * cellSize, heightCurrent, vz, 0, 0, s);
-											addVertexBytes(regionMeshBuffer, vx + d * cellSize, surf.getLevel(), vz, 0, 0, s);
-											addVertexBytes(regionMeshBuffer, vx + (i) * cellSize, surf.getLevel(), vz, 0, 0, s);
+											addVertexBytes(regionMeshBuffer, vx + (i) * cellSize, heightCurrent, vz, 0, 0, side, surf.getId());
+											addVertexBytes(regionMeshBuffer, vx + d * cellSize, surf.getLevel(), vz, 0, 0, side, surf.getId());
+											addVertexBytes(regionMeshBuffer, vx + (i) * cellSize, surf.getLevel(), vz, 0, 0, side, surf.getId());
 											vertexCount += 6;
 										}
 										heightCurrent = newHeight;
@@ -423,24 +423,28 @@ public class FarTerrainRenderer
 
 									if (heightNext > height)
 									{
-										addVertexBytes(regionMeshBuffer, vx, height, vz, 1, 0, 0);
-										addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, 1, 0, 0);
-										addVertexBytes(regionMeshBuffer, vx, heightNext, vz, 1, 0, 0);
+										int gapData = getIds(ids, world, vx - 1, vz, currentRegionX, currentRegionZ, details);
+										
+										addVertexBytes(regionMeshBuffer, vx, height, vz, 1, 0, 0, gapData);
+										addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, 1, 0, 0, gapData);
+										addVertexBytes(regionMeshBuffer, vx, heightNext, vz, 1, 0, 0, gapData);
 
-										addVertexBytes(regionMeshBuffer, vx, height, vz, 1, 0, 0);
-										addVertexBytes(regionMeshBuffer, vx, height, vz + cellSize, 1, 0, 0);
-										addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, 1, 0, 0);
+										addVertexBytes(regionMeshBuffer, vx, height, vz, 1, 0, 0, gapData);
+										addVertexBytes(regionMeshBuffer, vx, height, vz + cellSize, 1, 0, 0, gapData);
+										addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, 1, 0, 0, gapData);
 										vertexCount += 6;
 									}
 									else if (heightNext < height)
 									{
-										addVertexBytes(regionMeshBuffer, vx, height, vz, -1, 0, 0);
-										addVertexBytes(regionMeshBuffer, vx, heightNext, vz, -1, 0, 0);
-										addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, -1, 0, 0);
+										int gapData = getIds(ids, world, vx + 1, vz, currentRegionX, currentRegionZ, details);
+										
+										addVertexBytes(regionMeshBuffer, vx, height, vz, -1, 0, 0, gapData);
+										addVertexBytes(regionMeshBuffer, vx, heightNext, vz, -1, 0, 0, gapData);
+										addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, -1, 0, 0, gapData);
 
-										addVertexBytes(regionMeshBuffer, vx, height, vz, -1, 0, 0);
-										addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, -1, 0, 0);
-										addVertexBytes(regionMeshBuffer, vx, height, vz + cellSize, -1, 0, 0);
+										addVertexBytes(regionMeshBuffer, vx, height, vz, -1, 0, 0, gapData);
+										addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, -1, 0, 0, gapData);
+										addVertexBytes(regionMeshBuffer, vx, height, vz + cellSize, -1, 0, 0, gapData);
 										vertexCount += 6;
 									}
 								}
@@ -457,24 +461,28 @@ public class FarTerrainRenderer
 
 									if (heightNext > height)
 									{
-										addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, 1);
-										addVertexBytes(regionMeshBuffer, vx, heightNext, vz, 0, 0, 1);
-										addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, 1);
+										int gapData = getIds(heightMap, world, vx, vz - 1, currentRegionX, currentRegionZ, nextMeshDetailsZ);
+										
+										addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, 1, gapData);
+										addVertexBytes(regionMeshBuffer, vx, heightNext, vz, 0, 0, 1, gapData);
+										addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, 1, gapData);
 
-										addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, 1);
-										addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, 1);
-										addVertexBytes(regionMeshBuffer, vx + cellSize, height, vz, 0, 0, 1);
+										addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, 1, gapData);
+										addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, 1, gapData);
+										addVertexBytes(regionMeshBuffer, vx + cellSize, height, vz, 0, 0, 1, gapData);
 										vertexCount += 6;
 									}
 									else if (heightNext < height)
 									{
-										addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, -1);
-										addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, -1);
-										addVertexBytes(regionMeshBuffer, vx, heightNext, vz, 0, 0, -1);
+										int gapData = getIds(heightMap, world, vx, vz + 1, currentRegionX, currentRegionZ, nextMeshDetailsZ);
+										
+										addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, -1, gapData);
+										addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, -1, gapData);
+										addVertexBytes(regionMeshBuffer, vx, heightNext, vz, 0, 0, -1, gapData);
 
-										addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, -1);
-										addVertexBytes(regionMeshBuffer, vx + cellSize, height, vz, 0, 0, -1);
-										addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, -1);
+										addVertexBytes(regionMeshBuffer, vx, height, vz, 0, 0, -1, gapData);
+										addVertexBytes(regionMeshBuffer, vx + cellSize, height, vz, 0, 0, -1, gapData);
+										addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, -1, gapData);
 										vertexCount += 6;
 									}
 								}
@@ -526,10 +534,18 @@ public class FarTerrainRenderer
 		if (x < 0 || z < 0 || x >= 256 || z >= 256)
 			return world.getRegionSummaries().getHeightMipmapped(rx * 256 + x, rz * 256 + z, level);
 		else
-			return getHeightMipmapped(heightMap, x, z, level);
+			return getDataMipmapped(heightMap, x, z, level);
+	}
+	
+	private int getIds(int[] ids, WorldImplementation world, int x, int z, int rx, int rz, int level)
+	{
+		if (x < 0 || z < 0 || x >= 256 || z >= 256)
+			return world.getRegionSummaries().getDataMipmapped(rx * 256 + x, rz * 256 + z, level);
+		else
+			return getDataMipmapped(ids, x, z, level);
 	}
 
-	public int getHeightMipmapped(int[] heightMap, int x, int z, int level)
+	private int getDataMipmapped(int[] summaryData, int x, int z, int level)
 	{
 		if (level > 8)
 			return -1;
@@ -538,7 +554,7 @@ public class FarTerrainRenderer
 		z >>= level;
 		int offset = offsets[level];
 		//System.out.println(level+"l"+offset+"reso"+resolution+"x:"+x+"z:"+z);
-		return heightMap[offset + resolution * x + z];
+		return summaryData[offset + resolution * x + z];
 	}
 
 	public void updateData()
@@ -574,17 +590,20 @@ public class FarTerrainRenderer
 		}
 	}
 
-	private void addVertexBytes(ByteBuffer terrain, int x, int y, int z, int nx, int ny, int nz)
+	private void addVertexBytes(ByteBuffer terrain, int x, int y, int z, int nx, int ny, int nz, int voxelData)
 	{
 		terrain.putShort((short) x);
 		terrain.putShort((short) (y + 1));
 		terrain.putShort((short) z);
 		terrain.putShort((short) 0x00);
+		//terrain.putShort((short) VoxelFormat.id(voxelData));
 
 		terrain.put((byte) (nx + 1));
 		terrain.put((byte) (ny + 1));
 		terrain.put((byte) (nz + 1));
 		terrain.put((byte) (0x00));
+		
+		//terrain.putInt(VoxelFormat.id(voxelData));
 	}
 
 	public void destroy()

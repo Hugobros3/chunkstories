@@ -6,5 +6,6 @@ package io.xol.chunkstories.api.world.heightmap;
 
 public interface RegionSummaries
 {
-	int getHeightAtWorldCoordinates(int worldX, int worldZ);
+	public int getHeightAtWorldCoordinates(int worldX, int worldZ);
+	public int getDataAtWorldCoordinates(int worldX, int worldZ);
 }

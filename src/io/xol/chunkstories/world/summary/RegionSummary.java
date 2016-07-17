@@ -45,7 +45,6 @@ public class RegionSummary
 	private int[][] minChunkHeight = new int[8][8];
 
 	//Textures (client renderer)
-	//TODO use real textures
 	public AtomicBoolean texturesUpToDate = new AtomicBoolean(false);
 	
 	public Texture2D heightsTexture;
@@ -64,7 +63,7 @@ public class RegionSummary
 
 		// 512kb per summary, use of max mipmaps for heights
 		heights = new int[(int) Math.ceil(256 * 256 * (1 + 1 / 3D))];
-		ids = new int[256 * 256];
+		ids = new int[(int) Math.ceil(256 * 256 * (1 + 1 / 3D))];
 
 		if (world instanceof WorldMaster)
 			handler = new File(world.getFolderPath() + "/summaries/" + rx + "." + rz + ".sum");
@@ -321,7 +320,6 @@ public class RegionSummary
 					this.minChunkHeight[cx][cz] = this.getHeight(x, z);
 			}
 		//Max mipmaps
-
 		int resolution = 128;
 		int offset = 0;
 		while (resolution > 1)
@@ -330,27 +328,36 @@ public class RegionSummary
 				for (int z = 0; z < resolution; z++)
 				{
 					//Fetch from the current resolution
-					int v00 = heights[offset + (resolution * 2) * (x * 2) + (z * 2)];
-					int v01 = heights[offset + (resolution * 2) * (x * 2) + (z * 2 + 1)];
-					int v10 = heights[offset + (resolution * 2) * (x * 2 + 1) + (z * 2)];
-					int v11 = heights[offset + (resolution * 2) * (x * 2 + 1) + (z * 2) + 1];
-					//Max out
-					int max = max(max(v00, v01), max(v10, v11));
+					//int v00 = heights[offset + (resolution * 2) * (x * 2) + (z * 2)];
+					//int v01 = heights[offset + (resolution * 2) * (x * 2) + (z * 2 + 1)];
+					//int v10 = heights[offset + (resolution * 2) * (x * 2 + 1) + (z * 2)];
+					//int v11 = heights[offset + (resolution * 2) * (x * 2 + 1) + (z * 2) + 1];
+					
+					int maxIndex = 0;
+					int maxHeight = 0;
+					for(int i = 0; i <= 1; i++)
+						for(int j = 0; j <= 1; j++)
+						{
+							int locationThere = offset + (resolution * 2) * (x * 2 + i) + (z * 2) + j;
+							int heightThere = heights[locationThere];
+							
+							if(heightThere >= maxHeight)
+							{
+								maxIndex = locationThere;
+								maxHeight = heightThere;
+							}
+						}
+					
+					//int maxHeight = max(max(v00, v01), max(v10, v11));
 
 					//Skip the already passed steps and the current resolution being sampled data to go write the next one
-					heights[offset + (resolution * 2) * (resolution * 2) + resolution * x + z] = max;
+					heights[offset + (resolution * 2) * (resolution * 2) + resolution * x + z] = maxHeight;
+					ids[offset + (resolution * 2) * (resolution * 2) + resolution * x + z] = ids[maxIndex];
 				}
 
 			offset += resolution * 2 * resolution * 2;
 			resolution /= 2;
 		}
-	}
-
-	private int max(int a, int b)
-	{
-		if (a > b)
-			return a;
-		return b;
 	}
 
 	static int[] offsets = { 0, 65536, 81920, 86016, 87040, 87296, 87360, 87376, 87380, 87381 };
@@ -364,5 +371,16 @@ public class RegionSummary
 		z >>= level;
 		int offset = offsets[level];
 		return heights[offset + resolution * x + z];
+	}
+	
+	public int getDataMipmapped(int x, int z, int level)
+	{
+		if (level > 8)
+			return -1;
+		int resolution = 256 >> level;
+		x >>= level;
+		z >>= level;
+		int offset = offsets[level];
+		return ids[offset + resolution * x + z];
 	}
 }
