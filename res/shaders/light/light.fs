@@ -1,7 +1,7 @@
 #version 130
 
 uniform sampler2D albedoBuffer;
-uniform sampler2D comp_depth;
+uniform sampler2D depthBuffer;
 uniform sampler2D comp_spec;
 uniform sampler2D comp_normal;
 
@@ -27,34 +27,9 @@ uniform vec3 camPos;
 
 uniform float powFactor;
 
-const float gamma = 2.2;
-const float gammaInv = 1/2.2;
-
-vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
-{
-	return pow(texture2D(sampler, coords), vec4(gamma));
-}
-
-vec4 gammaOutput(vec4 inputValue)
-{
-	return pow(inputValue, vec4(gammaInv));
-}
-
-float linearizeDepth(float depth)
-{
-    float near = 0.1;//Camera.NearPlane;
-    float far = 3000.0;//Camera.FarPlane;
-    float linearDepth = (2.0 * near) / (far + near - depth * (far - near));
-
-    return linearDepth;
-}
-
-vec3 unprojectPixel(vec2 co) {
-
-    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2.0-1.0, texture2D(comp_depth, co, 0.0).x * 2.0 - 1.0), 1.0);
-    fragposition /= fragposition.w;
-    return fragposition.xyz;
-}
+//Gamma constants
+<include ../lib/gamma.glsl>
+<include ../lib/transformations.glsl>
 
 void main() {
 	vec4 totalLight = vec4(0.0);
@@ -63,7 +38,7 @@ void main() {
 	vec3 normalWorld = normalize(normalMatrixInv * normal);
 	float spec = texture2D(comp_normal, screenCoord).a;
 	
-	vec3 pixelPositionView = unprojectPixel(screenCoord);
+	vec3 pixelPositionView = convertScreenSpaceToCameraSpace(screenCoord, depthBuffer).xyz;
 	
 	if(length(pixelPositionView) > 500)
 		discard;

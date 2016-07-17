@@ -629,7 +629,7 @@ public class WorldRenderer
 		waterNormalTexture.setLinearFiltering(true);
 		waterNormalTexture.setMipMapping(true);
 		terrainShader.setUniformSamplerCubemap(9, "environmentCubemap", environmentMap);
-		terrainShader.setUniformSampler(8, "glowSampler", sunGlowTexture);
+		terrainShader.setUniformSampler(8, "sunSetRiseTexture", sunGlowTexture);
 		terrainShader.setUniformSampler(7, "skyTextureSunny", skyTextureSunny);
 		terrainShader.setUniformSampler(12, "skyTextureRaining", skyTextureRaining);
 		terrainShader.setUniformSampler(6, "blockLightmap", lightmapTexture);
@@ -1131,7 +1131,7 @@ public class WorldRenderer
 		//Required info
 		lightShader.setUniformSampler(0, "albedoBuffer", this.albedoBuffer);
 		lightShader.setUniformSampler(1, "metaBuffer", this.materialBuffer);
-		lightShader.setUniformSampler(2, "comp_depth", this.zBuffer);
+		lightShader.setUniformSampler(2, "depthBuffer", this.zBuffer);
 		lightShader.setUniformSampler(3, "comp_normal", this.normalBuffer);
 
 		//Parameters
@@ -1201,7 +1201,7 @@ public class WorldRenderer
 		applyShadowsShader.setUniformSampler(3, "metaBuffer", materialBuffer);
 		applyShadowsShader.setUniformSampler(4, "blockLightmap", lightmapTexture);
 		applyShadowsShader.setUniformSampler(5, "shadowMap", shadowMapBuffer);
-		applyShadowsShader.setUniformSampler(6, "glowSampler", sunGlowTexture);
+		applyShadowsShader.setUniformSampler(6, "sunSetRiseTexture", sunGlowTexture);
 		//applyShadowsShader.setUniformSampler(7, "colorSampler", skyTextureSunny);
 		
 		applyShadowsShader.setUniformSampler(7, "skyTextureSunny", skyTextureSunny);
@@ -1404,7 +1404,7 @@ public class WorldRenderer
 		//ssaoShader.use(true);
 
 		ssaoShader.setUniformSampler(1, "normalTexture", this.normalBuffer);
-		ssaoShader.setUniformSampler(0, "depthTexture", this.zBuffer);
+		ssaoShader.setUniformSampler(0, "deptBuffer", this.zBuffer);
 
 		ssaoShader.setUniformFloat("viewWidth", scrW);
 		ssaoShader.setUniformFloat("viewHeight", scrH);

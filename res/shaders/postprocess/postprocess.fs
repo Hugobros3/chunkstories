@@ -42,38 +42,10 @@ const float gammaInv = 0.45454545454;
 
 const vec4 waterColor = vec4(0.2, 0.4, 0.45, 1.0);
 
-vec3 convertCameraSpaceToScreenSpace(vec3 cameraSpace) {
-    vec4 clipSpace = projectionMatrix * vec4(cameraSpace, 1.0);
-    vec3 NDCSpace = clipSpace.xyz / clipSpace.w;
-    vec3 screenSpace = 0.5 * NDCSpace + 0.5;
-		 screenSpace.z = 0.1f;
-    return screenSpace;
-}
-
-vec3 unprojectPixel(vec2 co) {
-
-    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2.0-1.0, texture2D(depthBuffer, co, 0.0).x * 2.0 - 1.0), 1.0);
-    fragposition /= fragposition.w;
-    return fragposition.xyz;
-}
-
-float linearizeDepth(float z)
-{
-  float n = 0.1; // camera z near
-  float f = 300.0; // camera z far
-  return (2.0 * n) / (f + n - z * (f - n));	
-}
-
+<include ../lib/transformations.glsl>
 vec4 getDebugShit(vec2 coords);
 
-vec4 convertScreenSpaceToWorldSpace(vec2 co) {
-
-    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2.0-1.0, texture2D(depthBuffer, co, 0.0).x * 2.0 - 1.0), 1.0);
-    fragposition /= fragposition.w;
-    return fragposition;
-}
-// note: valve edition
-//       from http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+// note: valve edition from http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 // note: input in pixels (ie not normalized uv)
 vec3 ScreenSpaceDither( vec2 vScreenPos )
 {
@@ -87,6 +59,7 @@ vec3 ScreenSpaceDither( vec2 vScreenPos )
     //vDither.rgb = fract( vDither.rgb / vec3( 103.0, 71.0, 97.0 ) ) - vec3( 0.5, 0.5, 0.5 );
 	//return (vDither.rgb / 255.0) * 0.375;
 }
+
 void main() {
 	vec2 finalCoords = f_texcoord;
 	
@@ -110,7 +83,7 @@ void main() {
 	//compositeColor.rgb = compositeColor.rgb / (compositeColor.rgb + vec3(1.0)) ;
 	compositeColor.rgb = pow(compositeColor.rgb, vec3(gammaInv));
 	
-	vec4 cameraSpacePosition = convertScreenSpaceToWorldSpace(finalCoords);
+	vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(finalCoords, depthBuffer);
 	compositeColor = mix(compositeColor, vec4(0.0), underwater * clamp(length(cameraSpacePosition) / 32.0, 0.0, 1.0));
 	vec4 pixelNormal = texture2D(normalBuffer, finalCoords);
 	pixelNormal.rgb = pixelNormal.rgb * 2.0 - vec3(1.0);

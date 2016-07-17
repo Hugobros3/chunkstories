@@ -1,39 +1,36 @@
-#version 120
+#version 130
+
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
+
+//Passed variables
+in vec3 eyeDirection;
+
+//Framebuffer outputs
+out vec4 shadedFramebufferOut;
+
+//Sky data
 uniform sampler2D skyTextureSunny;
 uniform sampler2D skyTextureRaining;
-uniform sampler2D glowSampler;
+uniform sampler2D sunSetRiseTexture;
 uniform float overcastFactor;
-
-uniform float isRaining;
-uniform sampler2D comp_diffuse;
-uniform samplerCube environmentCubemap;
-
 uniform vec3 sunPos;
 
-varying vec2 vertex;
-
+//World
 uniform float time;
 
+//Common camera matrices & uniforms
 uniform vec3 camPos;
 
-varying vec3 eyeDirection;
+//Gamma constants
+<include ../lib/gamma.glsl>
 
-const float gamma = 2.2;
-const float gammaInv = 0.45454545454;
-
-vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
-{
-	return pow(texture2D(sampler, coords), vec4(gamma));
-}
-
-vec4 gammaOutput(vec4 inputValue)
-{
-	return pow(inputValue, vec4(gammaInv));
-}
-
-<include sky.glsl>
+//Sky functions
+<include ../sky/sky.glsl>
 
 void main()
 {
-	gl_FragColor = vec4(getSkyColor(time, eyeDirection), 1.0);
+	//Straight output of library's method
+	shadedFramebufferOut = vec4(getSkyColor(time, eyeDirection), 1.0);
 }

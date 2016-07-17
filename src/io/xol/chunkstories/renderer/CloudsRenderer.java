@@ -215,7 +215,7 @@ public class CloudsRenderer
 		Texture2D skyTextureSunny = TexturesHandler.getTexture("environement/sky.png");
 		Texture2D skyTextureRaining = TexturesHandler.getTexture("environement/sky_rain.png");
 		
-		cloudsShader.setUniformSampler(0, "glowSampler", glowTexture);
+		cloudsShader.setUniformSampler(0, "sunSetRiseTexture", glowTexture);
 		cloudsShader.setUniformSampler(1, "skyTextureSunny", skyTextureSunny);
 		cloudsShader.setUniformSampler(2, "skyTextureRaining", skyTextureRaining);
 		cloudsShader.setUniformFloat("time", (world.getTime() % 10000) / 10000f);

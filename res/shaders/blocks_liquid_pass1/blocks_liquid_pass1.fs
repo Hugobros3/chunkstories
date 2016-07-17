@@ -57,11 +57,6 @@ uniform mat3 normalMatrixInv;
 
 varying float waterFogI;
 
-float linearizeDepth(float expDepth)
-{
-	return (2 * 0.1) / (3000 + 0.1 - expDepth * (3000 - 0.1));
-}
-
 const vec3 shadowColor = vec3(0.20, 0.20, 0.31);
 const float shadowStrength = 0.75;
 
@@ -74,25 +69,9 @@ uniform float viewDistance;
 
 uniform float underwater;
 
-const float gamma = 2.2;
-const float gammaInv = 1/2.2;
-
-vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
-{
-	return pow(texture2D(sampler, coords), vec4(gamma));
-}
-
-vec4 gammaOutput(vec4 inputValue)
-{
-	return pow(inputValue, vec4(gammaInv));
-}
-
-vec4 unprojectPixel(vec2 co) {
-
-    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2.0-1.0, texture2D(readbackDepthBufferTemp, co, 0.0).x * 2.0 - 1.0), 1.0);
-    fragposition /= fragposition.w;
-    return fragposition;
-}
+//Gamma constants
+<include ../lib/gamma.glsl>
+<include ../lib/transformations.glsl>
 
 void main(){
 	//if(mod((gl_FragCoord.x + gl_FragCoord.y), 2) == 0)
@@ -124,7 +103,7 @@ void main(){
 	vec4 baseColor = texture2D(diffuseTexture, texcoord);
 	
 	float spec = fresnelTerm;
-	vec4 worldspaceFragment = unprojectPixel(coords);
+	vec4 worldspaceFragment = convertScreenSpaceToCameraSpace(coords, readbackDepthBufferTemp);
 	
 	<ifdef perPixelFresnel>
 	float dynamicFresnelTerm = 0.1 + 0.6 * clamp(0.7 + dot(normalize(worldspaceFragment.xyz), normal), 0.0, 1.0);

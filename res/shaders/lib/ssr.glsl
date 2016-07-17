@@ -1,11 +1,3 @@
-vec3 convertCameraSpaceToScreenSpace(vec3 cameraSpace) {
-    vec4 clipSpace = projectionMatrix * vec4(cameraSpace, 1.0);
-    vec3 NDCSpace = clipSpace.xyz / clipSpace.w;
-    vec3 screenSpace = 0.5 * NDCSpace + 0.5;
-		 screenSpace.z = 0.1f;
-    return screenSpace;
-}
-
 vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec3 pixelNormal, float showSkybox)
 {
     vec2 screenSpacePosition2D = screenSpaceCoords;
@@ -45,7 +37,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 		}
 
         vec2 samplePos = currentPosition.xy;
-        float sampleDepth = convertScreenSpaceToWorldSpace(samplePos).z;
+        float sampleDepth = convertScreenSpaceToCameraSpace(samplePos, depthBuffer).z;
 
         float currentDepth = cameraSpaceVectorPosition.z;
         float diff = sampleDepth - currentDepth;
@@ -99,12 +91,12 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 		
 	//float specular = clamp(pow(dot(normalize(normSkyDirection),normalize(sunPos)),16.0),0.0,1.0);
 		
-	float sunSpecular = clamp(1.0-overcastFactor * 2.0, 0.0, 1.0) * pow(clamp(dot(normalize(normSkyDirection),normalize(sunPos)), 0.0, 1.0),750.0);
+	float sunSpecular = 100.0 * clamp(1.0-overcastFactor * 2.0, 0.0, 1.0) * pow(clamp(dot(normalize(normSkyDirection),normalize(sunPos)), 0.0, 1.0),750.0);
 	<ifdef doDynamicCubemaps>
 	skyColor = textureCube(environmentCubemap, vec3(normSkyDirection.x, -normSkyDirection.y, -normSkyDirection.z)).rgb;
 	<endif doDynamicCubemaps>
 	
-	skyColor += vec3(100.0) * sunSpecular;
+	skyColor += vec3(sunSpecular);
 		
 	skyColor *= showSkybox;//texture2D(blocklights, lightMapUV).rgb;
 	
@@ -114,7 +106,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	}
 	else
 	{
-		vec4 cameraSpacePosition = convertScreenSpaceToWorldSpace(finalSamplePos);
+		vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(finalSamplePos, depthBuffer);
 		vec4 pixelNormal = texture2D(normalBuffer, finalSamplePos);
 		pixelNormal.rgb = pixelNormal.rgb * 2.0 - vec3(1.0);
 		vec4 pixelMeta = texture2D(metaBuffer, finalSamplePos);

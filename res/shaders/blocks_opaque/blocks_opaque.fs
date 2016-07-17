@@ -1,4 +1,4 @@
-#version 120
+#version 130
 // Copyright 2015 XolioWare Interactive
 
 //General data
@@ -54,53 +54,13 @@ varying float fresnelTerm;
 
 uniform vec2 screenSize;
 
-const float gamma = 2.2;
-const float gammaInv = 1/2.2;
+//Gamma constants
+<include ../lib/gamma.glsl>
+<include ../lib/transformations.glsl>
 
 uniform float mapSize;
 
-
-// I suck at maths, so I used this code in the meanwhile I get how it works
-// http://www.thetenthplanet.de/archives/1180
-mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
-{
-    // récupère les vecteurs du triangle composant le pixel
-    vec3 dp1 = dFdx( p );
-    vec3 dp2 = dFdy( p );
-    vec2 duv1 = dFdx( uv );
-    vec2 duv2 = dFdy( uv );
-
-    // résout le système linéaire
-    vec3 dp2perp = cross( dp2, N );
-    vec3 dp1perp = cross( N, dp1 );
-    vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
-    vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
-
-    // construit une trame invariante à l'échelle 
-    float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
-    return mat3( T * invmax, B * invmax, N );
-}
-
-vec3 perturb_normal( vec3 N, vec3 V, vec2 texcoord )
-{
-    // N, la normale interpolée et
-    // V, le vecteur vue (vertex dirigé vers l'œil)
-    vec3 map = texture2D(normalTexture, texcoord ).xyz;
-	//vec3 map = vec3(nul.x, nul.y, nul.z);
-    map = map*2.0 - 1.0;
-	map.x = -map.x;
-	
-	map = mix(map, vec3(0, 0, 1), 0.5);
-	mat3 TBN = cotangent_frame(N, -V, texcoord);
-    return normalize(TBN * map);
-}
-
-vec4 unprojectPixel(vec3 co) {
-
-    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2.0-1.0), 1.0);
-    fragposition /= fragposition.w;
-    return fragposition;
-}
+<include ../lib/normalmapping.glsl>
 
 const vec3 shadowColor = vec3(0.20, 0.20, 0.31);
 const float shadowStrength = 0.75;
@@ -109,11 +69,19 @@ void main(){
 	
 	vec3 normal = varyingNormal;
 	
+	//Check normal was given
 	float normalGiven = length(varyingNormal);
-	//texcoord /= 32768.0;
 	
-	normal = perturb_normal(normal, eye, texcoord);
+	//Grabs normal from texture and corrects the format
+	vec3 normalMapped = texture2D(normalTexture, texcoord).xyz;
+    normalMapped = normalMapped*2.0 - 1.0;
+	normalMapped.x = -normalMapped.x;
+	
+	//Apply it
+	normal = perturb_normal(normal, eye, texcoord, normalMapped);
 	normal = normalize(normalMatrix * normal);
+	
+	//If no normal given, face camera
 	normal = mix(vec3(0,0,1), normal, normalGiven);
 	//Basic texture color
 	vec3 baseColor = texture2D(diffuseTexture, texcoord).rgb;
@@ -142,25 +110,14 @@ void main(){
 	<ifdef perPixelFresnel>
 	vec3 coords = (gl_FragCoord.xyz);
 	coords.xy/=screenSize;
-	vec4 worldspaceFragment = unprojectPixel(coords);
+	vec4 worldspaceFragment = convertScreenSpaceToCameraSpace(coords);
 	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(eye), vec3(varyingNormal)), 0.0, 1.0);
 	spec = material.r*rainWetness + (material.g + rainWetness) * dynamicFresnelTerm + material.b;
 	<endif perPixelFresnel>
 	
-	//ao term
-	<ifdef !ssao>
-		//If SSAO is disabled, we use the crappy free vertex AO ( byproduct of block/sunlight merging in code )
-		//finalLight -= vec3(0.2)*clamp(lightMapCoords.z, 0.0, 1.0);
-	<endif ssao>
-	
-	//spec = 1.0+pow(spec, 1.0);
-	
 	vec3 finalColor = baseColor;
 	
 	//Diffuse G-Buffer
-	
-	//finalColor.gb = vec2(0.0);
-	//finalColor.r = material.r;
 	
 	gl_FragData[0] = vec4(finalColor,1);
 	//Normal G-Buffer

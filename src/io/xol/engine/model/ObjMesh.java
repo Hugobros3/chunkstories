@@ -27,8 +27,6 @@ import static org.lwjgl.opengl.GL20.*;
 
 /**
  * An appoling mess of an Obj loader
- * 
- * @author Hugo TODO fix
  */
 public class ObjMesh
 {

@@ -1,42 +1,46 @@
 #version 130
-// Disabled int textures for Intel IGP compatibility, instead it's floats in GL_NEAREST interpolation
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
+
+// Disabled int textures for Intel IGP compatibility, instead it's floats in GL_NEAREST interpolation, works everywhere including nvidia if you add a few tricks
 //#extension GL_EXT_gpu_shader4 : require
 
-varying vec3 vertex;
-varying vec4 color;
+//Passed variables
+in vec3 vertexPassed;
+in vec3 normalPassed;
+in vec2 lightMapCoords;
+in vec2 textureCoord;
+in vec3 eyeDirection;
+in float fresnelTerm;
+in float fogIntensity;
 
-varying float fogI;
+//Framebuffer outputs
+out vec4 shadedFramebufferOut;
 
-uniform sampler2D normalTexture;
-uniform vec3 sunPos; // Sun position
-uniform vec3 camPos;
-uniform float time;
-varying vec3 eye;
-uniform samplerCube skybox;
-varying float fresnelTerm;
+//Textures
+uniform sampler2D normalTexture; // Water surface
+uniform sampler2D heightMap; // Heightmap
+uniform sampler2D groundTexture; // Block ids
+uniform sampler1D blocksTexturesSummary; // Atlas ids -> diffuse rgb
+uniform sampler2D vegetationColorTexture; //Vegetation
 
-uniform float waterLevel;
-uniform sampler2D heightMap;
-uniform sampler2D groundTexture;
-uniform sampler1D blocksTexturesSummary;
+//Reflections
 uniform samplerCube environmentCubemap;
-uniform sampler2D vegetationColorTexture; // Blocks material texture atlas
-varying vec2 textureCoord;
 
-varying float chunkFade;
-
-varying vec2 lightMapCoords;
-
-uniform float sunIntensity;
-varying vec3 normalHeightmap;
-uniform sampler2D lightColors; // Sampler to lightmap
+//Block lightning
+uniform sampler2D lightColors;
 uniform sampler2D blockLightmap;
-
 uniform vec3 shadowColor;
 uniform vec3 sunColor;
 uniform float shadowStrength;
 uniform float shadowVisiblity;
 
+//World general information
+uniform float mapSize;
+uniform float time;
+
+//Common camera matrices & uniforms
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
 
@@ -46,199 +50,122 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
-//sky crap
-uniform sampler2D glowSampler;
+uniform vec3 camPos;
+
+//Sky data
+uniform sampler2D sunSetRiseTexture;
 uniform sampler2D skyTextureSunny;
 uniform sampler2D skyTextureRaining;
+uniform vec3 sunPos;
 uniform float overcastFactor;
 
-//gamma shit
-const float gamma = 2.2;
-const float gammaInv = 1/2.2;
+//Gamma constants
+<include ../lib/gamma.glsl>
 
-uniform float mapSize;
-
-varying vec2 chunkPositionFrag;
+//World mesh culling
 uniform sampler2D loadedChunksMapTop;
 uniform sampler2D loadedChunksMapBot;
-uniform vec2 playerCurrentChunk;
-
 uniform float ignoreWorldCulling;
-//flat in int voxelData;
-
-vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
-{
-	return pow(texture2D(sampler, coords), vec4(gamma));
-}
-
-vec4 gammaOutput(vec4 inputValue)
-{
-	return pow(inputValue, vec4(gammaInv));
-}
 
 <include ../sky/sky.glsl>
 
 void main()
 {
-	//int voxelDataActual = voxelData;
+	//Computes the zone covered by actual chunks
+	float heightCoveredStart = texture2D(loadedChunksMapBot,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0;
+	float heightCoveredEnd = texture2D(loadedChunksMapTop,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 + 32.0;
+	
+	//Discards the fragment if it is within
+	if(vertexPassed.y-5.0 > heightCoveredStart && vertexPassed.y+5.0-32.0 < heightCoveredEnd && ignoreWorldCulling < 1.0)
+		discard;
 
-	float id = texture2D(groundTexture, textureCoord).r;
-	vec3 finalColor = vec3(0.0+id*0.05, 0.0, 0.0);
+	//int voxelDataActual = voxelData;
+	float voxelId = texture2D(groundTexture, textureCoord).r;
 	
-	vec4 bs = texture1D(blocksTexturesSummary, id/512.0);
-	finalColor = bs.rgb;
-	if(bs.a < 1)
-		finalColor *= texture2D(vegetationColorTexture, vertex.xz / vec2(mapSize)).rgb;
+	//512-voxel types summary... not best
+	vec4 diffuseColor = texture1D(blocksTexturesSummary, voxelId/512.0);
 	
-	finalColor.rgb = pow(finalColor.rgb, vec3(gamma));
+	//Apply plants color if alpha is < 1.0
+	if(diffuseColor.a < 1.0)
+		diffuseColor.rgb *= texture2D(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
 	
-	float spec = 0.0;
+	//Apply gamma then
+	diffuseColor.rgb = pow(diffuseColor.rgb, vec3(gamma));
 	
-	vec3 normal = normalHeightmap;
+	float specularity = 0.0;
+	vec3 normal = normalPassed;
 	
-	/*<ifdef hqTerrain>
-	float baseHeight = texture2D(heightMap,textureCoord).r;
-	
-	//Normal computation, brace yourselves
-	vec3 normalHeightmap2 = vec3(0.0, 1.0, 0.0); //Start with an empty vector
-	
-	float xtrem = 2;
-	
-	float normalXplusHeight = texture2D(heightMap,textureCoord+vec2(1.0/256.0, 0.0)).r;
-	float alpha = atan((normalXplusHeight-baseHeight)*xtrem);
-	vec3 normalXplus = vec3(0.0, cos(alpha), -sin(alpha));
-	
-	normalHeightmap2 += normalXplus;
-	
-	float normalZplusHeight = texture2D(heightMap,textureCoord+vec2(0.0, 1.0/256.0)).r;
-	alpha = atan((normalZplusHeight-baseHeight)*xtrem);
-	vec3 normalZplus = vec3(-sin(alpha), cos(alpha), 0.0);
-	
-	normalHeightmap2 += normalZplus;
-	
-	float normalXminusHeight = texture2D(heightMap,textureCoord-vec2(1.0/256.0, 0.0)).r;
-	alpha = atan((normalXminusHeight-baseHeight)*xtrem);
-	vec3 normalXminus = vec3(0.0, cos(alpha), sin(alpha));
-	
-	normalHeightmap2 += normalXminus;
-	
-	float normalZminusHeight = texture2D(heightMap,textureCoord-vec2(0.0, 1.0/256.0)).r;
-	alpha = atan((normalZminusHeight-baseHeight)*xtrem);
-	vec3 normalZminus = vec3(sin(alpha), cos(alpha), 0.0);
-	
-	normalHeightmap2 += normalZminus;
-	
-	//I'm happy to say I came up with the maths by myself :)
-	
-	//normal = normalize(normalHeightmap2);
-	<endif hqTerrain>
-	*/
-	float specular = 0.0;
-	
-	if(id == 128)
+	//Water case
+	if(voxelId == 128)
 	{
-		
-		vec3 nt = 1.0*(texture2D(normalTexture,(vertex.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
-		nt += 1.0*(texture2D(normalTexture,(vertex.xz/2.0+vec2(-time,-2.0*time)/150.0)/2.0).rgb*2.0-1.0);
-		nt += 0.5*(texture2D(normalTexture,(vertex.zx*0.8+vec2(400.0, sin(-time/5.0)+time/25.0)/350.0)/10.0).rgb*2.0-1.0);
-		nt += 0.25*(texture2D(normalTexture,(vertex.zx*0.1+vec2(400.0, sin(-time/5.0)-time/25.0)/250.0)/15.0).rgb*2.0-1.0);
+		//Build water texture
+		vec3 nt = 1.0*(texture2D(normalTexture,(vertexPassed.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
+		nt += 1.0*(texture2D(normalTexture,(vertexPassed.xz/2.0+vec2(-time,-2.0*time)/150.0)/2.0).rgb*2.0-1.0);
+		nt += 0.5*(texture2D(normalTexture,(vertexPassed.zx*0.8+vec2(400.0, sin(-time/5.0)+time/25.0)/350.0)/10.0).rgb*2.0-1.0);
+		nt += 0.25*(texture2D(normalTexture,(vertexPassed.zx*0.1+vec2(400.0, sin(-time/5.0)-time/25.0)/250.0)/15.0).rgb*2.0-1.0);
 		
 		nt = normalize(nt);
 		
+		//Merge it a bit with the usual direction
 		float i = 0.5;
-		
 		normal.x += nt.r*i;
 		normal.z += nt.g*i;
 		normal.y += nt.b*i;
 		
 		normal = normalize(normal);
 		
-		//specular = max(pow(dot(normalize(reflect(normalMatrix * eye,normalMatrix * normal)),normalize(normalMatrix * sunPos)),150.0),0.0);
-		
-		spec = pow(fresnelTerm, gamma);
-		
-		//spec = fresnelTerm;
-		
-		specular = spec * pow(clamp(dot(normalize(reflect(normalMatrix * eye,normalMatrix * normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),750.0);
-	
-		//vec3 reflection = texture(skybox, reflect(eye, normal)).rgb;
-		
+		//Set wet
+		specularity = pow(fresnelTerm, gamma);
 	}
-	/*else if(voxelDataActual == 0)
-	{
-		finalColor = vec3(1, 1, 0);
-	}*/
-
 	
+	//Computes blocky light
 	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0.0, 1.0)).rgb;
 	baseLight *= texture2DGammaIn(lightColors, vec2(time, 1.0)).rgb;
 	
-	vec3 blockLight = texture2DGammaIn(blockLightmap,vec2(lightMapCoords.x, 0)).rgb;
-	vec3 sunLight = texture2DGammaIn(blockLightmap,vec2(0, lightMapCoords.y)).rgb;
-	
-	float opacity = 0.0;
+	//Compute side illumination by sun
 	float NdotL = clamp(dot(normal, normalize(sunPos)), 0.0, 1.0);
-	
-	//opacity += NdotL;
-	
-	float clamped = clamp(NdotL, 0.0, 0.1);
-	
-	opacity = clamp(clamped * 10.0, 0.0, 1.0);
-	sunLight *= mix(pow(shadowColor, vec3(gamma)),  pow(sunColor, vec3(gamma)), (NdotL) * 1);
-	
-	//vec3 finalLight = blockLight;// * (1-sunLight);
-	//finalLight += sunLight;
-	
-	
 	float sunlightAmount = NdotL * shadowVisiblity;
 	vec3 finalLight = mix(pow(sunColor, vec3(gamma)), baseLight * pow(shadowColor, vec3(gamma)), (1.0 - sunlightAmount) * shadowStrength);
 	
+	// Simple lightning for lower end machines
 	<ifdef !shadows>
-		// Simple lightning for lower end machines
-		float opacityModified = 0.0;
-		vec3 shadingDir = normal;//normalize(normalMatrixInv * normal);
-		opacityModified += 0.25 * abs(dot(vec3(1.0, 0.0, 0.0), shadingDir));
-		opacityModified += 0.45 * abs(dot(vec3(0.0, 0.0, 1.0), shadingDir));
-		opacityModified += 0.6 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
+		float faceDarkening = 0.0;
+		vec3 shadingDir = normal;
 		
-		//opacity = mix(opacity, opacityModified, meta.a);
-		finalLight = mix(baseLight, vec3(0.0), opacityModified);
-		//finalLight = pow(finalLight, vec3(gamma));
+		//Some face darken more than others
+		faceDarkening += 0.25 * abs(dot(vec3(1.0, 0.0, 0.0), shadingDir));
+		faceDarkening += 0.45 * abs(dot(vec3(0.0, 0.0, 1.0), shadingDir));
+		faceDarkening += 0.6 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
+		
+		finalLight = mix(baseLight, vec3(0.0), faceDarkening);
 	<endif !shadows>
-	
-	//finalColor = vec3(0.15);
-	//finalColor = (normalMatrix * normal) * 0.5 + 0.5;
 
-	finalColor = finalColor * finalLight;
+	//Merges diffuse and lightning
+	vec3 finalColor = diffuseColor.rgb * finalLight;
 	
-	vec3 reflectionVector = normalize(reflect(vec3(eye.x, eye.y, eye.z), normal));
-	if(spec >0)
+	//Do basic reflections
+	vec3 reflectionVector = normalize(reflect(vec3(eyeDirection.x, eyeDirection.y, eyeDirection.z), normal));
+	if(specularity > 0.0)
 	{	
-		vec3 reflected = getSkyColor(time, normalize(reflect(eye, normal)));
+		//Basic sky colour
+		vec3 reflected = getSkyColor(time, normalize(reflect(eyeDirection, normal)));
 		
+		//Sample cubemap if enabled
 		<ifdef doDynamicCubemaps>
 		reflected = textureCube(environmentCubemap, vec3(reflectionVector.x, -reflectionVector.y, -reflectionVector.z)).rgb;
 		<endif doDynamicCubemaps>
-		finalColor = mix(finalColor, reflected , spec);
+		
+		//Add sunlight reflection
+		float sunSpecularReflection = specularity * 100.0 * pow(clamp(dot(normalize(reflect(normalMatrix * eyeDirection,normalMatrix * normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),750.0);
+		finalColor += vec3(sunSpecularReflection);
+		
+		//Mix them to obtain final colour
+		finalColor = mix(finalColor, reflected , specularity);
 	}
-	vec3 fogColor = gl_Fog.color.rgb;
-	fogColor = getSkyColorWOSun(time, normalize(eye));
-	//fogColor.rgb = pow(fogColor.rgb, vec3(gamma));
 	
-	finalColor += vec3(100.0) * specular;
+	//Get per-fragment fog color
+	vec3 fogColor = getSkyColorWOSun(time, normalize(eyeDirection));
 	
-	//finalColor = vec3(1.0);
-	
-	vec4 compositeColor = mix(vec4(finalColor, 1.0),vec4(fogColor,1.0), fogI);
-	
-	//compositeColor.rgb = pow(compositeColor.rgb, vec3(gamma));
-	
-	float heightCoveredStart = texture2D(loadedChunksMapBot,  ( ( floor( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0;
-	float heightCoveredEnd = texture2D(loadedChunksMapTop,  ( ( floor( ( vertex.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 + 32.0;
-	
-	if(vertex.y-5.0 > heightCoveredStart && vertex.y+5.0-32.0 < heightCoveredEnd && ignoreWorldCulling < 1.0)
-		discard;
-	
-	
-	gl_FragColor = compositeColor;
+	//Mix in fog
+	shadedFramebufferOut = mix(vec4(finalColor, 1.0),vec4(fogColor,1.0), fogIntensity);
 }

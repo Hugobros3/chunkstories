@@ -70,8 +70,8 @@ public class ShaderProgram
 		StringBuilder fragSource = new StringBuilder();
 		try
 		{
-			vertexSource = CustomGLSLReader.loadRecursivly(new File(filename + "/"+shaderName+".vs"), vertexSource, parameters, false);
-			fragSource = CustomGLSLReader.loadRecursivly(new File(filename + "/"+shaderName+".fs"), fragSource, parameters, true);
+			vertexSource = CustomGLSLReader.loadRecursivly(new File(filename + "/"+shaderName+".vs"), vertexSource, parameters, false, null);
+			fragSource = CustomGLSLReader.loadRecursivly(new File(filename + "/"+shaderName+".fs"), fragSource, parameters, true, null);
 		}
 		catch (IOException e)
 		{

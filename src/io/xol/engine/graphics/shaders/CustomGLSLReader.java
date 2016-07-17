@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -14,8 +16,13 @@ import java.util.List;
 public class CustomGLSLReader
 {
 
-	public static StringBuilder loadRecursivly(File file, StringBuilder into, String[] parameters, boolean type) throws IOException
+	
+	
+	public static StringBuilder loadRecursivly(File file, StringBuilder into, String[] parameters, boolean type, Set<String> alreadyIncluded) throws IOException
 	{
+		if(alreadyIncluded == null)
+			alreadyIncluded = new HashSet<String>();
+		
 		//type : false = vertex, true = frag
 		FileReader fileReader = new FileReader(file);
 		BufferedReader reader = new BufferedReader(fileReader);
@@ -32,8 +39,13 @@ public class CustomGLSLReader
 					if (line[0].equals("include"))
 					{
 						String fn = line[1];
-						//System.out.println("including subshader file : " + fn);
-						loadRecursivly(new File(file.getParentFile().getAbsoluteFile() + "/" + fn), into, parameters, type);
+						File file2include = new File(file.getParentFile().getAbsoluteFile() + "/" + fn);
+						
+						//Prevents including same file twice and retarded loops
+						if(alreadyIncluded.add(file2include.getName()))
+							loadRecursivly(file2include, into, parameters, type, alreadyIncluded);
+						else
+							System.out.println("file : "+file2include.getAbsolutePath()+" already included, skipping");
 					}
 					else if (line[0].equals("ifdef"))
 					{

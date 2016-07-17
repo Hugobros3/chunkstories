@@ -54,11 +54,6 @@ uniform mat3 normalMatrixInv;
 
 varying float waterFogI;
 
-float linearizeDepth(float expDepth)
-{
-	return (2 * 0.1) / (3000 + 0.1 - expDepth * (3000 - 0.1));
-}
-
 const vec3 shadowColor = vec3(0.20, 0.20, 0.31);
 const float shadowStrength = 0.75;
 
@@ -69,52 +64,11 @@ uniform float viewDistance;
 
 uniform float underwater;
 
-const float gamma = 2.2;
-const float gammaInv = 1/2.2;
+//Gamma constants
+<include ../lib/gamma.glsl>
+<include ../lib/transformations.glsl>
 
-vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
-{
-	return pow(texture2D(sampler, coords), vec4(gamma));
-}
-
-vec4 gammaOutput(vec4 inputValue)
-{
-	return pow(inputValue, vec4(gammaInv));
-}
-
-vec4 unprojectPixel(vec2 co) {
-
-    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2.0-1.0, gl_FragCoord.z * 2.0 - 1.0), 1.0);
-    fragposition /= fragposition.w;
-    return fragposition;
-}
-
-mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
-{
-    // récupère les vecteurs du triangle composant le pixel
-    vec3 dp1 = dFdx( p );
-    vec3 dp2 = dFdy( p );
-    vec2 duv1 = dFdx( uv );
-    vec2 duv2 = dFdy( uv );
-
-    // résout le système linéaire
-    vec3 dp2perp = cross( dp2, N );
-    vec3 dp1perp = cross( N, dp1 );
-    vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
-    vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
-
-    // construit une trame invariante à l'échelle 
-    float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
-    return mat3( T * invmax, B * invmax, N );
-}
-
-vec3 perturb_normal( vec3 N, vec3 V, vec2 texcoord, vec3 map)
-{
-    // N, la normale interpolée et
-    // V, le vecteur vue (vertex dirigé vers l'œil)
-	mat3 TBN = cotangent_frame(N, -V, texcoord);
-    return normalize(TBN * map);
-}
+<include ../lib/normalmapping.glsl>
 
 vec3 mixedTextures(float blend, vec2 coords)
 {
@@ -154,7 +108,7 @@ void main(){
 	vec4 baseColor = texture2D(diffuseTexture, texcoord);
 	
 	float spec = fresnelTerm;
-	vec4 worldspaceFragment = unprojectPixel(coords);
+	vec4 worldspaceFragment = convertScreenSpaceToCameraSpace(coords, gl_FragCoord.z);
 	
 	<ifdef perPixelFresnel>
 	float dynamicFresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(worldspaceFragment.xyz), normal), 0.0, 1.0);

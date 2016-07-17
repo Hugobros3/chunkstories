@@ -1,15 +1,22 @@
-attribute vec4 vertexIn;
-attribute vec4 normalIn;
-attribute float alphaIn;
+#version 130
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
 
-varying vec4 vertex;
+//Vertex inputs
+in vec4 vertexIn;
+in vec4 normalIn;
+in float alphaIn;
 
+//Passed variables
+out vec3 eyeDirection;
+out float alphaPassed;
+
+//Misc
 uniform vec3 camPos;
 uniform vec3 sunPos;
 
-varying vec3 eyeDirection;
-varying float alpha;
-
+//Common camera matrices & uniforms
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
 
@@ -21,15 +28,9 @@ uniform mat3 normalMatrixInv;
 
 void main()
 {
-	alpha = alphaIn;
-	
-    vertex = projectionMatrix * modelViewMatrix * vertexIn;
-	
-	//vec4 transformedSS = vec4(gl_Vertex.x, gl_Vertex.y, -1.0, 1.0);
+	alphaPassed = alphaIn;
 	
 	eyeDirection = normalize(vertexIn.xyz - camPos);
 	
-	//eyeDirection = (modelViewMatrixInv * inverse(projectionMatrix) * transformedSS ).xyz;
-	
-    gl_Position = vec4(vertex);
+    gl_Position = projectionMatrix * modelViewMatrix * vertexIn;
 }

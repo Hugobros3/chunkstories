@@ -1,12 +1,19 @@
-#version 120
-varying vec2 vertex;
+#version 130
 
-attribute vec2 vertexIn;
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
 
+//Vertex inputs
+in vec2 vertexIn;
+
+//Passed variables
+out vec3 eyeDirection;
+
+//Sky
 uniform vec3 sunPos;
 
-varying vec3 eyeDirection;
-
+//Common camera matrices & uniforms
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
 
@@ -18,11 +25,9 @@ uniform mat3 normalMatrixInv;
 
 void main()
 {
-    vertex = vertexIn;
-	
 	vec4 transformedSS = vec4(vertexIn.x, vertexIn.y, -1.0, 1.0);
 	
-	eyeDirection = (untranslatedMVInv * projectionMatrixInv * transformedSS ).xyz;
+	eyeDirection = normalize(untranslatedMVInv * projectionMatrixInv * transformedSS ).xyz;
 	
     gl_Position = vec4(vertexIn.xy, 0.0, 1.0);
 }

@@ -72,7 +72,7 @@ public class SkyRenderer
 		skyShader.setUniformSampler(9, "cloudsNoise", TexturesHandler.getTexture("environement/cloudsStatic.png"));
 		
 		Texture2D glowTexture = TexturesHandler.getTexture("environement/glow.png");
-		skyShader.setUniformSampler(2, "glowSampler", glowTexture);
+		skyShader.setUniformSampler(2, "sunSetRiseTexture", glowTexture);
 		
 		glowTexture.setLinearFiltering(true);
 		glowTexture.setTextureWrapping(false);

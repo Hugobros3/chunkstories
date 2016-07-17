@@ -1,11 +1,11 @@
-#version 120
+#version 130
 
 uniform sampler2D depthBuffer;
 uniform sampler2D metaBuffer;
 uniform sampler2D albedoBuffer;
 uniform sampler2D normalBuffer;
 
-uniform sampler2D glowSampler;
+uniform sampler2D sunSetRiseTexture;
 uniform sampler2D skyTextureSunny;
 uniform sampler2D skyTextureRaining;
 uniform float overcastFactor;
@@ -13,8 +13,6 @@ uniform float overcastFactor;
 uniform sampler2D lightColors;
 
 uniform samplerCube environmentCubemap;
-
-uniform float isRaining;
 
 uniform sampler2D blockLightmap;
 
@@ -52,18 +50,8 @@ uniform float pass;
 uniform float sunIntensity;
 uniform vec3 sunPos;
 
-const float gamma = 2.2;
-const float gammaInv = 0.45454545454;
-
-vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
-{
-	return pow(texture2D(sampler, coords), vec4(gamma));
-}
-
-vec4 gammaOutput(vec4 inputValue)
-{
-	return pow(inputValue, vec4(gammaInv));
-}
+//Gamma constants
+<include ../lib/gamma.glsl>
 
 uniform vec3 shadowColor;
 uniform vec3 sunColor;
@@ -74,6 +62,7 @@ varying float shadowMapBiasMultiplier;
 uniform float brightnessMultiplier;
 
 <include ../sky/sky.glsl>
+<include ../lib/transformations.glsl>
 
 //Fog
 uniform float fogStartDistance;
@@ -86,21 +75,6 @@ vec4 accuratizeShadow(vec4 shadowMap)
 	//Transformation for screen-space
 	shadowMap.xyz = shadowMap.xyz * 0.5 + 0.5;
 	return shadowMap;
-}
-
-float linearizeDepth(float depth)
-{
-    float near = 0.1;//Camera.NearPlane;
-    float far = 3000.0;//Camera.FarPlane;
-    float linearDepth = (2.0 * near) / (far + near - depth * (far - near));
-    return linearDepth;
-}
-
-vec4 convertScreenSpaceToWorldSpace(vec2 co) {
-
-    vec4 fragposition = projectionMatrixInv * vec4(vec3(co*2.0-1.0, texture2D(depthBuffer, co, 0.0).x * 2.0 - 1.0), 1.0);
-    fragposition /= fragposition.w;
-    return fragposition;
 }
 
 vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 meta, float specular)
@@ -132,7 +106,6 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	//How much does the pixel is lit by directional light
 	float directionalLightning = clamp((NdotL) + (1 - meta.a), 0.0, 1.0);
 	
-	//opacity = mix(opacity, clamp(1.0-(10.0*clamped), 0.0, 1.0), meta.a);
 	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
 	{
 		//Bias to avoid shadow acne
@@ -143,11 +116,8 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 		shadowIllumination += clamp((shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0).r * 1.5 - 0.25), 0.0, 1.0);
 	}
 	
-	//float sunSpec = specular * pow(clamp(dot(normalize(reflect(worldSpacePosition.xyz, normal)),normalize(normalMatrix * sunPos)), 0.0, 1.0),750.0);
-	
 	float sunlightAmount = ( directionalLightning * ( mix( shadowIllumination, meta.y, 1-edgeSmoother) ) ) * shadowVisiblity;
 	
-	//finalLight = mix(baseLight * pow(shadowColor, vec3(gamma)), pow(sunColor, vec3(gamma)), 1.0 - ((1.0 - sunlightAmount) * shadowStrength));
 	finalLight = mix(pow(sunColor, vec3(gamma)), baseLight * pow(shadowColor, vec3(gamma)), (1.0 - sunlightAmount) * shadowStrength);
 	
 	<endif shadows>
@@ -182,10 +152,10 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	return inputColor;
 }
 
-<include ssr.glsl>
+<include ../lib/ssr.glsl>
 
 void main() {
-    vec4 cameraSpacePosition = convertScreenSpaceToWorldSpace(screenCoord);
+    vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(screenCoord, depthBuffer);
 	
 	vec4 pixelNormal = texture2D(normalBuffer, screenCoord);
 	vec4 pixelMeta = texture2D(metaBuffer, screenCoord);
@@ -215,12 +185,12 @@ void main() {
 	vec3 sum = (cameraSpacePosition.xyz);
 	float dist = length(sum)-fogStartDistance;
 	float fogFactor = (dist) / (fogEndDistance-fogStartDistance);
-	float fogI = clamp(fogFactor, 0.0, 0.9);
+	float fogIntensity = clamp(fogFactor, 0.0, 0.9);
 	
 	vec3 fogColor = gl_Fog.color.rgb;
 	fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz + camPos).xyz));
 	//fogColor.rgb = pow(fogColor.rgb, vec3(gamma));
 	
 	//gl_FragColor = shadingColor;
-	gl_FragColor = mix(shadingColor, vec4(fogColor,shadingColor.a), fogI);
+	gl_FragColor = mix(shadingColor, vec4(fogColor,shadingColor.a), fogIntensity);
 }
