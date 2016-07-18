@@ -117,8 +117,8 @@ public class WorldRenderer
 	private PBOPacker illuminationDownloader[] = new PBOPacker[illDownBuffers];
 	
 	// G-Buffers
-	private GBufferTexture albedoBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private GBufferTexture zBuffer = new GBufferTexture(DEPTH_RENDERBUFFER, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture diffuseBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private GBufferTexture normalBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private GBufferTexture materialBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
@@ -127,7 +127,7 @@ public class WorldRenderer
 	private GBufferTexture ssaoBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	// FBOs
-	private FBO fboGBuffers = new FBO(zBuffer, albedoBuffer, normalBuffer, materialBuffer);
+	private FBO fboGBuffers = new FBO(zBuffer, diffuseBuffer, normalBuffer, materialBuffer);
 
 	private FBO fboShadedBuffer = new FBO(zBuffer, shadedBuffer);
 	private FBO fboBloom = new FBO(null, bloomBuffer);
@@ -468,8 +468,8 @@ public class WorldRenderer
 				if (LoopingMathHelper.moduloDistance(chunk.getChunkX(), currentChunkX, world.getSizeInChunks()) <= chunksViewDistance)
 					if (LoopingMathHelper.moduloDistance(chunk.getChunkZ(), currentChunkZ, world.getSizeInChunks()) <= chunksViewDistance)
 					{
-						if (LoopingMathHelper.moduloDistance(chunk.getChunkX(), currentChunkX, world.getSizeInChunks()) < chunksViewDistance)
-							if (LoopingMathHelper.moduloDistance(chunk.getChunkZ(), currentChunkZ, world.getSizeInChunks()) < chunksViewDistance)
+						if (LoopingMathHelper.moduloDistance(chunk.getChunkX(), currentChunkX, world.getSizeInChunks()) < chunksViewDistance - 1)
+							if (LoopingMathHelper.moduloDistance(chunk.getChunkZ(), currentChunkZ, world.getSizeInChunks()) < chunksViewDistance - 1)
 							{
 								if ((renderableChunk.getChunkRenderData() != null && renderableChunk.getChunkRenderData().isUploaded))
 								{
@@ -1017,7 +1017,7 @@ public class WorldRenderer
 			{
 				fboShadedBuffer.bind();
 				fboShadedBuffer.setEnabledRenderTargets(true);
-				liquidBlocksShader.setUniformSampler(4, "readbackAlbedoBufferTemp", this.albedoBuffer);
+				liquidBlocksShader.setUniformSampler(4, "readbackAlbedoBufferTemp", this.diffuseBuffer);
 				liquidBlocksShader.setUniformSampler(5, "readbackMetaBufferTemp", this.materialBuffer);
 				liquidBlocksShader.setUniformSampler(6, "readbackDepthBufferTemp", this.zBuffer);
 				//glEnable(GL_ALPHA_TEST);
@@ -1094,25 +1094,6 @@ public class WorldRenderer
 		
 		renderLightsDeffered();
 		renderTerrain(chunksToRenderLimit != -1);
-		
-		//Draws chunks lines
-		/*if(FastConfig.showDebugInfo)
-		{
-			OverlayRenderer.glColor4f(4, 0, 0, 1);
-			ChunksIterator it = world.getAllLoadedChunks();
-			Chunk chunk;
-			while(it.hasNext())
-			{
-				chunk = it.next();
-				if(chunk instanceof ChunkRenderable)
-				{
-					ChunkRenderData crd = ((ChunkRenderable) chunk).getChunkRenderData();
-					if(crd != null)
-						crd.renderChunkBounds(renderingContext);
-				}
-			}
-				
-		}*/
 	}
 
 	private void renderLightsDeffered()
@@ -1129,10 +1110,9 @@ public class WorldRenderer
 		//lightShader.use(true);
 
 		//Required info
-		lightShader.setUniformSampler(0, "albedoBuffer", this.albedoBuffer);
-		lightShader.setUniformSampler(1, "metaBuffer", this.materialBuffer);
-		lightShader.setUniformSampler(2, "depthBuffer", this.zBuffer);
-		lightShader.setUniformSampler(3, "comp_normal", this.normalBuffer);
+		lightShader.setUniformSampler(0, "depthBuffer", this.zBuffer);
+		lightShader.setUniformSampler(1, "diffuseBuffer", this.diffuseBuffer);
+		lightShader.setUniformSampler(2, "normalBuffer", this.normalBuffer);
 
 		//Parameters
 		lightShader.setUniformFloat("powFactor", 5f);
@@ -1170,50 +1150,36 @@ public class WorldRenderer
 
 		applyShadowsShader.setUniformFloat("overcastFactor", world.getWeather());
 		applyShadowsShader.setUniformFloat("wetness", getWorldWetness());
-		//applyShadowsShader.setUniformFloat("isRaining", world.isRaining() ? 1f : 0f);
-		// Sun position
-		// if(FastConfig.debugGBuffers ) glFinish();
-		// glFlush();
-
-		//glEnable(GL_BLEND);
+		
 		glEnable(GL_ALPHA_TEST);
 		glDisable(GL_DEPTH_TEST);
-		//glBlendFunc(GL_DST_COLOR, GL_ZERO);
-		//glBlendFunc(GL_ONE, GL_ONE);
 
 		Vector3f sunPos = sky.getSunPosition();
 
 		fboShadedBuffer.bind();
 
-		//composite_pass_gbuffers.bind();
-		//composite_pass_gbuffers.setEnabledRenderTargets(false, false, true);
-
 		float lightMultiplier = 1.0f;
-		// int Bdata = world.getDataAt((int)viewX, (int)viewY, (int)viewZ);
-		// int llWherePlayerIs = VoxelFormat.sunlight(Bdata);
-		// lightMultiplier += (15-llWherePlayerIs)/15.0f/2f;
 
 		applyShadowsShader.setUniformFloat("brightnessMultiplier", lightMultiplier);
 
-		applyShadowsShader.setUniformSampler(0, "albedoBuffer", albedoBuffer);
+		applyShadowsShader.setUniformSampler(0, "albedoBuffer", diffuseBuffer);
 		applyShadowsShader.setUniformSampler(1, "depthBuffer", zBuffer);
 		applyShadowsShader.setUniformSampler(2, "normalBuffer", normalBuffer);
 		applyShadowsShader.setUniformSampler(3, "metaBuffer", materialBuffer);
 		applyShadowsShader.setUniformSampler(4, "blockLightmap", lightmapTexture);
 		applyShadowsShader.setUniformSampler(5, "shadowMap", shadowMapBuffer);
 		applyShadowsShader.setUniformSampler(6, "sunSetRiseTexture", sunGlowTexture);
-		//applyShadowsShader.setUniformSampler(7, "colorSampler", skyTextureSunny);
 		
 		applyShadowsShader.setUniformSampler(7, "skyTextureSunny", skyTextureSunny);
-		applyShadowsShader.setUniformSampler(11, "skyTextureRaining", skyTextureRaining);
+		applyShadowsShader.setUniformSampler(8, "skyTextureRaining", skyTextureRaining);
 		
 		Texture2D lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
-		applyShadowsShader.setUniformSampler(8, "lightColors", lightColors);
+		applyShadowsShader.setUniformSampler(9, "lightColors", lightColors);
 		
 		//TODO if SSAO
-		applyShadowsShader.setUniformSampler(9, "ssaoBuffer", ssaoBuffer);
+		applyShadowsShader.setUniformSampler(10, "ssaoBuffer", ssaoBuffer);
 		
-		applyShadowsShader.setUniformSamplerCubemap(10, "environmentCubemap", environmentMap);
+		applyShadowsShader.setUniformSamplerCubemap(11, "environmentCubemap", environmentMap);
 
 		applyShadowsShader.setUniformFloat("time", sky.time);
 
@@ -1260,7 +1226,7 @@ public class WorldRenderer
 		//postProcess.use(true);
 
 		postProcess.setUniformSampler(0, "shadedBuffer", this.shadedBuffer);
-		postProcess.setUniformSampler(1, "albedoBuffer", this.albedoBuffer);
+		postProcess.setUniformSampler(1, "albedoBuffer", this.diffuseBuffer);
 		postProcess.setUniformSampler(2, "depthBuffer", this.zBuffer);
 		postProcess.setUniformSampler(3, "normalBuffer", this.normalBuffer);
 		postProcess.setUniformSampler(4, "metaBuffer", this.materialBuffer);

@@ -1,12 +1,16 @@
 #version 130
-varying vec4 texcoord;
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
+
+in vec4 texCoordPassed;
+
 uniform sampler2D albedoTexture;
 
 void main(){
-	if(texture2D(albedoTexture, texcoord.st).a < 0.1)
+	if(texture2D(albedoTexture, texCoordPassed.st).a < 0.1)
 		discard;
 		
 	gl_FragDepth = gl_FragCoord.z;
-	gl_FragColor = vec4(1,gl_FragCoord.z,gl_FragCoord.z,1);
-	
+	gl_FragColor = vec4(1.0, gl_FragCoord.z, gl_FragCoord.z, 1.0);
 }

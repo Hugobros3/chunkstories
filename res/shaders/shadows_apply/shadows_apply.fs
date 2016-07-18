@@ -1,54 +1,44 @@
 #version 130
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
 
 uniform sampler2D depthBuffer;
 uniform sampler2D metaBuffer;
 uniform sampler2D albedoBuffer;
 uniform sampler2D normalBuffer;
 
+//Passed variables
+in vec2 screenCoord;
+
+//Sky data
 uniform sampler2D sunSetRiseTexture;
 uniform sampler2D skyTextureSunny;
 uniform sampler2D skyTextureRaining;
+uniform vec3 sunPos;
 uniform float overcastFactor;
 
 uniform sampler2D lightColors;
-
-uniform samplerCube environmentCubemap;
-
 uniform sampler2D blockLightmap;
-
 uniform sampler2D ssaoBuffer;
 
-varying vec2 screenCoord;
-
-uniform vec2 screenViewportSize;
-
+//Common camera matrices & uniforms
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
-
 uniform mat4 modelViewMatrix;
 uniform mat4 modelViewMatrixInv;
-
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
-
 uniform mat4 untranslatedMV;
 uniform mat4 untranslatedMVInv;
+uniform vec3 camPos;
 
+//Shadow mapping
 uniform float shadowVisiblity; // Used for night transitions, hides shadows
-
 uniform sampler2DShadow shadowMap;
 uniform mat4 shadowMatrix;
 
 uniform float time;
-uniform vec3 camPos;
-
-uniform float powFactor;
-
-const float distScale = 0.8;
-
-uniform float pass;
-uniform float sunIntensity;
-uniform vec3 sunPos;
 
 //Gamma constants
 <include ../lib/gamma.glsl>
@@ -57,25 +47,13 @@ uniform vec3 shadowColor;
 uniform vec3 sunColor;
 uniform float shadowStrength;
 
-varying float shadowMapBiasMultiplier;
-
-uniform float brightnessMultiplier;
-
 <include ../sky/sky.glsl>
 <include ../lib/transformations.glsl>
+<include ../lib/shadowTricks.glsl>
 
 //Fog
 uniform float fogStartDistance;
 uniform float fogEndDistance;
-
-vec4 accuratizeShadow(vec4 shadowMap)
-{
-	shadowMap.xy /= ( (1.0f - distScale) + sqrt(shadowMap.x * shadowMap.x + shadowMap.y * shadowMap.y) * distScale );
-	shadowMap.w = length(shadowMap.xy);
-	//Transformation for screen-space
-	shadowMap.xyz = shadowMap.xyz * 0.5 + 0.5;
-	return shadowMap;
-}
 
 vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 meta, float specular)
 {
@@ -152,6 +130,8 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	return inputColor;
 }
 
+//Reflections stuff
+uniform samplerCube environmentCubemap;
 <include ../lib/ssr.glsl>
 
 void main() {
@@ -176,19 +156,14 @@ void main() {
 	else
 		discard;
 	
-	//shadingColor.rgb *= brightnessMultiplier;
-	
-	//shadingColor.a *= 0.5;
-	
 	// Apply fog
-	//vec3 sum = (modelViewMatrixInv * projectionMatrixInv * vec4(vec3(screenCoord*2.0-1.0, texture2D(depthBuffer, screenCoord, 0.0).x * 2.0 - 1.0), 1.0)).xyz;
 	vec3 sum = (cameraSpacePosition.xyz);
 	float dist = length(sum)-fogStartDistance;
 	float fogFactor = (dist) / (fogEndDistance-fogStartDistance);
 	float fogIntensity = clamp(fogFactor, 0.0, 0.9);
 	
 	vec3 fogColor = gl_Fog.color.rgb;
-	fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz + camPos).xyz));
+	fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz - camPos).xyz));
 	//fogColor.rgb = pow(fogColor.rgb, vec3(gamma));
 	
 	//gl_FragColor = shadingColor;

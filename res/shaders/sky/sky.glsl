@@ -9,7 +9,8 @@
 vec4 getSkyTexture(vec2 coordinates)
 {
 	float greyFactor = clamp((overcastFactor - 0.2) / 0.5, 0.0, 1.0);
-	return mix(texture2D(skyTextureSunny, coordinates), texture2D(skyTextureRaining, coordinates), greyFactor);
+	float darkFactor = clamp((overcastFactor - 0.5), 0.0, 1.0);
+	return mix(texture2D(skyTextureSunny, coordinates), mix(texture2D(skyTextureRaining, coordinates), vec4(0.0), darkFactor), greyFactor);
 }
 
 //Returns the sky color without sun, depending on direction and time

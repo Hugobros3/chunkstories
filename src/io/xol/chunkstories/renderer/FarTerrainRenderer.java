@@ -225,7 +225,7 @@ public class FarTerrainRenderer
 
 		synchronized (this)
 		{
-			if (!renderingInProgress.compareAndSet(false, true) && (System.currentTimeMillis() - lastTerrainRegenerationTime) > 1000)
+			if (!renderingInProgress.compareAndSet(false, true))
 			{
 				//renderingInProgress.set(true);
 				Thread asynchGenerateThread = new Thread()

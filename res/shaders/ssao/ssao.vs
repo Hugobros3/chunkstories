@@ -1,7 +1,12 @@
-#version 120
-varying vec2 screenCoord;
+#version 130
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
 
-attribute vec2 vertexIn;
+
+out vec2 screenCoord;
+
+in vec2 vertexIn;
 void main(void)
 {
 	gl_Position = vec4(vertexIn.xy, 0.0, 1.0);

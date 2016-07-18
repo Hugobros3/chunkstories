@@ -100,7 +100,6 @@ public class ClientInputsManager implements InputsManager
 		while(i.hasNext())
 		{
 			Input input = i.next();
-			System.out.println("Loading input : "+input);
 			inputs.add(input);
 			inputsMap.put(input.getHash(), input);
 		}

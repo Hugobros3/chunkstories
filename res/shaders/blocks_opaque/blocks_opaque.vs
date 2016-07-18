@@ -1,37 +1,31 @@
 #version 130
-//Entry attributes
-attribute vec4 vertexIn;
-attribute vec2 texCoordIn;
-attribute vec3 colorIn;
-attribute vec4 normalIn;
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
 
-varying vec2 texcoord;
-varying vec3 lightMapCoords;
-varying float fresnelTerm;
+//Vertex inputs
+in vec4 vertexIn;
+in vec2 texCoordIn;
+in vec3 colorIn;
+in vec4 normalIn;
+
+//Passed variables
+out vec2 texCoordPassed;
+out vec3 lightMapCoords;
+out float fresnelTerm;
+out vec3 normalPassed;
+out vec4 vertexPassed;
+out vec3 eyeDirection;
+out float rainWetness;
 
 //Lighthing
 uniform float sunIntensity;
-uniform vec3 sunPos; // Sun position
-// The normal we're going to pass to the fragment shader.
-varying vec3 varyingNormal;
-// The vertex we're going to pass to the fragment shader.
-varying vec4 varyingVertex;
 
-varying vec4 coordinatesInShadowmap2;
-
-varying float fogI;
-
+uniform float wetness;
 uniform float time;
-varying vec3 eye;
-uniform vec3 camPos;
 uniform vec3 objectPosition;
 
-uniform float vegetation;
-varying float chunkFade;
-uniform float viewDistance;
-
-varying vec4 modelview;
-
+//Common camera matrices & uniforms
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
 
@@ -46,14 +40,11 @@ uniform mat4 untranslatedMVInv;
 
 uniform mat4 modelViewProjectionMatrix;
 uniform mat4 modelViewProjectionMatrixInv;
-
-//Weather
-uniform float wetness;
-varying float rainWetness;
+uniform vec3 camPos;
 
 void main(){
 	//Usual variable passing
-	texcoord = texCoordIn;
+	texCoordPassed = texCoordIn;
 	
 	vec4 v = vec4(vertexIn.xyz, 1.0);
 	
@@ -68,12 +59,12 @@ void main(){
 	
 	v+=vec4(objectPosition,0);
 	
-	varyingVertex = v + vec4(camPos, 0.0);
-	varyingNormal =  (normalIn.xyz-0.5)*2.0;//normalIn;
+	vertexPassed = v + vec4(camPos, 0.0);
+	normalPassed =  (normalIn.xyz-0.5)*2.0;//normalIn;
 	
-	fresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(varyingNormal)), 0.0, 1.0);
+	fresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(normalPassed)), 0.0, 1.0);
 	
-	texcoord /= 32768.0;
+	texCoordPassed /= 32768.0;
 	
 	//Compute lightmap coords
 	rainWetness = wetness*clamp((colorIn.g * 16.0 - 15.0),0,1.0);
@@ -84,6 +75,6 @@ void main(){
 	
 	gl_Position = projectionMatrix * untranslatedMV * v;
 	
-	//Eye transform
-	eye = v.xyz;
+	//eyeDirection transform
+	eyeDirection = v.xyz;
 }

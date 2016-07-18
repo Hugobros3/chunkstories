@@ -1,50 +1,41 @@
-#version 120
-//Entry attributes
-attribute vec4 vertexIn;
-attribute vec2 texCoordIn;
-attribute vec4 colorIn;
-attribute vec4 normalIn;
+#version 130
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
 
-varying vec2 texcoord;
-varying vec4 lightMapCoords;
+//Vertex inputs
+in vec4 vertexIn;
+in vec2 texCoordIn;
+in vec4 colorIn;
+in vec4 normalIn;
+
+//Passed variables
+out vec4 vertexPassed;
+out vec3 normalPassed;
+out vec2 texCoordPassed;
+out vec3 eyeDirection;
+out vec4 lightMapCoords;
+out float fresnelTerm;
+out float waterFogI;
 
 //Lighthing
 uniform float sunIntensity;
 uniform vec3 sunPos;
-varying vec3 fastColor;
-varying float NdotL; // Face luminosity
-
-// The normal we're going to pass to the fragment shader.
-varying vec3 varyingNormal;
-// The vertex we're going to pass to the fragment shader.
-varying vec4 varyingVertex;
 
 //Shadow shit
 uniform mat4 shadowMatrix;
 uniform mat4 shadowMatrix2;
- 
-varying vec4 coordinatesInShadowmap;
-varying vec4 coordinatesInShadowmap2;
-
-varying float fogI;
 
 uniform float time;
 
-varying vec3 eye;
-varying float fresnelTerm;
-
-uniform vec3 camPos;
 uniform vec3 objectPosition;
 
 uniform float vegetation;
 
 uniform float yAngle;
-
-varying float chunkFade;
 uniform float viewDistance;
 
-varying vec4 modelview;
-
+//Common camera matrices & uniforms
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
 
@@ -56,54 +47,29 @@ uniform mat3 normalMatrixInv;
 
 uniform mat4 modelViewProjectionMatrix;
 uniform mat4 modelViewProjectionMatrixInv;
-
-varying float waterFogI;
-
-float getFogI(vec3 position, float fogDistance)
-{
-	float dist = clamp(length(position)-fogDistance,0,10000);
-	const float LOG2 = 1.442695;
-	float density = 0.0025;
-	float fogFactor = exp2( -density * 
-					   density * 
-					   dist * 
-					   dist * 
-					   LOG2 );
-	float fogI = clamp(fogFactor, 0.0, 1.0);
-	return fogI;
-}
+uniform vec3 camPos;
 
 void main(){
 	//Usual variable passing
-	texcoord = texCoordIn;
-	texcoord /= 32768.0;
-	varyingNormal = (normalIn.xyz-0.5)*2.0;
-	vec4 v = vec4(vertexIn.xyz, 1);
+	texCoordPassed = texCoordIn;
+	texCoordPassed /= 32768.0;
+	normalPassed = (normalIn.xyz-0.5)*2.0;
+	vec4 vertex = vec4(vertexIn.xyz, 1);
 	//Move vertex if needed
 	
-	v+=vec4(objectPosition,0);
+	vertex+=vec4(objectPosition,0);
 	
-	//v.y -= colorIn.a / 15.0;
+	vertexPassed = vertex;
 	
-	varyingVertex = v;
+	//eyeDirection transform
+	eyeDirection = vertex.xyz-camPos;
 	
-	fresnelTerm = 0.1 + 0.6 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(0, 1.0 , 0)), 0.0, 1.0);
+	fresnelTerm = 0.1 + 0.6 * clamp(0.7 + dot(normalize(vertex.xyz - camPos), vec3(0, 1.0 , 0)), 0.0, 1.0);
 	
 	//Compute lightmap coords
 	lightMapCoords = vec4(colorIn.r, colorIn.g, colorIn.b, 0);
 	
-	gl_Position = modelViewProjectionMatrix * v;
+	waterFogI = length(eyeDirection)/(viewDistance/2.0-16);
 	
-	//Eye transform
-	eye = v.xyz-camPos;
-	
-	//Compute NdotL
-	NdotL = max(dot(normalize(normalMatrix * varyingNormal), normalize(normalMatrix * sunPos)), 0.0);
-	
-	//fresnelTerm = clamp(cos(yAngle),0,0.8);
-	
-	waterFogI = length(eye)/(viewDistance/2.0-16);
-	
-	//Fog calculation
-	
+	gl_Position = modelViewProjectionMatrix * vertex;
 }

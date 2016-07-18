@@ -1,17 +1,19 @@
 #version 130
-attribute vec4 vertexIn;
-attribute vec4 normalIn;
-attribute vec2 texCoordIn;
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
 
-varying vec4 texcoord;
+in vec4 vertexIn;
+in vec4 normalIn;
+in vec2 texCoordIn;
+
+out vec4 texCoordPassed;
 
 uniform mat4 depthMVP;
 
 uniform float time;
 
 uniform float vegetation;
-
-const float distScale = 0.8;
 
 uniform vec3 objectPosition;
 
@@ -20,19 +22,10 @@ uniform float entity;
 uniform mat4 localTransform;
 uniform mat4 boneTransform;
 
-vec4 accuratizeShadow(vec4 shadowMap)
-{
-	//shadowMap *= 2.0 - 1.0;
-	
-	shadowMap.xy *= 1.0 /( (1.0f - distScale) + sqrt(shadowMap.x * shadowMap.x + shadowMap.y * shadowMap.y) * distScale );
-	
-	//shadowMap *= 0.5 + 0.5;
-	
-	return shadowMap;
-}
+<include ../lib/shadowTricks.glsl>
 
 void main(){
-	texcoord = vec4(texCoordIn/32768.0,0,0);
+	texCoordPassed = vec4(texCoordIn/32768.0,0,0);
 	//gl_Position = ftransform();
 	vec4 v = localTransform * boneTransform * vec4(vertexIn.xyz, 1);
 	
@@ -46,6 +39,6 @@ void main(){
 	<endif dynamicGrass>
 	
 	v.xyz += objectPosition;
-	gl_Position = accuratizeShadow(depthMVP * v);
+	gl_Position = accuratizeShadowIn(depthMVP * v);
 }
 

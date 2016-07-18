@@ -1,14 +1,16 @@
 #version 130
-varying vec4 f_texcoord;
-varying vec2 screenCoord;
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
 
-uniform float shadowMapResolution;
-varying float shadowMapBiasMultiplier;
+//Vertex inputs
+in vec2 vertexIn;
 
-attribute vec2 vertexIn;
+//Passed variables
+out vec2 screenCoord;
+
 void main(void)
 {
 	gl_Position = vec4(vertexIn.xy, 0.0, 1.0);
 	screenCoord = vertexIn.xy*0.5+0.5;
-	shadowMapBiasMultiplier = 4.0 * 1024.0 / shadowMapResolution;
 }

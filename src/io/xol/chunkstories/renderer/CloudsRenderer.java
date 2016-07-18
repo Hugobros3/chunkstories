@@ -67,6 +67,9 @@ public class CloudsRenderer
 		
 		baked = 0;
 		
+		float time = 0.1f * ((System.currentTimeMillis() / 1000L) % (60 * 60 * 24));
+		//time = System.currentTimeMillis();
+		
 		for (int x = camChunkX - width / 2; x < camChunkX + width / 2; x++)
 			for (int z = camChunkZ - width / 2; z < camChunkZ + width / 2; z++)
 			{
@@ -79,7 +82,7 @@ public class CloudsRenderer
 				float freq = 1.0f;
 				for(int i = 0; i < octaves; i++)
 				{
-					total += generator.looped_noise(x * freq, z * freq, worldSize) * amplitude;
+					total += generator.looped_noise((x + time) * freq, z * freq, worldSize) * amplitude;
 					//System.out.println(i+" "+generator.looped_noise(x * freq, z * freq, worldSize) * amplitude);
 					freq*=2.0f;
 					maxAmplitude += amplitude;

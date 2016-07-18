@@ -9,7 +9,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
     vec3 currentPosition = convertCameraSpaceToScreenSpace(cameraSpaceVectorPosition);
     
 	// Is the reflection pointing in the right direction ?
-
+	
 	
 	vec4 color = vec4(0.0);// texture2D(comp_diffuse, screenSpacePosition2D); // vec4(pow(texture2D(gcolor, screenSpacePosition2D).rgb, vec3(3.0f + 1.2f)), 0.0);
    

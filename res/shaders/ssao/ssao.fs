@@ -1,13 +1,19 @@
-//#version 120
+#version 130
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
 
 uniform sampler2D depthBuffer;
 uniform sampler2D normalTexture;
 uniform sampler2D noiseTexture;
 
+in vec2 screenCoord;
+
+//SSAO kernel values
 const int KERNEL_SIZE = 16;
 uniform vec3[KERNEL_SIZE] ssaoKernel;
-varying vec2 screenCoord;
 
+//Common camera matrices & uniforms
 uniform mat4 modelViewMatrixInv;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
