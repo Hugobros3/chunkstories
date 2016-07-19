@@ -1,4 +1,4 @@
-package io.xol.chunkstories.renderer;
+package io.xol.chunkstories.renderer.terrain;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,7 +16,9 @@ import io.xol.engine.math.lalgb.Vector4f;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.client.FastConfig;
-import io.xol.chunkstories.renderer.HeightmapMeshSummarizer.Surface;
+import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.Camera;
+import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;

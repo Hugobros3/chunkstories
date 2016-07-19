@@ -1,4 +1,4 @@
-package io.xol.chunkstories.renderer;
+package io.xol.chunkstories.renderer.sky;
 
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -9,6 +9,7 @@ import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.model.RenderingContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.renderer.WorldRenderer;
 
 import java.nio.FloatBuffer;
 

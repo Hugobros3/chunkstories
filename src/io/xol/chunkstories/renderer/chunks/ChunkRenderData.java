@@ -53,16 +53,8 @@ public class ChunkRenderData
 	 */
 	public void upload()
 	{
-		//Check VBO exists
-		//if (vboId == -1)
-		//	vboId = glGenBuffers();
-		
-		//Upload data
-		
 		verticesObject.uploadData(pool.accessByteBuffer(byteBufferPoolId));
-		//glBindBuffer(GL_ARRAY_BUFFER, vboId);
-		//glBufferData(GL_ARRAY_BUFFER, pool.accessByteBuffer(byteBufferPoolId), GL_STATIC_DRAW);
-
+		
 		//Release BB
 		pool.releaseByteBuffer(byteBufferPoolId);
 		byteBufferPoolId = -1;

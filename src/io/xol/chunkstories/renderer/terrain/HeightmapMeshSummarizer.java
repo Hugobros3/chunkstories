@@ -1,4 +1,4 @@
-package io.xol.chunkstories.renderer;
+package io.xol.chunkstories.renderer.terrain;
 
 public class HeightmapMeshSummarizer
 {

@@ -79,7 +79,16 @@ public class Vector3d
 		dest.z = left.x * right.y - left.y * right.x;
 		return dest;
 	}
-
+	
+	public static Vector3d cross(Vector3d left, Vector3d right)
+	{
+		Vector3d dest = new Vector3d();
+		dest.x = left.y * right.z - left.z * right.y;
+		dest.y = left.x * right.z - left.z * right.x;
+		dest.z = left.x * right.y - left.y * right.x;
+		return dest;
+	}
+	
 	public static double dot(Vector3d left, Vector3d right)
 	{
 		return left.x * right.x + left.y * right.y + left.z * right.z;

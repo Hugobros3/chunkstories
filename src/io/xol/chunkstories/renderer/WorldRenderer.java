@@ -50,7 +50,10 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
+import io.xol.chunkstories.renderer.decals.DecalsRenderer;
 import io.xol.chunkstories.renderer.lights.LightsRenderer;
+import io.xol.chunkstories.renderer.sky.SkyRenderer;
+import io.xol.chunkstories.renderer.terrain.FarTerrainRenderer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -157,6 +160,9 @@ public class WorldRenderer
 	// Sky
 	private SkyRenderer sky;
 
+	// Decals
+	private DecalsRenderer decalsRenderer;
+	
 	// Debug
 	// private DebugProfiler updateProfiler = new DebugProfiler();
 
@@ -211,6 +217,7 @@ public class WorldRenderer
 		farTerrainRenderer = new FarTerrainRenderer(world);
 		weatherEffectsRenderer = new WeatherEffectsRenderer(world, this);
 		sky = new SkyRenderer(world, this);
+		decalsRenderer = new DecalsRenderer(this);
 		sizeInChunks = world.getSizeInChunks();
 		resizeShadowMaps();
 
@@ -1082,6 +1089,7 @@ public class WorldRenderer
 
 		// Particles rendering
 		this.world.getParticlesHolder().render(renderingContext);
+		decalsRenderer.renderDecals(renderingContext);
 		
 		// Draw world shaded with sunlight and vertex light
 		glDepthMask(false);
@@ -1722,29 +1730,9 @@ public class WorldRenderer
 		float sunLightFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.0f) / 1.0f, 1.0f);
 		
 		shader.setUniformFloat("shadowStrength", 1.0f);
-		float x = 1.5f;
+		float x = 1.2f;
 		shader.setUniformFloat3("sunColor", Math2.mix( new Vector3f(x * 255 / 255f, x * 255 / 255f, x * 255 / 255f),  new Vector3f(0.5f), sunLightFactor));
 		shader.setUniformFloat3("shadowColor", new Vector3f(0.50f, 0.50f, 0.50f));
-		
-		
-		/*if (world.isRaining())
-		{
-			shader.setUniformFloat("shadowStrength", 1.0f);
-			shader.setUniformFloat3("sunColor", new Vector3f(1.0f, 1.0f, 1.0f));
-			shader.setUniformFloat3("shadowColor", new Vector3f(0.50f, 0.50f, 0.50f));
-		}
-		else
-		{
-			shader.setUniformFloat("shadowStrength", 1.0f);
-			float x = 1.5f;
-			shader.setUniformFloat3("sunColor", x * 255 / 255f, x * 255 / 255f, x * 255 / 255f);
-			
-			Vector3f shadowColor = new Vector3f(0, 0, 0);
-			
-			float b = 0.50f;
-			shadowColor.add(new Vector3f(b, b, b));
-			shader.setUniformFloat3("shadowColor", shadowColor);
-		}*/
 	}
 
 	private float getShadowVisibility()
