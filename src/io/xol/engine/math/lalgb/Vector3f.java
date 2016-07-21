@@ -196,4 +196,8 @@ public class Vector3f
 		return new Vector3f(x, y, z);
 	}
 
+	public String toString()
+	{
+		return "[Vector3f x:"+x+" y:"+y+" z:"+z+"]";
+	}
 }

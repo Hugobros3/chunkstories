@@ -366,7 +366,7 @@ public class ChunksRenderer extends Thread
 		return new float[] { blocklightFactor / 15f, sunlightFactor / 15f, aoFactor / 4f };
 	}
 
-	private void addQuadTop(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadTop(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
 		int llMs = getSunlight(c, sx, sy + 1, sz);
 		int llMb = getBlocklight(c, sx, sy + 1, sz);
@@ -457,7 +457,7 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadBottom(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadBottom(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
 		int llMs = getSunlight(c, sx, sy - 1, sz);
 		int llMb = getBlocklight(c, sx, sy - 1, sz);
@@ -530,7 +530,7 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadRight(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadRight(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
 		// ++x for dekal
 
@@ -613,7 +613,7 @@ public class ChunksRenderer extends Thread
 		return c += b;
 	}
 
-	private void addQuadLeft(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadLeft(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
 		int llMs = getSunlight(c, sx - 1, sy, sz);
 		int llMb = getBlocklight(c, sx - 1, sy, sz);
@@ -690,7 +690,7 @@ public class ChunksRenderer extends Thread
 
 	}
 
-	private void addQuadFront(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadFront(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
@@ -765,7 +765,7 @@ public class ChunksRenderer extends Thread
 
 	}
 
-	private void addQuadBack(CubicChunk c, RenderByteBuffer rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadBack(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
 	{
 
 		int llMs = getSunlight(c, sx, sy, sz - 1);
@@ -840,7 +840,7 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 	}
 
-	private void addVoxelUsingCustomModel(CubicChunk c, RenderByteBuffer rbbf, int x, int y, int z, BlockRenderInfo info)
+	private void addVoxelUsingCustomModel(CubicChunk c, VoxelBaker rbbf, int x, int y, int z, BlockRenderInfo info)
 	{
 		VoxelRenderer model = info.getVoxelRenderer();
 		if(model != null)
@@ -922,13 +922,13 @@ public class ChunksRenderer extends Thread
 		// Expensive bullshit
 
 		rawBlocksBuffer.clear();
-		RenderByteBuffer rawRBBF = new RenderByteBuffer(rawBlocksBuffer);
+		VoxelBaker rawRBBF = new RenderByteBuffer(rawBlocksBuffer);
 
 		waterBlocksBuffer.clear();
-		RenderByteBuffer waterRBBF = new RenderByteBuffer(waterBlocksBuffer);
+		VoxelBaker waterRBBF = new RenderByteBuffer(waterBlocksBuffer);
 
 		complexBlocksBuffer.clear();
-		RenderByteBuffer complexRBBF = new RenderByteBuffer(complexBlocksBuffer);
+		VoxelBaker complexRBBF = new RenderByteBuffer(complexBlocksBuffer);
 		
 
 		long cr_iter = System.nanoTime();

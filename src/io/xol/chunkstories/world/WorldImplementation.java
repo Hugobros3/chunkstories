@@ -353,6 +353,16 @@ public abstract class WorldImplementation implements World
 		return getSizeInChunks() * 32d;
 	}
 
+	public Chunk getChunkWorldCoordinates(Location location, boolean load)
+	{
+		return getChunkWorldCoordinates((int)location.getX(), (int)location.getY(), (int)location.getZ(), load);
+	}
+	
+	public Chunk getChunkWorldCoordinates(int worldX, int worldY, int worldZ, boolean load)
+	{
+		return getChunk(worldX / 32, worldY / 32, worldZ / 32, load);
+	}
+	
 	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
 		chunkX = chunkX % getSizeInChunks();
@@ -1020,6 +1030,11 @@ public abstract class WorldImplementation implements World
 		return chunksHolder;
 	}
 
+	public Region getRegionWorldCoordinates(Location location)
+	{
+		return getRegionWorldCoordinates((int)location.getX(), (int)location.getY(), (int)location.getZ());
+	}
+	
 	public Region getRegionWorldCoordinates(int worldX, int worldY, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);

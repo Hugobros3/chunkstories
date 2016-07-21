@@ -1,18 +1,32 @@
 package io.xol.chunkstories.renderer.decals;
 
+import static org.lwjgl.opengl.GL11.*;
+
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.chunkstories.renderer.SelectionRenderer;
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.WorldRenderer;
-import io.xol.chunkstories.renderer.debug.OverlayRenderer;
+import io.xol.chunkstories.renderer.chunks.VoxelBaker;
+import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.models.VoxelModels;
+import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.engine.graphics.geometry.VerticesObject;
+import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
-import io.xol.engine.math.lalgb.Matrix3d;
-import io.xol.engine.math.lalgb.Matrix3f;
+import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.math.MatrixHelper;
+import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.engine.model.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -21,111 +35,171 @@ import io.xol.engine.model.RenderingContext;
 
 public class DecalsRenderer
 {
-	VerticesObject verticesObject = new VerticesObject();
-	WorldRenderer worldRenderer;
+	ByteBuffer decalsByteBuffer = BufferUtils.createByteBuffer(4 * (3 + 2) * (3 * 2) * 4096);
 	
+	VerticesObject verticesObject = new VerticesObject();
+	int kount = 0;
+	WorldRenderer worldRenderer;
+	World world;
+
 	public DecalsRenderer(WorldRenderer worldRenderer)
 	{
 		this.worldRenderer = worldRenderer;
+		this.world = worldRenderer.getWorld();
 	}
-	
-	public void drawDecal(Vector3d position, Vector3d orientation, Vector3d size, Texture2D texture )
+
+	public void drawDecal(Vector3d position, Vector3d orientation, Vector3d size, Texture2D texture)
 	{
-		ByteBuffer bbuf = BufferUtils.createByteBuffer(512);
-		Matrix3f alignedToDecalSpace = new Matrix3f();
-		//up = (forward cross (0, 1, 0)) cross forward 
+		
+		//decalsByteBuffer.clear();
+		//decalsByteBuffer.position(0);
+		//decalsByteBuffer.limit();
+		
+		decalsByteBuffer.limit(decalsByteBuffer.capacity());
+		
+		/*if(decalsByteBuffer.position() > 4 * (3 + 2) * (3 * 2) * 3048)
+		{
+			System.out.println("full, clearing");
+			//decalsByteBuffer.clear();
+			decalsByteBuffer.position(0);
+			kount = 0;
+			//decalsByteBuffer.clear();
+		}*/
+		
+		ByteBuffer bbuf = BufferUtils.createByteBuffer(128 * 1024 * 4 * (3 + 3));
+		//ByteBuffer bbuf2 = BufferUtils.createByteBuffer(409600);
+		orientation.normalize();
+
+		Vector3f lookAt = orientation.castToSP();
+		
+		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+		Vector3f.cross(lookAt, up, up);
+		Vector3f.cross(up, lookAt, up);
+		
+		Matrix4f rotationMatrix = MatrixHelper.getLookAtMatrix(new Vector3f(0.0f), lookAt, up);
+		//rotationMatrix.transpose();
+
+		//System.out.println(rotationMatrix);
+		//System.out.println(orientation);
+		
+		//System.out.println("0 0 1  "+Matrix3d.transform(new Vector3d(0, 0, 1), rotationMatrix, null));
+		//System.out.println("0 1 0  "+Matrix3d.transform(new Vector3d(0, 1, 0), rotationMatrix, null));
+		//System.out.println("1 0 0  "+Matrix3d.transform(new Vector3d(1, 0, 0), rotationMatrix, null));
+
+		VoxelBaker virtualRenderBytebuffer = new DecalsVoxelBaker(bbuf);
+		Vector3d size2 = new Vector3d(size);
+		size2.scale(1.5);
+		size2.add(new Vector3d(0.5));
+		//TODO use proper dda ?
+		try{
+		for (int x = 0; x < size2.x; x++)
+			for (int y = 0; y < size2.y; y++)
+				for (int z = 0; z < size2.z; z++)
+				{
+					float dx = (float) (x - size2.x / 2.0);
+					float dy = (float) (y - size2.y / 2.0);
+					float dz = (float) (z - size2.z / 2.0);
+
+					Vector4f rotateMe = new Vector4f(dx, dy, dz, 1.0f);
+					//Matrix4f.transform(rotationMatrix, rotateMe, rotateMe);
+					
+					//System.out.println(rotateMe);
+					//Matrix3d.transform(rotationMatrix, rotateMe, rotateMe);
+
+					Location location = new Location(world, position);
+					location.add(new Vector3d(rotateMe.x, rotateMe.y, rotateMe.z));
+					location.add(new Vector3d(0.5));
+
+					int idThere = VoxelFormat.id(world.getVoxelData(location));
+
+					Voxel voxel = VoxelTypes.get(idThere);
+					if (voxel != null && idThere > 0 && !voxel.isVoxelLiquid())
+					{
+						BlockRenderInfo bri = new BlockRenderInfo(location);
+						VoxelRenderer model = voxel.getVoxelModel(bri);
+
+						if (model == null)
+							model = VoxelModels.getVoxelModel("default");
+
+						model.renderInto(virtualRenderBytebuffer, bri, world.getChunkWorldCoordinates(location, false), (int) location.getX(), (int) location.getY(), (int) location.getZ());
+					}
+
+				}
+
+		}
+		catch(BufferOverflowException e)
+		{
+			
+		}
+		int c = bbuf.position() / 2;
+		if (c > 0.0)
+		{
+			bbuf.flip();
+			
+			int actualCount = 0;
+			
+			actualCount += TrianglesClipper.clipTriangles(bbuf, decalsByteBuffer, rotationMatrix, position, lookAt, size);
+
+			int p = decalsByteBuffer.position();
+			decalsByteBuffer.rewind();
+
+			verticesObject.uploadData(decalsByteBuffer.asReadOnlyBuffer());
+			
+			kount += actualCount;
+			
+			//Put byteBuffer2 
+			decalsByteBuffer.position(p);
+			
+			//bbuf.clear();
+			if(kount > decalsByteBuffer.capacity() / (4 * (3 + 2)))
+				kount = decalsByteBuffer.capacity() / (4 * (3 + 2));
+			
+			System.out.println("uploaded "+ actualCount + " vertices ("+kount+") total");
+		}
 	}
-	
+
 	public void renderDecals(RenderingContext renderingContext)
 	{
-		Vector3d orthogonalRight = new Vector3d(1.0, 0.0, 0.0);
-		Vector3d orthogonalTop = new Vector3d(0.0, 1.0, 0.0);
-		Vector3d orthogonalForward = new Vector3d(0.0, 0.0, 1.0);
-		
-		Vector3d originalPosition = new Vector3d(2512, 31, 2027);
-		Vector3d rayDirection = new Vector3d(0.33, 0.45, -0.6);
-		rayDirection.normalize();
-		
-		//Stack overflow answer to how to build matrix to rotate one unit vector to another
-		/*Vector3d v = Vector3d.cross(orthogonalForward, rayDirection);
-		double s = v.length();
-		double c = Vector3d.dot(orthogonalForward, rayDirection);
-		
-		System.out.println(c+" "+s+" chksm: "+(c*c + s*s) + "v:"+v);
-		
-		Matrix3d skewSymetricCrosProductMatrixOfV = new Matrix3d();
-		skewSymetricCrosProductMatrixOfV.setZero();
-		skewSymetricCrosProductMatrixOfV.m00 = 0;
-		skewSymetricCrosProductMatrixOfV.m10 = -v.z;
-		skewSymetricCrosProductMatrixOfV.m20 = v.y;
-		
-		skewSymetricCrosProductMatrixOfV.m01 = v.z;
-		skewSymetricCrosProductMatrixOfV.m11 = 0;
-		skewSymetricCrosProductMatrixOfV.m21 = -v.x;
-		
-		skewSymetricCrosProductMatrixOfV.m02 = -v.y;
-		skewSymetricCrosProductMatrixOfV.m12 = v.x;
-		skewSymetricCrosProductMatrixOfV.m22 = 0;
-		
-		Matrix3d skewSymetricCrosProductMatrixOfV_squared = new Matrix3d(skewSymetricCrosProductMatrixOfV);
-				
-		skewSymetricCrosProductMatrixOfV_squared = Matrix3d.mul(skewSymetricCrosProductMatrixOfV_squared, skewSymetricCrosProductMatrixOfV_squared, null);
+		ShaderProgram decalsShader = ShadersLibrary.getShaderProgram("decals");
 
-		double factor = (1.0 - c) / (s * s);
-		skewSymetricCrosProductMatrixOfV_squared.scale(factor);
+		renderingContext.setCurrentShader(decalsShader);
+		renderingContext.getCamera().setupShader(decalsShader);
 		
-		Matrix3d rotationMatrix = new Matrix3d();
-		Matrix3d.add(rotationMatrix, skewSymetricCrosProductMatrixOfV, rotationMatrix);
-		Matrix3d.add(rotationMatrix, skewSymetricCrosProductMatrixOfV_squared, rotationMatrix);
+		renderingContext.enableVertexAttribute(decalsShader.getVertexAttributeLocation("vertexIn"));
+		renderingContext.enableVertexAttribute(decalsShader.getVertexAttributeLocation("texCoordIn"));
 		
-		*/
+		Texture2D diffuseTexture = TexturesHandler.getTexture("decals/bullethole.png");
+		diffuseTexture.setTextureWrapping(false);
+		diffuseTexture.setLinearFiltering(false);
 		
-		Vector3d up = new Vector3d(0.0, 1.0, 0.0);
-		Vector3d.cross(rayDirection, new Vector3d(0.0, 1.0, 0.0), up);
-		Vector3d.cross(up, rayDirection, up);
-		up.normalize();
-		
-		Vector3d right = new Vector3d();
-		Vector3d.cross(rayDirection, new Vector3d(1.0, 0.0, 0.0), right);
-		Vector3d.cross(right, rayDirection, right);
-		right.normalize();
-		
-		Matrix3d rotationMatrix = new Matrix3d(right, up, rayDirection);
-		
-		System.out.println(rotationMatrix);
-		
-		Vector3d result = Matrix3d.transform(orthogonalForward, rotationMatrix, null);
-		
-		System.out.println("Target : " + rayDirection);
-		System.out.println("Result : " + result);
-		
-		
-		SelectionRenderer.cubeVertices((float)originalPosition.x, (float)originalPosition.y, (float)originalPosition.z, 0.05f, 0.05f, 0.05f);
+		decalsShader.setUniformSampler(0, "diffuseTexture", diffuseTexture);
+		decalsShader.setUniformSampler(1, "zBuffer", worldRenderer.zBuffer);
+		decalsShader.setUniformFloat("time", (world.getTime() % 10000) / 10000f);
 
-		Vector3d finalPosition = originalPosition.clone().add(up);
-		OverlayRenderer.glLineWidth(1f);
-		OverlayRenderer.glBegin(OverlayRenderer.GL_LINES);
-		OverlayRenderer.glColor4f(1.0f, 1, 1, 1.0f);
-		OverlayRenderer.glVertex3d(originalPosition.x, originalPosition.y, originalPosition.z);
-		OverlayRenderer.glVertex3d(finalPosition.x, finalPosition.y, finalPosition.z);
-		OverlayRenderer.glEnd();
+		decalsShader.setUniformFloat("overcastFactor", world.getWeather());
+
+		glDisable(GL_CULL_FACE);
+		//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		glEnable(GL_BLEND);
+
+		glDepthFunc(GL_LEQUAL);
+
+		verticesObject.bind();
+		renderingContext.setVertexAttributePointer("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2), 0);
+		renderingContext.setVertexAttributePointer("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2), 4 * 3);
+
+		glDepthMask(false);
 		
-		finalPosition = originalPosition.clone().add(right);
-		OverlayRenderer.glLineWidth(1.5f);
-		OverlayRenderer.glBegin(OverlayRenderer.GL_LINES);
-		OverlayRenderer.glColor4f(1.0f, 1, 1, 1.0f);
-		OverlayRenderer.glVertex3d(originalPosition.x, originalPosition.y, originalPosition.z);
-		OverlayRenderer.glVertex3d(finalPosition.x, finalPosition.y, finalPosition.z);
-		OverlayRenderer.glEnd();
+		verticesObject.drawElementsTriangles(Math.min(kount, decalsByteBuffer.capacity() / (4 * (3 + 2))));
+		glDisable(GL_BLEND);
+		glDepthMask(true);
+		glDepthFunc(GL_LEQUAL);
+
+		//System.out.println(renderingContext.getCamera().modelViewMatrix4f);
 		
-		finalPosition = originalPosition.clone().add(rayDirection);
-		OverlayRenderer.glLineWidth(2f);
-		OverlayRenderer.glBegin(OverlayRenderer.GL_LINES);
-		OverlayRenderer.glColor4f(1.0f, 1, 1, 1.0f);
-		OverlayRenderer.glVertex3d(originalPosition.x, originalPosition.y, originalPosition.z);
-		OverlayRenderer.glVertex3d(finalPosition.x, finalPosition.y, finalPosition.z);
-		OverlayRenderer.glEnd();
-		
-		
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+
+		renderingContext.disableVertexAttribute(decalsShader.getVertexAttributeLocation("vertexIn"));
+		renderingContext.disableVertexAttribute(decalsShader.getVertexAttributeLocation("texCoordIn"));
 	}
 }

@@ -179,10 +179,19 @@ public class ItemAk47 extends Item
 							untouchedReflection.normalize();
 							
 							untouchedReflection.scale(0.25);
-							FragmentData fragParticule = ((FragmentData)shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("voxel_frag"), nearestLocation.add(untouchedReflection)));
+							
+							Vector3d ppos = new Vector3d(nearestLocation);
+							ppos.add(untouchedReflection);
+							FragmentData fragParticule = ((FragmentData)shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("voxel_frag"), ppos));
 							
 							fragParticule.setVelocity(untouchedReflection);
 							fragParticule.setData(data);
+						}
+						
+						if(shooter.getWorld() instanceof WorldClient)
+						{
+							WorldClient world = (WorldClient)shooter.getWorld();
+							world.getWorldRenderer().getDecalsRenderer().drawDecal(nearestLocation, shooter.getDirectionLookingAt(), new Vector3d(0.5), null);
 						}
 					}
 				}

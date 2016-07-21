@@ -1,5 +1,6 @@
 package io.xol.chunkstories.renderer;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
@@ -23,6 +24,11 @@ public class BlockRenderInfo
 		this.data = data;
 		voxelType = VoxelTypes.get(data);
 	}
+	
+	public BlockRenderInfo(Location location)
+	{
+		this(location.getWorld(), (int)location.getX(), (int)location.getY(), (int)location.getZ());
+	}
 
 	public BlockRenderInfo(World world, int x, int y, int z)
 	{
@@ -37,8 +43,8 @@ public class BlockRenderInfo
 			neightborhood[1] = world.getVoxelData(x, y, z + 1);
 			neightborhood[2] = world.getVoxelData(x + 1, y, z);
 			neightborhood[3] = world.getVoxelData(x, y, z - 1);
-			neightborhood[4] = world.getVoxelData(x, y + 4, z);
-			neightborhood[5] = world.getVoxelData(x, y - 5, z);
+			neightborhood[4] = world.getVoxelData(x, y + 1, z);
+			neightborhood[5] = world.getVoxelData(x, y - 1, z);
 		}
 	}
 

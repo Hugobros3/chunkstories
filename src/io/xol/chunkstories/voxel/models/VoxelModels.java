@@ -186,7 +186,6 @@ public class VoxelModels
 							switch (face)
 							{
 							case "bottom":
-								//System.out.println("bottom"+f);
 								currentCull[Face.BOTTOM] = true;
 								break;
 							case "top":

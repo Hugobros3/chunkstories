@@ -7,12 +7,32 @@ package io.xol.engine.math.lalgb;
 public class Vector4f
 {
 	// Dirty self-made replacement for vecmatch classes, castable to LWJGL's vector
-	
+
 	public float x, y, z, w;
 
 	public Vector4f()
 	{
 		this(0, 0, 0, 0);
+	}
+
+	public Vector4f(double f)
+	{
+		this((float) f);
+	}
+
+	public Vector4f(float f)
+	{
+		this(f, f, f, f);
+	}
+
+	public Vector4f(Vector3f vec, double f)
+	{
+		this(vec.x, vec.y, vec.z, f);
+	}
+
+	public Vector4f(double x, double y, double z, double w)
+	{
+		this((float) x, (float) y, (float) z, (float) w);
 	}
 
 	public Vector4f(float x, float y, float z, float w)
@@ -30,7 +50,7 @@ public class Vector4f
 		this.z = vec4.z;
 		this.w = vec4.w;
 	}
-	
+
 	public Vector4f add(Vector4f b)
 	{
 		x += b.x;
@@ -48,7 +68,7 @@ public class Vector4f
 		w -= b.w;
 		return this;
 	}
-	
+
 	public void set(float x, float y, float z, float w)
 	{
 		this.x = x;
@@ -128,4 +148,8 @@ public class Vector4f
 		return x * x + y * y + z * z + w * w;
 	}
 
+	public String toString()
+	{
+		return "[Vector4f x:" + x + " y:" + y + " z:" + z + " w:" + w + "]";
+	}
 }

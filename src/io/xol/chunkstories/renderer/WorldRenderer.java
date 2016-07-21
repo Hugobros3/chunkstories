@@ -59,6 +59,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.chunk.ChunkRenderable;
@@ -120,7 +121,7 @@ public class WorldRenderer
 	private PBOPacker illuminationDownloader[] = new PBOPacker[illDownBuffers];
 	
 	// G-Buffers
-	private GBufferTexture zBuffer = new GBufferTexture(DEPTH_RENDERBUFFER, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	public GBufferTexture zBuffer = new GBufferTexture(DEPTH_RENDERBUFFER, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private GBufferTexture diffuseBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private GBufferTexture normalBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private GBufferTexture materialBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
@@ -969,6 +970,9 @@ public class WorldRenderer
 		if (isShadowPass)
 			return;
 
+		//Add decals
+		decalsRenderer.renderDecals(renderingContext);
+		
 		// Solid blocks done, now render water & lights
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_ALPHA_TEST);
@@ -1089,7 +1093,6 @@ public class WorldRenderer
 
 		// Particles rendering
 		this.world.getParticlesHolder().render(renderingContext);
-		decalsRenderer.renderDecals(renderingContext);
 		
 		// Draw world shaded with sunlight and vertex light
 		glDepthMask(false);
@@ -1769,5 +1772,15 @@ public class WorldRenderer
 		sky.destroy();
 		chunksRenderer.killThread();
 		farTerrainRenderer.destroy();
+	}
+
+	public World getWorld()
+	{
+		return world;
+	}
+
+	public DecalsRenderer getDecalsRenderer()
+	{
+		return decalsRenderer;
 	}
 }

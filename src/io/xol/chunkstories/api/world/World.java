@@ -217,8 +217,14 @@ public interface World
 	 * @return
 	 */
 	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
+
+	public Chunk getChunkWorldCoordinates(int worldX, int worldY, int worldZ, boolean load);
+	
+	public Chunk getChunkWorldCoordinates(Location location, boolean load);
 	
 	public Region getRegionWorldCoordinates(int worldX, int worldY, int worldZ);
+	
+	public Region getRegionWorldCoordinates(Location location);
 
 	public Region getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ);
 	

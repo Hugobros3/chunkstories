@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
-import io.xol.chunkstories.renderer.chunks.RenderByteBuffer;
+import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
@@ -36,7 +36,7 @@ public class VoxelWaterRenderer extends VoxelModel
 	}
 
 	@Override
-	public int renderInto(RenderByteBuffer renderByteBuffer, BlockRenderInfo info, Chunk chunk, int x, int y, int z)
+	public int renderInto(VoxelBaker renderByteBuffer, BlockRenderInfo info, Chunk chunk, int x, int y, int z)
 	{
 		int llMs = chunk.getSunLight(x, y, z);//getSunlight(c, x, y, z);
 		int llMb = chunk.getBlockLight(x, y, z);//getBlocklight(c, x, y, z);

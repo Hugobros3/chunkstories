@@ -12,6 +12,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 import org.lwjgl.BufferUtils;
 
 import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.math.MatrixHelper;
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
@@ -173,12 +174,18 @@ public class Camera
 		float a = (float) ((180-rotH) / 180f * Math.PI);
 		float b = (float) ((-rotV) / 180f * Math.PI);
 		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
+		Vector3f direction = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 		
 		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 		Vector3f.cross(lookAt, up, up);
 		Vector3f.cross(up, lookAt, up);
 		
 		Vector3f.add(position, lookAt, lookAt);
+		position.scale(0);
+	    
+	    //modelViewMatrix4f = MatrixHelper.getLookAtMatrix(position, direction, up);
+	    
+	    //return result;
 		
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
