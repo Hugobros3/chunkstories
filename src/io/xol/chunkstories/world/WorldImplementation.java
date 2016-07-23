@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleType;
@@ -185,24 +186,24 @@ public abstract class WorldImplementation implements World
 			entity.setUUID(nextUUID);
 			System.out.println("Attributed UUID " + nextUUID + " to " + entity);
 		}
-		
+
 		Entity check = this.getEntityByUUID(entity.getUUID());
-		if(check != null)
+		if (check != null)
 		{
 			System.out.println("Added an entity twice");
 			Thread.dumpStack();
 			System.exit(-1);
 		}
-		
+
 		//Add it to the world
 		entity.markHasSpawned();
 		Location updatedLocation = entity.getLocation();
 		updatedLocation.setWorld(this);
 		entity.setLocation(updatedLocation);
-		
+
 		this.entities.add(entity);
-		
-		System.out.println("added "+entity+"to the worlde");
+
+		System.out.println("added " + entity + "to the worlde");
 	}
 
 	@Override
@@ -287,8 +288,7 @@ public abstract class WorldImplementation implements World
 				}
 
 				Location entityLocation = entity.getLocation();
-				if (entity.getChunkHolder() != null && entity.getChunkHolder().isDiskDataLoaded() && 
-						entity.getChunkHolder().isChunkLoaded((int)entityLocation.getX()/32, (int)entityLocation.getY()/32, (int)entityLocation.getZ()/32))
+				if (entity.getChunkHolder() != null && entity.getChunkHolder().isDiskDataLoaded() && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
 				{
 					if (entity instanceof EntityControllable)
 					{
@@ -355,14 +355,14 @@ public abstract class WorldImplementation implements World
 
 	public Chunk getChunkWorldCoordinates(Location location, boolean load)
 	{
-		return getChunkWorldCoordinates((int)location.getX(), (int)location.getY(), (int)location.getZ(), load);
+		return getChunkWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ(), load);
 	}
-	
+
 	public Chunk getChunkWorldCoordinates(int worldX, int worldY, int worldZ, boolean load)
 	{
 		return getChunk(worldX / 32, worldY / 32, worldZ / 32, load);
 	}
-	
+
 	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
 		chunkX = chunkX % getSizeInChunks();
@@ -428,7 +428,7 @@ public abstract class WorldImplementation implements World
 
 	public int getVoxelData(Location location, boolean load)
 	{
-		return getVoxelData(location, load);
+		return getVoxelData((int) location.x, (int) location.y, (int) location.z, load);
 	}
 
 	public int getDataAt(Vector3d location, boolean load)
@@ -506,16 +506,36 @@ public abstract class WorldImplementation implements World
 		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
 		if (c != null)
 		{
-			//Optionally runs whatever the voxel requires to run when removed
 			int formerData = c.getVoxelData(x % 32, y % 32, z % 32);
 			Voxel formerVoxel = VoxelTypes.get(formerData);
-			if (formerVoxel != null && formerVoxel instanceof VoxelLogic)
-				((VoxelLogic) formerVoxel).onRemove(this, x, y, z, formerData, entity);
-
-			//Optionally runs whatever the voxel requires to run when placed
 			Voxel newVoxel = VoxelTypes.get(newData);
-			if (newVoxel != null && newVoxel instanceof VoxelLogic)
-				newData = ((VoxelLogic) newVoxel).onPlace(this, x, y, z, newData, entity);
+
+			try
+			{
+				//If we're merely changing the voxel meta 
+				if(formerVoxel != null && newVoxel != null && formerVoxel.equals(newVoxel))
+				{
+					//Optionally runs whatever the voxel requires to run when modified
+					if (formerVoxel instanceof VoxelLogic)
+						newData = ((VoxelLogic) formerVoxel).onModification(this, x, y, z, newData, entity);
+				}
+				else
+				{
+					//Optionally runs whatever the voxel requires to run when removed
+					if (formerVoxel instanceof VoxelLogic)
+						((VoxelLogic) formerVoxel).onRemove(this, x, y, z, formerData, entity);
+
+					//Optionally runs whatever the voxel requires to run when placed
+					if (newVoxel instanceof VoxelLogic)
+						newData = ((VoxelLogic) newVoxel).onPlace(this, x, y, z, newData, entity);
+				}
+
+			}
+			//If it is stopped, don't try to go further
+			catch (IllegalBlockModificationException illegal)
+			{
+				return -1;
+			}
 
 			c.setVoxelDataWithUpdates(x % 32, y % 32, z % 32, newData);
 
@@ -745,7 +765,6 @@ public abstract class WorldImplementation implements World
 		}
 		return false;
 	}
-	
 
 	public void trimRemovableChunks()
 	{
@@ -805,7 +824,6 @@ public abstract class WorldImplementation implements World
 	{
 		this.overcastFactor = overcastFactor;
 	}
-	
 
 	@Override
 	public Location getDefaultSpawnLocation()
@@ -1011,7 +1029,7 @@ public abstract class WorldImplementation implements World
 	{
 		return particlesHolder.addParticle(particleType, data);
 	}
-	
+
 	public ParticleData addParticle(ParticleType particleType, Vector3d position)
 	{
 		return particlesHolder.addParticle(particleType, new Location(this, position));
@@ -1032,9 +1050,9 @@ public abstract class WorldImplementation implements World
 
 	public Region getRegionWorldCoordinates(Location location)
 	{
-		return getRegionWorldCoordinates((int)location.getX(), (int)location.getY(), (int)location.getZ());
+		return getRegionWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
-	
+
 	public Region getRegionWorldCoordinates(int worldX, int worldY, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
@@ -1053,7 +1071,7 @@ public abstract class WorldImplementation implements World
 	{
 		return chunksHolder.getChunkHolderRegionCoordinates(regionX, regionY, regionZ, true);
 	}
-	
+
 	public long getTime()
 	{
 		return worldTime;

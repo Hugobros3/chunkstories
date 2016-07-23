@@ -11,7 +11,7 @@ voxel stone 1
 end
 
 voxel grass 2
-	textures: '~', 'dirt', '~side', '~side', '~side', '~side'
+	textures: '~side', '~side', '~side', '~side', '~', 'dirt'
 end
 
 voxel dirt 3
@@ -28,11 +28,11 @@ voxel leaves 5
 end
 
 voxel forestgrass 6
-	textures: '~', 'dirt', '~side', '~side', '~side', '~side'
+	textures: '~side', '~side', '~side', '~side', '~', 'dirt'
 end
 
 voxel drygrass 7
-	textures: '~', 'dirt', '~side', '~side', '~side', '~side'
+	textures: '~side', '~side', '~side', '~side', '~', 'dirt'
 end
 
 voxel pinewood 8
@@ -57,7 +57,7 @@ voxel sand 12
 end
 
 voxel cactus 13
-	textures: '~top', '~', '~side', '~side', '~side', '~side'
+	textures: '~side', '~side', '~side', '~side', '~top', '~'
 end
 
 voxel planks 14
@@ -228,6 +228,18 @@ voxel rails 66
 	solid: false
 	opaque: false
 	model: 'rails'
+end
+
+voxel wood_door 70 io.xol.chunkstories.core.voxel.VoxelDoor
+	opaque: false
+	model: 'door'
+	
+end
+
+voxel wood_door_top 71 io.xol.chunkstories.core.voxel.VoxelDoor
+	opaque: false
+	model: 'door'
+	
 end
 
 voxel density 99 io.xol.chunkstories.core.voxel.VoxelMeta16

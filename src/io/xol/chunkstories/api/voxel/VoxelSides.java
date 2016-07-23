@@ -28,4 +28,24 @@ public enum VoxelSides
 	BACK,
 	TOP,
 	BOTTOM;
+	
+	/**
+	 * Returns the Chunk Stories side from the minecraft metadata of the following objects, no top/bottom direction allowed
+	 */
+	public static VoxelSides getSideMcStairsChestFurnace(int mcSide)
+	{
+		switch(mcSide)
+		{
+		case 2:
+			return FRONT;
+		case 3:
+			return BACK;
+		case 4:
+			return RIGHT;
+		case 5:
+			return LEFT;
+		}
+		
+		return FRONT;
+	}
 }

@@ -211,4 +211,14 @@ public class VoxelDefault extends Voxel
 
 		new ItemPile("item_voxel", new String[] { "" + this.voxelID }).duplicate() };
 	}
+
+	public boolean equals(Object o)
+	{
+		//Only the id matters
+		if(o instanceof VoxelDefault)
+		{
+			return (((VoxelDefault) o).getId() == this.getId());
+		}
+		return false;
+	}
 }

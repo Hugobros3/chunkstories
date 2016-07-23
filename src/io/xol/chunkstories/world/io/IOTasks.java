@@ -633,8 +633,8 @@ public class IOTasks extends Thread
 				out.write(compressed);
 
 				writeMe.clear();
-				for (int i : summary.ids)
-					writeMe.putInt(i);
+				for (int i = 0; i < 256 * 256; i++)
+					writeMe.putInt(summary.ids[i]);
 
 				compressed = RegionSummary.compressor.compress(writeMe.array());
 				compressedSize = compressed.length;

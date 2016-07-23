@@ -28,7 +28,7 @@ import io.xol.engine.model.animation.BVHAnimation;
 import io.xol.engine.model.animation.BVHLibrary;
 import io.xol.engine.model.animation.Bone;
 
-public class EntityZombie extends EntityImplementation implements EntityHUD
+public class EntityZombie extends EntityLivingImplentation implements EntityHUD
 {
 	int i = 0;
 

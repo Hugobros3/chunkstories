@@ -3,6 +3,7 @@ package io.xol.chunkstories.api.voxel;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
+import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -69,6 +70,12 @@ public abstract class VoxelEntity extends VoxelDefault implements VoxelLogic, Vo
 		voxelEntity.removeFromWorld();
 		
 		System.out.println("removed voxel entity");
+	}
+
+	@Override
+	public int onModification(World world, int x, int y, int z, int voxelData, Entity entity) throws IllegalBlockModificationException
+	{
+		return voxelData;
 	}
 
 }

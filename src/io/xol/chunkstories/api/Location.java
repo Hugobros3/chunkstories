@@ -22,6 +22,14 @@ public class Location extends Vector3d
 		this(world, position.x, position.y, position.z);
 	}
 
+	public Location(Location location)
+	{
+		this.world = location.getWorld();
+		this.x = location.getX();
+		this.y = location.getY();
+		this.z = location.getZ();
+	}
+
 	public double getX()
 	{
 		return x;
@@ -60,5 +68,15 @@ public class Location extends Vector3d
 	public void setWorld(World world)
 	{
 		this.world = world;
+	}
+
+	public int getVoxelDataAtLocation()
+	{
+		return world.getVoxelData(this, false);
+	}
+
+	public void setVoxelDataAtLocation(int voxelData)
+	{
+		world.setVoxelData(this, voxelData, false);
 	}
 }

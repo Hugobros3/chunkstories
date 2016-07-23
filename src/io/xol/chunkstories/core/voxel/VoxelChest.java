@@ -57,23 +57,22 @@ public class VoxelChest extends VoxelEntity
 	@Override
 	public VoxelTexture getVoxelTexture(int data, VoxelSides side, BlockRenderInfo info)
 	{
+		VoxelSides actualSide = VoxelSides.getSideMcStairsChestFurnace(VoxelFormat.meta(data));
+		
+		if(side.equals(VoxelSides.TOP))
+			return topTexture;
+		
+		if(side.equals(actualSide))
+			return frontTexture;
+		
 		return sideTexture;
 	}
 	
 	@Override
+	//Chunk stories chests use Minecraft format to ease porting of maps
 	public int onPlace(World world, int x, int y, int z, int voxelData, Entity entity)
 	{
-		// id+dir of slope
-		// 0LEFT x-
-		// 1RIGHT x+
-		// 2BACK z-
-		// 3FRONT z+
-
-		//Vanilla mc sides (stairs) 
-		// 1 = cs_RIGHT / mc_WEST   |    3
-		// 0 = cs_LEFT  / mc_EAST   |  0 X 1
-		// 2 = cs_BACK  / mc_SOUTH  |    2
-		// 3 = cs_FRONT / mc_NORTH  |
+		super.onPlace(world, x, y, z, voxelData, entity);
 		
 		int stairsSide = 0;
 		//See: 
@@ -86,16 +85,16 @@ public class VoxelChest extends VoxelEntity
 			if (Math.abs(dx) > Math.abs(dz))
 			{
 				if(dx > 0)
-					stairsSide = 5;
-				else
 					stairsSide = 4;
+				else
+					stairsSide = 5;
 			}
 			else
 			{
 				if(dz > 0)
-					stairsSide = 3;
-				else
 					stairsSide = 2;
+				else
+					stairsSide = 3;
 			}
 			voxelData = VoxelFormat.changeMeta(voxelData, stairsSide);
 		}

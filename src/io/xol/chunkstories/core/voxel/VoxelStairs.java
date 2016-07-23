@@ -2,6 +2,7 @@ package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -72,13 +73,6 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 		}
 
 		return boxes;
-
-		/*
-		 * CollisionBox box = new CollisionBox(1,0.5,1); if(bottomOrTop(data))
-		 * box.translate(0.5, -1, 0.5); else box.translate(0.5, -0.5, 0.5);
-		 * return new CollisionBox[] { box };
-		 */
-		// return super.getCollisionBoxes(data);
 	}
 
 	@Override
@@ -126,14 +120,8 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 					stairsSide += 4;
 			}
 			
-			//System.out.println("tamerde"+VoxelFormat.meta(voxelData));
-			
 			voxelData = VoxelFormat.changeMeta(voxelData, stairsSide);
 		}
-
-		//System.out.println("tamer"+VoxelFormat.meta(voxelData));
-
-		//System.out.println("on place stairs"+stairsSide);
 		return voxelData;
 	}
 
@@ -141,5 +129,11 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 	public void onRemove(World world, int x, int y, int z, int voxelData, Entity entity)
 	{
 		//System.out.println("on remove stairs");
+	}
+	
+	@Override
+	public int onModification(World world, int x, int y, int z, int voxelData, Entity entity) throws IllegalBlockModificationException
+	{
+		throw new IllegalBlockModificationException("Stairs can't be changed direction");
 	}
 }
