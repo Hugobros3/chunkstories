@@ -40,6 +40,8 @@ public class Texture2D
 	boolean linearFiltering = true;
 	int baseMipmapLevel = 0;
 	int maxMipmapLevel = 1000;
+	
+	private boolean scheduledForLoad = false;
 
 	public Texture2D(TextureType type)
 	{
@@ -63,6 +65,14 @@ public class Texture2D
 
 	public int loadTextureFromDisk()
 	{
+		if (!GameWindowOpenGL.isMainGLWindow())
+		{
+			System.out.println("isn't main thread, scheduling load");
+			scheduledForLoad = true;
+			return -1;
+		}
+		scheduledForLoad = false;
+		
 		File textureFile = GameData.getTextureFileLocation(name);
 		if (textureFile == null)
 		{
@@ -159,7 +169,6 @@ public class Texture2D
 	{
 		if (!GameWindowOpenGL.isMainGLWindow())
 			throw new IllegalRenderingThreadException();
-		
 		//Allow creation only in intial state
 		if (glId == -1)
 		{
@@ -167,6 +176,12 @@ public class Texture2D
 		}
 		
 		glBindTexture(GL_TEXTURE_2D, glId);
+		
+		if(scheduledForLoad)
+		{
+			System.out.println("main thread called, actually loading");
+			this.loadTextureFromDisk();
+		}
 	}
 	
 	public synchronized void destroy()

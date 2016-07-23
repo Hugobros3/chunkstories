@@ -3,7 +3,6 @@ package io.xol.chunkstories.renderer.decals;
 import java.nio.ByteBuffer;
 
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
@@ -21,7 +20,7 @@ public class TrianglesClipper
 
 		toClipSpace = new Matrix4f(rotationMatrix);
 		toClipSpace.translate(originPosition.castToSP().negate());
-
+		
 		Matrix4f resize = new Matrix4f();
 		resize.scale(new Vector3f(1 / size.x, 1 / size.y, 1));
 		Matrix4f.transpose(resize, resize);
@@ -43,7 +42,7 @@ public class TrianglesClipper
 
 			//Skip backward-facing tris
 			Vector3f normal = new Vector3f(in.getFloat(), in.getFloat(), in.getFloat());
-			if (Vector3f.dot(normal, direction) > 0)
+			if (Vector3f.dot(normal, direction) >= 0)
 			{
 				for (int i = 0; i < 6; i++)
 					in.getFloat();
@@ -59,32 +58,30 @@ public class TrianglesClipper
 			for (int i = 0; i < 3; i++)
 				in.getFloat();
 
-			actualCount += 3;
-
-			cull(triVert1, triVert2, triVert3);
+			actualCount += 3 * cull(triVert1, triVert2, triVert3);
 		}
-
+		
 		return actualCount;
 	}
 
-	private static void cull(Vector3f vert1, Vector3f vert2, Vector3f vert3)
+	private static int cull(Vector3f vert1, Vector3f vert2, Vector3f vert3)
 	{
 		Vector4f tv1 = Matrix4f.transform(toClipSpace, new Vector4f(vert1, 1.0f), null);
 		Vector4f tv2 = Matrix4f.transform(toClipSpace, new Vector4f(vert2, 1.0f), null);
 		Vector4f tv3 = Matrix4f.transform(toClipSpace, new Vector4f(vert3, 1.0f), null);
 
 		if (tv1.x < 0.0 && tv2.x < 0.0 && tv3.x < 0.0)
-			return;
+			return 0;
 		if (tv1.y < 0.0 && tv2.y < 0.0 && tv3.y < 0.0)
-			return;
+			return 0;
 		if (tv1.x > 1.0 && tv2.x > 1.0 && tv3.x > 1.0)
-			return;
+			return 0;
 		if (tv1.y > 1.0 && tv2.y > 1.0 && tv3.y > 1.0)
-			return;
-		cullLeft(tv1, tv2, tv3);
+			return 0;
+		return cullLeft(tv1, tv2, tv3);
 	}
 
-	private static void cullLeft(Vector4f vert1, Vector4f vert2, Vector4f vert3)
+	private static int cullLeft(Vector4f vert1, Vector4f vert2, Vector4f vert3)
 	{
 		//Sort
 		Vector4f v1, v2, v3;
@@ -148,7 +145,8 @@ public class TrianglesClipper
 		}
 		else
 		{
-			System.out.println("fuck");
+			System.out.println("fuck X");
+			return 0;
 		}
 
 		//Actual culling here
@@ -161,14 +159,14 @@ public class TrianglesClipper
 			Vector4f v2to1 = new Vector4f(v1).sub(v2);
 			v2to1.scale((d2tb) / d2to1);
 			v2to1.add(v2);
-			cullRight(v2to1, v2, v3);
+			int t = cullRight(v2to1, v2, v3);
 			
 			float d3to1 = v3.x - v1.x;
 			float d3tb = v3.x;
 			Vector4f v3to1 = new Vector4f(v1).sub(v3);
 			v3to1.scale((d3tb) / d3to1);
 			v3to1.add(v3);
-			cullRight(v2to1, v3, v3to1);
+			return t + cullRight(v2to1, v3, v3to1);
 		}
 		//Two points are
 		else if (v1.x < border && v2.x < border && v3.x > border)
@@ -187,21 +185,22 @@ public class TrianglesClipper
 			
 			//System.out.println("v3to1"+v3to1);
 			
-			cullRight(v3to1, v3, v3to2);
+			return cullRight(v3to1, v3, v3to2);
 		}
 		//All are
 		else if (v1.x < border && v2.x < border && v3.x < border)
 		{
 			//System.out.println("all out !");
+			return 0;
 		}
 		//None are
 		else
 		{
-			cullRight(v1, v2, v3);
+			return cullRight(v1, v2, v3);
 		}
 	}
 
-	private static void cullRight(Vector4f v1, Vector4f v2, Vector4f v3)
+	private static int cullRight(Vector4f v1, Vector4f v2, Vector4f v3)
 	{
 		float border = 1.0f;
 		//One point is clipping
@@ -224,8 +223,7 @@ public class TrianglesClipper
 			v1to3.add(v1);
 			//System.out.println(v1to3+" is in of clip ("+v1to3.x+")");
 
-			cullTop(v1, v2, v1to3);
-			cullTop(v2to3, v2, v1to3);
+			return cullTop(v1, v2, v1to3) + cullTop(v2to3, v2, v1to3);
 		}
 		//Two points are
 		else if (v1.x < border && v2.x > border && v3.x > border)
@@ -242,19 +240,20 @@ public class TrianglesClipper
 			v1to2.scale((d1tb) / d1t2);
 			v1to2.add(v1);
 
-			cullTop(v1, v1to2, v1to3);
+			return cullTop(v1, v1to2, v1to3);
 		}
 		else if (v1.x > border && v2.x > border && v3.x > border)
 		{
 			//System.out.println("all out !");
+			return 0;
 		}
 		else
 		{
-			cullTop(v1, v2, v3);
+			return cullTop(v1, v2, v3);
 		}
 	}
 
-	private static void cullTop(Vector4f vert1, Vector4f vert2, Vector4f vert3)
+	private static int cullTop(Vector4f vert1, Vector4f vert2, Vector4f vert3)
 	{
 		Vector4f v1, v2, v3;
 		if (vert1.y > vert2.y)
@@ -317,7 +316,8 @@ public class TrianglesClipper
 		}
 		else
 		{
-			System.out.println("fuck");
+			System.out.println("fuck Y" + v1 + v2 + v3);
+			return 0;
 		}
 		//Actual culling here
 		
@@ -342,8 +342,7 @@ public class TrianglesClipper
 			v1to3.add(v1);
 			//System.out.println(v1to3+" is in of clip ("+v1to3.y+")");
 
-			cullBot(v1, v2, v1to3);
-			cullBot(v2to3, v2, v1to3);
+			return cullBot(v1, v2, v1to3) + cullBot(v2to3, v2, v1to3);
 		}
 		//Two points are
 		else if (v1.y < border && v2.y > border && v3.y > border)
@@ -360,19 +359,20 @@ public class TrianglesClipper
 			v1to2.scale((d1tb) / d1t2);
 			v1to2.add(v1);
 
-			cullBot(v1, v1to2, v1to3);
+			return cullBot(v1, v1to2, v1to3);
 		}
 		else if (v1.y > border && v2.y > border && v3.y > border)
 		{
 			//System.out.println("all out !");
+			return 0;
 		}
 		else
 		{
-			cullBot(v1, v2, v3);
+			return cullBot(v1, v2, v3);
 		}
 	}
 
-	private static void cullBot(Vector4f v1, Vector4f v2, Vector4f v3)
+	private static int cullBot(Vector4f v1, Vector4f v2, Vector4f v3)
 	{
 		float border = 0.0f;
 		//One point is clipping
@@ -383,14 +383,14 @@ public class TrianglesClipper
 			Vector4f v2to1 = new Vector4f(v1).sub(v2);
 			v2to1.scale((d2tb) / d2to1);
 			v2to1.add(v2);
-			cullDone(v2to1, v2, v3);
+			int t = cullDone(v2to1, v2, v3);
 			
 			float d3to1 = v3.y - v1.y;
 			float d3tb = v3.y;
 			Vector4f v3to1 = new Vector4f(v1).sub(v3);
 			v3to1.scale((d3tb) / d3to1);
 			v3to1.add(v3);
-			cullDone(v2to1, v3, v3to1);
+			return t + cullDone(v2to1, v3, v3to1);
 		}
 		//Two points are
 		else if (v1.y < border && v2.y < border && v3.y > border)
@@ -409,25 +409,28 @@ public class TrianglesClipper
 			
 			//System.out.println("v3to1"+v3to1);
 			
-			cullDone(v3to1, v3, v3to2);
+			return cullDone(v3to1, v3, v3to2);
 		}
 		//All are
 		else if (v1.y < border && v2.y < border && v3.y < border)
 		{
+			return 0;
 			//System.out.println("all out !");
 		}
 		//None are
 		else
 		{
-			cullDone(v1, v2, v3);
+			return cullDone(v1, v2, v3);
 		}
 	}
 
-	private static void cullDone(Vector4f vert1, Vector4f vert2, Vector4f vert3)
+	private static int cullDone(Vector4f vert1, Vector4f vert2, Vector4f vert3)
 	{
 		out(vert1);
 		out(vert2);
 		out(vert3);
+		
+		return 1;
 	}
 
 	private static void out(Vector4f tm)

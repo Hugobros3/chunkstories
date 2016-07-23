@@ -17,7 +17,6 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.core.item.renderers.Ak47ViewModelRenderer;
-import io.xol.chunkstories.core.particles.ParticleBlood.BloodData;
 import io.xol.chunkstories.core.particles.ParticleVoxelFragment.FragmentData;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.particles.ParticleTypes;
@@ -112,22 +111,27 @@ public class ItemAk47 extends Item
 				while (shotEntities.hasNext())
 				{
 					Entity shotEntity = shotEntities.next();
-					//Don't shoot itself
-					if (!shotEntity.equals(shooter))
+					//Don't shoot itself & only living things get shot
+					if (!shotEntity.equals(shooter) && shotEntity instanceof EntityLiving)
 					{
 						//Get hit location
 						Vector3d hitPoint = shotEntity.collidesWith(eyeLocation, shooter.getDirectionLookingAt());
 
 						//Spawn blood
 						Vector3d bloodDir = shooter.getDirectionLookingAt().normalize().scale(0.25);
-						for (int i = 0; i < 25; i++)
+						for (int i = 0; i < 3; i++)
 						{
 							Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
 							random.scale(0.25);
 							random.add(bloodDir);
 
-							((BloodData) shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("blood"), hitPoint)).setVelocity(random);
+							//((BloodData) shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("blood"), hitPoint)).setVelocity(random);
 							
+							if(shooter.getWorld() instanceof WorldClient)
+							{
+								WorldClient world = (WorldClient)shooter.getWorld();
+								world.getWorldRenderer().getDecalsRenderer().drawDecal(hitPoint, random, new Vector3d(5.0), "blood");
+							}
 						}
 
 					}
@@ -167,10 +171,9 @@ public class ItemAk47 extends Item
 							}
 						}
 						
-						//System.out.println("Intersection @ "+nearestLocation);
-						
 						for (int i = 0; i < 25; i++)
 						{
+							//System.out.println("pp");
 							Vector3d untouchedReflection = new Vector3d(reflected);
 							
 							Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
@@ -191,7 +194,8 @@ public class ItemAk47 extends Item
 						if(shooter.getWorld() instanceof WorldClient)
 						{
 							WorldClient world = (WorldClient)shooter.getWorld();
-							world.getWorldRenderer().getDecalsRenderer().drawDecal(nearestLocation, shooter.getDirectionLookingAt(), new Vector3d(0.5), null);
+							//System.out.println("normal"+normal);
+							world.getWorldRenderer().getDecalsRenderer().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");
 						}
 					}
 				}

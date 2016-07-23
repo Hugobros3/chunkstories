@@ -30,6 +30,9 @@ public class MatrixHelper
 
 	public static Matrix4f getLookAtMatrix(Vector3f position, Vector3f direction, Vector3f up)
 	{
+		if(direction.y == 1.0f || direction.y == -1.0f)
+			up = new Vector3f(1.0f, 0.0f, 0.0f);
+		
 		Matrix4f matrix = new Matrix4f();
 		matrix.setIdentity();
 		Vector3f f = new Vector3f();
