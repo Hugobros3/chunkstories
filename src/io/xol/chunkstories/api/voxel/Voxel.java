@@ -63,7 +63,7 @@ public abstract class Voxel
 	 * @param info
 	 * @return
 	 */
-	public abstract VoxelTexture getVoxelTexture(int data, int side, BlockRenderInfo info);
+	public abstract VoxelTexture getVoxelTexture(int data, VoxelSides side, BlockRenderInfo info);
 
 	/**
 	 * Gets the reduction of the light that will transfer from this block to another, based on data from the two blocks and the side from wich it's leaving the first block from.
@@ -76,7 +76,7 @@ public abstract class Voxel
 	 *            The side of the block light would come out of ( see {@link VoxelSides VoxelSides.class} )
 	 * @return The reduction to apply to the light level on exit
 	 */
-	public abstract int getLightLevelModifier(int dataFrom, int dataTo, int side);
+	public abstract int getLightLevelModifier(int dataFrom, int dataTo, VoxelSides side);
 
 	public void debugRenderCollision(World world, int x, int y, int z)
 	{
@@ -98,7 +98,7 @@ public abstract class Voxel
 	 *            The data of the block connected to the one being drew by the face j
 	 * @return Whether or not that face occlude a whole face and thus we can discard it
 	 */
-	public abstract boolean isFaceOpaque(int side, int data);
+	public abstract boolean isFaceOpaque(VoxelSides side, int data);
 
 	/**
 	 * Get the collision boxes for this object, centered as if the block was in x,y,z

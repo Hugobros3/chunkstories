@@ -20,6 +20,7 @@ import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -103,7 +104,7 @@ public class FarTerrainRenderer
 				temp.data = i;
 				Vector4f colorAndAlpha = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 				if (vox != null)
-					colorAndAlpha = VoxelTextures.getTextureColorAlphaAVG(vox.getVoxelTexture(0, 0, temp).name);
+					colorAndAlpha = VoxelTextures.getTextureColorAlphaAVG(vox.getVoxelTexture(0, VoxelSides.LEFT, temp).name);
 
 				// colorAndAlpha = new Vector4f(1f, 0.5f, 1f, 1f);
 				bb.put((byte) (colorAndAlpha.x * 255));

@@ -126,13 +126,13 @@ public class VoxelDefault extends Voxel
 	 * @return
 	 */
 	@Override
-	public VoxelTexture getVoxelTexture(int data, int side, BlockRenderInfo info)
+	public VoxelTexture getVoxelTexture(int data, VoxelSides side, BlockRenderInfo info)
 	{
-		return texture[side];
+		return texture[side.ordinal()];
 	}
 
 	@Override
-	public int getLightLevelModifier(int dataFrom, int dataTo, int side)
+	public int getLightLevelModifier(int dataFrom, int dataTo, VoxelSides side)
 	{
 		if (this.isVoxelOpaque())
 			return -15;
@@ -161,7 +161,7 @@ public class VoxelDefault extends Voxel
 	 * @return Whether or not that face occlude a whole face and thus we can discard it
 	 */
 	@Override
-	public boolean isFaceOpaque(int side, int data)
+	public boolean isFaceOpaque(VoxelSides side, int data)
 	{
 		return isVoxelOpaque();
 	}

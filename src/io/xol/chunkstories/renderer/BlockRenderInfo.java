@@ -3,6 +3,7 @@ package io.xol.chunkstories.renderer;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTypes;
@@ -69,10 +70,10 @@ public class BlockRenderInfo
 
 	public VoxelTexture getTexture()
 	{
-		return getTexture(0);
+		return getTexture(VoxelSides.LEFT);
 	}
 
-	public VoxelTexture getTexture(int side)
+	public VoxelTexture getTexture(VoxelSides side)
 	{
 		if (voxelType != null)
 			return voxelType.getVoxelTexture(data, side, this);

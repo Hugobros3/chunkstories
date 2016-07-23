@@ -15,6 +15,12 @@ public enum VoxelSides
 	 X
 	 5 y- bottom
 	 */
+
+	//Vanilla mc sides (stairs) 
+	// 1 = cs_RIGHT / mc_WEST   |    3
+	// 0 = cs_LEFT  / mc_EAST   |  0 X 1
+	// 2 = cs_BACK  / mc_SOUTH  |    2
+	// 3 = cs_FRONT / mc_NORTH  |
 	
 	LEFT,
 	FRONT,

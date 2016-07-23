@@ -5,6 +5,7 @@ import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTexture;
@@ -978,42 +979,42 @@ public class ChunksRenderer extends Thread
 						{
 							if (!(k == 0 && !chunkBotLoaded))
 							{
-								addQuadBottom(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, 1, renderInfo), renderInfo.isWavy());
+								addQuadBottom(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BOTTOM, renderInfo), renderInfo.isWavy());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 4))
 						{
 							if (!(k == 31 && !chunkTopLoaded))
 							{
-								addQuadTop(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, 0, renderInfo), renderInfo.isWavy());
+								addQuadTop(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.TOP, renderInfo), renderInfo.isWavy());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 2))
 						{
 							if (!(i == 31 && !chunkRightLoaded))
 							{
-								addQuadRight(work, rawRBBF, i + 1, k, j, vox.getVoxelTexture(src, 2, renderInfo), renderInfo.isWavy());
+								addQuadRight(work, rawRBBF, i + 1, k, j, vox.getVoxelTexture(src, VoxelSides.RIGHT, renderInfo), renderInfo.isWavy());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 0))
 						{
 							if (!(i == 0 && !chunkLeftLoaded))
 							{
-								addQuadLeft(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, 3, renderInfo), renderInfo.isWavy());
+								addQuadLeft(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.LEFT, renderInfo), renderInfo.isWavy());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 1))
 						{
 							if (!(j == 31 && !chunkFrontLoaded))
 							{
-								addQuadFront(work, rawRBBF, i, k, j + 1, vox.getVoxelTexture(src, 4, renderInfo), renderInfo.isWavy());
+								addQuadFront(work, rawRBBF, i, k, j + 1, vox.getVoxelTexture(src, VoxelSides.FRONT, renderInfo), renderInfo.isWavy());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 3))
 						{
 							if (!(j == 0 && !chunkBackLoaded))
 							{
-								addQuadBack(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, 5, renderInfo), renderInfo.isWavy());
+								addQuadBack(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, renderInfo), renderInfo.isWavy());
 							}
 						}
 					}

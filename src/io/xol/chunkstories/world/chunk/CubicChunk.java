@@ -2,6 +2,7 @@ package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.World;
@@ -422,7 +423,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (x < 31)
 				{
 					int adj = chunkVoxelData[(x + 1) * 1024 + y * 32 + z];
-					int llRight = ll - in.getLightLevelModifier(voxelData, adj, 2);
+					int llRight = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
 
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llRight - 1)
 					{
@@ -436,7 +437,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				else if (checkRightBleeding)
 				{
 					int adj = adjacentChunkRight.getVoxelData(0, y, z);
-					int llRight = ll - in.getLightLevelModifier(voxelData, adj, 2);
+					int llRight = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
 
 					//int adjacentSunlight = (adjacentChunkRight.getDataAt(0, y, z) & 0xFF0FFFFF) << 0x14;
 					if (((adj & 0x00F00000) >> 0x14) < llRight - 1)
@@ -448,7 +449,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (x > 0)
 				{
 					int adj = chunkVoxelData[(x - 1) * 1024 + y * 32 + z];
-					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, 0);
+					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
 					//int id = (adj & 0xFFFF);
 					//if(id == 25)
 					//	System.out.println("topikek"+VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() + " -> " +((adj & 0x00F00000) >> 0x14));
@@ -468,7 +469,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				{
 					int adj = adjacentChunkLeft.getVoxelData(31, y, z);
 					//int adjacentSunlight = (adjacentChunkLeft.getDataAt(31, y, z) & 0xFF0FFFFF) << 0x14;
-					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, 0);
+					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
 					if (((adj & 0x00F00000) >> 0x14) < llLeft - 1)
 					{
 						adjacentChunkLeft.markInNeedForLightningUpdate();
@@ -479,7 +480,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (z < 31)
 				{
 					int adj = chunkVoxelData[x * 1024 + y * 32 + z + 1];
-					int llFront = ll - in.getLightLevelModifier(voxelData, adj, 1);
+					int llFront = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llFront - 1)
 					{
 						chunkVoxelData[x * 1024 + y * 32 + z + 1] = adj & 0xFF0FFFFF | (llFront - 1) << 0x14;
@@ -493,7 +494,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				else if (checkFrontBleeding)
 				{
 					int adj = adjacentChunkFront.getVoxelData(x, y, 0);
-					int llFront = ll - in.getLightLevelModifier(voxelData, adj, 1);
+					int llFront = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
 					//int adjacentSunlight = (adjacentChunkFront.getDataAt(x, y, 0) & 0xFF0FFFFF) << 0x14;
 					if (((adj & 0x00F00000) >> 0x14) < llFront - 1)
 					{
@@ -504,7 +505,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (z > 0)
 				{
 					int adj = chunkVoxelData[x * 1024 + y * 32 + z - 1];
-					int llBack = ll - in.getLightLevelModifier(voxelData, adj, 3);
+					int llBack = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBack - 1)
 					{
 						chunkVoxelData[x * 1024 + y * 32 + z - 1] = adj & 0xFF0FFFFF | (llBack - 1) << 0x14;
@@ -519,7 +520,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				{
 					//int adjacentSunlight = (adjacentChunkBack.getDataAt(x, y, 31) & 0xFF0FFFFF) << 0x14;
 					int adj = adjacentChunkBack.getVoxelData(x, y, 31);
-					int llBack = ll - in.getLightLevelModifier(voxelData, adj, 3);
+					int llBack = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
 					if (((adj & 0x00F00000) >> 0x14) < llBack - 1)
 					{
 						adjacentChunkBack.markInNeedForLightningUpdate();
@@ -530,7 +531,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (y < 31) // y = 254+1
 				{
 					int adj = chunkVoxelData[x * 1024 + (y + 1) * 32 + z];
-					int llTop = ll - in.getLightLevelModifier(voxelData, adj, 4);
+					int llTop = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llTop - 1)
 					{
 						chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = adj & 0xFF0FFFFF | (llTop - 1) << 0x14;
@@ -544,7 +545,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				else if (checkTopBleeding)
 				{
 					int adj = adjacentChunkTop.getVoxelData(x, 0, z);
-					int llTop = ll - in.getLightLevelModifier(voxelData, adj, 4);
+					int llTop = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
 					//int adjacentSunlight = (adj & 0xFF0FFFFF) << 0x14;
 					if (((adj & 0x00F00000) >> 0x14) < llTop - 1)
 					{
@@ -555,7 +556,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (y > 0)
 				{
 					int adj = chunkVoxelData[x * 1024 + (y - 1) * 32 + z];
-					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, 5);
+					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
 					if (!VoxelTypes.get(adj).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBottm)
 					{
 						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)
@@ -570,7 +571,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				else if (checkBottomBleeding)
 				{
 					int adj = adjacentChunkBottom.getVoxelData(x, 31, z);
-					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, 5);
+					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
 					//int adjacentSunlight = (adj & 0xFF0FFFFF) << 0x14;
 					if (((adj & 0x00F00000) >> 0x14) < llBottm - 1)
 					{
@@ -1567,7 +1568,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (x < bounds)
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x + 1, y, z);
-					int llRight = ll - in.getLightLevelModifier(voxelData, adj, 2);
+					int llRight = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
 
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llRight - 1)
 					{
@@ -1581,7 +1582,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (x > -bounds)
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x - 1, y, z);
-					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, 0);
+					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
 					//int id = (adj & 0xFFFF);
 					//if(id == 25)
 					//	System.out.println("topikek"+VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() + " -> " +((adj & 0x00F00000) >> 0x14));
@@ -1601,7 +1602,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (z < bounds)
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z + 1);
-					int llFront = ll - in.getLightLevelModifier(voxelData, adj, 1);
+					int llFront = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llFront - 1)
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z + 1, adj & 0xFF0FFFFF | (llFront - 1) << 0x14);
@@ -1615,7 +1616,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (z > -bounds)
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z - 1);
-					int llBack = ll - in.getLightLevelModifier(voxelData, adj, 3);
+					int llBack = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBack - 1)
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z - 1, adj & 0xFF0FFFFF | (llBack - 1) << 0x14);
@@ -1630,7 +1631,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (y < bounds) // y = 254+1
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y + 1, z);
-					int llTop = ll - in.getLightLevelModifier(voxelData, adj, 4);
+					int llTop = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
 					if (!VoxelTypes.get((adj & 0xFFFF)).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llTop - 1)
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y + 1, z, adj & 0xFF0FFFFF | (llTop - 1) << 0x14);
@@ -1644,7 +1645,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 				if (y > -bounds)
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y - 1, z);
-					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, 5);
+					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
 					if (!VoxelTypes.get(adj).isVoxelOpaque() && ((adj & 0x00F00000) >> 0x14) < llBottm)
 					{
 						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)

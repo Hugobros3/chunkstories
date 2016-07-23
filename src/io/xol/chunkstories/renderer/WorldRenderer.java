@@ -1592,9 +1592,7 @@ public class WorldRenderer
 			if (cubemap != null)
 			{
 				glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.getID());
-
-				//String[] names = { "front", "back", "top", "bottom", "right", "left" };
-				//String[] names = { "right", "left", "top", "bottom", "front", "back" };
+				
 				int t[] = new int[] { 4, 5, 3, 2, 0, 1 };
 				int f = t[z];
 				
@@ -1636,19 +1634,19 @@ public class WorldRenderer
 
 				// Saving
 				// bbuf.get(buf);
-				ByteBuffer bbuf = ByteBuffer.allocateDirect(resolution * resolution * 4).order(ByteOrder.nativeOrder());
+				ByteBuffer bbuf = ByteBuffer.allocateDirect(resolution * resolution * 4 * 4).order(ByteOrder.nativeOrder());
 				
-				glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
+				glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, bbuf);
 				
 				BufferedImage pixels = new BufferedImage(resolution, resolution, BufferedImage.TYPE_INT_RGB);
 				for (int x = 0; x < resolution; x++)
 					for (int y = 0; y < resolution; y++)
 					{
 						int i = 4 * (x + resolution * y);
-						int r = (int) (Math.pow((bbuf.get(i) & 0xFF) / 255d, 1d / 2.2d) * 255d);
-						int g = (int) (Math.pow((bbuf.get(i + 1) & 0xFF) / 255d, 1d / 2.2d) * 255d);
-						int b = (int) (Math.pow((bbuf.get(i + 2) & 0xFF) / 255d, 1d / 2.2d) * 255d);
-						pixels.setRGB(x, resolution - 1 - y, (0xFF << 24) | (r << 16) | (g << 8) | b);
+						int r = (int) Math2.clamp(Math.pow((bbuf.getFloat(i * 4)) / 1d, 1d / 2.2d) * 255d, 0.0, 255.0);
+						int g = (int) Math2.clamp(Math.pow((bbuf.getFloat(i * 4 + 4)) / 1d, 1d / 2.2d) * 255d, 0.0, 255.0);
+						int b = (int) Math2.clamp(Math.pow((bbuf.getFloat(i * 4 + 8)) / 1d, 1d / 2.2d) * 255d, 0.0, 255.0);
+						pixels.setRGB(x, resolution - 1 - y, (0xFF << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | b & 0xFF);
 					}
 				try
 				{

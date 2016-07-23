@@ -1,6 +1,7 @@
 package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.voxel.VoxelDefault;
@@ -54,8 +55,10 @@ public class VoxelHalfTile extends VoxelDefault
 	}
 	
 	@Override
-	public int getLightLevelModifier(int dataFrom, int dataTo, int side)
+	public int getLightLevelModifier(int dataFrom, int dataTo, VoxelSides side2)
 	{
+		int side = side2.ordinal();
+		
 		//Special cases when half-tiles meet
 		if(VoxelTypes.get(dataTo) instanceof VoxelHalfTile && side < 4)
 		{

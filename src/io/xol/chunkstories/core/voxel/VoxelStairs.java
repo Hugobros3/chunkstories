@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -81,7 +82,7 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 	}
 
 	@Override
-	public int getLightLevelModifier(int dataFrom, int dataTo, int side)
+	public int getLightLevelModifier(int dataFrom, int dataTo, VoxelSides side)
 	{
 		return super.getLightLevelModifier(dataFrom, dataTo, side);
 	}
@@ -125,12 +126,12 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 					stairsSide += 4;
 			}
 			
-			System.out.println("tamerde"+VoxelFormat.meta(voxelData));
+			//System.out.println("tamerde"+VoxelFormat.meta(voxelData));
 			
 			voxelData = VoxelFormat.changeMeta(voxelData, stairsSide);
 		}
 
-		System.out.println("tamer"+VoxelFormat.meta(voxelData));
+		//System.out.println("tamer"+VoxelFormat.meta(voxelData));
 
 		//System.out.println("on place stairs"+stairsSide);
 		return voxelData;

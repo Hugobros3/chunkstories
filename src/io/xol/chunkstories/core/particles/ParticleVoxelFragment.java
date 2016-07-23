@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTypes;
@@ -38,7 +39,7 @@ public class ParticleVoxelFragment extends ParticleType
 			super(x, y, z);
 			int id = VoxelFormat.id(data);
 			
-			tex = VoxelTypes.get(id).getVoxelTexture(data, 0, null);
+			tex = VoxelTypes.get(id).getVoxelTexture(data, VoxelSides.LEFT, null);
 			//System.out.println("id+"+id + " "+ tex.atlasOffset / 32768f);
 		}
 		
@@ -102,7 +103,7 @@ public class ParticleVoxelFragment extends ParticleType
 		public void setData(int data)
 		{
 			int id = VoxelFormat.id(data);
-			VoxelTexture tex = VoxelTypes.get(id).getVoxelTexture(data, 0, null);
+			VoxelTexture tex = VoxelTypes.get(id).getVoxelTexture(data, VoxelSides.LEFT, null);
 			
 			int qx = (int) Math.floor(Math.random() * 4.0);
 			int rx = qx + 1;

@@ -11,6 +11,7 @@ import java.util.Map;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.item.ItemPile;
@@ -98,7 +99,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		{
 			float[] transformTextures = new float[model.texCoords.length];
 
-			VoxelTexture voxelTexture = voxel.getVoxelTexture(bri.data, 0, bri);
+			VoxelTexture voxelTexture = voxel.getVoxelTexture(bri.data, VoxelSides.LEFT, bri);
 			int modelTextureIndex = 0;
 			String voxelName = VoxelTypes.get(bri.data).getName();
 			if(!model.texturesNames[modelTextureIndex].equals("~"))
