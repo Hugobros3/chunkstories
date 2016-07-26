@@ -1,7 +1,9 @@
 package io.xol.chunkstories.gui;
 
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
+import io.xol.engine.graphics.util.TrueTypeFontRenderer;
 import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.misc.ColorsTools;
 
@@ -63,7 +65,7 @@ public class ChatPanel
 		}
 
 		@Override
-		public void drawToScreen(int positionStartX, int positionStartY, int width, int height)
+		public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
 		{
 
 		}
@@ -255,7 +257,7 @@ public class ChatPanel
 				continue;
 			}
 			//System.out.println("added" +line.text);
-			int actualLines = TrueTypeFont.arial12.getLinesHeight(line.text, 250);
+			int actualLines = TrueTypeFont.arial11px.getLinesHeight(line.text, 250);
 			linesDrew += actualLines;
 			float a = (line.time + 10000L - System.currentTimeMillis()) / 1000f;
 			if (a < 0)
@@ -264,7 +266,7 @@ public class ChatPanel
 				a = 1;
 			//FontRenderer2.drawTextUsingSpecificFont(9, (linesDrew + 0 * maxLines - 1) * 24 + 100 + (chatting ? 50 : 0), 0, 32, line.text, BitmapFont.SMALLFONTS, a);
 			//TrueTypeFont.arial12.drawString(9, (-linesDrew + 1) * 24 + 100 + (chatting ? 50 : 0), line.text, 2, 2, 500, new Vector4f(1,1,1,a));
-			TrueTypeFont.arial12.drawStringWithShadow(9, (linesDrew - 1) * 26 + 100 + (chatting ? 50 : 0), line.text, 2, 2, 500, new Vector4f(1, 1, 1, a));
+			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, 9, (linesDrew - 1) * 26 + 100 + (chatting ? 50 : 0), line.text, 2, 2, 500, new Vector4f(1, 1, 1, a));
 		}
 		inputBox.setPosition(12, 112);
 		if (chatting)

@@ -1,5 +1,6 @@
 package io.xol.chunkstories.renderer.lights;
 
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.util.ObjectRenderer;
@@ -9,7 +10,6 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.rendering.SpotLight;
-import io.xol.engine.model.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -43,7 +43,7 @@ public class LightsRenderer
 		if (lightsBuffer == 64)
 		{
 			lightShader.setUniformInt("lightsToRender", lightsBuffer);
-			ObjectRenderer.drawFSQuad(lightShader.getVertexAttributeLocation("vertexIn"));
+			renderingContext.drawFSQuad(lightShader.getVertexAttributeLocation("vertexIn"));
 			//drawFSQuad();
 			lightsBuffer = 0;
 		}
@@ -73,7 +73,7 @@ public class LightsRenderer
 		if (lightsBuffer > 0)
 		{
 			lightShader.setUniformInt("lightsToRender", lightsBuffer);
-			ObjectRenderer.drawFSQuad(lightShader.getVertexAttributeLocation("vertexIn"));
+			renderingContext.drawFSQuad(lightShader.getVertexAttributeLocation("vertexIn"));
 		}
 	}
 }

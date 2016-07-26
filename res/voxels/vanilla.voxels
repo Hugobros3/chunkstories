@@ -230,19 +230,25 @@ voxel rails 66
 	model: 'rails'
 end
 
+#Doors
 voxel wood_door 70 io.xol.chunkstories.core.voxel.VoxelDoor
 	opaque: false
 	model: 'door'
-	
 end
 
 voxel wood_door_top 71 io.xol.chunkstories.core.voxel.VoxelDoor
 	opaque: false
 	model: 'door'
-	
 end
 
-voxel density 99 io.xol.chunkstories.core.voxel.VoxelMeta16
+voxel iron_door 72 io.xol.chunkstories.core.voxel.VoxelDoor
+	opaque: false
+	model: 'door'
+end
+
+voxel iron_door_top 73 io.xol.chunkstories.core.voxel.VoxelDoor
+	opaque: false
+	model: 'door'
 end
 
 voxel water 128 io.xol.chunkstories.core.voxel.VoxelLiquid

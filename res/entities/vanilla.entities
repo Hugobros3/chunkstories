@@ -5,5 +5,6 @@
 2 io.xol.chunkstories.core.entity.EntityZombie
 3 io.xol.chunkstories.core.entity.EntityAk47ModelStandingByItself
 4 io.xol.chunkstories.core.entity.EntitySUV
-5 io.xol.chunkstories.core.entity.EntityVoxelTest
-6 io.xol.chunkstories.core.entity.EntityChest
+5 io.xol.chunkstories.core.entity.voxel.EntityVoxelTest
+6 io.xol.chunkstories.core.entity.voxel.EntityChest
+7 io.xol.chunkstories.core.entity.voxel.EntitySign

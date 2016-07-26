@@ -3,6 +3,7 @@ package io.xol.chunkstories.gui;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.gui.GuiElementsHandler;
@@ -38,7 +39,7 @@ public class ConnectScene extends Scene
 	boolean authK = false;
 	
 	@Override
-	public void update()
+	public void update(RenderingContext renderingContext)
 	{
 		cancelButton.setPosition(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2 - 80);
 		cancelButton.draw();
@@ -63,7 +64,7 @@ public class ConnectScene extends Scene
 		c = 0.5f;
 		drawCenteredText(message, GameWindowOpenGL.windowHeight / 2 - 32, 32, c, c, c, 1f);
 		FontRenderer2.drawTextUsingSpecificFontRVBA(12, 12, 0, 32, "Copyright 2016 XolioWare Interactive", BitmapFont.SMALLFONTS, 1f, 0.3f, 0.3f, 0.3f);
-		super.update();
+		super.update(renderingContext);
 		if (cancelButton.clicked())
 			cancel();
 		if(Client.connection != null && Client.connection.hasFailed())

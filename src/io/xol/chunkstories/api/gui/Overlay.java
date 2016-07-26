@@ -1,6 +1,7 @@
 package io.xol.chunkstories.api.gui;
 
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.engine.graphics.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -17,7 +18,7 @@ public abstract class Overlay
 		this.parent = parent;
 	}
 
-	public abstract void drawToScreen(int positionStartX, int positionStartY, int width, int height);
+	public abstract void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height);
 
 	public boolean handleKeypress(int k)
 	{

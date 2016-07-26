@@ -13,6 +13,7 @@ import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.math.lalgb.Vector4f;
 
@@ -39,7 +40,7 @@ public class InventoryOverlay extends Overlay
 	}
 
 	@Override
-	public void drawToScreen(int x, int y, int w, int h)
+	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
 	{
 		int totalWidth = 0;
 		for (EntityInventory inv : inventories)
@@ -67,7 +68,7 @@ public class InventoryOverlay extends Overlay
 			selectedItem.getItem().getItemRenderer().renderItemInInventory(mainScene.eng.renderingContext, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
 			
 			if(selectedItemAmount > 1)
-				TrueTypeFont.arial12.drawStringWithShadow(Mouse.getX() - width / 2 + (selectedItem.getItem().getSlotsWidth() - 1.0f) * slotSize , Mouse.getY() - height / 2, selectedItemAmount+"", 2, 2, new Vector4f(1,1,1,1));
+				renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, Mouse.getX() - width / 2 + (selectedItem.getItem().getSlotsWidth() - 1.0f) * slotSize , Mouse.getY() - height / 2, selectedItemAmount+"", 2, 2, new Vector4f(1,1,1,1));
 				
 		}
 		//System.out.println(inventories[0]);

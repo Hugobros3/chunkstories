@@ -19,6 +19,7 @@ import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -29,7 +30,6 @@ import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
-import io.xol.engine.model.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

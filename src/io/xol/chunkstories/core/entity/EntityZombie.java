@@ -19,11 +19,11 @@ import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.model.ModelLibrary;
-import io.xol.engine.model.RenderingContext;
 import io.xol.engine.model.animation.BVHAnimation;
 import io.xol.engine.model.animation.BVHLibrary;
 import io.xol.engine.model.animation.Bone;
@@ -161,14 +161,14 @@ public class EntityZombie extends EntityLivingImplentation implements EntityHUD
 
 
 	@Override
-	public void drawHUD(Camera camera)
+	public void drawHUD(RenderingContext renderingContext)
 	{
-		Vector3f posOnScreen = camera.transform3DCoordinate(getLocation().castToSP().add(new Vector3f(0.0f, 2.5f, 0.0f)));
+		Vector3f posOnScreen = renderingContext.getCamera().transform3DCoordinate(getLocation().castToSP().add(new Vector3f(0.0f, 2.5f, 0.0f)));
 		
 		float scale = posOnScreen.z;
-		float dekal = TrueTypeFont.arial12.getWidth("Player")*16*scale;
+		float dekal = TrueTypeFont.arial11px.getWidth("Player")*16*scale;
 		if(scale > 0)
-			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x-dekal/2, posOnScreen.y, "", 16*scale, 16*scale, new Vector4f(1,1,1,1));
+			renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, posOnScreen.x-dekal/2, posOnScreen.y, "", 16*scale, 16*scale, new Vector4f(1,1,1,1));
 	}
 	
 	@Override

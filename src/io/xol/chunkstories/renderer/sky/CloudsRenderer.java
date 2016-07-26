@@ -5,13 +5,13 @@ import java.nio.ByteBuffer;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.world.World;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.random.SeededSimplexNoiseGenerator;
-import io.xol.engine.model.RenderingContext;
 
 import static org.lwjgl.opengl.GL11.*;
 

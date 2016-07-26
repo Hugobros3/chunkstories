@@ -3,6 +3,7 @@ package io.xol.chunkstories.gui.menus;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.ObjectRenderer;
@@ -48,7 +49,7 @@ public class LoginOverlay extends Overlay implements HttpRequester
 	private boolean failed_login;
 	
 	@Override
-	public void drawToScreen(int x, int y, int w, int h)
+	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
 	{
 		if (can_next)
 			mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));

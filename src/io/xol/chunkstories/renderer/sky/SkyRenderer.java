@@ -1,12 +1,12 @@
 package io.xol.chunkstories.renderer.sky;
 
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.model.RenderingContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.renderer.WorldRenderer;
@@ -101,7 +101,7 @@ public class SkyRenderer
 		skyShader.setUniformFloat("time", time);
 		renderingContext.getCamera().setupShader(skyShader);
 
-		ObjectRenderer.drawFSQuad(skyShader.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(skyShader.getVertexAttributeLocation("vertexIn"));
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

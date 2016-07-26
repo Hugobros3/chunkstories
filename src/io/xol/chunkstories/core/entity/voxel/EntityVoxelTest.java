@@ -1,11 +1,11 @@
-package io.xol.chunkstories.core.entity;
+package io.xol.chunkstories.core.entity.voxel;
 
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Vector3f;
-import io.xol.engine.model.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

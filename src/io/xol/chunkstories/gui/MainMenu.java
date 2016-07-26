@@ -15,14 +15,13 @@ import io.xol.chunkstories.gui.menus.LoginOverlay;
 import io.xol.chunkstories.gui.menus.MainMenuOverlay;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.Camera;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fbo.FBO;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.GBufferTexture;
 import io.xol.engine.graphics.textures.TextureType;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.graphics.util.GuiDrawer;
-import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 
 public class MainMenu extends OverlayableScene
@@ -127,7 +126,7 @@ public class MainMenu extends OverlayableScene
 	}
 
 	@Override
-	public void update()
+	public void update(RenderingContext renderingContext)
 	{
 		try // Ugly fps caps yay
 		{
@@ -141,75 +140,58 @@ public class MainMenu extends OverlayableScene
 		// Render this shit boy
 		unblurredFBO.bind();
 		cam.justSetup(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(menuSkyBox);
+		renderingContext.setCurrentShader(menuSkyBox);
 		//menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);
 		menuSkyBox.setUniformSamplerCubemap(0, "skyBox", TexturesHandler.getCubemapID(skyBox));
 		cam.rotationX = 35 + (float) (Math.sin(cam.rotationY / 15)) * 5f;
 		cam.rotationY = (System.currentTimeMillis()%1000000)/200.0f;
-		ObjectRenderer.drawFSQuad(menuSkyBox.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(menuSkyBox.getVertexAttributeLocation("vertexIn"));
 		
 		// Blurring to H
 		blurredHFBO.bind();
-		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blurH);
+		renderingContext.setCurrentShader(blurH);
 		//blurH.use(true);
 		blurH.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		blurH.setUniformSampler(0, "inputTexture", unblurred.getId());
-		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 
 		for (int i = 0; i < 1; i++)
 		{
 			blurredVFBO.bind();
-			GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blurV);
+			renderingContext.setCurrentShader(blurV);
 			//blurV.use(true);
 			blurV.setUniformFloat("lookupScale", 1);
 			blurV.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
 			blurV.setUniformSampler(0, "inputTexture", blurredH.getId());
-			ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
+			renderingContext.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 
 			blurredHFBO.bind();
-			GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blurH);
+			renderingContext.setCurrentShader(blurH);
 			//blurH.use(true);
 			blurH.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
 			blurH.setUniformSampler(0, "inputTexture", blurredV.getId());
-			ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
+			renderingContext.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 		}
 
 		blurredVFBO.bind();
-		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blurV);
+		renderingContext.setCurrentShader(blurV);
 		//blurV.use(true);
 		blurV.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		blurV.setUniformSampler(0, "inputTexture", blurredH.getId());
-		ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 		//blurV.use(false);
 
 		FBO.unbind();
-		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(blit);
+		renderingContext.setCurrentShader(blit);
 		//blit.use(true);
 		blit.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		blit.setUniformSampler(0, "diffuseTexture", blurredV.getId());
-		ObjectRenderer.drawFSQuad(blit.getVertexAttributeLocation("vertexIn"));
-		//blit.use(false);
-
-		//XolioWindow.setup2d();
-		// ObjectRenderer.renderTexturedRectAlpha(256,XolioWindow.frameH/2,
-		// 512,XolioWindow.frameH,"gui/menufade", 1f);
-		// Place buttons
-
-		currentOverlay.drawToScreen(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-
-		// float time2 = ((System.currentTimeMillis()%5000)/100f);
-		// CorneredBoxDrawer.drawCorneredBoxTiled(550, 250,
-		// 232-(int)(Math.sin(time2*0.5+4)*33),
-		// 188+(int)(Math.sin(time2*0.5)*30), 8, "gui/debug", 32, 2);
-
-		// System.out.println("now");
-		// GuiDrawer.debugDraw();
-		// GuiDrawer.drawBox(-1, -1, 1, 1, 0, 1, 1, 0,
-		// TexturesHandler.idTexture("res/textures/logo.png"), false, new
-		// Vector4f(1f, 1f, 1f, 1f));
-		GuiDrawer.drawBuffer();
-		// System.out.println("notnow");
+		renderingContext.drawFSQuad(blit.getVertexAttributeLocation("vertexIn"));
+		
+		currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		
+		//renderingContext.getGuiRenderer().drawBuffer();
 	}
 
 	@Override

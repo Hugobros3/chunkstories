@@ -30,6 +30,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fbo.FBO;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -37,13 +38,11 @@ import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.GBufferTexture;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.graphics.util.PBOPacker;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.Math2;
 import io.xol.engine.math.MatrixHelper;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.model.RenderingContext;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameDirectory;
@@ -1203,7 +1202,7 @@ public class WorldRenderer
 		camera.setupShader(applyShadowsShader);
 		sky.setupShader(applyShadowsShader);
 
-		ObjectRenderer.drawFSQuad(applyShadowsShader.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(applyShadowsShader.getVertexAttributeLocation("vertexIn"));
 		//drawFSQuad();
 
 		if (FastConfig.debugGBuffers)
@@ -1261,7 +1260,7 @@ public class WorldRenderer
 
 		postProcess.setUniformFloat("apertureModifier", apertureModifier);
 
-		ObjectRenderer.drawFSQuad(postProcess.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(postProcess.getVertexAttributeLocation("vertexIn"));
 		//drawFSQuad();
 
 		if (FastConfig.debugGBuffers)
@@ -1368,7 +1367,7 @@ public class WorldRenderer
 		{
 			e = ei.next();
 			if (e instanceof EntityHUD)
-				((EntityHUD) e).drawHUD(camera);
+				((EntityHUD) e).drawHUD(renderingContext);
 		}
 	}
 
@@ -1412,7 +1411,7 @@ public class WorldRenderer
 			ssaoShader.setUniformFloat3("ssaoKernel[" + i + "]", ssao_kernel[i].x, ssao_kernel[i].y, ssao_kernel[i].z);
 		}
 
-		ObjectRenderer.drawFSQuad(ssaoShader.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(ssaoShader.getVertexAttributeLocation("vertexIn"));
 
 		// Blur the thing
 
@@ -1423,7 +1422,7 @@ public class WorldRenderer
 		blurV.setUniformFloat2("screenSize", scrW, scrH );
 		blurV.setUniformFloat("lookupScale", 2);
 		blurV.setUniformSampler(0, "inputTexture", this.ssaoBuffer);
-		ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 		//drawFSQuad();
 
 		// Horizontal pass
@@ -1432,7 +1431,7 @@ public class WorldRenderer
 		//blurH.use(true);
 		blurH.setUniformFloat2("screenSize", scrW , scrH);
 		blurH.setUniformSampler(0, "inputTexture", blurIntermediateBuffer);
-		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 		//drawFSQuad();
 
 	}
@@ -1455,7 +1454,7 @@ public class WorldRenderer
 		this.fboBloom.bind();
 		this.fboBloom.setEnabledRenderTargets();
 		glViewport(0, 0, scrW / 2, scrH / 2);
-		ObjectRenderer.drawFSQuad(bloomShader.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(bloomShader.getVertexAttributeLocation("vertexIn"));
 
 		// Blur bloom
 
@@ -1467,7 +1466,7 @@ public class WorldRenderer
 		blurV.setUniformFloat("lookupScale", 1);
 		blurV.setUniformSampler(0, "inputTexture", this.bloomBuffer);
 		//drawFSQuad();
-		ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 
 		// Horizontal pass
 		this.fboBloom.bind();
@@ -1476,7 +1475,7 @@ public class WorldRenderer
 		blurH.setUniformFloat2("screenSize", scrW / 2f, scrH / 2f);
 		blurH.setUniformSampler(0, "inputTexture", blurIntermediateBuffer);
 		//drawFSQuad();
-		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 		
 		fboBlur.bind();
 		renderingContext.setCurrentShader(blurV);
@@ -1485,7 +1484,7 @@ public class WorldRenderer
 		blurV.setUniformFloat("lookupScale", 1);
 		blurV.setUniformSampler(0, "inputTexture", this.bloomBuffer);
 		//drawFSQuad();
-		ObjectRenderer.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
 
 		// Horizontal pass
 		this.fboBloom.bind();
@@ -1494,7 +1493,7 @@ public class WorldRenderer
 		blurH.setUniformFloat2("screenSize", scrW / 4f, scrH / 4f);
 		blurH.setUniformSampler(0, "inputTexture", blurIntermediateBuffer);
 		//drawFSQuad();
-		ObjectRenderer.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
 
 		// Done blooming
 		glViewport(0, 0, scrW, scrH);
@@ -1623,7 +1622,7 @@ public class WorldRenderer
 				renderingContext.getCurrentShader().setUniformFloat2("screenSize", resolution, resolution);
 				
 				renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoord"));
-				ObjectRenderer.drawFSQuad(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
+				renderingContext.drawFSQuad(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
 				//glFinish();
 			}
 			else

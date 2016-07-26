@@ -15,8 +15,8 @@ import io.xol.chunkstories.item.inventory.CSFSerializable;
 import io.xol.chunkstories.physics.Collidable;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.model.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

@@ -20,35 +20,6 @@ import io.xol.engine.math.lalgb.Vector4f;
 
 public class ObjectRenderer
 {
-	static FloatBuffer buffer = null;
-	
-	public static void drawFSQuad(int vertexAttribLocation)
-	{
-		if(vertexAttribLocation < 0)
-			return;
-		buffer = null;
-		if(buffer == null)
-		{
-			buffer = BufferUtils.createFloatBuffer(6 * 2);
-			buffer.put(new float[] {
-				1f, 1f,
-				-1f, -1f,
-				1f, -1f,
-				1f, 1f,
-				-1f, 1f,
-				-1f, -1f
-			});
-		}
-		buffer.flip();
-		GameWindowOpenGL.getInstance().renderingContext.enableVertexAttribute(vertexAttribLocation);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glVertexAttribPointer(vertexAttribLocation, 2, false, 0, buffer);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-		
-        GameWindowOpenGL.getInstance().renderingContext.disableVertexAttribute(vertexAttribLocation);
-        //buffer = null;
-	}
-	
 	public static void renderTexturedRect(float xpos, float ypos, float w, float h, String tex)
 	{
 		renderTexturedRotatedRect(xpos, ypos, w, h, 0f, 0f, 0f, 1f, 1f, tex);
@@ -91,7 +62,7 @@ public class ObjectRenderer
 		texture.setLinearFiltering(false);
 		//TexturesHandler.mipmapLevel(texture, -1);
 
-		GuiDrawer.drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, texture.getId(), false, true, new Vector4f(r, v, b, a));
+		GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, texture.getId(), false, true, new Vector4f(r, v, b, a));
 	}
 
 	public static void renderColoredRect(float xpos, float ypos, float w, float h, float rot, String hex, float a)
@@ -102,7 +73,6 @@ public class ObjectRenderer
 
 	public static void renderColoredRect(float xpos, float ypos, float w, float h, float rot, float r, float v, float b, float a)
 	{
-		GuiDrawer.drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, 0, 0, 0, 0, 0, false, true, new Vector4f(r, v, b, a));
-
+		GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, 0, 0, 0, 0, 0, false, true, new Vector4f(r, v, b, a));
 	}
 }

@@ -13,17 +13,15 @@ import io.xol.engine.math.lalgb.Vector3d;
 //http://chunkstories.xyz
 //http://xol.io
 
-public abstract class Voxel
+public interface Voxel
 {
-	protected int voxelID = 0;
-	protected String voxelName;
 
 	/**
 	 * Determines if this Voxel uses a custom VoxelModel
 	 * 
 	 * @return Whether it does
 	 */
-	public abstract boolean isVoxelUsingCustomModel();
+	public boolean isVoxelUsingCustomModel();
 
 	/**
 	 * Gets the special voxel model this voxel uses, used for engine's ChunkRenderer
@@ -32,17 +30,17 @@ public abstract class Voxel
 	 *            A BlockRenderInfo object containing information on the voxel surroundings
 	 * @return The model used or null if none
 	 */
-	public abstract VoxelRenderer getVoxelModel(BlockRenderInfo info);
+	public VoxelRenderer getVoxelModel(BlockRenderInfo info);
 
-	public abstract boolean isVoxelLiquid();
+	public boolean isVoxelLiquid();
 
-	public abstract boolean isVoxelSolid();
+	public boolean isVoxelSolid();
 
-	public abstract boolean isVoxelSelectable();
+	public boolean isVoxelSelectable();
 
-	public abstract boolean isVoxelOpaque();
+	public boolean isVoxelOpaque();
 
-	public abstract boolean isVoxelOpaqueWithItself();
+	public boolean isVoxelOpaqueWithItself();
 
 	/**
 	 * Gets the Blocklight level this voxel emmits
@@ -51,7 +49,7 @@ public abstract class Voxel
 	 *            The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
 	 * @return The aformentioned light level
 	 */
-	public abstract short getLightLevel(int data);
+	public short getLightLevel(int data);
 
 	/**
 	 * Gets the texture for this voxel
@@ -63,7 +61,7 @@ public abstract class Voxel
 	 * @param info
 	 * @return
 	 */
-	public abstract VoxelTexture getVoxelTexture(int data, VoxelSides side, BlockRenderInfo info);
+	public VoxelTexture getVoxelTexture(int data, VoxelSides side, BlockRenderInfo info);
 
 	/**
 	 * Gets the reduction of the light that will transfer from this block to another, based on data from the two blocks and the side from wich it's leaving the first block from.
@@ -76,9 +74,9 @@ public abstract class Voxel
 	 *            The side of the block light would come out of ( see {@link VoxelSides VoxelSides.class} )
 	 * @return The reduction to apply to the light level on exit
 	 */
-	public abstract int getLightLevelModifier(int dataFrom, int dataTo, VoxelSides side);
+	public int getLightLevelModifier(int dataFrom, int dataTo, VoxelSides side);
 
-	public void debugRenderCollision(World world, int x, int y, int z)
+	public default void debugRenderCollision(World world, int x, int y, int z)
 	{
 		CollisionBox[] tboxes = getTranslatedCollisionBoxes(world, x, y, z);
 		if (tboxes != null)
@@ -98,7 +96,7 @@ public abstract class Voxel
 	 *            The data of the block connected to the one being drew by the face j
 	 * @return Whether or not that face occlude a whole face and thus we can discard it
 	 */
-	public abstract boolean isFaceOpaque(VoxelSides side, int data);
+	public boolean isFaceOpaque(VoxelSides side, int data);
 
 	/**
 	 * Get the collision boxes for this object, centered as if the block was in x,y,z
@@ -107,7 +105,7 @@ public abstract class Voxel
 	 *            The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
 	 * @return An array of CollisionBox or null.
 	 */
-	public CollisionBox[] getTranslatedCollisionBoxes(World world, int x, int y, int z)
+	public default CollisionBox[] getTranslatedCollisionBoxes(World world, int x, int y, int z)
 	{
 		CollisionBox[] boxes = getCollisionBoxes(new BlockRenderInfo(world, x, y, z));
 		if (boxes != null)
@@ -119,7 +117,7 @@ public abstract class Voxel
 	/**
 	 * Overload of getTranslatedCollisionBoxes with a vector3d
 	 */
-	public CollisionBox[] getTranslatedCollisionBoxes(WorldImplementation world, Vector3d position)
+	public default CollisionBox[] getTranslatedCollisionBoxes(WorldImplementation world, Vector3d position)
 	{
 		return getTranslatedCollisionBoxes(world, (int)position.x, (int)position.y, (int)position.z);
 	}
@@ -131,39 +129,30 @@ public abstract class Voxel
 	 *            full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
 	 * @return An array of CollisionBox or null.
 	 */
-	public abstract CollisionBox[] getCollisionBoxes(BlockRenderInfo info);
+	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info);
 
 	/**
 	 * Get the assignated ID for this voxel
 	 * 
 	 * @return etc
 	 */
-	public int getId()
-	{
-		return voxelID;
-	}
+	public int getId();
 
 	/**
 	 * Returns the internal, non localized name of this voxel
 	 * 
 	 * @return
 	 */
-	public String getName()
-	{
-		return voxelName;
-	}
+	public String getName();
 
-	public boolean sameKind(Voxel facing)
-	{
-		return this.voxelID == facing.voxelID;
-	}
+	public boolean sameKind(Voxel voxel);
 
 	/**
 	 * Defines if this voxel reacts to wind and waves about
 	 * 
 	 * @return
 	 */
-	public abstract boolean isAffectedByWind();
+	public boolean isAffectedByWind();
 
-	public abstract ItemPile[] getItems();
+	public ItemPile[] getItems();
 }

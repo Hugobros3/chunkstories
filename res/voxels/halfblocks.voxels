@@ -1,10 +1,10 @@
 voxel fullSlab 43
-	textures: 'stoneSlab', 'stoneSlab', 'stoneSlabSide', 'stoneSlabSide', 'stoneSlabSide', 'stoneSlabSide'
+	textures: 'stoneSlabSide', 'stoneSlabSide', 'stoneSlabSide', 'stoneSlabSide', 'stoneSlab', 'stoneSlab'
 end
 
 voxel stoneSlab 44 io.xol.chunkstories.core.voxel.VoxelHalfTile
 	opaque: false
-	textures: '~', '~', '~Side', '~Side', '~Side', '~Side'
+	textures: '~Side', '~Side', '~Side', '~Side', '~', '~'
 	model: 'halftile.bottom'
 end
 

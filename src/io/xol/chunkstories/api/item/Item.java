@@ -105,7 +105,7 @@ public abstract class Item
 	 */
 	public int getSlotsWidth()
 	{
-		return type.getSlotsHeight();
+		return type.getSlotsWidth();
 	}
 
 	/**

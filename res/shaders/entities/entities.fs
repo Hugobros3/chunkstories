@@ -4,6 +4,18 @@
 //General data
 varying vec2 texcoord; // Coordinate
 varying vec3 eye; // eye-position
+varying float chunkFade;
+varying vec3 varyingNormal;
+varying vec4 varyingVertex;
+varying vec4 colorPassed;
+varying float fresnelTerm;
+varying float rainWetness;
+varying vec4 vertexColor; // Vertex color : red is for blocklight, green is sunlight
+varying vec3 lightMapCoords; //Computed in vertex shader
+varying vec4 modelview;
+
+uniform float useColorIn;
+uniform float useNormalIn;
 
 //Diffuse colors
 uniform sampler2D diffuseTexture; // Blocks diffuse texture atlas
@@ -13,34 +25,22 @@ uniform sampler2D normalTexture; // Blocks normal texture atlas
 
 //Chunk fading into view
 uniform float chunkTransparency;
-varying float chunkFade;
 
 //Debug
 uniform vec3 blindFactor; // can white-out all the colors
-varying vec4 modelview;
 
 //Block and sun Lightning
-varying vec4 vertexColor; // Vertex color : red is for blocklight, green is sunlight
-varying vec3 lightMapCoords; //Computed in vertex shader
 uniform float sunIntensity; // Adjusts the lightmap coordinates
 uniform sampler2D lightColors; // Sampler to lightmap
 uniform vec3 sunPos; // Sun position
 
 //Normal mapping
-varying vec3 varyingNormal;
-varying vec4 varyingVertex;
 
 //Shadow shit
 uniform float shadowVisiblity; // Used for night transitions, hides shadows
-uniform sampler2D shadowMap;
-uniform sampler2D shadowMap2;
-varying vec4 coordinatesInShadowmap;
-varying vec4 coordinatesInShadowmap2;
 
 //Weather
 uniform float wetness;
-varying float fresnelTerm;
-varying float rainWetness;
 
 //Matrices
 
@@ -93,19 +93,22 @@ void main(){
 	
 	vec3 normal = varyingNormal;
 	
-	//texcoord /= 32768.0;
-	
+	if(useNormalIn < 1.0)
+		normal = vec3(0.0, 1.0, 0.0);
+		
 	normal = perturb_normal(normal, eye, texcoord);
 	normal = normalize(normalMatrix * normal);
-	
+		
 	//Basic texture color
 	vec3 baseColor = texture2D(diffuseTexture, texcoord).rgb;
+	if(useColorIn > 0.0)
+		baseColor = colorPassed.rgb;
 	
 	//Texture transparency
 	float alpha = texture2D(diffuseTexture, texcoord).a;
 	
-	//alpha = 1;
-	//baseColor = vec3(1, 0.5, 0.5);
+	//if(useColorIn > 0.0)
+	//	alpha *= colorPassed.a;
 	
 	if(alpha < 0.5)
 		discard;
@@ -143,15 +146,4 @@ void main(){
 	//Metadata color G-buffer
 	
 	gl_FragData[2] = vec4(lightMapCoords, 1.0f);
-	
-	//gl_FragData[2] = vec4(finalLight, 1.0);
-	
-	//gl_FragData[2] = coordinatesInShadowmap;
-	//Specular G-Buffer
-	//gl_FragData[3] = vec4(spec, lightMapCoords.xy, 1.0);
-	
-	//gl_FragData[0] = vec4(0.8, 0.2, 0.5, 1.0);
-	
-	//Modelview buffer (discard)
-	//gl_FragData[4] = vec4(modelview.rgb,modelview.a);
 }

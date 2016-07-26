@@ -1,4 +1,4 @@
-package io.xol.chunkstories.core.entity;
+package io.xol.chunkstories.core.entity.voxel;
 
 import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.EntityVoxel;
@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentPublicInventory;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.model.RenderingContext;
+import io.xol.engine.graphics.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

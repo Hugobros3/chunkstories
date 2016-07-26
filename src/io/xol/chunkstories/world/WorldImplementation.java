@@ -209,24 +209,10 @@ public abstract class WorldImplementation implements World
 	@Override
 	public boolean removeEntity(Entity entity)
 	{
-		/*Entity entityFound = null;
-		Iterator<Entity> iter = this.getAllLoadedEntities();
-		while (iter.hasNext())
-		{
-			Entity next = iter.next();
-			if (next.equals(entity))
-			{
-				entityFound = next;
-				break;
-				//iter.remove();
-			}
-		}*/
-
 		if (entity != null)
 			return entity.removeFromWorld();
 
 		return false;
-		//return this.entities.remove(entity);
 	}
 
 	@Override
@@ -249,7 +235,6 @@ public abstract class WorldImplementation implements World
 			return entityFound.removeFromWorld();
 
 		return false;
-		//return this.entities.remove(entity);
 	}
 
 	/**
@@ -699,6 +684,8 @@ public abstract class WorldImplementation implements World
 			if (c instanceof ChunkRenderable)
 			{
 				ChunkRenderable c2 = (ChunkRenderable) c;
+				
+				c2.markRenderInProgress(false);
 				c2.destroyRenderData();
 			}
 		}

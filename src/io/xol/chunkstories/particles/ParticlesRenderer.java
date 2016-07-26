@@ -6,10 +6,10 @@ import io.xol.chunkstories.api.particles.ParticleTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.world.World;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.model.RenderingContext;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL14.*;

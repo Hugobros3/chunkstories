@@ -19,6 +19,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.ConnectScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.base.InputAbstractor;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.ObjectRenderer;
@@ -66,7 +67,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 	}
 
 	@Override
-	public void drawToScreen(int x, int y, int w, int h)
+	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
 	{
 		if (autologin && !ipForm.text.equals(""))
 			login();

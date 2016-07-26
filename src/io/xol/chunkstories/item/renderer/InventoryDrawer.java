@@ -6,11 +6,11 @@ import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.graphics.util.GuiDrawer;
-import io.xol.engine.model.RenderingContext;
+import io.xol.engine.graphics.util.TrueTypeFontRenderer;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -76,14 +76,14 @@ public class InventoryDrawer
 		
 		Vector4f color = new Vector4f(1f, 1f, 1f, summary ? 0.5f : 1f);
 		//All 8 corners
-		GuiDrawer.drawBoxWindowsSpaceWithSize(x, y + internalHeight + cornerSize, cornerSize, cornerSize, 0, 0.03125f, 0.03125f, 0, textureId, true, true, color);
-		GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize, y + internalHeight + cornerSize, internalWidth, cornerSize, 0.03125f, 0.03125f, 0.96875f, 0, textureId, true, true, color);
-		GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y + internalHeight + cornerSize, cornerSize, cornerSize, 0.96875f, 0.03125f, 1f, 0, textureId, true, true, color);
-		GuiDrawer.drawBoxWindowsSpaceWithSize(x, y, cornerSize, cornerSize, 0, 1f, 0.03125f, 248/256f, textureId, true, true, color);
-		GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize, y, internalWidth, cornerSize, 0.03125f, 1f, 0.96875f, 248/256f, textureId, true, true, color);
-		GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y, cornerSize, cornerSize, 0.96875f, 1f, 1f, 248/256f, textureId, true, true, color);
-		GuiDrawer.drawBoxWindowsSpaceWithSize(x, y+cornerSize, cornerSize, internalHeight, 0, 248f/256f, 0.03125f, 8f/256f, textureId, true, true, color);
-		GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y+cornerSize, cornerSize, internalHeight, 248/256f, 248f/256f, 1f, 8f/256f, textureId, true, true, color);
+		context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x, y + internalHeight + cornerSize, cornerSize, cornerSize, 0, 0.03125f, 0.03125f, 0, textureId, true, true, color);
+		context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize, y + internalHeight + cornerSize, internalWidth, cornerSize, 0.03125f, 0.03125f, 0.96875f, 0, textureId, true, true, color);
+		context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y + internalHeight + cornerSize, cornerSize, cornerSize, 0.96875f, 0.03125f, 1f, 0, textureId, true, true, color);
+		context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x, y, cornerSize, cornerSize, 0, 1f, 0.03125f, 248/256f, textureId, true, true, color);
+		context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize, y, internalWidth, cornerSize, 0.03125f, 1f, 0.96875f, 248/256f, textureId, true, true, color);
+		context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y, cornerSize, cornerSize, 0.96875f, 1f, 1f, 248/256f, textureId, true, true, color);
+		context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x, y+cornerSize, cornerSize, internalHeight, 0, 248f/256f, 0.03125f, 8f/256f, textureId, true, true, color);
+		context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y+cornerSize, cornerSize, internalHeight, 248/256f, 248f/256f, 1f, 8f/256f, textureId, true, true, color);
 		//Actual inventory slots
 		int sumSlots2HL = 0;
 		boolean foundTheVegan = false;
@@ -115,20 +115,20 @@ public class InventoryDrawer
 					if(sumSlots2HL > 0 || (summaryBarSelected == null && highlightSlot == i))
 					{
 						sumSlots2HL--;
-						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 32f / 256f, 176 / 256f, 56 / 256f, 152 / 256f, textureId, true, true, color);
+						context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 32f / 256f, 176 / 256f, 56 / 256f, 152 / 256f, textureId, true, true, color);
 					}
 					else
-						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 176 / 256f, 32f / 256f, 152 / 256f, textureId, true, true, color);
+						context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 176 / 256f, 32f / 256f, 152 / 256f, textureId, true, true, color);
 					
 				}
 				else
 				{
 					if(mouseOver || (selectedPile != null && thisPile != null && selectedPile.x == thisPile.x && selectedPile.y == thisPile.y))
 					{
-						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 32f / 256f, 176 / 256f, 56 / 256f, 152 / 256f, textureId, true, true, color);
+						context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 32f / 256f, 176 / 256f, 56 / 256f, 152 / 256f, textureId, true, true, color);
 					}
 					else
-						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 176 / 256f, 32f / 256f, 152 / 256f, textureId, true, true, color);
+						context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 176 / 256f, 32f / 256f, 152 / 256f, textureId, true, true, color);
 				
 				}
 			}
@@ -143,37 +143,37 @@ public class InventoryDrawer
 				if(j == getInventory().getHeight())
 				{
 					if(i == getInventory().getWidth()-1)
-						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 224f / 256f, 152 / 256f, 248 / 256f, 128 / 256f, textureId, true, true, color);
+						context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 224f / 256f, 152 / 256f, 248 / 256f, 128 / 256f, textureId, true, true, color);
 					else
-						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 152 / 256f, 32f / 256f, 128 / 256f, textureId, true, true, color);
+						context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 152 / 256f, 32f / 256f, 128 / 256f, textureId, true, true, color);
 				}
 				else
 				{
 					if(i == getInventory().getWidth()-1)
-						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 224f / 256f, 56 / 256f, 248 / 256f, 32 / 256f, textureId, true, true, color);
+						context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 224f / 256f, 56 / 256f, 248 / 256f, 32 / 256f, textureId, true, true, color);
 					else
-						GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 56 / 256f, 32f / 256f, 32 / 256f, textureId, true, true, color);
+						context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 56 / 256f, 32f / 256f, 32 / 256f, textureId, true, true, color);
 				}
 			}
 		}
 		//Top part
 		if(!summary)
 		{
-			GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 8f / 256f, 32f / 256f, 32f / 256f, 8f / 256f, textureId, true, true, color);
+			context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 8f / 256f, 32f / 256f, 32f / 256f, 8f / 256f, textureId, true, true, color);
 			for (int i = 1; i < getInventory().getWidth() - 2; i++)
 			{
-				GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 32f / 256f, 32f / 256f, 56f / 256f, 8f / 256f, textureId, true, true, color);
+				context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 32f / 256f, 32f / 256f, 56f / 256f, 8f / 256f, textureId, true, true, color);
 			}
-			GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().getWidth() - 2) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 200f / 256f, 32f / 256f, 224 / 256f, 8f / 256f, textureId, true, true, color);
+			context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().getWidth() - 2) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 200f / 256f, 32f / 256f, 224 / 256f, 8f / 256f, textureId, true, true, color);
 			closedButton = Mouse.getX() > x + cornerSize + (getInventory().getWidth() - 1) * slotSize && Mouse.getX() <= x + cornerSize + (getInventory().getWidth() - 1) * slotSize + slotSize
 					&& Mouse.getY() > y + cornerSize + internalHeight - slotSize && Mouse.getY() <= y + cornerSize + internalHeight;
 			
-			GuiDrawer.drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().getWidth() - 1) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 224f / 256f, 32f / 256f, 248f / 256f, 8f / 256f, textureId, true, true, color);
-			TrueTypeFont.haettenschweiler.drawStringWithShadow(x + cornerSize, y + cornerSize + internalHeight - slotSize + 2 * scale, getInventory().getHolderName(), scale, scale, new Vector4f(1,1,1,1));
+			context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().getWidth() - 1) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 224f / 256f, 32f / 256f, 248f / 256f, 8f / 256f, textureId, true, true, color);
+			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.haettenschweiler, x + cornerSize + 6 , y + cornerSize + internalHeight - slotSize + 2 * scale, getInventory().getHolderName(), scale, scale, new Vector4f(1,1,1,1));
 		}
 
 		//Get rid of any remaining GUI elements or else they will draw on top of the items
-		GuiDrawer.drawBuffer();
+		context.getGuiRenderer().drawBuffer();
 		
 		//Draw the actual items
 		for (int i = 0; i < getInventory().getWidth(); i++)
@@ -202,7 +202,7 @@ public class InventoryDrawer
 					//System.out.println(""+(x + cornerSize + ((pile.getItem().getSlotsWidth() - 0.5f) + i) * slotSize));
 
 					if(amountToDisplay > 1)
-						TrueTypeFont.arial12.drawStringWithShadow(x + cornerSize + ((pile.getItem().getSlotsWidth() - 1.0f) + i) * slotSize , y + cornerSize + j * slotSize, amountToDisplay+"", scale, scale, new Vector4f(1,1,1,1));
+						TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, x + cornerSize + ((pile.getItem().getSlotsWidth() - 1.0f) + i) * slotSize , y + cornerSize + j * slotSize, amountToDisplay+"", scale, scale, new Vector4f(1,1,1,1));
 				}
 			}
 		}

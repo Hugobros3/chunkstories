@@ -10,11 +10,11 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.engine.misc.IconLoader;
 import io.xol.engine.misc.NativesLoader;
 import io.xol.engine.sound.ALSoundManager;
+
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.ClientSideController;
@@ -126,7 +126,6 @@ public class Client implements ClientSideController, ClientInterface
 	public static void onStart()
 	{
 		IconLoader.load();
-		GuiDrawer.initGL();
 	}
 
 	@Override
@@ -137,7 +136,6 @@ public class Client implements ClientSideController, ClientInterface
 
 	public static void onClose()
 	{
-		GuiDrawer.free();
 		soundManager.destroy();
 		clientConfig.save();
 	}

@@ -9,10 +9,10 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.model.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

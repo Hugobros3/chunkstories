@@ -14,8 +14,11 @@ import io.xol.chunkstories.voxel.models.VoxelRenderer;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class VoxelDefault extends Voxel
+public class VoxelDefault implements Voxel
 {
+	protected int voxelID = 0;
+	protected String voxelName;
+	
 	VoxelTexture[] texture = new VoxelTexture[6];
 
 	boolean liquid = false;
@@ -100,6 +103,12 @@ public class VoxelDefault extends Voxel
 	public boolean isVoxelOpaqueWithItself()
 	{
 		return self_opaque;
+	}
+	
+	@Override
+	public boolean isAffectedByWind()
+	{
+		return affectedByWind;
 	}
 
 	/**
@@ -198,10 +207,25 @@ public class VoxelDefault extends Voxel
 		return new CollisionBox[] { new CollisionBox(box) };
 	}
 
-	@Override
-	public boolean isAffectedByWind()
+	/**
+	 * Get the assignated ID for this voxel
+	 */
+	public int getId()
 	{
-		return affectedByWind;
+		return voxelID;
+	}
+
+	/**
+	 * Returns the internal, non localized name of this voxel
+	 */
+	public String getName()
+	{
+		return voxelName;
+	}
+
+	public boolean sameKind(Voxel facing)
+	{
+		return this.voxelID == facing.getId();
 	}
 
 	@Override

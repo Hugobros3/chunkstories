@@ -1,5 +1,6 @@
 package io.xol.chunkstories.core.item.renderers;
 
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
 
@@ -8,7 +9,6 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 import io.xol.engine.model.ModelLibrary;
-import io.xol.engine.model.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

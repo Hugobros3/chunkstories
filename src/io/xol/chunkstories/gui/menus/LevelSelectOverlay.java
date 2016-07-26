@@ -16,6 +16,7 @@ import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.gui.GuiElementsHandler;
@@ -61,7 +62,7 @@ public class LevelSelectOverlay extends Overlay
 	int scroll = 0;
 
 	@Override
-	public void drawToScreen(int x, int y, int w, int h)
+	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
 	{
 		if (scroll < 0)
 			scroll = 0;

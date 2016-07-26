@@ -8,6 +8,7 @@ import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.gui.GuiElementsHandler;
@@ -38,10 +39,10 @@ public class LevelCreateOverlay extends Overlay
 	}
 
 	@Override
-	public void drawToScreen(int positionStartX, int positionStartY, int width, int height)
+	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
 	{
 		if(parent != null)
-			this.parent.drawToScreen(positionStartX, positionStartY, width, height);
+			this.parent.drawToScreen(renderingContext, positionStartX, positionStartY, width, height);
 		
 		int x = 48;
 		// int y = 48;

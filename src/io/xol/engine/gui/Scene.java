@@ -1,7 +1,7 @@
 package io.xol.engine.gui;
 
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.util.GuiDrawer;
+import io.xol.engine.graphics.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -17,14 +17,15 @@ public class Scene
 		eng = XolioWindow;
 	}
 
-	public void update()
+	public void update(RenderingContext renderingContext)
 	{
 		if (resized)
 		{
 			resized = false;
 		}
 
-		GuiDrawer.drawBuffer();
+		//Draw any remaining buffers
+		renderingContext.getGuiRenderer().drawBuffer();
 		GameWindowOpenGL.tick();
 	}
 

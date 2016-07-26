@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.VoxelEntity;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.core.entity.EntityVoxelTest;
+import io.xol.chunkstories.core.entity.voxel.EntityVoxelTest;
 import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2016 XolioWare Interactive

@@ -2,32 +2,36 @@
 //Entry attributes
 attribute vec4 vertexIn;
 attribute vec2 texCoordIn;
+attribute vec4 colorIn;
 attribute vec4 normalIn;
 
 varying vec2 texcoord;
 varying vec3 lightMapCoords;
 varying float fresnelTerm;
+varying float chunkFade;
+varying float rainWetness;
+varying float fogI;
+varying vec4 modelview;
+varying vec3 eye;
+
+varying vec3 varyingNormal;
+varying vec4 varyingVertex;
+varying vec4 colorPassed;
+
+uniform float useColorIn;
+uniform float useNormalIn;
 
 //Lighthing
 uniform float sunIntensity;
 uniform vec3 sunPos; // Sun position
-varying vec3 varyingNormal;
-varying vec4 varyingVertex;
-
-varying float fogI;
 
 uniform float time;
-varying vec3 eye;
 uniform vec3 camPos;
 //TODO get rid of this legacy bs
 uniform vec3 objectPosition;
 
 uniform float vegetation;
-varying float chunkFade;
 uniform float viewDistance;
-
-varying vec4 modelview;
-
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
 
@@ -49,7 +53,6 @@ uniform mat4 offsetTransform;
 
 //Weather
 uniform float wetness;
-varying float rainWetness;
 
 void main(){
 	//Usual variable passing
@@ -63,6 +66,8 @@ void main(){
 	
 	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(varyingNormal)), 0.0, 1.0);
 	
+	colorPassed = colorIn;
+	
 	//texcoord /= 32768.0;
 	
 	//Compute lightmap coords
@@ -74,7 +79,6 @@ void main(){
 	modelview = modelViewMatrix * v;
 	
 	gl_Position = projectionMatrix * modelview;
-	
 	
 	//Eye transform
 	eye = v.xyz-camPos;

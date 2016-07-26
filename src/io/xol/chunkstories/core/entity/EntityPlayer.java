@@ -41,12 +41,12 @@ import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.ModelLibrary;
-import io.xol.engine.model.RenderingContext;
 import io.xol.engine.model.animation.BVHAnimation;
 import io.xol.engine.model.animation.BVHLibrary;
 
@@ -414,19 +414,19 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	}
 
 	@Override
-	public void drawHUD(Camera camera)
+	public void drawHUD(RenderingContext renderingContext)
 	{
 		if (this.equals(Client.controlledEntity))
 			return; // Don't render yourself
 		Vector3d pos = getLocation();
-		Vector3f posOnScreen = camera.transform3DCoordinate(new Vector3f((float) pos.x, (float) pos.y + 2.0f, (float) pos.z));
+		Vector3f posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3f((float) pos.x, (float) pos.y + 2.0f, (float) pos.z));
 
 		float scale = posOnScreen.z;
 		String txt = name.getName();// + rotH;
-		float dekal = TrueTypeFont.arial12.getWidth(txt) * 16 * scale;
+		float dekal = TrueTypeFont.arial11px.getWidth(txt) * 16 * scale;
 		//System.out.println("dekal"+dekal);
 		if (scale > 0)
-			TrueTypeFont.arial12.drawStringWithShadow(posOnScreen.x - dekal / 2, posOnScreen.y, txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
+			renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, posOnScreen.x - dekal / 2, posOnScreen.y, txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
 	}
 
 	@Override
@@ -461,7 +461,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
 		//Except in fp 
-		if (!this.equals(Client.controlledEntity) || renderingContext.shadow)
+		if (!this.equals(Client.controlledEntity) || renderingContext.isThisAShadowPass())
 			ModelLibrary.getMesh("res/models/human.obj").renderBut(renderingContext, fp_elements, animation, 0);
 		
 		
@@ -476,7 +476,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
 
-		if(selectedItemPile != null || !this.equals(Client.controlledEntity) || renderingContext.shadow)
+		if(selectedItemPile != null || !this.equals(Client.controlledEntity) || renderingContext.isThisAShadowPass())
 		ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, fp_elements, animation, 0);
 	
 		//Matrix to itemInHand bone in the player's bvh

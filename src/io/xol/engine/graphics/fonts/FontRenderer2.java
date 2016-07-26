@@ -7,9 +7,9 @@ package io.xol.engine.graphics.fonts;
 import static org.lwjgl.opengl.GL11.*;
 
 import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.graphics.util.GuiDrawer;
 import io.xol.engine.math.HexTools;
 import io.xol.engine.misc.ColorsTools;
 
@@ -36,25 +36,9 @@ public class FontRenderer2
 	{
 		glDisable(GL_CULL_FACE);
 		glEnable(GL_TEXTURE_2D);
-
-
-		/*
-		 * glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		 * glColor4f(r,v,b,alpha); glPushMatrix(); glEnable(GL_BLEND);
-		 * glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		 */
-		// draw quad
-
-		// glTranslated(xpos, ypos, 0);
-		// glRotatef(rot, 0, 0, 1);
-
-		/*
-		 * double rotRad = rot / 180 * Math.PI; float rotSin = (float)
-		 * Math.sin(rotRad); float rotCos = (float) Math.cos(rotRad);
-		 */
+		
 		Texture2D fontTexture = TexturesHandler.getTexture("./res/textures/font/" + font.name + ".png");
 		fontTexture.setLinearFiltering(false);
-		//TexturesHandler.mipmapLevel("./res/textures/font/" + font.name + ".png", -1);
 		
 		Vector4f color = new Vector4f(r, v, b, alpha);
 
@@ -138,11 +122,9 @@ public class FontRenderer2
 				{
 
 					float border = size / 16;
-					GuiDrawer.drawBoxWindowsSpace(baseX + (translateX), baseY + (translateY), baseX + (translateX + charW + border), baseY + (translateY + fontsize), tx, ty + cellSize, tx + (charW + border) / 16f / size, ty,
+					GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(baseX + (translateX), baseY + (translateY), baseX + (translateX + charW + border), baseY + (translateY + fontsize), tx, ty + cellSize, tx + (charW + border) / 16f / size, ty,
 							fontTexture.getId(), false, true, color);
-
-					// System.out.println(cellSize+":"+charW/256f+":"+cellSize);
-
+					
 					translateX += charW;
 					l += charW;
 				}

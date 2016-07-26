@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.MouseButton;
+import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
@@ -27,51 +27,50 @@ import io.xol.chunkstories.voxel.models.VoxelModels;
 //http://xol.io
 
 /**
- * 2-blocks tall door
- * Requires two consecutive voxel ids, x being lower, x+1 top, the top part should be suffixed of _top
+ * 2-blocks tall door Requires two consecutive voxel ids, x being lower, x+1 top, the top part should be suffixed of _top
  */
-public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteractive
+public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteractive, VoxelCustomIcon
 {
 	VoxelTexture doorTexture;
-	
+
 	VoxelModel[] models = new VoxelModel[8];
-	
+
 	boolean top;
-	
+
 	public VoxelDoor(int id, String name)
 	{
 		super(id, name);
-		
+
 		top = name.endsWith("_top");
-		
-		if(top)
+
+		if (top)
 			doorTexture = VoxelTextures.getVoxelTexture(name.replace("_top", "") + "_upper");
 		else
 			doorTexture = VoxelTextures.getVoxelTexture(name + "_lower");
 
 		for (int i = 0; i < 8; i++)
 			models[i] = VoxelModels.getVoxelModel("door.m" + i);
-	}	
-	
+	}
+
 	@Override
 	public VoxelTexture getVoxelTexture(int data, VoxelSides side, BlockRenderInfo info)
 	{
 		return doorTexture;
 	}
-	
+
 	@Override
 	public VoxelModel getVoxelModel(BlockRenderInfo info)
 	{
 		int facingPassed = (info.getMetaData() >> 2) & 0x3;
 		boolean isOpen = ((info.getMetaData() >> 0) & 0x1) == 1;
 		boolean hingeSide = ((info.getMetaData() >> 1) & 0x1) == 1;
-		
+
 		int i = 0;
-		
-		if(hingeSide)
+
+		if (hingeSide)
 			facingPassed += 4;
-		
-		switch(facingPassed)
+
+		switch (facingPassed)
 		{
 		case 0:
 			i = isOpen ? 3 : 0;
@@ -85,7 +84,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 		case 3:
 			i = isOpen ? 2 : 7;
 			break;
-			
+
 		case 4:
 			i = isOpen ? 1 : 4;
 			break;
@@ -99,7 +98,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 			i = isOpen ? 0 : 3;
 			break;
 		}
-		
+
 		return models[i];
 	}
 
@@ -107,46 +106,46 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 	//0x0 -> open/close
 	//0x1 -> left/right hinge || left = 0 right = 1 (left is default)
 	//0x2-0x4 -> side ( VoxelSide << 2 )
-	
+
 	@Override
 	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input, int voxelData)
 	{
-		if(!input.getName().equals("mouse.right"))
+		if (!input.getName().equals("mouse.right"))
 			return false;
-		if(!(entity.getWorld() instanceof WorldMaster))
+		if (!(entity.getWorld() instanceof WorldMaster))
 			return false;
-		
+
 		boolean isOpen = ((VoxelFormat.meta(voxelData) >> 0) & 0x1) == 1;
 		boolean hingeSide = ((VoxelFormat.meta(voxelData) >> 1) & 0x1) == 1;
 		int facingPassed = (VoxelFormat.meta(voxelData) >> 2) & 0x3;
-		
+
 		boolean newState = !isOpen;
-		
+
 		int newData = computeMeta(newState, hingeSide, facingPassed);
-		
+
 		Location otherPartLocation = new Location(voxelLocation);
-		if(top)
+		if (top)
 			otherPartLocation.add(0, -1, 0);
 		else
 			otherPartLocation.add(0, 1, 0);
-		
+
 		int otherLocationId = VoxelFormat.id(otherPartLocation.getVoxelDataAtLocation());
-		if(VoxelTypes.get(otherLocationId) instanceof VoxelDoor)
+		if (VoxelTypes.get(otherLocationId) instanceof VoxelDoor)
 		{
-			System.out.println("new door status : "+newState);
+			System.out.println("new door status : " + newState);
 			voxelLocation.getWorld().playSoundEffect("sfx/door.ogg", voxelLocation, 1.0f, 1.0f);
-			
+
 			voxelLocation.setVoxelDataAtLocation(VoxelFormat.changeMeta(voxelLocation.getVoxelDataAtLocation(), newData));
 			otherPartLocation.setVoxelDataAtLocation(VoxelFormat.changeMeta(otherPartLocation.getVoxelDataAtLocation(), newData));
 		}
 		else
 		{
-			ChunkStoriesLogger.getInstance().error("Incomplete door @ "+otherPartLocation);
+			ChunkStoriesLogger.getInstance().error("Incomplete door @ " + otherPartLocation);
 		}
-		
+
 		return true;
 	}
-	
+
 	@Override
 	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
 	{
@@ -156,57 +155,57 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 		boolean isOpen = ((info.getMetaData() >> 0) & 0x1) == 1;
 		boolean hingeSide = ((info.getMetaData() >> 1) & 0x1) == 1;
 
-		boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(0.125/2, 0, 0.5);
-		
-		if(isOpen)
+		boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(0.125 / 2, 0, 0.5);
+
+		if (isOpen)
 		{
-			switch(facingPassed + (hingeSide ? 4 : 0))
+			switch (facingPassed + (hingeSide ? 4 : 0))
 			{
 			case 0:
-				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 0.125/2);
+				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 0.125 / 2);
 				break;
 			case 1:
-				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(0.125/2, 0, 0.5);
+				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(0.125 / 2, 0, 0.5);
 				break;
 			case 2:
-				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 1.0 - 0.125/2);
+				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 1.0 - 0.125 / 2);
 				break;
 			case 3:
-				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(1.0 - 0.125/2, 0, 0.5);
+				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(1.0 - 0.125 / 2, 0, 0.5);
 				break;
 			case 4:
-				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 1.0 - 0.125/2);
+				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 1.0 - 0.125 / 2);
 				break;
 			case 5:
-				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(1.0 - 0.125/2, 0, 0.5);
+				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(1.0 - 0.125 / 2, 0, 0.5);
 				break;
 			case 6:
-				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 0.125/2);
+				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 0.125 / 2);
 				break;
 			case 7:
-				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(0.125/2, 0, 0.5);
+				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(0.125 / 2, 0, 0.5);
 				break;
 			}
 		}
 		else
 		{
-			switch(facingPassed)
+			switch (facingPassed)
 			{
 			case 0:
-				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(0.125/2, 0, 0.5);
+				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(0.125 / 2, 0, 0.5);
 				break;
 			case 1:
-				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 1.0 - 0.125/2);
+				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 1.0 - 0.125 / 2);
 				break;
 			case 2:
-				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(1.0 - 0.125/2, 0, 0.5);
+				boxes[0] = new CollisionBox(0.125, 1.0, 1.0).translate(1.0 - 0.125 / 2, 0, 0.5);
 				break;
 			case 3:
-				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 0.125/2);
+				boxes[0] = new CollisionBox(1.0, 1.0, 0.125).translate(0.5, 0, 0.125 / 2);
 				break;
 			}
 		}
-		
+
 		return boxes;
 	}
 
@@ -214,30 +213,30 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 	public int onPlace(World world, int x, int y, int z, int voxelData, Entity entity) throws IllegalBlockModificationException
 	{
 		//Ignore all that crap on a slave world
-		if(!(world instanceof WorldMaster))
+		if (!(world instanceof WorldMaster))
 			return voxelData;
-		
+
 		//We should only place the lower part, prevent entities from doing so !
-		if(top && entity != null)
+		if (top && entity != null)
 			throw new IllegalBlockModificationException("Entities can't place upper doors parts");
-		
+
 		//If the system adds the upper part, no modifications to be done on it
-		if(top)
+		if (top)
 			return voxelData;
-		
+
 		//Check top is free
 		int topData = world.getVoxelData(x, y + 1, z, false);
-		if(VoxelFormat.id(topData) != 0)
+		if (VoxelFormat.id(topData) != 0)
 			throw new IllegalBlockModificationException("Top part isn't free");
-		
+
 		//grab our attributes
 		boolean isOpen = ((VoxelFormat.meta(voxelData) >> 0) & 0x1) == 1;
 		boolean hingeSide = ((VoxelFormat.meta(voxelData) >> 1) & 0x1) == 1;
 		int facingPassed = (VoxelFormat.meta(voxelData) >> 2) & 0x3;
-		
+
 		//Default face is given by passed metadata
 		VoxelSides doorSideFacing = VoxelSides.values()[facingPassed];
-		
+
 		//Determine side if placed by an entity and not internal code
 		if (entity != null)
 		{
@@ -246,22 +245,22 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 			double dz = loc.getZ() - (z + 0.5);
 			if (Math.abs(dx) > Math.abs(dz))
 			{
-				if(dx > 0)
+				if (dx > 0)
 					doorSideFacing = VoxelSides.RIGHT;
 				else
 					doorSideFacing = VoxelSides.LEFT;
 			}
 			else
 			{
-				if(dz > 0)
+				if (dz > 0)
 					doorSideFacing = VoxelSides.FRONT;
 				else
 					doorSideFacing = VoxelSides.BACK;
 			}
-			
+
 			//If there is an adjacent one, set the hinge to right
 			int adjacentId = 0;
-			switch(doorSideFacing)
+			switch (doorSideFacing)
 			{
 			case LEFT:
 				adjacentId = world.getVoxelData(x, y, z - 1, false);
@@ -278,19 +277,18 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 			default:
 				break;
 			}
-			if(VoxelTypes.get(adjacentId) instanceof VoxelDoor)
+			if (VoxelTypes.get(adjacentId) instanceof VoxelDoor)
 			{
 				System.out.println("adjacent found");
 				hingeSide = true;
 			}
-			
+
 			voxelData = VoxelFormat.changeMeta(voxelData, computeMeta(isOpen, hingeSide, doorSideFacing));
 		}
-		
-		
+
 		//Place the upper part and we're good to go
 		world.setVoxelData(x, y + 1, z, VoxelFormat.changeId(voxelData, this.getId() + 1), false);
-		
+
 		//Return updated voxelData
 		return voxelData;
 	}
@@ -299,11 +297,11 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 	{
 		return computeMeta(isOpen, hingeSide, doorFacingSide.ordinal());
 	}
-	
+
 	private int computeMeta(boolean isOpen, boolean hingeSide, int doorFacingsSide)
 	{
 		System.out.println(doorFacingsSide + " open: " + isOpen + " hinge:" + hingeSide);
-		
+
 		return (doorFacingsSide << 2) | (((hingeSide ? 1 : 0) & 0x1) << 1) | (isOpen ? 1 : 0) & 0x1;
 	}
 
@@ -311,11 +309,11 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 	public void onRemove(World world, int x, int y, int z, int voxelData, Entity entity)
 	{
 		//Ignore all that crap on a slave world
-		if(!(world instanceof WorldMaster))
+		if (!(world instanceof WorldMaster))
 			return;
-		
+
 		int otherY = y;
-		if(top)
+		if (top)
 			otherY--;
 		else
 			otherY++;
@@ -323,7 +321,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 		world.setVoxelDataWithoutUpdates(x, y, z, 0, false);
 		int otherData = world.getVoxelData(x, otherY, z, false);
 		//Remove the other part as well, if it still exists
-		if(VoxelTypes.get(otherData) instanceof VoxelDoor)
+		if (VoxelTypes.get(otherData) instanceof VoxelDoor)
 		{
 			world.setVoxelData(x, otherY, z, 0, false);
 		}
@@ -333,11 +331,12 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 	public ItemPile[] getItems()
 	{
 		//Top part shouldn't be placed
-		if(top)
-			return new ItemPile[]{};
-		return super.getItems();
+		if (top)
+			return new ItemPile[] {};
+
+		return new ItemPile[] { new ItemPile("item_voxel_1x2", new String[] { "" + this.voxelID }).duplicate() };
 	}
-	
+
 	@Override
 	public int onModification(World world, int x, int y, int z, int voxelData, Entity entity) throws IllegalBlockModificationException
 	{

@@ -10,13 +10,16 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
+import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 //import io.xol.engine.base.font.TrueTypeFont;
 import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
+import io.xol.engine.math.lalgb.Vector4f;
 
 public class MainMenuOverlay extends Overlay
 {
@@ -37,7 +40,7 @@ public class MainMenuOverlay extends Overlay
 	}
 
 	@Override
-	public void drawToScreen(int x, int y, int w, int h)
+	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
 	{
 		if(Client.clientConfig.getProp("log-policy", "undefined").equals("undefined"))
 		{
@@ -45,7 +48,7 @@ public class MainMenuOverlay extends Overlay
 		}
 		
 		ObjectRenderer.renderTexturedRectAlpha(384 - 32 - 4, GameWindowOpenGL.windowHeight - 192, 768, 768, "logo", 1f);
-		FontRenderer2.drawTextUsingSpecificFontRVBA(384 + 192, GameWindowOpenGL.windowHeight - 256 - 16, 0, 48, "Indev " + VersionInfo.version, BitmapFont.SMALLFONTS, 1, 0.5f, 1, 1);
+		//FontRenderer2.drawTextUsingSpecificFontRVBA(384 + 192, GameWindowOpenGL.windowHeight - 256 - 16, 0, 48, "Indev " + VersionInfo.version, BitmapFont.SMALLFONTS, 1, 0.5f, 1, 1);
 
 		Random rng = new Random();
 		rng.setSeed(System.currentTimeMillis() / 100);
@@ -53,6 +56,8 @@ public class MainMenuOverlay extends Overlay
 		char[] bytes = new char[16];
 		for (int i = 0; i < 16; i++)
 			bytes[i] = (char) ((rng.nextInt() % 512));
+		
+		renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, 384 + 192, GameWindowOpenGL.windowHeight - 256 - 16, "Kektest > ?. :)", 2, 2, new Vector4f(1.0f));
 
 		singlePlayer.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320);
 		singlePlayer.draw();

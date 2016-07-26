@@ -56,7 +56,7 @@ public class EntityComponentRotation extends EntityComponent
 	
 	public void setRotation(double horizontalAngle, double verticalAngle)
 	{
-		this.rotationHorizontal = (float)horizontalAngle;
+		this.rotationHorizontal = (float)(360 + horizontalAngle) % 360;
 		this.rotationVertical = (float)verticalAngle;
 		
 		if (rotationVertical > 90)

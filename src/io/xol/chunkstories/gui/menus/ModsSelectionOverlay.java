@@ -2,6 +2,7 @@ package io.xol.chunkstories.gui.menus;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
@@ -22,7 +23,7 @@ public class ModsSelectionOverlay extends Overlay
 	}
 
 	@Override
-	public void drawToScreen(int positionStartX, int positionStartY, int width, int height)
+	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
 	{
 		backOption.setPosition(positionStartX + 192, 96);
 		backOption.draw();

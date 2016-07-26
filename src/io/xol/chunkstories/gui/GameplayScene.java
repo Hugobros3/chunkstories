@@ -9,13 +9,12 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.graphics.util.GuiDrawer;
-import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
@@ -29,6 +28,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
@@ -106,7 +106,7 @@ public class GameplayScene extends OverlayableScene
 	}
 
 	@Override
-	public void update()
+	public void update(RenderingContext renderingContext)
 	{
 		// Update client entity
 		if ((player == null || player != Client.controlledEntity) && Client.controlledEntity != null)
@@ -216,11 +216,11 @@ public class GameplayScene extends OverlayableScene
 				float scale = 2.0f;
 				
 				TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").setLinearFiltering(false);
-				GuiDrawer.drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale
+				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale
 						, 256 * scale, 32 * scale, 0, 32f / 256f, 1, 0, TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId(), false, true, null);
 				
 				int horizontalBitsToDraw = (int) (8 + 118 * livingPlayer.getHealth() / livingPlayer.getMaxHealth());
-				GuiDrawer.drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale
+				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale
 						, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f, 32f / 256f, TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId(), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
 				
 				//System.out.println(TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId());
@@ -240,14 +240,14 @@ public class GameplayScene extends OverlayableScene
 				focus(true);
 			// Draw overlay
 			if (currentOverlay != null)
-				currentOverlay.drawToScreen(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+				currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 			else
-				ObjectRenderer.renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "internal://./res/textures/gui/cursor.png");
+				renderingContext.getGuiRenderer().renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "internal://res/textures/gui/cursor.png");
 
 		}
 		Client.profiler.reset("gui");
 		
-		super.update();
+		super.update(renderingContext);
 		// Check connection didn't died and change scene if it has
 		if (Client.connection != null)
 		{
@@ -522,6 +522,34 @@ public class GameplayScene extends OverlayableScene
 		int cy = by / 32;
 		int cz = bz / 32;
 		int csh = Client.world.getRegionSummaries().getHeightAtWorldCoordinates(bx, bz);
+		
+		float angleX = Math.round(((EntityLiving) player).getEntityRotationComponent().getHorizontalRotation());
+		//float angleY = Math.round(((EntityLiving) player).getEntityRotationComponent().getVerticalRotation());
+		double dx = Math.sin(angleX / 360 * 2.0 * Math.PI);
+		double dz = Math.cos(angleX / 360 * 2.0 * Math.PI);
+		
+		VoxelSides side = VoxelSides.TOP;
+
+		//System.out.println("dx: "+dx+" dz:" + dz);
+		
+		if (Math.abs(dx) > Math.abs(dz))
+		{
+			if(dx > 0)
+				side = VoxelSides.RIGHT;
+			else
+				side = VoxelSides.LEFT;
+		}
+		else
+		{
+			if(dz > 0)
+				side = VoxelSides.FRONT;
+			else
+				side = VoxelSides.BACK;
+		}
+		
+		//Location selectedBlockLocation = ((EntityControllable) player).getBlockLookingAt(false);
+		
+		
 		Chunk current = Client.world.getChunk(cx, cy, cz, false);
 		int x_top = GameWindowOpenGL.windowHeight - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, "View distance : " + FastConfig.viewDistance + " Vertices(N):" + formatBigAssNumber(worldRenderer.renderedVertices + "") + " Chunks in view : "
@@ -542,7 +570,7 @@ public class GameplayScene extends OverlayableScene
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16,
 				"Chunks to bake : T : " + worldRenderer.chunksRenderer.todoQueue.size() + "   Chunks to upload: " + worldRenderer.chunksRenderer.doneQueue.size() + "    " + Client.world.ioHandler.toString(), BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16, "Position : x:" + bx + " y:" + by + " z:" + bz + " bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16, "Position : x:" + bx + " y:" + by + " z:" + bz + " dir: "+angleX+" side: "+side+" Block looking at : bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
 		if (current == null)
 			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk null", BitmapFont.SMALLFONTS);
 		else if (current instanceof ChunkRenderable)

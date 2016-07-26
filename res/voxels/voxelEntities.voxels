@@ -9,3 +9,9 @@ voxel chest 97 io.xol.chunkstories.core.voxel.VoxelChest
 	selfOpaque: true
 	textures: 'chesttop', 'chesttop', 'chestside', 'chestside', 'chestfront', 'chestside'
 end
+
+voxel wood_sign 96 io.xol.chunkstories.core.voxel.VoxelSign
+	solid: false
+	opaque: false
+	model: 'none'
+end

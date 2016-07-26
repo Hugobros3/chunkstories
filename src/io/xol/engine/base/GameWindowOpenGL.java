@@ -19,11 +19,11 @@ import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.gui.Scene;
 import io.xol.engine.misc.CPUModelDetection;
-import io.xol.engine.model.RenderingContext;
 
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
@@ -198,7 +198,9 @@ public class GameWindowOpenGL
 					// update inputs first
 					InputAbstractor.update(this, currentScene);
 					// then do the game logic
-					currentScene.update();
+					currentScene.update(renderingContext);
+					
+					renderingContext.getGuiRenderer().drawBuffer();
 				}
 				
 				//Clamp fps

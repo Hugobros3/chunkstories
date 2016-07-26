@@ -3,6 +3,7 @@ package io.xol.chunkstories.gui.menus;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
@@ -10,6 +11,7 @@ import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
+import io.xol.engine.math.lalgb.Vector4f;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -50,18 +52,19 @@ public class LogPolicyAsk extends Overlay
 			;
 	
 	@Override
-	public void drawToScreen(int positionStartX, int positionStartY, int width, int height)
+	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
 	{
-		ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
+		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, 0, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
 		
 		FontRenderer2.drawTextUsingSpecificFont(30, GameWindowOpenGL.windowHeight-64, 0, 64, "Chunk Stories indev log policy", BitmapFont.SMALLFONTS);
 		
-		int linesTaken = TrueTypeFont.arial12.getLinesHeight(message, (width-128) / 2 );
+		int linesTaken = TrueTypeFont.arial11px.getLinesHeight(message, (width-128) / 2 );
 		float scaling = 2;
 		if(linesTaken*32 > height)
 			scaling  = 1f;
 		
-		TrueTypeFont.arial12.drawString(30, GameWindowOpenGL.windowHeight-128, message, scaling, width-128, scaling);
+		renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, 30, GameWindowOpenGL.windowHeight-128, message, scaling, width-128);
 		
 		//FontRenderer2.drawTextUsingSpecificFont(30, 100, 0, 32, message, BitmapFont.SMALLFONTS);
 		//FontRenderer2.setLengthCutoff(false, width - 128);

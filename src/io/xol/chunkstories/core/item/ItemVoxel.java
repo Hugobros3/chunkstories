@@ -51,7 +51,7 @@ public class ItemVoxel extends Item
 	{
 		//ItemDataVoxel idv = (ItemDataVoxel) pile.data;
 		if (voxel != null)
-			return "res/voxels/textures/" + voxel.getName() + ".png";
+			return "res/items/icons/" + voxel.getName() + ".png";
 		return "res/items/icons/notex.png";
 	}
 
