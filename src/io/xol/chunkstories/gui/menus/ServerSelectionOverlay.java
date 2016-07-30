@@ -159,7 +159,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		if (ip.length() == 0)
 			return;
 		
-		Client.clientConfig.setProp("last-server", ip);
+		Client.clientConfig.setString("last-server", ip);
 		Client.clientConfig.save();
 		
 		if (ip.contains(":"))

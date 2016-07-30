@@ -1,4 +1,4 @@
-package io.xol.engine.model.animation;
+package io.xol.engine.animation;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.xol.engine.math.lalgb.Matrix4f;
+import io.xol.engine.math.lalgb.Quaternion4d;
+import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -16,7 +18,6 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 public class BVHAnimation
 {
-
 	int frames = 0;
 	float frameTime = 0f;
 
@@ -27,6 +28,59 @@ public class BVHAnimation
 	{
 		BVHAnimation test = new BVHAnimation(new File("res/models/human.bvh"));
 		System.out.println(test.toString());
+		
+		float rotX = (float) (Math.random() * 2.0 * Math.PI);
+		float rotY = (float) (Math.random() * 2.0 * Math.PI);
+		float rotZ = (float) (Math.random() * 2.0 * Math.PI);
+
+		Quaternion4d quaternionXLower = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotX);
+		Quaternion4d quaternionYLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotY);
+		Quaternion4d quaternionZLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZ);
+		Quaternion4d total = new Quaternion4d(quaternionXLower);
+		total = total.mult(quaternionYLower);
+		total.normalize();
+		total = total.mult(quaternionZLower);
+		
+		Matrix4f matrix = new Matrix4f();
+
+		//Apply rotations
+		matrix.rotate(rotX, new Vector3f(1, 0, 0));
+		matrix.rotate(rotY, new Vector3f(0, 1, 0));
+		matrix.rotate(rotZ, new Vector3f(0, 0, 1));
+		
+		Matrix4f mX = new Matrix4f();
+		Matrix4f mY = new Matrix4f();
+		Matrix4f mZ = new Matrix4f();
+		
+		mX.rotate(rotX, new Vector3f(1, 0, 0));
+		mY.rotate(rotY, new Vector3f(0, 1, 0));
+		mZ.rotate(rotZ, new Vector3f(0, 0, 1));
+		
+		/*System.out.println("Old:\n"+matrix);
+		System.out.println("New:\n"+Matrix4f.mul(Matrix4f.mul(mX, mY, null), mZ, null));
+		
+		System.out.println("mX:\n"+mX);
+		System.out.println("mY:\n"+mY);
+		System.out.println("mZ:\n"+mZ);*/
+		
+		//System.out.println(quaternionXLower);
+		//System.out.println(quaternionYLower);
+		//System.out.println(quaternionZLower);
+		
+		mX = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotX).toMatrix4f();
+		mY = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotY).toMatrix4f();
+		mZ = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZ).toMatrix4f();
+
+		//System.out.println("Old:\n"+matrix);
+		//System.out.println("New:\n"+Matrix4f.mul(Matrix4f.mul(mX, mY, null), mZ, null));
+		//System.out.println("mX:\n"+mX);
+		//System.out.println("mY:\n"+mY);
+		//System.out.println("mZ:\n"+mZ);
+		
+		//total = Matrix4f.invert(total, null);
+		
+		System.out.println("Qml:\n"+total.toMatrix4f());
+		//System.out.println("Inv:\n"+Matrix4f.invert(total.toMatrix4f(), null));
 	}
 
 	public BVHAnimation(File file)
@@ -34,7 +88,7 @@ public class BVHAnimation
 		load(file);
 	}
 
-	public Matrix4f getTransformationForBone(String boneName, int frame)
+	public Matrix4f getTransformationForBone(String boneName, double animationTime)
 	{
 		Matrix4f matrix = new Matrix4f();
 		if (frames == 0)
@@ -43,12 +97,26 @@ public class BVHAnimation
 			return matrix;
 		}
 		
-		//Sanity check
-		frame %= frames;
+		double frame = animationTime / 1000.0 / frameTime;
+		
+		double frameUpperBound = Math.ceil(frame);
+		double frameLowerBound = Math.floor(frame);
+		
+		double interp = frame % 1.0;
+		//Don't try to interpolate if we're on an exact frame
+		if(frameLowerBound == frameUpperBound)
+			interp = 0.0;
+		
+		int frameLower = (int)(frameLowerBound) % frames;
+		int frameUpper = (int)(frameUpperBound) % frames;
+		
+		//if(boneName.equals("boneLegLU"))
+		//	System.out.println(animationTime + " " + interp + " L"+frameLower+" U"+frameUpper);
+		
 		for (Bone b : bones)
 			if (b.name.equals(boneName))
 			{
-				matrix = b.getTransformationMatrix(frame);
+				matrix = b.getTransformationMatrixInterpolated(frameLower, frameUpper, interp);
 			}
 		
 		//Swaps Y and Z axises arround
@@ -74,7 +142,7 @@ public class BVHAnimation
 		return matrix;
 	}
 
-	public Matrix4f getTransformationForBonePlusOffset(String boneName, int frame)
+	public Matrix4f getTransformationForBonePlusOffset(String boneName, double animationTime)
 	{
 		Matrix4f matrix = null;
 		if (frames == 0)
@@ -84,9 +152,8 @@ public class BVHAnimation
 		}
 		Matrix4f offsetMatrix = new Matrix4f();
 		Vector3f offsetTotal = new Vector3f();
-
+		
 		//Sanity checking
-		frame %= frames;
 		for (Bone b : bones)
 			if (b.name.equals(boneName))
 			{
@@ -94,8 +161,9 @@ public class BVHAnimation
 				Bone kek = b;
 				while (kek != null)
 				{
+					//Swap yz arround and negate input Y to apply blender -> ingame coordinates system transformation
 					offsetTotal.x += kek.offset.x;
-					offsetTotal.y += kek.offset.z; //Swap yz arround and negate input Y to apply blender -> ingame transformation
+					offsetTotal.y += kek.offset.z; 
 					offsetTotal.z += -kek.offset.y;
 					kek = kek.parent;
 				}
@@ -107,7 +175,7 @@ public class BVHAnimation
 			}
 		
 		//Get the normal bone transformation
-		matrix = getTransformationForBone(boneName, frame);		
+		matrix = getTransformationForBone(boneName, animationTime);		
 
 		//Apply the offset matrix
 		Matrix4f.mul(matrix, offsetMatrix, matrix);		

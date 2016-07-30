@@ -13,6 +13,7 @@ import static org.lwjgl.opengl.GL11.glDrawArrays;
 
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 
@@ -105,7 +106,7 @@ public class OverlayRenderer
 		data.flip();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glVertexAttribPointer(vertexIn, 3, false, 0, data);
-		glDrawArrays(mode, 0, size);
+		GLCalls.drawArrays(mode, 0, size);
 		GameWindowOpenGL.getInstance().renderingContext.disableVertexAttribute(vertexIn);
 		GL11.glDisable(GL11.GL_BLEND);
 		data.clear();

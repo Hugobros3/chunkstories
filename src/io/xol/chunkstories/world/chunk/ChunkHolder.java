@@ -34,6 +34,7 @@ public class ChunkHolder implements Region
 	public final WorldImplementation world;
 	public final int regionX, regionY, regionZ;
 	public final long uuid;
+	private final WorldChunksHolder worldChunksHolder;
 
 	//Only relevant on Master worlds
 	public final CSFRegionFile handler;
@@ -71,16 +72,19 @@ public class ChunkHolder implements Region
 
 	private static Random random = new Random();
 
-	public ChunkHolder(WorldImplementation world, int regionX, int regionY, int regionZ)
+	public ChunkHolder(WorldImplementation world, int regionX, int regionY, int regionZ, WorldChunksHolder worldChunksHolder)
 	{
 		this.world = world;
 		this.regionX = regionX;
 		this.regionY = regionY;
 		this.regionZ = regionZ;
+		this.worldChunksHolder = worldChunksHolder;
 
 		//Unique UUID
 		uuid = random.nextLong();
 
+		worldChunksHolder.holderConstructorCallBack(this);
+		
 		//Set the initial cooldown delay
 		unloadCooldown.set(System.currentTimeMillis());
 
@@ -129,14 +133,14 @@ public class ChunkHolder implements Region
 
 				// Locks the compressedChunks array so nothing freakes out
 				compressedChunksLock.beginWrite();
-				compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = new byte[compressedDataLength];
-				System.arraycopy(compressedData.get(), 0, compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8], 0, compressedDataLength);
+				compressedChunks[chunkX & 7][chunkY & 7][chunkZ & 7] = new byte[compressedDataLength];
+				System.arraycopy(compressedData.get(), 0, compressedChunks[chunkX & 7][chunkY & 7][chunkZ & 7], 0, compressedDataLength);
 				compressedChunksLock.endWrite();
 			}
 			else
 			{
 				compressedChunksLock.beginWrite();
-				compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
+				compressedChunks[chunkX & 7][chunkY & 7][chunkZ & 7] = null;
 				compressedChunksLock.endWrite();
 
 			}
@@ -146,13 +150,13 @@ public class ChunkHolder implements Region
 
 	public byte[] getCompressedData(int chunkX, int chunkY, int chunkZ)
 	{
-		return compressedChunks[chunkX % 8][chunkY % 8][chunkZ % 8];
+		return compressedChunks[chunkX & 7][chunkY & 7][chunkZ & 7];
 	}
 
 	@Override
 	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean loadIfAvaible)
 	{
-		Chunk chunk = data[chunkX % 8][chunkY % 8][chunkZ % 8];
+		Chunk chunk = data[chunkX & 7][chunkY & 7][chunkZ & 7];
 
 		if (chunk == null && loadIfAvaible)
 		{
@@ -170,21 +174,21 @@ public class ChunkHolder implements Region
 	{
 		chunksArrayLock.beginWrite();
 
-		if (data[chunkX % 8][chunkY % 8][chunkZ % 8] == null && chunk != null)
+		if (data[chunkX & 7][chunkY & 7][chunkZ & 7] == null && chunk != null)
 			loadedChunks.incrementAndGet();
 
 		//Remove any form of cuck
-		if (data[chunkX % 8][chunkY % 8][chunkZ % 8] != null)// && data[chunkX % 8][chunkY % 8][chunkZ % 8].dataPointer != chunk.dataPointer)
+		if (data[chunkX & 7][chunkY & 7][chunkZ & 7] != null)// && data[chunkX & 7][chunkY & 7][chunkZ & 7].dataPointer != chunk.dataPointer)
 		{
 			System.out.println(chunk);
 			//System.out.println(this + "chunkX"+chunkX+":"+chunkY+":"+chunkZ);
 			//Thread.currentThread().dumpStack();
 			//System.out.println("Overriding existing chunk, deleting old one");
-			data[chunkX % 8][chunkY % 8][chunkZ % 8].destroy();
+			data[chunkX & 7][chunkY & 7][chunkZ & 7].destroy();
 		}
 
 		//System.out.println("set chunk"+chunk);
-		data[chunkX % 8][chunkY % 8][chunkZ % 8] = chunk;
+		data[chunkX & 7][chunkY & 7][chunkZ & 7] = chunk;
 
 		//Change chunk holder to this
 		assert chunk.getRegion().equals(this);
@@ -196,7 +200,7 @@ public class ChunkHolder implements Region
 	@Override
 	public boolean removeChunk(int chunkX, int chunkY, int chunkZ)
 	{
-		Chunk c = data[chunkX % 8][chunkY % 8][chunkZ % 8];
+		Chunk c = data[chunkX & 7][chunkY & 7][chunkZ & 7];
 		if (c != null)
 		{
 			//Save back whatever the chunk
@@ -205,7 +209,7 @@ public class ChunkHolder implements Region
 			//Locks the chunks array
 			chunksArrayLock.beginWrite();
 			//Destroys the chunk
-			data[chunkX % 8][chunkY % 8][chunkZ % 8] = null;
+			data[chunkX & 7][chunkY & 7][chunkZ & 7] = null;
 			c.destroy();
 			//Update counter
 			loadedChunks.decrementAndGet();
@@ -223,7 +227,7 @@ public class ChunkHolder implements Region
 	@Override
 	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ)
 	{
-		return data[chunkX % 8][chunkY % 8][chunkZ % 8] != null;
+		return data[chunkX & 7][chunkY & 7][chunkZ & 7] != null;
 	}
 
 	public ChunksIterator iterator()
@@ -283,7 +287,7 @@ public class ChunkHolder implements Region
 			if((entity instanceof EntityUnsaveable && !((EntityUnsaveable)entity).shouldSaveIntoRegion()))
 				continue;
 			
-			System.out.println("Unloading entity"+entity+" currently in chunk holder "+this);
+			//System.out.println("Unloading entity"+entity+" currently in chunk holder "+this);
 			
 			//We keep the inner reference so serialization can still write entities contained within
 			world.removeEntityFromList(entity);

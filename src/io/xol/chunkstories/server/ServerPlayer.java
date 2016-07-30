@@ -45,9 +45,9 @@ public class ServerPlayer implements Player
 		serverInputsManager = new ServerInputsManager(this);
 		
 		// Sets dates
-		playerDataFile.setProp("lastlogin", "" + System.currentTimeMillis());
+		playerDataFile.setString("lastlogin", "" + System.currentTimeMillis());
 		if (playerDataFile.getProp("firstlogin", "nope").equals("nope"))
-			playerDataFile.setProp("firstlogin", "" + System.currentTimeMillis());
+			playerDataFile.setString("firstlogin", "" + System.currentTimeMillis());
 		//Does not create a player entity yet, this is taken care of by the player spawn req
 	}
 
@@ -130,9 +130,9 @@ public class ServerPlayer implements Player
 		{
 			//Useless, kept for admin easyness, scripts, whatnot
 			Location controlledEntityLocation = controlledEntity.getLocation();
-			playerDataFile.setProp("posX", controlledEntityLocation.x);
-			playerDataFile.setProp("posY", controlledEntityLocation.y);
-			playerDataFile.setProp("posZ", controlledEntityLocation.z);
+			playerDataFile.setDouble("posX", controlledEntityLocation.x);
+			playerDataFile.setDouble("posY", controlledEntityLocation.y);
+			playerDataFile.setDouble("posZ", controlledEntityLocation.z);
 			
 			//Serializes the whole player entity !!!
 			SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + this.getName().toLowerCase() + ".csf");
@@ -140,7 +140,7 @@ public class ServerPlayer implements Player
 		}
 		
 		//Telemetry (EVIL)
-		playerDataFile.setProp("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)));
+		playerDataFile.setString("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)));
 		playerDataFile.save();
 		
 		System.out.println("Player profile "+playerConnection.name+" saved.");
@@ -247,7 +247,7 @@ public class ServerPlayer implements Player
 	{
 		if(this.playerDataFile.isFieldSet("posX"))
 		{
-			return new Location(Server.getInstance().getWorld(), playerDataFile.getDoubleProp("posX"), playerDataFile.getDoubleProp("posY"), playerDataFile.getDoubleProp("posZ"));
+			return new Location(Server.getInstance().getWorld(), playerDataFile.getDouble("posX"), playerDataFile.getDouble("posY"), playerDataFile.getDouble("posZ"));
 		}
 		return null;
 	}

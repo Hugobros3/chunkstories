@@ -93,7 +93,7 @@ public class Vector3f
 		if (dest == null)
 			dest = new Vector3f();
 		//dest.set(left.y * right.z - left.z * right.y, right.x * left.z - right.z * left.x, left.x * right.y - left.y * right.x);
-		dest.set(left.y * right.z - left.z * right.y, right.x * left.z - right.z * left.x, left.x * right.y - left.y * right.x);
+		//dest.set(left.y * right.z - left.z * right.y, right.x * left.z - right.z * left.x, left.x * right.y - left.y * right.x);
 
 		dest.set(
 				left.y * right.z - left.z * right.y,

@@ -14,6 +14,7 @@ import io.xol.engine.math.lalgb.Vector2f;
 
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -153,8 +154,8 @@ public class WeatherEffectsRenderer
 		renderingContext.enableVertexAttribute(vertexIn);
 		//glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		weatherShader.setUniformFloat("time", (System.currentTimeMillis() - lastRender) / 1000f);
-		weatherShader.setUniformSampler(0, "lightmap", TexturesHandler.getTexture("environement/light.png"));
-		//weatherShader.setUniformFloat("sunIntensity", worldRenderer.sky.getLightIntensity());
+		weatherShader.setUniformSampler(0, "lightmap", TexturesHandler.getTexture("environement/lightcolors.png"));
+		weatherShader.setUniformFloat("sunTime", worldRenderer.getSky().time);
 		//raindropsData.flip();
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		glVertexAttribPointer(vertexIn, 4, GL_FLOAT, false, 0, 0L);
@@ -163,7 +164,7 @@ public class WeatherEffectsRenderer
 		
 		//System.out.println("rainIntensity"+rainIntensity);
 		
-		glDrawArrays(GL_TRIANGLES, 0, 2000 + (int)(9000 * rainIntensity));
+		GLCalls.drawArrays(GL_TRIANGLES, 0, 2000 + (int)(9000 * rainIntensity));
 		renderingContext.disableVertexAttribute(vertexIn);
 		glDisable(GL_BLEND);
 	}

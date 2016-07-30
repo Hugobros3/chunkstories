@@ -118,9 +118,9 @@ public abstract class WorldImplementation implements World
 			this.internalData = new ConfigFile(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName() + "/internal.dat");
 			this.internalData.load();
 
-			this.entitiesUUIDGenerator.set(internalData.getLongProp("entities-ids-counter", 0));
-			this.worldTime = internalData.getLongProp("worldTime", 5000);
-			this.overcastFactor = internalData.getFloatProp("overcastFactor", 0.2f);
+			this.entitiesUUIDGenerator.set(internalData.getLong("entities-ids-counter", 0));
+			this.worldTime = internalData.getLong("worldTime", 5000);
+			this.overcastFactor = internalData.getFloat("overcastFactor", 0.2f);
 		}
 		else
 		{
@@ -184,7 +184,7 @@ public abstract class WorldImplementation implements World
 		{
 			long nextUUID = nextEntityId();
 			entity.setUUID(nextUUID);
-			System.out.println("Attributed UUID " + nextUUID + " to " + entity);
+			//System.out.println("Attributed UUID " + nextUUID + " to " + entity);
 		}
 
 		Entity check = this.getEntityByUUID(entity.getUUID());
@@ -203,7 +203,7 @@ public abstract class WorldImplementation implements World
 
 		this.entities.add(entity);
 
-		System.out.println("added " + entity + "to the worlde");
+		//System.out.println("added " + entity + "to the worlde");
 	}
 
 	@Override
@@ -704,9 +704,9 @@ public abstract class WorldImplementation implements World
 		getRegionSummaries().saveAll();
 
 		this.worldInfo.save(new File(this.getFolderPath() + "/info.txt"));
-		this.internalData.setProp("entities-ids-counter", entitiesUUIDGenerator.get());
-		this.internalData.setProp("worldTime", worldTime);
-		this.internalData.setProp("overcastFactor", overcastFactor);
+		this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
+		this.internalData.setLong("worldTime", worldTime);
+		this.internalData.setFloat("overcastFactor", overcastFactor);
 		this.internalData.save();
 	}
 
@@ -718,7 +718,7 @@ public abstract class WorldImplementation implements World
 		this.logic.shutdown();
 		if (this instanceof WorldMaster)
 		{
-			this.internalData.setProp("entities-ids-counter", entitiesUUIDGenerator.get());
+			this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
 			this.internalData.save();
 		}
 		ioHandler.kill();
@@ -815,9 +815,9 @@ public abstract class WorldImplementation implements World
 	@Override
 	public Location getDefaultSpawnLocation()
 	{
-		double dx = internalData.getDoubleProp("defaultSpawnX", 0.0);
-		double dy = internalData.getDoubleProp("defaultSpawnY", 100.0);
-		double dz = internalData.getDoubleProp("defaultSpawnZ", 0.0);
+		double dx = internalData.getDouble("defaultSpawnX", 0.0);
+		double dy = internalData.getDouble("defaultSpawnY", 100.0);
+		double dz = internalData.getDouble("defaultSpawnZ", 0.0);
 		return new Location(this, dx, dy, dz);
 	}
 

@@ -57,7 +57,7 @@ public class KeyBindImplementation implements KeyBind
 	public KeyBindImplementation(String name, String defaultKeyName)
 	{
 		this.name = name;
-		this.LWJGL2_key = Client.getConfig().getIntProp("bind."+name, Keyboard.getKeyIndex(defaultKeyName));
+		this.LWJGL2_key = Client.getConfig().getInteger("bind."+name, Keyboard.getKeyIndex(defaultKeyName));
 		computeHash(name);
 	}
 	
@@ -87,7 +87,7 @@ public class KeyBindImplementation implements KeyBind
 	 */
 	public void reload()
 	{
-		this.LWJGL2_key = Client.getConfig().getIntProp("bind."+name, -1);
+		this.LWJGL2_key = Client.getConfig().getInteger("bind."+name, -1);
 	}
 	
 	@Override

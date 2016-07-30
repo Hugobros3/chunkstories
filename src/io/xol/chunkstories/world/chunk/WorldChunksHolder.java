@@ -87,15 +87,26 @@ public class WorldChunksHolder
 		//Make a new chunkHolder if we can't find it
 		if (requestLoadIfAbsent && holder == null && regionY < heightInRegions * 8 && regionY >= 0)
 		{
-			holder = new ChunkHolder(world, regionX, regionY, regionZ);
-			
-			//If it's not still saving an older version
-			if(world.ioHandler.isDoneSavingChunkHolder(holder))
-				chunkHolders.putIfAbsent(key, holder);
+			holder = new ChunkHolder(world, regionX, regionY, regionZ, this);
 		}
 		worldDataLock.unlock();
 
 		return holder;
+	}
+
+	/**
+	 * The ChunkHolder constructor also loads it, and in the case of offline/immediate worlds it does so immediatly ( single-thread ), the issue
+	 * is that while loading the entities it might try to read voxel data, triggering a chunk load operation, itself triggering a chunkholder lookup.
+	 * This is an issue because if we add the ChunkHolder to the hashmap after having executed the constructor we might end up in a infinite loop
+	 * So to avoid that we do this
+	 */
+	protected void holderConstructorCallBack(ChunkHolder holder)
+	{
+		ChunkHolderKey key = new ChunkHolderKey(holder.regionX, holder.regionY, holder.regionZ);
+
+		//If it's not still saving an older version
+		if (world.ioHandler.isDoneSavingChunkHolder(holder))
+			chunkHolders.putIfAbsent(key, holder);
 	}
 
 	public void setChunk(Chunk chunk)
@@ -162,7 +173,7 @@ public class WorldChunksHolder
 			holder = i.next();
 			if (holder != null)
 			{
-				holder.unloadAllChunks();
+				holder.unloadHolder();
 			}
 		}
 		chunkHolders.clear();

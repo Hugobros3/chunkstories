@@ -60,10 +60,11 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 			//System.out.println("x:"+direction.x+"y:"+direction.y);
 			
 			double asAngle = Math.acos(direction.y) / Math.PI * 180;
+			asAngle *= -1;
 			if(direction.x < 0)
 				asAngle *= -1;
 			
-			asAngle += 180.0;
+			//asAngle += 180.0;
 			
 			asAngle %= 360.0;
 			asAngle += 360.0;

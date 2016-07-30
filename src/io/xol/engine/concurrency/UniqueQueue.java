@@ -139,7 +139,7 @@ public class UniqueQueue<T> implements Queue<T>
 	public boolean add(T e)
 	{
 		if(internalSet.add(e))
-			internalQueue.add(e);
+			return internalQueue.add(e);
 		return false;
 	}
 

@@ -33,7 +33,6 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 public class VoxelTextures
 {
-
 	static Map<String, VoxelTexture> texMap = new HashMap<String, VoxelTexture>();
 	static Map<String, Vector4f> colors = new HashMap<String, Vector4f>();
 

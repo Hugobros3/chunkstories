@@ -1,16 +1,31 @@
 package io.xol.chunkstories.importer;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.WorldTool;
+import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
+import io.xol.engine.misc.FoldersUtils;
 import io.xol.chunkstories.world.WorldInfo;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -27,11 +42,6 @@ public class AnvilExporter
 
 	public static void main(String[] arguments)
 	{
-		//Init main game shit
-
-		//String appDataFolder = System.getenv("APPDATA");
-		//Client.chunkStoriesFolder = new File(appDataFolder+"/.chunkstories");
-
 		//Start logs
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
@@ -55,6 +65,7 @@ public class AnvilExporter
 		}
 		else
 		{
+
 			long timestampStart = System.currentTimeMillis();
 
 			String mcWorldName = arguments[0];
@@ -64,6 +75,7 @@ public class AnvilExporter
 				System.out.println(mcWorldDir + " is not a valid directory.");
 				return;
 			}
+
 			String csWorldName = arguments[1];
 			File csWorldDir = new File("worlds/" + csWorldName + "/");
 
@@ -91,16 +103,29 @@ public class AnvilExporter
 				}
 			}
 
+			//Build a cache
+			long ict = System.nanoTime();
+			verbose("Creating ids conversion cache");
+			int[] cachedIdsMatrix = new int[4096 * 16];
+			for (int i = 0; i < 4096; i++)
+				for (int m = 0; m < 16; m++)
+					cachedIdsMatrix[i * 16 + m] = IDsConverter.getChunkStoriesIdFromMinecraft(i, m);
+			verbose("Done, took " + (System.nanoTime() - ict) / 1000 + " µs");
+
+			//Cache export
+			saveCSV(cachedIdsMatrix);
+
 			// Okay, let's roll motherfuckas
 			if (deleteAndRewrite)
 			{
 				if (csWorldDir.exists())
 				{
-					csWorldDir.delete();
+					FoldersUtils.deleteFolder(csWorldDir);
 					verbose(csWorldDir + " already existed, deleting !");
 				}
 			}
-			verbose("creating cs world");
+			verbose("Initializing Chunk Stories World");
+
 			WorldInfo info = new WorldInfo("name: Converted_" + mcWorldName + "\n" + "seed: null\n" + "worldgen: blank\n" + "size: " + size.name(), csWorldName);
 			info.save(new File(csWorldDir + "/info.txt"));
 			WorldImplementation exported = new WorldTool(csWorldDir);
@@ -142,8 +167,6 @@ public class AnvilExporter
 						{
 							for (int minecraftCuurrentChunkZinsideRegion = 0; minecraftCuurrentChunkZinsideRegion < 32; minecraftCuurrentChunkZinsideRegion++)
 							{
-								//Do we need it ?
-
 								//Map minecraft chunk-space to chunk storie's
 								int chunkStoriesCurrentChunkX = (minecraftCurrentChunkXinsideRegion + minecraftRegionX * 32) * 16 - minecraftOffsetX;
 								int chunkStoriesCurrentChunkZ = (minecraftCuurrentChunkZinsideRegion + minecraftRegionZ * 32) * 16 - minecraftOffsetZ;
@@ -164,15 +187,30 @@ public class AnvilExporter
 													for (int y = 0; y < 256; y++)
 													{
 														//Translate each block
-														int mcId = chunk.getBlockID(x, y, z);
-														int meta = chunk.getBlockMeta(x, y, z);
+														int mcId = chunk.getBlockID(x, y, z) & 0xFFF;
+														int meta = chunk.getBlockMeta(x, y, z) & 0xF;
+														//Ignore air blocks
 														if (mcId != 0)
 														{
-															//if(meta != 0 && mcId < 0)
-															//	System.out.println("BlockID : "+mcId+" Meta: "+meta);
-															exported.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, IDsConverter.mc2cs(mcId, meta), true);
+															int dataToSet = cachedIdsMatrix[mcId * 16 + meta];//IDsConverter.getChunkStoriesIdFromMinecraft(mcId, meta);
+															if (dataToSet == -2)
+																dataToSet = IDsConverter.getChunkStoriesIdFromMinecraftComplex(mcId, meta, region, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
+
+															if (dataToSet != -1)
+															{
+																Voxel voxel = VoxelTypes.get(dataToSet);
+
+																//Optionally runs whatever the voxel requires to run when placed
+																if (voxel instanceof VoxelLogic)
+																	dataToSet = ((VoxelLogic) voxel).onPlace(exported, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet, null);
+
+																if (dataToSet != -1)
+																	exported.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet, true);
+															}
 														}
 													}
+											//Converts external data such as signs
+											chunk.postProcess(exported, chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
 										}
 									}
 									catch (Exception e)
@@ -194,7 +232,6 @@ public class AnvilExporter
 									}
 
 								}
-
 								if (exported.getChunksHolder().countChunksWithData() > 256)
 								{
 									//Save world
@@ -223,6 +260,34 @@ public class AnvilExporter
 
 			say("Done, conversion took " + (System.currentTimeMillis() - timestampStart) / 1000 + "s");
 			//Runtime.getRuntime().exit(0);
+		}
+	}
+
+	private static void saveCSV(int[] cachedIdsMatrix)
+	{
+		try
+		{
+			Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("converter_ids_cache.csv"), "UTF-8"));
+			
+			for (int i = 0; i < 256; i++)
+			{
+				out.write(i+",");
+				for(int m = 0; m < 16; m++)
+				{
+					out.write(""+cachedIdsMatrix[i * 16 + m]);
+					if(m < 15)
+						out.write(",");
+				}
+				out.write("\n");
+			}
+			out.close();
+		}
+		catch (FileNotFoundException e)
+		{
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
 		}
 	}
 

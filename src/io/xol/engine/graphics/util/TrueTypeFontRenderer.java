@@ -90,6 +90,8 @@ public class TrueTypeFontRenderer
 
 		Vector4f colorModified = new Vector4f(color);
 		String lines[] = whatchars.split("\n");
+		if(lines.length == 0)
+			return;
 		int lineI = 0;
 		int currentLineTotalLength = trueTypeFont.getWidth(lines[lineI]);
 		if(alignement == ALIGN_CENTER)
@@ -134,7 +136,8 @@ public class TrueTypeFontRenderer
 					startY -= trueTypeFont.getHeight();
 					totalwidth = 0;
 					
-					lineI++;
+					if(lineI < lines.length - 1)
+						lineI++;
 					currentLineTotalLength = trueTypeFont.getWidth(lines[lineI]);
 					if(alignement == ALIGN_CENTER)
 					{

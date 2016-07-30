@@ -15,6 +15,7 @@ uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
 uniform float time;
+uniform float sunTime;
 
 uniform sampler2D lightmap;
 
@@ -34,7 +35,7 @@ vec4 gammaOutput(vec4 inputValue)
 }
 
 void main(){
-	interpolatedColor = vec4(0.5, 0.5, 0.6, 0.5 + 0.5 * sunIntensity) * texture2DGammaIn(lightmap, vec2(1 * sunIntensity, 0));
+	interpolatedColor = vec4(0.5, 0.5, 0.6, 0.5 + 0.5 * sunIntensity) * texture2DGammaIn(lightmap, vec2(sunTime, 1.0));
 	
 	float maxHeight = vertexIn.w;
 	vec3 vertexPosition = vertexIn.xyz;

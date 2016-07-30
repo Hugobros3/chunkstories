@@ -13,6 +13,7 @@
             <zipfileset excludes="META-INF/*.SF" src="lib/lz4-1.3.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="lib/PNGDecoder.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="lib/jorbis.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="lib/json-simple-1.1.1.jar"/>
         </jar>
     </target>
 </project>

@@ -7,7 +7,7 @@ package io.xol.engine.math.lalgb;
 public class Vector2f
 {
 	// Dirty self-made replacement for vecmatch classes, castable to LWJGL's vector
-	
+
 	public float x, y;
 
 	public Vector2f()
@@ -20,7 +20,7 @@ public class Vector2f
 		this.x = x;
 		this.y = y;
 	}
-	
+
 	public Vector2f(Vector2f vec3)
 	{
 		this.x = vec3.x;
@@ -46,7 +46,12 @@ public class Vector2f
 		this.x = x;
 		this.y = y;
 	}
-	
+
+	public String toString()
+	{
+		return "[Vector2d x:" + x + " y:" + y + " ]";
+	}
+
 	public static Vector2f add(Vector2f left, Vector2f right, Vector2f dest)
 	{
 		if (dest == null)
@@ -78,7 +83,7 @@ public class Vector2f
 		this.y *= s;
 		return this;
 	}
-	
+
 	public Vector2f normalise(Vector2f destination)
 	{
 		return normalize(destination);
@@ -92,12 +97,12 @@ public class Vector2f
 		dest.y /= length;
 		return dest;
 	}
-	
+
 	public Vector2f normalise()
 	{
 		return normalize();
 	}
-	
+
 	public Vector2f normalize()
 	{
 		float length = length();
@@ -115,7 +120,7 @@ public class Vector2f
 	{
 		return x * x + y * y;
 	}
-	
+
 	/*public Vector3d castToDP()
 	{
 		Vector3d vec = new Vector3d();

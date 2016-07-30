@@ -19,6 +19,7 @@ import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -223,7 +224,7 @@ public class GameWindowOpenGL
 				}
 				
 				//Draw graph
-				if(Client.getConfig().getBooleanProp("frametimeGraph", false))
+				if(Client.getConfig().getBoolean("frametimeGraph", false))
 					FrametimeRenderer.draw(renderingContext);
 				
 				//Update pending actions
@@ -232,6 +233,8 @@ public class GameWindowOpenGL
 				
 				//Update the screen
 				Display.update();
+				
+				GLCalls.nextFrame();
 			}
 			System.out.println("Copyright 2015 XolioWare Interactive");
 			Client.onClose();
@@ -332,7 +335,7 @@ public class GameWindowOpenGL
 	{
 		try
 		{
-			if (Client.getConfig().getBooleanProp("fullScreen", false))
+			if (Client.getConfig().getBoolean("fullScreen", false))
 			{
 				String str[] = Client.getConfig().getProp("fullScreenResolution", "800x600").split("x");
 				int w = Integer.parseInt(str[0]);
@@ -368,7 +371,7 @@ public class GameWindowOpenGL
 						windowHeight = 600;
 						current = new DisplayMode(windowWidth, windowHeight);
 						ChunkStoriesLogger.getInstance().warning("Couldnt set display to " + displayMode + "reverting to default resolution");
-						Client.getConfig().setProp("fullScreenResolution", current.getWidth() + "x" + current.getHeight());
+						Client.getConfig().setString("fullScreenResolution", current.getWidth() + "x" + current.getHeight());
 						Client.getConfig().save();
 						Display.setFullscreen(false);
 						Display.setDisplayMode(current);
@@ -441,9 +444,9 @@ public class GameWindowOpenGL
 	{
 		if (k == 87 /* F11 */)
 		{
-			Client.getConfig().setProp("fullScreen", !Client.getConfig().getBooleanProp("fullScreen", false) + "");
+			Client.getConfig().setString("fullScreen", !Client.getConfig().getBoolean("fullScreen", false) + "");
 			String fsReso = Display.getDesktopDisplayMode().getWidth() + "x" + Display.getDesktopDisplayMode().getHeight();
-			Client.getConfig().setProp("fullScreenResolution", fsReso);
+			Client.getConfig().setString("fullScreenResolution", fsReso);
 			switchResolution();
 		}
 	}

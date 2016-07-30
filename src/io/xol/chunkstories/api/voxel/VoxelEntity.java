@@ -53,7 +53,7 @@ public abstract class VoxelEntity extends VoxelDefault implements VoxelLogic, Vo
 		
 		EntityVoxel voxelEntity = createVoxelEntity(world, x, y, z);
 
-		System.out.println("added voxel entity");
+		//System.out.println("added voxel entity");
 		
 		world.addEntity(voxelEntity);
 		
@@ -69,7 +69,7 @@ public abstract class VoxelEntity extends VoxelDefault implements VoxelLogic, Vo
 		Entity voxelEntity = getVoxelEntity(world, x, y, z);
 		voxelEntity.removeFromWorld();
 		
-		System.out.println("removed voxel entity");
+		//System.out.println("removed voxel entity");
 	}
 
 	@Override

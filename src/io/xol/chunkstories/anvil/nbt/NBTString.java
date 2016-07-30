@@ -26,4 +26,11 @@ public class NBTString extends NBTNamed{
 			e.printStackTrace();
 		}
 	}
+	
+	public String getText()
+	{
+		if(data == null)
+			return "";
+		return data;
+	}
 }

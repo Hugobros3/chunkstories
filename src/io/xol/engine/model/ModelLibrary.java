@@ -44,7 +44,8 @@ public class ModelLibrary
 	public static void reloadAllModels()
 	{
 		for (ObjMesh m : models.values())
-			m.destroy();
+			if(m != null)
+				m.destroy();
 		models.clear();
 	}
 }

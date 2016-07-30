@@ -29,7 +29,7 @@ public class ServerAnnouncerThread extends Thread
 			// System.out.println("lolcode = 0");
 			Random rnd = new Random();
 			lolcode = rnd.nextInt(100000);
-			Server.getInstance().getServerConfig().setProp("lolcode", lolcode);
+			Server.getInstance().getServerConfig().setInteger("lolcode", lolcode);
 		}
 		updatedelay = Long.parseLong(Server.getInstance().getServerConfig().getProp("update-delay", "10000"));
 		String hostname = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?host=1", "");

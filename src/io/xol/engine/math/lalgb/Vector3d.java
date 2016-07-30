@@ -75,7 +75,7 @@ public class Vector3d
 		if (dest == null)
 			dest = new Vector3d();
 		dest.x = left.y * right.z - left.z * right.y;
-		dest.y = left.x * right.z - left.z * right.x;
+		dest.y = left.z * right.x - left.x * right.z;
 		dest.z = left.x * right.y - left.y * right.x;
 		return dest;
 	}
@@ -84,7 +84,7 @@ public class Vector3d
 	{
 		Vector3d dest = new Vector3d();
 		dest.x = left.y * right.z - left.z * right.y;
-		dest.y = left.x * right.z - left.z * right.x;
+		dest.y = left.z * right.x - left.x * right.z;
 		dest.z = left.x * right.y - left.y * right.x;
 		return dest;
 	}

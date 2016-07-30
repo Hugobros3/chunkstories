@@ -1,6 +1,7 @@
 package io.xol.engine.graphics.util;
 
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -183,7 +184,7 @@ public class GuiRenderer
 		glVertexAttribPointer(texCoordIn, 2, GL_FLOAT, false, 16, 8);
 		// System.out.println("Drawing"+elementsToDraw
 		// +" vertexIn "+vertexIn+" texCoordIn "+texCoordIn+" vbo: "+glVBO);
-		glDrawArrays(GL_TRIANGLES, 0, elementsToDraw);
+		GLCalls.drawArrays(GL_TRIANGLES, 0, elementsToDraw);
 
 		// Clean up
 		renderingContext.disableVertexAttribute(vertexIn);

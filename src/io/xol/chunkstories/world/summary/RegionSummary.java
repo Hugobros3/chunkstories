@@ -277,17 +277,13 @@ public class RegionSummary
 
 	public void destroy()
 	{
-		/*if (voxelTypesTextureId != -1)
+		if(world instanceof WorldClient)
 		{
-			glDeleteTextures(heightsTextureId);
-			glDeleteTextures(voxelTypesTextureId);
-		}*/
-		
-		heightsTexture.destroy();
-		voxelTypesTexture.destroy();
-		
-		verticesObject.destroy();
-		
+			heightsTexture.destroy();
+			voxelTypesTexture.destroy();
+			
+			verticesObject.destroy();
+		}
 		//if (vboId != -1)
 		//	glDeleteBuffers(vboId);
 	}

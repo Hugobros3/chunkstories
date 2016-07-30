@@ -75,7 +75,7 @@ public class LogPolicyAsk extends Overlay
 		if (acceptButton.clicked())
 		{
 			mainScene.changeOverlay(this.parent);
-			Client.clientConfig.setProp("log-policy", "send");
+			Client.clientConfig.setString("log-policy", "send");
 			Client.clientConfig.save();
 		}
 		
@@ -85,7 +85,7 @@ public class LogPolicyAsk extends Overlay
 		if (denyButton.clicked())
 		{
 			mainScene.changeOverlay(this.parent);
-			Client.clientConfig.setProp("log-policy", "dont");
+			Client.clientConfig.setString("log-policy", "dont");
 			Client.clientConfig.save();
 		}
 	}

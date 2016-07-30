@@ -20,10 +20,10 @@ public class EntityComponentSignText extends EntityComponent
 		super(entity, previous);
 	}
 	
-	String signTexture =  "Hitler did\n"
-			+ "Nothing\n"
-			+ "Wrong\n"
-			+ "kappa";
+	String signTexture =  "\n"
+			+ "\n"
+			+ "\n"
+			+ "";
 	
 	public String getSignText()
 	{

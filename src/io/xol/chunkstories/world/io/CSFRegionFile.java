@@ -73,6 +73,9 @@ public class CSFRegionFile implements OfflineSerializedData
 				}
 		//Unlock it immediatly afterwards
 		holder.compressedChunksLock.endWrite();
+		
+		//We pretend it's loaded sooner so we can add the entities and they will load their chunks data if needed
+		holder.setDiskDataLoaded(true);
 
 		//don't tick the world entities until we get this straight
 		holder.world.entitiesLock.lock();

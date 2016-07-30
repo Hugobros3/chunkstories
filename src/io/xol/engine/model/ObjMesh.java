@@ -1,7 +1,6 @@
 package io.xol.engine.model;
 
 import io.xol.chunkstories.content.GameData;
-import io.xol.engine.model.animation.BVHAnimation;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,6 +15,8 @@ import java.util.Set;
 
 import org.lwjgl.BufferUtils;
 
+import io.xol.engine.animation.BVHAnimation;
+import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Matrix4f;
 
@@ -202,7 +203,7 @@ public class ObjMesh
 		int totalSize = 0;
 		for (int i : groups.values())
 		{
-			glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
+			GLCalls.drawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 			totalSize += i;
 		}
 	}
@@ -230,7 +231,7 @@ public class ObjMesh
 			{
 				int i = groups.get(currentVertexGroup);
 				if (bonesToDraw.contains(currentVertexGroup))
-					glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
+					GLCalls.drawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 				totalSize += i;
 			}
 		
@@ -258,9 +259,6 @@ public class ObjMesh
 	 */
 	public void render(RenderingContext renderingContext, Set<String> bonesToDraw, BVHAnimation animationData, int frame)
 	{
-		//glEnable(GL_CULL_FACE);
-		//Backface culling because blender
-		//glCullFace(GL_BACK);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 
 		int vertexIn = renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn");
@@ -276,9 +274,9 @@ public class ObjMesh
 
 		glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 8 * 4, 0);
 		glVertexAttribPointer(texCoordIn, 2, GL_FLOAT, false, 8 * 4, 3 * 4);
-		
 		if(normalIn != -1)
 			glVertexAttribPointer(normalIn, 3, GL_FLOAT, true, 8 * 4, 5 * 4);
+		
 		int totalSize = 0;
 		for (String currentVertexGroup : groups.keySet())
 		{
@@ -289,7 +287,7 @@ public class ObjMesh
 			renderingContext.sendBoneTransformationMatrix(matrix);
 			//Only what we can care about
 			if (bonesToDraw == null || bonesToDraw.contains(currentVertexGroup))
-				glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
+				GLCalls.drawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 			totalSize += i;
 		}
 		
@@ -325,7 +323,7 @@ public class ObjMesh
 			renderingContext.sendBoneTransformationMatrix(matrix);
 			//Only what we can care about
 			if (bonesToNotDraw == null || !bonesToNotDraw.contains(currentVertexGroup))
-				glDrawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
+				GLCalls.drawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 			totalSize += i;
 		}
 		

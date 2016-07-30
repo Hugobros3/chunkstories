@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.particles.ParticleTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.world.World;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -278,7 +279,7 @@ public class ParticlesRenderer
 						// glDrawElements(GL_POINTS, elements, GL_UNSIGNED_BYTE,
 						// 0);
 						//glPointSize(4f);
-						glDrawArrays(GL_QUADS, 0, elements);
+						GLCalls.drawArrays(GL_QUADS, 0, elements);
 						totalDrawn += elements;*/
 					}
 					// System.out.println("drawing "+elements+" elements." +
@@ -333,7 +334,7 @@ public class ParticlesRenderer
 		// glDrawElements(GL_POINTS, elements,
 		// GL_UNSIGNED_BYTE, 0);
 		glPointSize(4f);
-		glDrawArrays(GL_QUADS, 0, elements);
+		GLCalls.drawArrays(GL_QUADS, 0, elements);
 
 		// And then clear the buffer to start over
 		particlesPositionsBuffer.clear();

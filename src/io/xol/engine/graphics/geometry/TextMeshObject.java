@@ -60,6 +60,7 @@ public class TextMeshObject
 
 		VerticesObject verticesObject = new VerticesObject();
 		tempBuffer.flip();
+		//System.out.println("Cucking"+temp);
 		verticesObject.uploadData(tempBuffer);
 
 		//System.out.println("Added " + verticesObject.getVramUsage() + " bytes worth of verticesObject");
@@ -117,19 +118,26 @@ public class TextMeshObject
 		glDisable(GL_CULL_FACE);
 		renderingContext.getCurrentShader().setUniformFloat("useColorIn", 1.0f);
 		renderingContext.getCurrentShader().setUniformFloat("useNormalIn", 0.0f);
+
+		renderingContext.enableVertexAttribute("vertexIn");
+		renderingContext.enableVertexAttribute("texCoordIn");
+		renderingContext.enableVertexAttribute("colorIn");
+		//renderingContext.disableVertexAttribute("normalIn");
 		for (VerticesObject verticesObject : verticesObjects)
 		{
 			verticesObject.bind();
-			renderingContext.enableVertexAttribute("vertexIn");
-			renderingContext.enableVertexAttribute("texCoordIn");
-			renderingContext.enableVertexAttribute("colorIn");
 
 			renderingContext.setVertexAttributePointer("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2 + 4), 0);
 			renderingContext.setVertexAttributePointer("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2 + 4), 4 * 3);
 			renderingContext.setVertexAttributePointer("colorIn", 4, GL_FLOAT, false, 4 * (3 + 2 + 4), 4 * (3 + 2));
-			verticesObject.drawElementsTriangles((int) (verticesObject.getVramUsage() / 4 * (3 + 2 + 4)));
+			
+			//System.out.println(verticesObject.getVramUsage() / 4 * (3 + 2 + 4));
+			
+			verticesObject.drawElementsTriangles((int) (verticesObject.getVramUsage() / (4 * (3 + 2 + 4))));
 			//renderingContext.enableVertexAttribute("colorIn");
 		}
+		renderingContext.enableVertexAttribute("colorIn");
+		renderingContext.enableVertexAttribute("normalIn");
 		renderingContext.getCurrentShader().setUniformFloat("useColorIn", 0.0f);
 		renderingContext.getCurrentShader().setUniformFloat("useNormalIn", 1.0f);
 	}

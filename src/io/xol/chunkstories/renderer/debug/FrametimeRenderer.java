@@ -10,6 +10,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -55,7 +56,7 @@ public class FrametimeRenderer
 		data.rewind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glVertexAttribPointer(vertexIn, 2, false, 0, data);
-		glDrawArrays(GL_LINES, 0, 2000);
+		GLCalls.drawArrays(GL_LINES, 0, 2000);
 		renderingContext.disableVertexAttribute(vertexIn);
 	}
 }

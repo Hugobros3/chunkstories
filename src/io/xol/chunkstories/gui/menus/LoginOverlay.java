@@ -152,9 +152,9 @@ public class LoginOverlay extends Overlay implements HttpRequester
 				String session = result.split(":")[1];
 				Client.username = guiHandler.getInputText(0).text;
 				Client.session_key = session;
-				Client.getConfig().setProp("autologin", "ok");
-				Client.getConfig().setProp("user", guiHandler.getInputText(0).text);
-				Client.getConfig().setProp("pass", guiHandler.getInputText(1).text);
+				Client.getConfig().setString("autologin", "ok");
+				Client.getConfig().setString("user", guiHandler.getInputText(0).text);
+				Client.getConfig().setString("pass", guiHandler.getInputText(1).text);
 				can_next = true;
 			}
 			else if (result.startsWith("ko"))

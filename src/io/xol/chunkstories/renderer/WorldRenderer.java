@@ -30,6 +30,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fbo.FBO;
 import io.xol.engine.graphics.shaders.ShaderProgram;
@@ -46,6 +47,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.FastConfig;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
@@ -522,14 +524,14 @@ public class WorldRenderer
 			localMapCommands.flip();
 
 			glVertexAttribPointer(vertexIn, 3, GL_BYTE, false, 4, localMapCommands);
-			glDrawArrays(GL_POINTS, 0, localMapElements);
+			GLCalls.drawArrays(GL_POINTS, 0, localMapElements);
 			//Two maps
 			glDepthFunc(GL_LEQUAL);
 			fboLoadedChunksBot.bind();
 
-			glDrawArrays(GL_POINTS, 0, localMapElements);
+			GLCalls.drawArrays(GL_POINTS, 0, localMapElements);
 			//glDepthFunc(GL_LEQUAL);
-			//glDrawArrays(GL_TRIANGLES, 0, 3);
+			//GLCalls.drawArrays(GL_TRIANGLES, 0, 3);
 
 			renderingContext.disableVertexAttribute(vertexIn);
 
@@ -908,6 +910,7 @@ public class WorldRenderer
 			renderingContext.enableVertexAttribute(vertexIn);
 			renderingContext.enableVertexAttribute(texCoordIn);
 			renderingContext.enableVertexAttribute(normalIn);
+			renderingContext.enableVertexAttribute("colorIn");
 
 			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, -1, normalIn);
 
@@ -923,7 +926,6 @@ public class WorldRenderer
 			entitiesShader.setUniformFloat3("blockColor", 1f, 1f, 1f);
 			entitiesShader.setUniformFloat("time", animationTimer);
 
-
 			entitiesShader.setUniformFloat("overcastFactor", world.getWeather());
 			entitiesShader.setUniformFloat("wetness", getWorldWetness());
 			//entitiesShader.setUniformFloat("wetness", world.isRaining() ? 0.5f : 0.0f);
@@ -936,20 +938,27 @@ public class WorldRenderer
 		{
 			shadowsPassShader.setUniformFloat("entity", 1);
 		}
-
-		//Client.world.particlesHolder.render(renderingContext);
 		glEnable(GL_CULL_FACE);
-
-		
 		glDisable(GL_CULL_FACE);
 		// Render entities
 		Iterator<Entity> ie = world.getAllLoadedEntities();
 		Entity entity;
+		
+		int entitiesRendered = 0;
+		
+		entityIter :
 		while (ie.hasNext())
-		//for (Entity e : getAllLoadedEntities())
 		{
 			entity = ie.next();
+			if(entity == null)
+				continue;
 
+			for(CollisionBox box : entity.getTranslatedCollisionBoxes())
+			{
+				if (!isShadowPass && !camera.isBoxInFrustrum(new Vector3f(box.xpos, box.ypos + box.h / 2, box.zpos), new Vector3f(box.xw, box.h, box.zw)))
+					continue entityIter;
+			}
+			
 			//Set the context
 			renderingContext.getCurrentShader().setUniformFloat3("objectPosition", entity.getLocation());
 			renderingContext.getCurrentShader().setUniformFloat2("worldLight", world.getBlocklightLevel(entity.getLocation()), world.getSunlightLevel(entity.getLocation()));
@@ -958,13 +967,17 @@ public class WorldRenderer
 			renderingContext.getCurrentShader().setUniformMatrix4f("localTansform", new Matrix4f());
 			renderingContext.getCurrentShader().setUniformMatrix3f("localTransformNormal", new Matrix3f());
 			
-			if (entity != null)
-				entity.render(renderingContext);
+			entitiesRendered++;
+			
+			entity.render(renderingContext);
 		}
 
+		//System.out.println(entitiesRendered);
+		
 		renderingContext.disableVertexAttribute(normalIn);
 		renderingContext.disableVertexAttribute(vertexIn);
 		renderingContext.disableVertexAttribute(texCoordIn);
+		renderingContext.disableVertexAttribute("colorIn");
 		
 		if (isShadowPass)
 			return;
@@ -1779,5 +1792,10 @@ public class WorldRenderer
 	public DecalsRenderer getDecalsRenderer()
 	{
 		return decalsRenderer;
+	}
+
+	public SkyRenderer getSky()
+	{
+		return sky;
 	}
 }

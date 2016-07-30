@@ -104,7 +104,7 @@ public class FarTerrainRenderer
 				temp.data = i;
 				Vector4f colorAndAlpha = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 				if (vox != null)
-					colorAndAlpha = VoxelTextures.getTextureColorAlphaAVG(vox.getVoxelTexture(0, VoxelSides.LEFT, temp).name);
+					colorAndAlpha = VoxelTextures.getTextureColorAlphaAVG(vox.getVoxelTexture(0, VoxelSides.TOP, temp).name);
 
 				// colorAndAlpha = new Vector4f(1f, 0.5f, 1f, 1f);
 				bb.put((byte) (colorAndAlpha.x * 255));

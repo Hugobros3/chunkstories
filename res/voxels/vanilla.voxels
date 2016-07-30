@@ -166,6 +166,9 @@ voxel snowblock 37
 	texture: snow
 end
 
+voxel ice 38
+end
+
 voxel web 51
 	solid: false
 	opaque: false

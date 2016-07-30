@@ -12,41 +12,63 @@ public class IOTasksImmediate extends IOTasks {
 
 	public IOTasksImmediate(WorldImplementation world) {
 		super(world);
-		this.tasks = null;
+		//this.tasks = null;
 	}
 
 	@Override
 	public void requestChunkLoad(ChunkHolder holder, int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
 		IOTaskLoadChunk task = new IOTaskLoadChunk(holder, chunkX, chunkY, chunkZ, true, overwrite);
-		task.run();
+		if(tasks.add(task))
+		{
+			//System.out.println("Added task ioloadchunk"+chunkX+":"+chunkY+":"+chunkZ);
+			task.run();
+			tasks.remove(task);
+		}
 	}
 
 	@Override
 	public void requestChunkHolderLoad(ChunkHolder holder)
 	{
+		//System.out.println("Load chunk holder"+holder);
 		IOTask task = new IOTaskLoadChunkHolder(holder);
-		task.run();
+		if(tasks.add(task))
+		{
+			task.run();
+			tasks.remove(task);
+		}
 	}
 
 	@Override
 	public void requestChunkHolderSave(ChunkHolder holder)
 	{
 		IOTask task = new IOTaskSaveChunkHolder(holder);
-		task.run();
+		if(tasks.add(task))
+		{
+			task.run();
+			tasks.remove(task);
+		}
 	}
 
 	@Override
 	public void requestChunkSummaryLoad(RegionSummary summary)
 	{
 		IOTask task = new IOTaskLoadSummary(summary);
-		task.run();
+		if(tasks.add(task))
+		{
+			task.run();
+			tasks.remove(task);
+		}
 	}
 
 	@Override
 	public void requestChunkSummarySave(RegionSummary summary)
 	{
 		IOTask task = new IOTaskSaveSummary(summary);
-		task.run();
+		if(tasks.add(task))
+		{
+			task.run();
+			tasks.remove(task);
+		}
 	}
 }

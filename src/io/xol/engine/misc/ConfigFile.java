@@ -44,7 +44,7 @@ public class ConfigFile
 		if (!file.exists())
 			try
 			{
-				System.out.println("Creating file "+file);
+				System.out.println("Creating config file " + file);
 				file.createNewFile();
 			}
 			catch (IOException e)
@@ -60,7 +60,7 @@ public class ConfigFile
 		try
 		{
 			File file = new File(path);
-			if(!file.exists())
+			if (!file.exists())
 				return;
 			InputStream ips = new FileInputStream(file);
 			InputStreamReader ipsr = new InputStreamReader(ips, "UTF-8");
@@ -87,13 +87,14 @@ public class ConfigFile
 			Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path), "UTF-8"));
 			Set<String> unsortedKeys = props.keySet();
 			List<String> sortedKeys = new ArrayList<String>(unsortedKeys);
-			sortedKeys.sort(new Comparator<String>(){
+			sortedKeys.sort(new Comparator<String>()
+			{
 				@Override
 				public int compare(String arg0, String arg1)
 				{
 					return arg0.compareTo(arg1);
 				}
-				
+
 			});
 			for (String key : sortedKeys)
 			{
@@ -121,83 +122,84 @@ public class ConfigFile
 			return props.get(s);
 		else
 		{
-			if(a != null)
+			if (a != null)
 				props.put(s, a);
 		}
 		return a;
 	}
 
-	public String getProp(String s)
+	public String getString(String s)
 	{
 		return getProp(s, "");
 	}
 
-	public void setProp(String p, String d)
+	public int getInteger(String s, int intProp)
+	{
+		return Integer.parseInt(getProp(s, intProp + ""));
+	}
+
+	public boolean getBoolean(String string, boolean booleanProp)
+	{
+		return getProp(string, booleanProp + "").equals("true");
+	}
+
+	public float getFloat(String s)
+	{
+		return Float.parseFloat(getProp(s, "0.0"));
+	}
+
+	public float getFloat(String s, float f)
+	{
+		return Float.parseFloat(getProp(s, "" + f));
+	}
+
+	public double getDouble(String s)
+	{
+		return Double.parseDouble(getProp(s, "0.0"));
+	}
+
+	public double getDouble(String s, double d)
+	{
+		return Double.parseDouble(getProp(s, d + ""));
+	}
+
+	public long getLong(String s, long l)
+	{
+		try
+		{
+			return Long.parseLong(getProp(s, l + ""));
+		}
+		catch (NumberFormatException e)
+		{
+			return (long) Double.parseDouble(getProp(s, l + ""));
+		}
+	}
+
+	public void setString(String p, String d)
 	{
 		if (props.containsKey(p))
 			props.remove(p);
 		props.put(p, d);
 	}
 
-	public void setProp(String p, int i)
+	public void setInteger(String p, int i)
 	{
-		setProp(p, i + "");
+		setString(p, i + "");
 	}
 
-	public int getIntProp(String s, int intProp)
+	public void setLong(String p, long l)
 	{
-		return Integer.parseInt(getProp(s, intProp + ""));
+		setString(p, l + "");
 	}
 
-	public boolean getBooleanProp(String string, boolean booleanProp)
+	public void setDouble(String p, double d)
 	{
-		return getProp(string, booleanProp + "").equals("true");
+		setString(p, d + "");
 	}
 
-	public float getFloatProp(String s)
+	public void setFloat(String p, float f)
 	{
-		return Float.parseFloat(getProp(s, "0.0"));
-	}
-
-	public float getFloatProp(String s, float f)
-	{
-		return Float.parseFloat(getProp(s, ""+f));
-	}
-
-	public double getDoubleProp(String s)
-	{
-		return Double.parseDouble(getProp(s, "0.0"));
-	}
-
-	public double getDoubleProp(String s, double d)
-	{
-		return Double.parseDouble(getProp(s, d+""));
-	}
-
-	public long getLongProp(String s, long l)
-	{
-		try{
-		return Long.parseLong(getProp(s, l+""));
-		}
-		catch(NumberFormatException e)
-		{
-			return (long) Double.parseDouble(getProp(s, l+""));
-		}
-	}
-
-	public void setProp(String p, long l)
-	{
-		setProp(p, l + "");
-	}
-	
-	public void setProp(String p, double d)
-	{
-		setProp(p, d + "");
-	}
-
-	public void setProp(String p, float f)
-	{
-		setProp(p, f + "");
+		setString(p, f + "");
 	}
 
 	public boolean isFieldSet(String string)

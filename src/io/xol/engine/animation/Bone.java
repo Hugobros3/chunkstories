@@ -1,9 +1,12 @@
-package io.xol.engine.model.animation;
+package io.xol.engine.animation;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Matrix4f;
+import io.xol.engine.math.lalgb.Quaternion4d;
+import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -96,7 +99,7 @@ public class Bone
 		matrix.rotate(rotX, new Vector3f(1, 0, 0));
 		matrix.rotate(rotY, new Vector3f(0, 1, 0));
 		matrix.rotate(rotZ, new Vector3f(0, 0, 1));
-
+		
 		//Apply transformations
 		if (channels == 6)
 		{
@@ -116,6 +119,82 @@ public class Bone
 		if (parent != null)
 			Matrix4f.mul(parent.getTransformationMatrix(frame), matrix, matrix);
 
+		return matrix;
+	}
+	
+	/**
+	 * Returns a Matrix4f describing how to end up at the bone transformation at the given frame.
+	 * @param frameLower
+	 * @return
+	 */
+	public Matrix4f getTransformationMatrixInterpolated(int frameLower, int frameUpper, double t)
+	{
+		//Read rotation data from where it is
+		float rotXLower;
+		float rotYLower;
+		float rotZLower;
+		if (channels == 6)
+		{
+			rotXLower = toRad(animationData[frameLower][3]);
+			rotYLower = toRad(animationData[frameLower][4]);
+			rotZLower = toRad(animationData[frameLower][5]);
+		}
+		else
+		{
+			rotXLower = toRad(animationData[frameLower][0]);
+			rotYLower = toRad(animationData[frameLower][1]);
+			rotZLower = toRad(animationData[frameLower][2]);
+		}
+		
+		float rotXUpper;
+		float rotYUpper;
+		float rotZUpper;
+		if (channels == 6)
+		{
+			rotXUpper = toRad(animationData[frameUpper][3]);
+			rotYUpper = toRad(animationData[frameUpper][4]);
+			rotZUpper = toRad(animationData[frameUpper][5]);
+		}
+		else
+		{
+			rotXUpper = toRad(animationData[frameUpper][0]);
+			rotYUpper = toRad(animationData[frameUpper][1]);
+			rotZUpper = toRad(animationData[frameUpper][2]);
+		}
+
+		Quaternion4d quaternionXLower = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotXLower);
+		Quaternion4d quaternionYLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotYLower);
+		Quaternion4d quaternionZLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZLower);
+		Quaternion4d totalLower = quaternionXLower.mult(quaternionYLower).mult(quaternionZLower);
+
+		Quaternion4d quaternionXUpper = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotXUpper);
+		Quaternion4d quaternionYUpper = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotYUpper);
+		Quaternion4d quaternionZUpper = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZUpper);
+		Quaternion4d totalUpper = (quaternionXUpper.mult(quaternionYUpper)).mult(quaternionZUpper);
+		
+		Quaternion4d total = Quaternion4d.slerp(totalLower, totalUpper, t);
+		
+		Matrix4f matrix = total.toMatrix4f();
+		
+		//Apply transformations
+		if (channels == 6)
+		{
+			matrix.m30 += Math2.mix(animationData[frameLower][0], animationData[frameUpper][0], t);
+			matrix.m31 += Math2.mix(animationData[frameLower][1], animationData[frameUpper][1], t);
+			matrix.m32 += Math2.mix(animationData[frameLower][2], animationData[frameUpper][2], t);
+		}
+		//TODO check on that, I'm not sure if you should apply both when possible
+		else
+		{
+			matrix.m30 += offset.x;
+			matrix.m31 += offset.y;
+			matrix.m32 += offset.z;
+		}
+
+		//Apply the father transformation
+		if (parent != null)
+			Matrix4f.mul(parent.getTransformationMatrixInterpolated(frameLower, frameUpper, t), matrix, matrix);
+		
 		return matrix;
 	}
 

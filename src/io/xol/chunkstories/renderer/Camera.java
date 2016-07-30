@@ -183,7 +183,7 @@ public class Camera
 		Vector3f.add(position, lookAt, lookAt);
 		position.scale(0);
 	    
-	    //modelViewMatrix4f = MatrixHelper.getLookAtMatrix(position, direction, up);
+	   // modelViewMatrix4f = MatrixHelper.getLookAtMatrix(position, direction, up);
 	    
 	    //return result;
 		
@@ -453,5 +453,10 @@ public class Camera
 		float a = (float) ((180-rotH) / 180f * Math.PI);
 		float b = (float) ((-rotV) / 180f * Math.PI);
 		return new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
+	}
+
+	public Vector3d getCameraPosition()
+	{
+		return this.pos.clone().negate();
 	}
 }

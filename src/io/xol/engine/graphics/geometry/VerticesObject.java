@@ -1,6 +1,7 @@
 package io.xol.engine.graphics.geometry;
 
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.GLCalls;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -68,7 +69,11 @@ public class VerticesObject
 		if (GameWindowOpenGL.isMainGLWindow())
 		{
 			bind();
-			dataSize = dataToUpload.remaining();
+			dataSize = dataToUpload.limit();
+			
+			//System.out.println("Uploading data "+dataToUpload.limit()/ (4 * (3 + 2 + 4)) + "v" + dataToUpload);
+			
+			//dataSize = 0;
 			glBufferData(GL_ARRAY_BUFFER, dataToUpload, GL_STATIC_DRAW);
 			isDataPresent = true;
 			return true;
@@ -103,6 +108,8 @@ public class VerticesObject
 		ByteBuffer atomicReference = dataPendingUpload;
 		if (atomicReference != null)
 		{
+			//System.out.println("cuck");
+			
 			uploadData(atomicReference);
 			dataPendingUpload = null;
 		}
@@ -119,7 +126,7 @@ public class VerticesObject
 	{
 		if (!prepareDraw())
 			return false;
-		glDrawArrays(GL_POINTS, 0, elementsToDraw);
+		GLCalls.drawArrays(GL_POINTS, 0, elementsToDraw);
 		return true;
 	}
 
@@ -127,7 +134,7 @@ public class VerticesObject
 	{
 		if (!prepareDraw())
 			return false;
-		glDrawArrays(GL_LINES, 0, elementsToDraw);
+		GLCalls.drawArrays(GL_LINES, 0, elementsToDraw);
 		return true;
 	}
 
@@ -135,7 +142,7 @@ public class VerticesObject
 	{
 		if (!prepareDraw())
 			return false;
-		glDrawArrays(GL_TRIANGLES, 0, elementsToDraw);
+		GLCalls.drawArrays(GL_TRIANGLES, 0, elementsToDraw);
 		return true;
 	}
 
@@ -143,7 +150,7 @@ public class VerticesObject
 	{
 		if (!prepareDraw())
 			return false;
-		glDrawArrays(GL_QUADS, 0, elementsToDraw);
+		GLCalls.drawArrays(GL_QUADS, 0, elementsToDraw);
 		return true;
 	}
 

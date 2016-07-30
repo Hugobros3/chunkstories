@@ -1,5 +1,6 @@
 package io.xol.chunkstories.renderer.sky;
 
+import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -133,7 +134,7 @@ public class SkyRenderer
 			renderingContext.enableVertexAttribute(vertexIn);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glVertexAttribPointer(vertexIn, 3, false, 0, stars);
-			glDrawArrays(GL_POINTS, 0, NB_STARS);
+			GLCalls.drawArrays(GL_POINTS, 0, NB_STARS);
 			renderingContext.disableVertexAttribute(vertexIn);
 			//starsShader.use(false);
 		}

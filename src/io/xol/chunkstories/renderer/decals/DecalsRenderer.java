@@ -103,7 +103,7 @@ public class DecalsRenderer
 						int idThere = VoxelFormat.id(world.getVoxelData(location));
 
 						Voxel voxel = VoxelTypes.get(idThere);
-						if (voxel != null && idThere > 0 && !voxel.isVoxelLiquid())
+						if (voxel != null && idThere > 0 && !voxel.isVoxelLiquid() && voxel.isVoxelSolid())
 						{
 							BlockRenderInfo bri = new BlockRenderInfo(location);
 							VoxelRenderer model = voxel.getVoxelModel(bri);
@@ -197,6 +197,8 @@ public class DecalsRenderer
 		
 		//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		glEnable(GL_BLEND);
+		
+		//glDisable(GL_DEPTH_TEST);
 		glDepthMask(false);
 		//glDepthFunc(GL_LEQUAL);
 
@@ -215,7 +217,8 @@ public class DecalsRenderer
 			
 			decalType.verticesObject.drawElementsTriangles(decalType.kount);
 		}
-		
+
+		//glEnable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 		glDepthMask(true);
 		

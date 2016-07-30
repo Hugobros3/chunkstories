@@ -197,36 +197,36 @@ public class IOTasks extends Thread
 		@Override
 		public boolean run()
 		{
-			//ChunkHolder holder = world.getChunksHolder().getChunkHolder(x, y, z, shouldLoadCH);
-
 			// If for some reasons the chunks holder's are still not loaded, we
 			// requeue the job for later.
 			if (holder == null)
 				return false;
+			//System.out.println("holder ok"+"in"+holder);
 			if (!holder.isDiskDataLoaded())
 				return false;
+			//System.out.println("dd loaded ok");
 			// When a loader was removed from the world, it's remaining data is ignored
 			if (holder.isUnloaded())
 				return true;
+			//System.out.println("unloaded ok");
 			//Already loaded
 			if (holder.isChunkLoaded(x, y, z))// && !overwrite)
 				return true;
+			//System.out.println("already ok");
+			
 			//Look for
 			holder.compressedChunksLock.beginRead();
 			byte[] cd = holder.getCompressedData(x, y, z);
-			//holder.lock.lock();
 			if (cd == null || cd.length == 0)
 			{
 				holder.compressedChunksLock.endRead();
 				CubicChunk c = new CubicChunk(holder, x, y, z);
 				//System.out.println("No compressed data for this chunk.");
-				//holder.lock.unlock();
 				world.setChunk(c);
 				return true;
 			}
 			else
 			{
-				//CubicChunk c = new CubicChunk(holder, x, y, z);
 				int data[] = new int[32 * 32 * 32];
 				try
 				{
@@ -242,14 +242,14 @@ public class IOTasks extends Thread
 				{
 					data[i] = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8)
 							| (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
-					//c.setDataAtWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
 				}
 				CubicChunk c = new CubicChunk(holder, x, y, z, data);
 				c.bakeVoxelLightning(false);
-
 				holder.setChunk(x, y, z, c);
-				//world.setChunk(c);
 			}
+
+			//System.out.println("loaded chunk");
+			
 			return true;
 		}
 

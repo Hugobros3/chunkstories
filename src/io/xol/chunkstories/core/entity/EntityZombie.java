@@ -15,18 +15,16 @@ import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.engine.animation.BVHAnimation;
+import io.xol.engine.animation.BVHLibrary;
+import io.xol.engine.animation.Bone;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.model.ModelLibrary;
-import io.xol.engine.model.animation.BVHAnimation;
-import io.xol.engine.model.animation.BVHLibrary;
-import io.xol.engine.model.animation.Bone;
 
 public class EntityZombie extends EntityLivingImplentation implements EntityHUD
 {
@@ -63,15 +61,7 @@ public class EntityZombie extends EntityLivingImplentation implements EntityHUD
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 
 		renderingContext.sendTransformationMatrix(null);
-		ModelLibrary.getMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/models/human-standstill.bvh"), i);
-
-		
-		Matrix4f itemMatrix = BVHLibrary.getAnimation("res/models/human-viewport.bvh").getTransformationForBone("boneItemInHand", i);
-
-		renderingContext.sendTransformationMatrix(itemMatrix);
-		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/ak47.hq.png"));
-		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
-		//ModelLibrary.getMesh("./res/models/ak47.hq.obj").render(renderingContext);
+		ModelLibrary.getMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/models/human-zombie-arms.bvh"), (int)System.currentTimeMillis() % 30000);
 	}
 
 	@Override

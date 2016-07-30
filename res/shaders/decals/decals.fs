@@ -28,8 +28,8 @@ void main()
 	
 	float depth = texture2D(zBuffer, gl_FragCoord.xy / screenViewportSize ).x;
 	
-	if(abs(depth - gl_FragCoord.z) > 0.001)
-		discard;
+	/*if(abs(depth - gl_FragCoord.z) > 0.001)
+		discard;*/
 	
 	//Debug : shows blue when out of bounds !
 	/*if(texCoordPassed.x < 0.0 || texCoordPassed.x > 1.0)

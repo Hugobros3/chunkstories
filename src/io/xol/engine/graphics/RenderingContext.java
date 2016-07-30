@@ -7,10 +7,8 @@ import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.util.GuiRenderer;
 import io.xol.engine.graphics.util.TrueTypeFontRenderer;
 
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.glDrawArrays;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
 import java.nio.FloatBuffer;
@@ -283,7 +281,7 @@ public class RenderingContext
 		enableVertexAttribute(vertexAttribLocation);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glVertexAttribPointer(vertexAttribLocation, 2, false, 0, fsQuadBuffer);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		GLCalls.drawArrays(GL_TRIANGLES, 0, 6);
 
 		disableVertexAttribute(vertexAttribLocation);
 		//buffer = null;

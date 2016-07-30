@@ -71,7 +71,7 @@ public abstract class EntityImplementation implements Entity
 		acceleration = new Vector3d();
 		//checkPositionAndUpdateHolder();
 		//To avoid NPEs
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(position.getLocation())));
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(position.getLocation(), false)));
 	}
 
 	/**

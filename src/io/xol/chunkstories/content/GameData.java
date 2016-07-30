@@ -18,10 +18,10 @@ import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.chunkstories.world.generator.WorldGenerators;
+import io.xol.engine.animation.BVHLibrary;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.model.ModelLibrary;
-import io.xol.engine.model.animation.BVHLibrary;
 import io.xol.engine.sound.library.SoundsLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -32,16 +32,51 @@ public class GameData
 {
 	public static void reload()
 	{
+		long total = System.nanoTime();
+		long part = System.nanoTime();
+		
 		buildModsFileSystem();
+		System.out.println("fs reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		part = System.nanoTime();
+		
 		VoxelTextures.buildTextureAtlas();
+		System.out.println("texture atlas reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		part = System.nanoTime();
+		
 		VoxelModels.resetAndLoadModels();
+		System.out.println("voxel models reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		part = System.nanoTime();
+		
 		ItemsList.reload();
+		System.out.println("items reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		part = System.nanoTime();
+		
 		VoxelTypes.loadVoxelTypes();
+		System.out.println("voxels reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		part = System.nanoTime();
+		
 		EntitiesList.reload();
+		System.out.println("entities reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		part = System.nanoTime();
+		
 		EntityComponents.reload();
+		System.out.println("components reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		part = System.nanoTime();
+		
 		PacketsProcessor.loadPacketsTypes();
+		System.out.println("packets reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		part = System.nanoTime();
+		
 		WorldGenerators.loadWorldGenerators();
+		System.out.println("generators reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		part = System.nanoTime();
+		
 		ParticleTypes.reload();
+		System.out.println("particles reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		part = System.nanoTime();
+		
+		//Total
+		System.out.println("Assets reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		
 		//Inputs.loadKeyBindsClient();
 	}

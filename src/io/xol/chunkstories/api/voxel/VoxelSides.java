@@ -19,8 +19,8 @@ public enum VoxelSides
 	//Vanilla mc sides (stairs) 
 	// 1 = cs_RIGHT / mc_WEST   |    3
 	// 0 = cs_LEFT  / mc_EAST   |  0 X 1
-	// 2 = cs_BACK  / mc_SOUTH  |    2
-	// 3 = cs_FRONT / mc_NORTH  |
+	// 2 = cs_FRONT  / mc_SOUTH  |    2
+	// 3 = cs_BACK / mc_NORTH  |
 	
 	LEFT,
 	FRONT,
@@ -37,13 +37,33 @@ public enum VoxelSides
 		switch(mcSide)
 		{
 		case 2:
-			return FRONT;
-		case 3:
 			return BACK;
+		case 3:
+			return FRONT;
 		case 4:
 			return RIGHT;
 		case 5:
 			return LEFT;
+		}
+		
+		return FRONT;
+	}
+	
+	/**
+	 * Returns the Chunk Stories side from the minecraft metadata of the following objects, no top/bottom direction allowed
+	 */
+	public static VoxelSides getSideMcDoor(int mcSide)
+	{
+		switch(mcSide)
+		{
+		case 0:
+			return LEFT;
+		case 1:
+			return BACK;
+		case 2:
+			return RIGHT;
+		case 3:
+			return FRONT;
 		}
 		
 		return FRONT;

@@ -279,7 +279,6 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 			}
 			if (VoxelTypes.get(adjacentId) instanceof VoxelDoor)
 			{
-				System.out.println("adjacent found");
 				hingeSide = true;
 			}
 
@@ -293,15 +292,14 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 		return voxelData;
 	}
 
-	private int computeMeta(boolean isOpen, boolean hingeSide, VoxelSides doorFacingSide)
+	public static int computeMeta(boolean isOpen, boolean hingeSide, VoxelSides doorFacingSide)
 	{
 		return computeMeta(isOpen, hingeSide, doorFacingSide.ordinal());
 	}
 
-	private int computeMeta(boolean isOpen, boolean hingeSide, int doorFacingsSide)
+	public static int computeMeta(boolean isOpen, boolean hingeSide, int doorFacingsSide)
 	{
-		System.out.println(doorFacingsSide + " open: " + isOpen + " hinge:" + hingeSide);
-
+		//System.out.println(doorFacingsSide + " open: " + isOpen + " hinge:" + hingeSide);
 		return (doorFacingsSide << 2) | (((hingeSide ? 1 : 0) & 0x1) << 1) | (isOpen ? 1 : 0) & 0x1;
 	}
 

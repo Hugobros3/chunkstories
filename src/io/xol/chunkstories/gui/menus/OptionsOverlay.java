@@ -74,7 +74,7 @@ public class OptionsOverlay extends Overlay
 
 		public void save()
 		{
-			Client.getConfig().setProp(parameter, value);
+			Client.getConfig().setString(parameter, value);
 		}
 	}
 
@@ -84,7 +84,7 @@ public class OptionsOverlay extends Overlay
 		public ConfigButtonToggle(String n)
 		{
 			super(n);
-			value = Client.getConfig().getBooleanProp(n, false)+"";
+			value = Client.getConfig().getBoolean(n, false)+"";
 		}
 
 		@Override
@@ -325,7 +325,7 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{
-						GameWindowOpenGL.setTargetFPS(Client.getConfig().getIntProp("framerate", -1));
+						GameWindowOpenGL.setTargetFPS(Client.getConfig().getInteger("framerate", -1));
 					}
 				}),
 				}));

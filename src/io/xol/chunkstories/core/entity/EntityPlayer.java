@@ -40,6 +40,8 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.engine.animation.BVHAnimation;
+import io.xol.engine.animation.BVHLibrary;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
@@ -47,8 +49,6 @@ import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.model.ModelLibrary;
-import io.xol.engine.model.animation.BVHAnimation;
-import io.xol.engine.model.animation.BVHLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -432,6 +432,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	@Override
 	public void render(RenderingContext renderingContext)
 	{
+		
 		Camera cam = renderingContext.getCamera();
 		ItemPile selectedItemPile = getSelectedItemComponent().getSelectedItem();
 		BVHAnimation animation = BVHLibrary.getAnimation("res/models/human-standstill.bvh");
@@ -464,7 +465,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		if (!this.equals(Client.controlledEntity) || renderingContext.isThisAShadowPass())
 			ModelLibrary.getMesh("res/models/human.obj").renderBut(renderingContext, fp_elements, animation, 0);
 		
-		
 		//Render rotated limbs
 		playerRotationMatrix = new Matrix4f();
 		playerRotationMatrix.translate(new Vector3f(0f, (float) this.eyePosition, 0f));
@@ -477,11 +477,13 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
 
 		if(selectedItemPile != null || !this.equals(Client.controlledEntity) || renderingContext.isThisAShadowPass())
-		ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, fp_elements, animation, 0);
+			ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, fp_elements, animation, 0);
 	
 		//Matrix to itemInHand bone in the player's bvh
 		Matrix4f itemMatrix = new Matrix4f();
-		itemMatrix = animation.getTransformationForBone("boneItemInHand", 0);
+		itemMatrix = animation.getTransformationForBone("boneItemInHand", 0.0);
+		//System.out.println(itemMatrix);
+		
 		Matrix4f.mul(playerRotationMatrix, itemMatrix, itemMatrix);
 
 		if (selectedItemPile != null)
