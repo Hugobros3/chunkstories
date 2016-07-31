@@ -435,13 +435,14 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		
 		Camera cam = renderingContext.getCamera();
 		ItemPile selectedItemPile = getSelectedItemComponent().getSelectedItem();
-		BVHAnimation animation = BVHLibrary.getAnimation("res/models/human-standstill.bvh");
+		
+		BVHAnimation animation = BVHLibrary.getAnimation("res/animations/human/standstill.bvh");
 		if (selectedItemPile != null)
 		{
 			if (selectedItemPile.getItem() instanceof ItemAk47)
-				animation = BVHLibrary.getAnimation("res/models/human-rifle-holding.bvh");
+				animation = BVHLibrary.getAnimation("res/animations/human/holding-rifle.bvh");
 			else
-				animation = BVHLibrary.getAnimation("res/models/human-holding.bvh");
+				animation = BVHLibrary.getAnimation("res/animations/human/holding-item.bvh");
 		}
 		//Player textures
 		Texture2D playerTexture = TexturesHandler.getTexture("models/guyA.png");

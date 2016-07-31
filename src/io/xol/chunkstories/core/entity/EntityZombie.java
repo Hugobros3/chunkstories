@@ -61,7 +61,7 @@ public class EntityZombie extends EntityLivingImplentation implements EntityHUD
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 
 		renderingContext.sendTransformationMatrix(null);
-		ModelLibrary.getMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/models/human-zombie-arms.bvh"), (int)System.currentTimeMillis() % 30000);
+		ModelLibrary.getMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/animations/human/walking.bvh"), (int)System.currentTimeMillis() % 30000);
 	}
 
 	@Override

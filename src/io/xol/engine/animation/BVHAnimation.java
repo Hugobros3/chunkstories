@@ -315,7 +315,8 @@ public class BVHAnimation
 	public String toString()
 	{
 		String txt = "BVH ANIMATION FILE\n";
-		txt += root.toString();
+		if(root != null)
+			txt += root.toString();
 		txt += "Frames: " + frames + "\n";
 		txt += "Frame Time: " + frameTime;
 		return txt;

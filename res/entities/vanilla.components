@@ -12,3 +12,4 @@
 10 io.xol.chunkstories.core.entity.components.EntityComponentHealth
 12 io.xol.chunkstories.core.entity.components.EntityComponentPublicInventory
 13 io.xol.chunkstories.core.entity.components.EntityComponentSignText
+14 io.xol.chunkstories.core.entity.components.EntityComponentAnimation
