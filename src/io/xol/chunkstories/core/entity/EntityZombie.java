@@ -74,7 +74,7 @@ public class EntityZombie extends EntityLivingImplentation implements EntityHUD
 			Matrix4f transform = anim.getTransformationForBone(b.name, i);
 			//TODO broken
 			Vector3d pos = this.getLocation();
-			debugDraw(0.2f, 0.2f, 0.2f, (float) pos.x, (float) pos.y , (float) pos.z, transform);
+			debugDraw(0.2f, 0.2f, 0.2f, (float) pos.getX(), (float) pos.getY() , (float) pos.getZ(), transform);
 		}
 	}
 	

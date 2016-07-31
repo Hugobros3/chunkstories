@@ -91,7 +91,7 @@ public class Camera
 				lookAt.x, lookAt.y, lookAt.z, up.x, up.y, up.z
 		});
 		//FloatBuffer listenerOrientation = getFloatBuffer(new float[] { (float) Math.sin(a) * 1 * (float) Math.cos(b), (float) Math.sin(b) * 1, (float) Math.cos(a) * 1 * (float) Math.cos(b), 0.0f, 1.0f, 0.0f });
-		Client.getInstance().getSoundManager().setListenerPosition(-pos.x, -pos.y, -pos.z, listenerOrientation);
+		Client.getInstance().getSoundManager().setListenerPosition(-pos.getX(), -pos.getY(), -pos.getZ(), listenerOrientation);
 	}
 
 	public float fov = 45;

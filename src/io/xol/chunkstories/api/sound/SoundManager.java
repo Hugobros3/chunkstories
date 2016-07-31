@@ -27,7 +27,7 @@ public abstract class SoundManager
 	 */
 	public SoundSource playSoundEffect(String soundEffect, Vector3d location, float pitch, float gain)
 	{
-		return playSoundEffect(soundEffect, location.x, location.y, location.z, pitch, gain);
+		return playSoundEffect(soundEffect, location.getX(), location.getY(), location.getZ(), pitch, gain);
 	}
 
 	/**

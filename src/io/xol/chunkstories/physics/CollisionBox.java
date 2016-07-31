@@ -43,9 +43,9 @@ public class CollisionBox implements Collidable
 	
 	public CollisionBox translate(Vector3d vec3)
 	{
-		xpos += vec3.x;
-		ypos += vec3.y;
-		zpos += vec3.z;
+		xpos += vec3.getX();
+		ypos += vec3.getY();
+		zpos += vec3.getZ();
 		return this;
 	}
 
@@ -96,11 +96,11 @@ public class CollisionBox implements Collidable
 
 	boolean inBox(Vector3d hit, Vector3d B1, Vector3d B2, int axis)
 	{
-		if (axis == 1 && hit.z > B1.z && hit.z < B2.z && hit.y > B1.y && hit.y < B2.y)
+		if (axis == 1 && hit.getZ() > B1.getZ() && hit.getZ() < B2.getZ() && hit.getY() > B1.getY() && hit.getY() < B2.getY())
 			return true;
-		if (axis == 2 && hit.z > B1.z && hit.z < B2.z && hit.x > B1.x && hit.x < B2.x)
+		if (axis == 2 && hit.getZ() > B1.getZ() && hit.getZ() < B2.getZ() && hit.getX() > B1.getX() && hit.getX() < B2.getX())
 			return true;
-		if (axis == 3 && hit.x > B1.x && hit.x < B2.x && hit.y > B1.y && hit.y < B2.y)
+		if (axis == 3 && hit.getX() > B1.getX() && hit.getX() < B2.getX() && hit.getY() > B1.getY() && hit.getY() < B2.getY())
 			return true;
 		return false;
 	}
@@ -125,26 +125,26 @@ public class CollisionBox implements Collidable
 		//System.out.println(xpos + ": " + ypos + ": " + zpos);
 		//System.out.println(L1 + " : " + L2);
 		
-		if (L2.x < B1.x && L1.x < B1.x)
+		if (L2.getX() < B1.getX() && L1.getX() < B1.getX())
 			return null;
-		if (L2.x > B2.x && L1.x > B2.x)
+		if (L2.getX() > B2.getX() && L1.getX() > B2.getX())
 			return null;
-		if (L2.y < B1.y && L1.y < B1.y)
+		if (L2.getY() < B1.getY() && L1.getY() < B1.getY())
 			return null;
-		if (L2.y > B2.y && L1.y > B2.y)
+		if (L2.getY() > B2.getY() && L1.getY() > B2.getY())
 			return null;
-		if (L2.z < B1.z && L1.z < B1.z)
+		if (L2.getZ() < B1.getZ() && L1.getZ() < B1.getZ())
 			return null;
-		if (L2.z > B2.z && L1.z > B2.z)
+		if (L2.getZ() > B2.getZ() && L1.getZ() > B2.getZ())
 			return null;
-		if (L1.x > B1.x && L1.x < B2.x && L1.y > B1.y && L1.y < B2.y && L1.z > B1.z && L1.z < B2.z)
+		if (L1.getX() > B1.getX() && L1.getX() < B2.getX() && L1.getY() > B1.getY() && L1.getY() < B2.getY() && L1.getZ() > B1.getZ() && L1.getZ() < B2.getZ())
 		{
 			return L1;
 		}
 		Vector3d hit = new Vector3d();
-		if ((getLineIntersection(L1.x - B1.x, L2.x - B1.x, L1, L2, hit) && inBox(hit, B1, B2, 1)) || (getLineIntersection(L1.y - B1.y, L2.y - B1.y, L1, L2, hit) && inBox(hit, B1, B2, 2))
-				|| (getLineIntersection(L1.z - B1.z, L2.z - B1.z, L1, L2, hit) && inBox(hit, B1, B2, 3)) || (getLineIntersection(L1.x - B2.x, L2.x - B2.x, L1, L2, hit) && inBox(hit, B1, B2, 1))
-				|| (getLineIntersection(L1.y - B2.y, L2.y - B2.y, L1, L2, hit) && inBox(hit, B1, B2, 2)) || (getLineIntersection(L1.z - B2.z, L2.z - B2.z, L1, L2, hit) && inBox(hit, B1, B2, 3)))
+		if ((getLineIntersection(L1.getX() - B1.getX(), L2.getX() - B1.getX(), L1, L2, hit) && inBox(hit, B1, B2, 1)) || (getLineIntersection(L1.getY() - B1.getY(), L2.getY() - B1.getY(), L1, L2, hit) && inBox(hit, B1, B2, 2))
+				|| (getLineIntersection(L1.getZ() - B1.getZ(), L2.getZ() - B1.getZ(), L1, L2, hit) && inBox(hit, B1, B2, 3)) || (getLineIntersection(L1.getX() - B2.getX(), L2.getX() - B2.getX(), L1, L2, hit) && inBox(hit, B1, B2, 1))
+				|| (getLineIntersection(L1.getY() - B2.getY(), L2.getY() - B2.getY(), L1, L2, hit) && inBox(hit, B1, B2, 2)) || (getLineIntersection(L1.getZ() - B2.getZ(), L2.getZ() - B2.getZ(), L1, L2, hit) && inBox(hit, B1, B2, 3)))
 			return hit;
 
 		//sSystem.out.println(hit);

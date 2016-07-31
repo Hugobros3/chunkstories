@@ -140,7 +140,7 @@ public class GameplayScene extends OverlayableScene
 			// System.out.println(Math.sin(transformedViewV)+"f");
 			Vector3f viewerCamDirVector = new Vector3f((float) (Math.sin((-camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)),
 					(float) (Math.cos((-camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)));
-			Vector3f lightPosition = new Vector3f((float) loc.x, (float) loc.y + (float) ((EntityPlayer) this.player).eyePosition, (float) loc.z);
+			Vector3f lightPosition = new Vector3f((float) loc.getX(), (float) loc.getY() + (float) ((EntityPlayer) this.player).eyePosition, (float) loc.getZ());
 			viewerCamDirVector.scale(-0.5f);
 			Vector3f.add(viewerCamDirVector, lightPosition, lightPosition);
 			viewerCamDirVector.scale(-1f);
@@ -163,9 +163,9 @@ public class GameplayScene extends OverlayableScene
 		{
 			int id, data;
 			int drawDebugDist = 6;
-			for (int i = ((int) loc.x) - drawDebugDist; i <= ((int) loc.x) + drawDebugDist; i++)
-				for (int j = ((int) loc.y) - drawDebugDist; j <= ((int) loc.y) + drawDebugDist; j++)
-					for (int k = ((int) loc.z) - drawDebugDist; k <= ((int) loc.z) + drawDebugDist; k++)
+			for (int i = ((int) loc.getX()) - drawDebugDist; i <= ((int) loc.getX()) + drawDebugDist; i++)
+				for (int j = ((int) loc.getY()) - drawDebugDist; j <= ((int) loc.getY()) + drawDebugDist; j++)
+					for (int k = ((int) loc.getZ()) - drawDebugDist; k <= ((int) loc.getZ()) + drawDebugDist; k++)
 					{
 						data = Client.world.getVoxelData(i, j, k);
 						id = VoxelFormat.id(data);
@@ -350,7 +350,7 @@ public class GameplayScene extends OverlayableScene
 		//TODO move this to core content plugin
 		else if (Client.getInstance().getInputsManager().getInputByName("use").equals(keyBind))
 		{
-			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) loc.x, (float) loc.y, (float) loc.z, 1.0f, 1.0f);
+			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) loc.getX(), (float) loc.getY(), (float) loc.getZ(), 1.0f, 1.0f);
 			flashLight = !flashLight;
 		}
 		else if (Client.getInstance().getInputsManager().getInputByName("inventory").equals(keyBind))
@@ -513,9 +513,9 @@ public class GameplayScene extends OverlayableScene
 
 		long total = Runtime.getRuntime().totalMemory();
 		long used = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		int bx = ((int) camera.pos.x);
-		int by = ((int) camera.pos.y);
-		int bz = ((int) camera.pos.z);
+		int bx = ((int) camera.pos.getX());
+		int by = ((int) camera.pos.getY());
+		int bz = ((int) camera.pos.getZ());
 		int data = Client.world.getVoxelData(bx, by, bz);
 		int bl = (data & 0x0F000000) >> 0x18;
 		int sl = (data & 0x00F00000) >> 0x14;

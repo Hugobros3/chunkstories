@@ -11,7 +11,7 @@ import io.xol.chunkstories.renderer.WorldRenderer;
  * A 'Client' world is one responsible of graphical and input tasks
  * A world can be both client and master.
  */
-public interface WorldClient
+public interface WorldClient extends World
 {
 	public Client getClient();
 

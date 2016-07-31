@@ -26,9 +26,9 @@ public class SelectionRenderer
 
 	public void drawSelectionBox(Location location)
 	{
-		int x = (int) location.x;
-		int y = (int) location.y;
-		int z = (int) location.z;
+		int x = (int) location.getX();
+		int y = (int) location.getY();
+		int z = (int) location.getZ();
 		glColor4f(1, 1, 1, 1.0f);
 		glLineWidth(2);
 		glDisable(GL_CULL_FACE);

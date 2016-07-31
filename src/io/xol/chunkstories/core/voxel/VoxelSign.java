@@ -55,7 +55,7 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 			blockLocation.sub(entity.getLocation());
 			blockLocation.negate();
 			
-			Vector2f direction = new Vector2f((float)blockLocation.x, (float)blockLocation.z);
+			Vector2f direction = new Vector2f((float)blockLocation.getX(), (float)blockLocation.getZ());
 			direction.normalise();
 			//System.out.println("x:"+direction.x+"y:"+direction.y);
 			

@@ -1,4 +1,4 @@
-package io.xol.chunkstories.server.tech;
+package io.xol.chunkstories.server;
 
 import java.util.Iterator;
 
@@ -11,7 +11,6 @@ import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.entity.EntitiesList;
-import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
@@ -44,6 +43,7 @@ public class ServerConsole
 				emitter.sendMessage("An exception happened while handling your command : " + e.getLocalizedMessage());
 				e.printStackTrace();
 			}
+			//Then try the world commands
 
 			// No rights needed
 			if (cmd.equals("uptime"))
@@ -137,7 +137,7 @@ public class ServerConsole
 				emitter.sendMessage("#00FFD0" + player.getControlledEntity().getChunkHolder());
 				return true;
 			}
-			else if (cmd.equals("spawn"))
+			else if (cmd.equals("spawnEntity"))
 			{
 				int id = Integer.parseInt(arguments[0]);
 				Entity test = EntitiesList.newEntity(server.getWorld(), (short) id);
@@ -234,7 +234,7 @@ public class ServerConsole
 				}
 				else
 				{
-					emitter.sendMessage("Unrecognized command. Try help.");
+					emitter.sendMessage("Unrecognized command. Try /help.");
 					return true;
 				}
 			}

@@ -1,9 +1,10 @@
-package io.xol.chunkstories.server;
+package io.xol.chunkstories.server.net;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.server.Server;
 import io.xol.engine.net.HttpRequests;
 
 //(c) 2015-2016 XolioWare Interactive

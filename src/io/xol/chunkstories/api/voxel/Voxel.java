@@ -119,7 +119,7 @@ public interface Voxel
 	 */
 	public default CollisionBox[] getTranslatedCollisionBoxes(WorldImplementation world, Vector3d position)
 	{
-		return getTranslatedCollisionBoxes(world, (int)position.x, (int)position.y, (int)position.z);
+		return getTranslatedCollisionBoxes(world, (int)position.getX(), (int)position.getY(), (int)position.getZ());
 	}
 	
 	/**

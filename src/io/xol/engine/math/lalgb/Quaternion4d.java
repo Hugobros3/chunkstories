@@ -97,7 +97,7 @@ public class Quaternion4d
 	
 	public static double dot(Quaternion4d a, Quaternion4d b)
 	{
-		return a.s * b.s + a.v.x * b.v.x + a.v.y * b.v.y + a.v.z * b.v.z;
+		return a.s * b.s + a.v.getX() * b.v.getX() + a.v.getY() * b.v.getY() + a.v.getZ() * b.v.getZ();
 	}
 	
 	public static Quaternion4d fromAxisAngle(Vector3d axis, double angle)
@@ -180,13 +180,13 @@ public class Quaternion4d
 	{
 		Matrix4f matrix = new Matrix4f();
 
-		double n = v.x * v.x + v.y * v.y + v.z * v.z + s * s;
+		double n = v.getX() * v.getX() + v.getY() * v.getY() + v.getZ() * v.getZ() + s * s;
 		double ss = (n > 0.0f) ? (2.0f / n) : 0.0f;
         
-		double xs = v.x * ss, ys = v.y * ss, zs = v.z * ss;
+		double xs = v.getX() * ss, ys = v.getY() * ss, zs = v.getZ() * ss;
 		double wx = s * xs, wy = s * ys, wz = s * zs;
-		double xx = v.x * xs, xy = v.x * ys, xz = v.x * zs;
-		double yy = v.y * ys, yz = v.y * zs, zz = v.z * zs;
+		double xx = v.getX() * xs, xy = v.getX() * ys, xz = v.getX() * zs;
+		double yy = v.getY() * ys, yz = v.getY() * zs, zz = v.getZ() * zs;
         
         matrix.m00 = (float) ( 1.0f - (yy + zz ) );
         matrix.m10 = (float) ( xy - wz );

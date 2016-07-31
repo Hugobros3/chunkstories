@@ -150,8 +150,8 @@ public class FarTerrainRenderer
 		List<RegionMesh> regionsToRenderSorted = new ArrayList<RegionMesh>(regionsToRender);
 		//renderingContext.getCamera().getLocation;
 		Camera camera = renderingContext.getCamera();
-		int camRX = (int) (-camera.pos.x / 256);
-		int camRZ = (int) (-camera.pos.z / 256);
+		int camRX = (int) (-camera.pos.getX() / 256);
+		int camRZ = (int) (-camera.pos.getZ() / 256);
 
 		regionsToRenderSorted.sort(new Comparator<RegionMesh>()
 		{
@@ -223,8 +223,8 @@ public class FarTerrainRenderer
 
 	public void startAsynchSummaryRegeneration(Camera camera)
 	{
-		cameraChunkX = (int) (-camera.pos.x / 32);
-		cameraChunkZ = (int) (-camera.pos.z / 32);
+		cameraChunkX = (int) (-camera.pos.getX() / 32);
+		cameraChunkZ = (int) (-camera.pos.getZ() / 32);
 
 		synchronized (this)
 		{

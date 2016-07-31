@@ -31,9 +31,9 @@ public class PacketPlaySound extends PacketSynch
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeUTF(soundName);
-		out.writeDouble(position.x);
-		out.writeDouble(position.y);
-		out.writeDouble(position.z);
+		out.writeDouble(position.getX());
+		out.writeDouble(position.getY());
+		out.writeDouble(position.getZ());
 		out.writeFloat(pitch);
 		out.writeFloat(gain);
 	}

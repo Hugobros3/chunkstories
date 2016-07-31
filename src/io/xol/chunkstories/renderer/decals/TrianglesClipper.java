@@ -22,7 +22,7 @@ public class TrianglesClipper
 		toClipSpace.translate(originPosition.castToSP().negate());
 		
 		Matrix4f resize = new Matrix4f();
-		resize.scale(new Vector3f(1 / size.x, 1 / size.y, 1));
+		resize.scale(new Vector3f(1 / size.getX(), 1 / size.getY(), 1));
 		Matrix4f.transpose(resize, resize);
 
 		Matrix4f.mul(resize, toClipSpace, toClipSpace);

@@ -47,9 +47,9 @@ public class EntityComponentRotation extends EntityComponent
 
 		float a = (float) ((-getHorizontalRotation()) / 360f * 2 * Math.PI);
 		float b = (float) ((getVerticalRotation()) / 360f * 2 * Math.PI);
-		direction.x = -(float) Math.sin(a) * (float) Math.cos(b);
-		direction.y = -(float) Math.sin(b);
-		direction.z = -(float) Math.cos(a) * (float) Math.cos(b);
+		direction.setX(-(float) Math.sin(a) * (float) Math.cos(b));
+		direction.setY(-(float) Math.sin(b));
+		direction.setZ(-(float) Math.cos(a) * (float) Math.cos(b));
 
 		return direction.normalize();
 	}

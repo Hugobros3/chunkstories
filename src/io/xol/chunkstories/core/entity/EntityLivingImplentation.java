@@ -23,8 +23,8 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	public long damageCooldown = 0;
 
 	EntityComponentRotation entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
-	EntityComponentHealth entityHealthComponent;
 	EntityComponentAnimation entityAnimationComponent = new EntityComponentAnimation(this);
+	EntityComponentHealth entityHealthComponent;
 
 	public EntityLivingImplentation(WorldImplementation w, double x, double y, double z)
 	{
@@ -58,7 +58,6 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	public void setHealth(float health)
 	{
 		entityHealthComponent.setHealth(health);
-		//this.health = health;
 	}
 
 	public float getHealth()
@@ -76,6 +75,8 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	@Override
 	public void tick()
 	{
+		Vector3d velocity = getVelocityComponent().getVelocity();
+		
 		Vector2f imp = this.getEntityRotationComponent().tickInpulse();
 		getEntityRotationComponent().addRotation(imp.x, imp.y);
 		
@@ -84,38 +85,40 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 
 		//Collisions
 		if (collision_left || collision_right)
-			velocity.x = 0;
+			velocity.setX(0);
 		if (collision_north || collision_south)
-			velocity.z = 0;
+			velocity.setZ(0);
 		// Stap it
-		if (collision_bot && velocity.y < 0)
-			velocity.y = 0;
+		if (collision_bot && velocity.getY() < 0)
+			velocity.setY(0);
 		else if (collision_top)
-			velocity.y = 0;
+			velocity.setY(0);
 
 		// Gravity
 		if (!(this instanceof EntityFlying && ((EntityFlying) this).getFlyingComponent().isFlying()))
 		{
 			double terminalVelocity = inWater ? -0.02 : -0.5;
-			if (velocity.y > terminalVelocity)
-				velocity.y -= 0.008;
-			if (velocity.y < terminalVelocity)
-				velocity.y = terminalVelocity;
+			if (velocity.getY() > terminalVelocity)
+				velocity.setY(velocity.getY() - 0.008);
+			if (velocity.getY() < terminalVelocity)
+				velocity.setY(terminalVelocity);
 		}
 
 		// Acceleration
-		velocity.x += acceleration.x;
-		velocity.y += acceleration.y;
-		velocity.z += acceleration.z;
+		velocity.setX(velocity.getX() + acceleration.getX());
+		velocity.setY(velocity.getY() + acceleration.getY());
+		velocity.setZ(velocity.getZ() + acceleration.getZ());
 
 		//TODO ugly
-		if (!world.isChunkLoaded((int) position.getLocation().x / 32, (int) position.getLocation().y / 32, (int) position.getLocation().z / 32))
+		if (!world.isChunkLoaded((int) position.getLocation().getX() / 32, (int) position.getLocation().getY() / 32, (int) position.getLocation().getZ() / 32))
 		{
 			velocity.zero();
 		}
 
 		//Eventually moves
-		blockedMomentum = moveWithCollisionRestrain(velocity.x, velocity.y, velocity.z, true);
+		blockedMomentum = moveWithCollisionRestrain(velocity.getX(), velocity.getY(), velocity.getZ(), true);
+		
+		getVelocityComponent().setVelocity(velocity);
 	}
 
 	@Override

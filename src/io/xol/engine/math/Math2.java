@@ -50,9 +50,9 @@ public class Math2
 	public static Vector3d mix(Vector3d a, Vector3d b, double f)
 	{
 		Vector3d vec = new Vector3d();
-		vec.x = mix(a.x, b.x, f);
-		vec.y = mix(a.y, b.y, f);
-		vec.z = mix(a.z, b.z, f);
+		vec.setX(mix(a.getX(), b.getX(), f));
+		vec.setY(mix(a.getY(), b.getY(), f));
+		vec.setZ(mix(a.getZ(), b.getZ(), f));
 		return vec;
 	}
 }

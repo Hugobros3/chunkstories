@@ -74,9 +74,9 @@ public class ServerPlayer implements Player
 			{
 				Location loc = e.getLocation();
 				//Distance calculations
-				double dx = LoopingMathHelper.moduloDistance(controlledEntityLocation.x, loc.x, ws);
-				double dy = Math.abs(controlledEntityLocation.y - loc.y);
-				double dz = LoopingMathHelper.moduloDistance(controlledEntityLocation.z, loc.z, ws);
+				double dx = LoopingMathHelper.moduloDistance(controlledEntityLocation.getX(), loc.getX(), ws);
+				double dy = Math.abs(controlledEntityLocation.getY() - loc.getY());
+				double dz = LoopingMathHelper.moduloDistance(controlledEntityLocation.getZ(), loc.getZ(), ws);
 				shouldTrack = (dx < 256 && dz < 256 && dy < 256);
 				boolean contains = subscribedEntities.contains(e) && e.shouldBeTrackedBy(this);
 				//Too close and untracked
@@ -130,9 +130,9 @@ public class ServerPlayer implements Player
 		{
 			//Useless, kept for admin easyness, scripts, whatnot
 			Location controlledEntityLocation = controlledEntity.getLocation();
-			playerDataFile.setDouble("posX", controlledEntityLocation.x);
-			playerDataFile.setDouble("posY", controlledEntityLocation.y);
-			playerDataFile.setDouble("posZ", controlledEntityLocation.z);
+			playerDataFile.setDouble("posX", controlledEntityLocation.getX());
+			playerDataFile.setDouble("posY", controlledEntityLocation.getY());
+			playerDataFile.setDouble("posZ", controlledEntityLocation.getZ());
 			
 			//Serializes the whole player entity !!!
 			SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + this.getName().toLowerCase() + ".csf");

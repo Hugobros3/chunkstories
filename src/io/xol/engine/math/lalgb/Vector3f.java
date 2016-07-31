@@ -185,9 +185,9 @@ public class Vector3f
 	public Vector3d castToDP()
 	{
 		Vector3d vec = new Vector3d();
-		vec.x = x;
-		vec.y = y;
-		vec.z = z;
+		vec.setX(x);
+		vec.setY(y);
+		vec.setZ(z);
 		return vec;
 	}
 	

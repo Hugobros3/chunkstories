@@ -96,14 +96,14 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	public double horizontalSpeed = 0;
 
 	public double eyePosition = 1.6;
-	public double walked = 0d;
+	public double metersWalked = 0d;
 
-	double jump = 0;
+	double jumpForce = 0;
 	double targetVectorX;
 	double targetVectorZ;
 
-	boolean jumped = false;
-	boolean landed = false;
+	boolean justJumped = false;
+	boolean justLanded = false;
 
 	public EntityPlayer(WorldImplementation w, double x, double y, double z)
 	{
@@ -145,41 +145,47 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	@Override
 	public void tick()
 	{
-		//Tick item
+		//Tick item in hand if one such exists
 		ItemPile pileSelected = getSelectedItemComponent().getSelectedItem();
 		if(pileSelected != null)
 			pileSelected.getItem().tickInHand(this, pileSelected);
 		
-		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y), (int) (pos.z))));
-		if (jump > 0)
+		//The actual moment the jump takes effect
+		if (jumpForce > 0.0 && !justJumped)
 		{
-			jumped = true;
-			walked = 0;
-			velocity.y = jump;
-			jump = 0;
+			//Set the velocity
+			getVelocityComponent().addVelocity(0.0, jumpForce, 0.0);
+			justJumped = true;
+			metersWalked = 0.0;
+			jumpForce = 0.0;
 		}
 
-		boolean l = collision_bot;
+		//Set acceleration vector to wanted speed - actual speed
+		acceleration = new Vector3d(targetVectorX - getVelocityComponent().getVelocity().getX(), 0, targetVectorZ - getVelocityComponent().getVelocity().getZ());
 
-		acceleration = new Vector3d(targetVectorX - velocity.x, 0, targetVectorZ - velocity.z);
-
-		double modifySpd = collision_bot ? 0.010 : 0.005;
-
-		if (acceleration.length() > modifySpd)
+		//Limit maximal acceleration depending if we're on the groud or not, we accelerate 2x faster on ground
+		double maxAcceleration = collision_bot ? 0.010 : 0.005;
+		if (acceleration.length() > maxAcceleration)
 		{
 			acceleration.normalize();
-			acceleration.scale(modifySpd);
+			acceleration.scale(maxAcceleration);
 		}
+
+		//Used to trigger landing sound
+		boolean wasCollidingBeforeTick = collision_bot;
+		
+		//Tick : will move the entity, solve velocity/acceleration and so on
 		super.tick();
+		
 		// Sound stuff
-		if (collision_bot && !l)
+		if (collision_bot && !wasCollidingBeforeTick)
 		{
-			landed = true;
-			walked = 0;
+			justLanded = true;
+			metersWalked = 0.0;
 		}
 		//Bobbing
 		if (collision_bot)
-			walked += Math.abs(horizontalSpeed);
+			metersWalked += Math.abs(horizontalSpeed);
 	}
 
 	// client-side method for updating the player movement
@@ -207,10 +213,9 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		boolean focus = controller.hasFocus();
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
-		boolean onLadder = voxelIn instanceof VoxelClimbable;
-		if (onLadder)
+		boolean onLadder = false;
+		if (voxelIn instanceof VoxelClimbable)
 		{
-			onLadder = false;
 			CollisionBox[] boxes = voxelIn.getTranslatedCollisionBoxes(world, getLocation());
 			if (boxes != null)
 				for (CollisionBox box : boxes)
@@ -220,33 +225,33 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 				}
 		}
 
-		if (jumped && !inWater)
+		if (justJumped && !inWater)
 		{
-			jumped = false;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * 0.1f), 1f);
+			justJumped = false;
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
 		}
-		if (landed)
+		if (justLanded)
 		{
-			landed = false;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * 0.1f), 1f);
+			justLanded = false;
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
 		}
 
-		if (walked > 0.2 * Math.PI * 2)
+		if (metersWalked > 0.2 * Math.PI * 2)
 		{
-			walked %= 0.2 * Math.PI * 2;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", getLocation(), (float) (0.9f + Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * 0.1f), 1f);
+			metersWalked %= 0.2 * Math.PI * 2;
+			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
 			// System.out.println("footstep");
 		}
 
 		if (focus && !inWater && controller.getInputsManager().getInputByName("jump").isPressed() && collision_bot)
 		{
 			// System.out.println("jumpin");
-			jump = 0.15;
+			jumpForce = 0.15;
 		}
 		else if (focus && inWater && controller.getInputsManager().getInputByName("jump").isPressed())
-			jump = 0.05;
+			jumpForce = 0.05;
 		else
-			jump = 0.0;
+			jumpForce = 0.0;
 
 		// Movement
 		// Run ?
@@ -280,9 +285,9 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			modif += -90 * (controller.getInputsManager().getInputByName("forward").isPressed() ? 0.5 : 1);
 
 		//Auto-step logic
-		if (collision_bot && (Math.abs(this.blockedMomentum.x) > 0.0005d || Math.abs(this.blockedMomentum.z) > 0.0005d))
+		if (collision_bot && (Math.abs(this.blockedMomentum.getX()) > 0.0005d || Math.abs(this.blockedMomentum.getZ()) > 0.0005d))
 		{
-			blockedMomentum.y = 0;
+			blockedMomentum.setY(0);
 			if (blockedMomentum.length() > 0.20d)
 			{
 				blockedMomentum.normalize();
@@ -318,13 +323,13 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		if (onLadder)
 		{
 			//moveWithCollisionRestrain(0, (float)(Math.sin(((rotV) / 180f * Math.PI)) * hSpeed), 0, false);
-			this.velocity.y = (float) (Math.sin((-(this.getEntityRotationComponent().getVerticalRotation()) / 180f * Math.PI)) * horizontalSpeed);
+			this.getVelocityComponent().setVelocityY((float) (Math.sin((-(this.getEntityRotationComponent().getVerticalRotation()) / 180f * Math.PI)) * horizontalSpeed));
 		}
 
 		targetVectorX = Math.sin((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed;
 		targetVectorZ = Math.cos((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed;
 
-		eyePosition = 1.65 + Math.sin(walked * 5d) * 0.035d;
+		eyePosition = 1.65 + Math.sin(metersWalked * 5d) * 0.035d;
 
 		//System.out.println("nrml mv");
 	}
@@ -333,7 +338,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	{
 		if (!controller.hasFocus())
 			return;
-		velocity.zero();
+		getVelocityComponent().setVelocity(0, 0, 0);
 		eyePosition = 1.65;
 		float camspeed = 0.125f;
 		if (Keyboard.isKeyDown(42))
@@ -374,13 +379,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			else
 				moveWithCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed, true);
 		}
-		
-		if (this.getFlyingComponent().isFlying())
-		{
-			this.velocity.x = 0;
-			this.velocity.y = 0;
-			this.velocity.z = 0;
-		}
 	}
 
 	@Override
@@ -394,7 +392,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			camera.rotationX = this.getEntityRotationComponent().getVerticalRotation();
 			camera.rotationY = this.getEntityRotationComponent().getHorizontalRotation();
 
-			camera.fov = (float) (FastConfig.fov + ((velocity.x * velocity.x + velocity.z * velocity.z) > 0.07 * 0.07 ? ((velocity.x * velocity.x + velocity.z * velocity.z) - 0.07 * 0.07) * 500 : 0));
+			camera.fov = (float) (FastConfig.fov + ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) > 0.07 * 0.07 ? ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) - 0.07 * 0.07) * 500 : 0));
 			camera.alUpdate();
 		}
 	}
@@ -419,7 +417,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		if (this.equals(Client.controlledEntity))
 			return; // Don't render yourself
 		Vector3d pos = getLocation();
-		Vector3f posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3f((float) pos.x, (float) pos.y + 2.0f, (float) pos.z));
+		Vector3f posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3f((float) pos.getX(), (float) pos.getY() + 2.0f, (float) pos.getZ()));
 
 		float scale = posOnScreen.z;
 		String txt = name.getName();// + rotH;
@@ -432,7 +430,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	@Override
 	public void render(RenderingContext renderingContext)
 	{
-		
 		Camera cam = renderingContext.getCamera();
 		ItemPile selectedItemPile = getSelectedItemComponent().getSelectedItem();
 		
@@ -453,15 +450,15 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 		//Prevents laggy behaviour
 		if (this.equals(Client.controlledEntity))
-			renderingContext.getCurrentShader().setUniformFloat3("objectPosition", -(float) cam.pos.x, -(float) cam.pos.y - eyePosition, -(float) cam.pos.z);
+			renderingContext.getCurrentShader().setUniformFloat3("objectPosition", -(float) cam.pos.getX(), -(float) cam.pos.getY() - eyePosition, -(float) cam.pos.getZ());
 
 		//Renders normal limbs
 		Matrix4f playerRotationMatrix = new Matrix4f();
 		playerRotationMatrix.translate(new Vector3f(0f, (float) this.eyePosition, 0f));
 		playerRotationMatrix.rotate((90 - this.getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-		
 		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
+		
 		//Except in fp 
 		if (!this.equals(Client.controlledEntity) || renderingContext.isThisAShadowPass())
 			ModelLibrary.getMesh("res/models/human.obj").renderBut(renderingContext, fp_elements, animation, 0);
@@ -494,7 +491,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 				if (((ItemVoxel) selectedItemPile.getItem()).getVoxel().getLightLevel(0x00) > 0)
 				{
 					Vector3d pos = getLocation();
-					Light heldBlockLight = new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.x, (float) pos.y + 1.6f, (float) pos.z), 15f);
+					Light heldBlockLight = new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.getX(), (float) pos.getY() + 1.6f, (float) pos.getZ()), 15f);
 					renderingContext.addLight(heldBlockLight);	
 					
 					//If we hold a light source, prepare the shader accordingly

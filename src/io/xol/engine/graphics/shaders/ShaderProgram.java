@@ -313,7 +313,7 @@ public class ShaderProgram
 
 	public void setUniformFloat3(String name, Vector3d vec3)
 	{
-		setUniformFloat3(name, vec3.x, vec3.y, vec3.z);
+		setUniformFloat3(name, vec3.getX(), vec3.getY(), vec3.getZ());
 	}
 
 	public void setUniformFloat3(String name, float f, float f2, float f3)

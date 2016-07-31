@@ -135,9 +135,9 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				if (clientEntity == null)
 					continue;
 				Location loc = clientEntity.getLocation();
-				int pCX = (int) loc.x / 32;
-				int pCY = (int) loc.y / 32;
-				int pCZ = (int) loc.z / 32;
+				int pCX = (int) loc.getX() / 32;
+				int pCY = (int) loc.getY() / 32;
+				int pCZ = (int) loc.getZ() / 32;
 				
 				
 				//TODO use proper configurable values for this
@@ -178,9 +178,9 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				if (clientEntity == null)
 					continue;
 				Location loc = clientEntity.getLocation();
-				int pCX = (int) loc.x / 32;
-				int pCY = (int) loc.y / 32;
-				int pCZ = (int) loc.z / 32;
+				int pCX = (int) loc.getX() / 32;
+				int pCY = (int) loc.getY() / 32;
+				int pCZ = (int) loc.getZ() / 32;
 				//TODO use proper configurable values for this
 				if (((LoopingMathHelper.moduloDistance(chunkHolderCenterX, pCX, sizeInChunks) < chunksViewDistance + 2) && (LoopingMathHelper.moduloDistance(chunkHolderCenterZ, pCZ, sizeInChunks) < chunksViewDistance + 2)
 						&& (Math.abs(chunkHolderCenterY - pCY) < 4 + 4)))
@@ -224,9 +224,9 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				if (clientEntity == null)
 					continue;
 				Location loc = clientEntity.getLocation();
-				int plocx = (int) loc.x;
-				int plocy = (int) loc.y;
-				int plocz = (int) loc.z;
+				int plocx = (int) loc.getX();
+				int plocy = (int) loc.getY();
+				int plocz = (int) loc.getZ();
 				//TODO use proper configurable values for this
 				if (!((LoopingMathHelper.moduloDistance(x, plocx, sizeInBlocks) > blocksViewDistance + 2) || (LoopingMathHelper.moduloDistance(z, plocz, sizeInBlocks) > blocksViewDistance + 2) || (y - plocy) > 4 * 32))
 				{

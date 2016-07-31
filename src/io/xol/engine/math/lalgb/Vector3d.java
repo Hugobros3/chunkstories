@@ -9,8 +9,9 @@ import io.xol.engine.math.lalgb.Vector3f;
 public class Vector3d
 {
 	// Dirty self-made replacement for vecmatch classes, castable to LWJGL's vector
-
-	public double x, y, z;
+	protected double x;
+	protected double y;
+	protected double z;
 
 	public Vector3d()
 	{
@@ -19,16 +20,16 @@ public class Vector3d
 
 	public Vector3d(double x, double y, double z)
 	{
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		this.setX(x);
+		this.setY(y);
+		this.setZ(z);
 	}
 
 	public Vector3d(Vector3d vec)
 	{
-		this.x = vec.x;
-		this.y = vec.y;
-		this.z = vec.z;
+		this.setX(vec.getX());
+		this.setY(vec.getY());
+		this.setZ(vec.getZ());
 	}
 
 	public Vector3d(double d)
@@ -36,19 +37,49 @@ public class Vector3d
 		this(d, d, d);
 	}
 
+	public double getX()
+	{
+		return x;
+	}
+
+	public void setX(double x)
+	{
+		this.x = x;
+	}
+
+	public double getY()
+	{
+		return y;
+	}
+
+	public void setY(double y)
+	{
+		this.y = y;
+	}
+
+	public double getZ()
+	{
+		return z;
+	}
+
+	public void setZ(double z)
+	{
+		this.z = z;
+	}
+
 	public Vector3d add(Vector3d b)
 	{
-		x += b.x;
-		y += b.y;
-		z += b.z;
+		setX(getX() + b.getX());
+		setY(getY() + b.getY());
+		setZ(getZ() + b.getZ());
 		return this;
 	}
 
 	public Vector3d sub(Vector3d b)
 	{
-		x -= b.x;
-		y -= b.y;
-		z -= b.z;
+		setX(getX() - b.getX());
+		setY(getY() - b.getY());
+		setZ(getZ() - b.getZ());
 		return this;
 	}
 
@@ -74,24 +105,24 @@ public class Vector3d
 	{
 		if (dest == null)
 			dest = new Vector3d();
-		dest.x = left.y * right.z - left.z * right.y;
-		dest.y = left.z * right.x - left.x * right.z;
-		dest.z = left.x * right.y - left.y * right.x;
+		dest.setX(left.getY() * right.getZ() - left.getZ() * right.getY());
+		dest.setY(left.getZ() * right.getX() - left.getX() * right.getZ());
+		dest.setZ(left.getX() * right.getY() - left.getY() * right.getX());
 		return dest;
 	}
-	
+
 	public static Vector3d cross(Vector3d left, Vector3d right)
 	{
 		Vector3d dest = new Vector3d();
-		dest.x = left.y * right.z - left.z * right.y;
-		dest.y = left.z * right.x - left.x * right.z;
-		dest.z = left.x * right.y - left.y * right.x;
+		dest.setX(left.getY() * right.getZ() - left.getZ() * right.getY());
+		dest.setY(left.getZ() * right.getX() - left.getX() * right.getZ());
+		dest.setZ(left.getX() * right.getY() - left.getY() * right.getX());
 		return dest;
 	}
-	
+
 	public static double dot(Vector3d left, Vector3d right)
 	{
-		return left.x * right.x + left.y * right.y + left.z * right.z;
+		return left.getX() * right.getX() + left.getY() * right.getY() + left.getZ() * right.getZ();
 	}
 
 	public static double angle(Vector3d left, Vector3d right)
@@ -106,84 +137,84 @@ public class Vector3d
 
 	public Vector3d negate()
 	{
-		this.x = -x;
-		this.y = -y;
-		this.z = -z;
+		this.setX(-getX());
+		this.setY(-getY());
+		this.setZ(-getZ());
 		return this;
 	}
 
 	public Vector3d scale(double s)
 	{
-		this.x *= s;
-		this.y *= s;
-		this.z *= s;
+		this.setX(this.getX() * s);
+		this.setY(this.getY() * s);
+		this.setZ(this.getZ() * s);
 		return this;
 	}
 
 	public Vector3d normalize()
 	{
 		double length = length();
-		x /= length;
-		y /= length;
-		z /= length;
+		setX(getX() / length);
+		setY(getY() / length);
+		setZ(getZ() / length);
 		return this;
 	}
 
 	public double length()
 	{
-		return Math.sqrt(x * x + y * y + z * z);
+		return Math.sqrt(getX() * getX() + getY() * getY() + getZ() * getZ());
 	}
 
 	public double lengthSquared()
 	{
-		return x * x + y * y + z * z;
+		return getX() * getX() + getY() * getY() + getZ() * getZ();
 	}
 
 	public Vector3f castToSP()
 	{
 		Vector3f vec = new Vector3f();
-		vec.x = (float) x;
-		vec.y = (float) y;
-		vec.z = (float) z;
+		vec.x = (float) getX();
+		vec.y = (float) getY();
+		vec.z = (float) getZ();
 		return vec;
 	}
 
 	public void set(Vector3d v)
 	{
-		this.x = v.x;
-		this.y = v.y;
-		this.z = v.z;
+		this.setX(v.getX());
+		this.setY(v.getY());
+		this.setZ(v.getZ());
 	}
 
 	@Override
 	public String toString()
 	{
-		return "[Vector3d x:" + x + " y:" + y + " z:" + z + "]";
+		return "[Vector3d x:" + getX() + " y:" + getY() + " z:" + getZ() + "]";
 	}
 
 	public Vector3d zero()
 	{
-		this.x = 0d;
-		this.y = 0d;
-		this.z = 0d;
+		this.setX(0d);
+		this.setY(0d);
+		this.setZ(0d);
 		return this;
 	}
 
 	public Vector3d add(double x, double y, double z)
 	{
-		this.x += x;
-		this.y += y;
-		this.z += z;
+		this.setX(this.getX() + x);
+		this.setY(this.getY() + y);
+		this.setZ(this.getZ() + z);
 		return this;
 	}
 
 	public double distanceTo(Vector3d vec)
 	{
-		return Math.sqrt((x - vec.x) * (x - vec.x) + (y - vec.y) * (y - vec.y) + (z - vec.z) * (z - vec.z));
+		return Math.sqrt((getX() - vec.getX()) * (getX() - vec.getX()) + (getY() - vec.getY()) * (getY() - vec.getY()) + (getZ() - vec.getZ()) * (getZ() - vec.getZ()));
 	}
-	
+
 	public Vector3d clone()
 	{
-		return new Vector3d(x, y, z);
+		return new Vector3d(getX(), getY(), getZ());
 	}
 }

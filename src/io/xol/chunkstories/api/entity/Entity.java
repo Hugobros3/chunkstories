@@ -52,6 +52,8 @@ public interface Entity extends Collidable, CSFSerializable
 	 * Updates the entity, ran at 60Hz by default
 	 */
 	public void tick();
+
+	public void moveWithoutCollisionRestrain(Vector3d delta);
 	
 	public void moveWithoutCollisionRestrain(double mx, double my, double mz);
 	
@@ -77,6 +79,9 @@ public interface Entity extends Collidable, CSFSerializable
 	 */
 	public void render(RenderingContext context);
 
+	/**
+	 * Used in debug mode only
+	 */
 	public void debugDraw();
 	
 	/**

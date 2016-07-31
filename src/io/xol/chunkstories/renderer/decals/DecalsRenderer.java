@@ -85,13 +85,13 @@ public class DecalsRenderer
 			size2.add(new Vector3d(0.5));
 			//TODO use proper dda ?
 			try{
-			for (int x = 0; x < size2.x; x++)
-				for (int y = 0; y < size2.y; y++)
-					for (int z = 0; z < size2.z; z++)
+			for (int x = 0; x < size2.getX(); x++)
+				for (int y = 0; y < size2.getY(); y++)
+					for (int z = 0; z < size2.getZ(); z++)
 					{
-						float dx = (float) (x - size2.x / 2.0);
-						float dy = (float) (y - size2.y / 2.0);
-						float dz = (float) (z - size2.z / 2.0);
+						float dx = (float) (x - size2.getX() / 2.0);
+						float dy = (float) (y - size2.getY() / 2.0);
+						float dz = (float) (z - size2.getZ() / 2.0);
 
 						Vector4f rotateMe = new Vector4f(dx, dy, dz, 1.0f);
 						//Matrix4f.transform(rotationMatrix, rotateMe, rotateMe);

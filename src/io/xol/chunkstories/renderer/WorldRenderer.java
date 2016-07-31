@@ -411,9 +411,9 @@ public class WorldRenderer
 		// Update view
 		//viewRotH = view_rotx;
 		//viewRotV = view_roty;
-		int newCX = Math2.floor((pos.x) / 32);
-		int newCY = Math2.floor((pos.y) / 32);
-		int newCZ = Math2.floor((pos.z) / 32);
+		int newCX = Math2.floor((pos.getX()) / 32);
+		int newCY = Math2.floor((pos.getY()) / 32);
+		int newCZ = Math2.floor((pos.getZ()) / 32);
 		// Fill the VBO array with chunks VBO ids if the player changed chunk
 		if (currentChunkX != newCX || currentChunkY != newCY || currentChunkZ != newCZ || chunksChanged)
 		{
@@ -609,7 +609,7 @@ public class WorldRenderer
 		//System.out.println(depthViewMatrix);
 		//depthMatrix.translate(new Vector3f((float) Math.floor(camera.pos.x), (float) Math.floor(camera.pos.y), (float) Math.floor(camera.pos.z)));
 		//shadowMVP.translate(new Vector3f((float) Math.floor(camera.pos.x), (float) Math.floor(camera.pos.y), (float) Math.floor(camera.pos.z)));
-		shadowMVP.translate(new Vector3f((float) camera.pos.x, (float) camera.pos.y, (float) camera.pos.z));
+		shadowMVP.translate(new Vector3f((float) camera.pos.getX(), (float) camera.pos.getY(), (float) camera.pos.getZ()));
 
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
 		shadowsPassShader.setUniformMatrix4f("localTransform", new Matrix4f());
@@ -632,7 +632,7 @@ public class WorldRenderer
 		//terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
 		terrainShader.setUniformFloat3("sunPos", sky.getSunPosition());
 		terrainShader.setUniformFloat("time", animationTimer);
-		terrainShader.setUniformFloat("terrainHeight", world.getRegionSummaries().getHeightAtWorldCoordinates((int) camera.pos.x, (int) camera.pos.z));
+		terrainShader.setUniformFloat("terrainHeight", world.getRegionSummaries().getHeightAtWorldCoordinates((int) camera.pos.getX(), (int) camera.pos.getZ()));
 		terrainShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
 		terrainShader.setUniformFloat("shadowVisiblity", getShadowVisibility());
 		waterNormalTexture.setLinearFiltering(true);
@@ -845,7 +845,7 @@ public class WorldRenderer
 				int correctedCY = chunk.getChunkY();
 				int correctedCZ = vboDekalZ / 32;
 				//Always show the chunk we're standing in no matter what
-				boolean shouldShowChunk = ((int) (camera.pos.x / 32) == chunk.getChunkX()) && ((int) (camera.pos.y / 32) == correctedCY) && ((int) (camera.pos.z / 32) == correctedCZ);
+				boolean shouldShowChunk = ((int) (camera.pos.getX() / 32) == chunk.getChunkX()) && ((int) (camera.pos.getY() / 32) == correctedCY) && ((int) (camera.pos.getZ() / 32) == correctedCZ);
 				if (!shouldShowChunk)
 					shouldShowChunk = checkChunkOcclusion(chunk, correctedCX, correctedCY, correctedCZ);
 				if (!shouldShowChunk)
@@ -853,16 +853,16 @@ public class WorldRenderer
 			}
 			if (!isShadowPass)
 			{
-				int camIntPartX = (int) Math.floor(camera.pos.x);
-				int camIntPartY = (int) Math.floor(camera.pos.y);
-				int camIntPartZ = (int) Math.floor(camera.pos.z);
-				double fractPartX = camera.pos.x - Math.floor(camera.pos.x);
-				double fractPartY = camera.pos.y - Math.floor(camera.pos.y);
-				double fractPartZ = camera.pos.z - Math.floor(camera.pos.z);
+				int camIntPartX = (int) Math.floor(camera.pos.getX());
+				int camIntPartY = (int) Math.floor(camera.pos.getY());
+				int camIntPartZ = (int) Math.floor(camera.pos.getZ());
+				double fractPartX = camera.pos.getX() - Math.floor(camera.pos.getX());
+				double fractPartY = camera.pos.getY() - Math.floor(camera.pos.getY());
+				double fractPartZ = camera.pos.getZ() - Math.floor(camera.pos.getZ());
 				double diffChunkX = vboDekalX + camIntPartX;
 				double diffChunkY = chunk.getChunkY() * 32 + camIntPartY;
 				double diffChunkZ = vboDekalZ + camIntPartZ;
-				opaqueBlocksShader.setUniformFloat3("objectPosition", vboDekalX + camera.pos.x, chunk.getChunkY() * 32f + camera.pos.y, vboDekalZ + camera.pos.z);
+				opaqueBlocksShader.setUniformFloat3("objectPosition", vboDekalX + camera.pos.getX(), chunk.getChunkY() * 32f + camera.pos.getY(), vboDekalZ + camera.pos.getZ());
 				opaqueBlocksShader.setUniformFloat3("objectPosition", diffChunkX + fractPartX, diffChunkY + fractPartY, diffChunkZ + fractPartZ);
 			}
 			else
@@ -1032,7 +1032,7 @@ public class WorldRenderer
 			// Set rendering context.
 			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
 
-			Voxel vox = VoxelTypes.get(world.getVoxelData((int) -camera.pos.x, (int) (-camera.pos.y + 0), (int) -camera.pos.z, false));
+			Voxel vox = VoxelTypes.get(world.getVoxelData((int) -camera.pos.getX(), (int) (-camera.pos.getY() + 0), (int) -camera.pos.getZ(), false));
 			liquidBlocksShader.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
 
 			//liquidBlocksShader.setUniformInt("pass", pass-1);
@@ -1080,7 +1080,7 @@ public class WorldRenderer
 				int correctedCY = chunk.getChunkY();
 				int correctedCZ = vboDekalZ / 32;
 
-				boolean shouldShowChunk = ((int) (camera.pos.x / 32) == chunk.getChunkX()) && ((int) (camera.pos.y / 32) == correctedCY) && ((int) (camera.pos.z / 32) == correctedCZ);
+				boolean shouldShowChunk = ((int) (camera.pos.getX() / 32) == chunk.getChunkX()) && ((int) (camera.pos.getY() / 32) == correctedCY) && ((int) (camera.pos.getZ() / 32) == correctedCZ);
 				if (!shouldShowChunk)
 					shouldShowChunk = checkChunkOcclusion(chunk, correctedCX, correctedCY, correctedCZ);
 				if (!shouldShowChunk)

@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
@@ -36,7 +35,6 @@ import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.WorldRenderer;
-import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.chunk.WorldChunksHolder;
@@ -250,56 +248,54 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void tick()
 	{
-		if (this instanceof WorldNetworked)
-		{
-			//TODO net logic has nothing to do in world logic, it should be handled elsewere !!!
-			//Deal with packets we received
-			((WorldNetworked) this).processIncommingPackets();
-		}
-
-		entitiesLock.lock();
+		//Place the entire tick() method in a try/catch
 		try
 		{
+			if (this instanceof WorldNetworked)
+			{
+				//TODO net logic has nothing to do in world logic, it should be handled elsewere !!!
+				//Deal with packets we received
+				((WorldNetworked) this).processIncommingPackets();
+			}
+
+			//Iterates over every entity
+			entitiesLock.lock();
 			Iterator<Entity> iter = this.getAllLoadedEntities();
 			Entity entity;
 			while (iter.hasNext())
 			{
-				//System.out.println("normal mv");
 				entity = iter.next();
-				if (entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.controlledEntity != null && Client.controlledEntity.equals(entity))
-				{
-					//System.out.println("mdr");
-					((EntityControllable) entity).tickClient(Client.getInstance());
-				}
 
+				//Check entity's chunk is loaded
 				Location entityLocation = entity.getLocation();
 				if (entity.getChunkHolder() != null && entity.getChunkHolder().isDiskDataLoaded() && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
 				{
-					if (entity instanceof EntityControllable)
+					//If we're the client world and this is our entity
+					if (entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.controlledEntity != null && Client.controlledEntity.equals(entity))
 					{
-						Controller controller = ((EntityControllable) entity).getControllerComponent().getController();
-						if (controller instanceof ServerPlayer)
-						{
-							//no
-						}
-						else if (controller instanceof Client)
-							entity.tick();
-
+						((EntityControllable) entity).tickClient(Client.getInstance());
+						entity.tick();
 					}
-					else
+					//Server should not tick client's entities
+					else if (this instanceof WorldMaster && (!(entity instanceof EntityControllable) || ((EntityControllable) entity).getControllerComponent().getController() != null))
 						entity.tick();
 				}
 
 			}
+			entitiesLock.unlock();
+
+			//Update particles subsystem if it exists
 			if (getParticlesHolder() != null)
 				getParticlesHolder().updatePhysics();
-			// worldTime++;
+
+			//Increase the time
+			if (this instanceof WorldMaster && internalData.getBoolean("doTimeCycle", true))
+				worldTime++;
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
-		entitiesLock.unlock();
 	}
 
 	@Override
@@ -408,17 +404,17 @@ public abstract class WorldImplementation implements World
 
 	public int getVoxelData(Location location)
 	{
-		return getVoxelData((int) location.x, (int) location.y, (int) location.z);
+		return getVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 
 	public int getVoxelData(Location location, boolean load)
 	{
-		return getVoxelData((int) location.x, (int) location.y, (int) location.z, load);
+		return getVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ(), load);
 	}
 
 	public int getDataAt(Vector3d location, boolean load)
 	{
-		return getVoxelData((int) location.x, (int) location.y, (int) location.z, load);
+		return getVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ(), load);
 	}
 
 	public int getVoxelData(int x, int y, int z)
@@ -448,13 +444,13 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void setVoxelData(Location location, int data)
 	{
-		setVoxelData((int) location.x, (int) location.y, (int) location.z, data, true);
+		setVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ(), data, true);
 	}
 
 	@Override
 	public void setVoxelData(Location location, int data, boolean load)
 	{
-		setVoxelData((int) location.x, (int) location.y, (int) location.z, data, load);
+		setVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ(), data, load);
 	}
 
 	@Override
@@ -466,7 +462,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void setVoxelData(Location location, int data, Entity entity)
 	{
-		actuallySetsDataAt((int) location.x, (int) location.y, (int) location.z, data, false, entity);
+		actuallySetsDataAt((int) location.getX(), (int) location.getY(), (int) location.getZ(), data, false, entity);
 	}
 
 	@Override
@@ -498,7 +494,7 @@ public abstract class WorldImplementation implements World
 			try
 			{
 				//If we're merely changing the voxel meta 
-				if(formerVoxel != null && newVoxel != null && formerVoxel.equals(newVoxel))
+				if (formerVoxel != null && newVoxel != null && formerVoxel.equals(newVoxel))
 				{
 					//Optionally runs whatever the voxel requires to run when modified
 					if (formerVoxel instanceof VoxelLogic)
@@ -638,7 +634,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public int getSunlightLevel(Location location)
 	{
-		return getSunlightLevel((int) location.x, (int) location.y, (int) location.z);
+		return getSunlightLevel((int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 
 	@Override
@@ -656,7 +652,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public int getBlocklightLevel(Location location)
 	{
-		return getBlocklightLevel((int) location.x, (int) location.y, (int) location.z);
+		return getBlocklightLevel((int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 
 	public void setChunk(Chunk chunk)
@@ -684,7 +680,7 @@ public abstract class WorldImplementation implements World
 			if (c instanceof ChunkRenderable)
 			{
 				ChunkRenderable c2 = (ChunkRenderable) c;
-				
+
 				c2.markRenderInProgress(false);
 				c2.destroyRenderData();
 			}
@@ -778,9 +774,9 @@ public abstract class WorldImplementation implements World
 				keep = true;
 				int sizeInChunks = this.getSizeInChunks();
 				int chunksViewDistance = (int) (FastConfig.viewDistance / 32) + 1;
-				int pCX = (int) Math.floor(loc.x / 32);
-				int pCY = (int) Math.floor(loc.y / 32);
-				int pCZ = (int) Math.floor(loc.z / 32);
+				int pCX = (int) Math.floor(loc.getX() / 32);
+				int pCY = (int) Math.floor(loc.getY() / 32);
+				int pCZ = (int) Math.floor(loc.getZ() / 32);
 
 				//System.out.println("chunkX:"+chunk.chunkX+":"+chunk.chunkY+":"+chunk.chunkZ);
 
@@ -869,21 +865,21 @@ public abstract class WorldImplementation implements World
 		float distance = 0f;
 		Voxel vox;
 		int x, y, z;
-		x = (int) Math.floor(initialPosition.x);
-		y = (int) Math.floor(initialPosition.y);
-		z = (int) Math.floor(initialPosition.z);
+		x = (int) Math.floor(initialPosition.getX());
+		y = (int) Math.floor(initialPosition.getY());
+		z = (int) Math.floor(initialPosition.getZ());
 
 		//DDA algorithm
 
 		//It requires double arrays because it works using loops over each dimension
 		double[] rayOrigin = new double[3];
 		double[] rayDirection = new double[3];
-		rayOrigin[0] = initialPosition.x;
-		rayOrigin[1] = initialPosition.y;
-		rayOrigin[2] = initialPosition.z;
-		rayDirection[0] = direction.x;
-		rayDirection[1] = direction.y;
-		rayDirection[2] = direction.z;
+		rayOrigin[0] = initialPosition.getX();
+		rayOrigin[1] = initialPosition.getY();
+		rayOrigin[2] = initialPosition.getZ();
+		rayDirection[0] = direction.getX();
+		rayDirection[1] = direction.getY();
+		rayDirection[2] = direction.getZ();
 		int voxelCoords[] = new int[] { x, y, z };
 		double[] deltaDist = new double[3];
 		double[] next = new double[3];

@@ -71,17 +71,17 @@ public class Matrix3d
 		
 		//up.x = 1 * m01 ...
 		
-		m00 = rightDirection.x;
-		m10 = rightDirection.y;
-		m20 = rightDirection.z;
+		m00 = rightDirection.getX();
+		m10 = rightDirection.getY();
+		m20 = rightDirection.getZ();
 		
-		m01 = upDirection.x;
-		m11 = upDirection.y;
-		m21 = upDirection.z;
+		m01 = upDirection.getX();
+		m11 = upDirection.getY();
+		m21 = upDirection.getZ();
 		
-		m02 = frontDirection.x;
-		m12 = frontDirection.y;
-		m22 = frontDirection.z;
+		m02 = frontDirection.getX();
+		m12 = frontDirection.getY();
+		m22 = frontDirection.getZ();
 	}
 	
 	public Matrix3d(Matrix3f castme)
@@ -229,13 +229,13 @@ public class Matrix3d
 		if (dest == null)
 			dest = new Vector3d();
 
-		double x = left.m00 * right.x + left.m10 * right.y + left.m20 * right.z;
-		double y = left.m01 * right.x + left.m11 * right.y + left.m21 * right.z;
-		double z = left.m02 * right.x + left.m12 * right.y + left.m22 * right.z;
+		double x = left.m00 * right.getX() + left.m10 * right.getY() + left.m20 * right.getZ();
+		double y = left.m01 * right.getX() + left.m11 * right.getY() + left.m21 * right.getZ();
+		double z = left.m02 * right.getX() + left.m12 * right.getY() + left.m22 * right.getZ();
 
-		dest.x = x;
-		dest.y = y;
-		dest.z = z;
+		dest.setX(x);
+		dest.setY(y);
+		dest.setZ(z);
 
 		return dest;
 	}
@@ -245,13 +245,13 @@ public class Matrix3d
 		if (dest == null)
 			dest = new Vector3d();
 
-		double x = left.x * right.m00 + left.y * right.m01 + left.z * right.m02;
-		double y = left.x * right.m10 + left.y * right.m11 + left.z * right.m12;
-		double z = left.x * right.m20 + left.y * right.m21 + left.z * right.m22;
+		double x = left.getX() * right.m00 + left.getY() * right.m01 + left.getZ() * right.m02;
+		double y = left.getX() * right.m10 + left.getY() * right.m11 + left.getZ() * right.m12;
+		double z = left.getX() * right.m20 + left.getY() * right.m21 + left.getZ() * right.m22;
 
-		dest.x = x;
-		dest.y = y;
-		dest.z = z;
+		dest.setX(x);
+		dest.setY(y);
+		dest.setZ(z);
 		return dest;
 	}
 	
