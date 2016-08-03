@@ -19,7 +19,7 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.animation.BVHAnimation;
 import io.xol.engine.animation.BVHLibrary;
-import io.xol.engine.animation.Bone;
+import io.xol.engine.animation.BVHTreeBone;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -61,7 +61,7 @@ public class EntityZombie extends EntityLivingImplentation implements EntityHUD
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 
 		renderingContext.sendTransformationMatrix(null);
-		ModelLibrary.getMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/animations/human/walking.bvh"), (int)System.currentTimeMillis() % 30000);
+		ModelLibrary.getRenderableMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/animations/human/walking.bvh"), (int)System.currentTimeMillis() % 30000);
 	}
 
 	@Override
@@ -69,9 +69,9 @@ public class EntityZombie extends EntityLivingImplentation implements EntityHUD
 	{
 		// Debug this shit
 		BVHAnimation anim = BVHLibrary.getAnimation("res/models/human-viewport.bvh");
-		for (Bone b : anim.bones)
+		for (BVHTreeBone b : anim.bones)
 		{
-			Matrix4f transform = anim.getTransformationForBone(b.name, i);
+			Matrix4f transform = anim.getBoneHierarchyTransformationMatrix(b.name, i);
 			//TODO broken
 			Vector3d pos = this.getLocation();
 			debugDraw(0.2f, 0.2f, 0.2f, (float) pos.getX(), (float) pos.getY() , (float) pos.getZ(), transform);

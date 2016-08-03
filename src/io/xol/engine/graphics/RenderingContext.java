@@ -49,6 +49,17 @@ public class RenderingContext
 		trueTypeFontRenderer = new TrueTypeFontRenderer(this);
 	}
 
+	public String toString()
+	{
+		String attributes = "";
+		for(int i : enabledAttributes)
+		{
+			attributes += i;
+		}
+		attributes += " ("+enabledAttributes.size()+")";
+		return "[RenderingContext shadow:"+isThisAShadowPass+" enabledAttributes: "+attributes+" lights: "+lights.size()+" shader:"+getCurrentShader()+" ]";
+	}
+
 	public void setCamera(Camera camera)
 	{
 		this.camera = camera;
@@ -264,7 +275,7 @@ public class RenderingContext
 		normal.m22 = temp.m22;
 		this.currentlyBoundShader.setUniformMatrix3f("boneTransformNormal", normal);
 	}
-
+	
 	static FloatBuffer fsQuadBuffer = null;
 
 	public void drawFSQuad(int vertexAttribLocation)

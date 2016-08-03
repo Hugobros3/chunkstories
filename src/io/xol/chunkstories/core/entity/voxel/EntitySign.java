@@ -78,9 +78,9 @@ public class EntitySign extends EntityImplementation implements EntityVoxel
 		renderingContext.enableVertexAttribute("normalIn");
 		glDisable(GL_CULL_FACE);
 		if(isPost)
-			ModelLibrary.getMesh("res/models/sign_post.obj").render(renderingContext);
+			ModelLibrary.getRenderableMesh("res/models/sign_post.obj").render(renderingContext);
 		else
-			ModelLibrary.getMesh("res/models/sign.obj").render(renderingContext);
+			ModelLibrary.getRenderableMesh("res/models/sign.obj").render(renderingContext);
 		//signText.setSignText("The #FF0000cuckiest man on earth #FFFF20 rises again to bring you A E S T H E T I C signs");
 		
 		// bake sign mesh

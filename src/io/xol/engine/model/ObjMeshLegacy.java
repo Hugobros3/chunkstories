@@ -31,12 +31,18 @@ import static org.lwjgl.opengl.GL20.*;
 /**
  * An appoling mess of an Obj loader
  */
-public class ObjMesh
+public class ObjMeshLegacy
 {
 	int vboId = -1;
 	public Map<String, Integer> groups = new HashMap<String, Integer>();
 
-	public ObjMesh(String name) throws FileNotFoundException
+	public static List<float[]> vertices = new ArrayList<float[]>();
+	public static List<float[]> texcoords = new ArrayList<float[]>();
+	public static List<float[]> normals = new ArrayList<float[]>();
+	
+	public static List<float[]> vboData = new ArrayList<float[]>();
+
+	public ObjMeshLegacy(String name) throws FileNotFoundException
 	{
 		loadMesh(GameData.getFileLocation(name));
 	}
@@ -93,7 +99,7 @@ public class ObjMesh
 					else if (l.startsWith("g"))
 					{
 						// This loader defines sub-parts of the vbo
-						//System.out.println("loaded " + faces + " faces." + groupSize + " new list" + splitted[1] + "old:" + group + " s:" + groups.size());
+						// System.out.println("loaded " + faces + " faces." + groupSize + " new list" + splitted[1] + "old:" + group + " s:" + groups.size());
 						if (groupSize > 0)
 						{
 							if (!groups.containsKey(group))
@@ -206,6 +212,8 @@ public class ObjMesh
 			GLCalls.drawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 			totalSize += i;
 		}
+		
+		//System.out.println(totalSize);
 	}
 
 	/**
@@ -282,9 +290,15 @@ public class ObjMesh
 		{
 			int i = groups.get(currentVertexGroup);
 			//Get transformer matrix
-			matrix = animationData.getTransformationForBonePlusOffset(currentVertexGroup, frame);
+			matrix = animationData.getBoneHierarchyTransformationMatrixWithOffset(currentVertexGroup, frame);
 			//Send the transformation
 			renderingContext.sendBoneTransformationMatrix(matrix);
+			
+			//System.out.println(currentVertexGroup);
+			
+			//if(currentVertexGroup.equals("boneArmLD"))
+			//	System.out.println(matrix);
+			
 			//Only what we can care about
 			if (bonesToDraw == null || bonesToDraw.contains(currentVertexGroup))
 				GLCalls.drawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
@@ -294,12 +308,6 @@ public class ObjMesh
 		renderingContext.sendBoneTransformationMatrix(null);
 		//glCullFace(GL_FRONT);
 	}
-
-	public static List<float[]> vertices = new ArrayList<float[]>();
-	public static List<float[]> texcoords = new ArrayList<float[]>();
-	public static List<float[]> normals = new ArrayList<float[]>();
-	
-	public static List<float[]> vboData = new ArrayList<float[]>();
 
 	public void renderBut(RenderingContext renderingContext, Set<String> bonesToNotDraw, BVHAnimation animationData, int frame)
 	{
@@ -318,7 +326,7 @@ public class ObjMesh
 		{
 			int i = groups.get(currentVertexGroup);
 			//Get transformer matrix
-			matrix = animationData.getTransformationForBonePlusOffset(currentVertexGroup, frame);
+			matrix = animationData.getBoneHierarchyTransformationMatrixWithOffset(currentVertexGroup, frame);
 			//Send the transformation
 			renderingContext.sendBoneTransformationMatrix(matrix);
 			//Only what we can care about

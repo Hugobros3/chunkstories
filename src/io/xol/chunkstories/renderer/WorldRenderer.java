@@ -676,6 +676,7 @@ public class WorldRenderer
 
 	public void renderWorld(boolean isShadowPass, int chunksToRenderLimit)
 	{
+		
 		long t;
 		animationTimer = (float) (((System.currentTimeMillis() % 100000) / 200f) % 100.0);
 
@@ -928,6 +929,9 @@ public class WorldRenderer
 
 			entitiesShader.setUniformFloat("overcastFactor", world.getWeather());
 			entitiesShader.setUniformFloat("wetness", getWorldWetness());
+			
+			renderingContext.getCurrentShader().setUniformFloat("useColorIn", 0.0f);
+			renderingContext.getCurrentShader().setUniformFloat("useNormalIn", 1.0f);
 			//entitiesShader.setUniformFloat("wetness", world.isRaining() ? 0.5f : 0.0f);
 
 			camera.setupShader(entitiesShader);

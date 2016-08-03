@@ -33,6 +33,8 @@ public class EntityComponentVelocity extends EntityComponent
 		this.velocity.setX(velocity.getX());
 		this.velocity.setY(velocity.getY());
 		this.velocity.setZ(velocity.getZ());
+		
+		this.pushComponentEveryone();
 	}
 
 	public void setVelocity(double x, double y, double z)

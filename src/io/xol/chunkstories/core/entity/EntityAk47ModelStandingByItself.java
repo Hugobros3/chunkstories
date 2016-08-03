@@ -46,6 +46,6 @@ public class EntityAk47ModelStandingByItself extends EntityImplementation
 		mutrix.translate(new Vector3f(0.0f, 1.0f, 0.0f));
 		renderingContext.sendTransformationMatrix(mutrix);
 		
-		ModelLibrary.getMesh("res/models/ak47.hq.obj").render(renderingContext);;
+		ModelLibrary.getRenderableMesh("res/models/ak47.hq.obj").render(renderingContext);
 	}
 }

@@ -12,6 +12,10 @@ import static org.lwjgl.opengl.GL15.*;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -25,15 +29,13 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class VerticesObject
 {
-	//private static int boundBuffer = -1;
-
 	private int openglBufferId = -1;
 
 	private boolean isDataPresent = false;
 	private long dataSize = 0L;
 
-	private ByteBuffer dataPendingUpload = null;
-	
+	private Object dataPendingUpload = null;
+
 	private final WeakReference<VerticesObject> self;
 
 	public VerticesObject()
@@ -65,18 +67,66 @@ public class VerticesObject
 	 */
 	public boolean uploadData(ByteBuffer dataToUpload)
 	{
+		return uploadDataActual(dataToUpload);
+	}
+
+	/**
+	 * @return True if the data was immediatly uploaded
+	 */
+	public boolean uploadData(FloatBuffer dataToUpload)
+	{
+		return uploadDataActual(dataToUpload);
+	}
+
+	private boolean uploadDataActual(Object dataToUpload)
+	{
 		//Are we clear to execute openGL calls ?
 		if (GameWindowOpenGL.isMainGLWindow())
 		{
 			bind();
-			dataSize = dataToUpload.limit();
-			
-			//System.out.println("Uploading data "+dataToUpload.limit()/ (4 * (3 + 2 + 4)) + "v" + dataToUpload);
-			
-			//dataSize = 0;
-			glBufferData(GL_ARRAY_BUFFER, dataToUpload, GL_STATIC_DRAW);
-			isDataPresent = true;
-			return true;
+
+			if (dataToUpload instanceof ByteBuffer)
+			{
+				dataSize = ((ByteBuffer) dataToUpload).limit();
+
+				glBufferData(GL_ARRAY_BUFFER, (ByteBuffer) dataToUpload, GL_STATIC_DRAW);
+				isDataPresent = true;
+				return true;
+			}
+			else if (dataToUpload instanceof FloatBuffer)
+			{
+				System.out.println("FLOAT BUFFER UPLOZAD"+this.openglBufferId);
+				
+				dataSize = ((FloatBuffer) dataToUpload).limit() * 4;
+
+				glBufferData(GL_ARRAY_BUFFER, (FloatBuffer) dataToUpload, GL_STATIC_DRAW);
+				isDataPresent = true;
+				return true;
+			}
+			else if (dataToUpload instanceof IntBuffer)
+			{
+				dataSize = ((IntBuffer) dataToUpload).limit() * 4;
+
+				glBufferData(GL_ARRAY_BUFFER, (IntBuffer) dataToUpload, GL_STATIC_DRAW);
+				isDataPresent = true;
+				return true;
+			}
+			else if (dataToUpload instanceof DoubleBuffer)
+			{
+				dataSize = ((DoubleBuffer) dataToUpload).limit() * 8;
+
+				glBufferData(GL_ARRAY_BUFFER, (DoubleBuffer) dataToUpload, GL_STATIC_DRAW);
+				isDataPresent = true;
+				return true;
+			}
+			else if (dataToUpload instanceof ShortBuffer)
+			{
+				dataSize = ((ShortBuffer) dataToUpload).limit() * 2;
+
+				glBufferData(GL_ARRAY_BUFFER, (ShortBuffer) dataToUpload, GL_STATIC_DRAW);
+				isDataPresent = true;
+				return true;
+			}
 		}
 		else
 		{
@@ -85,6 +135,7 @@ public class VerticesObject
 
 			return false;
 		}
+		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -105,12 +156,10 @@ public class VerticesObject
 			throw new IllegalRenderingThreadException();
 
 		//Upload pending stuff
-		ByteBuffer atomicReference = dataPendingUpload;
+		Object atomicReference = dataPendingUpload;
 		if (atomicReference != null)
 		{
-			//System.out.println("cuck");
-			
-			uploadData(atomicReference);
+			uploadDataActual(atomicReference);
 			dataPendingUpload = null;
 		}
 
@@ -158,6 +207,11 @@ public class VerticesObject
 	{
 		return dataSize;
 	}
+
+	public String toString()
+	{
+		return "[VerticeObjcect glId = "+this.openglBufferId+"]";
+	}
 	
 	/**
 	 * Synchronized, returns true only when it actually deletes the gl buffer
@@ -176,10 +230,11 @@ public class VerticesObject
 		{
 			isDataPresent = false;
 
+			System.out.println("Deleting Buffer "+openglBufferId);
 			glDeleteBuffers(openglBufferId);
 			openglBufferId = -2;
 			dataSize = 0;
-			
+
 			totalVerticesObjects--;
 
 			return true;
@@ -233,12 +288,12 @@ public class VerticesObject
 			WeakReference<VerticesObject> reference = i.next();
 
 			VerticesObject object = reference.get();
-			if(object != null)
+			if (object != null)
 				vram += object.getVramUsage();
 			else
 				i.remove();
 		}
-		
+
 		return vram;
 	}
 

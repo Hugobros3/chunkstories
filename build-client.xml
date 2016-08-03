@@ -7,10 +7,10 @@
     <property name="dir.workspace" value="C:/Users/Hugo/workspace2"/>
     <property name="dir.jarfile" value="${dir.buildfile}"/>
     <target name="create_run_jar">
-        <jar destfile="${dir.jarfile}/exporter.jar">
+        <jar destfile="${dir.jarfile}/chunkstories.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
-                <attribute name="Rsrc-Main-Class" value="io.xol.chunkstories.importer.AnvilExporter"/>
+                <attribute name="Rsrc-Main-Class" value="io.xol.chunkstories.client.Client"/>
                 <attribute name="Class-Path" value="."/>
                 <attribute name="Rsrc-Class-Path" value="./ jinput.jar lwjgl.jar lz4-1.3.0.jar PNGDecoder.jar jorbis.jar json-simple-1.1.1.jar"/>
             </manifest>

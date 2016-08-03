@@ -268,7 +268,7 @@ public abstract class WorldImplementation implements World
 
 				//Check entity's chunk is loaded
 				Location entityLocation = entity.getLocation();
-				if (entity.getChunkHolder() != null && entity.getChunkHolder().isDiskDataLoaded() && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
+				if (entity.getChunkHolder() != null && entity.getChunkHolder().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
 				{
 					//If we're the client world and this is our entity
 					if (entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.controlledEntity != null && Client.controlledEntity.equals(entity))
@@ -276,8 +276,8 @@ public abstract class WorldImplementation implements World
 						((EntityControllable) entity).tickClient(Client.getInstance());
 						entity.tick();
 					}
-					//Server should not tick client's entities
-					else if (this instanceof WorldMaster && (!(entity instanceof EntityControllable) || ((EntityControllable) entity).getControllerComponent().getController() != null))
+					//Server should not tick client's entities, only ticks if their controller isn't present
+					else if (this instanceof WorldMaster && (!(entity instanceof EntityControllable) || ((EntityControllable) entity).getControllerComponent().getController() == null))
 						entity.tick();
 				}
 

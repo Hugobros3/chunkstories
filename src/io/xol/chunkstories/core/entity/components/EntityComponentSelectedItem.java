@@ -8,7 +8,12 @@ import io.xol.chunkstories.api.csf.StreamSource;
 import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.ItemsList;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -76,11 +81,46 @@ public class EntityComponentSelectedItem extends EntityComponent
 	protected void push(StreamTarget destinator, DataOutputStream dos) throws IOException
 	{
 		dos.writeInt(selectedSlot);
+		
+		ItemPile pile = inventory.getItemPileAt(selectedSlot, 0);
+		System.out.println("Sending slot"+pile);
+		//don't bother writing the item pile if we're not master or if we'd be telling the controller about it
+		if(pile == null || !(entity.getWorld() instanceof WorldMaster) || (destinator instanceof EntityControllable && destinator.equals(((EntityControllable) entity).getControllerComponent())))
+			dos.writeBoolean(false);
+		else
+		{
+			System.out.println("Sending item");
+			dos.writeBoolean(true);
+			dos.writeInt(pile.getItem().getID());
+			pile.saveCSF(dos);
+		}
 	}
 
 	@Override
 	protected void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
 		selectedSlot = dis.readInt();
+		
+		boolean itemIncluded = dis.readBoolean();
+		if(itemIncluded)
+		{
+			System.out.println("reading item from packet for entity"+entity);
+			ItemPile pile;
+			
+			int id = dis.readInt() & 0x00FFFFFF;
+			ItemType itemType = ItemsList.getItemTypeById(id);
+			if(itemType != null)
+			{
+				Item item = itemType.newItem();
+				pile = new ItemPile(item, dis);
+				if(pile != null && !(entity.getWorld() instanceof WorldMaster))
+				{
+					System.out.println("got held item for "+entity + " : "+pile);
+					inventory.setItemPileAt(selectedSlot, 0, pile);
+				}
+			}
+		}
+		
+		this.pushComponentEveryoneButController();
 	}
 }

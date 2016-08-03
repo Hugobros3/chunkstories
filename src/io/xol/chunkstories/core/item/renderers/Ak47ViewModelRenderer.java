@@ -36,7 +36,7 @@ public class Ak47ViewModelRenderer extends DefaultItemRenderer
 		//renderingContext.getCurrentShader().setUniformFloat3("objectPosition", 0, 0, 0);
 		renderingContext.setDiffuseTexture(TexturesHandler.getTextureID("res/models/ak47.hq.png"));
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
-		ModelLibrary.getMesh("./res/models/ak47.hq.obj").render(renderingContext);
+		ModelLibrary.getRenderableMesh("./res/models/ak47.hq.obj").render(renderingContext);
 	}
 
 }

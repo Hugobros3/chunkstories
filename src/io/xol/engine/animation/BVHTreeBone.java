@@ -13,8 +13,9 @@ import io.xol.engine.math.lalgb.Vector3f;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Bone
+public class BVHTreeBone
 {
+	BVHAnimation bvh;
 	public String name;
 	//Offset from 0.0.0 ( for rigging )
 	Vector3f offset;
@@ -29,13 +30,14 @@ public class Bone
 	//3 is only rotations, 6 is translations included
 	int channels = 0;
 	
-	Bone parent = null;
-	List<Bone> childs = new ArrayList<Bone>();
+	BVHTreeBone parent = null;
+	List<BVHTreeBone> childs = new ArrayList<BVHTreeBone>();
 
-	public Bone(String name, Bone parent)
+	public BVHTreeBone(String name, BVHTreeBone parent, BVHAnimation bvh)
 	{
 		this.name = name;
 		this.parent = parent;
+		this.bvh = bvh;
 	}
 
 	// Pretty recursive debug function :D
@@ -43,14 +45,14 @@ public class Bone
 	public String toString()
 	{
 		String txt = "";
-		Bone p = parent;
+		BVHTreeBone p = parent;
 		while (p != null)
 		{
 			txt = txt + "\t";
 			p = p.parent;
 		}
 		txt += name + " " + channels + " channels, offset=" + offset.toString() + ", dest=" + dest + "\n";
-		for (Bone c : childs)
+		for (BVHTreeBone c : childs)
 			txt += c.toString();
 
 		return txt;
@@ -63,7 +65,7 @@ public class Bone
 	public void recursiveInitMotion(int frames)
 	{
 		animationData = new float[frames][channels];
-		for (Bone c : childs)
+		for (BVHTreeBone c : childs)
 			c.recursiveInitMotion(frames);
 	}
 
@@ -71,7 +73,7 @@ public class Bone
 	public void recursiveResetFlag()
 	{
 		animationDataLoaded = false;
-		for (Bone c : childs)
+		for (BVHTreeBone c : childs)
 			c.recursiveResetFlag();
 	}
 
@@ -80,7 +82,7 @@ public class Bone
 	 * @param frame
 	 * @return
 	 */
-	public Matrix4f getTransformationMatrix(int frame)
+	/*public Matrix4f getTransformationMatrix(int frame)
 	{
 		//Read rotation data from where it is
 		float rotX = toRad(animationData[frame][0]);
@@ -120,14 +122,43 @@ public class Bone
 			Matrix4f.mul(parent.getTransformationMatrix(frame), matrix, matrix);
 
 		return matrix;
-	}
+	}*/
 	
 	/**
 	 * Returns a Matrix4f describing how to end up at the bone transformation at the given frame.
 	 * @param frameLower
 	 * @return
 	 */
-	public Matrix4f getTransformationMatrixInterpolated(int frameLower, int frameUpper, double t)
+	public Matrix4f getTransformationMatrixInterpolatedRecursive(int frameLower, int frameUpper, double t)
+	{
+		Matrix4f matrix = getTransformationMatrixInterpolatedInternal(frameLower, frameUpper, t);
+
+		//Apply the father transformation
+		if (parent != null)
+			Matrix4f.mul(parent.getTransformationMatrixInterpolatedRecursive(frameLower, frameUpper, t), matrix, matrix);
+		
+		return matrix;
+	}
+
+	public Matrix4f getTransformationMatrix(double animationTime)
+	{
+		double frame = animationTime / 1000.0 / bvh.frameTime;
+		
+		double frameUpperBound = Math.ceil(frame);
+		double frameLowerBound = Math.floor(frame);
+		
+		double interp = frame % 1.0;
+		//Don't try to interpolate if we're on an exact frame
+		if(frameLowerBound == frameUpperBound)
+			interp = 0.0;
+		
+		int frameLower = (int)(frameLowerBound) % bvh.frames;
+		int frameUpper = (int)(frameUpperBound) % bvh.frames;
+		
+		return getTransformationMatrixInterpolatedInternal(frameLower, frameUpper, interp);
+	}
+	
+	private Matrix4f getTransformationMatrixInterpolatedInternal(int frameLower, int frameUpper, double t)
 	{
 		//Read rotation data from where it is
 		float rotXLower;
@@ -190,10 +221,6 @@ public class Bone
 			matrix.m31 += offset.y;
 			matrix.m32 += offset.z;
 		}
-
-		//Apply the father transformation
-		if (parent != null)
-			Matrix4f.mul(parent.getTransformationMatrixInterpolated(frameLower, frameUpper, t), matrix, matrix);
 		
 		return matrix;
 	}

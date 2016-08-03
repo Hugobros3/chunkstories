@@ -50,7 +50,7 @@ public class EntitySUV extends EntityImplementation
 		mutrix.translate(new Vector3f(0.0f, 1.0f, 0.0f));
 		renderingContext.getCurrentShader().setUniformMatrix4f("localTransform", mutrix);
 		//debugDraw();
-		ModelLibrary.getMesh("res/models/rookie.obj").render(renderingContext);
+		ModelLibrary.getRenderableMesh("res/models/rookie.obj").render(renderingContext);
 		//ModelLibrary.loadAndRenderAnimatedMesh("res/models/human.obj", "res/models/human-fixed-standstill.bvh", i);
 
 	}

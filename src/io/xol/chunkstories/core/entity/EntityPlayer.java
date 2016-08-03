@@ -32,7 +32,6 @@ import io.xol.chunkstories.core.entity.components.EntityComponentFlying;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentName;
 import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
-import io.xol.chunkstories.core.item.ItemAk47;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
 import io.xol.chunkstories.item.ItemPile;
@@ -40,8 +39,6 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.animation.BVHAnimation;
-import io.xol.engine.animation.BVHLibrary;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
@@ -329,7 +326,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		targetVectorX = Math.sin((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed;
 		targetVectorZ = Math.cos((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed;
 
-		eyePosition = 1.65 + Math.sin(metersWalked * 5d) * 0.035d;
+		eyePosition = 1.65;// + Math.sin(metersWalked * 5d) * 0.035d;
 
 		//System.out.println("nrml mv");
 	}
@@ -433,14 +430,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		Camera cam = renderingContext.getCamera();
 		ItemPile selectedItemPile = getSelectedItemComponent().getSelectedItem();
 		
-		BVHAnimation animation = BVHLibrary.getAnimation("res/animations/human/standstill.bvh");
-		if (selectedItemPile != null)
-		{
-			if (selectedItemPile.getItem() instanceof ItemAk47)
-				animation = BVHLibrary.getAnimation("res/animations/human/holding-rifle.bvh");
-			else
-				animation = BVHLibrary.getAnimation("res/animations/human/holding-item.bvh");
-		}
 		//Player textures
 		Texture2D playerTexture = TexturesHandler.getTexture("models/guyA.png");
 		playerTexture.setLinearFiltering(false);
@@ -460,8 +449,9 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
 		
 		//Except in fp 
+		
 		if (!this.equals(Client.controlledEntity) || renderingContext.isThisAShadowPass())
-			ModelLibrary.getMesh("res/models/human.obj").renderBut(renderingContext, fp_elements, animation, 0);
+			ModelLibrary.getRenderableMesh("res/models/human.obj").renderButParts(renderingContext, this.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
 		
 		//Render rotated limbs
 		playerRotationMatrix = new Matrix4f();
@@ -475,11 +465,11 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
 
 		if(selectedItemPile != null || !this.equals(Client.controlledEntity) || renderingContext.isThisAShadowPass())
-			ModelLibrary.getMesh("res/models/human.obj").render(renderingContext, fp_elements, animation, 0);
+			ModelLibrary.getRenderableMesh("res/models/human.obj").renderParts(renderingContext, this.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
 	
 		//Matrix to itemInHand bone in the player's bvh
 		Matrix4f itemMatrix = new Matrix4f();
-		itemMatrix = animation.getTransformationForBone("boneItemInHand", 0.0);
+		itemMatrix = this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000);
 		//System.out.println(itemMatrix);
 		
 		Matrix4f.mul(playerRotationMatrix, itemMatrix, itemMatrix);
@@ -490,8 +480,12 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			{
 				if (((ItemVoxel) selectedItemPile.getItem()).getVoxel().getLightLevel(0x00) > 0)
 				{
+					Vector4f lightposition = new Vector4f(0.0, 0.0, 0.0, 1.0);
+					Matrix4f.transform(itemMatrix, lightposition, lightposition);
+					//System.out.println(lightposition);
+					
 					Vector3d pos = getLocation();
-					Light heldBlockLight = new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.getX(), (float) pos.getY() + 1.6f, (float) pos.getZ()), 15f);
+					Light heldBlockLight = new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.getX(), (float) pos.getY(), (float) pos.getZ()).add(new Vector3f(lightposition.x, lightposition.y, lightposition.z)), 15f);
 					renderingContext.addLight(heldBlockLight);	
 					
 					//If we hold a light source, prepare the shader accordingly
