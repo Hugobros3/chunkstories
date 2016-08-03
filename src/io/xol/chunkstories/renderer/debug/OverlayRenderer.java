@@ -102,10 +102,10 @@ public class OverlayRenderer
 		int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");
 		GameWindowOpenGL.getInstance().renderingContext.enableVertexAttribute(vertexIn);
 		overlayProgram.setUniformFloat4("colorIn", color);
-		//glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0);
+		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		data.flip();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glVertexAttribPointer(vertexIn, 3, false, 0, data);
+		GameWindowOpenGL.getInstance().getRenderingContext().setVertexAttributePointerLocation(vertexIn, 3, false, 0, data);
 		GLCalls.drawArrays(mode, 0, size);
 		GameWindowOpenGL.getInstance().renderingContext.disableVertexAttribute(vertexIn);
 		GL11.glDisable(GL11.GL_BLEND);

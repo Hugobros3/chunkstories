@@ -127,9 +127,9 @@ public class TextMeshObject
 		{
 			verticesObject.bind();
 
-			renderingContext.setVertexAttributePointer("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2 + 4), 0);
-			renderingContext.setVertexAttributePointer("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2 + 4), 4 * 3);
-			renderingContext.setVertexAttributePointer("colorIn", 4, GL_FLOAT, false, 4 * (3 + 2 + 4), 4 * (3 + 2));
+			renderingContext.setVertexAttributeLocation("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2 + 4), 0);
+			renderingContext.setVertexAttributeLocation("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2 + 4), 4 * 3);
+			renderingContext.setVertexAttributeLocation("colorIn", 4, GL_FLOAT, false, 4 * (3 + 2 + 4), 4 * (3 + 2));
 			
 			//System.out.println(verticesObject.getVramUsage() / 4 * (3 + 2 + 4));
 			

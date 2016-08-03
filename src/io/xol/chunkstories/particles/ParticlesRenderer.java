@@ -272,10 +272,10 @@ public class ParticlesRenderer
 
 						glBindBuffer(GL_ARRAY_BUFFER, particlesPositionsVBO);
 						glBufferData(GL_ARRAY_BUFFER, particlesPositionsBuffer, GL_STATIC_DRAW);
-						glVertexAttribPointer(billCoordVAL, 3, GL_FLOAT, false, 12, 0);
+						renderingContext.setVertexAttributePointerLocation(billCoordVAL, 3, GL_FLOAT, false, 12, 0);
 
 						glBindBuffer(GL_ARRAY_BUFFER, billboardSquareVBO);
-						glVertexAttribPointer(planeVAL, 2, GL_FLOAT, false, 8, 0);
+						renderingContext.setVertexAttributePointerLocation(planeVAL, 2, GL_FLOAT, false, 8, 0);
 						// glDrawElements(GL_POINTS, elements, GL_UNSIGNED_BYTE,
 						// 0);
 						//glPointSize(4f);
@@ -310,27 +310,27 @@ public class ParticlesRenderer
 		return totalDrawn;
 	}
 
-	private int drawBuffers(RenderingContext context, int planeVAL, int billCoordVAL, int texCoordVAL, int elements, boolean haveTextureCoordinates)
+	private int drawBuffers(RenderingContext renderingContext, int planeVAL, int billCoordVAL, int texCoordVAL, int elements, boolean haveTextureCoordinates)
 	{
-		context.getCurrentShader().setUniformFloat("areTextureCoordinatesIninatesSupplied", haveTextureCoordinates ? 1f : 0f);
+		renderingContext.getCurrentShader().setUniformFloat("areTextureCoordinatesIninatesSupplied", haveTextureCoordinates ? 1f : 0f);
 		
 		// Render it now
 		particlesPositionsBuffer.flip();
 
 		glBindBuffer(GL_ARRAY_BUFFER, particlesPositionsVBO);
 		glBufferData(GL_ARRAY_BUFFER, particlesPositionsBuffer, GL_STATIC_DRAW);
-		glVertexAttribPointer(billCoordVAL, 3, GL_FLOAT, false, 12, 0);
+		renderingContext.setVertexAttributePointerLocation(billCoordVAL, 3, GL_FLOAT, false, 12, 0);
 		
 		if(haveTextureCoordinates)
 		{
 			textureCoordinatesBuffer.flip();
 			glBindBuffer(GL_ARRAY_BUFFER, texCoordsVBO);
 			glBufferData(GL_ARRAY_BUFFER, textureCoordinatesBuffer, GL_STATIC_DRAW);
-			glVertexAttribPointer(texCoordVAL, 2, GL_FLOAT, false, 8, 0);
+			renderingContext.setVertexAttributePointerLocation(texCoordVAL, 2, GL_FLOAT, false, 8, 0);
 		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, billboardSquareVBO);
-		glVertexAttribPointer(planeVAL, 2, GL_FLOAT, false, 8, 0);
+		renderingContext.setVertexAttributePointerLocation(planeVAL, 2, GL_FLOAT, false, 8, 0);
 		// glDrawElements(GL_POINTS, elements,
 		// GL_UNSIGNED_BYTE, 0);
 		glPointSize(4f);

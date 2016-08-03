@@ -95,6 +95,10 @@ public class ObjMeshRenderable implements RenderableAnimatable
 	{
 		//System.out.println("slt");
 
+
+		renderingContext.resetAllVertexAttributesLocations();
+		renderingContext.disableUnusedVertexAttributes();
+		
 		int vertexIn = renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn");
 		int texCoordIn = renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn");
 		int normalIn = renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn");
@@ -105,22 +109,28 @@ public class ObjMeshRenderable implements RenderableAnimatable
 		renderingContext.enableVertexAttribute(texCoordIn);
 		if (normalIn != -1)
 			renderingContext.enableVertexAttribute(normalIn);
+		
+		//System.out.println("ColorIn in is at :"+renderingContext.getCurrentShader().getVertexAttributeLocation("colorIn"));
 
+		renderingContext.getCurrentShader().setUniformFloat("useColorIn", 0.0f);
+		renderingContext.getCurrentShader().setUniformFloat("useNormalIn", 1.0f);
+		
 		//Make sure vertex data is avaible
 		getDrawableModel().bind();
 
-		glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0);
+		renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		texCoordDataOnGpu.bind();
-		glVertexAttribPointer(texCoordIn, 2, GL_FLOAT, false, 0, 0);
+		renderingContext.setVertexAttributePointerLocation(texCoordIn, 2, GL_FLOAT, false, 0, 0);
 		if (normalIn != -1)
 		{
-			System.out.println("normal bound to " + normalIn);
+			//System.out.println("normal bound to " + normalIn);
 			normalsDataOnGpu.bind();
-			glVertexAttribPointer(normalIn, 3, GL_FLOAT, true, 0, 0);
+			renderingContext.setVertexAttributePointerLocation(normalIn, 3, GL_FLOAT, true, 0, 0);
+			//renderingContext.enableVertexAttribute("colorIn");
+			//renderingContext.setVertexAttributePointerLocation(renderingContext.getCurrentShader().getVertexAttributeLocation("colorIn"), 3, GL_FLOAT, true, 0, 0);
 		}
 
 		int totalSize = 0;
-
 		if (skeleton != null)
 		{
 			//Loop over groups
@@ -162,11 +172,11 @@ public class ObjMeshRenderable implements RenderableAnimatable
 		}
 		else
 		{
-			System.out.println("verticesCount" + verticesCount);
+			/*System.out.println("verticesCount" + verticesCount);
 			System.out.println("renderingContext" + renderingContext.toString());
 			System.out.println(verticesDataOnGpu);
 			System.out.println(texCoordDataOnGpu);
-			System.out.println(normalsDataOnGpu);
+			System.out.println(normalsDataOnGpu);*/
 			GLCalls.drawArrays(GL_TRIANGLES, 0, verticesCount);
 		}
 

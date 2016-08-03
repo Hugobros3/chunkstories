@@ -101,6 +101,7 @@ void main(){
 		
 	//Basic texture color
 	vec3 baseColor = texture2D(diffuseTexture, texcoord).rgb;
+	
 	if(useColorIn > 0.0)
 		baseColor = colorPassed.rgb;
 	

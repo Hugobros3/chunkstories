@@ -212,8 +212,8 @@ public class DecalsRenderer
 			decalsShader.setUniformSampler(0, "diffuseTexture", diffuseTexture);
 			
 			decalType.verticesObject.bind();
-			renderingContext.setVertexAttributePointer("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2), 0);
-			renderingContext.setVertexAttributePointer("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2), 4 * 3);
+			renderingContext.setVertexAttributeLocation("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2), 0);
+			renderingContext.setVertexAttributeLocation("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2), 4 * 3);
 			
 			decalType.verticesObject.drawElementsTriangles(decalType.kount);
 		}

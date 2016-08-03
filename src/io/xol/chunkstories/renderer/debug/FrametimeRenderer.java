@@ -52,10 +52,10 @@ public class FrametimeRenderer
 		int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");
 		//System.out.println("ntm"+vertexIn);
 		renderingContext.enableVertexAttribute(vertexIn);
-		//glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0);
+		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		data.rewind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glVertexAttribPointer(vertexIn, 2, false, 0, data);
+		renderingContext.setVertexAttributePointerLocation(vertexIn, 2, false, 0, data);
 		GLCalls.drawArrays(GL_LINES, 0, 2000);
 		renderingContext.disableVertexAttribute(vertexIn);
 	}

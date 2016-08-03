@@ -193,7 +193,7 @@ public class FarTerrainRenderer
 
 				
 				//glBindBuffer(GL_ARRAY_BUFFER, rs.regionSummary.vboId);
-				glVertexAttribPointer(vertexIn, 3, GL_SHORT, false, stride, 0L);
+				renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_SHORT, false, stride, 0L);
 				//System.out.println("b4"+glGetError());
 				//System.out.println("ids:"+voxelDataIn);
 				
@@ -206,7 +206,7 @@ public class FarTerrainRenderer
 				//while((gl_Error = glGetError()) != 0)
 				//	System.out.println("errorzer : "+gl_Error);
 				
-				glVertexAttribPointer(normalIn, 4, GL_UNSIGNED_BYTE, false, stride, 8L);
+				renderingContext.setVertexAttributePointerLocation(normalIn, 4, GL_UNSIGNED_BYTE, false, stride, 8L);
 
 				elements += vertices2draw;
 				//elements += rs.regionSummary.vboSize;

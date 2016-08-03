@@ -16,7 +16,6 @@ import io.xol.engine.misc.ColorsTools;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -180,8 +179,8 @@ public class GuiRenderer
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		//glBlendEquation(GL_FUNC_ADD);
 
-		glVertexAttribPointer(vertexIn, 2, GL_FLOAT, false, 16, 0);
-		glVertexAttribPointer(texCoordIn, 2, GL_FLOAT, false, 16, 8);
+		renderingContext.setVertexAttributePointerLocation(vertexIn, 2, GL_FLOAT, false, 16, 0);
+		renderingContext.setVertexAttributePointerLocation(texCoordIn, 2, GL_FLOAT, false, 16, 8);
 		// System.out.println("Drawing"+elementsToDraw
 		// +" vertexIn "+vertexIn+" texCoordIn "+texCoordIn+" vbo: "+glVBO);
 		GLCalls.drawArrays(GL_TRIANGLES, 0, elementsToDraw);

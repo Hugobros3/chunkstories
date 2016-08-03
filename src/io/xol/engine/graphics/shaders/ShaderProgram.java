@@ -43,7 +43,7 @@ public class ShaderProgram
 
 	Map<String, Integer> uniforms = new HashMap<String, Integer>();
 	Map<String, Integer> attributes = new HashMap<String, Integer>();
-	
+
 	protected ShaderProgram(String filename)
 	{
 		this.filename = filename;
@@ -63,15 +63,15 @@ public class ShaderProgram
 		fragS = glCreateShader(GL_FRAGMENT_SHADER);
 
 		String shaderName = filename;
-		if(filename.lastIndexOf("/") != -1)
+		if (filename.lastIndexOf("/") != -1)
 			shaderName = filename.substring(filename.lastIndexOf("/"), filename.length());
-		
+
 		StringBuilder vertexSource = new StringBuilder();
 		StringBuilder fragSource = new StringBuilder();
 		try
 		{
-			vertexSource = CustomGLSLReader.loadRecursivly(new File(filename + "/"+shaderName+".vs"), vertexSource, parameters, false, null);
-			fragSource = CustomGLSLReader.loadRecursivly(new File(filename + "/"+shaderName+".fs"), fragSource, parameters, true, null);
+			vertexSource = CustomGLSLReader.loadRecursivly(new File(filename + "/" + shaderName + ".vs"), vertexSource, parameters, false, null);
+			fragSource = CustomGLSLReader.loadRecursivly(new File(filename + "/" + shaderName + ".fs"), fragSource, parameters, true, null);
 		}
 		catch (IOException e)
 		{
@@ -82,6 +82,23 @@ public class ShaderProgram
 			e.printStackTrace();
 			return;
 		}
+
+		//Anti-AMD bullshit : AMD drivers have this stupid design decision of attributing vertex attributes by lexicographical order instead of
+		//order of apparition, leading to these annoying issues where an optional attribute is in index zero and disabling it screws the drawcalls
+		//To counter this, this piece of code forces the attributes locations to be declared in proper order
+		int i = 0;
+		for (String line : vertexSource.toString().split("\n"))
+		{
+			//We're still GLSL 130
+			if (line.startsWith("in ") || line.startsWith("attribute "))
+			{
+				String attributeName = line.split(" ")[2].replace(";", "");
+				//System.out.println("Binding " + attributeName + " to location : " + i);
+				glBindAttribLocation(shaderP, i, attributeName);
+				i++;
+			}
+		}
+
 		glShaderSource(vertexS, vertexSource);
 		glCompileShader(vertexS);
 
@@ -91,23 +108,23 @@ public class ShaderProgram
 		if (glGetShaderi(fragS, GL_COMPILE_STATUS) == GL_FALSE)
 		{
 			ChunkStoriesLogger.getInstance().log("Failed to compile shader program " + filename + " (fragment)", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.ERROR);
-			
+
 			String errorsSource = glGetShaderInfoLog(fragS, 5000);
-			
+
 			String[] errorsLines = errorsSource.split("\n");
 			String[] sourceLines = fragSource.toString().split("\n");
-			for(String line : errorsLines)
+			for (String line : errorsLines)
 			{
 				ChunkStoriesLogger.getInstance().log(line, ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
-				if(line.toLowerCase().startsWith("error: "))
+				if (line.toLowerCase().startsWith("error: "))
 				{
 					String[] parsed = line.split(":");
-					if(parsed.length >= 3)
+					if (parsed.length >= 3)
 					{
 						int lineNumber = Integer.parseInt(parsed[2]);
-						if(sourceLines.length > lineNumber)
+						if (sourceLines.length > lineNumber)
 						{
-							System.out.println("@line: "+lineNumber+": "+sourceLines[lineNumber]);
+							System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
 						}
 					}
 				}
@@ -117,23 +134,23 @@ public class ShaderProgram
 		if (glGetShaderi(vertexS, GL_COMPILE_STATUS) == GL_FALSE)
 		{
 			ChunkStoriesLogger.getInstance().log("Failed to compile shader program " + filename + " (vertex)", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.ERROR);
-			
+
 			String errorsSource = glGetShaderInfoLog(vertexS, 5000);
-			
+
 			String[] errorsLines = errorsSource.split("\n");
 			String[] sourceLines = fragSource.toString().split("\n");
-			for(String line : errorsLines)
+			for (String line : errorsLines)
 			{
 				ChunkStoriesLogger.getInstance().log(line, ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
-				if(line.toLowerCase().startsWith("error: "))
+				if (line.toLowerCase().startsWith("error: "))
 				{
 					String[] parsed = line.split(":");
-					if(parsed.length >= 3)
+					if (parsed.length >= 3)
 					{
 						int lineNumber = Integer.parseInt(parsed[2]);
-						if(sourceLines.length > lineNumber)
+						if (sourceLines.length > lineNumber)
 						{
-							System.out.println("@line: "+lineNumber+": "+sourceLines[lineNumber]);
+							System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
 						}
 					}
 				}
@@ -147,64 +164,64 @@ public class ShaderProgram
 
 		glLinkProgram(shaderP);
 
-		if(glGetProgrami(shaderP, GL_LINK_STATUS) == GL_FALSE)
+		if (glGetProgrami(shaderP, GL_LINK_STATUS) == GL_FALSE)
 		{
 			ChunkStoriesLogger.getInstance().log("Failed to link program " + filename + "", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.ERROR);
-			
+
 			String errorsSource = glGetProgramInfoLog(shaderP, 5000);
-			
+
 			String[] errorsLines = errorsSource.split("\n");
 			String[] sourceLines = fragSource.toString().split("\n");
-			for(String line : errorsLines)
+			for (String line : errorsLines)
 			{
 				ChunkStoriesLogger.getInstance().log(line, ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
-				if(line.toLowerCase().startsWith("error: "))
+				if (line.toLowerCase().startsWith("error: "))
 				{
 					String[] parsed = line.split(":");
-					if(parsed.length >= 3)
+					if (parsed.length >= 3)
 					{
 						int lineNumber = Integer.parseInt(parsed[2]);
-						if(sourceLines.length > lineNumber)
+						if (sourceLines.length > lineNumber)
 						{
-							System.out.println("@line: "+lineNumber+": "+sourceLines[lineNumber]);
+							System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
 						}
 					}
 				}
 			}
-			
+
 			return;
 		}
 
 		glValidateProgram(shaderP);
-		
-		if(glGetProgrami(shaderP, GL_VALIDATE_STATUS) == GL_FALSE)
+
+		if (glGetProgrami(shaderP, GL_VALIDATE_STATUS) == GL_FALSE)
 		{
 			ChunkStoriesLogger.getInstance().log("Failed to validate program " + filename + "", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.ERROR);
-			
+
 			String errorsSource = glGetProgramInfoLog(shaderP, 5000);
-			
+
 			String[] errorsLines = errorsSource.split("\n");
 			String[] sourceLines = fragSource.toString().split("\n");
-			for(String line : errorsLines)
+			for (String line : errorsLines)
 			{
 				ChunkStoriesLogger.getInstance().log(line, ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
-				if(line.toLowerCase().startsWith("error: "))
+				if (line.toLowerCase().startsWith("error: "))
 				{
 					String[] parsed = line.split(":");
-					if(parsed.length >= 3)
+					if (parsed.length >= 3)
 					{
 						int lineNumber = Integer.parseInt(parsed[2]);
-						if(sourceLines.length > lineNumber)
+						if (sourceLines.length > lineNumber)
 						{
-							System.out.println("@line: "+lineNumber+": "+sourceLines[lineNumber]);
+							System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
 						}
 					}
 				}
 			}
-			
+
 			return;
 		}
-		
+
 		//ChunkStoriesLogger.getInstance().log("Shader program " + filename + " sucessfully loaded and compiled ! (P:" + shaderP + ")", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
 
 		loadOK = true;
@@ -245,7 +262,7 @@ public class ShaderProgram
 		glBindTexture(GL_TEXTURE_CUBE_MAP, texId);
 		glActiveTexture(GL_TEXTURE0);
 	}
-	
+
 	public void setUniformSamplerCubemap(int id, String name, Cubemap cubemap)
 	{
 		this.setUniformInt(name, id);
@@ -323,9 +340,9 @@ public class ShaderProgram
 
 	public void setUniformFloat3(String name, double d1, double d2, double d3)
 	{
-		glUniform3f(getUniformLocation(name), (float)d1, (float)d2, (float)d3);
+		glUniform3f(getUniformLocation(name), (float) d1, (float) d2, (float) d3);
 	}
-	
+
 	public void setUniformFloat4(String name, io.xol.engine.math.lalgb.Vector4f vec4)
 	{
 		setUniformFloat4(name, vec4.x, vec4.y, vec4.z, vec4.w);
@@ -343,14 +360,14 @@ public class ShaderProgram
 
 	public int getVertexAttributeLocation(String name)
 	{
-		if(attributes.containsKey(name))
+		if (attributes.containsKey(name))
 			return attributes.get(name);
 		else
 		{
 			int location = glGetAttribLocation(shaderP, name);
-			if(location == -1)
+			if (location == -1)
 			{
-				ChunkStoriesLogger.getInstance().warning("Warning, -1 location for VertexAttrib "+name+" in shader "+this.filename);
+				ChunkStoriesLogger.getInstance().warning("Warning, -1 location for VertexAttrib " + name + " in shader " + this.filename);
 				//location = 0;
 			}
 			attributes.put(name, location);

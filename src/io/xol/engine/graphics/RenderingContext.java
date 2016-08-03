@@ -11,6 +11,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ public class RenderingContext
 	private boolean isThisAShadowPass;
 
 	private Set<Integer> enabledAttributes = new HashSet<Integer>();
+	private Set<Integer> setupAttributes = new HashSet<Integer>();
 
 	private Set<Light> lights = new HashSet<Light>();
 
@@ -52,12 +54,12 @@ public class RenderingContext
 	public String toString()
 	{
 		String attributes = "";
-		for(int i : enabledAttributes)
+		for (int i : enabledAttributes)
 		{
 			attributes += i;
 		}
-		attributes += " ("+enabledAttributes.size()+")";
-		return "[RenderingContext shadow:"+isThisAShadowPass+" enabledAttributes: "+attributes+" lights: "+lights.size()+" shader:"+getCurrentShader()+" ]";
+		attributes += " (" + enabledAttributes.size() + ")";
+		return "[RenderingContext shadow:" + isThisAShadowPass + " enabledAttributes: " + attributes + " lights: " + lights.size() + " shader:" + getCurrentShader() + " ]";
 	}
 
 	public void setCamera(Camera camera)
@@ -105,7 +107,7 @@ public class RenderingContext
 	{
 		return guiRenderer;
 	}
-	
+
 	public TrueTypeFontRenderer getTrueTypeFontRenderer()
 	{
 		return trueTypeFontRenderer;
@@ -116,15 +118,16 @@ public class RenderingContext
 	 * 
 	 * @param vertexAttributeLocation
 	 */
-	public void enableVertexAttribute(int vertexAttributeLocation)
+	public boolean enableVertexAttribute(int vertexAttributeLocation)
 	{
 		if (vertexAttributeLocation < 0)
-			return;
+			return false;
 		if (!enabledAttributes.contains(vertexAttributeLocation))
 		{
 			glEnableVertexAttribArray(vertexAttributeLocation);
 			enabledAttributes.add(vertexAttributeLocation);
 		}
+		return true;
 	}
 
 	/**
@@ -143,9 +146,9 @@ public class RenderingContext
 		}
 	}
 
-	public void enableVertexAttribute(String vertexAttributeName)
+	public boolean enableVertexAttribute(String vertexAttributeName)
 	{
-		enableVertexAttribute(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName));
+		return enableVertexAttribute(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName));
 	}
 
 	public void disableVertexAttribute(String vertexAttributeName)
@@ -153,50 +156,90 @@ public class RenderingContext
 		disableVertexAttribute(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName));
 	}
 
-	public void setVertexAttributePointer(String vertexAttributeName, int dimensions, int vertexType, boolean normalized, int stride, int offset)
+	public void setVertexAttributeLocation(String vertexAttributeName, int dimensions, int vertexType, boolean normalized, int stride, int offset)
 	{
-		setVertexAttributePointer(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName), dimensions, vertexType, normalized, stride, offset);
+		setVertexAttributePointerLocation(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName), dimensions, vertexType, normalized, stride, offset);
 	}
 
 	/**
 	 * If the said attribute is enabled, tells openGL where to lookup data for it within the bind buffer
-	 * 
-	 * @param vertexAttributeLocation
-	 * @param dimensions
-	 * @param vertexType
-	 * @param normalized
-	 * @param stride
-	 * @param offset
 	 */
-	public void setVertexAttributePointer(int vertexAttributeLocation, int dimensions, int vertexType, boolean normalized, int stride, int offset)
+	public void setVertexAttributePointerLocation(int vertexAttributeLocation, int dimensions, int vertexType, boolean normalized, int stride, long offset)
 	{
-		if (enabledAttributes.contains(vertexAttributeLocation))
+		//If vertex attribute isn't enabled we enable it first
+		if (!enabledAttributes.contains(vertexAttributeLocation))
 		{
-			glVertexAttribPointer(vertexAttributeLocation, dimensions, vertexType, normalized, stride, offset);
+			//If we can't enable this attribute don't bother
+			if(!enableVertexAttribute(vertexAttributeLocation))
+				return;
 		}
+		glVertexAttribPointer(vertexAttributeLocation, dimensions, vertexType, normalized, stride, offset);
+		//System.out.println("Setup "+vertexAttributeLocation);
+		setupAttributes.add(vertexAttributeLocation);
+	}
+
+	public void setVertexAttributePointerLocation(int vertexAttributeLocation, int dimensions, int vertexType, boolean normalized, int stride, ByteBuffer data)
+	{
+		//If vertex attribute isn't enabled we enable it first
+		if (!enabledAttributes.contains(vertexAttributeLocation))
+		{
+			//If we can't enable this attribute don't bother
+			if(!enableVertexAttribute(vertexAttributeLocation))
+				return;
+		}
+		glVertexAttribPointer(vertexAttributeLocation, dimensions, vertexType, normalized, stride, data);
+		setupAttributes.add(vertexAttributeLocation);
+	}
+	
+	public void setVertexAttributePointerLocation(int vertexAttributeLocation, int dimensions, boolean normalized, int stride, FloatBuffer data)
+	{
+		//If vertex attribute isn't enabled we enable it first
+		if (!enabledAttributes.contains(vertexAttributeLocation))
+		{
+			//If we can't enable this attribute don't bother
+			if(!enableVertexAttribute(vertexAttributeLocation))
+				return;
+		}
+		glVertexAttribPointer(vertexAttributeLocation, dimensions, normalized, stride, data);
+		setupAttributes.add(vertexAttributeLocation);
+	}
+	
+	public boolean isVertexAttributeAvaible(String vertexAttributeName)
+	{
+		return this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName) > 0;
 	}
 
 	/**
 	 * Resets the vertex attributes enabled (disables all)
 	 */
-	public void clearVertexAttributes()
+	public void resetAllVertexAttributesLocations()
+	{
+		setupAttributes.clear();
+	}
+
+	public void disableUnusedVertexAttributes()
 	{
 		Iterator<Integer> i = enabledAttributes.iterator();
 		while (i.hasNext())
 		{
 			int vertexAttributeLocation = i.next();
-			glDisableVertexAttribArray(vertexAttributeLocation);
-			i.remove();
+
+			if (!setupAttributes.contains(vertexAttributeLocation))
+			{
+				//System.out.println("Disabled unused VAL : "+vertexAttributeLocation + " / "+this.getCurrentShader());
+				glDisableVertexAttribArray(vertexAttributeLocation);
+				i.remove();
+			}
 		}
 	}
-
 	public void setCurrentShader(ShaderProgram shaderProgram)
 	{
 		//Save calls
 		if (shaderProgram != currentlyBoundShader)
 		{
 			//When changing shaders, we make sure we disable whatever was enabled
-			clearVertexAttributes();
+			resetAllVertexAttributesLocations();
+			disableUnusedVertexAttributes();
 			shaderProgram.use();
 		}
 		currentlyBoundShader = shaderProgram;
@@ -275,7 +318,7 @@ public class RenderingContext
 		normal.m22 = temp.m22;
 		this.currentlyBoundShader.setUniformMatrix3f("boneTransformNormal", normal);
 	}
-	
+
 	static FloatBuffer fsQuadBuffer = null;
 
 	public void drawFSQuad(int vertexAttribLocation)
@@ -289,9 +332,9 @@ public class RenderingContext
 			fsQuadBuffer.put(new float[] { 1f, 1f, -1f, -1f, 1f, -1f, 1f, 1f, -1f, 1f, -1f, -1f });
 		}
 		fsQuadBuffer.flip();
-		enableVertexAttribute(vertexAttribLocation);
+		//enableVertexAttribute(vertexAttribLocation);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glVertexAttribPointer(vertexAttribLocation, 2, false, 0, fsQuadBuffer);
+		setVertexAttributePointerLocation(vertexAttribLocation, 2, false, 0, fsQuadBuffer);
 		GLCalls.drawArrays(GL_TRIANGLES, 0, 6);
 
 		disableVertexAttribute(vertexAttribLocation);

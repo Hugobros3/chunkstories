@@ -8,6 +8,8 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
+import io.xol.engine.base.GameWindowOpenGL;
+
 public class GLCalls
 {
 	static long verticesDrawn;
@@ -26,6 +28,7 @@ public class GLCalls
 	
 	public static void drawArrays(int mode, int first, int count)
 	{
+		GameWindowOpenGL.getInstance().getRenderingContext().disableUnusedVertexAttributes();
 		glDrawArrays(mode, first, count);
 		verticesDrawn += count;
 		drawCalls++;

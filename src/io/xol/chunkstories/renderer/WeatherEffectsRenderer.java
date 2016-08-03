@@ -2,7 +2,6 @@ package io.xol.chunkstories.renderer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 
 import java.nio.FloatBuffer;
 import java.util.Random;
@@ -152,13 +151,13 @@ public class WeatherEffectsRenderer
 		renderingContext.getCamera().setupShader(weatherShader);
 		int vertexIn = weatherShader.getVertexAttributeLocation("vertexIn");
 		renderingContext.enableVertexAttribute(vertexIn);
-		//glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 0, 0);
+		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		weatherShader.setUniformFloat("time", (System.currentTimeMillis() - lastRender) / 1000f);
 		weatherShader.setUniformSampler(0, "lightmap", TexturesHandler.getTexture("environement/lightcolors.png"));
 		weatherShader.setUniformFloat("sunTime", worldRenderer.getSky().time);
 		//raindropsData.flip();
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
-		glVertexAttribPointer(vertexIn, 4, GL_FLOAT, false, 0, 0L);
+		renderingContext.setVertexAttributePointerLocation(vertexIn, 4, GL_FLOAT, false, 0, 0L);
 		
 		float rainIntensity = Math.min(Math.max(0.0f, world.getWeather() - 0.5f) / 0.3f, 1.0f);
 		

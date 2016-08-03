@@ -73,27 +73,27 @@ public class DirectRenderer
 		//Upload data
 		glBindBuffer(GL_ARRAY_BUFFER, tempVBO[0]);
 		glBufferData(GL_ARRAY_BUFFER, vertexCoords, GL_STREAM_DRAW);
-		glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 12, 0);
+		renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 12, 0);
 		if (texCoordIn != -1)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[1]);
 			glBufferData(GL_ARRAY_BUFFER, texCoords, GL_STREAM_DRAW);
 			int dimensions = texCoords.capacity() / verticesToDraw;
-			glVertexAttribPointer(texCoordIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
+			renderingContext.setVertexAttributePointerLocation(texCoordIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
 		if (colorIn != -1)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[2]);
 			glBufferData(GL_ARRAY_BUFFER, colors, GL_STREAM_DRAW);
 			int dimensions = colors.capacity() / verticesToDraw;
-			glVertexAttribPointer(colorIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
+			renderingContext.setVertexAttributePointerLocation(colorIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
 		if (normalIn != -1)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[3]);
 			glBufferData(GL_ARRAY_BUFFER, normals, GL_STREAM_DRAW);
 			int dimensions = normals.capacity() / verticesToDraw;
-			glVertexAttribPointer(normalIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
+			renderingContext.setVertexAttributePointerLocation(normalIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
 
 		GLCalls.drawArrays(GL_TRIANGLES, 0, verticesToDraw);
@@ -150,7 +150,7 @@ public class DirectRenderer
 		tempBuffer.put(vertexCoords);
 		tempBuffer.flip();
 		glBufferData(GL_ARRAY_BUFFER, tempBuffer, GL_STREAM_DRAW);
-		glVertexAttribPointer(vertexIn, 3, GL_FLOAT, false, 12, 0);
+		renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 12, 0);
 		if (texCoordIn != -1)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, tempVBO[1]);
@@ -159,7 +159,7 @@ public class DirectRenderer
 			tempBuffer.flip();
 			glBufferData(GL_ARRAY_BUFFER, tempBuffer, GL_STREAM_DRAW);
 			int dimensions = texCoords.length / verticesToDraw;
-			glVertexAttribPointer(texCoordIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
+			renderingContext.setVertexAttributePointerLocation(texCoordIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
 		if (colorIn != -1 && colors != null)
 		{
@@ -169,7 +169,7 @@ public class DirectRenderer
 			tempBuffer.flip();
 			glBufferData(GL_ARRAY_BUFFER, tempBuffer, GL_STREAM_DRAW);
 			int dimensions = colors.length / verticesToDraw;
-			glVertexAttribPointer(colorIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
+			renderingContext.setVertexAttributePointerLocation(colorIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
 		if (normalIn != -1)
 		{
@@ -179,7 +179,7 @@ public class DirectRenderer
 			tempBuffer.flip();
 			glBufferData(GL_ARRAY_BUFFER, tempBuffer, GL_STREAM_DRAW);
 			int dimensions = normals.length / verticesToDraw;
-			glVertexAttribPointer(normalIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
+			renderingContext.setVertexAttributePointerLocation(normalIn, dimensions, GL_FLOAT, false, 4 * dimensions, 0);
 		}
 
 		GLCalls.drawArrays(GL_TRIANGLES, 0, verticesToDraw);

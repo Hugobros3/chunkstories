@@ -228,9 +228,9 @@ public class CloudsRenderer
 		glDisable(GL_CULL_FACE);
 
 		cloudsMesh.bind();
-		renderingContext.setVertexAttributePointer("vertexIn", 3, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), 0);
-		renderingContext.setVertexAttributePointer("normalIn", 3, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), (4 * 3));
-		renderingContext.setVertexAttributePointer("alphaIn", 1, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), (4 * 3 + 4 * 3));
+		renderingContext.setVertexAttributeLocation("vertexIn", 3, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), 0);
+		renderingContext.setVertexAttributeLocation("normalIn", 3, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), (4 * 3));
+		renderingContext.setVertexAttributeLocation("alphaIn", 1, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), (4 * 3 + 4 * 3));
 
 		cloudsMesh.drawElementsTriangles(baked);
 

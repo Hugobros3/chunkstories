@@ -13,7 +13,7 @@ import io.xol.chunkstories.content.GameData;
 public class ModelLibrary
 {
 	// This class holds static model info
-	static Map<String, ObjMeshLegacy> models = new HashMap<String, ObjMeshLegacy>();
+	// static Map<String, ObjMeshLegacy> models = new HashMap<String, ObjMeshLegacy>();
 	
 	static Map<File, ObjMeshRenderable> objModelsRenderable = new HashMap<File, ObjMeshRenderable>();
 	static Map<File, ObjMeshComplete> objModelsComplete = new HashMap<File, ObjMeshComplete>();
@@ -75,7 +75,7 @@ public class ModelLibrary
 	 * @param name
 	 * @return
 	 */
-	public static ObjMeshLegacy getMesh(String name)
+	/*public static ObjMeshLegacy getMesh(String name)
 	{
 		ObjMeshLegacy mesh = null;
 		if (models.containsKey(name))
@@ -98,14 +98,14 @@ public class ModelLibrary
 		if (mesh == null)
 			mesh = getMesh("./res/models/error.obj");
 		return mesh;
-	}
+	}*/
 
 	public static void reloadAllModels()
 	{
-		for (ObjMeshLegacy m : models.values())
+		/*for (ObjMeshLegacy m : models.values())
 			if (m != null)
 				m.destroy();
-		models.clear();
+		models.clear();*/
 		
 		objModelsRenderable.clear();
 	}

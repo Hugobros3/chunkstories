@@ -230,7 +230,7 @@ public class VerticesObject
 		{
 			isDataPresent = false;
 
-			System.out.println("Deleting Buffer "+openglBufferId);
+			//System.out.println("Deleting Buffer "+openglBufferId);
 			glDeleteBuffers(openglBufferId);
 			openglBufferId = -2;
 			dataSize = 0;

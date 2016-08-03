@@ -124,10 +124,10 @@ public class ChunkRenderData
 			// We're going back to interlaced format
 			// Raw blocks ( integer faces ) alignment :
 			// Vertex data : [VERTEX_POS(4b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 16 bits
-			renderingContext.setVertexAttributePointer("vertexIn", 4, GL_UNSIGNED_BYTE, false, 16, 0);
-			renderingContext.setVertexAttributePointer("texCoordIn", 2, GL_UNSIGNED_SHORT, false, 16, 4);
-			renderingContext.setVertexAttributePointer("colorIn", 4, GL_UNSIGNED_BYTE, true, 16, 8);
-			renderingContext.setVertexAttributePointer("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 16, 12);
+			renderingContext.setVertexAttributeLocation("vertexIn", 4, GL_UNSIGNED_BYTE, false, 16, 0);
+			renderingContext.setVertexAttributeLocation("texCoordIn", 2, GL_UNSIGNED_SHORT, false, 16, 4);
+			renderingContext.setVertexAttributeLocation("colorIn", 4, GL_UNSIGNED_BYTE, true, 16, 8);
+			renderingContext.setVertexAttributeLocation("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 16, 12);
 			
 
 			verticesObject.drawElementsTriangles(vboSizeFullBlocks);
@@ -147,10 +147,10 @@ public class ChunkRenderData
 			// We're going back to interlaced format
 			// Complex blocks ( integer faces ) alignment :
 			// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
-			renderingContext.setVertexAttributePointer("vertexIn", 3, GL_FLOAT, false, 24, dekal + 0);
-			renderingContext.setVertexAttributePointer("texCoordIn", 2, GL_UNSIGNED_SHORT, false, 24, dekal + 12);
-			renderingContext.setVertexAttributePointer("colorIn", 4, GL_UNSIGNED_BYTE, true, 24, dekal + 16);
-			renderingContext.setVertexAttributePointer("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20);
+			renderingContext.setVertexAttributeLocation("vertexIn", 3, GL_FLOAT, false, 24, dekal + 0);
+			renderingContext.setVertexAttributeLocation("texCoordIn", 2, GL_UNSIGNED_SHORT, false, 24, dekal + 12);
+			renderingContext.setVertexAttributeLocation("colorIn", 4, GL_UNSIGNED_BYTE, true, 24, dekal + 16);
+			renderingContext.setVertexAttributeLocation("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20);
 			//glDrawArrays(GL_TRIANGLES, 0, vboSizeCustomBlocks);
 			verticesObject.drawElementsTriangles(vboSizeCustomBlocks);
 			return vboSizeCustomBlocks;
@@ -167,10 +167,10 @@ public class ChunkRenderData
 			// We're going back to interlaced format
 			// Complex blocks ( integer faces ) alignment :
 			// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
-			renderingContext.setVertexAttributePointer("vertexIn", 3, GL_FLOAT, false, 24, dekal + 0);
-			renderingContext.setVertexAttributePointer("texCoordIn", 2, GL_UNSIGNED_SHORT, false, 24, dekal + 12);
-			renderingContext.setVertexAttributePointer("colorIn", 4, GL_UNSIGNED_BYTE, true, 24, dekal + 16);
-			renderingContext.setVertexAttributePointer("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20);
+			renderingContext.setVertexAttributeLocation("vertexIn", 3, GL_FLOAT, false, 24, dekal + 0);
+			renderingContext.setVertexAttributeLocation("texCoordIn", 2, GL_UNSIGNED_SHORT, false, 24, dekal + 12);
+			renderingContext.setVertexAttributeLocation("colorIn", 4, GL_UNSIGNED_BYTE, true, 24, dekal + 16);
+			renderingContext.setVertexAttributeLocation("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20);
 			//glDrawArrays(GL_TRIANGLES, 0, vboSizeWaterBlocks);
 			verticesObject.drawElementsTriangles(vboSizeWaterBlocks);
 			return vboSizeWaterBlocks;

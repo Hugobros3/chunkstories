@@ -518,12 +518,12 @@ public class WorldRenderer
 					}
 			}
 
-			renderingContext.clearVertexAttributes();
+			renderingContext.resetAllVertexAttributesLocations();
 			renderingContext.enableVertexAttribute(vertexIn);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			localMapCommands.flip();
 
-			glVertexAttribPointer(vertexIn, 3, GL_BYTE, false, 4, localMapCommands);
+			renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_BYTE, false, 4, localMapCommands);
 			GLCalls.drawArrays(GL_POINTS, 0, localMapElements);
 			//Two maps
 			glDepthFunc(GL_LEQUAL);
