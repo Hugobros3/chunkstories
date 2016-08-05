@@ -1,32 +1,18 @@
 package io.xol.chunkstories.core.entity;
 
-//(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
-
-import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
-import io.xol.engine.math.lalgb.Vector4f;
-import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.animation.BVHAnimation;
 import io.xol.engine.animation.BVHLibrary;
-import io.xol.engine.animation.BVHTreeBone;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.model.ModelLibrary;
 
-public class EntityZombie extends EntityLivingImplentation implements EntityHUD
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
+public class EntityZombie extends EntityHumanoid
 {
 	int i = 0;
 
@@ -61,10 +47,11 @@ public class EntityZombie extends EntityLivingImplentation implements EntityHUD
 		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 
 		renderingContext.sendTransformationMatrix(null);
-		ModelLibrary.getRenderableMesh("./res/models/human.obj").render(renderingContext, BVHLibrary.getAnimation("res/animations/human/walking.bvh"), (int)System.currentTimeMillis() % 30000);
+		ModelLibrary.getRenderableMesh("./res/models/human.obj").render(
+				renderingContext, BVHLibrary.getAnimation("res/animations/human/ded.bvh"), (int)System.currentTimeMillis() % 30000);
 	}
 
-	@Override
+	/*@Override
 	public void debugDraw()
 	{
 		// Debug this shit
@@ -147,10 +134,9 @@ public class EntityZombie extends EntityLivingImplentation implements EntityHUD
 			glVertex3f(k[0], k[1], k[2]);
 		}
 		glEnd();
-	}
+	}*/
 
-
-	@Override
+	/*@Override
 	public void drawHUD(RenderingContext renderingContext)
 	{
 		Vector3f posOnScreen = renderingContext.getCamera().transform3DCoordinate(getLocation().castToSP().add(new Vector3f(0.0f, 2.5f, 0.0f)));
@@ -159,11 +145,5 @@ public class EntityZombie extends EntityLivingImplentation implements EntityHUD
 		float dekal = TrueTypeFont.arial11px.getWidth("Player")*16*scale;
 		if(scale > 0)
 			renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, posOnScreen.x-dekal/2, posOnScreen.y, "", 16*scale, 16*scale, new Vector4f(1,1,1,1));
-	}
-	
-	@Override
-	public CollisionBox[] getCollisionBoxes()
-	{
-		return new CollisionBox[] { new CollisionBox(0.5, 2.00, 0.5) };
-	}
+	}*/
 }

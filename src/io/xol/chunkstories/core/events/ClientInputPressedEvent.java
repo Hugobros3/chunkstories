@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.events.categories.ClientEvent;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.net.packets.PacketInput;
 
@@ -46,6 +47,7 @@ public class ClientInputPressedEvent extends CancellableEvent implements ClientE
 	{
 		if(!this.isCancelled())
 		{
+			//Send input to server
 			ClientToServerConnection connection = this.getClient().getServerConnection();
 			if(connection != null)
 			{
@@ -53,6 +55,9 @@ public class ClientInputPressedEvent extends CancellableEvent implements ClientE
 				packet.input = input;
 				connection.sendPacket(packet);
 			}
+			//Handle interaction locally
+			if(Client.getInstance().getControlledEntity() != null)
+				Client.getInstance().getControlledEntity().handleInteraction(input, Client.getInstance());
 		}
 	}
 

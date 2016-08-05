@@ -6,6 +6,9 @@ package io.xol.chunkstories.api.sound;
 
 public interface SoundSource
 {
+	public String getSoundName();
+	public long getUUID();
+	
 	/**
 	 * Sets the pitch to a specific source
 	 * 
@@ -64,13 +67,7 @@ public interface SoundSource
 	/**
 	 * Removes and stops the SoundSource. In case this source was using an unique SoundData (ie streamed/buffered) it also deletes the said source and frees ressources.
 	 */
-	void destroy();
-
-	/**
-	 * Internal to the engine, updates the attributes in the AL context thread.
-	 */
-
-	void update(SoundManager manager);
+	void stop();
 
 	/**
 	 * Returns wether the sound source is not active anymore

@@ -302,8 +302,8 @@ public class GameplayScene extends OverlayableScene
 			Client.pluginsManager.fireEvent(event);
 			if (event.isCancelled())
 				return true;
-			else if (((EntityControllable) this.player).handleInteraction(keyBind, Client.getInstance()))
-				return true;
+			//else if (((EntityControllable) this.player).handleInteraction(keyBind, Client.getInstance()))
+			//	return true;
 		}
 
 		Location loc = player.getLocation();
@@ -414,8 +414,8 @@ public class GameplayScene extends OverlayableScene
 			ClientInputPressedEvent event = new ClientInputPressedEvent(mButton);
 			if (mButton != null)
 				Client.pluginsManager.fireEvent(event);
-			if (!event.isCancelled())
-				return ((EntityControllable) this.player).handleInteraction(mButton, Client.getInstance());
+			//if (!event.isCancelled())
+			//	return ((EntityControllable) this.player).handleInteraction(mButton, Client.getInstance());
 		}
 		//TODO it does not handle the special clicks yet, maybye do it somewhere else, like in binds ?
 		return false;

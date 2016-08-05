@@ -7,8 +7,10 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.entity.SerializedEntityFile;
+import io.xol.chunkstories.server.VirtualServerSoundManager.ServerPlayerVirtualSoundManager;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.misc.ColorsTools;
@@ -35,6 +37,8 @@ public class ServerPlayer implements Player
 
 	//Mirror of client inputs
 	private ServerInputsManager serverInputsManager;
+	
+	private ServerPlayerVirtualSoundManager virtualSoundManager;
 
 	public ServerPlayer(ServerClient serverClient)
 	{
@@ -43,6 +47,9 @@ public class ServerPlayer implements Player
 		playerDataFile = new ConfigFile("./players/" + playerConnection.name.toLowerCase() + ".cfg");
 		
 		serverInputsManager = new ServerInputsManager(this);
+		
+		//TODO update the sound manager to support multiworld
+		virtualSoundManager = Server.getInstance().getWorld().getSoundManager().new ServerPlayerVirtualSoundManager(this);
 		
 		// Sets dates
 		playerDataFile.setString("lastlogin", "" + System.currentTimeMillis());
@@ -69,9 +76,6 @@ public class ServerPlayer implements Player
 		{
 			e = iter.next();
 			
-			//Don't track ourselves
-			//if(!e.equals(controlledEntity))
-			{
 				Location loc = e.getLocation();
 				//Distance calculations
 				double dx = LoopingMathHelper.moduloDistance(controlledEntityLocation.getX(), loc.getX(), ws);
@@ -96,8 +100,9 @@ public class ServerPlayer implements Player
 					
 					subscribedEntities.remove(e); // Reminder, we are iterating the world, not trackedEntities
 				}
-			}
 		}
+		
+		
 		Iterator<Entity> iter2 = subscribedEntities.iterator();
 		while(iter.hasNext())
 		{
@@ -163,7 +168,7 @@ public class ServerPlayer implements Player
 	}
 
 	@Override
-	public Entity getControlledEntity()
+	public EntityControllable getControlledEntity()
 	{
 		return controlledEntity;
 	}
@@ -334,9 +339,17 @@ public class ServerPlayer implements Player
 		return subscribedEntities.contains(entity);
 	}
 
+	// Managers
+	
 	@Override
 	public InputsManager getInputsManager()
 	{
 		return serverInputsManager;
+	}
+
+	@Override
+	public SoundManager getSoundManager()
+	{
+		return virtualSoundManager;
 	}
 }

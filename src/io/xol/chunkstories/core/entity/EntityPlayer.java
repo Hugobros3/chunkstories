@@ -1,8 +1,5 @@
 package io.xol.chunkstories.core.entity;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -20,7 +17,6 @@ import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -32,12 +28,10 @@ import io.xol.chunkstories.core.entity.components.EntityComponentFlying;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentName;
 import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
-import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
@@ -54,7 +48,7 @@ import io.xol.engine.model.ModelLibrary;
 /**
  * Core/Vanilla player, has all the functionality you'd want from it
  */
-public class EntityPlayer extends EntityLivingImplentation implements EntityControllable, EntityHUD, EntityNameable, EntityWithInventory, EntityWithSelectedItem, EntityCreative, EntityFlying
+public class EntityPlayer extends EntityHumanoid implements EntityControllable, EntityHUD, EntityNameable, EntityWithInventory, EntityWithSelectedItem, EntityCreative, EntityFlying
 {
 	//Add the controller component to whatever else the superclass may have
 	EntityComponentController controllerComponent = new EntityComponentController(this, this.getComponents().getLastComponent());
@@ -73,19 +67,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 	float lastPX = -1f;
 	float lastPY = -1f;
-
-	//Body parts to render in first person
-	static Set<String> fp_elements = new HashSet<String>();
-
-	static
-	{
-		fp_elements.add("boneArmLU");
-		fp_elements.add("boneArmRU");
-		fp_elements.add("boneArmLD");
-		fp_elements.add("boneArmRD");
-	}
-
-	//private Controller controller;
 
 	public double maxSpeedRunning = 0.25;
 	public double maxSpeed = 0.15;
@@ -148,10 +129,11 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 			pileSelected.getItem().tickInHand(this, pileSelected);
 		
 		//The actual moment the jump takes effect
-		if (jumpForce > 0.0 && !justJumped)
+		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
+		if (jumpForce > 0.0 && (!justJumped || inWater))
 		{
 			//Set the velocity
-			getVelocityComponent().addVelocity(0.0, jumpForce, 0.0);
+			getVelocityComponent().setVelocityY(jumpForce);
 			justJumped = true;
 			metersWalked = 0.0;
 			jumpForce = 0.0;
@@ -327,8 +309,6 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		targetVectorZ = Math.cos((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed;
 
 		eyePosition = 1.65;// + Math.sin(metersWalked * 5d) * 0.035d;
-
-		//System.out.println("nrml mv");
 	}
 
 	public void tickFlyMove(ClientSideController controller)
@@ -414,6 +394,10 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 		if (this.equals(Client.controlledEntity))
 			return; // Don't render yourself
 		Vector3d pos = getLocation();
+		
+		//don't render tags too far out
+		if(pos.distanceTo(renderingContext.getCamera().getCameraPosition()) > 32f)
+			return;
 		Vector3f posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3f((float) pos.getX(), (float) pos.getY() + 2.0f, (float) pos.getZ()));
 
 		float scale = posOnScreen.z;
@@ -476,24 +460,7 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 
 		if (selectedItemPile != null)
 		{
-			if (selectedItemPile.getItem() instanceof ItemVoxel)
-			{
-				if (((ItemVoxel) selectedItemPile.getItem()).getVoxel().getLightLevel(0x00) > 0)
-				{
-					Vector4f lightposition = new Vector4f(0.0, 0.0, 0.0, 1.0);
-					Matrix4f.transform(itemMatrix, lightposition, lightposition);
-					//System.out.println(lightposition);
-					
-					Vector3d pos = getLocation();
-					Light heldBlockLight = new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f), new Vector3f((float) pos.getX(), (float) pos.getY(), (float) pos.getZ()).add(new Vector3f(lightposition.x, lightposition.y, lightposition.z)), 15f);
-					renderingContext.addLight(heldBlockLight);	
-					
-					//If we hold a light source, prepare the shader accordingly
-					renderingContext.getCurrentShader().setUniformFloat2("worldLight", ((ItemVoxel) selectedItemPile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevel(this.getLocation()));
-					
-				}
-			}
-			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, itemMatrix);
+			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, this.getLocation(), itemMatrix);
 		}
 	}
 
@@ -605,11 +572,5 @@ public class EntityPlayer extends EntityLivingImplentation implements EntityCont
 	public EntityComponentCreativeMode getCreativeModeComponent()
 	{
 		return creativeMode;
-	}
-
-	@Override
-	public CollisionBox[] getCollisionBoxes()
-	{
-		return new CollisionBox[] { new CollisionBox(0.75, 1.80, 0.75) };
 	}
 }

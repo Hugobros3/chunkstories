@@ -5,19 +5,18 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.WorldNetworked;
 import io.xol.chunkstories.core.events.PlayerSpawnEvent;
-import io.xol.chunkstories.net.packets.PacketPlaySound;
 import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
 import io.xol.chunkstories.particles.Particle;
 import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.server.VirtualServerSoundManager;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerServer;
@@ -30,12 +29,15 @@ import io.xol.engine.math.LoopingMathHelper;
 public class WorldServer extends WorldImplementation implements WorldMaster, WorldNetworked
 {
 	private Server server;
+	
+	private VirtualServerSoundManager virtualServerSoundManager;
 
 	public WorldServer(Server server, String worldDir)
 	{
 		super(new WorldInfo(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
 
 		this.server = server;
+		this.virtualServerSoundManager = new VirtualServerSoundManager(this, server);
 
 		ioHandler = new IOTasksMultiplayerServer(this);
 		ioHandler.start();
@@ -262,14 +264,14 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 	}
 
-	@Override
+	/*@Override
 	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain)
 	{
 		//Plays to everyone.
 		this.playSoundEffectExcluding(soundEffect, location, pitch, gain, null);
-	}
+	}*/
 
-	@Override
+	/*@Override
 	public void playSoundEffectExcluding(String soundEffect, Location location, float pitch, float gain, Subscriber subscriber)
 	{
 		//Creates packet
@@ -295,5 +297,11 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			player.pushPacket(packetSound);
 
 		}
+	}*/
+
+	@Override
+	public VirtualServerSoundManager getSoundManager()
+	{
+		return virtualServerSoundManager;
 	}
 }

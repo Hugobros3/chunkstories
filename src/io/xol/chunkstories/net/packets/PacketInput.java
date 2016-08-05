@@ -31,7 +31,9 @@ public class PacketInput extends PacketSynch
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeLong(input.getHash());
-		out.writeBoolean(input.isPressed());
+		out.writeBoolean(input.isPressed() | input instanceof InputVirtual);
+		
+		//System.out.println(input.getName()+input.isPressed());
 	}
 	
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException

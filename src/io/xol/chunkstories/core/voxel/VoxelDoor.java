@@ -133,7 +133,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 		if (VoxelTypes.get(otherLocationId) instanceof VoxelDoor)
 		{
 			System.out.println("new door status : " + newState);
-			voxelLocation.getWorld().playSoundEffect("sfx/door.ogg", voxelLocation, 1.0f, 1.0f);
+			voxelLocation.getWorld().getSoundManager().playSoundEffect("sfx/door.ogg", voxelLocation, 1.0f, 1.0f);
 
 			voxelLocation.setVoxelDataAtLocation(VoxelFormat.changeMeta(voxelLocation.getVoxelDataAtLocation(), newData));
 			otherPartLocation.setVoxelDataAtLocation(VoxelFormat.changeMeta(otherPartLocation.getVoxelDataAtLocation(), newData));

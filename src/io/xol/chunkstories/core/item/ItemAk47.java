@@ -14,9 +14,12 @@ import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
+import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.item.renderers.Ak47ViewModelRenderer;
+import io.xol.chunkstories.core.particles.ParticleBlood.BloodData;
 import io.xol.chunkstories.core.particles.ParticleVoxelFragment.FragmentData;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.particles.ParticleTypes;
@@ -64,7 +67,10 @@ public class ItemAk47 extends Item
 					return;
 				if (controller.getInputsManager().getInputByName("mouse.left").isPressed() && (System.currentTimeMillis() - lastShot) / 1000.0d > 1.0 / (rpm / 60.0))
 				{
-					owner2.handleInteraction(controller.getInputsManager().getInputByName("shootGun"), controller);
+
+					ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
+					Client.pluginsManager.fireEvent(event);
+					//owner2.handleInteraction(controller.getInputsManager().getInputByName("shootGun"), controller);
 					lastShot = System.currentTimeMillis();
 				}
 			}
@@ -96,12 +102,20 @@ public class ItemAk47 extends Item
 				}
 				
 				//Play sounds
-				if (shooter.getWorld() instanceof WorldClient)
+				if(controller != null)
+					controller.getSoundManager().playSoundEffect("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f);
+				
+				/*if (shooter.getWorld() instanceof WorldClient)
 					shooter.getWorld().playSoundEffect("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f);
 				if (shooter.getWorld() instanceof WorldMaster)
-					((WorldMaster) shooter.getWorld()).playSoundEffectExcluding("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f, controller);
+					((WorldMaster) shooter.getWorld()).playSoundEffectExcluding("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f, controller);*/
 
 				//Raytrace shot
+				if(shooter.getWorld() instanceof WorldMaster)
+					System.out.println("Raytracing on server");
+				else
+					System.out.println("Raytracing on client");
+				
 				Vector3d eyeLocation = new Vector3d(shooter.getLocation());
 				if (shooter instanceof EntityPlayer)
 					eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
@@ -119,21 +133,21 @@ public class ItemAk47 extends Item
 
 						//Spawn blood
 						Vector3d bloodDir = shooter.getDirectionLookingAt().normalize().scale(0.25);
-						for (int i = 0; i < 3; i++)
+						for (int i = 0; i < 25; i++)
 						{
 							Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
 							random.scale(0.25);
 							random.add(bloodDir);
 
-							//((BloodData) shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("blood"), hitPoint)).setVelocity(random);
-							
-							if(shooter.getWorld() instanceof WorldClient)
-							{
-								WorldClient world = (WorldClient)shooter.getWorld();
-								world.getWorldRenderer().getDecalsRenderer().drawDecal(hitPoint, random, new Vector3d(5.0), "blood");
-							}
+							((BloodData) shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("blood"), hitPoint)).setVelocity(random);
 						}
 
+						
+						/*if(shooter.getWorld() instanceof WorldClient)
+						{
+							WorldClient world = (WorldClient)shooter.getWorld();
+							world.getWorldRenderer().getDecalsRenderer().drawDecal(hitPoint, random, new Vector3d(2.0), "blood");
+						}*/
 					}
 				}
 				
@@ -199,10 +213,10 @@ public class ItemAk47 extends Item
 						}
 					}
 				}
-				
+
 				shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("muzzle"), eyeLocation);
 				//shooter.getWorld().addParticle(new ParticleMuzzleFlash(shooter.getWorld(), eyeLocation));
-				return true;
+				return (shooter.getWorld() instanceof WorldMaster);
 			}
 		}
 		return false;

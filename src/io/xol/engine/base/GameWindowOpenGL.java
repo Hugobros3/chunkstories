@@ -25,6 +25,7 @@ import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.gui.Scene;
 import io.xol.engine.misc.CPUModelDetection;
+import io.xol.engine.sound.ALSoundManager;
 
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
@@ -183,7 +184,6 @@ public class GameWindowOpenGL
 
 					if (currentScene != null)
 					{
-						// System.out.println("orr");
 						currentScene.onResize();
 						currentScene.resized = true;
 					}
@@ -191,7 +191,7 @@ public class GameWindowOpenGL
 				}
 
 				// Update audio streams
-				Client.getInstance().getSoundManager().update();
+				((ALSoundManager) Client.getInstance().getSoundManager()).update();
 
 				// Run scene content
 				if (currentScene != null)

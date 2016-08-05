@@ -68,17 +68,17 @@ void main() {
 		lightAmount.rgb *= dotL;
 		
 		//Add specular term if light should be reflected by surface
-		if(spec > 0.0)
-		{
-			lightAmount.rgb += pow(lightColor[i], vec3(gamma))  * 2 * clamp(pow(clamp(dot(reflect(lightRay, normalWorld), normalize(pixelPositionWorld-camPos)), 0.0, 10.0), 1000), 0.0, 10.0);
-		}
 		//Optional : cone light, view direction influence
 		if(lightAngle[i] > 0.0)
 		{
 			float dotCone = dot(lightRay, lightDir[i]);
 			float cosAngle = cos(lightAngle[i]);
 			
-			lightAmount.rgb *= clamp(60.0*(dotCone-cosAngle), 0.0, 1.0);
+			lightAmount.rgb *= clamp(30.0*(dotCone-cosAngle), 0.0, 1.0);
+		}
+		if(spec > 0.0)
+		{
+			//lightAmount.rgb += pow(lightColor[i], vec3(gamma)) * 20 * clamp(pow(clamp(dot(reflect(lightRay, normalWorld), normalize(pixelPositionWorld-camPos)), 0.0, 10.0), 1000), 0.0, 10.0);
 		}
 		totalLight += max(lightAmount, 0.0);
 	}

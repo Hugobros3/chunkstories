@@ -20,6 +20,7 @@ import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.net.Packet;
@@ -41,7 +42,7 @@ public class Client implements ClientSideController, ClientInterface
 
 	public static ClientInputsManager inputsManager;
 	
-	public static SoundManager soundManager;
+	public static ALSoundManager soundManager;
 	public static boolean offline = false;
 
 	public static ClientToServerConnection connection;
@@ -53,7 +54,7 @@ public class Client implements ClientSideController, ClientInterface
 
 	public static DebugProfiler profiler = new DebugProfiler();
 
-	public static Entity controlledEntity;
+	public static EntityControllable controlledEntity;
 	public static Client clientController;
 
 	public static PluginsManager pluginsManager;
@@ -248,5 +249,11 @@ public class Client implements ClientSideController, ClientInterface
 			else
 				gmp.changeOverlay(new InventoryOverlay(gmp, null, new EntityInventory[] { ((EntityWithInventory) controlledEntity).getInventory() }));
 		}
+	}
+
+	@Override
+	public EntityControllable getControlledEntity()
+	{
+		return controlledEntity;
 	}
 }

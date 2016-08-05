@@ -5,7 +5,7 @@
 #Leave this one alone for proper login/serverlist protocol things
 packet 0x00 PACKET_UTF_TEXT io.xol.chunkstories.net.packets.PacketText all
 
-#You can theorically mess with those with your mods.
+#You can theorically mess with those with your mods, but avoid because this can break a lot of stuff for no real purpose
 packet 0x01 PACKET_WORLD_INFO io.xol.chunkstories.net.packets.PacketWorldInfo server
 packet 0x02 PACKET_CHUNK_DATA io.xol.chunkstories.net.packets.PacketChunkCompressedData server
 packet 0x03 PACKET_CHUNK_SUMMARY io.xol.chunkstories.net.packets.PacketChunkSummary server
@@ -15,7 +15,7 @@ packet 0x06 PACKET_MOVE_ITEM io.xol.chunkstories.net.packets.PacketInventoryMove
 packet 0x07 PACKET_USE_ITEM io.xol.chunkstories.net.packets.PacketItemUsage client
 packet 0x08 PACKET_TIME io.xol.chunkstories.net.packets.PacketTime server
 packet 0x09 PACKET_VOXEL io.xol.chunkstories.net.packets.PacketVoxelUpdate server
-packet 0x0A PACKET_SOUND io.xol.chunkstories.net.packets.PacketPlaySound server
+packet 0x0A PACKET_SOUND io.xol.chunkstories.net.packets.PacketSoundSource server
 packet 0x10 PACKET_INPUT io.xol.chunkstories.net.packets.PacketInput client
 
-#Or be sensible and add your own ones after The game has an hardlimit of arround 32768 packet types possible
+#Be sensible and add your own ones after The game has an hardlimit of arround 32768 packet types possible

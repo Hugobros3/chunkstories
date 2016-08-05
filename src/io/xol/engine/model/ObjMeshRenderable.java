@@ -1,8 +1,6 @@
 package io.xol.engine.model;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 
 import java.nio.FloatBuffer;
 import java.util.HashMap;
@@ -49,7 +47,6 @@ public class ObjMeshRenderable implements RenderableAnimatable
 		texCoordDataOnGpu = new VerticesObject();
 		normalsDataOnGpu = new VerticesObject();
 
-		System.out.println("UPLOAD" + vertices);
 		verticesDataOnGpu.uploadData(vertices);
 		texCoordDataOnGpu.uploadData(textureCoordinates);
 		normalsDataOnGpu.uploadData(normals);

@@ -7,158 +7,57 @@ import static org.lwjgl.openal.EFX10.*;
 
 import org.lwjgl.openal.AL10;
 
+import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
 import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.engine.concurrency.SimpleLock;
 import io.xol.engine.sound.ALSoundManager;
 import io.xol.engine.sound.SoundData;
 import io.xol.engine.sound.SoundDataBuffered;
+import io.xol.engine.sound.library.SoundsLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class SoundSourceAL implements SoundSource
+public class ALSoundSource extends SoundSourceAbstract
 {
-	SimpleLock lock = new SimpleLock();
-
-	public long soundStartTime;
-	public long internalID;
-	public int alId;
-
-	public float x, y, z;
-	public float vx = 0f, vy = 0f, vz = 0f;
-	public float pitch;
-	public float gain;
-
-	public boolean loop = false;
-	public boolean isAmbient = false;
-
-	public float start = 5f;
-	public float end = 25f;
-
-	boolean updateProperties = true;
+	public int openAlSourceId;
 
 	public SoundData soundData;
 	
-	SoundEffect soundEffect;
+	SoundEffect effect;
 
-	public SoundSourceAL(SoundData data, float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain)
+	ALSoundSource(float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain)
 	{
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.gain = gain;
-		this.pitch = pitch;
-		this.loop = loop;
-		this.isAmbient = ambient;
-		this.soundData = data;
+		super(x, y, z, loop, ambient, pitch, gain);
 	}
 
-	/**
-	 * Sets the pitch to a specific source
-	 * 
-	 * @param pitch
-	 * @return
-	 */
-	@Override
-	public SoundSource setPitch(float pitch)
+	public void setUUID(long uUID)
 	{
-		lock.lock();
-		if (this.pitch != pitch)
-			updateProperties = true;
-		this.pitch = pitch;
-		lock.unlock();
-		return this;
+		this.soundSourceUUID = uUID;
 	}
 
-	/**
-	 * Ambient SoundSources have the special property of always being "on" the listener, thus never getting attenuated and not suffering from directional distorsions.
-	 * 
-	 * @param ambient
-	 * @return
-	 */
-	@Override
-	public SoundSource setAmbient(boolean ambient)
+	public ALSoundSource(String soundEffect, float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain) throws SoundEffectNotFoundException
 	{
-		lock.lock();
-		if (isAmbient != ambient)
-			updateProperties = true;
-		this.isAmbient = ambient;
-		lock.unlock();
-		return this;
-	}
-
-	/**
-	 * Sets the gain of the source
-	 * 
-	 * @param gain
-	 * @return
-	 */
-	@Override
-	public SoundSource setGain(float gain)
-	{
-		lock.lock();
-		if (this.gain != gain)
-			updateProperties = true;
-		this.gain = gain;
-		lock.unlock();
-		return this;
-	}
-
-	/**
-	 * Sets the source position in the World
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return The working SoundSource
-	 */
-	@Override
-	public SoundSource setPosition(float x, float y, float z)
-	{
-		lock.lock();
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		lock.unlock();
-		return this;
-	}
-
-	@Override
-	public SoundSource setAttenuationStart(float start)
-	{
-		lock.lock();
-		if (this.start != start)
-			updateProperties = true;
-		this.start = start;
-		lock.unlock();
-		return this;
-	}
-
-	@Override
-	public SoundSource setAttenuationEnd(float end)
-	{
-		lock.lock();
-		if (this.end != end)
-			updateProperties = true;
-		this.end = end;
-		lock.unlock();
-		return this;
+		this(x, y, z, loop, ambient, pitch, gain);
+		
+		this.soundData = SoundsLibrary.obtainSample(soundEffect);
+		if(soundData == null)
+			throw new SoundEffectNotFoundException();
 	}
 
 	@Override
 	public SoundSource applyEffect(SoundEffect soundEffect)
 	{
-		this.soundEffect = soundEffect;
+		this.effect = soundEffect;
 		return this;
 	}
 	
 	public void play()
 	{
-		alId = alGenSources();
+		openAlSourceId = alGenSources();
 		if (soundData == null)
 			ChunkStoriesLogger.getInstance().warning("A sound source was asked to play a null soundData !");
 		else
@@ -167,20 +66,19 @@ public class SoundSourceAL implements SoundSource
 			{
 				SoundDataBuffered sdb = ((SoundDataBuffered) soundData);
 				//Upload the first two pages, the first one is set to be the first one we'll swap
-				alSourceQueueBuffers(alId, sdb.uploadNextPage(alId));
-				alSourceQueueBuffers(alId, sdb.uploadNextPage(alId));
+				alSourceQueueBuffers(openAlSourceId, sdb.uploadNextPage(openAlSourceId));
+				alSourceQueueBuffers(openAlSourceId, sdb.uploadNextPage(openAlSourceId));
 			}
 			else
-				alSourcei(alId, AL_BUFFER, soundData.getBuffer());
+				alSourcei(openAlSourceId, AL_BUFFER, soundData.getBuffer());
 
 			updateSource();
-			alSourcePlay(alId);
+			alSourcePlay(openAlSourceId);
 			soundStartTime = System.currentTimeMillis();
 			//alSource (alId, AL_VELOCITY, sourceVel     );
 		}
 	}
 
-	@Override
 	public void update(SoundManager manager)
 	{
 		//Update buffered sounds
@@ -188,14 +86,14 @@ public class SoundSourceAL implements SoundSource
 		{
 			SoundDataBuffered sdb = ((SoundDataBuffered) soundData);
 			//Gets how many buffers we read entirely
-			int elapsed = AL10.alGetSourcei(alId, AL_BUFFERS_PROCESSED);
+			int elapsed = AL10.alGetSourcei(openAlSourceId, AL_BUFFERS_PROCESSED);
 			while (elapsed > 0)
 			{
 				//Get rid of them
-				int removeMeh = AL10.alSourceUnqueueBuffers(alId);
+				int removeMeh = AL10.alSourceUnqueueBuffers(openAlSourceId);
 				AL10.alDeleteBuffers(removeMeh);
 				//Queue a new one
-				alSourceQueueBuffers(alId, sdb.uploadNextPage(alId));
+				alSourceQueueBuffers(openAlSourceId, sdb.uploadNextPage(openAlSourceId));
 				elapsed--;
 			}
 		}
@@ -207,8 +105,8 @@ public class SoundSourceAL implements SoundSource
 			y = alManager.y;
 			z = alManager.z;
 		}
-		if(soundEffect != null)
-			effectSlotId = alManager.getSlotForEffect(soundEffect);
+		if(effect != null)
+			effectSlotId = alManager.getSlotForEffect(effect);
 		updateSource();
 	}
 
@@ -229,16 +127,16 @@ public class SoundSourceAL implements SoundSource
 	 * Removes and stops the SoundSource. In case this source was using an unique SoundData (ie streamed/buffered) it also deletes the said source and frees ressources.
 	 */
 	@Override
-	public void destroy()
+	public void stop()
 	{
-		alSourceStop(alId);
+		alSourceStop(openAlSourceId);
 		if (soundData instanceof SoundDataBuffered)
 		{
 			SoundDataBuffered sdb = ((SoundDataBuffered) soundData);
-			int elapsed = AL10.alGetSourcei(alId, AL_BUFFERS_PROCESSED);
+			int elapsed = AL10.alGetSourcei(openAlSourceId, AL_BUFFERS_PROCESSED);
 			while (elapsed > 0)
 			{
-				int removeMeh = AL10.alSourceUnqueueBuffers(alId);
+				int removeMeh = AL10.alSourceUnqueueBuffers(openAlSourceId);
 				AL10.alDeleteBuffers(removeMeh);
 				elapsed--;
 			}
@@ -246,7 +144,7 @@ public class SoundSourceAL implements SoundSource
 		}
 		//Set soundData to null to allow for garbage collection
 		soundData = null;
-		alDeleteSources(alId);
+		alDeleteSources(openAlSourceId);
 		/*if(efxSlot != -1)
 			alDeleteAuxiliaryEffectSlots(efxSlot);*/
 	}
@@ -255,7 +153,7 @@ public class SoundSourceAL implements SoundSource
 	
 	private void updateSource()
 	{
-		alSource3f(alId, AL_POSITION, x, y, z);
+		alSource3f(openAlSourceId, AL_POSITION, x, y, z);
 		/*if (efxSlot == -1 && ALSoundManager.efxOn)
 		{
 			efxSlot = alGenAuxiliaryEffectSlots();
@@ -295,18 +193,24 @@ public class SoundSourceAL implements SoundSource
 
 		if (updateProperties)
 		{
-			alSourcef(alId, AL_PITCH, pitch);
-			alSourcef(alId, AL_GAIN, gain);
-			alSourcef(alId, AL_ROLLOFF_FACTOR, isAmbient ? 0f : 1f);
-			alSourcef(alId, AL_REFERENCE_DISTANCE, start);
-			alSourcef(alId, AL_MAX_DISTANCE, end);
+			alSourcef(openAlSourceId, AL_PITCH, pitch);
+			alSourcef(openAlSourceId, AL_GAIN, gain);
+			alSourcef(openAlSourceId, AL_ROLLOFF_FACTOR, isAmbient ? 0f : 1f);
+			alSourcef(openAlSourceId, AL_REFERENCE_DISTANCE, attenuationStart);
+			alSourcef(openAlSourceId, AL_MAX_DISTANCE, attenuationEnd);
 			//System.out.println(efxSlot + ":"+reverbEffectSlot);
 			if(effectSlotId != -1)
-				alSource3i(alId, AL_AUXILIARY_SEND_FILTER, effectSlotId, 0, AL_FILTER_NULL);
+				alSource3i(openAlSourceId, AL_AUXILIARY_SEND_FILTER, effectSlotId, 0, AL_FILTER_NULL);
 			else
-			    alSource3i(alId, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 0, AL_FILTER_NULL);
+			    alSource3i(openAlSourceId, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 0, AL_FILTER_NULL);
 			//alSource3i(alId, AL_AUXILIARY_SEND_FILTER, efxSlot, 0, AL_FILTER_NULL);
 			updateProperties = false;
 		}
+	}
+
+	@Override
+	public String getSoundName()
+	{
+		return soundData.getName();
 	}
 }

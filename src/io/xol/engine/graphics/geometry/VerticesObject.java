@@ -95,8 +95,6 @@ public class VerticesObject
 			}
 			else if (dataToUpload instanceof FloatBuffer)
 			{
-				System.out.println("FLOAT BUFFER UPLOZAD"+this.openglBufferId);
-				
 				dataSize = ((FloatBuffer) dataToUpload).limit() * 4;
 
 				glBufferData(GL_ARRAY_BUFFER, (FloatBuffer) dataToUpload, GL_STATIC_DRAW);

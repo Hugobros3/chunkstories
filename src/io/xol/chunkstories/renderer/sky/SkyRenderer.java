@@ -6,7 +6,6 @@ import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.FastConfig;
@@ -18,7 +17,6 @@ import org.lwjgl.BufferUtils;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 
 import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Vector3f;
@@ -133,7 +131,7 @@ public class SkyRenderer
 		{
 			renderingContext.enableVertexAttribute(vertexIn);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glVertexAttribPointer(vertexIn, 3, false, 0, stars);
+			renderingContext.setVertexAttributePointerLocation(vertexIn, 3, false, 0, stars);
 			GLCalls.drawArrays(GL_POINTS, 0, NB_STARS);
 			renderingContext.disableVertexAttribute(vertexIn);
 			//starsShader.use(false);

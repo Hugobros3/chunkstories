@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.Subscriber;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
@@ -34,7 +35,7 @@ public interface Player extends CommandEmitter, Controller, Subscriber, PacketDe
 	 * Returns the entity this player is controlling
 	 * @return
 	 */
-	public Entity getControlledEntity();
+	public EntityControllable getControlledEntity();
 	
 	/**
 	 * Sets the entity this player has control over (and tells him)

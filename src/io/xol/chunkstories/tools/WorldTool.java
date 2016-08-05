@@ -4,6 +4,7 @@ import java.io.File;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.components.Subscriber;
+import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo;
@@ -35,8 +36,8 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	}
 
 	@Override
-	public void playSoundEffectExcluding(String soundEffect, Location location, float pitch, float gain, Subscriber subscriber)
+	public SoundManager getSoundManager()
 	{
-		
+		return null;
 	}
 }

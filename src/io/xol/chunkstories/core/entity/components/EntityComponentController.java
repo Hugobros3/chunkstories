@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.exceptions.UnauthorizedClientActionException;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -72,7 +73,7 @@ public class EntityComponentController extends EntityComponent
 				if(clientUUID == controllerUUID)
 				{
 					//This update tells us we are now in control of this entity
-					Client.controlledEntity = entity;
+					Client.controlledEntity = (EntityControllable) entity;
 					Client.getInstance().getServerConnection().subscribe(entity);
 					controller = Client.getInstance();
 					System.out.println("controlledEntity lel");

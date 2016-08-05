@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.core.entity.components.EntityComponentSignText;
 import io.xol.chunkstories.entity.EntityImplementation;
+import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
@@ -93,5 +94,11 @@ public class EntitySign extends EntityImplementation implements EntityVoxel
 		mutrix.translate(new Vector3f(0.0f, 1.15f, 0.055f));
 		renderingContext.sendTransformationMatrix(mutrix);
 		renderData.render(renderingContext);
+	}
+	
+	@Override
+	public CollisionBox[] getCollisionBoxes()
+	{
+		return new CollisionBox[] { new CollisionBox(1.0, 1.0, 1.0).translate(-0.5, 0.0, -0.5) };
 	}
 }

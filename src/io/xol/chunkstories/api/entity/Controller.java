@@ -1,7 +1,9 @@
 package io.xol.chunkstories.api.entity;
 
 import io.xol.chunkstories.api.entity.components.Subscriber;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.InputsManager;
+import io.xol.chunkstories.api.sound.SoundManager;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -13,4 +15,8 @@ import io.xol.chunkstories.api.input.InputsManager;
 public interface Controller extends Subscriber
 {
 	public InputsManager getInputsManager();
+	
+	public EntityControllable getControlledEntity();
+	
+	public SoundManager getSoundManager();
 }

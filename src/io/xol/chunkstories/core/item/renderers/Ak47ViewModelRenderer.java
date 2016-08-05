@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.item.renderers;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
-
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
@@ -29,7 +29,7 @@ public class Ak47ViewModelRenderer extends DefaultItemRenderer
 	}
 
 	@Override
-	public void renderItemInWorld(RenderingContext renderingContext, ItemPile pile, World world, Matrix4f handTransformation)
+	public void renderItemInWorld(RenderingContext renderingContext, ItemPile pile, World world, Location location, Matrix4f handTransformation)
 	{
 		renderingContext.sendTransformationMatrix(handTransformation);
 		renderingContext.sendBoneTransformationMatrix(null);

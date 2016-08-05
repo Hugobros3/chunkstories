@@ -2,7 +2,7 @@ package io.xol.chunkstories.api.item;
 
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Matrix4f;
-
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
 
@@ -33,5 +33,5 @@ public interface ItemRenderer
 	 * @param pile
 	 * @param handTransformation Can be modified
 	 */
-	public void renderItemInWorld(RenderingContext context, ItemPile pile, World world, Matrix4f handTransformation);
+	public void renderItemInWorld(RenderingContext context, ItemPile pile, World world, Location location, Matrix4f handTransformation);
 }
