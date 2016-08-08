@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.client.RenderingConfig;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -25,7 +25,7 @@ public class ShadersLibrary
 	{
 		//TODO support for external shaders !
 		String shaderPath = "res/shaders/"+name;
-		ShaderProgram subject = new ShaderProgram(shaderPath, FastConfig.getShaderConfig());
+		ShaderProgram subject = new ShaderProgram(shaderPath, RenderingConfig.getShaderConfig());
 		//if(subject.loadOK)
 		loadedShaders.put(name, subject);
 		return subject.loadOK;
@@ -46,13 +46,13 @@ public class ShadersLibrary
 	{
 		ShaderProgram s = loadedShaders.get(shaderName);
 		if(s != null)
-			s.reload(FastConfig.getShaderConfig());
+			s.reload(RenderingConfig.getShaderConfig());
 	}
 	
 	public static void reloadAllShaders()
 	{
 		for(ShaderProgram s : loadedShaders.values())
-			s.reload(FastConfig.getShaderConfig());
+			s.reload(RenderingConfig.getShaderConfig());
 	}
 	
 	public static void cleanup()

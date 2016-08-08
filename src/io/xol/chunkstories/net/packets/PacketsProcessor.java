@@ -38,7 +38,6 @@ public class PacketsProcessor
 	static PacketType[] packetTypes = new PacketType[32768];
 	static Map<String, Short> packetIds = new HashMap<String, Short>();
 	
-	
 	Queue<PendingSynchPacket> pendingSynchPackets = new ConcurrentLinkedQueue<PendingSynchPacket>();
 
 	public static void loadPacketsTypes()

@@ -1,16 +1,12 @@
 package io.xol.chunkstories.renderer.debug;
 
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import io.xol.engine.math.lalgb.Vector4f;
-
-import static org.lwjgl.opengl.GL11.glDrawArrays;
-
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;

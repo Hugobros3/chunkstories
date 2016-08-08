@@ -1,7 +1,8 @@
 package io.xol.chunkstories.core.particles;
 
 import io.xol.chunkstories.api.particles.ParticleData;
-import io.xol.chunkstories.api.particles.ParticleTextureCoordinates;
+import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
+import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -25,7 +26,7 @@ public class ParticleVoxelFragment extends ParticleType
 		super(id, name);
 	}
 
-	public class FragmentData extends ParticleData implements ParticleTextureCoordinates {
+	public class FragmentData extends ParticleData implements ParticleDataWithTextureCoordinates, ParticleDataWithVelocity {
 		
 		VoxelTexture tex;
 		
@@ -40,12 +41,14 @@ public class ParticleVoxelFragment extends ParticleType
 			int id = VoxelFormat.id(data);
 			
 			tex = VoxelTypes.get(id).getVoxelTexture(data, VoxelSides.LEFT, null);
+			setData(data);
 			//System.out.println("id+"+id + " "+ tex.atlasOffset / 32768f);
 		}
 		
 		public void setVelocity(Vector3d vel)
 		{
 			this.vel = vel;
+			this.add(vel.castToSP());
 		}
 
 		@Override
@@ -100,7 +103,7 @@ public class ParticleVoxelFragment extends ParticleType
 			return bottomY;
 		}
 
-		public void setData(int data)
+		void setData(int data)
 		{
 			int id = VoxelFormat.id(data);
 			VoxelTexture tex = VoxelTypes.get(id).getVoxelTexture(data, VoxelSides.LEFT, null);

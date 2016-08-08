@@ -1,6 +1,6 @@
 package io.xol.chunkstories.entity;
 
-import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
 import io.xol.chunkstories.core.entity.components.EntityComponentPosition;
 import io.xol.chunkstories.core.entity.components.EntityComponentVelocity;
@@ -512,7 +512,7 @@ public abstract class EntityImplementation implements Entity
 			//camera.rotationY = rotH;
 
 			//Default FOV
-			camera.fov = FastConfig.fov;
+			camera.fov = RenderingConfig.fov;
 
 			camera.alUpdate();
 		}

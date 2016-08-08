@@ -8,7 +8,7 @@ import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.WorldRenderer;
 
 import java.nio.FloatBuffer;
@@ -154,7 +154,7 @@ public class SkyRenderer
 	{
 		float fogFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.4f) / 0.1f, 1.0f);
 		
-		shader.setUniformFloat("fogStartDistance", Math2.mix(FastConfig.viewDistance, 32, fogFactor));
+		shader.setUniformFloat("fogStartDistance", Math2.mix(RenderingConfig.viewDistance, 32, fogFactor));
 		shader.setUniformFloat("fogEndDistance", Math2.mix(1024, 384, fogFactor));
 		shader.setUniformFloat("overcastFactor", world.getWeather());
 	}

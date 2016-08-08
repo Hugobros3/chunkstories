@@ -50,7 +50,7 @@ public class CloudsRenderer
 		int camChunkX = (int) -renderingContext.getCamera().pos.getX() / 32;
 		int camChunkZ = (int) -renderingContext.getCamera().pos.getZ() / 32;
 
-		if(System.currentTimeMillis() - lastBaked < 5000 && camChunkX == lastChunkX && camChunkZ == lastChunkZ)
+		if(System.currentTimeMillis() - lastBaked < 5000 || (camChunkX == lastChunkX && camChunkZ == lastChunkZ))
 			return;
 		
 		lastChunkX = camChunkX;

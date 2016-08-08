@@ -15,8 +15,8 @@ import io.xol.engine.concurrency.SafeWriteLock;
 
 import java.util.Iterator;
 import java.util.Random;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -54,7 +54,7 @@ public class ChunkHolder implements Region
 	private AtomicBoolean isDiskDataLoaded = new AtomicBoolean(false);
 
 	//Local entities
-	private BlockingQueue<Entity> localEntities = new LinkedBlockingQueue<Entity>();
+	private Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
 
 	// LZ4 compressors & decompressors stuff
 	private static LZ4Factory factory = LZ4Factory.fastestInstance();
@@ -99,9 +99,6 @@ public class ChunkHolder implements Region
 			handler = null;
 			isDiskDataLoaded.set(true);
 		}
-		
-		//System.out.println("spawning "+this);
-		//Thread.currentThread().dumpStack();
 	}
 
 	private void compressChunkData(Chunk chunk)

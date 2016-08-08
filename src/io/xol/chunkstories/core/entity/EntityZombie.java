@@ -48,7 +48,10 @@ public class EntityZombie extends EntityHumanoid
 
 		renderingContext.sendTransformationMatrix(null);
 		ModelLibrary.getRenderableMesh("./res/models/human.obj").render(
-				renderingContext, BVHLibrary.getAnimation("res/animations/human/ded.bvh"), (int)System.currentTimeMillis() % 30000);
+				renderingContext,  this.getAnimatedSkeleton(), (int)System.currentTimeMillis() % 1000000);
+		
+		//ModelLibrary.getRenderableMesh("./res/models/human.obj").render(
+		//		renderingContext, BVHLibrary.getAnimation("res/animations/human/ded.bvh"), (int)System.currentTimeMillis() % 30000);
 	}
 
 	/*@Override

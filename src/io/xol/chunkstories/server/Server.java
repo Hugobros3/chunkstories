@@ -18,6 +18,8 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.PluginsManager;
+import io.xol.chunkstories.content.sandbox.GameLogicThread;
+import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
@@ -40,7 +42,7 @@ public class Server implements Runnable, ServerInterface
 		server = new Server();
 		server.run();
 	}
-	
+
 	public static Server getInstance()
 	{
 		return server;
@@ -48,11 +50,12 @@ public class Server implements Runnable, ServerInterface
 
 	private ChunkStoriesLogger log = null;
 	private ConfigFile serverConfig = new ConfigFile("./config/server.cfg");
-	
+
 	private AtomicBoolean running = new AtomicBoolean(true);
 	private long initTimestamp = System.currentTimeMillis() / 1000;
 
 	private WorldServer world;
+	private GameLogicThread worldThread;
 
 	private ServerConnectionsManager connectionsManager;
 	private ServerConsole console = new ServerConsole(this);
@@ -72,13 +75,13 @@ public class Server implements Runnable, ServerInterface
 			Calendar cal = Calendar.getInstance();
 			SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 			String time = sdf.format(cal.getTime());
-			
+
 			ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/serverlogs/" + time + ".log")));
 			log = ChunkStoriesLogger.getInstance();
-		
+
 			log.info("Starting ChunkStories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
 			connectionsManager = new ServerConnectionsManager(this);
-			
+
 			GameData.reload();
 			// Load world
 			String worldName = serverConfig.getProp("world", "world");
@@ -86,7 +89,7 @@ public class Server implements Runnable, ServerInterface
 			if (new File(worldDir).exists())
 			{
 				world = new WorldServer(this, worldDir);
-				world.startLogic();
+				worldThread = new GameLogicThread(world, new UnthrustedUserContentSecurityManager());
 			}
 			else
 			{
@@ -138,7 +141,7 @@ public class Server implements Runnable, ServerInterface
 					}
 
 					console.handleCommand(this, new Command(cmdName), args);
-					
+
 					System.out.print("> ");
 				}
 				catch (Exception e)
@@ -166,7 +169,6 @@ public class Server implements Runnable, ServerInterface
 		{
 			e.printStackTrace();
 		}
-		pluginsManager.disablePlugins();
 		closeServer();
 		ChunkStoriesLogger.getInstance().save();
 	}
@@ -194,24 +196,27 @@ public class Server implements Runnable, ServerInterface
 		connectionsManager.closeAll();
 		connectionsManager.closeConnection();
 		
-		log.info("Saving map...");
+		log.info("Saving map ...");
 		world.saveEverything();
-		log.info("Done, shutting down threads");
-		
+		log.info("Shutting down plugins ...");
+		pluginsManager.disablePlugins();
+		log.info("Done, shutting down threads ... ");
+		worldThread.stopLogicThread();
+		log.info("Game logic done");
 		world.ioHandler.shutdown();
-		world.stopLogic();
-
+		log.info("IO done");
+		
 		log.info("Saving configuration");
 		serverConfig.save();
 		UsersPrivileges.save();
 		log.info("Good night sweet prince");
 		Runtime.getRuntime().exit(0);
 	}
-	
+
 	public void stop()
 	{
 		// When stopped, close sockets and save config.
-		announcer.flagStop();
+		announcer.stopAnnouncer();
 		running.set(false);
 	}
 
@@ -278,7 +283,13 @@ public class Server implements Runnable, ServerInterface
 	@Override
 	public Player getPlayerByUUID(long UUID)
 	{
-		// TODO Auto-generated method stub
+		Iterator<Player> i = getConnectedPlayers();
+		while (i.hasNext())
+		{
+			Player p = i.next();
+			if (p.getUUID() == UUID)
+				return p;
+		}
 		return null;
 	}
 

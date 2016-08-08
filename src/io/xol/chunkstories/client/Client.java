@@ -13,7 +13,6 @@ import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.engine.misc.IconLoader;
 import io.xol.engine.misc.NativesLoader;
-import io.xol.engine.sound.ALSoundManager;
 
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
@@ -24,11 +23,14 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.net.Packet;
+import io.xol.chunkstories.api.particles.ParticlesManager;
+import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.PluginsManager;
+import io.xol.chunkstories.content.sandbox.GameLogicThread;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
@@ -42,37 +44,35 @@ public class Client implements ClientSideController, ClientInterface
 
 	public static ClientInputsManager inputsManager;
 	
-	public static ALSoundManager soundManager;
 	public static boolean offline = false;
 
 	public static ClientToServerConnection connection;
 	public static GameWindowOpenGL windows;
 	public static WorldClientCommon world;
+	public static GameLogicThread worldThread;
 
 	public static String username = "Unknow";
 	public static String session_key = "nopeMLG";
 
 	public static DebugProfiler profiler = new DebugProfiler();
 
-	public static EntityControllable controlledEntity;
+	public EntityControllable controlledEntity;
 	public static Client clientController;
 
-	public static PluginsManager pluginsManager;
+	public PluginsManager pluginsManager;
 
 	public static void main(String[] args)
 	{
-		clientController = new Client();
-		GameDirectory.initClientPath();
 		for (String s : args) // Debug arguments
 		{
 			if (s.equals("-oldgl"))
 			{
-				FastConfig.openGL3Capable = false;
+				RenderingConfig.openGL3Capable = false;
 				System.out.println("Legacy OpenGL mode enabled");
 			}
 			else if (s.equals("-forceobsolete"))
 			{
-				FastConfig.ignoreObsoleteHardware = false;
+				RenderingConfig.ignoreObsoleteHardware = false;
 				System.out.println("Legacy OpenGL mode enabled");
 			}
 			else if (s.contains("-mods"))
@@ -98,23 +98,28 @@ public class Client implements ClientSideController, ClientInterface
 				//Runtime.getRuntime().exit(0);
 			}
 		}
+		new Client();
+	}
+	
+	public Client()
+	{
+		clientController = this;
 		// Check for folder
 		GameDirectory.check();
+		GameDirectory.initClientPath();
 		// Start logs
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 		String time = sdf.format(cal.getTime());
 		ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/logs/" + time + ".log")));
 		// Load natives
-		FastConfig.define();
+		RenderingConfig.define();
 		NativesLoader.load();
 		// Load last gamemode
 		GameData.reload();
 		inputsManager = new ClientInputsManager();
-		//Initialize sound
-		soundManager = new ALSoundManager();
 		// Gl init
-		windows = new GameWindowOpenGL("Chunk Stories " + VersionInfo.version, -1, -1);
+		windows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);
 		windows.createContext();
 		
 		GameData.reloadClientContent();
@@ -122,6 +127,11 @@ public class Client implements ClientSideController, ClientInterface
 		//Load 
 		pluginsManager = new PluginsManager(clientController);
 		windows.run();
+	}
+
+	public static Client getInstance()
+	{
+		return clientController;
 	}
 
 	public static void onStart()
@@ -132,23 +142,17 @@ public class Client implements ClientSideController, ClientInterface
 	@Override
 	public SoundManager getSoundManager()
 	{
-		return soundManager;
+		return windows.getSoundEngine();
 	}
 
 	public static void onClose()
 	{
-		soundManager.destroy();
 		clientConfig.save();
 	}
 
 	public static ConfigFile getConfig()
 	{
 		return clientConfig;
-	}
-
-	public static Client getInstance()
-	{
-		return clientController;
 	}
 
 	@Override
@@ -255,5 +259,24 @@ public class Client implements ClientSideController, ClientInterface
 	public EntityControllable getControlledEntity()
 	{
 		return controlledEntity;
+	}
+
+	@Override
+	public boolean setControlledEntity(EntityControllable entityControllable)
+	{
+		controlledEntity = entityControllable;
+		return false;
+	}
+
+	@Override
+	public ParticlesManager getParticlesManager()
+	{
+		return world.getParticlesManager();
+	}
+
+	@Override
+	public DecalsManager getDecalsManager()
+	{
+		return world.getDecalsManager();
 	}
 }

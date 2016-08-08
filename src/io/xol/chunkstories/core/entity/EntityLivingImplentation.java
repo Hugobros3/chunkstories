@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.core.entity.components.EntityComponentAnimation;
 import io.xol.chunkstories.core.entity.components.EntityComponentHealth;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
+import io.xol.chunkstories.core.events.EntityDeathEvent;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -22,6 +23,8 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 {
 	public long lastDamageTook = 0;
 	public long damageCooldown = 0;
+	
+	long deathDespawnTimer = 600;
 
 	EntityComponentRotation entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
 	EntityComponentAnimation entityAnimationComponent = new EntityComponentAnimation(this);
@@ -79,6 +82,11 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	@Override
 	public void tick()
 	{
+		if(isDead())
+			deathDespawnTimer--;
+		if(deathDespawnTimer < 0)
+			this.removeFromWorld();
+		
 		Vector3d velocity = getVelocityComponent().getVelocity();
 		
 		Vector2f imp = this.getEntityRotationComponent().tickInpulse();

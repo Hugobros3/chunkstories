@@ -39,7 +39,7 @@ public class ServerAnnouncerThread extends Thread
 		setName("Multiverse thread");
 	}
 
-	public void flagStop()
+	public void stopAnnouncer()
 	{
 		run.set(false);
 	}

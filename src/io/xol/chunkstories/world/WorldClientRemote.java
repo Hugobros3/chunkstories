@@ -1,7 +1,6 @@
 package io.xol.chunkstories.world;
 
 import io.xol.chunkstories.api.sound.SoundManager;
-import io.xol.chunkstories.api.world.WorldNetworked;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;

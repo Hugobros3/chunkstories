@@ -83,13 +83,13 @@ public class EntityComponentSelectedItem extends EntityComponent
 		dos.writeInt(selectedSlot);
 		
 		ItemPile pile = inventory.getItemPileAt(selectedSlot, 0);
-		System.out.println("Sending slot"+pile);
+		//System.out.println("Sending slot"+pile);
 		//don't bother writing the item pile if we're not master or if we'd be telling the controller about it
 		if(pile == null || !(entity.getWorld() instanceof WorldMaster) || (destinator instanceof EntityControllable && destinator.equals(((EntityControllable) entity).getControllerComponent())))
 			dos.writeBoolean(false);
 		else
 		{
-			System.out.println("Sending item");
+			//System.out.println("Sending item");
 			dos.writeBoolean(true);
 			dos.writeInt(pile.getItem().getID());
 			pile.saveCSF(dos);
@@ -104,7 +104,7 @@ public class EntityComponentSelectedItem extends EntityComponent
 		boolean itemIncluded = dis.readBoolean();
 		if(itemIncluded)
 		{
-			System.out.println("reading item from packet for entity"+entity);
+			//System.out.println("reading item from packet for entity"+entity);
 			ItemPile pile;
 			
 			int id = dis.readInt() & 0x00FFFFFF;
@@ -115,7 +115,7 @@ public class EntityComponentSelectedItem extends EntityComponent
 				pile = new ItemPile(item, dis);
 				if(pile != null && !(entity.getWorld() instanceof WorldMaster))
 				{
-					System.out.println("got held item for "+entity + " : "+pile);
+					//System.out.println("got held item for "+entity + " : "+pile);
 					inventory.setItemPileAt(selectedSlot, 0, pile);
 				}
 			}

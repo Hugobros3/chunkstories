@@ -8,6 +8,8 @@ import io.xol.chunkstories.api.csf.StreamSource;
 import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.core.events.EntityDeathEvent;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -30,14 +32,42 @@ public class EntityComponentHealth extends EntityComponent
 	
 	public void setHealth(float health)
 	{
+		boolean wasntDead = health > 0.0;
 		this.health = health;
-		this.pushComponentController();
+		
+		if(health < 0.0 && wasntDead)
+		{
+			EntityDeathEvent entityDeathEvent = new EntityDeathEvent(entity);
+			entity.getWorld().getGameLogic().getPluginsManager().fireEvent(entityDeathEvent);
+		}
+		
+		if(entity.getWorld() instanceof WorldMaster)
+		{
+			if(health > 0.0)
+				this.pushComponentController();
+			else
+				this.pushComponentEveryone();
+		}
 	}
 	
 	public void damage(float dmg)
 	{
+		boolean wasntDead = health > 0.0;
 		this.health -= dmg;
-		this.pushComponentController();
+
+		if(health < 0.0 && wasntDead)
+		{
+			EntityDeathEvent entityDeathEvent = new EntityDeathEvent(entity);
+			entity.getWorld().getGameLogic().getPluginsManager().fireEvent(entityDeathEvent);
+		}
+		
+		if(entity.getWorld() instanceof WorldMaster)
+		{
+			if(health > 0.0)
+				this.pushComponentController();
+			else
+				this.pushComponentEveryone();
+		}
 	}
 	
 	@Override

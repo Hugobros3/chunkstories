@@ -1,6 +1,8 @@
 package io.xol.chunkstories.core.events;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.server.Player;
@@ -56,7 +58,7 @@ public class PlayerSpawnEvent extends Event
 		if(playerEntityFile.exists())
 			entity = playerEntityFile.read(world);
 		
-		if(entity == null)
+		if(entity == null || ((entity instanceof EntityLiving) && (((EntityLiving) entity).isDead())))
 		{
 			System.out.println("Created entity named "+entity+":"+player.getDisplayName());
 			entity = new EntityPlayer(world, 0d, 0d, 0d, player.getName());
@@ -66,8 +68,10 @@ public class PlayerSpawnEvent extends Event
 			entity.setUUID(-1);
 		
 		Server.getInstance().getWorld().addEntity(entity);
-		player.setControlledEntity(entity);
-		System.out.println("Added player entity");
+		if(entity instanceof EntityControllable)
+			player.setControlledEntity((EntityControllable) entity);
+		else
+			System.out.println("Error : entity is not controllable");
 	}
 	
 }

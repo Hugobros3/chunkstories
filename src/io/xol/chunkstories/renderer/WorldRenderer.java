@@ -5,7 +5,6 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -45,8 +44,9 @@ import io.xol.engine.math.Math2;
 import io.xol.engine.math.MatrixHelper;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
@@ -263,9 +263,9 @@ public class WorldRenderer
 	public void resizeShadowMaps()
 	{
 		// Only if necessary
-		if (shadowMapResolution == FastConfig.shadowMapResolutions)
+		if (shadowMapResolution == RenderingConfig.shadowMapResolutions)
 			return;
-		shadowMapResolution = FastConfig.shadowMapResolutions;
+		shadowMapResolution = RenderingConfig.shadowMapResolutions;
 		shadowMapBuffer.resize(shadowMapResolution, shadowMapResolution);
 	}
 	
@@ -285,7 +285,7 @@ public class WorldRenderer
 	{
 		Client.profiler.startSection("kekupdates");
 		this.camera = camera;
-		if (FastConfig.doDynamicCubemaps && (System.currentTimeMillis() - lastEnvmapRender) > 2000L)// * Math.pow(30.0f / XolioWindow.getFPS(), 1.0f))
+		if (RenderingConfig.doDynamicCubemaps && (System.currentTimeMillis() - lastEnvmapRender) > 2000L)// * Math.pow(30.0f / XolioWindow.getFPS(), 1.0f))
 			screenCubeMap(256, environmentMap);
 		renderWorldAtCameraInternal(camera, -1);
 	}
@@ -306,7 +306,7 @@ public class WorldRenderer
 
 		Client.profiler.startSection("next");
 		// Shadows pre-pass
-		if (FastConfig.doShadows && chunksToRenderLimit == -1)
+		if (RenderingConfig.doShadows && chunksToRenderLimit == -1)
 			shadowPass();
 		// Prepare matrices
 		camera.justSetup(scrW, scrH);
@@ -318,7 +318,7 @@ public class WorldRenderer
 		fboShadedBuffer.bind();
 
 		// Draw sky
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			glFinish();
 		long t = System.nanoTime();
 		sky.time = (world.worldTime % 10000) / 10000f;
@@ -327,9 +327,9 @@ public class WorldRenderer
 		glViewport(0, 0, scrW, scrH);
 		sky.render(renderingContext);
 
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			glFinish();
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			System.out.println("sky took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		// Move camera to relevant position
@@ -344,16 +344,16 @@ public class WorldRenderer
 		weatherEffectsRenderer.renderEffects(renderingContext);
 
 		// Debug
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			glFinish();
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			System.out.println("total took " + (System.nanoTime() - t) / 1000000.0 + "ms ( " + 1 / ((System.nanoTime() - t) / 1000000000.0) + " fps)");
 
 		//Disable depth check
 		glDisable(GL_DEPTH_TEST);
 
 		// Do bloom
-		if (FastConfig.doBloom)
+		if (RenderingConfig.doBloom)
 			renderBloom();
 
 		//Bind shaded buffer in case some other rendering is to be done
@@ -394,7 +394,7 @@ public class WorldRenderer
 			}
 			else
 			{
-				if (FastConfig.debugGBuffers)
+				if (RenderingConfig.debugGBuffers)
 					System.out.println("ChunkRenderer outputted a chunk render for a not loaded chunk : ");
 				//if (FastConfig.debugGBuffers)
 				//	System.out.println("Chunks coordinates : X=" + toload.x + " Y=" + toload.y + " Z=" + toload.z);
@@ -423,7 +423,7 @@ public class WorldRenderer
 			currentChunkX = newCX;
 			currentChunkY = newCY;
 			currentChunkZ = newCZ;
-			int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
+			int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
 
 			// Unload too far chunks
 			//updateProfiler.startSection("unloadFar");
@@ -633,7 +633,7 @@ public class WorldRenderer
 		terrainShader.setUniformFloat3("sunPos", sky.getSunPosition());
 		terrainShader.setUniformFloat("time", animationTimer);
 		terrainShader.setUniformFloat("terrainHeight", world.getRegionSummaries().getHeightAtWorldCoordinates((int) camera.pos.getX(), (int) camera.pos.getZ()));
-		terrainShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
+		terrainShader.setUniformFloat("viewDistance", RenderingConfig.viewDistance);
 		terrainShader.setUniformFloat("shadowVisiblity", getShadowVisibility());
 		waterNormalTexture.setLinearFiltering(true);
 		waterNormalTexture.setMipMapping(true);
@@ -660,7 +660,7 @@ public class WorldRenderer
 		if(Keyboard.isKeyDown(Keyboard.KEY_F7))
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			glFinish();
 		long t = System.nanoTime();
 		if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
@@ -668,9 +668,9 @@ public class WorldRenderer
 
 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			glFinish();
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			System.out.println("terrain took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 	}
 
@@ -680,7 +680,7 @@ public class WorldRenderer
 		long t;
 		animationTimer = (float) (((System.currentTimeMillis() % 100000) / 200f) % 100.0);
 
-		int chunksViewDistance = (int) (FastConfig.viewDistance / 32);
+		int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
 
 		//skyTextureSunny = TexturesHandler.getTexture(world.isRaining() ? "environement/sky_rain.png" : "environement/sky.png");
 
@@ -786,7 +786,7 @@ public class WorldRenderer
 		// if(FastConfig.debugGBuffers ) System.out.println(Math.sin(transformedViewV)+"f");
 		//viewerCamDirVector = new Vector3f((float) (Math.sin((180 + camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)), (float) (Math.cos((180 + camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)));
 
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			glFinish();
 		t = System.nanoTime();
 
@@ -890,9 +890,9 @@ public class WorldRenderer
 		// Done looping chunks, now entities
 		if (!isShadowPass)
 		{
-			if (FastConfig.debugGBuffers)
+			if (RenderingConfig.debugGBuffers)
 				glFinish();
-			if (FastConfig.debugGBuffers)
+			if (RenderingConfig.debugGBuffers)
 				System.out.println("blocks took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 			renderingContext.disableVertexAttribute(vertexIn);
@@ -918,7 +918,7 @@ public class WorldRenderer
 			entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
 			entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
 
-			entitiesShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
+			entitiesShader.setUniformFloat("viewDistance", RenderingConfig.viewDistance);
 			entitiesShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
 			entitiesShader.setUniformSampler(4, "lightColors", lightmapTexture);
 			lightmapTexture.setTextureWrapping(false);
@@ -1002,7 +1002,7 @@ public class WorldRenderer
 			renderingContext.setCurrentShader(liquidBlocksShader);
 			//liquidBlocksShader.use(true);
 
-			liquidBlocksShader.setUniformFloat("viewDistance", FastConfig.viewDistance);
+			liquidBlocksShader.setUniformFloat("viewDistance", RenderingConfig.viewDistance);
 
 			liquidBlocksShader.setUniformFloat("yAngle", (float) (camera.rotationY * Math.PI / 180f));
 			liquidBlocksShader.setUniformFloat("shadowVisiblity", shadowVisiblity);
@@ -1108,7 +1108,7 @@ public class WorldRenderer
 		}
 
 		// Particles rendering
-		this.world.getParticlesHolder().render(renderingContext);
+		((ParticlesRenderer) this.world.getParticlesManager()).render(renderingContext);
 		
 		// Draw world shaded with sunlight and vertex light
 		glDepthMask(false);
@@ -1116,8 +1116,8 @@ public class WorldRenderer
 		glDepthMask(true);
 
 		// Compute SSAO
-		if (FastConfig.ssaoQuality > 0)
-			this.SSAO(FastConfig.ssaoQuality);
+		if (RenderingConfig.ssaoQuality > 0)
+			this.SSAO(RenderingConfig.ssaoQuality);
 		
 		renderLightsDeffered();
 		renderTerrain(chunksToRenderLimit != -1);
@@ -1164,9 +1164,9 @@ public class WorldRenderer
 	 */
 	public void renderShadedBlocks()
 	{
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 
-			if (FastConfig.debugGBuffers)
+			if (RenderingConfig.debugGBuffers)
 				glFinish();
 		long t = System.nanoTime();
 
@@ -1222,10 +1222,10 @@ public class WorldRenderer
 		renderingContext.drawFSQuad(applyShadowsShader.getVertexAttributeLocation("vertexIn"));
 		//drawFSQuad();
 
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			glFinish();
 
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			System.out.println("shadows pass took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		glDisable(GL_BLEND);
@@ -1239,7 +1239,7 @@ public class WorldRenderer
 	 */
 	public void blitScreen()
 	{
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			glFinish();
 		long t = System.nanoTime();
 
@@ -1280,13 +1280,13 @@ public class WorldRenderer
 		renderingContext.drawFSQuad(postProcess.getVertexAttributeLocation("vertexIn"));
 		//drawFSQuad();
 
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			glFinish();
 
-		if (FastConfig.debugGBuffers)
+		if (RenderingConfig.debugGBuffers)
 			System.out.println("final blit took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
-		if (FastConfig.doBloom)
+		if (RenderingConfig.doBloom)
 		{
 			glBindTexture(GL_TEXTURE_2D, shadedBuffer.getId());
 			shadedBuffer.setMipMapping(true);
@@ -1418,7 +1418,7 @@ public class WorldRenderer
 				scale = Math2.mix(0.1f, 1.0f, scale * scale);
 				vec.scale(scale);
 				ssao_kernel[i] = vec;
-				if (FastConfig.debugGBuffers)
+				if (RenderingConfig.debugGBuffers)
 					System.out.println("lerp " + scale + "x " + vec.x);
 			}
 		}
@@ -1529,11 +1529,11 @@ public class WorldRenderer
 	{
 		lastEnvmapRender = System.currentTimeMillis();
 		// Save state
-		boolean oldBloom = FastConfig.doBloom;
-		float oldViewDistance = FastConfig.viewDistance;
+		boolean oldBloom = RenderingConfig.doBloom;
+		float oldViewDistance = RenderingConfig.viewDistance;
 		//System.out.println(this.view);
 		//FastConfig.viewDistance = 0;
-		FastConfig.doBloom = false;
+		RenderingConfig.doBloom = false;
 		int oldW = scrW;
 		int oldH = scrH;
 		float camX = camera.rotationX;
@@ -1677,8 +1677,8 @@ public class WorldRenderer
 		}
 		// Revert correct data
 
-		FastConfig.viewDistance = oldViewDistance;
-		FastConfig.doBloom = oldBloom;
+		RenderingConfig.viewDistance = oldViewDistance;
+		RenderingConfig.doBloom = oldBloom;
 		camera.rotationX = camX;
 		camera.rotationY = camY;
 		camera.rotationZ = camZ;

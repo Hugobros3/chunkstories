@@ -4,33 +4,30 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.chunkstories.input.Inputs;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
-import io.xol.engine.graphics.util.ObjectRenderer;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
+import io.xol.engine.math.HexTools;
 import io.xol.engine.math.lalgb.Vector4f;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PauseOverlay extends Overlay
+public class DeathOverlay extends Overlay
 {
 	GuiElementsHandler guiHandler = new GuiElementsHandler();
 	
-	Button resumeButton = new Button(0, 0, 320, 32, "Resume", BitmapFont.SMALLFONTS, 1);
-	Button optionsButton = new Button(0, 0, 320, 32, "Options", BitmapFont.SMALLFONTS, 1);
-	Button exitButton = new Button(0, 0, 320, 32, "Quit to menu", BitmapFont.SMALLFONTS, 1);
-	
-	public PauseOverlay(OverlayableScene scene, Overlay parent)
+	Button respawnButton = new Button(0, 0, 320, 32, "tryhard", BitmapFont.SMALLFONTS, 1);
+	Button exitButton = new Button(0, 0, 320, 32, "ragequit", BitmapFont.SMALLFONTS, 1);
+
+	public DeathOverlay(OverlayableScene scene, Overlay parent)
 	{
 		super(scene, parent);
-		guiHandler.add(resumeButton);
-		guiHandler.add(optionsButton);
+		guiHandler.add(respawnButton);
 		guiHandler.add(exitButton);
 	}
 
@@ -39,24 +36,30 @@ public class PauseOverlay extends Overlay
 	{
 		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, 0, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
 		
-		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
-		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(48, "In-game menu", BitmapFont.SMALLFONTS) / 2, GameWindowOpenGL.windowHeight / 2 + 48 * 3, 0, 48, "In-game menu", BitmapFont.SMALLFONTS);
-
-		resumeButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight/2 + 48 * 2);
-		optionsButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight/2 + 48);
-		exitButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight/2 - 48);
+		String color = "";
+		color += HexTools.intToHex((int) (Math.random() * 255));
+		color += HexTools.intToHex((int) (Math.random() * 255));
+		color += HexTools.intToHex((int) (Math.random() * 255));
 		
-		resumeButton.draw();
-		optionsButton.draw();
+		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(96, "YOU DIEDED", BitmapFont.SMALLFONTS) / 2, GameWindowOpenGL.windowHeight / 2 + 48 * 3, 0, 96, "#FF0000YOU DIEDED", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(48, "git gud scrub", BitmapFont.SMALLFONTS) / 2, GameWindowOpenGL.windowHeight / 2 + 36 * 3, 0, 48, "#"+color+"git gud scrub", BitmapFont.SMALLFONTS);
+
+		respawnButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight/2 + 48);
+		exitButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight/2 - 24);
+		
+		respawnButton.draw();
 		exitButton.draw();
 		
-
-		if(resumeButton.clicked())
-			mainScene.changeOverlay(parent);
-		
-		if(optionsButton.clicked())
+		if(Client.getInstance().getControlledEntity() != null)
 		{
-			mainScene.changeOverlay(new OptionsOverlay(mainScene, this));
+			mainScene.changeOverlay(parent);
+		}
+
+		if(respawnButton.clicked())
+		{
+			if(Client.connection != null)
+				Client.connection.sendTextMessage("world/respawn");
+			mainScene.changeOverlay(parent);
 		}
 		
 		if(exitButton.clicked())

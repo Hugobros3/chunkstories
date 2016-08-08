@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world;
 
+import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
@@ -31,11 +32,5 @@ public class WorldClientLocal extends WorldClientCommon implements WorldMaster
 	{
 		//TODO when implementing server/client combo make sure we use something to mix behaviours of WorldServer and this
 		return Client.getInstance().getSoundManager();
-	}
-
-	@Override
-	public WorldRenderer getWorldRenderer()
-	{
-		return renderer;
 	}
 }

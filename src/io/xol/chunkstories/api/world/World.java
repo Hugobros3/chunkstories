@@ -2,11 +2,12 @@ package io.xol.chunkstories.api.world;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.particles.ParticleData;
-import io.xol.chunkstories.api.particles.ParticleType;
+import io.xol.chunkstories.api.particles.ParticlesManager;
+import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
@@ -334,20 +335,18 @@ public interface World
 	/*
 	 * Fx
 	 */
-
-	/*public ParticleData addParticle(ParticleType particleType, Vector3d eyeLocation);
 	
-	public ParticleData addParticle(ParticleType particleType, ParticleData particleData);*/
+	public DecalsManager getDecalsManager();
 	
 	public ParticlesManager getParticlesManager();
 
 	public SoundManager getSoundManager();
-	
-	//public void playSoundEffect(String soundEffect, Location location, float pitch, float gain);
 
 	public RegionSummaries getRegionSummaries();
 
 	public WorldInfo getWorldInfo();
 
 	public long getTime();
+
+	public GameLogic getGameLogic();
 }

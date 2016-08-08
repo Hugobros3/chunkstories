@@ -1,17 +1,17 @@
 package io.xol.chunkstories.entity;
 
 import java.util.Iterator;
-import java.util.concurrent.BlockingQueue;
+import java.util.Set;
 
 import io.xol.chunkstories.api.entity.Entity;
 
 public class EntityWorldIterator implements Iterator<Entity>
 {
-	BlockingQueue<Entity> entities;
+	Set<Entity> entities;
 	Iterator<Entity> ie;
 	Entity currentEntity;
 
-	public EntityWorldIterator(BlockingQueue<Entity> entities)
+	public EntityWorldIterator(Set<Entity> entities)
 	{
 		this.entities = entities;
 		ie = entities.iterator();

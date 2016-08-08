@@ -457,6 +457,6 @@ public class Camera
 
 	public Vector3d getCameraPosition()
 	{
-		return this.pos.clone().negate();
+		return this.pos.clone();
 	}
 }

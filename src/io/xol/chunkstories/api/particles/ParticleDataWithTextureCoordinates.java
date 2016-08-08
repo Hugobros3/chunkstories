@@ -4,7 +4,7 @@ package io.xol.chunkstories.api.particles;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface ParticleTextureCoordinates {
+public interface ParticleDataWithTextureCoordinates {
 	
 	public float getTextureCoordinateXTopLeft();
 	public float getTextureCoordinateXTopRight();

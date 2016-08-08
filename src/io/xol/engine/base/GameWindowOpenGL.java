@@ -14,7 +14,7 @@ import javax.swing.JOptionPane;
 import org.lwjgl.LWJGLException;
 
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
@@ -38,8 +38,11 @@ import org.lwjgl.opengl.PixelFormat;
 public class GameWindowOpenGL
 {
 	private final long mainGLThreadId;
-	
+
+	private Client client;
 	public RenderingContext renderingContext;
+	private ALSoundManager soundManager;
+
 	private Scene currentScene = null;
 
 	public String windowName;
@@ -67,8 +70,8 @@ public class GameWindowOpenGL
 	long timeTookLastTime = 0;
 
 	static long lastTime = 0;
-	
-	public GameWindowOpenGL(String name, int width, int height)
+
+	public GameWindowOpenGL(Client client, String name, int width, int height)
 	{
 		if (width != -1)
 			windowWidth = width;
@@ -76,7 +79,10 @@ public class GameWindowOpenGL
 			windowHeight = height;
 		this.windowName = name;
 		instance = this;
-		
+
+		//Initialize sound
+		soundManager = new ALSoundManager();
+
 		mainGLThreadId = Thread.currentThread().getId();
 	}
 
@@ -92,13 +98,13 @@ public class GameWindowOpenGL
 			Display.setResizable(true);
 			PixelFormat pixelFormat = new PixelFormat();
 			Display.create(pixelFormat);
-			
+
 			systemInfo();
 			glInfo();
 			switchResolution();
 
 			Keyboard.enableRepeatEvents(true);
-			
+
 			renderingContext = new RenderingContext(this);
 		}
 		catch (Exception e)
@@ -112,12 +118,12 @@ public class GameWindowOpenGL
 	private void systemInfo()
 	{
 		// Will print some debug information on the general context
-		ChunkStoriesLogger.getInstance().log("Running on "+System.getProperty("os.name"));
-		ChunkStoriesLogger.getInstance().log(Runtime.getRuntime().availableProcessors()+" avaible CPU cores");
-		ChunkStoriesLogger.getInstance().log("Trying cpu detection : "+CPUModelDetection.detectModel());
+		ChunkStoriesLogger.getInstance().log("Running on " + System.getProperty("os.name"));
+		ChunkStoriesLogger.getInstance().log(Runtime.getRuntime().availableProcessors() + " avaible CPU cores");
+		ChunkStoriesLogger.getInstance().log("Trying cpu detection : " + CPUModelDetection.detectModel());
 		long allocatedRam = Runtime.getRuntime().maxMemory();
-		ChunkStoriesLogger.getInstance().log("Allocated ram : "+allocatedRam);
-		if(allocatedRam < 1073741824L)
+		ChunkStoriesLogger.getInstance().log("Allocated ram : " + allocatedRam);
+		if (allocatedRam < 1000000000L)
 		{
 			//Warn user if he gave the game too few ram
 			ChunkStoriesLogger.getInstance().log("Less than 1Gb of ram detected");
@@ -125,7 +131,7 @@ public class GameWindowOpenGL
 					+ "\n Use the official launcher to launch the game properly, or add -Xmx1G to the java command.");
 		}
 	}
-	
+
 	private void glInfo()
 	{
 		// Will print some debug information on the openGL context
@@ -138,10 +144,10 @@ public class GameWindowOpenGL
 		ChunkStoriesLogger.getInstance().log("OpenGL Extensions avaible : " + glGetString(GL_EXTENSIONS));
 		if (glVersionf < 3.1f)
 		{
-			FastConfig.openGL3Capable = false;
+			RenderingConfig.openGL3Capable = false;
 			if (GLContext.getCapabilities().GL_EXT_framebuffer_object && GLContext.getCapabilities().GL_ARB_texture_rg)
 			{
-				FastConfig.fbExtCapable = true;
+				RenderingConfig.fbExtCapable = true;
 				ChunkStoriesLogger.getInstance().log("Pre-OpenGL 3.0 Hardware with needed extensions support detected.");
 			}
 			else
@@ -149,10 +155,9 @@ public class GameWindowOpenGL
 				// bien le moyen-âge ?
 				ChunkStoriesLogger.getInstance().log("Pre-OpenGL 3.0 Hardware without needed extensions support detected.");
 				ChunkStoriesLogger.getInstance().log("This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
-				JOptionPane.showMessageDialog(null, "Pre-OpenGL 3.0 Hardware without needed extensions support detected.\n"
-						+ "This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
+				JOptionPane.showMessageDialog(null, "Pre-OpenGL 3.0 Hardware without needed extensions support detected.\n" + "This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
 				// If you feel brave after all
-				if(!FastConfig.ignoreObsoleteHardware)
+				if (!RenderingConfig.ignoreObsoleteHardware)
 					Runtime.getRuntime().exit(0);
 			}
 		}
@@ -169,7 +174,7 @@ public class GameWindowOpenGL
 			while (!Display.isCloseRequested() && !closeRequest)
 			{
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				
+
 				//Resize window logic
 				if (resized)
 					resized = false;
@@ -191,7 +196,7 @@ public class GameWindowOpenGL
 				}
 
 				// Update audio streams
-				((ALSoundManager) Client.getInstance().getSoundManager()).update();
+				soundManager.update();
 
 				// Run scene content
 				if (currentScene != null)
@@ -199,45 +204,47 @@ public class GameWindowOpenGL
 					// update inputs first
 					InputAbstractor.update(this, currentScene);
 					// then do the game logic
-					currentScene.update(renderingContext);
-					
+					try
+					{
+						currentScene.update(renderingContext);
+					}
+					//Fucking tired of handling npes everywhere
+					catch (NullPointerException npe)
+					{
+						npe.printStackTrace();
+					}
+
 					renderingContext.getGuiRenderer().drawBuffer();
 				}
-				
+
 				//Clamp fps
 				if (targetFPS != -1)
 				{
 					long time = System.currentTimeMillis();
-					int milisToWait = 1000 / targetFPS;
-					long sleep = milisToWait - timeTookLastTime;
-					if (sleep > milisToWait)
-						sleep = milisToWait;
-					
-					//if (sleep > 0)
-					//	Thread.sleep(sleep);
-					
+
 					sync(targetFPS);
-					
+
 					//glFinish();
 					long timeTook = System.currentTimeMillis() - time;
 					timeTookLastTime = timeTook;
 				}
-				
+
 				//Draw graph
-				if(Client.getConfig().getBoolean("frametimeGraph", false))
+				if (Client.getConfig().getBoolean("frametimeGraph", false))
 					FrametimeRenderer.draw(renderingContext);
-				
+
 				//Update pending actions
 				VerticesObject.destroyPendingVerticesObjects();
 				Texture2D.destroyPendingTextureObjects();
-				
+
 				//Update the screen
 				Display.update();
-				
+
 				GLCalls.nextFrame();
 			}
 			System.out.println("Copyright 2015 XolioWare Interactive");
 			Client.onClose();
+			soundManager.destroy();
 			Display.destroy();
 			System.exit(0);
 		}
@@ -301,7 +308,7 @@ public class GameWindowOpenGL
 			//modes = new String[dms.length];
 			for (int i = 0; i < dms.length; i++)
 			{
-				if(dms[i].isFullscreenCapable() && dms[i].getBitsPerPixel() >= 32 && dms[i].getWidth() >= 640)
+				if (dms[i].isFullscreenCapable() && dms[i].getBitsPerPixel() >= 32 && dms[i].getWidth() >= 640)
 				{
 					validModes.add(dms[i]);
 				}
@@ -313,7 +320,7 @@ public class GameWindowOpenGL
 			}
 			modes = new String[validModes.size()];
 			int i = 0;
-			for(DisplayMode dm : validModes)
+			for (DisplayMode dm : validModes)
 			{
 				modes[i] = dm.getWidth() + "x" + dm.getHeight();
 				i++;
@@ -361,7 +368,7 @@ public class GameWindowOpenGL
 				{
 					DisplayMode current = Display.getDisplayMode();
 					try
-					{	
+					{
 						Display.setDisplayMode(displayMode);
 						Display.setFullscreen(true);
 					}
@@ -456,16 +463,21 @@ public class GameWindowOpenGL
 		return instance;
 	}
 
+	public ALSoundManager getSoundEngine()
+	{
+		return soundManager;
+	}
+
 	public RenderingContext getRenderingContext()
 	{
 		return renderingContext;
 	}
-	
+
 	public static boolean isMainGLWindow()
 	{
 		return getInstance().isInstanceMainGLWindow();
 	}
-	
+
 	public boolean isInstanceMainGLWindow()
 	{
 		return Thread.currentThread().getId() == mainGLThreadId;

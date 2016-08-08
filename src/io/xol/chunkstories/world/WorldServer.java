@@ -5,16 +5,15 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.world.WorldNetworked;
 import io.xol.chunkstories.core.events.PlayerSpawnEvent;
 import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
-import io.xol.chunkstories.particles.Particle;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.VirtualServerSoundManager;
 import io.xol.chunkstories.server.net.ServerClient;
@@ -31,6 +30,8 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	private Server server;
 	
 	private VirtualServerSoundManager virtualServerSoundManager;
+	private VirtualServerParticlesManager virtualServerParticlesManager;
+	private VirtualServerDecalsManager virtualServerDecalsManager;
 
 	public WorldServer(Server server, String worldDir)
 	{
@@ -38,6 +39,8 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 		this.server = server;
 		this.virtualServerSoundManager = new VirtualServerSoundManager(this, server);
+		this.virtualServerParticlesManager = new VirtualServerParticlesManager(this, server);
+		this.virtualServerDecalsManager = new VirtualServerDecalsManager(this, server);
 
 		ioHandler = new IOTasksMultiplayerServer(this);
 		ioHandler.start();
@@ -93,8 +96,25 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		}
 		else if (message.equals("respawn"))
 		{
-			//TODO respawn request
+			Player player = sender.getProfile();
+			if(player == null)
+			{
+				sender.sendChat("Fuck off ?");
+				return;
+			}
+			else
+			{
+				if(player.getControlledEntity() == null || (player.getControlledEntity() instanceof EntityLiving && ((EntityLiving)player.getControlledEntity()).isDead()))
+				{
 
+
+					PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.getProfile(), this);
+					Server.getInstance().getPluginsManager().fireEvent(playerSpawnEvent);
+					sender.sendChat("Respawning ...");
+				}
+				else
+					sender.sendChat("You're not dead, or you are controlling a non-living entity.");
+			}
 		}
 		if (message.startsWith("getChunkCompressed"))
 		{
@@ -259,49 +279,26 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		}
 	}
 
-	public void addParticle(Particle particle)
-	{
-
-	}
-
-	/*@Override
-	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain)
-	{
-		//Plays to everyone.
-		this.playSoundEffectExcluding(soundEffect, location, pitch, gain, null);
-	}*/
-
-	/*@Override
-	public void playSoundEffectExcluding(String soundEffect, Location location, float pitch, float gain, Subscriber subscriber)
-	{
-		//Creates packet
-		PacketPlaySound packetSound = new PacketPlaySound(false);
-		packetSound.soundName = soundEffect;
-		packetSound.position = location;
-		packetSound.gain = gain;
-		packetSound.pitch = pitch;
-
-		Iterator<Player> pi = server.getConnectedPlayers();
-		while (pi.hasNext())
-		{
-			Player player = pi.next();
-
-			//Don't send sounds to lone wolves
-			Entity clientEntity = player.getControlledEntity();
-			if (clientEntity == null)
-				continue;
-			//Don't send sounds to specific guy
-			if (subscriber != null && subscriber.equals(player))
-				continue;
-
-			player.pushPacket(packetSound);
-
-		}
-	}*/
-
 	@Override
 	public VirtualServerSoundManager getSoundManager()
 	{
 		return virtualServerSoundManager;
+	}
+
+	@Override
+	public VirtualServerParticlesManager getParticlesManager()
+	{
+		return virtualServerParticlesManager;
+	}
+
+	@Override
+	public VirtualServerDecalsManager getDecalsManager()
+	{
+		return virtualServerDecalsManager;
+	}
+
+	public Iterator<Player> getPlayers()
+	{
+		return Server.getInstance().getConnectedPlayers();
 	}
 }

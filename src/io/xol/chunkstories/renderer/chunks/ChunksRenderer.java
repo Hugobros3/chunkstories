@@ -50,12 +50,12 @@ public class ChunksRenderer extends Thread
 		// 8 buffers of 8Mb each (64Mb) for temp/scratch buffer memory
 		buffersPool = new ByteBufferPool(8, 0x800000);
 	}
-	
+
 	public void requestChunkRender(ChunkRenderable chunk)
 	{
-		if (!(chunk.isMarkedForReRender() /*|| chunk.needsLightningUpdates()*/) || chunk.isRenderAleadyInProgress() )
+		if (!(chunk.isMarkedForReRender() /*|| chunk.needsLightningUpdates()*/) || chunk.isRenderAleadyInProgress())
 			return;
-		
+
 		int[] request = new int[] { chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ() };
 		boolean priority = false; //chunk.need_render_fast.get();
 
@@ -79,16 +79,16 @@ public class ChunksRenderer extends Thread
 		// If it has been queued then it can't be asked again
 		chunk.markRenderInProgress(true);
 		// Reset the priority flag
-		
+
 		//chunk.need_render.set(false);
 
 		if (priority)
 			todoQueue.addFirst(request);
 		else
 			todoQueue.addLast(request);
-		
+
 		//System.out.println("Added "+chunk);
-		
+
 		synchronized (this)
 		{
 			notifyAll();
@@ -112,7 +112,7 @@ public class ChunksRenderer extends Thread
 				Chunk freed = world.getChunk(request[0], request[1], request[2], false);
 				if (freed != null && freed instanceof ChunkRenderable)
 					((ChunkRenderable) freed).markRenderInProgress(false);
-				
+
 				//System.out.println("Removed "+freed);
 				iter.remove();
 			}
@@ -155,7 +155,7 @@ public class ChunksRenderer extends Thread
 				try
 				{
 					//System.out.println("cuck");
-					
+
 					if (world.isChunkLoaded(task[0], task[1], task[2]))
 					{
 						ChunkRenderable work = (ChunkRenderable) world.getChunk(task[0], task[1], task[2], false);
@@ -171,7 +171,6 @@ public class ChunksRenderer extends Thread
 							if (world.isChunkLoaded(task[0], task[1], task[2] - 1))
 								nearChunks++;
 
-							
 							if (nearChunks == 4)
 							{
 								int buffer_id = buffersPool.requestByteBuffer();
@@ -187,8 +186,15 @@ public class ChunksRenderer extends Thread
 									}
 									buffer_id = buffersPool.requestByteBuffer();
 								}
-								if(work instanceof CubicChunk)
-									renderChunk((CubicChunk) work, buffer_id);
+								if (work instanceof CubicChunk)
+									try
+									{
+										renderChunk((CubicChunk) work, buffer_id);
+									}
+									catch (Exception e)
+									{
+
+									}
 							}
 							else
 							{
@@ -495,38 +501,38 @@ public class ChunksRenderer extends Thread
 		aoB = bakeLightColors(llGb, llHb, llAb, llMb, llGs, llHs, llAs, llMs);
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
-		
+
 		int offset = texture.atlasOffset / texture.textureScale;
 		int textureS = texture.atlasS + (sx % texture.textureScale) * offset;
 		int textureT = texture.atlasT + (sz % texture.textureScale) * offset;
-		
-		rbbf.addVerticeInt(sx + 1, sy, sz );
-		rbbf.addTexCoordInt(textureS + offset, textureT );
+
+		rbbf.addVerticeInt(sx + 1, sy, sz);
+		rbbf.addTexCoordInt(textureS + offset, textureT);
 		rbbf.addColors(aoB);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
-		
-		rbbf.addVerticeInt(sx + 1, sy, sz + 1 );
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+
+		rbbf.addVerticeInt(sx + 1, sy, sz + 1);
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
-		
-		rbbf.addVerticeInt(sx, sy, sz );
-		rbbf.addTexCoordInt(textureS, textureT );
+
+		rbbf.addVerticeInt(sx, sy, sz);
+		rbbf.addTexCoordInt(textureS, textureT);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy, sz );
-		rbbf.addTexCoordInt(textureS, textureT );
+		rbbf.addVerticeInt(sx, sy, sz);
+		rbbf.addTexCoordInt(textureS, textureT);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
-		
-		rbbf.addVerticeInt(sx + 1, sy, sz + 1 );
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+
+		rbbf.addVerticeInt(sx + 1, sy, sz + 1);
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
-		
-		rbbf.addVerticeInt(sx, sy, sz + 1 );
-		rbbf.addTexCoordInt(textureS, textureT + offset );
+
+		rbbf.addVerticeInt(sx, sy, sz + 1);
+		rbbf.addTexCoordInt(textureS, textureT + offset);
 		rbbf.addColors(aoD);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
 	}
@@ -574,34 +580,34 @@ public class ChunksRenderer extends Thread
 		int offset = texture.atlasOffset / texture.textureScale;
 		int textureS = texture.atlasS + mod(sz, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
-		
-		rbbf.addVerticeInt(sx, sy + 1, sz );
-		rbbf.addTexCoordInt(textureS, textureT );
+
+		rbbf.addVerticeInt(sx, sy + 1, sz);
+		rbbf.addTexCoordInt(textureS, textureT);
 		rbbf.addColors(aoB);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1 );
-		rbbf.addTexCoordInt(textureS + offset, textureT );
+		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
+		rbbf.addTexCoordInt(textureS + offset, textureT);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy - 0, sz );
-		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addVerticeInt(sx, sy - 0, sz);
+		rbbf.addTexCoordInt(textureS, textureT + offset);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy - 0, sz );
-		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addVerticeInt(sx, sy - 0, sz);
+		rbbf.addTexCoordInt(textureS, textureT + offset);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1 );
-		rbbf.addTexCoordInt( textureS + offset, textureT );
+		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
+		rbbf.addTexCoordInt(textureS + offset, textureT);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy - 0, sz + 1 );
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+		rbbf.addVerticeInt(sx, sy - 0, sz + 1);
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
 		rbbf.addColors(aoD);
 		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 	}
@@ -653,39 +659,37 @@ public class ChunksRenderer extends Thread
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
 
-
-
 		int offset = texture.atlasOffset / texture.textureScale;
 		int textureS = texture.atlasS + mod(sz, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
-		
-		rbbf.addVerticeInt(sx, sy - 0, sz );
-		rbbf.addTexCoordInt(textureS, textureT + offset );
+
+		rbbf.addVerticeInt(sx, sy - 0, sz);
+		rbbf.addTexCoordInt(textureS, textureT + offset);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-		
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1 );
-		rbbf.addTexCoordInt(textureS + offset, textureT );
+
+		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
+		rbbf.addTexCoordInt(textureS + offset, textureT);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-		
-		rbbf.addVerticeInt(sx, sy + 1, sz );
-		rbbf.addTexCoordInt(textureS, textureT );
+
+		rbbf.addVerticeInt(sx, sy + 1, sz);
+		rbbf.addTexCoordInt(textureS, textureT);
 		rbbf.addColors(aoB);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy - 0, sz + 1 );
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+		rbbf.addVerticeInt(sx, sy - 0, sz + 1);
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
 		rbbf.addColors(aoD);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-		
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1 );
-		rbbf.addTexCoordInt(textureS + offset, textureT );
+
+		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
+		rbbf.addTexCoordInt(textureS + offset, textureT);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-		
-		rbbf.addVerticeInt(sx, sy - 0, sz );
-		rbbf.addTexCoordInt(textureS, textureT + offset );
+
+		rbbf.addVerticeInt(sx, sy - 0, sz);
+		rbbf.addTexCoordInt(textureS, textureT + offset);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
 
@@ -733,34 +737,34 @@ public class ChunksRenderer extends Thread
 		int offset = texture.atlasOffset / texture.textureScale;
 		int textureS = texture.atlasS + mod(sx, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
-		
+
 		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addTexCoordInt(textureS, textureT + offset);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
-		
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz );
-		rbbf.addTexCoordInt(textureS + offset, textureT );
+
+		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
+		rbbf.addTexCoordInt(textureS + offset, textureT);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
-		
-		rbbf.addVerticeInt(sx, sy + 1, sz );
-		rbbf.addTexCoordInt(textureS, textureT );
+
+		rbbf.addVerticeInt(sx, sy + 1, sz);
+		rbbf.addTexCoordInt(textureS, textureT);
 		rbbf.addColors(aoB);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
 
-		rbbf.addVerticeInt(sx + 1, sy - 0, sz );
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+		rbbf.addVerticeInt(sx + 1, sy - 0, sz);
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
 		rbbf.addColors(aoD);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
-		
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz );
-		rbbf.addTexCoordInt(textureS + offset, textureT );
+
+		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
+		rbbf.addTexCoordInt(textureS + offset, textureT);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
-		
-		rbbf.addVerticeInt(sx, sy - 0, sz );
-		rbbf.addTexCoordInt(textureS, textureT + offset );
+
+		rbbf.addVerticeInt(sx, sy - 0, sz);
+		rbbf.addTexCoordInt(textureS, textureT + offset);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
 
@@ -809,34 +813,34 @@ public class ChunksRenderer extends Thread
 		int offset = texture.atlasOffset / texture.textureScale;
 		int textureS = texture.atlasS + mod(sx, texture.textureScale) * offset;
 		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
-		
-		rbbf.addVerticeInt(sx, sy + 1, sz );
-		rbbf.addTexCoordInt(textureS, textureT );
+
+		rbbf.addVerticeInt(sx, sy + 1, sz);
+		rbbf.addTexCoordInt(textureS, textureT);
 		rbbf.addColors(aoB);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
-		
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz );
-		rbbf.addTexCoordInt(textureS + offset, textureT );
+
+		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
+		rbbf.addTexCoordInt(textureS + offset, textureT);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
-		
-		rbbf.addVerticeInt(sx, sy - 0, sz );
-		rbbf.addTexCoordInt(textureS, textureT + offset );
+
+		rbbf.addVerticeInt(sx, sy - 0, sz);
+		rbbf.addTexCoordInt(textureS, textureT + offset);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 
-		rbbf.addVerticeInt(sx, sy - 0, sz );
-		rbbf.addTexCoordInt(textureS, textureT + offset );
+		rbbf.addVerticeInt(sx, sy - 0, sz);
+		rbbf.addTexCoordInt(textureS, textureT + offset);
 		rbbf.addColors(aoC);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
-		
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz );
-		rbbf.addTexCoordInt(textureS + offset, textureT );
+
+		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
+		rbbf.addTexCoordInt(textureS + offset, textureT);
 		rbbf.addColors(aoA);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
-		
-		rbbf.addVerticeInt(sx + 1, sy - 0, sz );
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset );
+
+		rbbf.addVerticeInt(sx + 1, sy - 0, sz);
+		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
 		rbbf.addColors(aoD);
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 	}
@@ -844,7 +848,7 @@ public class ChunksRenderer extends Thread
 	private void addVoxelUsingCustomModel(CubicChunk c, VoxelBaker rbbf, int x, int y, int z, BlockRenderInfo info)
 	{
 		VoxelRenderer model = info.getVoxelRenderer();
-		if(model != null)
+		if (model != null)
 			model.renderInto(rbbf, info, c, x, y, z);
 	}
 
@@ -889,9 +893,9 @@ public class ChunksRenderer extends Thread
 
 		if (work.needRelightning.getAndSet(false))
 			work.bakeVoxelLightning(true);
-		
+
 		//System.out.println("k");
-			
+
 		// Don't bother
 		if (!work.need_render.get())
 		{
@@ -930,7 +934,6 @@ public class ChunksRenderer extends Thread
 
 		complexBlocksBuffer.clear();
 		VoxelBaker complexRBBF = new RenderByteBuffer(complexBlocksBuffer);
-		
 
 		long cr_iter = System.nanoTime();
 
@@ -1031,17 +1034,17 @@ public class ChunksRenderer extends Thread
 		chunkRenderData.byteBufferPoolId = byteBufferId;// = byteBuffer;//BufferUtils.createByteBuffer(bufferTotalSize);
 
 		//long cr_buffer = System.nanoTime();
-		
+
 		//Set sizes
-		chunkRenderData.vboSizeFullBlocks = rawBlocksBuffer.position()/(16);
-		chunkRenderData.vboSizeCustomBlocks = complexBlocksBuffer.position()/(24);
-		chunkRenderData.vboSizeWaterBlocks = waterBlocksBuffer.position()/(24);
+		chunkRenderData.vboSizeFullBlocks = rawBlocksBuffer.position() / (16);
+		chunkRenderData.vboSizeCustomBlocks = complexBlocksBuffer.position() / (24);
+		chunkRenderData.vboSizeWaterBlocks = waterBlocksBuffer.position() / (24);
 
 		//Move data in final buffer in correct orders
 		rawBlocksBuffer.limit(rawBlocksBuffer.position());
 		rawBlocksBuffer.position(0);
 		byteBuffer.put(rawBlocksBuffer);
-		
+
 		waterBlocksBuffer.limit(waterBlocksBuffer.position());
 		waterBlocksBuffer.position(0);
 		byteBuffer.put(waterBlocksBuffer);
@@ -1051,7 +1054,7 @@ public class ChunksRenderer extends Thread
 		byteBuffer.put(complexBlocksBuffer);
 
 		byteBuffer.flip();
-		
+
 		doneQueue.add(chunkRenderData);
 
 		totalChunksRendered.incrementAndGet();

@@ -90,6 +90,8 @@ public class MainMenuOverlay extends Overlay
 		if (k == Keyboard.KEY_E)
 			mainScene.changeOverlay(new InventoryOverlay(mainScene, this, new EntityComponentInventory[]{new EntityComponentInventory(null, 10, 4)
 			, new InventoryAllVoxels()})); // new Inventory(null, 10, 4, "La chatte à ta mère")
+		if (k == Keyboard.KEY_D)
+			mainScene.changeOverlay(new DeathOverlay(mainScene, this));
 
 		if (k == Keyboard.KEY_R)
 			mainScene.changeOverlay(new MessageBoxOverlay(mainScene, this, "Error : error"));

@@ -16,7 +16,7 @@ import io.xol.engine.math.lalgb.Vector4f;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
@@ -28,7 +28,6 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.summary.RegionSummary;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -316,12 +315,12 @@ public class FarTerrainRenderer
 							int regionMiddleX = currentRegionX * 8 + scx;
 							int regionMiddleZ = currentRegionZ * 8 + scz;
 							int detail = (int) (Math.sqrt(Math.abs(regionMiddleX - cameraChunkX) * Math.abs(regionMiddleX - cameraChunkX) + Math.abs(regionMiddleZ - cameraChunkZ) * Math.abs(regionMiddleZ - cameraChunkZ))
-									/ (FastConfig.hqTerrain ? 6f : 4f));
+									/ (RenderingConfig.hqTerrain ? 6f : 4f));
 
 							if (detail > 5)
 								detail = 5;
 
-							if (!FastConfig.hqTerrain && detail < 2)
+							if (!RenderingConfig.hqTerrain && detail < 2)
 								detail = 2;
 
 							details2use[(scx + 1) * 10 + (scz + 1)] = detail;

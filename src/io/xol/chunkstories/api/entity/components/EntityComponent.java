@@ -60,8 +60,7 @@ public abstract class EntityComponent
 			Subscriber subscriber = iterator.next();
 			
 			PacketEntity packet = new PacketEntity(subscriber.getUUID() == -1);
-			packet.entityUUID = entity.getUUID();
-			packet.entityTypeID = entity.getEID();
+			packet.entityToUpdate = entity;
 			
 			packet.updateOneComponent = this;
 			subscriber.pushPacket(packet);
@@ -105,8 +104,7 @@ public abstract class EntityComponent
 				continue;
 			
 			PacketEntity packet = new PacketEntity(subscriber.getUUID() == -1);
-			packet.entityUUID = entity.getUUID();
-			packet.entityTypeID = entity.getEID();
+			packet.entityToUpdate = entity;
 			
 			packet.updateOneComponent = this;
 			subscriber.pushPacket(packet);
@@ -119,8 +117,7 @@ public abstract class EntityComponent
 		//Re : nope because we send the EntityExistence (hint: false) component to [just] unsubscribed guys so it wouldn't work
 		
 		PacketEntity packet = new PacketEntity(subscriber.getUUID() == -1);
-		packet.entityUUID = entity.getUUID();
-		packet.entityTypeID = entity.getEID();
+		packet.entityToUpdate = entity;
 		
 		//Set the packet to "just update that component" mode
 		packet.updateOneComponent = this;
@@ -143,8 +140,7 @@ public abstract class EntityComponent
 	public void pushAllComponents(Subscriber subscriber)
 	{
 		PacketEntity packet = new PacketEntity(subscriber.getUUID() == -1);
-		packet.entityUUID = entity.getUUID();
-		packet.entityTypeID = entity.getEID();
+		packet.entityToUpdate = entity;
 		
 		//Set the packet to "update everything in the chained list" mode
 		packet.updateManyComponents = this;

@@ -3,6 +3,8 @@ package io.xol.chunkstories.api.entity;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.InputsManager;
+import io.xol.chunkstories.api.particles.ParticlesManager;
+import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -18,5 +20,11 @@ public interface Controller extends Subscriber
 	
 	public EntityControllable getControlledEntity();
 	
+	public boolean setControlledEntity(EntityControllable entityControllable);
+	
 	public SoundManager getSoundManager();
+
+	public ParticlesManager getParticlesManager();
+
+	public DecalsManager getDecalsManager();
 }

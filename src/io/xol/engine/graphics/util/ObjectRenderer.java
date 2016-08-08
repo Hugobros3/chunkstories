@@ -4,14 +4,6 @@ import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.misc.ColorsTools;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
-
-import java.nio.FloatBuffer;
-
-import org.lwjgl.BufferUtils;
 import io.xol.engine.math.lalgb.Vector4f;
 
 //(c) 2015-2016 XolioWare Interactive

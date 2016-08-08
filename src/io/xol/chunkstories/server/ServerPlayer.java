@@ -6,12 +6,16 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.net.Packet;
+import io.xol.chunkstories.api.particles.ParticlesManager;
+import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.server.VirtualServerSoundManager.ServerPlayerVirtualSoundManager;
 import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.world.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager;
+import io.xol.chunkstories.world.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
@@ -38,7 +42,10 @@ public class ServerPlayer implements Player
 	//Mirror of client inputs
 	private ServerInputsManager serverInputsManager;
 	
+	//Dummy managers to relay synchronisation stuff
 	private ServerPlayerVirtualSoundManager virtualSoundManager;
+	private ServerPlayerVirtualParticlesManager virtualParticlesManager;
+	private ServerPlayerVirtualDecalsManager virtualDecalsManager;
 
 	public ServerPlayer(ServerClient serverClient)
 	{
@@ -50,6 +57,8 @@ public class ServerPlayer implements Player
 		
 		//TODO update the sound manager to support multiworld
 		virtualSoundManager = Server.getInstance().getWorld().getSoundManager().new ServerPlayerVirtualSoundManager(this);
+		virtualParticlesManager = Server.getInstance().getWorld().getParticlesManager().new ServerPlayerVirtualParticlesManager(this);
+		virtualDecalsManager = Server.getInstance().getWorld().getDecalsManager().new ServerPlayerVirtualDecalsManager(this);
 		
 		// Sets dates
 		playerDataFile.setString("lastlogin", "" + System.currentTimeMillis());
@@ -174,7 +183,7 @@ public class ServerPlayer implements Player
 	}
 
 	@Override
-	public void setControlledEntity(Entity entity)
+	public boolean setControlledEntity(EntityControllable entity)
 	{
 		if(entity instanceof EntityControllable)
 		{
@@ -184,6 +193,13 @@ public class ServerPlayer implements Player
 			controllableEntity.getControllerComponent().setController(this);
 			controlledEntity = controllableEntity;
 		}
+		else if(entity == null && getControlledEntity() != null)
+		{
+			getControlledEntity().getControllerComponent().setController(null);
+			controlledEntity = null;
+		}
+		
+		return true;
 	}
 
 	@Override
@@ -351,5 +367,17 @@ public class ServerPlayer implements Player
 	public SoundManager getSoundManager()
 	{
 		return virtualSoundManager;
+	}
+
+	@Override
+	public ParticlesManager getParticlesManager()
+	{
+		return virtualParticlesManager;
+	}
+
+	@Override
+	public DecalsManager getDecalsManager()
+	{
+		return virtualDecalsManager;
 	}
 }

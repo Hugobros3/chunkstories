@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.exceptions.UnknownComponentException;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
+import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
 import io.xol.chunkstories.entity.EntitiesList;
 import io.xol.chunkstories.world.WorldImplementation;
 
@@ -19,9 +20,11 @@ import java.io.IOException;
 
 public class PacketEntity extends PacketSynch
 {
-	public short entityTypeID;
-	public long entityUUID;
 	
+	private short entityTypeID;
+	private long entityUUID;
+
+	public Entity entityToUpdate;
 	public EntityComponent updateOneComponent;
 	public EntityComponent updateManyComponents;
 	
@@ -33,6 +36,22 @@ public class PacketEntity extends PacketSynch
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
+		//No other updates than the entity destruction itself can be sent once it has been removed
+		if(!entityToUpdate.exists() && updateOneComponent != null && !(updateOneComponent instanceof EntityComponentExistence))
+		{
+			//This is done because if the packets were allowed to filter the clients would create an entity to write the attributes into but they'd never hear from it
+			//ever again
+			
+			//System.out.println("WOW ! Tried to send something about a ghost entity there !");
+			//Thread.currentThread().dumpStack();
+			
+			entityTypeID = -1;
+			updateOneComponent = null;
+		}
+		
+		entityUUID = entityToUpdate.getUUID();
+		entityTypeID = entityToUpdate.getEID();
+		
 		//System.out.println("Sending entity " + entityID + " EID : " + entityType + " PosX" + XBuffered + (nBuffered == null ? "null" : nBuffered));
 		out.writeLong(entityUUID);
 		out.writeShort(entityTypeID);
@@ -40,7 +59,7 @@ public class PacketEntity extends PacketSynch
 		//Write all components we wanna update
 		if(updateOneComponent != null)
 			updateOneComponent.pushComponentInStream(destinator, out);
-		else
+		else if(updateManyComponents != null)
 			updateManyComponents.pushAllComponentsInStream(destinator, out);
 		
 		//Then write 0
@@ -51,6 +70,9 @@ public class PacketEntity extends PacketSynch
 	{
 		entityUUID = in.readLong();
 		entityTypeID = in.readShort();
+		
+		if(entityTypeID == -1)
+			return;
 		
 		((WorldImplementation)processor.getWorld()).entitiesLock.lock();
 		Entity entity = processor.getWorld().getEntityByUUID(this.entityUUID);

@@ -220,8 +220,8 @@ public class TrueTypeFont
 			}
 
 			glTextures[offset] = loadImageIntoOpenGLTexture(offset, imgTemp);
-			File outputfile = new File(font.getFontName() + "saved.png");
-			ImageIO.write(imgTemp, "png", outputfile);
+			/*File outputfile = new File(font.getFontName() + "saved.png");
+			ImageIO.write(imgTemp, "png", outputfile);*/
 
 			return glTextures[offset];
 

@@ -2,7 +2,6 @@ package io.xol.chunkstories.api.server;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.net.PacketDestinator;
@@ -39,8 +38,9 @@ public interface Player extends CommandEmitter, Controller, Subscriber, PacketDe
 	
 	/**
 	 * Sets the entity this player has control over (and tells him)
+	 * @return 
 	 */
-	public void setControlledEntity(Entity entity);
+	public boolean setControlledEntity(EntityControllable entity);
 	/**
 	 * Sends a text message to this player chat
 	 * @param msg

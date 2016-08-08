@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world;
 
+import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.particles.ParticlesRenderer;
@@ -29,12 +30,18 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 	public void linkWorldRenderer(WorldRenderer renderer)
 	{
 		this.renderer = renderer;
-		setParticlesHolder(new ParticlesRenderer(this));
+		setParticlesManager(new ParticlesRenderer(this));
 	}
 
 	@Override
 	public WorldRenderer getWorldRenderer()
 	{
 		return renderer;
+	}
+
+	@Override
+	public DecalsManager getDecalsManager()
+	{
+		return renderer.getDecalsRenderer();
 	}
 }

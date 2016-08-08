@@ -2,20 +2,17 @@ package io.xol.chunkstories.world;
 
 import java.io.File;
 import java.util.Iterator;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.particles.ParticleData;
-import io.xol.chunkstories.api.particles.ParticleType;
+import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
@@ -23,13 +20,12 @@ import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.Region;
-import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.world.WorldNetworked;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.particles.ParticlesRenderer;
@@ -55,6 +51,7 @@ import io.xol.engine.misc.ConfigFile;
 public abstract class WorldImplementation implements World
 {
 	protected WorldInfo worldInfo;
+	private GameLogic gameLogicThread;
 	private final File folder;
 
 	//protected final boolean client;
@@ -65,6 +62,9 @@ public abstract class WorldImplementation implements World
 	// The world age, also tick counter. Can count for billions of real-world
 	// time so we are not in trouble.
 	// Let's say that the game world runs at 60Ticks per second
+	public long worldTicksCounter = 0;
+	
+	//Timecycle counter
 	public long worldTime = 5000;
 	float overcastFactor = 0.2f;
 
@@ -83,10 +83,11 @@ public abstract class WorldImplementation implements World
 	protected WorldRenderer renderer;
 
 	// World logic thread
-	private ScheduledExecutorService logic;
+	
+	//private ScheduledExecutorService logic;
 
 	// Temporary entity list
-	private BlockingQueue<Entity> entities = new LinkedBlockingQueue<Entity>();
+	private Set<Entity> entities = ConcurrentHashMap.newKeySet();
 	//private ConcurrentHashMap<Long, Entity> localEntitiesByUUID = new ConcurrentHashMap<Long, Entity>();//new LinkedBlockingQueue<Entity>();
 	public SimpleLock entitiesLock = new SimpleLock();
 
@@ -107,7 +108,7 @@ public abstract class WorldImplementation implements World
 		//this.chunksData = new ChunksData();
 		this.chunksHolder = new WorldChunksHolder(this);
 		this.regionSummaries = new WorldHeightmapVersion(this);
-		this.logic = Executors.newSingleThreadScheduledExecutor();
+		//this.logic = Executors.newSingleThreadScheduledExecutor();
 
 		if (this instanceof WorldMaster)
 		{
@@ -118,6 +119,7 @@ public abstract class WorldImplementation implements World
 
 			this.entitiesUUIDGenerator.set(internalData.getLong("entities-ids-counter", 0));
 			this.worldTime = internalData.getLong("worldTime", 5000);
+			this.worldTicksCounter = internalData.getLong("worldTimeInternal", 0);
 			this.overcastFactor = internalData.getFloat("overcastFactor", 0.2f);
 		}
 		else
@@ -149,7 +151,7 @@ public abstract class WorldImplementation implements World
 		return null;
 	}
 
-	public void startLogic()
+	/*public void startLogic()
 	{
 		logic.scheduleAtFixedRate(new Runnable()
 		{
@@ -167,12 +169,12 @@ public abstract class WorldImplementation implements World
 				}
 			}
 		}, 0, 16666, TimeUnit.MICROSECONDS);
-	}
+	}*/
 
-	public void stopLogic()
+	/*public void stopLogic()
 	{
 		logic.shutdown();
-	}
+	}*/
 
 	@Override
 	public void addEntity(final Entity entity)
@@ -251,12 +253,12 @@ public abstract class WorldImplementation implements World
 		//Place the entire tick() method in a try/catch
 		try
 		{
-			if (this instanceof WorldNetworked)
+			/*if (this instanceof WorldNetworked)
 			{
 				//TODO net logic has nothing to do in world logic, it should be handled elsewere !!!
 				//Deal with packets we received
 				((WorldNetworked) this).processIncommingPackets();
-			}
+			}*/
 
 			//Iterates over every entity
 			entitiesLock.lock();
@@ -271,7 +273,7 @@ public abstract class WorldImplementation implements World
 				if (entity.getChunkHolder() != null && entity.getChunkHolder().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
 				{
 					//If we're the client world and this is our entity
-					if (entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.controlledEntity != null && Client.controlledEntity.equals(entity))
+					if (this instanceof WorldClient && entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.getInstance().getControlledEntity() != null && Client.getInstance().getControlledEntity().equals(entity))
 					{
 						((EntityControllable) entity).tickClient(Client.getInstance());
 						entity.tick();
@@ -285,12 +287,16 @@ public abstract class WorldImplementation implements World
 			entitiesLock.unlock();
 
 			//Update particles subsystem if it exists
-			if (getParticlesHolder() != null)
-				getParticlesHolder().updatePhysics();
+			if (getParticlesManager() != null && getParticlesManager() instanceof ParticlesRenderer)
+				((ParticlesRenderer) getParticlesManager()).updatePhysics();
 
 			//Increase the time
+			
+			worldTicksCounter++;
+			
 			if (this instanceof WorldMaster && internalData.getBoolean("doTimeCycle", true))
-				worldTime++;
+				if(worldTicksCounter % 60 == 0)
+					worldTime++;
 		}
 		catch (Exception e)
 		{
@@ -702,6 +708,7 @@ public abstract class WorldImplementation implements World
 		this.worldInfo.save(new File(this.getFolderPath() + "/info.txt"));
 		this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
 		this.internalData.setLong("worldTime", worldTime);
+		this.internalData.setLong("worldTimeInternal", worldTicksCounter);
 		this.internalData.setFloat("overcastFactor", overcastFactor);
 		this.internalData.save();
 	}
@@ -711,7 +718,7 @@ public abstract class WorldImplementation implements World
 		//this.chunksData.destroy();
 		this.chunksHolder.destroy();
 		this.getRegionSummaries().destroy();
-		this.logic.shutdown();
+		//this.logic.shutdown();
 		if (this instanceof WorldMaster)
 		{
 			this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
@@ -754,9 +761,9 @@ public abstract class WorldImplementation implements World
 		if (this instanceof WorldTool)
 			System.out.println("omg this should not happen");
 
-		if (Client.controlledEntity == null)
+		if (Client.getInstance().getControlledEntity() == null)
 			return;
-		Location loc = Client.controlledEntity.getLocation();
+		Location loc = Client.getInstance().getControlledEntity().getLocation();
 		ChunksIterator it = this.getAllLoadedChunks();
 		Chunk chunk;
 		while (it.hasNext())
@@ -769,11 +776,11 @@ public abstract class WorldImplementation implements World
 			}
 			boolean keep = false;
 			//Iterate over possible things that hold chunks in memory
-			if (!keep && Client.controlledEntity != null)
+			if (!keep && Client.getInstance().getControlledEntity() != null)
 			{
 				keep = true;
 				int sizeInChunks = this.getSizeInChunks();
-				int chunksViewDistance = (int) (FastConfig.viewDistance / 32) + 1;
+				int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32) + 1;
 				int pCX = (int) Math.floor(loc.getX() / 32);
 				int pCY = (int) Math.floor(loc.getY() / 32);
 				int pCZ = (int) Math.floor(loc.getZ() / 32);
@@ -998,32 +1005,14 @@ public abstract class WorldImplementation implements World
 		return coordinate;
 	}
 
-	public ParticlesRenderer getParticlesHolder()
+	public ParticlesManager getParticlesManager()
 	{
 		return particlesHolder;
 	}
 
-	public void setParticlesHolder(ParticlesRenderer particlesHolder)
+	public void setParticlesManager(ParticlesRenderer particlesHolder)
 	{
 		this.particlesHolder = particlesHolder;
-	}
-
-	public ParticleData addParticle(ParticleType particleType, ParticleData data)
-	{
-		return particlesHolder.addParticle(particleType, data);
-	}
-
-	public ParticleData addParticle(ParticleType particleType, Vector3d position)
-	{
-		return particlesHolder.addParticle(particleType, new Location(this, position));
-	}
-
-	public void playSoundEffect(String soundEffect, Location location, float pitch, float gain)
-	{
-		if (this instanceof WorldClient)
-		{
-			Client.getInstance().getSoundManager().playSoundEffect(soundEffect, location, pitch, gain);
-		}
 	}
 
 	public WorldChunksHolder getChunksHolder()
@@ -1058,5 +1047,15 @@ public abstract class WorldImplementation implements World
 	public long getTime()
 	{
 		return worldTime;
+	}
+
+	public void setLogicThread(GameLogic gameLogicThread)
+	{
+		this.gameLogicThread = gameLogicThread;
+	}
+	
+	public GameLogic getGameLogic()
+	{
+		return gameLogicThread;
 	}
 }

@@ -67,7 +67,7 @@ public class LevelCreateOverlay extends Overlay
 			WorldInfo info = new WorldInfo(levelName.text, ""+System.currentTimeMillis(), "", WorldSize.MEDIUM, generator);
 			
 			Client.world = new WorldClientLocal(info);
-			Client.world.startLogic();
+			//Client.world.startLogic();
 			this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 		}
 	}

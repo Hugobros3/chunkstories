@@ -83,7 +83,7 @@ public class LevelSelectOverlay extends Overlay
 			if (worldButton.clicked())
 			{
 				Client.world = new WorldClientLocal(worldButton.info);
-				Client.world.startLogic();
+				//Client.world.startLogic();
 				this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 			}
 			int maxWidth = GameWindowOpenGL.windowWidth - 64 * 2;

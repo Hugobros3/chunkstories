@@ -10,7 +10,7 @@ import org.lwjgl.input.Mouse;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBindImplementation;
@@ -50,7 +50,7 @@ public class OptionsOverlay extends Overlay
 		public void apply()
 		{
 			save();
-			FastConfig.define();
+			RenderingConfig.define();
 			if(run != null)
 				run.run();
 		}
@@ -236,23 +236,23 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("shadows_apply").reload(RenderingConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonToggle("doDynamicCubemaps").setApplyAction(new Runnable(){
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("terrain").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("shadows_apply").reload(RenderingConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("terrain").reload(RenderingConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonToggle("doShadows").setApplyAction(new Runnable(){
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("terrain").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("shadows_apply").reload(RenderingConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("terrain").reload(RenderingConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }).setApplyAction(new Runnable(){
@@ -267,16 +267,16 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("blocks_opaque").reload(FastConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("postprocess").reload(FastConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("shadows").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("blocks_opaque").reload(RenderingConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("shadows").reload(RenderingConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonToggle("hqTerrain").setApplyAction(new Runnable(){
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("terrain").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("terrain").reload(RenderingConfig.getShaderConfig());
 					}
 				}),
 				/*new ConfigButtonToggle("rainyMode").setApplyAction(new Runnable(){
@@ -291,10 +291,10 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("blocks_opaque").reload(FastConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("blocks_liquid_pass1").reload(FastConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("blocks_liquid_pass2").reload(FastConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("entities").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("blocks_opaque").reload(RenderingConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("blocks_liquid_pass1").reload(RenderingConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("blocks_liquid_pass2").reload(RenderingConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("entities").reload(RenderingConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonToggle("doClouds").setApplyAction(new Runnable(){
@@ -319,7 +319,7 @@ public class OptionsOverlay extends Overlay
 						GameplayScene gps = ((GameplayScene) mainScene);
 						gps.worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 					}
-					ShadersLibrary.getShaderProgram("postprocess").reload(FastConfig.getShaderConfig()); }
+					ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig()); }
 				}),
 				new ConfigButtonMultiChoice("framerate",new String[] { "30", "60", "120", "-1" }).setApplyAction(new Runnable(){
 					@Override
@@ -382,7 +382,7 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("postprocess").reload(FastConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonToggle("physicsVisualization"),

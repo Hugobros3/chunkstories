@@ -18,7 +18,7 @@ import static org.lwjgl.opengl.GL14.*;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
-import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.base.GameWindowOpenGL;
@@ -117,9 +117,9 @@ public class Texture2D
 		//Generate mipmaps
 		if (mipmapping)
 		{
-			if (FastConfig.openGL3Capable)
+			if (RenderingConfig.openGL3Capable)
 				GL30.glGenerateMipmap(GL_TEXTURE_2D);
-			else if (FastConfig.fbExtCapable)
+			else if (RenderingConfig.fbExtCapable)
 				ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
 			
 			mipmapsUpToDate = true;
@@ -256,9 +256,9 @@ public class Texture2D
 		bind();
 		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 		//Regenerate the mipmaps only when necessary
-		if (FastConfig.openGL3Capable)
+		if (RenderingConfig.openGL3Capable)
 			GL30.glGenerateMipmap(GL_TEXTURE_2D);
-		else if (FastConfig.fbExtCapable)
+		else if (RenderingConfig.fbExtCapable)
 			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
 
 		mipmapsUpToDate = true;

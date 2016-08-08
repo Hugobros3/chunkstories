@@ -9,7 +9,7 @@ import java.util.List;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class FastConfig
+public class RenderingConfig
 {
 	// This class hold often-used values
 

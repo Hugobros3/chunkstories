@@ -10,6 +10,7 @@ import java.util.Map;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
@@ -35,7 +36,7 @@ import io.xol.engine.math.lalgb.Vector4f;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class DecalsRenderer
+public class DecalsRenderer implements DecalsManager
 {
 	int MAX_CONCURRENT_DECAL_TYPES = 16;
 	int DECALS_BUFFER_SIZE = 4 * (3 + 2) * (3 * 2) * 4096;

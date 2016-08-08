@@ -140,7 +140,7 @@ public class ChatPanel
 					{
 						int id = Integer.parseInt(inputBox.text.split(" ")[1]);
 						Entity test = EntitiesList.newEntity(Client.world, (short) id);
-						Entity player = Client.controlledEntity;
+						Entity player = Client.getInstance().getControlledEntity();
 						test.setLocation(player.getLocation());
 						Client.world.addEntity(test);
 					}
@@ -152,7 +152,7 @@ public class ChatPanel
 					{
 						Entity e = ie.next();
 						System.out.println("checking " + e);
-						if (!e.equals(Client.controlledEntity))
+						if (!e.equals(Client.getInstance().getControlledEntity()))
 						{
 							System.out.println("removing");
 							ie.remove();
@@ -165,7 +165,7 @@ public class ChatPanel
 				}
 				else if (inputBox.text.startsWith("/locfly"))
 				{
-					Entity controlledEntity = Client.controlledEntity;
+					Entity controlledEntity = Client.getInstance().getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityFlying)
 					{
 						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().isFlying();
@@ -177,7 +177,7 @@ public class ChatPanel
 				}
 				else if (inputBox.text.startsWith("/locfly"))
 				{
-					Entity controlledEntity = Client.controlledEntity;
+					Entity controlledEntity = Client.getInstance().getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityFlying)
 					{
 						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().isFlying();
@@ -189,7 +189,7 @@ public class ChatPanel
 				}
 				else if (inputBox.text.startsWith("/kkk"))
 				{
-					Entity controlledEntity = Client.controlledEntity;
+					Entity controlledEntity = Client.getInstance().getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityRotateable)
 					{
 						 ((EntityRotateable) controlledEntity).getEntityRotationComponent().setRotation(180, 0);

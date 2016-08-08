@@ -5,6 +5,7 @@ import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.chunkstories.api.particles.ParticleData;
+import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -20,9 +21,9 @@ public class ParticleBlood extends ParticleType
 		super(id, name);
 	}
 
-	public class BloodData extends ParticleData {
+	public class BloodData extends ParticleData implements ParticleDataWithVelocity {
 		
-		int timer = 60 * 30; // 30s
+		int timer = 60 * 5; // 5s
 		Vector3d vel = new Vector3d();
 		
 		public BloodData(float x, float y, float z)

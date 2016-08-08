@@ -1,5 +1,6 @@
 package io.xol.chunkstories.gui;
 
+import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 
@@ -34,15 +35,19 @@ import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientInputsManager;
-import io.xol.chunkstories.client.FastConfig;
+import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.content.sandbox.GameLogicThread;
+import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
+import io.xol.chunkstories.gui.menus.DeathOverlay;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
+import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.SelectionRenderer;
@@ -59,6 +64,8 @@ import io.xol.chunkstories.world.chunk.ChunkRenderable;
 
 public class GameplayScene extends OverlayableScene
 {
+	//Gameplay thread
+
 	// Renderer
 	public WorldRenderer worldRenderer;
 	SelectionRenderer selectionRenderer;
@@ -80,15 +87,17 @@ public class GameplayScene extends OverlayableScene
 		if (Client.world == null)
 			w.changeScene(new MainMenu(w, false));
 
+		Client.worldThread = new GameLogicThread(Client.world, new UnthrustedUserContentSecurityManager());
+
 		//Spawn manually the player if we're in Singleplayer
 		//TODO this should be managed by a proper localhost server rather than this appalling hack
 		if (!multiPlayer)
 		{
 			//TODO remember a proper spawn location
-			Client.controlledEntity = new EntityPlayer(Client.world, 0, 100, 0, Client.username);
+			Client.getInstance().setControlledEntity(new EntityPlayer(Client.world, 0, 100, 0, Client.username));
 
-			((EntityControllable) Client.controlledEntity).getControllerComponent().setController(Client.getInstance());
-			Client.world.addEntity(Client.controlledEntity);
+			((EntityControllable) Client.getInstance().getControlledEntity()).getControllerComponent().setController(Client.getInstance());
+			Client.world.addEntity(Client.getInstance().getControlledEntity());
 		}
 
 		//Creates the rendering stuff
@@ -110,17 +119,25 @@ public class GameplayScene extends OverlayableScene
 	public void update(RenderingContext renderingContext)
 	{
 		// Update client entity
-		if ((player == null || player != Client.controlledEntity) && Client.controlledEntity != null)
+		if ((player == null || player != Client.getInstance().getControlledEntity()) && Client.getInstance().getControlledEntity() != null)
 		{
-			player = Client.controlledEntity;
+			player = Client.getInstance().getControlledEntity();
 			if (player instanceof EntityWithSelectedItem)
 				inventoryDrawer = ((EntityWithSelectedItem) player).getInventory() == null ? null : new InventoryDrawer((EntityWithSelectedItem) player);
 			else
 				inventoryDrawer = null;
 		}
 
+		if(player != null && ((EntityLiving)player).isDead() && !(this.currentOverlay instanceof DeathOverlay))
+		{
+			System.out.println("You dieded");
+			this.changeOverlay(new DeathOverlay(this, null));
+			//player = null;
+		}
+		//if (Client.getInstance().getControlledEntity() == null)
+		
 		//Get the player location
-		Location loc = player.getLocation();
+		Vector3d cameraPosition = renderingContext.getCamera().getCameraPosition();
 
 		// Update the player
 		if (player instanceof EntityControllable)
@@ -140,12 +157,13 @@ public class GameplayScene extends OverlayableScene
 			// System.out.println(Math.sin(transformedViewV)+"f");
 			Vector3f viewerCamDirVector = new Vector3f((float) (Math.sin((-camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)),
 					(float) (Math.cos((-camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)));
-			Vector3f lightPosition = new Vector3f((float) loc.getX(), (float) loc.getY() + (float) ((EntityPlayer) this.player).eyePosition, (float) loc.getZ());
+			Vector3f lightPosition = new Vector3f((float) cameraPosition.getX(), (float) cameraPosition.getY(), (float) cameraPosition.getZ());
 			viewerCamDirVector.scale(-0.5f);
 			Vector3f.add(viewerCamDirVector, lightPosition, lightPosition);
 			viewerCamDirVector.scale(-1f);
 			viewerCamDirVector.normalise();
 
+			//System.out.println("fl");
 			worldRenderer.getRenderingContext().addLight(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 35f, 35f, viewerCamDirVector));
 
 			//if (Keyboard.isKeyDown(Keyboard.KEY_F5))
@@ -153,19 +171,20 @@ public class GameplayScene extends OverlayableScene
 			//			.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedSpotLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 20f, viewerCamDirVector)));
 		}
 		//Main render call
+		
 		worldRenderer.renderWorldAtCamera(camera);
 
 		if (selectedBlock != null && player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().isCreativeMode())
 			selectionRenderer.drawSelectionBox(selectedBlock);
 
 		//Debug draws
-		if (FastConfig.physicsVisualization && player != null)
+		if (RenderingConfig.physicsVisualization && player != null)
 		{
 			int id, data;
 			int drawDebugDist = 6;
-			for (int i = ((int) loc.getX()) - drawDebugDist; i <= ((int) loc.getX()) + drawDebugDist; i++)
-				for (int j = ((int) loc.getY()) - drawDebugDist; j <= ((int) loc.getY()) + drawDebugDist; j++)
-					for (int k = ((int) loc.getZ()) - drawDebugDist; k <= ((int) loc.getZ()) + drawDebugDist; k++)
+			for (int i = ((int) cameraPosition.getX()) - drawDebugDist; i <= ((int) cameraPosition.getX()) + drawDebugDist; i++)
+				for (int j = ((int) cameraPosition.getY()) - drawDebugDist; j <= ((int) cameraPosition.getY()) + drawDebugDist; j++)
+					for (int k = ((int) cameraPosition.getZ()) - drawDebugDist; k <= ((int) cameraPosition.getZ()) + drawDebugDist; k++)
 					{
 						data = Client.world.getVoxelData(i, j, k);
 						id = VoxelFormat.id(data);
@@ -182,9 +201,6 @@ public class GameplayScene extends OverlayableScene
 				for (CollisionBox b : ie.next().getTranslatedCollisionBoxes())
 					b.debugDraw(0, 1, 1, 1);
 			}
-
-			//ie.next().debugDraw();
-			//glEnable(GL_DEPTH_TEST);
 		}
 		//Cubemap rendering trigger (can't run it while main render is occuring)
 		if (shouldCM)
@@ -198,7 +214,7 @@ public class GameplayScene extends OverlayableScene
 		//Draw the GUI
 		if (!guiHidden)
 		{
-			if (FastConfig.showDebugInfo)
+			if (RenderingConfig.showDebugInfo)
 				debug();
 
 			//Draw chat
@@ -210,25 +226,25 @@ public class GameplayScene extends OverlayableScene
 				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, GameWindowOpenGL.windowWidth / 2 - 7, 64 + 64);
 
 			//Draw health
-			if(player != null && player instanceof EntityLiving)
+			if (player != null && player instanceof EntityLiving)
 			{
-				EntityLiving livingPlayer = (EntityLiving)player;
-				
+				EntityLiving livingPlayer = (EntityLiving) player;
+
 				float scale = 2.0f;
-				
+
 				TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").setLinearFiltering(false);
-				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale
-						, 256 * scale, 32 * scale, 0, 32f / 256f, 1, 0, TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId(), false, true, null);
-				
+				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale, 256 * scale, 32 * scale, 0, 32f / 256f, 1, 0,
+						TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId(), false, true, null);
+
 				int horizontalBitsToDraw = (int) (8 + 118 * livingPlayer.getHealth() / livingPlayer.getMaxHealth());
-				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale
-						, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f, 32f / 256f, TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId(), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
-				
+				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f,
+						32f / 256f, TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId(), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
+
 				//System.out.println(TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId());
-				
+
 				//ObjectRenderer.renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 256, 256, 0, 0, 16, 16, 16, "internal://./res/textures/gui/hud/hud_survival.png");
 			}
-			
+
 			/*if (Keyboard.isKeyDown(78))
 				Client.world.worldTime += 10;
 			if (Keyboard.isKeyDown(74))
@@ -247,7 +263,7 @@ public class GameplayScene extends OverlayableScene
 
 		}
 		Client.profiler.reset("gui");
-		
+
 		super.update(renderingContext);
 		// Check connection didn't died and change scene if it has
 		if (Client.connection != null)
@@ -296,17 +312,15 @@ public class GameplayScene extends OverlayableScene
 				focus(false);
 				return true;
 			}
-			
+
 			ClientInputPressedEvent event = new ClientInputPressedEvent(keyBind);
 
-			Client.pluginsManager.fireEvent(event);
+			Client.getInstance().getPluginsManager().fireEvent(event);
 			if (event.isCancelled())
 				return true;
 			//else if (((EntityControllable) this.player).handleInteraction(keyBind, Client.getInstance()))
 			//	return true;
 		}
-
-		Location loc = player.getLocation();
 
 		//Function keys
 		if (keyCode == Keyboard.KEY_F1)
@@ -317,9 +331,7 @@ public class GameplayScene extends OverlayableScene
 			chat.insert(worldRenderer.screenShot());
 		else if (keyCode == Keyboard.KEY_F3)
 		{
-			//Client.getSoundManager().playSoundEffect("music/menu3.ogg", (float)loc.x, (float)loc.y, (float)loc.z, 1.0f, 1.0f);
-			//Client.getSoundManager().stopAnySound();
-			//Client.getSoundManager().playMusic("music/radio/horse.ogg", (float) loc.x, (float) loc.y, (float) loc.z, 1.0f, 1.0f, false).setAttenuationEnd(50f);
+			RenderingConfig.showDebugInfo = !RenderingConfig.showDebugInfo;
 		}
 		else if (keyCode == Keyboard.KEY_F4)
 		{
@@ -341,16 +353,17 @@ public class GameplayScene extends OverlayableScene
 		//Redraw chunks
 		else if (keyCode == 19)
 		{
-			Client.world.getParticlesHolder().cleanAllParticles();
+			((ParticlesRenderer) Client.world.getParticlesManager()).cleanAllParticles();
 			Client.world.redrawEverything();
 			worldRenderer.chunksRenderer.clear();
 			ChunksRenderer.renderStart = System.currentTimeMillis();
 			worldRenderer.flagModified();
 		}
 		//TODO move this to core content plugin
-		else if (Client.getInstance().getInputsManager().getInputByName("use").equals(keyBind))
+		else if (Client.getInstance().getInputsManager().getInputByName("use").equals(keyBind) && player != null)
 		{
-			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) loc.getX(), (float) loc.getY(), (float) loc.getZ(), 1.0f, 1.0f);
+			Location cameraPosition = player.getLocation();
+			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) cameraPosition.getX(), (float) cameraPosition.getY(), (float) cameraPosition.getZ(), 1.0f, 1.0f);
 			flashLight = !flashLight;
 		}
 		else if (Client.getInstance().getInputsManager().getInputByName("inventory").equals(keyBind))
@@ -380,7 +393,7 @@ public class GameplayScene extends OverlayableScene
 		{
 			ClientInputReleasedEvent event = new ClientInputReleasedEvent(keyBind);
 
-			Client.pluginsManager.fireEvent(event);
+			Client.getInstance().getPluginsManager().fireEvent(event);
 			return true;
 		}
 
@@ -413,7 +426,7 @@ public class GameplayScene extends OverlayableScene
 		{
 			ClientInputPressedEvent event = new ClientInputPressedEvent(mButton);
 			if (mButton != null)
-				Client.pluginsManager.fireEvent(event);
+				Client.getInstance().getPluginsManager().fireEvent(event);
 			//if (!event.isCancelled())
 			//	return ((EntityControllable) this.player).handleInteraction(mButton, Client.getInstance());
 		}
@@ -441,7 +454,7 @@ public class GameplayScene extends OverlayableScene
 		{
 			ClientInputReleasedEvent event = new ClientInputReleasedEvent(mButton);
 			if (mButton != null)
-				Client.pluginsManager.fireEvent(event);
+				Client.getInstance().getPluginsManager().fireEvent(event);
 		}
 
 		return false;
@@ -496,7 +509,10 @@ public class GameplayScene extends OverlayableScene
 	public void destroy()
 	{
 		Client.world.destroy();
+		Client.worldThread.stopLogicThread();
+		
 		this.worldRenderer.destroy();
+		
 		if (Client.connection != null)
 		{
 			Client.connection.close();
@@ -523,39 +539,39 @@ public class GameplayScene extends OverlayableScene
 		int cy = by / 32;
 		int cz = bz / 32;
 		int csh = Client.world.getRegionSummaries().getHeightAtWorldCoordinates(bx, bz);
-		
-		float angleX = Math.round(((EntityLiving) player).getEntityRotationComponent().getHorizontalRotation());
+
+		float angleX = -1;
+		if (player != null && player instanceof EntityLiving)
+			angleX = Math.round(((EntityLiving) player).getEntityRotationComponent().getHorizontalRotation());
 		//float angleY = Math.round(((EntityLiving) player).getEntityRotationComponent().getVerticalRotation());
 		double dx = Math.sin(angleX / 360 * 2.0 * Math.PI);
 		double dz = Math.cos(angleX / 360 * 2.0 * Math.PI);
-		
+
 		VoxelSides side = VoxelSides.TOP;
 
 		//System.out.println("dx: "+dx+" dz:" + dz);
-		
+
 		if (Math.abs(dx) > Math.abs(dz))
 		{
-			if(dx > 0)
+			if (dx > 0)
 				side = VoxelSides.RIGHT;
 			else
 				side = VoxelSides.LEFT;
 		}
 		else
 		{
-			if(dz > 0)
+			if (dz > 0)
 				side = VoxelSides.FRONT;
 			else
 				side = VoxelSides.BACK;
 		}
-		
+
 		//Location selectedBlockLocation = ((EntityControllable) player).getBlockLookingAt(false);
-		
-		
+
 		Chunk current = Client.world.getChunk(cx, cy, cz, false);
 		int x_top = GameWindowOpenGL.windowHeight - 16;
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, "View distance : " + FastConfig.viewDistance + GLCalls.getStatistics() + " Chunks in view : "
-				+ formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :" + Client.world.getParticlesHolder().count() + " #FF0000FPS : " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0,
-				BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, "View distance : " + RenderingConfig.viewDistance + GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :"
+				+ ((ParticlesRenderer) Client.world.getParticlesManager()).count() + " #FF0000FPS : " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0, BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Timings : " + debugInfo, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + Client.world.getChunksHolder().countChunksWithData() + "/"
@@ -572,10 +588,10 @@ public class GameplayScene extends OverlayableScene
 		//FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram + "Mb as " + Texture2D.getTotalNumberOfTextureObjects() + " textures using " + Texture2D.getTotalVramUsage() / 1024 / 1024 + "Mb + "
 		//		+ VerticesObject.getTotalNumberOfVerticesObjects() + " Vertices objects using " + VerticesObject.getTotalVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
 
-		
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16,
 				"Chunks to bake : T : " + worldRenderer.chunksRenderer.todoQueue.size() + "   Chunks to upload: " + worldRenderer.chunksRenderer.doneQueue.size() + "    " + Client.world.ioHandler.toString(), BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16, "Position : x:" + bx + " y:" + by + " z:" + bz + " dir: "+angleX+" side: "+side+" Block looking at : bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16,
+				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " Block looking at : bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
 		if (current == null)
 			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk null", BitmapFont.SMALLFONTS);
 		else if (current instanceof ChunkRenderable)
@@ -588,9 +604,13 @@ public class GameplayScene extends OverlayableScene
 			else
 				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk : " + current + " - No rendering data", BitmapFont.SMALLFONTS);
 		}
+		
+
+		if (player != null && player instanceof EntityLiving)
+		{
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Holder : " + this.player.getWorld().getRegionChunkCoordinates(cx, cy, cz), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 9 * 16, 0, 16, "Controller : " + this.player, BitmapFont.SMALLFONTS);
-
+		}
 	}
 
 	@SuppressWarnings("unused")
@@ -606,7 +626,7 @@ public class GameplayScene extends OverlayableScene
 			c = i.next();
 			if (c == null)
 				continue;
-			/*if (c instanceof ChunkRenderable)
+			if (c instanceof ChunkRenderable)
 			{
 				ChunkRenderData chunkRenderData = ((ChunkRenderable)c).getChunkRenderData();
 				if (chunkRenderData != null)
@@ -614,7 +634,7 @@ public class GameplayScene extends OverlayableScene
 					nbChunks++;
 					octelsTotal += chunkRenderData.getVramUsage();
 				}
-			}*/
+			}
 		}
 		return nbChunks + " chunks, storing " + octelsTotal / 1024 / 1024 + "Mb of vertex data.";
 	}
