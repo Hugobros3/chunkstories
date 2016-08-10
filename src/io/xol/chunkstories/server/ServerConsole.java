@@ -2,6 +2,9 @@ package io.xol.chunkstories.server;
 
 import java.util.Iterator;
 
+import static org.fusesource.jansi.Ansi.*;
+import static org.fusesource.jansi.Ansi.Color.*;
+
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
@@ -53,9 +56,12 @@ public class ServerConsole
 			}
 			else if (cmd.equals("info"))
 			{
+				//System.out.println("<<CUCK SUPRÊME>>");
 				emitter.sendMessage("#00FFD0The server's ip is " + server.getHandler().getIP());
 				emitter.sendMessage("#00FFD0It's running version " + VersionInfo.version + " of the server software.");
 				emitter.sendMessage("#00FFD0" + server.getWorld().getChunksHolder().toString());
+				emitter.sendMessage("#00FFD0" + server.getWorld().ioHandler);
+				emitter.sendMessage("#00FFD0" + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "Mb used out of " + Runtime.getRuntime().maxMemory() / 1024 / 1024 + "Mb allocated");
 				return true;
 			}
 			else if (cmd.equals("help"))
@@ -106,6 +112,7 @@ public class ServerConsole
 			else if (cmd.equals("io"))
 			{
 				emitter.sendMessage("#00FFD0" + server.getWorld().ioHandler);
+				server.getWorld().ioHandler.dumpIOTaks();
 				return true;
 			}
 			else if (cmd.equals("entities"))
@@ -120,7 +127,6 @@ public class ServerConsole
 			}
 			else if (cmd.equals("tim"))
 			{
-
 				emitter.sendMessage("#FFDD00" + ((Player) emitter).getLocation().getWorld());
 
 				return true;

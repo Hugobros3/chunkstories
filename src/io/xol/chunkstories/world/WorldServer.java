@@ -7,16 +7,18 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.server.Player;
-import io.xol.chunkstories.api.world.Chunk;
-import io.xol.chunkstories.api.world.ChunksIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.core.events.PlayerSpawnEvent;
 import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
 import io.xol.chunkstories.server.Server;
-import io.xol.chunkstories.server.VirtualServerSoundManager;
 import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
+import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
+import io.xol.chunkstories.server.propagation.VirtualServerSoundManager;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerServer;
 import io.xol.engine.math.LoopingMathHelper;
@@ -68,7 +70,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				for (int cx = chunkX - 4; cx < chunkX + 4; cx++)
 					for (int cy = chunkY - 2; cy < chunkY + 2; cy++)
 						for (int cz = chunkZ - 4; cz < chunkZ + 4; cz++)
-							this.getChunk(chunkX, chunkY, chunkZ, true);
+							this.getChunkChunkCoordinates(chunkX, chunkY, chunkZ, true);
 
 				//System.out.println("chunk:"+this.getChunk(chunkX, chunkY, chunkZ, true));
 				//System.out.println("holder:"+client.getProfile().getControlledEntity().getChunkHolder());
@@ -125,12 +127,12 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			int z = Integer.parseInt(split[3]);
 			((IOTasksMultiplayerServer) ioHandler).requestCompressedChunkSend(x, y, z, sender);
 		}
-		if (message.startsWith("getChunkSummary"))
+		if (message.startsWith("getChunkSummary") || message.startsWith("getRegionSummary"))
 		{
 			String[] split = message.split(":");
 			int x = Integer.parseInt(split[1]);
 			int z = Integer.parseInt(split[2]);
-			((IOTasksMultiplayerServer) ioHandler).requestChunkSummary(x, z, sender);
+			((IOTasksMultiplayerServer) ioHandler).requestRegionSummary(x, z, sender);
 		}
 	}
 

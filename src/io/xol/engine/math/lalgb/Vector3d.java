@@ -217,4 +217,18 @@ public class Vector3d
 	{
 		return new Vector3d(getX(), getY(), getZ());
 	}
+	
+	public boolean equals(Object o)
+	{
+		if(!(o instanceof Vector3d))
+			return false;
+		
+		Vector3d vec = (Vector3d)o;
+		return vec.x == x && vec.y == y && vec.z == z;
+	}
+	
+	public int hashCode()
+	{
+		return 1024 * (int)x + 32 * (int)y + (int)z;
+	}
 }

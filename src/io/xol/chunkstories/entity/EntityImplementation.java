@@ -23,8 +23,8 @@ import io.xol.chunkstories.api.exceptions.IllegalUUIDChangeException;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -158,7 +158,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public String toString()
 	{
-		return "[" + this.getClass().getSimpleName() + " holder: "+position.getRegionWithin()+" pos : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Region:" + this.position.getRegionWithin() + " ]";
+		return "[" + this.getClass().getSimpleName() + ": holderExists: "+(position.getRegionWithin() != null)+" ,position : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Region:" + this.position.getRegionWithin().getRegionX() + ", " + this.position.getRegionWithin().getRegionY() + ", " + this.position.getRegionWithin().getRegionZ() + " ]";
 	}
 
 	double clampDouble(double d)
@@ -551,7 +551,7 @@ public abstract class EntityImplementation implements Entity
 		
 			//Removes it's reference within the region
 			if(this.position.getRegionWithin() != null)
-				this.position.getRegionWithin().removeEntity(this);
+				this.position.getRegionWithin().removeEntityFromRegion(this);
 			
 			//Actually removes it from the world list
 			if(this.world != null)

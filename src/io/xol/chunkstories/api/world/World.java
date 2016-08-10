@@ -10,6 +10,9 @@ import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunksIterator;
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
 
 import io.xol.chunkstories.world.WorldInfo;
@@ -21,9 +24,22 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public interface World
 {
-	/*
-	 * Entities management
+	public WorldInfo getWorldInfo();
+	
+	/**
+	 * @return The height of the world, default worlds are 1024
 	 */
+	public int getMaxHeight();
+
+	/**
+	 * @return The size of the side of the world, divided by 32
+	 */
+	public int getSizeInChunks();
+
+	/**
+	 * @return The size of the side of the world
+	 */
+	public double getWorldSize();
 	
 	/**
 	 * Adds an entity to the world, the entity location is supposed to be already defined
@@ -41,7 +57,13 @@ public interface World
 	 * Removes an entity from the world, based on UUID
 	 * @param entity
 	 */
-	public boolean removeEntity(long uuid);
+	public boolean removeEntityByUUID(long uuid);
+
+	/**
+	 * @param entityID a valid UUID
+	 * @return null if it can't be found
+	 */
+	public Entity getEntityByUUID(long uuid);
 
 	/**
 	 * Returns an iterator containing all the loaded entities.
@@ -50,38 +72,6 @@ public interface World
 	 */
 	public Iterator<Entity> getAllLoadedEntities();
 
-	/**
-	 * @param entityID a valid UUID
-	 * @return null if it can't be found
-	 */
-	public Entity getEntityByUUID(long uuid);
-
-	/*
-	 * World parameters
-	 */
-	
-	/**
-	 * As of the current version of the game, this is internally set to 1024
-	 * @return
-	 */
-	public int getMaxHeight();
-
-	/**
-	 * Return the world size devided by 32.
-	 * @return
-	 */
-	public int getSizeInChunks();
-
-	/**
-	 * Return the world size (length of each square side)
-	 * @return
-	 */
-	public double getWorldSize();
-
-	/*
-	 * Get data
-	 */
-	
 	/**
 	 * Returns the block data at the specified location
 	 * Will try to load/generate the chunks if not alreay in ram
@@ -179,10 +169,6 @@ public interface World
 	public int getBlocklightLevel(int x, int y, int z);
 
 	public int getBlocklightLevel(Location location);
-
-	/*
-	 * Chunks
-	 */
 	
 	public ChunksIterator getAllLoadedChunks();
 	
@@ -218,7 +204,7 @@ public interface World
 	 * @param load
 	 * @return
 	 */
-	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
+	public Chunk getChunkChunkCoordinates(int chunkX, int chunkY, int chunkZ, boolean load);
 
 	public Chunk getChunkWorldCoordinates(int worldX, int worldY, int worldZ, boolean load);
 	
@@ -256,6 +242,16 @@ public interface World
 	 */
 	public void destroy();
 
+	public Location getDefaultSpawnLocation();
+
+	/**
+	 * Sets the time of the World. By default the time is set at 5000 and it uses a 10.000 cycle, 0 being midnight and 5000 being midday
+	 * @param time
+	 */
+	public void setTime(long time);
+
+	public long getTime();
+
 	/**
 	 * The weather is represented by a normalised float value
 	 * 0.0 equals dead dry
@@ -272,20 +268,12 @@ public interface World
 
 	public void setWeather(float overcastFactor);
 
-	public Location getDefaultSpawnLocation();
-
-	/**
-	 * Sets the time of the World. By default the time is set at 5000 and it uses a 10.000 cycle, 0 being midnight and 5000 being midday
-	 * @param time
-	 */
-	public void setTime(long time);
-
 	/**
 	 * Game-logic function. Not something you'd be supposed to call
 	 */
 	public void tick();
-
-	public WorldGenerator getGenerator();
+	
+	public long getTicksElapsed();
 
 	/**
 	 * Called when some controllable entity try to interact with the world
@@ -332,9 +320,7 @@ public interface World
 	 */
 	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3d initialPosition, Vector3d direction, double limit);
 	
-	/*
-	 * Fx
-	 */
+	public WorldGenerator getGenerator();
 	
 	public DecalsManager getDecalsManager();
 	
@@ -343,10 +329,6 @@ public interface World
 	public SoundManager getSoundManager();
 
 	public RegionSummaries getRegionSummaries();
-
-	public WorldInfo getWorldInfo();
-
-	public long getTime();
-
+	
 	public GameLogic getGameLogic();
 }

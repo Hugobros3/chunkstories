@@ -9,10 +9,9 @@ import io.xol.chunkstories.api.csf.StreamSource;
 import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
-import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
-
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -152,12 +151,12 @@ public class EntityComponentPosition extends EntityComponent
 			//System.out.println(entity.getUUID() + "region changed "+pos + "wtf" + entity);
 			
 			if(regionWithin != null)
-				regionWithin.removeEntity(entity);
+				regionWithin.removeEntityFromRegion(entity);
 		
 			regionWithin = entity.getWorld().getRegionChunkCoordinates(regionX * 8, regionY * 8, regionZ * 8);
 			//When the region is loaded, add this entity to it.
 			if(regionWithin != null)// && regionWithin.isDiskDataLoaded())
-				regionWithin.addEntity(entity);
+				regionWithin.addEntityToRegion(entity);
 			
 			return true;
 		}

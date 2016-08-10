@@ -2,8 +2,8 @@ package io.xol.chunkstories.world.iterators;
 
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.world.Chunk;
-import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 

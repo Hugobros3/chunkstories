@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.core.entity.components.EntityComponentAnimation;
 import io.xol.chunkstories.core.entity.components.EntityComponentHealth;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
-import io.xol.chunkstories.core.events.EntityDeathEvent;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;

@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
-import io.xol.chunkstories.net.packets.PacketChunkSummary;
+import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
@@ -49,7 +49,6 @@ public class IOTasksMultiplayerServer extends IOTasks
 			try
 			{
 				//Don't bother if the client died.
-				
 				if(!client.isAlive())
 					return true;
 				
@@ -121,12 +120,12 @@ public class IOTasksMultiplayerServer extends IOTasks
 		addTask(task);
 	}
 	
-	class IOTaskSendChunkSummary extends IOTask
+	class IOTaskSendRegionSummary extends IOTask
 	{
 		ServerClient client;
 		int rx, rz;
 		
-		public IOTaskSendChunkSummary(int x, int z, ServerClient client)
+		public IOTaskSendRegionSummary(int x, int z, ServerClient client)
 		{
 			this.client = client;
 			this.rx = x;
@@ -138,11 +137,15 @@ public class IOTasksMultiplayerServer extends IOTasks
 		{
 			try
 			{
+				//Don't bother if the client died.
+				if(!client.isAlive())
+					return true;
+				
 				RegionSummary summary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(rx * 256, rz * 256);
 				//System.out.println("Asking for summary at : "+rx+":"+rz);
 				if(summary.summaryLoaded.get())
 				{
-					PacketChunkSummary packet = new PacketChunkSummary(false);
+					PacketRegionSummary packet = new PacketRegionSummary(false);
 					packet.summary = summary;
 					client.pushPacket(packet);
 					return true;
@@ -160,9 +163,9 @@ public class IOTasksMultiplayerServer extends IOTasks
 		}
 	}
 
-	public void requestChunkSummary(int x, int z, ServerClient sender)
+	public void requestRegionSummary(int x, int z, ServerClient sender)
 	{
-		IOTaskSendChunkSummary task = new IOTaskSendChunkSummary(x, z, sender);
+		IOTaskSendRegionSummary task = new IOTaskSendRegionSummary(x, z, sender);
 		addTask(task);
 	}
 }

@@ -83,12 +83,12 @@ public class RegionSummary
 
 	private void loadSummary()
 	{
-		this.world.ioHandler.requestChunkSummaryLoad(this);
+		this.world.ioHandler.requestRegionSummaryLoad(this);
 	}
 
 	public void saveSummary()
 	{
-		this.world.ioHandler.requestChunkSummarySave(this);
+		this.world.ioHandler.requestRegionSummarySave(this);
 	}
 
 	private int index(int x, int z)

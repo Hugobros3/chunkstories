@@ -76,7 +76,7 @@ void main()
 	float heightCoveredEnd = texture2D(loadedChunksMapTop,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 + 32.0;
 	
 	//Discards the fragment if it is within
-	if(vertexPassed.y-5.0 > heightCoveredStart && vertexPassed.y+5.0-32.0 < heightCoveredEnd && ignoreWorldCulling < 1.0)
+	if(vertexPassed.y+0.0 > heightCoveredStart && vertexPassed.y-0.0-32.0 < heightCoveredEnd && ignoreWorldCulling < 1.0)
 		discard;
 
 	//int voxelDataActual = voxelData;

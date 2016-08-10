@@ -22,6 +22,7 @@
             <zipfileset dir="${dir.jarfile}/lib" includes="PNGDecoder.jar"/>
             <zipfileset dir="${dir.jarfile}/lib" includes="jorbis.jar"/>
             <zipfileset dir="${dir.jarfile}/lib" includes="json-simple-1.1.1.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="jansi-1.12.jar"/>
         </jar>
     </target>
 </project>

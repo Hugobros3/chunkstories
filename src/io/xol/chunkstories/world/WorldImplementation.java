@@ -17,13 +17,13 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
-import io.xol.chunkstories.api.world.Chunk;
-import io.xol.chunkstories.api.world.ChunksIterator;
-import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunksIterator;
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameDirectory;
@@ -216,7 +216,7 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public boolean removeEntity(long uuid)
+	public boolean removeEntityByUUID(long uuid)
 	{
 		Entity entityFound = null;
 		Iterator<Entity> iter = this.getAllLoadedEntities();
@@ -253,13 +253,8 @@ public abstract class WorldImplementation implements World
 		//Place the entire tick() method in a try/catch
 		try
 		{
-			/*if (this instanceof WorldNetworked)
-			{
-				//TODO net logic has nothing to do in world logic, it should be handled elsewere !!!
-				//Deal with packets we received
-				((WorldNetworked) this).processIncommingPackets();
-			}*/
-
+			
+			
 			//Iterates over every entity
 			entitiesLock.lock();
 			Iterator<Entity> iter = this.getAllLoadedEntities();
@@ -290,10 +285,10 @@ public abstract class WorldImplementation implements World
 			if (getParticlesManager() != null && getParticlesManager() instanceof ParticlesRenderer)
 				((ParticlesRenderer) getParticlesManager()).updatePhysics();
 
-			//Increase the time
-			
+			//Increase the ticks counter
 			worldTicksCounter++;
 			
+			//Time cycle
 			if (this instanceof WorldMaster && internalData.getBoolean("doTimeCycle", true))
 				if(worldTicksCounter % 60 == 0)
 					worldTime++;
@@ -347,10 +342,10 @@ public abstract class WorldImplementation implements World
 
 	public Chunk getChunkWorldCoordinates(int worldX, int worldY, int worldZ, boolean load)
 	{
-		return getChunk(worldX / 32, worldY / 32, worldZ / 32, load);
+		return getChunkChunkCoordinates(worldX / 32, worldY / 32, worldZ / 32, load);
 	}
 
-	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load)
+	public Chunk getChunkChunkCoordinates(int chunkX, int chunkY, int chunkZ, boolean load)
 	{
 		chunkX = chunkX % getSizeInChunks();
 		chunkZ = chunkZ % getSizeInChunks();
@@ -631,7 +626,7 @@ public abstract class WorldImplementation implements World
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		if (this.isChunkLoaded(x / 32, y / 32, z / 32) && !this.getChunk(x / 32, y / 32, z / 32, false).isAirChunk())
+		if (this.isChunkLoaded(x / 32, y / 32, z / 32) && !this.getChunkChunkCoordinates(x / 32, y / 32, z / 32, false).isAirChunk())
 			return VoxelFormat.sunlight(this.getVoxelData(x, y, z));
 		else
 			return y <= this.getRegionSummaries().getHeightAtWorldCoordinates(x, z) ? 0 : 15;
@@ -665,7 +660,7 @@ public abstract class WorldImplementation implements World
 	{
 		if (this.isChunkLoaded(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ()))
 		{
-			Chunk oldchunk = this.getChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ(), false);
+			Chunk oldchunk = this.getChunkChunkCoordinates(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ(), false);
 			//if (oldchunk.dataPointer != chunk.dataPointer)
 			oldchunk.destroy();
 
@@ -712,21 +707,7 @@ public abstract class WorldImplementation implements World
 		this.internalData.setFloat("overcastFactor", overcastFactor);
 		this.internalData.save();
 	}
-
-	public void destroy()
-	{
-		//this.chunksData.destroy();
-		this.chunksHolder.destroy();
-		this.getRegionSummaries().destroy();
-		//this.logic.shutdown();
-		if (this instanceof WorldMaster)
-		{
-			this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
-			this.internalData.save();
-		}
-		ioHandler.kill();
-	}
-
+	
 	public ChunksIterator getAllLoadedChunks()
 	{
 		return new WorldChunksIterator(this);
@@ -1049,6 +1030,11 @@ public abstract class WorldImplementation implements World
 		return worldTime;
 	}
 
+	public long getTicksElapsed()
+	{
+		return this.worldTicksCounter;
+	}
+
 	public void setLogicThread(GameLogic gameLogicThread)
 	{
 		this.gameLogicThread = gameLogicThread;
@@ -1058,4 +1044,19 @@ public abstract class WorldImplementation implements World
 	{
 		return gameLogicThread;
 	}
+
+	public void destroy()
+	{
+		//this.chunksData.destroy();
+		this.chunksHolder.destroy();
+		this.getRegionSummaries().destroy();
+		//this.logic.shutdown();
+		if (this instanceof WorldMaster)
+		{
+			this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
+			this.internalData.save();
+		}
+		ioHandler.kill();
+	}
+
 }

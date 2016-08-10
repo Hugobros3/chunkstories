@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.xol.chunkstories.api.world.Region;
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
-import io.xol.chunkstories.net.packets.PacketChunkSummary;
+import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
@@ -73,7 +73,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		{
 			Region region = world.getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
 			
-			CubicChunk c = new CubicChunk(region, chunkX, chunkY, chunkZ);
+			CubicChunk c = null;// new CubicChunk(region, chunkX, chunkY, chunkZ);
 			
 			//In any client scenario we don't need to check for a chunk holder to be already present neither do we need
 			//to let it load.
@@ -83,17 +83,21 @@ public class IOTasksMultiplayerClient extends IOTasks
 				try
 				{
 					decompressor.decompress(data, unCompressedDataBuffer.get());
+					int[] data = new int[32 * 32 * 32];
 					for (int i = 0; i < 32 * 32 * 32; i++)
 					{
-						int data = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
-						c.setVoxelDataWithoutUpdates(i / 32 / 32, (i / 32) % 32, i % 32, data);
+						data[i] = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
 					}
+					c = new CubicChunk(region, chunkX, chunkY, chunkZ, data);
 				}
 				catch (LZ4Exception exception)
 				{
+					c = new CubicChunk(region, chunkX, chunkY, chunkZ);
 					ChunkStoriesLogger.getInstance().warning("Invalid chunk data received for : " + c);
 				}
 			}
+			else
+				c = new CubicChunk(region, chunkX, chunkY, chunkZ);
 
 			c.bakeVoxelLightning(true);
 
@@ -187,11 +191,11 @@ public class IOTasksMultiplayerClient extends IOTasks
 		holder.setDiskDataLoaded(true);
 	}
 
-	public class IOTaskProcessCompressedChunkSummaryArrival extends IOTask
+	public class IOTaskProcessCompressedRegionSummaryArrival extends IOTask
 	{
-		PacketChunkSummary packet;
+		PacketRegionSummary packet;
 
-		public IOTaskProcessCompressedChunkSummaryArrival(PacketChunkSummary packet)
+		public IOTaskProcessCompressedRegionSummaryArrival(PacketRegionSummary packet)
 		{
 			this.packet = packet;
 		}
@@ -242,14 +246,14 @@ public class IOTasksMultiplayerClient extends IOTasks
 		}
 	}
 
-	public void requestChunkSummaryProcess(PacketChunkSummary packet)
+	public void requestRegionSummaryProcess(PacketRegionSummary packet)
 	{
-		IOTaskProcessCompressedChunkSummaryArrival task = new IOTaskProcessCompressedChunkSummaryArrival(packet);
+		IOTaskProcessCompressedRegionSummaryArrival task = new IOTaskProcessCompressedRegionSummaryArrival(packet);
 		addTask(task);
 	}
 
 	@Override
-	public void requestChunkSummaryLoad(RegionSummary summary)
+	public void requestRegionSummaryLoad(RegionSummary summary)
 	{
 		// don't spam packets !
 		int rx = summary.regionX;
@@ -269,7 +273,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			{
 				summariesAlreadyAsked.add(new int[] { rx, rz });
 			}
-			Client.connection.sendTextMessage("world/getChunkSummary:" + rx + ":" + rz);
+			Client.connection.sendTextMessage("world/getRegionSummary:" + rx + ":" + rz);
 		}
 	}
 }

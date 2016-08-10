@@ -1,8 +1,8 @@
 package io.xol.chunkstories.world.chunk;
 
-import io.xol.chunkstories.api.world.Chunk;
-
 import java.util.Arrays;
+
+import io.xol.chunkstories.api.world.chunk.Chunk;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

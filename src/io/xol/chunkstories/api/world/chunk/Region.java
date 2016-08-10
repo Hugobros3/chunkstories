@@ -1,16 +1,17 @@
-package io.xol.chunkstories.api.world;
+package io.xol.chunkstories.api.world.chunk;
 
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
+import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
 /**
- * A region holds 8x8x8 chunks, it's used to hold their entities
+ * A region is 8x8x8 chunks and contains entities
  */
 public interface Region
 {
@@ -29,13 +30,13 @@ public interface Region
 	 * Called when the entity is no longer within this region's influence
 	 * @return If it was removed successfully
 	 */
-	public boolean removeEntity(Entity entity);
+	public boolean removeEntityFromRegion(Entity entity);
 	
 	/**
 	 * Called when the entity is now within this region's influence
 	 * @return If it was added successfully
 	 */
-	public boolean addEntity(Entity entity);
+	public boolean addEntityToRegion(Entity entity);
 	
 	public int getNumberOfLoadedChunks();
 

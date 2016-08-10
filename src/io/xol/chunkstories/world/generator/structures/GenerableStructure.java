@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world.generator.structures;
 
-import io.xol.chunkstories.api.world.Chunk;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

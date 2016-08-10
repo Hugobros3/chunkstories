@@ -3,7 +3,7 @@ package io.xol.chunkstories.tools;
 import java.io.File;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.world.Chunk;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
 
@@ -56,7 +56,7 @@ public class SummaryRegenerator
 							while (!hit && y > 0)
 							{
 								int id = VoxelFormat.id(world.getVoxelData(rX, y, rZ));
-								Chunk chunk = world.getChunk(rX / 32, y / 32, rZ / 32, true);
+								Chunk chunk = world.getChunkChunkCoordinates(rX / 32, y / 32, rZ / 32, true);
 								if (chunk != null && chunk.isAirChunk())
 								{
 									y -= 31;

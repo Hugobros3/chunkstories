@@ -1,7 +1,7 @@
 package io.xol.chunkstories.world.iterators;
 
-import io.xol.chunkstories.api.world.Chunk;
-import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.world.chunk.ChunkHolder;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -21,7 +21,6 @@ public class ChunkHolderIterator implements ChunksIterator
 	public ChunkHolderIterator(ChunkHolder holder)
 	{
 		this.holder = holder;
-		//System.out.println("holder:"+" "+holder);
 	}
 	
 	@Override

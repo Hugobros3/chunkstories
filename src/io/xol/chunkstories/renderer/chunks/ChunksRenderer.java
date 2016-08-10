@@ -6,8 +6,8 @@ import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.world.Chunk;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
@@ -109,7 +109,7 @@ public class ChunksRenderer extends Thread
 			request = iter.next();
 			if ((LoopingMathHelper.moduloDistance(request[0], pCX, sizeInChunks) > chunksViewDistance + 1) || (LoopingMathHelper.moduloDistance(request[2], pCZ, sizeInChunks) > chunksViewDistance + 1) || (Math.abs(request[1] - pCY) > 4))
 			{
-				Chunk freed = world.getChunk(request[0], request[1], request[2], false);
+				Chunk freed = world.getChunkChunkCoordinates(request[0], request[1], request[2], false);
 				if (freed != null && freed instanceof ChunkRenderable)
 					((ChunkRenderable) freed).markRenderInProgress(false);
 
@@ -158,7 +158,7 @@ public class ChunksRenderer extends Thread
 
 					if (world.isChunkLoaded(task[0], task[1], task[2]))
 					{
-						ChunkRenderable work = (ChunkRenderable) world.getChunk(task[0], task[1], task[2], false);
+						ChunkRenderable work = (ChunkRenderable) world.getChunkChunkCoordinates(task[0], task[1], task[2], false);
 						if (work.isMarkedForReRender() || work.needsLightningUpdates())
 						{
 							int nearChunks = 0;
@@ -284,7 +284,7 @@ public class ChunksRenderer extends Thread
 		z += c.getChunkZ() * 32;
 
 		// Look for a chunk with relevant lightning data
-		cached = Client.world.getChunk(x / 32, y / 32, z / 32, false);
+		cached = Client.world.getChunkChunkCoordinates(x / 32, y / 32, z / 32, false);
 		if (cached != null && !cached.isAirChunk())
 		{
 			data = cached.getVoxelData(x, y, z);
@@ -922,7 +922,7 @@ public class ChunksRenderer extends Thread
 		for (int relx = -1; relx <= 1; relx++)
 			for (int rely = -1; rely <= 1; rely++)
 				for (int relz = -1; relz <= 1; relz++)
-					cache[((relx + 1) * 3 + (rely + 1)) * 3 + (relz + 1)] = work.world.getChunk(cx + relx, cy + rely, cz + relz, true);
+					cache[((relx + 1) * 3 + (rely + 1)) * 3 + (relz + 1)] = work.world.getChunkChunkCoordinates(cx + relx, cy + rely, cz + relz, true);
 
 		// Expensive bullshit
 

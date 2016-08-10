@@ -31,8 +31,8 @@ import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.world.Chunk;
-import io.xol.chunkstories.api.world.ChunksIterator;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientInputsManager;
 import io.xol.chunkstories.client.RenderingConfig;
@@ -165,13 +165,9 @@ public class GameplayScene extends OverlayableScene
 
 			//System.out.println("fl");
 			worldRenderer.getRenderingContext().addLight(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 35f, 35f, viewerCamDirVector));
-
-			//if (Keyboard.isKeyDown(Keyboard.KEY_F5))
-			//	Client.world.getParticlesHolder()
-			//			.addParticle(new ParticleSetupLight(Client.world, loc.x, loc.y + 1.0f, loc.z, new DefferedSpotLight(new Vector3f(1f, 1f, 1f), new Vector3f((float) loc.x, (float) loc.y + 1.5f, (float) loc.z), 75f, 20f, viewerCamDirVector)));
 		}
-		//Main render call
 		
+		//Main render call
 		worldRenderer.renderWorldAtCamera(camera);
 
 		if (selectedBlock != null && player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().isCreativeMode())
@@ -240,18 +236,7 @@ public class GameplayScene extends OverlayableScene
 				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f,
 						32f / 256f, TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId(), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
 
-				//System.out.println(TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId());
-
-				//ObjectRenderer.renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 256, 256, 0, 0, 16, 16, 16, "internal://./res/textures/gui/hud/hud_survival.png");
 			}
-
-			/*if (Keyboard.isKeyDown(78))
-				Client.world.worldTime += 10;
-			if (Keyboard.isKeyDown(74))
-			{
-				if (Client.world.worldTime > 10)
-					Client.world.worldTime -= 10;
-			}*/
 
 			if (currentOverlay == null && !chat.chatting)
 				focus(true);
@@ -292,8 +277,6 @@ public class GameplayScene extends OverlayableScene
 
 	boolean flashLight = false;
 	boolean shouldCM = false;
-
-	byte[] inventorySerialized;
 
 	@Override
 	public boolean onKeyDown(int keyCode)
@@ -568,12 +551,12 @@ public class GameplayScene extends OverlayableScene
 
 		//Location selectedBlockLocation = ((EntityControllable) player).getBlockLookingAt(false);
 
-		Chunk current = Client.world.getChunk(cx, cy, cz, false);
+		Chunk current = Client.world.getChunkChunkCoordinates(cx, cy, cz, false);
 		int x_top = GameWindowOpenGL.windowHeight - 16;
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, "View distance : " + RenderingConfig.viewDistance + GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :"
-				+ ((ParticlesRenderer) Client.world.getParticlesManager()).count() + " #FF0000FPS : " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0, BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :"
+				+ ((ParticlesRenderer) Client.world.getParticlesManager()).count() + " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + worldRenderer.getWorld().getGameLogic().getSimulationFps(), BitmapFont.SMALLFONTS);
 
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Timings : " + debugInfo, BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Frame timings : " + debugInfo, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + Client.world.getChunksHolder().countChunksWithData() + "/"
 				+ Client.world.getChunksHolder().countChunks() + " " + Math.floor(Client.world.getChunksHolder().countChunksWithData() * 4 * 32 * 32 * 32 / (1024L * 1024 / 100f)) / 100f + "Mb used by chunks"
 
@@ -585,31 +568,29 @@ public class GameplayScene extends OverlayableScene
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram + "Mb as " + Texture2D.getTotalNumberOfTextureObjects() + " textures using " + Texture2D.getTotalVramUsage() / 1024 / 1024 + "Mb + "
 				+ VerticesObject.getTotalNumberOfVerticesObjects() + " Vertices objects using " + VerticesObject.getTotalVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
 
-		//FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram + "Mb as " + Texture2D.getTotalNumberOfTextureObjects() + " textures using " + Texture2D.getTotalVramUsage() / 1024 / 1024 + "Mb + "
-		//		+ VerticesObject.getTotalNumberOfVerticesObjects() + " Vertices objects using " + VerticesObject.getTotalVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
-
+		
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16,
-				"Chunks to bake : T : " + worldRenderer.chunksRenderer.todoQueue.size() + "   Chunks to upload: " + worldRenderer.chunksRenderer.doneQueue.size() + "    " + Client.world.ioHandler.toString(), BitmapFont.SMALLFONTS);
+				"Chunks to bake : " + worldRenderer.chunksRenderer.todoQueue.size() + " - " + Client.world.ioHandler.toString(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16,
 				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " Block looking at : bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
+		
 		if (current == null)
-			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk null", BitmapFont.SMALLFONTS);
+			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk null", BitmapFont.SMALLFONTS);
 		else if (current instanceof ChunkRenderable)
 		{
 			ChunkRenderData chunkRenderData = ((ChunkRenderable) current).getChunkRenderData();
 			if (chunkRenderData != null)
 			{
-				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk : " + current + " - " + chunkRenderData.toString(), BitmapFont.SMALLFONTS);
+				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk : " + current + " - " + chunkRenderData.toString(), BitmapFont.SMALLFONTS);
 			}
 			else
-				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current chunk : " + current + " - No rendering data", BitmapFont.SMALLFONTS);
+				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk : " + current + " - No rendering data", BitmapFont.SMALLFONTS);
 		}
 		
-
 		if (player != null && player instanceof EntityLiving)
 		{
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Holder : " + this.player.getWorld().getRegionChunkCoordinates(cx, cy, cz), BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 9 * 16, 0, 16, "Controller : " + this.player, BitmapFont.SMALLFONTS);
+			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Current ChunkHolder : " + this.player.getWorld().getRegionChunkCoordinates(cx, cy, cz), BitmapFont.SMALLFONTS);
+			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 9 * 16, 0, 16, "Controlled Entity : " + this.player, BitmapFont.SMALLFONTS);
 		}
 	}
 

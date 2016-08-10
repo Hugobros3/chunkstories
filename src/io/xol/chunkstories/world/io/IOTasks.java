@@ -76,7 +76,7 @@ public class IOTasks extends Thread
 	@Override
 	public String toString()
 	{
-		return "IOTasks : " + getSize() + " remaining.";
+		return "IO :" + getSize() + " in queue.";
 	}
 
 	public void requestChunksUnload(int pCX, int pCY, int pCZ, int sizeInChunks, int chunksViewDistance)
@@ -213,7 +213,7 @@ public class IOTasks extends Thread
 			if (holder.isChunkLoaded(x, y, z))// && !overwrite)
 				return true;
 			//System.out.println("already ok");
-			
+
 			//Look for
 			holder.compressedChunksLock.beginRead();
 			byte[] cd = holder.getCompressedData(x, y, z);
@@ -249,7 +249,7 @@ public class IOTasks extends Thread
 			}
 
 			//System.out.println("loaded chunk");
-			
+
 			return true;
 		}
 
@@ -343,9 +343,9 @@ public class IOTasks extends Thread
 			//Else if no file exists
 			else
 			{
-				RegionSummary chunkSummary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(holder.regionX * 256, holder.regionZ * 256);
+				RegionSummary regionSummary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(holder.regionX * 256, holder.regionZ * 256);
 				//Require a chunk summary to be generated first !
-				if (chunkSummary == null || !chunkSummary.isLoaded())
+				if (regionSummary == null || !regionSummary.isLoaded())
 				{
 					return false;
 				}
@@ -383,9 +383,9 @@ public class IOTasks extends Thread
 
 	public boolean isDoneSavingChunkHolder(ChunkHolder holder)
 	{
-		if(!(this.world instanceof WorldMaster))
+		if (!(this.world instanceof WorldMaster))
 			return true;
-		
+
 		//Check no saving operations are occuring
 		IOTaskSaveChunkHolder saveChunkHolder = new IOTaskSaveChunkHolder(holder);
 		if (tasks != null && tasks.contains(saveChunkHolder))
@@ -398,9 +398,9 @@ public class IOTasks extends Thread
 
 	public void requestChunkHolderLoad(ChunkHolder holder)
 	{
-		if(!isDoneSavingChunkHolder(holder))
+		if (!isDoneSavingChunkHolder(holder))
 			return;
-		
+
 		IOTask task = new IOTaskLoadChunkHolder(holder);
 		addTask(task);
 	}
@@ -513,27 +513,35 @@ public class IOTasks extends Thread
 					FileInputStream in = new FileInputStream(summary.handler);
 
 					byte[] size = new byte[4];
-					in.read(size);
-					int s = ByteBuffer.wrap(size).asIntBuffer().get(0);
-					byte[] compressed = new byte[s];
-					in.read(compressed);
 
-					byte[] decompressed = decompressor.decompress(compressed, 256 * 256 * 4);
-					IntBuffer ib = ByteBuffer.wrap(decompressed).asIntBuffer();
-					for (int i = 0; i < 256 * 256; i++)
-						summary.heights[i] = ib.get();
+					try
+					{
+						in.read(size);
+						int s = ByteBuffer.wrap(size).asIntBuffer().get(0);
+						byte[] compressed = new byte[s];
+						in.read(compressed);
 
-					in.read(size);
-					s = ByteBuffer.wrap(size).asIntBuffer().get(0);
-					compressed = new byte[s];
-					in.read(compressed);
+						byte[] decompressed = decompressor.decompress(compressed, 256 * 256 * 4);
+						IntBuffer ib = ByteBuffer.wrap(decompressed).asIntBuffer();
+						for (int i = 0; i < 256 * 256; i++)
+							summary.heights[i] = ib.get();
 
-					decompressed = decompressor.decompress(compressed, 256 * 256 * 4);
-					ib = ByteBuffer.wrap(decompressed).asIntBuffer();
-					for (int i = 0; i < 256 * 256; i++)
-						summary.ids[i] = ib.get();
+						in.read(size);
+						s = ByteBuffer.wrap(size).asIntBuffer().get(0);
+						compressed = new byte[s];
+						in.read(compressed);
 
-					in.close();
+						decompressed = decompressor.decompress(compressed, 256 * 256 * 4);
+						ib = ByteBuffer.wrap(decompressed).asIntBuffer();
+						for (int i = 0; i < 256 * 256; i++)
+							summary.ids[i] = ib.get();
+
+						in.close();
+					}
+					catch (Exception e)
+					{
+						ChunkStoriesLogger.getInstance().error("Could not load load chunk summary at "+summary+" cause: "+e.getMessage());
+					}
 
 					summary.texturesUpToDate.set(false);
 					summary.summaryLoaded.set(true);
@@ -541,10 +549,6 @@ public class IOTasks extends Thread
 					summary.computeHeightMetadata();
 				}
 				catch (FileNotFoundException e)
-				{
-					e.printStackTrace();
-				}
-				catch (IOException e)
 				{
 					e.printStackTrace();
 				}
@@ -593,7 +597,7 @@ public class IOTasks extends Thread
 		}
 	}
 
-	public void requestChunkSummaryLoad(RegionSummary summary)
+	public void requestRegionSummaryLoad(RegionSummary summary)
 	{
 		IOTask task = new IOTaskLoadSummary(summary);
 		addTask(task);
@@ -673,7 +677,7 @@ public class IOTasks extends Thread
 		}
 	}
 
-	public void requestChunkSummarySave(RegionSummary summary)
+	public void requestRegionSummarySave(RegionSummary summary)
 	{
 		IOTask task = new IOTaskSaveSummary(summary);
 		addTask(task);
@@ -690,6 +694,17 @@ public class IOTasks extends Thread
 		synchronized (this)
 		{
 			notifyAll();
+		}
+	}
+
+	public void dumpIOTaks()
+	{
+		System.out.println("dumping io tasks");
+		Iterator<IOTask> i = this.tasks.iterator();
+		while (i.hasNext())
+		{
+			IOTask task = i.next();
+			System.out.println(task);
 		}
 	}
 

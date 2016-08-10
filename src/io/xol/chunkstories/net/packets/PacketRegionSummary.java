@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class PacketChunkSummary extends Packet
+public class PacketRegionSummary extends Packet
 {
 	// Server-side
 	public RegionSummary summary;
@@ -25,7 +25,7 @@ public class PacketChunkSummary extends Packet
 	public int rx, rz;
 	public byte[] compressedData;
 	
-	public PacketChunkSummary(boolean client)
+	public PacketRegionSummary(boolean client)
 	{
 		super(client);
 	}
@@ -68,7 +68,7 @@ public class PacketChunkSummary extends Packet
 	public void process(PacketsProcessor processor)
 	{
 		if(processor.isClient)
-			((IOTasksMultiplayerClient) Client.world.ioHandler).requestChunkSummaryProcess(this);
+			((IOTasksMultiplayerClient) Client.world.ioHandler).requestRegionSummaryProcess(this);
 	}
 
 }

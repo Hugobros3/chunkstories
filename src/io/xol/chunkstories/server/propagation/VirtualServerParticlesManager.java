@@ -1,4 +1,4 @@
-package io.xol.chunkstories.world;
+package io.xol.chunkstories.server.propagation;
 
 import java.util.Iterator;
 
@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.net.packets.PacketParticle;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.ServerPlayer;
+import io.xol.chunkstories.world.WorldServer;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive

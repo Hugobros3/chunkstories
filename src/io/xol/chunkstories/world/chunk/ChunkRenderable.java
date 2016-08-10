@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world.chunk;
 
-import io.xol.chunkstories.api.world.Chunk;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 
 //(c) 2015-2016 XolioWare Interactive

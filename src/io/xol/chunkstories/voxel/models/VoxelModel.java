@@ -3,7 +3,7 @@ package io.xol.chunkstories.voxel.models;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.world.Chunk;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;

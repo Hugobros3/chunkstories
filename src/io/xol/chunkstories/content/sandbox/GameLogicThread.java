@@ -1,5 +1,7 @@
 package io.xol.chunkstories.content.sandbox;
 
+import java.util.Iterator;
+
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
@@ -8,6 +10,7 @@ import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldNetworked;
 import io.xol.chunkstories.world.WorldServer;
+import io.xol.chunkstories.world.chunk.ChunkHolder;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -41,30 +44,53 @@ public class GameLogicThread extends Thread implements GameLogic
 		while (!die)
 		{
 			//Dirty performance metric :]
+			//perfMetric();
 			
-			/*double ms = Math.floor((System.nanoTime() - lastTimeNs) / 10000.0) / 100.0;
-			String kek = "";
-			double d = 0.02;
-			for(double i = 0; i < 1.0; i+= d)
-				kek += Math.abs(ms - 16 - i) > d ? " " : "|";
-			System.out.println(kek + ms + "ms");*/
+			fps = 1f / ((System.nanoTime() - lastTimeNs) / 1000f / 1000f / 1000f);
 			
 			lastTimeNs = System.nanoTime();
 			
+			//Processes incomming pending packets in synch with game logic
 			if(world instanceof WorldNetworked)
 				((WorldNetworked) world).processIncommingPackets();
 			
+			//Tick the world ( mostly entities )
 			world.tick();
+			
+			//Compresses pending chunk summaries
+			Iterator<ChunkHolder> loadedChunksHolders = world.getChunksHolder().getLoadedChunkHolders();
+			while(loadedChunksHolders.hasNext())
+			{
+				ChunkHolder chunkHolder = loadedChunksHolders.next();
+				chunkHolder.compressChangedChunks();
+			}
 			
 			//Game logic is 60 ticks/s
 			sync(60);
 		}
 	}
 
-	static long lastTime = 0;
+	float fps = 0.0f;
+	
+	long lastTime = 0;
 	long lastTimeNs = 0;
 
-	public static void sync(int fps)
+	public float getSimulationFps()
+	{
+		return (float) (Math.floor(fps * 100f) / 100f);
+	}
+	
+	public void perfMetric()
+	{
+		double ms = Math.floor((System.nanoTime() - lastTimeNs) / 10000.0) / 100.0;
+		String kek = "";
+		double d = 0.02;
+		for(double i = 0; i < 1.0; i+= d)
+			kek += Math.abs(ms - 16 - i) > d ? " " : "|";
+		System.out.println(kek + ms + "ms");
+	}
+	
+	public void sync(int fps)
 	{
 		if (fps <= 0)
 			return;

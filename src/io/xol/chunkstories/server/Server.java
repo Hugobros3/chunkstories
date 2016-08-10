@@ -1,5 +1,8 @@
 package io.xol.chunkstories.server;
 
+import static org.fusesource.jansi.Ansi.ansi;
+import static org.fusesource.jansi.Ansi.Color.*;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -122,7 +125,9 @@ public class Server implements Runnable, ServerInterface
 				// wait until we have data to complete a readLine()
 				while (!br.ready() && running.get())
 				{
-					Thread.sleep(200);
+					printTopScreenDebug();
+					
+					Thread.sleep(1000L);
 				}
 				if (!running.get())
 					break;
@@ -143,6 +148,7 @@ public class Server implements Runnable, ServerInterface
 					console.handleCommand(this, new Command(cmdName), args);
 
 					System.out.print("> ");
+					System.out.flush();
 				}
 				catch (Exception e)
 				{
@@ -171,6 +177,22 @@ public class Server implements Runnable, ServerInterface
 		}
 		closeServer();
 		ChunkStoriesLogger.getInstance().save();
+	}
+
+	private void printTopScreenDebug()
+	{
+		String txt = "" + ansi().fg(BLACK).bg(CYAN);
+		
+		txt += "Chunk Stories Server " + VersionInfo.version;
+		txt += " | world running at " + world.getGameLogic().getSimulationFps()+" Fps";
+		txt += " | " + this.connectionsManager.getNumberOfAuthentificatedClients() + "/" + this.connectionsManager.getMaxClients() + " players";
+		txt += " | " + this.world.getChunksHolder().getStats() + " + " + this.world.getRegionSummaries().countSummaries() + " summaries ";
+		txt += " | " + this.world.ioHandler.toString();
+		
+		txt += ansi().bg(BLACK).fg(WHITE);
+		
+		System.out.print(ansi().saveCursorPosition().cursor(0, 0).eraseLine().fg(RED) + txt + ansi().restoreCursorPosition());
+		System.out.flush();
 	}
 
 	public WorldServer getWorld()

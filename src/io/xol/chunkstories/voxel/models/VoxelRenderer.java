@@ -1,6 +1,6 @@
 package io.xol.chunkstories.voxel.models;
 
-import io.xol.chunkstories.api.world.Chunk;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.BlockRenderInfo;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 

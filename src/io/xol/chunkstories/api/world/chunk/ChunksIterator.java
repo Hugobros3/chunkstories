@@ -1,4 +1,4 @@
-package io.xol.chunkstories.api.world;
+package io.xol.chunkstories.api.world.chunk;
 
 import java.util.Iterator;
 

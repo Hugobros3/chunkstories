@@ -56,7 +56,7 @@ public class ServerAnnouncerThread extends Thread
 				if (Server.getInstance().getServerConfig().getProp("enable-multiverse", "false").equals("true"))
 				{
 					HttpRequests.sendPost("http://chunkstories.xyz/api/serverAnnounce.php", "srvname=" + srv_name + "&desc=" + srv_desc + "&ip=" + ip + "&mu=" + Server.getInstance().getHandler().getMaxClients() + "&u="
-							+ Server.getInstance().getHandler().getNumberOfConnectedClients() + "&n=0&w=default&p=1&v=" + VersionInfo.version + "&lolcode=" + lolcode);
+							+ Server.getInstance().getHandler().getNumberOfAuthentificatedClients() + "&n=0&w=default&p=1&v=" + VersionInfo.version + "&lolcode=" + lolcode);
 					sleep(updatedelay);
 				}
 				else

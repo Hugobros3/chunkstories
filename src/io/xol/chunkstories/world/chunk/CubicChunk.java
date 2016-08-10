@@ -3,14 +3,16 @@ package io.xol.chunkstories.world.chunk;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.world.Chunk;
-import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.voxel.VoxelTypes;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -27,7 +29,6 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	private int chunkZ;
 
 	public int[] chunkVoxelData = null;
-	//public int dataPointer = -1; // -1 means empty chunk (air)
 
 	// Used in client rendering
 	private ChunkRenderData chunkRenderData;
@@ -43,15 +44,17 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	// Terrain Generation
 	// public List<GenerableStructure> structures = new ArrayList<GenerableStructure>();
 
-	// Occlusion
-	boolean occludedTop = false;
-	boolean occludedBot = false;
+	// Occlusion lookup, there are 6 sides you can enter a chunk by and 5 sides you can exit it by. we use 6 coz it's easier and who the fuck cares about a six-heights of a byte
+	public boolean occlusionSides[][] = new boolean[6][6];
 
+	/*boolean occludedTop = false;
+	boolean occludedBot = false;
+	
 	boolean occludedNorth = false;
 	boolean occludedSouth = false;
-
+	
 	boolean occludedLeft = false;
-	boolean occludedRight = false;
+	boolean occludedRight = false;*/
 
 	//These wonderfull things does magic for us, they are unique per-thread so they won't ever clog memory neither will they have contigency issues
 	//Seriously awesome
@@ -99,15 +102,122 @@ public class CubicChunk implements Chunk, ChunkRenderable
 
 	public CubicChunk(Region holder, int chunkX, int chunkY, int chunkZ, int[] data)
 	{
-		this.holder = holder;
-		this.world = holder.getWorld();
-		this.chunkX = chunkX;
-		this.chunkY = chunkY;
-		this.chunkZ = chunkZ;
+		this(holder, chunkX, chunkY, chunkZ);
 
 		assert data.length == 32 * 32 * 32;
 
 		this.chunkVoxelData = data;
+		computeOcclusionTable();
+	}
+
+	static ThreadLocal<Deque<Integer>> occlusionFaces = new ThreadLocal<Deque<Integer>>()
+	{
+		@Override
+		protected Deque<Integer> initialValue()
+		{
+			return new ArrayDeque<Integer>();
+		}
+	};
+
+	private void computeOcclusionTable()
+	{
+		//System.out.println("Computing occlusion table ...");
+		occlusionSides = new boolean[6][6];
+
+		Deque<Integer> deque = occlusionFaces.get();
+		deque.clear();
+		boolean[] mask = new boolean[32768];
+		int x = 0, y = 0, z = 0;
+		int completion = 0;
+		int p = 0;
+		
+		int bits = 0;
+		//Until all 32768 blocks have been processed
+		while (completion < 32768)
+		{
+			//If this face was already done, we find one that wasn't
+			while (mask[x * 1024 + y * 32 + z])
+			{
+				p++;
+				p %= 32768;
+
+				x = p / 1024;
+				y = (p / 32) % 32;
+				z = p % 32;
+			}
+
+			bits++;
+			
+			//We put this face on the deque
+			deque.push(x * 1024 + y * 32 + z);
+
+			/**
+			 * Conventions for space in Chunk Stories 1 FRONT z+ x- LEFT 0 X 2 RIGHT x+ 3 BACK z- 4 y+ top X 5 y- bottom
+			 */
+			Set<Integer> touchingSides = new HashSet<Integer>();
+			while (!deque.isEmpty())
+			{
+				//Pop the topmost element
+				int d = deque.pop();
+
+				//Don't iterate twice over one element
+				if(mask[d])
+					continue;
+				
+				//Separate coordinates
+				x = d / 1024;
+				y = (d / 32) % 32;
+				z = d % 32;
+				
+				//Mark the case as done
+				mask[x * 1024 + y * 32 + z] = true;
+				completion++;
+				
+				if (!VoxelTypes.get(this.getVoxelData(x, y, z)).isVoxelOpaque())
+				{
+					//Adds touched sides to set
+					
+					if (x == 0)
+						touchingSides.add(0);
+					else if (x == 31)
+						touchingSides.add(2);
+
+					if (y == 0)
+						touchingSides.add(5);
+					else if (y == 31)
+						touchingSides.add(4);
+
+					if (z == 0)
+						touchingSides.add(3);
+					else if (z == 31)
+						touchingSides.add(1);
+					
+					//Flood fill
+					
+					if(x > 0)
+						deque.push((x - 1) * 1024 + (y) * 32 + (z));
+					if(y > 0)
+						deque.push((x) * 1024 + (y - 1) * 32 + (z));
+					if(z > 0)
+						deque.push((x) * 1024 + (y) * 32 + (z - 1));
+					
+					if(x < 31)
+						deque.push((x + 1) * 1024 + (y) * 32 + (z));
+					if(y < 31)
+						deque.push((x) * 1024 + (y + 1) * 32 + (z));
+					if(z < 31)
+						deque.push((x) * 1024 + (y) * 32 + (z + 1));
+				}
+			}
+			
+			for(int i : touchingSides)
+			{
+				for(int j : touchingSides)
+					occlusionSides[i][j] = true;
+			}
+		}
+		
+		//System.out.println("chunk "+this+" is made of "+bits+" bits");
 	}
 
 	public int getChunkX()
@@ -129,7 +239,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	{
 		return a & 0x1F;
 	}
-	
+
 	@Override
 	public int getVoxelData(int x, int y, int z)
 	{
@@ -139,15 +249,9 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		}
 		else
 		{
-			x %= 32;
-			y %= 32;
-			z %= 32;
-			if (x < 0)
-				x += 32;
-			if (y < 0)
-				y += 32;
-			if (z < 0)
-				z += 32;
+			x = sanitizeCoordinate(x);
+			y = sanitizeCoordinate(y);
+			z = sanitizeCoordinate(z);
 			return chunkVoxelData[x * 32 * 32 + y * 32 + z];
 		}
 	}
@@ -218,7 +322,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		//Propagates the light
 		int c = propagateLightning(blockSources, sunSources);
 
-		if(c > 0)
+		if (c > 0)
 			this.need_render.set(true);
 
 		needRelightning.set(false);
@@ -234,12 +338,12 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		int modifiedBlocks = 0;
 
 		//Checks if the adjacent chunks are done loading
-		Chunk adjacentChunkTop = world.getChunk(chunkX, chunkY + 1, chunkZ, false);
-		Chunk adjacentChunkBottom = world.getChunk(chunkX, chunkY - 1, chunkZ, false);
-		Chunk adjacentChunkFront = world.getChunk(chunkX, chunkY, chunkZ + 1, false);
-		Chunk adjacentChunkBack = world.getChunk(chunkX, chunkY, chunkZ - 1, false);
-		Chunk adjacentChunkLeft = world.getChunk(chunkX - 1, chunkY, chunkZ, false);
-		Chunk adjacentChunkRight = world.getChunk(chunkX + 1, chunkY, chunkZ, false);
+		Chunk adjacentChunkTop = world.getChunkChunkCoordinates(chunkX, chunkY + 1, chunkZ, false);
+		Chunk adjacentChunkBottom = world.getChunkChunkCoordinates(chunkX, chunkY - 1, chunkZ, false);
+		Chunk adjacentChunkFront = world.getChunkChunkCoordinates(chunkX, chunkY, chunkZ + 1, false);
+		Chunk adjacentChunkBack = world.getChunkChunkCoordinates(chunkX, chunkY, chunkZ - 1, false);
+		Chunk adjacentChunkLeft = world.getChunkChunkCoordinates(chunkX - 1, chunkY, chunkZ, false);
+		Chunk adjacentChunkRight = world.getChunkChunkCoordinates(chunkX + 1, chunkY, chunkZ, false);
 		//Don't spam the requeue requests
 		boolean checkTopBleeding = (adjacentChunkTop != null) && !adjacentChunkTop.needsLightningUpdates();
 		boolean checkBottomBleeding = (adjacentChunkBottom != null) && !adjacentChunkBottom.needsLightningUpdates();
@@ -632,7 +736,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		if (world != null)
 		{
 			Chunk cc;
-			cc = world.getChunk(chunkX + 1, chunkY, chunkZ, false);
+			cc = world.getChunkChunkCoordinates(chunkX + 1, chunkY, chunkZ, false);
 			if (cc != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -666,7 +770,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 						}
 					}
 			}
-			cc = world.getChunk(chunkX - 1, chunkY, chunkZ, false);
+			cc = world.getChunkChunkCoordinates(chunkX - 1, chunkY, chunkZ, false);
 			if (cc != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -702,7 +806,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 					}
 			}
 			// Top chunk
-			cc = world.getChunk(chunkX, chunkY + 1, chunkZ, false);
+			cc = world.getChunkChunkCoordinates(chunkX, chunkY + 1, chunkZ, false);
 			if (cc != null && chunkVoxelData != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -767,7 +871,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 					}
 			}
 			// Bottom chunk
-			cc = world.getChunk(chunkX, chunkY - 1, chunkZ, false);
+			cc = world.getChunkChunkCoordinates(chunkX, chunkY - 1, chunkZ, false);
 			if (cc != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -807,7 +911,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 					}
 			}
 			// Z
-			cc = world.getChunk(chunkX, chunkY, chunkZ + 1, false);
+			cc = world.getChunkChunkCoordinates(chunkX, chunkY, chunkZ + 1, false);
 			if (cc != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -840,7 +944,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 						}
 					}
 			}
-			cc = world.getChunk(chunkX, chunkY, chunkZ - 1, false);
+			cc = world.getChunkChunkCoordinates(chunkX, chunkY, chunkZ - 1, false);
 			if (cc != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -1684,7 +1788,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 
 		int oldData = world.getVoxelData(x, y, z, false);
 		world.setVoxelDataWithoutUpdates(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data, false);
-		Chunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32, false);
+		Chunk c = world.getChunkChunkCoordinates((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32, false);
 
 		if (c != null && oldData != data)
 			c.markInNeedForLightningUpdate();
@@ -1775,7 +1879,6 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	@Override
 	public void markForReRender()
 	{
-		//Thread.currentThread().dumpStack();
 		this.need_render.set(true);
 	}
 

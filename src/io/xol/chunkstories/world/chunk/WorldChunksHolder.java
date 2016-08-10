@@ -1,7 +1,7 @@
 package io.xol.chunkstories.world.chunk;
 
-import io.xol.chunkstories.api.world.Chunk;
-import io.xol.chunkstories.api.world.Region;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.concurrency.SimpleLock;
 
@@ -62,6 +62,7 @@ public class WorldChunksHolder
 
 	public Iterator<ChunkHolder> getLoadedChunkHolders()
 	{
+		//System.out.println(chunkHolders.size());
 		return chunkHolders.values().iterator();
 	}
 
@@ -207,6 +208,11 @@ public class WorldChunksHolder
 	public String toString()
 	{
 		return "[ChunksHolder: " + chunkHolders.size() + " Chunk Holders loaded]";
+	}
+	
+	public String getStats()
+	{
+		return countChunks() + " chunks loaded in " + chunkHolders.size() + " regions";
 	}
 
 	public int countChunks()

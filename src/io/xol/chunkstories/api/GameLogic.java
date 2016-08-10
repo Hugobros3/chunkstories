@@ -8,5 +8,7 @@ import io.xol.chunkstories.content.PluginsManager;
 
 public interface GameLogic
 {
-	PluginsManager getPluginsManager();
+	public float getSimulationFps();
+	
+	public PluginsManager getPluginsManager();
 }

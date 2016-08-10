@@ -66,9 +66,9 @@ public class ColorsTools
 
 	public static String convertToAnsi(String text)
 	{
-		boolean doConvert = !System.getProperty("os.name").toLowerCase()
-				.contains("windows");
-		// As windows don't support ansi codes in terminal we disable it.
+		boolean doConvert = true; //!System.getProperty("os.name").toLowerCase().contains("windows");
+		// // As windows don't support ansi codes in terminal we disable it.
+		// Use of Jansi prevents us from having to hack arround this shit
 
 		String result = "";
 		int i = 0;

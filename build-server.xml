@@ -12,6 +12,7 @@
             <zipfileset excludes="META-INF/*.SF" src="lib/lwjgl/jar/lwjgl_util.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="lib/lz4-1.3.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="lib/PNGDecoder.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="lib/jansi-1.12.jar"/>
         </jar>
     </target>
 </project>

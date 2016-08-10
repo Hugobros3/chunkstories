@@ -12,10 +12,10 @@ import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.entity.SerializedEntityFile;
-import io.xol.chunkstories.server.VirtualServerSoundManager.ServerPlayerVirtualSoundManager;
 import io.xol.chunkstories.server.net.ServerClient;
-import io.xol.chunkstories.world.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager;
-import io.xol.chunkstories.world.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager;
+import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager;
+import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager;
+import io.xol.chunkstories.server.propagation.VirtualServerSoundManager.ServerPlayerVirtualSoundManager;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
@@ -30,11 +30,11 @@ import java.util.Set;
 
 public class ServerPlayer implements Player
 {
-	ConfigFile playerDataFile;
-	ServerClient playerConnection;
+	private ConfigFile playerDataFile;
+	private ServerClient playerConnection;
 
 	//Entity controlled
-	public EntityControllable controlledEntity;
+	private EntityControllable controlledEntity;
 
 	//Streaming control
 	private Set<Entity> subscribedEntities = new HashSet<Entity>();
@@ -51,11 +51,11 @@ public class ServerPlayer implements Player
 	{
 		playerConnection = serverClient;
 		
-		playerDataFile = new ConfigFile("./players/" + playerConnection.name.toLowerCase() + ".cfg");
+		playerDataFile = new ConfigFile("./players/" + getPlayerConnection().name.toLowerCase() + ".cfg");
 		
 		serverInputsManager = new ServerInputsManager(this);
 		
-		//TODO update the sound manager to support multiworld
+		//TODO this should be reset when the user changes world
 		virtualSoundManager = Server.getInstance().getWorld().getSoundManager().new ServerPlayerVirtualSoundManager(this);
 		virtualParticlesManager = Server.getInstance().getWorld().getParticlesManager().new ServerPlayerVirtualParticlesManager(this);
 		virtualDecalsManager = Server.getInstance().getWorld().getDecalsManager().new ServerPlayerVirtualDecalsManager(this);
@@ -64,7 +64,13 @@ public class ServerPlayer implements Player
 		playerDataFile.setString("lastlogin", "" + System.currentTimeMillis());
 		if (playerDataFile.getProp("firstlogin", "nope").equals("nope"))
 			playerDataFile.setString("firstlogin", "" + System.currentTimeMillis());
-		//Does not create a player entity yet, this is taken care of by the player spawn req
+		
+		//Does not create a player entity here, this is taken care of by the player (re)spawn req
+	}
+
+	public ServerClient getPlayerConnection()
+	{
+		return playerConnection;
 	}
 
 	public void updateTrackedEntities()
@@ -157,7 +163,7 @@ public class ServerPlayer implements Player
 		playerDataFile.setString("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)));
 		playerDataFile.save();
 		
-		System.out.println("Player profile "+playerConnection.name+" saved.");
+		System.out.println("Player profile "+getPlayerConnection().name+" saved.");
 	}
 	
 	public void destroy()
@@ -173,7 +179,7 @@ public class ServerPlayer implements Player
 	@Override
 	public String getName()
 	{
-		return playerConnection.name;
+		return getPlayerConnection().name;
 	}
 
 	@Override
@@ -233,13 +239,13 @@ public class ServerPlayer implements Player
 	@Override
 	public void sendMessage(String msg)
 	{
-		playerConnection.sendChat(msg);
+		getPlayerConnection().sendChat(msg);
 	}
 	
 	@Override
 	public void kickPlayer(String reason)
 	{
-		playerConnection.disconnect("Kicked : "+reason);
+		getPlayerConnection().disconnect("Kicked : "+reason);
 	}
 
 	@Override
@@ -346,7 +352,7 @@ public class ServerPlayer implements Player
 	@Override
 	public void pushPacket(Packet packet)
 	{
-		this.playerConnection.pushPacket(packet);
+		this.getPlayerConnection().pushPacket(packet);
 	}
 
 	@Override

@@ -51,7 +51,7 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public void requestChunkSummaryLoad(RegionSummary summary)
+	public void requestRegionSummaryLoad(RegionSummary summary)
 	{
 		IOTask task = new IOTaskLoadSummary(summary);
 		if(tasks.add(task))
@@ -62,7 +62,7 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public void requestChunkSummarySave(RegionSummary summary)
+	public void requestRegionSummarySave(RegionSummary summary)
 	{
 		IOTask task = new IOTaskSaveSummary(summary);
 		if(tasks.add(task))

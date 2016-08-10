@@ -1,6 +1,7 @@
-package io.xol.chunkstories.api.world;
+package io.xol.chunkstories.api.world.chunk;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

@@ -8,6 +8,8 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.fusesource.jansi.AnsiConsole;
+
 import io.xol.chunkstories.client.Client;
 
 import static io.xol.chunkstories.tools.ChunkStoriesLogger.LogType.*;
@@ -24,6 +26,9 @@ public class ChunkStoriesLogger
 	public static void init(ChunkStoriesLogger log)
 	{
 		instance = log;
+
+		AnsiConsole.systemInstall();
+		
 		Runtime.getRuntime().addShutdownHook(new Thread()
 		{
 			@Override

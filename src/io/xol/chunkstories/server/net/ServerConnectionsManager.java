@@ -153,7 +153,7 @@ public class ServerConnectionsManager extends Thread
 	{
 		client.sendInternalTextMessage("info/name:" + Server.getInstance().getServerConfig().getProp("server-name", "unnamedserver@" + hostname));
 		client.sendInternalTextMessage("info/motd:" + Server.getInstance().getServerConfig().getProp("server-desc", "Default description."));
-		client.sendInternalTextMessage("info/connected:" + Server.getInstance().getHandler().getNumberOfConnectedClients() + ":" + maxClients);
+		client.sendInternalTextMessage("info/connected:" + Server.getInstance().getHandler().getNumberOfAuthentificatedClients() + ":" + maxClients);
 		client.sendInternalTextMessage("info/version:" + VersionInfo.version);
 		client.sendInternalTextMessage("info/nogame");
 		client.sendInternalTextMessage("info/done");
@@ -210,7 +210,7 @@ public class ServerConnectionsManager extends Thread
 		return maxClients;
 	}
 
-	public int getNumberOfConnectedClients()
+	public int getNumberOfAuthentificatedClients()
 	{
 		int count = 0;
 		for (ServerClient c : clients)

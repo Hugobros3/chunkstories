@@ -8,7 +8,7 @@ packet 0x00 PACKET_UTF_TEXT io.xol.chunkstories.net.packets.PacketText all
 #You can theorically mess with those with your mods, but avoid because this can break a lot of stuff for no real purpose
 packet 0x01 PACKET_WORLD_INFO io.xol.chunkstories.net.packets.PacketWorldInfo server
 packet 0x02 PACKET_CHUNK_DATA io.xol.chunkstories.net.packets.PacketChunkCompressedData server
-packet 0x03 PACKET_CHUNK_SUMMARY io.xol.chunkstories.net.packets.PacketChunkSummary server
+packet 0x03 PACKET_REGION_SUMMARY io.xol.chunkstories.net.packets.PacketRegionSummary server
 packet 0x04 PACKET_ENTITY io.xol.chunkstories.net.packets.PacketEntity all
 #packet 0x05 PACKET_SERIALIZED_INVENTORY io.xol.chunkstories.net.packets.PacketSerializedInventory server
 packet 0x06 PACKET_MOVE_ITEM io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile client

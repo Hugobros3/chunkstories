@@ -1,4 +1,4 @@
-package io.xol.chunkstories.server;
+package io.xol.chunkstories.server.propagation;
 
 import java.lang.ref.WeakReference;
 import java.nio.FloatBuffer;
@@ -10,6 +10,8 @@ import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.net.packets.PacketSoundSource;
+import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
 import io.xol.engine.sound.sources.SoundSourceVirtual;
 
@@ -28,7 +30,7 @@ public class VirtualServerSoundManager implements SoundManager
 	//Each player has his own instance of the soundManager
 	Set<ServerPlayerVirtualSoundManager> playersSoundManagers = ConcurrentHashMap.newKeySet();
 
-	class ServerPlayerVirtualSoundManager implements SoundManager
+	public class ServerPlayerVirtualSoundManager implements SoundManager
 	{
 
 		ServerPlayer serverPlayer;
@@ -36,7 +38,7 @@ public class VirtualServerSoundManager implements SoundManager
 		//As above, individual players have their playing sound sources kept track of
 		Set<WeakReference<SoundSourceVirtual>> playingSoundSources = ConcurrentHashMap.newKeySet();
 
-		ServerPlayerVirtualSoundManager(ServerPlayer serverPlayer)
+		public ServerPlayerVirtualSoundManager(ServerPlayer serverPlayer)
 		{
 			this.serverPlayer = serverPlayer;
 			playersSoundManagers.add(this);
@@ -58,7 +60,7 @@ public class VirtualServerSoundManager implements SoundManager
 		{
 			PacketSoundSource packet = new PacketSoundSource(false);
 			packet.soundSourceToSend = soundSource;
-			serverPlayer.playerConnection.pushPacket(packet);
+			serverPlayer.getPlayerConnection().pushPacket(packet);
 			playingSoundSources.add(new WeakReference<SoundSourceVirtual>(soundSource));
 		}
 

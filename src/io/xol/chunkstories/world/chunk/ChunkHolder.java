@@ -3,10 +3,10 @@ package io.xol.chunkstories.world.chunk;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
-import io.xol.chunkstories.api.world.Chunk;
-import io.xol.chunkstories.api.world.ChunksIterator;
-import io.xol.chunkstories.api.world.Region;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunksIterator;
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.io.CSFRegionFile;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
@@ -40,7 +40,7 @@ public class ChunkHolder implements Region
 	public final CSFRegionFile handler;
 
 	// Holds 8x8x8 CubicChunks
-	private Chunk[][][] data = new CubicChunk[8][8][8];
+	private CubicChunk[][][] data = new CubicChunk[8][8][8];
 	private AtomicInteger loadedChunks = new AtomicInteger();
 
 	private AtomicLong unloadCooldown = new AtomicLong();
@@ -185,7 +185,7 @@ public class ChunkHolder implements Region
 		}
 
 		//System.out.println("set chunk"+chunk);
-		data[chunkX & 7][chunkY & 7][chunkZ & 7] = chunk;
+		data[chunkX & 7][chunkY & 7][chunkZ & 7] = (CubicChunk) chunk;
 
 		//Change chunk holder to this
 		assert chunk.getRegion().equals(this);
@@ -295,8 +295,6 @@ public class ChunkHolder implements Region
 
 		//Remove the reference in the world to this
 		this.getWorld().getChunksHolder().removeHolder(this);
-
-		//System.out.println("Unloaded chunk holder " + this + " with " + c + " entities remaining in it.");
 	}
 
 	/* (non-Javadoc)
@@ -357,8 +355,21 @@ public class ChunkHolder implements Region
 				{
 					if (data[a][b][c] != null)
 						compressChunkData(data[a][b][c]);
-					//else
-					//	compressedChunks[a][b][c] = null;
+				}
+	}
+	
+	public void compressChangedChunks()
+	{
+		for (int a = 0; a < 8; a++)
+			for (int b = 0; b < 8; b++)
+				for (int c = 0; c < 8; c++)
+				{
+					if (data[a][b][c] != null)
+					{
+						CubicChunk chunk = data[a][b][c];
+						if(chunk.lastModification.get() > chunk.lastModificationSaved.get())
+							compressChunkData(data[a][b][c]);
+					}
 				}
 	}
 
@@ -393,13 +404,13 @@ public class ChunkHolder implements Region
 	}
 
 	@Override
-	public boolean removeEntity(Entity entity)
+	public boolean removeEntityFromRegion(Entity entity)
 	{
 		return localEntities.remove(entity);
 	}
 
 	@Override
-	public boolean addEntity(Entity entity)
+	public boolean addEntityToRegion(Entity entity)
 	{
 		return localEntities.add(entity);
 	}
