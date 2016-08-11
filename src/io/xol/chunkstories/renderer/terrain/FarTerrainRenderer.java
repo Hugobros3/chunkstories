@@ -25,7 +25,7 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.summary.RegionSummary;
+import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -177,7 +177,7 @@ public class FarTerrainRenderer
 			terrain.setUniformSampler(0, "heightMap", rs.regionSummary.heightsTexture);
 
 			terrain.setUniformSampler1D(2, "blocksTexturesSummary", getBlocksTexturesSummaryId());
-			terrain.setUniformFloat2("regionPosition", rs.regionSummary.regionX, rs.regionSummary.regionZ);
+			terrain.setUniformFloat2("regionPosition", rs.regionSummary.getRegionX(), rs.regionSummary.getRegionZ());
 
 			// terrain.setUniformFloat2("chunkPositionActual", cs.dekalX,
 			// cs.dekalZ);
@@ -292,8 +292,14 @@ public class FarTerrainRenderer
 						rz--;
 					if (currentChunkX < 0 && currentChunkX % 8 != 0)
 						rx--;
-					RegionMesh regionMesh = new RegionMesh(rx, rz, world.getRegionSummaries().getRegionSummaryWorldCoordinates(currentChunkX * 32, currentChunkZ * 32));
+					
+					RegionSummaryImplementation summary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(currentChunkX * 32, currentChunkZ * 32);
+					
+					if(summary == null)
+						continue;
+					RegionMesh regionMesh = new RegionMesh(rx, rz, summary);
 
+					
 					int rcx = currentChunkX % world.getSizeInChunks();
 					if (rcx < 0)
 						rcx += world.getSizeInChunks();
@@ -559,7 +565,7 @@ public class FarTerrainRenderer
 		return summaryData[offset + resolution * x + z];
 	}
 
-	public void updateData()
+	/*public void updateData()
 	{
 		for (RegionMesh rs : regionsToRender)
 		{
@@ -570,16 +576,16 @@ public class FarTerrainRenderer
 			}
 			//System.out.println(rs.dataSource.loaded.get());
 			if (!rs.regionSummary.summaryLoaded.get())
-				rs.regionSummary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(rs.regionSummary.regionX * 256, rs.regionSummary.regionZ * 256);
+				rs.regionSummary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(rs.regionSummary.getRegionX() * 256, rs.regionSummary.getRegionZ() * 256);
 		}
-	}
+	}*/
 
 	class RegionMesh
 	{
 		int regionDisplayedX, regionDisplayedZ;
-		RegionSummary regionSummary;
+		RegionSummaryImplementation regionSummary;
 
-		public RegionMesh(int rxDisplay, int rzDisplay, RegionSummary dataSource)
+		public RegionMesh(int rxDisplay, int rzDisplay, RegionSummaryImplementation dataSource)
 		{
 			this.regionDisplayedX = rxDisplay;
 			this.regionDisplayedZ = rzDisplay;

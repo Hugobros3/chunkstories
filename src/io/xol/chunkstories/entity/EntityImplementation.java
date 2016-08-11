@@ -73,7 +73,7 @@ public abstract class EntityImplementation implements Entity
 		acceleration = new Vector3d();
 		//checkPositionAndUpdateHolder();
 		//To avoid NPEs
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(position.getLocation(), false)));
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(position.getLocation())));
 	}
 
 	/**
@@ -110,7 +110,7 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public Region getChunkHolder()
+	public Region getRegion()
 	{
 		return position.getRegionWithin();
 	}

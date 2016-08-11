@@ -225,7 +225,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 			return voxelData;
 
 		//Check top is free
-		int topData = world.getVoxelData(x, y + 1, z, false);
+		int topData = world.getVoxelData(x, y + 1, z);
 		if (VoxelFormat.id(topData) != 0)
 			throw new IllegalBlockModificationException("Top part isn't free");
 
@@ -263,16 +263,16 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 			switch (doorSideFacing)
 			{
 			case LEFT:
-				adjacentId = world.getVoxelData(x, y, z - 1, false);
+				adjacentId = world.getVoxelData(x, y, z - 1);
 				break;
 			case RIGHT:
-				adjacentId = world.getVoxelData(x, y, z + 1, false);
+				adjacentId = world.getVoxelData(x, y, z + 1);
 				break;
 			case FRONT:
-				adjacentId = world.getVoxelData(x - 1, y, z, false);
+				adjacentId = world.getVoxelData(x - 1, y, z);
 				break;
 			case BACK:
-				adjacentId = world.getVoxelData(x + 1, y, z, false);
+				adjacentId = world.getVoxelData(x + 1, y, z);
 				break;
 			default:
 				break;
@@ -286,7 +286,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 		}
 
 		//Place the upper part and we're good to go
-		world.setVoxelData(x, y + 1, z, VoxelFormat.changeId(voxelData, this.getId() + 1), false);
+		world.setVoxelData(x, y + 1, z, VoxelFormat.changeId(voxelData, this.getId() + 1));
 
 		//Return updated voxelData
 		return voxelData;
@@ -316,12 +316,12 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 		else
 			otherY++;
 
-		world.setVoxelDataWithoutUpdates(x, y, z, 0, false);
-		int otherData = world.getVoxelData(x, otherY, z, false);
+		world.setVoxelDataWithoutUpdates(x, y, z, 0);
+		int otherData = world.getVoxelData(x, otherY, z);
 		//Remove the other part as well, if it still exists
 		if (VoxelTypes.get(otherData) instanceof VoxelDoor)
 		{
-			world.setVoxelData(x, otherY, z, 0, false);
+			world.setVoxelData(x, otherY, z, 0);
 		}
 	}
 

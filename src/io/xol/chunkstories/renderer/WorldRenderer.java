@@ -64,7 +64,6 @@ import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.chunk.ChunkRenderable;
@@ -433,7 +432,6 @@ public class WorldRenderer
 			// Unload too far chunks
 			//updateProfiler.startSection("unloadFar");
 			//long usageBefore = Runtime.getRuntime().freeMemory();
-			world.trimRemovableChunks();
 
 			//Iterates over all loaded chunks to generate list and map
 			fboLoadedChunksBot.bind();
@@ -494,20 +492,22 @@ public class WorldRenderer
 				int chunkZ = deque.pop();
 				int chunkY = deque.pop();
 				int chunkX = deque.pop();
-
 				//sideFrom = -1;
 				
 				int ajustedChunkX = chunkX;
 				int ajustedChunkZ = chunkZ;
 
-				Chunk chunk = world.getChunkChunkCoordinates(chunkX, chunkY, chunkZ, false);
+				Chunk chunk = world.getChunk(chunkX, chunkY, chunkZ);
 
 				if(floodFillMask.contains(new Vector3d(chunkX, chunkY, chunkZ)))
 					continue;
 				floodFillMask.add(new Vector3d(chunkX, chunkY, chunkZ));
 				
-				if (chunk != null)
+				//if (chunk != null)
 				{
+					if(chunk == null || chunk.isAirChunk())
+						sideFrom = -1;
+						
 					floodFillSet.add(chunk);
 					if ((sideFrom == -1 || ((CubicChunk)chunk).occlusionSides[sideFrom][2]) && (ajustedChunkX - cameraChunkX) < chunksViewDistance && !floodFillMask.contains(new Vector3d(chunkX + 1, chunkY, chunkZ)))
 					{
@@ -640,21 +640,16 @@ public class WorldRenderer
 
 			// Now delete from the worker threads what we won't need anymore
 			chunksRenderer.purgeUselessWork(cameraChunkX, cameraChunkY, cameraChunkZ, sizeInChunks, chunksViewDistance);
-			world.ioHandler.requestChunksUnload(cameraChunkX, cameraChunkY, cameraChunkZ, sizeInChunks, chunksViewDistance);
+			
+			//world.ioHandler.requestChunksUnload(cameraChunkX, cameraChunkY, cameraChunkZ, sizeInChunks, chunksViewDistance);
 
-			farTerrainRenderer.updateData();
-			world.getRegionSummaries().removeFurther(cameraChunkX, cameraChunkZ, 33);
+			//farTerrainRenderer.updateData();
+			
+			//world.getRegionSummaries().removeFurther(cameraChunkX, cameraChunkZ, 33);
 
 			chunksChanged = false;
 			// Load nearby chunks
-			for (int t = (cameraChunkX - chunksViewDistance - 1); t < cameraChunkX + chunksViewDistance + 1; t++)
-			{
-				for (int g = (cameraChunkZ - chunksViewDistance - 1); g < cameraChunkZ + chunksViewDistance + 1; g++)
-					for (int b = cameraChunkY - 3; b < cameraChunkY + 3; b++)
-					{
-						Chunk chunk = world.getChunkChunkCoordinates(t, b, g, true);
-					}
-			}
+			//TODO kek me up inside
 		}
 		// Cleans free vbos
 		ChunkRenderData.deleteUselessVBOs();
@@ -1035,6 +1030,7 @@ public class WorldRenderer
 		Iterator<Entity> ie = world.getAllLoadedEntities();
 		Entity entity;
 
+		@SuppressWarnings("unused")
 		int entitiesRendered = 0;
 
 		entityIter: while (ie.hasNext())
@@ -1051,7 +1047,7 @@ public class WorldRenderer
 
 			//Set the context
 			renderingContext.getCurrentShader().setUniformFloat3("objectPosition", entity.getLocation());
-			renderingContext.getCurrentShader().setUniformFloat2("worldLight", world.getBlocklightLevel(entity.getLocation()), world.getSunlightLevel(entity.getLocation()));
+			renderingContext.getCurrentShader().setUniformFloat2("worldLight", world.getBlocklightLevelLocation(entity.getLocation()), world.getSunlightLevelLocation(entity.getLocation()));
 
 			//Reset animations transformations
 			renderingContext.getCurrentShader().setUniformMatrix4f("localTansform", new Matrix4f());
@@ -1122,7 +1118,7 @@ public class WorldRenderer
 			// Set rendering context.
 			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
 
-			Voxel vox = VoxelTypes.get(world.getVoxelData((int) -camera.pos.getX(), (int) (-camera.pos.getY() + 0), (int) -camera.pos.getZ(), false));
+			Voxel vox = VoxelTypes.get(world.getVoxelData((int) -camera.pos.getX(), (int) (-camera.pos.getY() + 0), (int) -camera.pos.getZ()));
 			liquidBlocksShader.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
 
 			//liquidBlocksShader.setUniformInt("pass", pass-1);
@@ -1347,7 +1343,7 @@ public class WorldRenderer
 		//postProcess.setUniformSampler(8, "debugBuffer", (System.currentTimeMillis() % 1000 < 500 ) ? this.loadedChunksMapD : this.loadedChunksMap);
 		postProcess.setUniformSampler(8, "debugBuffer", (System.currentTimeMillis() % 1000 < 500) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
 
-		Voxel vox = VoxelTypes.get(world.getDataAt(camera.pos.negate(), false));
+		Voxel vox = VoxelTypes.get(world.getVoxelData(camera.pos.negate()));
 		postProcess.setUniformFloat("underwater", vox.isVoxelLiquid() ? 1 : 0);
 		postProcess.setUniformFloat("time", animationTimer);
 

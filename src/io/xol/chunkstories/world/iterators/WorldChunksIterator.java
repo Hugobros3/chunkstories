@@ -5,7 +5,7 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.world.chunk.RegionImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -18,60 +18,60 @@ import io.xol.chunkstories.world.chunk.ChunkHolder;
  */
 public class WorldChunksIterator implements ChunksIterator
 {
-	Iterator<ChunkHolder> chIterator;
-	ChunkHolder currentChunkHolder;
-	ChunksIterator currentChunkHolderIterator;
+	Iterator<RegionImplementation> chIterator;
+	RegionImplementation currentRegion;
+	ChunksIterator currentRegionChunksIterator;
 
 	public WorldChunksIterator(WorldImplementation world)
 	{
-		chIterator = world.getChunksHolder().getLoadedChunkHolders();
+		chIterator = world.getRegionsHolder().getLoadedRegions();
 	}
 
 	@Override
 	public boolean hasNext()
 	{
 		//We always want to ask a non-null, non-empty chunk holder
-		while (currentChunkHolder == null || !currentChunkHolderIterator.hasNext())
+		while (currentRegion == null || !currentRegionChunksIterator.hasNext())
 		{
 			if (chIterator.hasNext())
 			{
-				currentChunkHolder = chIterator.next();
-				if (!(currentChunkHolder == null))
-					currentChunkHolderIterator = currentChunkHolder.iterator();
+				currentRegion = chIterator.next();
+				if (!(currentRegion == null))
+					currentRegionChunksIterator = currentRegion.iterator();
 			}
 			//We ran out of chunks holder
 			else
 				break;
 		}
 		//Does it have something for us ?
-		return (currentChunkHolder != null && currentChunkHolderIterator.hasNext());
+		return (currentRegion != null && currentRegionChunksIterator.hasNext());
 	}
 
 	@Override
 	public Chunk next()
 	{
 		//We always want to ask a non-null, non-empty chunk holder
-		while (currentChunkHolder == null || !currentChunkHolderIterator.hasNext())
+		while (currentRegion == null || !currentRegionChunksIterator.hasNext())
 		{
 			if (chIterator.hasNext())
 			{
-				currentChunkHolder = chIterator.next();
-				if (!(currentChunkHolder == null))
-					currentChunkHolderIterator = currentChunkHolder.iterator();
+				currentRegion = chIterator.next();
+				if (!(currentRegion == null))
+					currentRegionChunksIterator = currentRegion.iterator();
 			}
 			//We ran out of chunks holder
 			else
 				break;
 		}
-		if (currentChunkHolder != null && currentChunkHolderIterator.hasNext())
-			return currentChunkHolderIterator.next();
+		if (currentRegion != null && currentRegionChunksIterator.hasNext())
+			return currentRegionChunksIterator.next();
 		return null;
 	}
 
 	@Override
 	public void remove()
 	{
-		currentChunkHolderIterator.remove();
+		currentRegionChunksIterator.remove();
 	}
 
 }

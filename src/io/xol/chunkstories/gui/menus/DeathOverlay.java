@@ -64,8 +64,8 @@ public class DeathOverlay extends Overlay
 		
 		if(exitButton.clicked())
 		{
-			if(Client.world != null)
-				Client.world.unloadEverything();
+			//if(Client.world != null)
+			//	Client.world.unloadEverything();
 			mainScene.eng.changeScene(new MainMenu(mainScene.eng, false));
 		}
 	}

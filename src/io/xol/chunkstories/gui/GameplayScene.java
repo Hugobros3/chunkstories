@@ -551,14 +551,14 @@ public class GameplayScene extends OverlayableScene
 
 		//Location selectedBlockLocation = ((EntityControllable) player).getBlockLookingAt(false);
 
-		Chunk current = Client.world.getChunkChunkCoordinates(cx, cy, cz, false);
+		Chunk current = Client.world.getChunk(cx, cy, cz);
 		int x_top = GameWindowOpenGL.windowHeight - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + worldRenderer.renderedChunks) + " Particles :"
 				+ ((ParticlesRenderer) Client.world.getParticlesManager()).count() + " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + worldRenderer.getWorld().getGameLogic().getSimulationFps(), BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Frame timings : " + debugInfo, BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + Client.world.getChunksHolder().countChunksWithData() + "/"
-				+ Client.world.getChunksHolder().countChunks() + " " + Math.floor(Client.world.getChunksHolder().countChunksWithData() * 4 * 32 * 32 * 32 / (1024L * 1024 / 100f)) / 100f + "Mb used by chunks"
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + Client.world.getRegionsHolder().countChunksWithData() + "/"
+				+ Client.world.getRegionsHolder().countChunks() + " " + Math.floor(Client.world.getRegionsHolder().countChunksWithData() * 4 * 32 * 32 * 32 / (1024L * 1024 / 100f)) / 100f + "Mb used by chunks"
 
 				, BitmapFont.SMALLFONTS);
 
@@ -589,7 +589,7 @@ public class GameplayScene extends OverlayableScene
 		
 		if (player != null && player instanceof EntityLiving)
 		{
-			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Current ChunkHolder : " + this.player.getWorld().getRegionChunkCoordinates(cx, cy, cz), BitmapFont.SMALLFONTS);
+			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Current Region : " + this.player.getWorld().getRegionChunkCoordinates(cx, cy, cz), BitmapFont.SMALLFONTS);
 			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 9 * 16, 0, 16, "Controlled Entity : " + this.player, BitmapFont.SMALLFONTS);
 		}
 	}
@@ -623,7 +623,7 @@ public class GameplayScene extends OverlayableScene
 	@SuppressWarnings("unused")
 	private String getLoadedTerrainVramFootprint()
 	{
-		int nbChunks = Client.world.getRegionSummaries().all().size();
+		int nbChunks = Client.world.getRegionSummaries().countSummaries();
 		long octelsTotal = nbChunks * 256 * 256 * (1 + 1) * 4;
 
 		return nbChunks + " regions, storing " + octelsTotal / 1024 / 1024 + "Mb of data";

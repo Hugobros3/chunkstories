@@ -2,23 +2,23 @@ package io.xol.chunkstories.world.iterators;
 
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.world.chunk.RegionImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
 /**
- * Iterates over a ChunkHolder
+ * Iterates over a Region
  */
-public class ChunkHolderIterator implements ChunksIterator
+public class RegionIterator implements ChunksIterator
 {
-	ChunkHolder holder;
+	RegionImplementation holder;
 	
 	Chunk chunk;
 	int i = 0;
 	
-	public ChunkHolderIterator(ChunkHolder holder)
+	public RegionIterator(RegionImplementation holder)
 	{
 		this.holder = holder;
 	}
@@ -28,7 +28,7 @@ public class ChunkHolderIterator implements ChunksIterator
 	{
 		while(i < 8*8*8)
 		{
-			chunk = holder.getChunk(i/64, (i/8) % 8, i % 8, false);
+			chunk = holder.getChunk(i/64, (i/8) % 8, i % 8);
 			//If there is a chunk waiting then we return yes
 			if(chunk != null)
 				return true;
@@ -45,7 +45,7 @@ public class ChunkHolderIterator implements ChunksIterator
 		//Returns a chunk and increment by one
 		do
 		{
-			chunk = holder.getChunk(i/64, (i/8) % 8, i % 8, false);
+			chunk = holder.getChunk(i/64, (i/8) % 8, i % 8);
 			i++;
 		}
 		while(chunk == null && i < 8*8*8);
@@ -56,9 +56,10 @@ public class ChunkHolderIterator implements ChunksIterator
 	@Override
 	public void remove()
 	{
-		if(chunk == null)
-			return;
-		holder.removeChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ());
+		throw new UnsupportedOperationException();
+		//if(chunk == null)
+		//	return;
+		//holder.removeChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ());
 	}
 
 }

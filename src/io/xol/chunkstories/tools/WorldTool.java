@@ -4,7 +4,6 @@ import java.io.File;
 import java.nio.FloatBuffer;
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundEffect;
@@ -33,12 +32,6 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	public WorldTool(File csWorldDir)
 	{
 		this(csWorldDir.getAbsolutePath());
-	}
-
-	@Override
-	public void trimRemovableChunks()
-	{
-
 	}
 
 	@Override

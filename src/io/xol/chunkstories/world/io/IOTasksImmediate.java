@@ -1,8 +1,9 @@
 package io.xol.chunkstories.world.io;
 
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
-import io.xol.chunkstories.world.summary.RegionSummary;
+import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.chunk.RegionImplementation;
+import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -16,22 +17,23 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public void requestChunkLoad(ChunkHolder holder, int chunkX, int chunkY, int chunkZ, boolean overwrite)
+	public IOTask requestChunkLoad(ChunkHolderImplementation r)
 	{
-		IOTaskLoadChunk task = new IOTaskLoadChunk(holder, chunkX, chunkY, chunkZ, true, overwrite);
+		IOTaskLoadChunk task = new IOTaskLoadChunk(r);
 		if(tasks.add(task))
 		{
 			//System.out.println("Added task ioloadchunk"+chunkX+":"+chunkY+":"+chunkZ);
 			task.run();
 			tasks.remove(task);
 		}
+		return task;
 	}
 
 	@Override
-	public void requestChunkHolderLoad(ChunkHolder holder)
+	public void requestRegionLoad(RegionImplementation holder)
 	{
 		//System.out.println("Load chunk holder"+holder);
-		IOTask task = new IOTaskLoadChunkHolder(holder);
+		IOTask task = new IOTaskLoadRegion(holder);
 		if(tasks.add(task))
 		{
 			task.run();
@@ -40,9 +42,9 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public void requestChunkHolderSave(ChunkHolder holder)
+	public void requestRegionSave(RegionImplementation holder)
 	{
-		IOTask task = new IOTaskSaveChunkHolder(holder);
+		IOTask task = new IOTaskSaveRegion(holder);
 		if(tasks.add(task))
 		{
 			task.run();
@@ -51,7 +53,7 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public void requestRegionSummaryLoad(RegionSummary summary)
+	public void requestRegionSummaryLoad(RegionSummaryImplementation summary)
 	{
 		IOTask task = new IOTaskLoadSummary(summary);
 		if(tasks.add(task))
@@ -62,7 +64,7 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public void requestRegionSummarySave(RegionSummary summary)
+	public void requestRegionSummarySave(RegionSummaryImplementation summary)
 	{
 		IOTask task = new IOTaskSaveSummary(summary);
 		if(tasks.add(task))

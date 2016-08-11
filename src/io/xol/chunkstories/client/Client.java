@@ -7,9 +7,13 @@ package io.xol.chunkstories.client;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.math.LoopingMathHelper;
+import io.xol.engine.math.Math2;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.engine.misc.IconLoader;
 import io.xol.engine.misc.NativesLoader;
@@ -26,6 +30,8 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.content.GameDirectory;
@@ -63,6 +69,10 @@ public class Client implements ClientSideController, ClientInterface
 
 	public static void main(String[] args)
 	{
+		// Check for folder
+		GameDirectory.check();
+		GameDirectory.initClientPath();
+		
 		for (String s : args) // Debug arguments
 		{
 			if (s.equals("-oldgl"))
@@ -104,9 +114,6 @@ public class Client implements ClientSideController, ClientInterface
 	public Client()
 	{
 		clientController = this;
-		// Check for folder
-		GameDirectory.check();
-		GameDirectory.initClientPath();
 		// Start logs
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
@@ -278,5 +285,58 @@ public class Client implements ClientSideController, ClientInterface
 	public DecalsManager getDecalsManager()
 	{
 		return world.getDecalsManager();
+	}
+
+	public Set<ChunkHolder> usedChunks = new HashSet<ChunkHolder>();
+	
+	@Override
+	public void updateUsedWorldBits()
+	{
+		if(controlledEntity == null)
+			return;
+			
+		//Subscribe to nearby wanted chunks
+		int cameraChunkX = Math2.floor((controlledEntity.getLocation().getX()) / 32);
+		int cameraChunkY = Math2.floor((controlledEntity.getLocation().getY()) / 32);
+		int cameraChunkZ = Math2.floor((controlledEntity.getLocation().getZ()) / 32);
+		int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
+		
+		for (int t = (cameraChunkX - chunksViewDistance - 1); t < cameraChunkX + chunksViewDistance + 1; t++)
+		{
+			for (int g = (cameraChunkZ - chunksViewDistance - 1); g < cameraChunkZ + chunksViewDistance + 1; g++)
+				for (int b = cameraChunkY - 3; b < cameraChunkY + 3; b++)
+				{
+					ChunkHolder holder = world.aquireChunkHolder(this, t, b, g);
+					if(holder == null)
+						continue;
+					
+					//System.out.println(holder);
+					if(usedChunks.add(holder))
+					{
+						//System.out.println(b);
+						//System.out.println("Registerin'" +holder + " "+ usedChunks.size());
+					}
+					//Chunk chunk = world.getChunkChunkCoordinates(t, b, g);
+				}
+		}
+		
+		//Unsubscribe for far ones
+		Iterator<ChunkHolder> i = usedChunks.iterator();
+		while(i.hasNext())
+		{
+			ChunkHolder holder = i.next();
+			if (		(LoopingMathHelper.moduloDistance(	holder.getChunkCoordinateX(), cameraChunkX, world.getSizeInChunks()) > chunksViewDistance + 1) 
+					|| 	(LoopingMathHelper.moduloDistance(	holder.getChunkCoordinateZ(), cameraChunkZ, world.getSizeInChunks()) > chunksViewDistance + 1)
+					|| 	(Math.abs(							holder.getChunkCoordinateY() - cameraChunkY) > 4))
+			{
+				/*System.out.println("rmv");
+				System.out.println((LoopingMathHelper.moduloDistance(	holder.getChunkCoordinateX(), cameraChunkX, world.getSizeInChunks()) > chunksViewDistance + 1) 
+					+"\n"+ 	(LoopingMathHelper.moduloDistance(	holder.getChunkCoordinateZ(), cameraChunkZ, world.getSizeInChunks()) > chunksViewDistance + 1)
+					+"\n"+ 	(Math.abs(							holder.getChunkCoordinateY() - cameraChunkY) > 4) + " > "+(holder.getChunkCoordinateY() - cameraChunkY) + " -> "  +holder.getChunkCoordinateY());
+				*/
+				i.remove();
+				holder.unregisterUser(this);
+			}
+		}
 	}
 }

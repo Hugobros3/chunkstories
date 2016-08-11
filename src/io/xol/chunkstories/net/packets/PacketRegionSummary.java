@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
-import io.xol.chunkstories.world.summary.RegionSummary;
+import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
 public class PacketRegionSummary extends Packet
 {
 	// Server-side
-	public RegionSummary summary;
+	public RegionSummaryImplementation summary;
 	
 	// Client-side
 	public int rx, rz;
@@ -33,8 +33,8 @@ public class PacketRegionSummary extends Packet
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
-		out.writeInt(summary.regionX);
-		out.writeInt(summary.regionZ);
+		out.writeInt(summary.getRegionX());
+		out.writeInt(summary.getRegionZ());
 		ByteBuffer compressMe = ByteBuffer.allocateDirect(256 * 256 * 4 * 2);
 			for(int i = 0; i < 256 * 256; i++)
 				compressMe.putInt(summary.heights[i]);
@@ -44,7 +44,7 @@ public class PacketRegionSummary extends Packet
 		compressMe.flip();
 		byte[] unCompressed = new byte[compressMe.remaining()];
 		compressMe.get(unCompressed);
-		byte[] compressedData = RegionSummary.compressor.compress(unCompressed);
+		byte[] compressedData = RegionSummaryImplementation.compressor.compress(unCompressed);
 		out.writeInt(compressedData.length);
 		out.write(compressedData);
 	}

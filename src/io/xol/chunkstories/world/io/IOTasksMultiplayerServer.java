@@ -7,8 +7,8 @@ import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
-import io.xol.chunkstories.world.summary.RegionSummary;
+import io.xol.chunkstories.world.chunk.RegionImplementation;
+import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -52,13 +52,9 @@ public class IOTasksMultiplayerServer extends IOTasks
 				if(!client.isAlive())
 					return true;
 				
-				ChunkHolder holder = world.getChunksHolder().getChunkHolderChunkCoordinates(chunkX, chunkY, chunkZ, true);
+				RegionImplementation holder = world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
 				if(holder.isDiskDataLoaded())
 				{
-					//System.out.println("snding actly: "+chunkX+":"+chunkY+":"+chunkZ);
-					//CubicChunk c = world.getChunk(chunkX, chunkY, chunkZ, true);
-					//ChunkHolder holder = c.holder;
-					
 					PacketChunkCompressedData packet = new PacketChunkCompressedData(false);
 					packet.setPosition(chunkX, chunkY, chunkZ);
 					packet.data = holder.getCompressedData(chunkX, chunkY, chunkZ);
@@ -70,21 +66,6 @@ public class IOTasksMultiplayerServer extends IOTasks
 				{
 					//System.out.println("holder not loaded yet "+holder);
 					
-					/*for(IOTask task : tasks)
-					{
-						if(task instanceof IOTaskLoadChunkHolder)
-							System.out.println(task);
-					}
-					
-					
-					IOTaskLoadChunkHolder saveChunkHolder = new IOTaskLoadChunkHolder(holder);
-					if (tasks != null && tasks.contains(saveChunkHolder))
-					{
-						System.out.println("A load operation is still running on " + holder + ", waiting for it to complete.");
-						return false;
-					}*/
-					
-					//world.ioHandler.requestChunkLoad(chunkX, chunkY, chunkZ, false);
 					return false;
 				}
 			}
@@ -117,7 +98,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 	public void requestCompressedChunkSend(int x, int y, int z, ServerClient sender)
 	{
 		IOTaskSendCompressedChunk task = new IOTaskSendCompressedChunk(x, y, z, sender);
-		addTask(task);
+		scheduleTask(task);
 	}
 	
 	class IOTaskSendRegionSummary extends IOTask
@@ -141,19 +122,17 @@ public class IOTasksMultiplayerServer extends IOTasks
 				if(!client.isAlive())
 					return true;
 				
-				RegionSummary summary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(rx * 256, rz * 256);
-				//System.out.println("Asking for summary at : "+rx+":"+rz);
-				if(summary.summaryLoaded.get())
-				{
-					PacketRegionSummary packet = new PacketRegionSummary(false);
-					packet.summary = summary;
-					client.pushPacket(packet);
-					return true;
-				}
-				else
-				{
+				RegionSummaryImplementation summary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(rx * 256, rz * 256);
+				
+				//Don't send the data until we have the summary loaded in
+				if(summary == null || !summary.isLoaded())
 					return false;
-				}
+				
+				PacketRegionSummary packet = new PacketRegionSummary(false);
+				packet.summary = summary;
+				client.pushPacket(packet);
+				return true;
+				
 			}
 			catch(Exception e)
 			{
@@ -166,6 +145,6 @@ public class IOTasksMultiplayerServer extends IOTasks
 	public void requestRegionSummary(int x, int z, ServerClient sender)
 	{
 		IOTaskSendRegionSummary task = new IOTaskSendRegionSummary(x, z, sender);
-		addTask(task);
+		scheduleTask(task);
 	}
 }

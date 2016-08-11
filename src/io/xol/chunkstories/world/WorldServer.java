@@ -8,8 +8,6 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.core.events.PlayerSpawnEvent;
 import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
@@ -19,7 +17,6 @@ import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
 import io.xol.chunkstories.server.propagation.VirtualServerSoundManager;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerServer;
 import io.xol.engine.math.LoopingMathHelper;
 
@@ -51,7 +48,6 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	@Override
 	public void tick()
 	{
-		this.trimRemovableChunks();
 		//Update client tracking
 		Iterator<Player> pi = server.getConnectedPlayers();
 		while (pi.hasNext())
@@ -70,7 +66,8 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				for (int cx = chunkX - 4; cx < chunkX + 4; cx++)
 					for (int cy = chunkY - 2; cy < chunkY + 2; cy++)
 						for (int cz = chunkZ - 4; cz < chunkZ + 4; cz++)
-							this.getChunkChunkCoordinates(chunkX, chunkY, chunkZ, true);
+							System.out.println("strangely this does not seem to happen huh..");
+							//this.getChunkChunkCoordinates(chunkX, chunkY, chunkZ, true);
 
 				//System.out.println("chunk:"+this.getChunk(chunkX, chunkY, chunkZ, true));
 				//System.out.println("holder:"+client.getProfile().getControlledEntity().getChunkHolder());
@@ -108,8 +105,6 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			{
 				if(player.getControlledEntity() == null || (player.getControlledEntity() instanceof EntityLiving && ((EntityLiving)player.getControlledEntity()).isDead()))
 				{
-
-
 					PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.getProfile(), this);
 					Server.getInstance().getPluginsManager().fireEvent(playerSpawnEvent);
 					sender.sendChat("Respawning ...");
@@ -136,7 +131,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		}
 	}
 
-	@Override
+	/*@Override
 	public void trimRemovableChunks()
 	{
 		int chunksViewDistance = 256 / 32;
@@ -176,20 +171,21 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 			if (!neededBySomeone)
 			{
-				removeChunk(c, true);
+				//TODO still have to refactorise
+				//removeChunk(c, true);
 			}
 		}
 
 		//4 of margin bc we need to be far enought of the center of the holder
 		chunksViewDistance += 4;
 
-		Iterator<ChunkHolder> chunksHoldersIterator = this.getChunksHolder().getLoadedChunkHolders();
-		while (chunksHoldersIterator.hasNext())
+		Iterator<RegionImplementation> regionsIterator = this.getRegionsHolder().getLoadedRegions();
+		while (regionsIterator.hasNext())
 		{
-			ChunkHolder chunkHolder = chunksHoldersIterator.next();
-			int chunkHolderCenterX = chunkHolder.regionX * 8 + 4;
-			int chunkHolderCenterY = chunkHolder.regionY * 8 + 4;
-			int chunkHolderCenterZ = chunkHolder.regionZ * 8 + 4;
+			RegionImplementation region = regionsIterator.next();
+			int regionCenterX = region.regionX * 8 + 4;
+			int chunkHolderCenterY = region.regionY * 8 + 4;
+			int chunkHolderCenterZ = region.regionZ * 8 + 4;
 
 			boolean neededBySomeone = false;
 
@@ -206,7 +202,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				int pCY = (int) loc.getY() / 32;
 				int pCZ = (int) loc.getZ() / 32;
 				//TODO use proper configurable values for this
-				if (((LoopingMathHelper.moduloDistance(chunkHolderCenterX, pCX, sizeInChunks) < chunksViewDistance + 2) && (LoopingMathHelper.moduloDistance(chunkHolderCenterZ, pCZ, sizeInChunks) < chunksViewDistance + 2)
+				if (((LoopingMathHelper.moduloDistance(regionCenterX, pCX, sizeInChunks) < chunksViewDistance + 2) && (LoopingMathHelper.moduloDistance(chunkHolderCenterZ, pCZ, sizeInChunks) < chunksViewDistance + 2)
 						&& (Math.abs(chunkHolderCenterY - pCY) < 4 + 4)))
 				{
 					neededBySomeone = true;
@@ -217,19 +213,20 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			//	System.out.println(chunkHolder.canBeUnloaded()+" "+chunkHolder.getNumberOfLoadedChunks());
 
 			//Don't unload it until it's empty, done loading from disk and needed by no one.
-			if (chunkHolder.canBeUnloaded() && chunkHolder.getNumberOfLoadedChunks() == 0 && !neededBySomeone)
+			if (region.canBeUnloaded() && region.getNumberOfLoadedChunks() == 0 && !neededBySomeone)
 			{
-				chunkHolder.unloadAndSave();
+				region.unloadAndSave();
 				
 				//chunkHolder.save();
 				//chunkHolder.unloadHolder();
 			}
 		}
-	}
+	}*/
 
-	protected int actuallySetsDataAt(int x, int y, int z, int newData, boolean load, Entity entity)
+	@Override
+	protected int actuallySetsDataAt(int x, int y, int z, int newData, Entity entity)
 	{
-		newData = super.actuallySetsDataAt(x, y, z, newData, load, entity);
+		newData = super.actuallySetsDataAt(x, y, z, newData, entity);
 		if (newData != -1)
 		{
 			int blocksViewDistance = 256;

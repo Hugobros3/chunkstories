@@ -20,11 +20,12 @@ public interface Region
 	public int getRegionY();
 	
 	public int getRegionZ();
-
+	
 	/**
-	 * @return An iterator over each entity within this region
+	 * Called when the entity is now within this region's influence
+	 * @return If it was added successfully
 	 */
-	Iterator<Entity> getEntitiesWithinRegion();
+	public boolean addEntityToRegion(Entity entity);
 	
 	/**
 	 * Called when the entity is no longer within this region's influence
@@ -33,20 +34,23 @@ public interface Region
 	public boolean removeEntityFromRegion(Entity entity);
 	
 	/**
-	 * Called when the entity is now within this region's influence
-	 * @return If it was added successfully
+	 * @return An iterator over each entity within this region
 	 */
-	public boolean addEntityToRegion(Entity entity);
+	Iterator<Entity> getEntitiesWithinRegion();
 	
 	public int getNumberOfLoadedChunks();
 
 	public boolean isDiskDataLoaded();
 	
-	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean load);
+	public ChunkHolder getChunkHolder(int chunkX, int chunkY, int chunkZ);
+	
+	public Chunk getChunk(int chunkX, int chunkY, int chunkZ);
 
 	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ);
 
-	public boolean removeChunk(int chunkX, int chunkY, int chunkZ);
+	public boolean isUnused();
+
+	//public boolean removeChunk(int chunkX, int chunkY, int chunkZ);
 
 	public void save();
 
@@ -55,5 +59,4 @@ public interface Region
 	public World getWorld();
 
 	public EntityVoxel getEntityVoxelAt(int worldX, int worldY, int worldZ);
-
 }

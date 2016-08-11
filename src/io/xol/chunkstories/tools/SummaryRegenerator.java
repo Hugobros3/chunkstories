@@ -56,7 +56,7 @@ public class SummaryRegenerator
 							while (!hit && y > 0)
 							{
 								int id = VoxelFormat.id(world.getVoxelData(rX, y, rZ));
-								Chunk chunk = world.getChunkChunkCoordinates(rX / 32, y / 32, rZ / 32, true);
+								Chunk chunk = world.getChunk(rX / 32, y / 32, rZ / 32);
 								if (chunk != null && chunk.isAirChunk())
 								{
 									y -= 31;
@@ -66,14 +66,14 @@ public class SummaryRegenerator
 									if (id != 0)
 									{
 										hit = true;
-										world.getRegionSummaries().set(rX, rZ, y, id);
+										world.getRegionSummaries().setHeightAndId(rX, rZ, y, id);
 									}
 								}
 								y--;
 							}
 							//System.out.println(world.chunksData.free());
 							world.saveEverything();
-							world.getChunksHolder().clearAll();
+							world.getRegionsHolder().clearAll();
 							world.unloadEverything();
 						}
 					}

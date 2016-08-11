@@ -9,8 +9,7 @@ import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.io.CSFRegionFile;
-import io.xol.chunkstories.world.io.IOTasksImmediate;
-import io.xol.chunkstories.world.iterators.ChunkHolderIterator;
+import io.xol.chunkstories.world.iterators.RegionIterator;
 import io.xol.engine.concurrency.SafeWriteLock;
 
 import java.util.Iterator;
@@ -18,49 +17,46 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import net.jpountz.lz4.LZ4Compressor;
-import net.jpountz.lz4.LZ4Factory;
-import net.jpountz.lz4.LZ4FastDecompressor;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ChunkHolder implements Region
+public class RegionImplementation implements Region
 {
 	public final WorldImplementation world;
 	public final int regionX, regionY, regionZ;
 	public final long uuid;
-	private final WorldChunksHolder worldChunksHolder;
+	private final WorldRegionsHolder worldChunksHolder;
 
 	//Only relevant on Master worlds
 	public final CSFRegionFile handler;
 
 	// Holds 8x8x8 CubicChunks
-	private CubicChunk[][][] data = new CubicChunk[8][8][8];
-	private AtomicInteger loadedChunks = new AtomicInteger();
+
+	//private CubicChunk[][][] data = new CubicChunk[8][8][8];
+	//private AtomicInteger loadedChunks = new AtomicInteger();
 
 	private AtomicLong unloadCooldown = new AtomicLong();
 	private boolean unloadedFlag = false;
 
 	//TODO find a clean way to let IOTaks fiddle with this
 	public SafeWriteLock chunksArrayLock = new SafeWriteLock();
-	public SafeWriteLock compressedChunksLock = new SafeWriteLock();
 
-	public byte[][][][] compressedChunks = new byte[8][8][8][];
+	private ChunkHolderImplementation[][][] chunkHolders;
+	//public SafeWriteLock compressedChunksLock = new SafeWriteLock();
+	//public byte[][][][] compressedChunks = new byte[8][8][8][];
 	private AtomicBoolean isDiskDataLoaded = new AtomicBoolean(false);
 
 	//Local entities
 	private Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
 
 	// LZ4 compressors & decompressors stuff
-	private static LZ4Factory factory = LZ4Factory.fastestInstance();
+	/*private static LZ4Factory factory = LZ4Factory.fastestInstance();
 	private static LZ4Compressor compressor = factory.fastCompressor();
 	private static LZ4FastDecompressor decompressor = factory.fastDecompressor();
-
+	
 	private static ThreadLocal<byte[]> compressedData = new ThreadLocal<byte[]>()
 	{
 		@Override
@@ -69,10 +65,11 @@ public class ChunkHolder implements Region
 			return new byte[32 * 32 * 32 * 4];
 		}
 	};
+	 */
 
 	private static Random random = new Random();
 
-	public ChunkHolder(WorldImplementation world, int regionX, int regionY, int regionZ, WorldChunksHolder worldChunksHolder)
+	public RegionImplementation(WorldImplementation world, int regionX, int regionY, int regionZ, WorldRegionsHolder worldChunksHolder)
 	{
 		this.world = world;
 		this.regionX = regionX;
@@ -80,11 +77,18 @@ public class ChunkHolder implements Region
 		this.regionZ = regionZ;
 		this.worldChunksHolder = worldChunksHolder;
 
+		//Initialize slots
+		chunkHolders = new ChunkHolderImplementation[8][8][8];
+		for (int i = 0; i < 8; i++)
+			for (int j = 0; j < 8; j++)
+				for (int k = 0; k < 8; k++)
+					chunkHolders[i][j][k] = new ChunkHolderImplementation(this, i, j, k);
+
 		//Unique UUID
 		uuid = random.nextLong();
 
-		worldChunksHolder.holderConstructorCallBack(this);
-		
+		worldChunksHolder.regionConstructorCallBack(this);
+
 		//Set the initial cooldown delay
 		unloadCooldown.set(System.currentTimeMillis());
 
@@ -92,7 +96,7 @@ public class ChunkHolder implements Region
 		if (world instanceof WorldMaster)
 		{
 			handler = new CSFRegionFile(this);
-			world.ioHandler.requestChunkHolderLoad(this);
+			world.ioHandler.requestRegionLoad(this);
 		}
 		else
 		{
@@ -101,7 +105,7 @@ public class ChunkHolder implements Region
 		}
 	}
 
-	private void compressChunkData(Chunk chunk)
+	/*private void compressChunkData(Chunk chunk)
 	{
 		int chunkX = chunk.getChunkX();
 		int chunkY = chunk.getChunkY();
@@ -111,10 +115,10 @@ public class ChunkHolder implements Region
 			CubicChunk cubic = (CubicChunk) chunk;
 			if (!chunk.isAirChunk())
 			{
-
+	
 				byte[] toCompressData = new byte[32 * 32 * 32 * 4];
-
-				int[] data = cubic.chunkVoxelData;// world.chunksData.grab(chunk.dataPointer);
+	
+				int[] data = cubic.chunkVoxelData;
 				int z = 0;
 				for (int i : data)
 				{
@@ -125,9 +129,9 @@ public class ChunkHolder implements Region
 					z += 4;
 				}
 				int compressedDataLength = compressor.compress(toCompressData, compressedData.get());
-
+	
 				assert decompressor.decompress(compressedData.get(), 32 * 32 * 32 * 4).length == 32 * 32 * 32 * 4;
-
+	
 				// Locks the compressedChunks array so nothing freakes out
 				compressedChunksLock.beginWrite();
 				compressedChunks[chunkX & 7][chunkY & 7][chunkZ & 7] = new byte[compressedDataLength];
@@ -139,41 +143,36 @@ public class ChunkHolder implements Region
 				compressedChunksLock.beginWrite();
 				compressedChunks[chunkX & 7][chunkY & 7][chunkZ & 7] = null;
 				compressedChunksLock.endWrite();
-
+	
 			}
 			cubic.lastModificationSaved.set(System.currentTimeMillis());
 		}
-	}
+	}*/
 
 	public byte[] getCompressedData(int chunkX, int chunkY, int chunkZ)
 	{
-		return compressedChunks[chunkX & 7][chunkY & 7][chunkZ & 7];
+		return chunkHolders[chunkX & 7][chunkY & 7][chunkZ & 7].getCompressedData();
 	}
 
 	@Override
-	public Chunk getChunk(int chunkX, int chunkY, int chunkZ, boolean loadIfAvaible)
+	public Chunk getChunk(int chunkX, int chunkY, int chunkZ)
 	{
-		Chunk chunk = data[chunkX & 7][chunkY & 7][chunkZ & 7];
-
-		if (chunk == null && loadIfAvaible)
-		{
-			world.ioHandler.requestChunkLoad(this, chunkX, chunkY, chunkZ, false);
-			if (world.ioHandler instanceof IOTasksImmediate)
-			{
-				return getChunk(chunkX, chunkY, chunkZ, false);
-			}
-			return null;
-		}
-		return chunk;
+		return chunkHolders[chunkX & 7][chunkY & 7][chunkZ & 7].getChunk();
 	}
 
-	public Chunk setChunk(int chunkX, int chunkY, int chunkZ, Chunk chunk)
+	@Override
+	public ChunkHolderImplementation getChunkHolder(int chunkX, int chunkY, int chunkZ)
+	{
+		return chunkHolders[chunkX & 7][chunkY & 7][chunkZ & 7];
+	}
+
+	/*public Chunk setChunk(int chunkX, int chunkY, int chunkZ, Chunk chunk)
 	{
 		chunksArrayLock.beginWrite();
-
+	
 		if (data[chunkX & 7][chunkY & 7][chunkZ & 7] == null && chunk != null)
 			loadedChunks.incrementAndGet();
-
+	
 		//Remove any form of cuck
 		if (data[chunkX & 7][chunkY & 7][chunkZ & 7] != null)// && data[chunkX & 7][chunkY & 7][chunkZ & 7].dataPointer != chunk.dataPointer)
 		{
@@ -183,18 +182,18 @@ public class ChunkHolder implements Region
 			//System.out.println("Overriding existing chunk, deleting old one");
 			data[chunkX & 7][chunkY & 7][chunkZ & 7].destroy();
 		}
-
+	
 		//System.out.println("set chunk"+chunk);
 		data[chunkX & 7][chunkY & 7][chunkZ & 7] = (CubicChunk) chunk;
-
+	
 		//Change chunk holder to this
 		assert chunk.getRegion().equals(this);
-
+	
 		chunksArrayLock.endWrite();
 		return chunk;
-	}
+	}*/
 
-	@Override
+	/*@Override
 	public boolean removeChunk(int chunkX, int chunkY, int chunkZ)
 	{
 		Chunk c = data[chunkX & 7][chunkY & 7][chunkZ & 7];
@@ -202,7 +201,7 @@ public class ChunkHolder implements Region
 		{
 			//Save back whatever the chunk
 			compressChunkData(c);
-
+	
 			//Locks the chunks array
 			chunksArrayLock.beginWrite();
 			//Destroys the chunk
@@ -213,34 +212,24 @@ public class ChunkHolder implements Region
 			//Unlocks
 			chunksArrayLock.endWrite();
 		}
-
+	
 		//True -> holder is now empty.
 		return loadedChunks.get() == 0;
-	}
+	}*/
 
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.world.chunk.Region#isChunkLoaded(int, int, int)
 	 */
+
 	@Override
 	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ)
 	{
-		return data[chunkX & 7][chunkY & 7][chunkZ & 7] != null;
+		return chunkHolders[chunkX & 7][chunkY & 7][chunkZ & 7].isChunkLoaded();
 	}
 
 	public ChunksIterator iterator()
 	{
-		return new ChunkHolderIterator(this);
-	}
-
-	public void unloadAllChunks()
-	{
-		for (int a = 0; a < 8; a++)
-			for (int b = 0; b < 8; b++)
-				for (int c = 0; c < 8; c++)
-				{
-					if (data[a][b][c] != null)
-						removeChunk(a, b, c);
-				}
+		return new RegionIterator(this);
 	}
 
 	@Override
@@ -248,7 +237,7 @@ public class ChunkHolder implements Region
 	{
 		return isDiskDataLoaded.get();
 	}
-	
+
 	public boolean isUnloaded()
 	{
 		return unloadedFlag;
@@ -259,7 +248,7 @@ public class ChunkHolder implements Region
 		isDiskDataLoaded.set(b);
 	}
 
-	public void unloadHolder()
+	public void unload()
 	{
 		//Before unloading the holder we want to make sure we finish all saving operations
 		if (handler != null)
@@ -268,7 +257,8 @@ public class ChunkHolder implements Region
 		//Set unloaded flag to true so we are not using again an unloaded holder
 		unloadedFlag = true;
 
-		unloadAllChunks();
+		//No need to unload chunks, this is assumed when we unload the holder
+		//unloadAllChunks();
 
 		world.entitiesLock.lock();
 
@@ -281,11 +271,11 @@ public class ChunkHolder implements Region
 			//i.remove();
 
 			//Skip entities that shouldn't be saved
-			if((entity instanceof EntityUnsaveable && !((EntityUnsaveable)entity).shouldSaveIntoRegion()))
+			if ((entity instanceof EntityUnsaveable && !((EntityUnsaveable) entity).shouldSaveIntoRegion()))
 				continue;
-			
+
 			//System.out.println("Unloading entity"+entity+" currently in chunk holder "+this);
-			
+
 			//We keep the inner reference so serialization can still write entities contained within
 			world.removeEntityFromList(entity);
 			//countRemovedEntities++;
@@ -294,7 +284,7 @@ public class ChunkHolder implements Region
 		world.entitiesLock.unlock();
 
 		//Remove the reference in the world to this
-		this.getWorld().getChunksHolder().removeHolder(this);
+		this.getWorld().getRegionsHolder().removeRegion(this);
 	}
 
 	/* (non-Javadoc)
@@ -317,34 +307,30 @@ public class ChunkHolder implements Region
 					if (chunk == null)
 						System.out.println("Notice : generator " + world.getGenerator() + " produced a null chunk.");
 
-					this.setChunk(cx, cy, cz, chunk);
+					this.chunkHolders[a][b][c].setChunk((CubicChunk) chunk);
 					//compressChunkData(data[a][b][c]);
 				}
 
 		compressAll();
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.chunk.Region#save()
-	 */
 	@Override
 	public void save()
 	{
-		world.ioHandler.requestChunkHolderSave(this);
+		world.ioHandler.requestRegionSave(this);
 	}
 
 	@Override
 	public void unloadAndSave()
 	{
-		unloadHolder();
-		world.ioHandler.requestChunkHolderSave(this);
-		//world.ioHandler.requestChunkHolderSaveAndUnload(this);
+		unload();
+		world.ioHandler.requestRegionSave(this);
 	}
 
 	@Override
 	public String toString()
 	{
-		return "[ChunkHolder rx:" + regionX + " ry:" + regionY + " rz:" + regionZ + " uuid: " + uuid + "l:" + isDiskDataLoaded.get() + " u:" + unloadedFlag + " chunks: " + this.loadedChunks.get() + " entities:" + this.localEntities.size() + "]";
+		return "[Region rx:" + regionX + " ry:" + regionY + " rz:" + regionZ + " uuid: " + uuid + "loaded?:" + isDiskDataLoaded.get() + " u:" + unloadedFlag + " chunks: " + "NULL" + " entities:" + this.localEntities.size() + "]";
 	}
 
 	public void compressAll()
@@ -352,23 +338,20 @@ public class ChunkHolder implements Region
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
-				{
-					if (data[a][b][c] != null)
-						compressChunkData(data[a][b][c]);
-				}
+					chunkHolders[a][b][c].compressChunkData();
 	}
-	
+
 	public void compressChangedChunks()
 	{
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
 				{
-					if (data[a][b][c] != null)
+					if (chunkHolders[a][b][c].getChunk() != null)
 					{
-						CubicChunk chunk = data[a][b][c];
-						if(chunk.lastModification.get() > chunk.lastModificationSaved.get())
-							compressChunkData(data[a][b][c]);
+						CubicChunk chunk = chunkHolders[a][b][c].getChunk();
+						if (chunk.lastModification.get() > chunk.lastModificationSaved.get())
+							chunkHolders[a][b][c].compressChunkData();
 					}
 				}
 	}
@@ -376,7 +359,15 @@ public class ChunkHolder implements Region
 	@Override
 	public int getNumberOfLoadedChunks()
 	{
-		return loadedChunks.get();
+		int count = 0;
+
+		for (int a = 0; a < 8; a++)
+			for (int b = 0; b < 8; b++)
+				for (int c = 0; c < 8; c++)
+					if (chunkHolders[a][b][c].isChunkLoaded())
+						count++;
+
+		return count;
 	}
 
 	@Override
@@ -435,13 +426,48 @@ public class ChunkHolder implements Region
 	public EntityVoxel getEntityVoxelAt(int worldX, int worldY, int worldZ)
 	{
 		Iterator<Entity> entities = this.getEntitiesWithinRegion();
-		while(entities.hasNext())
+		while (entities.hasNext())
 		{
 			Entity entity = entities.next();
-			if(entity != null && entity instanceof EntityVoxel && ((int)entity.getLocation().getX() == worldX)
-					&& ((int)entity.getLocation().getY() == worldY) && ((int)entity.getLocation().getZ() == worldZ))
+			if (entity != null && entity instanceof EntityVoxel && ((int) entity.getLocation().getX() == worldX) && ((int) entity.getLocation().getY() == worldY) && ((int) entity.getLocation().getZ() == worldZ))
 				return (EntityVoxel) entity;
 		}
 		return null;
+	}
+
+	/**
+	 * Unloads unused chunks, returns true if all chunks were unloaded
+	 */
+	public boolean unloadsUnusedChunks()
+	{
+		int loadedChunks = 0;
+		
+		for (int a = 0; a < 8; a++)
+			for (int b = 0; b < 8; b++)
+				for (int c = 0; c < 8; c++)
+				{
+					chunkHolders[a][b][c].unloadsIfUnused();
+					if(chunkHolders[a][b][c].isChunkLoaded())
+						loadedChunks++;
+				}
+		
+		return loadedChunks == 0;
+	}
+
+	@Override
+	public boolean isUnused()
+	{
+		int usedChunks = 0;
+		
+		for (int a = 0; a < 8; a++)
+			for (int b = 0; b < 8; b++)
+				for (int c = 0; c < 8; c++)
+				{
+					chunkHolders[a][b][c].unloadsIfUnused();
+					if(chunkHolders[a][b][c].isChunkLoaded() || chunkHolders[a][b][c].countUsers() > 0)
+						usedChunks++;
+				}
+		
+		return usedChunks == 0;
 	}
 }

@@ -55,6 +55,8 @@ public class PacketsProcessor
 	{
 		if (!f.exists())
 			return;
+		
+		ChunkStoriesLogger.getInstance().log("Loading packets in "+f);
 		try (FileReader fileReader = new FileReader(f); BufferedReader reader = new BufferedReader(fileReader);)
 		{
 			String line = "";

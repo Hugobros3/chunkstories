@@ -112,7 +112,7 @@ public class DecalsRenderer implements DecalsManager
 							if (model == null)
 								model = VoxelModels.getVoxelModel("default");
 
-							model.renderInto(virtualRenderBytebuffer, bri, world.getChunkWorldCoordinates(location, false), (int) location.getX(), (int) location.getY(), (int) location.getZ());
+							model.renderInto(virtualRenderBytebuffer, bri, world.getChunkWorldCoordinates(location), (int) location.getX(), (int) location.getY(), (int) location.getZ());
 						}
 
 					}

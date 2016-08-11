@@ -16,9 +16,10 @@ import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.world.chunk.RegionImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.summary.RegionSummary;
+import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import net.jpountz.lz4.LZ4Exception;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -105,7 +106,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
 			chunksAlreadyAsked.remove(loc);
 
-			world.setChunk(c);
+			world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ).getChunkHolder(chunkX, chunkY, chunkZ).setChunk(c);
 			return true;
 		}
 
@@ -126,13 +127,13 @@ public class IOTasksMultiplayerClient extends IOTasks
 	public void requestChunkCompressedDataProcess(PacketChunkCompressedData data)
 	{
 		IOTaskProcessCompressedChunkArrival task = new IOTaskProcessCompressedChunkArrival(data.x, data.y, data.z, data.data);
-		addTask(task);
+		scheduleTask(task);
 	}
 
 	public void requestChunkCompressedDataProcess(int x, int y, int z, byte[] data)
 	{
 		IOTaskProcessCompressedChunkArrival task = new IOTaskProcessCompressedChunkArrival(x, y, z, data);
-		addTask(task);
+		scheduleTask(task);
 	}
 
 	class ChunkLocation
@@ -166,16 +167,22 @@ public class IOTasksMultiplayerClient extends IOTasks
 	}
 
 	@Override
-	public void requestChunkLoad(ChunkHolder holder, int chunkX, int chunkY, int chunkZ, boolean overwrite)
+	public IOTask requestChunkLoad(ChunkHolderImplementation slot)
 	{
-		ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
+		/*ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
 		//Only asks server once about the load request
 		if (!this.chunksAlreadyAsked.contains(loc))
 		{
 			chunksAlreadyAsked.add(loc);
 			//Thread.currentThread().dumpStack();
 			Client.connection.sendTextMessage("world/getChunkCompressed:" + chunkX + ":" + chunkY + ":" + chunkZ);
-		}
+		}*/
+
+		//TODO don't ask anything, server knows what you deserve ?
+		//System.out.println("Asking (once tkt O:) ) about "+slot);
+		//System.out.println("world/getChunkCompressed:" + slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" + slot.getChunkCoordinateZ());
+		Client.connection.sendTextMessage("world/getChunkCompressed:" + slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" + slot.getChunkCoordinateZ());
+		return null;
 	}
 
 	@Override
@@ -186,7 +193,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 	}
 
 	@Override
-	public void requestChunkHolderLoad(ChunkHolder holder)
+	public void requestRegionLoad(RegionImplementation holder)
 	{
 		holder.setDiskDataLoaded(true);
 	}
@@ -198,26 +205,36 @@ public class IOTasksMultiplayerClient extends IOTasks
 		public IOTaskProcessCompressedRegionSummaryArrival(PacketRegionSummary packet)
 		{
 			this.packet = packet;
+			
+			System.out.println("arrival summary");
 		}
 
 		@Override
 		public boolean run()
 		{
-			synchronized (Client.world.getRegionSummaries())
+			//synchronized (Client.world.getRegionSummaries())
 			{
-				RegionSummary summary = Client.world.getRegionSummaries().getRegionSummaryWorldCoordinates(packet.rx * 256, packet.rz * 256);
+				RegionSummaryImplementation summary = Client.world.getRegionSummaries().getRegionSummaryWorldCoordinates(packet.rx * 256, packet.rz * 256);
+				
+				if(summary == null)
+				{
+					ChunkStoriesLogger.getInstance().error("Summary data arrived for "+packet.rx+ ": "+packet.rz + "but there was no region summary waiting for it ?");
+					return true;
+				}
+				
 				byte[] unCompressedSummaries = unCompressedSummariesData.get();
-				unCompressedSummaries = RegionSummary.decompressor.decompress(packet.compressedData, 256 * 256 * 4 * 2);
+				unCompressedSummaries = RegionSummaryImplementation.decompressor.decompress(packet.compressedData, 256 * 256 * 4 * 2);
 				IntBuffer ib = ByteBuffer.wrap(unCompressedSummaries).asIntBuffer();
 				ib.get(summary.heights, 0, 256 * 256);
 				ib.get(summary.ids, 0, 256 * 256);
-				// System.arraycopy(uncompressed, 0, summary.heights, 0, 256 *
-				// 256 * 4);
+				
 				summary.texturesUpToDate.set(false);
 				summary.summaryLoaded.set(true);
 
 				summary.computeHeightMetadata();
 			}
+			
+			//TODO look at these messy synchronisation blocks, not sure they are usefull
 			synchronized (summariesAlreadyAsked)
 			{
 				Iterator<int[]> i = summariesAlreadyAsked.iterator();
@@ -249,15 +266,15 @@ public class IOTasksMultiplayerClient extends IOTasks
 	public void requestRegionSummaryProcess(PacketRegionSummary packet)
 	{
 		IOTaskProcessCompressedRegionSummaryArrival task = new IOTaskProcessCompressedRegionSummaryArrival(packet);
-		addTask(task);
+		scheduleTask(task);
 	}
 
 	@Override
-	public void requestRegionSummaryLoad(RegionSummary summary)
+	public void requestRegionSummaryLoad(RegionSummaryImplementation summary)
 	{
 		// don't spam packets !
-		int rx = summary.regionX;
-		int rz = summary.regionZ;
+		int rx = summary.getRegionX();
+		int rz = summary.getRegionZ();
 		boolean alreadyAsked = false;
 		synchronized (summariesAlreadyAsked)
 		{

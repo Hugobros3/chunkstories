@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
 import io.xol.chunkstories.entity.EntitySerializer;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.world.chunk.RegionImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -22,13 +22,13 @@ import io.xol.chunkstories.world.chunk.ChunkHolder;
 
 public class CSFRegionFile implements OfflineSerializedData
 {
-	private ChunkHolder holder;
+	private RegionImplementation holder;
 	private File file;
 
 	//Locks modifications to the region untils it finishes saving.
 	public AtomicInteger savingOperations = new AtomicInteger();
 
-	public CSFRegionFile(ChunkHolder holder)
+	public CSFRegionFile(RegionImplementation holder)
 	{
 		this.holder = holder;
 
@@ -53,6 +53,25 @@ public class CSFRegionFile implements OfflineSerializedData
 			size += in.read();
 			chunksSizes[a] = size;
 		}
+		
+		for (int a = 0; a < 8; a++)
+			for (int b = 0; b < 8; b++)
+				for (int c = 0; c < 8; c++)
+				{
+					int size = chunksSizes[a * 8 * 8 + b * 8 + c];
+					// if chunk present then create it's byte array
+					// and
+					// fill it
+					if (size > 0)
+					{
+						byte[] buffer  = new byte[size];
+						in.read(buffer, 0, size);
+						holder.getChunkHolder(a, b, c).setCompressedData(buffer);
+						// i++;
+					}
+				}
+		
+		/*
 		//Lock the holder compressed chunks array !
 		holder.compressedChunksLock.beginWrite();
 		// Then load the chunks
@@ -72,7 +91,7 @@ public class CSFRegionFile implements OfflineSerializedData
 					}
 				}
 		//Unlock it immediatly afterwards
-		holder.compressedChunksLock.endWrite();
+		holder.compressedChunksLock.endWrite();*/
 		
 		//We pretend it's loaded sooner so we can add the entities and they will load their chunks data if needed
 		holder.setDiskDataLoaded(true);
@@ -114,16 +133,22 @@ public class CSFRegionFile implements OfflineSerializedData
 			file.createNewFile();
 		FileOutputStream out = new FileOutputStream(file);
 		// int[] chunksSizes = new int[8*8*8];
-		holder.compressedChunksLock.beginRead();
 		// First write the index
+		
+		byte[][][][] compressedVersions = new byte[8][8][8][];
+		
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
 				{
 					int chunkSize = 0;
-					if (holder.compressedChunks[a][b][c] != null)
+					
+					byte[] chunkCompressedVersion = holder.getChunkHolder(a, b, c).getCompressedData();
+					if (chunkCompressedVersion != null)
 					{
-						chunkSize = holder.compressedChunks[a][b][c].length;
+						//Save the reference to ensure coherence with later part
+						compressedVersions[a][b][c] = chunkCompressedVersion;
+						chunkSize = chunkCompressedVersion.length;
 					}
 					out.write((chunkSize >>> 24) & 0xFF);
 					out.write((chunkSize >>> 16) & 0xFF);
@@ -135,12 +160,11 @@ public class CSFRegionFile implements OfflineSerializedData
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
 				{
-					if (holder.compressedChunks[a][b][c] != null)
+					if (compressedVersions[a][b][c] != null)
 					{
-						out.write(holder.compressedChunks[a][b][c]);
+						out.write(compressedVersions[a][b][c]);
 					}
 				}
-		holder.compressedChunksLock.endRead();
 
 		//don't tick the world entities until we get this straight
 		holder.world.entitiesLock.lock();

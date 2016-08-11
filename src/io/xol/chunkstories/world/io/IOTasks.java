@@ -1,13 +1,14 @@
 package io.xol.chunkstories.world.io;
 
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.world.chunk.RegionImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.summary.RegionSummary;
+import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import io.xol.engine.concurrency.UniqueQueue;
-import io.xol.engine.math.LoopingMathHelper;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -60,7 +61,7 @@ public class IOTasks extends Thread
 		worldHeightInChunks = world.getMaxHeight() / 32;
 	}
 
-	public boolean addTask(IOTask task)
+	public boolean scheduleTask(IOTask task)
 	{
 		if (die.get())
 			return false;
@@ -79,7 +80,7 @@ public class IOTasks extends Thread
 		return "IO :" + getSize() + " in queue.";
 	}
 
-	public void requestChunksUnload(int pCX, int pCY, int pCZ, int sizeInChunks, int chunksViewDistance)
+	/*public void requestChunksUnload(int pCX, int pCY, int pCZ, int sizeInChunks, int chunksViewDistance)
 	{
 		Iterator<IOTask> iter = tasks.iterator();
 		while (iter.hasNext())
@@ -99,7 +100,7 @@ public class IOTasks extends Thread
 				}
 			}
 		}
-	}
+	}*/
 
 	@Override
 	public void run()
@@ -173,56 +174,52 @@ public class IOTasks extends Thread
 		}
 
 		abstract public boolean run();
+		
+		public void cancel()
+		{
+			tasks.remove(this);
+			System.out.println("Task "+this+" removed.");
+		}
 	}
 
+	/**
+	 * Loads the content of a region chunk slot
+	 */
 	public class IOTaskLoadChunk extends IOTask
 	{
-		ChunkHolder holder;
-		public int x;
-		public int y;
-		public int z;
-		boolean shouldLoadCH;
-		boolean overwrite;
+		ChunkHolderImplementation chunkSlot;
 
-		public IOTaskLoadChunk(ChunkHolder holder, int x, int y, int z, boolean shouldLoadCH, boolean overwrite)
+		public IOTaskLoadChunk(ChunkHolderImplementation chunkSlot)
 		{
-			this.holder = holder;
-			this.x = x;
-			this.y = y;
-			this.z = z;
-			this.shouldLoadCH = shouldLoadCH;
-			this.overwrite = overwrite;
+			this.chunkSlot = chunkSlot;
 		}
 
 		@Override
 		public boolean run()
 		{
-			// If for some reasons the chunks holder's are still not loaded, we
-			// requeue the job for later.
-			if (holder == null)
+			// If for some reasons the chunks holder's are still not loaded, we requeue the job
+			if (!chunkSlot.getRegion().isDiskDataLoaded())
 				return false;
-			//System.out.println("holder ok"+"in"+holder);
-			if (!holder.isDiskDataLoaded())
-				return false;
-			//System.out.println("dd loaded ok");
-			// When a loader was removed from the world, it's remaining data is ignored
-			if (holder.isUnloaded())
+			// When a loader was removed from the world, remaining operations on it are discarded
+			if (chunkSlot.getRegion().isUnloaded())
 				return true;
-			//System.out.println("unloaded ok");
-			//Already loaded
-			if (holder.isChunkLoaded(x, y, z))// && !overwrite)
+			// And so are redudant operations
+			if (chunkSlot.isChunkLoaded())
 				return true;
-			//System.out.println("already ok");
 
-			//Look for
-			holder.compressedChunksLock.beginRead();
-			byte[] cd = holder.getCompressedData(x, y, z);
-			if (cd == null || cd.length == 0)
+			Region region = chunkSlot.getRegion();
+			int cx = region.getRegionX() * 8 + chunkSlot.getInRegionX();
+			int cy = region.getRegionY() * 8 + chunkSlot.getInRegionY();
+			int cz = region.getRegionZ() * 8 + chunkSlot.getInRegionZ();
+			
+			CubicChunk result;
+			
+			byte[] compressedData = chunkSlot.getCompressedData();
+			if (compressedData == null || compressedData.length == 0)
 			{
-				holder.compressedChunksLock.endRead();
-				CubicChunk c = new CubicChunk(holder, x, y, z);
-				//System.out.println("No compressed data for this chunk.");
-				world.setChunk(c);
+				result = new CubicChunk(region, cx, cy, cz);
+				
+				//world.setChunk(c);
 				return true;
 			}
 			else
@@ -230,33 +227,33 @@ public class IOTasks extends Thread
 				int data[] = new int[32 * 32 * 32];
 				try
 				{
-					decompressor.decompress(cd, unCompressedDataBuffer.get());
+					decompressor.decompress(compressedData, unCompressedDataBuffer.get());
 				}
 				catch (LZ4Exception e)
 				{
-					System.out.println("Failed to decompress chunk data (corrupted?) holder:" + holder + " chunk:" + x + ":" + y + ":" + z + "task: " + this);
+					System.out.println("Failed to decompress chunk data (corrupted?) region:" + region + " chunk:" + cx + ":" + cy + ":" + cz + "task: " + this);
 				}
 
-				holder.compressedChunksLock.endRead();
 				for (int i = 0; i < 32 * 32 * 32; i++)
 				{
 					data[i] = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8)
 							| (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
 				}
-				CubicChunk c = new CubicChunk(holder, x, y, z, data);
-				c.bakeVoxelLightning(false);
-				holder.setChunk(x, y, z, c);
+				result = new CubicChunk(region, cx, cy, cz, data);
+				result.bakeVoxelLightning(false);
+				
+				//holder.setChunk(cx, cy, cz, c);
 			}
-
-			//System.out.println("loaded chunk");
-
+			
+			chunkSlot.setChunk(result);
+			chunkSlot.notifyAll();
 			return true;
 		}
 
 		@Override
 		public String toString()
 		{
-			return "[IOTaskLoadChunk x=" + x + " y= " + y + " z= " + z + "]";
+			return "[IOTaskLoadChunk " + chunkSlot + "]";
 		}
 
 		@Override
@@ -265,7 +262,13 @@ public class IOTasks extends Thread
 			if (o != null && o instanceof IOTaskLoadChunk)
 			{
 				IOTaskLoadChunk comp = ((IOTaskLoadChunk) o);
-				if (comp.x == this.x && comp.y == this.y && comp.z == this.z)
+				
+				//If not the same region, don't even bother
+				if(!comp.chunkSlot.getRegion().equals(this.chunkSlot.getRegion()))
+					return false;
+				
+				//Complete match of coordinates ?
+				if (comp.chunkSlot.getInRegionX() == this.chunkSlot.getInRegionX() && comp.chunkSlot.getInRegionY() == this.chunkSlot.getInRegionY() && comp.chunkSlot.getInRegionZ() == this.chunkSlot.getInRegionZ())
 					return true;
 			}
 			return false;
@@ -274,12 +277,20 @@ public class IOTasks extends Thread
 		@Override
 		public int hashCode()
 		{
-			return (int) ((65536 + 65536L * x + 256 * y + z) % 2147483647);
+			return (int) ((65536 + 65536L * chunkSlot.getInRegionX() + 256 * chunkSlot.getInRegionY() + chunkSlot.getInRegionZ()) % 2147483647);
 		}
 
 	}
 
-	public void requestChunkLoad(ChunkHolder holder, int chunkX, int chunkY, int chunkZ, boolean overwrite)
+	public IOTask requestChunkLoad(ChunkHolderImplementation chunkSlot)
+	{
+		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkSlot);
+		if(scheduleTask(task))
+			return task;
+		return null;
+	}
+	
+	/*public void requestChunkLoad(RegionImplementation holder, int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
 		chunkX = chunkX % worldSizeInChunks;
 		chunkZ = chunkZ % worldSizeInChunks;
@@ -287,47 +298,45 @@ public class IOTasks extends Thread
 			chunkX += worldSizeInChunks;
 		if (chunkZ < 0)
 			chunkZ += worldSizeInChunks;
+		
+		//Won't load chunks outside the world.
 		if (chunkY < 0)
 			return;
 		if (chunkY >= worldHeightInChunks)
 			return;
-
-		//System.out.println("Loading chunk " + this);
-		//Thread.currentThread().dumpStack();
-
+		
 		IOTaskLoadChunk task = new IOTaskLoadChunk(holder, chunkX, chunkY, chunkZ, true, overwrite);
+		scheduleTask(task);
+	}*/
 
-		addTask(task);
-	}
-
-	public class IOTaskLoadChunkHolder extends IOTask
+	public class IOTaskLoadRegion extends IOTask
 	{
-		ChunkHolder holder;
+		RegionImplementation region;
 
-		public IOTaskLoadChunkHolder(ChunkHolder holder)
+		public IOTaskLoadRegion(RegionImplementation holder)
 		{
-			this.holder = holder;
+			this.region = holder;
 		}
 
 		@Override
 		public boolean run()
 		{
 			//Trim world first
-			world.trimRemovableChunks();
+			//world.unloadsUselessData();
 
 			//Check no saving operations are occuring
-			IOTaskSaveChunkHolder saveChunkHolder = new IOTaskSaveChunkHolder(holder);
-			if (tasks != null && tasks.contains(saveChunkHolder))
+			IOTaskSaveRegion saveRegionTask = new IOTaskSaveRegion(region);
+			if (tasks != null && tasks.contains(saveRegionTask))
 			{
 				//System.out.println("A save operation is still running on " + holder + ", waiting for it to complete.");
 				return false;
 			}
 
-			if (holder.handler.exists())
+			if (region.handler.exists())
 			{
 				try
 				{
-					holder.handler.load();
+					region.handler.load();
 				}
 				catch (FileNotFoundException e)
 				{
@@ -343,32 +352,32 @@ public class IOTasks extends Thread
 			//Else if no file exists
 			else
 			{
-				RegionSummary regionSummary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(holder.regionX * 256, holder.regionZ * 256);
+				RegionSummaryImplementation regionSummary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(region.regionX * 256, region.regionZ * 256);
 				//Require a chunk summary to be generated first !
 				if (regionSummary == null || !regionSummary.isLoaded())
 				{
 					return false;
 				}
 				//Generate this crap !
-				holder.generateAll();
+				region.generateAll();
 				//Pre bake phase 1 lightning
 			}
 
 			//Marking the holder as loaded allows the game to remove it and unload it, so we set the timer to have a time frame until it naturally unloads.
-			holder.resetUnloadCooldown();
-			holder.setDiskDataLoaded(true);
+			region.resetUnloadCooldown();
+			region.setDiskDataLoaded(true);
 
-			world.trimRemovableChunks();
+			//world.unloadsUselessData();
 			return true;
 		}
 
 		@Override
 		public boolean equals(Object o)
 		{
-			if (o != null && o instanceof IOTaskLoadChunkHolder)
+			if (o != null && o instanceof IOTaskLoadRegion)
 			{
-				IOTaskLoadChunkHolder comp = ((IOTaskLoadChunkHolder) o);
-				if (comp.holder.regionX == holder.regionX && comp.holder.regionY == this.holder.regionY && comp.holder.regionZ == this.holder.regionZ)
+				IOTaskLoadRegion comp = ((IOTaskLoadRegion) o);
+				if (comp.region.regionX == region.regionX && comp.region.regionY == this.region.regionY && comp.region.regionZ == this.region.regionZ)
 					return true;
 			}
 			return false;
@@ -377,39 +386,36 @@ public class IOTasks extends Thread
 		@Override
 		public int hashCode()
 		{
-			return (874 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ) % 2147483647;
+			return (874 + 64 * region.regionX + 22 * region.regionY + 999 * region.regionZ) % 2147483647;
 		}
 	}
 
-	public boolean isDoneSavingChunkHolder(ChunkHolder holder)
+	public boolean isDoneSavingRegion(RegionImplementation holder)
 	{
 		if (!(this.world instanceof WorldMaster))
 			return true;
 
 		//Check no saving operations are occuring
-		IOTaskSaveChunkHolder saveChunkHolder = new IOTaskSaveChunkHolder(holder);
-		if (tasks != null && tasks.contains(saveChunkHolder))
-		{
-			//System.out.println("A save operation is still running on " + holder + ", waiting for it to complete before allowing holder creation");
+		IOTaskSaveRegion saveRegionTask = new IOTaskSaveRegion(holder);
+		if (tasks != null && tasks.contains(saveRegionTask))
 			return false;
-		}
 		return true;
 	}
 
-	public void requestChunkHolderLoad(ChunkHolder holder)
+	public void requestRegionLoad(RegionImplementation holder)
 	{
-		if (!isDoneSavingChunkHolder(holder))
+		if (!isDoneSavingRegion(holder))
 			return;
 
-		IOTask task = new IOTaskLoadChunkHolder(holder);
-		addTask(task);
+		IOTask task = new IOTaskLoadRegion(holder);
+		scheduleTask(task);
 	}
 
-	public class IOTaskSaveChunkHolder extends IOTask
+	public class IOTaskSaveRegion extends IOTask
 	{
-		ChunkHolder holder;
+		RegionImplementation holder;
 
-		public IOTaskSaveChunkHolder(ChunkHolder holder)
+		public IOTaskSaveRegion(RegionImplementation holder)
 		{
 			this.holder = holder;
 		}
@@ -448,9 +454,9 @@ public class IOTasks extends Thread
 		@Override
 		public boolean equals(Object o)
 		{
-			if (o != null && o instanceof IOTaskSaveChunkHolder)
+			if (o != null && o instanceof IOTaskSaveRegion)
 			{
-				IOTaskSaveChunkHolder comp = ((IOTaskSaveChunkHolder) o);
+				IOTaskSaveRegion comp = ((IOTaskSaveRegion) o);
 				if (comp.holder.regionX == holder.regionX && comp.holder.regionY == this.holder.regionY && comp.holder.regionZ == this.holder.regionZ)
 					return true;
 			}
@@ -464,39 +470,39 @@ public class IOTasks extends Thread
 		}
 	}
 
-	public void requestChunkHolderSave(ChunkHolder holder)
+	public void requestRegionSave(RegionImplementation holder)
 	{
 		if (!holder.isDiskDataLoaded())
 			return;
 
-		IOTask task = new IOTaskSaveChunkHolder(holder);
-		addTask(task);
+		IOTask task = new IOTaskSaveRegion(holder);
+		scheduleTask(task);
 	}
 
-	public void requestChunkHolderSaveAndUnload(ChunkHolder holder)
+	public void requestRegionSaveAndUnload(RegionImplementation holder)
 	{
 		if (!holder.isDiskDataLoaded())
 			return;
 
-		IOTask task = new IOTaskSaveChunkHolder(holder);
+		IOTask task = new IOTaskSaveRegion(holder);
 
 		task.setPostRunOperation(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				holder.unloadHolder();
+				holder.unload();
 			}
 		});
 
-		addTask(task);
+		scheduleTask(task);
 	}
 
 	public class IOTaskLoadSummary extends IOTask
 	{
-		RegionSummary summary;
+		RegionSummaryImplementation summary;
 
-		public IOTaskLoadSummary(RegionSummary summary)
+		public IOTaskLoadSummary(RegionSummaryImplementation summary)
 		{
 			this.summary = summary;
 		}
@@ -561,8 +567,8 @@ public class IOTasks extends Thread
 				for (int x = 0; x < 256; x++)
 					for (int z = 0; z < 256; z++)
 					{
-						h = world.getGenerator().getHeightAt(x + summary.regionX * 256, z + summary.regionZ * 256);
-						t = world.getGenerator().getTopDataAt(x + summary.regionX * 256, z + summary.regionZ * 256);
+						h = world.getGenerator().getHeightAt(x + summary.getRegionX() * 256, z + summary.getRegionZ() * 256);
+						t = world.getGenerator().getTopDataAt(x + summary.getRegionX() * 256, z + summary.getRegionZ() * 256);
 						summary.heights[x * 256 + z] = h;
 						summary.ids[x * 256 + z] = t;
 					}
@@ -584,7 +590,7 @@ public class IOTasks extends Thread
 			if (o instanceof IOTaskLoadSummary)
 			{
 				IOTaskLoadSummary comp = ((IOTaskLoadSummary) o);
-				if (comp.summary.regionX == this.summary.regionX && comp.summary.regionZ == this.summary.regionZ)
+				if (comp.summary.getRegionX() == this.summary.getRegionX() && comp.summary.getRegionZ() == this.summary.getRegionZ())
 					return true;
 			}
 			return false;
@@ -593,22 +599,22 @@ public class IOTasks extends Thread
 		@Override
 		public int hashCode()
 		{
-			return 1111 + summary.regionX + summary.regionZ * 256;
+			return 1111 + summary.getRegionX() + summary.getRegionZ() * 256;
 		}
 	}
 
-	public void requestRegionSummaryLoad(RegionSummary summary)
+	public void requestRegionSummaryLoad(RegionSummaryImplementation summary)
 	{
 		IOTask task = new IOTaskLoadSummary(summary);
-		addTask(task);
+		scheduleTask(task);
 	}
 
 	public class IOTaskSaveSummary extends IOTask
 	{
 
-		RegionSummary summary;
+		RegionSummaryImplementation summary;
 
-		public IOTaskSaveSummary(RegionSummary summary)
+		public IOTaskSaveSummary(RegionSummaryImplementation summary)
 		{
 			this.summary = summary;
 		}
@@ -628,7 +634,7 @@ public class IOTasks extends Thread
 				for (int i = 0; i < 256 * 256; i++)
 					writeMe.putInt(summary.heights[i]);
 
-				byte[] compressed = RegionSummary.compressor.compress(writeMe.array());
+				byte[] compressed = RegionSummaryImplementation.compressor.compress(writeMe.array());
 
 				int compressedSize = compressed.length;
 
@@ -640,7 +646,7 @@ public class IOTasks extends Thread
 				for (int i = 0; i < 256 * 256; i++)
 					writeMe.putInt(summary.ids[i]);
 
-				compressed = RegionSummary.compressor.compress(writeMe.array());
+				compressed = RegionSummaryImplementation.compressor.compress(writeMe.array());
 				compressedSize = compressed.length;
 
 				size = ByteBuffer.allocate(4).putInt(compressedSize).array();
@@ -673,14 +679,14 @@ public class IOTasks extends Thread
 		@Override
 		public int hashCode()
 		{
-			return 7777 + summary.regionX + summary.regionZ * 256;
+			return 7777 + summary.getRegionX() + summary.getRegionZ() * 256;
 		}
 	}
 
-	public void requestRegionSummarySave(RegionSummary summary)
+	public void requestRegionSummarySave(RegionSummaryImplementation summary)
 	{
 		IOTask task = new IOTaskSaveSummary(summary);
-		addTask(task);
+		scheduleTask(task);
 	}
 
 	public void notifyChunkUnload(int chunkX, int chunkY, int chunkZ)

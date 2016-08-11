@@ -386,4 +386,11 @@ public class ServerPlayer implements Player
 	{
 		return virtualDecalsManager;
 	}
+
+	@Override
+	public void updateUsedWorldBits()
+	{
+		// TODO Auto-generated method stub
+		
+	}
 }

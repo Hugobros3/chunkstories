@@ -338,12 +338,12 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		int modifiedBlocks = 0;
 
 		//Checks if the adjacent chunks are done loading
-		Chunk adjacentChunkTop = world.getChunkChunkCoordinates(chunkX, chunkY + 1, chunkZ, false);
-		Chunk adjacentChunkBottom = world.getChunkChunkCoordinates(chunkX, chunkY - 1, chunkZ, false);
-		Chunk adjacentChunkFront = world.getChunkChunkCoordinates(chunkX, chunkY, chunkZ + 1, false);
-		Chunk adjacentChunkBack = world.getChunkChunkCoordinates(chunkX, chunkY, chunkZ - 1, false);
-		Chunk adjacentChunkLeft = world.getChunkChunkCoordinates(chunkX - 1, chunkY, chunkZ, false);
-		Chunk adjacentChunkRight = world.getChunkChunkCoordinates(chunkX + 1, chunkY, chunkZ, false);
+		Chunk adjacentChunkTop = world.getChunk(chunkX, chunkY + 1, chunkZ);
+		Chunk adjacentChunkBottom = world.getChunk(chunkX, chunkY - 1, chunkZ);
+		Chunk adjacentChunkFront = world.getChunk(chunkX, chunkY, chunkZ + 1);
+		Chunk adjacentChunkBack = world.getChunk(chunkX, chunkY, chunkZ - 1);
+		Chunk adjacentChunkLeft = world.getChunk(chunkX - 1, chunkY, chunkZ);
+		Chunk adjacentChunkRight = world.getChunk(chunkX + 1, chunkY, chunkZ);
 		//Don't spam the requeue requests
 		boolean checkTopBleeding = (adjacentChunkTop != null) && !adjacentChunkTop.needsLightningUpdates();
 		boolean checkBottomBleeding = (adjacentChunkBottom != null) && !adjacentChunkBottom.needsLightningUpdates();
@@ -736,7 +736,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		if (world != null)
 		{
 			Chunk cc;
-			cc = world.getChunkChunkCoordinates(chunkX + 1, chunkY, chunkZ, false);
+			cc = world.getChunk(chunkX + 1, chunkY, chunkZ);
 			if (cc != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -770,7 +770,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 						}
 					}
 			}
-			cc = world.getChunkChunkCoordinates(chunkX - 1, chunkY, chunkZ, false);
+			cc = world.getChunk(chunkX - 1, chunkY, chunkZ);
 			if (cc != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -806,7 +806,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 					}
 			}
 			// Top chunk
-			cc = world.getChunkChunkCoordinates(chunkX, chunkY + 1, chunkZ, false);
+			cc = world.getChunk(chunkX, chunkY + 1, chunkZ);
 			if (cc != null && chunkVoxelData != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -871,7 +871,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 					}
 			}
 			// Bottom chunk
-			cc = world.getChunkChunkCoordinates(chunkX, chunkY - 1, chunkZ, false);
+			cc = world.getChunk(chunkX, chunkY - 1, chunkZ);
 			if (cc != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -911,7 +911,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 					}
 			}
 			// Z
-			cc = world.getChunkChunkCoordinates(chunkX, chunkY, chunkZ + 1, false);
+			cc = world.getChunk(chunkX, chunkY, chunkZ + 1);
 			if (cc != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -944,7 +944,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 						}
 					}
 			}
-			cc = world.getChunkChunkCoordinates(chunkX, chunkY, chunkZ - 1, false);
+			cc = world.getChunk(chunkX, chunkY, chunkZ - 1);
 			if (cc != null)
 			{
 				for (int b = 0; b < 32; b++)
@@ -1773,7 +1773,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 			if (y > 0 && y < 31)
 				if (z > 0 && z < 31)
 					this.getVoxelData(x, y, z);
-		return world.getVoxelData(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, false);
+		return world.getVoxelData(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32);
 	}
 
 	private void setWorldDataOnlyForLightningUpdatesFunctions(int x, int y, int z, int data)
@@ -1786,10 +1786,10 @@ public class CubicChunk implements Chunk, ChunkRenderable
 					return;
 				}
 
-		int oldData = world.getVoxelData(x, y, z, false);
-		world.setVoxelDataWithoutUpdates(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data, false);
-		Chunk c = world.getChunkChunkCoordinates((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32, false);
-
+		int oldData = world.getVoxelData(x, y, z);
+		world.setVoxelDataWithoutUpdates(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data);
+		
+		Chunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32);
 		if (c != null && oldData != data)
 			c.markInNeedForLightningUpdate();
 	}

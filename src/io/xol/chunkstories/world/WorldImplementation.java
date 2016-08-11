@@ -22,25 +22,25 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunkHolder;
+import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.WorldRenderer;
-import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.chunk.WorldChunksHolder;
+import io.xol.chunkstories.world.chunk.WorldRegionsHolder;
 import io.xol.chunkstories.world.chunk.ChunkRenderable;
+import io.xol.chunkstories.world.chunk.RegionImplementation;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.EntityRayIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
-import io.xol.chunkstories.world.summary.WorldHeightmapVersion;
+import io.xol.chunkstories.world.summary.WorldSummariesHolder;
 import io.xol.engine.concurrency.SimpleLock;
-import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.misc.ConfigFile;
 
@@ -74,18 +74,14 @@ public abstract class WorldImplementation implements World
 	// RAM-eating depreacated monster
 	// public ChunksData chunksData;
 
-	private WorldChunksHolder chunksHolder;
+	private WorldRegionsHolder regions;
 
 	// Heightmap management
-	private WorldHeightmapVersion regionSummaries;
+	private WorldSummariesHolder regionSummaries;
 
 	// World-renderer backcall
 	protected WorldRenderer renderer;
-
-	// World logic thread
 	
-	//private ScheduledExecutorService logic;
-
 	// Temporary entity list
 	private Set<Entity> entities = ConcurrentHashMap.newKeySet();
 	//private ConcurrentHashMap<Long, Entity> localEntitiesByUUID = new ConcurrentHashMap<Long, Entity>();//new LinkedBlockingQueue<Entity>();
@@ -106,8 +102,8 @@ public abstract class WorldImplementation implements World
 		this.generator.initialize(this);
 
 		//this.chunksData = new ChunksData();
-		this.chunksHolder = new WorldChunksHolder(this);
-		this.regionSummaries = new WorldHeightmapVersion(this);
+		this.regions = new WorldRegionsHolder(this);
+		this.regionSummaries = new WorldSummariesHolder(this);
 		//this.logic = Executors.newSingleThreadScheduledExecutor();
 
 		if (this instanceof WorldMaster)
@@ -129,6 +125,7 @@ public abstract class WorldImplementation implements World
 		}
 	}
 
+	@Override
 	public WorldInfo getWorldInfo()
 	{
 		return worldInfo;
@@ -150,31 +147,6 @@ public abstract class WorldImplementation implements World
 			return folder.getAbsolutePath();
 		return null;
 	}
-
-	/*public void startLogic()
-	{
-		logic.scheduleAtFixedRate(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				try
-				{
-					tick();
-				}
-				catch (Exception e)
-				{
-					System.out.println("Son excellence le fils de pute de thread silencieusement suicidaire de mes couilles aurait un mot à dire: ");
-					e.printStackTrace();
-				}
-			}
-		}, 0, 16666, TimeUnit.MICROSECONDS);
-	}*/
-
-	/*public void stopLogic()
-	{
-		logic.shutdown();
-	}*/
 
 	@Override
 	public void addEntity(final Entity entity)
@@ -253,8 +225,6 @@ public abstract class WorldImplementation implements World
 		//Place the entire tick() method in a try/catch
 		try
 		{
-			
-			
 			//Iterates over every entity
 			entitiesLock.lock();
 			Iterator<Entity> iter = this.getAllLoadedEntities();
@@ -265,7 +235,7 @@ public abstract class WorldImplementation implements World
 
 				//Check entity's chunk is loaded
 				Location entityLocation = entity.getLocation();
-				if (entity.getChunkHolder() != null && entity.getChunkHolder().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
+				if (entity.getRegion() != null && entity.getRegion().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
 				{
 					//If we're the client world and this is our entity
 					if (this instanceof WorldClient && entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.getInstance().getControlledEntity() != null && Client.getInstance().getControlledEntity().equals(entity))
@@ -319,157 +289,53 @@ public abstract class WorldImplementation implements World
 		return null;
 	}
 
-	public int getMaxHeight()
-	{
-		return worldInfo.getSize().heightInChunks * 32;
-	}
-
-	public int getSizeInChunks()
-	{
-		return worldInfo.getSize().sizeInChunks;
-	}
-
 	@Override
-	public double getWorldSize()
-	{
-		return getSizeInChunks() * 32d;
-	}
-
-	public Chunk getChunkWorldCoordinates(Location location, boolean load)
-	{
-		return getChunkWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ(), load);
-	}
-
-	public Chunk getChunkWorldCoordinates(int worldX, int worldY, int worldZ, boolean load)
-	{
-		return getChunkChunkCoordinates(worldX / 32, worldY / 32, worldZ / 32, load);
-	}
-
-	public Chunk getChunkChunkCoordinates(int chunkX, int chunkY, int chunkZ, boolean load)
-	{
-		chunkX = chunkX % getSizeInChunks();
-		chunkZ = chunkZ % getSizeInChunks();
-		if (chunkX < 0)
-			chunkX += getSizeInChunks();
-		if (chunkZ < 0)
-			chunkZ += getSizeInChunks();
-		if (chunkY < 0)
-			return null;
-		if (chunkY >= worldInfo.getSize().heightInChunks)
-			return null;
-		return chunksHolder.getChunk(chunkX, chunkY, chunkZ, load);
-	}
-
-	public void removeChunk(Chunk c, boolean save)
-	{
-		removeChunk(c.getChunkX(), c.getChunkY(), c.getChunkZ(), save);
-	}
-
-	public void removeChunk(int chunkX, int chunkY, int chunkZ, boolean save)
-	{
-		chunkX = chunkX % getSizeInChunks();
-		chunkZ = chunkZ % getSizeInChunks();
-		if (chunkX < 0)
-			chunkX += getSizeInChunks();
-		if (chunkZ < 0)
-			chunkZ += getSizeInChunks();
-		if (chunkY < 0)
-			chunkY = 0;
-		//ioHandler.requestChunkUnload(chunkX, chunkY, chunkZ);
-		chunksHolder.removeChunk(chunkX, chunkY, chunkZ, save);
-	}
-
-	@Override
-	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ)
-	{
-		//Sanitation of input data
-		chunkX = chunkX % getSizeInChunks();
-		chunkZ = chunkZ % getSizeInChunks();
-		if (chunkX < 0)
-			chunkX += getSizeInChunks();
-		if (chunkZ < 0)
-			chunkZ += getSizeInChunks();
-		//Out of bounds checks
-		if (chunkY < 0)
-			return false;
-		if (chunkY >= worldInfo.getSize().heightInChunks)
-			return false;
-		//If it doesn't return null then it exists
-		return this.chunksHolder.getChunk(chunkX, chunkY, chunkZ, false) != null;
-	}
-
-	public WorldHeightmapVersion getRegionSummaries()
+	public WorldSummariesHolder getRegionSummaries()
 	{
 		return regionSummaries;
 	}
-
-	public int getVoxelData(Location location)
+	
+	@Override
+	public int getVoxelData(Vector3d location)
 	{
 		return getVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 
-	public int getVoxelData(Location location, boolean load)
-	{
-		return getVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ(), load);
-	}
-
-	public int getDataAt(Vector3d location, boolean load)
-	{
-		return getVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ(), load);
-	}
-
-	public int getVoxelData(int x, int y, int z)
-	{
-		return getVoxelData(x, y, z, true);
-	}
-
 	@Override
-	public int getVoxelData(int x, int y, int z, boolean load)
+	public int getVoxelData(int x, int y, int z)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
 
-		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
+		Chunk c = regions.getChunk(x / 32, y / 32, z / 32);
 		if (c != null)
 			return c.getVoxelData(x, y, z);
 		return 0;
 	}
 
 	@Override
-	public void setVoxelData(int x, int y, int z, int data)
-	{
-		setVoxelData(x, y, z, data, true);
-	}
-
-	@Override
 	public void setVoxelData(Location location, int data)
 	{
-		setVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ(), data, true);
+		setVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ(), data);
 	}
 
 	@Override
-	public void setVoxelData(Location location, int data, boolean load)
+	public void setVoxelData(int x, int y, int z, int data)
 	{
-		setVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ(), data, load);
-	}
-
-	@Override
-	public void setVoxelData(int x, int y, int z, int data, boolean load)
-	{
-		actuallySetsDataAt(x, y, z, data, load, null);
+		actuallySetsDataAt(x, y, z, data, null);
 	}
 
 	@Override
 	public void setVoxelData(Location location, int data, Entity entity)
 	{
-		actuallySetsDataAt((int) location.getX(), (int) location.getY(), (int) location.getZ(), data, false, entity);
+		actuallySetsDataAt((int) location.getX(), (int) location.getY(), (int) location.getZ(), data, entity);
 	}
 
 	@Override
 	public void setVoxelData(int x, int y, int z, int data, Entity entity)
 	{
-		actuallySetsDataAt(x, y, z, data, false, entity);
+		actuallySetsDataAt(x, y, z, data, entity);
 	}
 
 	/**
@@ -477,15 +343,15 @@ public abstract class WorldImplementation implements World
 	 * 
 	 * @return -1 if fails, the data of the new block if succeeds
 	 */
-	protected int actuallySetsDataAt(int x, int y, int z, int newData, boolean load, Entity entity)
+	protected int actuallySetsDataAt(int x, int y, int z, int newData, Entity entity)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
 
-		getRegionSummaries().blockPlaced(x, y, z, newData);
+		getRegionSummaries().updateOnBlockPlaced(x, y, z, newData);
 
-		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
+		Chunk c = regions.getChunk(x / 32, y / 32, z / 32);
 		if (c != null)
 		{
 			int formerData = c.getVoxelData(x % 32, y % 32, z % 32);
@@ -527,26 +393,26 @@ public abstract class WorldImplementation implements World
 				if (y % 32 == 0)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z - 1) / 32);
+						regions.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z) / 32);
+						regions.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z + 1) / 32);
+					regions.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z) / 32);
 				}
 				else if (y % 32 == 31)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z - 1) / 32);
+						regions.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z) / 32);
+						regions.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z + 1) / 32);
+					regions.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z) / 32);
 				}
 				else
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkForReRender((x - 1) / 32, (y) / 32, (z - 1) / 32);
+						regions.markChunkForReRender((x - 1) / 32, (y) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkForReRender((x - 1) / 32, (y) / 32, (z + 1) / 32);
-					chunksHolder.markChunkForReRender((x - 1) / 32, (y) / 32, (z) / 32);
+						regions.markChunkForReRender((x - 1) / 32, (y) / 32, (z + 1) / 32);
+					regions.markChunkForReRender((x - 1) / 32, (y) / 32, (z) / 32);
 				}
 			}
 			else if (x % 32 == 31)
@@ -554,66 +420,67 @@ public abstract class WorldImplementation implements World
 				if (y % 32 == 0)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z - 1) / 32);
+						regions.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z) / 32);
+						regions.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z + 1) / 32);
+					regions.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z) / 32);
 				}
 				else if (y % 32 == 31)
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z - 1) / 32);
+						regions.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z + 1) / 32);
-					chunksHolder.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z) / 32);
+						regions.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z + 1) / 32);
+					regions.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z) / 32);
 				}
 				else
 				{
 					if (z % 32 == 0)
-						chunksHolder.markChunkForReRender((x + 1) / 32, (y) / 32, (z - 1) / 32);
+						regions.markChunkForReRender((x + 1) / 32, (y) / 32, (z - 1) / 32);
 					else if (z % 32 == 31)
-						chunksHolder.markChunkForReRender((x + 1) / 32, (y) / 32, (z + 1) / 32);
-					chunksHolder.markChunkForReRender((x + 1) / 32, (y) / 32, (z) / 32);
+						regions.markChunkForReRender((x + 1) / 32, (y) / 32, (z + 1) / 32);
+					regions.markChunkForReRender((x + 1) / 32, (y) / 32, (z) / 32);
 				}
 			}
 			if (y % 32 == 0)
 			{
 				if (z % 32 == 0)
-					chunksHolder.markChunkForReRender((x) / 32, (y - 1) / 32, (z - 1) / 32);
+					regions.markChunkForReRender((x) / 32, (y - 1) / 32, (z - 1) / 32);
 				else if (z % 32 == 31)
-					chunksHolder.markChunkForReRender((x) / 32, (y - 1) / 32, (z + 1) / 32);
-				chunksHolder.markChunkForReRender((x) / 32, (y - 1) / 32, (z) / 32);
+					regions.markChunkForReRender((x) / 32, (y - 1) / 32, (z + 1) / 32);
+				regions.markChunkForReRender((x) / 32, (y - 1) / 32, (z) / 32);
 			}
 			else if (y % 32 == 31)
 			{
 				if (z % 32 == 0)
-					chunksHolder.markChunkForReRender((x) / 32, (y + 1) / 32, (z - 1) / 32);
+					regions.markChunkForReRender((x) / 32, (y + 1) / 32, (z - 1) / 32);
 				else if (z % 32 == 31)
-					chunksHolder.markChunkForReRender((x) / 32, (y + 1) / 32, (z + 1) / 32);
-				chunksHolder.markChunkForReRender((x) / 32, (y + 1) / 32, (z) / 32);
+					regions.markChunkForReRender((x) / 32, (y + 1) / 32, (z + 1) / 32);
+				regions.markChunkForReRender((x) / 32, (y + 1) / 32, (z) / 32);
 			}
 			else
 			{
 				if (z % 32 == 0)
-					chunksHolder.markChunkForReRender((x) / 32, (y) / 32, (z - 1) / 32);
+					regions.markChunkForReRender((x) / 32, (y) / 32, (z - 1) / 32);
 				else if (z % 32 == 31)
-					chunksHolder.markChunkForReRender((x) / 32, (y) / 32, (z + 1) / 32);
-				chunksHolder.markChunkForReRender((x) / 32, (y) / 32, (z) / 32);
+					regions.markChunkForReRender((x) / 32, (y) / 32, (z + 1) / 32);
+				regions.markChunkForReRender((x) / 32, (y) / 32, (z) / 32);
 			}
 			return newData;
 		}
 		return -1;
 	}
 
-	public void setVoxelDataWithoutUpdates(int x, int y, int z, int i, boolean load)
+	@Override
+	public void setVoxelDataWithoutUpdates(int x, int y, int z, int i)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
 
-		getRegionSummaries().blockPlaced(x, y, z, i);
+		getRegionSummaries().updateOnBlockPlaced(x, y, z, i);
 
-		Chunk c = chunksHolder.getChunk(x / 32, y / 32, z / 32, load);
+		Chunk c = regions.getChunk(x / 32, y / 32, z / 32);
 		if (c != null)
 		{
 			c.setVoxelDataWithoutUpdates(x % 32, y % 32, z % 32, i);
@@ -621,25 +488,25 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public int getSunlightLevel(int x, int y, int z)
+	public int getSunlightLevelWorldCoordinates(int x, int y, int z)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		if (this.isChunkLoaded(x / 32, y / 32, z / 32) && !this.getChunkChunkCoordinates(x / 32, y / 32, z / 32, false).isAirChunk())
+		if (this.isChunkLoaded(x / 32, y / 32, z / 32) && !this.getChunk(x / 32, y / 32, z / 32).isAirChunk())
 			return VoxelFormat.sunlight(this.getVoxelData(x, y, z));
 		else
 			return y <= this.getRegionSummaries().getHeightAtWorldCoordinates(x, z) ? 0 : 15;
 	}
 
 	@Override
-	public int getSunlightLevel(Location location)
+	public int getSunlightLevelLocation(Location location)
 	{
-		return getSunlightLevel((int) location.getX(), (int) location.getY(), (int) location.getZ());
+		return getSunlightLevelWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 
 	@Override
-	public int getBlocklightLevel(int x, int y, int z)
+	public int getBlocklightLevelWorldCoordinates(int x, int y, int z)
 	{
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
@@ -651,26 +518,12 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public int getBlocklightLevel(Location location)
+	public int getBlocklightLevelLocation(Location location)
 	{
-		return getBlocklightLevel((int) location.getX(), (int) location.getY(), (int) location.getZ());
+		return getBlocklightLevelWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 
-	public void setChunk(Chunk chunk)
-	{
-		if (this.isChunkLoaded(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ()))
-		{
-			Chunk oldchunk = this.getChunkChunkCoordinates(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ(), false);
-			//if (oldchunk.dataPointer != chunk.dataPointer)
-			oldchunk.destroy();
-
-			System.out.println("Removed chunk " + chunk.toString());
-		}
-		chunksHolder.setChunk(chunk);
-		if (renderer != null)
-			renderer.flagModified();
-	}
-
+	@Override
 	public synchronized void redrawEverything()
 	{
 		ChunksIterator i = this.getAllLoadedChunks();
@@ -688,17 +541,20 @@ public abstract class WorldImplementation implements World
 		}
 	}
 
+	//@Override
 	public void unloadEverything()
 	{
-		chunksHolder.clearAll();
-		getRegionSummaries().clearAll();
+		//TODO exterminate this
+		regions.clearAll();
+		//getRegionSummaries().clearAll();
 	}
 
+	@Override
 	public void saveEverything()
 	{
 		System.out.println("Saving world");
-		chunksHolder.saveAll();
-		getRegionSummaries().saveAll();
+		regions.saveAll();
+		getRegionSummaries().saveAllLoadedSummaries();
 
 		this.worldInfo.save(new File(this.getFolderPath() + "/info.txt"));
 		this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
@@ -708,11 +564,6 @@ public abstract class WorldImplementation implements World
 		this.internalData.save();
 	}
 	
-	public ChunksIterator getAllLoadedChunks()
-	{
-		return new WorldChunksIterator(this);
-	}
-
 	/**
 	 * Legacy crap for particle system
 	 */
@@ -724,11 +575,12 @@ public abstract class WorldImplementation implements World
 		{
 
 			Voxel v = VoxelTypes.get(id);
-			/*CollisionBox[] boxes = v.getCollisionBoxes(data);
+			
+			CollisionBox[] boxes = v.getTranslatedCollisionBoxes(this, (int) posX, (int) posY, (int) posZ);
 			if (boxes != null)
 				for (CollisionBox box : boxes)
 					if (box.isPointInside(posX, posY, posZ))
-						return true;*/
+						return true;
 
 			if (v.isVoxelSolid())
 				return true;
@@ -737,50 +589,7 @@ public abstract class WorldImplementation implements World
 		return false;
 	}
 
-	public void trimRemovableChunks()
-	{
-		if (this instanceof WorldTool)
-			System.out.println("omg this should not happen");
-
-		if (Client.getInstance().getControlledEntity() == null)
-			return;
-		Location loc = Client.getInstance().getControlledEntity().getLocation();
-		ChunksIterator it = this.getAllLoadedChunks();
-		Chunk chunk;
-		while (it.hasNext())
-		{
-			chunk = it.next();
-			if (chunk == null)
-			{
-				it.remove();
-				continue;
-			}
-			boolean keep = false;
-			//Iterate over possible things that hold chunks in memory
-			if (!keep && Client.getInstance().getControlledEntity() != null)
-			{
-				keep = true;
-				int sizeInChunks = this.getSizeInChunks();
-				int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32) + 1;
-				int pCX = (int) Math.floor(loc.getX() / 32);
-				int pCY = (int) Math.floor(loc.getY() / 32);
-				int pCZ = (int) Math.floor(loc.getZ() / 32);
-
-				//System.out.println("chunkX:"+chunk.chunkX+":"+chunk.chunkY+":"+chunk.chunkZ);
-
-				if (((LoopingMathHelper.moduloDistance(chunk.getChunkX(), pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(chunk.getChunkZ(), pCZ, sizeInChunks) > chunksViewDistance)
-						|| Math.abs(chunk.getChunkY() - pCY) > 3 + 1))
-				{
-					chunk.destroy();
-					keep = false;
-				}
-			}
-			//System.out.println(z);
-			if (!keep)
-				it.remove();
-		}
-	}
-
+	@Override
 	public float getWeather()
 	{
 		return overcastFactor;
@@ -791,6 +600,7 @@ public abstract class WorldImplementation implements World
 		return entitiesUUIDGenerator.getAndIncrement();
 	}
 
+	@Override
 	public void setWeather(float overcastFactor)
 	{
 		this.overcastFactor = overcastFactor;
@@ -830,16 +640,19 @@ public abstract class WorldImplementation implements World
 		return false;
 	}
 
+	@Override
 	public Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit)
 	{
 		return raytraceSolid(initialPosition, direction, limit, false, false);
 	}
 
+	@Override
 	public Location raytraceSolidOuter(Vector3d initialPosition, Vector3d direction, double limit)
 	{
 		return raytraceSolid(initialPosition, direction, limit, true, false);
 	}
 
+	@Override
 	public Location raytraceSelectable(Location initialPosition, Vector3d direction, double limit)
 	{
 		return raytraceSolid(initialPosition, direction, limit, false, true);
@@ -953,6 +766,7 @@ public abstract class WorldImplementation implements World
 		return null;
 	}
 
+	@Override
 	public Iterator<Entity> rayTraceEntities(Vector3d initialPosition, Vector3d direction, double limit)
 	{
 		double blocksLimit = limit;
@@ -964,6 +778,7 @@ public abstract class WorldImplementation implements World
 		return raytraceEntitiesIgnoringVoxels(initialPosition, direction, blocksLimit);
 	}
 
+	@Override
 	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3d initialPosition, Vector3d direction, double limit)
 	{
 		return new EntityRayIterator(this, initialPosition, direction, limit);
@@ -986,6 +801,7 @@ public abstract class WorldImplementation implements World
 		return coordinate;
 	}
 
+	@Override
 	public ParticlesManager getParticlesManager()
 	{
 		return particlesHolder;
@@ -996,16 +812,124 @@ public abstract class WorldImplementation implements World
 		this.particlesHolder = particlesHolder;
 	}
 
-	public WorldChunksHolder getChunksHolder()
+	@Override
+	public ChunkHolder aquireChunkHolderLocation(WorldUser user, Location location)
 	{
-		return chunksHolder;
+		return aquireChunkHolder(user, (int) location.getX(), (int) location.getY(), (int) location.getZ());
+	}
+	
+	@Override
+	public ChunkHolder aquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ)
+	{
+		return this.getRegionsHolder().aquireChunkHolder(user, chunkX, chunkY, chunkZ);
+	}
+	
+	@Override
+	public ChunkHolder aquireChunkHolderWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ)
+	{
+		worldX = sanitizeHorizontalCoordinate(worldX);
+		worldY = sanitizeVerticalCoordinate(worldY);
+		worldZ = sanitizeHorizontalCoordinate(worldZ);
+		
+		return this.getRegionsHolder().aquireChunkHolder(user, worldX / 32, worldY / 32, worldZ / 32);
+	}
+	
+	@Override
+	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ)
+	{
+		//Sanitation of input data
+		chunkX = chunkX % getSizeInChunks();
+		chunkZ = chunkZ % getSizeInChunks();
+		if (chunkX < 0)
+			chunkX += getSizeInChunks();
+		if (chunkZ < 0)
+			chunkZ += getSizeInChunks();
+		//Out of bounds checks
+		if (chunkY < 0)
+			return false;
+		if (chunkY >= worldInfo.getSize().heightInChunks)
+			return false;
+		//If it doesn't return null then it exists
+		return this.regions.getChunk(chunkX, chunkY, chunkZ) != null;
+	}
+	
+	@Override
+	public Chunk getChunkWorldCoordinates(Location location)
+	{
+		return getChunkWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 
-	public Region getRegionWorldCoordinates(Location location)
+	@Override
+	public Chunk getChunkWorldCoordinates(int worldX, int worldY, int worldZ)
+	{
+		return getChunk(worldX / 32, worldY / 32, worldZ / 32);
+	}
+
+	@Override
+	public Chunk getChunk(int chunkX, int chunkY, int chunkZ)
+	{
+		chunkX = chunkX % getSizeInChunks();
+		chunkZ = chunkZ % getSizeInChunks();
+		if (chunkX < 0)
+			chunkX += getSizeInChunks();
+		if (chunkZ < 0)
+			chunkZ += getSizeInChunks();
+		if (chunkY < 0)
+			return null;
+		if (chunkY >= worldInfo.getSize().heightInChunks)
+			return null;
+		return regions.getChunk(chunkX, chunkY, chunkZ);
+	}
+
+	@Override
+	public ChunksIterator getAllLoadedChunks()
+	{
+		return new WorldChunksIterator(this);
+	}
+	
+	public WorldRegionsHolder getRegionsHolder()
+	{
+		return regions;
+	}
+
+	@Override
+	public Region aquireRegion(WorldUser user, int regionX, int regionY, int regionZ)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Region aquireRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Region aquireRegionWorldCoordinates(int worldX, int worldY, int worldZ)
+	{
+		worldX = sanitizeHorizontalCoordinate(worldX);
+		worldY = sanitizeVerticalCoordinate(worldY);
+		worldZ = sanitizeHorizontalCoordinate(worldZ);
+		
+		// TODO
+		return null;
+	}
+
+	@Override
+	public Region aquireRegionLocation(Location location)
+	{
+		return aquireRegionWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
+	}
+	
+	@Override
+	public Region getRegionLocation(Location location)
 	{
 		return getRegionWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 
+	@Override
 	public Region getRegionWorldCoordinates(int worldX, int worldY, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
@@ -1015,21 +939,25 @@ public abstract class WorldImplementation implements World
 		return getRegion(worldX / 256, worldY / 256, worldZ / 256);
 	}
 
+	@Override
 	public Region getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ)
 	{
 		return getRegion(chunkX / 8, chunkY / 8, chunkZ / 8);
 	}
 
+	@Override
 	public Region getRegion(int regionX, int regionY, int regionZ)
 	{
-		return chunksHolder.getChunkHolderRegionCoordinates(regionX, regionY, regionZ, true);
+		return regions.getRegion(regionX, regionY, regionZ);
 	}
 
+	@Override
 	public long getTime()
 	{
 		return worldTime;
 	}
 
+	@Override
 	public long getTicksElapsed()
 	{
 		return this.worldTicksCounter;
@@ -1040,15 +968,17 @@ public abstract class WorldImplementation implements World
 		this.gameLogicThread = gameLogicThread;
 	}
 	
+	@Override
 	public GameLogic getGameLogic()
 	{
 		return gameLogicThread;
 	}
 
+	@Override
 	public void destroy()
 	{
 		//this.chunksData.destroy();
-		this.chunksHolder.destroy();
+		this.regions.destroy();
 		this.getRegionSummaries().destroy();
 		//this.logic.shutdown();
 		if (this instanceof WorldMaster)
@@ -1057,6 +987,11 @@ public abstract class WorldImplementation implements World
 			this.internalData.save();
 		}
 		ioHandler.kill();
+	}
+
+	public void unloadUselessData()
+	{
+		this.getRegionsHolder().unloadsUselessData();
 	}
 
 }

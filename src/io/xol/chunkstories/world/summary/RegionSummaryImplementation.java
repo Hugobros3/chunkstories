@@ -3,6 +3,8 @@ package io.xol.chunkstories.world.summary;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.chunk.WorldUser;
+import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.geometry.VerticesObject;
@@ -10,8 +12,12 @@ import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureType;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.lwjgl.BufferUtils;
@@ -27,15 +33,19 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 /**
  * A region summary contains metadata about an 8x8 chunks ( or 256x256 blocks ) vertical slice of the world
  */
-public class RegionSummary
+public class RegionSummaryImplementation implements RegionSummary
 {
+	final WorldSummariesHolder worldSummariesHolder;
+	public WorldImplementation world;
+	private final int regionX;
+	private final int regionZ;
+
+	private Set<WeakReference<WorldUser>> users = new HashSet<WeakReference<WorldUser>>();
+	
 	// LZ4 compressors & decompressors
 	static LZ4Factory factory = LZ4Factory.fastestInstance();
 	public static LZ4Compressor compressor = factory.highCompressor(10);
 	public static LZ4FastDecompressor decompressor = factory.fastDecompressor();
-
-	public WorldImplementation world;
-	public int regionX, regionZ;
 
 	public final File handler;
 	public AtomicBoolean summaryLoaded = new AtomicBoolean(false);
@@ -55,9 +65,10 @@ public class RegionSummary
 
 	private byte[] vboDataToUpload = null;
 
-	public RegionSummary(WorldImplementation world, int rx, int rz)
+	RegionSummaryImplementation(WorldSummariesHolder worldSummariesHolder, int rx, int rz)
 	{
-		this.world = world;
+		this.worldSummariesHolder = worldSummariesHolder;
+		this.world = worldSummariesHolder.getWorld();
 		this.regionX = rx;
 		this.regionZ = rz;
 
@@ -81,6 +92,135 @@ public class RegionSummary
 		loadSummary();
 	}
 
+	public int getRegionX()
+	{
+		return regionX;
+	}
+
+	public int getRegionZ()
+	{
+		return regionZ;
+	}
+	
+	@Override
+	public Iterator<WorldUser> getSummaryUsers()
+	{
+		return new Iterator<WorldUser>()
+		{
+			Iterator<WeakReference<WorldUser>> i = users.iterator();
+			WorldUser user;
+
+			@Override
+			public boolean hasNext()
+			{
+				while(user == null && i.hasNext())
+				{
+					user = i.next().get();
+				}
+				return user != null;
+			}
+
+			@Override
+			public WorldUser next()
+			{
+				hasNext();
+				WorldUser u = user;
+				user = null;
+				return u;
+			}
+
+		};
+	}
+
+	@Override
+	public boolean registerUser(WorldUser user)
+	{
+		Iterator<WeakReference<WorldUser>> i = users.iterator();
+		while (i.hasNext())
+		{
+			WeakReference<WorldUser> w = i.next();
+			WorldUser u = w.get();
+			if (u == null)
+				i.remove();
+			else if (u != null && u.equals(user))
+				return false;
+		}
+		
+		users.add(new WeakReference<WorldUser>(user));
+		
+		//if(chunk == null)
+		//	loadChunk();
+		
+		return true;
+	}
+
+	@Override
+	/**
+	 * Unregisters user and if there is no remaining user, unloads the chunk
+	 */
+	public boolean unregisterUser(WorldUser user)
+	{
+		Iterator<WeakReference<WorldUser>> i = users.iterator();
+		while (i.hasNext())
+		{
+			WeakReference<WorldUser> w = i.next();
+			WorldUser u = w.get();
+			if (u == null)
+				i.remove();
+			else if (u != null && u.equals(user))
+				i.remove();
+		}
+		
+		if(users.isEmpty())
+		{
+			unloadSummary();
+			return true;
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Iterates over users references, cleans null ones and if the result is an empty list it promptly unloads the chunk.
+	 */
+	public boolean unloadsIfUnused()
+	{
+		Iterator<WeakReference<WorldUser>> i = users.iterator();
+		while (i.hasNext())
+		{
+			WeakReference<WorldUser> w = i.next();
+			WorldUser u = w.get();
+			if (u == null)
+				i.remove();
+		}
+		
+		if(users.isEmpty())
+		{
+			unloadSummary();
+			return true;
+		}
+		
+		return false;
+	}
+
+	public int countUsers()
+	{
+		int c = 0;
+		
+		Iterator<WeakReference<WorldUser>> i = users.iterator();
+		while (i.hasNext())
+		{
+			WeakReference<WorldUser> w = i.next();
+			WorldUser u = w.get();
+			if (u == null)
+				i.remove();
+			else
+				c++;
+		}
+		
+		return c;
+	}
+	
 	private void loadSummary()
 	{
 		this.world.ioHandler.requestRegionSummaryLoad(this);
@@ -96,42 +236,50 @@ public class RegionSummary
 		return x * 256 + z;
 	}
 
-	public void set(int x, int y, int z, int t)
+	@Override
+	public void updateOnBlockModification(int worldX, int height, int worldZ, int voxelData)
 	{
-		Voxel voxel = VoxelTypes.get(t);
-		int h = getHeight(x, z);
+		Voxel voxel = VoxelTypes.get(voxelData);
+		int h = getHeight(worldX, worldZ);
 		//If we place something solid over the last solid thing
-		if ((voxel.isVoxelSolid() || voxel.isVoxelLiquid()) && y >= h)
+		if ((voxel.isVoxelSolid() || voxel.isVoxelLiquid()) && height >= h)
 		{
-			if (y >= h)
+			if (height >= h)
 			{
-				heights[index(x, z)] = y;
-				ids[index(x, z)] = t;
+				heights[index(worldX, worldZ)] = height;
+				ids[index(worldX, worldZ)] = voxelData;
 			}
 		}
 		else
 		{
 			// If removing the top block, start a loop to find bottom.
-			if (y == h)
+			if (height == h)
 			{
 				boolean loaded = false;
 				boolean solid = false;
 				boolean liquid = false;
 				do
 				{
-					y--;
-					loaded = world.isChunkLoaded(x / 32, y / 32, z / 32);
+					height--;
+					loaded = world.isChunkLoaded(worldX / 32, height / 32, worldZ / 32);
 					
-					t = world.getVoxelData(x, y, z, false);
-					solid = VoxelTypes.get(t).isVoxelSolid();
-					liquid = VoxelTypes.get(t).isVoxelLiquid();
+					voxelData = world.getVoxelData(worldX, height, worldZ);
+					solid = VoxelTypes.get(voxelData).isVoxelSolid();
+					liquid = VoxelTypes.get(voxelData).isVoxelLiquid();
 				}
-				while (y >= 0 && loaded && !solid && !liquid);
+				while (height >= 0 && loaded && !solid && !liquid);
 
-				heights[index(x, z)] = y;
-				ids[index(x, z)] = t;
+				heights[index(worldX, worldZ)] = height;
+				ids[index(worldX, worldZ)] = voxelData;
 			}
 		}
+	}
+
+	@Override
+	public void setHeightAndId(int worldX, int height, int worldZ, int voxelData)
+	{
+		heights[index(worldX, worldZ)] = height;
+		ids[index(worldX, worldZ)] = voxelData;
 	}
 
 	public int getMinChunkHeight(int x, int z)
@@ -149,12 +297,6 @@ public class RegionSummary
 	public int getID(int x, int z)
 	{
 		return ids[index(x, z)];
-	}
-
-	public void forceSet(int x, int y, int z, int t)
-	{
-		heights[index(x, z)] = y;
-		ids[index(x, z)] = t;
 	}
 
 	public float dekalX;
@@ -275,7 +417,7 @@ public class RegionSummary
 		return true;
 	}
 
-	public void destroy()
+	void unloadSummary()
 	{
 		if(world instanceof WorldClient)
 		{
@@ -284,8 +426,11 @@ public class RegionSummary
 			
 			verticesObject.destroy();
 		}
-		//if (vboId != -1)
-		//	glDeleteBuffers(vboId);
+		
+		if(!worldSummariesHolder.removeSummary(this))
+		{
+			System.out.println("Someone tryed to remove a summary twice !!!");
+		}
 	}
 
 	public synchronized void sendNewModel(byte[] newModelData)

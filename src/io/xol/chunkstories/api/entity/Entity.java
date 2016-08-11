@@ -40,7 +40,7 @@ public interface Entity extends Collidable, CSFSerializable
 	 * Return the entity's current chunk holder
 	 * @return
 	 */
-	public Region getChunkHolder();
+	public Region getRegion();
 	
 	/**
 	 * Return the entity's world

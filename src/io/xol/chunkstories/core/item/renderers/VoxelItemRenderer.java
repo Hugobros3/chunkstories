@@ -183,7 +183,7 @@ public class VoxelItemRenderer implements ItemRenderer
 			context.addLight(heldBlockLight);	
 			
 			//If we hold a light source, prepare the shader accordingly
-			context.getCurrentShader().setUniformFloat2("worldLight", ((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevel(location));
+			context.getCurrentShader().setUniformFloat2("worldLight", ((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevelLocation(location));
 			
 		}
 		

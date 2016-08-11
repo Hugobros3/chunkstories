@@ -10,7 +10,7 @@ import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldNetworked;
 import io.xol.chunkstories.world.WorldServer;
-import io.xol.chunkstories.world.chunk.ChunkHolder;
+import io.xol.chunkstories.world.chunk.RegionImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -46,9 +46,13 @@ public class GameLogicThread extends Thread implements GameLogic
 			//Dirty performance metric :]
 			//perfMetric();
 			
+			//Timings
 			fps = 1f / ((System.nanoTime() - lastTimeNs) / 1000f / 1000f / 1000f);
-			
 			lastTimeNs = System.nanoTime();
+			
+			//Updates controller/s views
+			if(world instanceof WorldClient)
+				Client.getInstance().updateUsedWorldBits();
 			
 			//Processes incomming pending packets in synch with game logic
 			if(world instanceof WorldNetworked)
@@ -57,12 +61,19 @@ public class GameLogicThread extends Thread implements GameLogic
 			//Tick the world ( mostly entities )
 			world.tick();
 			
-			//Compresses pending chunk summaries
-			Iterator<ChunkHolder> loadedChunksHolders = world.getChunksHolder().getLoadedChunkHolders();
-			while(loadedChunksHolders.hasNext())
+			//Every second, unloads unused stuff
+			if(world.getTicksElapsed() % 60 == 0)
 			{
-				ChunkHolder chunkHolder = loadedChunksHolders.next();
-				chunkHolder.compressChangedChunks();
+				//Compresses pending chunk summaries
+				Iterator<RegionImplementation> loadedChunksHolders = world.getRegionsHolder().getLoadedRegions();
+				while(loadedChunksHolders.hasNext())
+				{
+					RegionImplementation region = loadedChunksHolders.next();
+					region.compressChangedChunks();
+				}
+				
+				//Delete unused world data
+				world.unloadUselessData();
 			}
 			
 			//Game logic is 60 ticks/s

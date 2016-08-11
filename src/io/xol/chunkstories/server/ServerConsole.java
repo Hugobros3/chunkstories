@@ -59,7 +59,7 @@ public class ServerConsole
 				//System.out.println("<<CUCK SUPRÊME>>");
 				emitter.sendMessage("#00FFD0The server's ip is " + server.getHandler().getIP());
 				emitter.sendMessage("#00FFD0It's running version " + VersionInfo.version + " of the server software.");
-				emitter.sendMessage("#00FFD0" + server.getWorld().getChunksHolder().toString());
+				emitter.sendMessage("#00FFD0" + server.getWorld().getRegionsHolder().toString());
 				emitter.sendMessage("#00FFD0" + server.getWorld().ioHandler);
 				emitter.sendMessage("#00FFD0" + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "Mb used out of " + Runtime.getRuntime().maxMemory() / 1024 / 1024 + "Mb allocated");
 				return true;
@@ -140,7 +140,7 @@ public class ServerConsole
 			{
 				Player player = (Player) emitter;
 
-				emitter.sendMessage("#00FFD0" + player.getControlledEntity().getChunkHolder());
+				emitter.sendMessage("#00FFD0" + player.getControlledEntity().getRegion());
 				return true;
 			}
 			else if (cmd.equals("spawnEntity"))
@@ -216,8 +216,8 @@ public class ServerConsole
 				}
 				else if (arguments.length >= 1 && cmd.equals("kick"))
 				{
-					ServerClient clientByName = server.getHandler().getAuthentificatedClientByName(arguments[1]);
-					String kickReason = "Donacdum";
+					ServerClient clientByName = server.getHandler().getAuthentificatedClientByName(arguments[0]);
+					String kickReason = "refrain from portraying an imbecile attitude";
 					//Recreate the argument
 					if (arguments.length >= 2)
 					{
@@ -230,7 +230,7 @@ public class ServerConsole
 					{
 						clientByName.disconnect("Kicked from server. \n" + kickReason);
 						//server.handler.disconnectClient(tokick);
-						emitter.sendMessage("Forced disconnect for user " + kickReason);
+						emitter.sendMessage("Kicked " + clientByName + " for " + kickReason);
 					}
 					else
 					{

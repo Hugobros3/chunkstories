@@ -205,7 +205,7 @@ public class AnvilExporter
 																	dataToSet = ((VoxelLogic) voxel).onPlace(exported, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet, null);
 
 																if (dataToSet != -1)
-																	exported.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet, true);
+																	exported.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet);
 															}
 														}
 													}
@@ -232,7 +232,7 @@ public class AnvilExporter
 									}
 
 								}
-								if (exported.getChunksHolder().countChunksWithData() > 256)
+								if (exported.getRegionsHolder().countChunksWithData() > 256)
 								{
 									//Save world
 									verbose("More than 256 chunks in memory, saving and unloading before continuing");
