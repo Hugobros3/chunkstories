@@ -1,6 +1,5 @@
 package io.xol.chunkstories.world.summary;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,15 +15,15 @@ import io.xol.chunkstories.world.WorldImplementation;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class WorldSummariesHolder implements RegionSummaries
+public class WorldRegionSummariesHolder implements RegionSummaries
 {
 	private final WorldImplementation world;
-	
-	private Semaphore dontDeleteWhileCreating = new Semaphore(1);
 	private final int worldSize;
+	
 	private Map<Long, RegionSummaryImplementation> summaries = new ConcurrentHashMap<Long, RegionSummaryImplementation>();
+	private Semaphore dontDeleteWhileCreating = new Semaphore(1);
 
-	public WorldSummariesHolder(WorldImplementation world)
+	public WorldRegionSummariesHolder(WorldImplementation world)
 	{
 		this.world = world;
 		this.worldSize = world.getSizeInChunks() * 32;
@@ -50,14 +49,14 @@ public class WorldSummariesHolder implements RegionSummaries
 		if (regionZ < 0)
 			regionZ += worldSize;
 
-		long i = index(regionX, regionZ);
+		long i = index(regionX * 256, regionZ * 256);
 		
 		dontDeleteWhileCreating.acquireUninterruptibly();
 		if (summaries.containsKey(i))
 			summary = summaries.get(i);
 		else
 		{
-			summary = new RegionSummaryImplementation(this, regionX / 256, regionZ / 256);
+			summary = new RegionSummaryImplementation(this, regionX, regionZ);
 			summaries.put(i, summary);
 		}
 		dontDeleteWhileCreating.release();
@@ -66,13 +65,13 @@ public class WorldSummariesHolder implements RegionSummaries
 	}
 
 	@Override
-	public RegionSummary aquireRegionSummaryChunkCoordinates(WorldUser worldUser, int chunkX, int chunkZ)
+	public RegionSummaryImplementation aquireRegionSummaryChunkCoordinates(WorldUser worldUser, int chunkX, int chunkZ)
 	{
 		return aquireRegionSummary(worldUser, chunkX / 8, chunkZ / 8);
 	}
 
 	@Override
-	public RegionSummary aquireRegionSummaryWorldCoordinates(WorldUser worldUser, int worldX, int worldZ)
+	public RegionSummaryImplementation aquireRegionSummaryWorldCoordinates(WorldUser worldUser, int worldX, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
@@ -80,26 +79,40 @@ public class WorldSummariesHolder implements RegionSummaries
 	}
 
 	@Override
-	public RegionSummary aquireRegionSummaryLocation(WorldUser worldUser, Location location)
+	public RegionSummaryImplementation aquireRegionSummaryLocation(WorldUser worldUser, Location location)
 	{
 		return aquireRegionSummary(worldUser, (int)location.getX(), (int)location.getZ());
 	}
-
-	public RegionSummaryImplementation getRegionSummaryWorldCoordinates(int x, int z)
+	
+	@Override
+	public RegionSummary getRegionSummary(int regionX, int regionZ)
 	{
-		x %= worldSize;
-		z %= worldSize;
-		if (x < 0)
-			x += worldSize;
-		if (z < 0)
-			z += worldSize;
+		return getRegionSummaryWorldCoordinates(regionX * 256, regionZ * 256);
+	}
 
-		long i = index(x, z);
+	@Override
+	public RegionSummary getRegionSummaryChunkCoordinates(int chunkX, int chunkZ)
+	{
+		return getRegionSummaryWorldCoordinates(chunkX * 32, chunkZ * 32);
+	}
+
+	@Override
+	public RegionSummary getRegionSummaryLocation(Location location)
+	{
+		return getRegionSummaryWorldCoordinates((int)location.getX(), (int)location.getZ());
+	}
+
+	public RegionSummaryImplementation getRegionSummaryWorldCoordinates(int worldX, int worldZ)
+	{
+		worldX = sanitizeHorizontalCoordinate(worldX);
+		worldZ = sanitizeHorizontalCoordinate(worldZ);
+
+		long i = index(worldX, worldZ);
 		if (summaries.containsKey(i))
 		{
 			RegionSummaryImplementation summary = summaries.get(i);
 			if(!summary.isLoaded())
-				return null;
+				return summary;
 			else
 				return summary;
 		}
@@ -158,21 +171,7 @@ public class WorldSummariesHolder implements RegionSummaries
 		if (z < 0)
 			z += worldSize;
 		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
-		return cs.getID(x % 256, z % 256);
-	}
-
-	public int getMinChunkHeightAt(int x, int z)
-	{
-		x %= worldSize;
-		z %= worldSize;
-		if (x < 0)
-			x += worldSize;
-		if (z < 0)
-			z += worldSize;
-		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
-		if (cs == null)
-			return 0;
-		return cs.getMinChunkHeight(x % 256, z % 256);
+		return cs.getVoxelData(x % 256, z % 256);
 	}
 
 	public void updateOnBlockPlaced(int x, int y, int z, int id)
@@ -200,15 +199,6 @@ public class WorldSummariesHolder implements RegionSummaries
 		}
 	}
 
-	/*public void clearAll()
-	{
-		for (RegionSummaryImplementation cs : summaries.values())
-		{
-			cs.unloadSummary();
-		}
-		summaries.clear();
-	}*/
-
 	public void setHeightAndId(int x, int z, int y, int id)
 	{
 		x %= worldSize;
@@ -230,7 +220,7 @@ public class WorldSummariesHolder implements RegionSummaries
 		{
 			RegionSummaryImplementation summary = i.next();
 			if(summary.unloadsIfUnused())
-				System.out.println("unloaded "+summary);
+				System.out.println("unloaded unused summary "+summary);
 		}
 		
 		dontDeleteWhileCreating.release();
@@ -281,7 +271,7 @@ public class WorldSummariesHolder implements RegionSummaries
 
 	boolean removeSummary(RegionSummaryImplementation regionSummary)
 	{
-		return summaries.remove(this.index(regionSummary.getRegionX(), regionSummary.getRegionZ())) != null;
+		return summaries.remove(this.index(regionSummary.getRegionX() * 256, regionSummary.getRegionZ() * 256)) != null;
 	}
 	
 	private int sanitizeHorizontalCoordinate(int coordinate)

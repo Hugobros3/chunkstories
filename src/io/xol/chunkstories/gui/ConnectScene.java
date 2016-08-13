@@ -57,7 +57,8 @@ public class ConnectScene extends Scene
 
 		if (loginOk)
 		{
-			this.eng.changeScene(new GameplayScene(eng, true));
+			//Client.getInstance().changeWorld(world);
+			//this.eng.changeScene(new GameplayScene(eng, true));
 		}
 		float c = 1.0f;
 		drawCenteredText("Connecting to " + serverName, GameWindowOpenGL.windowHeight / 2, 64, c, c, c, 1f);
@@ -85,7 +86,9 @@ public class ConnectScene extends Scene
 			Client.world.destroy();
 			Client.world = null;
 		}	
-		this.eng.changeScene(new MainMenu(eng, false));
+		
+		Client.getInstance().exitToMainMenu();
+		//this.eng.changeScene(new MainMenu(eng, false));
 	}
 
 	@Override

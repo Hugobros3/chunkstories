@@ -1,5 +1,6 @@
 package io.xol.chunkstories.core.events;
 
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.events.categories.ClientEvent;
@@ -56,8 +57,9 @@ public class ClientInputPressedEvent extends CancellableEvent implements ClientE
 				connection.sendPacket(packet);
 			}
 			//Handle interaction locally
-			if(Client.getInstance().getControlledEntity() != null)
-				Client.getInstance().getControlledEntity().handleInteraction(input, Client.getInstance());
+			final EntityControllable entityControlled = Client.getInstance().getClientSideController().getControlledEntity();
+			if(entityControlled != null)
+				entityControlled.handleInteraction(input, Client.getInstance().getClientSideController());
 		}
 	}
 

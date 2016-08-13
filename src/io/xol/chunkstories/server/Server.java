@@ -186,7 +186,7 @@ public class Server implements Runnable, ServerInterface
 		txt += "Chunk Stories Server " + VersionInfo.version;
 		txt += " | world running at " + world.getGameLogic().getSimulationFps()+" Fps";
 		txt += " | " + this.connectionsManager.getNumberOfAuthentificatedClients() + "/" + this.connectionsManager.getMaxClients() + " players";
-		txt += " | " + this.world.getRegionsHolder().getStats() + " + " + this.world.getRegionSummaries().countSummaries() + " summaries ";
+		txt += " | " + this.world.getRegionsHolder().getStats() + " + " + this.world.getRegionsSummariesHolder().countSummaries() + " summaries ";
 		txt += " | " + this.world.ioHandler.toString();
 		
 		txt += ansi().bg(BLACK).fg(WHITE);

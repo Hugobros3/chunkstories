@@ -71,7 +71,9 @@ public class PacketWorldInfo extends Packet
 	{
 		if(processor.isClient)
 		{
-			Client.world = new WorldClientRemote(info, processor);
+			WorldClientRemote world = new WorldClientRemote(info, processor);
+			
+			Client.getInstance().changeWorld(world);
 			//Client.world.startLogic();
 		}
 	}

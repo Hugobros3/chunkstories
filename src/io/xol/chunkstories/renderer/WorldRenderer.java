@@ -53,6 +53,7 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRenderer;
@@ -66,7 +67,6 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldClientCommon;
-import io.xol.chunkstories.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -336,7 +336,7 @@ public class WorldRenderer
 			System.out.println("sky took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		// Move camera to relevant position
-		fboGBuffers.setEnabledRenderTargets();
+		// fboGBuffers.setEnabledRenderTargets(true, false, false);
 
 		// Render world
 		renderWorld(false, chunksToRenderLimit);
@@ -643,7 +643,7 @@ public class WorldRenderer
 			
 			//world.ioHandler.requestChunksUnload(cameraChunkX, cameraChunkY, cameraChunkZ, sizeInChunks, chunksViewDistance);
 
-			//farTerrainRenderer.updateData();
+			farTerrainRenderer.uploadGeneratedMeshes();
 			
 			//world.getRegionSummaries().removeFurther(cameraChunkX, cameraChunkZ, 33);
 
@@ -715,7 +715,7 @@ public class WorldRenderer
 		//terrainShader.setUniformFloat3("vegetationColor", vegetationColor[0] / 255f, vegetationColor[1] / 255f, vegetationColor[2] / 255f);
 		terrainShader.setUniformFloat3("sunPos", sky.getSunPosition());
 		terrainShader.setUniformFloat("time", animationTimer);
-		terrainShader.setUniformFloat("terrainHeight", world.getRegionSummaries().getHeightAtWorldCoordinates((int) camera.pos.getX(), (int) camera.pos.getZ()));
+		terrainShader.setUniformFloat("terrainHeight", world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int) camera.pos.getX(), (int) camera.pos.getZ()));
 		terrainShader.setUniformFloat("viewDistance", RenderingConfig.viewDistance);
 		terrainShader.setUniformFloat("shadowVisiblity", getShadowVisibility());
 		waterNormalTexture.setLinearFiltering(true);
@@ -740,7 +740,7 @@ public class WorldRenderer
 		terrainShader.setUniformFloat2("playerCurrentChunk", this.cameraChunkX, this.cameraChunkY);
 		terrainShader.setUniformFloat("ignoreWorldCulling", ignoreWorldCulling ? 1f : 0f);
 
-		if (Keyboard.isKeyDown(Keyboard.KEY_F7))
+		if (Keyboard.isKeyDown(Keyboard.KEY_F10))
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 		if (RenderingConfig.debugGBuffers)
@@ -863,24 +863,19 @@ public class WorldRenderer
 		renderingContext.enableVertexAttribute(vertexIn);
 		renderingContext.enableVertexAttribute(texCoordIn);
 
-		// Culling vectors
-		//viewerPosVector = camera.pos.castToSP();//new Vector3f((float) viewX, (float) viewY, (float) viewZ);
-		//float transformedViewH = (float) ((camera.rotationX) / 180 * Math.PI);
-		// if(FastConfig.debugGBuffers ) System.out.println(Math.sin(transformedViewV)+"f");
-		//viewerCamDirVector = new Vector3f((float) (Math.sin((180 + camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)), (float) (Math.cos((180 + camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)));
-
 		if (RenderingConfig.debugGBuffers)
 			glFinish();
 		t = System.nanoTime();
 
 		// renderList.clear();
 		glDisable(GL_BLEND);
+		glEnable(GL_ALPHA_TEST);
+		glDepthFunc(GL_LESS);
+		
 		int chunksRendered = 0;
+		for(int XXX = 0; XXX < 1; XXX++)
 		for (ChunkRenderable chunk : renderList)
 		{
-
-			if (Keyboard.isKeyDown(Keyboard.KEY_F6))
-				break;
 			ChunkRenderData chunkRenderData = chunk.getChunkRenderData();
 			chunksRendered++;
 			if (chunksToRenderLimit != -1 && chunksRendered > chunksToRenderLimit)
@@ -904,6 +899,7 @@ public class WorldRenderer
 			// Don't bother if it don't render anything
 			if (chunkRenderData == null || chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)
 				continue;
+
 
 			// If we're doing shadows
 			if (isShadowPass)
@@ -945,14 +941,19 @@ public class WorldRenderer
 				double diffChunkX = vboDekalX + camIntPartX;
 				double diffChunkY = chunk.getChunkY() * 32 + camIntPartY;
 				double diffChunkZ = vboDekalZ + camIntPartZ;
-				opaqueBlocksShader.setUniformFloat3("objectPosition", vboDekalX + camera.pos.getX(), chunk.getChunkY() * 32f + camera.pos.getY(), vboDekalZ + camera.pos.getZ());
-				opaqueBlocksShader.setUniformFloat3("objectPosition", diffChunkX + fractPartX, diffChunkY + fractPartY, diffChunkZ + fractPartZ);
+				opaqueBlocksShader.setUniformFloat3("objectPosition", vboDekalX, chunk.getChunkY() * 32f, vboDekalZ);
+				//opaqueBlocksShader.setUniformFloat3("objectPosition", vboDekalX + camera.pos.getX(), chunk.getChunkY() * 32f + camera.pos.getY(), vboDekalZ + camera.pos.getZ());
+				//opaqueBlocksShader.setUniformFloat3("objectPosition", diffChunkX + fractPartX, diffChunkY + fractPartY, diffChunkZ + fractPartZ);
 			}
 			else
 				shadowsPassShader.setUniformFloat3("objectPosition", vboDekalX, chunk.getChunkY() * 32f, vboDekalZ);
 
 			//glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
 
+			if (Keyboard.isKeyDown(Keyboard.KEY_F6))
+				break;
+			
+			if (!Keyboard.isKeyDown(Keyboard.KEY_F4))
 			if (isShadowPass)
 				renderedVerticesShadow += chunkRenderData.renderCubeSolidBlocks(renderingContext);
 			else
@@ -961,6 +962,8 @@ public class WorldRenderer
 				renderedVertices += chunkRenderData.renderCubeSolidBlocks(renderingContext);
 			}
 
+
+			if (!Keyboard.isKeyDown(Keyboard.KEY_F5))
 			if (isShadowPass)
 				renderedVerticesShadow += chunkRenderData.renderCustomSolidBlocks(renderingContext);
 			else
@@ -969,6 +972,8 @@ public class WorldRenderer
 				renderedVertices += chunkRenderData.renderCustomSolidBlocks(renderingContext);
 			}
 		}
+		
+		glDepthFunc(GL_LEQUAL);
 		// Done looping chunks, now entities
 		if (!isShadowPass)
 		{
@@ -1246,10 +1251,12 @@ public class WorldRenderer
 	 */
 	public void renderShadedBlocks()
 	{
+		if(Keyboard.isKeyDown(Keyboard.KEY_F7))
+			return;
 		if (RenderingConfig.debugGBuffers)
-
-			if (RenderingConfig.debugGBuffers)
-				glFinish();
+			glFinish();
+		
+		
 		long t = System.nanoTime();
 
 		renderingContext.setCurrentShader(applyShadowsShader);

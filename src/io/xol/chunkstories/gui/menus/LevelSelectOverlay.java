@@ -11,7 +11,6 @@ import java.util.List;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.WorldClientLocal;
@@ -25,7 +24,6 @@ import io.xol.engine.gui.elements.Button;
 
 public class LevelSelectOverlay extends Overlay
 {
-
 	GuiElementsHandler guiHandler = new GuiElementsHandler();
 	Button backOption = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
 	Button newWorldOption = new Button(0, 0, 300, 32, ("New..."), BitmapFont.SMALLFONTS, 1);
@@ -82,9 +80,9 @@ public class LevelSelectOverlay extends Overlay
 				break;
 			if (worldButton.clicked())
 			{
-				Client.world = new WorldClientLocal(worldButton.info);
+				Client.getInstance().changeWorld(new WorldClientLocal(worldButton.info));
 				//Client.world.startLogic();
-				this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
+				//this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 			}
 			int maxWidth = GameWindowOpenGL.windowWidth - 64 * 2;
 			worldButton.width = maxWidth;

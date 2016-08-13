@@ -1,4 +1,4 @@
-package io.xol.chunkstories.world.chunk;
+package io.xol.chunkstories.world.region;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
@@ -7,11 +7,15 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.api.world.chunk.Region;
+import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.io.CSFRegionFile;
+import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.iterators.RegionIterator;
 import io.xol.engine.concurrency.SafeWriteLock;
 
+import java.lang.ref.WeakReference;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
@@ -29,14 +33,11 @@ public class RegionImplementation implements Region
 	public final int regionX, regionY, regionZ;
 	public final long uuid;
 	private final WorldRegionsHolder worldChunksHolder;
+	
+	private Set<WeakReference<WorldUser>> users = new HashSet<WeakReference<WorldUser>>();
 
 	//Only relevant on Master worlds
 	public final CSFRegionFile handler;
-
-	// Holds 8x8x8 CubicChunks
-
-	//private CubicChunk[][][] data = new CubicChunk[8][8][8];
-	//private AtomicInteger loadedChunks = new AtomicInteger();
 
 	private AtomicLong unloadCooldown = new AtomicLong();
 	private boolean unloadedFlag = false;
@@ -44,28 +45,12 @@ public class RegionImplementation implements Region
 	//TODO find a clean way to let IOTaks fiddle with this
 	public SafeWriteLock chunksArrayLock = new SafeWriteLock();
 
+	// Holds 8x8x8 CubicChunks
 	private ChunkHolderImplementation[][][] chunkHolders;
-	//public SafeWriteLock compressedChunksLock = new SafeWriteLock();
-	//public byte[][][][] compressedChunks = new byte[8][8][8][];
 	private AtomicBoolean isDiskDataLoaded = new AtomicBoolean(false);
 
 	//Local entities
 	private Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
-
-	// LZ4 compressors & decompressors stuff
-	/*private static LZ4Factory factory = LZ4Factory.fastestInstance();
-	private static LZ4Compressor compressor = factory.fastCompressor();
-	private static LZ4FastDecompressor decompressor = factory.fastDecompressor();
-	
-	private static ThreadLocal<byte[]> compressedData = new ThreadLocal<byte[]>()
-	{
-		@Override
-		protected byte[] initialValue()
-		{
-			return new byte[32 * 32 * 32 * 4];
-		}
-	};
-	 */
 
 	private static Random random = new Random();
 
@@ -105,50 +90,100 @@ public class RegionImplementation implements Region
 		}
 	}
 
-	/*private void compressChunkData(Chunk chunk)
+	@Override
+	public Iterator<WorldUser> getChunkUsers()
 	{
-		int chunkX = chunk.getChunkX();
-		int chunkY = chunk.getChunkY();
-		int chunkZ = chunk.getChunkZ();
-		if (chunk instanceof CubicChunk)
+		return new Iterator<WorldUser>()
 		{
-			CubicChunk cubic = (CubicChunk) chunk;
-			if (!chunk.isAirChunk())
-			{
-	
-				byte[] toCompressData = new byte[32 * 32 * 32 * 4];
-	
-				int[] data = cubic.chunkVoxelData;
-				int z = 0;
-				for (int i : data)
-				{
-					toCompressData[z] = (byte) ((i >>> 24) & 0xFF);
-					toCompressData[z + 1] = (byte) ((i >>> 16) & 0xFF);
-					toCompressData[z + 2] = (byte) ((i >>> 8) & 0xFF);
-					toCompressData[z + 3] = (byte) ((i) & 0xFF);
-					z += 4;
-				}
-				int compressedDataLength = compressor.compress(toCompressData, compressedData.get());
-	
-				assert decompressor.decompress(compressedData.get(), 32 * 32 * 32 * 4).length == 32 * 32 * 32 * 4;
-	
-				// Locks the compressedChunks array so nothing freakes out
-				compressedChunksLock.beginWrite();
-				compressedChunks[chunkX & 7][chunkY & 7][chunkZ & 7] = new byte[compressedDataLength];
-				System.arraycopy(compressedData.get(), 0, compressedChunks[chunkX & 7][chunkY & 7][chunkZ & 7], 0, compressedDataLength);
-				compressedChunksLock.endWrite();
-			}
-			else
-			{
-				compressedChunksLock.beginWrite();
-				compressedChunks[chunkX & 7][chunkY & 7][chunkZ & 7] = null;
-				compressedChunksLock.endWrite();
-	
-			}
-			cubic.lastModificationSaved.set(System.currentTimeMillis());
-		}
-	}*/
+			Iterator<WeakReference<WorldUser>> i = users.iterator();
+			WorldUser user;
 
+			@Override
+			public boolean hasNext()
+			{
+				while(user == null && i.hasNext())
+				{
+					user = i.next().get();
+				}
+				return user != null;
+			}
+
+			@Override
+			public WorldUser next()
+			{
+				hasNext();
+				WorldUser u = user;
+				user = null;
+				return u;
+			}
+
+		};
+	}
+
+	@Override
+	public boolean registerUser(WorldUser user)
+	{
+		Iterator<WeakReference<WorldUser>> i = users.iterator();
+		while (i.hasNext())
+		{
+			WeakReference<WorldUser> w = i.next();
+			WorldUser u = w.get();
+			if (u == null)
+				i.remove();
+			else if (u != null && u.equals(user))
+				return false;
+		}
+		
+		users.add(new WeakReference<WorldUser>(user));
+		
+		return true;
+	}
+
+	@Override
+	/**
+	 * Unregisters user and if there is no remaining user, unloads the chunk
+	 */
+	public boolean unregisterUser(WorldUser user)
+	{
+		Iterator<WeakReference<WorldUser>> i = users.iterator();
+		while (i.hasNext())
+		{
+			WeakReference<WorldUser> w = i.next();
+			WorldUser u = w.get();
+			if (u == null)
+				i.remove();
+			else if (u != null && u.equals(user))
+				i.remove();
+		}
+		
+		if(users.isEmpty())
+		{
+			//unloadChunk();
+			return true;
+		}
+		
+		return false;
+	}
+	
+
+	public int countUsers()
+	{
+		int c = 0;
+		
+		Iterator<WeakReference<WorldUser>> i = users.iterator();
+		while (i.hasNext())
+		{
+			WeakReference<WorldUser> w = i.next();
+			WorldUser u = w.get();
+			if (u == null)
+				i.remove();
+			else
+				c++;
+		}
+		
+		return c;
+	}
+	
 	public byte[] getCompressedData(int chunkX, int chunkY, int chunkZ)
 	{
 		return chunkHolders[chunkX & 7][chunkY & 7][chunkZ & 7].getCompressedData();
@@ -165,62 +200,7 @@ public class RegionImplementation implements Region
 	{
 		return chunkHolders[chunkX & 7][chunkY & 7][chunkZ & 7];
 	}
-
-	/*public Chunk setChunk(int chunkX, int chunkY, int chunkZ, Chunk chunk)
-	{
-		chunksArrayLock.beginWrite();
 	
-		if (data[chunkX & 7][chunkY & 7][chunkZ & 7] == null && chunk != null)
-			loadedChunks.incrementAndGet();
-	
-		//Remove any form of cuck
-		if (data[chunkX & 7][chunkY & 7][chunkZ & 7] != null)// && data[chunkX & 7][chunkY & 7][chunkZ & 7].dataPointer != chunk.dataPointer)
-		{
-			System.out.println(chunk);
-			//System.out.println(this + "chunkX"+chunkX+":"+chunkY+":"+chunkZ);
-			//Thread.currentThread().dumpStack();
-			//System.out.println("Overriding existing chunk, deleting old one");
-			data[chunkX & 7][chunkY & 7][chunkZ & 7].destroy();
-		}
-	
-		//System.out.println("set chunk"+chunk);
-		data[chunkX & 7][chunkY & 7][chunkZ & 7] = (CubicChunk) chunk;
-	
-		//Change chunk holder to this
-		assert chunk.getRegion().equals(this);
-	
-		chunksArrayLock.endWrite();
-		return chunk;
-	}*/
-
-	/*@Override
-	public boolean removeChunk(int chunkX, int chunkY, int chunkZ)
-	{
-		Chunk c = data[chunkX & 7][chunkY & 7][chunkZ & 7];
-		if (c != null)
-		{
-			//Save back whatever the chunk
-			compressChunkData(c);
-	
-			//Locks the chunks array
-			chunksArrayLock.beginWrite();
-			//Destroys the chunk
-			data[chunkX & 7][chunkY & 7][chunkZ & 7] = null;
-			c.destroy();
-			//Update counter
-			loadedChunks.decrementAndGet();
-			//Unlocks
-			chunksArrayLock.endWrite();
-		}
-	
-		//True -> holder is now empty.
-		return loadedChunks.get() == 0;
-	}*/
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.chunk.Region#isChunkLoaded(int, int, int)
-	 */
-
 	@Override
 	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ)
 	{
@@ -455,6 +435,9 @@ public class RegionImplementation implements Region
 	}
 
 	@Override
+	/**
+	 * Returns true if no one uses the region or one of it's chunk holders
+	 */
 	public boolean isUnused()
 	{
 		int usedChunks = 0;
@@ -468,6 +451,6 @@ public class RegionImplementation implements Region
 						usedChunks++;
 				}
 		
-		return usedChunks == 0;
+		return usedChunks == 0 && this.countUsers() == 0;
 	}
 }

@@ -3,6 +3,7 @@ package io.xol.chunkstories.content.sandbox;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.GameLogic;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.PluginsManager;
@@ -10,7 +11,7 @@ import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldNetworked;
 import io.xol.chunkstories.world.WorldServer;
-import io.xol.chunkstories.world.chunk.RegionImplementation;
+import io.xol.chunkstories.world.region.RegionImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -52,7 +53,16 @@ public class GameLogicThread extends Thread implements GameLogic
 			
 			//Updates controller/s views
 			if(world instanceof WorldClient)
-				Client.getInstance().updateUsedWorldBits();
+				Client.getInstance().getClientSideController().updateUsedWorldBits();
+			if(world instanceof WorldServer)
+			{
+				Iterator<Player> i = ((WorldServer)world).getPlayers();
+				while(i.hasNext())
+				{
+					Player p = i.next();
+					p.updateUsedWorldBits();
+				}
+			}
 			
 			//Processes incomming pending packets in synch with game logic
 			if(world instanceof WorldNetworked)

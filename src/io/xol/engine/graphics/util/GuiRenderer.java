@@ -120,8 +120,14 @@ public class GuiRenderer
 	 */
 	public void setState(int textureID, boolean alpha, boolean texture, Vector4f color)
 	{
-		if (textureID != currentTexture || alpha != alphaBlending || useTexture != texture || color == null || !color.equals(currentColor))
+		//System.out.println("color: "+color + " currentColor: "+currentColor + "");
+		
+		//if (textureID != currentTexture || alpha != alphaBlending || useTexture != texture || color == null || !color.equals(currentColor))
+		if (textureID != currentTexture || alpha != alphaBlending || useTexture != texture || (color == null && currentColor != null && !currentColor.equals(new Vector4f(1f, 1f, 1f, 1f))) || (color != null && !color.equals(currentColor)))
+		{
+			//System.out.println("color: "+color + " currentColor: "+currentColor + " == ?" + ((color == null && currentColor == null ) && (color != null && currentColor != null && color.equals(currentColor))) );
 			drawBuffer();
+		}
 		currentTexture = textureID;
 		alphaBlending = alpha;
 		currentColor = color;
@@ -137,10 +143,13 @@ public class GuiRenderer
 			return;
 
 		// Upload data and draw it.
+		
+		//System.out.println(this.currentTexture + " / " + elementsToDraw);
+		//System.out.println("b:"+buf+" : "+buf.limit());
 		buf.limit((2 + 2) * 3 * 2 * MAX_ELEMENTS);
 
 		buf.flip();
-		// System.out.println(buf.get(0)+" : "+buf.limit());
+		//System.out.println(buf+" : "+buf.limit());
 
 		glBindBuffer(GL_ARRAY_BUFFER, glVBO);
 		// glBufferData(GL_ARRAY_BUFFER, (2 + 2) * 3 * 2 * MAX_ELEMENTS,

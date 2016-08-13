@@ -147,6 +147,17 @@ public class Vector4f
 	{
 		return x * x + y * y + z * z + w * w;
 	}
+	
+	public boolean equals(Object o)
+	{
+		if(o instanceof Vector4f)
+		{
+			Vector4f v = (Vector4f)o;
+			return x == v.x && y == v.y && z == v.z && w == v.w;
+		}
+		return false;
+		
+	}
 
 	public String toString()
 	{

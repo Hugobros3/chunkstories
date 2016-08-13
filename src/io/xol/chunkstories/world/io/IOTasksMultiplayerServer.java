@@ -7,7 +7,7 @@ import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.RegionImplementation;
+import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -122,7 +122,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 				if(!client.isAlive())
 					return true;
 				
-				RegionSummaryImplementation summary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(rx * 256, rz * 256);
+				RegionSummaryImplementation summary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(rx * 256, rz * 256);
 				
 				//Don't send the data until we have the summary loaded in
 				if(summary == null || !summary.isLoaded())

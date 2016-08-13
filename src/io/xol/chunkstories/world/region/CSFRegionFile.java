@@ -1,4 +1,4 @@
-package io.xol.chunkstories.world.io;
+package io.xol.chunkstories.world.region;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -14,7 +14,6 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
 import io.xol.chunkstories.entity.EntitySerializer;
-import io.xol.chunkstories.world.chunk.RegionImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

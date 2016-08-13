@@ -1,9 +1,10 @@
-package io.xol.chunkstories.world.chunk;
+package io.xol.chunkstories.world.region;
 
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.concurrency.SimpleLock;
@@ -20,7 +21,7 @@ public class WorldRegionsHolder
 {
 	private WorldImplementation world;
 
-	private Semaphore noConcurrentLoadUnload = new Semaphore(1);
+	private Semaphore noConcurrentRegionCreationDestruction = new Semaphore(1);
 	private SimpleLock worldDataLock = new SimpleLock();
 	private ConcurrentHashMap<RegionLocation, RegionImplementation> regions = new ConcurrentHashMap<RegionLocation, RegionImplementation>(8, 0.9f, 1);
 
@@ -75,11 +76,16 @@ public class WorldRegionsHolder
 		return getRegion(chunkX / 8, chunkY / 8, chunkZ / 8);
 	}
 
-	/**
-	 * This method is set to private because it creates an empty Region and all regions should always contain at least one chunk.
-	 * @return
-	 */
 	public RegionImplementation getRegion(int regionX, int regionY, int regionZ)
+	{
+		RegionLocation key = new RegionLocation(regionX, regionY, regionZ);
+		return regions.get(key);
+	}
+	
+	/**
+	 * Only aquiring either the region or one of it's chunkholders should trigger a creation of a region
+	 */
+	private RegionImplementation getOrCreateRegion(int regionX, int regionY, int regionZ)
 	{
 		RegionImplementation holder = null;
 		RegionLocation key = new RegionLocation(regionX, regionY, regionZ);
@@ -215,7 +221,7 @@ public class WorldRegionsHolder
 	public void unloadsUselessData()
 	{
 		//Prevents unloading a region whilst one of it's chunk holders is being aquired
-		noConcurrentLoadUnload.acquireUninterruptibly();
+		noConcurrentRegionCreationDestruction.acquireUninterruptibly();
 		
 		//Iterates over loaded regions and unloads unused ones
 		Iterator<RegionImplementation> regionsIterator = this.getLoadedRegions();
@@ -229,7 +235,7 @@ public class WorldRegionsHolder
 			//If no users have registered for any chunks
 			if(region.isUnused() && region.canBeUnloaded())
 			{
-				System.out.println("unloading "+region);
+				//System.out.println("unloading "+region);
 				
 				if(this instanceof WorldMaster)
 					region.unloadAndSave();
@@ -241,7 +247,7 @@ public class WorldRegionsHolder
 			}
 		}
 		
-		noConcurrentLoadUnload.release();
+		noConcurrentRegionCreationDestruction.release();
 	}
 
 	/**
@@ -252,16 +258,31 @@ public class WorldRegionsHolder
 		if(chunkY < 0 || chunkY > world.getMaxHeight() / 32)
 			return null;
 		
-		noConcurrentLoadUnload.acquireUninterruptibly();
+		noConcurrentRegionCreationDestruction.acquireUninterruptibly();
 		
-		ChunkHolder holder = this.getRegionChunkCoordinates(chunkX, chunkY, chunkZ).getChunkHolder(chunkX, chunkY, chunkZ);
+		ChunkHolder holder = this.getOrCreateRegion(chunkX / 8, chunkY / 8, chunkZ / 8).getChunkHolder(chunkX, chunkY, chunkZ);
 		boolean userAdded = holder.registerUser(user);
 		
-		noConcurrentLoadUnload.release();
+		noConcurrentRegionCreationDestruction.release();
 		
 		return userAdded ? holder : null;
 	}
 
+	public RegionImplementation aquireRegion(WorldUser user, int regionX, int regionY, int regionZ)
+	{
+		if(regionY < 0 || regionY > world.getMaxHeight() / 256)
+			return null;
+		
+		noConcurrentRegionCreationDestruction.acquireUninterruptibly();
+		
+		RegionImplementation region = this.getOrCreateRegion(regionX, regionY, regionZ);
+		boolean userAdded = region.registerUser(user);
+		
+		noConcurrentRegionCreationDestruction.release();
+		
+		return userAdded ? region : null;
+	}
+	
 	/**
 	 * Callback by the holder's unload() method to remove himself from this list.
 	 */

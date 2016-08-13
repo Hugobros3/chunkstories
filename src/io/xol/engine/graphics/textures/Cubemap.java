@@ -151,12 +151,13 @@ public class Cubemap
 		}
 
 		@Override
-		public void destroy()
+		public boolean destroy()
 		{
 			if(glId == -1)
-				return;
+				return false;
 			glDeleteTextures(glId);
 			glId = -1;
+			return true;
 		}
 	}
 

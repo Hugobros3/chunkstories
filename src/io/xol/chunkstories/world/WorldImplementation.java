@@ -32,14 +32,15 @@ import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.WorldRenderer;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.chunk.WorldRegionsHolder;
-import io.xol.chunkstories.world.chunk.ChunkRenderable;
-import io.xol.chunkstories.world.chunk.RegionImplementation;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.EntityRayIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
-import io.xol.chunkstories.world.summary.WorldSummariesHolder;
+import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.region.WorldRegionsHolder;
+import io.xol.chunkstories.world.summary.WorldRegionSummariesHolder;
 import io.xol.engine.concurrency.SimpleLock;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.misc.ConfigFile;
@@ -77,7 +78,7 @@ public abstract class WorldImplementation implements World
 	private WorldRegionsHolder regions;
 
 	// Heightmap management
-	private WorldSummariesHolder regionSummaries;
+	private WorldRegionSummariesHolder regionSummaries;
 
 	// World-renderer backcall
 	protected WorldRenderer renderer;
@@ -103,7 +104,7 @@ public abstract class WorldImplementation implements World
 
 		//this.chunksData = new ChunksData();
 		this.regions = new WorldRegionsHolder(this);
-		this.regionSummaries = new WorldSummariesHolder(this);
+		this.regionSummaries = new WorldRegionSummariesHolder(this);
 		//this.logic = Executors.newSingleThreadScheduledExecutor();
 
 		if (this instanceof WorldMaster)
@@ -162,7 +163,8 @@ public abstract class WorldImplementation implements World
 		Entity check = this.getEntityByUUID(entity.getUUID());
 		if (check != null)
 		{
-			System.out.println("Added an entity twice");
+			ChunkStoriesLogger.getInstance().log("Added an entity twice");
+			ChunkStoriesLogger.getInstance().save();
 			Thread.dumpStack();
 			System.exit(-1);
 		}
@@ -238,15 +240,18 @@ public abstract class WorldImplementation implements World
 				if (entity.getRegion() != null && entity.getRegion().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
 				{
 					//If we're the client world and this is our entity
-					if (this instanceof WorldClient && entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.getInstance().getControlledEntity() != null && Client.getInstance().getControlledEntity().equals(entity))
+					if (this instanceof WorldClient && entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.getInstance().getClientSideController().getControlledEntity() != null && Client.getInstance().getClientSideController().getControlledEntity().equals(entity))
 					{
-						((EntityControllable) entity).tickClient(Client.getInstance());
+						((EntityControllable) entity).tickClient(Client.getInstance().getClientSideController());
 						entity.tick();
 					}
 					//Server should not tick client's entities, only ticks if their controller isn't present
 					else if (this instanceof WorldMaster && (!(entity instanceof EntityControllable) || ((EntityControllable) entity).getControllerComponent().getController() == null))
 						entity.tick();
 				}
+				//Tries to snap the entity to the region if it ends up being loaded
+				else if(entity.getRegion() == null)
+					entity.getEntityComponentPosition().trySnappingToRegion();
 
 			}
 			entitiesLock.unlock();
@@ -290,7 +295,7 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public WorldSummariesHolder getRegionSummaries()
+	public WorldRegionSummariesHolder getRegionsSummariesHolder()
 	{
 		return regionSummaries;
 	}
@@ -349,7 +354,7 @@ public abstract class WorldImplementation implements World
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
 
-		getRegionSummaries().updateOnBlockPlaced(x, y, z, newData);
+		getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, newData);
 
 		Chunk c = regions.getChunk(x / 32, y / 32, z / 32);
 		if (c != null)
@@ -478,7 +483,7 @@ public abstract class WorldImplementation implements World
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
 
-		getRegionSummaries().updateOnBlockPlaced(x, y, z, i);
+		getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, i);
 
 		Chunk c = regions.getChunk(x / 32, y / 32, z / 32);
 		if (c != null)
@@ -496,7 +501,7 @@ public abstract class WorldImplementation implements World
 		if (this.isChunkLoaded(x / 32, y / 32, z / 32) && !this.getChunk(x / 32, y / 32, z / 32).isAirChunk())
 			return VoxelFormat.sunlight(this.getVoxelData(x, y, z));
 		else
-			return y <= this.getRegionSummaries().getHeightAtWorldCoordinates(x, z) ? 0 : 15;
+			return y <= this.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) ? 0 : 15;
 	}
 
 	@Override
@@ -554,7 +559,7 @@ public abstract class WorldImplementation implements World
 	{
 		System.out.println("Saving world");
 		regions.saveAll();
-		getRegionSummaries().saveAllLoadedSummaries();
+		getRegionsSummariesHolder().saveAllLoadedSummaries();
 
 		this.worldInfo.save(new File(this.getFolderPath() + "/info.txt"));
 		this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
@@ -895,32 +900,29 @@ public abstract class WorldImplementation implements World
 	@Override
 	public Region aquireRegion(WorldUser user, int regionX, int regionY, int regionZ)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return this.getRegionsHolder().aquireRegion(user, regionX, regionY, regionZ);
 	}
 
 	@Override
-	public Region aquireRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ)
+	public Region aquireRegionChunkCoordinates(WorldUser user, int chunkX, int chunkY, int chunkZ)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return aquireRegion(user, chunkX / 8, chunkY / 8, chunkZ / 8);
 	}
 
 	@Override
-	public Region aquireRegionWorldCoordinates(int worldX, int worldY, int worldZ)
+	public Region aquireRegionWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldY = sanitizeVerticalCoordinate(worldY);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
-		
-		// TODO
-		return null;
+
+		return aquireRegion(user, worldX / 256, worldY / 256, worldZ / 256);
 	}
 
 	@Override
-	public Region aquireRegionLocation(Location location)
+	public Region aquireRegionLocation(WorldUser user, Location location)
 	{
-		return aquireRegionWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
+		return aquireRegionWorldCoordinates(user, (int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 	
 	@Override
@@ -979,7 +981,7 @@ public abstract class WorldImplementation implements World
 	{
 		//this.chunksData.destroy();
 		this.regions.destroy();
-		this.getRegionSummaries().destroy();
+		this.getRegionsSummariesHolder().destroy();
 		//this.logic.shutdown();
 		if (this instanceof WorldMaster)
 		{
@@ -992,6 +994,7 @@ public abstract class WorldImplementation implements World
 	public void unloadUselessData()
 	{
 		this.getRegionsHolder().unloadsUselessData();
+		this.getRegionsSummariesHolder().unloadsUselessData();
 	}
 
 }

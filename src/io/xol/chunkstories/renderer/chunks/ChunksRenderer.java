@@ -11,7 +11,6 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
-import io.xol.chunkstories.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.math.LoopingMathHelper;
 
@@ -294,7 +293,7 @@ public class ChunksRenderer extends Thread
 		}
 
 		// If all else fails, just use the heightmap information
-		return Client.world.getRegionSummaries().getHeightAtWorldCoordinates(x, z) <= y ? 15 : 0;
+		return Client.world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) <= y ? 15 : 0;
 	}
 
 	private int getBlocklight(CubicChunk c, int x, int y, int z)

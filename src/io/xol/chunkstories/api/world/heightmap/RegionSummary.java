@@ -18,4 +18,11 @@ public interface RegionSummary
 
 	void updateOnBlockModification(int worldX, int height, int worldZ, int voxelData);
 	void setHeightAndId(int worldX, int height, int worldZ, int voxelData);
+
+	int getHeight(int x, int z);
+
+	int getVoxelData(int x, int z);
+
+	int getRegionX();
+	int getRegionZ();
 }

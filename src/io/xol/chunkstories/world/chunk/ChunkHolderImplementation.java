@@ -7,22 +7,24 @@ import java.util.Set;
 
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.io.IOTasks.IOTask;
+import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.engine.concurrency.SafeWriteLock;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
-import net.jpountz.lz4.LZ4FastDecompressor;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
-import io.xol.chunkstories.api.world.chunk.Region;
+
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 public class ChunkHolderImplementation implements ChunkHolder
 {
 	private RegionImplementation region;
 	private int x, y, z;
 
-	ChunkHolderImplementation(RegionImplementation region, int x, int y, int z)
+	public ChunkHolderImplementation(RegionImplementation region, int x, int y, int z)
 	{
 		this.region = region;
 		

@@ -35,7 +35,7 @@ import net.jpountz.lz4.LZ4FastDecompressor;
  */
 public class RegionSummaryImplementation implements RegionSummary
 {
-	final WorldSummariesHolder worldSummariesHolder;
+	final WorldRegionSummariesHolder worldSummariesHolder;
 	public WorldImplementation world;
 	private final int regionX;
 	private final int regionZ;
@@ -52,7 +52,6 @@ public class RegionSummaryImplementation implements RegionSummary
 
 	public int[] heights;
 	public int[] ids;
-	private int[][] minChunkHeight = new int[8][8];
 
 	//Textures (client renderer)
 	public AtomicBoolean texturesUpToDate = new AtomicBoolean(false);
@@ -65,7 +64,7 @@ public class RegionSummaryImplementation implements RegionSummary
 
 	private byte[] vboDataToUpload = null;
 
-	RegionSummaryImplementation(WorldSummariesHolder worldSummariesHolder, int rx, int rz)
+	RegionSummaryImplementation(WorldRegionSummariesHolder worldSummariesHolder, int rx, int rz)
 	{
 		this.worldSummariesHolder = worldSummariesHolder;
 		this.world = worldSummariesHolder.getWorld();
@@ -92,11 +91,13 @@ public class RegionSummaryImplementation implements RegionSummary
 		loadSummary();
 	}
 
+	@Override
 	public int getRegionX()
 	{
 		return regionX;
 	}
 
+	@Override
 	public int getRegionZ()
 	{
 		return regionZ;
@@ -282,25 +283,17 @@ public class RegionSummaryImplementation implements RegionSummary
 		ids[index(worldX, worldZ)] = voxelData;
 	}
 
-	public int getMinChunkHeight(int x, int z)
-	{
-		int cx = x / 32;
-		int cz = z / 32;
-		return this.minChunkHeight[cx][cz];
-	}
-
+	@Override
 	public int getHeight(int x, int z)
 	{
 		return heights[index(x, z)];
 	}
 
-	public int getID(int x, int z)
+	@Override
+	public int getVoxelData(int x, int z)
 	{
 		return ids[index(x, z)];
 	}
-
-	public float dekalX;
-	public float dekalZ;
 
 	public boolean uploadNeededData()
 	{
@@ -309,7 +302,7 @@ public class RegionSummaryImplementation implements RegionSummary
 
 	private boolean uploadModel()
 	{
-		//synchronized (this)
+		synchronized (this)
 		{
 			if (vboDataToUpload == null)
 				return false;
@@ -445,21 +438,6 @@ public class RegionSummaryImplementation implements RegionSummary
 
 	public void computeHeightMetadata()
 	{
-		//Reset
-		for (int i = 0; i < 8; i++)
-			for (int j = 0; j < 8; j++)
-			{
-				this.minChunkHeight[i][j] = world.getMaxHeight();
-			}
-
-		for (int x = 0; x < 256; x++)
-			for (int z = 0; z < 256; z++)
-			{
-				int cx = x / 32;
-				int cz = z / 32;
-				if (this.getHeight(x, z) < this.minChunkHeight[cx][cz])
-					this.minChunkHeight[cx][cz] = this.getHeight(x, z);
-			}
 		//Max mipmaps
 		int resolution = 128;
 		int offset = 0;

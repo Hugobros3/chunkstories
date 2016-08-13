@@ -76,11 +76,13 @@ public abstract class EntityImplementation implements Entity
 		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(position.getLocation())));
 	}
 
-	/**
-	 * Returns the location of the entity
-	 * 
-	 * @return
-	 */
+
+	public EntityComponentPosition getEntityComponentPosition()
+	{
+		return position;
+	}
+	
+	
 	@Override
 	public Location getLocation()
 	{
@@ -158,7 +160,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public String toString()
 	{
-		return "[" + this.getClass().getSimpleName() + ": holderExists: "+(position.getRegionWithin() != null)+" ,position : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Region:" + this.position.getRegionWithin().getRegionX() + ", " + this.position.getRegionWithin().getRegionY() + ", " + this.position.getRegionWithin().getRegionZ() + " ]";
+		return "[" + this.getClass().getSimpleName() + ": holderExists: "+(position.getRegionWithin() != null)+" ,position : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Region:" + this.position.getRegionWithin() + " ]";
 	}
 
 	double clampDouble(double d)

@@ -157,6 +157,7 @@ public class VerticesObject
 		Object atomicReference = dataPendingUpload;
 		if (atomicReference != null)
 		{
+			System.out.println("atomicRef != null");
 			uploadDataActual(atomicReference);
 			dataPendingUpload = null;
 		}

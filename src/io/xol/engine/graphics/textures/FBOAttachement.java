@@ -12,5 +12,5 @@ public interface FBOAttachement
 
 	public void resize(int w, int h);
 
-	public void destroy();
+	public boolean destroy();
 }

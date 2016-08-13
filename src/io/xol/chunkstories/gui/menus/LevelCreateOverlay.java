@@ -2,7 +2,6 @@ package io.xol.chunkstories.gui.menus;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
@@ -66,9 +65,11 @@ public class LevelCreateOverlay extends Overlay
 			String generator = "noise";
 			WorldInfo info = new WorldInfo(levelName.text, ""+System.currentTimeMillis(), "", WorldSize.MEDIUM, generator);
 			
-			Client.world = new WorldClientLocal(info);
+			//Client.world = 
 			//Client.world.startLogic();
-			this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
+			//this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
+			
+			Client.getInstance().changeWorld(new WorldClientLocal(info));
 		}
 	}
 

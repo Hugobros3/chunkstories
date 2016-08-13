@@ -40,7 +40,7 @@ public class HorizonGenerator extends WorldGenerator
 			for(int z = 0; z < 32; z++)
 			{
 				//int v = getHeightAt(cx * 32 + x, cz * 32 + z);
-				int v = ((WorldImplementation) world).getRegionSummaries().getHeightAtWorldCoordinates(cx * 32 + x, cz * 32 + z);
+				int v = ((WorldImplementation) world).getRegionsSummariesHolder().getHeightAtWorldCoordinates(cx * 32 + x, cz * 32 + z);
 				//int v = 250;
 				int y = cy * 32;
 				while(y < cy * 32 + 32 && y < v)

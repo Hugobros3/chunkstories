@@ -397,8 +397,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	@Override
 	public void drawHUD(RenderingContext renderingContext)
 	{
-		if (this.equals(Client.getInstance().getControlledEntity()))
-			return; // Don't render yourself
+		if (this.equals(Client.getInstance().getClientSideController().getControlledEntity()))
+			return; // Don't render your own tag
 		Vector3d pos = getLocation();
 		
 		//don't render tags too far out
@@ -428,7 +428,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
 
 		//Prevents laggy behaviour
-		if (this.equals(Client.getInstance().getControlledEntity()))
+		if (this.equals(Client.getInstance().getClientSideController().getControlledEntity()))
 			renderingContext.getCurrentShader().setUniformFloat3("objectPosition", -(float) cam.pos.getX(), -(float) cam.pos.getY() - eyePosition, -(float) cam.pos.getZ());
 
 		//Renders normal limbs
@@ -440,7 +440,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		
 		//Except in fp 
 		
-		if (!this.equals(Client.getInstance().getControlledEntity()) || renderingContext.isThisAShadowPass())
+		if (!this.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
 			ModelLibrary.getRenderableMesh("res/models/human.obj").renderButParts(renderingContext, this.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
 		
 		//Render rotated limbs
@@ -454,7 +454,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
 		renderingContext.sendTransformationMatrix(playerRotationMatrix);
 
-		if(selectedItemPile != null || !this.equals(Client.getInstance().getControlledEntity()) || renderingContext.isThisAShadowPass())
+		if(selectedItemPile != null || !this.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
 			ModelLibrary.getRenderableMesh("res/models/human.obj").renderParts(renderingContext, this.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
 	
 		//Matrix to itemInHand bone in the player's bvh

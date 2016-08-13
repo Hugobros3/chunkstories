@@ -64,7 +64,7 @@ void main(){
 	//If no normal given, face camera
 	normal = mix(vec3(0,0,1), normal, normalGiven);
 	//Basic texture color
-	vec3 baseColor = texture2D(diffuseTexture, texCoordPassed).rgb;
+	vec3 surfaceDiffuseColor = texture2D(diffuseTexture, texCoordPassed).rgb;
 	
 	//Texture transparency
 	float alpha = texture2D(diffuseTexture, texCoordPassed).a;
@@ -76,10 +76,8 @@ void main(){
 		discard;
 	
 	else if(alpha < 1)
-		baseColor *= texture2D(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
+		surfaceDiffuseColor *= texture2D(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
 	
-	//Gamma correction
-	//baseColor.rgb = pow(baseColor.rgb, vec3(gamma));
 	
 	//Rain makes shit glint
 	float specularity = 0;
@@ -92,10 +90,11 @@ void main(){
 	specularity = material.r*rainWetness + (material.g + rainWetness) * dynamicFresnelTerm + material.b;
 	<endif perPixelFresnel>
 	
-	vec3 finalColor = baseColor;
+	//surfaceDiffuseColor = normalize(surfaceDiffuseColor) * 0.75;
+	//surfaceDiffuseColor = vec3(1.0);
 	
 	//Diffuse G-Buffer
-	gl_FragData[0] = vec4(finalColor, 1.0);
+	gl_FragData[0] = vec4(surfaceDiffuseColor, 1.0);
 	gl_FragData[1] = vec4(normal * 0.5 + vec3(0.5), specularity);
 	gl_FragData[2] = vec4(lightMapCoords, material.a);
 }

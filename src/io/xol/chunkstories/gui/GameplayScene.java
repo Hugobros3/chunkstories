@@ -31,6 +31,7 @@ import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.client.Client;
@@ -53,10 +54,10 @@ import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.SelectionRenderer;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.lights.DefferedSpotLight;
 import io.xol.chunkstories.voxel.VoxelTypes;
-import io.xol.chunkstories.world.chunk.ChunkRenderable;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -91,13 +92,13 @@ public class GameplayScene extends OverlayableScene
 
 		//Spawn manually the player if we're in Singleplayer
 		//TODO this should be managed by a proper localhost server rather than this appalling hack
-		if (!multiPlayer)
+		if (Client.world instanceof WorldMaster)
 		{
 			//TODO remember a proper spawn location
-			Client.getInstance().setControlledEntity(new EntityPlayer(Client.world, 0, 100, 0, Client.username));
+			Client.getInstance().getClientSideController().setControlledEntity(new EntityPlayer(Client.world, 0, 100, 0, Client.username));
 
-			((EntityControllable) Client.getInstance().getControlledEntity()).getControllerComponent().setController(Client.getInstance());
-			Client.world.addEntity(Client.getInstance().getControlledEntity());
+			((EntityControllable) Client.getInstance().getClientSideController().getControlledEntity()).getControllerComponent().setController(Client.getInstance().getClientSideController());
+			Client.world.addEntity(Client.getInstance().getClientSideController().getControlledEntity());
 		}
 
 		//Creates the rendering stuff
@@ -119,9 +120,9 @@ public class GameplayScene extends OverlayableScene
 	public void update(RenderingContext renderingContext)
 	{
 		// Update client entity
-		if ((player == null || player != Client.getInstance().getControlledEntity()) && Client.getInstance().getControlledEntity() != null)
+		if ((player == null || player != Client.getInstance().getClientSideController().getControlledEntity()) && Client.getInstance().getClientSideController().getControlledEntity() != null)
 		{
-			player = Client.getInstance().getControlledEntity();
+			player = Client.getInstance().getClientSideController().getControlledEntity();
 			if (player instanceof EntityWithSelectedItem)
 				inventoryDrawer = ((EntityWithSelectedItem) player).getInventory() == null ? null : new InventoryDrawer((EntityWithSelectedItem) player);
 			else
@@ -141,7 +142,7 @@ public class GameplayScene extends OverlayableScene
 
 		// Update the player
 		if (player instanceof EntityControllable)
-			((EntityControllable) player).setupCamera(Client.clientController);
+			((EntityControllable) player).setupCamera(Client.getInstance().getClientSideController());
 
 		Location selectedBlock = null;
 		if (player instanceof EntityPlayer)
@@ -210,9 +211,6 @@ public class GameplayScene extends OverlayableScene
 		//Draw the GUI
 		if (!guiHidden)
 		{
-			if (RenderingConfig.showDebugInfo)
-				debug();
-
 			//Draw chat
 			chat.update();
 			chat.draw();
@@ -246,6 +244,9 @@ public class GameplayScene extends OverlayableScene
 			else
 				renderingContext.getGuiRenderer().renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "internal://res/textures/gui/cursor.png");
 
+
+			if (RenderingConfig.showDebugInfo)
+				debug();
 		}
 		Client.profiler.reset("gui");
 
@@ -491,8 +492,8 @@ public class GameplayScene extends OverlayableScene
 	@Override
 	public void destroy()
 	{
-		Client.world.destroy();
-		Client.worldThread.stopLogicThread();
+		//Client.world.destroy();
+		//Client.worldThread.stopLogicThread();
 		
 		this.worldRenderer.destroy();
 		
@@ -521,7 +522,7 @@ public class GameplayScene extends OverlayableScene
 		int cx = bx / 32;
 		int cy = by / 32;
 		int cz = bz / 32;
-		int csh = Client.world.getRegionSummaries().getHeightAtWorldCoordinates(bx, bz);
+		int csh = Client.world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(bx, bz);
 
 		float angleX = -1;
 		if (player != null && player instanceof EntityLiving)
@@ -623,7 +624,7 @@ public class GameplayScene extends OverlayableScene
 	@SuppressWarnings("unused")
 	private String getLoadedTerrainVramFootprint()
 	{
-		int nbChunks = Client.world.getRegionSummaries().countSummaries();
+		int nbChunks = Client.world.getRegionsSummariesHolder().countSummaries();
 		long octelsTotal = nbChunks * 256 * 256 * (1 + 1) * 4;
 
 		return nbChunks + " regions, storing " + octelsTotal / 1024 / 1024 + "Mb of data";

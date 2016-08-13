@@ -6,7 +6,9 @@ package io.xol.engine.base;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
@@ -53,7 +55,7 @@ public class GameWindowOpenGL
 
 	public static int targetFPS = 60;
 
-	public static String engineVersion = "2.2b";
+	public static String engineVersion = "2.2c";
 
 	public static GameWindowOpenGL instance;
 
@@ -64,12 +66,13 @@ public class GameWindowOpenGL
 	private static long lastTimeMS = 0;
 	private static int framesSinceLS = 0;
 	private static int lastFPS = 0;
+	static long lastTime = 0;
 
 	static String currentDM = "";
 
 	long timeTookLastTime = 0;
 
-	static long lastTime = 0;
+	List<Runnable> mainThreadQueue = new ArrayList<Runnable>();
 
 	public GameWindowOpenGL(Client client, String name, int width, int height)
 	{
@@ -193,6 +196,14 @@ public class GameWindowOpenGL
 						currentScene.resized = true;
 					}
 					resized = true;
+				}
+
+				//Do scene changes etc
+				synchronized (mainThreadQueue)
+				{
+					for (Runnable r : mainThreadQueue)
+						r.run();
+					mainThreadQueue.clear();
 				}
 
 				// Update audio streams
@@ -481,5 +492,13 @@ public class GameWindowOpenGL
 	public boolean isInstanceMainGLWindow()
 	{
 		return Thread.currentThread().getId() == mainGLThreadId;
+	}
+
+	public void queueTask(Runnable runnable)
+	{
+		synchronized (mainThreadQueue)
+		{
+			mainThreadQueue.add(runnable);
+		}
 	}
 }

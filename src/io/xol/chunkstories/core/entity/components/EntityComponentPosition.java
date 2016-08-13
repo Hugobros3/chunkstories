@@ -114,6 +114,11 @@ public class EntityComponentPosition extends EntityComponent
 			pushComponentEveryoneButController();
 	}
 	
+	public void trySnappingToRegion()
+	{
+		checkPositionAndUpdateHolder();
+	}
+	
 	/**
 	 * Prevents entities from going outside the world area and updates the parentHolder reference
 	 */

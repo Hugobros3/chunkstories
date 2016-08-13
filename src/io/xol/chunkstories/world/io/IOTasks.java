@@ -4,8 +4,8 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.RegionImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import io.xol.engine.concurrency.UniqueQueue;
@@ -352,7 +352,7 @@ public class IOTasks extends Thread
 			//Else if no file exists
 			else
 			{
-				RegionSummaryImplementation regionSummary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(region.regionX * 256, region.regionZ * 256);
+				RegionSummaryImplementation regionSummary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(region.regionX * 256, region.regionZ * 256);
 				//Require a chunk summary to be generated first !
 				if (regionSummary == null || !regionSummary.isLoaded())
 				{

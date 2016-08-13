@@ -181,6 +181,7 @@ public class FarTerrainRenderer
 
 			// terrain.setUniformFloat2("chunkPositionActual", cs.dekalX,
 			// cs.dekalZ);
+			//System.out.println("kekkimus prime"+rs.regionSummary.verticesObject.isDataPresent());
 			terrain.setUniformFloat2("chunkPosition", rs.regionDisplayedX * 256, rs.regionDisplayedZ * 256);
 
 			if (rs.regionSummary.verticesObject.isDataPresent())
@@ -293,10 +294,14 @@ public class FarTerrainRenderer
 					if (currentChunkX < 0 && currentChunkX % 8 != 0)
 						rx--;
 					
-					RegionSummaryImplementation summary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(currentChunkX * 32, currentChunkZ * 32);
+					RegionSummaryImplementation summary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(currentChunkX * 32, currentChunkZ * 32);
 					
 					if(summary == null)
+					{
+						currentChunkZ = nextChunkZ;
 						continue;
+					}
+					
 					RegionMesh regionMesh = new RegionMesh(rx, rz, summary);
 
 					
@@ -540,7 +545,7 @@ public class FarTerrainRenderer
 	private int getHeight(int[] heightMap, WorldImplementation world, int x, int z, int rx, int rz, int level)
 	{
 		if (x < 0 || z < 0 || x >= 256 || z >= 256)
-			return world.getRegionSummaries().getHeightMipmapped(rx * 256 + x, rz * 256 + z, level);
+			return world.getRegionsSummariesHolder().getHeightMipmapped(rx * 256 + x, rz * 256 + z, level);
 		else
 			return getDataMipmapped(heightMap, x, z, level);
 	}
@@ -548,7 +553,7 @@ public class FarTerrainRenderer
 	private int getIds(int[] ids, WorldImplementation world, int x, int z, int rx, int rz, int level)
 	{
 		if (x < 0 || z < 0 || x >= 256 || z >= 256)
-			return world.getRegionSummaries().getDataMipmapped(rx * 256 + x, rz * 256 + z, level);
+			return world.getRegionsSummariesHolder().getDataMipmapped(rx * 256 + x, rz * 256 + z, level);
 		else
 			return getDataMipmapped(ids, x, z, level);
 	}
@@ -565,10 +570,15 @@ public class FarTerrainRenderer
 		return summaryData[offset + resolution * x + z];
 	}
 
-	/*public void updateData()
+	public void uploadGeneratedMeshes()
 	{
 		for (RegionMesh rs : regionsToRender)
 		{
+			if(rs == null)
+				continue;
+			if(rs.regionSummary == null)
+				continue;
+			//TODO investigate
 			boolean generated = rs.regionSummary.uploadNeededData();
 			if (generated)
 			{
@@ -576,9 +586,9 @@ public class FarTerrainRenderer
 			}
 			//System.out.println(rs.dataSource.loaded.get());
 			if (!rs.regionSummary.summaryLoaded.get())
-				rs.regionSummary = world.getRegionSummaries().getRegionSummaryWorldCoordinates(rs.regionSummary.getRegionX() * 256, rs.regionSummary.getRegionZ() * 256);
+				rs.regionSummary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(rs.regionSummary.getRegionX() * 256, rs.regionSummary.getRegionZ() * 256);
 		}
-	}*/
+	}
 
 	class RegionMesh
 	{

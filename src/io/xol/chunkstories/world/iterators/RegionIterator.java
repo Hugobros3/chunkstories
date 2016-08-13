@@ -2,7 +2,7 @@ package io.xol.chunkstories.world.iterators;
 
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
-import io.xol.chunkstories.world.chunk.RegionImplementation;
+import io.xol.chunkstories.world.region.RegionImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

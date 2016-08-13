@@ -47,6 +47,7 @@ void main(){
 	texCoordPassed = texCoordIn;
 	
 	vec4 v = vec4(vertexIn.xyz, 1.0);
+	//v.y += gl_VertexID / 6000.0;
 	
 	<ifdef dynamicGrass>
 	float movingness = normalIn.w;
@@ -59,7 +60,7 @@ void main(){
 	
 	v+=vec4(objectPosition,0);
 	
-	vertexPassed = v + vec4(camPos, 0.0);
+	vertexPassed = v;
 	normalPassed =  (normalIn.xyz-0.5)*2.0;//normalIn;
 	
 	fresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(normalPassed)), 0.0, 1.0);
@@ -73,7 +74,7 @@ void main(){
 	//lightMapCoords = vec3(colorIn.rgb);
 	//lightMapCoords.y *= sunIntensity;
 	
-	gl_Position = projectionMatrix * untranslatedMV * v;
+	gl_Position = modelViewProjectionMatrix * v;
 	
 	//eyeDirection transform
 	eyeDirection = v.xyz;

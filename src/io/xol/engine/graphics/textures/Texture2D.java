@@ -23,6 +23,7 @@ import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
+import io.xol.engine.graphics.geometry.VerticesObject;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -40,7 +41,7 @@ public class Texture2D
 	boolean linearFiltering = true;
 	int baseMipmapLevel = 0;
 	int maxMipmapLevel = 1000;
-	
+
 	private boolean scheduledForLoad = false;
 
 	public Texture2D(TextureType type)
@@ -72,7 +73,7 @@ public class Texture2D
 			return -1;
 		}
 		scheduledForLoad = false;
-		
+
 		File textureFile = GameData.getTextureFileLocation(name);
 		if (textureFile == null)
 		{
@@ -110,7 +111,6 @@ public class Texture2D
 		mipmapsUpToDate = false;
 		return glId;
 	}
-	
 
 	private void applyTextureParameters()
 	{
@@ -121,7 +121,7 @@ public class Texture2D
 				GL30.glGenerateMipmap(GL_TEXTURE_2D);
 			else if (RenderingConfig.fbExtCapable)
 				ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
-			
+
 			mipmapsUpToDate = true;
 		}
 		if (!wrapping)
@@ -141,13 +141,13 @@ public class Texture2D
 	{
 		return uploadTextureData(width, height, 0, data);
 	}
-	
+
 	public boolean uploadTextureData(int width, int height, int level, ByteBuffer data)
 	{
 		bind();
 		this.width = width;
 		this.height = height;
-		
+
 		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, level, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(), (ByteBuffer) data);
 
@@ -174,27 +174,40 @@ public class Texture2D
 		{
 			glId = glGenTextures();
 		}
-		
+
 		glBindTexture(GL_TEXTURE_2D, glId);
-		
-		if(scheduledForLoad)
+
+		if (scheduledForLoad)
 		{
 			System.out.println("main thread called, actually loading");
 			this.loadTextureFromDisk();
 		}
 	}
-	
-	public synchronized void destroy()
+
+	public synchronized boolean destroy()
 	{
-		if (glId >= 0)
+		if (GameWindowOpenGL.isMainGLWindow())
 		{
-			glDeleteTextures(glId);
+
+			if (glId >= 0)
+			{
+				glDeleteTextures(glId);
+			}
+			//Only register destruction once
+			if (glId != -2)
+			{
+				totalTextureObjects--;
+				glId = -2;
+			}
+			return true;
 		}
-		//Only register destruction once
-		if(glId != -2)
+		else
 		{
-			totalTextureObjects--;
-			glId = -2;
+			synchronized (objectsToDestroy)
+			{
+				objectsToDestroy.add(this);
+			}
+			return false;
 		}
 	}
 
@@ -358,11 +371,29 @@ public class Texture2D
 		if (type == TextureType.DEPTH_RENDERBUFFER)
 			return surface * 4;
 		return surface;
+		
 	}
+	private static BlockingQueue<Texture2D> objectsToDestroy = new LinkedBlockingQueue<Texture2D>();
 
 	public static int destroyPendingTextureObjects()
 	{
-		return 0;
+		int destroyedVerticesObjects = 0;
+
+		synchronized (objectsToDestroy)
+		{
+			Iterator<Texture2D> i = objectsToDestroy.iterator();
+			while (i.hasNext())
+			{
+				Texture2D object = i.next();
+
+				if (object.destroy())
+					destroyedVerticesObjects++;
+
+				i.remove();
+			}
+		}
+
+		return destroyedVerticesObjects;
 	}
 
 	public static int getTotalNumberOfTextureObjects()

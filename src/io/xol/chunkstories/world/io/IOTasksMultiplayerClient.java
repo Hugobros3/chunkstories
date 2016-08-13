@@ -16,8 +16,8 @@ import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.RegionImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import net.jpountz.lz4.LZ4Exception;
@@ -205,8 +205,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 		public IOTaskProcessCompressedRegionSummaryArrival(PacketRegionSummary packet)
 		{
 			this.packet = packet;
-			
-			System.out.println("arrival summary");
 		}
 
 		@Override
@@ -214,7 +212,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		{
 			//synchronized (Client.world.getRegionSummaries())
 			{
-				RegionSummaryImplementation summary = Client.world.getRegionSummaries().getRegionSummaryWorldCoordinates(packet.rx * 256, packet.rz * 256);
+				RegionSummaryImplementation summary = Client.world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(packet.rx * 256, packet.rz * 256);
 				
 				if(summary == null)
 				{
@@ -290,7 +288,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			{
 				summariesAlreadyAsked.add(new int[] { rx, rz });
 			}
-			Client.connection.sendTextMessage("world/getRegionSummary:" + rx + ":" + rz);
+			Client.connection.sendTextMessage("world/getChunkSummary:" + rx + ":" + rz);
 		}
 	}
 }

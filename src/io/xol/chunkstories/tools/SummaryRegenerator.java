@@ -66,7 +66,7 @@ public class SummaryRegenerator
 									if (id != 0)
 									{
 										hit = true;
-										world.getRegionSummaries().setHeightAndId(rX, rZ, y, id);
+										world.getRegionsSummariesHolder().setHeightAndId(rX, rZ, y, id);
 									}
 								}
 								y--;

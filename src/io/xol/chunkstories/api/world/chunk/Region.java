@@ -20,6 +20,12 @@ public interface Region
 	public int getRegionY();
 	
 	public int getRegionZ();
+
+	Iterator<WorldUser> getChunkUsers();
+
+	boolean registerUser(WorldUser user);
+
+	boolean unregisterUser(WorldUser user);
 	
 	/**
 	 * Called when the entity is now within this region's influence

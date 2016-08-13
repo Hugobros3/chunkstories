@@ -39,7 +39,7 @@ public interface World
 	 */
 	public default int getMaxHeight()
 	{
-		return getWorldInfo().getSize().heightInChunks;
+		return getWorldInfo().getSize().heightInChunks * 32;
 	}
 
 	/**
@@ -215,19 +215,19 @@ public interface World
 	 * Aquires a region and registers it's user, triggering a load operation for the region and preventing it to unload until all the users
 	 *  either unregisters or gets garbage collected and it's reference nulls out.
 	 */
-	public Region aquireRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ);
+	public Region aquireRegionChunkCoordinates(WorldUser user, int chunkX, int chunkY, int chunkZ);
 	
 	/**
 	 * Aquires a region and registers it's user, triggering a load operation for the region and preventing it to unload until all the users
 	 *  either unregisters or gets garbage collected and it's reference nulls out.
 	 */
-	public Region aquireRegionWorldCoordinates(int worldX, int worldY, int worldZ);
+	public Region aquireRegionWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ);
 	
 	/**
 	 * Aquires a region and registers it's user, triggering a load operation for the region and preventing it to unload until all the users
 	 *  either unregisters or gets garbage collected and it's reference nulls out.
 	 */
-	public Region aquireRegionLocation(Location location);
+	public Region aquireRegionLocation(WorldUser user, Location location);
 	
 	/**
 	 * Returns either null or a valid, entirely loaded region if the aquireRegion method was called and it had time to load and there is still one user using it
@@ -251,7 +251,7 @@ public interface World
 
 	/* Region Summaries */
 	
-	public RegionSummaries getRegionSummaries();
+	public RegionSummaries getRegionsSummariesHolder();
 	
 	/**
 	 * For dirty hacks that need so
