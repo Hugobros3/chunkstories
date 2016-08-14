@@ -43,8 +43,8 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 	MessageDigest md = null;
 
-	Set<ChunkLocation> chunksAlreadyAsked = ConcurrentHashMap.newKeySet();
-	List<int[]> summariesAlreadyAsked = new ArrayList<int[]>();
+	//Set<ChunkLocation> chunksAlreadyAsked = ConcurrentHashMap.newKeySet();
+	//List<int[]> summariesAlreadyAsked = new ArrayList<int[]>();
 
 	static ThreadLocal<byte[]> unCompressedSummariesData = new ThreadLocal<byte[]>()
 	{
@@ -104,7 +104,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 			//Remove any object preventing us from asking it again
 			ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
-			chunksAlreadyAsked.remove(loc);
+			//chunksAlreadyAsked.remove(loc);
 
 			world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ).getChunkHolder(chunkX, chunkY, chunkZ).setChunk(c);
 			return true;
@@ -185,12 +185,12 @@ public class IOTasksMultiplayerClient extends IOTasks
 		return null;
 	}
 
-	@Override
+	/*@Override
 	public void notifyChunkUnload(int chunkX, int chunkY, int chunkZ)
 	{
 		ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
-		chunksAlreadyAsked.remove(loc);
-	}
+		//chunksAlreadyAsked.remove(loc);
+	}*/
 
 	@Override
 	public void requestRegionLoad(RegionImplementation holder)
@@ -233,7 +233,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			}
 			
 			//TODO look at these messy synchronisation blocks, not sure they are usefull
-			synchronized (summariesAlreadyAsked)
+			/*synchronized (summariesAlreadyAsked)
 			{
 				Iterator<int[]> i = summariesAlreadyAsked.iterator();
 				while (i.hasNext())
@@ -242,7 +242,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 					if (coordinates[0] == packet.rx && coordinates[1] == packet.rz)
 						i.remove();
 				}
-			}
+			}*/
 			// System.out.println("Successfully loaded chunk summary from remote server. rx:"+summary.rx+"rz:"+summary.rz);
 			return true;
 		}
@@ -273,7 +273,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		// don't spam packets !
 		int rx = summary.getRegionX();
 		int rz = summary.getRegionZ();
-		boolean alreadyAsked = false;
+		/*boolean alreadyAsked = false;
 		synchronized (summariesAlreadyAsked)
 		{
 			for (int[] coordinates : summariesAlreadyAsked)
@@ -288,7 +288,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			{
 				summariesAlreadyAsked.add(new int[] { rx, rz });
 			}
-			Client.connection.sendTextMessage("world/getChunkSummary:" + rx + ":" + rz);
-		}
+		}*/
+		Client.connection.sendTextMessage("world/getChunkSummary:" + rx + ":" + rz);
 	}
 }

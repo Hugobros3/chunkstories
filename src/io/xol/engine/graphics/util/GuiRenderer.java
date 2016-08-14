@@ -43,7 +43,7 @@ public class GuiRenderer
 		// Buffer contains MAX_ELEMENTS of 2 triangles, each defined by 3
 		// vertices, themselves defined by 4 floats : 'xy' positions, and
 		// textures coords 'ts'.
-		buf = BufferUtils.createFloatBuffer((2 + 2) * 3 * 2 * MAX_ELEMENTS);
+		buf = BufferUtils.createFloatBuffer(4 * (2 + 2) * 3 * 2 * MAX_ELEMENTS);
 		glVBO = glGenBuffers();
 		shader = ShadersLibrary.getShaderProgram("gui");
 	}
@@ -146,7 +146,8 @@ public class GuiRenderer
 		
 		//System.out.println(this.currentTexture + " / " + elementsToDraw);
 		//System.out.println("b:"+buf+" : "+buf.limit());
-		buf.limit((2 + 2) * 3 * 2 * MAX_ELEMENTS);
+		
+		//buf.limit((2 + 2) * 3 * 2 * MAX_ELEMENTS);
 
 		buf.flip();
 		//System.out.println(buf+" : "+buf.limit());

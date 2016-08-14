@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -240,7 +241,7 @@ public class RegionImplementation implements Region
 		//No need to unload chunks, this is assumed when we unload the holder
 		//unloadAllChunks();
 
-		world.entitiesLock.lock();
+		Lock lock = world.entitiesLock.writeLock();
 
 		//int countRemovedEntities = 0;
 
@@ -261,7 +262,8 @@ public class RegionImplementation implements Region
 			//countRemovedEntities++;
 		}
 
-		world.entitiesLock.unlock();
+		lock.unlock();
+		//world.entitiesLock.unlock();
 
 		//Remove the reference in the world to this
 		this.getWorld().getRegionsHolder().removeRegion(this);

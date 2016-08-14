@@ -19,6 +19,8 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 {
 	private final WorldImplementation world;
 	private final int worldSize;
+	private final int worldSizeInChunks;
+	private final int worldSizeInRegions;
 	
 	private Map<Long, RegionSummaryImplementation> summaries = new ConcurrentHashMap<Long, RegionSummaryImplementation>();
 	private Semaphore dontDeleteWhileCreating = new Semaphore(1);
@@ -27,6 +29,8 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 	{
 		this.world = world;
 		this.worldSize = world.getSizeInChunks() * 32;
+		this.worldSizeInChunks = world.getSizeInChunks();
+		this.worldSizeInRegions = world.getSizeInChunks() / 8;
 	}
 
 	long index(int x, int z)
@@ -42,12 +46,12 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 	{
 		RegionSummaryImplementation summary;
 		
-		regionX %= worldSize;
-		regionZ %= worldSize;
+		regionX %= worldSizeInRegions;
+		regionZ %= worldSizeInRegions;
 		if (regionX < 0)
-			regionX += worldSize;
+			regionX += worldSizeInRegions;
 		if (regionZ < 0)
-			regionZ += worldSize;
+			regionZ += worldSizeInRegions;
 
 		long i = index(regionX * 256, regionZ * 256);
 		
@@ -67,6 +71,13 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 	@Override
 	public RegionSummaryImplementation aquireRegionSummaryChunkCoordinates(WorldUser worldUser, int chunkX, int chunkZ)
 	{
+		chunkX %= worldSizeInChunks;
+		chunkZ %= worldSizeInChunks;
+		if (chunkX < 0)
+			chunkX += worldSizeInChunks;
+		if (chunkZ < 0)
+			chunkZ += worldSizeInChunks;
+		
 		return aquireRegionSummary(worldUser, chunkX / 8, chunkZ / 8);
 	}
 

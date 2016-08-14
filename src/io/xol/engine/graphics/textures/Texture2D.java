@@ -23,7 +23,6 @@ import io.xol.chunkstories.content.GameData;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
-import io.xol.engine.graphics.geometry.VerticesObject;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

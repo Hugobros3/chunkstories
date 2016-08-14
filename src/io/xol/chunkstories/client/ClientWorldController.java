@@ -145,7 +145,7 @@ public class ClientWorldController implements ClientSideController
 				// System.out.println("Chunk Summary "+lx+":"+lz+" is "+dx+":"+dz+" away from camera max:"+distInRegions+" total:"+summaries.size());
 				if (dx > distInRegions || dz > distInRegions)
 				{
-					System.out.println("useless "+entry);
+					//System.out.println("useless "+entry);
 					entry.unregisterUser(this);
 					iterator.remove();
 				}

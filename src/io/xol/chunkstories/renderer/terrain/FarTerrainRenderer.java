@@ -166,6 +166,7 @@ public class FarTerrainRenderer
 
 		});
 
+		try {
 		for (RegionMesh rs : regionsToRenderSorted)
 		{
 			float height = 1024f;
@@ -214,6 +215,11 @@ public class FarTerrainRenderer
 				rs.regionSummary.verticesObject.drawElementsTriangles(vertices2draw);
 				
 			}
+		}
+		}
+		catch(NullPointerException npe)
+		{
+			System.out.println("npe"+npe.getMessage());
 		}
 		renderingContext.disableVertexAttribute(vertexIn);
 		renderingContext.disableVertexAttribute(voxelDataIn);

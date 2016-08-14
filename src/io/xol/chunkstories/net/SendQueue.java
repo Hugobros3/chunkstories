@@ -13,6 +13,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -23,7 +24,8 @@ public class SendQueue extends Thread
 {
 	Queue<Packet> sendQueue = new ConcurrentLinkedQueue<Packet>();
 	AtomicBoolean die = new AtomicBoolean(false);
-	AtomicBoolean sleepy = new AtomicBoolean(false);
+	Semaphore workTodo = new Semaphore(0);
+	//AtomicBoolean sleepy = new AtomicBoolean(false);
 	
 	PacketsProcessor processor;
 	DataOutputStream out;
@@ -121,13 +123,14 @@ public class SendQueue extends Thread
 		else
 			sendQueue.add(packet);
 		
-		if(sleepy.get())
+		workTodo.release();
+		/*if(sleepy.get())
 		{
 			synchronized (this)
 			{
 				notifyAll();
 			}
-		}
+		}*/
 	}
 	
 	@Override
@@ -135,14 +138,16 @@ public class SendQueue extends Thread
 	{
 		while(!die.get())
 		{
+			workTodo.acquireUninterruptibly();
+			
 			Packet packet = null;
-			//synchronized(sendQueue)
-			{
-				if(sendQueue.size() > 0)
-					packet = sendQueue.poll();
-			}
+			
+			if(sendQueue.size() > 0)
+				packet = sendQueue.poll();
+			
 			if(packet == null)
-				try
+			{
+				/*try
 				{
 					synchronized (this)
 					{
@@ -154,7 +159,8 @@ public class SendQueue extends Thread
 				catch (InterruptedException e)
 				{
 					e.printStackTrace();
-				}
+				}*/
+			}
 			else
 				try
 				{
@@ -174,7 +180,7 @@ public class SendQueue extends Thread
 					ChunkStoriesLogger.getInstance().error("Error : Unknown packet exception");
 					e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 				}
-			sleepy.set(false);
+			//sleepy.set(false);
 		}
 	}
 	

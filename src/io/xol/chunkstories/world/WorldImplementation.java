@@ -5,6 +5,9 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
@@ -86,7 +89,7 @@ public abstract class WorldImplementation implements World
 	// Temporary entity list
 	private Set<Entity> entities = ConcurrentHashMap.newKeySet();
 	//private ConcurrentHashMap<Long, Entity> localEntitiesByUUID = new ConcurrentHashMap<Long, Entity>();//new LinkedBlockingQueue<Entity>();
-	public SimpleLock entitiesLock = new SimpleLock();
+	public ReadWriteLock entitiesLock = new ReentrantReadWriteLock();
 
 	// Particles
 	private ParticlesRenderer particlesHolder;
@@ -228,7 +231,7 @@ public abstract class WorldImplementation implements World
 		try
 		{
 			//Iterates over every entity
-			entitiesLock.lock();
+			Lock entityIterationLock = entitiesLock.writeLock();
 			Iterator<Entity> iter = this.getAllLoadedEntities();
 			Entity entity;
 			while (iter.hasNext())
@@ -254,7 +257,7 @@ public abstract class WorldImplementation implements World
 					entity.getEntityComponentPosition().trySnappingToRegion();
 
 			}
-			entitiesLock.unlock();
+			entityIterationLock.unlock();
 
 			//Update particles subsystem if it exists
 			if (getParticlesManager() != null && getParticlesManager() instanceof ParticlesRenderer)

@@ -13,6 +13,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.concurrent.locks.Lock;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -74,7 +75,7 @@ public class PacketEntity extends PacketSynch
 		if(entityTypeID == -1)
 			return;
 		
-		((WorldImplementation)processor.getWorld()).entitiesLock.lock();
+		Lock lock = ((WorldImplementation)processor.getWorld()).entitiesLock.writeLock();
 		Entity entity = processor.getWorld().getEntityByUUID(this.entityUUID);
 		
 		boolean addToWorld = false;
@@ -105,6 +106,7 @@ public class PacketEntity extends PacketSynch
 			if(processor.isClient)
 				processor.getWorld().addEntity(entity);
 		}
-		((WorldImplementation)processor.getWorld()).entitiesLock.unlock();
+		lock.unlock();
+		//((WorldImplementation)processor.getWorld()).entitiesLock.unlock();
 	}
 }
