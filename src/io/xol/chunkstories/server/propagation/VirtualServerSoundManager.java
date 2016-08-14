@@ -187,6 +187,7 @@ public class VirtualServerSoundManager implements SoundManager
 
 	public void update()
 	{
+		//System.out.println("update srv sounds");
 		Iterator<ServerPlayerVirtualSoundManager> i = playersSoundManagers.iterator();
 		while (i.hasNext())
 		{

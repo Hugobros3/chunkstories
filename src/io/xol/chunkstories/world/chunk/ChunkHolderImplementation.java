@@ -138,6 +138,9 @@ public class ChunkHolderImplementation implements ChunkHolder
 			IOTask task = loadChunkTask.get();
 			if(task != null)
 				task.cancel();
+			
+			loadChunkTask = null;
+			//Thread.dumpStack();
 		}
 		
 		//Compress chunk if it changed

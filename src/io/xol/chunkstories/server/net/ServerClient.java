@@ -203,10 +203,16 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		{
 			if (in != null)
 				in.close();
-			sendQueue.kill();
+			if(sendQueue != null)
+				sendQueue.kill();
+			
+			//Null-out for server gc ?
+			sendQueue = null;
+			in = null;
 		}
 		catch (Exception e)
 		{
+			
 		}
 		alreadyKilled = true;
 	}
@@ -226,7 +232,9 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 
 	public void pushPacket(Packet packet)
 	{
-		sendQueue.queue(packet);
+		SendQueue sendQueue = this.sendQueue;
+		if(sendQueue != null)
+			sendQueue.queue(packet);
 	}
 
 	/**

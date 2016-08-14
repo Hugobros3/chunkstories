@@ -231,7 +231,7 @@ public abstract class WorldImplementation implements World
 		try
 		{
 			//Iterates over every entity
-			Lock entityIterationLock = entitiesLock.writeLock();
+			entitiesLock.writeLock().lock();
 			Iterator<Entity> iter = this.getAllLoadedEntities();
 			Entity entity;
 			while (iter.hasNext())
@@ -257,7 +257,7 @@ public abstract class WorldImplementation implements World
 					entity.getEntityComponentPosition().trySnappingToRegion();
 
 			}
-			entityIterationLock.unlock();
+			entitiesLock.writeLock().unlock();
 
 			//Update particles subsystem if it exists
 			if (getParticlesManager() != null && getParticlesManager() instanceof ParticlesRenderer)

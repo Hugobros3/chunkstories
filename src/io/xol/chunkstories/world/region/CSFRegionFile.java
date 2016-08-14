@@ -97,15 +97,14 @@ public class CSFRegionFile implements OfflineSerializedData
 		holder.setDiskDataLoaded(true);
 
 		//don't tick the world entities until we get this straight
-		Lock lock = holder.world.entitiesLock.writeLock();
+		holder.world.entitiesLock.writeLock().lock();
 
 		if (in.available() <= 0)
 		{
 			System.out.println("Old version file, no entities to be found anyway");
 			in.close();
-
 			
-			lock.unlock();
+			holder.world.entitiesLock.writeLock().unlock();
 			//holder.world.entitiesLock.unlock();
 			return;
 		}
@@ -122,7 +121,7 @@ public class CSFRegionFile implements OfflineSerializedData
 		}
 		while (entity != null);
 
-		lock.unlock();
+		holder.world.entitiesLock.writeLock().unlock();
 		//holder.world.entitiesLock.unlock();
 
 		// System.out.println("read "+i+" compressed chunks");
@@ -170,7 +169,7 @@ public class CSFRegionFile implements OfflineSerializedData
 				}
 
 		//don't tick the world entities until we get this straight
-		Lock lock = holder.world.entitiesLock.readLock();
+		holder.world.entitiesLock.readLock().lock();
 
 		//System.out.println("writing region file of " + holder);
 
@@ -191,7 +190,7 @@ public class CSFRegionFile implements OfflineSerializedData
 
 		//System.out.println("done");
 
-		lock.unlock();
+		holder.world.entitiesLock.readLock().unlock();
 		//holder.world.entitiesLock.unlock();
 
 		out.close();

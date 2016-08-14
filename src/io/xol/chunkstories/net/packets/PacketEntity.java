@@ -75,7 +75,7 @@ public class PacketEntity extends PacketSynch
 		if(entityTypeID == -1)
 			return;
 		
-		Lock lock = ((WorldImplementation)processor.getWorld()).entitiesLock.writeLock();
+		((WorldImplementation)processor.getWorld()).entitiesLock.writeLock().lock();;
 		Entity entity = processor.getWorld().getEntityByUUID(this.entityUUID);
 		
 		boolean addToWorld = false;
@@ -106,7 +106,8 @@ public class PacketEntity extends PacketSynch
 			if(processor.isClient)
 				processor.getWorld().addEntity(entity);
 		}
-		lock.unlock();
+		//lock.unlock();
+		((WorldImplementation)processor.getWorld()).entitiesLock.writeLock().unlock();
 		//((WorldImplementation)processor.getWorld()).entitiesLock.unlock();
 	}
 }

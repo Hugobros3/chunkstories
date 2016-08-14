@@ -92,7 +92,7 @@ public class IOTasks extends Thread
 				int x = loadChunkTask.x;
 				int y = loadChunkTask.y;
 				int z = loadChunkTask.z;
-
+	
 				if ((LoopingMathHelper.moduloDistance(x, pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(y, pCZ, sizeInChunks) > chunksViewDistance) || (Math.abs(z - pCY) > 3))
 				{
 					//System.out.println("Removed task "+loadChunkTask+" for being too far");
@@ -174,11 +174,11 @@ public class IOTasks extends Thread
 		}
 
 		abstract public boolean run();
-		
+
 		public void cancel()
 		{
 			tasks.remove(this);
-			System.out.println("Task "+this+" removed.");
+			System.out.println("Task " + this + " removed.");
 		}
 	}
 
@@ -211,14 +211,14 @@ public class IOTasks extends Thread
 			int cx = region.getRegionX() * 8 + chunkSlot.getInRegionX();
 			int cy = region.getRegionY() * 8 + chunkSlot.getInRegionY();
 			int cz = region.getRegionZ() * 8 + chunkSlot.getInRegionZ();
-			
+
 			CubicChunk result;
-			
+
 			byte[] compressedData = chunkSlot.getCompressedData();
 			if (compressedData == null || compressedData.length == 0)
 			{
 				result = new CubicChunk(region, cx, cy, cz);
-				
+
 				//world.setChunk(c);
 				return true;
 			}
@@ -241,12 +241,15 @@ public class IOTasks extends Thread
 				}
 				result = new CubicChunk(region, cx, cy, cz, data);
 				result.bakeVoxelLightning(false);
-				
+
 				//holder.setChunk(cx, cy, cz, c);
 			}
-			
+
 			chunkSlot.setChunk(result);
-			chunkSlot.notifyAll();
+			synchronized (chunkSlot)
+			{
+				chunkSlot.notifyAll();
+			}
 			return true;
 		}
 
@@ -262,11 +265,11 @@ public class IOTasks extends Thread
 			if (o != null && o instanceof IOTaskLoadChunk)
 			{
 				IOTaskLoadChunk comp = ((IOTaskLoadChunk) o);
-				
+
 				//If not the same region, don't even bother
-				if(!comp.chunkSlot.getRegion().equals(this.chunkSlot.getRegion()))
+				if (!comp.chunkSlot.getRegion().equals(this.chunkSlot.getRegion()))
 					return false;
-				
+
 				//Complete match of coordinates ?
 				if (comp.chunkSlot.getInRegionX() == this.chunkSlot.getInRegionX() && comp.chunkSlot.getInRegionY() == this.chunkSlot.getInRegionY() && comp.chunkSlot.getInRegionZ() == this.chunkSlot.getInRegionZ())
 					return true;
@@ -285,11 +288,11 @@ public class IOTasks extends Thread
 	public IOTask requestChunkLoad(ChunkHolderImplementation chunkSlot)
 	{
 		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkSlot);
-		if(scheduleTask(task))
+		if (scheduleTask(task))
 			return task;
 		return null;
 	}
-	
+
 	/*public void requestChunkLoad(RegionImplementation holder, int chunkX, int chunkY, int chunkZ, boolean overwrite)
 	{
 		chunkX = chunkX % worldSizeInChunks;
@@ -546,7 +549,7 @@ public class IOTasks extends Thread
 					}
 					catch (Exception e)
 					{
-						ChunkStoriesLogger.getInstance().error("Could not load load chunk summary at "+summary+" cause: "+e.getMessage());
+						ChunkStoriesLogger.getInstance().error("Could not load load chunk summary at " + summary + " cause: " + e.getMessage());
 					}
 
 					summary.texturesUpToDate.set(false);

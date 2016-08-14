@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
+import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -179,7 +180,16 @@ public class RegionImplementation implements Region
 			if (u == null)
 				i.remove();
 			else
+			{
+				//Remainings of a very long and drawn out garbage collection debugging session :/
+				/*if(u instanceof ServerPlayer)
+				{
+					ServerPlayer p = (ServerPlayer)u;
+					System.out.println("Region used by "+p);
+				}*/
+				//System.out.println(u);
 				c++;
+			}
 		}
 		
 		return c;
@@ -241,7 +251,7 @@ public class RegionImplementation implements Region
 		//No need to unload chunks, this is assumed when we unload the holder
 		//unloadAllChunks();
 
-		Lock lock = world.entitiesLock.writeLock();
+		world.entitiesLock.writeLock().lock();
 
 		//int countRemovedEntities = 0;
 
@@ -262,7 +272,7 @@ public class RegionImplementation implements Region
 			//countRemovedEntities++;
 		}
 
-		lock.unlock();
+		world.entitiesLock.writeLock().unlock();
 		//world.entitiesLock.unlock();
 
 		//Remove the reference in the world to this

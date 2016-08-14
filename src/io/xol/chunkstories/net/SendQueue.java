@@ -36,9 +36,16 @@ public class SendQueue extends Thread
 	//Used to buffer and compute the length synch packets to send
 	
 	//To avoid an HORRIBLE mess we have to have one temporary buffer per thread sending packets,
-	//as we have no idea how many madmen will spawn zillions of concurrent threads to spam lolz
-	//we do the classic thread local approach
-	ThreadLocal<SynchBuffer> synchBuffer = new ThreadLocal<SynchBuffer>()
+	//as we have no idea how many madmen will spawn zillions of concurrent threads to spam shit
+	
+	//NOTE: I just had my greatest breakthrought of the week with this, this field used to not be static and I had issues with world unloading on server
+	// namely the ServerPlayer ( implementing WorldUser ) object would not get garbage collected and thus it's reference in the various world bits would hold
+	// indefinitly. It appears that the cause was this ThreadLocal variable, because it is an inner class, it's always referencing it's parent/holder class
+	// and thus the "destinator" field referencing the ServerPlayer ( once he authentificates himself ) would be accessible throught this object.
+	// This becomes a problem with the ThreadLocal type : because ThreadLocal variables are local to threads they are stored in a Map inside the Thread's class, and
+	// these are NOT gc'ed until the thread dies. Meaning that pushing a packet from the tick() loop caused this buffer to get intialized, making a permanent reference to the
+	// player in the world ticking thread. The static qualifier prevents all this, I lost 5 hours to this ... 
+	static ThreadLocal<SynchBuffer> synchBuffer = new ThreadLocal<SynchBuffer>()
 	{
 		@Override
 		protected SynchBuffer initialValue()
@@ -47,7 +54,7 @@ public class SendQueue extends Thread
 		}
 	};
 	//With a custom subclass because the two objects are needed and rely on each other
-	class SynchBuffer {
+	static class SynchBuffer {
 
 		SynchBuffer()
 		{
@@ -195,6 +202,7 @@ public class SendQueue extends Thread
 			//Really that's just disconnection
 		}
 		die.set(true);
+		workTodo.release(10);
 		synchronized (this)
 		{
 			notifyAll();

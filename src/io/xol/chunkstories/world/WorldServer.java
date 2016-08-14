@@ -63,10 +63,11 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				int chunkX = (int) (loc.getX() / 32f);
 				int chunkY = (int) (loc.getY() / 32f);
 				int chunkZ = (int) (loc.getZ() / 32f);
-				for (int cx = chunkX - 4; cx < chunkX + 4; cx++)
+				
+				/*for (int cx = chunkX - 4; cx < chunkX + 4; cx++)
 					for (int cy = chunkY - 2; cy < chunkY + 2; cy++)
 						for (int cz = chunkZ - 4; cz < chunkZ + 4; cz++)
-							System.out.println("strangely this does not seem to happen huh..");
+							System.out.println("strangely this does not seem to happen huh..");*/
 							//this.getChunkChunkCoordinates(chunkX, chunkY, chunkZ, true);
 
 				//System.out.println("chunk:"+this.getChunk(chunkX, chunkY, chunkZ, true));
@@ -79,7 +80,11 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			packetTime.overcastFactor = this.getWeather();
 			player.pushPacket(packetTime);
 		}
+		
+		
 		super.tick();
+		
+		virtualServerSoundManager.update();
 	}
 
 	public void handleWorldMessage(ServerClient sender, String message)

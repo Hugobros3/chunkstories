@@ -71,6 +71,8 @@ public class GameLogicThread extends Thread implements GameLogic
 			//Tick the world ( mostly entities )
 			world.tick();
 			
+			//System.gc();
+			
 			//Every second, unloads unused stuff
 			if(world.getTicksElapsed() % 60 == 0)
 			{

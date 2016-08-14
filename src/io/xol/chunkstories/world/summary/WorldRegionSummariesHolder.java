@@ -230,8 +230,9 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		while(i.hasNext())
 		{
 			RegionSummaryImplementation summary = i.next();
-			if(summary.unloadsIfUnused())
-				System.out.println("unloaded unused summary "+summary);
+			summary.unloadsIfUnused();
+			//if(summary.unloadsIfUnused())
+			//	System.out.println("unloaded unused summary "+summary);
 		}
 		
 		dontDeleteWhileCreating.release();

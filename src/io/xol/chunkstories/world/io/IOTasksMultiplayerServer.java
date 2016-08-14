@@ -53,6 +53,9 @@ public class IOTasksMultiplayerServer extends IOTasks
 					return true;
 				
 				RegionImplementation holder = world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
+				if(holder == null)
+					return false;
+				
 				if(holder.isDiskDataLoaded())
 				{
 					PacketChunkCompressedData packet = new PacketChunkCompressedData(false);

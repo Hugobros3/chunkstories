@@ -10,6 +10,10 @@ import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.sound.SoundManager;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.chunk.ChunkHolder;
+import io.xol.chunkstories.api.world.chunk.Region;
+import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.server.net.ServerClient;
@@ -17,6 +21,7 @@ import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager.ServerP
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager;
 import io.xol.chunkstories.server.propagation.VirtualServerSoundManager.ServerPlayerVirtualSoundManager;
 import io.xol.engine.math.LoopingMathHelper;
+import io.xol.engine.math.Math2;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
 
@@ -233,7 +238,7 @@ public class ServerPlayer implements Player
 	@Override
 	public boolean isConnected()
 	{
-		return true;
+		return playerConnection.isAlive();
 	}
 
 	@Override
@@ -387,10 +392,137 @@ public class ServerPlayer implements Player
 		return virtualDecalsManager;
 	}
 
+	Set<ChunkHolder> usedChunks = new HashSet<ChunkHolder>();
+	Set<Region> usedRegions = new HashSet<Region>();
+	Set<RegionSummary> usedRegionSummaries = new HashSet<RegionSummary>();
+	
 	@Override
 	public void updateUsedWorldBits()
 	{
-		// TODO Auto-generated method stub
+		if(controlledEntity == null)
+			return;
+		World world = controlledEntity.getWorld();
+		if(world == null)
+			return;
+			
+		int cameraChunkX = Math2.floor((controlledEntity.getLocation().getX()) / 32);
+		int cameraChunkY = Math2.floor((controlledEntity.getLocation().getY()) / 32);
+		int cameraChunkZ = Math2.floor((controlledEntity.getLocation().getZ()) / 32);
 		
+		//Simulated chunks, properly loaded
+		int chunksViewDistance = 4;
+		for (int chunkX = (cameraChunkX - chunksViewDistance); chunkX < cameraChunkX + chunksViewDistance; chunkX++)
+		{
+			for (int chunkZ = (cameraChunkZ - chunksViewDistance); chunkZ < cameraChunkZ + chunksViewDistance; chunkZ++)
+				for (int chunkY = cameraChunkY - 3; chunkY < cameraChunkY + 3; chunkY++)
+				{
+					ChunkHolder holder = world.aquireChunkHolder(this, chunkX, chunkY, chunkZ);
+					if(holder == null)
+						continue;
+					
+					if(usedChunks.add(holder))
+					{
+						
+					}
+				}
+		}
+		
+		// ( Removes too far ones )
+		Iterator<ChunkHolder> chunkHoldersIterator = usedChunks.iterator();
+		while(chunkHoldersIterator.hasNext())
+		{
+			ChunkHolder holder = chunkHoldersIterator.next();
+			if (		(LoopingMathHelper.moduloDistance(	holder.getChunkCoordinateX(), cameraChunkX, world.getSizeInChunks()) > chunksViewDistance + 1) 
+					|| 	(LoopingMathHelper.moduloDistance(	holder.getChunkCoordinateZ(), cameraChunkZ, world.getSizeInChunks()) > chunksViewDistance + 1)
+					|| 	(Math.abs(							holder.getChunkCoordinateY() - cameraChunkY) > 4))
+			{
+				chunkHoldersIterator.remove();
+				holder.unregisterUser(this);
+			}
+		}
+		
+		//Unsimulated regions to send blocks
+		int maxChunksViewDistance = 256 / 32;
+		int maxRegionsViewDistance = 1;
+		
+		int rx = cameraChunkX / 8;
+		int ry = cameraChunkY / 8;
+		int rz = cameraChunkZ / 8;
+		
+		for (int chunkX = (cameraChunkX - maxChunksViewDistance); chunkX < cameraChunkX + maxChunksViewDistance; chunkX+=8)
+		{
+			for (int chunkZ = (cameraChunkZ - maxChunksViewDistance); chunkZ < cameraChunkZ + maxChunksViewDistance; chunkZ+=8)
+				for (int chunkY = cameraChunkY - 3; chunkY < cameraChunkY + 3; chunkY++)
+				{
+					Region region = world.aquireRegionChunkCoordinates(this, chunkX, chunkY, chunkZ);
+					if(region == null)
+						continue;
+					
+					if(usedRegions.add(region))
+					{
+						
+					}
+				}
+		}
+
+		// ( Removes too far ones )
+		Iterator<Region> regionsIterator = usedRegions.iterator();
+		while(chunkHoldersIterator.hasNext())
+		{
+			Region region = regionsIterator.next();
+			if (		(LoopingMathHelper.moduloDistance(	region.getRegionX(), rx, world.getSizeInChunks() / 8) > maxRegionsViewDistance) 
+					|| 	(LoopingMathHelper.moduloDistance(	region.getRegionZ(), rz, world.getSizeInChunks() / 8) > maxRegionsViewDistance)
+					|| 	(Math.abs(							region.getRegionY() - ry) > 1))
+			{
+				regionsIterator.remove();
+				region.unregisterUser(this);
+			}
+		}
+
+		//Loads / unloads summaries
+		int summaryDistance = 32;
+		
+		for (int chunkX = (cameraChunkX - summaryDistance); chunkX < cameraChunkX + summaryDistance; chunkX++)
+			for (int chunkZ = (cameraChunkZ - summaryDistance); chunkZ < cameraChunkZ + summaryDistance; chunkZ++)
+			{
+				if(chunkX % 8 == 0 && chunkZ % 8 == 0)
+				{
+					int regionX = chunkX / 8;
+					int regionZ = chunkZ / 8;
+					
+					RegionSummary s = world.getRegionsSummariesHolder().aquireRegionSummary(this, regionX, regionZ);
+					if(s != null)
+						//System.out.println("kek me up inside "+s);
+					if(s != null && usedRegionSummaries.add(s))
+					{
+						//System.out.println("Added "+s + "to summaries used ("+usedRegionSummaries.size()+")");
+					}
+				}
+			}
+
+		// ( Removes too far ones )
+		int distInRegions = summaryDistance / 8;
+		int s = world.getSizeInChunks() / 8;
+		//synchronized(summaries)
+		{
+			Iterator<RegionSummary> iterator = usedRegionSummaries.iterator();
+			//Iterator<Entry<Long, RegionSummaryImplementation>> iterator = summaries.entrySet().iterator();
+			while (iterator.hasNext())
+			{
+				RegionSummary entry = iterator.next();
+				int lx = entry.getRegionX();
+				int lz = entry.getRegionZ();
+
+				int dx = LoopingMathHelper.moduloDistance(rx, lx, s);
+				int dz = LoopingMathHelper.moduloDistance(rz, lz, s);
+				// System.out.println("Chunk Summary "+lx+":"+lz+" is "+dx+":"+dz+" away from camera max:"+distInRegions+" total:"+summaries.size());
+				if (dx > distInRegions || dz > distInRegions)
+				{
+					//System.out.println("useless "+entry);
+					entry.unregisterUser(this);
+					iterator.remove();
+				}
+			}
+		}
 	}
 }
