@@ -7,7 +7,6 @@ launcher.jar
 readme.txt
 spec.txt
 *.class
-*.jar
 hs_err_pid*
 res/textures/tiles_merged*
 *main.fs
