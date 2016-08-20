@@ -50,6 +50,7 @@ uniform float shadowStrength;
 <include ../sky/sky.glsl>
 <include ../lib/transformations.glsl>
 <include ../lib/shadowTricks.glsl>
+<include ../lib/normalmapping.glsl>
 
 //Fog
 uniform float fogStartDistance;
@@ -137,20 +138,20 @@ uniform samplerCube environmentCubemap;
 void main() {
     vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(screenCoord, depthBuffer);
 	
-	vec4 pixelNormal = texture2D(normalBuffer, screenCoord);
+	vec4 normalBufferData = texture2D(normalBuffer, screenCoord);
 	vec4 pixelMeta = texture2D(metaBuffer, screenCoord);
 	
-	pixelNormal.rgb = pixelNormal.rgb * 2.0 - vec3(1.0);
+	vec3 pixelNormal = decodeNormal(normalBufferData);
 	
 	vec4 shadingColor = texture2D(albedoBuffer, screenCoord);
 	//shadingColor.rgb = normalize(shadingColor.rgb);
 	
 	if(shadingColor.a > 0.0)
 	{
-		float spec = pow(pixelNormal.w, 1.0);
-		shadingColor = computeLight(shadingColor, pixelNormal.xyz, cameraSpacePosition, pixelMeta, spec);
+		float spec = pow(normalBufferData.w, 1.0);
+		shadingColor = computeLight(shadingColor, pixelNormal, cameraSpacePosition, pixelMeta, spec);
 		if(spec > 0.0)
-			shadingColor.rgb = mix(shadingColor.rgb, computeReflectedPixel(screenCoord, cameraSpacePosition.xyz, pixelNormal.xyz, pixelMeta.y).rgb, spec);
+			shadingColor.rgb = mix(shadingColor.rgb, computeReflectedPixel(screenCoord, cameraSpacePosition.xyz, pixelNormal, pixelMeta.y).rgb, spec);
 		//shadingColor = vec4(1.0, 0.0, 0.0, 0.0);
 	}
 	else

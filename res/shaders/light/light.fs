@@ -33,13 +33,14 @@ uniform int lightsToRender;
 //Gamma constants
 <include ../lib/gamma.glsl>
 <include ../lib/transformations.glsl>
+<include ../lib/normalmapping.glsl>
 
 void main() {
 	//Accumulator buffer
 	vec4 totalLight = vec4(0.0);
 	
 	//Get normal from g-buffer
-	vec3 normal = texture2D(normalBuffer, screenCoord).rgb * 2.0 - vec3(1.0);
+	vec3 normal = decodeNormal(texture2D(normalBuffer, screenCoord));
 	vec3 normalWorld = normalize(normalMatrixInv * normal);
 	
 	//Get reflectivity of surface

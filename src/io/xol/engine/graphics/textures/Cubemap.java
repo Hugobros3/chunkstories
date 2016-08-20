@@ -29,9 +29,10 @@ public class Cubemap
 	int size;
 	int glId = -1;
 	
-	public Cubemap(TextureType type)
+	public Cubemap(TextureType type, int size)
 	{
 		this.type = type;
+		this.size = size;
 		
 		glId = glGenTextures();
 		glBindTexture(GL_TEXTURE_CUBE_MAP, glId);
@@ -48,7 +49,7 @@ public class Cubemap
 	
 	public Cubemap(String name)
 	{
-		this(TextureType.RGBA_8BPP);
+		this(TextureType.RGBA_8BPP, 0);
 		this.name = name;
 		loadCubemapFromDisk();
 	}
@@ -78,6 +79,7 @@ public class Cubemap
 				decoder.decode(temp, decoder.getWidth() * 4, Format.RGBA);
 				temp.flip();
 				
+				this.size = decoder.getHeight();
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, type.getInternalFormat(), decoder.getWidth(), decoder.getHeight(), 0, type.getFormat(), type.getType(), temp);
 				// Anti alias
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -132,7 +134,9 @@ public class Cubemap
 			face = i;
 			textureType = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
 
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, type.getInternalFormat(), size, size, 0, type.getFormat(), type.getType(), (ByteBuffer)null);
+			//glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, type.getInternalFormat(), size, size, 0, type.getFormat(), type.getType(), (ByteBuffer)null);
+			System.out.println("Creating cubemap ,etc " +size);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, size, size, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer) null);
 		}
 		
 		@Override

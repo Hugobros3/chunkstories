@@ -77,5 +77,5 @@ void main(){
 	gl_Position = modelViewProjectionMatrix * v;
 	
 	//eyeDirection transform
-	eyeDirection = v.xyz;
+	eyeDirection = v.xyz - camPos;
 }

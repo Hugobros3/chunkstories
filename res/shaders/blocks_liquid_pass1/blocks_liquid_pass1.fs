@@ -55,42 +55,14 @@ uniform float underwater;
 <include ../lib/transformations.glsl>
 
 void main(){
-	//if(mod((gl_FragCoord.x + gl_FragCoord.y), 2) == 0)
-	//	discard;
-
-	vec3 normal = vec3(0.0, 1.0, 0.0);
-
-	vec3 nt = 1.0*(texture2D(normalTexture,(vertexPassed.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
-	nt += 1.0*(texture2D(normalTexture,(vertexPassed.xz/2.0+vec2(-time,-2.0*time)/150.0)/2.0).rgb*2.0-1.0);
-	nt += 0.5*(texture2D(normalTexture,(vertexPassed.zx*0.8+vec2(400.0, sin(-time/5.0)+time/25.0)/350.0)/10.0).rgb*2.0-1.0);
-	nt += 0.25*(texture2D(normalTexture,(vertexPassed.zx*0.1+vec2(400.0, sin(-time/5.0)-time/25.0)/250.0)/15.0).rgb*2.0-1.0);
-	
-	nt = normalize(nt);
-	
-	float i = 0.25;
-	
-	normal.x += nt.r*i;
-	normal.z += nt.g*i;
-	normal.y += nt.b*i;
-	
-	normal = normalize(normal);
-	normal = normalMatrix * normal;
 
 	//Basic texture color
 	vec2 coords = (gl_FragCoord.xy)/screenSize;
 	
-	//coords+=10.0 * vec2(floor(sin(coords.x*100.0+time/5.0))/screenSize.x,floor(cos(coords.y*100.0+time/5.0))/screenSize.y);
-	
 	vec4 baseColor = texture2D(diffuseTexture, texCoordPassed);
 	
-	float spec = fresnelTerm;
 	vec4 worldspaceFragment = convertScreenSpaceToCameraSpace(coords, readbackDepthBufferTemp);
 	
-	<ifdef perPixelFresnel>
-	float dynamicFresnelTerm = 0.1 + 0.6 * clamp(0.7 + dot(normalize(worldspaceFragment.xyz), normal), 0.0, 1.0);
-	spec = dynamicFresnelTerm;
-	<endif perPixelFresnel>
-
 	//Pass 1
 	vec4 meta = texture2D(readbackMetaBufferTemp, coords);
 	
@@ -110,8 +82,6 @@ void main(){
 	refracted.rgb *= pow(finalLight + vec3(1.0) * (1-refracted.a*lightMapCoords.g), vec3(gammaInv));
 	
 	baseColor.rgb = mix(refracted.rgb, baseColor.rgb, clamp(waterFogI2*(1.0-underwater), 0.0, 1.0));
-	
-	spec *= 1-underwater;
 	
 	gl_FragData[0] = vec4(baseColor);
 }

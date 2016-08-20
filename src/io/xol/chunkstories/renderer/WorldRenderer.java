@@ -160,7 +160,7 @@ public class WorldRenderer
 	private int ENVMAP_SIZE = 128;
 	private GBufferTexture environmentMapBufferHDR = new GBufferTexture(RGB_HDR, ENVMAP_SIZE, ENVMAP_SIZE);
 	private GBufferTexture environmentMapBufferZ = new GBufferTexture(DEPTH_RENDERBUFFER, ENVMAP_SIZE, ENVMAP_SIZE);
-	private Cubemap environmentMap = new Cubemap(TextureType.RGBA_8BPP);
+	private Cubemap environmentMap = new Cubemap(TextureType.RGB_HDR, ENVMAP_SIZE);
 	
 	private FBO environmentMapFastFbo = new FBO(environmentMapBufferZ, environmentMapBufferHDR);
 	private FBO environmentMapFBO = new FBO(null, environmentMap.getFace(0));
@@ -1614,7 +1614,7 @@ public class WorldRenderer
 	{
 		lastEnvmapRender = System.currentTimeMillis();
 		
-		boolean useFastBuffer = false;
+		boolean useFastBuffer = true;
 		
 		// Save state
 		boolean oldBloom = RenderingConfig.doBloom;
@@ -1628,11 +1628,19 @@ public class WorldRenderer
 		float fov = camera.fov;
 		camera.fov = 45;
 		// Setup cubemap resolution
-		this.setupRenderSize(resolution, resolution);
+
+		if(!useFastBuffer)
+			this.setupRenderSize(resolution, resolution);
+		else
+		{
+			scrW = resolution;
+			scrH = resolution;
+		}
+		
 		String[] names = { "front", "back", "top", "bottom", "right", "left" };
 
 		String time = null;
-		if (cubemap != null)
+		if (cubemap == null)
 		{
 			Calendar cal = Calendar.getInstance();
 			SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
@@ -1699,18 +1707,20 @@ public class WorldRenderer
 
 			if (cubemap != null)
 			{
-				glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.getID());
+				//System.out.println(cubemap.getID());
+				
+				//glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.getID());
 
 				int t[] = new int[] { 4, 5, 3, 2, 0, 1 };
 				int f = t[z];
 
 				//glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + f, 0, GL_RGBA, resolution, resolution, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer) null);
 
-				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				/*glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				// Anti seam
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
 
 				renderingContext.setCurrentShader(ShadersLibrary.getShaderProgram("blit"));
 
@@ -1771,7 +1781,14 @@ public class WorldRenderer
 		camera.rotationZ = camZ;
 		camera.fov = fov;
 		camera.justSetup(oldW, oldH);
-		this.setupRenderSize(oldW, oldH);
+
+		if(!useFastBuffer)
+			this.setupRenderSize(oldW, oldH);
+		else
+		{
+			scrW = oldW;
+			scrH = oldH;
+		}
 	}
 
 	/**
