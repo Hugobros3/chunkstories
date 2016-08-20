@@ -22,7 +22,7 @@ public class ParticleMuzzleFlash extends ParticleType
 
 	public class MuzzleData extends ParticleData {
 
-		public int timer = 1;
+		public int timer = 2;
 		
 		public MuzzleData(float x, float y, float z)
 		{

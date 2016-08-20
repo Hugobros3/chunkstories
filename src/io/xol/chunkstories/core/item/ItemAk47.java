@@ -101,7 +101,7 @@ public class ItemAk47 extends Item implements DamageCause
 
 				//Play sounds
 				if (controller != null)
-					controller.getSoundManager().playSoundEffect("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f);
+					controller.getSoundManager().playSoundEffect("weapons/ak47/shootNear.ogg", user.getLocation(), 1.0f, 1.0f).setAttenuationEnd(150f);
 
 				/*if (shooter.getWorld() instanceof WorldClient)
 					shooter.getWorld().playSoundEffect("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f);
@@ -168,11 +168,14 @@ public class ItemAk47 extends Item implements DamageCause
 						//System.out.println("normal: "+normal);
 						//System.out.println("reflected: "+reflected);
 
+						//shotBlock.setX(shotBlock.getX() + 1);
 						int data = user.getWorld().getVoxelData(shotBlock);
 						Voxel voxel = VoxelTypes.get(data);
 
 						Vector3d nearestLocation = null;
 
+						//This seems fine
+						
 						for (CollisionBox box : voxel.getTranslatedCollisionBoxes(user.getWorld(), (int) shotBlock.getX(), (int) shotBlock.getY(), (int) shotBlock.getZ()))
 						{
 							Vector3d thisLocation = box.collidesWith(eyeLocation, shooter.getDirectionLookingAt());
@@ -182,7 +185,7 @@ public class ItemAk47 extends Item implements DamageCause
 									nearestLocation = thisLocation;
 							}
 						}
-
+						
 						for (int i = 0; i < 25; i++)
 						{
 							Vector3d untouchedReflection = new Vector3d(reflected);

@@ -40,7 +40,7 @@ public class CollisionBox implements Collidable
 		zpos += z;
 		return this;
 	}
-	
+
 	public CollisionBox translate(Vector3d vec3)
 	{
 		xpos += vec3.getX();
@@ -81,7 +81,7 @@ public class CollisionBox implements Collidable
 		Vector3d TP2 = new Vector3d();
 		TP1.set(P1);
 		TP2.set(P2);
-		
+
 		Vector3d tempHit = new Vector3d();
 		Vector3d.sub(TP2, TP1, tempHit);
 		tempHit.scale(-fDst1 / (fDst2 - fDst1));
@@ -106,25 +106,80 @@ public class CollisionBox implements Collidable
 	}
 
 	/**
-	 * Box / Line collision check
-	 * Returns null if no colision, a Vector3d if collision, containing the collision point.
+	 * Box / Line collision check Returns null if no colision, a Vector3d if collision, containing the collision point.
+	 * 
 	 * @return The collision point, or NULL.
 	 */
 	public Vector3d collidesWith(Vector3d lineStart, Vector3d lineDirection)
 	{
-		Vector3d B1 = new Vector3d(xpos - xw/2, ypos, zpos - zw/2);
-		Vector3d B2 = new Vector3d(xpos + xw/2, ypos + h, zpos + zw/2);
+		double minDist = 0.0;
+		double maxDist = 256d;
 		
+		Vector3d min = new Vector3d(xpos - xw / 2, ypos, zpos - zw / 2);
+		Vector3d max = new Vector3d(xpos + xw / 2, ypos + h, zpos + zw / 2);
 		
+		lineDirection.normalize();
+		
+		Vector3d invDir = new Vector3d(1f / lineDirection.getX(), 1f / lineDirection.getY(), 1f / lineDirection.getZ());
+
+		boolean signDirX = invDir.getX() < 0;
+		boolean signDirY = invDir.getY() < 0;
+		boolean signDirZ = invDir.getZ() < 0;
+
+		Vector3d bbox = signDirX ? max : min;
+		double tmin = (bbox.getX() - lineStart.getX()) * invDir.getX();
+		bbox = signDirX ? min : max;
+		double tmax = (bbox.getX() - lineStart.getX()) * invDir.getX();
+		bbox = signDirY ? max : min;
+		double tymin = (bbox.getY() - lineStart.getY()) * invDir.getY();
+		bbox = signDirY ? min : max;
+		double tymax = (bbox.getY() - lineStart.getY()) * invDir.getY();
+
+		if ((tmin > tymax) || (tymin > tmax)) {
+			return null;
+		}
+		if (tymin > tmin) {
+			tmin = tymin;
+		}
+		if (tymax < tmax) {
+			tmax = tymax;
+		}
+
+		bbox = signDirZ ? max : min;
+		double tzmin = (bbox.getZ() - lineStart.getZ()) * invDir.getZ();
+		bbox = signDirZ ? min : max;
+		double tzmax = (bbox.getZ() - lineStart.getZ()) * invDir.getZ();
+
+		if ((tmin > tzmax) || (tzmin > tmax)) {
+			return null;
+		}
+		if (tzmin > tmin) {
+			tmin = tzmin;
+		}
+		if (tzmax < tmax) {
+			tmax = tzmax;
+		}
+		if ((tmin < maxDist) && (tmax > minDist)) {
+			
+			return Vector3d.add(lineStart, lineDirection.clone().normalize().scale(tmin), null);
+			
+			//return ray.getPointAtDistance(tmin);
+		}
+		return null;
+		
+	}
+	/*public Vector3d collidesWith(Vector3d lineStart, Vector3d lineDirection)
+	{
+		Vector3d B1 = new Vector3d(xpos - xw / 2, ypos, zpos - zw / 2);
+		Vector3d B2 = new Vector3d(xpos + xw / 2, ypos + h, zpos + zw / 2);
+
 		Vector3d L1 = new Vector3d();
 		L1.set(lineStart);
 		Vector3d L2 = new Vector3d();
 		L2.set(lineDirection);
 		L2.scale(500);
 		L2.add(lineStart);
-		//System.out.println(xpos + ": " + ypos + ": " + zpos);
-		//System.out.println(L1 + " : " + L2);
-		
+
 		if (L2.getX() < B1.getX() && L1.getX() < B1.getX())
 			return null;
 		if (L2.getX() > B2.getX() && L1.getX() > B2.getX())
@@ -139,18 +194,68 @@ public class CollisionBox implements Collidable
 			return null;
 		if (L1.getX() > B1.getX() && L1.getX() < B2.getX() && L1.getY() > B1.getY() && L1.getY() < B2.getY() && L1.getZ() > B1.getZ() && L1.getZ() < B2.getZ())
 		{
+			System.out.println("L1" + L1);
 			return L1;
 		}
+		//System.out.println("c kompliker");
+		Vector3d possibleHit = null;
 		Vector3d hit = new Vector3d();
-		if ((getLineIntersection(L1.getX() - B1.getX(), L2.getX() - B1.getX(), L1, L2, hit) && inBox(hit, B1, B2, 1)) || (getLineIntersection(L1.getY() - B1.getY(), L2.getY() - B1.getY(), L1, L2, hit) && inBox(hit, B1, B2, 2))
-				|| (getLineIntersection(L1.getZ() - B1.getZ(), L2.getZ() - B1.getZ(), L1, L2, hit) && inBox(hit, B1, B2, 3)) || (getLineIntersection(L1.getX() - B2.getX(), L2.getX() - B2.getX(), L1, L2, hit) && inBox(hit, B1, B2, 1))
-				|| (getLineIntersection(L1.getY() - B2.getY(), L2.getY() - B2.getY(), L1, L2, hit) && inBox(hit, B1, B2, 2)) || (getLineIntersection(L1.getZ() - B2.getZ(), L2.getZ() - B2.getZ(), L1, L2, hit) && inBox(hit, B1, B2, 3)))
-			return hit;
+		if ((getLineIntersection(L1.getX() - B1.getX(), L2.getX() - B1.getX(), L1, L2, hit) && inBox(hit, B1, B2, 1)))
+		{
+			System.out.println("x1");
+			
+			if(true)
+				return hit;
+			if(possibleHit == null || possibleHit.distanceTo(lineStart) > hit.distanceTo(lineStart))
+				possibleHit = hit;
+		}
+		if ((getLineIntersection(L1.getY() - B1.getY(), L2.getY() - B1.getY(), L1, L2, hit) && inBox(hit, B1, B2, 2)))
+		{
+			System.out.println("y1");
+			if(true)
+				return hit;
+			if(possibleHit == null || possibleHit.distanceTo(lineStart) > hit.distanceTo(lineStart))
+				possibleHit = hit;
+		}
+		if ((getLineIntersection(L1.getZ() - B1.getZ(), L2.getZ() - B1.getZ(), L1, L2, hit) && inBox(hit, B1, B2, 3)))
+		{
+			System.out.println("z1");
+			if(true)
+				return hit;
+			if(possibleHit == null || possibleHit.distanceTo(lineStart) > hit.distanceTo(lineStart))
+				possibleHit = hit;
+		}
+		if ((getLineIntersection(L1.getX() - B2.getX(), L2.getX() - B2.getX(), L1, L2, hit) && inBox(hit, B1, B2, 1)))
+		{
+			System.out.println("y1");
+			if(true)
+				return hit;
+			if(possibleHit == null || possibleHit.distanceTo(lineStart) > hit.distanceTo(lineStart))
+				possibleHit = hit;
+		}
+		if ((getLineIntersection(L1.getY() - B2.getY(), L2.getY() - B2.getY(), L1, L2, hit) && inBox(hit, B1, B2, 2)))
+		{
+			System.out.println("y2");
+			if(true)
+				return hit;
+			if(possibleHit == null || possibleHit.distanceTo(lineStart) > hit.distanceTo(lineStart))
+				possibleHit = hit;
+		}
+		if ((getLineIntersection(L1.getZ() - B2.getZ(), L2.getZ() - B2.getZ(), L1, L2, hit) && inBox(hit, B1, B2, 3)))
+		{
+			System.out.println("z2");
+			if(true)
+				return hit;
+			if(possibleHit == null || possibleHit.distanceTo(lineStart) > hit.distanceTo(lineStart))
+				possibleHit = hit;
+		}
+		//		)
+		//	return hit;
 
 		//sSystem.out.println(hit);
-		return null;
-	}
-
+		return possibleHit;
+	}*/
+	
 	public double getWidthWarp()
 	{
 		return xw % 1;

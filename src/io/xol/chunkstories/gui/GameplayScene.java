@@ -203,7 +203,7 @@ public class GameplayScene extends OverlayableScene
 		if (shouldCM)
 		{
 			shouldCM = false;
-			worldRenderer.screenCubeMap(512, null);
+			worldRenderer.renderWorldCubemap(null, 512, false);
 		}
 		//Blit the final 3d image
 		worldRenderer.blitScreen();

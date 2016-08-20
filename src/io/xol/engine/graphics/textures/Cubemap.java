@@ -22,12 +22,14 @@ import static org.lwjgl.opengl.GL30.*;
 public class Cubemap
 {
 	String name;
-	CubemapType type;
+	//CubemapType type;
+	TextureType type;
+	
 	Face faces[] = new Face[6];
 	int size;
 	int glId = -1;
 	
-	public Cubemap(CubemapType type)
+	public Cubemap(TextureType type)
 	{
 		this.type = type;
 		
@@ -46,7 +48,7 @@ public class Cubemap
 	
 	public Cubemap(String name)
 	{
-		this(CubemapType.RGBA_8BPP);
+		this(TextureType.RGBA_8BPP);
 		this.name = name;
 		loadCubemapFromDisk();
 	}
@@ -75,7 +77,8 @@ public class Cubemap
 				temp = ByteBuffer.allocateDirect(4 * decoder.getWidth() * decoder.getHeight());
 				decoder.decode(temp, decoder.getWidth() * 4, Format.RGBA);
 				temp.flip();
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, decoder.getWidth(), decoder.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, temp);
+				
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, type.getInternalFormat(), decoder.getWidth(), decoder.getHeight(), 0, type.getFormat(), type.getType(), temp);
 				// Anti alias
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -115,9 +118,9 @@ public class Cubemap
 		glId = -1;
 	}
 	
-	public enum CubemapType {
+	/*public enum CubemapType {
 		RGBA_8BPP;
-	}
+	}*/
 	
 	public class Face implements FBOAttachement {
 		
@@ -129,7 +132,7 @@ public class Cubemap
 			face = i;
 			textureType = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
 
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, size, size, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer)null);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, type.getInternalFormat(), size, size, 0, type.getFormat(), type.getType(), (ByteBuffer)null);
 		}
 		
 		@Override

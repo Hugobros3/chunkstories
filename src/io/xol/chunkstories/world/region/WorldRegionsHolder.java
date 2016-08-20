@@ -223,9 +223,6 @@ public class WorldRegionsHolder
 		//Prevents unloading a region whilst one of it's chunk holders is being aquired
 		noConcurrentRegionCreationDestruction.acquireUninterruptibly();
 		
-		System.runFinalization();
-		System.gc();
-		
 		//Iterates over loaded regions and unloads unused ones
 		Iterator<RegionImplementation> regionsIterator = this.getLoadedRegions();
 		while (regionsIterator.hasNext())
