@@ -102,6 +102,6 @@ void main(){
 		discard;
 	
 	gl_FragData[0] = vec4(baseColor);
-	gl_FragData[1] = vec4(encodeNormal(normal).xyz, spec);
+	gl_FragData[1] = vec4(encodeNormal(normal).xy, spec, 1.0);
 	gl_FragData[2] = vec4(lightMapCoords.xyz, 1);
 }

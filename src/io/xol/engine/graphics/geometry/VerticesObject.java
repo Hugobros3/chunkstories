@@ -2,6 +2,7 @@ package io.xol.engine.graphics.geometry;
 
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;
+import io.xol.engine.graphics.textures.Texture;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -17,7 +18,10 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -29,37 +33,48 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class VerticesObject
 {
-	private int openglBufferId = -1;
+	private int glId = -1;
 
 	private boolean isDataPresent = false;
 	private long dataSize = 0L;
 
 	private Object dataPendingUpload = null;
 
-	private final WeakReference<VerticesObject> self;
+	private final WeakReference<VerticesObject> selfReference;
 
 	public VerticesObject()
 	{
-		//Assign a buffer ID if we're in the right thread
-		if (GameWindowOpenGL.isMainGLWindow())
-			openglBufferId = glGenBuffers();
-
 		//Increment counter and create weak reference to this object
 		totalVerticesObjects++;
-		self = new WeakReference<VerticesObject>(this);
-		allVerticesObjects.add(self);
+		selfReference = new WeakReference<VerticesObject>(this);
+		allVerticesObjects.add(selfReference);
+
+		//Assign a buffer ID if we're in the right thread
+		if (GameWindowOpenGL.isMainGLWindow())
+			aquireID();
 	}
 
+	public final void aquireID()
+	{
+		//If texture was already assignated we discard this call
+		if (glId == -2 || glId >= 0)
+			return;
+
+		glId = glGenBuffers();
+		//Keep the reference for this allocated id
+		allocatedIds.put(glId, selfReference);
+	}
+	
 	public void bind()
 	{
 		if (!GameWindowOpenGL.isMainGLWindow())
 			throw new IllegalRenderingThreadException();
 
 		//Check for and if needed create the buffer
-		if (openglBufferId == -1)
-			openglBufferId = glGenBuffers();
+		if (glId == -1)
+			aquireID();
 
-		glBindBuffer(GL_ARRAY_BUFFER, openglBufferId);
+		glBindBuffer(GL_ARRAY_BUFFER, glId);
 	}
 
 	/**
@@ -157,7 +172,7 @@ public class VerticesObject
 		Object atomicReference = dataPendingUpload;
 		if (atomicReference != null)
 		{
-			System.out.println("atomicRef != null");
+			//System.out.println("atomicRef != null");
 			uploadDataActual(atomicReference);
 			dataPendingUpload = null;
 		}
@@ -209,7 +224,7 @@ public class VerticesObject
 
 	public String toString()
 	{
-		return "[VerticeObjcect glId = "+this.openglBufferId+"]";
+		return "[VerticeObjcect glId = "+this.glId+"]";
 	}
 	
 	/**
@@ -217,10 +232,10 @@ public class VerticesObject
 	 */
 	public synchronized boolean destroy()
 	{
-		if (openglBufferId == -1)
+		if (glId == -1)
 		{
 			//Mark it for unable to receive data, decrease counter
-			openglBufferId = -2;
+			glId = -2;
 			totalVerticesObjects--;
 			return false;
 		}
@@ -230,8 +245,8 @@ public class VerticesObject
 			isDataPresent = false;
 
 			//System.out.println("Deleting Buffer "+openglBufferId);
-			glDeleteBuffers(openglBufferId);
-			openglBufferId = -2;
+			glDeleteBuffers(glId);
+			glId = -2;
 			dataSize = 0;
 
 			totalVerticesObjects--;
@@ -268,6 +283,23 @@ public class VerticesObject
 			}
 		}
 
+		Iterator<Entry<Integer, WeakReference<VerticesObject>>> i = allocatedIds.entrySet().iterator();
+		while(i.hasNext())
+		{
+			Entry<Integer, WeakReference<VerticesObject>> entry = i.next();
+			int id = entry.getKey();
+			WeakReference<VerticesObject> weakReference = entry.getValue();
+			VerticesObject verticesObject = weakReference.get();
+			if(verticesObject == null)
+			{
+				//System.out.println("Destroyed orphan VerticesObject id #"+id);
+				glDeleteBuffers(id);
+				destroyedVerticesObjects++;
+				
+				i.remove();
+			}
+		}
+		
 		return destroyedVerticesObjects;
 	}
 
@@ -298,4 +330,6 @@ public class VerticesObject
 
 	private static int totalVerticesObjects = 0;
 	private static BlockingQueue<WeakReference<VerticesObject>> allVerticesObjects = new LinkedBlockingQueue<WeakReference<VerticesObject>>();
+	
+	protected static Map<Integer, WeakReference<VerticesObject> > allocatedIds = new ConcurrentHashMap<Integer, WeakReference<VerticesObject>>();
 }

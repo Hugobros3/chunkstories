@@ -2,8 +2,6 @@ package io.xol.chunkstories.renderer;
 
 import static io.xol.engine.graphics.textures.TextureType.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL15.*;
 
 import java.awt.image.BufferedImage;
@@ -128,7 +126,7 @@ public class WorldRenderer
 	// G-Buffers
 	public GBufferTexture zBuffer = new GBufferTexture(DEPTH_RENDERBUFFER, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private GBufferTexture albedoBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture normalBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture normalBuffer = new GBufferTexture(RGBA_3x10_2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private GBufferTexture materialBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	// Bloom texture
@@ -158,9 +156,11 @@ public class WorldRenderer
 
 	//Environment map
 	private int ENVMAP_SIZE = 128;
+	private Cubemap environmentMap = new Cubemap(TextureType.RGB_HDR, ENVMAP_SIZE);
+	//private Cubemap environmentMapBlurry = new Cubemap(TextureType.RGB_HDR, ENVMAP_SIZE);
+	//Temp buffers
 	private GBufferTexture environmentMapBufferHDR = new GBufferTexture(RGB_HDR, ENVMAP_SIZE, ENVMAP_SIZE);
 	private GBufferTexture environmentMapBufferZ = new GBufferTexture(DEPTH_RENDERBUFFER, ENVMAP_SIZE, ENVMAP_SIZE);
-	private Cubemap environmentMap = new Cubemap(TextureType.RGB_HDR, ENVMAP_SIZE);
 	
 	private FBO environmentMapFastFbo = new FBO(environmentMapBufferZ, environmentMapBufferHDR);
 	private FBO environmentMapFBO = new FBO(null, environmentMap.getFace(0));

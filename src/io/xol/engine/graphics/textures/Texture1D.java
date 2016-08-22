@@ -1,10 +1,6 @@
 package io.xol.engine.graphics.textures;
 
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
-import java.util.Iterator;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
@@ -16,20 +12,17 @@ import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Texture1D
+public class Texture1D extends Texture
 {
 	String name;
-	TextureType type;
-	int glId = -1;
 	int width;
 	boolean wrapping = true;
 	boolean linearFiltering = true;
 
 	public Texture1D(TextureType type)
 	{
-		this.type = type;
-
-		allTextureObjects.add(new WeakReference<Texture1D>(this));
+		super(type);
+		//allTextureObjects.add(new WeakReference<Texture1D>(this));
 	}
 
 	public TextureType getType()
@@ -53,12 +46,12 @@ public class Texture1D
 			throw new IllegalRenderingThreadException();
 		
 		if(glId == -1)
-			glId = glGenTextures();
+			aquireID();
 		
 		glBindTexture(GL_TEXTURE_1D, glId);
 	}
 
-	public synchronized void destroy()
+	/*public synchronized boolean destroy()
 	{
 		if (glId >= 0)
 		{
@@ -66,7 +59,7 @@ public class Texture1D
 			totalTextureObjects--;
 		}
 		glId = -1;
-	}
+	}*/
 
 	// Texture modifications
 
@@ -150,28 +143,10 @@ public class Texture1D
 	public long getVramUsage()
 	{
 		int surface = getWidth();
-		if (type == TextureType.RGBA_8BPP)
-			return surface * 4;
-		if (type == TextureType.RGB_HDR)
-			return surface * 4;
-		if (type == TextureType.DEPTH_SHADOWMAP)
-			return surface * 3;
-		if (type == TextureType.DEPTH_RENDERBUFFER)
-			return surface * 4;
-		return surface;
+		return surface * type.getBytesUsed();
 	}
 
-	public static int destroyPendingTextureObjects()
-	{
-		return 0;
-	}
-
-	public static int getTotalNumberOfTextureObjects()
-	{
-		return totalTextureObjects;
-	}
-
-	public static long getTotalVramUsage()
+	/*public static long getTotalVramUsage()
 	{
 		long vram = 0;
 
@@ -192,5 +167,5 @@ public class Texture1D
 	}
 
 	private static int totalTextureObjects = 0;
-	private static BlockingQueue<WeakReference<Texture1D>> allTextureObjects = new LinkedBlockingQueue<WeakReference<Texture1D>>();
+	private static BlockingQueue<WeakReference<Texture1D>> allTextureObjects = new LinkedBlockingQueue<WeakReference<Texture1D>>();*/
 }

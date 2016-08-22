@@ -8,6 +8,9 @@ uniform sampler2D metaBuffer;
 uniform sampler2D albedoBuffer;
 uniform sampler2D normalBuffer;
 
+//Reflections stuff
+uniform samplerCube environmentCubemap;
+
 //Passed variables
 in vec2 screenCoord;
 
@@ -40,6 +43,10 @@ uniform mat4 shadowMatrix;
 
 uniform float time;
 
+//Fog
+uniform float fogStartDistance;
+uniform float fogEndDistance;
+
 //Gamma constants
 <include ../lib/gamma.glsl>
 
@@ -51,10 +58,6 @@ uniform float shadowStrength;
 <include ../lib/transformations.glsl>
 <include ../lib/shadowTricks.glsl>
 <include ../lib/normalmapping.glsl>
-
-//Fog
-uniform float fogStartDistance;
-uniform float fogEndDistance;
 
 vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 meta, float specular)
 {
@@ -130,9 +133,6 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	
 	return inputColor;
 }
-
-//Reflections stuff
-uniform samplerCube environmentCubemap;
 <include ../lib/ssr.glsl>
 
 void main() {
@@ -148,7 +148,7 @@ void main() {
 	
 	if(shadingColor.a > 0.0)
 	{
-		float spec = pow(normalBufferData.w, 1.0);
+		float spec = pow(normalBufferData.z, 1.0);
 		shadingColor = computeLight(shadingColor, pixelNormal, cameraSpacePosition, pixelMeta, spec);
 		if(spec > 0.0)
 			shadingColor.rgb = mix(shadingColor.rgb, computeReflectedPixel(screenCoord, cameraSpacePosition.xyz, pixelNormal, pixelMeta.y).rgb, spec);
@@ -165,8 +165,6 @@ void main() {
 	
 	vec3 fogColor = gl_Fog.color.rgb;
 	fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz - camPos).xyz));
-	//fogColor.rgb = pow(fogColor.rgb, vec3(gamma));
 	
-	//gl_FragColor = shadingColor;
 	gl_FragColor = mix(shadingColor, vec4(fogColor,shadingColor.a), fogIntensity);
 }

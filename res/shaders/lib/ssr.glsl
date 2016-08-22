@@ -64,7 +64,6 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 		{
 			
 		}
-		
         cameraSpaceVectorPosition += cameraSpaceVector / pow(2.0f, numRefinements);
 
         if (numSteps > 1)
@@ -92,9 +91,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	//float specular = clamp(pow(dot(normalize(normSkyDirection),normalize(sunPos)),16.0),0.0,1.0);
 		
 	float sunSpecular = 100.0 * clamp(1.0-overcastFactor * 2.0, 0.0, 1.0) * pow(clamp(dot(normalize(normSkyDirection),normalize(sunPos)), 0.0, 1.0),750.0);
-	<ifdef doDynamicCubemaps>
-	skyColor = textureCube(environmentCubemap, vec3(normSkyDirection.x, -normSkyDirection.y, -normSkyDirection.z)).rgb;
-	<endif doDynamicCubemaps>
+	
 	
 	skyColor += vec3(sunSpecular);
 		
@@ -102,17 +99,24 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	
 	if(color.a == 0.0)
 	{
+		<ifdef doDynamicCubemaps>
+		skyColor = textureCube(environmentCubemap, vec3(normSkyDirection.x, -normSkyDirection.y, -normSkyDirection.z)).rgb;
+		
+		//skyColor = pow(skyColor.rgb, vec3(gamma));
+		skyColor *= showSkybox;
+		
+		return vec4(skyColor, 1.0);
+		<endif doDynamicCubemaps>
+	
 		color.rgb = skyColor;
 	}
 	else
 	{
 		vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(finalSamplePos, depthBuffer);
 		vec4 pixelNormal = texture2D(normalBuffer, finalSamplePos);
-		//pixelNormal.rgb = pixelNormal.rgb * 2.0 - vec3(1.0);
 		vec4 pixelMeta = texture2D(metaBuffer, finalSamplePos);
-		//color = vec4(1.0, 0.0, 1.0, 1.0);
-		color = computeLight(color, decodeNormal(pixelNormal), cameraSpacePosition, pixelMeta, pixelNormal.w);
-		//color.rgb = mix(color, skyColor, pixelNormal.w);
+		
+		color = computeLight(color, decodeNormal(pixelNormal), cameraSpacePosition, pixelMeta, pixelNormal.z);
 	}
 	return color;
 }

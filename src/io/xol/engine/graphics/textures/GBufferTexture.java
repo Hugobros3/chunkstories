@@ -17,7 +17,7 @@ public class GBufferTexture extends Texture2D implements FBOAttachement
 	public GBufferTexture(TextureType type, int w, int h)
 	{
 		super(type);
-		glId = glGenTextures();
+		
 		resize(w, h);
 	}
 

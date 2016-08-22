@@ -165,7 +165,7 @@ public class GameplayScene extends OverlayableScene
 			viewerCamDirVector.normalise();
 
 			//System.out.println("fl");
-			worldRenderer.getRenderingContext().addLight(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f), lightPosition, 35f, 35f, viewerCamDirVector));
+			worldRenderer.getRenderingContext().addLight(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f).scale(2.0f), lightPosition, 45f, 35f, viewerCamDirVector));
 		}
 		
 		//Main render call

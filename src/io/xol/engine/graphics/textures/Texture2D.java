@@ -4,11 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
-import java.util.Iterator;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.lwjgl.opengl.ARBFramebufferObject;
 import org.lwjgl.opengl.GL30;
@@ -28,11 +24,12 @@ import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Texture2D
+public class Texture2D extends Texture
 {
 	String name;
-	TextureType type;
-	int glId = -1;
+	//TextureType type;
+	//int glId = -1;
+	
 	int width, height;
 	boolean wrapping = true;
 	boolean mipmapping = false;
@@ -45,10 +42,7 @@ public class Texture2D
 
 	public Texture2D(TextureType type)
 	{
-		this.type = type;
-
-		totalTextureObjects++;
-		allTextureObjects.add(new WeakReference<Texture2D>(this));
+		super(type);
 	}
 
 	public TextureType getType()
@@ -171,7 +165,7 @@ public class Texture2D
 		//Allow creation only in intial state
 		if (glId == -1)
 		{
-			glId = glGenTextures();
+			aquireID();
 		}
 
 		glBindTexture(GL_TEXTURE_2D, glId);
@@ -183,7 +177,7 @@ public class Texture2D
 		}
 	}
 
-	public synchronized boolean destroy()
+	/*public synchronized boolean destroy()
 	{
 		if (GameWindowOpenGL.isMainGLWindow())
 		{
@@ -208,7 +202,7 @@ public class Texture2D
 			}
 			return false;
 		}
-	}
+	}*/
 
 	// Texture modifications
 
@@ -361,65 +355,6 @@ public class Texture2D
 	public long getVramUsage()
 	{
 		int surface = getWidth() * getHeight();
-		if (type == TextureType.RGBA_8BPP)
-			return surface * 4;
-		if (type == TextureType.RGB_HDR)
-			return surface * 4;
-		if (type == TextureType.DEPTH_SHADOWMAP)
-			return surface * 3;
-		if (type == TextureType.DEPTH_RENDERBUFFER)
-			return surface * 4;
-		return surface;
-		
+		return surface * type.getBytesUsed();
 	}
-	private static BlockingQueue<Texture2D> objectsToDestroy = new LinkedBlockingQueue<Texture2D>();
-
-	public static int destroyPendingTextureObjects()
-	{
-		int destroyedVerticesObjects = 0;
-
-		synchronized (objectsToDestroy)
-		{
-			Iterator<Texture2D> i = objectsToDestroy.iterator();
-			while (i.hasNext())
-			{
-				Texture2D object = i.next();
-
-				if (object.destroy())
-					destroyedVerticesObjects++;
-
-				i.remove();
-			}
-		}
-
-		return destroyedVerticesObjects;
-	}
-
-	public static int getTotalNumberOfTextureObjects()
-	{
-		return totalTextureObjects;
-	}
-
-	public static long getTotalVramUsage()
-	{
-		long vram = 0;
-
-		//Iterates over every instance reference, removes null ones and add up valid ones
-		Iterator<WeakReference<Texture2D>> i = allTextureObjects.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<Texture2D> reference = i.next();
-
-			Texture2D object = reference.get();
-			if (object != null)
-				vram += object.getVramUsage();
-			else
-				i.remove();
-		}
-
-		return vram;
-	}
-
-	private static int totalTextureObjects = 0;
-	private static BlockingQueue<WeakReference<Texture2D>> allTextureObjects = new LinkedBlockingQueue<WeakReference<Texture2D>>();
 }

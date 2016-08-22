@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -16,7 +17,6 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL14.*;
-import static org.lwjgl.opengl.GL15.*;
 
 import java.nio.FloatBuffer;
 import java.util.Iterator;
@@ -39,14 +39,17 @@ public class ParticlesRenderer implements ParticlesManager
 	ShaderProgram particlesShader = ShadersLibrary.getShaderProgram("particles");
 
 	//TODO use objects
-	int billboardSquareVBO, particlesPositionsVBO, texCoordsVBO;
+	//int billboardSquareVBO, particlesPositionsVBO, texCoordsVBO;
+	VerticesObject billboardSquare, particlesPositions, texCoords;
 	FloatBuffer particlesPositionsBuffer, textureCoordinatesBuffer;
 
 	public ParticlesRenderer(World world)
 	{
 		this.world = world;
 
-		billboardSquareVBO = glGenBuffers();
+		billboardSquare = new VerticesObject();
+		//billboardSquareVBO = glGenBuffers();
+		
 		//320kb
 		FloatBuffer fb = BufferUtils.createFloatBuffer(4 * 2 * 10000);
 		for (int i = 0; i < 10000; i++)
@@ -57,11 +60,16 @@ public class ParticlesRenderer implements ParticlesManager
 			fb.put(new float[] { -1, 1 });
 		}
 		fb.flip();
-		glBindBuffer(GL_ARRAY_BUFFER, billboardSquareVBO);
-		glBufferData(GL_ARRAY_BUFFER, fb, GL_STATIC_DRAW);
+		
+		//glBindBuffer(GL_ARRAY_BUFFER, billboardSquareVBO);
+		//glBufferData(GL_ARRAY_BUFFER, fb, GL_STATIC_DRAW);
+		billboardSquare.uploadData(fb);
 
-		particlesPositionsVBO = glGenBuffers();
-		texCoordsVBO = glGenBuffers();
+		particlesPositions = new VerticesObject();
+		texCoords = new VerticesObject();
+		//particlesPositionsVBO = glGenBuffers();
+		//texCoordsVBO = glGenBuffers();
+		
 		//480kb
 		particlesPositionsBuffer = BufferUtils.createFloatBuffer(4 * 3 * 10000);
 		//320kb
@@ -327,20 +335,24 @@ public class ParticlesRenderer implements ParticlesManager
 		// Render it now
 		particlesPositionsBuffer.flip();
 
-		glBindBuffer(GL_ARRAY_BUFFER, particlesPositionsVBO);
-		glBufferData(GL_ARRAY_BUFFER, particlesPositionsBuffer, GL_STATIC_DRAW);
-		renderingContext.setVertexAttributePointerLocation(billCoordVAL, 3, GL_FLOAT, false, 12, 0);
+		//glBindBuffer(GL_ARRAY_BUFFER, particlesPositionsVBO);
+		//glBufferData(GL_ARRAY_BUFFER, particlesPositionsBuffer, GL_STATIC_DRAW);
+		particlesPositions.uploadData(particlesPositionsBuffer);
+		renderingContext.setVertexAttributePointerLocation("particlesPositionIn", 3, GL_FLOAT, false, 12, 0, particlesPositions);
+		//renderingContext.setVertexAttributePointerLocation(billCoordVAL, 3, GL_FLOAT, false, 12, 0);
 
 		if (haveTextureCoordinates)
 		{
 			textureCoordinatesBuffer.flip();
-			glBindBuffer(GL_ARRAY_BUFFER, texCoordsVBO);
-			glBufferData(GL_ARRAY_BUFFER, textureCoordinatesBuffer, GL_STATIC_DRAW);
-			renderingContext.setVertexAttributePointerLocation(texCoordVAL, 2, GL_FLOAT, false, 8, 0);
+			//glBindBuffer(GL_ARRAY_BUFFER, texCoordsVBO);
+			//glBufferData(GL_ARRAY_BUFFER, textureCoordinatesBuffer, GL_STATIC_DRAW);
+			texCoords.uploadData(textureCoordinatesBuffer);
+			
+			renderingContext.setVertexAttributePointerLocation("textureCoordinatesIn", 2, GL_FLOAT, false, 8, 0, texCoords);
 		}
 
-		glBindBuffer(GL_ARRAY_BUFFER, billboardSquareVBO);
-		renderingContext.setVertexAttributePointerLocation(planeVAL, 2, GL_FLOAT, false, 8, 0);
+		//glBindBuffer(GL_ARRAY_BUFFER, billboardSquareVBO);
+		renderingContext.setVertexAttributePointerLocation("billboardSquareCoordsIn", 2, GL_FLOAT, false, 8, 0, billboardSquare);
 		// glDrawElements(GL_POINTS, elements,
 		// GL_UNSIGNED_BYTE, 0);
 		glPointSize(4f);

@@ -86,7 +86,7 @@ void main(){
 	
 	specularity = material.r*rainWetness + (material.g + rainWetness) * fresnelTerm + material.b;
 	<ifdef perPixelFresnel>
-	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(eyeDirection), vec3(normal)), 0.0, 1.0);
+	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalMatrix * normalize(eyeDirection), vec3(normal)), 0.0, 1.0);
 	specularity = material.r*rainWetness + (material.g + rainWetness) * dynamicFresnelTerm + material.b;
 	<endif perPixelFresnel>
 	
@@ -95,6 +95,6 @@ void main(){
 	
 	//Diffuse G-Buffer
 	gl_FragData[0] = vec4(surfaceDiffuseColor, 1.0);
-	gl_FragData[1] = vec4(encodeNormal(normal).xyz, specularity);
+	gl_FragData[1] = vec4(encodeNormal(normal).xy, specularity, 1.0);
 	gl_FragData[2] = vec4(lightMapCoords, material.a);
 }

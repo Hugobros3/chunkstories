@@ -15,27 +15,27 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL30.*;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Cubemap
+public class Cubemap extends Texture
 {
 	String name;
-	//CubemapType type;
-	TextureType type;
+	//TextureType type;
+	//int glId = -1;
 	
 	Face faces[] = new Face[6];
 	int size;
-	int glId = -1;
 	
 	public Cubemap(TextureType type, int size)
 	{
-		this.type = type;
+		super(type);
 		this.size = size;
-		
-		glId = glGenTextures();
-		glBindTexture(GL_TEXTURE_CUBE_MAP, glId);
+
+		aquireID();
+		bind();
 		
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -54,11 +54,16 @@ public class Cubemap
 		loadCubemapFromDisk();
 	}
 	
-	public int loadCubemapFromDisk()
+	public void bind()
 	{
 		if(glId == -1)
-			glId = glGenTextures();
+			aquireID();
 		glBindTexture(GL_TEXTURE_CUBE_MAP, glId);
+	}
+	
+	public int loadCubemapFromDisk()
+	{
+		bind();
 		
 		ByteBuffer temp;
 		String[] names = { "right", "left", "top", "bottom", "front", "back" };
@@ -108,7 +113,7 @@ public class Cubemap
 	public int getID()
 	{
 		if(glId == -1)
-			glId = glGenTextures();
+			aquireID();
 		return glId;
 	}
 	
@@ -134,9 +139,9 @@ public class Cubemap
 			face = i;
 			textureType = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
 
-			//glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, type.getInternalFormat(), size, size, 0, type.getFormat(), type.getType(), (ByteBuffer)null);
-			System.out.println("Creating cubemap ,etc " +size);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, size, size, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer) null);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, type.getInternalFormat(), size, size, 0, type.getFormat(), type.getType(), (ByteBuffer)null);
+			//System.out.println("Creating cubemap ,etc " +size);
+			//glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, size, size, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer) null);
 		}
 		
 		@Override
@@ -171,6 +176,12 @@ public class Cubemap
 	public FBOAttachement getFace(int f)
 	{
 		return faces[f];
+	}
+
+	@Override
+	public long getVramUsage()
+	{
+		return type.getBytesUsed() * 6 * size * size;
 	}
 	
 }

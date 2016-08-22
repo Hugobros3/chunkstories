@@ -3,6 +3,7 @@ package io.xol.engine.graphics;
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.util.GuiRenderer;
 import io.xol.engine.graphics.util.TrueTypeFontRenderer;
@@ -156,7 +157,7 @@ public class RenderingContext
 		disableVertexAttribute(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName));
 	}
 
-	public void setVertexAttributeLocation(String vertexAttributeName, int dimensions, int vertexType, boolean normalized, int stride, int offset)
+	public void setVertexAttributeLocation(String vertexAttributeName, int dimensions, int vertexType, boolean normalized, int stride, long offset)
 	{
 		setVertexAttributePointerLocation(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName), dimensions, vertexType, normalized, stride, offset);
 	}
@@ -202,6 +203,12 @@ public class RenderingContext
 		}
 		glVertexAttribPointer(vertexAttributeLocation, dimensions, normalized, stride, data);
 		setupAttributes.add(vertexAttributeLocation);
+	}
+
+	public void setVertexAttributePointerLocation(String vertexAttributeName, int dimensions, int vertexType, boolean normalized, int stride, long offset, VerticesObject verticesObject)
+	{
+		verticesObject.bind();
+		setVertexAttributeLocation(vertexAttributeName, dimensions, vertexType, normalized, stride, offset);
 	}
 	
 	public boolean isVertexAttributeAvaible(String vertexAttributeName)

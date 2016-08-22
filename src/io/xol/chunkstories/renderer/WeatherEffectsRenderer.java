@@ -1,7 +1,6 @@
 package io.xol.chunkstories.renderer;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
 
 import java.nio.FloatBuffer;
 import java.util.Random;
@@ -15,6 +14,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -43,7 +43,9 @@ public class WeatherEffectsRenderer
 	int viewX, viewY, viewZ;
 	int lastX, lastY, lastZ;
 	
-	private void generateRainForOneSecond()
+	VerticesObject rainVerticesBuffer = new VerticesObject();
+	
+	private void generateRainForOneSecond(RenderingContext renderingContext)
 	{
 		float rainIntensity = Math.min(Math.max(0.0f, world.getWeather() - 0.5f) / 0.3f, 1.0f);
 		
@@ -110,8 +112,10 @@ public class WeatherEffectsRenderer
 		
 		raindropsData.put(raindrops, 0, raindrops.length);
 		raindropsData.flip();
-		glBindBuffer(GL_ARRAY_BUFFER, vboId);
-		glBufferData(GL_ARRAY_BUFFER, raindropsData, GL_STATIC_DRAW);
+		
+		rainVerticesBuffer.uploadData(raindropsData);
+		//glBindBuffer(GL_ARRAY_BUFFER, vboId);
+		//glBufferData(GL_ARRAY_BUFFER, raindropsData, GL_STATIC_DRAW);
 		lastX = viewX;
 		lastY = viewY;
 		lastZ = viewZ;
@@ -129,18 +133,19 @@ public class WeatherEffectsRenderer
 			renderRain(renderingContext);
 	}
 
-	int vboId = -1;
+	//int vboId = -1;
 	
 	private void renderRain(RenderingContext renderingContext)
 	{
-		if(vboId == -1)
-			vboId = glGenBuffers();
+		//if(vboId == -1)
+		//	vboId = glGenBuffers();
+		
 		ShaderProgram weatherShader = ShadersLibrary.getShaderProgram("weather");
 		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(weatherShader);
 		//weatherShader.use(true);
 		if((System.currentTimeMillis() - lastRender) >= 1000 || Math.abs(viewX - lastX) > 10  || Math.abs(viewZ - lastZ) > 10)
 		{
-			generateRainForOneSecond();
+			generateRainForOneSecond(renderingContext);
 			lastRender = System.currentTimeMillis();
 		}
 		glDisable(GL_CULL_FACE);
@@ -156,8 +161,8 @@ public class WeatherEffectsRenderer
 		weatherShader.setUniformSampler(0, "lightmap", TexturesHandler.getTexture("environement/lightcolors.png"));
 		weatherShader.setUniformFloat("sunTime", worldRenderer.getSky().time);
 		//raindropsData.flip();
-		glBindBuffer(GL_ARRAY_BUFFER, vboId);
-		renderingContext.setVertexAttributePointerLocation(vertexIn, 4, GL_FLOAT, false, 0, 0L);
+		//glBindBuffer(GL_ARRAY_BUFFER, vboId);
+		renderingContext.setVertexAttributePointerLocation("vertexIn", 4, GL_FLOAT, false, 0, 0L, rainVerticesBuffer);
 		
 		float rainIntensity = Math.min(Math.max(0.0f, world.getWeather() - 0.5f) / 0.3f, 1.0f);
 		
@@ -170,7 +175,8 @@ public class WeatherEffectsRenderer
 	
 	public void destroy()
 	{
-		if(vboId != -1)
-			glDeleteBuffers(vboId);
+		rainVerticesBuffer.destroy();
+		//if(vboId != -1)
+		//	glDeleteBuffers(vboId);
 	}
 }
