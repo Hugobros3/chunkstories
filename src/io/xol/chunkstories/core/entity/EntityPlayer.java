@@ -131,6 +131,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if(pileSelected != null)
 			pileSelected.getItem().tickInHand(this, pileSelected);
 		
+		
+		
 		//The actual moment the jump takes effect
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
 		if (jumpForce > 0.0 && (!justJumped || inWater))
@@ -184,7 +186,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		}
 
 		//Instead of creating a packet and dealing with it ourselves, we instead push the relevant components
-		this.position.pushComponentEveryoneButController();
+		this.positionComponent.pushComponentEveryoneButController();
 		//In that case that means pushing to the server.
 	}
 
@@ -213,18 +215,18 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if (justJumped && !inWater)
 		{
 			justJumped = false;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("sounds/footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
 		}
 		if (justLanded)
 		{
 			justLanded = false;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("sounds/footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
 		}
 
 		if (metersWalked > 0.2 * Math.PI * 2)
 		{
 			metersWalked %= 0.2 * Math.PI * 2;
-			worldClient.getClient().getSoundManager().playSoundEffect("footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
+			worldClient.getClient().getSoundManager().playSoundEffect("sounds/footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
 			// System.out.println("footstep");
 		}
 

@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 
@@ -59,7 +59,7 @@ public class VoxelDefault implements Voxel
 	 * @return The model used.
 	 */
 	@Override
-	public VoxelRenderer getVoxelModel(BlockRenderInfo info)
+	public VoxelRenderer getVoxelModel(VoxelContext info)
 	{
 		return model;
 	}
@@ -88,7 +88,7 @@ public class VoxelDefault implements Voxel
 	 * @return Whether it does
 	 */
 	@Override
-	public boolean isVoxelUsingCustomModel()
+	public boolean isVoxelUsingCustomRenderer()
 	{
 		return custom_model;
 	}
@@ -135,7 +135,7 @@ public class VoxelDefault implements Voxel
 	 * @return
 	 */
 	@Override
-	public VoxelTexture getVoxelTexture(int data, VoxelSides side, BlockRenderInfo info)
+	public VoxelTexture getVoxelTexture(int data, VoxelSides side, VoxelContext info)
 	{
 		return texture[side.ordinal()];
 	}
@@ -185,7 +185,7 @@ public class VoxelDefault implements Voxel
 	@Override
 	public CollisionBox[] getTranslatedCollisionBoxes(World world, int x, int y, int z)
 	{
-		CollisionBox[] boxes = getCollisionBoxes(new BlockRenderInfo(world, x, y, z));
+		CollisionBox[] boxes = getCollisionBoxes(new VoxelContext(world, x, y, z));
 		if (boxes != null)
 			for (CollisionBox b : boxes)
 				b.translate(x, y, z);
@@ -200,7 +200,7 @@ public class VoxelDefault implements Voxel
 	 * @return An array of CollisionBox or null.
 	 */
 	@Override
-	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
+	public CollisionBox[] getCollisionBoxes(VoxelContext info)
 	{
 		if (voxelID == 0)
 			return new CollisionBox[] {};

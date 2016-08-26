@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
@@ -34,7 +34,7 @@ public class VoxelHalfTile extends VoxelDefault
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(BlockRenderInfo info)
+	public VoxelModel getVoxelModel(VoxelContext info)
 	{
 		int meta = info.getMetaData();
 		if (bottomOrTop(meta))
@@ -43,7 +43,7 @@ public class VoxelHalfTile extends VoxelDefault
 	}
 
 	@Override
-	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
+	public CollisionBox[] getCollisionBoxes(VoxelContext info)
 	{
 		// System.out.println("kek");
 		CollisionBox box2 = new CollisionBox(1, 0.5, 1);

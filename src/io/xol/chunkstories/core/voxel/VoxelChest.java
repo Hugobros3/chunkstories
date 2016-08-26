@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.voxel.EntityChest;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -55,7 +55,7 @@ public class VoxelChest extends VoxelEntity
 	}
 	
 	@Override
-	public VoxelTexture getVoxelTexture(int data, VoxelSides side, BlockRenderInfo info)
+	public VoxelTexture getVoxelTexture(int data, VoxelSides side, VoxelContext info)
 	{
 		VoxelSides actualSide = VoxelSides.getSideMcStairsChestFurnace(VoxelFormat.meta(data));
 		

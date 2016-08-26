@@ -4,7 +4,7 @@ package io.xol.chunkstories.core.voxel;
 // http://chunkstories.xyz
 // http://xol.io
 
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
@@ -21,7 +21,7 @@ public class VoxelLadder extends VoxelDefault implements VoxelClimbable
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(BlockRenderInfo info)
+	public VoxelModel getVoxelModel(VoxelContext info)
 	{
 		int meta = info.getMetaData();
 		if(meta == 2)

@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
@@ -30,14 +30,14 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(BlockRenderInfo info)
+	public VoxelModel getVoxelModel(VoxelContext info)
 	{
 		int meta = info.getMetaData();
 		return models[meta % 8];
 	}
 
 	@Override
-	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
+	public CollisionBox[] getCollisionBoxes(VoxelContext info)
 	{
 		int meta = VoxelFormat.meta(info.data);
 		// System.out.println("kek"+meta);

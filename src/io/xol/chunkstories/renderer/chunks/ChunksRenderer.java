@@ -1,7 +1,7 @@
 package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -844,14 +844,14 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 	}
 
-	private void addVoxelUsingCustomModel(CubicChunk c, VoxelBaker rbbf, int x, int y, int z, BlockRenderInfo info)
+	private void addVoxelUsingCustomModel(CubicChunk c, VoxelBaker rbbf, int x, int y, int z, VoxelContext info)
 	{
 		VoxelRenderer model = info.getVoxelRenderer();
 		if (model != null)
 			model.renderInto(rbbf, info, c, x, y, z);
 	}
 
-	private boolean shallBuildWallArround(BlockRenderInfo renderInfo, int face)
+	private boolean shallBuildWallArround(VoxelContext renderInfo, int face)
 	{
 		//int baseID = renderInfo.data;
 		Voxel facing = VoxelTypes.get(renderInfo.getSideId(face));
@@ -936,7 +936,7 @@ public class ChunksRenderer extends Thread
 
 		long cr_iter = System.nanoTime();
 
-		BlockRenderInfo renderInfo = new BlockRenderInfo(0);
+		VoxelContext renderInfo = new VoxelContext(0);
 
 		int i, j, k;
 		//Don't waste time rendering void chunks m8
@@ -970,7 +970,7 @@ public class ChunksRenderer extends Thread
 					{
 						addVoxelUsingCustomModel(work, waterRBBF, i, k, j, renderInfo);
 					}
-					else if (vox.isVoxelUsingCustomModel())
+					else if (vox.isVoxelUsingCustomRenderer())
 					{
 						// Prop rendering
 						addVoxelUsingCustomModel(work, complexRBBF, i, k, j, renderInfo);
@@ -981,42 +981,42 @@ public class ChunksRenderer extends Thread
 						{
 							if (!(k == 0 && !chunkBotLoaded))
 							{
-								addQuadBottom(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BOTTOM, renderInfo), renderInfo.isWavy());
+								addQuadBottom(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BOTTOM, renderInfo), renderInfo.isAffectedByWind());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 4))
 						{
 							if (!(k == 31 && !chunkTopLoaded))
 							{
-								addQuadTop(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.TOP, renderInfo), renderInfo.isWavy());
+								addQuadTop(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.TOP, renderInfo), renderInfo.isAffectedByWind());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 2))
 						{
 							if (!(i == 31 && !chunkRightLoaded))
 							{
-								addQuadRight(work, rawRBBF, i + 1, k, j, vox.getVoxelTexture(src, VoxelSides.RIGHT, renderInfo), renderInfo.isWavy());
+								addQuadRight(work, rawRBBF, i + 1, k, j, vox.getVoxelTexture(src, VoxelSides.RIGHT, renderInfo), renderInfo.isAffectedByWind());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 0))
 						{
 							if (!(i == 0 && !chunkLeftLoaded))
 							{
-								addQuadLeft(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.LEFT, renderInfo), renderInfo.isWavy());
+								addQuadLeft(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.LEFT, renderInfo), renderInfo.isAffectedByWind());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 1))
 						{
 							if (!(j == 31 && !chunkFrontLoaded))
 							{
-								addQuadFront(work, rawRBBF, i, k, j + 1, vox.getVoxelTexture(src, VoxelSides.FRONT, renderInfo), renderInfo.isWavy());
+								addQuadFront(work, rawRBBF, i, k, j + 1, vox.getVoxelTexture(src, VoxelSides.FRONT, renderInfo), renderInfo.isAffectedByWind());
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 3))
 						{
 							if (!(j == 0 && !chunkBackLoaded))
 							{
-								addQuadBack(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, renderInfo), renderInfo.isWavy());
+								addQuadBack(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, renderInfo), renderInfo.isAffectedByWind());
 							}
 						}
 					}

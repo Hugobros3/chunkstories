@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
  */
 public class RenderByteBuffer implements VoxelBaker
 {
-	ByteBuffer byteBuffer;
+	protected ByteBuffer byteBuffer;
 	
 	public RenderByteBuffer(ByteBuffer byteBuffer)
 	{

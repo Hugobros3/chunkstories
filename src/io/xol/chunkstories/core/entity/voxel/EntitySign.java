@@ -44,7 +44,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel
 	public void render(RenderingContext renderingContext)
 	{
 		//System.out.println();
-		if(renderingContext.getCamera().getCameraPosition().sub(this.getLocation()).length() > 32)
+		if(renderingContext.getCamera().getCameraPosition().add(this.getLocation()).length() > 32)
 			return;
 		
 		renderingContext.sendBoneTransformationMatrix(null);

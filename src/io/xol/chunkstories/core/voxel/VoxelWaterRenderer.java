@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelTexture;
@@ -37,7 +37,7 @@ public class VoxelWaterRenderer extends VoxelModel
 	}
 
 	@Override
-	public int renderInto(VoxelBaker renderByteBuffer, BlockRenderInfo info, Chunk chunk, int x, int y, int z)
+	public int renderInto(VoxelBaker renderByteBuffer, VoxelContext info, Chunk chunk, int x, int y, int z)
 	{
 		int llMs = chunk.getSunLight(x, y, z);//getSunlight(c, x, y, z);
 		int llMb = chunk.getBlockLight(x, y, z);//getBlocklight(c, x, y, z);
@@ -47,6 +47,9 @@ public class VoxelWaterRenderer extends VoxelModel
 		int depth = 0;
 		for(int i = 1; i < 16; i++)
 		{
+			if(chunk.getWorld() == null)
+				return 0;
+			
 			int id = chunk.getWorld().getVoxelData(chunk.getChunkX() * 32 + x, chunk.getChunkY() * 32 + y - i, chunk.getChunkZ() * 32 + z);
 			if(VoxelTypes.get(id) != null && VoxelTypes.get(id).isVoxelLiquid())
 				depth++;
@@ -58,10 +61,23 @@ public class VoxelWaterRenderer extends VoxelModel
 		
 		int modelTextureIndex = 0;
 		
-		VoxelTexture texture = info.getTexture();
+		VoxelTexture texture = info.getTexture(VoxelSides.TOP);
 		
-		if(!this.texturesNames[modelTextureIndex].equals("~"))
+		if(this.texturesNames[modelTextureIndex].equals("_top"))
+			texture = info.getTexture(VoxelSides.TOP);
+		else if(this.texturesNames[modelTextureIndex].equals("_bottom"))
+			texture = info.getTexture(VoxelSides.BOTTOM);
+		else if(this.texturesNames[modelTextureIndex].equals("_left"))
+			texture = info.getTexture(VoxelSides.LEFT);
+		else if(this.texturesNames[modelTextureIndex].equals("_right"))
+			texture = info.getTexture(VoxelSides.RIGHT);
+		else if(this.texturesNames[modelTextureIndex].equals("_front"))
+			texture = info.getTexture(VoxelSides.FRONT);
+		else if(this.texturesNames[modelTextureIndex].equals("_back"))
+			texture = info.getTexture(VoxelSides.BACK);
+		else
 			texture = VoxelTextures.getVoxelTexture(this.texturesNames[modelTextureIndex].replace("~", voxelName));
+		
 		int useUntil = this.texturesOffsets[modelTextureIndex];
 		int textureS = texture.atlasS;// +mod(sx,texture.textureScale)*offset;
 		int textureT = texture.atlasT;// +mod(sz,texture.textureScale)*offset;
@@ -97,10 +113,22 @@ public class VoxelWaterRenderer extends VoxelModel
 			if(i >= useUntil)
 			{
 				modelTextureIndex++;
-				if(!this.texturesNames[modelTextureIndex].equals("~"))
-					texture = VoxelTextures.getVoxelTexture(this.texturesNames[modelTextureIndex].replace("~", voxelName));
+				
+				if(this.texturesNames[modelTextureIndex].equals("_top"))
+					texture = info.getTexture(VoxelSides.TOP);
+				else if(this.texturesNames[modelTextureIndex].equals("_bottom"))
+					texture = info.getTexture(VoxelSides.BOTTOM);
+				else if(this.texturesNames[modelTextureIndex].equals("_left"))
+					texture = info.getTexture(VoxelSides.LEFT);
+				else if(this.texturesNames[modelTextureIndex].equals("_right"))
+					texture = info.getTexture(VoxelSides.RIGHT);
+				else if(this.texturesNames[modelTextureIndex].equals("_front"))
+					texture = info.getTexture(VoxelSides.FRONT);
+				else if(this.texturesNames[modelTextureIndex].equals("_back"))
+					texture = info.getTexture(VoxelSides.BACK);
 				else
-					texture = info.getTexture();
+					texture = VoxelTextures.getVoxelTexture(this.texturesNames[modelTextureIndex].replace("~", voxelName));
+				
 				useUntil = this.texturesOffsets[modelTextureIndex];
 				textureS = texture.atlasS;// +mod(sx,texture.textureScale)*offset;
 				textureT = texture.atlasT;// +mod(sz,texture.textureScale)*offset;
@@ -143,7 +171,7 @@ public class VoxelWaterRenderer extends VoxelModel
 				//texcoords.add(new int[] { (int) (textureS + tex[0] * texture.atlasOffset), (int) (textureT + tex[1] * texture.atlasOffset) });
 				renderByteBuffer.addColorsSpecial(lightColors, depth * 16);
 				//colors.add(lightColors);
-				renderByteBuffer.addNormalsInt(ChunksRenderer.intifyNormal(this.normals[i*3+0]), ChunksRenderer.intifyNormal(this.normals[i*3+1]), ChunksRenderer.intifyNormal(this.normals[i*3+2]), info.isWavy());
+				renderByteBuffer.addNormalsInt(ChunksRenderer.intifyNormal(this.normals[i*3+0]), ChunksRenderer.intifyNormal(this.normals[i*3+1]), ChunksRenderer.intifyNormal(this.normals[i*3+2]), info.isAffectedByWind());
 				//normals.add(normal);
 				//if (isWavy != null)
 				//	isWavy.add(info.isWavy());

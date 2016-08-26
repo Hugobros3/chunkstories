@@ -3,7 +3,7 @@ package io.xol.chunkstories.api.voxel;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -16,21 +16,13 @@ import io.xol.engine.math.lalgb.Vector3d;
 public interface Voxel
 {
 
-	/**
-	 * Determines if this Voxel uses a custom VoxelModel
-	 * 
-	 * @return Whether it does
-	 */
-	public boolean isVoxelUsingCustomModel();
+	/** Returns true if this voxel uses a custom VoxelRenderer */
+	public boolean isVoxelUsingCustomRenderer();
 
 	/**
-	 * Gets the special voxel model this voxel uses, used for engine's ChunkRenderer
-	 * 
-	 * @param info
-	 *            A BlockRenderInfo object containing information on the voxel surroundings
 	 * @return The model used or null if none
 	 */
-	public VoxelRenderer getVoxelModel(BlockRenderInfo info);
+	public VoxelRenderer getVoxelModel(VoxelContext info);
 
 	public boolean isVoxelLiquid();
 
@@ -44,24 +36,18 @@ public interface Voxel
 
 	/**
 	 * Gets the Blocklight level this voxel emmits
-	 * 
-	 * @param data
-	 *            The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
+	 * @param data The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
 	 * @return The aformentioned light level
 	 */
 	public short getLightLevel(int data);
 
 	/**
 	 * Gets the texture for this voxel
-	 * 
-	 * @param data
-	 *            The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
-	 * @param side
-	 *            The side of the block we want the texture of ( see {@link VoxelSides VoxelSides.class} )
-	 * @param info
+	 * @param data The full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
+	 * @param side The side of the block we want the texture of ( see {@link VoxelSides VoxelSides.class} )
 	 * @return
 	 */
-	public VoxelTexture getVoxelTexture(int data, VoxelSides side, BlockRenderInfo info);
+	public VoxelTexture getVoxelTexture(int data, VoxelSides side, VoxelContext info);
 
 	/**
 	 * Gets the reduction of the light that will transfer from this block to another, based on data from the two blocks and the side from wich it's leaving the first block from.
@@ -107,7 +93,7 @@ public interface Voxel
 	 */
 	public default CollisionBox[] getTranslatedCollisionBoxes(World world, int x, int y, int z)
 	{
-		CollisionBox[] boxes = getCollisionBoxes(new BlockRenderInfo(world, x, y, z));
+		CollisionBox[] boxes = getCollisionBoxes(new VoxelContext(world, x, y, z));
 		if (boxes != null)
 			for (CollisionBox b : boxes)
 				b.translate(x, y, z);
@@ -129,7 +115,7 @@ public interface Voxel
 	 *            full 4-byte data related to this voxel ( see {@link VoxelFormat VoxelFormat.class} )
 	 * @return An array of CollisionBox or null.
 	 */
-	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info);
+	public CollisionBox[] getCollisionBoxes(VoxelContext info);
 
 	/**
 	 * Get the assignated ID for this voxel

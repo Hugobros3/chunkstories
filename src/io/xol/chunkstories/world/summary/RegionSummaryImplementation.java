@@ -1,6 +1,7 @@
 package io.xol.chunkstories.world.summary;
 
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
@@ -378,7 +379,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		for (int i = 0; i < 256 * 256; i++)
 		{
 			int id = ids[i];
-			bb.putFloat(id & 0x0000FFFF);
+			bb.putFloat(VoxelTypes.get(id).getVoxelTexture(id, VoxelSides.TOP, null).positionInColorIndex);
 		}
 		bb.rewind();
 		//glBindTexture(GL_TEXTURE_2D, voxelTypesTextureId);

@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
@@ -20,7 +20,7 @@ public class VoxelMeta16 extends VoxelDefault
 	}
 
 	@Override
-	public VoxelTexture getVoxelTexture(int data, VoxelSides side, BlockRenderInfo info) // 0 for top, 1 bot,
+	public VoxelTexture getVoxelTexture(int data, VoxelSides side, VoxelContext info) // 0 for top, 1 bot,
 	// 2,3,4,5
 	// north/south/east/west
 	{

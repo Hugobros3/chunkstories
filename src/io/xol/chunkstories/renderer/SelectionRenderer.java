@@ -38,7 +38,7 @@ public class SelectionRenderer
 		GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
 		//GL11.glBlendEquation(GL11.);
 		glBegin(GL_LINES);
-		BlockRenderInfo bri = new BlockRenderInfo(world, x, y, z);
+		VoxelContext bri = new VoxelContext(world, x, y, z);
 		if (bri.voxelType == null)
 		{
 			System.out.println(bri.data);

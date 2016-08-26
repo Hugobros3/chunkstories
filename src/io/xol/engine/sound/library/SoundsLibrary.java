@@ -23,7 +23,7 @@ public class SoundsLibrary
 	
 	public static SoundData obtainOggSample(String soundEffect)
 	{
-		SoundDataOggSample sd = new SoundDataOggSample(new File("res/sound/" + soundEffect));
+		SoundDataOggSample sd = new SoundDataOggSample(new File("res/" + soundEffect));
 		sd.name = soundEffect;
 		if(sd.loadedOk())
 			return sd;

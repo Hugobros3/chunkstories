@@ -2,7 +2,7 @@ package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
@@ -24,13 +24,13 @@ public class Voxel8Steps extends VoxelDefault
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(BlockRenderInfo info)
+	public VoxelModel getVoxelModel(VoxelContext info)
 	{
 		return steps[info.getMetaData() % 8];
 	}
 
 	@Override
-	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
+	public CollisionBox[] getCollisionBoxes(VoxelContext info)
 	{
 		//System.out.println("kek");
 		int meta = VoxelFormat.meta(info.data);

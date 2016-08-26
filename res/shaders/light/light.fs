@@ -44,7 +44,7 @@ void main() {
 	vec3 normalWorld = normalize(normalMatrixInv * normal);
 	
 	//Get reflectivity of surface
-	float spec = texture2D(normalBuffer, screenCoord).a;
+	float spec = texture2D(normalBuffer, screenCoord).z;
 	
 	vec3 pixelPositionCamera = convertScreenSpaceToCameraSpace(screenCoord, depthBuffer).xyz;
 	//Discard if too far from camera

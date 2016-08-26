@@ -8,7 +8,16 @@ import io.xol.chunkstories.content.PluginsManager;
 
 public interface GameLogic
 {
-	public float getSimulationFps();
+	public int getTargetFps();
+	
+	public double getSimulationFps();
+	
+	public double getSimulationSpeed();
+	
+	public default double getTickVelocityDivisor()
+	{
+		return getSimulationSpeed() / getTargetFps();
+	}
 	
 	public PluginsManager getPluginsManager();
 }

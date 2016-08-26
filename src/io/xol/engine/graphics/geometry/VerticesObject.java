@@ -2,11 +2,6 @@ package io.xol.engine.graphics.geometry;
 
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;
-import io.xol.engine.graphics.textures.Texture;
-
-//(c) 2015-2016 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;

@@ -157,7 +157,7 @@ public class RenderingContext
 		disableVertexAttribute(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName));
 	}
 
-	public void setVertexAttributeLocation(String vertexAttributeName, int dimensions, int vertexType, boolean normalized, int stride, long offset)
+	public void setVertexAttributePointerLocation(String vertexAttributeName, int dimensions, int vertexType, boolean normalized, int stride, long offset)
 	{
 		setVertexAttributePointerLocation(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName), dimensions, vertexType, normalized, stride, offset);
 	}
@@ -208,7 +208,7 @@ public class RenderingContext
 	public void setVertexAttributePointerLocation(String vertexAttributeName, int dimensions, int vertexType, boolean normalized, int stride, long offset, VerticesObject verticesObject)
 	{
 		verticesObject.bind();
-		setVertexAttributeLocation(vertexAttributeName, dimensions, vertexType, normalized, stride, offset);
+		setVertexAttributePointerLocation(vertexAttributeName, dimensions, vertexType, normalized, stride, offset);
 	}
 	
 	public boolean isVertexAttributeAvaible(String vertexAttributeName)

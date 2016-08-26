@@ -1,7 +1,6 @@
 package io.xol.chunkstories.gui;
 
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 
 import java.util.Iterator;
@@ -56,7 +55,6 @@ import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
-import io.xol.chunkstories.renderer.lights.DefferedSpotLight;
 import io.xol.chunkstories.voxel.VoxelTypes;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -78,6 +76,7 @@ public class GameplayScene extends OverlayableScene
 	Entity player;
 
 	private boolean guiHidden = false;
+	boolean shouldCM = false;
 
 	public GameplayScene(GameWindowOpenGL w, boolean multiPlayer)
 	{
@@ -152,7 +151,7 @@ public class GameplayScene extends OverlayableScene
 		if (player != null)
 			player.setupCamera(camera);
 		//Temp
-		if (flashLight)
+		/*if (flashLight)
 		{
 			float transformedViewH = (float) ((camera.rotationX) / 180 * Math.PI);
 			// System.out.println(Math.sin(transformedViewV)+"f");
@@ -166,7 +165,7 @@ public class GameplayScene extends OverlayableScene
 
 			//System.out.println("fl");
 			worldRenderer.getRenderingContext().addLight(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f).scale(2.0f), lightPosition, 45f, 35f, viewerCamDirVector));
-		}
+		}*/
 		
 		//Main render call
 		worldRenderer.renderWorldAtCamera(camera);
@@ -276,8 +275,7 @@ public class GameplayScene extends OverlayableScene
 		focus = f;
 	}
 
-	boolean flashLight = false;
-	boolean shouldCM = false;
+	//boolean flashLight = false;
 
 	@Override
 	public boolean onKeyDown(int keyCode)
@@ -344,12 +342,12 @@ public class GameplayScene extends OverlayableScene
 			worldRenderer.flagModified();
 		}
 		//TODO move this to core content plugin
-		else if (Client.getInstance().getInputsManager().getInputByName("use").equals(keyBind) && player != null)
+		/*else if (Client.getInstance().getInputsManager().getInputByName("use").equals(keyBind) && player != null)
 		{
 			Location cameraPosition = player.getLocation();
 			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) cameraPosition.getX(), (float) cameraPosition.getY(), (float) cameraPosition.getZ(), 1.0f, 1.0f);
 			flashLight = !flashLight;
-		}
+		}*/
 		else if (Client.getInstance().getInputsManager().getInputByName("inventory").equals(keyBind))
 		{
 			if (player != null)

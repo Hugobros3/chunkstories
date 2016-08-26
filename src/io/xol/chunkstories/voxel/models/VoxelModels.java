@@ -54,7 +54,7 @@ public class VoxelModels
 			List<float[]> normal = new ArrayList<float[]>();
 			List<boolean[]> culling = new ArrayList<boolean[]>();
 			
-			String currentTexture = "~";
+			String currentTexture = "_top";
 			List<String> texturesNames = new ArrayList<String>();
 			List<Integer> texturesOffsets = new ArrayList<Integer>();
 			
@@ -76,7 +76,7 @@ public class VoxelModels
 							bmName += "." + line;
 						model = new VoxelModel(bmName);
 						//Textures calculator
-						currentTexture = "~";
+						currentTexture = "_top";
 					}
 					else if (line.startsWith("end"))
 					{

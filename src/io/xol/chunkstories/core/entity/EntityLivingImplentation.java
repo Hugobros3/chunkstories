@@ -91,7 +91,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		Vector2f imp = this.getEntityRotationComponent().tickInpulse();
 		getEntityRotationComponent().addRotation(imp.x, imp.y);
 		
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(position.getLocation())));
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 		boolean inWater = voxelIn.isVoxelLiquid();
 
 		//Collisions
@@ -121,7 +121,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		velocity.setZ(velocity.getZ() + acceleration.getZ());
 
 		//TODO ugly
-		if (!world.isChunkLoaded((int) position.getLocation().getX() / 32, (int) position.getLocation().getY() / 32, (int) position.getLocation().getZ() / 32))
+		if (!world.isChunkLoaded((int) positionComponent.getLocation().getX() / 32, (int) positionComponent.getLocation().getY() / 32, (int) positionComponent.getLocation().getZ() / 32))
 		{
 			velocity.zero();
 		}

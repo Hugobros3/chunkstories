@@ -101,7 +101,7 @@ public class ItemAk47 extends Item implements DamageCause
 
 				//Play sounds
 				if (controller != null)
-					controller.getSoundManager().playSoundEffect("weapons/ak47/shootNear.ogg", user.getLocation(), 1.0f, 1.0f).setAttenuationEnd(150f);
+					controller.getSoundManager().playSoundEffect("sounds/weapons/ak47/shootNear.ogg", user.getLocation(), 1.0f, 1.0f).setAttenuationEnd(150f);
 
 				/*if (shooter.getWorld() instanceof WorldClient)
 					shooter.getWorld().playSoundEffect("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f);
@@ -185,6 +185,14 @@ public class ItemAk47 extends Item implements DamageCause
 									nearestLocation = thisLocation;
 							}
 						}
+						
+						//Position adjustements so shot blocks always shoot proper particles
+						if(shotBlock.getX() - nearestLocation.getX() <= -1.0)
+							nearestLocation.add(-0.01, 0, 0);
+						if(shotBlock.getY() - nearestLocation.getY() <= -1.0)
+							nearestLocation.add(0, -0.01, 0);
+						if(shotBlock.getZ() - nearestLocation.getZ() <= -1.0)
+							nearestLocation.add(0, 0, -0.01);
 						
 						for (int i = 0; i < 25; i++)
 						{

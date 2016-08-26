@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -17,11 +18,12 @@ import io.xol.engine.math.lalgb.Vector4f;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -87,38 +89,60 @@ public class FarTerrainRenderer
 	{
 		if (!blocksTexturesSummaryDone)
 		{
-			//if (blocksTexturesSummaryId == -1)
-			//	blocksTexturesSummaryId = glGenTextures();
-
-			//glBindTexture(GL_TEXTURE_1D, blocksTexturesSummaryId);
-
 			int size = 512;
 			ByteBuffer bb = ByteBuffer.allocateDirect(size * 4);
 			bb.order(ByteOrder.LITTLE_ENDIAN);
-			Voxel vox;
-			BlockRenderInfo temp = new BlockRenderInfo(0);
+			
+			
+			//Voxel vox;
+			//BlockRenderInfo temp = new BlockRenderInfo(0);
+			
+			int counter = 0;
+			Iterator<VoxelTexture> i = VoxelTextures.getAllVoxelTextures();
+			while(i.hasNext() && counter < size)
+			{
+				VoxelTexture voxelTexture = i.next();
+				
+				bb.put((byte) (voxelTexture.color.x * 255));
+				bb.put((byte) (voxelTexture.color.y * 255));
+				bb.put((byte) (voxelTexture.color.z * 255));
+				bb.put((byte) (voxelTexture.color.w * 255));
+				
+				voxelTexture.positionInColorIndex = counter;
+				counter++;
+			}
+			
+			//Padding
+			while(counter < size)
+			{
+				bb.put((byte) (0));
+				bb.put((byte) (0));
+				bb.put((byte) (0));
+				bb.put((byte) (0));
+				counter++;
+			}
+			
+			/*
 			for (int i = 0; i < size; i++)
 			{
 				vox = VoxelTypes.get(i);
 				temp.data = i;
 				Vector4f colorAndAlpha = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 				if (vox != null)
-					colorAndAlpha = VoxelTextures.getTextureColorAlphaAVG(vox.getVoxelTexture(0, VoxelSides.TOP, temp).name);
+					colorAndAlpha = vox.getVoxelTexture(0, VoxelSides.TOP, temp).color;
+				
+				//VoxelTextures.getTextureColorAlphaAVG(vox.getVoxelTexture(0, VoxelSides.TOP, temp).name);
 
 				// colorAndAlpha = new Vector4f(1f, 0.5f, 1f, 1f);
 				bb.put((byte) (colorAndAlpha.x * 255));
 				bb.put((byte) (colorAndAlpha.y * 255));
 				bb.put((byte) (colorAndAlpha.z * 255));
 				bb.put((byte) (colorAndAlpha.w * 255));
-			}
+			}*/
 			bb.flip();
-			//glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, size, 0, GL_RGBA, GL_UNSIGNED_BYTE, bb);
 
 			blockTexturesSummary.uploadTextureData(size, bb);
 			blockTexturesSummary.setLinearFiltering(false);
-			
-			//glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			//glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 			blocksTexturesSummaryDone = true;
 		}

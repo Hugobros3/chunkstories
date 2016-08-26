@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.voxel.VoxelEntity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.voxel.EntitySign;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.lalgb.Vector2f;
@@ -39,7 +39,7 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 	}
 	
 	@Override
-	public VoxelRenderer getVoxelModel(BlockRenderInfo info)
+	public VoxelRenderer getVoxelModel(VoxelContext info)
 	{
 		return super.getVoxelModel(info);
 	}

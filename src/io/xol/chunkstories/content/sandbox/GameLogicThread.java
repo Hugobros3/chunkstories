@@ -87,7 +87,7 @@ public class GameLogicThread extends Thread implements GameLogic
 			}
 			
 			//Game logic is 60 ticks/s
-			sync(60);
+			sync(getTargetFps());
 		}
 	}
 
@@ -96,9 +96,20 @@ public class GameLogicThread extends Thread implements GameLogic
 	long lastTime = 0;
 	long lastTimeNs = 0;
 
-	public float getSimulationFps()
+	@Override
+	public int getTargetFps()
 	{
-		return (float) (Math.floor(fps * 100f) / 100f);
+		return 60;
+	}
+
+	public double getSimulationFps()
+	{
+		return (double) (Math.floor(fps * 100f) / 100f);
+	}
+	
+	public double getSimulationSpeed()
+	{
+		return 1.0;
 	}
 	
 	public void perfMetric()

@@ -34,7 +34,8 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 public class VoxelTextures
 {
 	static Map<String, VoxelTexture> texMap = new HashMap<String, VoxelTexture>();
-	static Map<String, Vector4f> colors = new HashMap<String, Vector4f>();
+	static int uniquesIds = 0;
+	//static Map<String, Vector4f> colors = new HashMap<String, Vector4f>();
 
 	public static int BLOCK_ATLAS_SIZE;
 	public static int BLOCK_ATLAS_FACTOR;
@@ -45,12 +46,13 @@ public class VoxelTextures
 		{
 			// Clear previous values
 			texMap.clear();
-			colors.clear();
+			//colors.clear();
+			
 			// Compute all sizes first.
 			int totalSurfacedNeeded = 0;
 			//File folder = new File("./res/voxels/textures/");
 			// Get all sizes :
-			List<VoxelTexture> sizes = new ArrayList<VoxelTexture>();
+			List<VoxelTexture> voxelTexturesSortedBySize = new ArrayList<VoxelTexture>();
 
 			//for (File f : folder.listFiles())
 			Iterator<Entry<String, Deque<File>>> allFiles = GameData.getAllUniqueEntries();
@@ -71,18 +73,19 @@ public class VoxelTextures
 						//System.out.println("texName:"+textureName+" "+entry.getKey());
 						if (!texMap.containsKey(textureName))
 						{
-							VoxelTexture vt = new VoxelTexture(textureName);
-							vt.imageFileDimensions = getImageSize(f);
+							VoxelTexture voxelTexture = new VoxelTexture(textureName, uniquesIds);
+							uniquesIds++;
+							
+							voxelTexture.imageFileDimensions = getImageSize(f);
 
-							sizes.add(vt);
-							// texMap.put(textureName, vt);
-							totalSurfacedNeeded += vt.imageFileDimensions * vt.imageFileDimensions;
+							voxelTexturesSortedBySize.add(voxelTexture);
+							totalSurfacedNeeded += voxelTexture.imageFileDimensions * voxelTexture.imageFileDimensions;
 						}
 					}
 				}
 			}
 			// Sort them by size
-			Collections.sort(sizes, new Comparator<VoxelTexture>()
+			Collections.sort(voxelTexturesSortedBySize, new Comparator<VoxelTexture>()
 			{
 				@Override
 				public int compare(VoxelTexture a, VoxelTexture b)
@@ -90,12 +93,13 @@ public class VoxelTextures
 					return Integer.compare(b.imageFileDimensions, a.imageFileDimensions);
 				}
 			});
-			for (VoxelTexture vt : sizes)
+			for (VoxelTexture voxelTexture : voxelTexturesSortedBySize)
 			{
 				// System.out.println(vt.imageFileDimensions);
-				texMap.put(vt.name, vt);
+				texMap.put(voxelTexture.name, voxelTexture);
 			}
-			// Make an appropriately sized texture atlas (aprox)
+			
+			// Estimates the required texture atlas size by surface
 			int sizeRequired = 16;
 			for (int i = 4; i < 14; i++)
 			{
@@ -106,7 +110,9 @@ public class VoxelTextures
 					break;
 				}
 			}
-			ChunkStoriesLogger.getInstance().info("At least " + sizeRequired + " by " + sizeRequired + " for TextureAtlas (surfacedNeeded : " + totalSurfacedNeeded + ")");
+			
+			//ChunkStoriesLogger.getInstance().info("At least " + sizeRequired + " by " + sizeRequired + " for TextureAtlas (surfacedNeeded : " + totalSurfacedNeeded + ")");
+			
 			// Delete previous atlases
 			File diffuseTextureFile = new File("./res/textures/tiles_merged_diffuse.png");
 			if (diffuseTextureFile.exists())
@@ -121,6 +127,7 @@ public class VoxelTextures
 				materialTextureFile.delete();
 			// Build the new one
 			boolean loadedOK = false;
+			
 			while (!loadedOK && sizeRequired <= 8192) // Security to prevend
 														// HUGE-ASS textures
 			{
@@ -137,7 +144,7 @@ public class VoxelTextures
 
 				BufferedImage imageBuffer;
 
-				for (VoxelTexture vt : sizes)
+				for (VoxelTexture vt : voxelTexturesSortedBySize)
 				{
 					// Find a free spot on the atlas
 					boolean foundSpot = false;
@@ -203,7 +210,9 @@ public class VoxelTextures
 					if (nonNullPixels > 0)
 						alphaTotal /= nonNullPixels;
 
-					colors.put(vt.name, new Vector4f(color.x, color.y, color.z, alphaTotal));
+					vt.color = new Vector4f(color.x, color.y, color.z, alphaTotal);
+					
+					//colors.put(vt.name, new Vector4f(color.x, color.y, color.z, alphaTotal));
 					// Do also the normal maps !
 					File normalMap = GameData.getTextureFileLocation("./res/voxels/textures/normal/" + vt.name + ".png");
 					if (normalMap == null || !normalMap.exists())
@@ -348,17 +357,22 @@ public class VoxelTextures
 		return texMap.get("notex");
 		// return new VoxelTexture(null, "notex");
 	}
+	
+	public static Iterator<VoxelTexture> getAllVoxelTextures()
+	{
+		return texMap.values().iterator();
+	}
 
-	public static Vector3f getTextureColorAVG(String name)
+	/*public static Vector3f getTextureColorAVG(String name)
 	{
 		Vector4f colorAlpha = getTextureColorAlphaAVG(name);
 		return new Vector3f(colorAlpha.x, colorAlpha.y, colorAlpha.z);
-	}
+	}*/
 
-	public static Vector4f getTextureColorAlphaAVG(String name)
+	/*public static Vector4f getTextureColorAlphaAVG(String name)
 	{
 		if (colors.containsKey(name))
 			return colors.get(name);
 		return colors.get("notex");
-	}
+	}*/
 }

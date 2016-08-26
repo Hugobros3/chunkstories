@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelTypes;
@@ -106,7 +106,7 @@ public class DecalsRenderer implements DecalsManager
 						Voxel voxel = VoxelTypes.get(idThere);
 						if (voxel != null && idThere > 0 && !voxel.isVoxelLiquid() && voxel.isVoxelSolid())
 						{
-							BlockRenderInfo bri = new BlockRenderInfo(location);
+							VoxelContext bri = new VoxelContext(location);
 							VoxelRenderer model = voxel.getVoxelModel(bri);
 
 							if (model == null)
@@ -213,8 +213,8 @@ public class DecalsRenderer implements DecalsManager
 			decalsShader.setUniformSampler(0, "diffuseTexture", diffuseTexture);
 			
 			decalType.verticesObject.bind();
-			renderingContext.setVertexAttributeLocation("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2), 0);
-			renderingContext.setVertexAttributeLocation("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2), 4 * 3);
+			renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2), 0);
+			renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2), 4 * 3);
 			
 			decalType.verticesObject.drawElementsTriangles(decalType.kount);
 		}

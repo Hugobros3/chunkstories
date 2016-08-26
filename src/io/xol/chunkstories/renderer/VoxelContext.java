@@ -13,25 +13,25 @@ import io.xol.chunkstories.voxel.models.VoxelRenderer;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class BlockRenderInfo
+public class VoxelContext
 {
 	public int data;
 	public Voxel voxelType;
 
 	public int[] neightborhood = new int[6];
 
-	public BlockRenderInfo(int data)
+	public VoxelContext(int data)
 	{
 		this.data = data;
 		voxelType = VoxelTypes.get(data);
 	}
 	
-	public BlockRenderInfo(Location location)
+	public VoxelContext(Location location)
 	{
 		this(location.getWorld(), (int)location.getX(), (int)location.getY(), (int)location.getZ());
 	}
 
-	public BlockRenderInfo(World world, int x, int y, int z)
+	public VoxelContext(World world, int x, int y, int z)
 	{
 		this.data = world.getVoxelData(x, y, z);
 		voxelType = VoxelTypes.get(data);
@@ -54,7 +54,7 @@ public class BlockRenderInfo
 		return VoxelFormat.id(neightborhood[side]);
 	}
 
-	public boolean isWavy()
+	public boolean isAffectedByWind()
 	{
 		if (voxelType != null)
 			return voxelType.isAffectedByWind();
@@ -68,10 +68,10 @@ public class BlockRenderInfo
 		return null;
 	}
 
-	public VoxelTexture getTexture()
+	/*public VoxelTexture getTexture()
 	{
-		return getTexture(VoxelSides.LEFT);
-	}
+		return getTexture(VoxelSides.TOP);
+	}*/
 
 	public VoxelTexture getTexture(VoxelSides side)
 	{
@@ -80,9 +80,9 @@ public class BlockRenderInfo
 		return null;
 	}
 
-	public static BlockRenderInfo get(int voxelId, int meta)
+	public static VoxelContext get(int voxelId, int meta)
 	{
-		BlockRenderInfo info = new BlockRenderInfo(VoxelFormat.format(voxelId, meta, 0, 0));
+		VoxelContext info = new VoxelContext(VoxelFormat.format(voxelId, meta, 0, 0));
 		return info;
 	}
 

@@ -5,7 +5,7 @@ import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
 import io.xol.chunkstories.core.entity.components.EntityComponentPosition;
 import io.xol.chunkstories.core.entity.components.EntityComponentVelocity;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.Camera;
 
 import java.io.DataInputStream;
@@ -39,9 +39,9 @@ public abstract class EntityImplementation implements Entity
 
 	Set<Subscriber> subscribers = new HashSet<Subscriber>();
 
-	protected EntityComponentExistence existence = new EntityComponentExistence(this, null);
-	protected EntityComponentPosition position = new EntityComponentPosition(this, existence);
-	private EntityComponentVelocity velocity = new EntityComponentVelocity(this, position);
+	protected EntityComponentExistence existenceComponent = new EntityComponentExistence(this, null);
+	protected EntityComponentPosition positionComponent = new EntityComponentPosition(this, existenceComponent);
+	private EntityComponentVelocity velocityComponent = new EntityComponentVelocity(this, positionComponent);
 
 	public WorldImplementation world;
 	
@@ -66,32 +66,32 @@ public abstract class EntityImplementation implements Entity
 	{
 		world = w;
 
-		position.setWorld(w);
-		position.setPositionXYZ(x, y, z);
+		positionComponent.setWorld(w);
+		positionComponent.setPositionXYZ(x, y, z);
 		
 		//velocity = new Vector3d();
 		acceleration = new Vector3d();
 		//checkPositionAndUpdateHolder();
 		//To avoid NPEs
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(position.getLocation())));
+		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 	}
 
 
 	public EntityComponentPosition getEntityComponentPosition()
 	{
-		return position;
+		return positionComponent;
 	}
 	
 	
 	@Override
 	public Location getLocation()
 	{
-		return position.getLocation();
+		return positionComponent.getLocation();
 	}
 
 	protected EntityComponentVelocity getVelocityComponent()
 	{
-		return velocity;
+		return velocityComponent;
 	}
 
 	/**
@@ -102,7 +102,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void setLocation(Location loc)
 	{
-		position.setLocation(loc);
+		positionComponent.setLocation(loc);
 	}
 
 	@Override
@@ -114,22 +114,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public Region getRegion()
 	{
-		return position.getRegionWithin();
-	}
-
-	public void setVelocity(double x, double y, double z)
-	{
-		/*
-		velocity.x = x;
-		velocity.y = y;
-		velocity.z = z;*/
-	}
-
-	public void applyExternalForce(double x, double y, double z)
-	{/*
-		velocity.x += x;
-		velocity.y += y;
-		velocity.z += z;*/
+		return positionComponent.getRegionWithin();
 	}
 
 	// Ran each tick
@@ -142,25 +127,25 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void moveWithoutCollisionRestrain(double mx, double my, double mz)
 	{
-		Vector3d pos = new Vector3d(position.getLocation());
+		Vector3d pos = new Vector3d(positionComponent.getLocation());
 		pos.setX(pos.getX() + mx);
 		pos.setY(pos.getY() + my);
 		pos.setZ(pos.getZ() + mz);
-		position.setPosition(pos);
+		positionComponent.setPosition(pos);
 	}
 
 	@Override
 	public void moveWithoutCollisionRestrain(Vector3d delta)
 	{
-		Vector3d pos = new Vector3d(position.getLocation());
+		Vector3d pos = new Vector3d(positionComponent.getLocation());
 		pos.add(delta);
-		position.setPosition(pos);
+		positionComponent.setPosition(pos);
 	}
 
 	@Override
 	public String toString()
 	{
-		return "[" + this.getClass().getSimpleName() + ": holderExists: "+(position.getRegionWithin() != null)+" ,position : " + position.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Region:" + this.position.getRegionWithin() + " ]";
+		return "[" + this.getClass().getSimpleName() + ": holderExists: "+(positionComponent.getRegionWithin() != null)+" ,position : " + positionComponent.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Region:" + this.positionComponent.getRegionWithin() + " ]";
 	}
 
 	double clampDouble(double d)
@@ -287,7 +272,7 @@ public abstract class EntityImplementation implements Entity
 							vox = VoxelTypes.get(id);
 							if (vox.isVoxelSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
+								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
 								if (boxes != null)
 									for (CollisionBox b : boxes)
 									{
@@ -336,7 +321,7 @@ public abstract class EntityImplementation implements Entity
 							vox = VoxelTypes.get(id);
 							if (vox.isVoxelSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
+								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
 								if (boxes != null)
 									for (CollisionBox b : boxes)
 									{
@@ -386,7 +371,7 @@ public abstract class EntityImplementation implements Entity
 							vox = VoxelTypes.get(id);
 							if (vox.isVoxelSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(new BlockRenderInfo(world, i, j, k));
+								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
 								if (boxes != null)
 									for (CollisionBox b : boxes)
 									{
@@ -504,7 +489,7 @@ public abstract class EntityImplementation implements Entity
 	{
 		synchronized (this)
 		{
-			camera.pos = new Vector3d(position.getLocation()).negate();
+			camera.pos = new Vector3d(positionComponent.getLocation()).negate();
 
 			//camera.pos.x = -pos.x;
 			//camera.pos.y = -pos.y;
@@ -546,14 +531,14 @@ public abstract class EntityImplementation implements Entity
 	public boolean removeFromWorld()
 	{
 		//Only once
-		if(existence.exists())
+		if(existenceComponent.exists())
 		{
 			//Destroys it
-			existence.destroyEntity();
+			existenceComponent.destroyEntity();
 		
 			//Removes it's reference within the region
-			if(this.position.getRegionWithin() != null)
-				this.position.getRegionWithin().removeEntityFromRegion(this);
+			if(this.positionComponent.getRegionWithin() != null)
+				this.positionComponent.getRegionWithin().removeEntityFromRegion(this);
 			
 			//Actually removes it from the world list
 			if(this.world != null)
@@ -588,7 +573,7 @@ public abstract class EntityImplementation implements Entity
 
 	public boolean exists()
 	{
-		return existence.exists();
+		return existenceComponent.exists();
 	}
 	
 	public boolean hasSpawned()
@@ -635,7 +620,7 @@ public abstract class EntityImplementation implements Entity
 		if (subscribers.remove(subscriber))
 		{
 			//Push an update to the subscriber telling him to forget about the entity :
-			this.existence.pushComponent(subscriber);
+			this.existenceComponent.pushComponent(subscriber);
 			//The existence component checks for the subscriber being present in the subscribees of the entity and if it doesn't find it it will
 			//say the entity no longer exists
 			return true;
@@ -649,6 +634,6 @@ public abstract class EntityImplementation implements Entity
 	 */
 	public EntityComponent getComponents()
 	{
-		return existence;
+		return existenceComponent;
 	}
 }

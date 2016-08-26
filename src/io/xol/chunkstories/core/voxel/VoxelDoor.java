@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelTexture;
@@ -53,13 +53,13 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 	}
 
 	@Override
-	public VoxelTexture getVoxelTexture(int data, VoxelSides side, BlockRenderInfo info)
+	public VoxelTexture getVoxelTexture(int data, VoxelSides side, VoxelContext info)
 	{
 		return doorTexture;
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(BlockRenderInfo info)
+	public VoxelModel getVoxelModel(VoxelContext info)
 	{
 		int facingPassed = (info.getMetaData() >> 2) & 0x3;
 		boolean isOpen = ((info.getMetaData() >> 0) & 0x1) == 1;
@@ -133,7 +133,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 		if (VoxelTypes.get(otherLocationId) instanceof VoxelDoor)
 		{
 			System.out.println("new door status : " + newState);
-			voxelLocation.getWorld().getSoundManager().playSoundEffect("sfx/door.ogg", voxelLocation, 1.0f, 1.0f);
+			voxelLocation.getWorld().getSoundManager().playSoundEffect("sounds/sfx/door.ogg", voxelLocation, 1.0f, 1.0f);
 
 			voxelLocation.setVoxelDataAtLocation(VoxelFormat.changeMeta(voxelLocation.getVoxelDataAtLocation(), newData));
 			otherPartLocation.setVoxelDataAtLocation(VoxelFormat.changeMeta(otherPartLocation.getVoxelDataAtLocation(), newData));
@@ -147,7 +147,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 	}
 
 	@Override
-	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
+	public CollisionBox[] getCollisionBoxes(VoxelContext info)
 	{
 		CollisionBox[] boxes = new CollisionBox[1];
 

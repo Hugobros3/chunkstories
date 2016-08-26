@@ -2,7 +2,7 @@ package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.BlockRenderInfo;
+import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
@@ -20,7 +20,7 @@ public class VoxelFence extends VoxelDefault
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(BlockRenderInfo info)
+	public VoxelModel getVoxelModel(VoxelContext info)
 	{
 		Voxel vox = VoxelTypes.get(info.neightborhood[0]);
 		boolean connectLeft = (vox.isVoxelSolid() && vox.isVoxelOpaque()) || vox.equals(this);
@@ -67,7 +67,7 @@ public class VoxelFence extends VoxelDefault
 	}
 	
 	@Override
-	public CollisionBox[] getCollisionBoxes(BlockRenderInfo info)
+	public CollisionBox[] getCollisionBoxes(VoxelContext info)
 	{
 		// System.out.println("kek");
 		CollisionBox[] boxes = new CollisionBox[] { new CollisionBox(0.4, 1.1, 0.4) };
