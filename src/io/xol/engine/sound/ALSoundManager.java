@@ -155,6 +155,7 @@ public class ALSoundManager implements SoundManager
 		}
 		catch (SoundEffectNotFoundException e)
 		{
+			System.out.println("Sound not found "+soundEffect);
 		}
 		return null;
 	}

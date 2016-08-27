@@ -151,9 +151,9 @@ public class ObjMeshRenderable implements RenderableAnimatable
 						continue boneGroup;
 					}
 				}
-
+				
 				//Get transformer matrix
-				matrix = skeleton.getBoneHierarchyTransformationMatrixWithOffset(currentVertexGroup, animationTime);
+				matrix = skeleton.getBoneHierarchyTransformationMatrixWithOffset(currentVertexGroup, animationTime < 0 ? 0 : animationTime);
 				//Send the transformation
 
 				//if(currentVertexGroup.equals("boneArmLD"))

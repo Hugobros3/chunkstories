@@ -78,7 +78,7 @@ public class SoundsLibrary
 		SoundDataOggStream sd;
 		try
 		{
-			sd = new SoundDataOggStream(new FileInputStream(new File("res/sound/" + musicName)));
+			sd = new SoundDataOggStream(new FileInputStream(new File("res/" + musicName)));
 			sd.name = musicName;
 			if(sd.loadedOk())
 				return sd;

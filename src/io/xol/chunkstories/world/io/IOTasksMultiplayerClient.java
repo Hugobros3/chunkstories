@@ -43,9 +43,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 	MessageDigest md = null;
 
-	//Set<ChunkLocation> chunksAlreadyAsked = ConcurrentHashMap.newKeySet();
-	//List<int[]> summariesAlreadyAsked = new ArrayList<int[]>();
-
 	static ThreadLocal<byte[]> unCompressedSummariesData = new ThreadLocal<byte[]>()
 	{
 		@Override
@@ -169,29 +166,10 @@ public class IOTasksMultiplayerClient extends IOTasks
 	@Override
 	public IOTask requestChunkLoad(ChunkHolderImplementation slot)
 	{
-		/*ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
-		//Only asks server once about the load request
-		if (!this.chunksAlreadyAsked.contains(loc))
-		{
-			chunksAlreadyAsked.add(loc);
-			//Thread.currentThread().dumpStack();
-			Client.connection.sendTextMessage("world/getChunkCompressed:" + chunkX + ":" + chunkY + ":" + chunkZ);
-		}*/
-
-		//TODO don't ask anything, server knows what you deserve ?
-		//System.out.println("Asking (once tkt O:) ) about "+slot);
-		//System.out.println("world/getChunkCompressed:" + slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" + slot.getChunkCoordinateZ());
 		Client.connection.sendTextMessage("world/getChunkCompressed:" + slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" + slot.getChunkCoordinateZ());
 		return null;
 	}
-
-	/*@Override
-	public void notifyChunkUnload(int chunkX, int chunkY, int chunkZ)
-	{
-		ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
-		//chunksAlreadyAsked.remove(loc);
-	}*/
-
+	
 	@Override
 	public void requestRegionLoad(RegionImplementation holder)
 	{

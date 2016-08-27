@@ -12,6 +12,7 @@ import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.core.entity.components.EntityComponentPosition;
+import io.xol.chunkstories.core.entity.components.EntityComponentVelocity;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
 import io.xol.chunkstories.physics.Collidable;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -63,6 +64,8 @@ public interface Entity extends Collidable, CSFSerializable
 	public Vector3d moveWithCollisionRestrain(Vector3d vec);
 	
 	public Vector3d moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions);
+	
+	public EntityComponentVelocity getVelocityComponent();
 	
 	/**
 	 * Returns the entitie's AABBs to their position

@@ -67,9 +67,9 @@ public class EntityComponentRotation extends EntityComponent
 		this.pushComponentEveryone();
 	}
 
-	public void addRotation(float x, float y)
+	public void addRotation(double d, double e)
 	{
-		setRotation(rotationHorizontal + x, rotationVertical + y);
+		setRotation(rotationHorizontal + d, rotationVertical + e);
 	}
 	
 	@Override

@@ -20,14 +20,12 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 public abstract class EntityHumanoid extends EntityLivingImplentation
 {
-
 	public EntityHumanoid(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 		
 		animatedSkeleton = new EntityHumanoidAnimatedSkeleton();
 	}
-
 	
 	protected class EntityHumanoidAnimatedSkeleton extends AnimatedSkeleton {
 
@@ -97,6 +95,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation
 				
 				//System.out.println((horizSpd / 0.065) * 0.3);
 			}
+			
 			return getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime);
 		}
 		

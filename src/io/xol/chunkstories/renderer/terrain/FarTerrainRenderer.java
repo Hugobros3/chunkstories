@@ -13,19 +13,14 @@ import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.TextureType;
 import io.xol.engine.math.lalgb.Vector3f;
-import io.xol.engine.math.lalgb.Vector4f;
 
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
-import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
-import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
@@ -93,10 +88,6 @@ public class FarTerrainRenderer
 			ByteBuffer bb = ByteBuffer.allocateDirect(size * 4);
 			bb.order(ByteOrder.LITTLE_ENDIAN);
 			
-			
-			//Voxel vox;
-			//BlockRenderInfo temp = new BlockRenderInfo(0);
-			
 			int counter = 0;
 			Iterator<VoxelTexture> i = VoxelTextures.getAllVoxelTextures();
 			while(i.hasNext() && counter < size)
@@ -122,23 +113,6 @@ public class FarTerrainRenderer
 				counter++;
 			}
 			
-			/*
-			for (int i = 0; i < size; i++)
-			{
-				vox = VoxelTypes.get(i);
-				temp.data = i;
-				Vector4f colorAndAlpha = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-				if (vox != null)
-					colorAndAlpha = vox.getVoxelTexture(0, VoxelSides.TOP, temp).color;
-				
-				//VoxelTextures.getTextureColorAlphaAVG(vox.getVoxelTexture(0, VoxelSides.TOP, temp).name);
-
-				// colorAndAlpha = new Vector4f(1f, 0.5f, 1f, 1f);
-				bb.put((byte) (colorAndAlpha.x * 255));
-				bb.put((byte) (colorAndAlpha.y * 255));
-				bb.put((byte) (colorAndAlpha.z * 255));
-				bb.put((byte) (colorAndAlpha.w * 255));
-			}*/
 			bb.flip();
 
 			blockTexturesSummary.uploadTextureData(size, bb);

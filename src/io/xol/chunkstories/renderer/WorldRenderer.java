@@ -201,7 +201,7 @@ public class WorldRenderer
 	Texture2D lightmapTexture = TexturesHandler.getTexture("environement/light.png");
 	Texture2D waterNormalTexture = TexturesHandler.getTexture("water/shallow.png");
 
-	Texture2D blocksDiffuseTexture = TexturesHandler.getTexture("tiles_merged_diffuse.png");
+	Texture2D blocksAlbedoTexture = TexturesHandler.getTexture("tiles_merged_albedo.png");
 	Texture2D blocksNormalTexture = TexturesHandler.getTexture("tiles_merged_normal.png");
 	Texture2D blocksMaterialTexture = TexturesHandler.getTexture("tiles_merged_material.png");
 
@@ -785,17 +785,17 @@ public class WorldRenderer
 			//opaqueBlocksShader.use(true);
 
 			//Set materials
-			opaqueBlocksShader.setUniformSampler(0, "diffuseTexture", blocksDiffuseTexture);
+			opaqueBlocksShader.setUniformSampler(0, "diffuseTexture", blocksAlbedoTexture);
 			opaqueBlocksShader.setUniformSampler(1, "normalTexture", blocksNormalTexture);
 			opaqueBlocksShader.setUniformSampler(2, "materialTexture", blocksMaterialTexture);
 			opaqueBlocksShader.setUniformSampler(3, "lightColors", lightmapTexture);
 			opaqueBlocksShader.setUniformSampler(4, "vegetationColorTexture", getGrassTexture());
 
 			//Set texturing arguments
-			blocksDiffuseTexture.setTextureWrapping(false);
-			blocksDiffuseTexture.setLinearFiltering(false);
-			blocksDiffuseTexture.setMipMapping(false);
-			blocksDiffuseTexture.setMipmapLevelsRange(0, 4);
+			blocksAlbedoTexture.setTextureWrapping(false);
+			blocksAlbedoTexture.setLinearFiltering(false);
+			blocksAlbedoTexture.setMipMapping(false);
+			blocksAlbedoTexture.setMipmapLevelsRange(0, 4);
 
 			blocksNormalTexture.setTextureWrapping(false);
 			blocksNormalTexture.setLinearFiltering(false);
@@ -833,7 +833,7 @@ public class WorldRenderer
 			renderingContext.setCurrentShader(shadowsPassShader);
 			//shadowsPassShader.use(true);
 			shadowsPassShader.setUniformFloat("time", animationTimer);
-			opaqueBlocksShader.setUniformSampler(0, "albedoTexture", blocksDiffuseTexture);
+			opaqueBlocksShader.setUniformSampler(0, "albedoTexture", blocksAlbedoTexture);
 		}
 
 		// Alpha blending is disabled because certain G-Buffer rendertargets can output a 0 for alpha
@@ -1099,7 +1099,7 @@ public class WorldRenderer
 			liquidBlocksShader.setUniformSampler(1, "normalTextureDeep", TexturesHandler.getTexture("water/deep.png"));
 			liquidBlocksShader.setUniformSampler(2, "normalTextureShallow", waterNormalTexture);
 			liquidBlocksShader.setUniformSampler(3, "lightColors", lightmapTexture);
-			liquidBlocksShader.setUniformSampler(0, "diffuseTexture", blocksDiffuseTexture);
+			liquidBlocksShader.setUniformSampler(0, "diffuseTexture", blocksAlbedoTexture);
 			liquidBlocksShader.setUniformFloat2("screenSize", scrW, scrH);
 			liquidBlocksShader.setUniformFloat3("sunPos", sunPos.x, sunPos.y, sunPos.z);
 			liquidBlocksShader.setUniformFloat("time", animationTimer);

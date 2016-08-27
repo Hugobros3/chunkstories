@@ -5,6 +5,7 @@ import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.util.GuiRenderer;
 import io.xol.engine.graphics.util.TrueTypeFontRenderer;
 
@@ -268,6 +269,24 @@ public class RenderingContext
 	{
 		if (currentlyBoundShader != null)
 			currentlyBoundShader.setUniformSampler(2, "materialTexture", id);
+	}
+	
+	public void setDiffuseTexture(Texture2D texture)
+	{
+		if (currentlyBoundShader != null)
+			currentlyBoundShader.setUniformSampler(0, "diffuseTexture", texture);
+	}
+
+	public void setNormalTexture(Texture2D texture)
+	{
+		if (currentlyBoundShader != null)
+			currentlyBoundShader.setUniformSampler(1, "normalTexture", texture);
+	}
+
+	public void setMaterialTexture(Texture2D texture)
+	{
+		if (currentlyBoundShader != null)
+			currentlyBoundShader.setUniformSampler(2, "materialTexture", texture);
 	}
 
 	Matrix4f temp = new Matrix4f();

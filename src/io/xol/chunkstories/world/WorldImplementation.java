@@ -16,6 +16,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.particles.ParticlesManager;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
@@ -278,7 +279,7 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public Iterator<Entity> getAllLoadedEntities()
+	public IterableIterator<Entity> getAllLoadedEntities()
 	{
 		return new EntityWorldIterator(entities);
 	}

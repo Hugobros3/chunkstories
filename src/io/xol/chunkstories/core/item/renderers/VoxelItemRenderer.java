@@ -20,17 +20,13 @@ import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.RenderByteBuffer;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
-import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
@@ -97,9 +93,17 @@ public class VoxelItemRenderer implements ItemRenderer
 			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, TexturesHandler.getTexture("res/items/icons/notex.png").getId(), true, true, null);
 			return;
 		}
-		Texture2D texture = TexturesHandler.getTexture("./res/textures/tiles_merged_diffuse.png");
+		Texture2D texture = TexturesHandler.getTexture("./res/textures/tiles_merged_albedo.png");
 		texture.setLinearFiltering(false);
-		renderingContext.setDiffuseTexture(texture.getId());
+		renderingContext.setDiffuseTexture(texture);
+		
+		Texture2D normalTexture = TexturesHandler.getTexture("./res/textures/tiles_merged_normal.png");
+		normalTexture.setLinearFiltering(false);
+		renderingContext.setNormalTexture(normalTexture);
+		
+		Texture2D materialTexture = TexturesHandler.getTexture("./res/textures/tiles_merged_material.png");
+		materialTexture.setLinearFiltering(false);
+		renderingContext.setMaterialTexture(materialTexture);
 
 		VoxelContext bri = new VoxelContext(0);
 		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));
@@ -158,38 +162,6 @@ public class VoxelItemRenderer implements ItemRenderer
 			mesh.uploadData(buffer);
 			
 			voxelItemsModelBuffer.put(bri.getMetaData() + 16 * voxel.getId(), mesh);
-			
-			/*float[] transformTextures = new float[model.texCoords.length];
-
-			VoxelTexture voxelTexture = voxel.getVoxelTexture(bri.data, VoxelSides.LEFT, bri);
-			int modelTextureIndex = 0;
-			String voxelName = VoxelTypes.get(bri.data).getName();
-			if (!model.texturesNames[modelTextureIndex].equals("~"))
-				voxelTexture = VoxelTextures.getVoxelTexture(model.texturesNames[modelTextureIndex].replace("~", voxelName));
-			int useUntil = model.texturesOffsets[modelTextureIndex];
-			int textureS = voxelTexture.atlasS;// +mod(sx,texture.textureScale)*offset;
-			int textureT = voxelTexture.atlasT;// +mod(sz,texture.textureScale)*offset;
-
-			for (int i = 0; i < transformTextures.length; i += 2)
-			{
-				int vertexIndice = i / 2;
-
-				if (vertexIndice >= useUntil)
-				{
-					modelTextureIndex++;
-					if (!model.texturesNames[modelTextureIndex].equals("~"))
-						voxelTexture = VoxelTextures.getVoxelTexture(model.texturesNames[modelTextureIndex].replace("~", voxelName));
-					else
-						voxelTexture = bri.getTexture(getSideUsingNormalDir(model.normals[vertexIndice * 3 + 0], model.normals[vertexIndice * 3 + 1], model.normals[vertexIndice * 3 + 2]));
-					useUntil = model.texturesOffsets[modelTextureIndex];
-					textureS = voxelTexture.atlasS;// +mod(sx,texture.textureScale)*offset;
-					textureT = voxelTexture.atlasT;// +mod(sz,texture.textureScale)*offset;
-				}
-
-				transformTextures[i] = (textureS + model.texCoords[i] * voxelTexture.atlasOffset) / 32768f;
-				transformTextures[i + 1] = (textureT + model.texCoords[i + 1] * voxelTexture.atlasOffset) / 32768f;
-			}
-			voxelItemsModelBuffer.put(bri.getMetaData() + 16 * voxel.getId(), transformTextures);*/
 		}
 		
 		
@@ -205,7 +177,7 @@ public class VoxelItemRenderer implements ItemRenderer
 			renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 24, 0 + 12, mesh);
 			renderingContext.setVertexAttributePointerLocation("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, 0 + 20, mesh);
 			
-			mesh.drawElementsTriangles((int) (mesh.getVramUsage() / 20));
+			mesh.drawElementsTriangles((int) (mesh.getVramUsage() / 24));
 		}
 	}
 
@@ -241,7 +213,7 @@ public class VoxelItemRenderer implements ItemRenderer
 			
 		}
 		
-		Texture2D texture = TexturesHandler.getTexture("./res/textures/tiles_merged_diffuse.png");
+		Texture2D texture = TexturesHandler.getTexture("./res/textures/tiles_merged_albedo.png");
 		texture.setLinearFiltering(false);
 		context.setDiffuseTexture(texture.getId());
 

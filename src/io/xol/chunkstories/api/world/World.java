@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -74,7 +75,7 @@ public interface World
 	
 	/**
 	 * Removes an entity from the world, based on UUID
-	 * @param entity
+	 * @param entityFollowed
 	 */
 	public boolean removeEntityByUUID(long uuid);
 
@@ -88,7 +89,7 @@ public interface World
 	 * Returns an iterator containing all the loaded entities.
 	 * Supposedly thread-safe
 	 */
-	public Iterator<Entity> getAllLoadedEntities();
+	public IterableIterator<Entity> getAllLoadedEntities();
 
 	/* Direct voxel data accessors */
 	

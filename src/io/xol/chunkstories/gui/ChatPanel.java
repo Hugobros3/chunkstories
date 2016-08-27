@@ -17,6 +17,7 @@ import org.lwjgl.input.Keyboard;
 
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.entity.interfaces.EntityRotateable;
 import io.xol.chunkstories.api.gui.Overlay;
@@ -175,15 +176,15 @@ public class ChatPanel
 						//return;
 					}
 				}
-				else if (inputBox.text.startsWith("/locfly"))
+				else if (inputBox.text.startsWith("/loccrea"))
 				{
 					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
-					if (controlledEntity != null && controlledEntity instanceof EntityFlying)
+					if (controlledEntity != null && controlledEntity instanceof EntityCreative)
 					{
-						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().isFlying();
+						boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().isCreativeMode();
 						state = !state;
-						Client.getInstance().printChat("flying : " + state);
-						((EntityFlying) controlledEntity).getFlyingComponent().setFlying(state);
+						Client.getInstance().printChat("creative : " + state);
+						((EntityCreative) controlledEntity).getCreativeModeComponent().setCreativeMode(true);
 						//return;
 					}
 				}

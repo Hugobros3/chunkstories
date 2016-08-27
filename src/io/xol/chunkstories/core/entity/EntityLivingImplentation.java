@@ -88,8 +88,8 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		
 		Vector3d velocity = getVelocityComponent().getVelocity();
 		
-		Vector2f imp = this.getEntityRotationComponent().tickInpulse();
-		getEntityRotationComponent().addRotation(imp.x, imp.y);
+		Vector2f headRotationVelocity = this.getEntityRotationComponent().tickInpulse();
+		getEntityRotationComponent().addRotation(headRotationVelocity.x, headRotationVelocity.y);
 		
 		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 		boolean inWater = voxelIn.isVoxelLiquid();

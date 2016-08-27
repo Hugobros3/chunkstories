@@ -89,7 +89,7 @@ public abstract class EntityImplementation implements Entity
 		return positionComponent.getLocation();
 	}
 
-	protected EntityComponentVelocity getVelocityComponent()
+	public EntityComponentVelocity getVelocityComponent()
 	{
 		return velocityComponent;
 	}

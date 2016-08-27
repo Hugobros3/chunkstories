@@ -4,8 +4,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.utils.IterableIterator;
 
-public class EntityWorldIterator implements Iterator<Entity>
+public class EntityWorldIterator implements IterableIterator<Entity>
 {
 	Set<Entity> entities;
 	Iterator<Entity> ie;

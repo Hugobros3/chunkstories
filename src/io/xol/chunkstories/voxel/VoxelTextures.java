@@ -114,7 +114,7 @@ public class VoxelTextures
 			//ChunkStoriesLogger.getInstance().info("At least " + sizeRequired + " by " + sizeRequired + " for TextureAtlas (surfacedNeeded : " + totalSurfacedNeeded + ")");
 			
 			// Delete previous atlases
-			File diffuseTextureFile = new File("./res/textures/tiles_merged_diffuse.png");
+			File diffuseTextureFile = new File("./res/textures/tiles_merged_albedo.png");
 			if (diffuseTextureFile.exists())
 				diffuseTextureFile.delete();
 
