@@ -178,7 +178,7 @@ public class IOTasks extends Thread
 		public void cancel()
 		{
 			tasks.remove(this);
-			System.out.println("Task " + this + " removed.");
+			//System.out.println("Task " + this + " removed.");
 		}
 	}
 
@@ -220,6 +220,7 @@ public class IOTasks extends Thread
 				result = new CubicChunk(region, cx, cy, cz);
 
 				//world.setChunk(c);
+				chunkSlot.setChunk(result);
 				return true;
 			}
 			else

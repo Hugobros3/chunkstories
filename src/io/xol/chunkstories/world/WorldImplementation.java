@@ -830,6 +830,14 @@ public abstract class WorldImplementation implements World
 	@Override
 	public ChunkHolder aquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ)
 	{
+
+		//Sanitation of input data
+		chunkX = chunkX % getSizeInChunks();
+		chunkZ = chunkZ % getSizeInChunks();
+		if (chunkX < 0)
+			chunkX += getSizeInChunks();
+		if (chunkZ < 0)
+			chunkZ += getSizeInChunks();
 		return this.getRegionsHolder().aquireChunkHolder(user, chunkX, chunkY, chunkZ);
 	}
 	
