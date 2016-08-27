@@ -24,6 +24,8 @@ public class KeyBindImplementation implements KeyBind
 	
 	long hash;
 	
+	boolean isDown;
+	
 	/**
 	 * Returns the name of the bind
 	 * @return
@@ -51,7 +53,7 @@ public class KeyBindImplementation implements KeyBind
 	@Override
 	public boolean isPressed()
 	{
-		return Keyboard.isKeyDown(LWJGL2_key);
+		return isDown;
 	}
 	
 	public KeyBindImplementation(String name, String defaultKeyName)
@@ -104,5 +106,10 @@ public class KeyBindImplementation implements KeyBind
 	public int hashCode()
 	{
 		return getName().hashCode();
+	}
+	
+	public void updateStatus()
+	{
+		isDown = Keyboard.isKeyDown(LWJGL2_key);
 	}
 }

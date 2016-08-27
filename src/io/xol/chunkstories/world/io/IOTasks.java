@@ -218,10 +218,6 @@ public class IOTasks extends Thread
 			if (compressedData == null || compressedData.length == 0)
 			{
 				result = new CubicChunk(region, cx, cy, cz);
-
-				//world.setChunk(c);
-				chunkSlot.setChunk(result);
-				return true;
 			}
 			else
 			{
@@ -242,8 +238,6 @@ public class IOTasks extends Thread
 				}
 				result = new CubicChunk(region, cx, cy, cz, data);
 				result.bakeVoxelLightning(false);
-
-				//holder.setChunk(cx, cy, cz, c);
 			}
 
 			chunkSlot.setChunk(result);
@@ -294,25 +288,6 @@ public class IOTasks extends Thread
 		return null;
 	}
 
-	/*public void requestChunkLoad(RegionImplementation holder, int chunkX, int chunkY, int chunkZ, boolean overwrite)
-	{
-		chunkX = chunkX % worldSizeInChunks;
-		chunkZ = chunkZ % worldSizeInChunks;
-		if (chunkX < 0)
-			chunkX += worldSizeInChunks;
-		if (chunkZ < 0)
-			chunkZ += worldSizeInChunks;
-		
-		//Won't load chunks outside the world.
-		if (chunkY < 0)
-			return;
-		if (chunkY >= worldHeightInChunks)
-			return;
-		
-		IOTaskLoadChunk task = new IOTaskLoadChunk(holder, chunkX, chunkY, chunkZ, true, overwrite);
-		scheduleTask(task);
-	}*/
-
 	public class IOTaskLoadRegion extends IOTask
 	{
 		RegionImplementation region;
@@ -325,9 +300,6 @@ public class IOTasks extends Thread
 		@Override
 		public boolean run()
 		{
-			//Trim world first
-			//world.unloadsUselessData();
-
 			//Check no saving operations are occuring
 			IOTaskSaveRegion saveRegionTask = new IOTaskSaveRegion(region);
 			if (tasks != null && tasks.contains(saveRegionTask))

@@ -18,6 +18,10 @@ import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.Math2;
 
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
+
 public class ClientWorldController implements ClientSideController
 {
 	Client client;

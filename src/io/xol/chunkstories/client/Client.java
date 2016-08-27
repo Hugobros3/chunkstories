@@ -138,7 +138,7 @@ public class Client implements /*ClientSideController, */ClientInterface
 	}
 
 	@Override
-	public InputsManager getInputsManager()
+	public ClientInputsManager getInputsManager()
 	{
 		return inputsManager;
 	}

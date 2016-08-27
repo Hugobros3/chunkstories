@@ -236,22 +236,22 @@ end
 #Doors
 voxel wood_door 70 io.xol.chunkstories.core.voxel.VoxelDoor
 	opaque: false
-	model: 'door'
+	model: 'door.m0'
 end
 
 voxel wood_door_top 71 io.xol.chunkstories.core.voxel.VoxelDoor
 	opaque: false
-	model: 'door'
+	model: 'door.m0'
 end
 
 voxel iron_door 72 io.xol.chunkstories.core.voxel.VoxelDoor
 	opaque: false
-	model: 'door'
+	model: 'door.m0'
 end
 
 voxel iron_door_top 73 io.xol.chunkstories.core.voxel.VoxelDoor
 	opaque: false
-	model: 'door'
+	model: 'door.m0'
 end
 
 voxel water 128 io.xol.chunkstories.core.voxel.VoxelLiquid

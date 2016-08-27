@@ -81,6 +81,8 @@ public class GameWindowOpenGL
 		if (height != -1)
 			windowHeight = height;
 		this.windowName = name;
+		
+		this.client = client;
 		instance = this;
 
 		//Initialize sound
@@ -214,6 +216,8 @@ public class GameWindowOpenGL
 				{
 					// update inputs first
 					InputAbstractor.update(this, currentScene);
+					client.getInputsManager().updateKeyboardScanCodes();
+					
 					// then do the game logic
 					try
 					{

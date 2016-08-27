@@ -20,6 +20,7 @@ import io.xol.chunkstories.input.KeyBindImplementation;
 public class ClientInputsManager implements InputsManager
 {
 	Set<Input> inputs = new HashSet<Input>();
+	Set<KeyBindImplementation> keyboardInputs = new HashSet<KeyBindImplementation>();
 	Map<Long, Input> inputsMap = new HashMap<Long, Input>();
 
 	public ClientInputsManager()
@@ -96,12 +97,26 @@ public class ClientInputsManager implements InputsManager
 	{
 		inputs.clear();
 		inputsMap.clear();
+		keyboardInputs.clear();
 		Iterator<Input> i = Inputs.loadKeyBindsIntoManager(this);
 		while(i.hasNext())
 		{
 			Input input = i.next();
 			inputs.add(input);
 			inputsMap.put(input.getHash(), input);
+			
+			if(input instanceof KeyBindImplementation)
+			{
+				keyboardInputs.add((KeyBindImplementation) input);
+			}
+		}
+	}
+
+	public void updateKeyboardScanCodes()
+	{
+		for(KeyBindImplementation key : keyboardInputs)
+		{
+			key.updateStatus();
 		}
 	}
 }

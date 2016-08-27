@@ -1,6 +1,5 @@
 package io.xol.chunkstories.core.entity;
 
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
@@ -326,10 +325,10 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		getVelocityComponent().setVelocity(0, 0, 0);
 		eyePosition = 1.65;
 		float camspeed = 0.125f;
-		if (Keyboard.isKeyDown(42))
-			camspeed = 1f;
-		if (Keyboard.isKeyDown(Keyboard.KEY_LMENU))
-			camspeed = 5f;
+		/*if (Keyboard.isKeyDown(42))
+			camspeed = 1f;*/
+		//if (Keyboard.isKeyDown(Keyboard.KEY_LMENU))
+		//	camspeed = 5f;
 		if (controller.getInputsManager().getInputByName("back").isPressed())
 		{
 			float a = (float) ((-this.getEntityRotationComponent().getHorizontalRotation()) / 180f * Math.PI);
