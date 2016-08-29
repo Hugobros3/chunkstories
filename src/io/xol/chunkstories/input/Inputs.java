@@ -134,6 +134,11 @@ public class Inputs
 										if (splitted[0].equals("keyBind"))
 										{
 											input = new KeyBindImplementation(splitted[1], splitted[2]);
+											for(int i = 3; i < splitted.length; i++)
+											{
+												if(splitted[i].equals("hidden"))
+													((KeyBindImplementation) input).setEditable(false);
+											}
 											return true;
 										}
 									}

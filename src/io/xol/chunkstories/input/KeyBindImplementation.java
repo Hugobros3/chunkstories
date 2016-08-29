@@ -14,7 +14,7 @@ import io.xol.chunkstories.client.Client;
  * @author Hugo
  *
  */
-public class KeyBindImplementation implements KeyBind
+public class KeyBindImplementation implements KeyBind, LWJGLPollable
 {
 	String name;
 	
@@ -25,6 +25,8 @@ public class KeyBindImplementation implements KeyBind
 	long hash;
 	
 	boolean isDown;
+	
+	boolean editable = true;
 	
 	/**
 	 * Returns the name of the bind
@@ -111,5 +113,18 @@ public class KeyBindImplementation implements KeyBind
 	public void updateStatus()
 	{
 		isDown = Keyboard.isKeyDown(LWJGL2_key);
+	}
+	
+	/**
+	 * Is this key bind editable in the controls
+	 */
+	public boolean isEditable()
+	{
+		return editable;
+	}
+
+	public void setEditable(boolean editable)
+	{
+		this.editable = editable;
 	}
 }

@@ -12,6 +12,7 @@ import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.input.Inputs;
 import io.xol.chunkstories.input.KeyBindImplementation;
+import io.xol.chunkstories.input.LWJGLPollable;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -112,11 +113,12 @@ public class ClientInputsManager implements InputsManager
 		}
 	}
 
-	public void updateKeyboardScanCodes()
+	public void pollLWJGLInputs()
 	{
-		for(KeyBindImplementation key : keyboardInputs)
+		for(Input input : this.inputs)
 		{
-			key.updateStatus();
+			if(input instanceof LWJGLPollable)
+				((LWJGLPollable) input).updateStatus();
 		}
 	}
 }

@@ -11,6 +11,21 @@ keyBind exit ESCAPE
 keyBind enter RETURN
 keyBind chat T
 
+#Some keys are hidden and not supposed to be modifiable !
+keyBind flyFast LSHIFT hidden
+keyBind flyReallyFast LMENU hidden
+
+keyBind inventorySlot1 1 hidden
+keyBind inventorySlot2 2 hidden
+keyBind inventorySlot3 3 hidden
+keyBind inventorySlot4 4 hidden
+keyBind inventorySlot5 5 hidden
+keyBind inventorySlot6 6 hidden
+keyBind inventorySlot7 7 hidden
+keyBind inventorySlot8 8 hidden
+keyBind inventorySlot9 9 hidden
+keyBind inventorySlot0 0 hidden
+
 #Those are hard coded inside the engine, you can't change them
 #mouseButton mouse.left 0
 #mouseButton mouse.middle 2

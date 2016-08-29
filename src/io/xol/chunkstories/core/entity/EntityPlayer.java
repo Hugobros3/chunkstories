@@ -325,10 +325,15 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		getVelocityComponent().setVelocity(0, 0, 0);
 		eyePosition = 1.65;
 		float camspeed = 0.125f;
-		/*if (Keyboard.isKeyDown(42))
-			camspeed = 1f;*/
-		//if (Keyboard.isKeyDown(Keyboard.KEY_LMENU))
-		//	camspeed = 5f;
+		//if (Keyboard.isKeyDown(42))
+		if (controller.getInputsManager().getInputByName("flyFast").isPressed())
+			camspeed = 1f;
+		//if (Keyboard.isKeyDown(Keyboard.KEY_LMENU)) //56
+		if (controller.getInputsManager().getInputByName("flyReallyFast").isPressed())
+			camspeed = 5f;
+		
+		//camspeed = 1f;
+		
 		if (controller.getInputsManager().getInputByName("back").isPressed())
 		{
 			float a = (float) ((-this.getEntityRotationComponent().getHorizontalRotation()) / 180f * Math.PI);

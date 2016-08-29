@@ -215,8 +215,8 @@ public class GameWindowOpenGL
 				if (currentScene != null)
 				{
 					// update inputs first
+					client.getInputsManager().pollLWJGLInputs();
 					InputAbstractor.update(this, currentScene);
-					client.getInputsManager().updateKeyboardScanCodes();
 					
 					// then do the game logic
 					try

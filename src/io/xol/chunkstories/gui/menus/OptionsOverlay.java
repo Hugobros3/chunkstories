@@ -346,7 +346,8 @@ public class OptionsOverlay extends Overlay
 			if(keyBind instanceof KeyBindImplementation)
 			{
 				KeyBindImplementation kbi = (KeyBindImplementation)keyBind;
-				controlsButtons.add(new ConfigButtonKey(kbi, this));
+				if(kbi.isEditable())
+					controlsButtons.add(new ConfigButtonKey(kbi, this));
 			}
 		}
 		

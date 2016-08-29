@@ -348,6 +348,30 @@ public class GameplayScene extends OverlayableScene
 			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) cameraPosition.getX(), (float) cameraPosition.getY(), (float) cameraPosition.getZ(), 1.0f, 1.0f);
 			flashLight = !flashLight;
 		}*/
+		else if(keyBind != null && keyBind.getName().startsWith("inventorySlot"))
+		{
+			int requestedInventorySlot = Integer.parseInt(keyBind.getName().replace("inventorySlot", ""));
+			//Match zero onto last slot
+			if(requestedInventorySlot == 0)
+				requestedInventorySlot = 10;
+			
+			//Map to zero-indexed inventory
+			requestedInventorySlot--;
+			
+			if(player != null && player instanceof EntityWithSelectedItem)
+			{
+				//Do not accept request to select non-existent inventories slots
+				if(requestedInventorySlot > ((EntityWithInventory) player).getInventory().getWidth())
+					return false;
+				
+				ItemPile p = ((EntityWithInventory) player).getInventory().getItemPileAt(requestedInventorySlot, 0);
+				if(p != null)
+					requestedInventorySlot = p.x;
+				((EntityWithSelectedItem) player).getSelectedItemComponent().setSelectedSlot(requestedInventorySlot);
+				
+				return true;
+			}
+		}
 		else if (Client.getInstance().getInputsManager().getInputByName("inventory").equals(keyBind))
 		{
 			if (player != null)

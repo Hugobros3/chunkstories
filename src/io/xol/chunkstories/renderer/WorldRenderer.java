@@ -972,6 +972,7 @@ public class WorldRenderer
 						renderedChunks++;
 						renderedVertices += chunkRenderData.renderCustomSolidBlocks(renderingContext);
 					}
+				
 			}
 
 		glDepthFunc(GL_LEQUAL);
