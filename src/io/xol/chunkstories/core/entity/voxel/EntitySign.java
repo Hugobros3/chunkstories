@@ -4,6 +4,9 @@ import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.glDisable;
 
 import io.xol.chunkstories.api.entity.EntityVoxel;
+import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
+import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
+import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.core.entity.components.EntityComponentSignText;
@@ -23,79 +26,107 @@ import io.xol.engine.model.ModelLibrary;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class EntitySign extends EntityImplementation implements EntityVoxel
+public class EntitySign extends EntityImplementation implements EntityVoxel, EntityRenderable
 {
 	EntityComponentSignText signText = new EntityComponentSignText(this, this.getComponents().getLastComponent());
-	
+
 	String cachedText = null;
 	TextMeshObject renderData = null;
-	
+
 	public EntitySign(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 	}
-	
+
 	public void setText(String text)
 	{
 		signText.setSignText(text);
 	}
 
 	@Override
-	public void render(RenderingContext renderingContext)
+	public EntityRenderer<? extends EntityRenderable> getEntityRenderer()
 	{
-		//System.out.println();
-		if(renderingContext.getCamera().getCameraPosition().add(this.getLocation()).length() > 32)
-			return;
-		
-		renderingContext.sendBoneTransformationMatrix(null);
-		
-		Texture2D diffuse = TexturesHandler.getTexture("res/models/sign.png");
-		diffuse.setLinearFiltering(false);
-		renderingContext.setDiffuseTexture(diffuse.getId());
-		renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
-		renderingContext.getCurrentShader().setUniformFloat3("objectPosition", getLocation());
-		
-		int modelBlockData = world.getVoxelData(getLocation());
-		
-		Voxel voxel = VoxelTypes.get(modelBlockData);
-		boolean isPost = voxel.getName().endsWith("_post");
-		
-		int lightSky = VoxelFormat.sunlight(modelBlockData);
-		int lightBlock = VoxelFormat.blocklight(modelBlockData);
-		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
-		//world.particlesHolder.addParticle(new ParticleSmoke(world, pos.x+0.8+(Math.random()-0.5)*0.2, pos.y+0.5, pos.z- 3.0f));
-	
-		int facing = VoxelFormat.meta(modelBlockData);
-		
-		Matrix4f mutrix = new Matrix4f();
-		mutrix.translate(new Vector3f(0.5f, 0.0f, 0.5f));
-		mutrix.rotate((float)Math.PI * 2.0f * (-facing) / 16f, new Vector3f(0, 1, 0));
-		if(isPost)
-			mutrix.translate(new Vector3f(0.0f, 0.0f, -0.5f));
-		renderingContext.sendTransformationMatrix(mutrix);
-
-
-		renderingContext.enableVertexAttribute("colorIn");
-		renderingContext.enableVertexAttribute("normalIn");
-		glDisable(GL_CULL_FACE);
-		if(isPost)
-			ModelLibrary.getRenderableMesh("res/models/sign_post.obj").render(renderingContext);
-		else
-			ModelLibrary.getRenderableMesh("res/models/sign.obj").render(renderingContext);
-		//signText.setSignText("The #FF0000cuckiest man on earth #FFFF20 rises again to bring you A E S T H E T I C signs");
-		
-		// bake sign mesh
-		if(cachedText == null || !cachedText.equals(signText.getSignText()))
-		{
-			renderData = new TextMeshObject(signText.getSignText());
-			cachedText = signText.getSignText();
-		}
-		// Display it
-		mutrix.translate(new Vector3f(0.0f, 1.15f, 0.055f));
-		renderingContext.sendTransformationMatrix(mutrix);
-		renderData.render(renderingContext);
+		return new EntitySignRenderer();
 	}
-	
+
+	static class EntitySignRenderer implements EntityRenderer<EntitySign>
+	{
+
+		@Override
+		public void setupRender(RenderingContext renderingContext)
+		{
+			renderingContext.sendBoneTransformationMatrix(null);
+
+			Texture2D diffuse = TexturesHandler.getTexture("res/models/sign.png");
+			diffuse.setLinearFiltering(false);
+			renderingContext.setDiffuseTexture(diffuse.getId());
+			renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
+		}
+
+		@Override
+		public void forEach(RenderingContext renderingContext, RenderingIterator<EntitySign> renderableEntitiesIterator)
+		{
+			renderingContext.sendBoneTransformationMatrix(null);
+
+			for (EntitySign entitySign : renderableEntitiesIterator.getElementsInFrustrumOnly())
+			{
+				if (renderingContext.getCamera().getCameraPosition().add(entitySign.getLocation()).length() > 32)
+					continue;
+				
+				Texture2D diffuse = TexturesHandler.getTexture("res/models/sign.png");
+				diffuse.setLinearFiltering(false);
+				renderingContext.setDiffuseTexture(diffuse.getId());
+				renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
+				renderingContext.getCurrentShader().setUniformFloat3("objectPosition", entitySign.getLocation());
+
+				int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
+
+				Voxel voxel = VoxelTypes.get(modelBlockData);
+				boolean isPost = voxel.getName().endsWith("_post");
+
+				int lightSky = VoxelFormat.sunlight(modelBlockData);
+				int lightBlock = VoxelFormat.blocklight(modelBlockData);
+				renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+
+				int facing = VoxelFormat.meta(modelBlockData);
+
+				Matrix4f mutrix = new Matrix4f();
+				mutrix.translate(new Vector3f(0.5f, 0.0f, 0.5f));
+				mutrix.rotate((float) Math.PI * 2.0f * (-facing) / 16f, new Vector3f(0, 1, 0));
+				if (isPost)
+					mutrix.translate(new Vector3f(0.0f, 0.0f, -0.5f));
+				renderingContext.sendTransformationMatrix(mutrix);
+
+				renderingContext.enableVertexAttribute("colorIn");
+				renderingContext.enableVertexAttribute("normalIn");
+				glDisable(GL_CULL_FACE);
+				if (isPost)
+					ModelLibrary.getRenderableMesh("res/models/sign_post.obj").render(renderingContext);
+				else
+					ModelLibrary.getRenderableMesh("res/models/sign.obj").render(renderingContext);
+				//signText.setSignText("The #FF0000cuckiest man on earth #FFFF20 rises again to bring you A E S T H E T I C signs");
+
+				// bake sign mesh
+				if (entitySign.cachedText == null || !entitySign.cachedText.equals(entitySign.signText.getSignText()))
+				{
+					entitySign.renderData = new TextMeshObject(entitySign.signText.getSignText());
+					entitySign.cachedText = entitySign.signText.getSignText();
+				}
+				// Display it
+				mutrix.translate(new Vector3f(0.0f, 1.15f, 0.055f));
+				renderingContext.sendTransformationMatrix(mutrix);
+				entitySign.renderData.render(renderingContext);
+			}
+		}
+
+		@Override
+		public void freeRessources()
+		{
+
+		}
+
+	}
+
 	@Override
 	public CollisionBox[] getCollisionBoxes()
 	{

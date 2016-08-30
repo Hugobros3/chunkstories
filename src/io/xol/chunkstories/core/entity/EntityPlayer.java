@@ -16,11 +16,15 @@ import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
+import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.core.entity.EntityHumanoid.EntityHumanoidRenderer;
+import io.xol.chunkstories.core.entity.EntityZombie.EntityZombieRenderer;
 import io.xol.chunkstories.core.entity.components.EntityComponentController;
 import io.xol.chunkstories.core.entity.components.EntityComponentCreativeMode;
 import io.xol.chunkstories.core.entity.components.EntityComponentFlying;
@@ -71,8 +75,6 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	public double maxSpeed = 0.15;
 
 	public double horizontalSpeed = 0;
-
-	public double eyePosition = 1.6;
 	public double metersWalked = 0d;
 
 	double jumpForce = 0;
@@ -420,62 +422,27 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, posOnScreen.x - dekal / 2, posOnScreen.y, txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
 	}
 
-	@Override
-	public void render(RenderingContext renderingContext)
-	{
-		Camera cam = renderingContext.getCamera();
-		ItemPile selectedItemPile = getSelectedItemComponent().getSelectedItem();
+	class EntityPlayerRenderer<H extends EntityHumanoid> extends EntityHumanoidRenderer<H> {
 		
-		//Player textures
-		Texture2D playerTexture = TexturesHandler.getTexture("models/guyA.png");
-		playerTexture.setLinearFiltering(false);
-		renderingContext.setDiffuseTexture(playerTexture.getId());
-		//Players models have no normal mapping
-		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
-
-		//Prevents laggy behaviour
-		if (this.equals(Client.getInstance().getClientSideController().getControlledEntity()))
-			renderingContext.getCurrentShader().setUniformFloat3("objectPosition", -(float) cam.pos.getX(), -(float) cam.pos.getY() - eyePosition, -(float) cam.pos.getZ());
-
-		//Renders normal limbs
-		Matrix4f playerRotationMatrix = new Matrix4f();
-		playerRotationMatrix.translate(new Vector3f(0f, (float) this.eyePosition, 0f));
-		playerRotationMatrix.rotate((90 - this.getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
-		renderingContext.sendTransformationMatrix(playerRotationMatrix);
-		
-		//Except in fp 
-		
-		if (!this.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
-			ModelLibrary.getRenderableMesh("res/models/human.obj").renderButParts(renderingContext, this.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
-		
-		//Render rotated limbs
-		playerRotationMatrix = new Matrix4f();
-		playerRotationMatrix.translate(new Vector3f(0f, (float) this.eyePosition, 0f));
-		playerRotationMatrix.rotate((90 - this.getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-		
-		if(selectedItemPile != null)
-			playerRotationMatrix.rotate((-this.getEntityRotationComponent().getVerticalRotation()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
-		
-		playerRotationMatrix.translate(new Vector3f(0f, -(float) this.eyePosition, 0f));
-		renderingContext.sendTransformationMatrix(playerRotationMatrix);
-
-		if(selectedItemPile != null || !this.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
-			ModelLibrary.getRenderableMesh("res/models/human.obj").renderParts(renderingContext, this.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
-	
-		//Matrix to itemInHand bone in the player's bvh
-		Matrix4f itemMatrix = new Matrix4f();
-		itemMatrix = this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000);
-		//System.out.println(itemMatrix);
-		
-		Matrix4f.mul(playerRotationMatrix, itemMatrix, itemMatrix);
-
-		if (selectedItemPile != null)
+		@Override
+		public void setupRender(RenderingContext renderingContext)
 		{
-			selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, this.getLocation(), itemMatrix);
+			super.setupRender(renderingContext);
+			
+			//Player textures
+			Texture2D playerTexture = TexturesHandler.getTexture("models/guyA.png");
+			playerTexture.setLinearFiltering(false);
+			
+			renderingContext.setDiffuseTexture(playerTexture);
 		}
 	}
-
+	
+	@Override
+	public EntityRenderer<? extends EntityRenderable> getEntityRenderer()
+	{
+		return new EntityPlayerRenderer<EntityPlayer>();
+	}
+	
 	@Override
 	public String getName()
 	{
@@ -485,7 +452,6 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	@Override
 	public void setName(String n)
 	{
-		//this.inventory.name = this.name + "'s Inventory";
 		name.setName(n);
 	}
 

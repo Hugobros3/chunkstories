@@ -342,7 +342,9 @@ public class RegionImplementation implements Region
 					if (chunkHolders[a][b][c].getChunk() != null)
 					{
 						CubicChunk chunk = chunkHolders[a][b][c].getChunk();
-						if (chunk.lastModification.get() > chunk.lastModificationSaved.get())
+						
+						if(chunk.unsavedBlockModifications.get() > 0)
+						//if (chunk.lastModification.get() > chunk.lastModificationSaved.get())
 							chunkHolders[a][b][c].compressChunkData();
 					}
 				}

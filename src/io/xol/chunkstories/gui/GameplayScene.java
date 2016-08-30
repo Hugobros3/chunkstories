@@ -330,7 +330,7 @@ public class GameplayScene extends OverlayableScene
 		else if (keyCode == Keyboard.KEY_F12)
 		{
 			Client.getInstance().reloadAssets();
-			worldRenderer.farTerrainRenderer.markVoxelTexturesSummaryDirty();
+			worldRenderer.reloadContentSpecificStuff();
 		}
 		//Redraw chunks
 		else if (keyCode == 19)

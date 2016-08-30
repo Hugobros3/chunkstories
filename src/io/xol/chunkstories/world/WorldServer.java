@@ -59,10 +59,12 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			{
 				//System.out.println(client.getProfile().hasSpawned());
 				//Load 8x4x8 chunks arround player
-				Location loc = player.getLocation();
+				
+				/*Location loc = player.getLocation();
 				int chunkX = (int) (loc.getX() / 32f);
 				int chunkY = (int) (loc.getY() / 32f);
 				int chunkZ = (int) (loc.getZ() / 32f);
+				*/
 				
 				/*for (int cx = chunkX - 4; cx < chunkX + 4; cx++)
 					for (int cy = chunkY - 2; cy < chunkY + 2; cy++)
@@ -80,8 +82,6 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			packetTime.overcastFactor = this.getWeather();
 			player.pushPacket(packetTime);
 		}
-		
-		
 		super.tick();
 		
 		virtualServerSoundManager.update();
@@ -135,99 +135,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			((IOTasksMultiplayerServer) ioHandler).requestRegionSummary(x, z, sender);
 		}
 	}
-
-	/*@Override
-	public void trimRemovableChunks()
-	{
-		int chunksViewDistance = 256 / 32;
-		int sizeInChunks = getWorldInfo().getSize().sizeInChunks;
-
-		//Chunks pruner
-		ChunksIterator i = this.getAllLoadedChunks();
-		Chunk c;
-		while (i.hasNext())
-		{
-			c = i.next();
-			boolean neededBySomeone = false;
-
-			Iterator<Player> pi = server.getConnectedPlayers();
-			while (pi.hasNext())
-			{
-				Player player = pi.next();
-
-				Entity clientEntity = player.getControlledEntity();
-				if (clientEntity == null)
-					continue;
-				Location loc = clientEntity.getLocation();
-				int pCX = (int) loc.getX() / 32;
-				int pCY = (int) loc.getY() / 32;
-				int pCZ = (int) loc.getZ() / 32;
-				
-				
-				//TODO use proper configurable values for this
-				if (((LoopingMathHelper.moduloDistance(c.getChunkX(), pCX, sizeInChunks) < chunksViewDistance + 1) && (LoopingMathHelper.moduloDistance(c.getChunkZ(), pCZ, sizeInChunks) < chunksViewDistance + 1) && (Math.abs(c.getChunkY() - pCY) < 4)))
-				{
-					//System.out.println(c.getChunkX() + " vs " + pCX + "ok");
-					neededBySomeone = true;
-				}
-				//else
-				//	System.out.println(c.getChunkX() + " vs " + pCX + "ko");
-			}
-
-			if (!neededBySomeone)
-			{
-				//TODO still have to refactorise
-				//removeChunk(c, true);
-			}
-		}
-
-		//4 of margin bc we need to be far enought of the center of the holder
-		chunksViewDistance += 4;
-
-		Iterator<RegionImplementation> regionsIterator = this.getRegionsHolder().getLoadedRegions();
-		while (regionsIterator.hasNext())
-		{
-			RegionImplementation region = regionsIterator.next();
-			int regionCenterX = region.regionX * 8 + 4;
-			int chunkHolderCenterY = region.regionY * 8 + 4;
-			int chunkHolderCenterZ = region.regionZ * 8 + 4;
-
-			boolean neededBySomeone = false;
-
-			Iterator<Player> pi = server.getConnectedPlayers();
-			while (pi.hasNext())
-			{
-				Player player = pi.next();
-
-				Entity clientEntity = player.getControlledEntity();
-				if (clientEntity == null)
-					continue;
-				Location loc = clientEntity.getLocation();
-				int pCX = (int) loc.getX() / 32;
-				int pCY = (int) loc.getY() / 32;
-				int pCZ = (int) loc.getZ() / 32;
-				//TODO use proper configurable values for this
-				if (((LoopingMathHelper.moduloDistance(regionCenterX, pCX, sizeInChunks) < chunksViewDistance + 2) && (LoopingMathHelper.moduloDistance(chunkHolderCenterZ, pCZ, sizeInChunks) < chunksViewDistance + 2)
-						&& (Math.abs(chunkHolderCenterY - pCY) < 4 + 4)))
-				{
-					neededBySomeone = true;
-				}
-			}
-			
-			//if(chunkHolder.regionX == 2 && chunkHolder.regionZ == 3)
-			//	System.out.println(chunkHolder.canBeUnloaded()+" "+chunkHolder.getNumberOfLoadedChunks());
-
-			//Don't unload it until it's empty, done loading from disk and needed by no one.
-			if (region.canBeUnloaded() && region.getNumberOfLoadedChunks() == 0 && !neededBySomeone)
-			{
-				region.unloadAndSave();
-				
-				//chunkHolder.save();
-				//chunkHolder.unloadHolder();
-			}
-		}
-	}*/
-
+	
 	@Override
 	protected int actuallySetsDataAt(int x, int y, int z, int newData, Entity entity)
 	{

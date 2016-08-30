@@ -21,7 +21,7 @@ import io.xol.chunkstories.world.generator.WorldGenerators;
 
 public class WorldInfo
 {
-	File folder;
+	private File folder = null;
 
 	private String internalName = "";
 	private String name;
@@ -29,22 +29,15 @@ public class WorldInfo
 	private String description = "";
 	private WorldSize size;
 	private String generatorName;
-
-	WorldInfo()
-	{
-		
-	}
 	
 	public WorldInfo(String name, String seed, String description, WorldSize size, String generator)
 	{
-		super();
 		this.setName(name);
 		this.setSeed(seed);
 		this.setDescription(description);
 		this.setSize(size);
 		this.setGeneratorName(generator);
 	}
-
 
 	public WorldInfo(String fileContents, String internalName)
 	{

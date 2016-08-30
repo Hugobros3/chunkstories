@@ -1,6 +1,5 @@
 package io.xol.chunkstories.api.entity.interfaces;
 
-import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.graphics.RenderingContext;
 
 //(c) 2015-2016 XolioWare Interactive

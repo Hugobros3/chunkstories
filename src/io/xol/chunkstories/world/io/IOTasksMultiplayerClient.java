@@ -4,11 +4,6 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.client.Client;
@@ -100,8 +95,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			c.bakeVoxelLightning(true);
 
 			//Remove any object preventing us from asking it again
-			ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
-			//chunksAlreadyAsked.remove(loc);
+			//ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
 
 			world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ).getChunkHolder(chunkX, chunkY, chunkZ).setChunk(c);
 			return true;
@@ -188,8 +182,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 		@Override
 		public boolean run()
 		{
-			//synchronized (Client.world.getRegionSummaries())
-			{
 				RegionSummaryImplementation summary = Client.world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(packet.rx * 256, packet.rz * 256);
 				
 				if(summary == null)
@@ -208,20 +200,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 				summary.summaryLoaded.set(true);
 
 				summary.computeHeightMetadata();
-			}
 			
-			//TODO look at these messy synchronisation blocks, not sure they are usefull
-			/*synchronized (summariesAlreadyAsked)
-			{
-				Iterator<int[]> i = summariesAlreadyAsked.iterator();
-				while (i.hasNext())
-				{
-					int[] coordinates = i.next();
-					if (coordinates[0] == packet.rx && coordinates[1] == packet.rz)
-						i.remove();
-				}
-			}*/
-			// System.out.println("Successfully loaded chunk summary from remote server. rx:"+summary.rx+"rz:"+summary.rz);
 			return true;
 		}
 
@@ -251,22 +230,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		// don't spam packets !
 		int rx = summary.getRegionX();
 		int rz = summary.getRegionZ();
-		/*boolean alreadyAsked = false;
-		synchronized (summariesAlreadyAsked)
-		{
-			for (int[] coordinates : summariesAlreadyAsked)
-			{
-				if (coordinates[0] == rx && coordinates[1] == rz)
-					alreadyAsked = true;
-			}
-		}
-		if (!alreadyAsked)
-		{
-			synchronized (summariesAlreadyAsked)
-			{
-				summariesAlreadyAsked.add(new int[] { rx, rz });
-			}
-		}*/
+		
 		Client.connection.sendTextMessage("world/getChunkSummary:" + rx + ":" + rz);
 	}
 }

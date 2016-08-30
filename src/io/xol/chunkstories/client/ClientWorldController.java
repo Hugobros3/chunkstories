@@ -56,8 +56,7 @@ public class ClientWorldController implements ClientSideController
 		controlledEntity = entityControllable;
 		return true;
 	}
-
-
+	
 	@Override
 	public void updateUsedWorldBits()
 	{

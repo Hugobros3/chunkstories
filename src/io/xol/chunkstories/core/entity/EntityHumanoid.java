@@ -3,16 +3,25 @@ package io.xol.chunkstories.core.entity;
 import java.util.Arrays;
 
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
+import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
+import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
+import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemAk47;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.animation.AnimatedSkeleton;
 import io.xol.engine.animation.BVHAnimation;
 import io.xol.engine.animation.BVHLibrary;
+import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.model.ModelLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -20,6 +29,8 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 public abstract class EntityHumanoid extends EntityLivingImplentation
 {
+	public double eyePosition = 1.6;
+	
 	public EntityHumanoid(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
@@ -99,6 +110,89 @@ public abstract class EntityHumanoid extends EntityLivingImplentation
 			return getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime);
 		}
 		
+	}
+	
+	protected class EntityHumanoidRenderer<H extends EntityHumanoid> implements EntityRenderer<H> {
+
+		@Override
+		public void setupRender(RenderingContext renderingContext)
+		{
+			//Player textures
+			Texture2D playerTexture = TexturesHandler.getTexture("models/humanoid_test.png");
+			playerTexture.setLinearFiltering(false);
+			
+			renderingContext.setDiffuseTexture(playerTexture);
+			
+			renderingContext.setNormalTexture(TexturesHandler.getTexture("models/humanoid_normal.png"));
+			TexturesHandler.getTexture("models/humanoid_normal.png").setLinearFiltering(false);
+
+			renderingContext.setNormalTexture(TexturesHandler.getTexture("textures/normalnormal.png"));
+		}
+
+		@Override
+		public void forEach(RenderingContext renderingContext, RenderingIterator<H> renderableEntitiesIterator)
+		{
+			for(EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
+			{
+				ItemPile selectedItemPile = null;
+				
+				if(entity instanceof EntityWithSelectedItem)
+					selectedItemPile = ((EntityWithSelectedItem)entity).getSelectedItemComponent().getSelectedItem();
+				
+				//Prevents laggy behaviour
+				Camera cam = renderingContext.getCamera();
+				if (entity.equals(Client.getInstance().getClientSideController().getControlledEntity()))
+					renderingContext.getCurrentShader().setUniformFloat3("objectPosition", -(float) cam.pos.getX(), -(float) cam.pos.getY() - eyePosition, -(float) cam.pos.getZ());
+
+				//Renders normal limbs
+				Matrix4f headRotationMatrix = new Matrix4f();
+				headRotationMatrix.translate(new Vector3f(0f, (float) entity.eyePosition, 0f));
+				headRotationMatrix.rotate((90 - entity.getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
+				headRotationMatrix.translate(new Vector3f(0f, -(float) entity.eyePosition, 0f));
+				renderingContext.sendTransformationMatrix(headRotationMatrix);
+				
+				//Except in fp 
+				if (!entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
+					ModelLibrary.getRenderableMesh("res/models/human.obj").renderButParts(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
+				
+				//Render rotated limbs
+				headRotationMatrix = new Matrix4f();
+				headRotationMatrix.translate(new Vector3f(0f, (float) entity.eyePosition, 0f));
+				headRotationMatrix.rotate((90 - entity.getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
+				
+				if(selectedItemPile != null)
+					headRotationMatrix.rotate((-entity.getEntityRotationComponent().getVerticalRotation()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
+				
+				headRotationMatrix.translate(new Vector3f(0f, -(float) entity.eyePosition, 0f));
+				renderingContext.sendTransformationMatrix(headRotationMatrix);
+
+				if(selectedItemPile != null || !entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
+					ModelLibrary.getRenderableMesh("res/models/human.obj").renderParts(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
+			
+				//Matrix to itemInHand bone in the player's bvh
+				Matrix4f itemMatrix = new Matrix4f();
+				itemMatrix = entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000);
+				//System.out.println(itemMatrix);
+				
+				Matrix4f.mul(headRotationMatrix, itemMatrix, itemMatrix);
+
+				if (selectedItemPile != null)
+					selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
+			}
+		}
+
+		@Override
+		public void freeRessources()
+		{
+			
+		}
+		
+	}
+
+	@Override
+	public EntityRenderer<? extends EntityRenderable> getEntityRenderer()
+	{
+		return new EntityHumanoidRenderer<EntityHumanoid>();
 	}
 	
 	public String getDefaultAnimation()

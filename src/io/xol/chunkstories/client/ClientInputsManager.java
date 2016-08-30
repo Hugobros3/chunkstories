@@ -111,6 +111,14 @@ public class ClientInputsManager implements InputsManager
 				keyboardInputs.add((KeyBindImplementation) input);
 			}
 		}
+
+		//Add physical mouse buttons
+		inputs.add(MouseButton.LEFT);
+		inputsMap.put(MouseButton.LEFT.getHash(), MouseButton.LEFT);
+		inputs.add(MouseButton.RIGHT);
+		inputsMap.put(MouseButton.RIGHT.getHash(), MouseButton.RIGHT);
+		inputs.add(MouseButton.MIDDLE);
+		inputsMap.put(MouseButton.MIDDLE.getHash(), MouseButton.MIDDLE);
 	}
 
 	public void pollLWJGLInputs()

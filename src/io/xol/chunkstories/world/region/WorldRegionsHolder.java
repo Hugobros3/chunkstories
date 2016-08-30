@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.concurrency.SimpleLock;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +21,6 @@ public class WorldRegionsHolder
 	private WorldImplementation world;
 
 	private Semaphore noConcurrentRegionCreationDestruction = new Semaphore(1);
-	private SimpleLock worldDataLock = new SimpleLock();
 	private ConcurrentHashMap<RegionLocation, RegionImplementation> regions = new ConcurrentHashMap<RegionLocation, RegionImplementation>(8, 0.9f, 1);
 
 	private final int sizeInRegions, heightInRegions;
@@ -90,8 +88,8 @@ public class WorldRegionsHolder
 		RegionImplementation holder = null;
 		RegionLocation key = new RegionLocation(regionX, regionY, regionZ);
 
-		//Lock to avoid any issues with another thread making another holder while we handle this
-		worldDataLock.lock();
+		//Lock to avoid any issues with another thread making another region while we handle this
+		//Note lock was moved to a semaphore in public
 		holder = regions.get(key);
 
 		//Make a new region if we can't find it
@@ -99,7 +97,7 @@ public class WorldRegionsHolder
 		{
 			holder = new RegionImplementation(world, regionX, regionY, regionZ, this);
 		}
-		worldDataLock.unlock();
+		
 
 		return holder;
 	}
@@ -237,15 +235,10 @@ public class WorldRegionsHolder
 			//If no users have registered for any chunks
 			if(region.isUnused() && region.canBeUnloaded())
 			{
-				//System.out.println("unloading "+region);
-				
 				if(this instanceof WorldMaster)
 					region.unloadAndSave();
 				else
 					region.unload();
-				
-				//Handled in region.unload()
-				//regionsIterator.remove();
 			}
 		}
 		

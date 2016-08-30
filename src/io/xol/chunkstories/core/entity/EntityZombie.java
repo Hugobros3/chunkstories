@@ -1,15 +1,13 @@
 package io.xol.chunkstories.core.entity;
 
 import io.xol.chunkstories.api.ai.AI;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
+import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.core.entity.ai.GenericLivingAI;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3f;
-import io.xol.engine.model.ModelLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -46,27 +44,24 @@ public class EntityZombie extends EntityHumanoid
 		}
 	}
 
+	class EntityZombieRenderer<H extends EntityHumanoid> extends EntityHumanoidRenderer<H> {
+		
+		@Override
+		public void setupRender(RenderingContext renderingContext)
+		{
+			super.setupRender(renderingContext);
+			
+			//Player textures
+			Texture2D playerTexture = TexturesHandler.getTexture("models/zombie_s3.png");
+			playerTexture.setLinearFiltering(false);
+			
+			renderingContext.setDiffuseTexture(playerTexture);
+		}
+	}
+	
 	@Override
-	public void render(RenderingContext renderingContext)
+	public EntityRenderer<? extends EntityRenderable> getEntityRenderer()
 	{
-		i++;
-		i %= 80;
-		
-		Texture2D playerTexture = TexturesHandler.getTexture("models/zombie_s3.png");
-		playerTexture.setLinearFiltering(false);
-		
-		renderingContext.setDiffuseTexture(playerTexture.getId());
-		renderingContext.setNormalTexture(TexturesHandler.getTextureID("textures/normalnormal.png"));
-		renderingContext.getCurrentShader().setUniformFloat3("objectPosition", getLocation().castToSP());
-		int modelBlockData = world.getVoxelData(getLocation());
-		int lightSky = VoxelFormat.sunlight(modelBlockData);
-		int lightBlock = VoxelFormat.blocklight(modelBlockData);
-		renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
-
-		Matrix4f matrix = new Matrix4f();
-		matrix.rotate((90 - this.getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-		
-		renderingContext.sendTransformationMatrix(matrix);
-		ModelLibrary.getRenderableMesh("./res/models/human.obj").render(renderingContext,  this.getAnimatedSkeleton(), (int)(System.currentTimeMillis() % 1000000));
+		return new EntityZombieRenderer<EntityZombie>();
 	}
 }

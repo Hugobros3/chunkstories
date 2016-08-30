@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.core.entity.EntityLivingImplentation;
 import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;
 
@@ -21,6 +22,13 @@ public class GenericLivingAI extends AI<EntityLiving>
 	
 	public void tick()
 	{
+		if(entity.isDead())
+		{
+			entity.getVelocityComponent().setVelocityX(0);
+			entity.getVelocityComponent().setVelocityZ(0);
+			return;
+		}
+		
 		if(currentTask != null)
 			currentTask.execute();
 		
@@ -133,8 +141,6 @@ public class GenericLivingAI extends AI<EntityLiving>
 			
 			makeEntityLookAt(entity, delta);
 			
-			//entity.getEntityRotationComponent().setRotation(0.0, 0.0);
-			
 			entity.getVelocityComponent().setVelocityX(0);
 			entity.getVelocityComponent().setVelocityZ(0);
 		}
@@ -185,11 +191,19 @@ public class GenericLivingAI extends AI<EntityLiving>
 			entity.getVelocityComponent().setVelocityX(delta.getX());
 			entity.getVelocityComponent().setVelocityZ(delta.getZ());
 			
+			if(((EntityLivingImplentation)entity).collision_bot)
+			{
+				if(		((EntityLivingImplentation)entity).collision_left || 
+						((EntityLivingImplentation)entity).collision_right || 
+						((EntityLivingImplentation)entity).collision_north || 
+						((EntityLivingImplentation)entity).collision_south)
+				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
+			}
+			
 			makeEntityLookAt(entity, delta.clone().negate());
 		}
 		
 	}
-
 
 	private void makeEntityLookAt(EntityLiving entity, Vector3d delta)
 	{

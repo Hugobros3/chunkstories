@@ -49,7 +49,7 @@ public class PacketInput extends PacketSynch
 			input = processor.getServerClient().getProfile().getInputsManager().getInputFromHash(code);
 			
 			if(input == null)
-				throw new NullPointerException();
+				throw new NullPointerException("Unknown input hash : "+code);
 			
 			//System.out.println(processor.getServerClient().getProfile() + " "+input + " "+pressed);
 			//Update it's state

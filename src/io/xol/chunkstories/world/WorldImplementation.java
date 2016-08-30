@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -42,10 +41,8 @@ import io.xol.chunkstories.voxel.VoxelTypes;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.EntityRayIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
-import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.region.WorldRegionsHolder;
 import io.xol.chunkstories.world.summary.WorldRegionSummariesHolder;
-import io.xol.engine.concurrency.SimpleLock;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.misc.ConfigFile;
 
@@ -360,10 +357,10 @@ public abstract class WorldImplementation implements World
 
 		getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, newData);
 
-		Chunk c = regions.getChunk(x / 32, y / 32, z / 32);
-		if (c != null)
+		Chunk chunk = regions.getChunk(x / 32, y / 32, z / 32);
+		if (chunk != null)
 		{
-			int formerData = c.getVoxelData(x % 32, y % 32, z % 32);
+			int formerData = chunk.getVoxelData(x % 32, y % 32, z % 32);
 			Voxel formerVoxel = VoxelTypes.get(formerData);
 			Voxel newVoxel = VoxelTypes.get(newData);
 
@@ -394,7 +391,7 @@ public abstract class WorldImplementation implements World
 				return -1;
 			}
 
-			c.setVoxelDataWithUpdates(x % 32, y % 32, z % 32, newData);
+			chunk.setVoxelDataWithUpdates(x % 32, y % 32, z % 32, newData);
 
 			//Neighbour chunks updates
 			if (x % 32 == 0)
@@ -830,7 +827,6 @@ public abstract class WorldImplementation implements World
 	@Override
 	public ChunkHolder aquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ)
 	{
-
 		//Sanitation of input data
 		chunkX = chunkX % getSizeInChunks();
 		chunkZ = chunkZ % getSizeInChunks();

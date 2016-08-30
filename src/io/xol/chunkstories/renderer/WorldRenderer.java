@@ -50,7 +50,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.particles.ParticlesRenderer;
-import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
@@ -161,13 +160,16 @@ public class WorldRenderer
 	//Temp buffers
 	private GBufferTexture environmentMapBufferHDR = new GBufferTexture(RGB_HDR, ENVMAP_SIZE, ENVMAP_SIZE);
 	private GBufferTexture environmentMapBufferZ = new GBufferTexture(DEPTH_RENDERBUFFER, ENVMAP_SIZE, ENVMAP_SIZE);
-	
+
 	private FBO environmentMapFastFbo = new FBO(environmentMapBufferZ, environmentMapBufferHDR);
 	private FBO environmentMapFBO = new FBO(null, environmentMap.getFace(0));
 
 	// Shadow transformation matrix
 	private Matrix4f depthMatrix = new Matrix4f();
 
+	//Entities
+	private EntitiesRenderer entitiesRenderer;
+	
 	// Sky
 	private SkyRenderer sky;
 
@@ -175,7 +177,7 @@ public class WorldRenderer
 	private DecalsRenderer decalsRenderer;
 
 	//Far terrain mesher
-	public FarTerrainRenderer farTerrainRenderer;
+	private FarTerrainRenderer farTerrainRenderer;
 
 	//Rain snow etc
 	public WeatherEffectsRenderer weatherEffectsRenderer;
@@ -201,6 +203,7 @@ public class WorldRenderer
 	Texture2D lightmapTexture = TexturesHandler.getTexture("environement/light.png");
 	Texture2D waterNormalTexture = TexturesHandler.getTexture("water/shallow.png");
 
+	//Blocks atlases
 	Texture2D blocksAlbedoTexture = TexturesHandler.getTexture("tiles_merged_albedo.png");
 	Texture2D blocksNormalTexture = TexturesHandler.getTexture("tiles_merged_normal.png");
 	Texture2D blocksMaterialTexture = TexturesHandler.getTexture("tiles_merged_material.png");
@@ -222,6 +225,7 @@ public class WorldRenderer
 		// Link world
 		world = w;
 		world.linkWorldRenderer(this);
+		entitiesRenderer = new EntitiesRenderer(world);
 		farTerrainRenderer = new FarTerrainRenderer(world);
 		weatherEffectsRenderer = new WeatherEffectsRenderer(world, this);
 		sky = new SkyRenderer(world, this);
@@ -972,7 +976,7 @@ public class WorldRenderer
 						renderedChunks++;
 						renderedVertices += chunkRenderData.renderCustomSolidBlocks(renderingContext);
 					}
-				
+
 			}
 
 		glDepthFunc(GL_LEQUAL);
@@ -1034,36 +1038,8 @@ public class WorldRenderer
 		glEnable(GL_CULL_FACE);
 		glDisable(GL_CULL_FACE);
 		// Render entities
-		Iterator<Entity> ie = world.getAllLoadedEntities();
-		Entity entity;
-
-		@SuppressWarnings("unused")
-		int entitiesRendered = 0;
-
-		entityIter: while (ie.hasNext())
-		{
-			entity = ie.next();
-			if (entity == null)
-				continue;
-
-			for (CollisionBox box : entity.getTranslatedCollisionBoxes())
-			{
-				if (!isShadowPass && !camera.isBoxInFrustrum(new Vector3f(box.xpos, box.ypos + box.h / 2, box.zpos), new Vector3f(box.xw, box.h, box.zw)))
-					continue entityIter;
-			}
-
-			//Set the context
-			renderingContext.getCurrentShader().setUniformFloat3("objectPosition", entity.getLocation());
-			renderingContext.getCurrentShader().setUniformFloat2("worldLight", world.getBlocklightLevelLocation(entity.getLocation()), world.getSunlightLevelLocation(entity.getLocation()));
-
-			//Reset animations transformations
-			renderingContext.getCurrentShader().setUniformMatrix4f("localTansform", new Matrix4f());
-			renderingContext.getCurrentShader().setUniformMatrix3f("localTransformNormal", new Matrix3f());
-
-			entitiesRendered++;
-
-			entity.render(renderingContext);
-		}
+		
+		entitiesRenderer.renderEntities(renderingContext);
 
 		//System.out.println(entitiesRendered);
 
@@ -1603,7 +1579,7 @@ public class WorldRenderer
 		// Done blooming
 		glViewport(0, 0, scrW, scrH);
 	}
-	
+
 	/**
 	 * Renders the whole scene into either a cubemap or saved on disk
 	 * 
@@ -1614,9 +1590,9 @@ public class WorldRenderer
 	public void renderWorldCubemap(Cubemap cubemap, int resolution, boolean onlyTerrain)
 	{
 		lastEnvmapRender = System.currentTimeMillis();
-		
+
 		boolean useFastBuffer = true;
-		
+
 		// Save state
 		boolean oldBloom = RenderingConfig.doBloom;
 		float oldViewDistance = RenderingConfig.viewDistance;
@@ -1630,14 +1606,14 @@ public class WorldRenderer
 		camera.fov = 45;
 		// Setup cubemap resolution
 
-		if(!useFastBuffer)
+		if (!useFastBuffer)
 			this.setupRenderSize(resolution, resolution);
 		else
 		{
 			scrW = resolution;
 			scrH = resolution;
 		}
-		
+
 		String[] names = { "front", "back", "top", "bottom", "right", "left" };
 
 		String time = null;
@@ -1679,11 +1655,11 @@ public class WorldRenderer
 				break;
 			}
 
-			if(useFastBuffer)
+			if (useFastBuffer)
 				environmentMapFastFbo.bind();
 			else
 				this.fboShadedBuffer.bind();
-			
+
 			//glDisable(GL_DEPTH_TEST);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1705,11 +1681,10 @@ public class WorldRenderer
 			else
 				this.renderWorldAtCameraInternal(camera, cubemap == null ? -1 : 0);
 
-
 			if (cubemap != null)
 			{
 				//System.out.println(cubemap.getID());
-				
+
 				//glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.getID());
 
 				int t[] = new int[] { 4, 5, 3, 2, 0, 1 };
@@ -1728,11 +1703,11 @@ public class WorldRenderer
 				this.environmentMapFBO.bind();
 				this.environmentMapFBO.setColorAttachement(0, cubemap.getFace(f));
 
-				if(useFastBuffer)
+				if (useFastBuffer)
 					renderingContext.getCurrentShader().setUniformSampler(0, "diffuseTexture", environmentMapBufferHDR);
 				else
 					renderingContext.getCurrentShader().setUniformSampler(0, "diffuseTexture", shadedBuffer);
-				
+
 				renderingContext.getCurrentShader().setUniformFloat2("screenSize", resolution, resolution);
 
 				renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoord"));
@@ -1743,7 +1718,7 @@ public class WorldRenderer
 			{
 				// GL access
 				glBindTexture(GL_TEXTURE_2D, shadedBuffer.getId());
-				
+
 				// File access
 				File image = new File(GameDirectory.getGameFolderPath() + "/skyboxscreens/" + time + "/" + names[z] + ".png");
 				image.mkdirs();
@@ -1783,7 +1758,7 @@ public class WorldRenderer
 		camera.fov = fov;
 		camera.justSetup(oldW, oldH);
 
-		if(!useFastBuffer)
+		if (!useFastBuffer)
 			this.setupRenderSize(oldW, oldH);
 		else
 		{
@@ -1891,6 +1866,7 @@ public class WorldRenderer
 		sky.destroy();
 		chunksRenderer.killThread();
 		farTerrainRenderer.destroy();
+		entitiesRenderer.clearLoadedEntitiesRenderers();
 	}
 
 	public World getWorld()
@@ -1903,8 +1879,19 @@ public class WorldRenderer
 		return decalsRenderer;
 	}
 
+	public FarTerrainRenderer getFarTerrainRenderer()
+	{
+		return farTerrainRenderer;
+	}
+	
 	public SkyRenderer getSky()
 	{
 		return sky;
+	}
+	
+	public void reloadContentSpecificStuff()
+	{
+		farTerrainRenderer.markVoxelTexturesSummaryDirty();
+		entitiesRenderer.clearLoadedEntitiesRenderers();
 	}
 }

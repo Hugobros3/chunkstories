@@ -78,17 +78,6 @@ public interface Entity extends Collidable, CSFSerializable
 	 * @return
 	 */
 	public CollisionBox[] getCollisionBoxes();
-
-	/**
-	 * Renders the entity using the context
-	 * @param context
-	 */
-	public void render(RenderingContext context);
-
-	/**
-	 * Used in debug mode only
-	 */
-	public void debugDraw();
 	
 	/**
 	 * Called when controlling/viewing an entity

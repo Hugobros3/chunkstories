@@ -93,64 +93,23 @@ public class ItemAk47 extends Item implements DamageCause
 				if (shooter.getWorld() instanceof WorldClient)
 				{
 					EntityComponentRotation rot = ((EntityLiving) user).getEntityRotationComponent();
-
 					rot.applyInpulse((Math.random() - 0.5) * 3.0, -(Math.random() - 0.25) * 5.0);
-
-					//rot.setRotation(rot.getHorizontalRotation() + (Math.random() - 0.5) * 3.0, rot.getVerticalRotation() - (Math.random() - 0.25) * 5.0);
 				}
 
 				//Play sounds
 				if (controller != null)
 					controller.getSoundManager().playSoundEffect("sounds/weapons/ak47/shootNear.ogg", user.getLocation(), 1.0f, 1.0f).setAttenuationEnd(150f);
 
-				/*if (shooter.getWorld() instanceof WorldClient)
-					shooter.getWorld().playSoundEffect("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f);
-				if (shooter.getWorld() instanceof WorldMaster)
-					((WorldMaster) shooter.getWorld()).playSoundEffectExcluding("sfx/shoot.ogg", user.getLocation(), 1.0f, 1.0f, controller);*/
-
 				//Raytrace shot
-
 				Vector3d eyeLocation = new Vector3d(shooter.getLocation());
 				if (shooter instanceof EntityPlayer)
 					eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
 
-				//Hitreg takes place on server bois
-				if (shooter.getWorld() instanceof WorldMaster)
-				{
-					//Iterate over each found entities
-					Iterator<Entity> shotEntities = user.getWorld().rayTraceEntities(eyeLocation, shooter.getDirectionLookingAt(), 256f);
-					while (shotEntities.hasNext())
-					{
-						Entity shotEntity = shotEntities.next();
-						//Don't shoot itself & only living things get shot
-						if (!shotEntity.equals(shooter) && shotEntity instanceof EntityLiving)
-						{
-							//Get hit location
-							Vector3d hitPoint = shotEntity.collidesWith(eyeLocation, shooter.getDirectionLookingAt());
-
-							//Deal damage
-							((EntityLiving) shotEntity).damage(this, 35f);
-							
-							//Spawn blood particles
-							Vector3d bloodDir = shooter.getDirectionLookingAt().normalize().scale(0.25);
-							for (int i = 0; i < 25; i++)
-							{
-								Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
-								random.scale(0.25);
-								random.add(bloodDir);
-
-								shooter.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("blood", hitPoint, random);
-								//((BloodData) shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("blood"), hitPoint)).setVelocity(random);
-							}
-
-							//Spawn blood on walls
-							shooter.getWorld().getDecalsManager().drawDecal(hitPoint, bloodDir, new Vector3d(3.0), "blood");
-						}
-					}
-				}
-
 				//Find wall collision
 				Location shotBlock = user.getWorld().raytraceSolid(eyeLocation, shooter.getDirectionLookingAt(), 256f);
+
+				Vector3d nearestLocation = null;
+				
 				if (shotBlock != null)
 				{
 					Location shotBlockOuter = user.getWorld().raytraceSolidOuter(eyeLocation, shooter.getDirectionLookingAt(), 256f);
@@ -171,8 +130,6 @@ public class ItemAk47 extends Item implements DamageCause
 						//shotBlock.setX(shotBlock.getX() + 1);
 						int data = user.getWorld().getVoxelData(shotBlock);
 						Voxel voxel = VoxelTypes.get(data);
-
-						Vector3d nearestLocation = null;
 
 						//This seems fine
 						
@@ -216,6 +173,43 @@ public class ItemAk47 extends Item implements DamageCause
 						controller.getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");
 					}
 				}
+				
+				//Hitreg takes place on server bois
+				if (shooter.getWorld() instanceof WorldMaster)
+				{
+					//Iterate over each found entities
+					Iterator<Entity> shotEntities = user.getWorld().rayTraceEntities(eyeLocation, shooter.getDirectionLookingAt(), 256f);
+					while (shotEntities.hasNext())
+					{
+						Entity shotEntity = shotEntities.next();
+						//Don't shoot itself & only living things get shot
+						if (!shotEntity.equals(shooter) && shotEntity instanceof EntityLiving)
+						{
+							//Get hit location
+							Vector3d hitPoint = shotEntity.collidesWith(eyeLocation, shooter.getDirectionLookingAt());
+
+							//Deal damage
+							((EntityLiving) shotEntity).damage(this, 35f);
+							
+							//Spawn blood particles
+							Vector3d bloodDir = shooter.getDirectionLookingAt().normalize().scale(0.25);
+							for (int i = 0; i < 25; i++)
+							{
+								Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+								random.scale(0.25);
+								random.add(bloodDir);
+
+								shooter.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("blood", hitPoint, random);
+								//((BloodData) shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("blood"), hitPoint)).setVelocity(random);
+							}
+
+							//Spawn blood on walls
+							if(nearestLocation != null)
+								shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3d(3.0), "blood");
+						}
+					}
+				}
+
 
 				controller.getParticlesManager().spawnParticleAtPosition("muzzle", eyeLocation);
 				//shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("muzzle"), eyeLocation);

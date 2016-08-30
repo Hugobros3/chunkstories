@@ -449,9 +449,9 @@ public class ServerPlayer implements Player
 		int ry = cameraChunkY / 8;
 		int rz = cameraChunkZ / 8;
 		
-		for (int chunkX = (cameraChunkX - maxChunksViewDistance); chunkX < cameraChunkX + maxChunksViewDistance; chunkX+=8)
+		for (int chunkX = (cameraChunkX - maxChunksViewDistance); chunkX < Math.ceil((cameraChunkX + maxChunksViewDistance) / 8.0) * 8.0; chunkX+=8)
 		{
-			for (int chunkZ = (cameraChunkZ - maxChunksViewDistance); chunkZ < cameraChunkZ + maxChunksViewDistance; chunkZ+=8)
+			for (int chunkZ = (cameraChunkZ - maxChunksViewDistance); chunkZ < Math.ceil((cameraChunkZ + maxChunksViewDistance) / 8.0) * 8.0; chunkZ+=8)
 				for (int chunkY = cameraChunkY - 3; chunkY < cameraChunkY + 3; chunkY++)
 				{
 					Region region = world.aquireRegionChunkCoordinates(this, chunkX, chunkY, chunkZ);

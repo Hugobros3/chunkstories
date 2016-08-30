@@ -404,7 +404,7 @@ public class RegionSummaryImplementation implements RegionSummary
 			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);*/
 
 		//Tell world renderer
-		((WorldClient) this.world).getWorldRenderer().farTerrainRenderer.markFarTerrainMeshDirty();
+		((WorldClient) this.world).getWorldRenderer().getFarTerrainRenderer().markFarTerrainMeshDirty();
 		
 		//Flag it
 		texturesUpToDate.set(true);

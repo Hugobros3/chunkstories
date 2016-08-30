@@ -39,12 +39,12 @@ public abstract class EntityImplementation implements Entity
 
 	Set<Subscriber> subscribers = new HashSet<Subscriber>();
 
+	public WorldImplementation world;
+
 	protected EntityComponentExistence existenceComponent = new EntityComponentExistence(this, null);
 	protected EntityComponentPosition positionComponent = new EntityComponentPosition(this, existenceComponent);
 	private EntityComponentVelocity velocityComponent = new EntityComponentVelocity(this, positionComponent);
 
-	public WorldImplementation world;
-	
 	//public Vector3d velocity;
 	public Vector3d acceleration;
 
@@ -57,9 +57,8 @@ public abstract class EntityImplementation implements Entity
 
 	public Vector3d blockedMomentum = new Vector3d();
 
-	//public boolean inWater = false;
 	public Voxel voxelIn;
-	
+
 	private boolean hasSpawned = false;
 
 	public EntityImplementation(WorldImplementation w, double x, double y, double z)
@@ -68,21 +67,18 @@ public abstract class EntityImplementation implements Entity
 
 		positionComponent.setWorld(w);
 		positionComponent.setPositionXYZ(x, y, z);
-		
-		//velocity = new Vector3d();
+
 		acceleration = new Vector3d();
-		//checkPositionAndUpdateHolder();
+
 		//To avoid NPEs
 		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 	}
-
 
 	public EntityComponentPosition getEntityComponentPosition()
 	{
 		return positionComponent;
 	}
-	
-	
+
 	@Override
 	public Location getLocation()
 	{
@@ -121,7 +117,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void tick()
 	{
-		
+
 	}
 
 	@Override
@@ -145,7 +141,8 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public String toString()
 	{
-		return "[" + this.getClass().getSimpleName() + ": holderExists: "+(positionComponent.getRegionWithin() != null)+" ,position : " + positionComponent.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Region:" + this.positionComponent.getRegionWithin() + " ]";
+		return "[" + this.getClass().getSimpleName() + ": holderExists: " + (positionComponent.getRegionWithin() != null) + " ,position : " + positionComponent.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Region:"
+				+ this.positionComponent.getRegionWithin() + " ]";
 	}
 
 	double clampDouble(double d)
@@ -215,7 +212,7 @@ public abstract class EntityImplementation implements Entity
 
 		//Keep biggest distanceToTravel in each dimension
 		Vector3d maxDistanceToTravel = new Vector3d(0.0);
-		
+
 		//Iterate over every box
 		//CollisionBox[] translatedBoxes = getCollisionBoxes();
 		for (int r = 0; r < getCollisionBoxes().length; r++)
@@ -228,7 +225,7 @@ public abstract class EntityImplementation implements Entity
 			vec.scale(0.25d);
 			// Do it block per block, face per face
 			double distanceTraveled = 0;
-			
+
 			CollisionBox checkerX = getCollisionBoxes()[r].translate(pos.getX(), pos.getY(), pos.getZ());
 			CollisionBox checkerY = getCollisionBoxes()[r].translate(pos.getX(), pos.getY(), pos.getZ());
 			CollisionBox checkerZ = getCollisionBoxes()[r].translate(pos.getX(), pos.getY(), pos.getZ());
@@ -410,22 +407,22 @@ public abstract class EntityImplementation implements Entity
 				distanceToTravel.setY(distanceToTravel.getY() - pmy);
 			}
 
-			if(Math.abs(distanceToTravel.getX()) > Math.abs(maxDistanceToTravel.getX()))
+			if (Math.abs(distanceToTravel.getX()) > Math.abs(maxDistanceToTravel.getX()))
 				maxDistanceToTravel.setX(distanceToTravel.getX());
 
-			if(Math.abs(distanceToTravel.getY()) > Math.abs(maxDistanceToTravel.getY()))
+			if (Math.abs(distanceToTravel.getY()) > Math.abs(maxDistanceToTravel.getY()))
 				maxDistanceToTravel.setY(distanceToTravel.getY());
 
-			if(Math.abs(distanceToTravel.getZ()) > Math.abs(maxDistanceToTravel.getZ()))
+			if (Math.abs(distanceToTravel.getZ()) > Math.abs(maxDistanceToTravel.getZ()))
 				maxDistanceToTravel.setZ(distanceToTravel.getZ());
-			
+
 			//System.out.println("cuck'd"+distanceToTravel);
 		}
 		//Set the new position after computations have been done
-		
+
 		if (!onlyTest)
 			this.moveWithoutCollisionRestrain(delta.getX() - maxDistanceToTravel.getX(), delta.getY() - maxDistanceToTravel.getY(), delta.getZ() - maxDistanceToTravel.getZ());
-			//this.position.setPosition(pos);
+		//this.position.setPosition(pos);
 
 		//System.out.println("cuck'd"+maxDistanceToTravel);
 		return maxDistanceToTravel;
@@ -435,23 +432,23 @@ public abstract class EntityImplementation implements Entity
 	{
 		return box.collidesWith(this);
 	}
-	
+
 	public boolean collidesWith(Entity entity)
 	{
-		for(CollisionBox box : this.getTranslatedCollisionBoxes())
+		for (CollisionBox box : this.getTranslatedCollisionBoxes())
 		{
-			if(box.collidesWith(entity))
+			if (box.collidesWith(entity))
 				return true;
 		}
 		return false;
 	}
-	
+
 	public Vector3d collidesWith(Vector3d lineStart, Vector3d lineDirection)
 	{
-		for(CollisionBox box : this.getTranslatedCollisionBoxes())
+		for (CollisionBox box : this.getTranslatedCollisionBoxes())
 		{
 			Vector3d collides = box.collidesWith(lineStart, lineDirection);
-			if(collides != null)
+			if (collides != null)
 				return collides;
 		}
 		return null;
@@ -464,7 +461,6 @@ public abstract class EntityImplementation implements Entity
 		for (CollisionBox box : boxes)
 			box.translate(getLocation());
 		return boxes;
-		//return new CollisionBox[] { getCollisionBox().translate(position.getLocation()) };
 	}
 
 	@Override
@@ -473,36 +469,15 @@ public abstract class EntityImplementation implements Entity
 		return new CollisionBox[] { new CollisionBox(1.0, 1.0, 1.0) };
 	}
 
-	public void render()
-	{
-		// Do nothing.
-	}
-
-	@Override
-	public void debugDraw()
-	{
-		// Do nothing.
-	}
-
 	@Override
 	public void setupCamera(Camera camera)
 	{
-		synchronized (this)
-		{
-			camera.pos = new Vector3d(positionComponent.getLocation()).negate();
+		camera.pos = new Vector3d(positionComponent.getLocation()).negate();
 
-			//camera.pos.x = -pos.x;
-			//camera.pos.y = -pos.y;
-			//camera.pos.z = -pos.z;
+		//Default FOV
+		camera.fov = RenderingConfig.fov;
 
-			//camera.rotationX = rotV;
-			//camera.rotationY = rotH;
-
-			//Default FOV
-			camera.fov = RenderingConfig.fov;
-
-			camera.alUpdate();
-		}
+		camera.alUpdate();
 	}
 
 	@Override
@@ -531,19 +506,19 @@ public abstract class EntityImplementation implements Entity
 	public boolean removeFromWorld()
 	{
 		//Only once
-		if(existenceComponent.exists())
+		if (existenceComponent.exists())
 		{
 			//Destroys it
 			existenceComponent.destroyEntity();
-		
+
 			//Removes it's reference within the region
-			if(this.positionComponent.getRegionWithin() != null)
+			if (this.positionComponent.getRegionWithin() != null)
 				this.positionComponent.getRegionWithin().removeEntityFromRegion(this);
-			
+
 			//Actually removes it from the world list
-			if(this.world != null)
+			if (this.world != null)
 				this.world.removeEntityFromList(this);
-			
+
 			return true;
 		}
 		return false;
@@ -575,12 +550,12 @@ public abstract class EntityImplementation implements Entity
 	{
 		return existenceComponent.exists();
 	}
-	
+
 	public boolean hasSpawned()
 	{
 		return hasSpawned;
 	}
-	
+
 	public void markHasSpawned()
 	{
 		hasSpawned = true;
@@ -590,9 +565,9 @@ public abstract class EntityImplementation implements Entity
 	public void setUUID(long uuid)
 	{
 		//Don't allow UUID changes once spawned !
-		if(entityUUID != -1 && this.hasSpawned())
+		if (entityUUID != -1 && this.hasSpawned())
 			throw new IllegalUUIDChangeException();
-		
+
 		this.entityUUID = uuid;
 	}
 

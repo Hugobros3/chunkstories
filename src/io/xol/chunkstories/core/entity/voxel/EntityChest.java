@@ -23,18 +23,6 @@ public class EntityChest extends EntityImplementation implements EntityWithInven
 	}
 
 	@Override
-	public void render(RenderingContext context)
-	{
-
-		/*Vector3f pos = getLocation().castToSP();
-		pos.x += 0.5f;
-		pos.z += 0.5f;
-		
-		pos.y += 1.5f;
-		context.addLight(new DefferedLight(new Vector3f(1.0f, 0.0f, 0.0f), pos, 500f));*/
-	}
-
-	@Override
 	public EntityInventory getInventory()
 	{
 		return inventoryComponent;

@@ -1,6 +1,7 @@
 package io.xol.chunkstories.core.entity.voxel;
 
 import io.xol.chunkstories.api.entity.EntityVoxel;
+import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -18,7 +19,7 @@ public class EntityVoxelTest extends EntityImplementation implements EntityVoxel
 		super(w, x, y, z);
 	}
 
-	@Override
+	/*@Override
 	public void render(RenderingContext context)
 	{
 		//System.out.println("k man" + getLocation());
@@ -29,5 +30,5 @@ public class EntityVoxelTest extends EntityImplementation implements EntityVoxel
 		
 		pos.y += 1.5f;
 		context.addLight(new DefferedLight(new Vector3f(1.0f, 1.0f, 0.0f), pos, 15f));
-	}
+	}*/
 }

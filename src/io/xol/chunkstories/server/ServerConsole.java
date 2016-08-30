@@ -150,7 +150,7 @@ public class ServerConsole
 				test.setLocation(((Player) emitter).getLocation());
 				server.getWorld().addEntity(test);
 
-				emitter.sendMessage("#00FFD0" + "Spawned " + test);
+				emitter.sendMessage("#00FFD0" + "Spawned " + test.getClass().getSimpleName() + " at player");
 				return true;
 			}
 			else if (cmd.equals("fly"))

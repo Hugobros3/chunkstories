@@ -15,7 +15,7 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -33,8 +33,9 @@ public class CubicChunk implements Chunk, ChunkRenderable
 
 	// Used in client rendering
 	private ChunkRenderData chunkRenderData;
-	public AtomicLong lastModification = new AtomicLong();
-	public AtomicLong lastModificationSaved = new AtomicLong();
+	//public AtomicLong lastModification = new AtomicLong();
+	//public AtomicLong lastModificationSaved = new AtomicLong();
+	public AtomicInteger unsavedBlockModifications = new AtomicInteger();
 
 	public AtomicBoolean need_render = new AtomicBoolean(true);
 	public AtomicBoolean need_render_fast = new AtomicBoolean(false);
@@ -273,7 +274,9 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		int dataBefore = chunkVoxelData[x * 32 * 32 + y * 32 + z];
 		chunkVoxelData[x * 32 * 32 + y * 32 + z] = data;
 		computeLightSpread(x, y, z, dataBefore, data);
-		lastModification.set(System.currentTimeMillis());
+		
+		unsavedBlockModifications.incrementAndGet();
+		//lastModification.set(System.currentTimeMillis());
 
 		if (dataBefore != data)
 			this.markForReRender();
@@ -289,7 +292,9 @@ public class CubicChunk implements Chunk, ChunkRenderable
 			chunkVoxelData = new int[32 * 32 * 32];
 
 		chunkVoxelData[x * 32 * 32 + y * 32 + z] = data;
-		lastModification.set(System.currentTimeMillis());
+		
+		unsavedBlockModifications.incrementAndGet();
+		//lastModification.set(System.currentTimeMillis());
 	}
 
 	@Override
@@ -808,7 +813,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 			}
 			// Top chunk
 			cc = world.getChunk(chunkX, chunkY + 1, chunkZ);
-			if (cc != null && chunkVoxelData != null)
+			if (cc != null && !cc.isAirChunk())// && chunkVoxelData != null)
 			{
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
@@ -853,8 +858,51 @@ public class CubicChunk implements Chunk, ChunkRenderable
 					for (int c = 0; c < 32; c++)
 					{
 						int heightInSummary = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + b, chunkZ * 32 + c);
+						
+						//If the top chunk is air
+						if(heightInSummary <= this.chunkY * 32 + 32)
+						{
+							//int adjacent_data = cc.getVoxelData(c, 0, b);
+							int current_data = getVoxelData(c, 31, b);
+	
+							int adjacent_blo = 0;//((adjacent_data & 0x0F000000) >>> 0x18);
+							int current_blo = ((current_data & 0x0F000000) >>> 0x18);
+							int adjacent_sun = 15;//((adjacent_data & 0x00F00000) >>> 0x14);
+							int current_sun = ((current_data & 0x00F00000) >>> 0x14);
+							if (adjacent_blo > 1 && adjacent_blo > current_blo)
+							{
+								int ndata = current_data & 0xF0FFFFFF | (adjacent_blo - 1) << 0x18;
+								setVoxelDataWithoutUpdates(c, 31, b, ndata);
+								if (adjacent_blo > 2)
+								{
+									blockSources.push(c);
+									blockSources.push(b);
+									blockSources.push(31);
+									//blockSources.push(c << 16 | b << 8 | 31);
+								}
+							}
+							if (adjacent_sun > 1 && adjacent_sun > current_sun)
+							{
+								int ndata = current_data & 0xFF0FFFFF | (adjacent_sun - 1) << 0x14;
+								setVoxelDataWithoutUpdates(c, 31, b, ndata);
+								//System.out.println(cc + " : "+adjacent_sun);
+								if (adjacent_sun > 2)
+								{
+									sunSources.push(c);
+									sunSources.push(b);
+									sunSources.push(31);
+									//sunSources.push(c << 16 | b << 8 | 31);
+								}
+							}
+						}
+					}
+				
+				/*for (int b = 0; b < 32; b++)
+					for (int c = 0; c < 32; c++)
+					{
+						int heightInSummary = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + b, chunkZ * 32 + c);
 						// System.out.println("compute "+heightInSummary+" <= ? "+chunkY*32);
-						if (heightInSummary <= chunkY * 32)
+						if (heightInSummary <= chunkY * 32 + 32)
 						{
 							int sourceAt = chunkY * 32 - heightInSummary;
 							sourceAt = Math.min(31, sourceAt);
@@ -869,7 +917,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 							//sunSources.push(b << 16 | c << 8 | sourceAt);
 							// System.out.println("Added sunsource cause summary etc");
 						}
-					}
+					}*/
 			}
 			// Bottom chunk
 			cc = world.getChunk(chunkX, chunkY - 1, chunkZ);

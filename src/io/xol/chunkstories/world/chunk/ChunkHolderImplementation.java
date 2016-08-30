@@ -61,6 +61,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 			return;
 		
 		final CubicChunk chunk = this.chunk;
+		final int changesTakenIntoAccount = chunk.unsavedBlockModifications.get();
 		
 		if (!chunk.isAirChunk())
 		{
@@ -102,7 +103,10 @@ public class ChunkHolderImplementation implements ChunkHolder
 			compressedDataLock.endWrite();
 
 		}
-		chunk.lastModificationSaved.set(System.currentTimeMillis());
+		
+		//Remove whatever modifications existed when the method started, this is for avoiding concurrent modifications not being taken into account
+		chunk.unsavedBlockModifications.addAndGet(-changesTakenIntoAccount);
+		//chunk.lastModificationSaved.set(System.currentTimeMillis());
 	}
 	
 	public byte[] getCompressedData()
@@ -144,7 +148,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		}
 		
 		//Compress chunk if it changed
-		if(chunk != null && region.getWorld() instanceof WorldMaster && chunk.lastModification.get() > chunk.lastModificationSaved.get())
+		if(chunk != null && region.getWorld() instanceof WorldMaster && chunk.unsavedBlockModifications.get() > 0)//chunk.lastModification.get() > chunk.lastModificationSaved.get())
 			compressChunkData();
 		
 		//Null-out reference

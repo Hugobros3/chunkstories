@@ -4,7 +4,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
-
+import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -14,7 +14,7 @@ import io.xol.engine.model.ModelLibrary;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntitySUV extends EntityImplementation
+public class EntitySUV extends EntityImplementation// implements EntityRenderable
 {
 	int i = 0;
 
@@ -31,7 +31,7 @@ public class EntitySUV extends EntityImplementation
 
 	//BVHAnimation anim;
 
-	@Override
+	/*@Override
 	public void render(RenderingContext renderingContext)
 	{
 		// if(Math.random() > 0.9)
@@ -53,7 +53,7 @@ public class EntitySUV extends EntityImplementation
 		ModelLibrary.getRenderableMesh("res/models/rookie.obj").render(renderingContext);
 		//ModelLibrary.loadAndRenderAnimatedMesh("res/models/human.obj", "res/models/human-fixed-standstill.bvh", i);
 
-	}
+	}*/
 	
 	/*@Override
 	public Light[] getLights()

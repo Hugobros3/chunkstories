@@ -18,7 +18,6 @@ public class ItemAk47Magazine extends Item
 	@Override
 	public String getTextureName(ItemPile pile)
 	{
-		// TODO Auto-generated method stub
 		return "res/items/icons/ak47_magazine.png";
 	}
 
