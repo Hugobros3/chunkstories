@@ -7,7 +7,7 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
-import io.xol.chunkstories.entity.EntitiesList;
+import io.xol.chunkstories.entity.Entities;
 import io.xol.chunkstories.world.WorldImplementation;
 
 import java.io.DataInputStream;
@@ -82,7 +82,7 @@ public class PacketEntity extends PacketSynch
 		//Create an entity if the servers tells you to do so
 		if(entity == null)
 		{
-			entity = EntitiesList.newEntity(processor.getWorld(), this.entityTypeID);
+			entity = Entities.newEntity(processor.getWorld(), this.entityTypeID);
 			entity.setUUID(entityUUID);
 			
 			addToWorld = true;

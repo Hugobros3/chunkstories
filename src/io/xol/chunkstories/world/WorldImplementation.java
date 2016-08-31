@@ -10,8 +10,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.interfaces.EntityWithClientPrediction;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.particles.ParticlesManager;
@@ -37,7 +39,7 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.EntityRayIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
@@ -240,11 +242,40 @@ public abstract class WorldImplementation implements World
 				Location entityLocation = entity.getLocation();
 				if (entity.getRegion() != null && entity.getRegion().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
 				{
-					//If we're the client world and this is our entity
+					//If we're the client world and this is our controlled entity we execute the tickClientController() and tick() methods
 					if (this instanceof WorldClient && entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.getInstance().getClientSideController().getControlledEntity() != null && Client.getInstance().getClientSideController().getControlledEntity().equals(entity))
 					{
-						((EntityControllable) entity).tickClient(Client.getInstance().getClientSideController());
+						((EntityControllable) entity).tickClientController(Client.getInstance().getClientSideController());
 						entity.tick();
+					}
+					else if(this instanceof WorldClient)
+					{
+						//Some entities feature fancy clientside-prediction, for misc functions such as interpolation positions, spawning particles or playing walking sounds
+						if(entity instanceof EntityWithClientPrediction)
+						{
+							if(entity instanceof EntityControllable)
+							{
+								Controller controller = ((EntityControllable) entity).getControllerComponent().getController();
+								//If this is a remote world, any non-controlled entity could be client-predicted
+								if(this instanceof WorldClientRemote)
+								{
+									//Ok
+								}
+								//If this is a local world/server then only REMOTE clients should be predicted
+								else if(controller != null && !controller.equals(Client.getInstance().getClientSideController()))
+								{
+									//Ok too
+								}
+								//If neither is true, abort
+								else
+									continue;
+							}
+							//Non-controllable, locally simulated entities should not be predicted
+							else if(this instanceof WorldClientLocal)
+								continue;
+							
+							((EntityWithClientPrediction) entity).tickClientPrediction();
+						}
 					}
 					//Server should not tick client's entities, only ticks if their controller isn't present
 					else if (this instanceof WorldMaster && (!(entity instanceof EntityControllable) || ((EntityControllable) entity).getControllerComponent().getController() == null))
@@ -361,8 +392,8 @@ public abstract class WorldImplementation implements World
 		if (chunk != null)
 		{
 			int formerData = chunk.getVoxelData(x % 32, y % 32, z % 32);
-			Voxel formerVoxel = VoxelTypes.get(formerData);
-			Voxel newVoxel = VoxelTypes.get(newData);
+			Voxel formerVoxel = Voxels.get(formerData);
+			Voxel newVoxel = Voxels.get(newData);
 
 			try
 			{
@@ -580,7 +611,7 @@ public abstract class WorldImplementation implements World
 		if (id > 0)
 		{
 
-			Voxel v = VoxelTypes.get(id);
+			Voxel v = Voxels.get(id);
 			
 			CollisionBox[] boxes = v.getTranslatedCollisionBoxes(this, (int) posX, (int) posY, (int) posZ);
 			if (boxes != null)
@@ -640,7 +671,7 @@ public abstract class WorldImplementation implements World
 			return false;
 
 		int dataAtLocation = this.getVoxelData(voxelLocation);
-		Voxel voxel = VoxelTypes.get(dataAtLocation);
+		Voxel voxel = Voxels.get(dataAtLocation);
 		if (voxel != null && voxel instanceof VoxelInteractive)
 			return ((VoxelInteractive) voxel).handleInteraction(entity, voxelLocation, input, dataAtLocation);
 		return false;
@@ -717,7 +748,7 @@ public abstract class WorldImplementation implements World
 			x = voxelCoords[0];
 			y = voxelCoords[1];
 			z = voxelCoords[2];
-			vox = VoxelTypes.get(this.getVoxelData(x, y, z));
+			vox = Voxels.get(this.getVoxelData(x, y, z));
 			if (vox.isVoxelSolid() || (selectable && vox.isVoxelSelectable()))
 			{
 				boolean collides = false;

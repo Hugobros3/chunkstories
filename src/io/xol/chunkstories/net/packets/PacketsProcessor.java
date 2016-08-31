@@ -22,7 +22,7 @@ import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
-import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -44,7 +44,7 @@ public class PacketsProcessor
 	{
 		//Loads *all* possible packets types
 		packetIds.clear();
-		Deque<File> packetsFiles = GameData.getAllFileInstances("./res/data/packetsTypes.txt");
+		Deque<File> packetsFiles = GameContent.getAllFileInstances("./res/data/packetsTypes.txt");
 		for (File f : packetsFiles)
 		{
 			loadPacketFile(f);

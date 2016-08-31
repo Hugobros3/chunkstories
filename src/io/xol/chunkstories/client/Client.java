@@ -22,7 +22,7 @@ import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
-import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.content.sandbox.GameLogicThread;
@@ -79,7 +79,7 @@ public class Client implements /*ClientSideController, */ClientInterface
 			else if (s.contains("-mods"))
 			{
 				String[] modsString = s.replace("-mods=", "").split(",");
-				GameData.setEnabledMods(modsString);
+				GameContent.setEnabledMods(modsString);
 			}
 			else if (s.contains("-dir"))
 			{
@@ -111,13 +111,13 @@ public class Client implements /*ClientSideController, */ClientInterface
 		RenderingConfig.define();
 		NativesLoader.load();
 		// Load last gamemode
-		GameData.reload();
+		GameContent.reload();
 		inputsManager = new ClientInputsManager();
 		// Gl init
 		windows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);
 		windows.createContext();
 
-		GameData.reloadClientContent();
+		GameContent.reloadClientContent();
 		windows.changeScene(new MainMenu(windows, true));
 		//Load 
 		pluginsManager = new PluginsManager(clientController);
@@ -185,9 +185,9 @@ public class Client implements /*ClientSideController, */ClientInterface
 	@Override
 	public void reloadAssets()
 	{
-		GameData.reload();
+		GameContent.reload();
 		inputsManager.reload();
-		GameData.reloadClientContent();
+		GameContent.reloadClientContent();
 	}
 
 	@Override

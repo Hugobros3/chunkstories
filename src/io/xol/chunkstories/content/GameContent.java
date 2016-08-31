@@ -9,13 +9,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.xol.chunkstories.entity.EntitiesList;
+import io.xol.chunkstories.entity.Entities;
 import io.xol.chunkstories.entity.EntityComponents;
-import io.xol.chunkstories.item.ItemsList;
+import io.xol.chunkstories.item.ItemTypes;
+import io.xol.chunkstories.materials.Materials;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.particles.ParticleTypes;
 import io.xol.chunkstories.voxel.VoxelTextures;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.chunkstories.world.generator.WorldGenerators;
 import io.xol.engine.animation.BVHLibrary;
@@ -28,7 +29,7 @@ import io.xol.engine.sound.library.SoundsLibrary;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class GameData
+public class GameContent
 {
 	public static void reload()
 	{
@@ -43,19 +44,23 @@ public class GameData
 		System.out.println("texture atlas reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();
 		
+		Materials.reload();
+		System.out.println("materials reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		part = System.nanoTime();
+		
 		VoxelModels.resetAndLoadModels();
 		System.out.println("voxel models reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();
 		
-		ItemsList.reload();
+		ItemTypes.reload();
 		System.out.println("items reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();
 		
-		VoxelTypes.loadVoxelTypes();
+		Voxels.loadVoxelTypes();
 		System.out.println("voxels reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();
 		
-		EntitiesList.reload();
+		Entities.reload();
 		System.out.println("entities reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();
 		

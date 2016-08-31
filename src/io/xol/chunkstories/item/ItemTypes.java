@@ -17,7 +17,7 @@ import java.util.Map;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ItemsList
+public class ItemTypes
 {
 	public static ItemType[] items = new ItemType[65536];
 	static Map<Short, Constructor<? extends Item>> itemsTypes = new HashMap<Short, Constructor<? extends Item>>();

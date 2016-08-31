@@ -25,7 +25,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.lalgb.Vector3d;
 
@@ -71,7 +71,7 @@ public abstract class EntityImplementation implements Entity
 		acceleration = new Vector3d();
 
 		//To avoid NPEs
-		voxelIn = VoxelTypes.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
+		voxelIn = Voxels.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 	}
 
 	public EntityComponentPosition getEntityComponentPosition()
@@ -266,7 +266,7 @@ public abstract class EntityImplementation implements Entity
 						{
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
-							vox = VoxelTypes.get(id);
+							vox = Voxels.get(id);
 							if (vox.isVoxelSolid())
 							{
 								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
@@ -315,7 +315,7 @@ public abstract class EntityImplementation implements Entity
 						{
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
-							vox = VoxelTypes.get(id);
+							vox = Voxels.get(id);
 							if (vox.isVoxelSolid())
 							{
 								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
@@ -365,7 +365,7 @@ public abstract class EntityImplementation implements Entity
 						{
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
-							vox = VoxelTypes.get(id);
+							vox = Voxels.get(id);
 							if (vox.isVoxelSolid())
 							{
 								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
@@ -483,7 +483,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public short getEID()
 	{
-		return EntitiesList.getIdForClass(getClass().getName());
+		return Entities.getIdForClass(getClass().getName());
 	}
 
 	public static short allocatedID = 0;
@@ -610,5 +610,11 @@ public abstract class EntityImplementation implements Entity
 	public EntityComponent getComponents()
 	{
 		return existenceComponent;
+	}
+
+	@Override
+	public boolean isEntityOnGround()
+	{
+		return this.canMoveWithCollisionRestrain(new Vector3d(0.0, -0.01, 0.0)).length() == 0.01;
 	}
 }

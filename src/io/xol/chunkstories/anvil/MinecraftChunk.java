@@ -10,7 +10,7 @@ import io.xol.chunkstories.anvil.nbt.NBTag;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.core.entity.voxel.EntitySign;
 import io.xol.chunkstories.core.voxel.VoxelSign;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
 
 import java.io.ByteArrayInputStream;
@@ -111,7 +111,7 @@ public class MinecraftChunk
 					
 					String textComplete = text1 + "\n" + text2 + "\n" + text3 + "\n" + text4;
 					
-					Voxel voxel = VoxelTypes.get(exported.getVoxelData(csCoordinatesX, csCoordinatesY, csCoordinatesZ));
+					Voxel voxel = Voxels.get(exported.getVoxelData(csCoordinatesX, csCoordinatesY, csCoordinatesZ));
 					//System.out.println("int dataAt sign : "+exported.getVoxelData(csCoordinatesX, csCoordinatesY, csCoordinatesZ));
 					if(voxel instanceof VoxelSign)
 					{

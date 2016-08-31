@@ -8,7 +8,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface EntityLiving extends EntityRenderable, EntityRotateable, EntityAnimated, DamageCause
+public interface EntityLiving extends Entity, EntityRenderable, EntityRotateable, EntityAnimated, DamageCause
 {
 	public float getMaxHealth();
 	

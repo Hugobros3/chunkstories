@@ -9,7 +9,7 @@ import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -51,13 +51,13 @@ public class VoxelWaterRenderer extends VoxelModel
 				return 0;
 			
 			int id = chunk.getWorld().getVoxelData(chunk.getChunkX() * 32 + x, chunk.getChunkY() * 32 + y - i, chunk.getChunkZ() * 32 + z);
-			if(VoxelTypes.get(id) != null && VoxelTypes.get(id).isVoxelLiquid())
+			if(Voxels.get(id) != null && Voxels.get(id).isVoxelLiquid())
 				depth++;
 			else
 				break;
 		}
 		
-		String voxelName = VoxelTypes.get(info.data).getName();
+		String voxelName = Voxels.get(info.data).getName();
 		
 		int modelTextureIndex = 0;
 		
@@ -89,7 +89,7 @@ public class VoxelWaterRenderer extends VoxelModel
 		{
 			int id = VoxelFormat.id(info.neightborhood[j]);
 			int meta = VoxelFormat.meta(info.neightborhood[j]);
-			occTest = VoxelTypes.get(id);
+			occTest = Voxels.get(id);
 			// If it is, don't draw it.
 			cullingCache[j] = (occTest.isVoxelOpaque() || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])) || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])
 					|| (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());

@@ -27,7 +27,7 @@ import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.RenderByteBuffer;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
@@ -107,8 +107,8 @@ public class VoxelItemRenderer implements ItemRenderer
 
 		VoxelContext bri = new VoxelContext(0);
 		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));
-		bri.voxelType = VoxelTypes.get(bri.data);
-		VoxelRenderer model = voxel.getVoxelModel(bri);
+		bri.voxelType = Voxels.get(bri.data);
+		VoxelRenderer model = voxel.getVoxelRenderer(bri);
 		if (model == null || !voxel.isVoxelUsingCustomRenderer())
 		{
 			model = VoxelModels.getVoxelModel("default");
@@ -219,8 +219,8 @@ public class VoxelItemRenderer implements ItemRenderer
 
 		VoxelContext bri = new VoxelContext(0);
 		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));
-		bri.voxelType = VoxelTypes.get(bri.data);
-		VoxelRenderer model = voxel.getVoxelModel(bri);
+		bri.voxelType = Voxels.get(bri.data);
+		VoxelRenderer model = voxel.getVoxelRenderer(bri);
 		if (model == null || !voxel.isVoxelUsingCustomRenderer())
 		{
 			model = VoxelModels.getVoxelModel("default");

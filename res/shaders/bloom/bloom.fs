@@ -31,7 +31,7 @@ void main()
 {	
 	vec3 finalLight = vec3(0.0);
 
-	for(int i = 0; i <= 0 / 2.0; i++)
+/*	for(int i = 0; i <= 0 / 2.0; i++)
 	{
 		float powed = pow(2, i);
 		
@@ -40,6 +40,7 @@ void main()
 		//float normalizedError = clamp(1.0 - length(screenCoord * (screenSize / powed) - lp), 0.0, 1.0);
 		
 		finalLight += 1 * texture2DLod(shadedBuffer, screenCoord, i).rgb / powed;
+		finalLight = pow(finalLight, vec3(gammaInv));
 		
 		//vec2 diff = vec2(0.0);
 		
@@ -50,12 +51,16 @@ void main()
 		//finalLight += 0.25 * texture2DLod(shadedBuffer, screenCoordFloored + vec2(-1.0, 0.0) / (screenSize / powed) , i).rgb / powed;
 	}
 		
-		
+		*/
 	//finalLight = 0.5 * texture2DLod(shadedBuffer, screenCoord, max_mipmap+1).rgb;
-	float lum = luminance(finalLight) * apertureModifier;
 	
-	finalLight = pow(finalLight, vec3(gammaInv));
-	finalLight *= clamp(lum-0.4, 0.0, 1000.0);
+	vec3 originalPixelColor = texture2D(shadedBuffer, screenCoord).rgb;
+	originalPixelColor = pow(originalPixelColor, vec3(gammaInv));
 	
-	gl_FragColor = vec4(finalLight * 0.4, 1.0);
+	float lum = luminance(originalPixelColor) * apertureModifier;
+	
+	finalLight += clamp(originalPixelColor * (lum - 0.6), vec3(0.0), vec3(1.0)) * 0.4;
+	finalLight += clamp(originalPixelColor * lum, vec3(0.0), vec3(1.0)) * 0.10;
+	
+	gl_FragColor = vec4(finalLight, 1.0);
 }

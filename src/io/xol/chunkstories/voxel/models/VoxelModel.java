@@ -9,7 +9,7 @@ import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -48,7 +48,7 @@ public class VoxelModel implements VoxelRenderer
 
 		float[] lightColors = ChunksRenderer.bakeLightColors(llMb, llMb, llMb, llMb, llMs, llMs, llMs, llMs);
 		
-		String voxelName = VoxelTypes.get(info.data).getName();
+		String voxelName = Voxels.get(info.data).getName();
 		
 		int modelTextureIndex = 0;
 		
@@ -80,7 +80,7 @@ public class VoxelModel implements VoxelRenderer
 		{
 			int id = VoxelFormat.id(info.neightborhood[j]);
 			int meta = VoxelFormat.meta(info.neightborhood[j]);
-			occTest = VoxelTypes.get(id);
+			occTest = Voxels.get(id);
 			// If it is, don't draw it.
 			cullingCache[j] = (occTest.isVoxelOpaque() || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])) || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])
 					|| (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());

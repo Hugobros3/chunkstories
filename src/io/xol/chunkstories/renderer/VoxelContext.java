@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -23,7 +23,7 @@ public class VoxelContext
 	public VoxelContext(int data)
 	{
 		this.data = data;
-		voxelType = VoxelTypes.get(data);
+		voxelType = Voxels.get(data);
 	}
 	
 	public VoxelContext(Location location)
@@ -34,7 +34,7 @@ public class VoxelContext
 	public VoxelContext(World world, int x, int y, int z)
 	{
 		this.data = world.getVoxelData(x, y, z);
-		voxelType = VoxelTypes.get(data);
+		voxelType = Voxels.get(data);
 		if (world != null)
 		{
 			/**
@@ -64,7 +64,7 @@ public class VoxelContext
 	public VoxelRenderer getVoxelRenderer()
 	{
 		if (voxelType != null)
-			return voxelType.getVoxelModel(this);
+			return voxelType.getVoxelRenderer(this);
 		return null;
 	}
 

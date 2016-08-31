@@ -21,7 +21,7 @@ public abstract class SoundSourceAbstract implements SoundSource
 	public boolean loop = false;
 	public boolean isAmbient = false;
 
-	public float attenuationStart = 5f;
+	public float attenuationStart = 1f;
 	public float attenuationEnd = 25f;
 
 	SimpleLock lock = new SimpleLock();
@@ -141,6 +141,7 @@ public abstract class SoundSourceAbstract implements SoundSource
 			updateProperties = true;
 		this.attenuationEnd = end;
 		lock.unlock();
+		
 		return this;
 	}
 }

@@ -21,7 +21,7 @@ public class VoxelLadder extends VoxelDefault implements VoxelClimbable
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(VoxelContext info)
+	public VoxelModel getVoxelRenderer(VoxelContext info)
 	{
 		int meta = info.getMetaData();
 		if(meta == 2)

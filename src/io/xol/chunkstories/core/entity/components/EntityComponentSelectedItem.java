@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemsList;
+import io.xol.chunkstories.item.ItemTypes;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -108,7 +108,7 @@ public class EntityComponentSelectedItem extends EntityComponent
 			ItemPile pile;
 			
 			int id = dis.readInt() & 0x00FFFFFF;
-			ItemType itemType = ItemsList.getItemTypeById(id);
+			ItemType itemType = ItemTypes.getItemTypeById(id);
 			if(itemType != null)
 			{
 				Item item = itemType.newItem();

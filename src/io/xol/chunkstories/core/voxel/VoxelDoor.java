@@ -18,7 +18,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 
@@ -59,7 +59,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(VoxelContext info)
+	public VoxelModel getVoxelRenderer(VoxelContext info)
 	{
 		int facingPassed = (info.getMetaData() >> 2) & 0x3;
 		boolean isOpen = ((info.getMetaData() >> 0) & 0x1) == 1;
@@ -130,7 +130,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 			otherPartLocation.add(0, 1, 0);
 
 		int otherLocationId = VoxelFormat.id(otherPartLocation.getVoxelDataAtLocation());
-		if (VoxelTypes.get(otherLocationId) instanceof VoxelDoor)
+		if (Voxels.get(otherLocationId) instanceof VoxelDoor)
 		{
 			System.out.println("new door status : " + newState);
 			voxelLocation.getWorld().getSoundManager().playSoundEffect("sounds/sfx/door.ogg", voxelLocation, 1.0f, 1.0f);
@@ -277,7 +277,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 			default:
 				break;
 			}
-			if (VoxelTypes.get(adjacentId) instanceof VoxelDoor)
+			if (Voxels.get(adjacentId) instanceof VoxelDoor)
 			{
 				hingeSide = true;
 			}
@@ -319,7 +319,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 		world.setVoxelDataWithoutUpdates(x, y, z, 0);
 		int otherData = world.getVoxelData(x, otherY, z);
 		//Remove the other part as well, if it still exists
-		if (VoxelTypes.get(otherData) instanceof VoxelDoor)
+		if (Voxels.get(otherData) instanceof VoxelDoor)
 		{
 			world.setVoxelData(x, otherY, z, 0);
 		}

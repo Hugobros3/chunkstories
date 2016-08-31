@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 
@@ -34,7 +34,7 @@ public class VoxelHalfTile extends VoxelDefault
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(VoxelContext info)
+	public VoxelModel getVoxelRenderer(VoxelContext info)
 	{
 		int meta = info.getMetaData();
 		if (bottomOrTop(meta))
@@ -60,7 +60,7 @@ public class VoxelHalfTile extends VoxelDefault
 		int side = side2.ordinal();
 		
 		//Special cases when half-tiles meet
-		if(VoxelTypes.get(dataTo) instanceof VoxelHalfTile && side < 4)
+		if(Voxels.get(dataTo) instanceof VoxelHalfTile && side < 4)
 		{
 			//If they are the same type, allow the light to transfer
 			if(bottomOrTop(VoxelFormat.meta(dataFrom)) == bottomOrTop(VoxelFormat.meta(dataTo)))

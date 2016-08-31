@@ -27,7 +27,7 @@ public interface EntityControllable extends Entity, EntityUnsaveable
 	/**
 	 * Clientside controller tick, called before the main tick() call on clients, supposed to handle the bulk of interactions
 	 */
-	public void tickClient(ClientSideController controller);
+	public void tickClientController(ClientSideController controller);
 
 	public void setupCamera(ClientSideController controller);
 	

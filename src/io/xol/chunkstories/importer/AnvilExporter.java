@@ -19,10 +19,10 @@ import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
-import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.WorldTool;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.engine.misc.FoldersUtils;
@@ -48,7 +48,7 @@ public class AnvilExporter
 		String time = sdf.format(cal.getTime());
 		ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File("./logs/" + time + ".log")));
 
-		GameData.reload();
+		GameContent.reload();
 
 		if (arguments.length < 5)
 		{
@@ -198,7 +198,7 @@ public class AnvilExporter
 
 															if (dataToSet != -1)
 															{
-																Voxel voxel = VoxelTypes.get(dataToSet);
+																Voxel voxel = Voxels.get(dataToSet);
 
 																//Optionally runs whatever the voxel requires to run when placed
 																if (voxel instanceof VoxelLogic)

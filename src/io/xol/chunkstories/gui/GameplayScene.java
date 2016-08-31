@@ -55,7 +55,7 @@ import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -184,7 +184,7 @@ public class GameplayScene extends OverlayableScene
 					{
 						data = Client.world.getVoxelData(i, j, k);
 						id = VoxelFormat.id(data);
-						VoxelTypes.get(id).debugRenderCollision(Client.world, i, j, k);
+						Voxels.get(id).debugRenderCollision(Client.world, i, j, k);
 					}
 
 			for (CollisionBox b : player.getTranslatedCollisionBoxes())

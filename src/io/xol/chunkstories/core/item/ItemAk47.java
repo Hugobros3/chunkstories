@@ -22,7 +22,7 @@ import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.item.renderers.Ak47ViewModelRenderer;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -129,7 +129,7 @@ public class ItemAk47 extends Item implements DamageCause
 
 						//shotBlock.setX(shotBlock.getX() + 1);
 						int data = user.getWorld().getVoxelData(shotBlock);
-						Voxel voxel = VoxelTypes.get(data);
+						Voxel voxel = Voxels.get(data);
 
 						//This seems fine
 						

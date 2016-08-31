@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.math.LoopingMathHelper;
@@ -271,7 +271,7 @@ public class ChunksRenderer extends Thread
 			{
 				data = target.getVoxelData(x, y, z);
 				int blockID = VoxelFormat.id(data);
-				return VoxelTypes.get(blockID).isVoxelOpaque() ? -1 : VoxelFormat.sunlight(data);
+				return Voxels.get(blockID).isVoxelOpaque() ? -1 : VoxelFormat.sunlight(data);
 			}
 		}
 		else
@@ -292,7 +292,7 @@ public class ChunksRenderer extends Thread
 			data = cached.getVoxelData(x, y, z);
 
 			int blockID = VoxelFormat.id(data);
-			return VoxelTypes.get(blockID).isVoxelOpaque() ? -1 : VoxelFormat.sunlight(data);
+			return Voxels.get(blockID).isVoxelOpaque() ? -1 : VoxelFormat.sunlight(data);
 		}
 
 		// If all else fails, just use the heightmap information
@@ -332,7 +332,7 @@ public class ChunksRenderer extends Thread
 			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
 		*/
 		int blockID = VoxelFormat.id(data);
-		return VoxelTypes.get(blockID).isVoxelOpaque() ? 0 : VoxelFormat.blocklight(data);
+		return Voxels.get(blockID).isVoxelOpaque() ? 0 : VoxelFormat.blocklight(data);
 	}
 
 	public static float[] bakeLightColors(int bl1, int bl2, int bl3, int bl4, int sl1, int sl2, int sl3, int sl4)
@@ -857,8 +857,8 @@ public class ChunksRenderer extends Thread
 	private boolean shallBuildWallArround(VoxelContext renderInfo, int face)
 	{
 		//int baseID = renderInfo.data;
-		Voxel facing = VoxelTypes.get(renderInfo.getSideId(face));
-		Voxel voxel = VoxelTypes.get(renderInfo.data);
+		Voxel facing = Voxels.get(renderInfo.getSideId(face));
+		Voxel voxel = Voxels.get(renderInfo.data);
 
 		if (voxel.isVoxelLiquid() && !facing.isVoxelLiquid())
 			return true;
@@ -956,7 +956,7 @@ public class ChunksRenderer extends Thread
 
 					if (blockID == 0)
 						continue;
-					Voxel vox = VoxelTypes.get(blockID);
+					Voxel vox = Voxels.get(blockID);
 					// Fill near-blocks info
 					renderInfo.data = src;
 					renderInfo.voxelType = vox;

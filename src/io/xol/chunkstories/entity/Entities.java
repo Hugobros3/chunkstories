@@ -18,7 +18,7 @@ import java.util.Map;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntitiesList
+public class Entities
 {
 	static Map<Short, Constructor<? extends Entity>> entitiesTypes = new HashMap<Short, Constructor<? extends Entity>>();
 	static Map<String, Short> entitiesIds = new HashMap<String, Short>();

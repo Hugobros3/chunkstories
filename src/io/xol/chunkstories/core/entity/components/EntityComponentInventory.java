@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemsList;
+import io.xol.chunkstories.item.ItemTypes;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -366,7 +366,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			for(int j = 0; j < height ; j++)
 			{
 				id = stream.readInt() & 0x00FFFFFF;
-				ItemType itemType = ItemsList.getItemTypeById(id);
+				ItemType itemType = ItemTypes.getItemTypeById(id);
 				if(itemType != null)
 				{
 					item = itemType.newItem();

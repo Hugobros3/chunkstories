@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import io.xol.chunkstories.api.particles.ParticleType;
-import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -28,7 +28,7 @@ public class ParticleTypes
 		particleTypesById.clear();
 		particleTypesByName.clear();
 		
-		Iterator<File> i = GameData.getAllFilesByExtension("particles");
+		Iterator<File> i = GameContent.getAllFilesByExtension("particles");
 		while(i.hasNext())
 		{
 			File f = i.next();

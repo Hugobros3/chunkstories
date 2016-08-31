@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.item.renderers.VoxelItemRenderer;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -41,7 +41,7 @@ public class ItemVoxel extends Item
 	{
 		//ItemDataVoxel idv = (ItemDataVoxel) pile.data;
 		if (info != null && info.length > 0)
-			voxel = VoxelTypes.get(Integer.parseInt(info[0]));
+			voxel = Voxels.get(Integer.parseInt(info[0]));
 		if (info != null && info.length > 1)
 			voxelMeta = Integer.parseInt(info[1]) % 16;
 	}
@@ -87,13 +87,13 @@ public class ItemVoxel extends Item
 			{
 				//int selectedBlockPreviousData = user.getWorld().getDataAt(selectedBlock);
 				//Adding blocks should not erase light if the block's not opaque
-				if (VoxelTypes.get(data2write).isVoxelOpaque())
+				if (Voxels.get(data2write).isVoxelOpaque())
 				{
 					data2write = VoxelFormat.changeSunlight(data2write, 0);
 					data2write = VoxelFormat.changeBlocklight(data2write, 0);
 				}
-				if(VoxelTypes.get(data2write).getLightLevel(data2write) > 0)
-					data2write = VoxelFormat.changeBlocklight(data2write, VoxelTypes.get(data2write).getLightLevel(data2write));
+				if(Voxels.get(data2write).getLightLevel(data2write) > 0)
+					data2write = VoxelFormat.changeBlocklight(data2write, Voxels.get(data2write).getLightLevel(data2write));
 					
 				user.getWorld().setVoxelData(selectedBlock, data2write, user);
 			}
@@ -105,7 +105,7 @@ public class ItemVoxel extends Item
 	@Override
 	public void load(DataInputStream stream) throws IOException
 	{
-		voxel = VoxelTypes.get(stream.readInt());
+		voxel = Voxels.get(stream.readInt());
 		voxelMeta = stream.readByte();
 		//((ItemDataVoxel) itemPile.data).voxel = VoxelTypes.get(stream.readInt());
 		//((ItemDataVoxel) itemPile.data).voxelMeta = stream.readByte();

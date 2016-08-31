@@ -39,9 +39,9 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 	}
 	
 	@Override
-	public VoxelRenderer getVoxelModel(VoxelContext info)
+	public VoxelRenderer getVoxelRenderer(VoxelContext info)
 	{
-		return super.getVoxelModel(info);
+		return super.getVoxelRenderer(info);
 	}
 		
 	@Override

@@ -24,7 +24,7 @@ public class Voxel8Steps extends VoxelDefault
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(VoxelContext info)
+	public VoxelModel getVoxelRenderer(VoxelContext info)
 	{
 		return steps[info.getMetaData() % 8];
 	}

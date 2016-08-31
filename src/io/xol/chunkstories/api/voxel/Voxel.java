@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api.voxel;
 
+import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -15,14 +16,25 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public interface Voxel
 {
+	/**
+	 * Get the assignated ID for this voxel
+	 */
+	public int getId();
+
+	/**
+	 * Returns the internal, non localized name of this voxel
+	 */
+	public String getName();
+	
+	public Material getMaterial();
 
 	/** Returns true if this voxel uses a custom VoxelRenderer */
 	public boolean isVoxelUsingCustomRenderer();
 
 	/**
-	 * @return The model used or null if none
+	 * @return The custom rendered used or null if default
 	 */
-	public VoxelRenderer getVoxelModel(VoxelContext info);
+	public VoxelRenderer getVoxelRenderer(VoxelContext info);
 
 	public boolean isVoxelLiquid();
 
@@ -66,11 +78,11 @@ public interface Voxel
 	{
 		CollisionBox[] tboxes = getTranslatedCollisionBoxes(world, x, y, z);
 		if (tboxes != null)
-			for (CollisionBox b : tboxes)
+			for (CollisionBox box : tboxes)
 				if (this.isVoxelSolid())
-					b.debugDraw(1, 0, 0, 1.0f);
+					box.debugDraw(1, 0, 0, 1.0f);
 				else
-					b.debugDraw(1, 1, 0, 0.25f);
+					box.debugDraw(1, 1, 0, 0.25f);
 	}
 
 	/**
@@ -117,20 +129,6 @@ public interface Voxel
 	 */
 	public CollisionBox[] getCollisionBoxes(VoxelContext info);
 
-	/**
-	 * Get the assignated ID for this voxel
-	 * 
-	 * @return etc
-	 */
-	public int getId();
-
-	/**
-	 * Returns the internal, non localized name of this voxel
-	 * 
-	 * @return
-	 */
-	public String getName();
-
 	public boolean sameKind(Voxel voxel);
 
 	/**
@@ -140,5 +138,8 @@ public interface Voxel
 	 */
 	public boolean isAffectedByWind();
 
+	/**
+	 * @return Returns an array of ItemPiles to use in creative inventory
+	 */
 	public ItemPile[] getItems();
 }

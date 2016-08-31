@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.core.events.PlayerMoveItemEvent;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemsList;
+import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.server.Server;
 
 import java.io.DataInputStream;
@@ -88,7 +88,7 @@ public class PacketInventoryMoveItemPile extends PacketSynch
 		
 		if(holderTypeFrom == 0x00)
 		{
-			Item item = ItemsList.getItemTypeById(in.readInt()).newItem();
+			Item item = ItemTypes.getItemTypeById(in.readInt()).newItem();
 			itemPile = new ItemPile(item, in);
 		}
 	}

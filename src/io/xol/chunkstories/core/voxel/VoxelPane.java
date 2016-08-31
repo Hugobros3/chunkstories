@@ -4,7 +4,7 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelDefault;
-import io.xol.chunkstories.voxel.VoxelTypes;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 
@@ -20,16 +20,16 @@ public class VoxelPane extends VoxelDefault
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(VoxelContext info)
+	public VoxelModel getVoxelRenderer(VoxelContext info)
 	{
 		Voxel vox;
-		vox = VoxelTypes.get(info.neightborhood[0]);
+		vox = Voxels.get(info.neightborhood[0]);
 		boolean connectLeft = vox.isVoxelSolid() || vox.equals(this);
-		vox = VoxelTypes.get(info.neightborhood[1]);
+		vox = Voxels.get(info.neightborhood[1]);
 		boolean connectFront = vox.isVoxelSolid() || vox.equals(this);
-		vox = VoxelTypes.get(info.neightborhood[2]);
+		vox = Voxels.get(info.neightborhood[2]);
 		boolean connectRight = vox.isVoxelSolid() || vox.equals(this);
-		vox = VoxelTypes.get(info.neightborhood[3]);
+		vox = Voxels.get(info.neightborhood[3]);
 		boolean connectBack = vox.isVoxelSolid() || vox.equals(this);
 
 		String type = "default";
@@ -76,13 +76,13 @@ public class VoxelPane extends VoxelDefault
 		CollisionBox[] boxes = new CollisionBox[] { new CollisionBox(0.1, 1, 1.0), new CollisionBox(1.0, 1, 0.1) };
 
 		Voxel vox;
-		vox = VoxelTypes.get(info.neightborhood[0]);
+		vox = Voxels.get(info.neightborhood[0]);
 		boolean connectLeft = vox.isVoxelSolid() || vox.equals(this);
-		vox = VoxelTypes.get(info.neightborhood[1]);
+		vox = Voxels.get(info.neightborhood[1]);
 		boolean connectFront = vox.isVoxelSolid() || vox.equals(this);
-		vox = VoxelTypes.get(info.neightborhood[2]);
+		vox = Voxels.get(info.neightborhood[2]);
 		boolean connectRight = vox.isVoxelSolid() || vox.equals(this);
-		vox = VoxelTypes.get(info.neightborhood[3]);
+		vox = Voxels.get(info.neightborhood[3]);
 		boolean connectBack = vox.isVoxelSolid() || vox.equals(this);
 
 		if (connectLeft && connectFront && connectRight && connectBack)

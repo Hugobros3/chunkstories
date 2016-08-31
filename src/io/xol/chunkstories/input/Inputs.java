@@ -12,7 +12,7 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.client.ClientInputsManager;
-import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.server.ServerInputsManager;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -40,7 +40,7 @@ public class Inputs
 		return new Iterator<Input>()
 		{
 
-			Iterator<File> i = GameData.getAllFilesByExtension("inputs");
+			Iterator<File> i = GameContent.getAllFilesByExtension("inputs");
 			Iterator<Input> fileInputsIterator = null;
 			Input input = null;
 

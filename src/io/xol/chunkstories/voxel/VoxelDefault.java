@@ -1,10 +1,12 @@
 package io.xol.chunkstories.voxel;
 
+import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.materials.Materials;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.models.VoxelModel;
@@ -36,6 +38,7 @@ public class VoxelDefault implements Voxel
 	public boolean billboard = false;
 
 	CollisionBox box;
+	Material material;
 
 	/**
 	 * Creates a Voxel type, internal to the engine
@@ -49,6 +52,8 @@ public class VoxelDefault implements Voxel
 	{
 		voxelID = id;
 		voxelName = name;
+		
+		material = Materials.getMaterial(name);
 	}
 
 	/**
@@ -59,7 +64,7 @@ public class VoxelDefault implements Voxel
 	 * @return The model used.
 	 */
 	@Override
-	public VoxelRenderer getVoxelModel(VoxelContext info)
+	public VoxelRenderer getVoxelRenderer(VoxelContext info)
 	{
 		return model;
 	}
@@ -244,5 +249,11 @@ public class VoxelDefault implements Voxel
 			return (((VoxelDefault) o).getId() == this.getId());
 		}
 		return false;
+	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return material;
 	}
 }

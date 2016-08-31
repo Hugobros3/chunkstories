@@ -18,6 +18,7 @@ voxel dirt 3
 end
 
 voxel wood 4
+	material: bluntwood
 end
 
 voxel leaves 5
@@ -36,6 +37,7 @@ voxel drygrass 7
 end
 
 voxel pinewood 8
+	material: bluntwood
 end
 
 voxel pineleaves 9
@@ -47,6 +49,7 @@ end
 
 voxel bricks 10
 	#textures: 'bricks2', 'bricks2', 'bricks2', 'bricks2', 'bricks2', 'bricks2'
+	material: stone
 end
 
 voxel gravel 11
@@ -62,6 +65,7 @@ end
 
 voxel planks 14
 	#textures: 'wood2', 'wood2', 'wood2', 'wood2', 'wood2', 'wood2'
+	material: bluntwood
 end
 
 voxel glass 15
@@ -77,9 +81,11 @@ voxel snow 17 io.xol.chunkstories.core.voxel.Voxel8Steps
 	opaque: false
 	selfOpaque: true
 	model: 'steps.m0'
+	material: snow
 end
 
 voxel smoothstone 18
+	material: stone
 end
 
 voxel birchleaves 19
@@ -97,12 +103,14 @@ voxel redBricks 23
 end
 
 voxel colored 24 io.xol.chunkstories.core.voxel.VoxelMeta16
+	material: concrete
 end
 
 voxel ironGrill 25 io.xol.chunkstories.core.voxel.VoxelPane
 	opaque: false
 	usesCustomModel: true
 	selfOpaque: true
+	material: metalbar
 	#texture: debug
 end
 
@@ -111,21 +119,27 @@ voxel woodFence 26 io.xol.chunkstories.core.voxel.VoxelFence
 	usesCustomModel: true
 	selfOpaque: true
 	texture: planks
+	material: bluntwood
 end
 
 voxel cobble 27
+	material: stone
 end
 
 voxel andesite 28
+	material: stone
 end
 
 voxel stonebrick 29
+	material: stone
 end
 
 voxel stonebrickcracked 30
+	material: stone
 end
 
 voxel stonebrickmossy 31
+	material: stone
 end
 
 voxel glassPane 32 io.xol.chunkstories.core.voxel.VoxelPane
@@ -164,6 +178,7 @@ end
 
 voxel snowblock 37
 	texture: snow
+	material: snow
 end
 
 voxel ice 38
@@ -196,6 +211,7 @@ voxel redflower 53
 end
 
 voxel ironblock 54
+	material: metal
 end
 
 voxel glowoff 55
@@ -237,11 +253,13 @@ end
 voxel wood_door 70 io.xol.chunkstories.core.voxel.VoxelDoor
 	opaque: false
 	model: 'door.m0'
+	material: bluntwood
 end
 
 voxel wood_door_top 71 io.xol.chunkstories.core.voxel.VoxelDoor
 	opaque: false
 	model: 'door.m0'
+	material: bluntwood
 end
 
 voxel iron_door 72 io.xol.chunkstories.core.voxel.VoxelDoor

@@ -30,7 +30,7 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 	}
 
 	@Override
-	public VoxelModel getVoxelModel(VoxelContext info)
+	public VoxelModel getVoxelRenderer(VoxelContext info)
 	{
 		int meta = info.getMetaData();
 		return models[meta % 8];

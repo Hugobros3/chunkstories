@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameContent;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -23,7 +23,7 @@ public class ModelLibrary
 	 */
 	public static ObjMeshRenderable getRenderableMesh(String name)
 	{
-		File file = GameData.getFileLocation(name);
+		File file = GameContent.getFileLocation(name);
 		if(file != null)
 		{
 			//Don't load something that is already loaded !
@@ -49,7 +49,7 @@ public class ModelLibrary
 	 */
 	public static ObjMeshComplete getCompleteMesh(String name)
 	{
-		File file = GameData.getFileLocation(name);
+		File file = GameContent.getFileLocation(name);
 		if(file != null)
 		{
 			if(objModelsComplete.containsKey(file))

@@ -24,7 +24,7 @@ import javax.imageio.stream.ImageInputStream;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 
-import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -55,7 +55,7 @@ public class VoxelTextures
 			List<VoxelTexture> voxelTexturesSortedBySize = new ArrayList<VoxelTexture>();
 
 			//for (File f : folder.listFiles())
-			Iterator<Entry<String, Deque<File>>> allFiles = GameData.getAllUniqueEntries();
+			Iterator<Entry<String, Deque<File>>> allFiles = GameContent.getAllUniqueEntries();
 			Entry<String, Deque<File>> entry;
 			File f;
 			while (allFiles.hasNext())
@@ -183,7 +183,7 @@ public class VoxelTextures
 						break;
 					}
 
-					imageBuffer = ImageIO.read(GameData.getTextureFileLocation("./res/voxels/textures/" + vt.name + ".png"));
+					imageBuffer = ImageIO.read(GameContent.getTextureFileLocation("./res/voxels/textures/" + vt.name + ".png"));
 
 					float alphaTotal = 0;
 					int nonNullPixels = 0;
@@ -214,9 +214,9 @@ public class VoxelTextures
 					
 					//colors.put(vt.name, new Vector4f(color.x, color.y, color.z, alphaTotal));
 					// Do also the normal maps !
-					File normalMap = GameData.getTextureFileLocation("./res/voxels/textures/normal/" + vt.name + ".png");
+					File normalMap = GameContent.getTextureFileLocation("./res/voxels/textures/normal/" + vt.name + ".png");
 					if (normalMap == null || !normalMap.exists())
-						normalMap = GameData.getTextureFileLocation("./res/voxels/textures/normal/notex.png");
+						normalMap = GameContent.getTextureFileLocation("./res/voxels/textures/normal/notex.png");
 
 					imageBuffer = ImageIO.read(normalMap);
 					for (int x = 0; x < vt.imageFileDimensions; x++)
@@ -228,9 +228,9 @@ public class VoxelTextures
 						}
 					}
 					// And the materials !
-					File materialMap = GameData.getTextureFileLocation("./res/voxels/textures/material/" + vt.name + ".png");
+					File materialMap = GameContent.getTextureFileLocation("./res/voxels/textures/material/" + vt.name + ".png");
 					if (materialMap == null || !materialMap.exists())
-						materialMap = GameData.getTextureFileLocation("./res/voxels/textures/material/notex.png");
+						materialMap = GameContent.getTextureFileLocation("./res/voxels/textures/material/notex.png");
 
 					imageBuffer = ImageIO.read(materialMap);
 					for (int x = 0; x < vt.imageFileDimensions; x++)
@@ -254,7 +254,7 @@ public class VoxelTextures
 					sizeRequired *= 2;
 			}
 			// Read textures metadata
-			readTexturesMeta(GameData.getFileLocation("./res/voxels/textures/meta.txt"));
+			readTexturesMeta(GameContent.getFileLocation("./res/voxels/textures/meta.txt"));
 		}
 		catch (Exception e)
 		{

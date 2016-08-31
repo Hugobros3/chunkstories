@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
-import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -67,7 +67,7 @@ public class Cubemap extends Texture
 		
 		ByteBuffer temp;
 		String[] names = { "right", "left", "top", "bottom", "front", "back" };
-		if (GameData.getFileLocation((name + "/front.png")) == null)
+		if (GameContent.getFileLocation((name + "/front.png")) == null)
 		{
 			ChunkStoriesLogger.getInstance().log("Can't find front.png from CS-format skybox, trying MC format.", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
 			names = new String[] { "panorama_1", "panorama_3", "panorama_4", "panorama_5", "panorama_0", "panorama_2" };
@@ -76,7 +76,7 @@ public class Cubemap extends Texture
 		{
 			for (int i = 0; i < 6; i++)
 			{
-				File pngFile = GameData.getFileLocation(name + "/" + names[i] + ".png");
+				File pngFile = GameContent.getFileLocation(name + "/" + names[i] + ".png");
 				if(pngFile == null)
 					throw new FileNotFoundException(name + "/" + names[i] + ".png");
 				PNGDecoder decoder = new PNGDecoder(new FileInputStream(pngFile));

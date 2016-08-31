@@ -32,6 +32,9 @@ public class SoundsLibrary
 
 	public static SoundData obtainSample(String soundEffect)
 	{
+		if(soundEffect == null)
+			return null;
+		
 		SoundData sd = soundsData.get(soundEffect);
 		if(sd != null)
 			return sd;

@@ -1,7 +1,6 @@
 package io.xol.chunkstories.core.entity;
 
 import org.lwjgl.input.Mouse;
-import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 
@@ -23,8 +22,6 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.core.entity.EntityHumanoid.EntityHumanoidRenderer;
-import io.xol.chunkstories.core.entity.EntityZombie.EntityZombieRenderer;
 import io.xol.chunkstories.core.entity.components.EntityComponentController;
 import io.xol.chunkstories.core.entity.components.EntityComponentCreativeMode;
 import io.xol.chunkstories.core.entity.components.EntityComponentFlying;
@@ -42,7 +39,6 @@ import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.model.ModelLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -66,23 +62,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	protected boolean noclip = true;
 
-	boolean running = false;
-
 	float lastPX = -1f;
 	float lastPY = -1f;
-
-	public double maxSpeedRunning = 0.25;
-	public double maxSpeed = 0.15;
-
-	public double horizontalSpeed = 0;
-	public double metersWalked = 0d;
-
-	double jumpForce = 0;
-	double targetVectorX;
-	double targetVectorZ;
-
-	boolean justJumped = false;
-	boolean justLanded = false;
 
 	public EntityPlayer(WorldImplementation w, double x, double y, double z)
 	{
@@ -132,50 +113,12 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if(pileSelected != null)
 			pileSelected.getItem().tickInHand(this, pileSelected);
 		
-		
-		
-		//The actual moment the jump takes effect
-		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
-		if (jumpForce > 0.0 && (!justJumped || inWater))
-		{
-			//Set the velocity
-			getVelocityComponent().setVelocityY(jumpForce);
-			justJumped = true;
-			metersWalked = 0.0;
-			jumpForce = 0.0;
-		}
-
-		//Set acceleration vector to wanted speed - actual speed
-		acceleration = new Vector3d(targetVectorX - getVelocityComponent().getVelocity().getX(), 0, targetVectorZ - getVelocityComponent().getVelocity().getZ());
-
-		//Limit maximal acceleration depending if we're on the groud or not, we accelerate 2x faster on ground
-		double maxAcceleration = collision_bot ? 0.010 : 0.005;
-		if (acceleration.length() > maxAcceleration)
-		{
-			acceleration.normalize();
-			acceleration.scale(maxAcceleration);
-		}
-
-		//Used to trigger landing sound
-		boolean wasCollidingBeforeTick = collision_bot;
-		
-		//Tick : will move the entity, solve velocity/acceleration and so on
 		super.tick();
-		
-		// Sound stuff
-		if (collision_bot && !wasCollidingBeforeTick)
-		{
-			justLanded = true;
-			metersWalked = 0.0;
-		}
-		//Bobbing
-		if (collision_bot)
-			metersWalked += Math.abs(horizontalSpeed);
 	}
 
 	// client-side method for updating the player movement
 	@Override
-	public void tickClient(ClientSideController controller)
+	public void tickClientController(ClientSideController controller)
 	{
 		// Null-out acceleration, until modified by controls
 		synchronized (this)
@@ -211,24 +154,6 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					if (box.collidesWith(this))
 						onLadder = true;
 				}
-		}
-
-		if (justJumped && !inWater)
-		{
-			justJumped = false;
-			worldClient.getClient().getSoundManager().playSoundEffect("sounds/footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
-		}
-		if (justLanded)
-		{
-			justLanded = false;
-			worldClient.getClient().getSoundManager().playSoundEffect("sounds/footsteps/jump.ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
-		}
-
-		if (metersWalked > 0.2 * Math.PI * 2)
-		{
-			metersWalked %= 0.2 * Math.PI * 2;
-			worldClient.getClient().getSoundManager().playSoundEffect("sounds/footsteps/generic" + ((int) (1 + Math.floor(Math.random() * 3))) + ".ogg", getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f);
-			// System.out.println("footstep");
 		}
 
 		if (focus && !inWater && controller.getInputsManager().getInputByName("jump").isPressed() && collision_bot)
@@ -550,5 +475,12 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	public EntityComponentCreativeMode getCreativeModeComponent()
 	{
 		return creativeMode;
+	}
+
+	@Override
+	public boolean shouldSaveIntoRegion()
+	{
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

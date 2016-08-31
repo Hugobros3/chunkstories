@@ -2,6 +2,7 @@ package io.xol.chunkstories.voxel;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.materials.Materials;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.models.VoxelModels;
@@ -20,7 +21,7 @@ import java.util.Set;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class VoxelTypes
+public class Voxels
 {
 	public static Voxel[] voxels = new Voxel[65536];
 	public static Set<Integer> attributedIds = new HashSet<Integer>();
@@ -173,6 +174,9 @@ public class VoxelTypes
 									break;
 								case "billboard":
 									voxDefault.billboard = Boolean.parseBoolean(parameterValue);
+									break;
+								case "material":
+									voxDefault.material = Materials.getMaterial(parameterValue);
 									break;
 								default:
 									ChunkStoriesLogger.getInstance().log("Parse error in file " + f + ", line " + ln + ", unknown parameter '" + parameterName + "'", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);

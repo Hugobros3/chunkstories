@@ -15,7 +15,7 @@ import static org.lwjgl.opengl.GL14.*;
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
@@ -67,7 +67,7 @@ public class Texture2D extends Texture
 		}
 		scheduledForLoad = false;
 
-		File textureFile = GameData.getTextureFileLocation(name);
+		File textureFile = GameContent.getTextureFileLocation(name);
 		if (textureFile == null)
 		{
 			ChunkStoriesLogger.getInstance().warning("Couldn't load texture " + name + ", no file found on disk matching this name.");

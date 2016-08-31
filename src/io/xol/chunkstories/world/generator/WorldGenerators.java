@@ -2,7 +2,7 @@ package io.xol.chunkstories.world.generator;
 
 import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
 import io.xol.chunkstories.api.world.WorldGenerator;
-import io.xol.chunkstories.content.GameData;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.core.generator.BlankWorldGenerator;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
@@ -30,7 +30,7 @@ public class WorldGenerators
 		//Loads all generators
 		generators.clear();
 		generatorsClasses.clear();
-		Deque<File> packetsFiles = GameData.getAllFileInstances("./res/data/worldGenerators.txt");
+		Deque<File> packetsFiles = GameContent.getAllFileInstances("./res/data/worldGenerators.txt");
 		for (File f : packetsFiles)
 		{
 			loadWorldGeneratorsFile(f);

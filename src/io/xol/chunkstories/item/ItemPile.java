@@ -32,12 +32,12 @@ public class ItemPile implements CSFSerializable
 	 */
 	public ItemPile(String itemName)
 	{
-		this(ItemsList.getItemTypeByName(itemName).newItem());
+		this(ItemTypes.getItemTypeByName(itemName).newItem());
 	}
 
 	public ItemPile(String itemName, String[] info)
 	{
-		this(ItemsList.getItemTypeByName(itemName).newItem(), info);
+		this(ItemTypes.getItemTypeByName(itemName).newItem(), info);
 	}
 	
 	public ItemPile(Item item)

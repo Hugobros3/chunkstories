@@ -22,7 +22,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.entity.interfaces.EntityRotateable;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.entity.EntitiesList;
+import io.xol.chunkstories.entity.Entities;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -140,7 +140,7 @@ public class ChatPanel
 					if (inputBox.text.contains(" "))
 					{
 						int id = Integer.parseInt(inputBox.text.split(" ")[1]);
-						Entity test = EntitiesList.newEntity(Client.world, (short) id);
+						Entity test = Entities.newEntity(Client.world, (short) id);
 						Entity player = Client.getInstance().getClientSideController().getControlledEntity();
 						test.setLocation(player.getLocation());
 						Client.world.addEntity(test);

@@ -191,6 +191,7 @@ public class ALSoundSource extends SoundSourceAbstract
 			alAuxiliaryEffectSloti(efxSlot, AL_EFFECTSLOT_EFFECT, reverbEffectSlot);
 		}*/
 
+		lock.lock();
 		if (updateProperties)
 		{
 			alSourcef(openAlSourceId, AL_PITCH, pitch);
@@ -206,6 +207,7 @@ public class ALSoundSource extends SoundSourceAbstract
 			//alSource3i(alId, AL_AUXILIARY_SEND_FILTER, efxSlot, 0, AL_FILTER_NULL);
 			updateProperties = false;
 		}
+		lock.unlock();
 	}
 
 	@Override

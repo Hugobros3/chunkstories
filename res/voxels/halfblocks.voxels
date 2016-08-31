@@ -1,11 +1,13 @@
 voxel fullSlab 43
 	textures: 'stoneSlabSide', 'stoneSlabSide', 'stoneSlabSide', 'stoneSlabSide', 'stoneSlab', 'stoneSlab'
+	material: stone
 end
 
 voxel stoneSlab 44 io.xol.chunkstories.core.voxel.VoxelHalfTile
 	opaque: false
 	textures: '~Side', '~Side', '~Side', '~Side', '~', '~'
 	model: 'halftile.bottom'
+	material: stone
 end
 
 voxel brickSlab 45 io.xol.chunkstories.core.voxel.VoxelHalfTile
@@ -13,6 +15,7 @@ voxel brickSlab 45 io.xol.chunkstories.core.voxel.VoxelHalfTile
 	texture: redbricks16
 	#textures: '~', '~', '~Side', '~Side', '~Side', '~Side'
 	model: 'halftile.bottom'
+	material: stone
 end
 
 voxel woodSlab 46 io.xol.chunkstories.core.voxel.VoxelHalfTile
@@ -20,6 +23,7 @@ voxel woodSlab 46 io.xol.chunkstories.core.voxel.VoxelHalfTile
 	texture: planks
 	#textures: '~', '~', '~Side', '~Side', '~Side', '~Side'
 	model: 'halftile.bottom'
+	material: bluntwood
 end
 
 voxel cobbleSlab 47 io.xol.chunkstories.core.voxel.VoxelHalfTile
@@ -27,6 +31,7 @@ voxel cobbleSlab 47 io.xol.chunkstories.core.voxel.VoxelHalfTile
 	texture: cobble
 	#textures: '~', '~', '~Side', '~Side', '~Side', '~Side'
 	model: 'halftile.bottom'
+	material: stone
 end
 
 voxel stonebrickSlab 48 io.xol.chunkstories.core.voxel.VoxelHalfTile
@@ -34,4 +39,5 @@ voxel stonebrickSlab 48 io.xol.chunkstories.core.voxel.VoxelHalfTile
 	texture: stonebrick
 	#textures: '~', '~', '~Side', '~Side', '~Side', '~Side'
 	model: 'halftile.bottom'
+	material: stone
 end

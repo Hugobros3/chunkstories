@@ -17,7 +17,6 @@ import io.xol.chunkstories.item.inventory.CSFSerializable;
 import io.xol.chunkstories.physics.Collidable;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -130,6 +129,8 @@ public interface Entity extends Collidable, CSFSerializable
 	public boolean hasSpawned();
 	
 	public void markHasSpawned();
+	
+	public boolean isEntityOnGround();
 	
 	/**
 	 * Loads the object state from the stream, implying the ID has already been read in the stream.
