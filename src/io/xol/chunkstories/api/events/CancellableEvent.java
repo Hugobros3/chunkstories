@@ -8,7 +8,7 @@ public abstract class CancellableEvent extends Event {
 	
 	private boolean canceled = false;
 
-	public void setCanceled(boolean canceled)
+	public void setCancelled(boolean canceled)
 	{
 		this.canceled  = canceled;
 	}

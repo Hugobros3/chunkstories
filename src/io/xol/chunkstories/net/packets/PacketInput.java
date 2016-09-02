@@ -5,6 +5,8 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
+import io.xol.chunkstories.core.events.PlayerInputPressedEvent;
+import io.xol.chunkstories.core.events.PlayerInputReleasedEvent;
 import io.xol.chunkstories.input.InputVirtual;
 
 import java.io.DataInputStream;
@@ -54,6 +56,21 @@ public class PacketInput extends PacketSynch
 			//System.out.println(processor.getServerClient().getProfile() + " "+input + " "+pressed);
 			//Update it's state
 			((InputVirtual)input).setPressed(pressed);
+			
+			//Fire appropriate event
+			if(pressed)
+			{
+				PlayerInputPressedEvent event = new PlayerInputPressedEvent(processor.getServerClient().getProfile(), input);
+				entity.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
+				
+				if(!event.isCancelled())
+					entity.handleInteraction(input, entity.getControllerComponent().getController());
+			}
+			else
+			{
+				PlayerInputReleasedEvent event = new PlayerInputReleasedEvent(processor.getServerClient().getProfile(), input);
+				entity.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
+			}
 			
 			//If we pressed the input, apply game logic
 			if(pressed)

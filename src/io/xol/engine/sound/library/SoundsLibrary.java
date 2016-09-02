@@ -1,11 +1,11 @@
 package io.xol.engine.sound.library;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.xol.chunkstories.content.GameContent;
 import io.xol.engine.sound.SoundData;
 import io.xol.engine.sound.SoundDataBuffered;
 import io.xol.engine.sound.ogg.SoundDataOggSample;
@@ -23,7 +23,7 @@ public class SoundsLibrary
 	
 	public static SoundData obtainOggSample(String soundEffect)
 	{
-		SoundDataOggSample sd = new SoundDataOggSample(new File("res/" + soundEffect));
+		SoundDataOggSample sd = new SoundDataOggSample(GameContent.getFileLocation(soundEffect));
 		sd.name = soundEffect;
 		if(sd.loadedOk())
 			return sd;
@@ -81,7 +81,7 @@ public class SoundsLibrary
 		SoundDataOggStream sd;
 		try
 		{
-			sd = new SoundDataOggStream(new FileInputStream(new File("res/" + musicName)));
+			sd = new SoundDataOggStream(new FileInputStream(GameContent.getFileLocation(musicName)));
 			sd.name = musicName;
 			if(sd.loadedOk())
 				return sd;

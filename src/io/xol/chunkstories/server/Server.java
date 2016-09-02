@@ -14,10 +14,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
+import io.xol.engine.misc.FancyParser;
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.plugin.Scheduler;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.utils.IterableIterator;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.PluginsManager;
@@ -40,8 +44,28 @@ public class Server implements Runnable, ServerInterface
 	// thought the processing of command lines is handled by ServerConsole.java
 	static Server server;
 
-	public static void main(String a[])
+	public static void main(String args[])
 	{
+		for (String s : args) // Debug arguments
+		{
+			if (s.contains("--mods"))
+			{
+				String[] modsString = s.replace("--mods=", "").split(",");
+				GameContent.setEnabledMods(modsString);
+			}
+			else if (s.contains("--dir"))
+			{
+				GameDirectory.set(s.replace("--dir=", ""));
+			}
+			else
+			{
+				System.out.println("Chunk Stories server arguments : \n"
+						+ "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n" + "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument" + "" + "");
+
+				//Runtime.getRuntime().exit(0);
+			}
+		}
+		
 		server = new Server();
 		server.run();
 	}
@@ -85,6 +109,7 @@ public class Server implements Runnable, ServerInterface
 			log.info("Starting ChunkStories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
 			connectionsManager = new ServerConnectionsManager(this);
 
+			
 			GameContent.reload();
 			// Load world
 			String worldName = serverConfig.getProp("world", "world");
@@ -109,6 +134,7 @@ public class Server implements Runnable, ServerInterface
 			connectionsManager.start();
 			// Load plugins
 			pluginsManager = new PluginsManager(this);
+			pluginsManager.reloadPlugins();
 		}
 		catch (Exception e)
 		{ // Exceptions stuff
@@ -145,7 +171,7 @@ public class Server implements Runnable, ServerInterface
 						args = unparsedCommandText.substring(unparsedCommandText.indexOf(" ") + 1, unparsedCommandText.length()).split(" ");
 					}
 
-					console.handleCommand(this, new Command(cmdName), args);
+					console.dispatchCommand(this, cmdName, args);
 
 					System.out.print("> ");
 					System.out.flush();
@@ -254,9 +280,9 @@ public class Server implements Runnable, ServerInterface
 	}
 
 	@Override
-	public Iterator<Player> getConnectedPlayers()
+	public IterableIterator<Player> getConnectedPlayers()
 	{
-		return new Iterator<Player>()
+		return new IterableIterator<Player>()
 		{
 			Iterator<ServerClient> authClients = connectionsManager.getAuthentificatedClients();
 
@@ -333,5 +359,11 @@ public class Server implements Runnable, ServerInterface
 	public long getUptime()
 	{
 		return (System.currentTimeMillis() / 1000 - initTimestamp);
+	}
+
+	@Override
+	public void broadcastMessage(String message)
+	{
+		this.connectionsManager.sendAllChat(message);
 	}
 }

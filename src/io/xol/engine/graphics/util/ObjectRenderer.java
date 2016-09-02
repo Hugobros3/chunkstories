@@ -47,7 +47,7 @@ public class ObjectRenderer
 		else if (textureName.contains("../"))
 			textureName = ("./" + textureName.replace("../", "") + ".png");
 		else
-			textureName = ("./res/textures/" + textureName + ".png");
+			textureName = ("./textures/" + textureName + ".png");
 
 		Texture2D texture = TexturesHandler.getTexture(textureName);
 		

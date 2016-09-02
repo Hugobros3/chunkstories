@@ -139,7 +139,6 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if(isDead())
 			return;
 		
-		//System.out.println("tck");
 		WorldClient worldClient = (WorldClient) world;
 		boolean focus = controller.hasFocus();
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
@@ -189,8 +188,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		else
 			horizontalSpeed = 0.0;
 		// Water slows you down
-		if (inWater)
-			horizontalSpeed *= 0.45;
+		
+		//if (inWater)
+		//	horizontalSpeed *= 0.45;
 
 		if (controller.getInputsManager().getInputByName("left").isPressed())
 			modif += 90 * (controller.getInputsManager().getInputByName("forward").isPressed() ? 0.5 : 1);
@@ -207,29 +207,33 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 				blockedMomentum.scale(0.20);
 			}
 
-			//I don't want any of this to reflect on the object, because it causes ugly jumps in the animation
-			Vector3d canMoveUp = this.canMoveWithCollisionRestrain(new Vector3d(0.0, 0.55, 0.0));
-			//It can go up that bit
-			if (canMoveUp.length() == 0.0f)
+			for(double d = 0.25; d < 0.5; d+= 0.05)
 			{
-				//Would it help with being stuck ?
-				Vector3d tryFromHigher = new Vector3d(this.getLocation());
-				tryFromHigher.add(new Vector3d(0.0, 0.55, 0.0));
-				Vector3d blockedMomentumRemaining = this.canMoveWithCollisionRestrain(tryFromHigher, blockedMomentum);
-				//If length of remaining momentum < of what we requested it to do, that means it *did* go a bit further away
-				if (blockedMomentumRemaining.length() < blockedMomentum.length())
+				//I don't want any of this to reflect on the object, because it causes ugly jumps in the animation
+				Vector3d canMoveUp = this.canMoveWithCollisionRestrain(new Vector3d(0.0, d, 0.0));
+				//It can go up that bit
+				if (canMoveUp.length() == 0.0f)
 				{
-					//Where would this land ?
-					Vector3d afterJump = new Vector3d(tryFromHigher);
-					afterJump.add(blockedMomentum);
-					afterJump.sub(blockedMomentumRemaining);
-
-					//land distance = whatever is left of our -0.55 delta when it hits the ground
-					Vector3d landDistance = this.canMoveWithCollisionRestrain(afterJump, new Vector3d(0.0, -0.55, 0.0));
-					afterJump.add(new Vector3d(0.0, -0.55, 0.0));
-					afterJump.sub(landDistance);
-
-					this.setLocation(new Location(world, afterJump));
+					//Would it help with being stuck ?
+					Vector3d tryFromHigher = new Vector3d(this.getLocation());
+					tryFromHigher.add(new Vector3d(0.0, d, 0.0));
+					Vector3d blockedMomentumRemaining = this.canMoveWithCollisionRestrain(tryFromHigher, blockedMomentum);
+					//If length of remaining momentum < of what we requested it to do, that means it *did* go a bit further away
+					if (blockedMomentumRemaining.length() < blockedMomentum.length())
+					{
+						//Where would this land ?
+						Vector3d afterJump = new Vector3d(tryFromHigher);
+						afterJump.add(blockedMomentum);
+						afterJump.sub(blockedMomentumRemaining);
+	
+						//land distance = whatever is left of our -0.55 delta when it hits the ground
+						Vector3d landDistance = this.canMoveWithCollisionRestrain(afterJump, new Vector3d(0.0, -d, 0.0));
+						afterJump.add(new Vector3d(0.0, -d, 0.0));
+						afterJump.sub(landDistance);
+	
+						this.setLocation(new Location(world, afterJump));
+						break;
+					}
 				}
 			}
 		}

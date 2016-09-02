@@ -100,7 +100,7 @@ public class TexturesHandler
 	public static Texture2D nullTexture()
 	{
 		if(nullTexture == null)
-			nullTexture = TexturesHandler.getTexture("res/textures/notex.png");
+			nullTexture = TexturesHandler.getTexture("./textures/notex.png");
 		return nullTexture;
 	}
 }

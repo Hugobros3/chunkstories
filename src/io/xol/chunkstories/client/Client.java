@@ -10,13 +10,14 @@ import java.util.Calendar;
 
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.misc.ConfigFile;
+import io.xol.engine.misc.FancyParser;
 import io.xol.engine.misc.IconLoader;
 import io.xol.engine.misc.NativesLoader;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.ClientSideController;
-import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.DecalsManager;
@@ -76,14 +77,14 @@ public class Client implements /*ClientSideController, */ClientInterface
 				RenderingConfig.ignoreObsoleteHardware = false;
 				System.out.println("Legacy OpenGL mode enabled");
 			}
-			else if (s.contains("-mods"))
+			else if (s.contains("--mods"))
 			{
-				String[] modsString = s.replace("-mods=", "").split(",");
+				String[] modsString = s.replace("--mods=", "").split(",");
 				GameContent.setEnabledMods(modsString);
 			}
-			else if (s.contains("-dir"))
+			else if (s.contains("--dir"))
 			{
-				GameDirectory.set(s.replace("-dir=", ""));
+				GameDirectory.set(s.replace("--dir=", ""));
 			}
 			else
 			{
@@ -203,7 +204,7 @@ public class Client implements /*ClientSideController, */ClientInterface
 		return connection;
 	}
 
-	public void openInventory(EntityInventory otherInventory)
+	public void openInventory(Inventory otherInventory)
 	{
 		if (windows.getCurrentScene() instanceof GameplayScene)
 		{
@@ -211,9 +212,9 @@ public class Client implements /*ClientSideController, */ClientInterface
 
 			gmp.focus(false);
 			if (otherInventory != null)
-				gmp.changeOverlay(new InventoryOverlay(gmp, null, new EntityInventory[] { ((EntityWithInventory) this.getClientSideController().getControlledEntity()).getInventory(), otherInventory }));
+				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getClientSideController().getControlledEntity()).getInventory(), otherInventory }));
 			else
-				gmp.changeOverlay(new InventoryOverlay(gmp, null, new EntityInventory[] { ((EntityWithInventory) this.getClientSideController().getControlledEntity()).getInventory() }));
+				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getClientSideController().getControlledEntity()).getInventory() }));
 		}
 	}
 

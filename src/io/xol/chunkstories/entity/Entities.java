@@ -2,6 +2,7 @@ package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
 
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -27,7 +29,7 @@ public class Entities
 	{
 		entitiesIds.clear();
 		entitiesTypes.clear();
-		File vanillaFolder = new File("./" + "res/entities/");
+		/*File vanillaFolder = new File("./" + "res/entities/");
 		for (File f : vanillaFolder.listFiles())
 		{
 			if (!f.isDirectory() && f.getName().endsWith(".entities"))
@@ -35,6 +37,14 @@ public class Entities
 				ChunkStoriesLogger.getInstance().log("Reading entities definitions in : " + f.getAbsolutePath());
 				readEntitiesDefinitions(f);
 			}
+		}*/
+		
+		Iterator<File> i = GameContent.getAllFilesByExtension("entities");
+		while(i.hasNext())
+		{
+			File f = i.next();
+			ChunkStoriesLogger.getInstance().log("Reading entities definitions in : " + f.getAbsolutePath());
+			readEntitiesDefinitions(f);
 		}
 	}
 

@@ -20,6 +20,7 @@ import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager;
 import io.xol.chunkstories.server.propagation.VirtualServerSoundManager.ServerPlayerVirtualSoundManager;
+import io.xol.chunkstories.world.WorldServer;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.Math2;
 import io.xol.engine.misc.ColorsTools;
@@ -524,5 +525,11 @@ public class ServerPlayer implements Player
 				}
 			}
 		}
+	}
+
+	@Override
+	public WorldServer getWorld()
+	{
+		return (WorldServer) getLocation().getWorld();
 	}
 }

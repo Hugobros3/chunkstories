@@ -90,18 +90,18 @@ public class VoxelItemRenderer implements ItemRenderer
 		{
 			int width = slotSize * pile.item.getSlotsWidth();
 			int height = slotSize * pile.item.getSlotsHeight();
-			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, TexturesHandler.getTexture("res/items/icons/notex.png").getId(), true, true, null);
+			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, TexturesHandler.getTexture("./items/icons/notex.png").getId(), true, true, null);
 			return;
 		}
-		Texture2D texture = TexturesHandler.getTexture("./res/textures/tiles_merged_albedo.png");
+		Texture2D texture = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
 		texture.setLinearFiltering(false);
 		renderingContext.setDiffuseTexture(texture);
 		
-		Texture2D normalTexture = TexturesHandler.getTexture("./res/textures/tiles_merged_normal.png");
+		Texture2D normalTexture = TexturesHandler.getTexture("./textures/tiles_merged_normal.png");
 		normalTexture.setLinearFiltering(false);
 		renderingContext.setNormalTexture(normalTexture);
 		
-		Texture2D materialTexture = TexturesHandler.getTexture("./res/textures/tiles_merged_material.png");
+		Texture2D materialTexture = TexturesHandler.getTexture("./textures/tiles_merged_material.png");
 		materialTexture.setLinearFiltering(false);
 		renderingContext.setMaterialTexture(materialTexture);
 
@@ -213,7 +213,7 @@ public class VoxelItemRenderer implements ItemRenderer
 			
 		}
 		
-		Texture2D texture = TexturesHandler.getTexture("./res/textures/tiles_merged_albedo.png");
+		Texture2D texture = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
 		texture.setLinearFiltering(false);
 		context.setDiffuseTexture(texture.getId());
 

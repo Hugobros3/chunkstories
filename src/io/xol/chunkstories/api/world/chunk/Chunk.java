@@ -1,5 +1,7 @@
 package io.xol.chunkstories.api.world.chunk;
 
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 
@@ -65,5 +67,7 @@ public interface Chunk
 	public boolean isAirChunk();
 
 	public void destroy();
+
+	public IterableIterator<Entity> getEntitiesWithinChunk();
 
 }

@@ -7,12 +7,13 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.csf.StreamSource;
 import io.xol.chunkstories.api.csf.StreamTarget;
-import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
 
@@ -20,7 +21,7 @@ import io.xol.chunkstories.item.ItemTypes;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityComponentInventory extends EntityComponent implements Iterable<ItemPile>, EntityInventory
+public class EntityComponentInventory extends EntityComponent implements Iterable<ItemPile>, Inventory
 {
 	public int width;
 	public int height;
@@ -250,9 +251,9 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	/**
 	 * Iterates over every ItemPile
 	 */
-	public Iterator<ItemPile> iterator()
+	public IterableIterator<ItemPile> iterator()
 	{
-		Iterator<ItemPile> it = new Iterator<ItemPile>()
+		IterableIterator<ItemPile> it = new IterableIterator<ItemPile>()
 		{
 			public int i = 0;
 			public int j = 0;

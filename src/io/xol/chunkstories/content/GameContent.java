@@ -107,7 +107,7 @@ public class GameContent
 		allModsEnabled = false;
 		for (String s : modsEnabled)
 		{
-			//System.out.println("MODS"+s);
+			System.out.println("MODS"+s);
 			if(s.equals("*"))
 				allModsEnabled = true;
 			else
@@ -123,35 +123,55 @@ public class GameContent
 	private static void buildModsFileSystem()
 	{
 		fileSystem.clear();
+		
 		//Get the mods/ dir
 		File modsDir = new File(GameDirectory.getGameFolderPath() + "/mods/");
 		if (!modsDir.exists())
 			modsDir.mkdirs();
+		
+		//Enable external mods
+		//Set<String> alreadyEnabledMods = new HashSet<String>();
+		for(String modName : mods)
+		{
+			modName = modName.replace('\\', '/');
+			if(modName.contains("/"))
+			{
+				System.out.println("External mod:"+modsDir.getAbsolutePath()+""+modName);
+				File f = new File(modName);
+				if (f.isDirectory())
+					recursiveScan(f, f);
+			}
+			else
+			{
+				File f = new File(modsDir.getAbsolutePath()+""+modName);
+				System.out.println("Local mod:"+modsDir.getAbsolutePath()+""+modName);
+				if (f.isDirectory())
+					recursiveScan(f, f);
+			}
+		}
 		//Load needed mods by order of priority
 		for (File f : modsDir.listFiles())
 		{
-			System.out.println("FFFF"+allModsEnabled);
-			if (allModsEnabled || mods.contains(f.getName()))
+			if (allModsEnabled)// && !alreadyEnabledMods.contains(f.getName()))
 			{
-				System.out.println("FFFF"+f.getAbsolutePath());
 				if (f.isDirectory())
 					recursiveScan(f, f);
 			}
 		}
 		//Load vanilla ressources (lowest priority)
 		for(File f : new File(GameDirectory.getGameFolderPath() + "/res/").listFiles())
-				recursiveScan(f, new File(GameDirectory.getGameFolderPath() + "/"));
+				recursiveScan(f, new File(GameDirectory.getGameFolderPath() + "/res/"));
 	}
 
-	private static void recursiveScan(File directory, File modsDir)
+	private static void recursiveScan(File initialFile, File modRootDirectory)
 	{
 		//Special case for initial res/ folder
-		if(!directory.isDirectory())
+		if(!initialFile.isDirectory())
 		{
-			File f = directory;
+			File f = initialFile;
 			String filteredName = f.getAbsolutePath();
 			//Remove game dir path
-			filteredName = "."+filteredName.replace(modsDir.getAbsolutePath(), "");
+			filteredName = "."+filteredName.replace(modRootDirectory.getAbsolutePath(), "");
 			filteredName = filteredName.replace('\\', '/');
 			//Remove mod path
 			if(!fileSystem.containsKey(filteredName))
@@ -165,15 +185,15 @@ public class GameContent
 			return;
 		}
 		//We just list dem files
-		for (File f : directory.listFiles())
+		for (File f : initialFile.listFiles())
 		{
 			if (f.isDirectory())
-				recursiveScan(f, modsDir);
+				recursiveScan(f, modRootDirectory);
 			else
 			{
 				String filteredName = f.getAbsolutePath();
 				//Remove game dir path
-				filteredName = "."+filteredName.replace(modsDir.getAbsolutePath(), "");
+				filteredName = "."+filteredName.replace(modRootDirectory.getAbsolutePath(), "");
 				filteredName = filteredName.replace('\\', '/');
 				//Remove mod path
 				if(!fileSystem.containsKey(filteredName))
@@ -183,6 +203,7 @@ public class GameContent
 					//System.out.println("Found override for ressource : " + filteredName + " in modDir : " + modsDir);
 				}
 				fileSystem.get(filteredName).addLast(f);
+				System.out.println("Found ressocurce "+filteredName);
 				//fileSystem.put(filteredName, f);
 			}
 		}
@@ -232,8 +253,13 @@ public class GameContent
 	 */
 	public static File getFileLocation(String fileName)
 	{
+		if(!fileName.startsWith("./"))
+			fileName = "./"+fileName;
+		
 		if(fileSystem.containsKey(fileName))
 			return fileSystem.get(fileName).getFirst();
+		
+		
 		File checkRootFolder = new File("./" + fileName);
 		if (checkRootFolder.exists())
 			return checkRootFolder;

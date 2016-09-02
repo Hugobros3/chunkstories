@@ -18,8 +18,7 @@ public class ItemHeGrenade extends Item
 	@Override
 	public String getTextureName(ItemPile pile)
 	{
-		// TODO Auto-generated method stub
-		return "res/items/icons/hegrenade.png";
+		return "items/icons/hegrenade.png";
 	}
 
 }

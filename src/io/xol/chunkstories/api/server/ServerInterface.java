@@ -17,4 +17,6 @@ public interface ServerInterface extends CommandEmitter
 	public Player getPlayerByUUID(long UUID);
 
 	public PluginManager getPluginsManager();
+
+	public void broadcastMessage(String message);
 }

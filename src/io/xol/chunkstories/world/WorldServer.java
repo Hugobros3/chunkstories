@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.events.PlayerSpawnEvent;
 import io.xol.chunkstories.net.packets.PacketTime;
@@ -209,7 +210,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		return virtualServerDecalsManager;
 	}
 
-	public Iterator<Player> getPlayers()
+	public IterableIterator<Player> getPlayers()
 	{
 		return Server.getInstance().getConnectedPlayers();
 	}

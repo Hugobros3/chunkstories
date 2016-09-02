@@ -42,6 +42,11 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 	{
 		signText.setSignText(text);
 	}
+	
+	public String getText()
+	{
+		return signText.getSignText();
+	}
 
 	@Override
 	public EntityRenderer<? extends EntityRenderable> getEntityRenderer()
@@ -57,10 +62,10 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 		{
 			renderingContext.sendBoneTransformationMatrix(null);
 
-			Texture2D diffuse = TexturesHandler.getTexture("res/models/sign.png");
+			Texture2D diffuse = TexturesHandler.getTexture("./models/sign.png");
 			diffuse.setLinearFiltering(false);
 			renderingContext.setDiffuseTexture(diffuse.getId());
-			renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
+			renderingContext.setNormalTexture(TexturesHandler.getTextureID("./textures/normalnormal.png"));
 		}
 
 		@Override
@@ -73,10 +78,10 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 				if (renderingContext.getCamera().getCameraPosition().add(entitySign.getLocation()).length() > 32)
 					continue;
 				
-				Texture2D diffuse = TexturesHandler.getTexture("res/models/sign.png");
+				Texture2D diffuse = TexturesHandler.getTexture("./models/sign.png");
 				diffuse.setLinearFiltering(false);
 				renderingContext.setDiffuseTexture(diffuse.getId());
-				renderingContext.setNormalTexture(TexturesHandler.getTextureID("res/textures/normalnormal.png"));
+				renderingContext.setNormalTexture(TexturesHandler.getTextureID("./textures/normalnormal.png"));
 				renderingContext.getCurrentShader().setUniformFloat3("objectPosition", entitySign.getLocation());
 
 				int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
@@ -101,9 +106,9 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 				renderingContext.enableVertexAttribute("normalIn");
 				glDisable(GL_CULL_FACE);
 				if (isPost)
-					ModelLibrary.getRenderableMesh("res/models/sign_post.obj").render(renderingContext);
+					ModelLibrary.getRenderableMesh("./models/sign_post.obj").render(renderingContext);
 				else
-					ModelLibrary.getRenderableMesh("res/models/sign.obj").render(renderingContext);
+					ModelLibrary.getRenderableMesh("./models/sign.obj").render(renderingContext);
 				//signText.setSignText("The #FF0000cuckiest man on earth #FFFF20 rises again to bring you A E S T H E T I C signs");
 
 				// bake sign mesh

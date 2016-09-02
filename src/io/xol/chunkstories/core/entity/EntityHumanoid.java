@@ -64,7 +64,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		public BVHAnimation getAnimationPlayingForBone(String boneName, double animationTime)
 		{
 			if (EntityHumanoid.this.isDead())
-				return BVHLibrary.getAnimation("res/animations/human/ded.bvh");
+				return BVHLibrary.getAnimation("./animations/human/ded.bvh");
 
 			if (Arrays.asList(new String[] { "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD", "boneItemInHand" }).contains(boneName))
 			{
@@ -76,9 +76,9 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 					if (selectedItemPile != null)
 					{
 						if (selectedItemPile.getItem() instanceof ItemAk47)
-							return BVHLibrary.getAnimation("res/animations/human/holding-rifle.bvh");
+							return BVHLibrary.getAnimation("./animations/human/holding-rifle.bvh");
 						else
-							return BVHLibrary.getAnimation("res/animations/human/holding-item.bvh");
+							return BVHLibrary.getAnimation("./animations/human/holding-item.bvh");
 					}
 				}
 			}
@@ -90,13 +90,13 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			if (horizSpd > 0.065)
 			{
 				//System.out.println("running");
-				return BVHLibrary.getAnimation("res/animations/human/running.bvh");
+				return BVHLibrary.getAnimation("./animations/human/running.bvh");
 			}
 
 			if (horizSpd > 0.0)
-				return BVHLibrary.getAnimation("res/animations/human/walking.bvh");
+				return BVHLibrary.getAnimation("./animations/human/walking.bvh");
 
-			return BVHLibrary.getAnimation("res/animations/human/standstill.bvh");
+			return BVHLibrary.getAnimation("./animations/human/standstill.bvh");
 		}
 
 		public Matrix4f getBoneTransformationMatrix(String boneName, double animationTime)
@@ -105,7 +105,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 			double horizSpd = Math.sqrt(vel.getX() * vel.getX() + vel.getZ() * vel.getZ());
 
-			animationTime *= 1.0 + (horizSpd / 0.065) * 0.3;
+			// animationTime += metersWalked * 50;
 			//	return BVHLibrary.getAnimation("res/animations/human/running.bvh");
 
 			if (boneName.endsWith("boneHead"))
@@ -115,8 +115,11 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				return modify;
 			}
 
-			if (horizSpd > 0.065)
-				animationTime *= 2.0;
+			if (horizSpd > 0.030)
+				animationTime *= 1.5;
+			
+			if (horizSpd > 0.060)
+				animationTime *= 1.5;
 			else if (Arrays.asList(new String[] { "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD", "boneItemInHand", "boneTorso" }).contains(boneName))
 			{
 				//Vector3d vel = getVelocityComponent().getVelocity();
@@ -172,7 +175,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 				//Except in fp 
 				if (!entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
-					ModelLibrary.getRenderableMesh("res/models/human.obj").renderButParts(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
+					ModelLibrary.getRenderableMesh("./models/human.obj").renderButParts(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
 
 				//Render rotated limbs
 				headRotationMatrix = new Matrix4f();
@@ -186,7 +189,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				renderingContext.sendTransformationMatrix(headRotationMatrix);
 
 				if (selectedItemPile != null || !entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
-					ModelLibrary.getRenderableMesh("res/models/human.obj").renderParts(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
+					ModelLibrary.getRenderableMesh("./models/human.obj").renderParts(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
 
 				//Matrix to itemInHand bone in the player's bvh
 				Matrix4f itemMatrix = new Matrix4f();
@@ -238,6 +241,8 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 		//Limit maximal acceleration depending if we're on the groud or not, we accelerate 2x faster on ground
 		double maxAcceleration = collision_bot ? 0.010 : 0.005;
+		if(inWater)
+			maxAcceleration = 0.005;
 		if (acceleration.length() > maxAcceleration)
 		{
 			acceleration.normalize();
@@ -283,7 +288,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		
 		Voxel voxelStandingOn = Voxels.get(world.getVoxelData(this.getLocation().clone().add(0.0, -0.01, 0.0)));
 		
-		if(voxelStandingOn == null || !voxelStandingOn.isVoxelSolid())
+		if(voxelStandingOn == null || !voxelStandingOn.isVoxelSolid() && !voxelStandingOn.isVoxelLiquid())
 			return;
 		
 		Material material = voxelStandingOn.getMaterial();

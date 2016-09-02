@@ -6,5 +6,5 @@ package io.xol.chunkstories.api.entity;
 
 public interface DamageCause
 {
-	
+	public String getName();
 }

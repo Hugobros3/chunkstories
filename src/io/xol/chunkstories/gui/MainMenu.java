@@ -72,7 +72,7 @@ public class MainMenu extends OverlayableScene
 		if (possibleSkyboxes == null || possibleSkyboxes.length == 0)
 		{
 			// No skyboxes screen avaible, default to basic skybox
-			skyBox = "./res/textures/skybox";
+			skyBox = "./textures/skybox";
 		} else
 		{
 			// Choose a random one.

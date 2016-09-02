@@ -15,11 +15,12 @@ import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.events.Listener;
 import io.xol.chunkstories.api.events.RegisteredListener;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
-import io.xol.chunkstories.api.plugin.PluginJar;
+import io.xol.chunkstories.api.plugin.PluginInformation;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.PluginStore;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
+import io.xol.chunkstories.api.plugin.commands.CommandHandler;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
@@ -34,7 +35,9 @@ public class PluginsManager implements PluginManager
 	PluginStore store = new PluginStore();
 
 	public Set<ChunkStoriesPlugin> activePlugins = new HashSet<ChunkStoriesPlugin>();
-	public Map<Command, ChunkStoriesPlugin> commandsHandlers = new HashMap<Command, ChunkStoriesPlugin>();
+	
+	public Map<String, Command> commandsAliases = new HashMap<String, Command>();
+	public Map<Command, CommandHandler> commandsHandlers = new HashMap<Command, CommandHandler>();
 
 	public PluginsManager(ClientInterface client)
 	{
@@ -48,29 +51,35 @@ public class PluginsManager implements PluginManager
 		File pluginsFolder = new File(GameDirectory.getGameFolderPath() + "/plugins/");
 		pluginsFolder.mkdirs();
 		
-		reloadServerPlugins();
+		// reloadServerPlugins();
 		//store.loadPlugins(pluginsFolder);
 	}
 
 	public void enablePlugins()
 	{
-		Set<PluginJar> pluginsToInitialize = store.getLoadedPlugins();
+		Set<PluginInformation> pluginsToInitialize = store.getLoadedPlugins();
 		System.out.println(pluginsToInitialize.size() + " plugins to initialize");
-		for (PluginJar pj : pluginsToInitialize)
+		for (PluginInformation pj : pluginsToInitialize)
 		{
-			ChunkStoriesPlugin plugin = pj.getInstance();
-			plugin.setPluginManager(this);
+			ChunkStoriesPlugin plugin = pj.createInstance(this);
 			plugin.setServer(server);
 			// Add commands support
-			for (Command cmd : pj.commands)
+			for (Command command : pj.commands)
 			{
-				if (commandsHandlers.containsKey(cmd))
+				for(String alias : command.aliases())
 				{
-					System.out.println("Plugin " + pj.getName() + " can't define the command " + cmd.getName() + " as it's already defined by another plugin.");
-					break;
+					System.out.println("alias"+alias+" 4cmd"+command);
+					commandsAliases.put(alias, command);
+					
+				}
+				
+				if (commandsHandlers.containsKey(command))
+				{
+					System.out.println("Plugin " + pj.getName() + " can't define the command " + command.getName() + " as it's already defined by another plugin.");
+					continue;
 				}
 				else
-					commandsHandlers.put(cmd, plugin);
+					commandsHandlers.put(command, plugin);
 			}
 
 			activePlugins.add(plugin);
@@ -88,6 +97,7 @@ public class PluginsManager implements PluginManager
 			plugin.onDisable();
 		}
 		activePlugins.clear();
+		commandsAliases.clear();
 		commandsHandlers.clear();
 	}
 
@@ -117,8 +127,17 @@ public class PluginsManager implements PluginManager
 		enablePlugins();
 	}
 
+	public void registerCommandHandler(String commandName, CommandHandler commandHandler)
+	{
+		Command command = findCommandUsingAlias(commandName);
+		if(command == null)
+			return;
+	
+		commandsHandlers.put(command, commandHandler);
+	}
+
 	@Override
-	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments)
+	public boolean dispatchCommand(CommandEmitter emitter, String commandName, String[] arguments)
 	{
 		/*String cmdName = unparsedCommandText.toLowerCase();
 		String[] args = {};
@@ -127,6 +146,11 @@ public class PluginsManager implements PluginManager
 			cmdName = unparsedCommandText.substring(0, unparsedCommandText.indexOf(" "));
 			args = unparsedCommandText.substring(unparsedCommandText.indexOf(" ")+1, unparsedCommandText.length()).split(" ");
 		}*/
+		
+		Command command = findCommandUsingAlias(commandName);
+		System.out.println(command);
+		if(command == null)
+			return false;
 		
 		//System.out.println("debug looking for plugin to handle cmd" + cmdName + " args:" + args.length);
 		
@@ -144,6 +168,11 @@ public class PluginsManager implements PluginManager
 			}
 		}
 		return false;
+	}
+
+	private Command findCommandUsingAlias(String commandName)
+	{
+		return commandsAliases.get(commandName.toLowerCase());
 	}
 
 	@Override

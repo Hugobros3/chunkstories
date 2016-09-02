@@ -23,7 +23,7 @@ public class VoxelModels
 	public static void resetAndLoadModels()
 	{
 		models.clear();
-		File vanillaFolder = new File("./" + "res/voxels/blockmodels/");
+		File vanillaFolder = new File("./res/voxels/blockmodels/");
 		for (File f : vanillaFolder.listFiles())
 		{
 			if (!f.isDirectory() && f.getName().endsWith(".model"))

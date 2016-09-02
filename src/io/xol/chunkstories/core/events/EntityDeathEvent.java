@@ -51,13 +51,15 @@ public class EntityDeathEvent extends Event
 			if(controller instanceof Player)
 			{
 				Player player = (Player)controller;
-				File playerSavefile = new File("./players/" + player.getName().toLowerCase() + ".csf");
-				if(playerSavefile.exists())
-				{
-					System.out.println("Removing player file as he died :");
-					playerSavefile.delete();
-				}
+				
+				PlayerDeathEvent event = new PlayerDeathEvent(player);
+				entity.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
 			}
 		}
+	}
+	
+	public Entity getEntity()
+	{
+		return entity;
 	}
 }

@@ -2,8 +2,8 @@ package io.xol.chunkstories.api.plugin;
 
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.Listener;
-import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
+import io.xol.chunkstories.api.plugin.commands.CommandHandler;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -20,7 +20,9 @@ public interface PluginManager
 	 * @param emitter Whoever sent it
 	 * @return
 	 */
-	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments);
+	public boolean dispatchCommand(CommandEmitter emitter, String commandName, String[] arguments);
+	
+	public void registerCommandHandler(String commandName, CommandHandler commandHandler);
 	
 	/**
 	 * Register a Listener in an plugin

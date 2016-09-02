@@ -2,6 +2,7 @@ package io.xol.chunkstories.item;
 
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.BufferedReader;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -30,7 +32,7 @@ public class ItemTypes
 		Arrays.fill(items, null);
 		dictionary.clear();
 
-		File vanillaFolder = new File("./" + "res/items/");
+		/*File vanillaFolder = new File("./" + "res/items/");
 		for (File f : vanillaFolder.listFiles())
 		{
 			if (!f.isDirectory() && f.getName().endsWith(".items"))
@@ -38,6 +40,14 @@ public class ItemTypes
 				ChunkStoriesLogger.getInstance().log("Reading items definitions in : " + f.getAbsolutePath());
 				readitemsDefinitions(f);
 			}
+		}*/
+		
+		Iterator<File> i = GameContent.getAllFilesByExtension("items");
+		while(i.hasNext())
+		{
+			File f = i.next();
+			ChunkStoriesLogger.getInstance().log("Reading items definitions in : " + f.getAbsolutePath());
+			readitemsDefinitions(f);
 		}
 	}
 
@@ -99,8 +109,10 @@ public class ItemTypes
 						String[] split = line.split(" ");
 						int id = Integer.parseInt(split[1]);
 						String itemName = split[2];
-						String className = split[3];
-
+						String className = "io.xol.chunkstories.api.item.Item";
+						
+						if(split.length > 3)
+							className = split[3];
 						try
 						{
 							Class<?> rawClass = Class.forName(className);

@@ -33,6 +33,15 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 	}
 
 	@Override
+	public EntitySign getVoxelEntity(World world, int worldX, int worldY, int worldZ)
+	{
+		EntityVoxel ev = super.getVoxelEntity(world, worldX, worldY, worldZ);
+		if(!(ev instanceof EntitySign))
+				throw new RuntimeException("VoxelEntity representation invariant fail, wrong entity found at " + worldX + ":" + worldY + ":" + worldZ);
+		return (EntitySign) ev;
+	}
+
+	@Override
 	protected EntityVoxel createVoxelEntity(World world, int x, int y, int z)
 	{
 		return new EntitySign((WorldImplementation) world, x, y, z);

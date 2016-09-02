@@ -1,5 +1,9 @@
 package io.xol.chunkstories.world.chunk;
 
+import java.util.Iterator;
+
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -104,6 +108,29 @@ public class DummyChunk implements Chunk
 	@Override
 	public void destroy()
 	{
+	}
+
+	@Override
+	public IterableIterator<Entity> getEntitiesWithinChunk()
+	{
+		return new IterableIterator<Entity>()
+		{
+
+			@Override
+			public boolean hasNext()
+			{
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public Entity next()
+			{
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+		};
 	}
 
 }

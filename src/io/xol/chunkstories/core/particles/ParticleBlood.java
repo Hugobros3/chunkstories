@@ -46,7 +46,7 @@ public class ParticleBlood extends ParticleType
 	@Override
 	public Texture2D getTexture()
 	{
-		return TexturesHandler.getTexture("./res/textures/particles/blood.png");
+		return TexturesHandler.getTexture("./textures/particles/blood.png");
 	}
 
 	@Override

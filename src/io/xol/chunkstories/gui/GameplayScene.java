@@ -19,7 +19,7 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
@@ -227,11 +227,11 @@ public class GameplayScene extends OverlayableScene
 
 				TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").setLinearFiltering(false);
 				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale, 256 * scale, 32 * scale, 0, 32f / 256f, 1, 0,
-						TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId(), false, true, null);
+						TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png").getId(), false, true, null);
 
 				int horizontalBitsToDraw = (int) (8 + 118 * livingPlayer.getHealth() / livingPlayer.getMaxHealth());
 				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f,
-						32f / 256f, TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").getId(), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
+						32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png").getId(), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
 
 			}
 
@@ -241,7 +241,7 @@ public class GameplayScene extends OverlayableScene
 			if (currentOverlay != null)
 				currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 			else
-				renderingContext.getGuiRenderer().renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "internal://res/textures/gui/cursor.png");
+				renderingContext.getGuiRenderer().renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "./textures/gui/cursor.png");
 
 
 			if (RenderingConfig.showDebugInfo)
@@ -378,9 +378,9 @@ public class GameplayScene extends OverlayableScene
 			{
 				focus(false);
 				if (player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().isCreativeMode())
-					this.changeOverlay(new InventoryOverlay(this, null, new EntityInventory[] { ((EntityWithInventory) player).getInventory(), new InventoryAllVoxels() }));
+					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) player).getInventory(), new InventoryAllVoxels() }));
 				else
-					this.changeOverlay(new InventoryOverlay(this, null, new EntityInventory[] { ((EntityWithInventory) player).getInventory() }));
+					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) player).getInventory() }));
 			}
 		}
 		else if (Client.getInstance().getInputsManager().getInputByName("exit").equals(keyBind))

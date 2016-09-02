@@ -157,7 +157,7 @@ public class DecalsRenderer implements DecalsManager
 	
 	public void drawDecal(Vector3d position, Vector3d orientation, Vector3d size, String decalName)
 	{
-		Texture2D texture = TexturesHandler.getTexture("res/textures/decals/"+decalName+".png");
+		Texture2D texture = TexturesHandler.getTexture("./textures/decals/"+decalName+".png");
 		drawDecal(position, orientation, size, texture);
 	}
 

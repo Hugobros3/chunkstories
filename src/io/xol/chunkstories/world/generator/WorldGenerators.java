@@ -30,7 +30,7 @@ public class WorldGenerators
 		//Loads all generators
 		generators.clear();
 		generatorsClasses.clear();
-		Deque<File> packetsFiles = GameContent.getAllFileInstances("./res/data/worldGenerators.txt");
+		Deque<File> packetsFiles = GameContent.getAllFileInstances("./data/worldGenerators.txt");
 		for (File f : packetsFiles)
 		{
 			loadWorldGeneratorsFile(f);

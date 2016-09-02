@@ -16,9 +16,9 @@ public class PluginStore
 {
 	ServerInterface server;
 	
-	Set<PluginJar> loadedPlugins = new HashSet<PluginJar>();
+	Set<PluginInformation> loadedPlugins = new HashSet<PluginInformation>();
 	
-	public Set<PluginJar> getLoadedPlugins()
+	public Set<PluginInformation> getLoadedPlugins()
 	{
 		return loadedPlugins;
 	}
@@ -46,7 +46,7 @@ public class PluginStore
 	{
 		try
 		{
-			PluginJar plugin = new PluginJar(file, getClass().getClassLoader());
+			PluginInformation plugin = new PluginInformation(file, getClass().getClassLoader());
 			loadedPlugins.add(plugin);
 		}
 		catch (PluginInfoException | IOException e)
@@ -60,7 +60,7 @@ public class PluginStore
 	 * Removes a plugin
 	 * @param pj
 	 */
-	public void unLoadPlugin(PluginJar pj)
+	public void unLoadPlugin(PluginInformation pj)
 	{
 		loadedPlugins.remove(pj);
 	}

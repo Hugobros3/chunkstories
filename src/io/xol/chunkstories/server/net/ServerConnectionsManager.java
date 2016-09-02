@@ -136,7 +136,7 @@ public class ServerConnectionsManager extends Thread
 					args = chatMsg.substring(chatMsg.indexOf(" ")+1, chatMsg.length()).split(" ");
 				}
 				
-				server.getConsole().handleCommand(c.getProfile(), new Command(cmdName), args);
+				server.getConsole().dispatchCommand(c.getProfile(), cmdName, args);
 			}
 			else if (chatMsg.length() > 0)
 			{

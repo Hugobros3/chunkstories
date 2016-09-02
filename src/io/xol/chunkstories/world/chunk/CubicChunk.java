@@ -1,5 +1,7 @@
 package io.xol.chunkstories.world.chunk;
 
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -1980,5 +1982,12 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	public ChunkRenderData getChunkRenderData()
 	{
 		return chunkRenderData;
+	}
+
+	@Override
+	public IterableIterator<Entity> getEntitiesWithinChunk()
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

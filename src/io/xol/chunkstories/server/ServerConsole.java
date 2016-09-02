@@ -30,15 +30,15 @@ public class ServerConsole
 		this.server = server;
 	}
 
-	public boolean handleCommand(CommandEmitter emitter, Command cmd, String[] arguments)
+	public boolean dispatchCommand(CommandEmitter emitter, String cmd, String[] arguments)
 	{
-		ChunkStoriesLogger.getInstance().info(("[" + emitter.getName() + "] ") + "Entered command : " + cmd.getName());
+		ChunkStoriesLogger.getInstance().info(("[" + emitter.getName() + "] ") + "Entered command : " + cmd);
 		try
 		{
 			//First try to handle the plugins commands
 			try
 			{
-				if (server.getPluginsManager().handleCommand(emitter, cmd, arguments))
+				if (server.getPluginsManager().dispatchCommand(emitter, cmd, arguments))
 					return true;
 			}
 			catch (Exception e)

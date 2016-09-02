@@ -44,7 +44,7 @@ public class PacketsProcessor
 	{
 		//Loads *all* possible packets types
 		packetIds.clear();
-		Deque<File> packetsFiles = GameContent.getAllFileInstances("./res/data/packetsTypes.txt");
+		Deque<File> packetsFiles = GameContent.getAllFileInstances("./data/packetsTypes.txt");
 		for (File f : packetsFiles)
 		{
 			loadPacketFile(f);

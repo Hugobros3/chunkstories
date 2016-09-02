@@ -1,7 +1,7 @@
 package io.xol.chunkstories.api.client;
 
 import io.xol.chunkstories.api.entity.ClientSideController;
-import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.DecalsManager;
@@ -37,7 +37,7 @@ public interface ClientInterface
 	 * Opens the inventory GUI with the controlled entity's inventory, if applicable
 	 * @param otherInventory If not null, opens this other inventory as well
 	 */
-	public void openInventory(EntityInventory otherInventory);
+	public void openInventory(Inventory otherInventory);
 
 	/**
 	 * @return Is the game GUI in focus or obstructed by other things ?

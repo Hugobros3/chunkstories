@@ -6,8 +6,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
 
@@ -88,8 +89,14 @@ public class ItemPile implements CSFSerializable
 		loadCSF(stream);
 	}
 
+	public ItemPile(ItemType type)
+	{
+		this(type.newItem());
+	}
+
 	public String getTextureName()
 	{
+		//System.out.println("fck off"+item.getTextureName(this));
 		return item.getTextureName(this);
 	}
 
@@ -122,9 +129,9 @@ public class ItemPile implements CSFSerializable
 	 * @return null if successfull, this if not.
 	 */
 	//@SuppressWarnings("unchecked")
-	public boolean moveItemPileTo(EntityInventory destinationInventory, int destinationX, int destinationY, int amountToTransfer)
+	public boolean moveItemPileTo(Inventory destinationInventory, int destinationX, int destinationY, int amountToTransfer)
 	{
-		EntityInventory currentInventory = this.inventory;
+		Inventory currentInventory = this.inventory;
 		
 		//If moving to itself
 		if(destinationInventory != null && currentInventory != null && destinationInventory.equals(currentInventory))

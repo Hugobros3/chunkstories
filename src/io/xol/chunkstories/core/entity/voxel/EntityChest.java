@@ -1,6 +1,6 @@
 package io.xol.chunkstories.core.entity.voxel;
 
-import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentPublicInventory;
@@ -23,7 +23,7 @@ public class EntityChest extends EntityImplementation implements EntityWithInven
 	}
 
 	@Override
-	public EntityInventory getInventory()
+	public Inventory getInventory()
 	{
 		return inventoryComponent;
 	}

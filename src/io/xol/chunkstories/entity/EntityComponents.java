@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 public class EntityComponents
@@ -16,7 +18,8 @@ public class EntityComponents
 	public static void reload()
 	{
 		entityComponentsIds.clear();
-		File vanillaFolder = new File("./" + "res/entities/");
+		
+		/*File vanillaFolder = new File("./" + "res/entities/");
 		for (File f : vanillaFolder.listFiles())
 		{
 			if (!f.isDirectory() && f.getName().endsWith(".components"))
@@ -24,6 +27,14 @@ public class EntityComponents
 				ChunkStoriesLogger.getInstance().log("Reading entity components definitions in : " + f.getAbsolutePath());
 				readEntityComponentsDefinitions(f);
 			}
+		}*/
+		
+		Iterator<File> i = GameContent.getAllFilesByExtension("components");
+		while(i.hasNext())
+		{
+			File f = i.next();
+			ChunkStoriesLogger.getInstance().log("Reading entity components definitions in : " + f.getAbsolutePath());
+			readEntityComponentsDefinitions(f);
 		}
 	}
 

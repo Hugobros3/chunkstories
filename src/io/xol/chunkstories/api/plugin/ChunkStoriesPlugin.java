@@ -15,8 +15,14 @@ public abstract class ChunkStoriesPlugin implements CommandHandler
 	protected ServerInterface serverI;
 	protected ClientInterface clientI;
 	
-	protected PluginManager pluginManager;
-	public PluginJar jar;
+	private PluginManager pluginManager;
+	private PluginInformation pluginInformation;
+	
+	protected final void initialize(PluginManager pluginManager, PluginInformation jar)
+	{
+		this.pluginManager = pluginManager;
+		this.pluginInformation = jar;
+	}
 	
 	public void setServer(ServerInterface server)
 	{
@@ -33,6 +39,11 @@ public abstract class ChunkStoriesPlugin implements CommandHandler
 		return pluginManager;
 	}
 	
+	public PluginInformation getPluginInformation()
+	{
+		return pluginInformation;
+	}
+	
 	public boolean handleCommand(CommandEmitter sender, Command cmd, String[] arguments)
 	{
 		System.out.println("Someone left the default command handler !");
@@ -42,15 +53,10 @@ public abstract class ChunkStoriesPlugin implements CommandHandler
 	public abstract void onEnable();
 	public abstract void onDisable();
 
-	public void setPluginManager(PluginManager pluginManager)
-	{
-		this.pluginManager = pluginManager;
-	}
-
 	public String getName()
 	{
-		if(jar == null)
+		if(pluginInformation == null)
 			return "you were adopted";
-		return jar.getName();
+		return pluginInformation.getName();
 	}
 }

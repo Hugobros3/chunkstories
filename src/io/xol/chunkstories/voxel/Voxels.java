@@ -2,6 +2,7 @@ package io.xol.chunkstories.voxel;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.materials.Materials;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -15,6 +16,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -210,7 +212,7 @@ public class Voxels
 		
 		// Load .voxels files
 		// From vanilla
-		File vanillaFolder = new File("./" + "res/voxels/");
+		/*File vanillaFolder = new File("./" + "res/voxels/");
 		for (File f : vanillaFolder.listFiles())
 		{
 			if (!f.isDirectory() && f.getName().endsWith(".voxels"))
@@ -226,6 +228,14 @@ public class Voxels
 			{
 				//vo.color = VoxelTextures.getTextureColorAVG(vo.getVoxelTexture(0, new BlockRenderInfo()).name);
 			}
+		}*/
+		
+		Iterator<File> i = GameContent.getAllFilesByExtension("voxels");
+		while(i.hasNext())
+		{
+			File f = i.next();
+			ChunkStoriesLogger.getInstance().log("Reading voxels definitions in : " + f.getAbsolutePath());
+			readVoxelsDefinitions(f);
 		}
 	}
 

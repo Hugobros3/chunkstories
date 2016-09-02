@@ -1,7 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;
@@ -94,7 +94,7 @@ public class PacketInventoryMoveItemPile extends PacketSynch
 	}
 	
 	public ItemPile itemPile;
-	public EntityInventory from, to;
+	public Inventory from, to;
 	public int oldX, oldY, newX, newY;
 	public int amount;
 

@@ -41,7 +41,7 @@ public class ModelLibrary
 		}
 		
 		//Not found ? Throw the error mesh in
-		return getCompleteMesh("./res/models/error.obj");
+		return getCompleteMesh("./models/error.obj");
 	}
 
 	/**
@@ -63,10 +63,10 @@ public class ModelLibrary
 		}
 			
 		//Not found ? Throw the error mesh in
-		if(!name.equals("./res/models/error.obj"))
-			return getCompleteMesh("./res/models/error.obj");
+		if(!name.equals("./models/error.obj"))
+			return getCompleteMesh("./models/error.obj");
 		//Avoid infinite loop in case someone was a moron
-		throw new RuntimeException("File ./res/models/error.obj absent !");
+		throw new RuntimeException("File ./models/error.obj absent !");
 	}
 
 	/**

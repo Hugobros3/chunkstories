@@ -14,7 +14,7 @@ import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 // http://chunkstories.xyz
 // http://xol.io
 
-public abstract class Item
+public class Item
 {
 	private final ItemType type;
 	
@@ -29,6 +29,11 @@ public abstract class Item
 	public ItemType getType()
 	{
 		return type;
+	}
+	
+	public String getName()
+	{
+		return type.getInternalName();
 	}
 	
 	public ItemRenderer getItemRenderer()
@@ -85,7 +90,7 @@ public abstract class Item
 	 */
 	public String getTextureName(ItemPile pile)
 	{
-		return "res/items/icons/"+getInternalName()+".png";
+		return "./items/icons/"+getInternalName()+".png";
 	}
 	
 	/**

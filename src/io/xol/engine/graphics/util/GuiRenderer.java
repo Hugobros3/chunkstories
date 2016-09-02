@@ -86,7 +86,7 @@ public class GuiRenderer
 
 	public void debugDraw()
 	{
-		setState(TexturesHandler.getTextureID("res/textures/logo.png"), false, true, new Vector4f(1f, 1f, 1f, 1f));
+		setState(TexturesHandler.getTextureID("./textures/logo.png"), false, true, new Vector4f(1f, 1f, 1f, 1f));
 
 		addVertice(new float[] { -1, -1 }, new float[] { 0, 1 });
 		addVertice(new float[] { -1, 1 }, new float[] { 0, 0 });
@@ -245,7 +245,7 @@ public class GuiRenderer
 		else if (textureName.contains("../"))
 			textureName = ("./" + textureName.replace("../", "") + ".png");
 		else
-			textureName = ("./res/textures/" + textureName + ".png");
+			textureName = ("./textures/" + textureName + ".png");
 
 		Texture2D texture = TexturesHandler.getTexture(textureName);
 		

@@ -1,9 +1,13 @@
 package io.xol.chunkstories.content.sandbox;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.GameLogic;
+import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
+import io.xol.chunkstories.api.plugin.Scheduler;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
@@ -24,8 +28,8 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 public class GameLogicThread extends Thread implements GameLogic
 {
 	private WorldImplementation world;
-
-	boolean die = false;
+	private GameLogicScheduler gameLogicScheduler;
+	private boolean die = false;
 
 	public GameLogicThread(WorldImplementation world, SecurityManager securityManager)
 	{
@@ -34,6 +38,8 @@ public class GameLogicThread extends Thread implements GameLogic
 		
 		this.setName("world " + world.getWorldInfo().getInternalName()+" logic thread");
 		this.setPriority(Constants.MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY);
+		
+		gameLogicScheduler = new GameLogicScheduler();
 		
 		this.start();
 	}
@@ -184,5 +190,63 @@ public class GameLogicThread extends Thread implements GameLogic
 	public void stopLogicThread()
 	{
 		die = true;
+	}
+
+	@Override
+	public Scheduler getScheduler()
+	{
+		return gameLogicScheduler;
+	}
+	
+	class GameLogicScheduler implements Scheduler {
+
+		List<ScheduledTask> scheduledTasks = new ArrayList<ScheduledTask>();
+		
+		public void runScheduledTasks()
+		{
+			Iterator<ScheduledTask> i = scheduledTasks.iterator();
+			while(i.hasNext())
+			{
+				if(i.next().etc())
+					i.remove();
+			}
+		}
+		
+		@Override
+		public void scheduleSyncRepeatingTask(ChunkStoriesPlugin p, Runnable runnable, long delay, long period)
+		{
+			scheduledTasks.add(new ScheduledTask(runnable, delay, period));
+		}
+		
+		class ScheduledTask {
+			
+			public ScheduledTask(Runnable runnable, long delay, long period)
+			{
+				this.runnable = runnable;
+				this.delay = delay;
+				this.period = period;
+			}
+
+			Runnable runnable;
+			long delay;
+			long period;
+			
+			//Returns true when it's no longer going to run
+			boolean etc()
+			{
+				if(--delay > 0)
+					return false;
+				
+				runnable.run();
+				
+				if(period > 0)
+					delay = period;
+				else
+					return true;
+				
+				return false;
+			}
+		}
+		
 	}
 }

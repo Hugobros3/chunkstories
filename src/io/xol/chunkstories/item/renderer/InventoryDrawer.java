@@ -2,7 +2,7 @@ package io.xol.chunkstories.item.renderer;
 
 import org.lwjgl.input.Mouse;
 import io.xol.engine.math.lalgb.Vector4f;
-import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.item.ItemPile;
@@ -18,10 +18,10 @@ import io.xol.engine.graphics.util.TrueTypeFontRenderer;
 
 public class InventoryDrawer
 {
-	private EntityInventory inventory;
+	private Inventory inventory;
 	private EntityWithSelectedItem entity;
 	
-	public InventoryDrawer(EntityInventory entityInventories)
+	public InventoryDrawer(Inventory entityInventories)
 	{
 		this.inventory = entityInventories;
 	}
@@ -218,7 +218,7 @@ public class InventoryDrawer
 		return (8 + (slots+(summary ? 0 : 1)+blankLines) * 24) * scale;
 	}
 
-	public EntityInventory getInventory()
+	public Inventory getInventory()
 	{
 		if(entity == null)
 			return inventory;

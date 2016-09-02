@@ -1,13 +1,15 @@
 package io.xol.chunkstories.api.entity;
 
-import java.util.Iterator;
-
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.item.ItemPile;
 
-public interface EntityInventory
-{
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
+public interface Inventory
+{
 	ItemPile getItemPileAt(int x, int y);
 
 	boolean canPlaceItemAt(int x, int y, ItemPile pile);
@@ -35,7 +37,7 @@ public interface EntityInventory
 	/**
 	 * Iterates over every ItemPile
 	 */
-	Iterator<ItemPile> iterator();
+	IterableIterator<ItemPile> iterator();
 	
 	ItemPile[][] getContents();
 	

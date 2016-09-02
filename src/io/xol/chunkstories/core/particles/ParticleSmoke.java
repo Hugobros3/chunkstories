@@ -45,7 +45,7 @@ public class ParticleSmoke extends Particle
 	@Override
 	public String getTextureName()
 	{
-		return "./res/textures/smoke2.png";
+		return "./textures/smoke2.png";
 	}
 
 	@Override

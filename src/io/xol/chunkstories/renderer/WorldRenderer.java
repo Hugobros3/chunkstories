@@ -732,7 +732,7 @@ public class WorldRenderer
 		terrainShader.setUniformSampler(7, "skyTextureSunny", skyTextureSunny);
 		terrainShader.setUniformSampler(12, "skyTextureRaining", skyTextureRaining);
 		terrainShader.setUniformSampler(6, "blockLightmap", lightmapTexture);
-		Texture2D lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
+		Texture2D lightColors = TexturesHandler.getTexture("./textures/environement/lightcolors.png");
 		terrainShader.setUniformSampler(11, "lightColors", lightColors);
 		terrainShader.setUniformSampler(10, "normalTexture", waterNormalTexture);
 		setupShadowColors(terrainShader);
@@ -1265,7 +1265,7 @@ public class WorldRenderer
 		applyShadowsShader.setUniformSampler(7, "skyTextureSunny", skyTextureSunny);
 		applyShadowsShader.setUniformSampler(8, "skyTextureRaining", skyTextureRaining);
 
-		Texture2D lightColors = TexturesHandler.getTexture("./res/textures/environement/lightcolors.png");
+		Texture2D lightColors = TexturesHandler.getTexture("./textures/environement/lightcolors.png");
 		applyShadowsShader.setUniformSampler(9, "lightColors", lightColors);
 
 		//TODO if SSAO
@@ -1816,7 +1816,7 @@ public class WorldRenderer
 		if (world.getFolderPath() != null)
 			vegetationTexture = TexturesHandler.getTexture(world.getFolderPath() + "/grassColor.png");
 		if (vegetationTexture == null || vegetationTexture.getId() == -1)
-			vegetationTexture = TexturesHandler.getTexture("./res/textures/environement/grassColor.png");
+			vegetationTexture = TexturesHandler.getTexture("./textures/environement/grassColor.png");
 		vegetationTexture.setMipMapping(true);
 		vegetationTexture.setLinearFiltering(true);
 		return vegetationTexture;

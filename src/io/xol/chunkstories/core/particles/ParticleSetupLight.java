@@ -41,7 +41,7 @@ public class ParticleSetupLight extends Particle
 	@Override
 	public String getTextureName()
 	{
-		return "./res/textures/light.png";
+		return "./textures/light.png";
 	}
 
 	@Override

@@ -49,6 +49,11 @@ public class VoxelContext
 		}
 	}
 
+	public Voxel getVoxel()
+	{
+		return voxelType;
+	}
+	
 	public int getSideId(int side)
 	{
 		return VoxelFormat.id(neightborhood[side]);

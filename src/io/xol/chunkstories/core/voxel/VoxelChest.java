@@ -49,6 +49,15 @@ public class VoxelChest extends VoxelEntity
 	}
 
 	@Override
+	public EntityChest getVoxelEntity(World world, int worldX, int worldY, int worldZ)
+	{
+		EntityVoxel ev = super.getVoxelEntity(world, worldX, worldY, worldZ);
+		if(!(ev instanceof EntityChest))
+				throw new RuntimeException("VoxelEntity representation invariant fail, wrong entity found at " + worldX + ":" + worldY + ":" + worldZ);
+		return (EntityChest) ev;
+	}
+
+	@Override
 	protected EntityVoxel createVoxelEntity(World world, int x, int y, int z)
 	{
 		return new EntityChest((WorldImplementation) world, x, y, z);

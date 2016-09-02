@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api;
 
+import io.xol.chunkstories.api.plugin.Scheduler;
 import io.xol.chunkstories.content.PluginsManager;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -20,4 +21,6 @@ public interface GameLogic
 	}
 	
 	public PluginsManager getPluginsManager();
+
+	public Scheduler getScheduler();
 }

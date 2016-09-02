@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.xol.chunkstories.content.GameContent;
 import io.xol.engine.animation.BVHAnimation;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -20,7 +21,8 @@ public class BVHLibrary
 
 	public static BVHAnimation loadAnimation(String name)
 	{
-		BVHAnimation anim = new BVHAnimation(new File(name));
+		System.out.println(name);
+		BVHAnimation anim = new BVHAnimation(GameContent.getFileLocation(name));
 		animations.put(name, anim);
 		return anim;
 	}

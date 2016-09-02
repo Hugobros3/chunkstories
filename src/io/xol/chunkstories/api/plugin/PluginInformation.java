@@ -19,9 +19,9 @@ import io.xol.chunkstories.api.plugin.commands.Command;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PluginJar extends URLClassLoader
+public class PluginInformation extends URLClassLoader
 {
-	public PluginJar(File file, ClassLoader parentLoader) throws PluginInfoException, IOException
+	public PluginInformation(File file, ClassLoader parentLoader) throws PluginInfoException, IOException
 	{
 		super(new URL[] { file.toURI().toURL() }, parentLoader);
 		jar = new JarFile(file);
@@ -43,6 +43,8 @@ public class PluginJar extends URLClassLoader
 
 	// Commands handled by this plugin
 	public Set<Command> commands = new HashSet<Command>();
+
+	JarFile jar = null;
 
 	private void loadInformation(InputStream inputStream) throws PluginInfoException, IOException
 	{
@@ -81,7 +83,13 @@ public class PluginJar extends URLClassLoader
 						entryPoint = value;
 						break;
 					case "command":
-						commands.add(new Command(value));
+						String[] aliases = value.split(" ");
+						Command command = new Command(aliases[0]);
+						
+						for(int i = 1; i < aliases.length; i++)
+							command.addAlias(aliases[i]);
+						
+						commands.add(command);
 						break;
 					}
 				}
@@ -91,14 +99,19 @@ public class PluginJar extends URLClassLoader
 		br.close();
 	}
 
-	public ChunkStoriesPlugin getInstance()
+	public float getPluginVersion()
+	{
+		return pluginVersion;
+	}
+
+	public ChunkStoriesPlugin createInstance(PluginManager pluginManager)
 	{
 		try
 		{
 			Class<?> entryPointClass = Class.forName(entryPoint, true, this);
 			Class<? extends ChunkStoriesPlugin> javaPluginClass = entryPointClass.asSubclass(ChunkStoriesPlugin.class);
 			ChunkStoriesPlugin plugin = javaPluginClass.newInstance();
-			plugin.jar = this;
+			plugin.initialize(pluginManager, this);
 			return plugin;
 		}
 		catch (ClassNotFoundException | InstantiationException | IllegalAccessException e)
@@ -108,8 +121,6 @@ public class PluginJar extends URLClassLoader
 		}
 		return null;
 	}
-
-	JarFile jar = null;
 
 	public InputStream getRessourceFromJar(File file, String ressource)
 	{

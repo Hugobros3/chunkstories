@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.core.entity.components.EntityComponentAnimation;
 import io.xol.chunkstories.core.entity.components.EntityComponentHealth;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
+import io.xol.chunkstories.core.events.EntityDamageEvent;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -22,14 +23,16 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 {
 	public long lastDamageTook = 0;
 	public long damageCooldown = 0;
-	
+
 	long deathDespawnTimer = 600;
 
 	EntityComponentRotation entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
 	EntityComponentAnimation entityAnimationComponent = new EntityComponentAnimation(this);
 	EntityComponentHealth entityHealthComponent;
-	
+
 	protected AnimatedSkeleton animatedSkeleton;
+
+	DamageCause lastDamageCause;
 
 	public EntityLivingImplentation(WorldImplementation w, double x, double y, double z)
 	{
@@ -42,7 +45,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	{
 		return animatedSkeleton;
 	}
-	
+
 	public EntityComponentAnimation getAnimationComponent()
 	{
 		return entityAnimationComponent;
@@ -74,23 +77,32 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	@Override
 	public float damage(DamageCause cause, float damage)
 	{
-		entityHealthComponent.damage(damage);
-		return damage;
+		EntityDamageEvent event = new EntityDamageEvent(this, cause, damage);
+		this.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
+
+		if (!event.isCancelled())
+		{
+			entityHealthComponent.damage(event.getDamageDealt());
+			lastDamageCause = cause;
+			return event.getDamageDealt();
+		}
+
+		return 0f;
 	}
 
 	@Override
 	public void tick()
 	{
-		if(isDead())
+		if (isDead())
 			deathDespawnTimer--;
-		if(deathDespawnTimer < 0)
+		if (deathDespawnTimer < 0)
 			this.removeFromWorld();
-		
+
 		Vector3d velocity = getVelocityComponent().getVelocity();
-		
+
 		Vector2f headRotationVelocity = this.getEntityRotationComponent().tickInpulse();
 		getEntityRotationComponent().addRotation(headRotationVelocity.x, headRotationVelocity.y);
-		
+
 		voxelIn = Voxels.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 		boolean inWater = voxelIn.isVoxelLiquid();
 
@@ -108,11 +120,31 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		// Gravity
 		if (!(this instanceof EntityFlying && ((EntityFlying) this).getFlyingComponent().isFlying()))
 		{
-			double terminalVelocity = inWater ? -0.02 : -0.5;
+			double terminalVelocity = inWater ? -0.05 : -0.5;
 			if (velocity.getY() > terminalVelocity)
 				velocity.setY(velocity.getY() - 0.008);
 			if (velocity.getY() < terminalVelocity)
 				velocity.setY(terminalVelocity);
+
+			//Water limits your overall movement
+			double targetSpeedInWater = 0.02;
+			if (inWater)
+			{
+				if (velocity.length() > targetSpeedInWater)
+				{
+					double decelerationThen = Math.pow((velocity.length() - targetSpeedInWater), 1.0);
+
+					System.out.println(decelerationThen);
+					double maxDeceleration = 0.006;
+					if (decelerationThen > maxDeceleration)
+						decelerationThen = maxDeceleration;
+
+					System.out.println(decelerationThen);
+
+					acceleration.add(velocity.clone().normalize().negate().scale(decelerationThen));
+					//acceleration.add(0.0, decelerationThen * (velocity.getY() > 0.0 ? 1.0 : -1.0), 0.0);
+				}
+			}
 		}
 
 		// Acceleration
@@ -128,7 +160,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 
 		//Eventually moves
 		blockedMomentum = moveWithCollisionRestrain(velocity.getX(), velocity.getY(), velocity.getZ(), true);
-		
+
 		getVelocityComponent().setVelocity(velocity);
 	}
 
@@ -146,5 +178,17 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	public Vector3d getDirectionLookingAt()
 	{
 		return getEntityRotationComponent().getDirectionLookingAt();
+	}
+
+	@Override
+	public DamageCause getLastDamageCause()
+	{
+		return lastDamageCause;
+	}
+
+	@Override
+	public String getName()
+	{
+		return this.getClass().getSimpleName();
 	}
 }

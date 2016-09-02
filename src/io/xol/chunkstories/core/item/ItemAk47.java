@@ -40,7 +40,7 @@ public class ItemAk47 extends Item implements DamageCause
 	@Override
 	public String getTextureName(ItemPile pile)
 	{
-		return "./res/items/icons/ak47.png";
+		return "./items/icons/ak47.png";
 	}
 
 	long lastShot = 0L;

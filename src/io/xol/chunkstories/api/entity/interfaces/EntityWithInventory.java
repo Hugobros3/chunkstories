@@ -1,7 +1,7 @@
 package io.xol.chunkstories.api.entity.interfaces;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityInventory;
+import io.xol.chunkstories.api.entity.Inventory;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -9,5 +9,5 @@ import io.xol.chunkstories.api.entity.EntityInventory;
 
 public interface EntityWithInventory extends Entity
 {	
-	public EntityInventory getInventory();
+	public Inventory getInventory();
 }

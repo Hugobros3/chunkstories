@@ -37,7 +37,7 @@ public class FontRenderer2
 		glDisable(GL_CULL_FACE);
 		glEnable(GL_TEXTURE_2D);
 		
-		Texture2D fontTexture = TexturesHandler.getTexture("./res/textures/font/" + font.name + ".png");
+		Texture2D fontTexture = TexturesHandler.getTexture("./textures/font/" + font.name + ".png");
 		fontTexture.setLinearFiltering(false);
 		
 		Vector4f color = new Vector4f(r, v, b, alpha);
