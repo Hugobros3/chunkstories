@@ -16,6 +16,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 import org.lwjgl.BufferUtils;
 
+import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
@@ -23,7 +24,6 @@ import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
 
@@ -240,6 +240,9 @@ public class FarTerrainRenderer
 					@Override
 					public void run()
 					{
+						Thread.currentThread().setName("Far terrain rebuilder thread");
+						Thread.currentThread().setPriority(Constants.TERRAIN_RENDERER_THREAD_PRIORITY);
+						
 						generateArround();
 					}
 				};

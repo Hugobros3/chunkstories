@@ -2,6 +2,7 @@ package io.xol.chunkstories.content.sandbox;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -32,6 +33,7 @@ public class GameLogicThread extends Thread implements GameLogic
 		this.world.setLogicThread(this);
 		
 		this.setName("world " + world.getWorldInfo().getInternalName()+" logic thread");
+		this.setPriority(Constants.MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY);
 		
 		this.start();
 	}

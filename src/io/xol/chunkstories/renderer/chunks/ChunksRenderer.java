@@ -1,5 +1,6 @@
 package io.xol.chunkstories.renderer.chunks;
 
+import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
@@ -128,6 +129,8 @@ public class ChunksRenderer extends Thread
 	{
 		System.out.println("Starting Chunk Renderer thread !");
 		Thread.currentThread().setName("Chunk Renderer");
+		Thread.currentThread().setPriority(Constants.CHUNKS_RENDERER_THREAD_PRIORITY);
+		
 		worldSizeInChunks = world.getSizeInChunks();
 		while (!die.get())
 		{

@@ -7,17 +7,17 @@ package io.xol.chunkstories.client;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.engine.misc.IconLoader;
 import io.xol.engine.misc.NativesLoader;
-
+import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.EntityInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
-import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
@@ -93,6 +93,9 @@ public class Client implements /*ClientSideController, */ClientInterface
 				//Runtime.getRuntime().exit(0);
 			}
 		}
+		
+		Thread.currentThread().setName("Main OpenGL Rendering thread");
+		Thread.currentThread().setPriority(Constants.MAIN_GL_THREAD_PRIORITY);
 		new Client();
 	}
 

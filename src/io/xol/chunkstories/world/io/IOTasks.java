@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world.io;
 
+import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -80,41 +81,18 @@ public class IOTasks extends Thread
 		return "IO :" + getSize() + " in queue.";
 	}
 
-	/*public void requestChunksUnload(int pCX, int pCY, int pCZ, int sizeInChunks, int chunksViewDistance)
-	{
-		Iterator<IOTask> iter = tasks.iterator();
-		while (iter.hasNext())
-		{
-			IOTask task = iter.next();
-			if (task instanceof IOTaskLoadChunk)
-			{
-				IOTaskLoadChunk loadChunkTask = (IOTaskLoadChunk) task;
-				int x = loadChunkTask.x;
-				int y = loadChunkTask.y;
-				int z = loadChunkTask.z;
-	
-				if ((LoopingMathHelper.moduloDistance(x, pCX, sizeInChunks) > chunksViewDistance) || (LoopingMathHelper.moduloDistance(y, pCZ, sizeInChunks) > chunksViewDistance) || (Math.abs(z - pCY) > 3))
-				{
-					//System.out.println("Removed task "+loadChunkTask+" for being too far");
-					iter.remove();
-				}
-			}
-		}
-	}*/
-
 	@Override
 	public void run()
 	{
 		System.out.println("IO Thread started.");
-		Thread.currentThread().setName("IO Tasks");
+
+		this.setPriority(Constants.IO_THREAD_PRIOTITY);
+		this.setName("IO Tasks");
 		while (!die.get())
 		{
 			IOTask task = null;
 
-			//synchronized (tasks)
-			{
-				task = tasks.poll();
-			}
+			task = tasks.poll();
 			if (task == null)
 			{
 				try
