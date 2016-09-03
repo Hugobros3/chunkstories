@@ -63,7 +63,7 @@ void main(){
 	//v += modelViewMatrixInv * vec4(billboardSquareCoordsIn,0,0);
 	
 	varyingVertex = v;
-	varyingNormal = gl_Normal;
+	//varyingNormal = gl_Normal;
 	
 	//Compute lightmap coords
 	lightMapCoords = vec2(0.0, 1.0);
