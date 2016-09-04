@@ -21,11 +21,11 @@ public class WorldRegionsHolder
 	private WorldImplementation world;
 
 	private Semaphore noConcurrentRegionCreationDestruction = new Semaphore(1);
-	private ConcurrentHashMap<RegionLocation, RegionImplementation> regions = new ConcurrentHashMap<RegionLocation, RegionImplementation>(8, 0.9f, 1);
+	private ConcurrentHashMap<Integer, RegionImplementation> regions = new ConcurrentHashMap<Integer, RegionImplementation>(8, 0.9f, 1);
 
 	private final int sizeInRegions, heightInRegions;
 
-	private class RegionLocation
+	/*private class RegionLocation
 	{
 		public int regionX, regionY, regionZ;
 
@@ -54,7 +54,7 @@ public class WorldRegionsHolder
 			//System.out.println("hashCode == "+address);
 			return address;
 		}
-	}
+	}*/
 
 	public WorldRegionsHolder(WorldImplementation world)
 	{
@@ -76,7 +76,8 @@ public class WorldRegionsHolder
 
 	public RegionImplementation getRegion(int regionX, int regionY, int regionZ)
 	{
-		RegionLocation key = new RegionLocation(regionX, regionY, regionZ);
+		int key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY;
+		//RegionLocation key = new RegionLocation(regionX, regionY, regionZ);
 		return regions.get(key);
 	}
 	
@@ -86,7 +87,10 @@ public class WorldRegionsHolder
 	private RegionImplementation getOrCreateRegion(int regionX, int regionY, int regionZ)
 	{
 		RegionImplementation holder = null;
-		RegionLocation key = new RegionLocation(regionX, regionY, regionZ);
+		
+
+		int key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY;
+		//RegionLocation key = new RegionLocation(regionX, regionY, regionZ);
 
 		//Lock to avoid any issues with another thread making another region while we handle this
 		//Note lock was moved to a semaphore in public
@@ -97,7 +101,6 @@ public class WorldRegionsHolder
 		{
 			holder = new RegionImplementation(world, regionX, regionY, regionZ, this);
 		}
-		
 
 		return holder;
 	}
@@ -110,18 +113,23 @@ public class WorldRegionsHolder
 	 */
 	protected void regionConstructorCallBack(RegionImplementation region)
 	{
-		RegionLocation key = new RegionLocation(region.regionX, region.regionY, region.regionZ);
+
+		int key = (region.getRegionX() * sizeInRegions + region.getRegionZ()) * heightInRegions + region.getRegionY();
+		//RegionLocation key = new RegionLocation(region.regionX, region.regionY, region.regionZ);
 
 		//If it's not still saving an older version
 		if (world.ioHandler.isDoneSavingRegion(region))
 			regions.putIfAbsent(key, region);
 	}
 
+	long prout = 0;
+	
 	public Chunk getChunk(int chunkX, int chunkY, int chunkZ)
 	{
 		RegionImplementation holder = getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
 		if (holder != null)
 		{
+			//System.out.println(regions.size());
 			return holder.getChunk(chunkX, chunkY, chunkZ);
 		}
 		return null;
@@ -283,6 +291,8 @@ public class WorldRegionsHolder
 	 */
 	public void removeRegion(RegionImplementation region)
 	{
-		regions.remove(new RegionLocation(region.getRegionX(), region.getRegionY(), region.getRegionZ()));
+		int key = (region.getRegionX() * sizeInRegions + region.getRegionZ()) * heightInRegions + region.getRegionY();
+		//regions.remove(new RegionLocation(region.getRegionX(), region.getRegionY(), region.getRegionZ()));
+		regions.remove(key);
 	}
 }

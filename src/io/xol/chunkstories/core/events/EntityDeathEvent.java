@@ -1,7 +1,5 @@
 package io.xol.chunkstories.core.events;
 
-import java.io.File;
-
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;

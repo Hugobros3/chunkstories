@@ -26,18 +26,18 @@ public class SendQueue extends Thread
 	AtomicBoolean die = new AtomicBoolean(false);
 	Semaphore workTodo = new Semaphore(0);
 	//AtomicBoolean sleepy = new AtomicBoolean(false);
-	
+
 	PacketsProcessor processor;
 	DataOutputStream out;
-	
+
 	//Reference to what we are sending stuff to, used in packet creation logic to look for implemented interfaces ( remote server, unlogged in client, logged in client etc )
 	PacketDestinator destinator;
-	
+
 	//Used to buffer and compute the length synch packets to send
-	
+
 	//To avoid an HORRIBLE mess we have to have one temporary buffer per thread sending packets,
 	//as we have no idea how many madmen will spawn zillions of concurrent threads to spam shit
-	
+
 	//NOTE: I just had my greatest breakthrought of the week with this, this field used to not be static and I had issues with world unloading on server
 	// namely the ServerPlayer ( implementing WorldUser ) object would not get garbage collected and thus it's reference in the various world bits would hold
 	// indefinitly. It appears that the cause was this ThreadLocal variable, because it is an inner class, it's always referencing it's parent/holder class
@@ -53,15 +53,17 @@ public class SendQueue extends Thread
 			return new SynchBuffer();
 		}
 	};
+
 	//With a custom subclass because the two objects are needed and rely on each other
-	static class SynchBuffer {
+	static class SynchBuffer
+	{
 
 		SynchBuffer()
 		{
 			this.baos = new ByteArrayOutputStream(262144);
 			this.outSynch = new DataOutputStream(baos);
 		}
-		
+
 		public ByteArrayOutputStream baos;
 		public DataOutputStream outSynch;
 	}
@@ -71,31 +73,31 @@ public class SendQueue extends Thread
 		this.destinator = destinator;
 		this.out = out;
 		this.processor = processor;
-		
+
 		this.setName("Send queue thread");
 	}
-	
+
 	public void setDestinator(PacketDestinator destinator)
 	{
 		this.destinator = destinator;
 	}
-	
+
 	/**
 	 * Queue a packet for sending, no synchronisation needed
 	 */
 	public void queue(Packet packet)
 	{
-		if(die.get())
+		if (die.get())
 			return;
-		
-		if(packet instanceof PacketSynch)
+
+		if (packet instanceof PacketSynch)
 		{
 			//Get our thread's buffers
-			SynchBuffer synchBuffer = this.synchBuffer.get();
-			
+			SynchBuffer synchBuffer = SendQueue.synchBuffer.get();
+
 			ByteArrayOutputStream baos = synchBuffer.baos;
 			DataOutputStream outSynch = synchBuffer.outSynch;
-			
+
 			//Reset it
 			baos.reset();
 			try
@@ -103,22 +105,22 @@ public class SendQueue extends Thread
 				//Send the packet in the buffer
 				packet.send(destinator, outSynch);
 				outSynch.flush();
-				
+
 				//How many bytes were written ?
 				int packetSize = baos.size();
-				
+
 				//Make a dummy packet out of the stuff we got
 				PacketSynchSendable sendablePacket = new PacketSynchSendable(packet.isSentFromClient());
 				sendablePacket.data = baos.toByteArray();
 				sendablePacket.packetLength = packetSize;
 				sendablePacket.packetType = processor.getPacketId(packet);
-				
+
 				//Add that one instead of the real one
 				sendQueue.add(sendablePacket);
 			}
 			catch (IOException e)
 			{
-				ChunkStoriesLogger.getInstance().error("Error : unable to buffer PacketSynch "+packet);
+				ChunkStoriesLogger.getInstance().error("Error : unable to buffer PacketSynch " + packet);
 				e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 			}
 			catch (UnknowPacketException e)
@@ -129,7 +131,7 @@ public class SendQueue extends Thread
 		}
 		else
 			sendQueue.add(packet);
-		
+
 		workTodo.release();
 		/*if(sleepy.get())
 		{
@@ -139,21 +141,35 @@ public class SendQueue extends Thread
 			}
 		}*/
 	}
-	
+
 	@Override
 	public void run()
 	{
-		while(!die.get())
+		int k = 0;
+
+		while (!die.get())
 		{
-			workTodo.acquireUninterruptibly();
-			
-			Packet packet = null;
-			
-			if(sendQueue.size() > 0)
-				packet = sendQueue.poll();
-			
-			if(packet == null)
+			//workTodo.acquireUninterruptibly();
+
+			Packet packet = sendQueue.poll();
+
+			k++;
+
+			if (packet == null)
 			{
+				try
+				{
+					//System.out.println("\nFlushing " + k + " packets\nStill" + sendQueue.size() + " in send queue ");
+					k = 0;
+					out.flush();
+				}
+				catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				//workTodo.acquireUninterruptibly();
 				/*try
 				{
 					synchronized (this)
@@ -171,10 +187,9 @@ public class SendQueue extends Thread
 			else
 				try
 				{
-					if(!(packet instanceof PacketDummy))
-						processor.sendPacketHeader(out, packet);
-					packet.send(destinator, out);
-					out.flush();
+						if (!(packet instanceof PacketDummy))
+							processor.sendPacketHeader(out, packet);
+						packet.send(destinator, out);
 				}
 				catch (IOException e)
 				{
@@ -190,7 +205,7 @@ public class SendQueue extends Thread
 			//sleepy.set(false);
 		}
 	}
-	
+
 	public void kill()
 	{
 		try

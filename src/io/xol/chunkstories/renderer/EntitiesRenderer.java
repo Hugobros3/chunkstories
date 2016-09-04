@@ -42,7 +42,7 @@ public class EntitiesRenderer
 		entityRenderers.clear();
 	}
 
-	public void renderEntities(RenderingContext renderingContext)
+	public int renderEntities(RenderingContext renderingContext)
 	{
 		//Sort them by type
 		Map<Class<? extends EntityRenderable>, List<EntityRenderable>> renderableEntitiesTypes = new HashMap<Class<? extends EntityRenderable>, List<EntityRenderable>>();
@@ -80,8 +80,10 @@ public class EntitiesRenderer
 			
 			entityRenderer.setupRender(renderingContext);
 
-			entityRenderer.forEach(renderingContext, new EntitiesRendererIterator<>(renderingContext, entities));
+			entitiesRendered += entityRenderer.forEach(renderingContext, new EntitiesRendererIterator<>(renderingContext, entities));
 		}
+		
+		return entitiesRendered;
 	}
 
 	@SuppressWarnings("unchecked")

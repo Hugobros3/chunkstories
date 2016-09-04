@@ -189,7 +189,7 @@ public class ItemAk47 extends Item implements DamageCause
 							Vector3d hitPoint = shotEntity.collidesWith(eyeLocation, shooter.getDirectionLookingAt());
 
 							//Deal damage
-							((EntityLiving) shotEntity).damage(this, 35f);
+							((EntityLiving) shotEntity).damage(shooter, 35f);
 							
 							//Spawn blood particles
 							Vector3d bloodDir = shooter.getDirectionLookingAt().normalize().scale(0.25);

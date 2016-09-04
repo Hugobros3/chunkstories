@@ -346,6 +346,8 @@ public abstract class WorldImplementation implements World
 		z = sanitizeHorizontalCoordinate(z);
 
 		Chunk c = regions.getChunk(x / 32, y / 32, z / 32);
+		
+		
 		if (c != null)
 			return c.getVoxelData(x, y, z);
 		return 0;

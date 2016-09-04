@@ -956,9 +956,6 @@ public class WorldRenderer
 
 				//glBindBuffer(GL_ARRAY_BUFFER, chunkRenderData.vboId);
 
-				if (Keyboard.isKeyDown(Keyboard.KEY_F6))
-					break;
-
 				if (!Keyboard.isKeyDown(Keyboard.KEY_F4))
 					if (isShadowPass)
 						renderedVerticesShadow += chunkRenderData.renderCubeSolidBlocks(renderingContext);
@@ -1039,7 +1036,9 @@ public class WorldRenderer
 		glDisable(GL_CULL_FACE);
 		// Render entities
 		
-		entitiesRenderer.renderEntities(renderingContext);
+
+		if (!Keyboard.isKeyDown(Keyboard.KEY_F6))
+			entitiesRenderer.renderEntities(renderingContext);
 
 		//System.out.println(entitiesRendered);
 

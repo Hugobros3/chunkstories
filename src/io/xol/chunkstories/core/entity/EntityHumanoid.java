@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemAk47;
 import io.xol.chunkstories.item.ItemPile;
@@ -152,8 +153,9 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		}
 
 		@Override
-		public void forEach(RenderingContext renderingContext, RenderingIterator<H> renderableEntitiesIterator)
+		public int forEach(RenderingContext renderingContext, RenderingIterator<H> renderableEntitiesIterator)
 		{
+			int e = 0;
 			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
 				ItemPile selectedItemPile = null;
@@ -200,7 +202,11 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 				if (selectedItemPile != null)
 					selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
+				
+				e++;
 			}
+			
+			return e;
 		}
 
 		@Override
@@ -267,6 +273,13 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 	protected void handleWalkingEtcSounds()
 	{
+		if(!(getWorld() instanceof WorldClient))
+			return;
+		
+		if(Client.getInstance().getClientSideController().getControlledEntity() != null )
+			if(Client.getInstance().getClientSideController().getControlledEntity().getLocation().distanceTo(this.getLocation()) > 25f)
+				return;
+		
 		// Sound stuff
 		if (isEntityOnGround() && !lastTickOnGround)
 		{

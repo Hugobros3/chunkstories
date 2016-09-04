@@ -16,7 +16,7 @@ public interface EntityRenderer<E extends EntityRenderable>
 	/**
 	 * Called for each entity
 	 */
-	public void forEach(RenderingContext renderingContext, RenderingIterator<E> renderableEntitiesIterator);
+	public int forEach(RenderingContext renderingContext, RenderingIterator<E> renderableEntitiesIterator);
 	
 	public void freeRessources();
 }

@@ -76,6 +76,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				//System.out.println("chunk:"+this.getChunk(chunkX, chunkY, chunkZ, true));
 				//System.out.println("holder:"+client.getProfile().getControlledEntity().getChunkHolder());
 				//Update whatever he controls
+				
 				player.updateTrackedEntities();
 			}
 			PacketTime packetTime = new PacketTime(false);

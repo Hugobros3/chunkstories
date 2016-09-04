@@ -254,7 +254,7 @@ public abstract class EntityImplementation implements Entity
 				pmy = vec.getY();
 				pmz = vec.getZ();
 
-				int radius = 2;
+				int radius = 1;
 
 				// checkerX = getCollisionBox().translate(pos.x+pmx, pos.y, pos.z);
 				Voxel vox;

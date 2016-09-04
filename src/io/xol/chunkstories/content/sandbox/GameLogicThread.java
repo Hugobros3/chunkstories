@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldNetworked;
 import io.xol.chunkstories.world.WorldServer;
@@ -93,6 +94,8 @@ public class GameLogicThread extends Thread implements GameLogic
 				//Delete unused world data
 				world.unloadUselessData();
 			}
+			
+			gameLogicScheduler.runScheduledTasks();
 			
 			//Game logic is 60 ticks/s
 			sync(getTargetFps());
@@ -204,11 +207,18 @@ public class GameLogicThread extends Thread implements GameLogic
 		
 		public void runScheduledTasks()
 		{
+			try{
 			Iterator<ScheduledTask> i = scheduledTasks.iterator();
 			while(i.hasNext())
 			{
 				if(i.next().etc())
 					i.remove();
+			}
+			}
+			catch(Throwable t)
+			{
+				ChunkStoriesLogger.getInstance().error(t.getMessage());
+				t.printStackTrace();
 			}
 		}
 		

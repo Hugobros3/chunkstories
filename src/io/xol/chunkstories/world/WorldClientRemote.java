@@ -36,11 +36,16 @@ public class WorldClientRemote extends WorldClientCommon implements WorldNetwork
 	public void processIncommingPackets()
 	{
 		//Accepts and processes synched packets
+		int packetsThisTick = 0;
 		PendingSynchPacket packet = packetsProcessor.getPendingSynchPacket();
 		while (packet != null)
 		{
+			//System.out.println(packet);
 			packet.process(this.getClient().getServerConnection(), packetsProcessor);
 			packet = packetsProcessor.getPendingSynchPacket();
+			packetsThisTick++;
 		}
+		//if(packetsThisTick > 0)
+		//	System.out.println(packetsThisTick+"packetsThisTick");
 	}
 }

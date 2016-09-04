@@ -69,14 +69,18 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 		}
 
 		@Override
-		public void forEach(RenderingContext renderingContext, RenderingIterator<EntitySign> renderableEntitiesIterator)
+		public int forEach(RenderingContext renderingContext, RenderingIterator<EntitySign> renderableEntitiesIterator)
 		{
+			int e = 0;
+			
 			renderingContext.sendBoneTransformationMatrix(null);
 
 			for (EntitySign entitySign : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
 				if (renderingContext.getCamera().getCameraPosition().add(entitySign.getLocation()).length() > 32)
 					continue;
+				
+				e++;
 				
 				Texture2D diffuse = TexturesHandler.getTexture("./models/sign.png");
 				diffuse.setLinearFiltering(false);
@@ -122,6 +126,8 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 				renderingContext.sendTransformationMatrix(mutrix);
 				entitySign.renderData.render(renderingContext);
 			}
+			
+			return e;
 		}
 
 		@Override

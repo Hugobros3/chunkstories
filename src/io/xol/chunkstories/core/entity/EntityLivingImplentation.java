@@ -106,16 +106,6 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		voxelIn = Voxels.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 		boolean inWater = voxelIn.isVoxelLiquid();
 
-		//Collisions
-		if (collision_left || collision_right)
-			velocity.setX(0);
-		if (collision_north || collision_south)
-			velocity.setZ(0);
-		// Stap it
-		if (collision_bot && velocity.getY() < 0)
-			velocity.setY(0);
-		else if (collision_top)
-			velocity.setY(0);
 
 		// Gravity
 		if (!(this instanceof EntityFlying && ((EntityFlying) this).getFlyingComponent().isFlying()))
@@ -134,12 +124,12 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 				{
 					double decelerationThen = Math.pow((velocity.length() - targetSpeedInWater), 1.0);
 
-					System.out.println(decelerationThen);
+					//System.out.println(decelerationThen);
 					double maxDeceleration = 0.006;
 					if (decelerationThen > maxDeceleration)
 						decelerationThen = maxDeceleration;
 
-					System.out.println(decelerationThen);
+					//System.out.println(decelerationThen);
 
 					acceleration.add(velocity.clone().normalize().negate().scale(decelerationThen));
 					//acceleration.add(0.0, decelerationThen * (velocity.getY() > 0.0 ? 1.0 : -1.0), 0.0);
@@ -161,6 +151,17 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		//Eventually moves
 		blockedMomentum = moveWithCollisionRestrain(velocity.getX(), velocity.getY(), velocity.getZ(), true);
 
+		//Collisions
+		/*if (collision_left || collision_right)
+			velocity.setX(0);
+		if (collision_north || collision_south)
+			velocity.setZ(0);
+		// Stap it
+		if (collision_bot && velocity.getY() < 0)
+			velocity.setY(0);
+		else if (collision_top)
+			velocity.setY(0);*/
+		
 		getVelocityComponent().setVelocity(velocity);
 	}
 
