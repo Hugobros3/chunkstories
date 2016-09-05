@@ -379,7 +379,11 @@ public class RegionSummaryImplementation implements RegionSummary
 		for (int i = 0; i < 256 * 256; i++)
 		{
 			int id = ids[i];
-			bb.putFloat(Voxels.get(id).getVoxelTexture(id, VoxelSides.TOP, null).positionInColorIndex);
+			Voxel v = Voxels.get(id);
+			if(v.isVoxelLiquid())
+				bb.putFloat(512f);
+			else
+				bb.putFloat(v.getVoxelTexture(id, VoxelSides.TOP, null).positionInColorIndex);
 		}
 		bb.rewind();
 		//glBindTexture(GL_TEXTURE_2D, voxelTypesTextureId);

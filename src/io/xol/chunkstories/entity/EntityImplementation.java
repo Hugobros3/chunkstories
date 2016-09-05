@@ -527,7 +527,8 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public boolean shouldBeTrackedBy(Player player)
 	{
-		return !exists();
+		//Note 05/09/2016 : Gobrosse read yourself properly you tardfuck
+		return exists();
 	}
 
 	/**

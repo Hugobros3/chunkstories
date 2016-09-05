@@ -106,7 +106,7 @@ public abstract class Texture
 			Texture texture = weakReference.get();
 			if(texture == null)
 			{
-				//System.out.println("Destroyed orphan texture id #"+id);
+				System.out.println("Destroyed orphan texture id #"+id);
 				glDeleteTextures(id);
 				destroyedVerticesObjects++;
 				

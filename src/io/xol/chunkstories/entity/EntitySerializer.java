@@ -31,7 +31,7 @@ public class EntitySerializer
 			//Then write 0 to mark end of components
 			out.writeInt((int)0);
 			
-			//System.out.println("Wrote serialized entity to : "+destination);
+			//System.out.println("Wrote serialized "+entity.getClass().getSimpleName()+" to : "+destination + " note: "+entity.exists());
 		}
 		catch (IOException e)
 		{
@@ -65,6 +65,12 @@ public class EntitySerializer
 			
 			//System.out.println("Read serialized entity from : "+source);
 			//System.out.println(entity.exists()+" - "+entity);
+			
+			/*-if(!entity.exists())
+			{
+				System.out.println("LOADED NON-EXISTENT ENTITY : "+entity);
+				((EntityImplementation)entity).existenceComponent.exists = true;
+			}*/
 			
 			return entity;
 		}

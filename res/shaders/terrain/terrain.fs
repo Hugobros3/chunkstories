@@ -96,8 +96,10 @@ void main()
 	vec3 normal = normalPassed;
 	
 	//Water case
-	if(voxelId == 128)
+	if(voxelId > 511.0)
 	{
+		diffuseColor.rgb = pow(vec3(51 / 255.0, 105 / 255.0, 110 / 255.0), vec3(gamma));
+	
 		//Build water texture
 		vec3 nt = 1.0*(texture2D(normalTexture,(vertexPassed.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
 		nt += 1.0*(texture2D(normalTexture,(vertexPassed.xz/2.0+vec2(-time,-2.0*time)/150.0)/2.0).rgb*2.0-1.0);

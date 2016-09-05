@@ -29,6 +29,7 @@ import io.xol.engine.misc.ConfigFile;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -43,7 +44,7 @@ public class ServerPlayer implements Player
 	private EntityControllable controlledEntity;
 
 	//Streaming control
-	private Set<Entity> subscribedEntities = new HashSet<Entity>();
+	private Set<Entity> subscribedEntities = ConcurrentHashMap.newKeySet();
 
 	//Mirror of client inputs
 	private ServerInputsManager serverInputsManager;
@@ -92,7 +93,6 @@ public class ServerPlayer implements Player
 		boolean shouldTrack = false;
 		//Let's iterate throught all of the world for now
 		//TODO don't
-		
 		while(iter.hasNext())
 		{
 			e = iter.next();
@@ -114,7 +114,7 @@ public class ServerPlayer implements Player
 				if(!shouldTrack && contains)
 				{
 					//Despawn the entity
-					System.out.println("Unsubscribed "+this+" from "+e+" because of distance");
+					//System.out.println("Unsubscribed "+this+" from "+e+" because of distance");
 					
 					this.unsubscribe(e);
 					//trackEntity(e, false, true);
@@ -123,19 +123,29 @@ public class ServerPlayer implements Player
 				}
 		}
 		
+		//System.out.println(subscribedEntities.size());
 		
 		Iterator<Entity> iter2 = subscribedEntities.iterator();
-		while(iter.hasNext())
+		while(iter2.hasNext())
 		{
 			e = iter2.next();
+
+			Location loc = e.getLocation();
+			//Distance calculations
+			double dx = LoopingMathHelper.moduloDistance(controlledEntityLocation.getX(), loc.getX(), ws);
+			double dy = Math.abs(controlledEntityLocation.getY() - loc.getY());
+			double dz = LoopingMathHelper.moduloDistance(controlledEntityLocation.getZ(), loc.getZ(), ws);
+			shouldTrack = (dx < 256 && dz < 256 && dy < 256);
+			
 			//Reasons other than distance to stop tracking this entity
-			if(!e.shouldBeTrackedBy(this))
+			if(!e.shouldBeTrackedBy(this) || !shouldTrack)
 			{
 				//Despawn the entity
 				//trackEntity(e, false, true);
-				System.out.println("Unsubscribed "+this+" from "+e+" because of IM A MORON");
+				
+				//System.out.println("Unsubscribed "+this+" from "+e+" because of IM A MORON");
 				this.unsubscribe(e);
-				iter.remove();
+				//iter2.remove();
 			}
 			else
 			{

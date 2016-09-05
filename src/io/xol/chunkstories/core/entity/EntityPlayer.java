@@ -364,6 +364,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			
 			renderingContext.setDiffuseTexture(playerTexture);
 		}
+		
+		
 	}
 	
 	@Override

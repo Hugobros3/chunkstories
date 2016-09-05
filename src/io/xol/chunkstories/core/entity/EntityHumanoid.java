@@ -175,7 +175,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				headRotationMatrix.translate(new Vector3f(0f, -(float) entity.eyePosition, 0f));
 				renderingContext.sendTransformationMatrix(headRotationMatrix);
 
-				//Except in fp 
+				//Except in first person
 				if (!entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
 					ModelLibrary.getRenderableMesh("./models/human.obj").renderButParts(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
 

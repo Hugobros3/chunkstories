@@ -45,6 +45,9 @@ public class RenderingContext
 	private GuiRenderer guiRenderer;
 	private TrueTypeFontRenderer trueTypeFontRenderer;
 
+	Matrix4f temp = new Matrix4f();
+	Matrix3f normal = new Matrix3f();
+
 	public RenderingContext(GameWindowOpenGL windows)
 	{
 		mainWindows = windows;
@@ -212,6 +215,12 @@ public class RenderingContext
 		setVertexAttributePointerLocation(vertexAttributeName, dimensions, vertexType, normalized, stride, offset);
 	}
 	
+	public void setVertexAttributePointerLocation(int vertexAttributeLocation, int dimensions, int vertexType, boolean normalized, int stride, long offset, VerticesObject verticesObject)
+	{
+		verticesObject.bind();
+		setVertexAttributePointerLocation(vertexAttributeLocation, dimensions, vertexType, normalized, stride, offset);
+	}
+	
 	public boolean isVertexAttributeAvaible(String vertexAttributeName)
 	{
 		return this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName) > 0;
@@ -289,9 +298,6 @@ public class RenderingContext
 			currentlyBoundShader.setUniformSampler(2, "materialTexture", texture);
 	}
 
-	Matrix4f temp = new Matrix4f();
-	Matrix3f normal = new Matrix3f();
-
 	/**
 	 * Sets the current local matrix transformation and normal 3x3 counterpart
 	 * 
@@ -345,25 +351,28 @@ public class RenderingContext
 		this.currentlyBoundShader.setUniformMatrix3f("boneTransformNormal", normal);
 	}
 
-	static FloatBuffer fsQuadBuffer = null;
+	//static FloatBuffer fsQuadBuffer = null;
 
+	static VerticesObject fsQuadVertices = null;
+	
 	public void drawFSQuad(int vertexAttribLocation)
 	{
 		if (vertexAttribLocation < 0)
 			return;
-		fsQuadBuffer = null;
-		if (fsQuadBuffer == null)
+		fsQuadVertices = null;
+		if (fsQuadVertices == null)
 		{
-			fsQuadBuffer = BufferUtils.createFloatBuffer(6 * 2);
+			fsQuadVertices = new VerticesObject();
+			FloatBuffer fsQuadBuffer = BufferUtils.createFloatBuffer(6 * 2);
 			fsQuadBuffer.put(new float[] { 1f, 1f, -1f, -1f, 1f, -1f, 1f, 1f, -1f, 1f, -1f, -1f });
+			fsQuadBuffer.flip();
+			
+			fsQuadVertices.uploadData(fsQuadBuffer);
 		}
-		fsQuadBuffer.flip();
-		//enableVertexAttribute(vertexAttribLocation);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		setVertexAttributePointerLocation(vertexAttribLocation, 2, false, 0, fsQuadBuffer);
+		setVertexAttributePointerLocation(vertexAttribLocation, 2, GL_FLOAT, false, 0, 0, fsQuadVertices);
 		GLCalls.drawArrays(GL_TRIANGLES, 0, 6);
 
 		disableVertexAttribute(vertexAttribLocation);
-		//buffer = null;
 	}
 }

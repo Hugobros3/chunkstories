@@ -69,44 +69,8 @@ public class ModelLibrary
 		throw new RuntimeException("File ./models/error.obj absent !");
 	}
 
-	/**
-	 * Returns the ObjMesh found within the game's filesystem matching the given path.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	/*public static ObjMeshLegacy getMesh(String name)
-	{
-		ObjMeshLegacy mesh = null;
-		if (models.containsKey(name))
-			mesh = models.get(name);
-		else
-		{
-			try
-			{
-				mesh = new ObjMeshLegacy(name);
-			}
-			catch (Exception e)
-			{
-				System.out.println("[ObjectLibrary] Coudln't load mesh \"" + name + "\"");
-			}
-		}
-		models.put(name, mesh);
-		
-		//Source style error mesh
-		//We learn from the best
-		if (mesh == null)
-			mesh = getMesh("./res/models/error.obj");
-		return mesh;
-	}*/
-
 	public static void reloadAllModels()
 	{
-		/*for (ObjMeshLegacy m : models.values())
-			if (m != null)
-				m.destroy();
-		models.clear();*/
-		
 		objModelsRenderable.clear();
 	}
 }

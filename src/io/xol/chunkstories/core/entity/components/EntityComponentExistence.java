@@ -58,7 +58,7 @@ public final class EntityComponentExistence extends EntityComponent
 	{
 		boolean existedBefore = exists;
 		boolean willExist = dis.readBoolean();
-		//If the entity existedBefore and we are not the world master, we remove it from our world
+		//If the entity existedBefore and we are not the world master, we remove it from our world ( it's a despawn packet )
 		if(!willExist && existedBefore && !(entity.getWorld() instanceof WorldMaster))
 		{
 			//System.out.println("Debug : removed entity "+entity + "from world");
