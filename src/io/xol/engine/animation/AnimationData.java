@@ -1,5 +1,6 @@
 package io.xol.engine.animation;
 
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Matrix4f;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -21,7 +22,7 @@ public interface AnimationData
 	/**
 	 * Used to hide body parts and/or do multipass rendering
 	 */
-	public default boolean shouldHideBone(String boneName)
+	public default boolean shouldHideBone(RenderingContext renderingContext, String boneName)
 	{
 		return false;
 	}

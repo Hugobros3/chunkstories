@@ -204,7 +204,6 @@ public class ObjMeshRenderable implements RenderableAnimatable
 	@Override
 	public void renderInstanciated(RenderingContext renderingContext, Collection<AnimatableData> instancesData)
 	{
-		
 		prepareDraw(renderingContext);
 		
 		int totalTriangles = 0;
@@ -221,7 +220,7 @@ public class ObjMeshRenderable implements RenderableAnimatable
 			{
 				AnimatableData data = iterator.next();
 
-				if (!data.skeleton.shouldHideBone(currentVertexGroup))
+				if (!data.skeleton.shouldHideBone(renderingContext, currentVertexGroup))
 				{
 					Matrix4f animation = data.skeleton.getBoneHierarchyTransformationMatrixWithOffset(currentVertexGroup, data.animationTime);
 					
@@ -251,8 +250,14 @@ public class ObjMeshRenderable implements RenderableAnimatable
 					instancesDataBuffer.putFloat(mat.m31);
 					instancesDataBuffer.putFloat(mat.m32);
 					instancesDataBuffer.putFloat(mat.m33);
+					
+					instancesDataBuffer.putFloat(data.sunLight);
+					instancesDataBuffer.putFloat(data.blockLight);
 
-					dataInInstancesBuffer += 4;
+					for (int f = 0; f < 14; f++)
+						instancesDataBuffer.putFloat(0.0f);
+						
+					dataInInstancesBuffer += 8;
 				}
 				
 				//Don't overfill the buffer
@@ -273,9 +278,9 @@ public class ObjMeshRenderable implements RenderableAnimatable
 				int k = dataInInstancesBuffer;
 				while (k < 1024)
 				{
-					for (int f = 0; f < 16; f++)
+					for (int f = 0; f < 32; f++)
 						instancesDataBuffer.putFloat(0.0f);
-					k += 4;
+					k += 8;
 				}
 
 				instancesDataBuffer.flip();

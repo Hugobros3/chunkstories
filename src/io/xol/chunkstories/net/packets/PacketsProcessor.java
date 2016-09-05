@@ -312,6 +312,7 @@ public class PacketsProcessor
 		{
 			try
 			{
+				//System.out.println(packet.getClass().getSimpleName());
 				packet.process(sender, dis, processor);
 			}
 			catch (Exception e)

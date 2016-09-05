@@ -87,7 +87,7 @@ public abstract class WorldImplementation implements World
 	protected WorldRenderer renderer;
 	
 	// Temporary entity list
-	private Set<Entity> entities = ConcurrentHashMap.newKeySet();
+	protected Set<Entity> entities = ConcurrentHashMap.newKeySet();
 	//private ConcurrentHashMap<Long, Entity> localEntitiesByUUID = new ConcurrentHashMap<Long, Entity>();//new LinkedBlockingQueue<Entity>();
 	public ReadWriteLock entitiesLock = new ReentrantReadWriteLock();
 

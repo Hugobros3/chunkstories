@@ -43,10 +43,10 @@ void main(){
 	
 	if(isUsingInstancedData > 0)
 	{
-		mat4 matrixInstanced = mat4(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4, 32), (gl_InstanceID * 4) / 32), 0),
-									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 1, 32), (gl_InstanceID * 4 + 1) / 32), 0),
-									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 2, 32), (gl_InstanceID * 4 + 2) / 32), 0),
-									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 3, 32), (gl_InstanceID * 4 + 3) / 32), 0)
+		mat4 matrixInstanced = mat4(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8, 32), (gl_InstanceID * 8) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 1, 32), (gl_InstanceID * 8 + 1) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 2, 32), (gl_InstanceID * 8 + 2) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 3, 32), (gl_InstanceID * 8 + 3) / 32), 0)
 									);
 	
 		v = matrixInstanced * vec4(vertexIn.xyz, 1.0);

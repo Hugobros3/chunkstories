@@ -20,12 +20,15 @@ public interface RenderableAnimatable extends Renderable
 		public Vector3f position;
 		public AnimationData skeleton;
 		public double animationTime;
+		public int sunLight, blockLight;
 		
-		public AnimatableData(Vector3f position, AnimationData skeleton, double animationTime)
+		public AnimatableData(Vector3f position, AnimationData skeleton, double animationTime, int sunLight, int blockLight)
 		{
 			this.position = position;
 			this.skeleton = skeleton;
 			this.animationTime = animationTime;
+			this.sunLight = sunLight;
+			this.blockLight = blockLight;
 		}
 	}
 	

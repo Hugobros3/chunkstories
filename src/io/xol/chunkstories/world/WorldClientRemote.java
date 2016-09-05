@@ -46,6 +46,6 @@ public class WorldClientRemote extends WorldClientCommon implements WorldNetwork
 			packetsThisTick++;
 		}
 		//if(packetsThisTick > 0)
-		//	System.out.println(packetsThisTick+"packetsThisTick");
+		//	System.out.println(packetsThisTick+"packets for "+this.entities.size()+ " entities");
 	}
 }

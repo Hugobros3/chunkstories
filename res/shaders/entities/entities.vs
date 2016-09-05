@@ -64,19 +64,26 @@ void main(){
 	
 	if(isUsingInstancedData > 0)
 	{
-		mat4 matrixInstanced = mat4(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4, 32), (gl_InstanceID * 4) / 32), 0),
-									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 1, 32), (gl_InstanceID * 4 + 1) / 32), 0),
-									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 2, 32), (gl_InstanceID * 4 + 2) / 32), 0),
-									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 3, 32), (gl_InstanceID * 4 + 3) / 32), 0)
+		mat4 matrixInstanced = mat4(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8, 32), (gl_InstanceID * 8) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 1, 32), (gl_InstanceID * 8 + 1) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 2, 32), (gl_InstanceID * 8 + 2) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 3, 32), (gl_InstanceID * 8 + 3) / 32), 0)
 									);
 	
+		
+	
 		v = matrixInstanced * vec4(vertexIn.xyz, 1.0);
+		
+		varyingVertex = v;
+		varyingNormal =  mat3(transpose(inverse(matrixInstanced))) * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;;
 	}
 	else
+	{
 		v+=vec4(objectPosition,0);
 	
-	varyingVertex = v;
-	varyingNormal =  localTransformNormal * boneTransformNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
+		varyingVertex = v;
+		varyingNormal =  localTransformNormal * boneTransformNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
+	}
 	
 	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(varyingNormal)), 0.0, 1.0);
 	
@@ -86,7 +93,13 @@ void main(){
 	
 	//Compute lightmap coords
 	rainWetness = wetness;//wetness*clamp((colorIn.g-15.0/16.0)*16,0,0.5);
-	lightMapCoords = vec3(worldLight / 15.0, 0);
+	
+	if(isUsingInstancedData > 0)
+	{
+		lightMapCoords = vec3(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 4, 32), (gl_InstanceID * 8 + 1) / 32), 0).xy / 15.0, 0.0);
+	}
+	else
+		lightMapCoords = vec3(worldLight / 15.0, 0);
 	//lightMapCoords.y *= sunIntensity;
 	
 	//Translate vertex

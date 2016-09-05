@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.Lock;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
@@ -13,6 +14,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -44,6 +46,9 @@ public class EntitiesRenderer
 
 	public int renderEntities(RenderingContext renderingContext)
 	{
+		Lock l = ((WorldImplementation)world).entitiesLock.readLock();
+		l.lock();
+		
 		//Sort them by type
 		Map<Class<? extends EntityRenderable>, List<EntityRenderable>> renderableEntitiesTypes = new HashMap<Class<? extends EntityRenderable>, List<EntityRenderable>>();
 		for (Entity entity : world.getAllLoadedEntities())
@@ -82,6 +87,8 @@ public class EntitiesRenderer
 
 			entitiesRendered += entityRenderer.forEach(renderingContext, new EntitiesRendererIterator<>(renderingContext, entities));
 		}
+		
+		l.unlock();
 		
 		return entitiesRendered;
 	}
