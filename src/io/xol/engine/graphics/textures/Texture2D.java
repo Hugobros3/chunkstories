@@ -10,6 +10,8 @@ import org.lwjgl.opengl.ARBFramebufferObject;
 import org.lwjgl.opengl.GL30;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL14.*;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
@@ -137,6 +139,9 @@ public class Texture2D extends Texture
 
 	public boolean uploadTextureData(int width, int height, int level, ByteBuffer data)
 	{
+		int k = currentlyBoundId;
+
+		glActiveTexture(GL_TEXTURE0 + 15);
 		bind();
 		this.width = width;
 		this.height = height;
@@ -145,6 +150,12 @@ public class Texture2D extends Texture
 		glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(), (ByteBuffer) data);
 
 		applyTextureParameters();
+
+		//glActiveTexture(GL_TEXTURE0);
+		
+		if(k > 0)
+			glBindTexture(GL_TEXTURE_2D, currentlyBoundId);
+		
 		return true;
 	}
 
@@ -158,6 +169,8 @@ public class Texture2D extends Texture
 		return glId;
 	}
 
+	static int currentlyBoundId = 0;
+	
 	public void bind()
 	{
 		if (!GameWindowOpenGL.isMainGLWindow())
@@ -169,6 +182,7 @@ public class Texture2D extends Texture
 		}
 
 		glBindTexture(GL_TEXTURE_2D, glId);
+		currentlyBoundId = glId;
 
 		if (scheduledForLoad)
 		{
@@ -176,34 +190,7 @@ public class Texture2D extends Texture
 			this.loadTextureFromDisk();
 		}
 	}
-
-	/*public synchronized boolean destroy()
-	{
-		if (GameWindowOpenGL.isMainGLWindow())
-		{
-
-			if (glId >= 0)
-			{
-				glDeleteTextures(glId);
-			}
-			//Only register destruction once
-			if (glId != -2)
-			{
-				totalTextureObjects--;
-				glId = -2;
-			}
-			return true;
-		}
-		else
-		{
-			synchronized (objectsToDestroy)
-			{
-				objectsToDestroy.add(this);
-			}
-			return false;
-		}
-	}*/
-
+	
 	// Texture modifications
 
 	/**

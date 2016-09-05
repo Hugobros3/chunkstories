@@ -23,7 +23,9 @@ public enum TextureType
 	//Summary data
 	RED_32F(GL_R32F, GL_RED, GL_FLOAT, 4),
 	//
-	RGBA_3x10_2(GL_RGB10_A2, GL_RGBA, GL_UNSIGNED_BYTE, 4)
+	RGBA_3x10_2(GL_RGB10_A2, GL_RGBA, GL_UNSIGNED_BYTE, 4),
+	//
+	RGBA_32F(GL_RGBA32F, GL_RGBA, GL_FLOAT, 16),
 	;
 	
 	TextureType(int internalFormat, int format, int type, int bytesUsed)

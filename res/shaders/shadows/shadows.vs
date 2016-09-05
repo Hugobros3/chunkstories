@@ -22,6 +22,9 @@ uniform float entity;
 uniform mat4 localTransform;
 uniform mat4 boneTransform;
 
+uniform float isUsingInstancedData;
+uniform sampler2D instancedDataSampler;
+
 <include ../lib/shadowTricks.glsl>
 
 void main(){
@@ -38,7 +41,21 @@ void main(){
 	}
 	<endif dynamicGrass>
 	
-	v.xyz += objectPosition;
+	if(isUsingInstancedData > 0)
+	{
+		mat4 matrixInstanced = mat4(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4, 32), (gl_InstanceID * 4) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 1, 32), (gl_InstanceID * 4 + 1) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 2, 32), (gl_InstanceID * 4 + 2) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 3, 32), (gl_InstanceID * 4 + 3) / 32), 0)
+									);
+	
+		v = matrixInstanced * vec4(vertexIn.xyz, 1.0);
+	}
+	else
+	{
+		v.xyz += objectPosition;
+	}
+		
 	gl_Position = accuratizeShadowIn(depthMVP * v);
 }
 

@@ -1,6 +1,8 @@
 package io.xol.chunkstories.core.entity;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import io.xol.chunkstories.api.entity.interfaces.EntityWithClientPrediction;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
@@ -21,6 +23,8 @@ import io.xol.engine.animation.AnimatedSkeleton;
 import io.xol.engine.animation.BVHAnimation;
 import io.xol.engine.animation.BVHLibrary;
 import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.geometry.RenderableAnimatable;
+import io.xol.engine.graphics.geometry.RenderableAnimatable.AnimatableData;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -60,7 +64,6 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 	protected class EntityHumanoidAnimatedSkeleton extends AnimatedSkeleton
 	{
-
 		@Override
 		public BVHAnimation getAnimationPlayingForBone(String boneName, double animationTime)
 		{
@@ -129,7 +132,19 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				//System.out.println((horizSpd / 0.065) * 0.3);
 			}
 
-			return getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime);
+			Matrix4f characterRotationMatrix = new Matrix4f();
+			//Only the torso is modified, the effect is replicated accross the other bones later
+			if(boneName.endsWith("boneTorso"))
+				characterRotationMatrix.rotate((90 - getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
+			
+			return Matrix4f.mul(characterRotationMatrix, getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime),  null);
+		}
+		
+		public boolean shouldHideBone(String boneName)
+		{
+			if (EntityHumanoid.this.equals(Client.getInstance().getClientSideController().getControlledEntity()))
+				return true;
+			return false;
 		}
 
 	}
@@ -156,6 +171,23 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		public int forEach(RenderingContext renderingContext, RenderingIterator<H> renderableEntitiesIterator)
 		{
 			int e = 0;
+			
+			List<RenderableAnimatable.AnimatableData> animationsData = new LinkedList<AnimatableData>();
+			
+			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
+			{
+				//System.out.println("K"+entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition().clone().negate()));
+				
+				//if(renderingContext.isThisAShadowPass() && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition().clone().negate()) > 25)
+				//	continue;
+				animationsData.add(new AnimatableData(entity.getLocation().castToSP(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000));
+			}
+			
+			ModelLibrary.getRenderableMesh("./models/human.obj").renderInstanciated(renderingContext, animationsData);
+			
+			if(true)
+				return 0;
+			
 			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
 				ItemPile selectedItemPile = null;
@@ -165,43 +197,54 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 				//Prevents laggy behaviour
 				Camera cam = renderingContext.getCamera();
-				if (entity.equals(Client.getInstance().getClientSideController().getControlledEntity()))
-					renderingContext.getCurrentShader().setUniformFloat3("objectPosition", -(float) cam.pos.getX(), -(float) cam.pos.getY() - eyePosition, -(float) cam.pos.getZ());
+				
+				//if (entity.equals(Client.getInstance().getClientSideController().getControlledEntity()))
+				//	renderingContext.getCurrentShader().setUniformFloat3("objectPosition", -(float) cam.pos.getX(), -(float) cam.pos.getY() - eyePosition, -(float) cam.pos.getZ());
 
+				renderingContext.getCurrentShader().setUniformFloat3("objectPosition", 0, 0, 0);
+
+				
 				//Renders normal limbs
 				Matrix4f headRotationMatrix = new Matrix4f();
-				headRotationMatrix.translate(new Vector3f(0f, (float) entity.eyePosition, 0f));
-				headRotationMatrix.rotate((90 - entity.getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-				headRotationMatrix.translate(new Vector3f(0f, -(float) entity.eyePosition, 0f));
+				headRotationMatrix.translate(entity.getLocation().castToSP());
+				//headRotationMatrix.translate(new Vector3f(0f, (float) entity.eyePosition, 0f));
+				//headRotationMatrix.translate(new Vector3f(0f, -(float) entity.eyePosition, 0f));
+				
 				renderingContext.sendTransformationMatrix(headRotationMatrix);
 
 				//Except in first person
-				if (!entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
-					ModelLibrary.getRenderableMesh("./models/human.obj").renderButParts(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
+				//if (!entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
+				//	ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);//, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
 
+
+				
 				//Render rotated limbs
-				headRotationMatrix = new Matrix4f();
+				
+				/*headRotationMatrix = new Matrix4f();
 				headRotationMatrix.translate(new Vector3f(0f, (float) entity.eyePosition, 0f));
 				headRotationMatrix.rotate((90 - entity.getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
 
 				if (selectedItemPile != null)
 					headRotationMatrix.rotate((-entity.getEntityRotationComponent().getVerticalRotation()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
 
-				headRotationMatrix.translate(new Vector3f(0f, -(float) entity.eyePosition, 0f));
-				renderingContext.sendTransformationMatrix(headRotationMatrix);
-
+				headRotationMatrix.translate(new Vector3f(0f, -(float) entity.eyePosition, 0f));*/
+				
+				
+				/*renderingContext.sendTransformationMatrix(headRotationMatrix);
 				if (selectedItemPile != null || !entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
 					ModelLibrary.getRenderableMesh("./models/human.obj").renderParts(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
-
+				 */
+				
 				//Matrix to itemInHand bone in the player's bvh
-				Matrix4f itemMatrix = new Matrix4f();
+				
+				/*Matrix4f itemMatrix = new Matrix4f();
 				itemMatrix = entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000);
 				//System.out.println(itemMatrix);
 
 				Matrix4f.mul(headRotationMatrix, itemMatrix, itemMatrix);
 
 				if (selectedItemPile != null)
-					selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
+					selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);*/
 				
 				e++;
 			}

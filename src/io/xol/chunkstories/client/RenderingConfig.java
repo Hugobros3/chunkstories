@@ -68,6 +68,9 @@ public class RenderingConfig
 	
 	public static boolean doDynamicCubemaps = true;
 	public static boolean ignoreObsoleteHardware = false;
+	
+	public static int animationCacheMaxSize = 128 * 1024; // 128kb max per animation
+	public static int animationCacheFrameRate = 60;
 
 	public static String[] getShaderConfig()
 	{

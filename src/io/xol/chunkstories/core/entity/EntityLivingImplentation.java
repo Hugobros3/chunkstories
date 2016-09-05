@@ -152,7 +152,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		blockedMomentum = moveWithCollisionRestrain(velocity.getX(), velocity.getY(), velocity.getZ(), true);
 
 		//Collisions
-		/*if (collision_left || collision_right)
+		if (collision_left || collision_right)
 			velocity.setX(0);
 		if (collision_north || collision_south)
 			velocity.setZ(0);
@@ -160,7 +160,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		if (collision_bot && velocity.getY() < 0)
 			velocity.setY(0);
 		else if (collision_top)
-			velocity.setY(0);*/
+			velocity.setY(0);
 		
 		getVelocityComponent().setVelocity(velocity);
 	}

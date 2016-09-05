@@ -1,4 +1,4 @@
-#version 120
+#version 140
 //Entry attributes
 attribute vec4 vertexIn;
 attribute vec2 texCoordIn;
@@ -20,6 +20,8 @@ varying vec4 colorPassed;
 
 uniform float useColorIn;
 uniform float useNormalIn;
+uniform float isUsingInstancedData;
+uniform sampler2D instancedDataSampler;
 
 //Lighthing
 uniform float sunIntensity;
@@ -59,7 +61,19 @@ void main(){
 	texcoord = texCoordIn;
 	vec4 v = localTransform * boneTransform * vec4(vertexIn.xyz, 1.0);
 	
-	v+=vec4(objectPosition,0);
+	
+	if(isUsingInstancedData > 0)
+	{
+		mat4 matrixInstanced = mat4(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4, 32), (gl_InstanceID * 4) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 1, 32), (gl_InstanceID * 4 + 1) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 2, 32), (gl_InstanceID * 4 + 2) / 32), 0),
+									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 4 + 3, 32), (gl_InstanceID * 4 + 3) / 32), 0)
+									);
+	
+		v = matrixInstanced * vec4(vertexIn.xyz, 1.0);
+	}
+	else
+		v+=vec4(objectPosition,0);
 	
 	varyingVertex = v;
 	varyingNormal =  localTransformNormal * boneTransformNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;

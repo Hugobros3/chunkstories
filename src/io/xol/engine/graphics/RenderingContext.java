@@ -298,6 +298,8 @@ public class RenderingContext
 			currentlyBoundShader.setUniformSampler(2, "materialTexture", texture);
 	}
 
+	Matrix4f currentTransformationMatrix = new Matrix4f();
+	
 	/**
 	 * Sets the current local matrix transformation and normal 3x3 counterpart
 	 * 
@@ -307,6 +309,9 @@ public class RenderingContext
 	{
 		if (matrix == null)
 			matrix = new Matrix4f();
+		
+		currentTransformationMatrix = matrix;
+		
 		this.currentlyBoundShader.setUniformMatrix4f("localTransform", matrix);
 		Matrix4f.invert(matrix, temp);
 		Matrix4f.transpose(temp, temp);
@@ -351,6 +356,11 @@ public class RenderingContext
 		this.currentlyBoundShader.setUniformMatrix3f("boneTransformNormal", normal);
 	}
 
+	public Matrix4f getTransformationMatrix()
+	{
+		return currentTransformationMatrix;
+	}
+	
 	//static FloatBuffer fsQuadBuffer = null;
 
 	static VerticesObject fsQuadVertices = null;

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Quaternion4d;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -23,6 +24,9 @@ public class BVHAnimation implements AnimationData
 
 	BVHTreeBone root;
 	public List<BVHTreeBone> bones = new ArrayList<BVHTreeBone>();
+	
+	Matrix4f[] cachedAnimations;
+	int totalCachedFrames;
 
 	public static void main(String a[])
 	{
@@ -115,6 +119,32 @@ public class BVHAnimation implements AnimationData
 	{
 		load(file);
 	}
+	
+	public void buildAnimationCache()
+	{
+		double totalAnimationTime = frames * frameTime;
+		
+		totalCachedFrames = (int) (totalAnimationTime * RenderingConfig.animationCacheFrameRate);
+		
+		//Don't waste too much ram
+		if(totalCachedFrames * bones.size() * 64 > RenderingConfig.animationCacheMaxSize)
+			return;
+		
+		System.out.println("Building "+(totalCachedFrames * bones.size() * 64 / 1024)+"kb of animation cached data at " + RenderingConfig.animationCacheFrameRate);
+		cachedAnimations = new Matrix4f[totalCachedFrames * bones.size()];
+		//Foreach bone
+		for(BVHTreeBone bone : bones)
+		{
+			int boneId = bone.id;
+			int boneOffset = boneId * totalCachedFrames;
+			double timer = 0.0;
+			for(int f = 0; f < totalCachedFrames; f++)
+			{
+				timer += 1.0 / RenderingConfig.animationCacheFrameRate;
+				cachedAnimations[boneOffset + f] = getBoneHierarchyTransformationMatrix(bone.name, timer);
+			}
+		}
+	}
 
 	public Matrix4f getBoneHierarchyTransformationMatrix(String boneName, double animationTime)
 	{
@@ -125,6 +155,21 @@ public class BVHAnimation implements AnimationData
 			return matrix;
 		}
 
+		System.out.println("k");
+		
+		if(cachedAnimations == null && RenderingConfig.animationCacheFrameRate > 0)
+		{
+			buildAnimationCache();
+		}
+		if(cachedAnimations != null && RenderingConfig.animationCacheFrameRate > 0)
+		{
+			double frameD = animationTime * 1000.0 / frameTime;
+			
+			System.out.println("that'd be the "+(int)frameD+" frame out of "+totalCachedFrames+"cached frames");
+			
+			//return cachedAnimations[];
+		}
+		
 		double frame = animationTime / 1000.0 / frameTime;
 
 		double frameUpperBound = Math.ceil(frame);
@@ -362,11 +407,11 @@ public class BVHAnimation implements AnimationData
 	@Override
 	public String toString()
 	{
-		String txt = "BVH ANIMATION FILE\n";
+		String txt = "[BVH Animation File\n";
 		if (root != null)
 			txt += root.toString();
 		txt += "Frames: " + frames + "\n";
-		txt += "Frame Time: " + frameTime;
+		txt += "Frame Time: " + frameTime + "]";
 		return txt;
 	}
 }

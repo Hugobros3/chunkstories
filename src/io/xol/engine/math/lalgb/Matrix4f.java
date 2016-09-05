@@ -480,4 +480,9 @@ public class Matrix4f
 
 		return dest;
 	}
+	
+	public Matrix4f clone()
+	{
+		return new Matrix4f(this);
+	}
 }

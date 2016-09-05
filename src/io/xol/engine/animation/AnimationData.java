@@ -9,12 +9,20 @@ import io.xol.engine.math.lalgb.Matrix4f;
 public interface AnimationData
 {
 	/**
-	 * Used to draw debug bone armature
+	 * Used to draw the debug bone armature
 	 */
 	public Matrix4f getBoneHierarchyTransformationMatrix(String nameOfEndBone, double animationTime);
 
 	/**
-	 * Used to draw mesh parts in OpenGL
+	 * Used to draw deformed mesh parts in OpenGL
 	 */
 	public Matrix4f getBoneHierarchyTransformationMatrixWithOffset(String nameOfEndBone, double animationTime);
+	
+	/**
+	 * Used to hide body parts and/or do multipass rendering
+	 */
+	public default boolean shouldHideBone(String boneName)
+	{
+		return false;
+	}
 }

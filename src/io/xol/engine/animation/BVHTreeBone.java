@@ -17,6 +17,8 @@ public class BVHTreeBone
 {
 	BVHAnimation bvh;
 	public String name;
+	int id;
+	
 	//Offset from 0.0.0 ( for rigging )
 	Vector3f offset;
 	//Destination vector ( for end bones only )
@@ -38,6 +40,7 @@ public class BVHTreeBone
 		this.name = name;
 		this.parent = parent;
 		this.bvh = bvh;
+		this.id = bvh.bones.size();
 	}
 
 	// Pretty recursive debug function :D

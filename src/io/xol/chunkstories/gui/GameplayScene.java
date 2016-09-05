@@ -225,7 +225,7 @@ public class GameplayScene extends OverlayableScene
 
 				float scale = 2.0f;
 
-				TexturesHandler.getTexture("res/textures/gui/hud/hud_survival.png").setLinearFiltering(false);
+				TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png").setLinearFiltering(false);
 				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale, 256 * scale, 32 * scale, 0, 32f / 256f, 1, 0,
 						TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png").getId(), false, true, null);
 
@@ -241,7 +241,7 @@ public class GameplayScene extends OverlayableScene
 			if (currentOverlay != null)
 				currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 			else
-				renderingContext.getGuiRenderer().renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "./textures/gui/cursor.png");
+				renderingContext.getGuiRenderer().renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "gui/cursor");
 
 
 			if (RenderingConfig.showDebugInfo)

@@ -229,7 +229,16 @@ public class ShaderProgram
 
 	public void setUniformSampler(int id, String name, Texture2D texture)
 	{
-		setUniformSampler(id, name, texture.getId());
+		if(id == 0)
+		{
+			this.setUniformInt(name, id);
+			selectTextureUnit(id);
+			texture.bind();
+			//glBindTexture(GL_TEXTURE_2D, texId);
+			glActiveTexture(GL_TEXTURE0);
+		}
+		else
+			setUniformSampler(id, name, texture.getId());
 	}
 
 	public void setUniformSampler(int id, String name, int texId)

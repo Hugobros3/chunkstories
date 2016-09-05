@@ -1351,7 +1351,9 @@ public class WorldRenderer
 
 		if (RenderingConfig.doBloom)
 		{
-			glBindTexture(GL_TEXTURE_2D, shadedBuffer.getId());
+			//glBindTexture(GL_TEXTURE_2D, shadedBuffer.getId());
+			shadedBuffer.bind();
+			
 			shadedBuffer.setMipMapping(true);
 			int max_mipmap = (int) (Math.ceil(Math.log(Math.max(scrH, scrW)) / Math.log(2))) - 1;
 			shadedBuffer.setMipmapLevelsRange(0, max_mipmap);
@@ -1716,7 +1718,8 @@ public class WorldRenderer
 			else
 			{
 				// GL access
-				glBindTexture(GL_TEXTURE_2D, shadedBuffer.getId());
+				//glBindTexture(GL_TEXTURE_2D, shadedBuffer.getId());
+				shadedBuffer.bind();
 
 				// File access
 				File image = new File(GameDirectory.getGameFolderPath() + "/skyboxscreens/" + time + "/" + names[z] + ".png");
