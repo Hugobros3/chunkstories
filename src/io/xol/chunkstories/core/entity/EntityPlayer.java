@@ -64,6 +64,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	float lastPX = -1f;
 	float lastPY = -1f;
+	
+	Location lastCameraLocation;
 
 	public EntityPlayer(WorldImplementation w, double x, double y, double z)
 	{
@@ -306,7 +308,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	{
 		synchronized (this)
 		{
-			camera.pos = new Vector3d(getLocation()).negate();
+			lastCameraLocation = getLocation();
+			
+			camera.pos = lastCameraLocation.clone().negate();
 			camera.pos.add(0d, -eyePosition, 0d);
 
 			camera.rotationX = this.getEntityRotationComponent().getVerticalRotation();
@@ -488,5 +492,12 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	{
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public Location getPredictedLocation()
+	{
+		//System.out.println("predict");
+		return lastCameraLocation != null ? lastCameraLocation : getLocation();
 	}
 }

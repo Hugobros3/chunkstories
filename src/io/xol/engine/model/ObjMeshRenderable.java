@@ -12,7 +12,7 @@ import java.util.Map;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.engine.animation.AnimationData;
+import io.xol.engine.animation.SkeletonAnimator;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.RenderableAnimatable;
@@ -81,7 +81,7 @@ public class ObjMeshRenderable implements RenderableAnimatable
 	}
 
 	@Override
-	public void render(RenderingContext renderingContext, AnimationData skeleton, double animationTime)
+	public void render(RenderingContext renderingContext, SkeletonAnimator skeleton, double animationTime)
 	{
 		internalRenderer(renderingContext, skeleton, animationTime, false, (String[]) null);
 	}
@@ -98,7 +98,7 @@ public class ObjMeshRenderable implements RenderableAnimatable
 		internalRenderer(renderingContext, skeleton, animationTime, true, parts);
 	}*/
 
-	private void internalRenderer(RenderingContext renderingContext, AnimationData skeleton, double animationTime, boolean exclude, String... parts)
+	private void internalRenderer(RenderingContext renderingContext, SkeletonAnimator skeleton, double animationTime, boolean exclude, String... parts)
 	{
 		prepareDraw(renderingContext);
 

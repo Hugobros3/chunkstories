@@ -7,7 +7,7 @@ import io.xol.engine.math.lalgb.Matrix4f;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface AnimationData
+public interface SkeletonAnimator
 {
 	/**
 	 * Used to draw the debug bone armature
@@ -22,8 +22,5 @@ public interface AnimationData
 	/**
 	 * Used to hide body parts and/or do multipass rendering
 	 */
-	public default boolean shouldHideBone(RenderingContext renderingContext, String boneName)
-	{
-		return false;
-	}
+	public boolean shouldHideBone(RenderingContext renderingContext, String boneName);
 }

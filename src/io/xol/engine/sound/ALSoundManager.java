@@ -157,7 +157,7 @@ public class ALSoundManager implements SoundManager
 		{
 			System.out.println("Sound not found "+soundEffect);
 		}
-		return null;
+		return new DummySound();
 	}
 
 	@Override

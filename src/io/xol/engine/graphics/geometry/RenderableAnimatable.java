@@ -2,7 +2,7 @@ package io.xol.engine.graphics.geometry;
 
 import java.util.Collection;
 
-import io.xol.engine.animation.AnimationData;
+import io.xol.engine.animation.SkeletonAnimator;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Vector3f;
 
@@ -12,17 +12,17 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 public interface RenderableAnimatable extends Renderable
 {
-	public void render(RenderingContext renderingContext, AnimationData skeleton, double animationTime);
+	public void render(RenderingContext renderingContext, SkeletonAnimator skeleton, double animationTime);
 	
 	public void renderInstanciated(RenderingContext renderingContext, Collection<AnimatableData> instancesData);
 	
 	public class AnimatableData {
 		public Vector3f position;
-		public AnimationData skeleton;
+		public SkeletonAnimator skeleton;
 		public double animationTime;
 		public int sunLight, blockLight;
 		
-		public AnimatableData(Vector3f position, AnimationData skeleton, double animationTime, int sunLight, int blockLight)
+		public AnimatableData(Vector3f position, SkeletonAnimator skeleton, double animationTime, int sunLight, int blockLight)
 		{
 			this.position = position;
 			this.skeleton = skeleton;

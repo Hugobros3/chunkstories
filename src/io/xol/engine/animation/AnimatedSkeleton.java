@@ -9,7 +9,7 @@ import io.xol.engine.math.lalgb.Matrix4f;
 /**
  * For this system to work two assertions need to be valid : all animations used have the same tree structure, and the distances/position of the bones are the same. Otherwrise unpredictable results may occur;
  */
-public abstract class AnimatedSkeleton implements AnimationData
+public abstract class AnimatedSkeleton implements SkeletonAnimator
 {
 	/**
 	 * Key of this class : returns whatever BVHAnimation to use with wich bone at wich point, possibly depending of external factors of the implemting subclass

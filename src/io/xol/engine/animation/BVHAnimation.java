@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Quaternion4d;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -17,7 +18,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class BVHAnimation implements AnimationData
+public class BVHAnimation implements SkeletonAnimator
 {
 	int frames = 0;
 	float frameTime = 0f;
@@ -25,8 +26,8 @@ public class BVHAnimation implements AnimationData
 	BVHTreeBone root;
 	public List<BVHTreeBone> bones = new ArrayList<BVHTreeBone>();
 	
-	Matrix4f[] cachedAnimations;
-	int totalCachedFrames;
+	//Matrix4f[] cachedAnimations;
+	//int totalCachedFrames;
 
 	public static void main(String a[])
 	{
@@ -120,7 +121,7 @@ public class BVHAnimation implements AnimationData
 		load(file);
 	}
 	
-	public void buildAnimationCache()
+	/*public void buildAnimationCache()
 	{
 		double totalAnimationTime = frames * frameTime;
 		
@@ -144,7 +145,7 @@ public class BVHAnimation implements AnimationData
 				cachedAnimations[boneOffset + f] = getBoneHierarchyTransformationMatrix(bone.name, timer);
 			}
 		}
-	}
+	}*/
 
 	public Matrix4f getBoneHierarchyTransformationMatrix(String boneName, double animationTime)
 	{
@@ -157,7 +158,7 @@ public class BVHAnimation implements AnimationData
 
 		System.out.println("k");
 		
-		if(cachedAnimations == null && RenderingConfig.animationCacheFrameRate > 0)
+		/*if(cachedAnimations == null && RenderingConfig.animationCacheFrameRate > 0)
 		{
 			buildAnimationCache();
 		}
@@ -168,7 +169,7 @@ public class BVHAnimation implements AnimationData
 			System.out.println("that'd be the "+(int)frameD+" frame out of "+totalCachedFrames+"cached frames");
 			
 			//return cachedAnimations[];
-		}
+		}*/
 		
 		double frame = animationTime / 1000.0 / frameTime;
 
@@ -413,5 +414,11 @@ public class BVHAnimation implements AnimationData
 		txt += "Frames: " + frames + "\n";
 		txt += "Frame Time: " + frameTime + "]";
 		return txt;
+	}
+
+	@Override
+	public boolean shouldHideBone(RenderingContext renderingContext, String boneName)
+	{
+		return false;
 	}
 }

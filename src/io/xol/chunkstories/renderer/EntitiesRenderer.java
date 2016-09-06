@@ -46,8 +46,8 @@ public class EntitiesRenderer
 
 	public int renderEntities(RenderingContext renderingContext)
 	{
-		Lock l = ((WorldImplementation)world).entitiesLock.readLock();
-		l.lock();
+		//Lock l = ((WorldImplementation)world).entitiesLock.readLock();
+		//l.lock();
 		
 		//Sort them by type
 		Map<Class<? extends EntityRenderable>, List<EntityRenderable>> renderableEntitiesTypes = new HashMap<Class<? extends EntityRenderable>, List<EntityRenderable>>();
@@ -88,7 +88,7 @@ public class EntitiesRenderer
 			entitiesRendered += entityRenderer.forEach(renderingContext, new EntitiesRendererIterator<>(renderingContext, entities));
 		}
 		
-		l.unlock();
+		//l.unlock();
 		
 		return entitiesRendered;
 	}

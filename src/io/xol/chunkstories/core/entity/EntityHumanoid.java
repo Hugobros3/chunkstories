@@ -17,7 +17,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemAk47;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.animation.AnimatedSkeleton;
@@ -56,11 +55,14 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 	public double eyePosition = 1.6;
 
+	CachedLodSkeletonAnimator cachedSkeleton;
+
 	public EntityHumanoid(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 
-		animatedSkeleton = new EntityHumanoidAnimatedSkeleton();
+		cachedSkeleton = new CachedLodSkeletonAnimator(new EntityHumanoidAnimatedSkeleton(), 25f, 75f);
+		animatedSkeleton = cachedSkeleton;
 	}
 
 	protected class EntityHumanoidAnimatedSkeleton extends AnimatedSkeleton
@@ -122,7 +124,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 			if (horizSpd > 0.030)
 				animationTime *= 1.5;
-			
+
 			if (horizSpd > 0.060)
 				animationTime *= 1.5;
 			else if (Arrays.asList(new String[] { "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD", "boneItemInHand", "boneTorso" }).contains(boneName))
@@ -135,10 +137,10 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 			Matrix4f characterRotationMatrix = new Matrix4f();
 			//Only the torso is modified, the effect is replicated accross the other bones later
-			if(boneName.endsWith("boneTorso"))
+			if (boneName.endsWith("boneTorso"))
 				characterRotationMatrix.rotate((90 - getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
-			
-			if(Arrays.asList("boneArmLU", "boneArmRU").contains(boneName))
+
+			if (Arrays.asList("boneArmLU", "boneArmRU").contains(boneName))
 			{
 				double k = 0.75;
 
@@ -146,33 +148,33 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 				if (EntityHumanoid.this instanceof EntityWithSelectedItem)
 					selectedItem = ((EntityWithSelectedItem) EntityHumanoid.this).getSelectedItemComponent().getSelectedItem();
-				
-				if(selectedItem != null)
+
+				if (selectedItem != null)
 				{
-				characterRotationMatrix.translate(new Vector3f(0f, 0f, (float) k));
-				characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-				characterRotationMatrix.translate(new Vector3f(0f, 0f, -(float) k));
+					characterRotationMatrix.translate(new Vector3f(0f, 0f, (float) k));
+					characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
+					characterRotationMatrix.translate(new Vector3f(0f, 0f, -(float) k));
 				}
 			}
-			
-			return Matrix4f.mul(characterRotationMatrix, getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime),  null);
+
+			return Matrix4f.mul(characterRotationMatrix, getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime), null);
 		}
-		
+
 		public boolean shouldHideBone(RenderingContext renderingContext, String boneName)
 		{
 			if (EntityHumanoid.this.equals(Client.getInstance().getClientSideController().getControlledEntity()))
 			{
-				if(renderingContext.isThisAShadowPass())
+				if (renderingContext.isThisAShadowPass())
 					return false;
-				
+
 				ItemPile selectedItem = null;
 
 				if (EntityHumanoid.this instanceof EntityWithSelectedItem)
 					selectedItem = ((EntityWithSelectedItem) EntityHumanoid.this).getSelectedItemComponent().getSelectedItem();
-				
-				if(Arrays.asList("boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD").contains(boneName) && selectedItem != null)
+
+				if (Arrays.asList("boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD").contains(boneName) && selectedItem != null)
 					return false;
-				
+
 				return true;
 			}
 			return false;
@@ -201,26 +203,30 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		public int forEach(RenderingContext renderingContext, RenderingIterator<H> renderableEntitiesIterator)
 		{
 			int e = 0;
-			
+
 			List<RenderableAnimatable.AnimatableData> animationsData = new LinkedList<AnimatableData>();
-			
+
 			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
-				if(renderingContext.isThisAShadowPass() && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition().clone().negate()) > 15)
-					continue;
+				//if (renderingContext.isThisAShadowPass() && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition().clone().negate()) > 15)
+				//	continue;
 				
-				int bl = entity.getWorld().getBlocklightLevelLocation(entity.getLocation());
-				int sl = entity.getWorld().getSunlightLevelLocation(entity.getLocation());
+				Location location = entity.getPredictedLocation();
 				
+				entity.cachedSkeleton.lodUpdate(renderingContext);
+
+				int bl = entity.getWorld().getBlocklightLevelLocation(location);
+				int sl = entity.getWorld().getSunlightLevelLocation(location);
+
 				//if (entity.equals(Client.getInstance().getClientSideController().getControlledEntity()))
 				//	animationsData.add(new AnimatableData(renderingContext.getCamera().getCameraPosition().clone().negate().add(0, -eyePosition, 0).castToSP(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
 				//else
-					animationsData.add(new AnimatableData(entity.getLocation().castToSP(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
+				animationsData.add(new AnimatableData(location.castToSP(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
 			}
-			
+
 			//Instanciate all players
 			ModelLibrary.getRenderableMesh("./models/human.obj").renderInstanciated(renderingContext, animationsData);
-			
+
 			//Render items in hands
 			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
@@ -231,45 +237,40 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 				//Prevents laggy behaviour
 				//Camera cam = renderingContext.getCamera();
-				
+
 				//if (entity.equals(Client.getInstance().getClientSideController().getControlledEntity()))
 				//	renderingContext.getCurrentShader().setUniformFloat3("objectPosition", -(float) cam.pos.getX(), -(float) cam.pos.getY() - eyePosition, -(float) cam.pos.getZ());
 
 				//renderingContext.getCurrentShader().setUniformFloat3("objectPosition", 0, 0, 0);
 
-				
 				//Renders normal limbs
 				//Matrix4f headRotationMatrix = new Matrix4f();
 				//headRotationMatrix.translate(entity.getLocation().castToSP());
 				//headRotationMatrix.translate(new Vector3f(0f, (float) entity.eyePosition, 0f));
 				//headRotationMatrix.translate(new Vector3f(0f, -(float) entity.eyePosition, 0f));
-				
+
 				//renderingContext.sendTransformationMatrix(headRotationMatrix);
 
 				//Except in first person
 				//if (!entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
 				//	ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);//, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
 
-
-				
 				//Render rotated limbs
-				
-				
+
 				/*renderingContext.sendTransformationMatrix(headRotationMatrix);
 				if (selectedItemPile != null || !entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
 					ModelLibrary.getRenderableMesh("./models/human.obj").renderParts(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
 				 */
-				
+
 				//Matrix to itemInHand bone in the player's bvh
 
 				if (selectedItemPile != null)
 				{
 					Matrix4f headRotationMatrix = new Matrix4f();
-					
+
 					float k = (float) entity.eyePosition;
-					
 					k = 0.5f;
-					
+
 					headRotationMatrix = new Matrix4f();
 					//headRotationMatrix.translate(new Vector3f(0f, (float) k, 0f));
 					//headRotationMatrix.rotate((90 - entity.getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
@@ -278,24 +279,28 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 					//	headRotationMatrix.rotate((-entity.getEntityRotationComponent().getVerticalRotation()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
 
 					//headRotationMatrix.translate(new Vector3f(0f, -(float) k, 0f));
-					
+
 					//headRotationMatrix.invert(headRotationMatrix, headRotationMatrix);
-					
+
 					Matrix4f itemMatrix = new Matrix4f();
 					itemMatrix = entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000);
 					//System.out.println(itemMatrix);
 
 					Matrix4f.mul(itemMatrix, headRotationMatrix, itemMatrix);
 					
+					renderingContext.getCurrentShader().setUniformFloat3("objectPosition", entity.getPredictedLocation());
+
 					if (entity.equals(Client.getInstance().getClientSideController().getControlledEntity()))
+					{
 						selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, new Location(world, renderingContext.getCamera().getCameraPosition().clone().negate().add(0, -eyePosition, 0)), itemMatrix);
+					}
 					else
 						selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
 				}
-				
+
 				e++;
 			}
-			
+
 			return e;
 		}
 
@@ -311,11 +316,6 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 	public EntityRenderer<? extends EntityRenderable> getEntityRenderer()
 	{
 		return new EntityHumanoidRenderer<EntityHumanoid>();
-	}
-
-	public String getDefaultAnimation()
-	{
-		return "human/standstill";
 	}
 
 	@Override
@@ -337,7 +337,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 		//Limit maximal acceleration depending if we're on the groud or not, we accelerate 2x faster on ground
 		double maxAcceleration = collision_bot ? 0.010 : 0.005;
-		if(inWater)
+		if (inWater)
 			maxAcceleration = 0.005;
 		if (acceleration.length() > maxAcceleration)
 		{
@@ -347,14 +347,13 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 		//Tick : will move the entity, solve velocity/acceleration and so on
 
-		
 		handleWalkingEtcSounds();
-		
+
 		super.tick();
 	}
 
 	boolean lastTickOnGround = false;
-	
+
 	@Override
 	public void tickClientPrediction()
 	{
@@ -363,13 +362,13 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 	protected void handleWalkingEtcSounds()
 	{
-		if(!(getWorld() instanceof WorldClient))
+		if (!(getWorld() instanceof WorldClient))
 			return;
-		
-		if(Client.getInstance().getClientSideController().getControlledEntity() != null )
-			if(Client.getInstance().getClientSideController().getControlledEntity().getLocation().distanceTo(this.getLocation()) > 25f)
+
+		if (Client.getInstance().getClientSideController().getControlledEntity() != null)
+			if (Client.getInstance().getClientSideController().getControlledEntity().getLocation().distanceTo(this.getLocation()) > 25f)
 				return;
-		
+
 		// Sound stuff
 		if (isEntityOnGround() && !lastTickOnGround)
 		{
@@ -379,47 +378,61 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 		//Used to trigger landing sound
 		lastTickOnGround = this.isEntityOnGround();
-		
+
 		//Bobbing
 		Vector3d horizontalSpeed = this.getVelocityComponent().getVelocity().clone();
 		horizontalSpeed.setY(0);
-		
+
 		if (isEntityOnGround())
 			metersWalked += Math.abs(horizontalSpeed.length());
-		
+
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
-		
+
 		Voxel voxelStandingOn = Voxels.get(world.getVoxelData(this.getLocation().clone().add(0.0, -0.01, 0.0)));
-		
-		if(voxelStandingOn == null || !voxelStandingOn.isVoxelSolid() && !voxelStandingOn.isVoxelLiquid())
+
+		if (voxelStandingOn == null || !voxelStandingOn.isVoxelSolid() && !voxelStandingOn.isVoxelLiquid())
 			return;
-		
+
 		Material material = voxelStandingOn.getMaterial();
-		
+
 		if (justJumped && !inWater)
 		{
 			justJumped = false;
-			getWorld().getSoundManager().playSoundEffect(material.resolveProperty("jumpingSounds"), getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f).setAttenuationEnd(10);
+			getWorld().getSoundManager()
+					.playSoundEffect(material.resolveProperty("jumpingSounds"), getLocation(),
+							(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f)
+					.setAttenuationEnd(10);
 		}
 		if (justLanded)
 		{
 			justLanded = false;
-			getWorld().getSoundManager().playSoundEffect(material.resolveProperty("landingSounds"), getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f).setAttenuationEnd(10);
+			getWorld().getSoundManager()
+					.playSoundEffect(material.resolveProperty("landingSounds"), getLocation(),
+							(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f)
+					.setAttenuationEnd(10);
 		}
-		
+
 		if (metersWalked > 0.2 * Math.PI * 2)
 		{
 			metersWalked %= 0.2 * Math.PI * 2;
-			if(horizontalSpeed.length() <= 0.06)
-				getWorld().getSoundManager().playSoundEffect(material.resolveProperty("walkingSounds"), getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f).setAttenuationEnd(10);
+			if (horizontalSpeed.length() <= 0.06)
+				getWorld().getSoundManager()
+						.playSoundEffect(material.resolveProperty("walkingSounds"), getLocation(),
+								(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f),
+								1f)
+						.setAttenuationEnd(10);
 			else
-				getWorld().getSoundManager().playSoundEffect(material.resolveProperty("runningSounds"), getLocation(), (float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f).setAttenuationEnd(10);
-			
+				getWorld().getSoundManager()
+						.playSoundEffect(material.resolveProperty("runningSounds"), getLocation(),
+								(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f),
+								1f)
+						.setAttenuationEnd(10);
+
 			//System.out.println("footstep");
 			//System.out.println(horizontalSpeed.length());
 			//System.out.println(voxelStandingOn.getName() + "	" + material.getName());
 		}
-		
+
 		//if(this instanceof EntityZombie)
 		//	System.out.println(metersWalked + "" + this);
 	}
@@ -428,5 +441,11 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 	public CollisionBox[] getCollisionBoxes()
 	{
 		return new CollisionBox[] { new CollisionBox(0.5, 2.00, 0.5) };
+	}
+	
+	@Override
+	public Location getPredictedLocation()
+	{
+		return getLocation();
 	}
 }
