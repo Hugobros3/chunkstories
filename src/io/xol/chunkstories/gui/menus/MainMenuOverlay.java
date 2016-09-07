@@ -78,7 +78,7 @@ public class MainMenuOverlay extends Overlay
 		else if (optionsMenu.clicked())
 			mainScene.changeOverlay(new OptionsOverlay(mainScene, this));
 		else if (exitGame.clicked())
-			this.mainScene.eng.close();
+			this.mainScene.gameWindows.close();
 
 		String version = "ChunkStories " + VersionInfo.version + " - (c) 2016 XolioWare Interactive";
 		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth - 20 - FontRenderer2.getTextLengthUsingFont(32, version, BitmapFont.SMALLFONTS), 10, 0, 32, version, BitmapFont.SMALLFONTS);

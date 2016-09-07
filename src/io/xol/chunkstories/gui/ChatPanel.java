@@ -31,9 +31,9 @@ import io.xol.chunkstories.entity.Entities;
 public class ChatPanel
 {
 	int chatHistorySize = 150;
-	
+
 	InputText inputBox = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
-	
+
 	public boolean chatting = false;
 	Deque<ChatLine> chat = new ArrayDeque<ChatLine>();
 	List<String> sent = new ArrayList<String>();
@@ -83,24 +83,24 @@ public class ChatPanel
 			else if (k == Keyboard.KEY_UP)
 			{
 				//sentHistory = 0 : empty message, = 1 last message, 2 last message before etc
-				if(sentMessages > sentHistory)
+				if (sentMessages > sentHistory)
 				{
 					sentHistory++;
 				}
-				if(sentHistory > 0)
-					inputBox.text = sent.get(sentHistory-1);
+				if (sentHistory > 0)
+					inputBox.text = sent.get(sentHistory - 1);
 				else
 					inputBox.text = "";
 			}
 			else if (k == Keyboard.KEY_DOWN)
 			{
 				//sentHistory = 0 : empty message, = 1 last message, 2 last message before etc
-				if(sentHistory > 0)
+				if (sentHistory > 0)
 				{
 					sentHistory--;
 				}
-				if(sentHistory > 0)
-					inputBox.text = sent.get(sentHistory-1);
+				if (sentHistory > 0)
+					inputBox.text = sent.get(sentHistory - 1);
 				else
 					inputBox.text = "";
 			}
@@ -193,19 +193,22 @@ public class ChatPanel
 					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityRotateable)
 					{
-						 ((EntityRotateable) controlledEntity).getEntityRotationComponent().setRotation(180, 0);
+						((EntityRotateable) controlledEntity).getEntityRotationComponent().setRotation(180, 0);
 					}
 				}
 				else if (Client.connection != null)
 					Client.connection.sendTextMessage("chat/" + inputBox.text);
 				else
 					insert(ColorsTools.getUniqueColorPrefix(Client.username) + Client.username + "#FFFFFF > " + inputBox.text);
-				
-				System.out.println(Client.username+" > "+inputBox.text);
-				
-				sent.add(0, inputBox.text);
-				sentMessages++;
-				
+
+				System.out.println(Client.username + " > " + inputBox.text);
+
+				if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
+				{
+					sent.add(0, inputBox.text);
+					sentMessages++;
+				}
+
 				inputBox.text = "";
 				chatting = false;
 				sentHistory = 0;

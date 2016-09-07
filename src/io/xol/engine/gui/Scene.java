@@ -9,12 +9,14 @@ import io.xol.engine.graphics.RenderingContext;
 
 public class Scene
 {
-	public GameWindowOpenGL eng;
+	protected GuiElementsHandler guiHandler = new GuiElementsHandler();
+	
+	public GameWindowOpenGL gameWindows;
 	public boolean resized = false;
 
 	public Scene(GameWindowOpenGL XolioWindow)
 	{
-		eng = XolioWindow;
+		gameWindows = XolioWindow;
 	}
 
 	public void update(RenderingContext renderingContext)

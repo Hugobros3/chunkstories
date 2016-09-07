@@ -169,7 +169,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		}
 		
 		Client.world = null;
-		this.mainScene.eng.changeScene(new ConnectScene(mainScene.eng, ip, port));
+		this.mainScene.gameWindows.changeScene(new ConnectScene(mainScene.gameWindows, ip, port));
 	}
 
 	@Override

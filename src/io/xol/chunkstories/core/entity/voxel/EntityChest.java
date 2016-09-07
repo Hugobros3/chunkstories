@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentPublicInventory;
 import io.xol.chunkstories.entity.EntityImplementation;
+import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
 
@@ -20,6 +21,12 @@ public class EntityChest extends EntityImplementation implements EntityWithInven
 	{
 		super(w, x, y, z);
 		inventoryComponent = new EntityComponentPublicInventory(this, 10, 6);
+	}
+	
+	@Override
+	public CollisionBox[] getCollisionBoxes()
+	{
+		return new CollisionBox[] { new CollisionBox(1.0, 1.0, 1.0).translate(0.5, 0, 0.5) };
 	}
 
 	@Override

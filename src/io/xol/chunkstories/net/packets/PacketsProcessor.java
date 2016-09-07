@@ -167,7 +167,7 @@ public class PacketsProcessor
 	ClientToServerConnection serverConnection;
 	ServerClient serverClient;
 
-	public ClientToServerConnection getServerConnection()
+	public ClientToServerConnection getClientToServerConnection()
 	{
 		return serverConnection;
 	}

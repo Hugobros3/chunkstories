@@ -94,7 +94,7 @@ public class Client implements /*ClientSideController, */ClientInterface
 				//Runtime.getRuntime().exit(0);
 			}
 		}
-		
+
 		Thread.currentThread().setName("Main OpenGL Rendering thread");
 		Thread.currentThread().setPriority(Constants.MAIN_GL_THREAD_PRIORITY);
 		new Client();
@@ -248,10 +248,12 @@ public class Client implements /*ClientSideController, */ClientInterface
 			@Override
 			public void run()
 			{
-				Client.world.destroy();
-				Client.worldThread.stopLogicThread();
-				
-				Client.world = null;
+				if (world != null)
+				{
+					Client.world.destroy();
+					Client.worldThread.stopLogicThread();
+					Client.world = null;
+				}
 				clientSideController = null;
 
 				Client.windows.changeScene(new MainMenu(windows, false));

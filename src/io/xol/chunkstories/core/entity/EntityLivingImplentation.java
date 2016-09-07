@@ -153,7 +153,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		{
 			velocity.zero();
 		}
-
+		
 		//Eventually moves
 		blockedMomentum = moveWithCollisionRestrain(velocity.getX(), velocity.getY(), velocity.getZ(), true);
 
@@ -221,9 +221,9 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			int lodDivisor = 1;
 			if(distance > lodStart)
 			{
-				lodDivisor *= 2;
+				lodDivisor *= 4;
 				if(distance > lodEnd)
-					lodDivisor *= 2;
+					lodDivisor *= 4;
 			}
 			if(renderingContext.isThisAShadowPass())
 				lodDivisor *= 2;
@@ -266,8 +266,8 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		@Override
 		public Matrix4f getBoneHierarchyTransformationMatrixWithOffset(String nameOfEndBone, double animationTime)
 		{
-			if(true)
-				dataSource.getBoneHierarchyTransformationMatrixWithOffset(nameOfEndBone, animationTime);
+			//if(true)
+			//	dataSource.getBoneHierarchyTransformationMatrixWithOffset(nameOfEndBone, animationTime);
 			
 			CachedData cachedData = cachedBones.get(nameOfEndBone);
 			//If the matrix exists and doesn't need an update

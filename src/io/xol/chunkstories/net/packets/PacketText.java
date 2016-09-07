@@ -43,7 +43,7 @@ public class PacketText extends Packet
 	public void process(PacketsProcessor processor)
 	{
 		if(processor.isClient)
-			processor.getServerConnection().handleTextPacket(text);
+			processor.getClientToServerConnection().handleTextPacket(text);
 		else
 			Server.getInstance().getHandler().handle(processor.getServerClient(), text);
 	}

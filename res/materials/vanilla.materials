@@ -91,7 +91,7 @@ end
 
 material bluntwood
 	walkingSounds: <sounds><matname>_walk[1-11].ogg
-	runningSounds: <sounds><matname>_run[1-11].ogg
+	runningSounds: <walkingSounds>
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
 end

@@ -208,19 +208,16 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
-				//if (renderingContext.isThisAShadowPass() && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition().clone().negate()) > 15)
-				//	continue;
-				
 				Location location = entity.getPredictedLocation();
+				
+				if(renderingContext.isThisAShadowPass() && location.distanceTo(renderingContext.getCamera().getCameraPosition().clone().negate()) > 15f)
+					continue;
 				
 				entity.cachedSkeleton.lodUpdate(renderingContext);
 
 				int bl = entity.getWorld().getBlocklightLevelLocation(location);
 				int sl = entity.getWorld().getSunlightLevelLocation(location);
-
-				//if (entity.equals(Client.getInstance().getClientSideController().getControlledEntity()))
-				//	animationsData.add(new AnimatableData(renderingContext.getCamera().getCameraPosition().clone().negate().add(0, -eyePosition, 0).castToSP(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
-				//else
+				
 				animationsData.add(new AnimatableData(location.castToSP(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
 			}
 
@@ -230,72 +227,23 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			//Render items in hands
 			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
+
+				if(renderingContext.isThisAShadowPass() && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition().clone().negate()) > 15f)
+					continue;
+				
 				ItemPile selectedItemPile = null;
 
 				if (entity instanceof EntityWithSelectedItem)
 					selectedItemPile = ((EntityWithSelectedItem) entity).getSelectedItemComponent().getSelectedItem();
-
-				//Prevents laggy behaviour
-				//Camera cam = renderingContext.getCamera();
-
-				//if (entity.equals(Client.getInstance().getClientSideController().getControlledEntity()))
-				//	renderingContext.getCurrentShader().setUniformFloat3("objectPosition", -(float) cam.pos.getX(), -(float) cam.pos.getY() - eyePosition, -(float) cam.pos.getZ());
-
-				//renderingContext.getCurrentShader().setUniformFloat3("objectPosition", 0, 0, 0);
-
-				//Renders normal limbs
-				//Matrix4f headRotationMatrix = new Matrix4f();
-				//headRotationMatrix.translate(entity.getLocation().castToSP());
-				//headRotationMatrix.translate(new Vector3f(0f, (float) entity.eyePosition, 0f));
-				//headRotationMatrix.translate(new Vector3f(0f, -(float) entity.eyePosition, 0f));
-
-				//renderingContext.sendTransformationMatrix(headRotationMatrix);
-
-				//Except in first person
-				//if (!entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
-				//	ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);//, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
-
-				//Render rotated limbs
-
-				/*renderingContext.sendTransformationMatrix(headRotationMatrix);
-				if (selectedItemPile != null || !entity.equals(Client.getInstance().getClientSideController().getControlledEntity()) || renderingContext.isThisAShadowPass())
-					ModelLibrary.getRenderableMesh("./models/human.obj").renderParts(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD");
-				 */
-
-				//Matrix to itemInHand bone in the player's bvh
-
+				
 				if (selectedItemPile != null)
 				{
-					Matrix4f headRotationMatrix = new Matrix4f();
-
-					float k = (float) entity.eyePosition;
-					k = 0.5f;
-
-					headRotationMatrix = new Matrix4f();
-					//headRotationMatrix.translate(new Vector3f(0f, (float) k, 0f));
-					//headRotationMatrix.rotate((90 - entity.getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-
-					//if (selectedItemPile != null)
-					//	headRotationMatrix.rotate((-entity.getEntityRotationComponent().getVerticalRotation()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
-
-					//headRotationMatrix.translate(new Vector3f(0f, -(float) k, 0f));
-
-					//headRotationMatrix.invert(headRotationMatrix, headRotationMatrix);
-
 					Matrix4f itemMatrix = new Matrix4f();
 					itemMatrix = entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000);
-					//System.out.println(itemMatrix);
-
-					Matrix4f.mul(itemMatrix, headRotationMatrix, itemMatrix);
 					
 					renderingContext.getCurrentShader().setUniformFloat3("objectPosition", entity.getPredictedLocation());
 
-					if (entity.equals(Client.getInstance().getClientSideController().getControlledEntity()))
-					{
-						selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, new Location(world, renderingContext.getCamera().getCameraPosition().clone().negate().add(0, -eyePosition, 0)), itemMatrix);
-					}
-					else
-						selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
+					selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
 				}
 
 				e++;

@@ -83,5 +83,5 @@ void main()
 	fogIntensity = clamp(fogFactor, 0.0, 1.0);
 	
 	//Output position
-    gl_Position = modelViewProjectionMatrix * vertice;
+    gl_Position = modelViewProjectionMatrix * vertice + vec4(0.0, 0.0, 0.001, 0.0);
 }

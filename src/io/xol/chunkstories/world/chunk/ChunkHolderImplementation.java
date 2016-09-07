@@ -245,6 +245,8 @@ public class ChunkHolderImplementation implements ChunkHolder
 			WorldUser u = w.get();
 			if (u == null)
 				i.remove();
+			
+			//System.out.println("chunk used by "+u.hashCode());
 		}
 		
 		if(users.isEmpty())

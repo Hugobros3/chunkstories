@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -23,9 +24,14 @@ import net.jpountz.lz4.LZ4Exception;
 
 public class IOTasksMultiplayerClient extends IOTasks
 {
-	public IOTasksMultiplayerClient(WorldImplementation world)
+	ClientToServerConnection connection;
+	
+	public IOTasksMultiplayerClient(WorldImplementation world, ClientToServerConnection connection)
 	{
 		super(world);
+		this.connection = connection;
+		
+		
 		try
 		{
 			md = MessageDigest.getInstance("MD5");
@@ -160,7 +166,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 	@Override
 	public IOTask requestChunkLoad(ChunkHolderImplementation slot)
 	{
-		Client.connection.sendTextMessage("world/getChunkCompressed:" + slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" + slot.getChunkCoordinateZ());
+		connection.sendTextMessage("world/getChunkCompressed:" + slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" + slot.getChunkCoordinateZ());
 		return null;
 	}
 	
@@ -231,6 +237,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 		int rx = summary.getRegionX();
 		int rz = summary.getRegionZ();
 		
-		Client.connection.sendTextMessage("world/getChunkSummary:" + rx + ":" + rz);
+		connection.sendTextMessage("world/getChunkSummary:" + rx + ":" + rz);
 	}
 }

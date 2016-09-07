@@ -83,6 +83,8 @@ public class GameLogicThread extends Thread implements GameLogic
 			//Every second, unloads unused stuff
 			if(world.getTicksElapsed() % 60 == 0)
 			{
+				System.gc();
+				
 				//Compresses pending chunk summaries
 				Iterator<RegionImplementation> loadedChunksHolders = world.getRegionsHolder().getLoadedRegions();
 				while(loadedChunksHolders.hasNext())

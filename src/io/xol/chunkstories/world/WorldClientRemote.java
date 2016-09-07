@@ -21,7 +21,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldNetwork
 
 		this.packetsProcessor = packetsProcessor;
 
-		ioHandler = new IOTasksMultiplayerClient(this);
+		ioHandler = new IOTasksMultiplayerClient(this, packetsProcessor.getClientToServerConnection());
 		ioHandler.start();
 
 	}

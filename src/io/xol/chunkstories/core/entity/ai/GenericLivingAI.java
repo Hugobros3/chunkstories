@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.core.entity.EntityLivingImplentation;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;
 
@@ -36,6 +37,13 @@ public class GenericLivingAI extends AI<EntityLiving>
 		{
 			entity.getWorld().getSoundManager().playSoundEffect("sounds/sfx/zombie.ogg", entity.getLocation(), (float) (0.9 + Math.random() * 0.2), 1.0f);//.setPitch();
 		}
+		
+		if(Voxels.get(entity.getWorld().getVoxelData(entity.getLocation())).isVoxelLiquid())
+		{
+			entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
+			//System.out.println("vel:");
+		}
+			
 	}
 	
 	class AiTaskLookArround extends AiTask {

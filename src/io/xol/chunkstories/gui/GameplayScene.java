@@ -41,6 +41,7 @@ import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
+import io.xol.chunkstories.gui.ChatPanel.ChatPanelOverlay;
 import io.xol.chunkstories.gui.menus.DeathOverlay;
 import io.xol.chunkstories.gui.menus.InventoryOverlay;
 import io.xol.chunkstories.gui.menus.PauseOverlay;
@@ -63,8 +64,6 @@ import io.xol.chunkstories.voxel.Voxels;
 
 public class GameplayScene extends OverlayableScene
 {
-	//Gameplay thread
-
 	// Renderer
 	public WorldRenderer worldRenderer;
 	SelectionRenderer selectionRenderer;
@@ -216,7 +215,7 @@ public class GameplayScene extends OverlayableScene
 
 			//Draw inventory
 			if (player != null && inventoryDrawer != null)
-				inventoryDrawer.drawPlayerInventorySummary(eng.renderingContext, GameWindowOpenGL.windowWidth / 2 - 7, 64 + 64);
+				inventoryDrawer.drawPlayerInventorySummary(gameWindows.renderingContext, GameWindowOpenGL.windowWidth / 2 - 7, 64 + 64);
 
 			//Draw health
 			if (player != null && player instanceof EntityLiving)
@@ -254,7 +253,7 @@ public class GameplayScene extends OverlayableScene
 		if (Client.connection != null)
 		{
 			if (!Client.connection.isAlive() || Client.connection.hasFailed())
-				eng.changeScene(new MainMenu(eng, "Connection failed : " + Client.connection.getLatestErrorMessage()));
+				gameWindows.changeScene(new MainMenu(gameWindows, "Connection failed : " + Client.connection.getLatestErrorMessage()));
 		}
 
 		if (!Display.isActive() && this.currentOverlay == null)
@@ -275,8 +274,17 @@ public class GameplayScene extends OverlayableScene
 		focus = f;
 	}
 
-	//boolean flashLight = false;
-
+	public boolean onKeyRepeatEvent(int keyCode)
+	{
+		if(currentOverlay != null && currentOverlay instanceof ChatPanelOverlay)
+		{
+			ChatPanelOverlay chatPanel = (ChatPanelOverlay)currentOverlay;
+			return chatPanel.handleKeypress(keyCode);
+		}
+		
+		return false;
+	}
+	
 	@Override
 	public boolean onKeyDown(int keyCode)
 	{
