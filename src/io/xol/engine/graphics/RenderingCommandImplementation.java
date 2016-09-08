@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.rendering.PipelineConfiguration;
 import io.xol.chunkstories.api.rendering.Renderable;
 import io.xol.chunkstories.api.rendering.RenderingCommand;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.rendering.TexturingConfiguration;
 import io.xol.chunkstories.api.rendering.UniformsConfiguration;
@@ -22,15 +23,17 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 {
 	List<Matrix4f> objectMatrices = new LinkedList<Matrix4f>();
 
+	protected Primitive primitive;
 	protected ShaderInterface shaderInterface;
 	protected TexturingConfiguration texturingConfiguration;
 	protected AttributesConfiguration attributesConfiguration;
 	protected UniformsConfiguration uniformsConfiguration;
 	protected PipelineConfiguration pipelineConfiguration;
 
-	public RenderingCommandImplementation(ShaderInterface shaderInterface, TexturingConfiguration texturingConfiguration, AttributesConfiguration attributesConfiguration, UniformsConfiguration uniformsConfiguration,
-			PipelineConfiguration pipelineConfiguration, Matrix4f objectMatrix)
+	public RenderingCommandImplementation(Primitive primitive, ShaderInterface shaderInterface, TexturingConfiguration texturingConfiguration, AttributesConfiguration attributesConfiguration, UniformsConfiguration uniformsConfiguration,
+			PipelineConfiguration pipelineConfiguration, Matrix4f objectMatrix, int start, int count)
 	{
+		this.primitive = primitive;
 		this.shaderInterface = shaderInterface;
 		this.texturingConfiguration = texturingConfiguration;
 		this.attributesConfiguration = attributesConfiguration;
@@ -75,6 +78,10 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 	 */
 	public final boolean canMerge(RenderingCommand renderingCommand)
 	{
+		if(getPrimitive() != renderingCommand.getPrimitive())
+			return false;
+		
+		//Check shader
 		if (!getShader().equals(renderingCommand.getShader()))
 			return false;
 
@@ -112,6 +119,12 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 	public RenderingCommand render(RenderingInterface renderingInterface)
 	{
 		return null;
+	}
+
+	@Override
+	public Primitive getPrimitive()
+	{
+		return primitive;
 	}
 
 }

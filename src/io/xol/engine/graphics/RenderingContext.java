@@ -30,6 +30,8 @@ import static org.lwjgl.opengl.GL20.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -68,8 +70,9 @@ public class RenderingContext implements RenderingInterface
 	private float rotationHorizontal = 0, rotationVertial = 0;
 	//Pipeline config
 	private PipelineConfigurationImplementation pipelineConfiguration = PipelineConfigurationImplementation.DEFAULT;
-	private AttributesConfiguration attributesConfiguration;
+	private AttributesConfigurationImplementation attributesConfiguration = new AttributesConfigurationImplementation();
 	
+	private Deque<RenderingCommandImplementation> commands = new ArrayDeque<RenderingCommandImplementation>();
 	
 	Matrix4f temp = new Matrix4f();
 	Matrix3f normal = new Matrix3f();
@@ -264,7 +267,7 @@ public class RenderingContext implements RenderingInterface
 		this.currentlyBoundShader.setUniformMatrix3f("boneTransformNormal", normal);
 	}
 
-	public Matrix4f setObjectPosition(Vector3f position)
+	/*public Matrix4f setObjectPosition(Vector3f position)
 	{
 		currentObjectMatrix = new Matrix4f();
 		currentObjectMatrix.translate(position);
@@ -285,7 +288,7 @@ public class RenderingContext implements RenderingInterface
 		// TODO Auto-generated method stub
 		return this.currentObjectMatrix;
 	}
-
+	 */
 	@Override
 	public Matrix4f setObjectMatrix(Matrix4f objectMatrix)
 	{
@@ -314,7 +317,7 @@ public class RenderingContext implements RenderingInterface
 			
 			fsQuadVertices.uploadData(fsQuadBuffer);
 		}
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//glBindBuffer(GL_ARRAY_BUFFER, 0);
 		setVertexAttributePointerLocation(vertexAttribLocation, 2, GL_FLOAT, false, 0, 0, fsQuadVertices);
 		
 		GLCalls.drawArrays(GL_TRIANGLES, 0, 6);
@@ -353,21 +356,39 @@ public class RenderingContext implements RenderingInterface
 	@Override
 	public AttributesConfiguration getAttributesConfiguration()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return attributesConfiguration;
 	}
 
 	@Override
 	public AttributesConfiguration bindAttribute(String attributeName, AttributeSource attributeSource) throws AttributeNotPresentException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		//TODO check in shader if attribute exists
+		attributesConfiguration = attributesConfiguration.bindAttribute(attributeName, attributeSource);
+		
+		return this.attributesConfiguration;
 	}
 
 	@Override
-	public RenderingCommand drawTriangles(int startAt, int count)
+	public RenderingCommand draw(Primitive p, int startAt, int count)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		RenderingCommandImplementation command = new RenderingCommandImplementation(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix, startAt, count);
+		
+		commands.addLast(command);
+		
+		return command;
+	}
+
+	@Override
+	public void flush()
+	{
+		Iterator<RenderingCommandImplementation> i = commands.iterator();
+		while(i.hasNext())
+		{
+			RenderingCommandImplementation command = i.next();
+			
+			command.render(this);
+			
+			i.remove();
+		}
 	}
 }

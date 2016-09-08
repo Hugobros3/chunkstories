@@ -2,6 +2,7 @@ package io.xol.chunkstories.api.rendering;
 
 import java.util.Collection;
 
+import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.engine.math.lalgb.Matrix4f;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -13,6 +14,8 @@ import io.xol.engine.math.lalgb.Matrix4f;
  */
 public interface RenderingCommand
 {
+	public Primitive getPrimitive();
+	
 	public ShaderInterface getShader();
 
 	public TexturingConfiguration getBoundTextures();

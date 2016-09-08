@@ -70,6 +70,8 @@ public class VerticesObject
 			aquireID();
 
 		glBindBuffer(GL_ARRAY_BUFFER, glId);
+		
+		checkForPendingUploadData();
 	}
 
 	/**
@@ -156,8 +158,8 @@ public class VerticesObject
 		return isDataPresent;
 	}
 
-	//Mututal stuff of drawElements* functions
-	private boolean prepareDraw()
+	
+	private boolean checkForPendingUploadData()
 	{
 		//Check for context
 		if (!GameWindowOpenGL.isMainGLWindow())
@@ -167,7 +169,7 @@ public class VerticesObject
 		Object atomicReference = dataPendingUpload;
 		if (atomicReference != null)
 		{
-			//System.out.println("atomicRef != null");
+			System.out.println("Uploading pending VerticesObject ... ");
 			uploadDataActual(atomicReference);
 			dataPendingUpload = null;
 		}
@@ -180,7 +182,7 @@ public class VerticesObject
 		return true;
 	}
 
-	public boolean drawElementsPoints(int elementsToDraw)
+	/*public boolean drawElementsPoints(int elementsToDraw)
 	{
 		if (!prepareDraw())
 			return false;
@@ -210,8 +212,13 @@ public class VerticesObject
 			return false;
 		GLCalls.drawArrays(GL_QUADS, 0, elementsToDraw);
 		return true;
-	}
+	}*/
 
+	public AttributeSource asAttributeSource(int )
+	{
+		
+	}
+	
 	public long getVramUsage()
 	{
 		return dataSize;
