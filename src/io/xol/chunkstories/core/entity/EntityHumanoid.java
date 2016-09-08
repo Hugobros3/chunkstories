@@ -191,12 +191,12 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			Texture2D playerTexture = TexturesHandler.getTexture("models/humanoid_test.png");
 			playerTexture.setLinearFiltering(false);
 
-			renderingContext.setDiffuseTexture(playerTexture);
+			renderingContext.bindAlbedoTexture(playerTexture);
 
-			renderingContext.setNormalTexture(TexturesHandler.getTexture("models/humanoid_normal.png"));
+			renderingContext.bindNormalTexture(TexturesHandler.getTexture("models/humanoid_normal.png"));
 			TexturesHandler.getTexture("models/humanoid_normal.png").setLinearFiltering(false);
 
-			renderingContext.setNormalTexture(TexturesHandler.getTexture("textures/normalnormal.png"));
+			renderingContext.bindNormalTexture(TexturesHandler.getTexture("textures/normalnormal.png"));
 		}
 
 		@Override
@@ -210,7 +210,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			{
 				Location location = entity.getPredictedLocation();
 				
-				if(renderingContext.isThisAShadowPass() && location.distanceTo(renderingContext.getCamera().getCameraPosition().clone().negate()) > 15f)
+				if(renderingContext.isThisAShadowPass() && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
 					continue;
 				
 				entity.cachedSkeleton.lodUpdate(renderingContext);
@@ -218,7 +218,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				int bl = entity.getWorld().getBlocklightLevelLocation(location);
 				int sl = entity.getWorld().getSunlightLevelLocation(location);
 				
-				animationsData.add(new AnimatableData(location.castToSP(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
+				animationsData.add(new AnimatableData(location.castToSimplePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
 			}
 
 			//Instanciate all players
@@ -228,7 +228,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
 
-				if(renderingContext.isThisAShadowPass() && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition().clone().negate()) > 15f)
+				if(renderingContext.isThisAShadowPass() && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
 					continue;
 				
 				ItemPile selectedItemPile = null;
@@ -241,7 +241,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 					Matrix4f itemMatrix = new Matrix4f();
 					itemMatrix = entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000);
 					
-					renderingContext.getCurrentShader().setUniformFloat3("objectPosition", entity.getPredictedLocation());
+					renderingContext.currentShader().setUniformFloat3("objectPosition", entity.getPredictedLocation());
 
 					selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
 				}

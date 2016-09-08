@@ -64,8 +64,8 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 
 			Texture2D diffuse = TexturesHandler.getTexture("./models/sign.png");
 			diffuse.setLinearFiltering(false);
-			renderingContext.setDiffuseTexture(diffuse.getId());
-			renderingContext.setNormalTexture(TexturesHandler.getTextureID("./textures/normalnormal.png"));
+			renderingContext.bindAlbedoTexture(diffuse);
+			renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
 		}
 
 		@Override
@@ -77,16 +77,16 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 
 			for (EntitySign entitySign : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
-				if (renderingContext.getCamera().getCameraPosition().add(entitySign.getLocation()).length() > 32)
+				if (renderingContext.getCamera().getCameraPosition().distanceTo(entitySign.getLocation()) > 32)
 					continue;
 				
 				e++;
 				
 				Texture2D diffuse = TexturesHandler.getTexture("./models/sign.png");
 				diffuse.setLinearFiltering(false);
-				renderingContext.setDiffuseTexture(diffuse.getId());
-				renderingContext.setNormalTexture(TexturesHandler.getTextureID("./textures/normalnormal.png"));
-				renderingContext.getCurrentShader().setUniformFloat3("objectPosition", entitySign.getLocation());
+				renderingContext.bindAlbedoTexture(diffuse);
+				renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
+				renderingContext.currentShader().setUniformFloat3("objectPosition", entitySign.getLocation());
 
 				int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
 
@@ -95,7 +95,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 
 				int lightSky = VoxelFormat.sunlight(modelBlockData);
 				int lightBlock = VoxelFormat.blocklight(modelBlockData);
-				renderingContext.getCurrentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+				renderingContext.currentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 
 				int facing = VoxelFormat.meta(modelBlockData);
 

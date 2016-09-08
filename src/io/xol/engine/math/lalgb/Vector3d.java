@@ -170,7 +170,7 @@ public class Vector3d
 		return getX() * getX() + getY() * getY() + getZ() * getZ();
 	}
 
-	public Vector3f castToSP()
+	public Vector3f castToSimplePrecision()
 	{
 		Vector3f vec = new Vector3f();
 		vec.x = (float) getX();

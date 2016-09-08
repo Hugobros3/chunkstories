@@ -95,15 +95,15 @@ public class VoxelItemRenderer implements ItemRenderer
 		}
 		Texture2D texture = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
 		texture.setLinearFiltering(false);
-		renderingContext.setDiffuseTexture(texture);
+		renderingContext.bindAlbedoTexture(texture);
 		
 		Texture2D normalTexture = TexturesHandler.getTexture("./textures/tiles_merged_normal.png");
 		normalTexture.setLinearFiltering(false);
-		renderingContext.setNormalTexture(normalTexture);
+		renderingContext.bindNormalTexture(normalTexture);
 		
 		Texture2D materialTexture = TexturesHandler.getTexture("./textures/tiles_merged_material.png");
 		materialTexture.setLinearFiltering(false);
-		renderingContext.setMaterialTexture(materialTexture);
+		renderingContext.bindMaterialTexture(materialTexture);
 
 		VoxelContext bri = new VoxelContext(0);
 		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));
@@ -209,13 +209,13 @@ public class VoxelItemRenderer implements ItemRenderer
 			context.addLight(heldBlockLight);	
 			
 			//If we hold a light source, prepare the shader accordingly
-			context.getCurrentShader().setUniformFloat2("worldLight", ((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevelLocation(location));
+			context.currentShader().setUniformFloat2("worldLight", ((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevelLocation(location));
 			
 		}
 		
 		Texture2D texture = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
 		texture.setLinearFiltering(false);
-		context.setDiffuseTexture(texture.getId());
+		context.bindAlbedoTexture(texture);
 
 		VoxelContext bri = new VoxelContext(0);
 		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));

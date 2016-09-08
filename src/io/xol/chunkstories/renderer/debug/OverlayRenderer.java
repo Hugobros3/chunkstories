@@ -7,7 +7,7 @@ import java.nio.FloatBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import io.xol.engine.math.lalgb.Vector4f;
-import io.xol.chunkstories.renderer.Camera;
+import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.shaders.ShaderProgram;
@@ -23,13 +23,13 @@ public class OverlayRenderer
 
 	public static int GL_TEXTURE_2D, GL_BLEND, GL_CULL_FACE;
 
-	static Camera camera;
+	static CameraInterface camera;
 
 	/**
 	 * This class requires knowledge of the camera object
 	 * @param camera
 	 */
-	public static void setCamera(Camera camera)
+	public static void setCamera(CameraInterface camera)
 	{
 		OverlayRenderer.camera = camera;
 	}

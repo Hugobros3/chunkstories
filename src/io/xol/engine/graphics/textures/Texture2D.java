@@ -112,9 +112,9 @@ public class Texture2D extends Texture
 		//Generate mipmaps
 		if (mipmapping)
 		{
-			if (RenderingConfig.openGL3Capable)
+			if (RenderingConfig.gl_openGL3Capable)
 				GL30.glGenerateMipmap(GL_TEXTURE_2D);
-			else if (RenderingConfig.fbExtCapable)
+			else if (RenderingConfig.gl_fbExtCapable)
 				ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
 
 			mipmapsUpToDate = true;
@@ -249,9 +249,9 @@ public class Texture2D extends Texture
 		bind();
 		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 		//Regenerate the mipmaps only when necessary
-		if (RenderingConfig.openGL3Capable)
+		if (RenderingConfig.gl_openGL3Capable)
 			GL30.glGenerateMipmap(GL_TEXTURE_2D);
-		else if (RenderingConfig.fbExtCapable)
+		else if (RenderingConfig.gl_fbExtCapable)
 			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
 
 		mipmapsUpToDate = true;

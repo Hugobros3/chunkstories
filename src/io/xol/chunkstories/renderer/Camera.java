@@ -6,6 +6,7 @@ package io.xol.chunkstories.renderer;
 
 import java.nio.FloatBuffer;
 
+import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.math.lalgb.Vector3d;
 
@@ -17,7 +18,7 @@ import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 
-public class Camera
+public class Camera implements CameraInterface
 {
 	//Viewport size
 	public int viewportWidth, viewportHeight;
@@ -26,15 +27,9 @@ public class Camera
 	public float rotationX = 0.0f;
 	public float rotationY = 0.0f;
 	public float rotationZ = 0.0f;
-
 	//Camera positions
-
 	public Vector3d pos = new Vector3d();
 	
-	//public double camPosX = 10;
-	//public double camPosY = -75;
-	//public double camPosZ = -18;
-
 	//Mouse pointer tracking
 	float lastPX = -1f;
 	float lastPY = -1f;
@@ -165,7 +160,7 @@ public class Camera
 		modelViewMatrix4f.rotate((float) (rotationY / 180 * Math.PI), new Vector3f( 0.0f, 1.0f, 0.0f));
 		modelViewMatrix4f.rotate((float) (rotationZ / 180 * Math.PI), new Vector3f( 0.0f, 0.0f, 1.0f));
 		
-		Vector3f position = pos.castToSP();
+		Vector3f position = pos.castToSimplePrecision();
 		position = position.negate(position);
 		
 		float rotH = rotationY;
@@ -231,7 +226,7 @@ public class Camera
 		
 		// Recreate the 3 vectors for the algorithm
 
-		Vector3f position = pos.castToSP();
+		Vector3f position = pos.castToSimplePrecision();
 		position = position.negate(position);
 		//Vector3f position = new Vector3f((float)-camPosX, (float)-camPosY, (float)-camPosZ);
 		
@@ -324,6 +319,10 @@ public class Camera
 
 	Vector3f corners[] = new Vector3f[8];
 	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.CameraInterface#isBoxInFrustrum(io.xol.engine.math.lalgb.Vector3f, io.xol.engine.math.lalgb.Vector3f)
+	 */
+	@Override
 	public boolean isBoxInFrustrum(Vector3f center, Vector3f dimensions)
 	{
 		for(int i = 0; i < 2; i++)
@@ -376,15 +375,15 @@ public class Camera
 		untranslatedMVP4f.load(modelViewMatrix4f);
 		Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
 
-		modelViewMatrix4f.translate(pos.castToSP());
+		modelViewMatrix4f.translate(pos.castToSimplePrecision());
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
 	}
 
-	/**
-	 * Sends the common matrices ( projection, modelview etc) to the shaderProgram
-	 * @param shaderProgram
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.CameraInterface#setupShader(io.xol.engine.graphics.shaders.ShaderProgram)
 	 */
+	@Override
 	public void setupShader(ShaderProgram shaderProgram)
 	{
 		// Helper function to clean code from messy bits :)
@@ -445,6 +444,10 @@ public class Camera
 		return posOnScreen;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.CameraInterface#getViewDirection()
+	 */
+	@Override
 	public Vector3f getViewDirection()
 	{
 		float rotH = rotationY;
@@ -454,8 +457,12 @@ public class Camera
 		return new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.CameraInterface#getCameraPosition()
+	 */
+	@Override
 	public Vector3d getCameraPosition()
 	{
-		return this.pos.clone();
+		return this.pos.clone().negate();
 	}
 }

@@ -72,7 +72,7 @@ public class DecalsRenderer implements DecalsManager
 			
 			orientation.normalize();
 
-			Vector3f lookAt = orientation.castToSP();
+			Vector3f lookAt = orientation.castToSimplePrecision();
 			
 			Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 			Vector3f.cross(lookAt, up, up);

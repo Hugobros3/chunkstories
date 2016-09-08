@@ -460,7 +460,7 @@ public class WorldRenderer
 			renderingContext.setCurrentShader(ShadersLibrary.getShaderProgram("loaded_map"));
 			localMapCommands.clear();
 
-			int vertexIn = renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn");
+			int vertexIn = renderingContext.currentShader().getVertexAttributeLocation("vertexIn");
 			//System.out.println("vertexIn"+vertexIn);
 			//glDepthMask(true);
 			glEnable(GL_DEPTH_TEST);
@@ -1020,8 +1020,8 @@ public class WorldRenderer
 			entitiesShader.setUniformFloat("overcastFactor", world.getWeather());
 			entitiesShader.setUniformFloat("wetness", getWorldWetness());
 
-			renderingContext.getCurrentShader().setUniformFloat("useColorIn", 0.0f);
-			renderingContext.getCurrentShader().setUniformFloat("useNormalIn", 1.0f);
+			renderingContext.currentShader().setUniformFloat("useColorIn", 0.0f);
+			renderingContext.currentShader().setUniformFloat("useNormalIn", 1.0f);
 			//entitiesShader.setUniformFloat("wetness", world.isRaining() ? 0.5f : 0.0f);
 
 			camera.setupShader(entitiesShader);
@@ -1705,14 +1705,14 @@ public class WorldRenderer
 				this.environmentMapFBO.setColorAttachement(0, cubemap.getFace(f));
 
 				if (useFastBuffer)
-					renderingContext.getCurrentShader().setUniformSampler(0, "diffuseTexture", environmentMapBufferHDR);
+					renderingContext.currentShader().setUniformSampler(0, "diffuseTexture", environmentMapBufferHDR);
 				else
-					renderingContext.getCurrentShader().setUniformSampler(0, "diffuseTexture", shadedBuffer);
+					renderingContext.currentShader().setUniformSampler(0, "diffuseTexture", shadedBuffer);
 
-				renderingContext.getCurrentShader().setUniformFloat2("screenSize", resolution, resolution);
+				renderingContext.currentShader().setUniformFloat2("screenSize", resolution, resolution);
 
-				renderingContext.enableVertexAttribute(renderingContext.getCurrentShader().getVertexAttributeLocation("texCoord"));
-				renderingContext.drawFSQuad(renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn"));
+				renderingContext.enableVertexAttribute(renderingContext.currentShader().getVertexAttributeLocation("texCoord"));
+				renderingContext.drawFSQuad(renderingContext.currentShader().getVertexAttributeLocation("vertexIn"));
 				//glFinish();
 			}
 			else

@@ -132,12 +132,12 @@ public class EntitiesRenderer
 			//Here fancy rendering tech
 			if(isCurrentElementInViewFrustrum())
 			{
-				renderingContext.getCurrentShader().setUniformFloat3("objectPosition", currentEntity.getLocation());
-				renderingContext.getCurrentShader().setUniformFloat2("worldLight", world.getBlocklightLevelLocation(currentEntity.getLocation()), world.getSunlightLevelLocation(currentEntity.getLocation()));
+				renderingContext.currentShader().setUniformFloat3("objectPosition", currentEntity.getLocation());
+				renderingContext.currentShader().setUniformFloat2("worldLight", world.getBlocklightLevelLocation(currentEntity.getLocation()), world.getSunlightLevelLocation(currentEntity.getLocation()));
 			
 				//Reset animations transformations
-				renderingContext.getCurrentShader().setUniformMatrix4f("localTansform", new Matrix4f());
-				renderingContext.getCurrentShader().setUniformMatrix3f("localTransformNormal", new Matrix3f());
+				renderingContext.currentShader().setUniformMatrix4f("localTansform", new Matrix4f());
+				renderingContext.currentShader().setUniformMatrix3f("localTransformNormal", new Matrix3f());
 			}
 
 			currentEntity = null;

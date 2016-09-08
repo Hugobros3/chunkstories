@@ -69,7 +69,7 @@ public class Client implements /*ClientSideController, */ClientInterface
 		{
 			if (s.equals("-oldgl"))
 			{
-				RenderingConfig.openGL3Capable = false;
+				RenderingConfig.gl_openGL3Capable = false;
 				System.out.println("Legacy OpenGL mode enabled");
 			}
 			else if (s.equals("-forceobsolete"))

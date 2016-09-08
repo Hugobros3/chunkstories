@@ -12,7 +12,6 @@ import io.xol.engine.base.GameWindowOpenGL;
 
 public class GLCalls
 {
-	
 	static long verticesDrawn;
 	static long drawCalls;
 	

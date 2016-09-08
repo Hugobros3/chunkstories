@@ -1,5 +1,8 @@
 package io.xol.engine.graphics.shaders;
 
+import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.TexturingConfiguration;
+import io.xol.chunkstories.api.rendering.UniformsConfiguration;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.File;
@@ -9,11 +12,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.xol.engine.graphics.textures.Cubemap;
+import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.Vector4f;
+
 import org.lwjgl.BufferUtils;
 import io.xol.engine.math.lalgb.Matrix4f;
 
@@ -28,21 +34,30 @@ import static org.lwjgl.opengl.GL20.*;
 /**
  * Handles a GLSL shader
  */
-public class ShaderProgram
+public class ShaderProgram implements ShaderInterface
 {
-	String filename;
+	private String filename;
+	String shaderName = filename;
 
-	int shaderP;
-	int vertexS;
-	int fragS;
+	private int shaderProgramId;
+	private int vertexShaderId;
+	private int fragShaderId;
 
 	boolean loadOK = false;
 
-	FloatBuffer matrix4fBuffer = BufferUtils.createFloatBuffer(16);
-	FloatBuffer matrix3fBuffer = BufferUtils.createFloatBuffer(9);
+	private static FloatBuffer matrix4fBuffer = BufferUtils.createFloatBuffer(16);
+	private static FloatBuffer matrix3fBuffer = BufferUtils.createFloatBuffer(9);
 
-	Map<String, Integer> uniforms = new HashMap<String, Integer>();
-	Map<String, Integer> attributes = new HashMap<String, Integer>();
+	private Map<String, Integer> uniformsLocations = new HashMap<String, Integer>();
+	private Map<String, Integer> attributesLocations = new HashMap<String, Integer>();
+	
+	private Map<String, Integer> uniformsAttributesIntegers = new HashMap<String, Integer>();
+	private Map<String, Float> uniformsAttributesFloat = new HashMap<String, Float>();
+	private Map<String, Vector2f> uniformsAttributes2Float = new HashMap<String, Vector2f>();
+	private Map<String, Vector3f> uniformsAttributes3Float = new HashMap<String, Vector3f>();
+	private Map<String, Vector4f> uniformsAttributes4Float = new HashMap<String, Vector4f>();
+	private Map<String, Matrix4f> uniformsAttributesMatrix4 = new HashMap<String, Matrix4f>();
+	private Map<String, Matrix3f> uniformsAttributesMatrix3 = new HashMap<String, Matrix3f>();
 
 	protected ShaderProgram(String filename)
 	{
@@ -55,16 +70,21 @@ public class ShaderProgram
 		this.filename = filename;
 		load(parameters);
 	}
+	
+	public String getShaderName()
+	{
+		return shaderName;
+	}
 
 	private void load(String[] parameters)
 	{
-		shaderP = glCreateProgram();
-		vertexS = glCreateShader(GL_VERTEX_SHADER);
-		fragS = glCreateShader(GL_FRAGMENT_SHADER);
-
-		String shaderName = filename;
+		shaderName = filename;
 		if (filename.lastIndexOf("/") != -1)
 			shaderName = filename.substring(filename.lastIndexOf("/"), filename.length());
+		
+		shaderProgramId = glCreateProgram();
+		vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
+		fragShaderId = glCreateShader(GL_FRAGMENT_SHADER);
 
 		StringBuilder vertexSource = new StringBuilder();
 		StringBuilder fragSource = new StringBuilder();
@@ -76,9 +96,6 @@ public class ShaderProgram
 		catch (IOException e)
 		{
 			ChunkStoriesLogger.getInstance().log("Failed to load shader program " + filename, ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.ERROR);
-			// ChunkStoriesLogger.getInstance().log(,
-			// ChunkStoriesLogger.LogType.RENDERING,
-			// ChunkStoriesLogger.LogLevel.WARN);
 			e.printStackTrace();
 			return;
 		}
@@ -94,22 +111,22 @@ public class ShaderProgram
 			{
 				String attributeName = line.split(" ")[2].replace(";", "");
 				//System.out.println("Binding " + attributeName + " to location : " + i);
-				glBindAttribLocation(shaderP, i, attributeName);
+				glBindAttribLocation(shaderProgramId, i, attributeName);
 				i++;
 			}
 		}
 
-		glShaderSource(vertexS, vertexSource);
-		glCompileShader(vertexS);
+		glShaderSource(vertexShaderId, vertexSource);
+		glCompileShader(vertexShaderId);
 
-		glShaderSource(fragS, fragSource);
-		glCompileShader(fragS);
+		glShaderSource(fragShaderId, fragSource);
+		glCompileShader(fragShaderId);
 
-		if (glGetShaderi(fragS, GL_COMPILE_STATUS) == GL_FALSE)
+		if (glGetShaderi(fragShaderId, GL_COMPILE_STATUS) == GL_FALSE)
 		{
 			ChunkStoriesLogger.getInstance().log("Failed to compile shader program " + filename + " (fragment)", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.ERROR);
 
-			String errorsSource = glGetShaderInfoLog(fragS, 5000);
+			String errorsSource = glGetShaderInfoLog(fragShaderId, 5000);
 
 			String[] errorsLines = errorsSource.split("\n");
 			String[] sourceLines = fragSource.toString().split("\n");
@@ -131,11 +148,11 @@ public class ShaderProgram
 			}
 			return;
 		}
-		if (glGetShaderi(vertexS, GL_COMPILE_STATUS) == GL_FALSE)
+		if (glGetShaderi(vertexShaderId, GL_COMPILE_STATUS) == GL_FALSE)
 		{
 			ChunkStoriesLogger.getInstance().log("Failed to compile shader program " + filename + " (vertex)", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.ERROR);
 
-			String errorsSource = glGetShaderInfoLog(vertexS, 5000);
+			String errorsSource = glGetShaderInfoLog(vertexShaderId, 5000);
 
 			String[] errorsLines = errorsSource.split("\n");
 			String[] sourceLines = fragSource.toString().split("\n");
@@ -155,20 +172,18 @@ public class ShaderProgram
 					}
 				}
 			}
-			//ChunkStoriesLogger.getInstance().log(vertexSource.toString(), ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
-			//ChunkStoriesLogger.getInstance().log(glGetShaderInfoLog(vertexS, 5000), ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
 			return;
 		}
-		glAttachShader(shaderP, vertexS);
-		glAttachShader(shaderP, fragS);
+		glAttachShader(shaderProgramId, vertexShaderId);
+		glAttachShader(shaderProgramId, fragShaderId);
 
-		glLinkProgram(shaderP);
+		glLinkProgram(shaderProgramId);
 
-		if (glGetProgrami(shaderP, GL_LINK_STATUS) == GL_FALSE)
+		if (glGetProgrami(shaderProgramId, GL_LINK_STATUS) == GL_FALSE)
 		{
 			ChunkStoriesLogger.getInstance().log("Failed to link program " + filename + "", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.ERROR);
 
-			String errorsSource = glGetProgramInfoLog(shaderP, 5000);
+			String errorsSource = glGetProgramInfoLog(shaderProgramId, 5000);
 
 			String[] errorsLines = errorsSource.split("\n");
 			String[] sourceLines = fragSource.toString().split("\n");
@@ -192,13 +207,13 @@ public class ShaderProgram
 			return;
 		}
 
-		glValidateProgram(shaderP);
+		glValidateProgram(shaderProgramId);
 
-		if (glGetProgrami(shaderP, GL_VALIDATE_STATUS) == GL_FALSE)
+		if (glGetProgrami(shaderProgramId, GL_VALIDATE_STATUS) == GL_FALSE)
 		{
 			ChunkStoriesLogger.getInstance().log("Failed to validate program " + filename + "", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.ERROR);
 
-			String errorsSource = glGetProgramInfoLog(shaderP, 5000);
+			String errorsSource = glGetProgramInfoLog(shaderProgramId, 5000);
 
 			String[] errorsLines = errorsSource.split("\n");
 			String[] sourceLines = fragSource.toString().split("\n");
@@ -221,13 +236,11 @@ public class ShaderProgram
 
 			return;
 		}
-
-		//ChunkStoriesLogger.getInstance().log("Shader program " + filename + " sucessfully loaded and compiled ! (P:" + shaderP + ")", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
-
+		
 		loadOK = true;
 	}
-
-	public void setUniformSampler(int id, String name, Texture2D texture)
+	
+	/*public void setUniformSampler(int id, String name, Texture2D texture)
 	{
 		if(id == 0)
 		{
@@ -278,22 +291,25 @@ public class ShaderProgram
 		selectTextureUnit(id);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.getID());
 		glActiveTexture(GL_TEXTURE0);
-	}
+	}*/
 
 	public int getUniformLocation(String name)
 	{
-		if (uniforms.containsKey(name))
-			return uniforms.get(name);
+		if (uniformsLocations.containsKey(name))
+			return uniformsLocations.get(name);
 		else
 		{
-			int location = glGetUniformLocation(shaderP, name);
-			uniforms.put(name, location);
+			int location = glGetUniformLocation(shaderProgramId, name);
+			
+			if(location == GL_INVALID_OPERATION || location == GL_INVALID_VALUE)
+				 location = -1;
+			
+			uniformsLocations.put(name, location);
 			return location;
 		}
-		// return glGetUniformLocation(shaderP, name);
 	}
 
-	public void setUniformMatrix4f(String name, FloatBuffer fb)
+	/*public void setUniformMatrix4f(String name, FloatBuffer fb)
 	{
 		fb.position(0);
 		glUniformMatrix4(getUniformLocation(name), false, fb);
@@ -342,17 +358,12 @@ public class ShaderProgram
 		setUniformFloat3(name, vec3.getX(), vec3.getY(), vec3.getZ());
 	}
 
-	public void setUniformFloat3(String name, float f, float f2, float f3)
-	{
-		glUniform3f(getUniformLocation(name), f, f2, f3);
-	}
-
 	public void setUniformFloat3(String name, double d1, double d2, double d3)
 	{
 		glUniform3f(getUniformLocation(name), (float) d1, (float) d2, (float) d3);
 	}
 
-	public void setUniformFloat4(String name, io.xol.engine.math.lalgb.Vector4f vec4)
+	public void setUniformFloat4(String name, Vector4f vec4)
 	{
 		setUniformFloat4(name, vec4.x, vec4.y, vec4.z, vec4.w);
 	}
@@ -366,37 +377,140 @@ public class ShaderProgram
 	{
 		glUniform1i(getUniformLocation(name), i);
 	}
+*/
 
+	@Override
+	public void setUniform1i(String uniformName, int uniformData)
+	{
+		uniformsAttributesIntegers.put(uniformName, uniformData);
+	}
+
+	@Override
+	public void setUniform1f(String uniformName, double uniformData)
+	{
+		uniformsAttributesFloat.put(uniformName, (float)uniformData);
+	}
+
+	@Override
+	public void setUniform2f(String uniformName, double uniformData_x, double uniformData_y)
+	{
+		uniformsAttributes2Float.put(uniformName, new Vector2f(uniformData_x, uniformData_y));
+	}
+
+	@Override
+	public void setUniform2f(String uniformName, Vector2f uniformData)
+	{
+		uniformsAttributes2Float.put(uniformName, uniformData);
+	}
+
+	@Override
+	public void setUniform3f(String uniformName, double uniformData_x, double uniformData_y, double uniformData_z)
+	{
+		uniformsAttributes3Float.put(uniformName, new Vector3f(uniformData_x, uniformData_y, uniformData_z));
+	}
+
+	@Override
+	public void setUniform3f(String uniformName, Vector3d uniformData)
+	{
+		uniformsAttributes3Float.put(uniformName, uniformData.castToSimplePrecision());
+	}
+
+	@Override
+	public void setUniform3f(String uniformName, Vector3f uniformData)
+	{
+		uniformsAttributes3Float.put(uniformName, uniformData);
+	}
+
+	@Override
+	public void setUniform4f(String uniformName, double x, double y, double z, double w)
+	{
+		uniformsAttributes4Float.put(uniformName, new Vector4f(x, y, z, w));
+	}
+
+	@Override
+	public void setUniform4f(String uniformName, Vector4f uniformData)
+	{
+		uniformsAttributes4Float.put(uniformName, uniformData);
+	}
+
+	@Override
+	public void setUniformMatrix4f(String uniformName, Matrix4f uniformData)
+	{
+		uniformsAttributesMatrix4.put(uniformName, uniformData);
+	}
+
+	@Override
+	public void setUniformMatrix3f(String uniformName, Matrix3f uniformData)
+	{
+		uniformsAttributesMatrix3.put(uniformName, uniformData);
+	}
+
+	class InternalUniformsConfiguration implements UniformsConfiguration {
+
+		long code;
+		
+		public InternalUniformsConfiguration(Map<String, Integer> uniformsAttributesIntegers, Map<String, Float> uniformsAttributesFloat, Map<String, Vector2f> uniformsAttributes2Float, Map<String, Vector3f> uniformsAttributes3Float,
+				Map<String, Vector4f> uniformsAttributes4Float, Map<String, Matrix4f> uniformsAttributesMatrix4, Map<String, Matrix3f> uniformsAttributesMatrix3)
+		{
+			//Le close enough
+			code += uniformsAttributesIntegers.hashCode();
+			code += uniformsAttributesFloat.hashCode();
+			code += uniformsAttributes2Float.hashCode();
+			code += uniformsAttributes3Float.hashCode();
+			code += uniformsAttributes4Float.hashCode();
+			code += uniformsAttributesMatrix4.hashCode();
+			code += uniformsAttributesMatrix3.hashCode();
+		}
+
+		@Override
+		public boolean isCompatibleWith(UniformsConfiguration u)
+		{
+			//This is quick n' dirty, should be made better someday
+			if(u instanceof InternalUniformsConfiguration)
+			{
+				InternalUniformsConfiguration t = (InternalUniformsConfiguration)u;
+				return t.code == code;
+			}
+			
+			return false;
+		}
+	}
+	
+	public UniformsConfiguration getUniformsConfiguration()
+	{
+		return new InternalUniformsConfiguration(uniformsAttributesIntegers, uniformsAttributesFloat, uniformsAttributes2Float, uniformsAttributes3Float, uniformsAttributes4Float, uniformsAttributesMatrix4, uniformsAttributesMatrix3);
+	}
+	
 	public int getVertexAttributeLocation(String name)
 	{
-		if (attributes.containsKey(name))
-			return attributes.get(name);
+		if (attributesLocations.containsKey(name))
+			return attributesLocations.get(name);
 		else
 		{
-			int location = glGetAttribLocation(shaderP, name);
+			int location = glGetAttribLocation(shaderProgramId, name);
 			if (location == -1)
 			{
 				ChunkStoriesLogger.getInstance().warning("Warning, -1 location for VertexAttrib " + name + " in shader " + this.filename);
 				//location = 0;
 			}
-			attributes.put(name, location);
+			attributesLocations.put(name, location);
 			return location;
 		}
 	}
-
+	
 	public void use()
 	{
-		glUseProgram(shaderP);
+		glUseProgram(shaderProgramId);
 	}
 
 	protected void free()
 	{
-		glDeleteProgram(shaderP);
-		glDeleteShader(vertexS);
-		glDeleteShader(fragS);
+		glDeleteProgram(shaderProgramId);
+		glDeleteShader(vertexShaderId);
+		glDeleteShader(fragShaderId);
 
-		uniforms.clear();
-		attributes.clear();
+		uniformsLocations.clear();
+		attributesLocations.clear();
 	}
 
 	public void reload(String[] parameters)
@@ -410,4 +524,6 @@ public class ShaderProgram
 	{
 		return "[ShaderProgram : " + this.filename + "]";
 	}
+
+	
 }

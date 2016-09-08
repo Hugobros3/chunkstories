@@ -19,7 +19,7 @@ public class TrianglesClipper
 		int actualCount = 0;
 
 		toClipSpace = new Matrix4f(rotationMatrix);
-		toClipSpace.translate(originPosition.castToSP().negate());
+		toClipSpace.translate(originPosition.castToSimplePrecision().negate());
 		
 		Matrix4f resize = new Matrix4f();
 		resize.scale(new Vector3f(1 / size.getX(), 1 / size.getY(), 1));

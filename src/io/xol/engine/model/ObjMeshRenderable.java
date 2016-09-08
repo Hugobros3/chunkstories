@@ -167,9 +167,9 @@ public class ObjMeshRenderable implements RenderableAnimatable
 		renderingContext.resetAllVertexAttributesLocations();
 		renderingContext.disableUnusedVertexAttributes();
 
-		int vertexIn = renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn");
-		int texCoordIn = renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn");
-		int normalIn = renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn");
+		int vertexIn = renderingContext.currentShader().getVertexAttributeLocation("vertexIn");
+		int texCoordIn = renderingContext.currentShader().getVertexAttributeLocation("texCoordIn");
+		int normalIn = renderingContext.currentShader().getVertexAttributeLocation("normalIn");
 
 		renderingContext.enableVertexAttribute(vertexIn);
 		renderingContext.enableVertexAttribute(texCoordIn);
@@ -178,8 +178,8 @@ public class ObjMeshRenderable implements RenderableAnimatable
 
 		//System.out.println("ColorIn in is at :"+renderingContext.getCurrentShader().getVertexAttributeLocation("colorIn"));
 
-		renderingContext.getCurrentShader().setUniformFloat("useColorIn", 0.0f);
-		renderingContext.getCurrentShader().setUniformFloat("useNormalIn", 1.0f);
+		renderingContext.currentShader().setUniformFloat("useColorIn", 0.0f);
+		renderingContext.currentShader().setUniformFloat("useNormalIn", 1.0f);
 
 		//Make sure vertex data is avaible
 		getDrawableModel().bind();
@@ -296,11 +296,11 @@ public class ObjMeshRenderable implements RenderableAnimatable
 
 	private void drawInstanceBufferContents(RenderingContext renderingContext, int start, int count, int dataInInstancesBuffer)
 	{
-		renderingContext.getCurrentShader().setUniformSampler(13, "instancedDataSampler", instancesDataTexture);
+		renderingContext.currentShader().setUniformSampler(13, "instancedDataSampler", instancesDataTexture);
 
 		//System.out.println("Drawing "+dataInInstancesBuffer+" instances of "+start);
-		renderingContext.getCurrentShader().setUniformFloat("isUsingInstancedData", 1);
+		renderingContext.currentShader().setUniformFloat("isUsingInstancedData", 1);
 		GLCalls.drawArraysInstanced(GL_TRIANGLES, start, count, dataInInstancesBuffer);
-		renderingContext.getCurrentShader().setUniformFloat("isUsingInstancedData", 0);
+		renderingContext.currentShader().setUniformFloat("isUsingInstancedData", 0);
 	}
 }

@@ -5,6 +5,7 @@ package io.xol.engine.base;
 // http://xol.io
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.GL_MAX_TEXTURE_IMAGE_UNITS;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -149,10 +150,10 @@ public class GameWindowOpenGL
 		ChunkStoriesLogger.getInstance().log("OpenGL Extensions avaible : " + glGetString(GL_EXTENSIONS));
 		if (glVersionf < 3.1f)
 		{
-			RenderingConfig.openGL3Capable = false;
+			RenderingConfig.gl_openGL3Capable = false;
 			if (GLContext.getCapabilities().GL_EXT_framebuffer_object && GLContext.getCapabilities().GL_ARB_texture_rg)
 			{
-				RenderingConfig.fbExtCapable = true;
+				RenderingConfig.gl_fbExtCapable = true;
 				ChunkStoriesLogger.getInstance().log("Pre-OpenGL 3.0 Hardware with needed extensions support detected.");
 			}
 			else
@@ -168,6 +169,10 @@ public class GameWindowOpenGL
 		}
 		else
 			System.out.println("OpenGL 3.0 Hardware detected.");
+		
+		//Check for various limitations
+		RenderingConfig.gl_MaxTextureUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS);
+		RenderingConfig.gl_IsInstancingSupported = GLContext.getCapabilities().GL_ARB_draw_instanced;
 
 	}
 

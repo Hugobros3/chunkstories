@@ -330,7 +330,7 @@ public class ParticlesRenderer implements ParticlesManager
 
 	private int drawBuffers(RenderingContext renderingContext, int planeVAL, int billCoordVAL, int texCoordVAL, int elements, boolean haveTextureCoordinates)
 	{
-		renderingContext.getCurrentShader().setUniformFloat("areTextureCoordinatesIninatesSupplied", haveTextureCoordinates ? 1f : 0f);
+		renderingContext.currentShader().setUniformFloat("areTextureCoordinatesIninatesSupplied", haveTextureCoordinates ? 1f : 0f);
 
 		// Render it now
 		particlesPositionsBuffer.flip();

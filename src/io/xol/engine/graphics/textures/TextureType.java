@@ -15,7 +15,7 @@ public enum TextureType
 	//For diffuse buffer
 	RGBA_8BPP(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 4),
 	//For shaded buffer
-	RGB_HDR(RenderingConfig.openGL3Capable ? GL_R11F_G11F_B10F : GL_RGBA16F, GL_RGB, GL_FLOAT, 4),
+	RGB_HDR(RenderingConfig.gl_openGL3Capable ? GL_R11F_G11F_B10F : GL_RGBA16F, GL_RGB, GL_FLOAT, 4),
 	//Shadow maps
 	DEPTH_SHADOWMAP(GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT, 3),
 	//Main render depth

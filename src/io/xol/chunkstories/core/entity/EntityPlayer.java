@@ -366,7 +366,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			Texture2D playerTexture = TexturesHandler.getTexture("models/guyA.png");
 			playerTexture.setLinearFiltering(false);
 			
-			renderingContext.setDiffuseTexture(playerTexture);
+			renderingContext.bindAlbedoTexture(playerTexture);
 		}
 		
 		

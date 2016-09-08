@@ -215,7 +215,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		
 		public void lodUpdate(RenderingContext renderingContext)
 		{
-			double distance = getLocation().distanceTo(renderingContext.getCamera().getCameraPosition().clone().negate());
+			double distance = getLocation().distanceTo(renderingContext.getCamera().getCameraPosition());
 			double targetFps = RenderingConfig.animationCacheFrameRate;
 			
 			int lodDivisor = 1;

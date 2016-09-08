@@ -1,11 +1,26 @@
 package io.xol.engine.graphics;
 
+import io.xol.chunkstories.api.exceptions.AttributeNotPresentException;
+import io.xol.chunkstories.api.rendering.AttributeSource;
+import io.xol.chunkstories.api.rendering.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.Light;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.PolygonFillMode;
+import io.xol.chunkstories.api.rendering.RenderingCommand;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.TexturingConfiguration;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.textures.Cubemap;
+import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
 import io.xol.engine.graphics.util.GuiRenderer;
 import io.xol.engine.graphics.util.TrueTypeFontRenderer;
 
@@ -17,18 +32,21 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.lwjgl.BufferUtils;
 
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
+import io.xol.engine.math.lalgb.Vector3f;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class RenderingContext
+public class RenderingContext implements RenderingInterface
 {
 	private GameWindowOpenGL mainWindows;
 	private ShaderProgram currentlyBoundShader = null;
@@ -36,15 +54,23 @@ public class RenderingContext
 	private Camera camera;
 	private boolean isThisAShadowPass;
 
-	private Set<Integer> enabledAttributes = new HashSet<Integer>();
-	private Set<Integer> setupAttributes = new HashSet<Integer>();
-
-	private Set<Light> lights = new HashSet<Light>();
+	private List<Light> lights = new LinkedList<Light>();
 
 	private DirectRenderer directRenderer;
 	private GuiRenderer guiRenderer;
 	private TrueTypeFontRenderer trueTypeFontRenderer;
 
+	//Texturing
+	private TexturingConfigurationImplementation texturingConfiguration = new TexturingConfigurationImplementation();
+	//Object matrix
+	private Matrix4f currentObjectMatrix = null;
+	private Vector3f currentObjectPosition = new Vector3f();
+	private float rotationHorizontal = 0, rotationVertial = 0;
+	//Pipeline config
+	private PipelineConfigurationImplementation pipelineConfiguration = PipelineConfigurationImplementation.DEFAULT;
+	private AttributesConfiguration attributesConfiguration;
+	
+	
 	Matrix4f temp = new Matrix4f();
 	Matrix3f normal = new Matrix3f();
 
@@ -58,13 +84,15 @@ public class RenderingContext
 
 	public String toString()
 	{
-		String attributes = "";
+		/*String attributes = "";
 		for (int i : enabledAttributes)
 		{
 			attributes += i;
 		}
 		attributes += " (" + enabledAttributes.size() + ")";
-		return "[RenderingContext shadow:" + isThisAShadowPass + " enabledAttributes: " + attributes + " lights: " + lights.size() + " shader:" + getCurrentShader() + " ]";
+		return "[RenderingContext shadow:" + isThisAShadowPass + " enabledAttributes: " + attributes + " lights: " + lights.size() + " shader:" + currentShader() + " ]";
+		 */
+		return "wip";
 	}
 
 	public void setCamera(Camera camera)
@@ -76,6 +104,71 @@ public class RenderingContext
 	{
 		return camera;
 	}
+	
+	public ShaderInterface useShader(String shaderName)
+	{
+		return setCurrentShader(ShadersLibrary.getShaderProgram(shaderName));
+	}
+	
+	public ShaderInterface setCurrentShader(ShaderProgram shaderProgram)
+	{
+		//Save calls
+		if (shaderProgram != currentlyBoundShader)
+		{
+			//When changing shaders, we make sure we disable whatever was enabled
+			
+			//resetAllVertexAttributesLocations();
+			//disableUnusedVertexAttributes();
+			shaderProgram.use();
+		}
+		currentlyBoundShader = shaderProgram;
+		return currentlyBoundShader;
+	}
+	
+	public ShaderInterface currentShader()
+	{
+		return currentlyBoundShader;
+	}
+	
+	/* TEXTURING */
+	
+	public TexturingConfiguration getTexturingConfiguration()
+	{
+		return texturingConfiguration;
+	}
+	
+	public TexturingConfiguration bindTexture1D(String textureSamplerName, Texture1D texture)
+	{
+		texturingConfiguration = texturingConfiguration.bindTexture1D(textureSamplerName, texture);
+		return texturingConfiguration;
+	}
+
+	public TexturingConfiguration bindTexture2D(String textureSamplerName, Texture2D texture)
+	{
+		texturingConfiguration = texturingConfiguration.bindTexture2D(textureSamplerName, texture);
+		return texturingConfiguration;
+	}
+	
+	public TexturingConfiguration bindCubemap(String cubemapSamplerName, Cubemap cubemapTexture)
+	{
+		texturingConfiguration = texturingConfiguration.bindCubemap(cubemapSamplerName, cubemapTexture);
+		return texturingConfiguration;
+	}
+	
+	public TexturingConfiguration bindAlbedoTexture(Texture2D texture)
+	{
+		return bindTexture2D("diffuseTexture", texture);
+	}
+
+	public TexturingConfiguration bindNormalTexture(Texture2D texture)
+	{
+		return bindTexture2D("normalTexture", texture);
+	}
+
+	public TexturingConfiguration bindMaterialTexture(Texture2D texture)
+	{
+		return bindTexture2D("materialTexture", texture);
+	}
 
 	public boolean isThisAShadowPass()
 	{
@@ -85,11 +178,6 @@ public class RenderingContext
 	public void setIsShadowPass(boolean isShadowPass)
 	{
 		isThisAShadowPass = isShadowPass;
-	}
-
-	public ShaderProgram getCurrentShader()
-	{
-		return currentlyBoundShader;
 	}
 
 	public void addLight(Light light)
@@ -117,200 +205,20 @@ public class RenderingContext
 	{
 		return trueTypeFontRenderer;
 	}
-
-	/**
-	 * Enables if not already the vertex attribute at the said location. Reset uppon shader switch.
-	 * 
-	 * @param vertexAttributeLocation
-	 */
-	public boolean enableVertexAttribute(int vertexAttributeLocation)
-	{
-		if (vertexAttributeLocation < 0)
-			return false;
-		if (!enabledAttributes.contains(vertexAttributeLocation))
-		{
-			glEnableVertexAttribArray(vertexAttributeLocation);
-			enabledAttributes.add(vertexAttributeLocation);
-		}
-		return true;
-	}
-
-	/**
-	 * Disables if not already the vertex attribute at the said location. Reset uppon shader switch.
-	 * 
-	 * @param vertexAttributeLocation
-	 */
-	public void disableVertexAttribute(int vertexAttributeLocation)
-	{
-		if (vertexAttributeLocation < 0)
-			return;
-		if (enabledAttributes.contains(vertexAttributeLocation))
-		{
-			glDisableVertexAttribArray(vertexAttributeLocation);
-			enabledAttributes.remove(vertexAttributeLocation);
-		}
-	}
-
-	public boolean enableVertexAttribute(String vertexAttributeName)
-	{
-		return enableVertexAttribute(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName));
-	}
-
-	public void disableVertexAttribute(String vertexAttributeName)
-	{
-		disableVertexAttribute(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName));
-	}
-
-	public void setVertexAttributePointerLocation(String vertexAttributeName, int dimensions, int vertexType, boolean normalized, int stride, long offset)
-	{
-		setVertexAttributePointerLocation(this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName), dimensions, vertexType, normalized, stride, offset);
-	}
-
-	/**
-	 * If the said attribute is enabled, tells openGL where to lookup data for it within the bind buffer
-	 */
-	public void setVertexAttributePointerLocation(int vertexAttributeLocation, int dimensions, int vertexType, boolean normalized, int stride, long offset)
-	{
-		//If vertex attribute isn't enabled we enable it first
-		if (!enabledAttributes.contains(vertexAttributeLocation))
-		{
-			//If we can't enable this attribute don't bother
-			if(!enableVertexAttribute(vertexAttributeLocation))
-				return;
-		}
-		glVertexAttribPointer(vertexAttributeLocation, dimensions, vertexType, normalized, stride, offset);
-		//System.out.println("Setup "+vertexAttributeLocation);
-		setupAttributes.add(vertexAttributeLocation);
-	}
-
-	public void setVertexAttributePointerLocation(int vertexAttributeLocation, int dimensions, int vertexType, boolean normalized, int stride, ByteBuffer data)
-	{
-		//If vertex attribute isn't enabled we enable it first
-		if (!enabledAttributes.contains(vertexAttributeLocation))
-		{
-			//If we can't enable this attribute don't bother
-			if(!enableVertexAttribute(vertexAttributeLocation))
-				return;
-		}
-		glVertexAttribPointer(vertexAttributeLocation, dimensions, vertexType, normalized, stride, data);
-		setupAttributes.add(vertexAttributeLocation);
-	}
 	
-	public void setVertexAttributePointerLocation(int vertexAttributeLocation, int dimensions, boolean normalized, int stride, FloatBuffer data)
-	{
-		//If vertex attribute isn't enabled we enable it first
-		if (!enabledAttributes.contains(vertexAttributeLocation))
-		{
-			//If we can't enable this attribute don't bother
-			if(!enableVertexAttribute(vertexAttributeLocation))
-				return;
-		}
-		glVertexAttribPointer(vertexAttributeLocation, dimensions, normalized, stride, data);
-		setupAttributes.add(vertexAttributeLocation);
-	}
-
-	public void setVertexAttributePointerLocation(String vertexAttributeName, int dimensions, int vertexType, boolean normalized, int stride, long offset, VerticesObject verticesObject)
-	{
-		verticesObject.bind();
-		setVertexAttributePointerLocation(vertexAttributeName, dimensions, vertexType, normalized, stride, offset);
-	}
-	
-	public void setVertexAttributePointerLocation(int vertexAttributeLocation, int dimensions, int vertexType, boolean normalized, int stride, long offset, VerticesObject verticesObject)
-	{
-		verticesObject.bind();
-		setVertexAttributePointerLocation(vertexAttributeLocation, dimensions, vertexType, normalized, stride, offset);
-	}
-	
-	public boolean isVertexAttributeAvaible(String vertexAttributeName)
-	{
-		return this.getCurrentShader().getVertexAttributeLocation(vertexAttributeName) > 0;
-	}
-
-	/**
-	 * Resets the vertex attributes enabled (disables all)
-	 */
-	public void resetAllVertexAttributesLocations()
-	{
-		setupAttributes.clear();
-	}
-
-	public void disableUnusedVertexAttributes()
-	{
-		Iterator<Integer> i = enabledAttributes.iterator();
-		while (i.hasNext())
-		{
-			int vertexAttributeLocation = i.next();
-
-			if (!setupAttributes.contains(vertexAttributeLocation))
-			{
-				//System.out.println("Disabled unused VAL : "+vertexAttributeLocation + " / "+this.getCurrentShader());
-				glDisableVertexAttribArray(vertexAttributeLocation);
-				i.remove();
-			}
-		}
-	}
-	public void setCurrentShader(ShaderProgram shaderProgram)
-	{
-		//Save calls
-		if (shaderProgram != currentlyBoundShader)
-		{
-			//When changing shaders, we make sure we disable whatever was enabled
-			resetAllVertexAttributesLocations();
-			disableUnusedVertexAttributes();
-			shaderProgram.use();
-		}
-		currentlyBoundShader = shaderProgram;
-	}
-
-	public void setDiffuseTexture(int id)
-	{
-		if (currentlyBoundShader != null)
-			currentlyBoundShader.setUniformSampler(0, "diffuseTexture", id);
-	}
-
-	public void setNormalTexture(int id)
-	{
-		if (currentlyBoundShader != null)
-			currentlyBoundShader.setUniformSampler(1, "normalTexture", id);
-	}
-
-	public void setMaterialTexture(int id)
-	{
-		if (currentlyBoundShader != null)
-			currentlyBoundShader.setUniformSampler(2, "materialTexture", id);
-	}
-	
-	public void setDiffuseTexture(Texture2D texture)
-	{
-		if (currentlyBoundShader != null)
-			currentlyBoundShader.setUniformSampler(0, "diffuseTexture", texture);
-	}
-
-	public void setNormalTexture(Texture2D texture)
-	{
-		if (currentlyBoundShader != null)
-			currentlyBoundShader.setUniformSampler(1, "normalTexture", texture);
-	}
-
-	public void setMaterialTexture(Texture2D texture)
-	{
-		if (currentlyBoundShader != null)
-			currentlyBoundShader.setUniformSampler(2, "materialTexture", texture);
-	}
-
-	Matrix4f currentTransformationMatrix = new Matrix4f();
+	//Matrix4f currentTransformationMatrix = new Matrix4f();
 	
 	/**
 	 * Sets the current local matrix transformation and normal 3x3 counterpart
 	 * 
 	 * @param matrix
 	 */
-	public void sendTransformationMatrix(Matrix4f matrix)
+	private void sendTransformationMatrix(Matrix4f matrix)
 	{
 		if (matrix == null)
 			matrix = new Matrix4f();
 		
-		currentTransformationMatrix = matrix;
+		//currentTransformationMatrix = matrix;
 		
 		this.currentlyBoundShader.setUniformMatrix4f("localTransform", matrix);
 		Matrix4f.invert(matrix, temp);
@@ -334,7 +242,7 @@ public class RenderingContext
 	 * 
 	 * @param matrix
 	 */
-	public void sendBoneTransformationMatrix(Matrix4f matrix)
+	private void sendBoneTransformationMatrix(Matrix4f matrix)
 	{
 		if (matrix == null)
 			matrix = new Matrix4f();
@@ -356,13 +264,40 @@ public class RenderingContext
 		this.currentlyBoundShader.setUniformMatrix3f("boneTransformNormal", normal);
 	}
 
-	public Matrix4f getTransformationMatrix()
+	public Matrix4f setObjectPosition(Vector3f position)
 	{
-		return currentTransformationMatrix;
+		currentObjectMatrix = new Matrix4f();
+		currentObjectMatrix.translate(position);
+		
+		return this.currentObjectMatrix;
+	}
+
+	@Override
+	public Matrix4f setObjectRotation(Matrix4f objectRotationOnlyMatrix)
+	{
+		// TODO Auto-generated method stub
+		return this.currentObjectMatrix;
+	}
+
+	@Override
+	public Matrix4f setObjectRotation(double horizontalRotation, double verticalRotation)
+	{
+		// TODO Auto-generated method stub
+		return this.currentObjectMatrix;
+	}
+
+	@Override
+	public Matrix4f setObjectMatrix(Matrix4f objectMatrix)
+	{
+		currentObjectMatrix = objectMatrix;
+		return this.currentObjectMatrix;
 	}
 	
-	//static FloatBuffer fsQuadBuffer = null;
-
+	public Matrix4f getObjectMatrix()
+	{
+		return this.currentObjectMatrix;
+	}
+	
 	static VerticesObject fsQuadVertices = null;
 	
 	public void drawFSQuad(int vertexAttribLocation)
@@ -381,8 +316,58 @@ public class RenderingContext
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		setVertexAttributePointerLocation(vertexAttribLocation, 2, GL_FLOAT, false, 0, 0, fsQuadVertices);
+		
 		GLCalls.drawArrays(GL_TRIANGLES, 0, 6);
+		//disableVertexAttribute(vertexAttribLocation);
+	}
+	
+	/* Pipeline config */
 
-		disableVertexAttribute(vertexAttribLocation);
+	@Override
+	public PipelineConfiguration getPipelineConfiguration()
+	{
+		return pipelineConfiguration;
+	}
+
+	@Override
+	public PipelineConfiguration setDepthTestMode(DepthTestMode depthTestMode)
+	{
+		pipelineConfiguration = pipelineConfiguration.setDepthTestMode(depthTestMode);
+		return pipelineConfiguration;
+	}
+
+	@Override
+	public PipelineConfiguration setBlendMode(BlendMode blendMode)
+	{	
+		pipelineConfiguration.setBlendMode(blendMode);
+		return pipelineConfiguration;
+	}
+
+	@Override
+	public PipelineConfiguration setPolygonFillMode(PolygonFillMode polygonFillMode)
+	{
+		pipelineConfiguration.setPolygonFillMode(polygonFillMode);
+		return pipelineConfiguration;
+	}
+
+	@Override
+	public AttributesConfiguration getAttributesConfiguration()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public AttributesConfiguration bindAttribute(String attributeName, AttributeSource attributeSource) throws AttributeNotPresentException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RenderingCommand drawTriangles(int startAt, int count)
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

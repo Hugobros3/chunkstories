@@ -113,11 +113,11 @@ public class TextMeshObject
 
 	public void render(RenderingContext renderingContext)
 	{
-		renderingContext.setDiffuseTexture(TrueTypeFont.arial11px.glTextures[0].getId());
+		renderingContext.bindAlbedoTexture(TrueTypeFont.arial11px.glTextures[0]);
 		
 		glDisable(GL_CULL_FACE);
-		renderingContext.getCurrentShader().setUniformFloat("useColorIn", 1.0f);
-		renderingContext.getCurrentShader().setUniformFloat("useNormalIn", 0.0f);
+		renderingContext.currentShader().setUniformFloat("useColorIn", 1.0f);
+		renderingContext.currentShader().setUniformFloat("useNormalIn", 0.0f);
 
 		renderingContext.enableVertexAttribute("vertexIn");
 		renderingContext.enableVertexAttribute("texCoordIn");
@@ -138,7 +138,7 @@ public class TextMeshObject
 		}
 		renderingContext.enableVertexAttribute("colorIn");
 		renderingContext.enableVertexAttribute("normalIn");
-		renderingContext.getCurrentShader().setUniformFloat("useColorIn", 0.0f);
-		renderingContext.getCurrentShader().setUniformFloat("useNormalIn", 1.0f);
+		renderingContext.currentShader().setUniformFloat("useColorIn", 0.0f);
+		renderingContext.currentShader().setUniformFloat("useNormalIn", 1.0f);
 	}
 }

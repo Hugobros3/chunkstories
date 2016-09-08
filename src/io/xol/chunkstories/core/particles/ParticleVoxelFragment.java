@@ -48,7 +48,7 @@ public class ParticleVoxelFragment extends ParticleType
 		public void setVelocity(Vector3d vel)
 		{
 			this.vel = vel;
-			this.add(vel.castToSP());
+			this.add(vel.castToSimplePrecision());
 		}
 
 		@Override

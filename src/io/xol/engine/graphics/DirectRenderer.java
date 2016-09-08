@@ -46,10 +46,10 @@ public class DirectRenderer
 	 */
 	public void renderDirectFromFloatBuffers(int verticesToDraw, FloatBuffer vertexCoords, FloatBuffer texCoords, FloatBuffer colors, FloatBuffer normals)
 	{
-		int vertexIn = renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn");
-		int texCoordIn = renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn");
-		int colorIn = renderingContext.getCurrentShader().getVertexAttributeLocation("colorIn");
-		int normalIn = renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn");
+		int vertexIn = renderingContext.currentShader().getVertexAttributeLocation("vertexIn");
+		int texCoordIn = renderingContext.currentShader().getVertexAttributeLocation("texCoordIn");
+		int colorIn = renderingContext.currentShader().getVertexAttributeLocation("colorIn");
+		int normalIn = renderingContext.currentShader().getVertexAttributeLocation("normalIn");
 
 		renderingContext.enableVertexAttribute(vertexIn);
 		if (texCoordIn != -1)
@@ -119,10 +119,10 @@ public class DirectRenderer
 		//Parse inputs, grab vertex attribute locations
 		int verticesToDraw = vertexCoords.length / 3;
 
-		int vertexIn = renderingContext.getCurrentShader().getVertexAttributeLocation("vertexIn");
-		int texCoordIn = renderingContext.getCurrentShader().getVertexAttributeLocation("texCoordIn");
-		int colorIn = renderingContext.getCurrentShader().getVertexAttributeLocation("colorIn");
-		int normalIn = renderingContext.getCurrentShader().getVertexAttributeLocation("normalIn");
+		int vertexIn = renderingContext.currentShader().getVertexAttributeLocation("vertexIn");
+		int texCoordIn = renderingContext.currentShader().getVertexAttributeLocation("texCoordIn");
+		int colorIn = renderingContext.currentShader().getVertexAttributeLocation("colorIn");
+		int normalIn = renderingContext.currentShader().getVertexAttributeLocation("normalIn");
 
 		renderingContext.enableVertexAttribute(vertexIn);
 		if (texCoordIn != -1)

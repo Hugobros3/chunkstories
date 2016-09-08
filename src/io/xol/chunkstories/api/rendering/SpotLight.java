@@ -8,7 +8,6 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 public interface SpotLight extends Light
 {
-
 	float getAngle();
 
 	void setAngle(float angle);

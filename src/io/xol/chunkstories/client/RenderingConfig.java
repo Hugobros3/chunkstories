@@ -11,14 +11,15 @@ import java.util.List;
 
 public class RenderingConfig
 {
-	// This class hold often-used values
+	//Open GL limitations
+	public static int gl_MaxTextureUnits;
+	public static boolean gl_IsInstancingSupported;
+	public static boolean gl_openGL3Capable = true;
+	public static boolean gl_fbExtCapable = false;
 
 	// RENDERING
 	public static float viewDistance = 150;
 	public static float fogDistance = 100;
-
-	public static boolean openGL3Capable = true;
-	public static boolean fbExtCapable = false;
 
 	public static boolean dynamicGrass = false;
 
@@ -36,6 +37,15 @@ public class RenderingConfig
 	public static boolean physicsVisualization = false;
 	public static boolean showDebugInfo = false;
 
+	public static float mouseSensitivity = 1f;
+	public static float fov = 1f;
+	
+	public static boolean doDynamicCubemaps = true;
+	public static boolean ignoreObsoleteHardware = false;
+	
+	public static int animationCacheMaxSize = 128 * 1024; // 128kb max per animation
+	public static int animationCacheFrameRate = 60;
+	
 	public static void define()
 	{
 		viewDistance = Client.getConfig().getInteger("viewDistance", 128);
@@ -62,15 +72,6 @@ public class RenderingConfig
 
 		GameWindowOpenGL.setTargetFPS(Client.getConfig().getInteger("framerate", -1));
 	}
-
-	public static float mouseSensitivity = 1f;
-	public static float fov = 1f;
-	
-	public static boolean doDynamicCubemaps = true;
-	public static boolean ignoreObsoleteHardware = false;
-	
-	public static int animationCacheMaxSize = 128 * 1024; // 128kb max per animation
-	public static int animationCacheFrameRate = 60;
 
 	public static String[] getShaderConfig()
 	{

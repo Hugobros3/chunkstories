@@ -1,15 +1,11 @@
 package io.xol.engine.math;
 
-//(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
-
-import io.xol.chunkstories.renderer.Camera;
-
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
+
+import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.engine.math.lalgb.Vector3f;
 
 public class GeometryHelper
@@ -45,7 +41,7 @@ public class GeometryHelper
 		return null;
 	}
 
-	static public Vector3f getVectorMouseIn3d(int mx, int my, Camera cam)
+	static public Vector3f getVectorMouseIn3d(int mx, int my, CameraInterface cam)
 	{
 		/*Vector3f position = getMousePositionIn3dCoords(mx, my);
 		Vector3f camera = cam.pos.castToSP();

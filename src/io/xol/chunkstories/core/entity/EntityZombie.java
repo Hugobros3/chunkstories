@@ -55,7 +55,7 @@ public class EntityZombie extends EntityHumanoid
 			Texture2D playerTexture = TexturesHandler.getTexture("models/zombie_s3.png");
 			playerTexture.setLinearFiltering(false);
 			
-			renderingContext.setDiffuseTexture(playerTexture);
+			renderingContext.bindAlbedoTexture(playerTexture);
 		}
 	}
 	
