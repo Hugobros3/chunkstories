@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import io.xol.chunkstories.api.exceptions.NotEnoughtTextureUnitsException;
+import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.rendering.TexturingConfiguration;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.engine.graphics.shaders.ShaderProgram;
@@ -121,8 +122,10 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 	/**
 	 * Setups the required texturing units and links the shaders uniforms to them
 	 */
-	public void actuallyApply(ShaderProgram shaderProgram) throws NotEnoughtTextureUnitsException
+	public void setup(ShaderInterface shaderInterface) throws NotEnoughtTextureUnitsException
 	{
+		ShaderProgram shaderProgram = (ShaderProgram)shaderInterface;
+		
 		int textureUnitId = 0;
 		
 		//Foreach texture

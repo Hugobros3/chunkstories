@@ -13,4 +13,9 @@ public interface UniformsConfiguration
 	 * Used by RenderingCommands to determine if they can be merged together and instanced
 	 */
 	public boolean isCompatibleWith(UniformsConfiguration uniformsConfiguration);
+	
+	/**
+	 * Setups the uniforms for the shader
+	 */
+	public void setup();
 }

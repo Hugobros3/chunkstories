@@ -2,6 +2,7 @@ package io.xol.chunkstories.api.rendering;
 
 import java.util.Map;
 
+import io.xol.chunkstories.api.exceptions.NotEnoughtTextureUnitsException;
 import io.xol.engine.graphics.textures.Texture2D;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -23,4 +24,6 @@ public interface TexturingConfiguration
 	 * Used by RenderingCommands to determine if they can be merged together and instanced
 	 */
 	public boolean isCompatibleWith(TexturingConfiguration boundTextures);
+	
+	public void setup(ShaderInterface shaderInterface) throws NotEnoughtTextureUnitsException;
 }

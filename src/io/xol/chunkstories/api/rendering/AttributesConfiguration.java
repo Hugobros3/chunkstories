@@ -21,4 +21,6 @@ public interface AttributesConfiguration
 	 * Used by RenderingCommands to determine if they can be merged together and instanced
 	 */
 	public boolean isCompatibleWith(AttributesConfiguration attributesConfiguration);
+
+	public void setup(RenderingInterface renderingInterface);
 }

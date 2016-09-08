@@ -118,6 +118,10 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 	@Override
 	public RenderingCommand render(RenderingInterface renderingInterface)
 	{
+		
+		//Setups vertex attributes
+		this.attributesConfiguration.setup(renderingInterface);
+		
 		return null;
 	}
 

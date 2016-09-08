@@ -1,5 +1,6 @@
 package io.xol.engine.graphics.geometry;
 
+import io.xol.chunkstories.api.rendering.AttributeSource;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;
 
@@ -214,9 +215,27 @@ public class VerticesObject
 		return true;
 	}*/
 
-	public AttributeSource asAttributeSource(int )
-	{
+	class VerticesObjectAsAttribute implements AttributeSource {
+
+		int startAt, count;
 		
+		public VerticesObjectAsAttribute(int startAt, int count)
+		{
+			this.startAt = startAt;
+			this.count = count;
+		}
+
+		@Override
+		public void setup(int gl_AttributeLocation)
+		{
+			glVertexAttribIPointer(voxelDataIn, 1, GL_INT, stride, 12L);
+		}
+		
+	}
+	
+	public AttributeSource asAttributeSource(int startAt, int count)
+	{
+		return new VerticesObjectAsAttribute(startAt, count);
 	}
 	
 	public long getVramUsage()

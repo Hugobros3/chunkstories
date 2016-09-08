@@ -164,7 +164,7 @@ public class ObjMeshRenderable implements RenderableAnimatable
 	private void prepareDraw(RenderingContext renderingContext)
 	{
 		//System.out.println("slt");
-		renderingContext.resetAllVertexAttributesLocations();
+		renderingContext.resetAllVertexAttributesLocations();w
 		renderingContext.disableUnusedVertexAttributes();
 
 		int vertexIn = renderingContext.currentShader().getVertexAttributeLocation("vertexIn");
