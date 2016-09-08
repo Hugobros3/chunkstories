@@ -10,7 +10,7 @@ import static org.lwjgl.opengl.GL30.*;
 
 import io.xol.chunkstories.client.RenderingConfig;
 
-public enum TextureType
+public enum TextureFormat
 {
 	//For diffuse buffer
 	RGBA_8BPP(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 4),
@@ -28,7 +28,7 @@ public enum TextureType
 	RGBA_32F(GL_RGBA32F, GL_RGBA, GL_FLOAT, 16),
 	;
 	
-	TextureType(int internalFormat, int format, int type, int bytesUsed)
+	TextureFormat(int internalFormat, int format, int type, int bytesUsed)
 	{
 		this.internalFormat = internalFormat;
 		this.format = format;
@@ -56,7 +56,7 @@ public enum TextureType
 		return type;
 	}
 
-	public int getBytesUsed()
+	public int getBytesPerTexel()
 	{
 		return bytesUsed;
 	}

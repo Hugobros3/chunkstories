@@ -6,6 +6,8 @@ import io.xol.engine.graphics.GLCalls;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
@@ -217,25 +219,34 @@ public class VerticesObject
 
 	class VerticesObjectAsAttribute implements AttributeSource {
 
-		int startAt, count;
+		VertexFormat format;
+		int dimensions, stride;
+		long offset;
 		
-		public VerticesObjectAsAttribute(int startAt, int count)
+		public VerticesObjectAsAttribute(VertexFormat format, int dimensions, int stride, long offset)
 		{
-			this.startAt = startAt;
-			this.count = count;
+			this.format = format;
+			this.dimensions = dimensions;
+			this.stride = stride;
+			this.offset = offset;
 		}
 
 		@Override
 		public void setup(int gl_AttributeLocation)
 		{
-			glVertexAttribIPointer(voxelDataIn, 1, GL_INT, stride, 12L);
+			glVertexAttribPointer(gl_AttributeLocation, dimensions, format.glId, format.normalized, stride, offset);
 		}
 		
 	}
 	
-	public AttributeSource asAttributeSource(int startAt, int count)
+	public AttributeSource asAttributeSource(VertexFormat format, int dimensions)
 	{
-		return new VerticesObjectAsAttribute(startAt, count);
+		return new VerticesObjectAsAttribute(format, dimensions, 0, 0);
+	}
+	
+	public AttributeSource asAttributeSource(VertexFormat format, int dimensions, int stride, long offset)
+	{
+		return new VerticesObjectAsAttribute(format, dimensions, stride, offset);
 	}
 	
 	public long getVramUsage()

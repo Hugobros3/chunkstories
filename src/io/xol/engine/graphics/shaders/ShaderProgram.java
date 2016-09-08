@@ -1,5 +1,6 @@
 package io.xol.engine.graphics.shaders;
 
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.rendering.TexturingConfiguration;
 import io.xol.chunkstories.api.rendering.UniformsConfiguration;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.Texture1D;
@@ -21,8 +23,8 @@ import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 
 import org.lwjgl.BufferUtils;
-import io.xol.engine.math.lalgb.Matrix4f;
 
+import io.xol.engine.math.lalgb.Matrix4f;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -474,6 +476,39 @@ public class ShaderProgram implements ShaderInterface
 			
 			return false;
 		}
+
+		@Override
+		public void setup(RenderingInterface renderingInterface)
+		{
+			for(Entry<String, Integer> e : uniformsAttributesIntegers.entrySet())
+				glUniform1i(getUniformLocation(e.getKey()), e.getValue());
+			
+			for(Entry<String, Float> e : uniformsAttributesFloat.entrySet())
+				glUniform1f(getUniformLocation(e.getKey()), e.getValue());
+			
+			for(Entry<String, Vector2f> e : uniformsAttributes2Float.entrySet())
+				glUniform2f(getUniformLocation(e.getKey()), e.getValue().x, e.getValue().y);
+			
+			for(Entry<String, Vector3f> e : uniformsAttributes3Float.entrySet())
+				glUniform3f(getUniformLocation(e.getKey()), e.getValue().x, e.getValue().y, e.getValue().z);
+			
+			for(Entry<String, Vector4f> e : uniformsAttributes4Float.entrySet())
+				glUniform4f(getUniformLocation(e.getKey()), e.getValue().x, e.getValue().y, e.getValue().z, e.getValue().w);
+
+			for(Entry<String, Matrix4f> e : uniformsAttributesMatrix4.entrySet())
+			{
+				e.getValue().store(matrix4fBuffer);
+				glUniformMatrix4(getUniformLocation(e.getKey()), false, matrix4fBuffer);
+				matrix4fBuffer.clear();
+			}
+			
+			for(Entry<String, Matrix3f> e : uniformsAttributesMatrix3.entrySet())
+			{
+				e.getValue().store(matrix3fBuffer);
+				glUniformMatrix3(getUniformLocation(e.getKey()), false, matrix3fBuffer);
+				matrix3fBuffer.clear();
+			}
+		}
 	}
 	
 	public UniformsConfiguration getUniformsConfiguration()
@@ -500,8 +535,13 @@ public class ShaderProgram implements ShaderInterface
 	
 	public void use()
 	{
+		if(currentProgram == shaderProgramId)
+			return;
 		glUseProgram(shaderProgramId);
+		currentProgram = shaderProgramId;
 	}
+	
+	int currentProgram = -2;
 
 	protected void free()
 	{

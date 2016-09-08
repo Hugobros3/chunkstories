@@ -123,7 +123,7 @@ public class FontRenderer2
 
 					float border = size / 16;
 					GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(baseX + (translateX), baseY + (translateY), baseX + (translateX + charW + border), baseY + (translateY + fontsize), tx, ty + cellSize, tx + (charW + border) / 16f / size, ty,
-							fontTexture.getId(), false, true, color);
+							fontTexture, false, true, color);
 					
 					translateX += charW;
 					l += charW;

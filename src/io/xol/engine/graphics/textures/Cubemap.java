@@ -29,7 +29,7 @@ public class Cubemap extends Texture
 	Face faces[] = new Face[6];
 	int size;
 	
-	public Cubemap(TextureType type, int size)
+	public Cubemap(TextureFormat type, int size)
 	{
 		super(type);
 		this.size = size;
@@ -49,7 +49,7 @@ public class Cubemap extends Texture
 	
 	public Cubemap(String name)
 	{
-		this(TextureType.RGBA_8BPP, 0);
+		this(TextureFormat.RGBA_8BPP, 0);
 		this.name = name;
 		loadCubemapFromDisk();
 	}
@@ -181,7 +181,7 @@ public class Cubemap extends Texture
 	@Override
 	public long getVramUsage()
 	{
-		return type.getBytesUsed() * 6 * size * size;
+		return type.getBytesPerTexel() * 6 * size * size;
 	}
 	
 }

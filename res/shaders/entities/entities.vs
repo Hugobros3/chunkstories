@@ -45,11 +45,8 @@ uniform mat3 normalMatrixInv;
 
 uniform vec2 worldLight;
 
-uniform mat4 localTransform;
-uniform mat3 localTransformNormal;
-
-uniform mat4 boneTransform;
-uniform mat3 boneTransformNormal;
+uniform mat4 objectMatrix;
+uniform mat3 objectMatrixNormal;
 
 uniform mat4 offsetTransform;
 
@@ -59,7 +56,7 @@ uniform float wetness;
 void main(){
 	//Usual variable passing
 	texcoord = texCoordIn;
-	vec4 v = localTransform * boneTransform * vec4(vertexIn.xyz, 1.0);
+	vec4 v = objectMatrix * vec4(vertexIn.xyz, 1.0);
 	
 	
 	if(isUsingInstancedData > 0)
@@ -82,7 +79,7 @@ void main(){
 		v+=vec4(objectPosition,0);
 	
 		varyingVertex = v;
-		varyingNormal =  localTransformNormal * boneTransformNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
+		varyingNormal =  objectMatrixNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
 	}
 	
 	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(varyingNormal)), 0.0, 1.0);

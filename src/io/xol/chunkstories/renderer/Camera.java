@@ -402,9 +402,9 @@ public class Camera implements CameraInterface
 		shaderProgram.setUniformMatrix4f("untranslatedMV", untranslatedMVP4f);
 		shaderProgram.setUniformMatrix4f("untranslatedMVInv", untranslatedMVP4fInv);
 		
-		shaderProgram.setUniformFloat2("screenViewportSize", this.viewportWidth, this.viewportHeight);
+		shaderProgram.setUniform2f("screenViewportSize", this.viewportWidth, this.viewportHeight);
 
-		shaderProgram.setUniformFloat3("camPos", pos.clone().negate());
+		shaderProgram.setUniform3f("camPos", pos.clone().negate());
 	}
 	
 	public Vector3f transform3DCoordinate(Vector3f in)

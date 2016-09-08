@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.textures.Texture1D;
-import io.xol.engine.graphics.textures.TextureType;
+import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.math.lalgb.Vector3f;
 
 import org.lwjgl.BufferUtils;
@@ -48,7 +48,7 @@ public class FarTerrainRenderer
 
 	//TODO use a texture
 	private boolean blocksTexturesSummaryDone = false;
-	private Texture1D blockTexturesSummary = new Texture1D(TextureType.RGBA_8BPP);
+	private Texture1D blockTexturesSummary = new Texture1D(TextureFormat.RGBA_8BPP);
 	//private int blocksTexturesSummaryId = -1;
 
 	@SuppressWarnings("unused")

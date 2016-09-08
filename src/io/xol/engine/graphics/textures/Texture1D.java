@@ -19,13 +19,13 @@ public class Texture1D extends Texture
 	boolean wrapping = true;
 	boolean linearFiltering = true;
 
-	public Texture1D(TextureType type)
+	public Texture1D(TextureFormat type)
 	{
 		super(type);
 		//allTextureObjects.add(new WeakReference<Texture1D>(this));
 	}
 
-	public TextureType getType()
+	public TextureFormat getType()
 	{
 		return type;
 	}
@@ -143,7 +143,7 @@ public class Texture1D extends Texture
 	public long getVramUsage()
 	{
 		int surface = getWidth();
-		return surface * type.getBytesUsed();
+		return surface * type.getBytesPerTexel();
 	}
 
 	/*public static long getTotalVramUsage()

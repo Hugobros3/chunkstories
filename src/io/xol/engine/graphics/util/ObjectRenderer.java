@@ -54,7 +54,7 @@ public class ObjectRenderer
 		texture.setLinearFiltering(false);
 		//TexturesHandler.mipmapLevel(texture, -1);
 
-		GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, texture.getId(), false, true, new Vector4f(r, v, b, a));
+		GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, texture, false, true, new Vector4f(r, v, b, a));
 	}
 
 	public static void renderColoredRect(float xpos, float ypos, float w, float h, float rot, String hex, float a)
@@ -65,6 +65,6 @@ public class ObjectRenderer
 
 	public static void renderColoredRect(float xpos, float ypos, float w, float h, float rot, float r, float v, float b, float a)
 	{
-		GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, 0, 0, 0, 0, 0, false, true, new Vector4f(r, v, b, a));
+		GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, 0, 0, 0, 0, null, false, true, new Vector4f(r, v, b, a));
 	}
 }

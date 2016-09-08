@@ -1,6 +1,7 @@
 package io.xol.engine.graphics;
 
 import io.xol.chunkstories.api.exceptions.AttributeNotPresentException;
+import io.xol.chunkstories.api.exceptions.RenderingException;
 import io.xol.chunkstories.api.rendering.AttributeSource;
 import io.xol.chunkstories.api.rendering.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.Light;
@@ -14,6 +15,7 @@ import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.rendering.TexturingConfiguration;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -24,23 +26,15 @@ import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
 import io.xol.engine.graphics.util.GuiRenderer;
 import io.xol.engine.graphics.util.TrueTypeFontRenderer;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
-
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
 
@@ -74,8 +68,6 @@ public class RenderingContext implements RenderingInterface
 	
 	private Deque<RenderingCommandImplementation> commands = new ArrayDeque<RenderingCommandImplementation>();
 	
-	Matrix4f temp = new Matrix4f();
-	Matrix3f normal = new Matrix3f();
 
 	public RenderingContext(GameWindowOpenGL windows)
 	{
@@ -113,16 +105,16 @@ public class RenderingContext implements RenderingInterface
 		return setCurrentShader(ShadersLibrary.getShaderProgram(shaderName));
 	}
 	
-	public ShaderInterface setCurrentShader(ShaderProgram shaderProgram)
+	private ShaderInterface setCurrentShader(ShaderProgram shaderProgram)
 	{
 		//Save calls
 		if (shaderProgram != currentlyBoundShader)
 		{
 			//When changing shaders, we make sure we disable whatever was enabled
+			flush();
 			
 			//resetAllVertexAttributesLocations();
 			//disableUnusedVertexAttributes();
-			shaderProgram.use();
 		}
 		currentlyBoundShader = shaderProgram;
 		return currentlyBoundShader;
@@ -208,64 +200,6 @@ public class RenderingContext implements RenderingInterface
 	{
 		return trueTypeFontRenderer;
 	}
-	
-	//Matrix4f currentTransformationMatrix = new Matrix4f();
-	
-	/**
-	 * Sets the current local matrix transformation and normal 3x3 counterpart
-	 * 
-	 * @param matrix
-	 */
-	private void sendTransformationMatrix(Matrix4f matrix)
-	{
-		if (matrix == null)
-			matrix = new Matrix4f();
-		
-		//currentTransformationMatrix = matrix;
-		
-		this.currentlyBoundShader.setUniformMatrix4f("localTransform", matrix);
-		Matrix4f.invert(matrix, temp);
-		Matrix4f.transpose(temp, temp);
-		normal.m00 = temp.m00;
-		normal.m01 = temp.m01;
-		normal.m02 = temp.m02;
-
-		normal.m10 = temp.m10;
-		normal.m11 = temp.m11;
-		normal.m12 = temp.m12;
-
-		normal.m20 = temp.m20;
-		normal.m21 = temp.m21;
-		normal.m22 = temp.m22;
-		this.currentlyBoundShader.setUniformMatrix3f("localTransformNormal", normal);
-	}
-
-	/**
-	 * Sets the current bone matrix transformation and normal 3x3 counterpart
-	 * 
-	 * @param matrix
-	 */
-	private void sendBoneTransformationMatrix(Matrix4f matrix)
-	{
-		if (matrix == null)
-			matrix = new Matrix4f();
-		this.currentlyBoundShader.setUniformMatrix4f("boneTransform", matrix);
-
-		Matrix4f.invert(matrix, temp);
-		Matrix4f.transpose(temp, temp);
-		normal.m00 = temp.m00;
-		normal.m01 = temp.m01;
-		normal.m02 = temp.m02;
-
-		normal.m10 = temp.m10;
-		normal.m11 = temp.m11;
-		normal.m12 = temp.m12;
-
-		normal.m20 = temp.m20;
-		normal.m21 = temp.m21;
-		normal.m22 = temp.m22;
-		this.currentlyBoundShader.setUniformMatrix3f("boneTransformNormal", normal);
-	}
 
 	/*public Matrix4f setObjectPosition(Vector3f position)
 	{
@@ -302,11 +236,10 @@ public class RenderingContext implements RenderingInterface
 	}
 	
 	static VerticesObject fsQuadVertices = null;
+	static AttributeSource fsQuadAttrib;
 	
-	public void drawFSQuad(int vertexAttribLocation)
+	public void drawFSQuad()
 	{
-		if (vertexAttribLocation < 0)
-			return;
 		fsQuadVertices = null;
 		if (fsQuadVertices == null)
 		{
@@ -316,11 +249,16 @@ public class RenderingContext implements RenderingInterface
 			fsQuadBuffer.flip();
 			
 			fsQuadVertices.uploadData(fsQuadBuffer);
+			
+			fsQuadAttrib = fsQuadVertices.asAttributeSource(VertexFormat.FLOAT, 2);
 		}
 		//glBindBuffer(GL_ARRAY_BUFFER, 0);
-		setVertexAttributePointerLocation(vertexAttribLocation, 2, GL_FLOAT, false, 0, 0, fsQuadVertices);
 		
-		GLCalls.drawArrays(GL_TRIANGLES, 0, 6);
+		this.bindAttribute("vertexIn", fsQuadAttrib);
+		//setVertexAttributePointerLocation(vertexAttribLocation, 2, GL_FLOAT, false, 0, 0, fsQuadVertices);
+		
+		this.draw(Primitive.TRIANGLE, 0, 6);
+		//GLCalls.drawArrays(GL_TRIANGLES, 0, 6);
 		//disableVertexAttribute(vertexAttribLocation);
 	}
 	
@@ -374,6 +312,7 @@ public class RenderingContext implements RenderingInterface
 		RenderingCommandImplementation command = new RenderingCommandImplementation(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix, startAt, count);
 		
 		commands.addLast(command);
+		flush();
 		
 		return command;
 	}
@@ -386,7 +325,14 @@ public class RenderingContext implements RenderingInterface
 		{
 			RenderingCommandImplementation command = i.next();
 			
-			command.render(this);
+			try
+			{
+				command.render(this);
+			}
+			catch (RenderingException e)
+			{
+				e.printStackTrace();
+			}
 			
 			i.remove();
 		}

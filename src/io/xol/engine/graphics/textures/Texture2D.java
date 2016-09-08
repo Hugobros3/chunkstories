@@ -42,19 +42,19 @@ public class Texture2D extends Texture
 
 	private boolean scheduledForLoad = false;
 
-	public Texture2D(TextureType type)
+	public Texture2D(TextureFormat type)
 	{
 		super(type);
 	}
 
-	public TextureType getType()
+	public TextureFormat getType()
 	{
 		return type;
 	}
 
 	public Texture2D(String name)
 	{
-		this(TextureType.RGBA_8BPP);
+		this(TextureFormat.RGBA_8BPP);
 		this.name = name;
 		loadTextureFromDisk();
 	}
@@ -342,6 +342,6 @@ public class Texture2D extends Texture
 	public long getVramUsage()
 	{
 		int surface = getWidth() * getHeight();
-		return surface * type.getBytesUsed();
+		return surface * type.getBytesPerTexel();
 	}
 }

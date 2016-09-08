@@ -1,5 +1,7 @@
 package io.xol.chunkstories.api.rendering;
 
+import io.xol.chunkstories.api.exceptions.RenderingException;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -11,6 +13,7 @@ public interface Renderable
 {
 	/**
 	 * Setups the RenderingInterface as it needs and registers a RenderingCommand
+	 * @throws RenderingException 
 	 */
-	public RenderingCommand render(RenderingInterface renderingInterface);
+	public RenderingCommand render(RenderingInterface renderingInterface) throws RenderingException;
 }

@@ -25,5 +25,5 @@ public interface TexturingConfiguration
 	 */
 	public boolean isCompatibleWith(TexturingConfiguration boundTextures);
 	
-	public void setup(ShaderInterface shaderInterface) throws NotEnoughtTextureUnitsException;
+	public void setup(RenderingInterface renderingInterface) throws NotEnoughtTextureUnitsException;
 }

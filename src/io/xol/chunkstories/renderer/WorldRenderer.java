@@ -1,6 +1,6 @@
 package io.xol.chunkstories.renderer;
 
-import static io.xol.engine.graphics.textures.TextureType.*;
+import static io.xol.engine.graphics.textures.TextureFormat.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 
@@ -39,7 +39,7 @@ import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.GBufferTexture;
 import io.xol.engine.graphics.textures.Texture2D;
-import io.xol.engine.graphics.textures.TextureType;
+import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.PBOPacker;
 import io.xol.engine.math.LoopingMathHelper;
@@ -155,7 +155,7 @@ public class WorldRenderer
 
 	//Environment map
 	private int ENVMAP_SIZE = 128;
-	private Cubemap environmentMap = new Cubemap(TextureType.RGB_HDR, ENVMAP_SIZE);
+	private Cubemap environmentMap = new Cubemap(TextureFormat.RGB_HDR, ENVMAP_SIZE);
 	//private Cubemap environmentMapBlurry = new Cubemap(TextureType.RGB_HDR, ENVMAP_SIZE);
 	//Temp buffers
 	private GBufferTexture environmentMapBufferHDR = new GBufferTexture(RGB_HDR, ENVMAP_SIZE, ENVMAP_SIZE);

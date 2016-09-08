@@ -8,6 +8,7 @@ import java.nio.FloatBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
+import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
@@ -42,20 +43,25 @@ public class FrametimeRenderer
 		glDisable(GL_ALPHA_TEST);
 		glDisable(GL_CULL_FACE);
 		glDepthFunc(GL11.GL_LEQUAL);
-		ShaderProgram overlayProgram = ShadersLibrary.getShaderProgram("fps_graph");
-		renderingContext.setCurrentShader(overlayProgram);
+
+		renderingContext.useShader("overlayProgram");
+		//ShaderProgram overlayProgram = ShadersLibrary.getShaderProgram("fps_graph");
+		ShaderInterface overlayProgram = renderingContext.currentShader();
 		//overlayProgram.use(true);
-		overlayProgram.setUniformFloat("currentTiming", lel);
-		overlayProgram.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		overlayProgram.setUniform1f("currentTiming", lel);
+		overlayProgram.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		//System.out.println(XolioWindow.frameW);
-		int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");
+		
+		//int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");
 		//System.out.println("ntm"+vertexIn);
-		renderingContext.enableVertexAttribute(vertexIn);
+		//renderingContext.enableVertexAttribute(vertexIn);
 		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		data.rewind();
+		
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		renderingContext.setVertexAttributePointerLocation(vertexIn, 2, false, 0, data);
 		GLCalls.drawArrays(GL_LINES, 0, 2000);
-		renderingContext.disableVertexAttribute(vertexIn);
+		
+		//renderingContext.disableVertexAttribute(vertexIn);
 	}
 }

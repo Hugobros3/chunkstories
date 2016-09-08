@@ -19,8 +19,7 @@ uniform vec3 objectPosition;
 
 uniform float entity;
 
-uniform mat4 localTransform;
-uniform mat4 boneTransform;
+uniform mat4 objectMatrix;
 
 uniform float isUsingInstancedData;
 uniform sampler2D instancedDataSampler;
@@ -30,7 +29,7 @@ uniform sampler2D instancedDataSampler;
 void main(){
 	texCoordPassed = vec4(texCoordIn/32768.0,0,0);
 	//gl_Position = ftransform();
-	vec4 v = localTransform * boneTransform * vec4(vertexIn.xyz, 1);
+	vec4 v = objectMatrix * vec4(vertexIn.xyz, 1);
 	
 	float movingness = normalIn.w * (1-entity);
 	<ifdef dynamicGrass>

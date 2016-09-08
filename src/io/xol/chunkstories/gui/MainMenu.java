@@ -20,7 +20,7 @@ import io.xol.engine.graphics.fbo.FBO;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.GBufferTexture;
-import io.xol.engine.graphics.textures.TextureType;
+import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.base.GameWindowOpenGL;
 
@@ -38,9 +38,9 @@ public class MainMenu extends OverlayableScene
 	String skyBox;
 	Camera cam = new Camera();
 
-	private GBufferTexture unblurred = new GBufferTexture(TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture blurredH = new GBufferTexture(TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture blurredV = new GBufferTexture(TextureType.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture unblurred = new GBufferTexture(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture blurredH = new GBufferTexture(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private GBufferTexture blurredV = new GBufferTexture(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	private FBO unblurredFBO = new FBO(null, unblurred);
 	private FBO blurredHFBO = new FBO(null, blurredH);
@@ -140,54 +140,63 @@ public class MainMenu extends OverlayableScene
 		// Render this shit boy
 		unblurredFBO.bind();
 		cam.justSetup(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		renderingContext.setCurrentShader(menuSkyBox);
+		renderingContext.useShader("mainMenuSkyBox");
 		//menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);
-		menuSkyBox.setUniformSamplerCubemap(0, "skyBox", TexturesHandler.getCubemapID(skyBox));
+		
+		renderingContext.bindCubemap("skyBox", TexturesHandler.getCubemap(skyBox));
+		//menuSkyBox.setUniformSamplerCubemap(0, "skyBox", TexturesHandler.getCubemapID(skyBox));
 		cam.rotationX = 35 + (float) (Math.sin(cam.rotationY / 15)) * 5f;
 		cam.rotationY = (System.currentTimeMillis()%1000000)/200.0f;
-		renderingContext.drawFSQuad(menuSkyBox.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad();
 		
 		// Blurring to H
 		blurredHFBO.bind();
-		renderingContext.setCurrentShader(blurH);
+		renderingContext.useShader("blurH");
 		//blurH.use(true);
-		blurH.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		blurH.setUniformSampler(0, "inputTexture", unblurred.getId());
-		renderingContext.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
+		blurH.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		
+		renderingContext.bindTexture2D("inputTexture", unblurred);
+		//blurH.setUniformSampler(0, "inputTexture", unblurred.getId());
+		renderingContext.drawFSQuad();
 
 		for (int i = 0; i < 1; i++)
 		{
 			blurredVFBO.bind();
-			renderingContext.setCurrentShader(blurV);
+			renderingContext.useShader("blurV");
 			//blurV.use(true);
-			blurV.setUniformFloat("lookupScale", 1);
-			blurV.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
-			blurV.setUniformSampler(0, "inputTexture", blurredH.getId());
-			renderingContext.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
+			blurV.setUniform1f("lookupScale", 1);
+			blurV.setUniform2f("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
+			
+			//blurV.setUniformSampler(0, "inputTexture", blurredH.getId());
+			renderingContext.bindTexture2D("inputTexture", blurredH);
+			renderingContext.drawFSQuad();
 
 			blurredHFBO.bind();
-			renderingContext.setCurrentShader(blurH);
+			renderingContext.useShader("blurH");
 			//blurH.use(true);
-			blurH.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
-			blurH.setUniformSampler(0, "inputTexture", blurredV.getId());
-			renderingContext.drawFSQuad(blurH.getVertexAttributeLocation("vertexIn"));
+			blurH.setUniform2f("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
+			//blurH.setUniformSampler(0, "inputTexture", blurredV.getId());
+			renderingContext.bindTexture2D("inputTexture", blurredV);
+			renderingContext.drawFSQuad();
 		}
 
 		blurredVFBO.bind();
-		renderingContext.setCurrentShader(blurV);
+		renderingContext.useShader("blurV");
 		//blurV.use(true);
-		blurV.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		blurV.setUniformSampler(0, "inputTexture", blurredH.getId());
-		renderingContext.drawFSQuad(blurV.getVertexAttributeLocation("vertexIn"));
+		blurV.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		//blurV.setUniformSampler(0, "inputTexture", blurredH.getId());
+		renderingContext.bindTexture2D("inputTexture", blurredH);
+		renderingContext.drawFSQuad();
 		//blurV.use(false);
 
 		FBO.unbind();
-		renderingContext.setCurrentShader(blit);
+		renderingContext.useShader("blit");
 		//blit.use(true);
-		blit.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		blit.setUniformSampler(0, "diffuseTexture", blurredV.getId());
-		renderingContext.drawFSQuad(blit.getVertexAttributeLocation("vertexIn"));
+		blit.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		//blit.setUniformSampler(0, "diffuseTexture", blurredV.getId());
+		renderingContext.bindTexture2D("inputTexture", blurredV);
+		renderingContext.drawFSQuad();
 		
 		currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		

@@ -26,9 +26,8 @@ public class GLCalls
 		return "Drawn "+formatBigAssNumber(verticesDrawn+"")+" verts, in "+drawCalls+" draw calls.";
 	}
 	
-	public static void drawArrays(int mode, int first, int verticesCount)
+	public static void drawArrays_(int mode, int first, int verticesCount)
 	{
-		GameWindowOpenGL.getInstance().getRenderingContext().disableUnusedVertexAttributes();
 		glDrawArrays(mode, first, verticesCount);
 		verticesDrawn += verticesCount;
 		drawCalls++;
@@ -48,7 +47,6 @@ public class GLCalls
 
 	public static void drawArraysInstanced(int mode, int first, int verticesCount, int instancesCount)
 	{
-		GameWindowOpenGL.getInstance().getRenderingContext().disableUnusedVertexAttributes();
 		glDrawArraysInstancedARB(mode, first, verticesCount, instancesCount);
 		verticesDrawn += instancesCount * verticesCount;
 		drawCalls++;

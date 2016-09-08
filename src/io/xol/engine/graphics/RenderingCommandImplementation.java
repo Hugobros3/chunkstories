@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import io.xol.chunkstories.api.exceptions.RenderingException;
 import io.xol.chunkstories.api.rendering.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration;
 import io.xol.chunkstories.api.rendering.Renderable;
@@ -13,7 +14,12 @@ import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.rendering.TexturingConfiguration;
 import io.xol.chunkstories.api.rendering.UniformsConfiguration;
+import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.*;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -21,9 +27,14 @@ import io.xol.engine.math.lalgb.Matrix4f;
 
 public class RenderingCommandImplementation implements RenderingCommand, Renderable
 {
+	//For merging draw calls
 	List<Matrix4f> objectMatrices = new LinkedList<Matrix4f>();
 
+	//Draw call paramters
 	protected Primitive primitive;
+	int start, count;
+	
+	//Pipeline state
 	protected ShaderInterface shaderInterface;
 	protected TexturingConfiguration texturingConfiguration;
 	protected AttributesConfiguration attributesConfiguration;
@@ -34,6 +45,9 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 			PipelineConfiguration pipelineConfiguration, Matrix4f objectMatrix, int start, int count)
 	{
 		this.primitive = primitive;
+		this.start = start;
+		this.count = count;
+		
 		this.shaderInterface = shaderInterface;
 		this.texturingConfiguration = texturingConfiguration;
 		this.attributesConfiguration = attributesConfiguration;
@@ -116,14 +130,55 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 	}
 
 	@Override
-	public RenderingCommand render(RenderingInterface renderingInterface)
+	public RenderingCommand render(RenderingInterface renderingInterface) throws RenderingException
 	{
+		//Make sure to use the right shader
+		((ShaderProgram)shaderInterface).use();
 		
 		//Setups vertex attributes
 		this.attributesConfiguration.setup(renderingInterface);
 		
+		//Bind required textures
+		this.texturingConfiguration.setup(renderingInterface);
+		
+		//Send & compute the object matrix
+		Matrix4f objectMatrix = renderingInterface.getObjectMatrix();
+		if(objectMatrix != null)
+		{
+			this.shaderInterface.setUniformMatrix4f("boneTransform", objectMatrix);
+			Matrix4f.invert(objectMatrix, temp);
+			Matrix4f.transpose(temp, temp);
+			//TODO make a clean function for this
+			normal.m00 = temp.m00;
+			normal.m01 = temp.m01;
+			normal.m02 = temp.m02;
+
+			normal.m10 = temp.m10;
+			normal.m11 = temp.m11;
+			normal.m12 = temp.m12;
+
+			normal.m20 = temp.m20;
+			normal.m21 = temp.m21;
+			normal.m22 = temp.m22;
+			this.shaderInterface.setUniformMatrix3f("boneTransformNormal", normal);
+		}
+		
+		//Setup pipeline state
+		this.pipelineConfiguration.setup(renderingInterface);
+		
+		//Sends uniforms
+		this.uniformsConfiguration.setup(renderingInterface);
+		
+		//Do the draw call
+		GLCalls.drawArrays_(modes[primitive.ordinal()], start, count);
+		
 		return null;
 	}
+	
+	int modes[] = {GL_POINTS, GL_LINES, GL_TRIANGLES};
+	
+	private static Matrix4f temp = new Matrix4f();
+	private static Matrix3f normal = new Matrix3f();
 
 	@Override
 	public Primitive getPrimitive()

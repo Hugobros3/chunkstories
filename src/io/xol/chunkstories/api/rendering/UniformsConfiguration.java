@@ -17,5 +17,5 @@ public interface UniformsConfiguration
 	/**
 	 * Setups the uniforms for the shader
 	 */
-	public void setup();
+	public void setup(RenderingInterface renderingInterface);
 }

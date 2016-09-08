@@ -20,10 +20,10 @@ public abstract class Texture
 {
 	private WeakReference<Texture> selfReference;
 
-	final TextureType type;
+	final TextureFormat type;
 	int glId = -1;
 
-	public Texture(TextureType type)
+	public Texture(TextureFormat type)
 	{
 		this.type = type;
 

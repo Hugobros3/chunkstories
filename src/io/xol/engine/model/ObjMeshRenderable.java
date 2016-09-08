@@ -4,7 +4,6 @@ import static org.lwjgl.opengl.GL11.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,16 +11,17 @@ import java.util.Map;
 
 import org.lwjgl.BufferUtils;
 
+import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.engine.animation.SkeletonAnimator;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.RenderableAnimatable;
+import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.GBufferTexture;
 import io.xol.engine.graphics.textures.Texture2D;
-import io.xol.engine.graphics.textures.TextureType;
+import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3f;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -68,11 +68,6 @@ public class ObjMeshRenderable implements RenderableAnimatable
 	protected VerticesObject texCoordDataOnGpu;
 	protected VerticesObject normalsDataOnGpu;
 
-	public VerticesObject getDrawableModel()
-	{
-		return verticesDataOnGpu;
-	}
-
 	@Override
 	public void render(RenderingContext renderingContext)
 	{
@@ -102,6 +97,7 @@ public class ObjMeshRenderable implements RenderableAnimatable
 	{
 		prepareDraw(renderingContext);
 
+		Matrix4f currentObjectMatrix = renderingContext.getObjectMatrix();
 		Matrix4f matrix;
 
 		int totalSize = 0;
@@ -131,16 +127,17 @@ public class ObjMeshRenderable implements RenderableAnimatable
 
 				//Get transformer matrix
 				matrix = skeleton.getBoneHierarchyTransformationMatrixWithOffset(currentVertexGroup, animationTime < 0 ? 0 : animationTime);
+				
+				
 				//Send the transformation
-
-				//if(currentVertexGroup.equals("boneArmLD"))
-				//	System.out.println(matrix);
-
-				//System.out.println(currentVertexGroup);
-				renderingContext.sendBoneTransformationMatrix(matrix);
+				Matrix4f.mul(matrix, currentObjectMatrix, matrix);
+				
+				renderingContext.setObjectMatrix(matrix);
+				//renderingContext.sendBoneTransformationMatrix(matrix);
 				//Only what we can care about
 
-				GLCalls.drawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
+				renderingContext.draw(Primitive.TRIANGLE, totalSize * 3, i * 3);
+				//GLCalls.drawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
 				//GLCalls.drawArraysInstanced(GL_TRIANGLES, totalSize * 3, i * 3, 50);
 				totalSize += i;
 			}
@@ -152,10 +149,12 @@ public class ObjMeshRenderable implements RenderableAnimatable
 			System.out.println(verticesDataOnGpu);
 			System.out.println(texCoordDataOnGpu);
 			System.out.println(normalsDataOnGpu);*/
-			GLCalls.drawArrays(GL_TRIANGLES, 0, verticesCount);
+			renderingContext.draw(Primitive.TRIANGLE, 0, verticesCount);
+			//GLCalls.drawArrays(GL_TRIANGLES, 0, verticesCount);
 		}
 
-		renderingContext.sendBoneTransformationMatrix(null);
+		renderingContext.setObjectMatrix(currentObjectMatrix);
+		//renderingContext.sendBoneTransformationMatrix(null);
 
 		//renderInstanciated(renderingContext, Arrays.asList(new AnimatableData(new Vector3f(0.0, 2.0f, 0.5f), skeleton, animationTime)));
 		//glCullFace(GL_FRONT);
@@ -164,41 +163,45 @@ public class ObjMeshRenderable implements RenderableAnimatable
 	private void prepareDraw(RenderingContext renderingContext)
 	{
 		//System.out.println("slt");
-		renderingContext.resetAllVertexAttributesLocations();w
-		renderingContext.disableUnusedVertexAttributes();
+		
+		//renderingContext.resetAllVertexAttributesLocations();
+		//renderingContext.disableUnusedVertexAttributes();
 
-		int vertexIn = renderingContext.currentShader().getVertexAttributeLocation("vertexIn");
+		/*int vertexIn = renderingContext.currentShader().getVertexAttributeLocation("vertexIn");
 		int texCoordIn = renderingContext.currentShader().getVertexAttributeLocation("texCoordIn");
 		int normalIn = renderingContext.currentShader().getVertexAttributeLocation("normalIn");
 
 		renderingContext.enableVertexAttribute(vertexIn);
 		renderingContext.enableVertexAttribute(texCoordIn);
 		if (normalIn != -1)
-			renderingContext.enableVertexAttribute(normalIn);
+			renderingContext.enableVertexAttribute(normalIn);*/
 
 		//System.out.println("ColorIn in is at :"+renderingContext.getCurrentShader().getVertexAttributeLocation("colorIn"));
 
-		renderingContext.currentShader().setUniformFloat("useColorIn", 0.0f);
-		renderingContext.currentShader().setUniformFloat("useNormalIn", 1.0f);
+		renderingContext.currentShader().setUniform1f("useColorIn", 0.0f);
+		renderingContext.currentShader().setUniform1f("useNormalIn", 1.0f);
 
 		//Make sure vertex data is avaible
-		getDrawableModel().bind();
-
-		renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
-		texCoordDataOnGpu.bind();
-		renderingContext.setVertexAttributePointerLocation(texCoordIn, 2, GL_FLOAT, false, 0, 0);
-		if (normalIn != -1)
+		
+		renderingContext.bindAttribute("vertexIn", verticesDataOnGpu.asAttributeSource(VertexFormat.FLOAT, 3));
+		//verticesDataOnGpu.bind();
+		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
+		
+		renderingContext.bindAttribute("texCoordIn", texCoordDataOnGpu.asAttributeSource(VertexFormat.FLOAT, 2));
+		//texCoordDataOnGpu.bind();
+		//renderingContext.setVertexAttributePointerLocation(texCoordIn, 2, GL_FLOAT, false, 0, 0);
+		
+		//if (normalIn != -1)
 		{
-			//System.out.println("normal bound to " + normalIn);
-			normalsDataOnGpu.bind();
-			renderingContext.setVertexAttributePointerLocation(normalIn, 3, GL_FLOAT, true, 0, 0);
-			//renderingContext.enableVertexAttribute("colorIn");
-			//renderingContext.setVertexAttributePointerLocation(renderingContext.getCurrentShader().getVertexAttributeLocation("colorIn"), 3, GL_FLOAT, true, 0, 0);
+
+			renderingContext.bindAttribute("normalIn", normalsDataOnGpu.asAttributeSource(VertexFormat.FLOAT, 2));
+			//normalsDataOnGpu.bind();
+			//renderingContext.setVertexAttributePointerLocation(normalIn, 3, GL_FLOAT, true, 0, 0);
 		}
 
 	}
 
-	Texture2D instancesDataTexture = new GBufferTexture(TextureType.RGBA_32F, 32, 32);
+	Texture2D instancesDataTexture = new GBufferTexture(TextureFormat.RGBA_32F, 32, 32);
 	ByteBuffer instancesDataBuffer = BufferUtils.createByteBuffer(32 * 32 * 4 * 4);
 
 	@Override
@@ -296,11 +299,12 @@ public class ObjMeshRenderable implements RenderableAnimatable
 
 	private void drawInstanceBufferContents(RenderingContext renderingContext, int start, int count, int dataInInstancesBuffer)
 	{
-		renderingContext.currentShader().setUniformSampler(13, "instancedDataSampler", instancesDataTexture);
+		renderingContext.bindTexture2D("instancedDataSampler", instancesDataTexture);
+		//renderingContext.currentShader().setUniformSampler(13, "instancedDataSampler", instancesDataTexture);
 
 		//System.out.println("Drawing "+dataInInstancesBuffer+" instances of "+start);
-		renderingContext.currentShader().setUniformFloat("isUsingInstancedData", 1);
+		renderingContext.currentShader().setUniform1f("isUsingInstancedData", 1);
 		GLCalls.drawArraysInstanced(GL_TRIANGLES, start, count, dataInInstancesBuffer);
-		renderingContext.currentShader().setUniformFloat("isUsingInstancedData", 0);
+		renderingContext.currentShader().setUniform1f("isUsingInstancedData", 0);
 	}
 }

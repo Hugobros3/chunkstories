@@ -43,7 +43,7 @@ public class LightsRenderer
 		if (lightsBuffer == 64)
 		{
 			lightShader.setUniformInt("lightsToRender", lightsBuffer);
-			renderingContext.drawFSQuad(lightShader.getVertexAttributeLocation("vertexIn"));
+			renderingContext.drawFSQuad();
 			//drawFSQuad();
 			lightsBuffer = 0;
 		}

@@ -11,6 +11,8 @@ public interface PipelineConfiguration
 	public BlendMode getBlendMode();
 
 	public PolygonFillMode getPolygonFillMode();
+	
+	//TODO depthMask
 
 	public static enum DepthTestMode {
 		DISABLED, GREATER, GREATER_OR_EQUAL, EQUAL, LESS_OR_EQUAL, LESS;
@@ -23,4 +25,6 @@ public interface PipelineConfiguration
 	public static enum PolygonFillMode {
 		FILL, WIREFRAME, POINTS;
 	}
+
+	public void setup(RenderingInterface renderingInterface);
 }

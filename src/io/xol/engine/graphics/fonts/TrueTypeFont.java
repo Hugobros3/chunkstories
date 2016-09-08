@@ -2,7 +2,7 @@ package io.xol.engine.graphics.fonts;
 
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.graphics.textures.Texture2D;
-import io.xol.engine.graphics.textures.TextureType;
+import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.graphics.util.GuiRenderer;
 import io.xol.engine.math.HexTools;
 import io.xol.engine.misc.ColorsTools;
@@ -359,7 +359,7 @@ public class TrueTypeFont
 			}
 			byteBuffer.flip();
 
-			Texture2D texture = new Texture2D(TextureType.RGBA_8BPP);
+			Texture2D texture = new Texture2D(TextureFormat.RGBA_8BPP);
 
 			texture.uploadTextureData(width, height, byteBuffer);
 			texture.setLinearFiltering(false);

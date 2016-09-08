@@ -14,7 +14,7 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class GBufferTexture extends Texture2D implements FBOAttachement
 {
-	public GBufferTexture(TextureType type, int w, int h)
+	public GBufferTexture(TextureFormat type, int w, int h)
 	{
 		super(type);
 		
@@ -25,7 +25,7 @@ public class GBufferTexture extends Texture2D implements FBOAttachement
 	{
 		bind();
 
-		if (this.width == w && this.height == h && !(type == TextureType.RGB_HDR))
+		if (this.width == w && this.height == h && !(type == TextureFormat.RGB_HDR))
 			return;
 
 		this.width = w;
@@ -61,7 +61,7 @@ public class GBufferTexture extends Texture2D implements FBOAttachement
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, (ByteBuffer) null);
 		}*/
 		
-		if (type != TextureType.DEPTH_SHADOWMAP)
+		if (type != TextureFormat.DEPTH_SHADOWMAP)
 		{
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

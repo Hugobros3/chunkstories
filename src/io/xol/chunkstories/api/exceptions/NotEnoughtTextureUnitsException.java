@@ -4,7 +4,7 @@ package io.xol.chunkstories.api.exceptions;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class NotEnoughtTextureUnitsException extends Exception
+public class NotEnoughtTextureUnitsException extends RenderingException
 {
 
 	/**
