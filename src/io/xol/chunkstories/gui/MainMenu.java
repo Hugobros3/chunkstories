@@ -72,7 +72,7 @@ public class MainMenu extends OverlayableScene
 		if (possibleSkyboxes == null || possibleSkyboxes.length == 0)
 		{
 			// No skyboxes screen avaible, default to basic skybox
-			skyBox = "./textures/skybox";
+			skyBox = "./res/textures/skybox";
 		} else
 		{
 			// Choose a random one.
@@ -139,12 +139,13 @@ public class MainMenu extends OverlayableScene
 		
 		// Render this shit boy
 		unblurredFBO.bind();
+		FBO.unbind();
 		cam.justSetup(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		renderingContext.useShader("mainMenuSkyBox");
 		//menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);
 		
-		renderingContext.bindCubemap("skyBox", TexturesHandler.getCubemap(skyBox));
+		renderingContext.bindCubemap("skybox", TexturesHandler.getCubemap(skyBox));
 		//menuSkyBox.setUniformSamplerCubemap(0, "skyBox", TexturesHandler.getCubemapID(skyBox));
 		cam.rotationX = 35 + (float) (Math.sin(cam.rotationY / 15)) * 5f;
 		cam.rotationY = (System.currentTimeMillis()%1000000)/200.0f;
@@ -190,14 +191,14 @@ public class MainMenu extends OverlayableScene
 		renderingContext.drawFSQuad();
 		//blurV.use(false);
 
-		FBO.unbind();
+		/*FBO.unbind();
 		renderingContext.useShader("blit");
 		//blit.use(true);
 		blit.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		//blit.setUniformSampler(0, "diffuseTexture", blurredV.getId());
 		renderingContext.bindTexture2D("inputTexture", blurredV);
-		renderingContext.drawFSQuad();
-		
+		renderingContext.drawFSQuad();*/
+		FBO.unbind();
 		currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		
 		//renderingContext.getGuiRenderer().drawBuffer();

@@ -498,6 +498,7 @@ public class ShaderProgram implements ShaderInterface
 			for(Entry<String, Matrix4f> e : uniformsAttributesMatrix4.entrySet())
 			{
 				e.getValue().store(matrix4fBuffer);
+				matrix4fBuffer.position(0);
 				glUniformMatrix4(getUniformLocation(e.getKey()), false, matrix4fBuffer);
 				matrix4fBuffer.clear();
 			}
@@ -505,6 +506,7 @@ public class ShaderProgram implements ShaderInterface
 			for(Entry<String, Matrix3f> e : uniformsAttributesMatrix3.entrySet())
 			{
 				e.getValue().store(matrix3fBuffer);
+				matrix4fBuffer.position(0);
 				glUniformMatrix3(getUniformLocation(e.getKey()), false, matrix3fBuffer);
 				matrix3fBuffer.clear();
 			}
@@ -541,7 +543,7 @@ public class ShaderProgram implements ShaderInterface
 		currentProgram = shaderProgramId;
 	}
 	
-	int currentProgram = -2;
+	static int currentProgram = -2;
 
 	protected void free()
 	{

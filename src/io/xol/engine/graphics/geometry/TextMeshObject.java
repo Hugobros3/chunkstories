@@ -116,12 +116,6 @@ public class TextMeshObject
 		renderingContext.bindAlbedoTexture(TrueTypeFont.arial11px.glTextures[0]);
 		
 		glDisable(GL_CULL_FACE);
-		renderingContext.currentShader().setUniformFloat("useColorIn", 1.0f);
-		renderingContext.currentShader().setUniformFloat("useNormalIn", 0.0f);
-
-		renderingContext.enableVertexAttribute("vertexIn");
-		renderingContext.enableVertexAttribute("texCoordIn");
-		renderingContext.enableVertexAttribute("colorIn");
 		//renderingContext.disableVertexAttribute("normalIn");
 		for (VerticesObject verticesObject : verticesObjects)
 		{
@@ -136,9 +130,5 @@ public class TextMeshObject
 			verticesObject.drawElementsTriangles((int) (verticesObject.getVramUsage() / (4 * (3 + 2 + 4))));
 			//renderingContext.enableVertexAttribute("colorIn");
 		}
-		renderingContext.enableVertexAttribute("colorIn");
-		renderingContext.enableVertexAttribute("normalIn");
-		renderingContext.currentShader().setUniformFloat("useColorIn", 0.0f);
-		renderingContext.currentShader().setUniformFloat("useNormalIn", 1.0f);
 	}
 }

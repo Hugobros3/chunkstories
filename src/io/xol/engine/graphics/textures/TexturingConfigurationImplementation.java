@@ -186,7 +186,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 			Texture texture = entry.getValue();
 			if(texture == null)
 				continue;
-			
+
 			//Check it is used in the shader
 			int textureLocation = shaderProgram.getUniformLocation(entry.getKey());
 			if(textureLocation == -1)

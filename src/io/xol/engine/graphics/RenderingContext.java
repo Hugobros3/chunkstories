@@ -113,6 +113,8 @@ public class RenderingContext implements RenderingInterface
 			//When changing shaders, we make sure we disable whatever was enabled
 			flush();
 			
+			texturingConfiguration = new TexturingConfigurationImplementation();
+			attributesConfiguration = new AttributesConfigurationImplementation();
 			//resetAllVertexAttributesLocations();
 			//disableUnusedVertexAttributes();
 		}

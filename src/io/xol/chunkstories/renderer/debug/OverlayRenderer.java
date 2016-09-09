@@ -92,7 +92,7 @@ public class OverlayRenderer
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glDepthFunc(GL11.GL_LEQUAL);
 		ShaderProgram overlayProgram = ShadersLibrary.getShaderProgram("overlay");
-		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(overlayProgram);
+		//GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(overlayProgram);
 		//overlayProgram.use(true);
 		camera.setupShader(overlayProgram);
 		int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");

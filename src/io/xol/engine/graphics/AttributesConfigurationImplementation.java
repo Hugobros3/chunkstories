@@ -12,9 +12,6 @@ import io.xol.chunkstories.api.rendering.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.*;
-import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
 public class AttributesConfigurationImplementation implements AttributesConfiguration

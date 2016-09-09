@@ -172,6 +172,8 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 		//Do the draw call
 		GLCalls.drawArrays_(modes[primitive.ordinal()], start, count);
 		
+		//System.out.println("RenderingCommand "+start+ " / " + count + "   " + renderingInterface.currentShader());
+		
 		return null;
 	}
 	
