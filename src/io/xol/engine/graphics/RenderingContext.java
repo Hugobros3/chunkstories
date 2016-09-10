@@ -333,6 +333,7 @@ public class RenderingContext implements RenderingInterface
 	public void flush()
 	{
 		Iterator<RenderingCommandImplementation> i = commands.iterator();
+		int z = 0;
 		while(i.hasNext())
 		{
 			RenderingCommandImplementation command = i.next();
@@ -347,6 +348,8 @@ public class RenderingContext implements RenderingInterface
 			}
 			
 			i.remove();
+			z++;
 		}
+		//System.out.println("Flushed z"+z);
 	}
 }

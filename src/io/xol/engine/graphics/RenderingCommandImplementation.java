@@ -164,7 +164,7 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 		}
 		
 		//Setup pipeline state
-		//this.pipelineConfiguration.setup(renderingInterface);
+		this.pipelineConfiguration.setup(renderingInterface);
 		
 		//Sends uniforms
 		this.uniformsConfiguration.setup(renderingInterface);

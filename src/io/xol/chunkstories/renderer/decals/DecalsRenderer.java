@@ -12,6 +12,8 @@ import org.lwjgl.BufferUtils;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.rendering.DecalsManager;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -194,10 +196,13 @@ public class DecalsRenderer implements DecalsManager
 		renderingContext.bindTexture2D("zBuffer", worldRenderer.zBuffer);
 		//decalsShader.setUniformSampler(1, "zBuffer", worldRenderer.zBuffer);
 
-		glDisable(GL_CULL_FACE);
+		renderingContext.setCullingMode(CullingMode.DISABLED);
+		//glDisable(GL_CULL_FACE);
 		
 		//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-		glEnable(GL_BLEND);
+		
+		renderingContext.setBlendMode(BlendMode.MIX);
+		//glEnable(GL_BLEND);
 		
 		//glDisable(GL_DEPTH_TEST);
 		glDepthMask(false);
@@ -224,9 +229,8 @@ public class DecalsRenderer implements DecalsManager
 		}
 
 		//glEnable(GL_DEPTH_TEST);
-		glDisable(GL_BLEND);
 		glDepthMask(true);
 		
-		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	}
 }

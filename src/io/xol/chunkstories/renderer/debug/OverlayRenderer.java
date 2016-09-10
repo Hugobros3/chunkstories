@@ -9,6 +9,9 @@ import org.lwjgl.opengl.GL11;
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;
@@ -92,11 +95,16 @@ public class OverlayRenderer
 		RenderingContext renderingContext = GameWindowOpenGL.getInstance().getRenderingContext();
 		
 		//System.out.println("ntm");
-		glDisable(GL_CULL_FACE);
+		
+		renderingContext.setCullingMode(CullingMode.DISABLED);
+		renderingContext.setBlendMode(BlendMode.MIX);
+		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		
+		/*glDisable(GL_CULL_FACE);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glDisable(GL11.GL_ALPHA_TEST);
 		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glDepthFunc(GL11.GL_LEQUAL);
+		GL11.glDepthFunc(GL11.GL_LEQUAL);*/
 		ShaderInterface overlayProgram = renderingContext.useShader("overlay");//ShadersLibrary.getShaderProgram("overlay");
 		//GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(overlayProgram);
 		//overlayProgram.use(true);
@@ -113,7 +121,8 @@ public class OverlayRenderer
 		
 		renderingContext.draw(mode == GL_TRIANGLES ? Primitive.TRIANGLE : Primitive.LINE, 0, size);
 		//GLCalls.drawArrays(mode, 0, size);
-		GL11.glDisable(GL11.GL_BLEND);
+		renderingContext.setBlendMode(BlendMode.DISABLED);
+		//GL11.glDisable(GL11.GL_BLEND);
 		data.clear();
 		size = 0;
 	}

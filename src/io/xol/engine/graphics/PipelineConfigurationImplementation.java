@@ -102,22 +102,28 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 		{
 		case DISABLED:
 			depth(false);
+			depthFunc(-1);
 			break;
 		case LESS:
 			depth(true);
 			depthFunc(GL_LESS);
+			break;
 		case LESS_OR_EQUAL:
 			depth(true);
 			depthFunc(GL_LEQUAL);
+			break;
 		case EQUAL:
 			depth(true);
 			depthFunc(GL_EQUAL);
+			break;
 		case GREATER_OR_EQUAL:
 			depth(true);
 			depthFunc(GL_GEQUAL);
+			break;
 		case GREATER:
 			depth(true);
 			depthFunc(GL_GREATER);
+			break;
 		}
 
 		switch (blendMode)
@@ -128,10 +134,10 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 			break;
 		case ALPHA_TEST:
 			alphaTest(true);
-			blend(true);
+			blend(false);
 			break;
 		case MIX:
-			alphaTest(true);
+			alphaTest(false);
 			blend(true);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			break;
@@ -151,9 +157,11 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 		case CLOCKWISE:
 			cull(true);
 			cullFF(GL_CW);
+			break;
 		case COUNTERCLOCKWISE:
 			cull(true);
 			cullFF(GL_CCW);
+			break;
 		}
 		
 		//TODO polyFill
@@ -163,12 +171,12 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	{
 		if (on)
 		{
-			if (!isBlendEnabled)
+			//if (!isBlendEnabled)
 				glEnable(GL_DEPTH_TEST);
 		}
 		else
 		{
-			if (isBlendEnabled)
+			//if (isBlendEnabled)
 				glDisable(GL_DEPTH_TEST);
 		}
 		isBlendEnabled = on;
@@ -176,7 +184,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 
 	private void depthFunc(int depthFunc)
 	{
-		if (depthFunc != currentDepthFunc)
+		//if (depthFunc != currentDepthFunc)
 		{
 			glDepthFunc(depthFunc);
 			currentDepthFunc = depthFunc;
@@ -187,12 +195,12 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	{
 		if (on)
 		{
-			if (!isAlphaTestEnabled)
+			//if (!isAlphaTestEnabled)
 				glEnable(GL_ALPHA_TEST);
 		}
 		else
 		{
-			if (isAlphaTestEnabled)
+			//if (isAlphaTestEnabled)
 				glDisable(GL_ALPHA_TEST);
 		}
 		isAlphaTestEnabled = on;
@@ -202,12 +210,12 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	{
 		if (on)
 		{
-			if (!isBlendingEnabled)
+			//if (!isBlendingEnabled)
 				glEnable(GL_BLEND);
 		}
 		else
 		{
-			if (isBlendingEnabled)
+			//if (isBlendingEnabled)
 				glDisable(GL_BLEND);
 		}
 		isBlendingEnabled = on;
@@ -217,12 +225,12 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	{
 		if (on)
 		{
-			if (!isCullingEnabled)
+			//if (!isCullingEnabled)
 				glEnable(GL_CULL_FACE);
 		}
 		else
 		{
-			if (isCullingEnabled)
+			//if (isCullingEnabled)
 				glDisable(GL_CULL_FACE);
 		}
 		isCullingEnabled = on;
@@ -230,7 +238,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	
 	private void cullFF(int mode)
 	{
-		if (mode != currentCullFunc)
+		//if (mode != currentCullFunc)
 		{
 			glFrontFace(mode);
 			currentCullFunc = mode;

@@ -1,5 +1,8 @@
 package io.xol.engine.graphics.util;
 
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
@@ -68,12 +71,13 @@ public class GuiRenderer
 
 		if (elementsToDraw >= 6 * 1024)
 			drawBuffer();
-
+		
 		if (color != null && color.w < 1)
+		{
 			alpha = true; // Force blending if alpha < 1
+		}
 
-		if(texture != null)
-			setState(texture, alpha, true,  color);
+		setState(texture, alpha, texture != null,  color);
 
 		addVertice(startX, startY, textureStartX, textureStartY );
 		addVertice(startX, endY, textureStartX, textureEndY );
@@ -175,28 +179,28 @@ public class GuiRenderer
 		*/
 		renderingContext.currentShader().setUniform1f("useTexture", useTexture ? 1f : 0f);
 		if(currentColor != null)
+		{	
 			renderingContext.currentShader().setUniform4f("color", currentColor);
+		}
 		else
 			renderingContext.currentShader().setUniform4f("color", 1f, 1f, 1f, 1f);
 		
 		renderingContext.bindTexture2D("sampler", currentTexture);
 		//renderingContext.currentShader().setUniformSampler(0, "sampler", currentTexture);
-		glDisable(GL_DEPTH_TEST);
+		
+		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
+		//glDisable(GL_DEPTH_TEST);
 		if (alphaBlending)
 		{
-			glEnable(GL_BLEND);
+			renderingContext.setBlendMode(BlendMode.MIX);
+			//glEnable(GL_BLEND);
 		}
 		else
 		{
-			glDisable(GL_BLEND);
-			glEnable(GL_ALPHA_TEST);
-			glAlphaFunc(GL_GREATER, 0.1f);
+			renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
 		}
-		glEnable(GL_BLEND);
-		glDisable(GL_CULL_FACE);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		//glBlendEquation(GL_FUNC_ADD);
-
+		
+		renderingContext.setCullingMode(CullingMode.DISABLED);
 		renderingContext.bindAttribute("vertexIn", guiDrawData.asAttributeSource(VertexFormat.FLOAT, 2, 16, 0));
 		renderingContext.bindAttribute("texCoordIn", guiDrawData.asAttributeSource(VertexFormat.FLOAT, 2, 16, 8));
 		//renderingContext.setVertexAttributePointerLocation(vertexIn, 2, GL_FLOAT, false, 16, 0);

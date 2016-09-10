@@ -9,6 +9,9 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;
@@ -43,10 +46,10 @@ public class FrametimeRenderer
 		data.put(lel * 4 + 3, elapsedTime/1000000f);
 		//System.out.println("ntm");
 		glLineWidth(1);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_ALPHA_TEST);
-		glDisable(GL_CULL_FACE);
-		glDepthFunc(GL11.GL_LEQUAL);
+		
+		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
+		renderingContext.setBlendMode(BlendMode.MIX);
+		renderingContext.setCullingMode(CullingMode.DISABLED);
 
 		renderingContext.useShader("fps_graph");
 		//ShaderProgram overlayProgram = ShadersLibrary.getShaderProgram("fps_graph");

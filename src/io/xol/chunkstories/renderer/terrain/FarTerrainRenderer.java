@@ -20,6 +20,8 @@ import org.lwjgl.BufferUtils;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
@@ -136,9 +138,10 @@ public class FarTerrainRenderer
 		}
 
 		int elements = 0;
-		glEnable(GL_CULL_FACE); // culling for our glorious terrain
+		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
+		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		//glEnable(GL_CULL_FACE); // culling for our glorious terrain
 		glLineWidth(1.0f);
-
 		
 		//Sort to draw near first
 		List<RegionMesh> regionsToRenderSorted = new ArrayList<RegionMesh>(regionsToRender);

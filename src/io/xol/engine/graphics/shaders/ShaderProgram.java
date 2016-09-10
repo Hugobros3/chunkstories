@@ -53,13 +53,13 @@ public class ShaderProgram implements ShaderInterface
 	private Map<String, Integer> uniformsLocations = new HashMap<String, Integer>();
 	private Map<String, Integer> attributesLocations = new HashMap<String, Integer>();
 	
-	private Map<String, Integer> uniformsAttributesIntegers = new HashMap<String, Integer>();
-	private Map<String, Float> uniformsAttributesFloat = new HashMap<String, Float>();
-	private Map<String, Vector2f> uniformsAttributes2Float = new HashMap<String, Vector2f>();
-	private Map<String, Vector3f> uniformsAttributes3Float = new HashMap<String, Vector3f>();
-	private Map<String, Vector4f> uniformsAttributes4Float = new HashMap<String, Vector4f>();
-	private Map<String, Matrix4f> uniformsAttributesMatrix4 = new HashMap<String, Matrix4f>();
-	private Map<String, Matrix3f> uniformsAttributesMatrix3 = new HashMap<String, Matrix3f>();
+	private HashMap<String, Integer> uniformsAttributesIntegers = new HashMap<String, Integer>(5);
+	private HashMap<String, Float> uniformsAttributesFloat = new HashMap<String, Float>(10);
+	private HashMap<String, Vector2f> uniformsAttributes2Float = new HashMap<String, Vector2f>(5);
+	private HashMap<String, Vector3f> uniformsAttributes3Float = new HashMap<String, Vector3f>(5);
+	private HashMap<String, Vector4f> uniformsAttributes4Float = new HashMap<String, Vector4f>(5);
+	private HashMap<String, Matrix4f> uniformsAttributesMatrix4 = new HashMap<String, Matrix4f>(4);
+	private HashMap<String, Matrix3f> uniformsAttributesMatrix3 = new HashMap<String, Matrix3f>(4);
 
 	protected ShaderProgram(String filename)
 	{
@@ -447,7 +447,7 @@ public class ShaderProgram implements ShaderInterface
 		uniformsAttributesMatrix3.put(uniformName, uniformData);
 	}
 
-	class InternalUniformsConfiguration implements UniformsConfiguration {
+	public class InternalUniformsConfiguration implements UniformsConfiguration {
 
 		long code;
 		
@@ -455,13 +455,6 @@ public class ShaderProgram implements ShaderInterface
 				Map<String, Vector4f> uniformsAttributes4Float, Map<String, Matrix4f> uniformsAttributesMatrix4, Map<String, Matrix3f> uniformsAttributesMatrix3)
 		{
 			//Le close enough
-			code += uniformsAttributesIntegers.hashCode();
-			code += uniformsAttributesFloat.hashCode();
-			code += uniformsAttributes2Float.hashCode();
-			code += uniformsAttributes3Float.hashCode();
-			code += uniformsAttributes4Float.hashCode();
-			code += uniformsAttributesMatrix4.hashCode();
-			code += uniformsAttributesMatrix3.hashCode();
 		}
 
 		@Override
@@ -514,9 +507,25 @@ public class ShaderProgram implements ShaderInterface
 		}
 	}
 	
-	public UniformsConfiguration getUniformsConfiguration()
+	public InternalUniformsConfiguration getUniformsConfiguration()
 	{
-		return new InternalUniformsConfiguration(uniformsAttributesIntegers, uniformsAttributesFloat, uniformsAttributes2Float, uniformsAttributes3Float, uniformsAttributes4Float, uniformsAttributesMatrix4, uniformsAttributesMatrix3);
+		return new InternalUniformsConfiguration(null
+				, null
+				, null
+				, null
+				, null
+				, null
+				, null
+				);
+		
+		/*return new InternalUniformsConfiguration((Map<String, Integer>) uniformsAttributesIntegers.clone()
+				, (Map<String, Float>) uniformsAttributesFloat.clone()
+				, (Map<String, Vector2f>) uniformsAttributes2Float.clone()
+				, (Map<String, Vector3f>) uniformsAttributes3Float.clone()
+				, (Map<String, Vector4f>) uniformsAttributes4Float.clone()
+				, (Map<String, Matrix4f>) uniformsAttributesMatrix4.clone()
+				, (Map<String, Matrix3f>) uniformsAttributesMatrix3.clone()
+				);*/
 	}
 	
 	public int getVertexAttributeLocation(String name)

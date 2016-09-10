@@ -63,6 +63,10 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
 import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.PolygonFillMode;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -325,6 +329,8 @@ public class WorldRenderer
 		camera.justSetup(scrW, scrH);
 		camera.translate();
 
+		
+		
 		// Clear G-Buffers and bind shaded HDR rendertarget
 		fboGBuffers.bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -337,7 +343,7 @@ public class WorldRenderer
 		sky.time = (world.worldTime % 10000) / 10000f;
 		//sky.skyShader.use(true);
 		//sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
-		glViewport(0, 0, scrW, scrH);
+		//glViewport(0, 0, scrW, scrH);
 		sky.render(renderingContext);
 
 		if (RenderingConfig.debugGBuffers)
@@ -348,13 +354,16 @@ public class WorldRenderer
 		// Move camera to relevant position
 		// fboGBuffers.setEnabledRenderTargets(true, false, false);
 
+		fboGBuffers.bind();
+		fboGBuffers.setEnabledRenderTargets();
+		
 		// Render world
 		renderWorld(false, chunksToRenderLimit);
 
 		// Render weather
 		fboShadedBuffer.bind();
 		fboShadedBuffer.setEnabledRenderTargets();
-		weatherEffectsRenderer.renderEffects(renderingContext);
+		//weatherEffectsRenderer.renderEffects(renderingContext);
 
 		// Debug
 		if (RenderingConfig.debugGBuffers)
@@ -363,7 +372,7 @@ public class WorldRenderer
 			System.out.println("total took " + (System.nanoTime() - t) / 1000000.0 + "ms ( " + 1 / ((System.nanoTime() - t) / 1000000000.0) + " fps)");
 
 		//Disable depth check
-		glDisable(GL_DEPTH_TEST);
+		//glDisable(GL_DEPTH_TEST);
 
 		// Do bloom
 		if (RenderingConfig.doBloom)
@@ -428,7 +437,7 @@ public class WorldRenderer
 		int newCY = Math2.floor((pos.getY()) / 32);
 		int newCZ = Math2.floor((pos.getZ()) / 32);
 		// Fill the VBO array with chunks VBO ids if the player changed chunk
-
+		
 		if (cameraChunkX != newCX || cameraChunkY != newCY || cameraChunkZ != newCZ || chunksChanged)
 		{
 			if (newCX != cameraChunkX || newCZ != cameraChunkZ)
@@ -439,6 +448,7 @@ public class WorldRenderer
 			cameraChunkZ = newCZ;
 			int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
 
+			
 			// Unload too far chunks
 			//updateProfiler.startSection("unloadFar");
 			//long usageBefore = Runtime.getRuntime().freeMemory();
@@ -448,7 +458,7 @@ public class WorldRenderer
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			fboLoadedChunksTop.bind();
-			glViewport(0, 0, 64, 64);
+			//glViewport(0, 0, 64, 64);
 			glClearDepth(0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glClearDepth(1f);
@@ -462,19 +472,19 @@ public class WorldRenderer
 			//fboLoadedChunks.resizeFBO(32, 32);
 			
 			renderingContext.useShader("loaded_map");
-			//renderingContext.setCurrentShader(ShadersLibrary.getShaderProgram("loaded_map"));
 			localMapCommands.clear();
 
-			//int vertexIn = renderingContext.currentShader().getVertexAttributeLocation("vertexIn");
 			
-			//System.out.println("vertexIn"+vertexIn);
-			//glDepthMask(true);
-			glEnable(GL_DEPTH_TEST);
+			renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
+			renderingContext.setCullingMode(CullingMode.DISABLED);
+			renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
+			renderingContext.setDepthTestMode(DepthTestMode.GREATER_OR_EQUAL);
+			
+			
+			/*glEnable(GL_DEPTH_TEST);
 			glDisable(GL_CULL_FACE);
 			glDisable(GL_ALPHA_TEST);
-			glDepthFunc(GL_GEQUAL);
-			//glEnable(GL_BLEND);
-			//glBlendFunc(GL_ONE, GL_ONE);
+			glDepthFunc(GL_GEQUAL);*/
 			int localMapElements = 0;
 
 			Set<Chunk> floodFillSet = new HashSet<Chunk>();
@@ -574,7 +584,7 @@ public class WorldRenderer
 			renderList.clear();
 			for (Chunk chunk : floodFillSet)
 			{
-
+				
 				if (chunk == null || !(chunk instanceof ChunkRenderable))
 					continue;
 				ChunkRenderable renderableChunk = (ChunkRenderable) chunk;
@@ -618,7 +628,6 @@ public class WorldRenderer
 						renderList.add(renderableChunk);
 					}
 			}
-
 			//Sort 
 			renderList.sort(new Comparator<ChunkRenderable>()
 			{
@@ -640,17 +649,17 @@ public class WorldRenderer
 			//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_BYTE, false, 4, localMapCommands);
 			
 			renderingContext.draw(Primitive.POINT, 0, localMapElements);
-			//GLCalls.drawArrays(GL_POINTS, 0, localMapElements);
 			//Two maps
-			glDepthFunc(GL_LEQUAL);
+			
+			renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+			
+			//glDepthFunc(GL_LEQUAL);
 			fboLoadedChunksBot.bind();
 
 			renderingContext.draw(Primitive.POINT, 0, localMapElements);
-			//GLCalls.drawArrays(GL_POINTS, 0, localMapElements);
-			//glDepthFunc(GL_LEQUAL);
-			//GLCalls.drawArrays(GL_TRIANGLES, 0, 3);
 
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			//renderingContext.setBlendMode(BlendMode.MIX);
+			//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			FBO.unbind();
 
 			// Now delete from the worker threads what we won't need anymore
@@ -676,20 +685,24 @@ public class WorldRenderer
 		// float worldTime = (world.worldTime%1000+1000)%1000;
 		if (this.getShadowVisibility() == 0f)
 			return; // No shadows at night :)
-		glCullFace(GL_BACK);
+		
+		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
+		renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
+		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		
+		/*glCullFace(GL_BACK);
 		glEnable(GL_CULL_FACE);
-		//glDisable(GL_CULL_FACE);
 		glEnable(GL_ALPHA_TEST);
 		glDisable(GL_BLEND);
-		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);*/
 
 		int size = (shadowMapBuffer).getWidth();
-		glViewport(0, 0, size, size);
+		//glViewport(0, 0, size, size);
 
 		shadowMapFBO.bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		renderingContext.useShader("shadows");
+		shadowsPassShader = renderingContext.useShader("shadows");
 		//renderingContext.setCurrentShader(shadowsPassShader);
 		//shadowsPassShader.use(true);
 		int fun = 10;// / hdPass ? 3 : 8;
@@ -714,16 +727,18 @@ public class WorldRenderer
 		shadowsPassShader.setUniformMatrix4f("localTransform", new Matrix4f());
 		shadowsPassShader.setUniform1f("entity", 0);
 		renderWorld(true, -1);
-		glViewport(0, 0, scrW, scrH);
+		//glViewport(0, 0, scrW, scrH);
 	}
 
 	public void renderTerrain(boolean ignoreWorldCulling)
 	{
 		// Terrain
 		Client.profiler.startSection("terrain");
-		glDisable(GL_BLEND);
+		
+		//glDisable(GL_BLEND);
 
-		renderingContext.useShader("terrain");
+		terrainShader = renderingContext.useShader("terrain");
+		renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
 		//renderingContext.setCurrentShader(terrainShader);
 		//terrainShader.use(true);
 		camera.setupShader(terrainShader);
@@ -770,7 +785,7 @@ public class WorldRenderer
 		terrainShader.setUniform1f("ignoreWorldCulling", ignoreWorldCulling ? 1f : 0f);
 
 		if (Keyboard.isKeyDown(Keyboard.KEY_F10))
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
 		if (RenderingConfig.debugGBuffers)
 			glFinish();
@@ -778,16 +793,23 @@ public class WorldRenderer
 		if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
 			renderedVertices += farTerrainRenderer.draw(renderingContext, terrainShader);
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);
 
 		if (RenderingConfig.debugGBuffers)
 			glFinish();
 		if (RenderingConfig.debugGBuffers)
 			System.out.println("terrain took " + (System.nanoTime() - t) / 1000000.0 + "ms");
+		
+		renderingContext.flush();
 	}
 
 	public void renderWorld(boolean isShadowPass, int chunksToRenderLimit)
 	{
+		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		renderingContext.setBlendMode(BlendMode.DISABLED);
+		//renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		//System.out.println(renderingContext.getPipelineConfiguration().getBlendMode() + ":" + renderingContext.getPipelineConfiguration().getCullingMode() + ":" + renderingContext.getPipelineConfiguration().getDepthTestMode() + ":" + renderingContext.getPipelineConfiguration().getPolygonFillMode());
+
 
 		long t;
 		animationTimer = (float) (((System.currentTimeMillis() % 100000) / 200f) % 100.0);
@@ -858,9 +880,13 @@ public class WorldRenderer
 			camera.setupShader(opaqueBlocksShader);
 
 			// Prepare for gbuffer pass
-			glEnable(GL_CULL_FACE);
+			
+			renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
+			//renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
+			
+			/*glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
-			glDisable(GL_BLEND);
+			glDisable(GL_BLEND);*/
 		}
 		else
 		{
@@ -875,8 +901,10 @@ public class WorldRenderer
 		}
 
 		// Alpha blending is disabled because certain G-Buffer rendertargets can output a 0 for alpha
-		glAlphaFunc(GL_GREATER, 0.0f);
-		glDisable(GL_ALPHA_TEST);
+		
+		//glAlphaFunc(GL_GREATER, 0.0f);
+		//glDisable(GL_ALPHA_TEST);
+		
 		// Init vertex attribute locations
 		
 		/*if (!isShadowPass)
@@ -909,9 +937,10 @@ public class WorldRenderer
 		t = System.nanoTime();
 
 		// renderList.clear();
-		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glDepthFunc(GL_LESS);
+		
+		//glDisable(GL_BLEND);
+		//glEnable(GL_ALPHA_TEST);
+		//glDepthFunc(GL_LESS);
 
 		int chunksRendered = 0;
 		for (int XXX = 0; XXX < 1; XXX++)
@@ -1010,7 +1039,8 @@ public class WorldRenderer
 
 			}
 
-		glDepthFunc(GL_LEQUAL);
+		//glDepthFunc(GL_LEQUAL);
+		
 		// Done looping chunks, now entities
 		if (!isShadowPass)
 		{
@@ -1065,8 +1095,11 @@ public class WorldRenderer
 		{
 			shadowsPassShader.setUniform1f("entity", 1);
 		}
-		glEnable(GL_CULL_FACE);
-		glDisable(GL_CULL_FACE);
+		
+		//glEnable(GL_CULL_FACE);
+		//glDisable(GL_CULL_FACE);
+		
+		renderingContext.setCullingMode(CullingMode.DISABLED);
 		// Render entities
 		
 
@@ -1087,12 +1120,16 @@ public class WorldRenderer
 		decalsRenderer.renderDecals(renderingContext);
 
 		// Solid blocks done, now render water & lights
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_ALPHA_TEST);
+		
+		renderingContext.setBlendMode(BlendMode.MIX);
+		renderingContext.setCullingMode(CullingMode.DISABLED);
+		//glDisable(GL_CULL_FACE);
+		//glDisable(GL_ALPHA_TEST);
 
 		// We do water in two passes : one for computing the refracted color and putting it in shaded buffer, and another one
 		// to read it back and blend it
-		glDepthFunc(GL_LEQUAL);
+		
+		//glDepthFunc(GL_LEQUAL);
 		for (int pass = 1; pass < 3; pass++)
 		{
 			liquidBlocksShader = renderingContext.useShader("blocks_liquid_pass" + (pass));
@@ -1149,7 +1186,7 @@ public class WorldRenderer
 				renderingContext.bindTexture2D("readbackMetaBufferTemp", this.materialBuffer);
 				renderingContext.bindTexture2D("readbackDepthBufferTemp", this.zBuffer);
 				//glEnable(GL_ALPHA_TEST);
-				glDisable(GL_ALPHA_TEST);
+				//glDisable(GL_ALPHA_TEST);
 				glDepthMask(false);
 			}
 			else if (pass == 2)
@@ -1221,6 +1258,8 @@ public class WorldRenderer
 			this.SSAO(RenderingConfig.ssaoQuality);
 
 		renderLightsDeffered();
+		fboShadedBuffer.bind();
+		fboShadedBuffer.setEnabledRenderTargets(true);
 		renderTerrain(chunksToRenderLimit != -1);
 	}
 
@@ -1232,10 +1271,12 @@ public class WorldRenderer
 		this.fboShadedBuffer.bind();
 		// Deffered lightning
 		// Disable depth read/write
-		glDisable(GL_DEPTH_TEST);
+		
+		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
+		//glDisable(GL_DEPTH_TEST);
 		glDepthMask(false);
 		
-		renderingContext.useShader("light");
+		lightShader = renderingContext.useShader("light");
 		//renderingContext.setCurrentShader(lightShader);
 		//lightShader.use(true);
 
@@ -1248,17 +1289,23 @@ public class WorldRenderer
 		lightShader.setUniform1f("powFactor", 5f);
 		camera.setupShader(lightShader);
 		//Blend parameters
-		glEnable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glDisable(GL_DEPTH_TEST);
-		glBlendFunc(GL_ONE, GL_ONE);
+
+		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
+		renderingContext.setBlendMode(BlendMode.ADD);
+		//glEnable(GL_BLEND);
+		//glEnable(GL_ALPHA_TEST);
+		//glDisable(GL_DEPTH_TEST);
+		//glBlendFunc(GL_ONE, GL_ONE);
 
 		LightsRenderer.renderPendingLights(renderingContext);
 		//Cleanup
 		glDepthMask(true);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		
+		renderingContext.setBlendMode(BlendMode.MIX);
+		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		/*glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
-		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);*/
 		//renderingContext.lights.clear();
 	}
 
@@ -1274,7 +1321,7 @@ public class WorldRenderer
 
 		long t = System.nanoTime();
 
-		renderingContext.useShader("shadows_apply");
+		applyShadowsShader = renderingContext.useShader("shadows_apply");
 		//renderingContext.setCurrentShader(applyShadowsShader);
 		//applyShadowsShader.use(true);
 		setupShadowColors(applyShadowsShader);
@@ -1282,8 +1329,9 @@ public class WorldRenderer
 		applyShadowsShader.setUniform1f("overcastFactor", world.getWeather());
 		applyShadowsShader.setUniform1f("wetness", getWorldWetness());
 
-		glEnable(GL_ALPHA_TEST);
-		glDisable(GL_DEPTH_TEST);
+		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
+		//glEnable(GL_ALPHA_TEST);
+		//glDisable(GL_DEPTH_TEST);
 
 		Vector3f sunPos = sky.getSunPosition();
 
@@ -1332,8 +1380,9 @@ public class WorldRenderer
 		if (RenderingConfig.debugGBuffers)
 			System.out.println("shadows pass took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
-		glDisable(GL_BLEND);
-		glEnable(GL_DEPTH_TEST);
+		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		//glDisable(GL_BLEND);
+		//glEnable(GL_DEPTH_TEST);
 	}
 
 	//Post-process effects
@@ -1349,11 +1398,15 @@ public class WorldRenderer
 
 		// We render to the screen.
 		FBO.unbind();
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_BLEND);
-		glDisable(GL_CULL_FACE);
 		
-		renderingContext.useShader("postprocess");
+		//glDisable(GL_DEPTH_TEST);
+		//glDisable(GL_BLEND);
+		//glDisable(GL_CULL_FACE);
+		
+		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
+		renderingContext.setBlendMode(BlendMode.DISABLED);
+		
+		postProcess = renderingContext.useShader("postprocess");
 		//renderingContext.setCurrentShader(postProcess);
 		//postProcess.use(true);
 
@@ -1543,7 +1596,7 @@ public class WorldRenderer
 		// Vertical pass
 		fboBlur.bind();
 		
-		renderingContext.useShader("blurV");
+		blurV = renderingContext.useShader("blurV");
 		//renderingContext.setCurrentShader(blurV);
 		//blurV.use(true);
 		blurV.setUniform2f("screenSize", scrW, scrH);
@@ -1555,7 +1608,7 @@ public class WorldRenderer
 		// Horizontal pass
 		this.fboSSAO.bind();
 		
-		renderingContext.useShader("blurH");
+		blurH = renderingContext.useShader("blurH");
 		//renderingContext.setCurrentShader(blurH);
 		//blurH.use(true);
 		blurH.setUniform2f("screenSize", scrW, scrH);
@@ -1571,7 +1624,7 @@ public class WorldRenderer
 		this.bloomBuffer.setLinearFiltering(true);
 		this.blurIntermediateBuffer.setLinearFiltering(true);
 
-		renderingContext.useShader("bloom");
+		bloomShader  = renderingContext.useShader("bloom");
 		//renderingContext.setCurrentShader(bloomShader);
 		//bloomShader.use(true);
 		renderingContext.bindTexture2D("shadedBuffer", this.shadedBuffer);
@@ -1583,7 +1636,7 @@ public class WorldRenderer
 
 		this.fboBloom.bind();
 		this.fboBloom.setEnabledRenderTargets();
-		glViewport(0, 0, scrW / 2, scrH / 2);
+		//glViewport(0, 0, scrW / 2, scrH / 2);
 		renderingContext.drawFSQuad();
 
 		// Blur bloom
@@ -1591,7 +1644,7 @@ public class WorldRenderer
 		// Vertical pass
 		fboBlur.bind();
 		
-		renderingContext.useShader("blurV");
+		blurV = renderingContext.useShader("blurV");
 		//renderingContext.setCurrentShader(blurV);
 		//blurV.use(true);
 		blurV.setUniform2f("screenSize", scrW / 2f, scrH / 2f);
@@ -1603,7 +1656,7 @@ public class WorldRenderer
 		// Horizontal pass
 		this.fboBloom.bind();
 		
-		renderingContext.useShader("blurH");
+		blurH = renderingContext.useShader("blurH");
 		//renderingContext.setCurrentShader(blurH);
 		//blurH.use(true);
 		blurH.setUniform2f("screenSize", scrW / 2f, scrH / 2f);
@@ -1613,7 +1666,7 @@ public class WorldRenderer
 
 		fboBlur.bind();
 		
-		renderingContext.useShader("blurV");
+		blurV = renderingContext.useShader("blurV");
 		//renderingContext.setCurrentShader(blurV);
 		//blurV.use(true);
 		blurV.setUniform2f("screenSize", scrW / 4f, scrH / 4f);
@@ -1625,7 +1678,7 @@ public class WorldRenderer
 		// Horizontal pass
 		this.fboBloom.bind();
 		
-		renderingContext.useShader("blurH");
+		blurH = renderingContext.useShader("blurH");
 		//renderingContext.setCurrentShader(blurH);
 		//blurH.use(true);
 		blurH.setUniform2f("screenSize", scrW / 4f, scrH / 4f);
@@ -1634,7 +1687,7 @@ public class WorldRenderer
 		renderingContext.drawFSQuad();
 
 		// Done blooming
-		glViewport(0, 0, scrW, scrH);
+		//glViewport(0, 0, scrW, scrH);
 	}
 
 	/**
@@ -1730,7 +1783,7 @@ public class WorldRenderer
 				sky.time = (world.worldTime % 10000) / 10000f;
 				//sky.skyShader.use(true);
 				//sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
-				glViewport(0, 0, scrW, scrH);
+				//glViewport(0, 0, scrW, scrH);
 				sky.render(renderingContext);
 
 				this.renderTerrain(true);
