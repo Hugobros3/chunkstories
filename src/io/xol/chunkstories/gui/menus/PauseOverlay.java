@@ -37,7 +37,7 @@ public class PauseOverlay extends Overlay
 	@Override
 	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
 	{
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, 0, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
 		
 		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
 		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(48, "In-game menu", BitmapFont.SMALLFONTS) / 2, GameWindowOpenGL.windowHeight / 2 + 48 * 3, 0, 48, "In-game menu", BitmapFont.SMALLFONTS);

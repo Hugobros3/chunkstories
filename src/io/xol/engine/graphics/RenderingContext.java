@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.rendering.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.PolygonFillMode;
 import io.xol.chunkstories.api.rendering.RenderingCommand;
@@ -52,7 +53,6 @@ public class RenderingContext implements RenderingInterface
 
 	private List<Light> lights = new LinkedList<Light>();
 
-	private DirectRenderer directRenderer;
 	private GuiRenderer guiRenderer;
 	private TrueTypeFontRenderer trueTypeFontRenderer;
 
@@ -72,7 +72,6 @@ public class RenderingContext implements RenderingInterface
 	public RenderingContext(GameWindowOpenGL windows)
 	{
 		mainWindows = windows;
-		directRenderer = new DirectRenderer(this);
 		guiRenderer = new GuiRenderer(this);
 		trueTypeFontRenderer = new TrueTypeFontRenderer(this);
 	}
@@ -188,11 +187,6 @@ public class RenderingContext implements RenderingInterface
 		return lights.iterator();
 	}
 
-	public DirectRenderer getDirectRenderer()
-	{
-		return directRenderer;
-	}
-
 	public GuiRenderer getGuiRenderer()
 	{
 		return guiRenderer;
@@ -282,14 +276,21 @@ public class RenderingContext implements RenderingInterface
 	@Override
 	public PipelineConfiguration setBlendMode(BlendMode blendMode)
 	{	
-		pipelineConfiguration.setBlendMode(blendMode);
+		pipelineConfiguration = pipelineConfiguration.setBlendMode(blendMode);
+		return pipelineConfiguration;
+	}
+
+	@Override
+	public PipelineConfiguration setCullingMode(CullingMode cullingMode)
+	{
+		pipelineConfiguration = pipelineConfiguration.setCullingMode(cullingMode);
 		return pipelineConfiguration;
 	}
 
 	@Override
 	public PipelineConfiguration setPolygonFillMode(PolygonFillMode polygonFillMode)
 	{
-		pipelineConfiguration.setPolygonFillMode(polygonFillMode);
+		pipelineConfiguration = pipelineConfiguration.setPolygonFillMode(polygonFillMode);
 		return pipelineConfiguration;
 	}
 
@@ -305,6 +306,13 @@ public class RenderingContext implements RenderingInterface
 		//TODO check in shader if attribute exists
 		attributesConfiguration = attributesConfiguration.bindAttribute(attributeName, attributeSource);
 		
+		return this.attributesConfiguration;
+	}
+
+	@Override
+	public AttributesConfiguration unbindAttributes()
+	{
+		attributesConfiguration = new AttributesConfigurationImplementation();
 		return this.attributesConfiguration;
 	}
 

@@ -34,7 +34,7 @@ public class DeathOverlay extends Overlay
 	@Override
 	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
 	{
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, 0, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
 		
 		String color = "";
 		color += HexTools.intToHex((int) (Math.random() * 255));

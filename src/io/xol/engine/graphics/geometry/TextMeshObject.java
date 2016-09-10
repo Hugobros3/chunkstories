@@ -6,19 +6,21 @@ import java.util.List;
 
 import org.lwjgl.BufferUtils;
 
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.Renderable;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.util.TrueTypeFontRenderer;
 import io.xol.engine.math.lalgb.Vector4f;
 
-import static org.lwjgl.opengl.GL11.*;
-
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class TextMeshObject
+public class TextMeshObject implements Renderable
 {
 	private boolean done = false;
 	private List<VerticesObject> verticesObjects = new LinkedList<VerticesObject>();
@@ -111,23 +113,31 @@ public class TextMeshObject
 		done = true;
 	}
 
-	public void render(RenderingContext renderingContext)
+	public void render(RenderingInterface renderingContext)
 	{
 		renderingContext.bindAlbedoTexture(TrueTypeFont.arial11px.glTextures[0]);
 		
-		glDisable(GL_CULL_FACE);
+		renderingContext.setCullingMode(CullingMode.DISABLED);
+		//glDisable(GL_CULL_FACE);
 		//renderingContext.disableVertexAttribute("normalIn");
 		for (VerticesObject verticesObject : verticesObjects)
 		{
-			verticesObject.bind();
-
+			//verticesObject.bind();
+			
+			int stride = 4 * ( 3 + 2 + 4);
+			renderingContext.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, stride, 0));
+			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 2, stride, 4 * 3));
+			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 4, stride, 4 * ( 3 + 2)));
+			
+			/*
 			renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2 + 4), 0);
 			renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2 + 4), 4 * 3);
 			renderingContext.setVertexAttributePointerLocation("colorIn", 4, GL_FLOAT, false, 4 * (3 + 2 + 4), 4 * (3 + 2));
-			
+			*/
 			//System.out.println(verticesObject.getVramUsage() / 4 * (3 + 2 + 4));
 			
-			verticesObject.drawElementsTriangles((int) (verticesObject.getVramUsage() / (4 * (3 + 2 + 4))));
+			renderingContext.draw(Primitive.TRIANGLE, 0, (int) (verticesObject.getVramUsage() / stride));
+			//verticesObject.drawElementsTriangles((int) (verticesObject.getVramUsage() / (4 * (3 + 2 + 4))));
 			//renderingContext.enableVertexAttribute("colorIn");
 		}
 	}

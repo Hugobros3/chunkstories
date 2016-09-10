@@ -37,7 +37,7 @@ public abstract class ParticleType
 	public void beginRenderingForType(RenderingContext renderingContext)
 	{
 		renderingContext.bindAlbedoTexture(getTexture());
-		renderingContext.currentShader().setUniformFloat("billboardSize", getBillboardSize());
+		renderingContext.currentShader().setUniform1f("billboardSize", getBillboardSize());
 	}
 	
 	public abstract void forEach_Rendering(RenderingContext renderingContext, ParticleData data);

@@ -8,8 +8,12 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.chunkstories.api.rendering.CameraInterface;
+import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;
+import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 
@@ -85,25 +89,30 @@ public class OverlayRenderer
 
 	public static void glEnd()
 	{
+		RenderingContext renderingContext = GameWindowOpenGL.getInstance().getRenderingContext();
+		
 		//System.out.println("ntm");
 		glDisable(GL_CULL_FACE);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glDisable(GL11.GL_ALPHA_TEST);
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glDepthFunc(GL11.GL_LEQUAL);
-		ShaderProgram overlayProgram = ShadersLibrary.getShaderProgram("overlay");
+		ShaderInterface overlayProgram = renderingContext.useShader("overlay");//ShadersLibrary.getShaderProgram("overlay");
 		//GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(overlayProgram);
 		//overlayProgram.use(true);
 		camera.setupShader(overlayProgram);
-		int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");
-		GameWindowOpenGL.getInstance().renderingContext.enableVertexAttribute(vertexIn);
-		overlayProgram.setUniformFloat4("colorIn", color);
+		overlayProgram.setUniform4f("colorIn", color);
+		
+		
 		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		data.flip();
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		GameWindowOpenGL.getInstance().getRenderingContext().setVertexAttributePointerLocation(vertexIn, 3, false, 0, data);
-		GLCalls.drawArrays(mode, 0, size);
-		GameWindowOpenGL.getInstance().renderingContext.disableVertexAttribute(vertexIn);
+		//glBindBuffer(GL_ARRAY_BUFFER, 0);
+		
+		renderingContext.bindAttribute("vertexIn", new FloatBufferAttributeSource(data, 3));
+		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, false, 0, data);
+		
+		renderingContext.draw(mode == GL_TRIANGLES ? Primitive.TRIANGLE : Primitive.LINE, 0, size);
+		//GLCalls.drawArrays(mode, 0, size);
 		GL11.glDisable(GL11.GL_BLEND);
 		data.clear();
 		size = 0;

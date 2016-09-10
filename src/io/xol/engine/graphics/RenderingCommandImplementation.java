@@ -130,7 +130,7 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 	}
 
 	@Override
-	public RenderingCommand render(RenderingInterface renderingInterface) throws RenderingException
+	public void render(RenderingInterface renderingInterface) throws RenderingException
 	{
 		//Make sure to use the right shader
 		((ShaderProgram)shaderInterface).use();
@@ -164,7 +164,7 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 		}
 		
 		//Setup pipeline state
-		this.pipelineConfiguration.setup(renderingInterface);
+		//this.pipelineConfiguration.setup(renderingInterface);
 		
 		//Sends uniforms
 		this.uniformsConfiguration.setup(renderingInterface);
@@ -174,10 +174,9 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 		
 		//System.out.println("RenderingCommand "+start+ " / " + count + "   " + renderingInterface.currentShader());
 		
-		return null;
 	}
 	
-	int modes[] = {GL_POINTS, GL_LINES, GL_TRIANGLES};
+	int modes[] = {GL_POINTS, GL_LINES, GL_TRIANGLES, GL_QUADS};
 	
 	private static Matrix4f temp = new Matrix4f();
 	private static Matrix3f normal = new Matrix3f();

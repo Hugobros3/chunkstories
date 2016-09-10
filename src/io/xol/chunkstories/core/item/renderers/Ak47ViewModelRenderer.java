@@ -31,8 +31,8 @@ public class Ak47ViewModelRenderer extends DefaultItemRenderer
 	@Override
 	public void renderItemInWorld(RenderingContext renderingContext, ItemPile pile, World world, Location location, Matrix4f handTransformation)
 	{
-		renderingContext.sendTransformationMatrix(handTransformation);
-		renderingContext.sendBoneTransformationMatrix(null);
+		renderingContext.setObjectMatrix(handTransformation);
+		//renderingContext.sendBoneTransformationMatrix(null);
 		//renderingContext.getCurrentShader().setUniformFloat3("objectPosition", 0, 0, 0);
 		renderingContext.bindAlbedoTexture(TexturesHandler.getTexture("./models/ak47.hq.png"));
 		renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));

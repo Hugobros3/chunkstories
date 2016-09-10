@@ -23,8 +23,6 @@ import io.xol.engine.animation.AnimatedSkeleton;
 import io.xol.engine.animation.BVHAnimation;
 import io.xol.engine.animation.BVHLibrary;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.geometry.RenderableAnimatable;
-import io.xol.engine.graphics.geometry.RenderableAnimatable.AnimatableData;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -204,7 +202,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		{
 			int e = 0;
 
-			List<RenderableAnimatable.AnimatableData> animationsData = new LinkedList<AnimatableData>();
+			/*List<RenderableAnimatable.AnimatableData> animationsData = new LinkedList<AnimatableData>();
 
 			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
@@ -219,10 +217,10 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				int sl = entity.getWorld().getSunlightLevelLocation(location);
 				
 				animationsData.add(new AnimatableData(location.castToSimplePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
-			}
+			}*/
 
 			//Instanciate all players
-			ModelLibrary.getRenderableMesh("./models/human.obj").renderInstanciated(renderingContext, animationsData);
+			//ModelLibrary.getRenderableMesh("./models/human.obj").renderInstanciated(renderingContext, animationsData);
 
 			//Render items in hands
 			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
@@ -241,7 +239,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 					Matrix4f itemMatrix = new Matrix4f();
 					itemMatrix = entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000);
 					
-					renderingContext.currentShader().setUniformFloat3("objectPosition", entity.getPredictedLocation());
+					renderingContext.currentShader().setUniform3f("objectPosition", entity.getPredictedLocation());
 
 					selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
 				}

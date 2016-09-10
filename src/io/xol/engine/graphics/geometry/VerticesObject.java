@@ -72,10 +72,26 @@ public class VerticesObject
 		if (glId == -1)
 			aquireID();
 
-		glBindBuffer(GL_ARRAY_BUFFER, glId);
+		bind(glId);
 		
 		checkForPendingUploadData();
 	}
+	
+	public static void unbind()
+	{
+		bind(0);
+	}
+	
+	static void bind(int arrayBufferId)
+	{
+		if(arrayBufferId == bound)
+			return;
+		
+		glBindBuffer(GL_ARRAY_BUFFER, arrayBufferId);
+		bound = arrayBufferId;
+	}
+	
+	static int bound = 0;
 
 	/**
 	 * @return True if the data was immediatly uploaded
@@ -173,8 +189,8 @@ public class VerticesObject
 		if (atomicReference != null)
 		{
 			System.out.println("Uploading pending VerticesObject ... ");
-			uploadDataActual(atomicReference);
 			dataPendingUpload = null;
+			uploadDataActual(atomicReference);
 		}
 
 		//Check for data presence
@@ -234,6 +250,7 @@ public class VerticesObject
 		@Override
 		public void setup(int gl_AttributeLocation)
 		{
+			bind();
 			glVertexAttribPointer(gl_AttributeLocation, dimensions, format.glId, format.normalized, stride, offset);
 		}
 		

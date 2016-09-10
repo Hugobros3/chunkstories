@@ -16,16 +16,18 @@ import static org.lwjgl.opengl.GL20.*;
  */
 public final class PipelineConfigurationImplementation implements PipelineConfiguration
 {
-	public static PipelineConfigurationImplementation DEFAULT = new PipelineConfigurationImplementation(DepthTestMode.LESS_OR_EQUAL, BlendMode.DISABLED, PolygonFillMode.FILL);
+	public static PipelineConfigurationImplementation DEFAULT = new PipelineConfigurationImplementation(DepthTestMode.LESS_OR_EQUAL, BlendMode.DISABLED, CullingMode.COUNTERCLOCKWISE, PolygonFillMode.FILL);
 
 	private final DepthTestMode depthTestMode;
 	private final BlendMode blendMode;
+	private final CullingMode cullingMode;
 	private final PolygonFillMode polygonFillMode;
 
-	public PipelineConfigurationImplementation(DepthTestMode depthTestMode, BlendMode blendMode, PolygonFillMode polygonFillMode)
+	public PipelineConfigurationImplementation(DepthTestMode depthTestMode, BlendMode blendMode, CullingMode cullingMode, PolygonFillMode polygonFillMode)
 	{
 		this.depthTestMode = depthTestMode;
 		this.blendMode = blendMode;
+		this.cullingMode = cullingMode;
 		this.polygonFillMode = polygonFillMode;
 	}
 
@@ -42,6 +44,12 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	}
 
 	@Override
+	public CullingMode getCullingMode()
+	{
+		return cullingMode;
+	}
+
+	@Override
 	public PolygonFillMode getPolygonFillMode()
 	{
 		return polygonFillMode;
@@ -49,17 +57,22 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 
 	public PipelineConfigurationImplementation setDepthTestMode(DepthTestMode depthTestMode)
 	{
-		return new PipelineConfigurationImplementation(depthTestMode, blendMode, polygonFillMode);
+		return new PipelineConfigurationImplementation(depthTestMode, blendMode, cullingMode, polygonFillMode);
 	}
 
 	public PipelineConfigurationImplementation setBlendMode(BlendMode blendMode)
 	{
-		return new PipelineConfigurationImplementation(depthTestMode, blendMode, polygonFillMode);
+		return new PipelineConfigurationImplementation(depthTestMode, blendMode, cullingMode, polygonFillMode);
+	}
+	
+	public PipelineConfigurationImplementation setCullingMode(CullingMode cullingMode)
+	{
+		return new PipelineConfigurationImplementation(depthTestMode, blendMode, cullingMode, polygonFillMode);
 	}
 
 	public PipelineConfigurationImplementation setPolygonFillMode(PolygonFillMode polygonFillMode)
 	{
-		return new PipelineConfigurationImplementation(depthTestMode, blendMode, polygonFillMode);
+		return new PipelineConfigurationImplementation(depthTestMode, blendMode, cullingMode, polygonFillMode);
 	}
 
 	public boolean equals(Object o)
@@ -129,6 +142,20 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 			break;
 		}
 		
+		//Culling mode
+		switch(cullingMode)
+		{
+		case DISABLED:
+			cull(false);
+			break;
+		case CLOCKWISE:
+			cull(true);
+			cullFF(GL_CW);
+		case COUNTERCLOCKWISE:
+			cull(true);
+			cullFF(GL_CCW);
+		}
+		
 		//TODO polyFill
 	}
 
@@ -186,8 +213,34 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 		isBlendingEnabled = on;
 	}
 	
+	private void cull(boolean on)
+	{
+		if (on)
+		{
+			if (!isCullingEnabled)
+				glEnable(GL_CULL_FACE);
+		}
+		else
+		{
+			if (isCullingEnabled)
+				glDisable(GL_CULL_FACE);
+		}
+		isCullingEnabled = on;
+	}
+	
+	private void cullFF(int mode)
+	{
+		if (mode != currentCullFunc)
+		{
+			glFrontFace(mode);
+			currentCullFunc = mode;
+		}
+	}
+	
 	private static boolean isBlendEnabled = false;
 	private static int currentDepthFunc = -1;
 	private static boolean isAlphaTestEnabled = false;
 	private static boolean isBlendingEnabled = false;
+	private static boolean isCullingEnabled = false;
+	private static int currentCullFunc = -1;
 }

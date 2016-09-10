@@ -10,9 +10,9 @@ public interface PipelineConfiguration
 
 	public BlendMode getBlendMode();
 
-	public PolygonFillMode getPolygonFillMode();
+	public CullingMode getCullingMode();
 	
-	//TODO depthMask
+	public PolygonFillMode getPolygonFillMode();
 
 	public static enum DepthTestMode {
 		DISABLED, GREATER, GREATER_OR_EQUAL, EQUAL, LESS_OR_EQUAL, LESS;
@@ -20,6 +20,10 @@ public interface PipelineConfiguration
 	
 	public static enum BlendMode {
 		DISABLED, ADD, MIX, ALPHA_TEST;
+	}
+	
+	public static enum CullingMode {
+		DISABLED, CLOCKWISE, COUNTERCLOCKWISE;
 	}
 	
 	public static enum PolygonFillMode {

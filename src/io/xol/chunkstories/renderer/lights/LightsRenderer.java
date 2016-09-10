@@ -25,24 +25,24 @@ public class LightsRenderer
 		if (!lightInFrustrum(renderingContext, light))
 			return;
 
-		lightShader.setUniformFloat("lightDecay[" + lightsBuffer + "]", light.getDecay());
-		lightShader.setUniformFloat3("lightPos[" + lightsBuffer + "]", light.getPosition());
-		lightShader.setUniformFloat3("lightColor[" + lightsBuffer + "]", light.getColor());
+		lightShader.setUniform1f("lightDecay[" + lightsBuffer + "]", light.getDecay());
+		lightShader.setUniform3f("lightPos[" + lightsBuffer + "]", light.getPosition());
+		lightShader.setUniform3f("lightColor[" + lightsBuffer + "]", light.getColor());
 		if (light instanceof SpotLight)
 		{
 			SpotLight spotlight = (SpotLight)light;
-			lightShader.setUniformFloat3("lightDir[" + lightsBuffer + "]", spotlight.getDirection());
-			lightShader.setUniformFloat("lightAngle[" + lightsBuffer + "]", (float) (spotlight.getAngle() / 180 * Math.PI));
+			lightShader.setUniform3f("lightDir[" + lightsBuffer + "]", spotlight.getDirection());
+			lightShader.setUniform1f("lightAngle[" + lightsBuffer + "]", (float) (spotlight.getAngle() / 180 * Math.PI));
 		}
 		else
-			lightShader.setUniformFloat("lightAngle[" + lightsBuffer + "]", 0f);
+			lightShader.setUniform1f("lightAngle[" + lightsBuffer + "]", 0f);
 
 		//TexturesHandler.nowrap("res/textures/flashlight.png");
 
 		lightsBuffer++;
 		if (lightsBuffer == 64)
 		{
-			lightShader.setUniformInt("lightsToRender", lightsBuffer);
+			lightShader.setUniform1i("lightsToRender", lightsBuffer);
 			renderingContext.drawFSQuad();
 			//drawFSQuad();
 			lightsBuffer = 0;
@@ -72,8 +72,8 @@ public class LightsRenderer
 		// Render remaining lights
 		if (lightsBuffer > 0)
 		{
-			lightShader.setUniformInt("lightsToRender", lightsBuffer);
-			renderingContext.drawFSQuad(lightShader.getVertexAttributeLocation("vertexIn"));
+			lightShader.setUniform1i("lightsToRender", lightsBuffer);
+			renderingContext.drawFSQuad();
 		}
 	}
 }

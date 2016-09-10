@@ -11,6 +11,8 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.rendering.DecalsManager;
+import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
@@ -21,6 +23,7 @@ import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -184,15 +187,12 @@ public class DecalsRenderer implements DecalsManager
 
 	public void renderDecals(RenderingContext renderingContext)
 	{
-		ShaderProgram decalsShader = ShadersLibrary.getShaderProgram("decals");
+		ShaderInterface decalsShader = renderingContext.useShader("decals");
 
-		renderingContext.setCurrentShader(decalsShader);
 		renderingContext.getCamera().setupShader(decalsShader);
 		
-		renderingContext.enableVertexAttribute(decalsShader.getVertexAttributeLocation("vertexIn"));
-		renderingContext.enableVertexAttribute(decalsShader.getVertexAttributeLocation("texCoordIn"));
-		
-		decalsShader.setUniformSampler(1, "zBuffer", worldRenderer.zBuffer);
+		renderingContext.bindTexture2D("zBuffer", worldRenderer.zBuffer);
+		//decalsShader.setUniformSampler(1, "zBuffer", worldRenderer.zBuffer);
 
 		glDisable(GL_CULL_FACE);
 		
@@ -210,13 +210,17 @@ public class DecalsRenderer implements DecalsManager
 			diffuseTexture.setTextureWrapping(false);
 			diffuseTexture.setLinearFiltering(false);
 			
-			decalsShader.setUniformSampler(0, "diffuseTexture", diffuseTexture);
+			renderingContext.bindAlbedoTexture(diffuseTexture);
+			//decalsShader.setUniformSampler(0, "diffuseTexture", diffuseTexture);
 			
-			decalType.verticesObject.bind();
-			renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2), 0);
-			renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2), 4 * 3);
+			//decalType.verticesObject.bind();
+			renderingContext.bindAttribute("vertexIn", decalType.verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, 4 * (3 + 2), 0));
+			renderingContext.bindAttribute("texCoordIn", decalType.verticesObject.asAttributeSource(VertexFormat.FLOAT, 2, 4 * (3 + 2), 4 * 3));
+			//renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2), 0);
+			//renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2), 4 * 3);
 			
-			decalType.verticesObject.drawElementsTriangles(decalType.kount);
+			renderingContext.draw(Primitive.TRIANGLE, 0, decalType.kount);
+			//decalType.verticesObject.drawElementsTriangles(decalType.kount);
 		}
 
 		//glEnable(GL_DEPTH_TEST);
@@ -224,8 +228,5 @@ public class DecalsRenderer implements DecalsManager
 		glDepthMask(true);
 		
 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-
-		renderingContext.disableVertexAttribute(decalsShader.getVertexAttributeLocation("vertexIn"));
-		renderingContext.disableVertexAttribute(decalsShader.getVertexAttributeLocation("texCoordIn"));
 	}
 }

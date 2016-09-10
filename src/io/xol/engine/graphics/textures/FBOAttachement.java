@@ -11,6 +11,10 @@ public interface FBOAttachement
 	public void attachColor(int colorAttachement);
 
 	public void resize(int w, int h);
+	
+	public int getWidth();
+	
+	public int getHeight();
 
 	public boolean destroy();
 }

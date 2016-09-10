@@ -11,11 +11,12 @@ import java.util.Map;
 
 import org.lwjgl.BufferUtils;
 
+import io.xol.chunkstories.api.rendering.Renderable;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.engine.animation.SkeletonAnimator;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.geometry.RenderableAnimatable;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.GBufferTexture;
@@ -27,7 +28,7 @@ import io.xol.engine.math.lalgb.Matrix4f;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ObjMeshRenderable implements RenderableAnimatable
+public class ObjMeshRenderable implements Renderable
 {
 	protected ObjMeshRenderable()
 	{
@@ -69,13 +70,12 @@ public class ObjMeshRenderable implements RenderableAnimatable
 	protected VerticesObject normalsDataOnGpu;
 
 	@Override
-	public void render(RenderingContext renderingContext)
+	public void render(RenderingInterface renderingContext)
 	{
 		internalRenderer(renderingContext, null, 0.0, false, (String[]) null);
 
 	}
 
-	@Override
 	public void render(RenderingContext renderingContext, SkeletonAnimator skeleton, double animationTime)
 	{
 		internalRenderer(renderingContext, skeleton, animationTime, false, (String[]) null);
@@ -93,7 +93,7 @@ public class ObjMeshRenderable implements RenderableAnimatable
 		internalRenderer(renderingContext, skeleton, animationTime, true, parts);
 	}*/
 
-	private void internalRenderer(RenderingContext renderingContext, SkeletonAnimator skeleton, double animationTime, boolean exclude, String... parts)
+	private void internalRenderer(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime, boolean exclude, String... parts)
 	{
 		prepareDraw(renderingContext);
 
@@ -160,7 +160,7 @@ public class ObjMeshRenderable implements RenderableAnimatable
 		//glCullFace(GL_FRONT);
 	}
 
-	private void prepareDraw(RenderingContext renderingContext)
+	private void prepareDraw(RenderingInterface renderingContext)
 	{
 		//System.out.println("slt");
 		
@@ -204,8 +204,7 @@ public class ObjMeshRenderable implements RenderableAnimatable
 	Texture2D instancesDataTexture = new GBufferTexture(TextureFormat.RGBA_32F, 32, 32);
 	ByteBuffer instancesDataBuffer = BufferUtils.createByteBuffer(32 * 32 * 4 * 4);
 
-	@Override
-	public void renderInstanciated(RenderingContext renderingContext, Collection<AnimatableData> instancesData)
+	/*public void renderInstanciated(RenderingContext renderingContext, Collection<AnimatableData> instancesData)
 	{
 		prepareDraw(renderingContext);
 		
@@ -295,9 +294,9 @@ public class ObjMeshRenderable implements RenderableAnimatable
 
 			totalTriangles += trianglesInThisGroup;
 		}
-	}
+	}*/
 
-	private void drawInstanceBufferContents(RenderingContext renderingContext, int start, int count, int dataInInstancesBuffer)
+	/*private void drawInstanceBufferContents(RenderingContext renderingContext, int start, int count, int dataInInstancesBuffer)
 	{
 		renderingContext.bindTexture2D("instancedDataSampler", instancesDataTexture);
 		//renderingContext.currentShader().setUniformSampler(13, "instancedDataSampler", instancesDataTexture);
@@ -306,5 +305,5 @@ public class ObjMeshRenderable implements RenderableAnimatable
 		renderingContext.currentShader().setUniform1f("isUsingInstancedData", 1);
 		GLCalls.drawArraysInstanced(GL_TRIANGLES, start, count, dataInInstancesBuffer);
 		renderingContext.currentShader().setUniform1f("isUsingInstancedData", 0);
-	}
+	}*/
 }

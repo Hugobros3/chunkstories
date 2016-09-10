@@ -409,8 +409,8 @@ public class OptionsOverlay extends Overlay
 	{
 		int optionsPanelSize = 320 * 2 + 32 + 64;
 		
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, 0, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(GameWindowOpenGL.windowWidth / 2.0f - optionsPanelSize / 2, 0, GameWindowOpenGL.windowWidth  / 2 + optionsPanelSize / 2, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, 0, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(GameWindowOpenGL.windowWidth / 2.0f - optionsPanelSize / 2, 0, GameWindowOpenGL.windowWidth  / 2 + optionsPanelSize / 2, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
 		
 		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
 		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, optionsPanelSize, GameWindowOpenGL.windowHeight, 0, "000000", 0.25f);

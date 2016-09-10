@@ -4,15 +4,13 @@ import io.xol.chunkstories.api.exceptions.AttributeNotPresentException;
 import io.xol.chunkstories.api.exceptions.InvalidShaderException;
 import io.xol.chunkstories.api.exceptions.ShaderCompileException;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.PolygonFillMode;
-import io.xol.engine.graphics.PipelineConfigurationImplementation;
 import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -87,6 +85,8 @@ public interface RenderingInterface
 	public PipelineConfiguration getPipelineConfiguration();
 
 	public PipelineConfiguration setDepthTestMode(DepthTestMode depthTestMode);
+	
+	public PipelineConfiguration setCullingMode(CullingMode cullingMode);
 
 	public PipelineConfiguration setBlendMode(BlendMode blendMode);
 
@@ -108,13 +108,19 @@ public interface RenderingInterface
 	public AttributesConfiguration bindAttribute(String attributeName, AttributeSource attributeSource) throws AttributeNotPresentException;
 	
 	/**
+	 * Ensures no attributes are bound left over from previous draw instructions
+	 * @return
+	 */
+	public AttributesConfiguration unbindAttributes();
+	
+	/**
 	 * Draws N primitives made of 'count' vertices, offset at vertice 'startAt', using data specified in the AttributesConfiguration
 	 * @return Returns a RenderingCommand object, containing a snapshot of the current state of the RenderingInterface and adds it to the rendering queue
 	 */
 	public RenderingCommand draw(Primitive primitive, int startAt, int count);
 	
 	public enum Primitive {
-		POINT, LINE, TRIANGLE;
+		POINT, LINE, TRIANGLE, QUAD;
 	}
 	
 	/**

@@ -55,7 +55,7 @@ public class LogPolicyAsk extends Overlay
 	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
 	{
 		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, 0, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
 		
 		FontRenderer2.drawTextUsingSpecificFont(30, GameWindowOpenGL.windowHeight-64, 0, 64, "Chunk Stories indev log policy", BitmapFont.SMALLFONTS);
 		

@@ -226,11 +226,11 @@ public class GameplayScene extends OverlayableScene
 
 				TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png").setLinearFiltering(false);
 				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale, 256 * scale, 32 * scale, 0, 32f / 256f, 1, 0,
-						TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png").getId(), false, true, null);
+						TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, null);
 
 				int horizontalBitsToDraw = (int) (8 + 118 * livingPlayer.getHealth() / livingPlayer.getMaxHealth());
 				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f,
-						32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png").getId(), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
+						32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
 
 			}
 

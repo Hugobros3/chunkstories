@@ -159,7 +159,7 @@ public class Cubemap extends Texture
 		@Override
 		public void resize(int w, int h)
 		{
-			
+			throw new UnsupportedOperationException("Individual cubemaps face should not be resized.");
 		}
 
 		@Override
@@ -170,6 +170,18 @@ public class Cubemap extends Texture
 			glDeleteTextures(glId);
 			glId = -1;
 			return true;
+		}
+
+		@Override
+		public int getWidth()
+		{
+			return size;
+		}
+
+		@Override
+		public int getHeight()
+		{
+			return size;
 		}
 	}
 

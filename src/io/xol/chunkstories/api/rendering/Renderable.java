@@ -12,8 +12,8 @@ import io.xol.chunkstories.api.exceptions.RenderingException;
 public interface Renderable
 {
 	/**
-	 * Setups the RenderingInterface as it needs and registers a RenderingCommand
+	 * Setups the RenderingInterface as it needs and registers RenderingCommands
 	 * @throws RenderingException 
 	 */
-	public RenderingCommand render(RenderingInterface renderingInterface) throws RenderingException;
+	public void render(RenderingInterface renderingInterface) throws RenderingException;
 }

@@ -2,11 +2,14 @@ package io.xol.chunkstories.renderer.sky;
 
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.WorldRenderer;
@@ -63,16 +66,14 @@ public class SkyRenderer
 		Vector3f sunPosVector = getSunPosition();
 		double[] sunpos = { sunPosVector.x, sunPosVector.y, sunPosVector.z };
 
-		ShaderProgram skyShader = ShadersLibrary.getShaderProgram("sky");
-		renderingContext.setCurrentShader(skyShader);
+		ShaderInterface skyShader = renderingContext.useShader("sky");
 		
-		// TexturesHandler.bindTexture("res/textures/environement/sky.png");
-		GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(skyShader);
+		
 		//skyShader.use(true);
-		skyShader.setUniformSampler(9, "cloudsNoise", TexturesHandler.getTexture("environement/cloudsStatic.png"));
+		renderingContext.bindTexture2D("cloudsNoise", TexturesHandler.getTexture("environement/cloudsStatic.png"));
 		
 		Texture2D glowTexture = TexturesHandler.getTexture("environement/glow.png");
-		skyShader.setUniformSampler(2, "sunSetRiseTexture", glowTexture);
+		renderingContext.bindTexture2D("sunSetRiseTexture", glowTexture);
 		
 		glowTexture.setLinearFiltering(true);
 		glowTexture.setTextureWrapping(false);
@@ -81,10 +82,10 @@ public class SkyRenderer
 		Texture2D skyTextureSunny = TexturesHandler.getTexture("environement/sky.png");
 		Texture2D skyTextureRaining = TexturesHandler.getTexture("environement/sky_rain.png");
 		
-		skyShader.setUniformSampler(0, "skyTextureSunny", skyTextureSunny);
-		skyShader.setUniformSampler(1, "skyTextureRaining", skyTextureRaining);
+		renderingContext.bindTexture2D("skyTextureSunny", skyTextureSunny);
+		renderingContext.bindTexture2D("skyTextureRaining", skyTextureRaining);
 		
-		skyShader.setUniformFloat("overcastFactor", world.getWeather());
+		skyShader.setUniform1f("overcastFactor", world.getWeather());
 		
 		skyTextureSunny.setLinearFiltering(true);
 		skyTextureSunny.setMipMapping(false);
@@ -95,23 +96,22 @@ public class SkyRenderer
 		skyTextureRaining.setTextureWrapping(false);
 
 		//skyShader.setUniformSamplerCube(2, "skybox", TexturesHandler.idCubemap("res/textures/skybox"));
-		skyShader.setUniformFloat3("camPos", renderingContext.getCamera().pos.castToSimplePrecision());
-		skyShader.setUniformFloat3("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
-		skyShader.setUniformFloat("time", time);
+		skyShader.setUniform3f("camPos", renderingContext.getCamera().pos.castToSimplePrecision());
+		skyShader.setUniform3f("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
+		skyShader.setUniform1f("time", time);
 		renderingContext.getCamera().setupShader(skyShader);
 
-		renderingContext.drawFSQuad(skyShader.getVertexAttributeLocation("vertexIn"));
+		renderingContext.drawFSQuad();
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPointSize(1f);
 
-		ShaderProgram starsShader = skyShader = ShadersLibrary.getShaderProgram("stars");
+		ShaderInterface starsShader = renderingContext.useShader("stars");
 		
-		renderingContext.setCurrentShader(starsShader);
 		//starsShader.use(true);
-		starsShader.setUniformFloat3("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
-		starsShader.setUniformFloat3("color", 1f, 1f, 1f);
+		starsShader.setUniform3f("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
+		starsShader.setUniform3f("color", 1f, 1f, 1f);
 		renderingContext.getCamera().setupShader(starsShader);
 		int NB_STARS = 500;
 		if (stars == null)
@@ -126,14 +126,12 @@ public class SkyRenderer
 			}
 		}
 		stars.rewind();
-		int vertexIn = starsShader.getVertexAttributeLocation("vertexIn");
-		if (vertexIn >= 0)
 		{
-			renderingContext.enableVertexAttribute(vertexIn);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			renderingContext.setVertexAttributePointerLocation(vertexIn, 3, false, 0, stars);
-			GLCalls.drawArrays(GL_POINTS, 0, NB_STARS);
-			renderingContext.disableVertexAttribute(vertexIn);
+			//glBindBuffer(GL_ARRAY_BUFFER, 0);
+			renderingContext.bindAttribute("vertexIn", new FloatBufferAttributeSource(stars, 3));
+			//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, false, 0, stars);
+			renderingContext.draw(Primitive.POINT, 0, NB_STARS);
+			//GLCalls.drawArrays(GL_POINTS, 0, NB_STARS);
 			//starsShader.use(false);
 		}
 		glDisable(GL_BLEND);
@@ -150,13 +148,13 @@ public class SkyRenderer
 		return h / 180 * Math.PI;
 	}
 
-	public void setupShader(ShaderProgram shader)
+	public void setupShader(ShaderInterface shaderInterface)
 	{
 		float fogFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.4f) / 0.1f, 1.0f);
 		
-		shader.setUniformFloat("fogStartDistance", Math2.mix(RenderingConfig.viewDistance, 32, fogFactor));
-		shader.setUniformFloat("fogEndDistance", Math2.mix(1024, 384, fogFactor));
-		shader.setUniformFloat("overcastFactor", world.getWeather());
+		shaderInterface.setUniform1f("fogStartDistance", Math2.mix(RenderingConfig.viewDistance, 32, fogFactor));
+		shaderInterface.setUniform1f("fogEndDistance", Math2.mix(1024, 384, fogFactor));
+		shaderInterface.setUniform1f("overcastFactor", world.getWeather());
 	}
 	
 	public void destroy()

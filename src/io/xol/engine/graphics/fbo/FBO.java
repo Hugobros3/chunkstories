@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.lwjgl.BufferUtils;
 
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.textures.FBOAttachement;
 import io.xol.engine.graphics.textures.GBufferTexture;
 
@@ -152,15 +153,19 @@ public class FBO
 
 	public void bind()
 	{
+		//Don't rebind twice
 		if(fbo_id == bound)
 			return;
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+		FBOAttachement ok = this.depthAttachement != null ? depthAttachement : this.colorAttachements[0];
+		glViewport(0, 0, ok.getWidth(), ok.getHeight());
 		bound = fbo_id;
 	}
 
 	public static void unbind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		bound = 0;
 	}
 	

@@ -17,6 +17,8 @@ import org.lwjgl.BufferUtils;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.rendering.Light;
+import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -34,6 +36,7 @@ import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.chunk.DummyChunk;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -68,15 +71,17 @@ public class VoxelItemRenderer implements ItemRenderer
 		}
 
 		int slotSize = 24 * scaling;
-		ShaderProgram program = ShadersLibrary.getShaderProgram("inventory_blockmodel");
-		renderingContext.setCurrentShader(program);
+		ShaderInterface program = renderingContext.useShader("inventory_blockmodel");
+		//ShaderProgram program = ShadersLibrary.getShaderProgram("inventory_blockmodel");
+		//renderingContext.setCurrentShader(program);
+		
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
 
-		program.setUniformFloat2("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		program.setUniformFloat2("dekal", screenPositionX + pile.getItem().getSlotsWidth() * slotSize / 2, screenPositionY + pile.getItem().getSlotsHeight() * slotSize / 2);
-		program.setUniformFloat("scaling", slotSize / 1.65f);
+		program.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		program.setUniform2f("dekal", screenPositionX + pile.getItem().getSlotsWidth() * slotSize / 2, screenPositionY + pile.getItem().getSlotsHeight() * slotSize / 2);
+		program.setUniform1f("scaling", slotSize / 1.65f);
 		transformation.setIdentity();
 		transformation.scale(new Vector3f(-1f, 1f, 1f));
 		transformation.rotate(toRad(-22.5f), new Vector3f(1.0f, 0.0f, 0.0f));
@@ -90,7 +95,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		{
 			int width = slotSize * pile.item.getSlotsWidth();
 			int height = slotSize * pile.item.getSlotsHeight();
-			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, TexturesHandler.getTexture("./items/icons/notex.png").getId(), true, true, null);
+			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, TexturesHandler.getTexture("./items/icons/notex.png"), true, true, null);
 			return;
 		}
 		Texture2D texture = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
@@ -167,17 +172,19 @@ public class VoxelItemRenderer implements ItemRenderer
 		
 		if (voxelItemsModelBuffer.containsKey(bri.getMetaData() + 16 * voxel.getId()))
 		{
-			renderingContext.enableVertexAttribute("vertexIn");
-			renderingContext.enableVertexAttribute("texCoordIn");
-			renderingContext.enableVertexAttribute("normalIn");
-
 			VerticesObject mesh = voxelItemsModelBuffer.get(bri.getMetaData() + 16 * voxel.getId());
 
-			renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 24, 0 + 0, mesh);
-			renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 24, 0 + 12, mesh);
-			renderingContext.setVertexAttributePointerLocation("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, 0 + 20, mesh);
+			renderingContext.bindAttribute("vertexIn", mesh.asAttributeSource(VertexFormat.FLOAT, 3, 24, 0));
+			renderingContext.bindAttribute("texCoordIn", mesh.asAttributeSource(VertexFormat.FLOAT, 3, 24, 12));
+			renderingContext.bindAttribute("normalIn", mesh.asAttributeSource(VertexFormat.U1010102, 3, 24, 20));
 			
-			mesh.drawElementsTriangles((int) (mesh.getVramUsage() / 24));
+			//renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 24, 0 + 0, mesh);
+			//renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 24, 0 + 12, mesh);
+			//renderingContext.setVertexAttributePointerLocation("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, 0 + 20, mesh);
+			
+			renderingContext.draw(Primitive.TRIANGLE, 0, (int) (mesh.getVramUsage() / 24));
+			
+			//mesh.drawElementsTriangles((int) (mesh.getVramUsage() / 24));
 		}
 	}
 
@@ -192,7 +199,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		float s = 0.45f;
 		handTransformation.scale(new Vector3f(s, s, s));
 		handTransformation.translate(new Vector3f(-0.25f, -0.5f, -0.5f));
-		context.sendTransformationMatrix(handTransformation);
+		context.setObjectMatrix(handTransformation);
 		Voxel voxel = ((ItemVoxel) pile.getItem()).getVoxel();
 		if (voxel == null)
 		{
@@ -209,7 +216,7 @@ public class VoxelItemRenderer implements ItemRenderer
 			context.addLight(heldBlockLight);	
 			
 			//If we hold a light source, prepare the shader accordingly
-			context.currentShader().setUniformFloat2("worldLight", ((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevelLocation(location));
+			context.currentShader().setUniform2f("worldLight", ((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevelLocation(location));
 			
 		}
 		

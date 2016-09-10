@@ -4,6 +4,9 @@ import java.nio.ByteBuffer;
 
 import org.lwjgl.BufferUtils;
 
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
+import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VerticesObject;
@@ -204,39 +207,35 @@ public class CloudsRenderer
 		if(baked <= 0)
 			return;
 		
-		ShaderProgram cloudsShader = ShadersLibrary.getShaderProgram("clouds");
-
-		renderingContext.setCurrentShader(cloudsShader);
-		renderingContext.getCamera().setupShader(cloudsShader);
-		skyRenderer.setupShader(cloudsShader);
-		cloudsShader.setUniformFloat3("sunPos", skyRenderer.getSunPosition());
-		renderingContext.enableVertexAttribute(cloudsShader.getVertexAttributeLocation("vertexIn"));
-		renderingContext.enableVertexAttribute(cloudsShader.getVertexAttributeLocation("normalIn"));
-		renderingContext.enableVertexAttribute(cloudsShader.getVertexAttributeLocation("alphaIn"));
-
+		//ShaderProgram cloudsShader = ShadersLibrary.getShaderProgram("clouds");
+		renderingContext.useShader("clouds");
+		//renderingContext.setCurrentShader(cloudsShader);
+		renderingContext.getCamera().setupShader(renderingContext.currentShader());
+		skyRenderer.setupShader(renderingContext.currentShader());
+		renderingContext.currentShader().setUniform3f("sunPos", skyRenderer.getSunPosition());
+		ShaderInterface cloudsShader = renderingContext.currentShader();
+		
 		Texture2D glowTexture = TexturesHandler.getTexture("environement/glow.png");
 		Texture2D skyTextureSunny = TexturesHandler.getTexture("environement/sky.png");
 		Texture2D skyTextureRaining = TexturesHandler.getTexture("environement/sky_rain.png");
 		
-		cloudsShader.setUniformSampler(0, "sunSetRiseTexture", glowTexture);
-		cloudsShader.setUniformSampler(1, "skyTextureSunny", skyTextureSunny);
-		cloudsShader.setUniformSampler(2, "skyTextureRaining", skyTextureRaining);
-		cloudsShader.setUniformFloat("time", (world.getTime() % 10000) / 10000f);
+		renderingContext.bindTexture2D("sunSetRiseTexture", glowTexture);
+		renderingContext.bindTexture2D("skyTextureSunny", skyTextureSunny);
+		renderingContext.bindTexture2D("skyTextureRaining", skyTextureRaining);
+		cloudsShader.setUniform1f("time", (world.getTime() % 10000) / 10000f);
 
-		cloudsShader.setUniformFloat("overcastFactor", world.getWeather());
+		cloudsShader.setUniform1f("overcastFactor", world.getWeather());
 		
-		glDisable(GL_CULL_FACE);
+		renderingContext.setCullingMode(CullingMode.DISABLED);
+		//glDisable(GL_CULL_FACE);
 
-		cloudsMesh.bind();
-		renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), 0);
-		renderingContext.setVertexAttributePointerLocation("normalIn", 3, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), (4 * 3));
-		renderingContext.setVertexAttributePointerLocation("alphaIn", 1, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), (4 * 3 + 4 * 3));
+		//cloudsMesh.bind();
+		//renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), 0);
+		//renderingContext.setVertexAttributePointerLocation("normalIn", 3, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), (4 * 3));
+		//renderingContext.setVertexAttributePointerLocation("alphaIn", 1, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), (4 * 3 + 4 * 3));
 
-		cloudsMesh.drawElementsTriangles(baked);
-
-		renderingContext.disableVertexAttribute(cloudsShader.getVertexAttributeLocation("vertexIn"));
-		renderingContext.disableVertexAttribute(cloudsShader.getVertexAttributeLocation("normalIn"));
-		renderingContext.disableVertexAttribute(cloudsShader.getVertexAttributeLocation("alphaIn"));
+		renderingContext.draw(Primitive.TRIANGLE, 0, baked);
+		//cloudsMesh.drawElementsTriangles(baked);
 	}
 
 	public void destroy()

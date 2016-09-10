@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
 
@@ -27,9 +28,9 @@ public class DefaultItemRenderer implements ItemRenderer
 	{
 		int slotSize = 24 * 2;
 		TexturesHandler.getTexture(pile.getTextureName()).setLinearFiltering(false);
-		int textureId = TexturesHandler.getTextureID(pile.getTextureName());
-		if(textureId == -1)
-			textureId = TexturesHandler.getTexture("res/items/icons/notex.png").getId();
+		Texture2D textureId = TexturesHandler.getTexture(pile.getTextureName());
+		if(textureId == null)
+			textureId = TexturesHandler.getTexture("res/items/icons/notex.png");
 		
 		//System.out.println(textureId + pile.getTextureName());
 		int width = slotSize * pile.item.getSlotsWidth();

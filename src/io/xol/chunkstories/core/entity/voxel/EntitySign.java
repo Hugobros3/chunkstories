@@ -60,7 +60,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 		@Override
 		public void setupRender(RenderingContext renderingContext)
 		{
-			renderingContext.sendBoneTransformationMatrix(null);
+			renderingContext.setObjectMatrix(null);
 
 			Texture2D diffuse = TexturesHandler.getTexture("./models/sign.png");
 			diffuse.setLinearFiltering(false);
@@ -73,7 +73,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 		{
 			int e = 0;
 			
-			renderingContext.sendBoneTransformationMatrix(null);
+			renderingContext.setObjectMatrix(null);
 
 			for (EntitySign entitySign : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
@@ -86,7 +86,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 				diffuse.setLinearFiltering(false);
 				renderingContext.bindAlbedoTexture(diffuse);
 				renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
-				renderingContext.currentShader().setUniformFloat3("objectPosition", entitySign.getLocation());
+				renderingContext.currentShader().setUniform3f("objectPosition", entitySign.getLocation());
 
 				int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
 
@@ -95,7 +95,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 
 				int lightSky = VoxelFormat.sunlight(modelBlockData);
 				int lightBlock = VoxelFormat.blocklight(modelBlockData);
-				renderingContext.currentShader().setUniformFloat3("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+				renderingContext.currentShader().setUniform3f("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
 
 				int facing = VoxelFormat.meta(modelBlockData);
 
@@ -104,10 +104,8 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 				mutrix.rotate((float) Math.PI * 2.0f * (-facing) / 16f, new Vector3f(0, 1, 0));
 				if (isPost)
 					mutrix.translate(new Vector3f(0.0f, 0.0f, -0.5f));
-				renderingContext.sendTransformationMatrix(mutrix);
+				renderingContext.setObjectMatrix(mutrix);
 
-				renderingContext.enableVertexAttribute("colorIn");
-				renderingContext.enableVertexAttribute("normalIn");
 				glDisable(GL_CULL_FACE);
 				if (isPost)
 					ModelLibrary.getRenderableMesh("./models/sign_post.obj").render(renderingContext);
@@ -123,7 +121,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 				}
 				// Display it
 				mutrix.translate(new Vector3f(0.0f, 1.15f, 0.055f));
-				renderingContext.sendTransformationMatrix(mutrix);
+				renderingContext.setObjectMatrix(mutrix);
 				entitySign.renderData.render(renderingContext);
 			}
 			
