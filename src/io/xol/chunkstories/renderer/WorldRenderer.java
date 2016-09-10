@@ -2,7 +2,6 @@ package io.xol.chunkstories.renderer;
 
 import static io.xol.engine.graphics.textures.TextureFormat.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -871,13 +870,13 @@ public class WorldRenderer
 			shadowsPassShader.setUniform1f("time", animationTimer);
 			
 			renderingContext.bindAlbedoTexture(blocksAlbedoTexture);
+			renderingContext.setObjectMatrix(null);
 			//opaqueBlocksShader.setUniformSampler(0, "albedoTexture", blocksAlbedoTexture);
 		}
 
 		// Alpha blending is disabled because certain G-Buffer rendertargets can output a 0 for alpha
 		glAlphaFunc(GL_GREATER, 0.0f);
 		glDisable(GL_ALPHA_TEST);
-		int vertexIn = 0, texCoordIn = 0, colorIn = 0, normalIn = 0;
 		// Init vertex attribute locations
 		
 		/*if (!isShadowPass)

@@ -145,7 +145,7 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 		Matrix4f objectMatrix = renderingInterface.getObjectMatrix();
 		if(objectMatrix != null)
 		{
-			this.shaderInterface.setUniformMatrix4f("boneTransform", objectMatrix);
+			this.shaderInterface.setUniformMatrix4f("objectMatrix", objectMatrix);
 			Matrix4f.invert(objectMatrix, temp);
 			Matrix4f.transpose(temp, temp);
 			//TODO make a clean function for this
@@ -160,7 +160,7 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 			normal.m20 = temp.m20;
 			normal.m21 = temp.m21;
 			normal.m22 = temp.m22;
-			this.shaderInterface.setUniformMatrix3f("boneTransformNormal", normal);
+			this.shaderInterface.setUniformMatrix3f("objectMatrixNormal", normal);
 		}
 		
 		//Setup pipeline state

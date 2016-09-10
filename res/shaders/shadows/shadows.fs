@@ -5,10 +5,10 @@
 
 in vec4 texCoordPassed;
 
-uniform sampler2D albedoTexture;
+uniform sampler2D diffuseTexture;
 
 void main(){
-	if(texture2D(albedoTexture, texCoordPassed.st).a < 0.1)
+	if(texture2D(diffuseTexture, texCoordPassed.st).a < 0.1)
 		discard;
 		
 	gl_FragDepth = gl_FragCoord.z;

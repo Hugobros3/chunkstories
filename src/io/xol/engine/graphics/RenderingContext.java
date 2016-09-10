@@ -222,6 +222,8 @@ public class RenderingContext implements RenderingInterface
 	@Override
 	public Matrix4f setObjectMatrix(Matrix4f objectMatrix)
 	{
+		if(objectMatrix == null)
+			objectMatrix = new Matrix4f();
 		currentObjectMatrix = objectMatrix;
 		return this.currentObjectMatrix;
 	}

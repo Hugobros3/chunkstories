@@ -193,4 +193,16 @@ public class Matrix3f
 		m21 *= factor;
 		m22 *= factor;
 	}
+	
+	@Override
+	public String toString()
+	{
+		String t = "";
+		String format = "%10.5f";
+		t += "[ " + String.format(format, m00) + ", " + String.format(format, m10) + ", " + String.format(format, m20) + "]\n";
+		t += "[ " + String.format(format, m01) + ", " + String.format(format, m11) + ", " + String.format(format, m21) + "]\n";
+		t += "[ " + String.format(format, m02) + ", " + String.format(format, m12) + ", " + String.format(format, m22) + "]\n";
+
+		return t;
+	}
 }

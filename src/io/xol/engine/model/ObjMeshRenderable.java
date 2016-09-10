@@ -194,7 +194,7 @@ public class ObjMeshRenderable implements Renderable
 		//if (normalIn != -1)
 		{
 
-			renderingContext.bindAttribute("normalIn", normalsDataOnGpu.asAttributeSource(VertexFormat.FLOAT, 2));
+			renderingContext.bindAttribute("normalIn", normalsDataOnGpu.asAttributeSource(VertexFormat.FLOAT, 3));
 			//normalsDataOnGpu.bind();
 			//renderingContext.setVertexAttributePointerLocation(normalIn, 3, GL_FLOAT, true, 0, 0);
 		}
