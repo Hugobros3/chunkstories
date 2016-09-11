@@ -94,7 +94,6 @@ void main(){
 	
 	spec = pow(spec, gamma);
 	
-	
 	//if(mod((gl_FragCoord.x + gl_FragCoord.y), 2) == 0)
 	//	discard;
 	

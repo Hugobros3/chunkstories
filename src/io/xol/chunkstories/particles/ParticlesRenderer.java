@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.world.World;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;
@@ -306,11 +307,13 @@ public class ParticlesRenderer implements ParticlesManager
 
 		glDepthMask(true);
 
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glBlendEquation(GL_FUNC_ADD);
-		glDisable(GL_BLEND);
+		renderingContext.setBlendMode(BlendMode.DISABLED);
+		
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glBlendEquation(GL_FUNC_ADD);
+		//glDisable(GL_BLEND);
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		renderLights(renderingContext);
 

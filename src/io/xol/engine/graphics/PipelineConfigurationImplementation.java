@@ -171,12 +171,12 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	{
 		if (on)
 		{
-			//if (!isBlendEnabled)
+			if (!isBlendEnabled)
 				glEnable(GL_DEPTH_TEST);
 		}
 		else
 		{
-			//if (isBlendEnabled)
+			if (isBlendEnabled)
 				glDisable(GL_DEPTH_TEST);
 		}
 		isBlendEnabled = on;
@@ -184,7 +184,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 
 	private void depthFunc(int depthFunc)
 	{
-		//if (depthFunc != currentDepthFunc)
+		if (depthFunc != currentDepthFunc)
 		{
 			glDepthFunc(depthFunc);
 			currentDepthFunc = depthFunc;
@@ -195,12 +195,12 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	{
 		if (on)
 		{
-			//if (!isAlphaTestEnabled)
+			if (!isAlphaTestEnabled)
 				glEnable(GL_ALPHA_TEST);
 		}
 		else
 		{
-			//if (isAlphaTestEnabled)
+			if (isAlphaTestEnabled)
 				glDisable(GL_ALPHA_TEST);
 		}
 		isAlphaTestEnabled = on;
@@ -210,12 +210,12 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	{
 		if (on)
 		{
-			//if (!isBlendingEnabled)
+			if (!isBlendingEnabled)
 				glEnable(GL_BLEND);
 		}
 		else
 		{
-			//if (isBlendingEnabled)
+			if (isBlendingEnabled)
 				glDisable(GL_BLEND);
 		}
 		isBlendingEnabled = on;
@@ -225,12 +225,12 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	{
 		if (on)
 		{
-			//if (!isCullingEnabled)
+			if (!isCullingEnabled)
 				glEnable(GL_CULL_FACE);
 		}
 		else
 		{
-			//if (isCullingEnabled)
+			if (isCullingEnabled)
 				glDisable(GL_CULL_FACE);
 		}
 		isCullingEnabled = on;
@@ -238,7 +238,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	
 	private void cullFF(int mode)
 	{
-		//if (mode != currentCullFunc)
+		if (mode != currentCullFunc)
 		{
 			glFrontFace(mode);
 			currentCullFunc = mode;

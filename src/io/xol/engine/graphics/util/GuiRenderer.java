@@ -128,7 +128,11 @@ public class GuiRenderer
 		//System.out.println("color: "+color + " currentColor: "+currentColor + "");
 		
 		//if (textureID != currentTexture || alpha != alphaBlending || useTexture != texture || color == null || !color.equals(currentColor))
-		if (texture != currentTexture || alpha != alphaBlending || useTexture != textureEnabled || (color == null && currentColor != null && !currentColor.equals(new Vector4f(1f, 1f, 1f, 1f))) || (color != null && !color.equals(currentColor)))
+		if (texture != currentTexture || 
+				alpha != alphaBlending || 
+				useTexture != textureEnabled || 
+				(color == null && currentColor != null && !currentColor.equals(new Vector4f(1f, 1f, 1f, 1f))) || 
+				(color != null && !color.equals(currentColor)))
 		{
 			//System.out.println("color: "+color + " currentColor: "+currentColor + " == ?" + ((color == null && currentColor == null ) && (color != null && currentColor != null && color.equals(currentColor))) );
 			drawBuffer();
@@ -207,8 +211,7 @@ public class GuiRenderer
 		//renderingContext.setVertexAttributePointerLocation(texCoordIn, 2, GL_FLOAT, false, 16, 8);
 		
 		
-		// System.out.println("Drawing"+elementsToDraw
-		// +" vertexIn "+vertexIn+" texCoordIn "+texCoordIn+" vbo: "+glVBO);
+		//System.out.println("Drawing"+elementsToDraw +" texture: "+currentTexture.getId() + " color:"+currentColor + " alpha:"+alphaBlending);
 		//GLCalls.drawArrays(GL_TRIANGLES, 0, elementsToDraw);
 		renderingContext.draw(Primitive.TRIANGLE, 0, elementsToDraw);
 

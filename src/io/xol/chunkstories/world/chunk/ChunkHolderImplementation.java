@@ -53,7 +53,6 @@ public class ChunkHolderImplementation implements ChunkHolder
 		}
 	};
 	
-	
 	@Override
 	public void compressChunkData()
 	{
@@ -306,7 +305,6 @@ public class ChunkHolderImplementation implements ChunkHolder
 		return z;
 	}
 
-	
 	public void setChunk(CubicChunk chunk)
 	{
 		this.chunk = chunk;

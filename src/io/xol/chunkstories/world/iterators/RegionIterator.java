@@ -57,9 +57,6 @@ public class RegionIterator implements ChunksIterator
 	public void remove()
 	{
 		throw new UnsupportedOperationException();
-		//if(chunk == null)
-		//	return;
-		//holder.removeChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ());
 	}
 
 }

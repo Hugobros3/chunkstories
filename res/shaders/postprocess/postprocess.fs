@@ -133,8 +133,8 @@ vec4 getDebugShit(vec2 coords)
 		else
 		{
 			shit = texture2DLod(debugBuffer, sampleCoords, 4.0);
-			shit = vec4(1.0, 0.5, 0.0, 1.0) * texture2D(normalBuffer, sampleCoords).w;
-			shit.yz += texture2D(metaBuffer, sampleCoords).xy;
+			//shit = vec4(1.0, 0.5, 0.0, 1.0) * texture2D(normalBuffer, sampleCoords).w;
+			//shit.yz += texture2D(metaBuffer, sampleCoords).xy;
 			<ifdef dynamicGrass>
 			
 			shit = vec4(1.0, 1.0, 1.0, 1.0) * texture2D(bloomBuffer, sampleCoords).x * 1.0;

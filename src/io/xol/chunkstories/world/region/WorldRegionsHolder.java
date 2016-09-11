@@ -25,37 +25,6 @@ public class WorldRegionsHolder
 
 	private final int sizeInRegions, heightInRegions;
 
-	/*private class RegionLocation
-	{
-		public int regionX, regionY, regionZ;
-
-		public RegionLocation(int x, int y, int z)
-		{
-			regionX = x;
-			regionY = y;
-			regionZ = z;
-		}
-
-		@Override
-		public boolean equals(Object o)
-		{
-			if (!(o instanceof RegionLocation))
-				return false;
-			RegionLocation chk = (RegionLocation) o;
-			boolean equals = chk.regionX == regionX && chk.regionY == regionY && chk.regionZ == regionZ;
-			//System.out.println("checking if chk == !" + equals);
-			return equals;
-		}
-
-		@Override
-		public int hashCode()
-		{
-			int address = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY;
-			//System.out.println("hashCode == "+address);
-			return address;
-		}
-	}*/
-
 	public WorldRegionsHolder(WorldImplementation world)
 	{
 		this.world = world;
@@ -113,7 +82,6 @@ public class WorldRegionsHolder
 	 */
 	protected void regionConstructorCallBack(RegionImplementation region)
 	{
-
 		int key = (region.getRegionX() * sizeInRegions + region.getRegionZ()) * heightInRegions + region.getRegionY();
 		//RegionLocation key = new RegionLocation(region.regionX, region.regionY, region.regionZ);
 
@@ -234,9 +202,6 @@ public class WorldRegionsHolder
 		while (regionsIterator.hasNext())
 		{
 			RegionImplementation region = regionsIterator.next();
-
-			//System.out.println("unload mdr" +region.countUsers());
-			
 			//Processes users, remove null ones
 			region.unloadsUnusedChunks();
 			

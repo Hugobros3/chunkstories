@@ -238,7 +238,6 @@ public class RenderingContext implements RenderingInterface
 	
 	public void drawFSQuad()
 	{
-		fsQuadVertices = null;
 		if (fsQuadVertices == null)
 		{
 			fsQuadVertices = new VerticesObject();

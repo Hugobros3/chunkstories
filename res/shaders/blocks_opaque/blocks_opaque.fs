@@ -72,7 +72,7 @@ void main(){
 	//alpha = 1;
 	//baseColor = vec3(1, 0.5, 0.5);
 	
-	if(alpha <= 0.0)
+	if(alpha <= 0.1)
 		discard;
 	
 	else if(alpha < 1)

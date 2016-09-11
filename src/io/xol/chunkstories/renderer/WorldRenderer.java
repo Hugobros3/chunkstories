@@ -30,12 +30,10 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fbo.FBO;
 import io.xol.engine.graphics.geometry.ByteBufferAttributeSource;
 import io.xol.engine.graphics.geometry.VertexFormat;
-import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.GBufferTexture;
@@ -337,7 +335,7 @@ public class WorldRenderer
 		fboShadedBuffer.bind();
 
 		// Draw sky
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			glFinish();
 		long t = System.nanoTime();
 		sky.time = (world.worldTime % 10000) / 10000f;
@@ -346,9 +344,9 @@ public class WorldRenderer
 		//glViewport(0, 0, scrW, scrH);
 		sky.render(renderingContext);
 
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			glFinish();
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			System.out.println("sky took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		// Move camera to relevant position
@@ -366,9 +364,9 @@ public class WorldRenderer
 		//weatherEffectsRenderer.renderEffects(renderingContext);
 
 		// Debug
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			glFinish();
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			System.out.println("total took " + (System.nanoTime() - t) / 1000000.0 + "ms ( " + 1 / ((System.nanoTime() - t) / 1000000000.0) + " fps)");
 
 		//Disable depth check
@@ -416,11 +414,11 @@ public class WorldRenderer
 			}
 			else
 			{
-				if (RenderingConfig.debugGBuffers)
+				if (RenderingConfig.debugPasses)
 					System.out.println("ChunkRenderer outputted a chunk render for a not loaded chunk : ");
-				//if (FastConfig.debugGBuffers)
+				//if (FastConfig.debugPasses)
 				//	System.out.println("Chunks coordinates : X=" + toload.x + " Y=" + toload.y + " Z=" + toload.z);
-				//if (FastConfig.debugGBuffers)
+				//if (FastConfig.debugPasses)
 				//	System.out.println("Render information : vbo size =" + toload.s_normal + " and water size =" + toload.s_water);
 				chunkRenderData.free();
 			}
@@ -645,7 +643,7 @@ public class WorldRenderer
 			//glBindBuffer(GL_ARRAY_BUFFER, 0);
 			localMapCommands.flip();
 
-			renderingContext.bindAttribute("vertexIn", new ByteBufferAttributeSource(localMapCommands, VertexFormat.UBYTE, 3, 4));
+			renderingContext.bindAttribute("vertexIn", new ByteBufferAttributeSource(localMapCommands, VertexFormat.BYTE, 3, 4));
 			//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_BYTE, false, 4, localMapCommands);
 			
 			renderingContext.draw(Primitive.POINT, 0, localMapElements);
@@ -787,7 +785,7 @@ public class WorldRenderer
 		if (Keyboard.isKeyDown(Keyboard.KEY_F10))
 			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			glFinish();
 		long t = System.nanoTime();
 		if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
@@ -795,9 +793,9 @@ public class WorldRenderer
 
 		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);
 
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			glFinish();
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			System.out.println("terrain took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 		
 		renderingContext.flush();
@@ -932,7 +930,7 @@ public class WorldRenderer
 		//renderingContext.enableVertexAttribute(vertexIn);
 		//renderingContext.enableVertexAttribute(texCoordIn);
 
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			glFinish();
 		t = System.nanoTime();
 
@@ -1044,9 +1042,9 @@ public class WorldRenderer
 		// Done looping chunks, now entities
 		if (!isShadowPass)
 		{
-			if (RenderingConfig.debugGBuffers)
+			if (RenderingConfig.debugPasses)
 				glFinish();
-			if (RenderingConfig.debugGBuffers)
+			if (RenderingConfig.debugPasses)
 				System.out.println("blocks took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 			/*renderingContext.disableVertexAttribute(vertexIn);
@@ -1185,6 +1183,7 @@ public class WorldRenderer
 				renderingContext.bindTexture2D("readbackAlbedoBufferTemp", this.albedoBuffer);
 				renderingContext.bindTexture2D("readbackMetaBufferTemp", this.materialBuffer);
 				renderingContext.bindTexture2D("readbackDepthBufferTemp", this.zBuffer);
+				//renderingContext.bindTexture2D("alb2o", blocksAlbedoTexture);
 				//glEnable(GL_ALPHA_TEST);
 				//glDisable(GL_ALPHA_TEST);
 				glDepthMask(false);
@@ -1316,7 +1315,7 @@ public class WorldRenderer
 	{
 		if (Keyboard.isKeyDown(Keyboard.KEY_F7))
 			return;
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			glFinish();
 
 		long t = System.nanoTime();
@@ -1374,10 +1373,10 @@ public class WorldRenderer
 		renderingContext.drawFSQuad();
 		//drawFSQuad();
 
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			glFinish();
 
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			System.out.println("shadows pass took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
@@ -1392,7 +1391,7 @@ public class WorldRenderer
 	 */
 	public void blitScreen()
 	{
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			glFinish();
 		long t = System.nanoTime();
 
@@ -1438,10 +1437,10 @@ public class WorldRenderer
 		renderingContext.drawFSQuad();
 		//drawFSQuad();
 
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			glFinish();
 
-		if (RenderingConfig.debugGBuffers)
+		if (RenderingConfig.debugPasses)
 			System.out.println("final blit took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		if (RenderingConfig.doBloom)
@@ -1579,7 +1578,7 @@ public class WorldRenderer
 				scale = Math2.mix(0.1f, 1.0f, scale * scale);
 				vec.scale(scale);
 				ssao_kernel[i] = vec;
-				if (RenderingConfig.debugGBuffers)
+				if (RenderingConfig.debugPasses)
 					System.out.println("lerp " + scale + "x " + vec.x);
 			}
 		}

@@ -34,9 +34,6 @@ public class FontRenderer2
 
 	public static int drawTextUsingSpecificFontRVBA(float xpos, float ypos, float rot, float size, String text, BitmapFont font, float alpha, float r, float v, float b)
 	{
-		glDisable(GL_CULL_FACE);
-		glEnable(GL_TEXTURE_2D);
-		
 		Texture2D fontTexture = TexturesHandler.getTexture("./textures/font/" + font.name + ".png");
 		fontTexture.setLinearFiltering(false);
 		

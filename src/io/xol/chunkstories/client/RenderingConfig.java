@@ -24,6 +24,7 @@ public class RenderingConfig
 	public static boolean dynamicGrass = false;
 
 	public static boolean debugGBuffers = false;
+	public static boolean debugPasses = false;
 
 	public static boolean hqTerrain = true;
 	public static boolean perPixelFresnel = false;

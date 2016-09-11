@@ -15,10 +15,11 @@ public enum VertexFormat
 	INTEGER(GL_INT, 4), 
 	USHORT(GL_UNSIGNED_SHORT, 2), 
 	NORMALIZED_USHORT(GL_UNSIGNED_SHORT, 2, true),
-	UBYTE(GL_UNSIGNED_BYTE, 2), 
+	UBYTE(GL_UNSIGNED_BYTE, 1), 
 	NORMALIZED_UBYTE(GL_UNSIGNED_BYTE, 2, true),
 	U1010102(GL_UNSIGNED_INT_2_10_10_10_REV, 1, true),//<On average, based on a vec4>
-	SHORT(GL_SHORT, 2),
+	SHORT(GL_SHORT, 2), 
+	BYTE(GL_BYTE, 1),
 	;
 	
 	VertexFormat(int id, int bytes)

@@ -149,8 +149,8 @@ public class TrueTypeFontRenderer
 				{
 					if(target == null)
 					{
-						renderingContext.getGuiRenderer().setState(pageTexture, true, true, colorModified);
-						drawQuad(totalwidth * scaleX + x, startY * scaleY + y, (glyph.width) * scaleX, glyph.height * scaleY, ((float)glyph.x) / textureWidth, ((float)(glyph.y + glyph.height)) / textureHeight, ((float)(glyph.x + glyph.width)) / textureWidth, ((float)glyph.y) / textureHeight, pageTexture);
+						//renderingContext.getGuiRenderer().setState(pageTexture, true, true, colorModified);
+						drawQuad(totalwidth * scaleX + x, startY * scaleY + y, (glyph.width) * scaleX, glyph.height * scaleY, ((float)glyph.x) / textureWidth, ((float)(glyph.y + glyph.height)) / textureHeight, ((float)(glyph.x + glyph.width)) / textureWidth, ((float)glyph.y) / textureHeight, pageTexture, colorModified);
 					}
 					else
 					{
@@ -176,8 +176,8 @@ public class TrueTypeFontRenderer
 	/** Default font texture height */
 	private int textureHeight = 512;
 
-	private void drawQuad(float startX, float startY, float width, float height, float srcX, float srcY, float srcX2, float srcY2, Texture2D pageTexture)
+	private void drawQuad(float startX, float startY, float width, float height, float srcX, float srcY, float srcX2, float srcY2, Texture2D pageTexture, Vector4f colorModified)
 	{
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(startX, startY, startX + width, startY + height, srcX, srcY, srcX2, srcY2, pageTexture, false, true, null);
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(startX, startY, startX + width, startY + height, srcX, srcY, srcX2, srcY2, pageTexture, false, true, colorModified);
 	}
 }

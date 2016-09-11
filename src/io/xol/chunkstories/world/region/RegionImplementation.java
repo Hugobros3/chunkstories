@@ -48,7 +48,7 @@ public class RegionImplementation implements Region
 	public SafeWriteLock chunksArrayLock = new SafeWriteLock();
 
 	// Holds 8x8x8 CubicChunks
-	private ChunkHolderImplementation[][][] chunkHolders;
+	private ChunkHolderImplementation[] chunkHolders;
 	private AtomicBoolean isDiskDataLoaded = new AtomicBoolean(false);
 
 	//Local entities
@@ -65,11 +65,11 @@ public class RegionImplementation implements Region
 		this.worldChunksHolder = worldChunksHolder;
 
 		//Initialize slots
-		chunkHolders = new ChunkHolderImplementation[8][8][8];
+		chunkHolders = new ChunkHolderImplementation[512];
 		for (int i = 0; i < 8; i++)
 			for (int j = 0; j < 8; j++)
 				for (int k = 0; k < 8; k++)
-					chunkHolders[i][j][k] = new ChunkHolderImplementation(this, i, j, k);
+					chunkHolders[i * 64 + j *8 + k] = new ChunkHolderImplementation(this, i, j, k);
 
 		//Unique UUID
 		uuid = random.nextLong();
@@ -166,7 +166,6 @@ public class RegionImplementation implements Region
 		
 		return false;
 	}
-	
 
 	public int countUsers()
 	{
@@ -197,25 +196,25 @@ public class RegionImplementation implements Region
 	
 	public byte[] getCompressedData(int chunkX, int chunkY, int chunkZ)
 	{
-		return chunkHolders[chunkX & 7][chunkY & 7][chunkZ & 7].getCompressedData();
+		return chunkHolders[(chunkX & 7) * 64 + (chunkY & 7) * 8 + (chunkZ & 7)].getCompressedData();
 	}
 
 	@Override
 	public Chunk getChunk(int chunkX, int chunkY, int chunkZ)
 	{
-		return chunkHolders[chunkX & 7][chunkY & 7][chunkZ & 7].getChunk();
+		return chunkHolders[(chunkX & 7) * 64 + (chunkY & 7) * 8 + (chunkZ & 7)].getChunk();
 	}
 
 	@Override
 	public ChunkHolderImplementation getChunkHolder(int chunkX, int chunkY, int chunkZ)
 	{
-		return chunkHolders[chunkX & 7][chunkY & 7][chunkZ & 7];
+		return chunkHolders[(chunkX & 7) * 64 + (chunkY & 7) * 8 + (chunkZ & 7)];
 	}
 	
 	@Override
 	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ)
 	{
-		return chunkHolders[chunkX & 7][chunkY & 7][chunkZ & 7].isChunkLoaded();
+		return chunkHolders[(chunkX & 7) * 64 + (chunkY & 7) * 8 + (chunkZ & 7)].isChunkLoaded();
 	}
 
 	public ChunksIterator iterator()
@@ -299,7 +298,7 @@ public class RegionImplementation implements Region
 					if (chunk == null)
 						System.out.println("Notice : generator " + world.getGenerator() + " produced a null chunk.");
 
-					this.chunkHolders[a][b][c].setChunk((CubicChunk) chunk);
+					this.chunkHolders[a * 64 + b * 8 + c].setChunk((CubicChunk) chunk);
 					//compressChunkData(data[a][b][c]);
 				}
 
@@ -330,7 +329,7 @@ public class RegionImplementation implements Region
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
-					chunkHolders[a][b][c].compressChunkData();
+					chunkHolders[a * 64 + b * 8 + c].compressChunkData();
 	}
 
 	public void compressChangedChunks()
@@ -339,13 +338,13 @@ public class RegionImplementation implements Region
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
 				{
-					if (chunkHolders[a][b][c].getChunk() != null)
+					if (chunkHolders[a * 64 + b * 8 + c].getChunk() != null)
 					{
-						CubicChunk chunk = chunkHolders[a][b][c].getChunk();
+						CubicChunk chunk = chunkHolders[a * 64 + b * 8 + c].getChunk();
 						
 						if(chunk.unsavedBlockModifications.get() > 0)
 						//if (chunk.lastModification.get() > chunk.lastModificationSaved.get())
-							chunkHolders[a][b][c].compressChunkData();
+							chunkHolders[a * 64 + b * 8 + c].compressChunkData();
 					}
 				}
 	}
@@ -358,7 +357,7 @@ public class RegionImplementation implements Region
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
-					if (chunkHolders[a][b][c].isChunkLoaded())
+					if (chunkHolders[a * 64 + b * 8 + c].isChunkLoaded())
 						count++;
 
 		return count;
@@ -440,8 +439,8 @@ public class RegionImplementation implements Region
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
 				{
-					chunkHolders[a][b][c].unloadsIfUnused();
-					if(chunkHolders[a][b][c].isChunkLoaded())
+					chunkHolders[a * 64 + b * 8 + c].unloadsIfUnused();
+					if(chunkHolders[a * 64 + b * 8 + c].isChunkLoaded())
 						loadedChunks++;
 				}
 		
@@ -460,8 +459,8 @@ public class RegionImplementation implements Region
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
 				{
-					chunkHolders[a][b][c].unloadsIfUnused();
-					if(chunkHolders[a][b][c].isChunkLoaded() || chunkHolders[a][b][c].countUsers() > 0)
+					chunkHolders[a * 64 + b * 8 + c].unloadsIfUnused();
+					if(chunkHolders[a * 64 + b * 8 + c].isChunkLoaded() || chunkHolders[a * 64 + b * 8 + c].countUsers() > 0)
 						usedChunks++;
 				}
 		
