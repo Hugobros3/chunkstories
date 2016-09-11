@@ -361,7 +361,7 @@ public class WorldRenderer
 		// Render weather
 		fboShadedBuffer.bind();
 		fboShadedBuffer.setEnabledRenderTargets();
-		//weatherEffectsRenderer.renderEffects(renderingContext);
+		weatherEffectsRenderer.renderEffects(renderingContext);
 
 		// Debug
 		if (RenderingConfig.debugPasses)
@@ -438,8 +438,10 @@ public class WorldRenderer
 		
 		if (cameraChunkX != newCX || cameraChunkY != newCY || cameraChunkZ != newCZ || chunksChanged)
 		{
-			if (newCX != cameraChunkX || newCZ != cameraChunkZ)
-				farTerrainRenderer.startAsynchSummaryRegeneration(camera);
+			farTerrainRenderer.markFarTerrainMeshDirty();
+			//if (newCX != cameraChunkX || newCZ != cameraChunkZ)
+			//	farTerrainRenderer.startAsynchSummaryRegeneration(camera);
+			
 			//Updates current chunk location
 			cameraChunkX = newCX;
 			cameraChunkY = newCY;

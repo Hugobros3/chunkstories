@@ -30,6 +30,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	private int chunkX;
 	private int chunkY;
 	private int chunkZ;
+	private int uuid;
 
 	public int[] chunkVoxelData = null;
 
@@ -102,6 +103,8 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		this.chunkX = chunkX;
 		this.chunkY = chunkY;
 		this.chunkZ = chunkZ;
+		
+		uuid = ((chunkX << world.getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | chunkY ) << world.getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | chunkZ;
 	}
 
 	public CubicChunk(Region holder, int chunkX, int chunkY, int chunkZ, int[] data)
@@ -1984,6 +1987,12 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		return chunkRenderData;
 	}
 
+	@Override
+	public int hashCode()
+	{
+		return uuid;
+	}
+	
 	@Override
 	public IterableIterator<Entity> getEntitiesWithinChunk()
 	{

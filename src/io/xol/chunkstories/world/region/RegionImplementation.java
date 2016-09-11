@@ -8,22 +8,21 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
-import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.iterators.RegionIterator;
 import io.xol.engine.concurrency.SafeWriteLock;
 
 import java.lang.ref.WeakReference;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -36,6 +35,7 @@ public class RegionImplementation implements Region
 	public final long uuid;
 	private final WorldRegionsHolder worldChunksHolder;
 	
+	protected Collection<CubicChunk> loadedChunks = new LinkedBlockingQueue<CubicChunk>();
 	private Set<WeakReference<WorldUser>> users = new HashSet<WeakReference<WorldUser>>();
 
 	//Only relevant on Master worlds
@@ -69,7 +69,7 @@ public class RegionImplementation implements Region
 		for (int i = 0; i < 8; i++)
 			for (int j = 0; j < 8; j++)
 				for (int k = 0; k < 8; k++)
-					chunkHolders[i * 64 + j *8 + k] = new ChunkHolderImplementation(this, i, j, k);
+					chunkHolders[i * 64 + j *8 + k] = new ChunkHolderImplementation(this, loadedChunks, i, j, k);
 
 		//Unique UUID
 		uuid = random.nextLong();
@@ -219,7 +219,24 @@ public class RegionImplementation implements Region
 
 	public ChunksIterator iterator()
 	{
-		return new RegionIterator(this);
+		return new ChunksIterator()
+				{
+
+					Iterator<CubicChunk> i = loadedChunks.iterator();
+			
+					@Override
+					public boolean hasNext()
+					{
+						return i.hasNext();
+					}
+
+					@Override
+					public Chunk next()
+					{
+						return i.next();
+					}
+			
+				};
 	}
 
 	@Override

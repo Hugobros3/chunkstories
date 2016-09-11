@@ -1,90 +1,69 @@
 package io.xol.chunkstories.core.particles;
 
+import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector3f;
-
-import static io.xol.chunkstories.particles.Particle.Type.*;
-
-import io.xol.chunkstories.api.rendering.Light;
-import io.xol.chunkstories.particles.Particle;
-import io.xol.chunkstories.particles.Particle.Type;
+import io.xol.chunkstories.api.particles.ParticleData;
+import io.xol.chunkstories.api.particles.ParticleType;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.core.particles.ParticleMuzzleFlash.MuzzleData;
 import io.xol.chunkstories.renderer.lights.DefferedLight;
-import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ParticleLight extends Particle
+public class ParticleLight extends ParticleType
 {
-
-	int timer = 2400;// for 40sec
-
-	DefferedLight dl;
-
-	@Override
-	public Type getType()
+	public ParticleLight(int id, String name)
 	{
-		return LIGHT;
+		super(id, name);
+	}
+
+	public class ParticleLightData extends ParticleData {
+
+		public int timer = 2;
+		public Vector3f c;
+		
+		public ParticleLightData(float x, float y, float z)
+		{
+			super(x, y, z);
+			c = new Vector3f(Math.random(), Math.random(), Math.random());
+		}
 	}
 
 	@Override
-	public void update()
+	public ParticleData createNew(World world, float x, float y, float z)
 	{
-		if (!((WorldImplementation) world).checkCollisionPoint(posX, posY, posZ))
-			posY += -0.25;
-		// posX+=Math.sin(timer/30f)*0.5;
-		// posZ+=Math.cos(timer/30f)*0.5;
-		// posY+=Math.cos(timer/15f)*0.1;
-		timer--;
-		/*
-		 * if(timer < 0) kill();
-		 */
-		dl.position = new Vector3f((float) posX, (float) posY, (float) posZ);
-		// dl.decay = timer/360f;
-		// dl.decay = 8f+(float)Math.sin(timer/20f)*4f;
-		// dl.decay = 8f+1f;
-	}
-
-	public ParticleLight(WorldImplementation world, double posX, double posY, double posZ)
-	{
-		super(world, posX, posY, posZ);
-		dl = new DefferedLight(new Vector3f(0.5f + (float) Math.random(),
-				0.5f + (float) Math.random(), 0.5f + (float) Math.random()),
-				new Vector3f((float) posX, (float) posY, (float) posZ),
-				05f + (float) Math.random() * 15f);
-		/*
-		 * if(Math.random() > 0.5) { dl.angle = 22; float rotx = (float)
-		 * (Math.random()*45f); float roty = (float) (Math.random()*360f); float
-		 * transformedViewH = (float) ((rotx)/180*Math.PI);
-		 * //System.out.println(Math.sin(transformedViewV)+"f"); dl.direction =
-		 * new Vector3f((float)
-		 * (Math.sin((-roty)/180*Math.PI)*Math.cos(transformedViewH)), (float)
-		 * (Math.sin(transformedViewH)), (float)
-		 * (Math.cos((-roty)/180*Math.PI)*Math.cos(transformedViewH))); dl.decay
-		 * = 50f; }
-		 */
+		return new ParticleLightData(x, y, z);
 	}
 
 	@Override
-	public String getTextureName()
+	public Texture2D getTexture()
 	{
-		return "./res/textures/particle.png";
+		return TexturesHandler.getTexture("./res/textures/particle.png");
 	}
 
 	@Override
-	public boolean emitsLights()
+	public void forEach_Rendering(RenderingContext renderingContext, ParticleData data2)
 	{
-		return true;
+		ParticleLightData data = (ParticleLightData)data2;
+		renderingContext.addLight(new DefferedLight(new Vector3f(1.0f, 181f/255f, 79/255f),
+				new Vector3f((float) data.c.x, (float) data.c.y, (float) data.c.z),
+				15f + (float) Math.random() * 5f));
 	}
 
 	@Override
-	public Light getLightEmited()
+	public void forEach_Physics(World world, ParticleData data)
 	{
-		return dl;
+		((MuzzleData)data).timer--;
+		if(((MuzzleData)data).timer < 0)
+			data.destroy();
 	}
 
 	@Override
-	public Float getSize()
+	public float getBillboardSize()
 	{
 		return 0.0f;
 	}

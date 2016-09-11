@@ -55,4 +55,13 @@ public class Math2
 		vec.setZ(mix(a.getZ(), b.getZ(), f));
 		return vec;
 	}
+
+	public static int clampi(int a, int min, int max)
+	{
+		if(a < min)
+			return min;
+		else if(a > max)
+			return max;
+		return a;
+	}
 }

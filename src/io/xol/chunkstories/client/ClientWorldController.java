@@ -15,6 +15,8 @@ import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.world.WorldClientCommon;
+import io.xol.chunkstories.world.WorldInfo;
+import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.Math2;
 
@@ -29,6 +31,7 @@ public class ClientWorldController implements ClientSideController
 	
 	EntityControllable controlledEntity;
 	
+	Set<Integer> dontWasteTimeDude = new HashSet<Integer>();
 	Set<ChunkHolder> usedChunks = new HashSet<ChunkHolder>();
 	Set<RegionSummary> usedRegionSummaries = new HashSet<RegionSummary>();
 	
@@ -74,6 +77,33 @@ public class ClientWorldController implements ClientSideController
 			for (int chunkZ = (cameraChunkZ - chunksViewDistance - 1); chunkZ < cameraChunkZ + chunksViewDistance + 1; chunkZ++)
 				for (int chunkY = cameraChunkY - 3; chunkY < cameraChunkY + 3; chunkY++)
 				{
+					WorldInfo worldInfo = world.getWorldInfo();
+					WorldSize size = worldInfo.getSize();
+					
+					int filteredChunkX = chunkX & (size.maskForChunksCoordinates);
+					int filteredChunkY = Math2.clampi(chunkY, 0, 31);
+					int filteredChunkZ = chunkZ & (size.maskForChunksCoordinates);
+					
+					int summed = ((filteredChunkX << size.bitlengthOfVerticalChunksCoordinates) | filteredChunkY ) << size.bitlengthOfHorizontalChunksCoordinates | filteredChunkZ;
+					
+					/*int recreatedX = (summed >> (size.bitlengthOfHorizontalChunksCoordinates + size.bitlengthOfVerticalChunksCoordinates)) & size.maskForChunksCoordinates;
+					int recreatedY = (summed >> (size.bitlengthOfHorizontalChunksCoordinates)) & 31;
+					int recreatedZ = (summed) & size.maskForChunksCoordinates;
+
+					System.out.println("Debug"+size+" :/ "+size.maskForChunksCoordinates);
+					System.out.println(chunkX+":"+chunkY+":"+chunkZ);
+					System.out.println(filteredChunkX+":"+filteredChunkY+":"+filteredChunkZ);
+					System.out.println(summed);
+					System.out.println(recreatedX+":"+recreatedY+":"+recreatedZ);
+					System.out.println(dontWasteTimeDude.add(summed));
+					
+					assert recreatedX == filteredChunkX;
+					assert recreatedY == filteredChunkY;
+					assert recreatedZ == filteredChunkZ;*/
+
+					if(dontWasteTimeDude.contains(summed))
+						continue;
+					
 					ChunkHolder holder = world.aquireChunkHolder(this, chunkX, chunkY, chunkZ);
 					if(holder == null)
 						continue;
@@ -81,6 +111,7 @@ public class ClientWorldController implements ClientSideController
 					//System.out.println(holder);
 					if(usedChunks.add(holder))
 					{
+						dontWasteTimeDude.add(summed);
 						//System.out.println(b);
 						//System.out.println("Registerin'" +holder + " "+ usedChunks.size());
 					}
@@ -103,6 +134,17 @@ public class ClientWorldController implements ClientSideController
 					+"\n"+ 	(Math.abs(							holder.getChunkCoordinateY() - cameraChunkY) > 4) + " > "+(holder.getChunkCoordinateY() - cameraChunkY) + " -> "  +holder.getChunkCoordinateY());
 				*/
 	
+				WorldInfo worldInfo = world.getWorldInfo();
+				WorldSize size = worldInfo.getSize();
+				
+				int filteredChunkX = holder.getChunkCoordinateX() & (size.maskForChunksCoordinates);
+				int filteredChunkY = Math2.clampi(holder.getChunkCoordinateY(), 0, 31);
+				int filteredChunkZ = holder.getChunkCoordinateZ() & (size.maskForChunksCoordinates);
+				
+				int summed = ((filteredChunkX << size.bitlengthOfVerticalChunksCoordinates) | filteredChunkY ) << size.bitlengthOfHorizontalChunksCoordinates | filteredChunkZ;
+				
+				dontWasteTimeDude.remove(summed);
+				
 				i.remove();
 				holder.unregisterUser(this);
 			}

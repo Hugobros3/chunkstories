@@ -139,7 +139,6 @@ public class MainMenu extends OverlayableScene
 		
 		// Render this shit boy
 		unblurredFBO.bind();
-		FBO.unbind();
 		cam.justSetup(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		renderingContext.useShader("mainMenuSkyBox");
 		//menuSkyBox.use(true);
@@ -191,13 +190,13 @@ public class MainMenu extends OverlayableScene
 		renderingContext.drawFSQuad();
 		//blurV.use(false);
 
-		/*FBO.unbind();
+		FBO.unbind();
 		renderingContext.useShader("blit");
 		//blit.use(true);
 		blit.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		//blit.setUniformSampler(0, "diffuseTexture", blurredV.getId());
 		renderingContext.bindTexture2D("inputTexture", blurredV);
-		renderingContext.drawFSQuad();*/
+		renderingContext.drawFSQuad();
 		FBO.unbind();
 		currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		

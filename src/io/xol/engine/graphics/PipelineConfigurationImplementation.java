@@ -8,8 +8,6 @@ import io.xol.chunkstories.api.rendering.PipelineConfiguration;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 
 /**
  * Abstracts the OpenGL state machine, reduces state changes by tracking them
@@ -204,6 +202,11 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 				glDisable(GL_ALPHA_TEST);
 		}
 		isAlphaTestEnabled = on;
+		if(!alphaModeOk)
+		{
+			alphaModeOk = true;
+			glAlphaFunc(GL_GREATER, 0.0f);
+		}
 	}
 
 	private void blend(boolean on)
@@ -251,4 +254,6 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	private static boolean isBlendingEnabled = false;
 	private static boolean isCullingEnabled = false;
 	private static int currentCullFunc = -1;
+	
+	private static boolean alphaModeOk = false;
 }

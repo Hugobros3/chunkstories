@@ -27,8 +27,6 @@ import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
-import io.xol.engine.graphics.shaders.ShaderProgram;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.MatrixHelper;
@@ -211,7 +209,7 @@ public class DecalsRenderer implements DecalsManager
 		for(DecalType decalType : decalsTypes.values())
 		{
 			Texture2D diffuseTexture = decalType.getTexture();
-			diffuseTexture.bind();
+			//diffuseTexture.bind();
 			diffuseTexture.setTextureWrapping(false);
 			diffuseTexture.setLinearFiltering(false);
 			

@@ -21,6 +21,7 @@ public class RegionIterator implements ChunksIterator
 	public RegionIterator(RegionImplementation holder)
 	{
 		this.holder = holder;
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override

@@ -1,6 +1,7 @@
 package io.xol.chunkstories.world.chunk;
 
 import java.lang.ref.WeakReference;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -22,15 +23,24 @@ import io.xol.chunkstories.api.world.chunk.WorldUser;
 public class ChunkHolderImplementation implements ChunkHolder
 {
 	private RegionImplementation region;
+	Collection<CubicChunk> regionLoadedChunks;
 	private int x, y, z;
+	private int uuid;
 
-	public ChunkHolderImplementation(RegionImplementation region, int x, int y, int z)
+	public ChunkHolderImplementation(RegionImplementation region, Collection<CubicChunk> loadedChunks, int x, int y, int z)
 	{
 		this.region = region;
+		this.regionLoadedChunks = loadedChunks;
 		
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		
+		//int filteredChunkX = chunkX & (size.maskForChunksCoordinates);
+		//int filteredChunkY = Math2.clampi(chunkY, 0, 31);
+		//int filteredChunkZ = chunkZ & (size.maskForChunksCoordinates);
+		
+		uuid = ((x << region.getWorld().getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | y ) << region.getWorld().getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | z;
 	}
 
 	private Set<WeakReference<WorldUser>> users = new HashSet<WeakReference<WorldUser>>();
@@ -149,9 +159,14 @@ public class ChunkHolderImplementation implements ChunkHolder
 		//Compress chunk if it changed
 		if(chunk != null && region.getWorld() instanceof WorldMaster && chunk.unsavedBlockModifications.get() > 0)//chunk.lastModification.get() > chunk.lastModificationSaved.get())
 			compressChunkData();
+
+		//Unlist it
+		if(chunk != null)
+			regionLoadedChunks.remove(chunk);
 		
 		//Null-out reference
 		chunk = null;
+		
 	}
 
 	@Override
@@ -307,6 +322,8 @@ public class ChunkHolderImplementation implements ChunkHolder
 
 	public void setChunk(CubicChunk chunk)
 	{
+		if(this.chunk == null && chunk != null)
+			regionLoadedChunks.add(chunk);
 		this.chunk = chunk;
 		
 		if(region.getWorld() instanceof WorldClient)
@@ -334,18 +351,14 @@ public class ChunkHolderImplementation implements ChunkHolder
 	@Override
 	public int hashCode()
 	{
-		return getChunkCoordinateX() * 65536 + getChunkCoordinateY() * 256 + getChunkCoordinateZ();
+		return uuid;
 	}
 	
 	@Override
 	public boolean equals(Object o)
 	{
-		if(o instanceof ChunkHolder)
-		{
-			return 		getChunkCoordinateX() == ((ChunkHolder) o).getChunkCoordinateX() 
-					&& 	getChunkCoordinateY() == ((ChunkHolder) o).getChunkCoordinateY()
-					&& 	getChunkCoordinateZ() == ((ChunkHolder) o).getChunkCoordinateZ();
-		}
+		if(o instanceof ChunkHolderImplementation)
+			return ((ChunkHolderImplementation)o).uuid == uuid;
 		return false;
 	}
 }

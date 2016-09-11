@@ -204,15 +204,20 @@ public class WorldInfo
 		// leading to enormous map sizes ( in the order of 10Gbs to 100Gbs )
 		// when fully explored.
 
-		WorldSize(int s, String n)
+		WorldSize(int sizeInChunks, String n)
 		{
-			sizeInChunks = s;
+			this.sizeInChunks = sizeInChunks;
+			this.maskForChunksCoordinates = sizeInChunks - 1;
+			this.bitlengthOfHorizontalChunksCoordinates = (int) (Math.log(sizeInChunks) / Math.log(2));
 			name = n;
 		}
 
-		public int sizeInChunks;
-		public int heightInChunks = 32;
-		public String name;
+		public final int sizeInChunks;
+		public final int maskForChunksCoordinates;
+		public final int bitlengthOfHorizontalChunksCoordinates;
+		public final int heightInChunks = 32;
+		public final int bitlengthOfVerticalChunksCoordinates = 5;
+		public final String name;
 
 		public static String getAllSizes()
 		{

@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 
 import io.xol.chunkstories.api.exceptions.NotEnoughtTextureUnitsException;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.rendering.TexturingConfiguration;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.engine.graphics.shaders.ShaderProgram;
@@ -15,10 +14,7 @@ import io.xol.engine.graphics.shaders.ShaderProgram;
 //http://chunkstories.xyz
 //http://xol.io
 
-import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 
 public class TexturingConfigurationImplementation implements TexturingConfiguration
 {

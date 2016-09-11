@@ -18,13 +18,13 @@ import io.xol.chunkstories.world.region.RegionImplementation;
  */
 public class WorldChunksIterator implements ChunksIterator
 {
-	Iterator<RegionImplementation> chIterator;
+	Iterator<RegionImplementation> regionsIterator;
 	RegionImplementation currentRegion;
 	ChunksIterator currentRegionChunksIterator;
 
 	public WorldChunksIterator(WorldImplementation world)
 	{
-		chIterator = world.getRegionsHolder().getLoadedRegions();
+		regionsIterator = world.getRegionsHolder().getLoadedRegions();
 	}
 
 	@Override
@@ -33,9 +33,9 @@ public class WorldChunksIterator implements ChunksIterator
 		//We always want to ask a non-null, non-empty chunk holder
 		while (currentRegion == null || !currentRegionChunksIterator.hasNext())
 		{
-			if (chIterator.hasNext())
+			if (regionsIterator.hasNext())
 			{
-				currentRegion = chIterator.next();
+				currentRegion = regionsIterator.next();
 				if (!(currentRegion == null))
 					currentRegionChunksIterator = currentRegion.iterator();
 			}
@@ -53,9 +53,9 @@ public class WorldChunksIterator implements ChunksIterator
 		//We always want to ask a non-null, non-empty chunk holder
 		while (currentRegion == null || !currentRegionChunksIterator.hasNext())
 		{
-			if (chIterator.hasNext())
+			if (regionsIterator.hasNext())
 			{
-				currentRegion = chIterator.next();
+				currentRegion = regionsIterator.next();
 				if (!(currentRegion == null))
 					currentRegionChunksIterator = currentRegion.iterator();
 			}
