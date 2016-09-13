@@ -100,7 +100,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 		{
 		case DISABLED:
 			depth(false);
-			depthFunc(-1);
+			//depthFunc(-1);
 			break;
 		case LESS:
 			depth(true);

@@ -127,4 +127,6 @@ public interface RenderingInterface
 	 * Executes ALL commands in the queue up to this point before continuing
 	 */
 	public void flush();
+
+	public boolean isThisAShadowPass();
 }

@@ -35,7 +35,7 @@ public class RegionImplementation implements Region
 	public final long uuid;
 	private final WorldRegionsHolder worldChunksHolder;
 	
-	protected Collection<CubicChunk> loadedChunks = new LinkedBlockingQueue<CubicChunk>();
+	protected Collection<CubicChunk> loadedChunks = ConcurrentHashMap.newKeySet();//new LinkedBlockingQueue<CubicChunk>();
 	private Set<WeakReference<WorldUser>> users = new HashSet<WeakReference<WorldUser>>();
 
 	//Only relevant on Master worlds

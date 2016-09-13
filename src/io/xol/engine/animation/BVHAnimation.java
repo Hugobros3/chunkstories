@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -417,7 +418,7 @@ public class BVHAnimation implements SkeletonAnimator
 	}
 
 	@Override
-	public boolean shouldHideBone(RenderingContext renderingContext, String boneName)
+	public boolean shouldHideBone(RenderingInterface renderingContext, String boneName)
 	{
 		return false;
 	}

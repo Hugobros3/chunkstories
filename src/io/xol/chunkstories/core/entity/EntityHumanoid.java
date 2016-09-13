@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithClientPrediction;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.material.Material;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
@@ -158,7 +159,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			return Matrix4f.mul(characterRotationMatrix, getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime), null);
 		}
 
-		public boolean shouldHideBone(RenderingContext renderingContext, String boneName)
+		public boolean shouldHideBone(RenderingInterface renderingContext, String boneName)
 		{
 			if (EntityHumanoid.this.equals(Client.getInstance().getClientSideController().getControlledEntity()))
 			{
@@ -202,6 +203,27 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		{
 			int e = 0;
 
+			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
+			{
+				Location location = entity.getPredictedLocation();
+				
+				if(renderingContext.isThisAShadowPass() && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
+					continue;
+				
+				entity.cachedSkeleton.lodUpdate(renderingContext);
+
+				int bl = entity.getWorld().getBlocklightLevelLocation(location);
+				int sl = entity.getWorld().getSunlightLevelLocation(location);
+				
+				Matrix4f matrix = new Matrix4f();
+				matrix.translate(location.castToSimplePrecision());
+				//renderingContext.setObjectMatrix(matrix);
+				
+				renderingContext.currentShader().setUniform3f("objectPosition", location.castToSimplePrecision());
+				ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
+				//animationsData.add(new AnimatableData(location.castToSimplePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
+			}
+			
 			/*List<RenderableAnimatable.AnimatableData> animationsData = new LinkedList<AnimatableData>();
 
 			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())

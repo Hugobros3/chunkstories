@@ -303,7 +303,7 @@ public class RegionSummaryImplementation implements RegionSummary
 
 	private boolean uploadModel()
 	{
-		synchronized (this)
+		/*synchronized (this)
 		{
 			if (vboDataToUpload == null)
 				return false;
@@ -325,7 +325,7 @@ public class RegionSummaryImplementation implements RegionSummary
 			//vboSize = vboDataToUpload.length / 12;
 
 			vboDataToUpload = null;
-		}
+		}*/
 		return true;
 	}
 
@@ -433,7 +433,11 @@ public class RegionSummaryImplementation implements RegionSummary
 
 	public synchronized void sendNewModel(byte[] newModelData)
 	{
-		vboDataToUpload = newModelData;
+		//vboDataToUpload = newModelData;
+		ByteBuffer byteBuffer = BufferUtils.createByteBuffer(newModelData.length);
+		byteBuffer.put(newModelData);
+		byteBuffer.flip();
+		verticesObject.uploadData(byteBuffer);
 	}
 		
 	public boolean isLoaded()

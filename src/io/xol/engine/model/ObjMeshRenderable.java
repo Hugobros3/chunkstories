@@ -118,16 +118,24 @@ public class ObjMeshRenderable implements Renderable
 						}
 
 					//If we found or didn't found what we were looking for we skip this group
-					if (exclude == found)
+					if (exclude == found || skeleton.shouldHideBone(renderingContext, currentVertexGroup))
 					{
 						totalSize += i;
 						continue boneGroup;
 					}
 				}
+				
+				if(skeleton.shouldHideBone(renderingContext, currentVertexGroup))
+				{
+					totalSize += i;
+					continue boneGroup;
+				}
 
 				//Get transformer matrix
 				matrix = skeleton.getBoneHierarchyTransformationMatrixWithOffset(currentVertexGroup, animationTime < 0 ? 0 : animationTime);
 				
+				if(currentObjectMatrix == null)
+					currentObjectMatrix = new Matrix4f();
 				
 				//Send the transformation
 				Matrix4f.mul(matrix, currentObjectMatrix, matrix);

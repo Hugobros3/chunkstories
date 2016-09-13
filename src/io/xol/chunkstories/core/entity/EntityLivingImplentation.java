@@ -6,6 +6,7 @@ import java.util.Map;
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.components.EntityComponentAnimation;
@@ -284,7 +285,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			return matrix.clone();
 		}
 		
-		public boolean shouldHideBone(RenderingContext renderingContext, String boneName)
+		public boolean shouldHideBone(RenderingInterface renderingContext, String boneName)
 		{
 			return dataSource.shouldHideBone(renderingContext, boneName);
 		}

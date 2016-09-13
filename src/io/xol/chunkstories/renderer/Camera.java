@@ -326,20 +326,55 @@ public class Camera implements CameraInterface
 	@Override
 	public boolean isBoxInFrustrum(Vector3f center, Vector3f dimensions)
 	{
-		for(int i = 0; i < 2; i++)
+		//Manual loop unrolling
+		/*for(int i = 0; i < 2; i++)
 		{
 			for(int j = 0; j < 2; j++)
 			{
 				for(int k = 0; k < 2; k++)
 				{
-					//Vector3f corner = new Vector3f();
 					corners[i * 4 + j * 2 + k].x = center.x + dimensions.x / 2f * (i == 0 ? -1 : 1);
 					corners[i * 4 + j * 2 + k].y = center.y + dimensions.y / 2f * (j == 0 ? -1 : 1);
 					corners[i * 4 + j * 2 + k].z = center.z + dimensions.z / 2f * (k == 0 ? -1 : 1);
-					//corners[i * 4 + j * 2 + k] = corner;
 				}
 			}
-		}
+		}*/
+		
+		dimensions.scale(0.5f);
+		
+		//i=0 j=0 k=0
+		corners[0].x = center.x + dimensions.x   * -1;
+		corners[0].y = center.y + dimensions.y   * -1;
+		corners[0].z = center.z + dimensions.z   * -1;
+		//i=0 j=0 k=1
+		corners[1].x = center.x + dimensions.x   * -1;
+		corners[1].y = center.y + dimensions.y   * -1;
+		corners[1].z = center.z + dimensions.z  ;
+		//i=0 j=1 k=0
+		corners[2].x = center.x + dimensions.x   * -1;
+		corners[2].y = center.y + dimensions.y  ;
+		corners[2].z = center.z + dimensions.z   * -1;
+		//i=0 j=1 k=1
+		corners[3].x = center.x + dimensions.x   * -1;
+		corners[3].y = center.y + dimensions.y  ;
+		corners[3].z = center.z + dimensions.z  ;
+		//i=1 j=0 k=0
+		corners[4].x = center.x + dimensions.x  ;
+		corners[4].y = center.y + dimensions.y   * -1;
+		corners[4].z = center.z + dimensions.z   * -1;
+		//i=1 j=0 k=1
+		corners[5].x = center.x + dimensions.x  ;
+		corners[5].y = center.y + dimensions.y   * -1;
+		corners[5].z = center.z + dimensions.z  ;
+		//i=1 j=1 k=0
+		corners[6].x = center.x + dimensions.x  ;
+		corners[6].y = center.y + dimensions.y  ;
+		corners[6].z = center.z + dimensions.z   * -1;
+		//i=1 j=1 k=1
+		corners[7].x = center.x + dimensions.x  ;
+		corners[7].y = center.y + dimensions.y  ;
+		corners[7].z = center.z + dimensions.z  ;
+		
 		for(int i = 0; i < 6; i++)
 		{
 			int out = 0;
