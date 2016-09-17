@@ -964,7 +964,7 @@ public class WorldRenderer
 				if ((chunk.isMarkedForReRender() || chunk.needsLightningUpdates()) && !chunk.isAirChunk())
 					chunksRenderer.requestChunkRender(chunk);
 				// Don't bother if it don't render anything
-				if (chunkRenderData == null || chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)
+				if (chunkRenderData == null || !chunkRenderData.isUploaded()|| chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)
 					continue;
 
 				// If we're doing shadows

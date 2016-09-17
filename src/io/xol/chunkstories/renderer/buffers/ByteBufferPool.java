@@ -74,28 +74,4 @@ public class ByteBufferPool
 		}
 		return null;
 	}
-
-	/*public ByteBuffer accessByteBuffer(int id)
-	{
-		return pool[id];
-	}
-
-	public int requestByteBuffer()
-	{
-		for (int i = 0; i < size; i++)
-		{
-			if (avaible[i])
-			{
-				avaible[i] = false;
-				pool[i].clear();
-				return i;
-			}
-		}
-		return -1;
-	}
-
-	public void releaseByteBuffer(int id)
-	{
-		avaible[id] = true;
-	}*/
 }

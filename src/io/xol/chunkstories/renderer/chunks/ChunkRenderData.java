@@ -34,8 +34,7 @@ public class ChunkRenderData
 	public int vboSizeCustomBlocks;
 	
 	//public int byteBufferPoolId = -1;
-	
-	public boolean isUploaded = false;
+	//public boolean isUploaded = false;
 	
 	public ChunkRenderData(CubicChunk chunk)
 	{
@@ -48,30 +47,10 @@ public class ChunkRenderData
 	}
 	
 	/**
-	 * Uploads the ByteBuffer contents and frees it
-	 */
-	/*public void upload()
-	{
-		verticesObject.uploadData(pool.accessByteBuffer(byteBufferPoolId));
-		
-		//Release BB
-		pool.releaseByteBuffer(byteBufferPoolId);
-		byteBufferPoolId = -1;
-		
-		isUploaded = true;
-	}
-	*/
-	
-	/**
 	 * Frees the ressources allocated to this ChunkRenderData
 	 */
 	public void free()
 	{
-		//Make sure we freed the byteBuffer
-		/*-if(byteBufferPoolId != -1)
-			pool.releaseByteBuffer(byteBufferPoolId);
-		byteBufferPoolId = -1;*/
-		
 		//Deallocate the VBO
 		verticesObject.destroy();
 	}
@@ -92,8 +71,6 @@ public class ChunkRenderData
 	{
 		return vboSizeFullBlocks * 16 + vboSizeWaterBlocks * 24 + vboSizeCustomBlocks * 24;
 	}
-	
-	// End class instance code, begin static de-allocation functions
 	
 	public static Set<ChunkRenderData> uselessChunkRenderDatas = ConcurrentHashMap.newKeySet();
 	
@@ -126,14 +103,6 @@ public class ChunkRenderData
 			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 16, 8));
 			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 16, 12));
 			renderingContext.draw(Primitive.TRIANGLE, 0, vboSizeFullBlocks);
-			
-			/*renderingContext.setVertexAttributePointerLocation("vertexIn", 4, GL_UNSIGNED_BYTE, false, 16, 0, verticesObject);
-			renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_UNSIGNED_SHORT, false, 16, 4, verticesObject);
-			renderingContext.setVertexAttributePointerLocation("colorIn", 4, GL_UNSIGNED_BYTE, true, 16, 8, verticesObject);
-			renderingContext.setVertexAttributePointerLocation("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 16, 12, verticesObject);
-			*/
-			//verticesObject.drawElementsTriangles(vboSizeFullBlocks);
-			//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			return vboSizeFullBlocks;
 		}
 		return 0;
@@ -152,13 +121,7 @@ public class ChunkRenderData
 			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 24, dekal + 16));
 			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 24, dekal + 20));
 			renderingContext.draw(Primitive.TRIANGLE, 0, vboSizeCustomBlocks);
-			
-			/*renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 24, dekal + 0, verticesObject);
-			renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_UNSIGNED_SHORT, false, 24, dekal + 12, verticesObject);
-			renderingContext.setVertexAttributePointerLocation("colorIn", 4, GL_UNSIGNED_BYTE, true, 24, dekal + 16, verticesObject);
-			renderingContext.setVertexAttributePointerLocation("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20, verticesObject);
-			verticesObject.drawElementsTriangles(vboSizeCustomBlocks);
-			return vboSizeCustomBlocks;*/
+			return vboSizeCustomBlocks;
 		}
 		return 0;
 	}
@@ -176,11 +139,6 @@ public class ChunkRenderData
 			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 24, dekal + 16));
 			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 24, dekal + 20));
 			renderingContext.draw(Primitive.TRIANGLE, 0, vboSizeWaterBlocks);
-			/*renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 24, dekal + 0, verticesObject);
-			renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_UNSIGNED_SHORT, false, 24, dekal + 12, verticesObject);
-			renderingContext.setVertexAttributePointerLocation("colorIn", 4, GL_UNSIGNED_BYTE, true, 24, dekal + 16, verticesObject);
-			renderingContext.setVertexAttributePointerLocation("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, dekal + 20, verticesObject);
-			verticesObject.drawElementsTriangles(vboSizeWaterBlocks);*/
 			return vboSizeWaterBlocks;
 		}
 		return 0;

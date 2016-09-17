@@ -137,12 +137,12 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 		case MIX:
 			alphaTest(false);
 			blend(true);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			blendFunc(blendMode);
 			break;
 		case ADD:
 			alphaTest(true);
 			blend(true);
-			glBlendFunc(GL_ONE, GL_ONE);
+			blendFunc(blendMode);
 			break;
 		}
 		
@@ -163,6 +163,26 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 		}
 		
 		//TODO polyFill
+	}
+
+	private void blendFunc(BlendMode blendMode)
+	{
+		if(blendMode.ordinal() == currentBlendFunc)
+			return;
+		
+		switch(blendMode)
+		{
+		case ADD:
+			glBlendFunc(GL_ONE, GL_ONE);
+			break;
+		case MIX:
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			break;
+		default:
+			break;
+		}
+		
+		currentBlendFunc = blendMode.ordinal();
 	}
 
 	private void depth(boolean on)
@@ -252,6 +272,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	private static int currentDepthFunc = -1;
 	private static boolean isAlphaTestEnabled = false;
 	private static boolean isBlendingEnabled = false;
+	private static int currentBlendFunc = -1;
 	private static boolean isCullingEnabled = false;
 	private static int currentCullFunc = -1;
 	
