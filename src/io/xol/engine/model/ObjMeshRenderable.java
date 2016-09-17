@@ -13,7 +13,7 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.Renderable;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
+import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.animation.SkeletonAnimator;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
@@ -152,13 +152,7 @@ public class ObjMeshRenderable implements Renderable
 		}
 		else
 		{
-			/*System.out.println("verticesCount" + verticesCount);
-			System.out.println("renderingContext" + renderingContext.toString());
-			System.out.println(verticesDataOnGpu);
-			System.out.println(texCoordDataOnGpu);
-			System.out.println(normalsDataOnGpu);*/
 			renderingContext.draw(Primitive.TRIANGLE, 0, verticesCount);
-			//GLCalls.drawArrays(GL_TRIANGLES, 0, verticesCount);
 		}
 
 		renderingContext.setObjectMatrix(currentObjectMatrix);

@@ -59,7 +59,7 @@ import io.xol.chunkstories.renderer.sky.SkyRenderer;
 import io.xol.chunkstories.renderer.terrain.FarTerrainRenderer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
-import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
+import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;

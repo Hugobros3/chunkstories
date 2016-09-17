@@ -15,8 +15,10 @@ import java.nio.ShortBuffer;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -28,12 +30,13 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class VerticesObject
 {
-	private int glId = -1;
+	private int openGLID = -1;
 
 	private boolean isDataPresent = false;
 	private long dataSize = 0L;
-
-	private Object dataPendingUpload = null;
+	
+	private Object waitingToUploadMainThread;
+	private Object waitingToUploadDeffered;
 
 	private final WeakReference<VerticesObject> selfReference;
 
@@ -52,28 +55,33 @@ public class VerticesObject
 	public final synchronized void aquireID()
 	{
 		//If texture was already assignated we discard this call
-		if (glId == -2 || glId >= 0)
+		if (openGLID == -2 || openGLID >= 0)
 			return;
 
-		glId = glGenBuffers();
+		openGLID = glGenBuffers();
 		//Keep the reference for this allocated id
-		allocatedIds.put(glId, selfReference);
+		allocatedIds.put(openGLID, selfReference);
 	}
 
+	/**
+	 * <i>Implementation internals, don't mess with this !</i><br/>
+	 * Binds this VerticesObject to the opengl GL_ARRAY_BUFFER bind point.
+	 */
 	public void bind()
 	{
-		if(glId == -2)
+		if (openGLID == -2)
 			throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
-		
+
 		//Check for and if needed create the buffer
-		if (glId == -1)
+		if (openGLID == -1)
 			aquireID();
 
-		bind(glId);
-
-		checkForPendingUploadData();
+		bind(openGLID);
 	}
 
+	/**
+	 * <i>Implementation internals, don't mess with this !</i><br/>
+	 */
 	public static void unbind()
 	{
 		bind(0);
@@ -81,7 +89,7 @@ public class VerticesObject
 
 	static void bind(int arrayBufferId)
 	{
-		if(arrayBufferId == bound)
+		if (arrayBufferId == currentlyBoundArrayBuffer)
 			return;
 
 		//When no updates are supposed to be required
@@ -102,93 +110,129 @@ public class VerticesObject
 		}*/
 
 		glBindBuffer(GL_ARRAY_BUFFER, arrayBufferId);
-		bound = arrayBufferId;
+		currentlyBoundArrayBuffer = arrayBufferId;
 	}
 
-	static int bound = 0;
+	static int currentlyBoundArrayBuffer = 0;
 
 	/**
-	 * @return True if the data was immediatly uploaded
+	 * Uploads new data to this buffer, replacing former content.<br/>
+	 * <u>IF THIS IS CALLED IN THE MAIN THREAD:</u><br/>
+	 *  * Uploading of data is queued for the next time this object is used in a drawcall ( an attribute source is setup, namely )<br/>
+	 *  * The apparent size of the object ( getVramUsage() ) is updated immediately<br/>
+	 *  * Multiple subsequent uploads in one frame can override former ones; given the right conditions a call to uploadData followed by another one then a draw call, the first upload
+	 *  will be ignored altogether and only the latest buffer content will be used<br/>
+	 *  * Changing the VerticesObject content does not trigger a flush() in the RenderingInterface, if you want to issue draw calls on this buffer with multiple data per frame you have to issue
+	 *  flush() commands between them to make sure the data is uploaded. More information is on the wiki on this.<br/>
+	 * <u>IF THIS IS CALLED IN ANY OTHER THREAD:</u><br/>
+	 *  * The data is queued for upload on the <b>NEXT</b> frame.<br/>
+	 *  * Before each frame starts being drawed, the latest buffer content provided by a foreign thread, if such exists, is uploaded, replacing the VerticesObject content and
+	 *  updating it's size.
+	 * @return True if the data was uploaded ( or rather, queued for upload on use ), false if it was deffered to the next frame
 	 */
 	public boolean uploadData(ByteBuffer dataToUpload)
 	{
-		if(glId == -2)
-			throw new RuntimeException("Tryed to upload to a destroyed VerticesBuffer");
-		
-		return uploadDataActual(dataToUpload);
-	}
+		if (openGLID == -2)
+			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
+		//Queue for immediate upload
+		if(GameWindowOpenGL.isMainGLWindow())
+		{
+			waitingToUploadMainThread = dataToUpload;
+			dataSize = dataToUpload.limit();
+			return true;
+		}
+		
+		//This is a deffered call
+		waitingToUploadDeffered = dataToUpload;
+		return false;
+	}
+	
 	/**
-	 * @return True if the data was immediatly uploaded
+	 * Uploads new data to this buffer, replacing former content.<br/>
+	 * <u>IF THIS IS CALLED IN THE MAIN THREAD:</u><br/>
+	 *  * Uploading of data is queued for the next time this object is used in a drawcall ( an attribute source is setup, namely )<br/>
+	 *  * The apparent size of the object ( getVramUsage() ) is updated immediately<br/>
+	 *  * Multiple subsequent uploads in one frame can override former ones; given the right conditions a call to uploadData followed by another one then a draw call, the first upload
+	 *  will be ignored altogether and only the latest buffer content will be used<br/>
+	 *  * Changing the VerticesObject content does not trigger a flush() in the RenderingInterface, if you want to issue draw calls on this buffer with multiple data per frame you have to issue
+	 *  flush() commands between them to make sure the data is uploaded. More information is on the wiki on this.<br/>
+	 * <u>IF THIS IS CALLED IN ANY OTHER THREAD:</u><br/>
+	 *  * The data is queued for upload on the <b>NEXT</b> frame.<br/>
+	 *  * Before each frame starts being drawed, the latest buffer content provided by a foreign thread, if such exists, is uploaded, replacing the VerticesObject content and
+	 *  updating it's size.
+	 * @return True if the data was uploaded ( or rather, queued for upload on use ), false if it was deffered to the next frame
 	 */
 	public boolean uploadData(FloatBuffer dataToUpload)
 	{
-		if(glId == -2)
-			throw new RuntimeException("Tryed to upload to a destroyed VerticesBuffer");
+		if (openGLID == -2)
+			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
+
+		//Queue for immediate upload
+		if(GameWindowOpenGL.isMainGLWindow())
+		{
+			waitingToUploadMainThread = dataToUpload;
+			dataSize = dataToUpload.limit() * 4;
+			return true;
+		}
 		
-		return uploadDataActual(dataToUpload);
+		//This is a deffered call
+		waitingToUploadDeffered = dataToUpload;
+		return false;
 	}
 
 	private boolean uploadDataActual(Object dataToUpload)
 	{
 		//Are we clear to execute openGL calls ?
-		if (GameWindowOpenGL.isMainGLWindow())
+		assert GameWindowOpenGL.isMainGLWindow();
+
+		bind();
+
+		if (openGLID == -2)
 		{
-			bind();
-			
-			if(glId == -2)
-			{
-				System.out.println("There we fucking go");
-				Runtime.getRuntime().exit(-555);
-			}
-
-			if (dataToUpload instanceof ByteBuffer)
-			{
-				dataSize = ((ByteBuffer) dataToUpload).limit();
-
-				glBufferData(GL_ARRAY_BUFFER, (ByteBuffer) dataToUpload, GL_STATIC_DRAW);
-				isDataPresent = true;
-				return true;
-			}
-			else if (dataToUpload instanceof FloatBuffer)
-			{
-				dataSize = ((FloatBuffer) dataToUpload).limit() * 4;
-
-				glBufferData(GL_ARRAY_BUFFER, (FloatBuffer) dataToUpload, GL_STATIC_DRAW);
-				isDataPresent = true;
-				return true;
-			}
-			else if (dataToUpload instanceof IntBuffer)
-			{
-				dataSize = ((IntBuffer) dataToUpload).limit() * 4;
-
-				glBufferData(GL_ARRAY_BUFFER, (IntBuffer) dataToUpload, GL_STATIC_DRAW);
-				isDataPresent = true;
-				return true;
-			}
-			else if (dataToUpload instanceof DoubleBuffer)
-			{
-				dataSize = ((DoubleBuffer) dataToUpload).limit() * 8;
-
-				glBufferData(GL_ARRAY_BUFFER, (DoubleBuffer) dataToUpload, GL_STATIC_DRAW);
-				isDataPresent = true;
-				return true;
-			}
-			else if (dataToUpload instanceof ShortBuffer)
-			{
-				dataSize = ((ShortBuffer) dataToUpload).limit() * 2;
-
-				glBufferData(GL_ARRAY_BUFFER, (ShortBuffer) dataToUpload, GL_STATIC_DRAW);
-				isDataPresent = true;
-				return true;
-			}
+			System.out.println("There we fucking go");
+			Runtime.getRuntime().exit(-555);
 		}
-		else
-		{
-			//Mark data for pending uploading.
-			dataPendingUpload = dataToUpload;
 
-			return false;
+		if (dataToUpload instanceof ByteBuffer)
+		{
+			dataSize = ((ByteBuffer) dataToUpload).limit();
+
+			glBufferData(GL_ARRAY_BUFFER, (ByteBuffer) dataToUpload, GL_STATIC_DRAW);
+			isDataPresent = true;
+			return true;
+		}
+		else if (dataToUpload instanceof FloatBuffer)
+		{
+			dataSize = ((FloatBuffer) dataToUpload).limit() * 4;
+
+			glBufferData(GL_ARRAY_BUFFER, (FloatBuffer) dataToUpload, GL_STATIC_DRAW);
+			isDataPresent = true;
+			return true;
+		}
+		else if (dataToUpload instanceof IntBuffer)
+		{
+			dataSize = ((IntBuffer) dataToUpload).limit() * 4;
+
+			glBufferData(GL_ARRAY_BUFFER, (IntBuffer) dataToUpload, GL_STATIC_DRAW);
+			isDataPresent = true;
+			return true;
+		}
+		else if (dataToUpload instanceof DoubleBuffer)
+		{
+			dataSize = ((DoubleBuffer) dataToUpload).limit() * 8;
+
+			glBufferData(GL_ARRAY_BUFFER, (DoubleBuffer) dataToUpload, GL_STATIC_DRAW);
+			isDataPresent = true;
+			return true;
+		}
+		else if (dataToUpload instanceof ShortBuffer)
+		{
+			dataSize = ((ShortBuffer) dataToUpload).limit() * 2;
+
+			glBufferData(GL_ARRAY_BUFFER, (ShortBuffer) dataToUpload, GL_STATIC_DRAW);
+			isDataPresent = true;
+			return true;
 		}
 		throw new UnsupportedOperationException();
 	}
@@ -200,29 +244,37 @@ public class VerticesObject
 	 */
 	public boolean isDataPresent()
 	{
-		if(glId == -2)
+		if (openGLID == -2)
 			return false;
-		
-		return isDataPresent || dataPendingUpload != null;
+
+		return isDataPresent || waitingToUploadMainThread != null;
 	}
 
-	private boolean checkForPendingUploadData()
+	private boolean uploadPendingDefferedData()
 	{
 		//Upload pending stuff
-		Object atomicReference = dataPendingUpload;
+		Object atomicReference = waitingToUploadDeffered;
 		if (atomicReference != null)
 		{
-			//System.out.println("Uploading pending VerticesObject ... ");
-			dataPendingUpload = null;
-			uploadDataActual(atomicReference);
+			bind();
+			waitingToUploadDeffered = null;
+			return uploadDataActual(atomicReference);
 		}
 
-		//Check for data presence
-		if (!isDataPresent())
-			return false;
-
 		//Clear to draw stuff
-		return true;
+		return false;
+	}
+	
+	private boolean checkForPendingMainThreadData()
+	{
+		if(waitingToUploadMainThread == null)
+			return false;
+		
+		//Take pending object, remove reference
+		Object waitingToUploadMainThread = this.waitingToUploadMainThread;
+		this.waitingToUploadMainThread = null;
+		//And upload it
+		return uploadDataActual(waitingToUploadMainThread);
 	}
 
 	class VerticesObjectAsAttribute implements AttributeSource
@@ -242,7 +294,11 @@ public class VerticesObject
 		@Override
 		public void setup(int gl_AttributeLocation)
 		{
+			//Ensure it's bound
 			bind();
+			//Ensure it's up-to-date
+			checkForPendingMainThreadData();
+			//Set pointer
 			glVertexAttribPointer(gl_AttributeLocation, dimensions, format.glId, format.normalized, stride, offset);
 		}
 
@@ -265,7 +321,7 @@ public class VerticesObject
 
 	public String toString()
 	{
-		return "[VerticeObjcect glId = " + this.glId + "]";
+		return "[VerticeObjcect glId = " + this.openGLID + "]";
 	}
 
 	/**
@@ -274,17 +330,17 @@ public class VerticesObject
 	public synchronized boolean destroy()
 	{
 		//If it was already destroyed
-		if(glId == -2)
+		if (openGLID == -2)
 		{
 			System.out.println("Tried to delete already destroyed verticesObject");
 			Thread.dumpStack();
 		}
-		
+
 		//If it wasn't allocated an id
-		if (glId == -1)
+		if (openGLID == -1)
 		{
 			//Mark it for unable to receive data, decrease counter
-			glId = -2;
+			openGLID = -2;
 			totalVerticesObjects--;
 			return true;
 		}
@@ -294,9 +350,9 @@ public class VerticesObject
 			isDataPresent = false;
 
 			//System.out.println("Deleting Buffer "+openglBufferId);
-			glDeleteBuffers(glId);
-			allocatedIds.remove(glId);
-			glId = -2;
+			allocatedIds.remove(openGLID);
+			glDeleteBuffers(openGLID);
+			openGLID = -2;
 			dataSize = 0;
 
 			totalVerticesObjects--;
@@ -305,7 +361,7 @@ public class VerticesObject
 		}
 		else
 		{
-			synchronized (objectsToDestroy)
+			//synchronized (objectsToDestroy)
 			{
 				objectsToDestroy.add(this);
 			}
@@ -313,13 +369,16 @@ public class VerticesObject
 		}
 	}
 
-	private static BlockingQueue<VerticesObject> objectsToDestroy = new LinkedBlockingQueue<VerticesObject>();
+	private static Queue<VerticesObject> objectsToDestroy = new ConcurrentLinkedQueue<VerticesObject>();
 
-	public static int destroyPendingVerticesObjects()
+	public static long updateVerticesObjects()
 	{
 		int destroyedVerticesObjects = 0;
+		long vram = 0;
 
-		synchronized (objectsToDestroy)
+		//synchronized (objectsToDestroy)
+		
+		//Destroys unused objects
 		{
 			Iterator<VerticesObject> i = objectsToDestroy.iterator();
 			while (i.hasNext())
@@ -337,20 +396,30 @@ public class VerticesObject
 		while (i.hasNext())
 		{
 			Entry<Integer, WeakReference<VerticesObject>> entry = i.next();
-			int id = entry.getKey();
+			int openGLID = entry.getKey();
 			WeakReference<VerticesObject> weakReference = entry.getValue();
 			VerticesObject verticesObject = weakReference.get();
+			
 			if (verticesObject == null)
 			{
+				//Gives back orphan buffers
+				glDeleteBuffers(openGLID);
 				//System.out.println("Destroyed orphan VerticesObject id #"+id);
-				glDeleteBuffers(id);
+				
 				destroyedVerticesObjects++;
-
 				i.remove();
+			}
+			else
+			{
+				//Send deffered uploads
+				verticesObject.uploadPendingDefferedData();
+				
+				//Count VRAM
+				vram += verticesObject.getVramUsage();
 			}
 		}
 
-		return destroyedVerticesObjects;
+		return vram;
 	}
 
 	public static int getTotalNumberOfVerticesObjects()
@@ -358,7 +427,8 @@ public class VerticesObject
 		return totalVerticesObjects;
 	}
 
-	public static long getTotalVramUsage()
+	/*
+	public static long updateVerticesObjects()
 	{
 		long vram = 0;
 
@@ -370,16 +440,19 @@ public class VerticesObject
 
 			VerticesObject object = reference.get();
 			if (object != null)
+			{
 				vram += object.getVramUsage();
+			}
+			//Remove null objects from the list
 			else
 				i.remove();
 		}
 
 		return vram;
-	}
+	}*/
 
 	private static int totalVerticesObjects = 0;
-	private static BlockingQueue<WeakReference<VerticesObject>> allVerticesObjects = new LinkedBlockingQueue<WeakReference<VerticesObject>>();
+	private static Queue<WeakReference<VerticesObject>> allVerticesObjects = new ConcurrentLinkedQueue<WeakReference<VerticesObject>>();
 
 	protected static Map<Integer, WeakReference<VerticesObject>> allocatedIds = new ConcurrentHashMap<Integer, WeakReference<VerticesObject>>();
 }

@@ -28,6 +28,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseButton;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -244,7 +245,7 @@ public class GameplayScene extends OverlayableScene
 
 
 			if (RenderingConfig.showDebugInfo)
-				debug();
+				debug(renderingContext);
 		}
 		Client.profiler.reset("gui");
 
@@ -534,7 +535,7 @@ public class GameplayScene extends OverlayableScene
 		}
 	}
 
-	private void debug()
+	private void debug(RenderingInterface renderingInterface)
 	{
 		int timeTook = Client.profiler.timeTook();
 		String debugInfo = Client.profiler.reset("gui").toString();
@@ -603,9 +604,9 @@ public class GameplayScene extends OverlayableScene
 
 		//FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + getLoadedChunksVramFootprint() + ", " + getLoadedTerrainVramFootprint(), BitmapFont.SMALLFONTS);
 
-		long totalVram = (VerticesObject.getTotalVramUsage() + Texture2D.getTotalVramUsage()) / 1024 / 1024;
+		long totalVram = (renderingInterface.getTotalVramUsage()) / 1024 / 1024;
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram + "Mb as " + Texture2D.getTotalNumberOfTextureObjects() + " textures using " + Texture2D.getTotalVramUsage() / 1024 / 1024 + "Mb + "
-				+ VerticesObject.getTotalNumberOfVerticesObjects() + " Vertices objects using " + VerticesObject.getTotalVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
+				+ VerticesObject.getTotalNumberOfVerticesObjects() + " Vertices objects using " + renderingInterface.getVertexDataVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
 
 		
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16,

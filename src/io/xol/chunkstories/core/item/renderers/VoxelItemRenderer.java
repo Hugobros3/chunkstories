@@ -18,7 +18,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.rendering.Light;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
-import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
+import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;

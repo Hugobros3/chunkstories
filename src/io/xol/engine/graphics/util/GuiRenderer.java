@@ -3,7 +3,7 @@ package io.xol.engine.graphics.util;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
-import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
+import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;

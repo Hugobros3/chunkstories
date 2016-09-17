@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.PolygonFillMode;
+import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingCommand;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
@@ -21,6 +22,7 @@ import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Cubemap;
+import io.xol.engine.graphics.textures.Texture;
 import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
@@ -350,5 +352,17 @@ public class RenderingContext implements RenderingInterface
 			z++;
 		}
 		//System.out.println("Flushed z"+z);
+	}
+
+	@Override
+	public long getVertexDataVramUsage()
+	{
+		return this.mainWindows.vramUsageVerticesObjects;
+	}
+
+	@Override
+	public long getTextureDataVramUsage()
+	{
+		return Texture.getTotalVramUsage();
 	}
 }

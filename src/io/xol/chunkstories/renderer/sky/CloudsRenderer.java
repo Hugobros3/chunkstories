@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
+import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.engine.graphics.RenderingContext;

@@ -63,8 +63,6 @@ public class RegionSummaryImplementation implements RegionSummary
 	//Mesh (client renderer)
 	public VerticesObject verticesObject;
 
-	private byte[] vboDataToUpload = null;
-
 	RegionSummaryImplementation(WorldRegionSummariesHolder worldSummariesHolder, int rx, int rz)
 	{
 		this.worldSummariesHolder = worldSummariesHolder;

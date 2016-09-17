@@ -56,7 +56,7 @@ public class GameWindowOpenGL
 
 	public static int targetFPS = 60;
 
-	public static String engineVersion = "2.2c";
+	public static String engineVersion = "2.2d";
 
 	public static GameWindowOpenGL instance;
 
@@ -69,7 +69,9 @@ public class GameWindowOpenGL
 	private static int lastFPS = 0;
 	static long lastTime = 0;
 
-	static String currentDM = "";
+	public long vramUsageVerticesObjects = 0;
+	
+	//static String currentDM = "";
 
 	long timeTookLastTime = 0;
 
@@ -254,7 +256,7 @@ public class GameWindowOpenGL
 					FrametimeRenderer.draw(renderingContext);
 
 				//Update pending actions
-				VerticesObject.destroyPendingVerticesObjects();
+				vramUsageVerticesObjects = VerticesObject.updateVerticesObjects();
 				Texture2D.destroyPendingTextureObjects();
 
 				//Update the screen

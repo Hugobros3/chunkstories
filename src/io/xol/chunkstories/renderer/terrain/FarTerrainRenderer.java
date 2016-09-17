@@ -18,7 +18,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.Constants;
-import io.xol.chunkstories.api.rendering.RenderingInterface.Primitive;
+import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
@@ -146,13 +146,13 @@ public class FarTerrainRenderer
 		glLineWidth(1.0f);
 
 		//Sort to draw near first
-		List<RegionMesh> regionsToRenderSorted = new ArrayList<RegionMesh>(regionsToRender);
+		List<RegionMesh> regionsMeshesToRenderSorted = new ArrayList<RegionMesh>(regionsToRender);
 		//renderingContext.getCamera().getLocation;
 		Camera camera = renderingContext.getCamera();
 		int camRX = (int) (-camera.pos.getX() / 256);
 		int camRZ = (int) (-camera.pos.getZ() / 256);
 
-		regionsToRenderSorted.sort(new Comparator<RegionMesh>()
+		regionsMeshesToRenderSorted.sort(new Comparator<RegionMesh>()
 		{
 
 			@Override
@@ -168,47 +168,28 @@ public class FarTerrainRenderer
 
 		try
 		{
-			for (RegionMesh rs : regionsToRenderSorted)
+			for (RegionMesh regionMesh : regionsMeshesToRenderSorted)
 			{
 				float height = 1024f;
-				if (!renderingContext.getCamera().isBoxInFrustrum(new Vector3f(rs.regionDisplayedX * 256 + 128, height / 2, rs.regionDisplayedZ * 256 + 128), new Vector3f(256, height, 256)))
+				if (!renderingContext.getCamera().isBoxInFrustrum(new Vector3f(regionMesh.regionDisplayedX * 256 + 128, height / 2, regionMesh.regionDisplayedZ * 256 + 128), new Vector3f(256, height, 256)))
 					continue;
-				renderingContext.bindTexture2D("groundTexture", rs.regionSummary.voxelTypesTexture);
-
-				renderingContext.bindTexture2D("heightMap", rs.regionSummary.heightsTexture);
-
+				
+				renderingContext.bindTexture2D("groundTexture", regionMesh.regionSummary.voxelTypesTexture);
+				renderingContext.bindTexture2D("heightMap", regionMesh.regionSummary.heightsTexture);
 				renderingContext.bindTexture1D("blocksTexturesSummary", getBlocksTexturesSummary());
-				terrainShader.setUniform2f("regionPosition", rs.regionSummary.getRegionX(), rs.regionSummary.getRegionZ());
+				terrainShader.setUniform2f("regionPosition", regionMesh.regionSummary.getRegionX(), regionMesh.regionSummary.getRegionZ());
+				terrainShader.setUniform2f("chunkPosition", regionMesh.regionDisplayedX * 256, regionMesh.regionDisplayedZ * 256);
 
-				// terrain.setUniformFloat2("chunkPositionActual", cs.dekalX,
-				// cs.dekalZ);
-				//System.out.println("kekkimus prime"+rs.regionSummary.verticesObject.isDataPresent());
-				terrainShader.setUniform2f("chunkPosition", rs.regionDisplayedX * 256, rs.regionDisplayedZ * 256);
-
-				if (rs.regionSummary.verticesObject.isDataPresent())
+				if (regionMesh.regionSummary.verticesObject.isDataPresent())
 				{
-					//rs.regionSummary.verticesObject.bind();
 					int stride = 4 * 2 + 4 + 0 * 4;
 
-					int vertices2draw = (int) (rs.regionSummary.verticesObject.getVramUsage() / stride);
+					int vertices2draw = (int) (regionMesh.regionSummary.verticesObject.getVramUsage() / stride);
 
-					renderingContext.bindAttribute("vertexIn", rs.regionSummary.verticesObject.asAttributeSource(VertexFormat.SHORT, 3, stride, 0L));
-					//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_SHORT, false, stride, 0L);
-
-					//if(voxelDataIn != -1)
-					//	glVertexAttribIPointer(voxelDataIn, 1, GL_INT, stride, 12L);
-
-					renderingContext.bindAttribute("normalIn", rs.regionSummary.verticesObject.asAttributeSource(VertexFormat.UBYTE, 4, stride, 8L));
-					//renderingContext.setVertexAttributePointerLocation(normalIn, 4, GL_UNSIGNED_BYTE, false, stride, 8L);
+					renderingContext.bindAttribute("vertexIn", regionMesh.regionSummary.verticesObject.asAttributeSource(VertexFormat.SHORT, 3, stride, 0L));
+					renderingContext.bindAttribute("normalIn", regionMesh.regionSummary.verticesObject.asAttributeSource(VertexFormat.UBYTE, 4, stride, 8L));
 
 					elements += vertices2draw;
-					//elements += rs.regionSummary.vboSize;
-
-					if(false && rs.regionDisplayedX == 10 && rs.regionDisplayedZ == 2)
-					{
-						System.out.println("cuck"+rs.regionSummary.verticesObject.getVramUsage());
-						continue;
-					}
 					
 					renderingContext.draw(Primitive.TRIANGLE, 0, vertices2draw);
 				}
@@ -216,7 +197,7 @@ public class FarTerrainRenderer
 		}
 		catch (NullPointerException npe)
 		{
-			System.out.println("npe" + npe.getMessage());
+			
 		}
 
 		return elements;

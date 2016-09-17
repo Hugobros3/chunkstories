@@ -19,6 +19,8 @@ import io.xol.engine.math.lalgb.Matrix4f;
 public interface RenderingInterface
 {
 	public CameraInterface getCamera();
+
+	public boolean isThisAShadowPass();
 	
 	/* shaders */
 	
@@ -119,14 +121,17 @@ public interface RenderingInterface
 	 */
 	public RenderingCommand draw(Primitive primitive, int startAt, int count);
 	
-	public enum Primitive {
-		POINT, LINE, TRIANGLE, QUAD;
-	}
-	
 	/**
 	 * Executes ALL commands in the queue up to this point before continuing
 	 */
 	public void flush();
-
-	public boolean isThisAShadowPass();
+	
+	public default long getTotalVramUsage()
+	{
+		return getVertexDataVramUsage() + getTextureDataVramUsage();
+	}
+	
+	public long getVertexDataVramUsage();
+	
+	public long getTextureDataVramUsage();
 }
