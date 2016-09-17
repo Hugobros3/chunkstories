@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.renderer.SelectionRenderer;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
+import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.graphics.RenderingContext;
@@ -32,14 +33,12 @@ public class ChunkRenderData
 	public int vboSizeWaterBlocks;
 	public int vboSizeCustomBlocks;
 	
-	public ByteBufferPool pool;
-	public int byteBufferPoolId = -1;
+	//public int byteBufferPoolId = -1;
 	
 	public boolean isUploaded = false;
 	
-	public ChunkRenderData(ByteBufferPool pool, CubicChunk chunk)
+	public ChunkRenderData(CubicChunk chunk)
 	{
-		this.pool = pool;
 		this.chunk = chunk;
 	}
 	
@@ -51,7 +50,7 @@ public class ChunkRenderData
 	/**
 	 * Uploads the ByteBuffer contents and frees it
 	 */
-	public void upload()
+	/*public void upload()
 	{
 		verticesObject.uploadData(pool.accessByteBuffer(byteBufferPoolId));
 		
@@ -61,6 +60,7 @@ public class ChunkRenderData
 		
 		isUploaded = true;
 	}
+	*/
 	
 	/**
 	 * Frees the ressources allocated to this ChunkRenderData
@@ -68,14 +68,12 @@ public class ChunkRenderData
 	public void free()
 	{
 		//Make sure we freed the byteBuffer
-		if(byteBufferPoolId != -1)
+		/*-if(byteBufferPoolId != -1)
 			pool.releaseByteBuffer(byteBufferPoolId);
-		byteBufferPoolId = -1;
-		//Deallocate the VBO
+		byteBufferPoolId = -1;*/
 		
+		//Deallocate the VBO
 		verticesObject.destroy();
-		//if(vboId != -1)
-		//	glDeleteBuffers(vboId);
 	}
 	
 	/**
@@ -194,5 +192,10 @@ public class ChunkRenderData
 		//	return;
 		OverlayRenderer.glColor4f(5, 0, (float) Math.random() * 0.01f, 1);
 		SelectionRenderer.cubeVertices(chunk.getChunkX() * 32 + 16, chunk.getChunkY() * 32, chunk.getChunkZ() * 32 + 16, 32, 32, 32);
+	}
+
+	public void setChunkMeshes(RecyclableByteBuffer buffer)
+	{
+		verticesObject.uploadData(buffer);
 	}
 }

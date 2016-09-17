@@ -4,6 +4,7 @@ import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
+import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -175,8 +176,10 @@ public class ChunksRenderer extends Thread
 
 							if (nearChunks == 4)
 							{
-								int buffer_id = buffersPool.requestByteBuffer();
-								while (buffer_id == -1)
+								RecyclableByteBuffer buffer = buffersPool.requestByteBuffer();
+								//int buffer_id = buffersPool.requestByteBuffer();
+								while(buffer == null)
+								//while (buffer_id == -1)
 								{
 									try
 									{
@@ -186,12 +189,14 @@ public class ChunksRenderer extends Thread
 									{
 										e.printStackTrace();
 									}
-									buffer_id = buffersPool.requestByteBuffer();
+									
+									buffer = buffersPool.requestByteBuffer();
+									//buffer_id = buffersPool.requestByteBuffer();
 								}
 								if (work instanceof CubicChunk)
 									try
 									{
-										renderChunk((CubicChunk) work, buffer_id);
+										renderChunk((CubicChunk) work, buffer);
 									}
 									catch (Exception e)
 									{
@@ -882,14 +887,16 @@ public class ChunksRenderer extends Thread
 	ByteBuffer complexBlocksBuffer = BufferUtils.createByteBuffer(0x600000);
 
 	@SuppressWarnings("unused")
-	private void renderChunk(CubicChunk work, int byteBufferId)
+	private void renderChunk(CubicChunk work, RecyclableByteBuffer buffer)
 	{
-		ByteBuffer byteBuffer = buffersPool.accessByteBuffer(byteBufferId);
+		//TODO only requests a ByteBuffer when it is sure it will actually need one
+		ByteBuffer byteBuffer = buffer.accessByteBuffer();
 
 		// Update lightning as well if needed
 		if (work == null)
 		{
-			buffersPool.releaseByteBuffer(byteBufferId);
+			buffer.recycle();
+			//buffersPool.releaseByteBuffer(buffer);
 			return;
 		}
 
@@ -901,7 +908,8 @@ public class ChunksRenderer extends Thread
 		// Don't bother
 		if (!work.need_render.get())
 		{
-			buffersPool.releaseByteBuffer(byteBufferId);
+			buffer.recycle();
+			//buffersPool.releaseByteBuffer(buffer);
 			return;
 		}
 
@@ -1030,10 +1038,10 @@ public class ChunksRenderer extends Thread
 		long cr_convert = System.nanoTime();
 
 		// Prepare output
-		ChunkRenderData chunkRenderData = new ChunkRenderData(buffersPool, work);
+		ChunkRenderData chunkRenderData = new ChunkRenderData(work);
 
 		byteBuffer.clear();
-		chunkRenderData.byteBufferPoolId = byteBufferId;// = byteBuffer;//BufferUtils.createByteBuffer(bufferTotalSize);
+		//chunkRenderData.byteBufferPoolId = buffer;// = byteBuffer;//BufferUtils.createByteBuffer(bufferTotalSize);
 
 		//long cr_buffer = System.nanoTime();
 
@@ -1056,6 +1064,8 @@ public class ChunksRenderer extends Thread
 		byteBuffer.put(complexBlocksBuffer);
 
 		byteBuffer.flip();
+		
+		chunkRenderData.setChunkMeshes(buffer);
 
 		doneQueue.add(chunkRenderData);
 

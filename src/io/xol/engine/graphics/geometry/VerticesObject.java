@@ -1,6 +1,7 @@
 package io.xol.engine.graphics.geometry;
 
 import io.xol.chunkstories.api.rendering.AttributeSource;
+import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
 import io.xol.engine.base.GameWindowOpenGL;
 
 import static org.lwjgl.opengl.GL15.*;
@@ -16,10 +17,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -34,7 +33,7 @@ public class VerticesObject
 
 	private boolean isDataPresent = false;
 	private long dataSize = 0L;
-	
+
 	private Object waitingToUploadMainThread;
 	private Object waitingToUploadDeffered;
 
@@ -118,16 +117,14 @@ public class VerticesObject
 	/**
 	 * Uploads new data to this buffer, replacing former content.<br/>
 	 * <u>IF THIS IS CALLED IN THE MAIN THREAD:</u><br/>
-	 *  * Uploading of data is queued for the next time this object is used in a drawcall ( an attribute source is setup, namely )<br/>
-	 *  * The apparent size of the object ( getVramUsage() ) is updated immediately<br/>
-	 *  * Multiple subsequent uploads in one frame can override former ones; given the right conditions a call to uploadData followed by another one then a draw call, the first upload
-	 *  will be ignored altogether and only the latest buffer content will be used<br/>
-	 *  * Changing the VerticesObject content does not trigger a flush() in the RenderingInterface, if you want to issue draw calls on this buffer with multiple data per frame you have to issue
-	 *  flush() commands between them to make sure the data is uploaded. More information is on the wiki on this.<br/>
+	 * * Uploading of data is queued for the next time this object is used in a drawcall ( an attribute source is setup, namely )<br/>
+	 * * The apparent size of the object ( getVramUsage() ) is updated immediately<br/>
+	 * * Multiple subsequent uploads in one frame can override former ones; given the right conditions a call to uploadData followed by another one then a draw call, the first upload will be ignored altogether and only the latest buffer content will be used<br/>
+	 * * Changing the VerticesObject content does not trigger a flush() in the RenderingInterface, if you want to issue draw calls on this buffer with multiple data per frame you have to issue flush() commands between them to make sure the data is uploaded. More information is on the wiki on this.<br/>
 	 * <u>IF THIS IS CALLED IN ANY OTHER THREAD:</u><br/>
-	 *  * The data is queued for upload on the <b>NEXT</b> frame.<br/>
-	 *  * Before each frame starts being drawed, the latest buffer content provided by a foreign thread, if such exists, is uploaded, replacing the VerticesObject content and
-	 *  updating it's size.
+	 * * The data is queued for upload on the <b>NEXT</b> frame.<br/>
+	 * * Before each frame starts being drawed, the latest buffer content provided by a foreign thread, if such exists, is uploaded, replacing the VerticesObject content and updating it's size.
+	 * 
 	 * @return True if the data was uploaded ( or rather, queued for upload on use ), false if it was deffered to the next frame
 	 */
 	public boolean uploadData(ByteBuffer dataToUpload)
@@ -136,31 +133,29 @@ public class VerticesObject
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
 		//Queue for immediate upload
-		if(GameWindowOpenGL.isMainGLWindow())
+		if (GameWindowOpenGL.isMainGLWindow())
 		{
 			waitingToUploadMainThread = dataToUpload;
 			dataSize = dataToUpload.limit();
 			return true;
 		}
-		
+
 		//This is a deffered call
 		waitingToUploadDeffered = dataToUpload;
 		return false;
 	}
-	
+
 	/**
 	 * Uploads new data to this buffer, replacing former content.<br/>
 	 * <u>IF THIS IS CALLED IN THE MAIN THREAD:</u><br/>
-	 *  * Uploading of data is queued for the next time this object is used in a drawcall ( an attribute source is setup, namely )<br/>
-	 *  * The apparent size of the object ( getVramUsage() ) is updated immediately<br/>
-	 *  * Multiple subsequent uploads in one frame can override former ones; given the right conditions a call to uploadData followed by another one then a draw call, the first upload
-	 *  will be ignored altogether and only the latest buffer content will be used<br/>
-	 *  * Changing the VerticesObject content does not trigger a flush() in the RenderingInterface, if you want to issue draw calls on this buffer with multiple data per frame you have to issue
-	 *  flush() commands between them to make sure the data is uploaded. More information is on the wiki on this.<br/>
+	 * * Uploading of data is queued for the next time this object is used in a drawcall ( an attribute source is setup, namely )<br/>
+	 * * The apparent size of the object ( getVramUsage() ) is updated immediately<br/>
+	 * * Multiple subsequent uploads in one frame can override former ones; given the right conditions a call to uploadData followed by another one then a draw call, the first upload will be ignored altogether and only the latest buffer content will be used<br/>
+	 * * Changing the VerticesObject content does not trigger a flush() in the RenderingInterface, if you want to issue draw calls on this buffer with multiple data per frame you have to issue flush() commands between them to make sure the data is uploaded. More information is on the wiki on this.<br/>
 	 * <u>IF THIS IS CALLED IN ANY OTHER THREAD:</u><br/>
-	 *  * The data is queued for upload on the <b>NEXT</b> frame.<br/>
-	 *  * Before each frame starts being drawed, the latest buffer content provided by a foreign thread, if such exists, is uploaded, replacing the VerticesObject content and
-	 *  updating it's size.
+	 * * The data is queued for upload on the <b>NEXT</b> frame.<br/>
+	 * * Before each frame starts being drawed, the latest buffer content provided by a foreign thread, if such exists, is uploaded, replacing the VerticesObject content and updating it's size.
+	 * 
 	 * @return True if the data was uploaded ( or rather, queued for upload on use ), false if it was deffered to the next frame
 	 */
 	public boolean uploadData(FloatBuffer dataToUpload)
@@ -169,13 +164,31 @@ public class VerticesObject
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
 		//Queue for immediate upload
-		if(GameWindowOpenGL.isMainGLWindow())
+		if (GameWindowOpenGL.isMainGLWindow())
 		{
 			waitingToUploadMainThread = dataToUpload;
 			dataSize = dataToUpload.limit() * 4;
 			return true;
 		}
-		
+
+		//This is a deffered call
+		waitingToUploadDeffered = dataToUpload;
+		return false;
+	}
+
+	public boolean uploadData(RecyclableByteBuffer dataToUpload)
+	{
+		if (openGLID == -2)
+			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
+
+		//Queue for immediate upload
+		if (GameWindowOpenGL.isMainGLWindow())
+		{
+			waitingToUploadMainThread = dataToUpload;
+			dataSize = dataToUpload.accessByteBuffer().limit();
+			return true;
+		}
+
 		//This is a deffered call
 		waitingToUploadDeffered = dataToUpload;
 		return false;
@@ -192,6 +205,13 @@ public class VerticesObject
 		{
 			System.out.println("There we fucking go");
 			Runtime.getRuntime().exit(-555);
+		}
+
+		if (dataToUpload instanceof RecyclableByteBuffer)
+		{
+			boolean returnCode = uploadDataActual(((RecyclableByteBuffer) dataToUpload).accessByteBuffer());
+			((RecyclableByteBuffer) dataToUpload).recycle();
+			return returnCode;
 		}
 
 		if (dataToUpload instanceof ByteBuffer)
@@ -256,6 +276,8 @@ public class VerticesObject
 		Object atomicReference = waitingToUploadDeffered;
 		if (atomicReference != null)
 		{
+			//System.out.println("oh shit waddup");
+
 			bind();
 			waitingToUploadDeffered = null;
 			return uploadDataActual(atomicReference);
@@ -264,12 +286,12 @@ public class VerticesObject
 		//Clear to draw stuff
 		return false;
 	}
-	
+
 	private boolean checkForPendingMainThreadData()
 	{
-		if(waitingToUploadMainThread == null)
+		if (waitingToUploadMainThread == null)
 			return false;
-		
+
 		//Take pending object, remove reference
 		Object waitingToUploadMainThread = this.waitingToUploadMainThread;
 		this.waitingToUploadMainThread = null;
@@ -377,7 +399,7 @@ public class VerticesObject
 		long vram = 0;
 
 		//synchronized (objectsToDestroy)
-		
+
 		//Destroys unused objects
 		{
 			Iterator<VerticesObject> i = objectsToDestroy.iterator();
@@ -399,24 +421,35 @@ public class VerticesObject
 			int openGLID = entry.getKey();
 			WeakReference<VerticesObject> weakReference = entry.getValue();
 			VerticesObject verticesObject = weakReference.get();
-			
+
 			if (verticesObject == null)
 			{
 				//Gives back orphan buffers
 				glDeleteBuffers(openGLID);
 				//System.out.println("Destroyed orphan VerticesObject id #"+id);
-				
+
 				destroyedVerticesObjects++;
 				i.remove();
 			}
-			else
+		}
+
+		//Iterates over every instance reference, removes null ones and add up valid ones
+		Iterator<WeakReference<VerticesObject>> i2 = allVerticesObjects.iterator();
+		while (i2.hasNext())
+		{
+			WeakReference<VerticesObject> reference = i2.next();
+
+			VerticesObject verticesObject = reference.get();
+			if (verticesObject != null)
 			{
 				//Send deffered uploads
 				verticesObject.uploadPendingDefferedData();
-				
-				//Count VRAM
+					
 				vram += verticesObject.getVramUsage();
 			}
+			//Remove null objects from the list
+			else
+				i2.remove();
 		}
 
 		return vram;
@@ -431,13 +464,13 @@ public class VerticesObject
 	public static long updateVerticesObjects()
 	{
 		long vram = 0;
-
+	
 		//Iterates over every instance reference, removes null ones and add up valid ones
 		Iterator<WeakReference<VerticesObject>> i = allVerticesObjects.iterator();
 		while (i.hasNext())
 		{
 			WeakReference<VerticesObject> reference = i.next();
-
+	
 			VerticesObject object = reference.get();
 			if (object != null)
 			{
@@ -447,7 +480,7 @@ public class VerticesObject
 			else
 				i.remove();
 		}
-
+	
 		return vram;
 	}*/
 

@@ -399,7 +399,6 @@ public class WorldRenderer
 		// Upload generated chunks data to GPU
 		//updateProfiler.reset("vbo upload");
 		ChunkRenderData chunkRenderData = chunksRenderer.getNextRenderedChunkData();
-		int loadLimit = 16;
 		while (chunkRenderData != null)
 		{
 			//CubicChunk c = world.getChunk(toload.x, toload.y, toload.z, false);
@@ -409,7 +408,9 @@ public class WorldRenderer
 				((ChunkRenderable) c).setChunkRenderData(chunkRenderData);
 
 				//Upload data
-				chunkRenderData.upload();
+				
+				//chunkRenderData.upload();
+				
 				chunksChanged = true;
 			}
 			else
@@ -422,11 +423,7 @@ public class WorldRenderer
 				//	System.out.println("Render information : vbo size =" + toload.s_normal + " and water size =" + toload.s_water);
 				chunkRenderData.free();
 			}
-			loadLimit--;
-			if (loadLimit > 0)
-				chunkRenderData = chunksRenderer.getNextRenderedChunkData();
-			else
-				chunkRenderData = null;
+			chunkRenderData = chunksRenderer.getNextRenderedChunkData();
 		}
 		// Update view
 		//viewRotH = view_rotx;
@@ -595,7 +592,7 @@ public class WorldRenderer
 						if (LoopingMathHelper.moduloDistance(chunk.getChunkX(), cameraChunkX, world.getSizeInChunks()) < chunksViewDistance - 1)
 							if (LoopingMathHelper.moduloDistance(chunk.getChunkZ(), cameraChunkZ, world.getSizeInChunks()) < chunksViewDistance - 1)
 							{
-								if ((renderableChunk.getChunkRenderData() != null && renderableChunk.getChunkRenderData().isUploaded))
+								if ((renderableChunk.getChunkRenderData() != null && renderableChunk.getChunkRenderData().isUploaded()))
 								{
 
 									int ajustedChunkX = chunk.getChunkX();
