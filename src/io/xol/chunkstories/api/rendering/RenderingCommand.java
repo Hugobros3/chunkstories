@@ -10,9 +10,9 @@ import io.xol.engine.math.lalgb.Matrix4f;
 //http://xol.io
 
 /**
- * Describes a rendering task the game renderer will have to deal with
+ * Describes precisely everything needed to draw something on screen
  */
-public interface RenderingCommand
+public interface RenderingCommand extends Renderable
 {
 	public Primitive getPrimitive();
 	
@@ -25,8 +25,6 @@ public interface RenderingCommand
 	public UniformsConfiguration getUniformsConfiguration();
 
 	public PipelineConfiguration getPipelineConfiguration();
-
-	public Collection<Matrix4f> getObjectsMatrices();
 	
 	/**
 	 * Used to automatically instanciate similar rendering commands

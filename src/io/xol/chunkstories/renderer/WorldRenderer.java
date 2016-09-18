@@ -31,7 +31,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.fbo.FBO;
+import io.xol.engine.graphics.fbo.FrameBufferObject;
 import io.xol.engine.graphics.geometry.ByteBufferAttributeSource;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -138,25 +138,25 @@ public class WorldRenderer
 	private GBufferTexture ssaoBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	// FBOs
-	private FBO fboGBuffers = new FBO(zBuffer, albedoBuffer, normalBuffer, materialBuffer);
+	private FrameBufferObject fboGBuffers = new FrameBufferObject(zBuffer, albedoBuffer, normalBuffer, materialBuffer);
 
-	private FBO fboShadedBuffer = new FBO(zBuffer, shadedBuffer);
-	private FBO fboBloom = new FBO(null, bloomBuffer);
-	private FBO fboSSAO = new FBO(null, ssaoBuffer);
+	private FrameBufferObject fboShadedBuffer = new FrameBufferObject(zBuffer, shadedBuffer);
+	private FrameBufferObject fboBloom = new FrameBufferObject(null, bloomBuffer);
+	private FrameBufferObject fboSSAO = new FrameBufferObject(null, ssaoBuffer);
 
 	private GBufferTexture blurIntermediateBuffer = new GBufferTexture(RGB_HDR, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
-	private FBO fboBlur = new FBO(null, blurIntermediateBuffer);
+	private FrameBufferObject fboBlur = new FrameBufferObject(null, blurIntermediateBuffer);
 
 	// 64x64 texture used to cull distant mesh
 	private GBufferTexture loadedChunksMapTop = new GBufferTexture(DEPTH_RENDERBUFFER, 64, 64);
-	private FBO fboLoadedChunksTop = new FBO(loadedChunksMapTop);
+	private FrameBufferObject fboLoadedChunksTop = new FrameBufferObject(loadedChunksMapTop);
 	private GBufferTexture loadedChunksMapBot = new GBufferTexture(DEPTH_RENDERBUFFER, 64, 64);
-	private FBO fboLoadedChunksBot = new FBO(loadedChunksMapBot);
+	private FrameBufferObject fboLoadedChunksBot = new FrameBufferObject(loadedChunksMapBot);
 
 	// Shadow maps
 	private int shadowMapResolution = 0;
 	private GBufferTexture shadowMapBuffer = new GBufferTexture(DEPTH_SHADOWMAP, 256, 256);
-	private FBO shadowMapFBO = new FBO(shadowMapBuffer);
+	private FrameBufferObject shadowMapFBO = new FrameBufferObject(shadowMapBuffer);
 
 	//Environment map
 	private int ENVMAP_SIZE = 128;
@@ -166,8 +166,8 @@ public class WorldRenderer
 	private GBufferTexture environmentMapBufferHDR = new GBufferTexture(RGB_HDR, ENVMAP_SIZE, ENVMAP_SIZE);
 	private GBufferTexture environmentMapBufferZ = new GBufferTexture(DEPTH_RENDERBUFFER, ENVMAP_SIZE, ENVMAP_SIZE);
 
-	private FBO environmentMapFastFbo = new FBO(environmentMapBufferZ, environmentMapBufferHDR);
-	private FBO environmentMapFBO = new FBO(null, environmentMap.getFace(0));
+	private FrameBufferObject environmentMapFastFbo = new FrameBufferObject(environmentMapBufferZ, environmentMapBufferHDR);
+	private FrameBufferObject environmentMapFBO = new FrameBufferObject(null, environmentMap.getFace(0));
 
 	// Shadow transformation matrix
 	private Matrix4f depthMatrix = new Matrix4f();
@@ -657,7 +657,7 @@ public class WorldRenderer
 
 			//renderingContext.setBlendMode(BlendMode.MIX);
 			//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			FBO.unbind();
+			FrameBufferObject.unbind();
 
 			// Now delete from the worker threads what we won't need anymore
 			chunksRenderer.purgeUselessWork(cameraChunkX, cameraChunkY, cameraChunkZ, sizeInChunks, chunksViewDistance);
@@ -1395,7 +1395,7 @@ public class WorldRenderer
 		long t = System.nanoTime();
 
 		// We render to the screen.
-		FBO.unbind();
+		FrameBufferObject.unbind();
 		
 		//glDisable(GL_DEPTH_TEST);
 		//glDisable(GL_BLEND);
@@ -1622,9 +1622,8 @@ public class WorldRenderer
 		this.bloomBuffer.setLinearFiltering(true);
 		this.blurIntermediateBuffer.setLinearFiltering(true);
 
-		bloomShader  = renderingContext.useShader("bloom");
-		//renderingContext.setCurrentShader(bloomShader);
-		//bloomShader.use(true);
+		bloomShader = renderingContext.useShader("bloom");
+		
 		renderingContext.bindTexture2D("shadedBuffer", this.shadedBuffer);
 		bloomShader.setUniform1f("apertureModifier", apertureModifier);
 		bloomShader.setUniform2f("screenSize", scrW / 2f, scrH / 2f);
@@ -1638,7 +1637,6 @@ public class WorldRenderer
 		renderingContext.drawFSQuad();
 
 		// Blur bloom
-
 		// Vertical pass
 		fboBlur.bind();
 		

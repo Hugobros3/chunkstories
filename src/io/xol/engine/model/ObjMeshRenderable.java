@@ -138,15 +138,12 @@ public class ObjMeshRenderable implements Renderable
 					currentObjectMatrix = new Matrix4f();
 				
 				//Send the transformation
-				Matrix4f.mul(matrix, currentObjectMatrix, matrix);
+				Matrix4f.mul(currentObjectMatrix, matrix, matrix);
 				
 				renderingContext.setObjectMatrix(matrix);
-				//renderingContext.sendBoneTransformationMatrix(matrix);
+				
 				//Only what we can care about
-
 				renderingContext.draw(Primitive.TRIANGLE, totalSize * 3, i * 3);
-				//GLCalls.drawArrays(GL_TRIANGLES, totalSize * 3, i * 3);
-				//GLCalls.drawArraysInstanced(GL_TRIANGLES, totalSize * 3, i * 3, 50);
 				totalSize += i;
 			}
 		}
@@ -156,10 +153,6 @@ public class ObjMeshRenderable implements Renderable
 		}
 
 		renderingContext.setObjectMatrix(currentObjectMatrix);
-		//renderingContext.sendBoneTransformationMatrix(null);
-
-		//renderInstanciated(renderingContext, Arrays.asList(new AnimatableData(new Vector3f(0.0, 2.0f, 0.5f), skeleton, animationTime)));
-		//glCullFace(GL_FRONT);
 	}
 
 	private void prepareDraw(RenderingInterface renderingContext)

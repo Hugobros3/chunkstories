@@ -108,14 +108,10 @@ public class ClientWorldController implements ClientSideController
 					if(holder == null)
 						continue;
 					
-					//System.out.println(holder);
 					if(usedChunks.add(holder))
 					{
 						dontWasteTimeDude.add(summed);
-						//System.out.println(b);
-						//System.out.println("Registerin'" +holder + " "+ usedChunks.size());
 					}
-					//Chunk chunk = world.getChunkChunkCoordinates(t, b, g);
 				}
 		}
 		

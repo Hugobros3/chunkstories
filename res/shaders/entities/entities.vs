@@ -58,7 +58,6 @@ void main(){
 	texcoord = texCoordIn;
 	vec4 v = objectMatrix * vec4(vertexIn.xyz, 1.0);
 	
-	
 	if(isUsingInstancedData > 0)
 	{
 		mat4 matrixInstanced = mat4(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8, 32), (gl_InstanceID * 8) / 32), 0),
@@ -79,14 +78,12 @@ void main(){
 		v+=vec4(objectPosition,0);
 	
 		varyingVertex = v;
-		varyingNormal =  objectMatrixNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
+		varyingNormal = objectMatrixNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
 	}
 	
 	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(varyingNormal)), 0.0, 1.0);
 	
 	colorPassed = colorIn;
-	
-	//texcoord /= 32768.0;
 	
 	//Compute lightmap coords
 	rainWetness = wetness;//wetness*clamp((colorIn.g-15.0/16.0)*16,0,0.5);

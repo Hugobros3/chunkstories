@@ -1,5 +1,9 @@
 package io.xol.chunkstories.renderer.buffers;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 import java.lang.ref.WeakReference;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -14,7 +18,6 @@ public class ByteBufferPool
 {
 	ByteBuffer[] pool;
 	WeakReference<RecyclableByteBuffer> trashCollector[];
-	//boolean avaible[];
 	int size;
 
 	public ByteBufferPool(int poolSize, int buffersSize)

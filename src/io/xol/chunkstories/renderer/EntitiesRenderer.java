@@ -133,7 +133,7 @@ public class EntitiesRenderer
 			if(isCurrentElementInViewFrustrum())
 			{
 				//TODO instancing friendly
-				renderingContext.currentShader().setUniform3f("objectPosition", currentEntity.getLocation());
+				//renderingContext.currentShader().setUniform3f("objectPosition", currentEntity.getLocation());
 				renderingContext.currentShader().setUniform2f("worldLight", world.getBlocklightLevelLocation(currentEntity.getLocation()), world.getSunlightLevelLocation(currentEntity.getLocation()));
 			
 				//Reset animations transformations

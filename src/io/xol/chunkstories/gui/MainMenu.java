@@ -16,7 +16,7 @@ import io.xol.chunkstories.gui.menus.MainMenuOverlay;
 import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.fbo.FBO;
+import io.xol.engine.graphics.fbo.FrameBufferObject;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.GBufferTexture;
@@ -42,9 +42,9 @@ public class MainMenu extends OverlayableScene
 	private GBufferTexture blurredH = new GBufferTexture(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private GBufferTexture blurredV = new GBufferTexture(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
-	private FBO unblurredFBO = new FBO(null, unblurred);
-	private FBO blurredHFBO = new FBO(null, blurredH);
-	private FBO blurredVFBO = new FBO(null, blurredV);
+	private FrameBufferObject unblurredFBO = new FrameBufferObject(null, unblurred);
+	private FrameBufferObject blurredHFBO = new FrameBufferObject(null, blurredH);
+	private FrameBufferObject blurredVFBO = new FrameBufferObject(null, blurredV);
 
 	// private String splashText = getRandomSplashScreen();
 
@@ -190,14 +190,14 @@ public class MainMenu extends OverlayableScene
 		renderingContext.drawFSQuad();
 		//blurV.use(false);
 
-		FBO.unbind();
+		FrameBufferObject.unbind();
 		renderingContext.useShader("blit");
 		//blit.use(true);
 		blit.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		//blit.setUniformSampler(0, "diffuseTexture", blurredV.getId());
 		renderingContext.bindTexture2D("inputTexture", blurredV);
 		renderingContext.drawFSQuad();
-		FBO.unbind();
+		FrameBufferObject.unbind();
 		currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		
 		//renderingContext.getGuiRenderer().drawBuffer();

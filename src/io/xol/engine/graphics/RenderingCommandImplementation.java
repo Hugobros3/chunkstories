@@ -25,7 +25,7 @@ import static org.lwjgl.opengl.GL20.*;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class RenderingCommandImplementation implements RenderingCommand, Renderable
+public class RenderingCommandImplementation implements RenderingCommand
 {
 	//For merging draw calls
 	List<Matrix4f> objectMatrices = new LinkedList<Matrix4f>();
@@ -56,7 +56,6 @@ public class RenderingCommandImplementation implements RenderingCommand, Rendera
 		this.objectMatrices.add(objectMatrix);
 	}
 
-	@Override
 	public Collection<Matrix4f> getObjectsMatrices()
 	{
 		return objectMatrices;

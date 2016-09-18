@@ -207,13 +207,9 @@ public class GuiRenderer
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 		renderingContext.bindAttribute("vertexIn", guiDrawData.asAttributeSource(VertexFormat.FLOAT, 2, 16, 0));
 		renderingContext.bindAttribute("texCoordIn", guiDrawData.asAttributeSource(VertexFormat.FLOAT, 2, 16, 8));
-		//renderingContext.setVertexAttributePointerLocation(vertexIn, 2, GL_FLOAT, false, 16, 0);
-		//renderingContext.setVertexAttributePointerLocation(texCoordIn, 2, GL_FLOAT, false, 16, 8);
 		
-		
-		//System.out.println("Drawing"+elementsToDraw +" texture: "+currentTexture.getId() + " color:"+currentColor + " alpha:"+alphaBlending);
-		//GLCalls.drawArrays(GL_TRIANGLES, 0, elementsToDraw);
 		renderingContext.draw(Primitive.TRIANGLE, 0, elementsToDraw);
+		renderingContext.flush();
 
 		elementsToDraw = 0;
 	}

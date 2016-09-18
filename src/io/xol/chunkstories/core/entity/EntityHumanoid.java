@@ -217,9 +217,10 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				
 				Matrix4f matrix = new Matrix4f();
 				matrix.translate(location.castToSimplePrecision());
-				//renderingContext.setObjectMatrix(matrix);
-				
-				renderingContext.currentShader().setUniform3f("objectPosition", location.castToSimplePrecision());
+				renderingContext.setObjectMatrix(matrix);
+
+				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
+				//renderingContext.currentShader().setUniform3f("objectPosition", location.castToSimplePrecision());
 				ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
 				//animationsData.add(new AnimatableData(location.castToSimplePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
 			}
@@ -261,7 +262,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 					Matrix4f itemMatrix = new Matrix4f();
 					itemMatrix = entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000);
 					
-					renderingContext.currentShader().setUniform3f("objectPosition", entity.getPredictedLocation());
+					//renderingContext.currentShader().setUniform3f("objectPosition", entity.getPredictedLocation());
 
 					selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
 				}

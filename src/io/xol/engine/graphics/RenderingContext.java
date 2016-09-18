@@ -62,14 +62,13 @@ public class RenderingContext implements RenderingInterface
 	private TexturingConfigurationImplementation texturingConfiguration = new TexturingConfigurationImplementation();
 	//Object matrix
 	private Matrix4f currentObjectMatrix = null;
-	private Vector3f currentObjectPosition = new Vector3f();
-	private float rotationHorizontal = 0, rotationVertial = 0;
 	//Pipeline config
 	private PipelineConfigurationImplementation pipelineConfiguration = PipelineConfigurationImplementation.DEFAULT;
 	private AttributesConfigurationImplementation attributesConfiguration = new AttributesConfigurationImplementation();
-	
-	private Deque<RenderingCommandImplementation> commands = new ArrayDeque<RenderingCommandImplementation>();
-	
+
+	private int queuedCommandsIndex;
+	private RenderingCommand[] queuedCommands = new RenderingCommand[1024];
+	//private Deque<RenderingCommandImplementation> commands = new ArrayDeque<RenderingCommandImplementation>();
 
 	public RenderingContext(GameWindowOpenGL windows)
 	{
@@ -100,12 +99,12 @@ public class RenderingContext implements RenderingInterface
 	{
 		return camera;
 	}
-	
+
 	public ShaderInterface useShader(String shaderName)
 	{
 		return setCurrentShader(ShadersLibrary.getShaderProgram(shaderName));
 	}
-	
+
 	private ShaderInterface setCurrentShader(ShaderProgram shaderProgram)
 	{
 		//Save calls
@@ -113,7 +112,7 @@ public class RenderingContext implements RenderingInterface
 		{
 			//When changing shaders, we make sure we disable whatever was enabled
 			flush();
-			
+
 			texturingConfiguration = new TexturingConfigurationImplementation();
 			attributesConfiguration = new AttributesConfigurationImplementation();
 			//resetAllVertexAttributesLocations();
@@ -122,19 +121,19 @@ public class RenderingContext implements RenderingInterface
 		currentlyBoundShader = shaderProgram;
 		return currentlyBoundShader;
 	}
-	
+
 	public ShaderInterface currentShader()
 	{
 		return currentlyBoundShader;
 	}
-	
+
 	/* TEXTURING */
-	
+
 	public TexturingConfiguration getTexturingConfiguration()
 	{
 		return texturingConfiguration;
 	}
-	
+
 	public TexturingConfiguration bindTexture1D(String textureSamplerName, Texture1D texture)
 	{
 		texturingConfiguration = texturingConfiguration.bindTexture1D(textureSamplerName, texture);
@@ -146,13 +145,13 @@ public class RenderingContext implements RenderingInterface
 		texturingConfiguration = texturingConfiguration.bindTexture2D(textureSamplerName, texture);
 		return texturingConfiguration;
 	}
-	
+
 	public TexturingConfiguration bindCubemap(String cubemapSamplerName, Cubemap cubemapTexture)
 	{
 		texturingConfiguration = texturingConfiguration.bindCubemap(cubemapSamplerName, cubemapTexture);
 		return texturingConfiguration;
 	}
-	
+
 	public TexturingConfiguration bindAlbedoTexture(Texture2D texture)
 	{
 		return bindTexture2D("diffuseTexture", texture);
@@ -206,14 +205,14 @@ public class RenderingContext implements RenderingInterface
 		
 		return this.currentObjectMatrix;
 	}
-
+	
 	@Override
 	public Matrix4f setObjectRotation(Matrix4f objectRotationOnlyMatrix)
 	{
 		// TODO Auto-generated method stub
 		return this.currentObjectMatrix;
 	}
-
+	
 	@Override
 	public Matrix4f setObjectRotation(double horizontalRotation, double verticalRotation)
 	{
@@ -224,20 +223,27 @@ public class RenderingContext implements RenderingInterface
 	@Override
 	public Matrix4f setObjectMatrix(Matrix4f objectMatrix)
 	{
-		if(objectMatrix == null)
+		if (objectMatrix == null)
 			objectMatrix = new Matrix4f();
 		currentObjectMatrix = objectMatrix;
 		return this.currentObjectMatrix;
 	}
-	
+
 	public Matrix4f getObjectMatrix()
 	{
 		return this.currentObjectMatrix;
 	}
-	
+
+	@Override
+	public void setWorldLight(int sunLight, int blockLight)
+	{
+		// TODO Auto-generated method stub
+
+	}
+
 	static VerticesObject fsQuadVertices = null;
 	static AttributeSource fsQuadAttrib;
-	
+
 	public void drawFSQuad()
 	{
 		if (fsQuadVertices == null)
@@ -246,21 +252,21 @@ public class RenderingContext implements RenderingInterface
 			FloatBuffer fsQuadBuffer = BufferUtils.createFloatBuffer(6 * 2);
 			fsQuadBuffer.put(new float[] { 1f, 1f, -1f, -1f, 1f, -1f, 1f, 1f, -1f, 1f, -1f, -1f });
 			fsQuadBuffer.flip();
-			
+
 			fsQuadVertices.uploadData(fsQuadBuffer);
-			
+
 			fsQuadAttrib = fsQuadVertices.asAttributeSource(VertexFormat.FLOAT, 2);
 		}
 		//glBindBuffer(GL_ARRAY_BUFFER, 0);
-		
+
 		this.bindAttribute("vertexIn", fsQuadAttrib);
 		//setVertexAttributePointerLocation(vertexAttribLocation, 2, GL_FLOAT, false, 0, 0, fsQuadVertices);
-		
+
 		this.draw(Primitive.TRIANGLE, 0, 6);
 		//GLCalls.drawArrays(GL_TRIANGLES, 0, 6);
 		//disableVertexAttribute(vertexAttribLocation);
 	}
-	
+
 	/* Pipeline config */
 
 	@Override
@@ -278,7 +284,7 @@ public class RenderingContext implements RenderingInterface
 
 	@Override
 	public PipelineConfiguration setBlendMode(BlendMode blendMode)
-	{	
+	{
 		pipelineConfiguration = pipelineConfiguration.setBlendMode(blendMode);
 		return pipelineConfiguration;
 	}
@@ -308,7 +314,7 @@ public class RenderingContext implements RenderingInterface
 	{
 		//TODO check in shader if attribute exists
 		attributesConfiguration = attributesConfiguration.bindAttribute(attributeName, attributeSource);
-		
+
 		return this.attributesConfiguration;
 	}
 
@@ -322,18 +328,40 @@ public class RenderingContext implements RenderingInterface
 	@Override
 	public RenderingCommand draw(Primitive p, int startAt, int count)
 	{
-		RenderingCommandImplementation command = new RenderingCommandImplementation(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix, startAt, count);
-		
-		commands.addLast(command);
-		flush();
-		
+		RenderingCommandImplementation command = new RenderingCommandImplementation(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix,
+				startAt, count);
+
+		if (queuedCommandsIndex >= 1024)
+			flush();
+
+		queuedCommands[queuedCommandsIndex] = command;
+		queuedCommandsIndex++;
+
+		//commands.addLast(command);
+		//flush();
+
 		return command;
 	}
 
 	@Override
 	public void flush()
 	{
-		Iterator<RenderingCommandImplementation> i = commands.iterator();
+		try
+		{
+			while (queuedCommandsIndex > 0)
+			{
+				queuedCommands[0].render(this);
+				queuedCommandsIndex--;
+			}
+		}
+		catch (RenderingException e)
+		{
+			e.printStackTrace();
+		}
+		
+		queuedCommandsIndex = 0;
+
+		/*Iterator<RenderingCommandImplementation> i = commands.iterator();
 		int z = 0;
 		while(i.hasNext())
 		{
@@ -350,7 +378,7 @@ public class RenderingContext implements RenderingInterface
 			
 			i.remove();
 			z++;
-		}
+		}*/
 		//System.out.println("Flushed z"+z);
 	}
 

@@ -10,7 +10,9 @@ import static org.lwjgl.opengl.GL20.GL_MAX_TEXTURE_IMAGE_UNITS;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.JOptionPane;
 
@@ -70,12 +72,12 @@ public class GameWindowOpenGL
 	static long lastTime = 0;
 
 	public long vramUsageVerticesObjects = 0;
-	
+
 	//static String currentDM = "";
 
 	long timeTookLastTime = 0;
 
-	List<Runnable> mainThreadQueue = new ArrayList<Runnable>();
+	Queue<Runnable> mainThreadQueue = new ConcurrentLinkedQueue<Runnable>();
 
 	public GameWindowOpenGL(Client client, String name, int width, int height)
 	{
@@ -84,7 +86,7 @@ public class GameWindowOpenGL
 		if (height != -1)
 			windowHeight = height;
 		this.windowName = name;
-		
+
 		this.client = client;
 		instance = this;
 
@@ -171,7 +173,7 @@ public class GameWindowOpenGL
 		}
 		else
 			System.out.println("OpenGL 3.0 Hardware detected.");
-		
+
 		//Check for various limitations
 		RenderingConfig.gl_MaxTextureUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS);
 		RenderingConfig.gl_IsInstancingSupported = GLContext.getCapabilities().GL_ARB_draw_instanced;
@@ -185,6 +187,11 @@ public class GameWindowOpenGL
 			Client.onStart();
 			while (!Display.isCloseRequested() && !closeRequest)
 			{
+				//Update pending actions
+				vramUsageVerticesObjects = VerticesObject.updateVerticesObjects();
+				Texture2D.destroyPendingTextureObjects();
+
+				//Clear windows
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 				//Resize window logic
@@ -208,12 +215,9 @@ public class GameWindowOpenGL
 				}
 
 				//Do scene changes etc
-				synchronized (mainThreadQueue)
-				{
-					for (Runnable r : mainThreadQueue)
-						r.run();
-					mainThreadQueue.clear();
-				}
+				for (Runnable r : mainThreadQueue)
+					r.run();
+				mainThreadQueue.clear();
 
 				// Update audio streams
 				soundManager.update();
@@ -224,7 +228,7 @@ public class GameWindowOpenGL
 					// update inputs first
 					client.getInputsManager().pollLWJGLInputs();
 					InputAbstractor.update(this, currentScene);
-					
+
 					// then do the game logic
 					try
 					{
@@ -255,16 +259,16 @@ public class GameWindowOpenGL
 				if (Client.getConfig().getBoolean("frametimeGraph", false))
 					FrametimeRenderer.draw(renderingContext);
 
-				//Update pending actions
-				vramUsageVerticesObjects = VerticesObject.updateVerticesObjects();
-				Texture2D.destroyPendingTextureObjects();
+				//Draw last shit
+				GameWindowOpenGL.instance.renderingContext.flush();
 
 				//Update the screen
 				Display.update();
 
+				//Reset counters
 				GLCalls.nextFrame();
 			}
-			System.out.println("Copyright 2015 XolioWare Interactive");
+			System.out.println("Copyright 2015-2016 XolioWare Interactive");
 			Client.onClose();
 			soundManager.destroy();
 			Display.destroy();
