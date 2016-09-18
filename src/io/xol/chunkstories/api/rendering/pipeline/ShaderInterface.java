@@ -1,4 +1,4 @@
-package io.xol.chunkstories.api.rendering;
+package io.xol.chunkstories.api.rendering.pipeline;
 
 import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.Texture1D;

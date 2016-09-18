@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world;
 
-import io.xol.chunkstories.api.rendering.DecalsManager;
+import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;

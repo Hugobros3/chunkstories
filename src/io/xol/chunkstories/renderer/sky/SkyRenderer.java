@@ -1,15 +1,14 @@
 package io.xol.chunkstories.renderer.sky;
 
-import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
-import io.xol.engine.graphics.shaders.ShaderProgram;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.WorldRenderer;
@@ -19,7 +18,6 @@ import java.nio.FloatBuffer;
 import org.lwjgl.BufferUtils;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
 
 import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Vector3f;
@@ -55,12 +53,10 @@ public class SkyRenderer
 	
 	public void render(RenderingContext renderingContext)
 	{
-		//setupFog();
-
-		glDisable(GL_ALPHA_TEST);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_BLEND);
+		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
+		renderingContext.setBlendMode(BlendMode.DISABLED);
+		renderingContext.setCullingMode(CullingMode.DISABLED);
+		
 		glDepthMask(false);
 
 		Vector3f sunPosVector = getSunPosition();
@@ -103,8 +99,8 @@ public class SkyRenderer
 
 		renderingContext.drawFSQuad();
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		renderingContext.setBlendMode(BlendMode.MIX);
+		
 		glPointSize(1f);
 
 		ShaderInterface starsShader = renderingContext.useShader("stars");
@@ -113,7 +109,7 @@ public class SkyRenderer
 		starsShader.setUniform3f("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
 		starsShader.setUniform3f("color", 1f, 1f, 1f);
 		renderingContext.getCamera().setupShader(starsShader);
-		int NB_STARS = 500;
+		int NB_STARS = 1500;
 		if (stars == null)
 		{
 			stars = BufferUtils.createFloatBuffer(NB_STARS * 3);
@@ -127,16 +123,15 @@ public class SkyRenderer
 		}
 		stars.rewind();
 		{
-			//glBindBuffer(GL_ARRAY_BUFFER, 0);
 			renderingContext.bindAttribute("vertexIn", new FloatBufferAttributeSource(stars, 3));
-			//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, false, 0, stars);
 			renderingContext.draw(Primitive.POINT, 0, NB_STARS);
-			//GLCalls.drawArrays(GL_POINTS, 0, NB_STARS);
-			//starsShader.use(false);
 		}
-		glDisable(GL_BLEND);
+		
+		renderingContext.flush();
 		glDepthMask(true);
-		glEnable(GL_DEPTH_TEST);
+		
+		renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
+		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		
 		cloudsRenderer.renderClouds(renderingContext);
 	}

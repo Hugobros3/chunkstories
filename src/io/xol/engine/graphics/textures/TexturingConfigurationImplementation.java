@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 
 import io.xol.chunkstories.api.exceptions.NotEnoughtTextureUnitsException;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.TexturingConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 

@@ -5,7 +5,7 @@ import java.nio.FloatBuffer;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.particles.ParticlesManager;
-import io.xol.chunkstories.api.rendering.DecalsManager;
+import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;

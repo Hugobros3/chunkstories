@@ -10,10 +10,10 @@ import java.util.Map;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.rendering.DecalsManager;
-import io.xol.chunkstories.api.rendering.ShaderInterface;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.effects.DecalsManager;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;

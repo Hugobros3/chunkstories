@@ -1,6 +1,6 @@
 package io.xol.engine.graphics.geometry;
 
-import io.xol.chunkstories.api.rendering.AttributeSource;
+import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
 import io.xol.engine.base.GameWindowOpenGL;
 

@@ -1,11 +1,7 @@
 package io.xol.engine.graphics;
 
-//(c) 2015-2016 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
-
-import io.xol.chunkstories.api.rendering.PipelineConfiguration;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
 
 import static org.lwjgl.opengl.GL11.*;
 

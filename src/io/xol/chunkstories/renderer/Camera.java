@@ -7,7 +7,7 @@ package io.xol.chunkstories.renderer;
 import java.nio.FloatBuffer;
 
 import io.xol.chunkstories.api.rendering.CameraInterface;
-import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.math.lalgb.Vector3d;
 

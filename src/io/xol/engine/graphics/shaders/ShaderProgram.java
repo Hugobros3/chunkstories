@@ -1,14 +1,15 @@
 package io.xol.engine.graphics.shaders;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.ShaderInterface;
-import io.xol.chunkstories.api.rendering.UniformsConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -48,13 +49,8 @@ public class ShaderProgram implements ShaderInterface
 	private Map<String, Integer> uniformsLocations = new HashMap<String, Integer>();
 	private Map<String, Integer> attributesLocations = new HashMap<String, Integer>();
 
-	private HashMap<String, Integer> uniformsAttributesIntegers = new HashMap<String, Integer>(5);
-	private HashMap<String, Float> uniformsAttributesFloat = new HashMap<String, Float>(10);
-	private HashMap<String, Vector2f> uniformsAttributes2Float = new HashMap<String, Vector2f>(5);
-	private HashMap<String, Vector3f> uniformsAttributes3Float = new HashMap<String, Vector3f>(5);
-	private HashMap<String, Vector4f> uniformsAttributes4Float = new HashMap<String, Vector4f>(5);
-	private HashMap<String, Matrix4f> uniformsAttributesMatrix4 = new HashMap<String, Matrix4f>(4);
-	private HashMap<String, Matrix3f> uniformsAttributesMatrix3 = new HashMap<String, Matrix3f>(4);
+	private HashMap<String, Object> uncommitedUniforms = new HashMap<String, Object>();
+	private HashMap<String, Object> commitedUniforms = new HashMap<String, Object>();
 
 	protected ShaderProgram(String filename)
 	{
@@ -256,86 +252,90 @@ public class ShaderProgram implements ShaderInterface
 	@Override
 	public void setUniform1i(String uniformName, int uniformData)
 	{
-		uniformsAttributesIntegers.put(uniformName, uniformData);
+		uncommitedUniforms.put(uniformName, uniformData);
+		//uniformsAttributesIntegers.put(uniformName, uniformData);
 	}
 
 	@Override
 	public void setUniform1f(String uniformName, double uniformData)
 	{
-		uniformsAttributesFloat.put(uniformName, (float) uniformData);
+		uncommitedUniforms.put(uniformName, ((float)uniformData));
+		//uniformsAttributesFloat.put(uniformName, (float) uniformData);
 	}
 
 	@Override
 	public void setUniform2f(String uniformName, double uniformData_x, double uniformData_y)
 	{
-		uniformsAttributes2Float.put(uniformName, new Vector2f(uniformData_x, uniformData_y));
+		setUniform2f(uniformName, new Vector2f(uniformData_x, uniformData_y));
+		//uncommitedUniforms.put(uniformName, uniformData);
+		//uniformsAttributes2Float.put(uniformName, new Vector2f(uniformData_x, uniformData_y));
 	}
 
 	@Override
 	public void setUniform2f(String uniformName, Vector2f uniformData)
 	{
-		uniformsAttributes2Float.put(uniformName, uniformData);
+		uncommitedUniforms.put(uniformName, uniformData);
+		//uniformsAttributes2Float.put(uniformName, uniformData);
 	}
 
 	@Override
 	public void setUniform3f(String uniformName, double uniformData_x, double uniformData_y, double uniformData_z)
 	{
-		uniformsAttributes3Float.put(uniformName, new Vector3f(uniformData_x, uniformData_y, uniformData_z));
+		setUniform3f(uniformName, new Vector3f(uniformData_x, uniformData_y, uniformData_z));
+		//uncommitedUniforms.put(uniformName, uniformData);
+		//uniformsAttributes3Float.put(uniformName, new Vector3f(uniformData_x, uniformData_y, uniformData_z));
 	}
 
 	@Override
 	public void setUniform3f(String uniformName, Vector3d uniformData)
 	{
-		uniformsAttributes3Float.put(uniformName, uniformData.castToSimplePrecision());
+		uncommitedUniforms.put(uniformName, uniformData);
+		//uniformsAttributes3Float.put(uniformName, uniformData.castToSimplePrecision());
 	}
 
 	@Override
 	public void setUniform3f(String uniformName, Vector3f uniformData)
 	{
-		uniformsAttributes3Float.put(uniformName, uniformData);
+		uncommitedUniforms.put(uniformName, uniformData);
+		//uniformsAttributes3Float.put(uniformName, uniformData);
 	}
 
 	@Override
 	public void setUniform4f(String uniformName, double x, double y, double z, double w)
 	{
-		uniformsAttributes4Float.put(uniformName, new Vector4f(x, y, z, w));
+		setUniform4f(uniformName, new Vector4f(x, y, z, w));
+		//uncommitedUniforms.put(uniformName, uniformData);
+		//uniformsAttributes4Float.put(uniformName, new Vector4f(x, y, z, w));
 	}
 
 	@Override
 	public void setUniform4f(String uniformName, Vector4f uniformData)
 	{
-		uniformsAttributes4Float.put(uniformName, uniformData);
+		uncommitedUniforms.put(uniformName, uniformData);
+		//uniformsAttributes4Float.put(uniformName, uniformData);
 	}
 
 	@Override
 	public void setUniformMatrix4f(String uniformName, Matrix4f uniformData)
 	{
-		uniformsAttributesMatrix4.put(uniformName, uniformData);
+		uncommitedUniforms.put(uniformName, uniformData);
+		//uniformsAttributesMatrix4.put(uniformName, uniformData);
 	}
 
 	@Override
 	public void setUniformMatrix3f(String uniformName, Matrix3f uniformData)
 	{
-		uniformsAttributesMatrix3.put(uniformName, uniformData);
-	}
-
-	private HashMap<String, Object> setUniforms = new HashMap<String, Object>(256);
-
-	private boolean shouldUpdateUniform(String uniformName, Object uniform)
-	{
-		Object former = setUniforms.put(uniformName, uniform);
-		return former == null || former != uniform;
+		uncommitedUniforms.put(uniformName, uniformData);
+		//uniformsAttributesMatrix3.put(uniformName, uniformData);
 	}
 
 	public class InternalUniformsConfiguration implements UniformsConfiguration
 	{
-
-		long code;
-
-		public InternalUniformsConfiguration(Map<String, Integer> uniformsAttributesIntegers, Map<String, Float> uniformsAttributesFloat, Map<String, Vector2f> uniformsAttributes2Float, Map<String, Vector3f> uniformsAttributes3Float,
-				Map<String, Vector4f> uniformsAttributes4Float, Map<String, Matrix4f> uniformsAttributesMatrix4, Map<String, Matrix3f> uniformsAttributesMatrix3)
+		Map<String, Object> commit;
+		
+		public InternalUniformsConfiguration(Map<String, Object> commit)
 		{
-			//Le close enough
+			this.commit = commit;
 		}
 
 		@Override
@@ -345,7 +345,7 @@ public class ShaderProgram implements ShaderInterface
 			if (u instanceof InternalUniformsConfiguration)
 			{
 				InternalUniformsConfiguration t = (InternalUniformsConfiguration) u;
-				return t.code == code;
+				return t.commit == commit;
 			}
 
 			return false;
@@ -354,66 +354,81 @@ public class ShaderProgram implements ShaderInterface
 		@Override
 		public void setup(RenderingInterface renderingInterface)
 		{
-			for (Entry<String, Integer> e : uniformsAttributesIntegers.entrySet())
+			if(commit != null)
 			{
-				if (shouldUpdateUniform(e.getKey(), e.getValue()))
+				for (Entry<String, Object> e : commit.entrySet())
 				{
-					//if(e.getKey().equals("alb2o"))
-					//	System.out.println("m'k" + e.getValue());
-					glUniform1i(getUniformLocation(e.getKey()), e.getValue());
+					applyUniformAttribute(e.getKey(), e.getValue());
 				}
 			}
+		}
+	}
 
-			for (Entry<String, Float> e : uniformsAttributesFloat.entrySet())
-				if (shouldUpdateUniform(e.getKey(), e.getValue()))
-					glUniform1f(getUniformLocation(e.getKey()), e.getValue());
+	public void applyUniformAttribute(String uniformName, Object uniformData)
+	{
+		int uniformLocation = getUniformLocation(uniformName);
+		if(uniformLocation == -1)
+			return;
 
-			for (Entry<String, Vector2f> e : uniformsAttributes2Float.entrySet())
-
-				if (shouldUpdateUniform(e.getKey(), e.getValue()))
-					glUniform2f(getUniformLocation(e.getKey()), e.getValue().x, e.getValue().y);
-
-			for (Entry<String, Vector3f> e : uniformsAttributes3Float.entrySet())
-				if (shouldUpdateUniform(e.getKey(), e.getValue()))
-					glUniform3f(getUniformLocation(e.getKey()), e.getValue().x, e.getValue().y, e.getValue().z);
-
-			for (Entry<String, Vector4f> e : uniformsAttributes4Float.entrySet())
-				if (shouldUpdateUniform(e.getKey(), e.getValue()))
-					glUniform4f(getUniformLocation(e.getKey()), e.getValue().x, e.getValue().y, e.getValue().z, e.getValue().w);
-
-			for (Entry<String, Matrix4f> e : uniformsAttributesMatrix4.entrySet())
-				if (shouldUpdateUniform(e.getKey(), e.getValue()))
-				{
-					e.getValue().store(matrix4fBuffer);
-					matrix4fBuffer.position(0);
-					glUniformMatrix4(getUniformLocation(e.getKey()), false, matrix4fBuffer);
-					matrix4fBuffer.clear();
-				}
-
-			for (Entry<String, Matrix3f> e : uniformsAttributesMatrix3.entrySet())
-				if (shouldUpdateUniform(e.getKey(), e.getValue()))
-				{
-					e.getValue().store(matrix3fBuffer);
-					matrix3fBuffer.position(0);
-					//System.out.println("uniformName"+e.getKey()+" / "+e.getValue());
-					glUniformMatrix3(getUniformLocation(e.getKey()), false, matrix3fBuffer);
-					matrix3fBuffer.clear();
-				}
+		//System.out.println(uniformData);
+		
+		if(uniformData instanceof Float)
+			glUniform1f(uniformLocation, (Float)uniformData);
+		if(uniformData instanceof Double)
+			glUniform1f(uniformLocation, (Float)((Double)uniformData).floatValue());
+		else if(uniformData instanceof Integer)
+			glUniform1i(uniformLocation, (Integer)uniformData);
+		else if(uniformData instanceof Vector2f)
+			glUniform2f(uniformLocation, ((Vector2f)uniformData).x, ((Vector2f)uniformData).y);
+		else if(uniformData instanceof Vector3f)
+			glUniform3f(uniformLocation, ((Vector3f)uniformData).x, ((Vector3f)uniformData).y, ((Vector3f)uniformData).z);
+		else if(uniformData instanceof Vector3d)
+			glUniform3f(uniformLocation, (float)((Vector3d)uniformData).getX(), (float)((Vector3d)uniformData).getY(), (float)((Vector3d)uniformData).getZ());
+		else if(uniformData instanceof Vector4f)
+			glUniform4f(uniformLocation, ((Vector4f)uniformData).x, ((Vector4f)uniformData).y, ((Vector4f)uniformData).z, ((Vector4f)uniformData).w);
+		else if(uniformData instanceof Matrix4f)
+		{
+			((Matrix4f)uniformData).store(matrix4fBuffer);
+			matrix4fBuffer.position(0);
+			glUniformMatrix4(uniformLocation, false, matrix4fBuffer);
+			matrix4fBuffer.clear();
+		}
+		else if(uniformData instanceof Matrix3f)
+		{
+			((Matrix3f)uniformData).store(matrix3fBuffer);
+			matrix3fBuffer.position(0);
+			glUniformMatrix3(uniformLocation, false, matrix3fBuffer);
+			matrix3fBuffer.clear();
 		}
 	}
 
 	public InternalUniformsConfiguration getUniformsConfiguration()
 	{
-		return new InternalUniformsConfiguration(null, null, null, null, null, null, null);
-
-		/*return new InternalUniformsConfiguration((Map<String, Integer>) uniformsAttributesIntegers.clone()
-				, (Map<String, Float>) uniformsAttributesFloat.clone()
-				, (Map<String, Vector2f>) uniformsAttributes2Float.clone()
-				, (Map<String, Vector3f>) uniformsAttributes3Float.clone()
-				, (Map<String, Vector4f>) uniformsAttributes4Float.clone()
-				, (Map<String, Matrix4f>) uniformsAttributesMatrix4.clone()
-				, (Map<String, Matrix3f>) uniformsAttributesMatrix3.clone()
-				);*/
+		//Skip all this if nothing changed
+		if(this.uncommitedUniforms.size() == 0)
+			return new InternalUniformsConfiguration(null);
+		
+		//Make a map of the changes
+		HashMap<String, Object> commit = new HashMap<String, Object>(uncommitedUniforms.size());
+		
+		//Iterate over uncommited changes
+		Iterator<Entry<String, Object>> i = uncommitedUniforms.entrySet().iterator();
+		while(i.hasNext())
+		{
+			Entry<String, Object> e = i.next();
+			
+			//Add it the the commited uniforms list and check it did change
+			Object former = commitedUniforms.put(e.getKey(), e.getValue());
+			//If it did change ( or didn't exist ), add it to the uniforms configuration commit
+			if(former == null || !former.equals(e.getValue()))
+				commit.put(e.getKey(), e.getValue());
+			
+			//Remove the from uncommited list
+			i.remove();
+		}
+		
+		//Return the uniform configuration reflecting those changes
+		return new InternalUniformsConfiguration(commit);
 	}
 
 	public int getVertexAttributeLocation(String name)
@@ -441,7 +456,10 @@ public class ShaderProgram implements ShaderInterface
 		glUseProgram(shaderProgramId);
 		currentProgram = shaderProgramId;
 		//Reset uniforms when changing shader
-		setUniforms.clear();
+		
+		//setUniforms.clear();
+		uncommitedUniforms.clear();
+		commitedUniforms.clear();
 	}
 
 	static int currentProgram = -2;

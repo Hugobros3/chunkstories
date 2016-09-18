@@ -7,9 +7,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import io.xol.chunkstories.api.exceptions.AttributeNotPresentException;
-import io.xol.chunkstories.api.rendering.AttributeSource;
-import io.xol.chunkstories.api.rendering.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
+import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 
 import static org.lwjgl.opengl.GL20.*;

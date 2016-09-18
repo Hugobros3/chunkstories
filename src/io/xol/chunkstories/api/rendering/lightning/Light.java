@@ -1,4 +1,4 @@
-package io.xol.chunkstories.api.rendering;
+package io.xol.chunkstories.api.rendering.lightning;
 
 import io.xol.engine.math.lalgb.Vector3f;
 

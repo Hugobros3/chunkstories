@@ -9,8 +9,8 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Vector2f;
-import io.xol.chunkstories.api.rendering.ShaderInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.GLCalls;

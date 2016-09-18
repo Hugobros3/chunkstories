@@ -4,19 +4,16 @@ import java.nio.ByteBuffer;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.Primitive;
-import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.world.World;
 import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
-import io.xol.engine.graphics.shaders.ShaderProgram;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.random.SeededSimplexNoiseGenerator;
-
-import static org.lwjgl.opengl.GL11.*;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -230,6 +227,11 @@ public class CloudsRenderer
 		//glDisable(GL_CULL_FACE);
 
 		//cloudsMesh.bind();
+		
+		renderingContext.bindAttribute("vertexIn", cloudsMesh.asAttributeSource(VertexFormat.FLOAT, 3, (4 * 3 + 4 * 3 + 4), 0));
+		renderingContext.bindAttribute("normalIn", cloudsMesh.asAttributeSource(VertexFormat.FLOAT, 3, (4 * 3 + 4 * 3 + 4), 4 * 3));
+		renderingContext.bindAttribute("alphaIn", cloudsMesh.asAttributeSource(VertexFormat.FLOAT, 1, (4 * 3 + 4 * 3 + 4), 4 * 6));
+		
 		//renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), 0);
 		//renderingContext.setVertexAttributePointerLocation("normalIn", 3, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), (4 * 3));
 		//renderingContext.setVertexAttributePointerLocation("alphaIn", 1, GL_FLOAT, false, (4 * 3 + 4 * 3 + 4), (4 * 3 + 4 * 3));

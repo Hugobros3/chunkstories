@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.particles.ParticlesManager;
-import io.xol.chunkstories.api.rendering.DecalsManager;
+import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 

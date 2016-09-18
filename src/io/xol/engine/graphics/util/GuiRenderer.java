@@ -1,9 +1,9 @@
 package io.xol.engine.graphics.util;
 
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
@@ -17,7 +17,7 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.engine.misc.ColorsTools;
-import static org.lwjgl.opengl.GL11.*;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -47,9 +47,6 @@ public class GuiRenderer
 		// vertices, themselves defined by 4 floats : 'xy' positions, and
 		// textures coords 'ts'.
 		buf = BufferUtils.createFloatBuffer(4 * (2 + 2) * 3 * 2 * MAX_ELEMENTS);
-		
-		//glVBO = glGenBuffers();
-		//shader = ShadersLibrary.getShaderProgram("gui");
 	}
 
 	public void drawBoxWindowsSpace(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4f color)
@@ -127,14 +124,12 @@ public class GuiRenderer
 	{
 		//System.out.println("color: "+color + " currentColor: "+currentColor + "");
 		
-		//if (textureID != currentTexture || alpha != alphaBlending || useTexture != texture || color == null || !color.equals(currentColor))
 		if (texture != currentTexture || 
 				alpha != alphaBlending || 
 				useTexture != textureEnabled || 
 				(color == null && currentColor != null && !currentColor.equals(new Vector4f(1f, 1f, 1f, 1f))) || 
 				(color != null && !color.equals(currentColor)))
 		{
-			//System.out.println("color: "+color + " currentColor: "+currentColor + " == ?" + ((color == null && currentColor == null ) && (color != null && currentColor != null && color.equals(currentColor))) );
 			drawBuffer();
 		}
 		currentTexture = texture;
@@ -152,35 +147,12 @@ public class GuiRenderer
 			return;
 
 		// Upload data and draw it.
-		
-		//System.out.println(this.currentTexture + " / " + elementsToDraw);
-		//System.out.println("b:"+buf+" : "+buf.limit());
-		
-		//buf.limit((2 + 2) * 3 * 2 * MAX_ELEMENTS);
-
 		buf.flip();
-		//System.out.println(buf+" : "+buf.limit());
-
-		//glBindBuffer(GL_ARRAY_BUFFER, glVBO);
-		// glBufferData(GL_ARRAY_BUFFER, (2 + 2) * 3 * 2 * MAX_ELEMENTS,
-		// GL_STREAM_DRAW);
-		// glBufferSubData(GL_ARRAY_BUFFER, 0, buf);
-
 		this.guiDrawData.uploadData(buf);
-		//glBufferData(GL_ARRAY_BUFFER, buf, GL_STREAM_DRAW);
 
 		buf.clear();
-		
 		renderingContext.useShader("gui");
-		//renderingContext.setCurrentShader(shader);
-		//shader.use(true);
-		// Get attributes locations
 		
-		/*int vertexIn = shader.getVertexAttributeLocation("vertexIn");
-		int texCoordIn = shader.getVertexAttributeLocation("texCoordIn");
-		renderingContext.enableVertexAttribute(vertexIn);
-		renderingContext.enableVertexAttribute(texCoordIn);
-		*/
 		renderingContext.currentShader().setUniform1f("useTexture", useTexture ? 1f : 0f);
 		if(currentColor != null)
 		{	

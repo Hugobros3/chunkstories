@@ -6,7 +6,7 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleType;
-import io.xol.chunkstories.api.rendering.Light;
+import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2016 XolioWare Interactive

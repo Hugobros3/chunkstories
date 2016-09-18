@@ -2,19 +2,19 @@ package io.xol.engine.graphics;
 
 import io.xol.chunkstories.api.exceptions.AttributeNotPresentException;
 import io.xol.chunkstories.api.exceptions.RenderingException;
-import io.xol.chunkstories.api.rendering.AttributeSource;
-import io.xol.chunkstories.api.rendering.AttributesConfiguration;
-import io.xol.chunkstories.api.rendering.Light;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.PolygonFillMode;
+import io.xol.chunkstories.api.rendering.lightning.Light;
+import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
+import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingCommand;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.ShaderInterface;
-import io.xol.chunkstories.api.rendering.TexturingConfiguration;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.geometry.VertexFormat;
@@ -30,8 +30,6 @@ import io.xol.engine.graphics.util.GuiRenderer;
 import io.xol.engine.graphics.util.TrueTypeFontRenderer;
 
 import java.nio.FloatBuffer;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,7 +37,6 @@ import java.util.List;
 import org.lwjgl.BufferUtils;
 
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3f;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -197,29 +194,7 @@ public class RenderingContext implements RenderingInterface
 	{
 		return trueTypeFontRenderer;
 	}
-
-	/*public Matrix4f setObjectPosition(Vector3f position)
-	{
-		currentObjectMatrix = new Matrix4f();
-		currentObjectMatrix.translate(position);
-		
-		return this.currentObjectMatrix;
-	}
 	
-	@Override
-	public Matrix4f setObjectRotation(Matrix4f objectRotationOnlyMatrix)
-	{
-		// TODO Auto-generated method stub
-		return this.currentObjectMatrix;
-	}
-	
-	@Override
-	public Matrix4f setObjectRotation(double horizontalRotation, double verticalRotation)
-	{
-		// TODO Auto-generated method stub
-		return this.currentObjectMatrix;
-	}
-	 */
 	@Override
 	public Matrix4f setObjectMatrix(Matrix4f objectMatrix)
 	{
@@ -257,14 +232,10 @@ public class RenderingContext implements RenderingInterface
 
 			fsQuadAttrib = fsQuadVertices.asAttributeSource(VertexFormat.FLOAT, 2);
 		}
-		//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		this.bindAttribute("vertexIn", fsQuadAttrib);
-		//setVertexAttributePointerLocation(vertexAttribLocation, 2, GL_FLOAT, false, 0, 0, fsQuadVertices);
 
 		this.draw(Primitive.TRIANGLE, 0, 6);
-		//GLCalls.drawArrays(GL_TRIANGLES, 0, 6);
-		//disableVertexAttribute(vertexAttribLocation);
 	}
 
 	/* Pipeline config */
@@ -328,17 +299,15 @@ public class RenderingContext implements RenderingInterface
 	@Override
 	public RenderingCommand draw(Primitive p, int startAt, int count)
 	{
-		RenderingCommandImplementation command = new RenderingCommandImplementation(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix,
+		RenderingCommandImplementation command = new RenderingCommandSingleInstance(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix,
 				startAt, count);
 
+		//Limit to how many commands it may stack
 		if (queuedCommandsIndex >= 1024)
 			flush();
 
 		queuedCommands[queuedCommandsIndex] = command;
 		queuedCommandsIndex++;
-
-		//commands.addLast(command);
-		//flush();
 
 		return command;
 	}
@@ -348,10 +317,12 @@ public class RenderingContext implements RenderingInterface
 	{
 		try
 		{
-			while (queuedCommandsIndex > 0)
+			int kek = 0;
+			while (kek < queuedCommandsIndex)
 			{
-				queuedCommands[0].render(this);
-				queuedCommandsIndex--;
+				queuedCommands[kek].render(this);
+				queuedCommands[kek] = null;
+				kek++;
 			}
 		}
 		catch (RenderingException e)
@@ -360,26 +331,6 @@ public class RenderingContext implements RenderingInterface
 		}
 		
 		queuedCommandsIndex = 0;
-
-		/*Iterator<RenderingCommandImplementation> i = commands.iterator();
-		int z = 0;
-		while(i.hasNext())
-		{
-			RenderingCommandImplementation command = i.next();
-			
-			try
-			{
-				command.render(this);
-			}
-			catch (RenderingException e)
-			{
-				e.printStackTrace();
-			}
-			
-			i.remove();
-			z++;
-		}*/
-		//System.out.println("Flushed z"+z);
 	}
 
 	@Override

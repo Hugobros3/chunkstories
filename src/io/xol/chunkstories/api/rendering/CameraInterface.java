@@ -1,5 +1,7 @@
 package io.xol.chunkstories.api.rendering;
 
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io

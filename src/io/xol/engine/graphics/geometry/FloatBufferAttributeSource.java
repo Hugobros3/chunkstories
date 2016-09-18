@@ -6,7 +6,7 @@ package io.xol.engine.graphics.geometry;
 
 import java.nio.FloatBuffer;
 
-import io.xol.chunkstories.api.rendering.AttributeSource;
+import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 
 import static org.lwjgl.opengl.GL20.*;
 

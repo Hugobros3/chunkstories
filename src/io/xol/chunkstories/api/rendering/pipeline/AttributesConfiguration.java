@@ -1,6 +1,8 @@
-package io.xol.chunkstories.api.rendering;
+package io.xol.chunkstories.api.rendering.pipeline;
 
 import java.util.Map;
+
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

@@ -16,8 +16,8 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.item.ItemRenderer;
-import io.xol.chunkstories.api.rendering.Light;
-import io.xol.chunkstories.api.rendering.ShaderInterface;
+import io.xol.chunkstories.api.rendering.lightning.Light;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;

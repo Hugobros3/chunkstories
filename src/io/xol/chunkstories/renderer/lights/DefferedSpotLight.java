@@ -1,8 +1,7 @@
 package io.xol.chunkstories.renderer.lights;
 
+import io.xol.chunkstories.api.rendering.lightning.SpotLight;
 import io.xol.engine.math.lalgb.Vector3f;
-
-import io.xol.chunkstories.api.rendering.SpotLight;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

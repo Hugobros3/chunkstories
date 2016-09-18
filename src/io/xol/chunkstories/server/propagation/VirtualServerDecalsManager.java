@@ -2,7 +2,7 @@ package io.xol.chunkstories.server.propagation;
 
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.rendering.DecalsManager;
+import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.net.packets.PacketDecal;
 import io.xol.chunkstories.server.Server;

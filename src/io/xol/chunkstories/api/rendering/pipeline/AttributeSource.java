@@ -1,4 +1,4 @@
-package io.xol.chunkstories.api.rendering;
+package io.xol.chunkstories.api.rendering.pipeline;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

@@ -1,34 +1,24 @@
 package io.xol.engine.graphics;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-
-import io.xol.chunkstories.api.exceptions.RenderingException;
-import io.xol.chunkstories.api.rendering.AttributesConfiguration;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration;
-import io.xol.chunkstories.api.rendering.Renderable;
 import io.xol.chunkstories.api.rendering.RenderingCommand;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;
 import io.xol.chunkstories.api.rendering.Primitive;
-import io.xol.chunkstories.api.rendering.ShaderInterface;
-import io.xol.chunkstories.api.rendering.TexturingConfiguration;
-import io.xol.chunkstories.api.rendering.UniformsConfiguration;
-import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class RenderingCommandImplementation implements RenderingCommand
+public abstract class RenderingCommandImplementation implements RenderingCommand
 {
 	//For merging draw calls
-	List<Matrix4f> objectMatrices = new LinkedList<Matrix4f>();
+	//List<Matrix4f> objectMatrices = new LinkedList<Matrix4f>();
 
 	//Draw call paramters
 	protected Primitive primitive;
@@ -40,9 +30,14 @@ public class RenderingCommandImplementation implements RenderingCommand
 	protected AttributesConfiguration attributesConfiguration;
 	protected UniformsConfiguration uniformsConfiguration;
 	protected PipelineConfiguration pipelineConfiguration;
+	
+	static int modes[] = {GL_POINTS, GL_LINES, GL_TRIANGLES, GL_QUADS};
+	
+	protected static Matrix4f temp = new Matrix4f();
+	protected static Matrix3f normal = new Matrix3f();
 
 	public RenderingCommandImplementation(Primitive primitive, ShaderInterface shaderInterface, TexturingConfiguration texturingConfiguration, AttributesConfiguration attributesConfiguration, UniformsConfiguration uniformsConfiguration,
-			PipelineConfiguration pipelineConfiguration, Matrix4f objectMatrix, int start, int count)
+			PipelineConfiguration pipelineConfiguration/*, Matrix4f objectMatrix*/, int start, int count)
 	{
 		this.primitive = primitive;
 		this.start = start;
@@ -53,12 +48,6 @@ public class RenderingCommandImplementation implements RenderingCommand
 		this.attributesConfiguration = attributesConfiguration;
 		this.uniformsConfiguration = uniformsConfiguration;
 		this.pipelineConfiguration = pipelineConfiguration;
-		this.objectMatrices.add(objectMatrix);
-	}
-
-	public Collection<Matrix4f> getObjectsMatrices()
-	{
-		return objectMatrices;
 	}
 
 	public ShaderInterface getShader()
@@ -117,18 +106,7 @@ public class RenderingCommandImplementation implements RenderingCommand
 		return true;
 	}
 
-	public RenderingCommand merge(RenderingCommandImplementation mergeWith)
-	{
-		//Debug
-		assert mergeWith.canMerge(this);
-
-		for (Matrix4f foreightObject : mergeWith.getObjectsMatrices())
-			objectMatrices.add(foreightObject);
-
-		return this;
-	}
-
-	@Override
+	/*@Override
 	public void render(RenderingInterface renderingInterface) throws RenderingException
 	{
 		//Make sure to use the right shader
@@ -140,7 +118,7 @@ public class RenderingCommandImplementation implements RenderingCommand
 		//Bind required textures
 		this.texturingConfiguration.setup(renderingInterface);
 		
-		//Send & compute the object matrix
+		//Compute & send the object matrix
 		Matrix4f objectMatrix = renderingInterface.getObjectMatrix();
 		if(objectMatrix != null)
 		{
@@ -165,20 +143,14 @@ public class RenderingCommandImplementation implements RenderingCommand
 		//Setup pipeline state
 		this.pipelineConfiguration.setup(renderingInterface);
 		
-		//Sends uniforms
+		//Updates uniforms
 		this.uniformsConfiguration.setup(renderingInterface);
 		
 		//Do the draw call
 		GLCalls.drawArrays_(modes[primitive.ordinal()], start, count);
 		
-		//System.out.println("RenderingCommand "+start+ " / " + count + "   " + renderingInterface.currentShader());
-		
-	}
+	}*/
 	
-	int modes[] = {GL_POINTS, GL_LINES, GL_TRIANGLES, GL_QUADS};
-	
-	private static Matrix4f temp = new Matrix4f();
-	private static Matrix3f normal = new Matrix3f();
 
 	@Override
 	public Primitive getPrimitive()

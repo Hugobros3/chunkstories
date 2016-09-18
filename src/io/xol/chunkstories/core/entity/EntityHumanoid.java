@@ -1,8 +1,6 @@
 package io.xol.chunkstories.core.entity;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithClientPrediction;
@@ -257,12 +255,15 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				if (entity instanceof EntityWithSelectedItem)
 					selectedItemPile = ((EntityWithSelectedItem) entity).getSelectedItemComponent().getSelectedItem();
 				
+
+				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
+				
 				if (selectedItemPile != null)
 				{
 					Matrix4f itemMatrix = new Matrix4f();
-					itemMatrix = entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000);
+					itemMatrix.translate(entity.getPredictedLocation().castToSimplePrecision());
 					
-					//renderingContext.currentShader().setUniform3f("objectPosition", entity.getPredictedLocation());
+					Matrix4f.mul(itemMatrix, entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000), itemMatrix);
 
 					selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
 				}

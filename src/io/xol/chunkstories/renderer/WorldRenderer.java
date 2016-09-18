@@ -60,11 +60,11 @@ import io.xol.chunkstories.renderer.terrain.FarTerrainRenderer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
 import io.xol.chunkstories.api.rendering.Primitive;
-import io.xol.chunkstories.api.rendering.ShaderInterface;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.DepthTestMode;
-import io.xol.chunkstories.api.rendering.PipelineConfiguration.PolygonFillMode;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -897,47 +897,17 @@ public class WorldRenderer
 			//opaqueBlocksShader.setUniformSampler(0, "albedoTexture", blocksAlbedoTexture);
 		}
 
+		renderingContext.setObjectMatrix(new Matrix4f());
 		// Alpha blending is disabled because certain G-Buffer rendertargets can output a 0 for alpha
 		
 		//glAlphaFunc(GL_GREATER, 0.0f);
 		//glDisable(GL_ALPHA_TEST);
 		
-		// Init vertex attribute locations
-		
-		/*if (!isShadowPass)
-		{
-			vertexIn = opaqueBlocksShader.getVertexAttributeLocation("vertexIn");
-			texCoordIn = opaqueBlocksShader.getVertexAttributeLocation("texCoordIn");
-			colorIn = opaqueBlocksShader.getVertexAttributeLocation("colorIn");
-			normalIn = opaqueBlocksShader.getVertexAttributeLocation("normalIn");
-			//glEnablezVertexAttribArray(colorIn);
-			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
-			renderingContext.setCurrentShader(opaqueBlocksShader);
-			renderingContext.enableVertexAttribute(colorIn);
-		}
-		else
-		{
-			vertexIn = shadowsPassShader.getVertexAttributeLocation("vertexIn");
-			texCoordIn = shadowsPassShader.getVertexAttributeLocation("texCoordIn");
-			normalIn = shadowsPassShader.getVertexAttributeLocation("normalIn");
-			//renderingContext.setupVertexInputs(vertexIn, texCoordIn, colorIn, normalIn);
-			renderingContext.setCurrentShader(shadowsPassShader);
-		}*/
 		renderingContext.setIsShadowPass(isShadowPass);
-
-		//renderingContext.enableVertexAttribute(normalIn);
-		//renderingContext.enableVertexAttribute(vertexIn);
-		//renderingContext.enableVertexAttribute(texCoordIn);
 
 		if (RenderingConfig.debugPasses)
 			glFinish();
 		t = System.nanoTime();
-
-		// renderList.clear();
-		
-		//glDisable(GL_BLEND);
-		//glEnable(GL_ALPHA_TEST);
-		//glDepthFunc(GL_LESS);
 
 		int chunksRendered = 0;
 		for (int XXX = 0; XXX < 1; XXX++)
@@ -998,18 +968,7 @@ public class WorldRenderer
 				}
 				if (!isShadowPass)
 				{
-					/*int camIntPartX = (int) Math.floor(camera.pos.getX());
-					int camIntPartY = (int) Math.floor(camera.pos.getY());
-					int camIntPartZ = (int) Math.floor(camera.pos.getZ());
-					double fractPartX = camera.pos.getX() - Math.floor(camera.pos.getX());
-					double fractPartY = camera.pos.getY() - Math.floor(camera.pos.getY());
-					double fractPartZ = camera.pos.getZ() - Math.floor(camera.pos.getZ());
-					double diffChunkX = vboDekalX + camIntPartX;
-					double diffChunkY = chunk.getChunkY() * 32 + camIntPartY;
-					double diffChunkZ = vboDekalZ + camIntPartZ;*/
 					opaqueBlocksShader.setUniform3f("objectPosition", vboDekalX, chunk.getChunkY() * 32f, vboDekalZ);
-					//opaqueBlocksShader.setUniformFloat3("objectPosition", vboDekalX + camera.pos.getX(), chunk.getChunkY() * 32f + camera.pos.getY(), vboDekalZ + camera.pos.getZ());
-					//opaqueBlocksShader.setUniformFloat3("objectPosition", diffChunkX + fractPartX, diffChunkY + fractPartY, diffChunkZ + fractPartZ);
 				}
 				else
 					shadowsPassShader.setUniform3f("objectPosition", vboDekalX, chunk.getChunkY() * 32f, vboDekalZ);
@@ -1035,6 +994,8 @@ public class WorldRenderer
 					}
 
 			}
+		
+		renderingContext.flush();
 
 		//glDepthFunc(GL_LEQUAL);
 		
@@ -1418,6 +1379,7 @@ public class WorldRenderer
 		renderingContext.bindTexture2D("ssaoBuffer", this.ssaoBuffer);
 		//postProcess.setUniformSampler(8, "debugBuffer", (System.currentTimeMillis() % 1000 < 500 ) ? this.loadedChunksMapD : this.loadedChunksMap);
 		renderingContext.bindTexture2D("debugBuffer", (System.currentTimeMillis() % 1000 < 500) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
+		//renderingContext.bindTexture2D("debugBuffer", this.shadowMapBuffer);
 
 		Voxel vox = Voxels.get(world.getVoxelData(camera.pos.negate()));
 		postProcess.setUniform1f("underwater", vox.isVoxelLiquid() ? 1 : 0);
