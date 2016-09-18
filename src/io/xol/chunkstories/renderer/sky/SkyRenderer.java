@@ -109,7 +109,7 @@ public class SkyRenderer
 		starsShader.setUniform3f("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
 		starsShader.setUniform3f("color", 1f, 1f, 1f);
 		renderingContext.getCamera().setupShader(starsShader);
-		int NB_STARS = 1500;
+		int NB_STARS = 500;
 		if (stars == null)
 		{
 			stars = BufferUtils.createFloatBuffer(NB_STARS * 3);

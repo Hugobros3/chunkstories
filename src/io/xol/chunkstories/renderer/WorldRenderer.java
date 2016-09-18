@@ -523,7 +523,7 @@ public class WorldRenderer
 					continue;
 				floodFillMask.add(new Vector3d(chunkX, chunkY, chunkZ));
 
-				//if (chunk != null)
+				if (chunk != null)
 				{
 					if (chunk == null || chunk.isAirChunk())
 						sideFrom = -1;

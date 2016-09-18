@@ -6,13 +6,35 @@ import io.xol.engine.math.lalgb.Vector3f;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface SpotLight extends Light
+public class SpotLight extends Light
 {
-	float getAngle();
+	public SpotLight(Vector3f color, Vector3f position, float decay, float angle, Vector3f direction)
+	{
+		super(color, position, decay);
+		this.angle = angle;
+		this.direction = direction;
+	}
 
-	void setAngle(float angle);
+	public float angle;
+	public Vector3f direction;
 
-	Vector3f getDirection();
+	public float getAngle()
+	{
+		return angle;
+	}
 
-	void setDirection(Vector3f direction);
+	public void setAngle(float angle)
+	{
+		this.angle = angle;
+	}
+
+	public Vector3f getDirection()
+	{
+		return direction;
+	}
+
+	public void setDirection(Vector3f direction)
+	{
+		this.direction = direction;
+	}
 }

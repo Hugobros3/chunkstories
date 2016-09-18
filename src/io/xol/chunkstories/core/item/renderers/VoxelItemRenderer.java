@@ -28,7 +28,6 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.RenderByteBuffer;
-import io.xol.chunkstories.renderer.lights.DefferedLight;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelModels;
@@ -212,7 +211,7 @@ public class VoxelItemRenderer implements ItemRenderer
 			Matrix4f.transform(handTransformation, lightposition, lightposition);
 			
 			Vector3d pos = location.clone();
-			Light heldBlockLight = new DefferedLight(new Vector3f(0.5f, 0.45f, 0.4f).scale(2.0f), new Vector3f((float) pos.getX(), (float) pos.getY(), (float) pos.getZ()).add(new Vector3f(lightposition.x, lightposition.y, lightposition.z)), 15f);
+			Light heldBlockLight = new Light(new Vector3f(0.5f, 0.45f, 0.4f).scale(2.0f), new Vector3f((float) pos.getX(), (float) pos.getY(), (float) pos.getZ()).add(new Vector3f(lightposition.x, lightposition.y, lightposition.z)), 15f);
 			context.addLight(heldBlockLight);	
 			
 			//If we hold a light source, prepare the shader accordingly

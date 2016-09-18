@@ -1,8 +1,5 @@
 package io.xol.chunkstories.api.rendering.pipeline;
 
-import io.xol.engine.graphics.textures.Cubemap;
-import io.xol.engine.graphics.textures.Texture1D;
-import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector2f;
