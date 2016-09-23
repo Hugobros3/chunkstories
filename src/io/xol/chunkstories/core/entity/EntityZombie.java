@@ -1,6 +1,7 @@
 package io.xol.chunkstories.core.entity;
 
 import io.xol.chunkstories.api.ai.AI;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.core.entity.ai.GenericLivingAI;
@@ -47,7 +48,7 @@ public class EntityZombie extends EntityHumanoid
 	class EntityZombieRenderer<H extends EntityHumanoid> extends EntityHumanoidRenderer<H> {
 		
 		@Override
-		public void setupRender(RenderingContext renderingContext)
+		public void setupRender(RenderingInterface renderingContext)
 		{
 			super.setupRender(renderingContext);
 			

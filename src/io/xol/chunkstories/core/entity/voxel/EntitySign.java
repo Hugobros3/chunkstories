@@ -4,6 +4,7 @@ import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.glDisable;
 
 import io.xol.chunkstories.api.entity.EntityVoxel;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
@@ -14,7 +15,6 @@ import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.TextMeshObject;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -58,7 +58,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 	{
 
 		@Override
-		public void setupRender(RenderingContext renderingContext)
+		public void setupRender(RenderingInterface renderingContext)
 		{
 			renderingContext.setObjectMatrix(null);
 
@@ -69,7 +69,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 		}
 
 		@Override
-		public int forEach(RenderingContext renderingContext, RenderingIterator<EntitySign> renderableEntitiesIterator)
+		public int forEach(RenderingInterface renderingContext, RenderingIterator<EntitySign> renderableEntitiesIterator)
 		{
 			int e = 0;
 			

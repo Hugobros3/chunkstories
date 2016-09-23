@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Quaternion4d;
 import io.xol.engine.math.lalgb.Vector3d;

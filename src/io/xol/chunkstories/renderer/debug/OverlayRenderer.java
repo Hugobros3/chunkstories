@@ -1,7 +1,5 @@
 package io.xol.chunkstories.renderer.debug;
 
-import static org.lwjgl.opengl.GL15.*;
-
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
@@ -14,11 +12,8 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMod
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
-import io.xol.engine.graphics.shaders.ShaderProgram;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

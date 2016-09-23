@@ -10,6 +10,7 @@ import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.engine.graphics.fbo.RenderTarget;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
@@ -23,8 +24,6 @@ import static org.lwjgl.opengl.GL30.*;
 public class Cubemap extends Texture
 {
 	String name;
-	//TextureType type;
-	//int glId = -1;
 	
 	Face faces[] = new Face[6];
 	int size;
@@ -125,11 +124,7 @@ public class Cubemap extends Texture
 		glId = -1;
 	}
 	
-	/*public enum CubemapType {
-		RGBA_8BPP;
-	}*/
-	
-	public class Face implements FBOAttachement {
+	public class Face implements RenderTarget {
 		
 		int face;
 		int textureType;
@@ -140,18 +135,16 @@ public class Cubemap extends Texture
 			textureType = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
 
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, type.getInternalFormat(), size, size, 0, type.getFormat(), type.getType(), (ByteBuffer)null);
-			//System.out.println("Creating cubemap ,etc " +size);
-			//glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, size, size, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer) null);
 		}
 		
 		@Override
-		public void attachDepth()
+		public void attacAshDepth()
 		{
 			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureType, getID(), 0);
 		}
 
 		@Override
-		public void attachColor(int colorAttachement)
+		public void attachAsColor(int colorAttachement)
 		{
 			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachement, textureType, getID(), 0);
 		}
@@ -185,7 +178,7 @@ public class Cubemap extends Texture
 		}
 	}
 
-	public FBOAttachement getFace(int f)
+	public RenderTarget getFace(int f)
 	{
 		return faces[f];
 	}

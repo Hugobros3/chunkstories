@@ -15,6 +15,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -358,7 +359,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	class EntityPlayerRenderer<H extends EntityHumanoid> extends EntityHumanoidRenderer<H> {
 		
 		@Override
-		public void setupRender(RenderingContext renderingContext)
+		public void setupRender(RenderingInterface renderingContext)
 		{
 			super.setupRender(renderingContext);
 			

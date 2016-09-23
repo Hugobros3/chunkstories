@@ -21,11 +21,6 @@ import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.math.lalgb.Vector4f;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.*;
-
 public class MainMenuOverlay extends Overlay
 {
 	GuiElementsHandler guiHandler = new GuiElementsHandler();

@@ -6,13 +6,15 @@ import static org.lwjgl.opengl.GL14.*;
 
 import java.nio.ByteBuffer;
 
+import io.xol.engine.graphics.fbo.RenderTarget;
+
 import static org.lwjgl.opengl.GL30.*;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class GBufferTexture extends Texture2D implements FBOAttachement
+public class GBufferTexture extends Texture2D implements RenderTarget
 {
 	public GBufferTexture(TextureFormat type, int w, int h)
 	{
@@ -32,34 +34,6 @@ public class GBufferTexture extends Texture2D implements FBOAttachement
 		this.height = h;
 		
 		glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), w, h, 0, type.getFormat(), type.getType(), (ByteBuffer) null);
-		/*if (type == TextureType.RGBA_8BPP)
-		{
-			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " RGBA texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer) null);
-		}
-		else if (type == TextureType.RGB_HDR)
-		{
-			// Optimization for OpenGL 3 cards
-			//if(!FastConfig.doBloom)
-			//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, (ByteBuffer) null);
-			//else
-			//{
-			if (FastConfig.openGL3Capable)
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, w, h, 0, GL_RGB, GL_FLOAT, (ByteBuffer) null);
-			else
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, (ByteBuffer) null);
-			//}
-		}
-		else if (type == TextureType.DEPTH_SHADOWMAP)
-		{
-			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " D16 texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, (ByteBuffer) null);
-		}
-		else if (type == TextureType.DEPTH_RENDERBUFFER)
-		{
-			//ChunkStoriesLogger.getInstance().log("Created " + w + "by" + h + " D32 texture", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.INFO);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, (ByteBuffer) null);
-		}*/
 		
 		if (type != TextureFormat.DEPTH_SHADOWMAP)
 		{
@@ -79,13 +53,13 @@ public class GBufferTexture extends Texture2D implements FBOAttachement
 	}
 
 	@Override
-	public void attachDepth()
+	public void attacAshDepth()
 	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this.getId(), 0);
 	}
 
 	@Override
-	public void attachColor(int colorAttachement)
+	public void attachAsColor(int colorAttachement)
 	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachement, GL_TEXTURE_2D, this.getId(), 0);
 	}

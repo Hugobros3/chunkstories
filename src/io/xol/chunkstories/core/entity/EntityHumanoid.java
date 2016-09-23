@@ -21,7 +21,6 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.animation.AnimatedSkeleton;
 import io.xol.engine.animation.BVHAnimation;
 import io.xol.engine.animation.BVHLibrary;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -182,7 +181,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 	protected class EntityHumanoidRenderer<H extends EntityHumanoid> implements EntityRenderer<H>
 	{
 		@Override
-		public void setupRender(RenderingContext renderingContext)
+		public void setupRender(RenderingInterface renderingContext)
 		{
 			//Player textures
 			Texture2D playerTexture = TexturesHandler.getTexture("models/humanoid_test.png");
@@ -197,7 +196,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		}
 
 		@Override
-		public int forEach(RenderingContext renderingContext, RenderingIterator<H> renderableEntitiesIterator)
+		public int forEach(RenderingInterface renderingContext, RenderingIterator<H> renderableEntitiesIterator)
 		{
 			int e = 0;
 

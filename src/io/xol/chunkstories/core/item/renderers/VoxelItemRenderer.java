@@ -6,7 +6,6 @@ import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.GL_UNSIGNED_INT_2_10_10_10_REV;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -19,6 +18,7 @@ import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -34,11 +34,8 @@ import io.xol.chunkstories.voxel.models.VoxelModels;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.chunk.DummyChunk;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
-import io.xol.engine.graphics.shaders.ShaderProgram;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
@@ -61,7 +58,7 @@ public class VoxelItemRenderer implements ItemRenderer
 	}
 
 	@Override
-	public void renderItemInInventory(RenderingContext renderingContext, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
+	public void renderItemInInventory(RenderingInterface renderingContext, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
 	{
 		if (((ItemVoxel) pile.getItem()).getVoxel() instanceof VoxelCustomIcon)
 		{
@@ -145,7 +142,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		}
 	}
 
-	private void renderVoxel(RenderingContext renderingContext, Voxel voxel, VoxelRenderer voxelRenderer, VoxelContext bri)
+	private void renderVoxel(RenderingInterface renderingContext, Voxel voxel, VoxelRenderer voxelRenderer, VoxelContext bri)
 	{
 		VoxelModel model = null;
 		if (voxelRenderer instanceof VoxelModel)
@@ -193,7 +190,7 @@ public class VoxelItemRenderer implements ItemRenderer
 	}
 
 	@Override
-	public void renderItemInWorld(RenderingContext context, ItemPile pile, World world, Location location, Matrix4f handTransformation)
+	public void renderItemInWorld(RenderingInterface context, ItemPile pile, World world, Location location, Matrix4f handTransformation)
 	{
 		float s = 0.45f;
 		handTransformation.scale(new Vector3f(s, s, s));

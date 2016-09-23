@@ -16,17 +16,16 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.textures.FBOAttachement;
 import io.xol.engine.graphics.textures.GBufferTexture;
 
 public class FrameBufferObject
 {
-	FBOAttachement[] colorAttachements;
-	FBOAttachement depthAttachement;
+	RenderTarget[] colorAttachements;
+	RenderTarget depthAttachement;
 
 	int fbo_id;
 
-	public FrameBufferObject(GBufferTexture depth, FBOAttachement... colors)
+	public FrameBufferObject(GBufferTexture depth, RenderTarget... colors)
 	{
 		fbo_id = glGenFramebuffers();
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
@@ -39,9 +38,9 @@ public class FrameBufferObject
 		{
 			scratchBuffer = BufferUtils.createIntBuffer(colors.length);
 			int i = 0;
-			for (FBOAttachement texture : colors)
+			for (RenderTarget texture : colors)
 			{
-				texture.attachColor(i);
+				texture.attachAsColor(i);
 				//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
 				scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
 				i++;
@@ -54,7 +53,7 @@ public class FrameBufferObject
 		}
 		// Initialize depth output buffer
 		if (depthAttachement != null)
-			depthAttachement.attachDepth();
+			depthAttachement.attacAshDepth();
 			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthAttachement.getID(), 0);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -68,15 +67,15 @@ public class FrameBufferObject
 		bind();
 		// ???
 		if (depthAttachement != null)
-			depthAttachement.attachDepth();
+			depthAttachement.attacAshDepth();
 		if (targets.length == 0)
 		{
 			// If no arguments set ALL to renderable
 			scratchBuffer.clear();
 			int i = 0;
-			for (FBOAttachement texture : colorAttachements)
+			for (RenderTarget texture : colorAttachements)
 			{
-				texture.attachColor(i);
+				texture.attachAsColor(i);
 				//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
 				scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
 				i++;
@@ -109,28 +108,28 @@ public class FrameBufferObject
 		}
 	}
 	
-	public void setDepthAttachement(FBOAttachement depthAttachement)
+	public void setDepthAttachement(RenderTarget depthAttachement)
 	{
 		this.depthAttachement = depthAttachement;
 		if(depthAttachement != null)
-			depthAttachement.attachDepth();
+			depthAttachement.attacAshDepth();
 	}
 	
-	public void setColorAttachement(int index, FBOAttachement colorAttachement)
+	public void setColorAttachement(int index, RenderTarget colorAttachement)
 	{
 		this.colorAttachements[index] = colorAttachement;
 		if(colorAttachement != null)
-			colorAttachement.attachColor(index);
+			colorAttachement.attachAsColor(index);
 	}
 	
-	public void setColorAttachements(FBOAttachement[] colorAttachements)
+	public void setColorAttachements(RenderTarget[] colorAttachements)
 	{
 		this.colorAttachements = colorAttachements;
 		
 		int i = 0;
-		for (FBOAttachement colorAttachement : colorAttachements)
+		for (RenderTarget colorAttachement : colorAttachements)
 		{
-			colorAttachement.attachColor(i);
+			colorAttachement.attachAsColor(i);
 			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
 			scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
 			i++;
@@ -145,7 +144,7 @@ public class FrameBufferObject
 		}
 		if (colorAttachements != null)
 		{
-			for (FBOAttachement t : colorAttachements)
+			for (RenderTarget t : colorAttachements)
 			{
 				t.resize(w, h);
 			}
@@ -159,7 +158,7 @@ public class FrameBufferObject
 			return;
 		GameWindowOpenGL.instance.renderingContext.flush();
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
-		FBOAttachement ok = this.depthAttachement != null ? depthAttachement : this.colorAttachements[0];
+		RenderTarget ok = this.depthAttachement != null ? depthAttachement : this.colorAttachements[0];
 		glViewport(0, 0, ok.getWidth(), ok.getHeight());
 		bound = fbo_id;
 	}
@@ -181,7 +180,7 @@ public class FrameBufferObject
 		{
 			if (depthAttachement != null)
 				depthAttachement.destroy();
-			for (FBOAttachement tex : colorAttachements)
+			for (RenderTarget tex : colorAttachements)
 			{
 				if (tex != null)
 					tex.destroy();

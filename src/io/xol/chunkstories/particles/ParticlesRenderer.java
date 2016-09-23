@@ -18,7 +18,6 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector3d;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.*;
 
 import java.nio.FloatBuffer;
 import java.util.Iterator;
@@ -352,7 +351,7 @@ public class ParticlesRenderer implements ParticlesManager
 		//renderingContext.setVertexAttributePointerLocation("billboardSquareCoordsIn", 2, GL_FLOAT, false, 8, 0, billboardSquare);
 		// glDrawElements(GL_POINTS, elements,
 		// GL_UNSIGNED_BYTE, 0);
-		glPointSize(4f);
+		//glPointSize(4f);
 		
 		renderingContext.draw(Primitive.QUAD, 0, elements);
 		renderingContext.unbindAttributes();

@@ -17,7 +17,6 @@ import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.animation.SkeletonAnimator;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -214,7 +213,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			this.lodEnd = lodEnd;
 		}
 		
-		public void lodUpdate(RenderingContext renderingContext)
+		public void lodUpdate(RenderingInterface renderingContext)
 		{
 			double distance = getLocation().distanceTo(renderingContext.getCamera().getCameraPosition());
 			double targetFps = RenderingConfig.animationCacheFrameRate;

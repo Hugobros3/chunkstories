@@ -1,10 +1,10 @@
 package io.xol.chunkstories.core.item.renderers;
 
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
@@ -23,13 +23,13 @@ public class Ak47ViewModelRenderer extends DefaultItemRenderer
 	}
 
 	@Override
-	public void renderItemInInventory(RenderingContext context, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
+	public void renderItemInInventory(RenderingInterface context, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
 	{
 		super.renderItemInInventory(context, pile, screenPositionX, screenPositionY, scaling);
 	}
 
 	@Override
-	public void renderItemInWorld(RenderingContext renderingContext, ItemPile pile, World world, Location location, Matrix4f handTransformation)
+	public void renderItemInWorld(RenderingInterface renderingContext, ItemPile pile, World world, Location location, Matrix4f handTransformation)
 	{
 		renderingContext.setObjectMatrix(handTransformation);
 		//renderingContext.sendBoneTransformationMatrix(null);

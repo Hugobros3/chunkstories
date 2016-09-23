@@ -28,8 +28,6 @@ import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
 public class Texture2D extends Texture
 {
 	String name;
-	//TextureType type;
-	//int glId = -1;
 	
 	int width, height;
 	boolean wrapping = true;
@@ -75,7 +73,6 @@ public class Texture2D extends Texture
 			return -1;
 		}
 		//TODO we probably don't need half this shit
-		//glActiveTexture(GL_TEXTURE0);
 		bind();
 		try
 		{
@@ -88,8 +85,7 @@ public class Texture2D extends Texture
 			temp.flip();
 			bind();
 			glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(), (ByteBuffer) temp);
-			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, temp);
-
+		
 			applyTextureParameters();
 
 		}
@@ -145,12 +141,9 @@ public class Texture2D extends Texture
 		this.width = width;
 		this.height = height;
 
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, level, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(), (ByteBuffer) data);
 
 		applyTextureParameters();
-
-		//glActiveTexture(GL_TEXTURE0);
 		
 		if(k > 0)
 			glBindTexture(GL_TEXTURE_2D, currentlyBoundId);

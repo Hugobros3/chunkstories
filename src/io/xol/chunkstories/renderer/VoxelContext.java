@@ -72,12 +72,7 @@ public class VoxelContext
 			return voxelType.getVoxelRenderer(this);
 		return null;
 	}
-
-	/*public VoxelTexture getTexture()
-	{
-		return getTexture(VoxelSides.TOP);
-	}*/
-
+	
 	public VoxelTexture getTexture(VoxelSides side)
 	{
 		if (voxelType != null)

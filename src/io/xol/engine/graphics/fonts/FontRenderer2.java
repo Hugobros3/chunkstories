@@ -4,8 +4,6 @@ package io.xol.engine.graphics.fonts;
 // http://chunkstories.xyz
 // http://xol.io
 
-import static org.lwjgl.opengl.GL11.*;
-
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.textures.Texture2D;

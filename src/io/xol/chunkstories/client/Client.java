@@ -10,7 +10,6 @@ import java.util.Calendar;
 
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.misc.ConfigFile;
-import io.xol.engine.misc.FancyParser;
 import io.xol.engine.misc.IconLoader;
 import io.xol.engine.misc.NativesLoader;
 import io.xol.chunkstories.Constants;

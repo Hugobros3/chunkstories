@@ -35,11 +35,8 @@ public class GuiRenderer
 	public Vector4f currentColor = new Vector4f(1f, 1f, 1f, 1f);
 
 	// GL stuff
-	
 	VerticesObject guiDrawData = new VerticesObject();
-	//int glVBO;
-	//ShaderProgram shader;
-
+	
 	public GuiRenderer(RenderingContext renderingContext)
 	{
 		this.renderingContext = renderingContext;
@@ -122,13 +119,13 @@ public class GuiRenderer
 	 */
 	public void setState(Texture2D texture, boolean alpha, boolean textureEnabled, Vector4f color)
 	{
-		//System.out.println("color: "+color + " currentColor: "+currentColor + "");
+		if(color == null)
+			color = new Vector4f(1.0F);
 		
 		if (texture != currentTexture || 
 				alpha != alphaBlending || 
 				useTexture != textureEnabled || 
-				(color == null && currentColor != null && !currentColor.equals(new Vector4f(1f, 1f, 1f, 1f))) || 
-				(color != null && !color.equals(currentColor)))
+				(!color.equals(currentColor)))
 		{
 			drawBuffer();
 		}
@@ -159,10 +156,11 @@ public class GuiRenderer
 			renderingContext.currentShader().setUniform4f("color", currentColor);
 		}
 		else
-			renderingContext.currentShader().setUniform4f("color", 1f, 1f, 1f, 1f);
+			throw new RuntimeException("No color specified");
+			
+			//renderingContext.currentShader().setUniform4f("color", 1f, 1f, 1f, 1f);
 		
 		renderingContext.bindTexture2D("sampler", currentTexture);
-		//renderingContext.currentShader().setUniformSampler(0, "sampler", currentTexture);
 		
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		//glDisable(GL_DEPTH_TEST);

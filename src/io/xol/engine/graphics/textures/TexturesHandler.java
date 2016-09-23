@@ -1,9 +1,7 @@
 package io.xol.engine.graphics.textures;
 
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.glBindTexture;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.*;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,7 +42,7 @@ public class TexturesHandler
 			ChunkStoriesLogger.getInstance().info("Failed to bind texture "+name+", not loaded properly on disk.");
 			return;
 		}
-		glEnable(GL_TEXTURE_2D);
+		//glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, id);
 	}
 	
@@ -75,7 +73,7 @@ public class TexturesHandler
 			ChunkStoriesLogger.getInstance().info("Failed to bind Cubemap "+name+", not loaded properly on disk.");
 			return;
 		}
-		glEnable(GL_TEXTURE_CUBE_MAP);
+		//glEnable(GL_TEXTURE_CUBE_MAP);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 	}
 	

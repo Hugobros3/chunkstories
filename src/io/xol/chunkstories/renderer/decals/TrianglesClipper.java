@@ -1,5 +1,9 @@
 package io.xol.chunkstories.renderer.decals;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 import java.nio.ByteBuffer;
 
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -7,6 +11,9 @@ import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 
+/**
+ * Straight from the 6th gate of hell, forged in the shattered skulls of fresh babies, this code should not be messed with. Proceed at your own risk.
+ */
 public class TrianglesClipper
 {
 	private static Matrix4f toClipSpace;

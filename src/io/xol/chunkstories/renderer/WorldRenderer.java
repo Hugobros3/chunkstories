@@ -670,7 +670,6 @@ public class WorldRenderer
 
 			chunksChanged = false;
 			// Load nearby chunks
-			//TODO kek me up inside
 		}
 		// Cleans free vbos
 		ChunkRenderData.deleteUselessVBOs();

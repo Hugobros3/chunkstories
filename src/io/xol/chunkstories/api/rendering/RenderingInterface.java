@@ -3,6 +3,7 @@ package io.xol.chunkstories.api.rendering;
 import io.xol.chunkstories.api.exceptions.AttributeNotPresentException;
 import io.xol.chunkstories.api.exceptions.InvalidShaderException;
 import io.xol.chunkstories.api.exceptions.ShaderCompileException;
+import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
@@ -15,6 +16,7 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonF
 import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.util.GuiRenderer;
 import io.xol.engine.math.lalgb.Matrix4f;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -121,4 +123,8 @@ public interface RenderingInterface
 	public long getVertexDataVramUsage();
 	
 	public long getTextureDataVramUsage();
+
+	public void addLight(Light light);
+
+	public GuiRenderer getGuiRenderer();
 }

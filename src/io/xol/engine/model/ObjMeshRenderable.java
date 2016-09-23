@@ -1,12 +1,8 @@
 package io.xol.engine.model;
 
-import static org.lwjgl.opengl.GL11.*;
-
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.lwjgl.BufferUtils;
@@ -15,8 +11,6 @@ import io.xol.chunkstories.api.rendering.Renderable;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.animation.SkeletonAnimator;
-import io.xol.engine.graphics.GLCalls;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.GBufferTexture;
@@ -76,22 +70,10 @@ public class ObjMeshRenderable implements Renderable
 
 	}
 
-	public void render(RenderingContext renderingContext, SkeletonAnimator skeleton, double animationTime)
+	public void render(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime)
 	{
 		internalRenderer(renderingContext, skeleton, animationTime, false, (String[]) null);
 	}
-
-	/*@Override
-	public void renderParts(RenderingContext renderingContext, AnimationData skeleton, double animationTime, String... parts)
-	{
-		internalRenderer(renderingContext, skeleton, animationTime, false, parts);
-	}
-	
-	@Override
-	public void renderButParts(RenderingContext renderingContext, AnimationData skeleton, double animationTime, String... parts)
-	{
-		internalRenderer(renderingContext, skeleton, animationTime, true, parts);
-	}*/
 
 	private void internalRenderer(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime, boolean exclude, String... parts)
 	{
