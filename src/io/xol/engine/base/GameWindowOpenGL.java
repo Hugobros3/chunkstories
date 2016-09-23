@@ -5,11 +5,9 @@ package io.xol.engine.base;
 // http://xol.io
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.GL_MAX_TEXTURE_IMAGE_UNITS;
+import static org.lwjgl.opengl.GL20.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -72,8 +70,6 @@ public class GameWindowOpenGL
 	static long lastTime = 0;
 
 	public long vramUsageVerticesObjects = 0;
-
-	//static String currentDM = "";
 
 	long timeTookLastTime = 0;
 

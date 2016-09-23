@@ -91,23 +91,6 @@ public class VerticesObject
 		if (arrayBufferId == currentlyBoundArrayBuffer)
 			return;
 
-		//When no updates are supposed to be required
-		/*if (arrayBufferId == bound)
-		{
-			int boundAccordingToGL = glGetInteger( GL_ARRAY_BUFFER_BINDING );
-			if (boundAccordingToGL != bound)
-			{
-				System.out.println("WOW : " + boundAccordingToGL + " != " + bound);
-				WeakReference<VerticesObject> ref = allocatedIds.get(boundAccordingToGL);
-				if (ref != null)
-				{
-					VerticesObject object = ref.get();
-					if (object != null)
-						System.out.println(object);
-				}
-			}
-		}*/
-
 		glBindBuffer(GL_ARRAY_BUFFER, arrayBufferId);
 		currentlyBoundArrayBuffer = arrayBufferId;
 	}
@@ -320,6 +303,8 @@ public class VerticesObject
 			bind();
 			//Ensure it's up-to-date
 			checkForPendingMainThreadData();
+			if(!isDataPresent())
+				throw new RuntimeException("No VBO data uploaded | "+GameWindowOpenGL.instance.renderingContext);
 			//Set pointer
 			glVertexAttribPointer(gl_AttributeLocation, dimensions, format.glId, format.normalized, stride, offset);
 		}

@@ -1161,7 +1161,7 @@ public class WorldRenderer
 			for (ChunkRenderable chunk : renderList)
 			{
 				ChunkRenderData chunkRenderData = chunk.getChunkRenderData();
-				if (chunkRenderData == null || chunkRenderData.vboSizeWaterBlocks == 0)
+				if (chunkRenderData == null || !chunkRenderData.isUploaded() || chunkRenderData.vboSizeWaterBlocks == 0)
 					continue;
 
 				int vboDekalX = chunk.getChunkX() * 32;
