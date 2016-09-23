@@ -1,6 +1,5 @@
 package io.xol.chunkstories.renderer;
 
-import static org.lwjgl.opengl.GL11.*;
 
 import java.nio.FloatBuffer;
 import java.util.Random;
@@ -10,16 +9,12 @@ import org.lwjgl.BufferUtils;
 import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
-import io.xol.engine.graphics.shaders.ShaderProgram;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -150,11 +145,15 @@ public class WeatherEffectsRenderer
 			generateRainForOneSecond(renderingContext);
 			lastRender = System.currentTimeMillis();
 		}
-		glDisable(GL_CULL_FACE);
+		
+		/*glDisable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_ALPHA_TEST);
 		glDisable(GL_BLEND);
-		glDepthFunc(GL_LEQUAL);
+		glDepthFunc(GL_LEQUAL);*/
+		
+		renderingContext.setCullingMode(CullingMode.DISABLED);
+		
 		renderingContext.getCamera().setupShader(weatherShader);
 		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		weatherShader.setUniform1f("time", (System.currentTimeMillis() - lastRender) / 1000f);
@@ -174,7 +173,9 @@ public class WeatherEffectsRenderer
 		
 		renderingContext.draw(Primitive.TRIANGLE, 0, 2000 + (int)(9000 * rainIntensity));
 		//GLCalls.drawArrays(GL_TRIANGLES, 0, 2000 + (int)(9000 * rainIntensity));
-		glDisable(GL_BLEND);
+		//glDisable(GL_BLEND);
+		
+		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 	}
 	
 	public void destroy()

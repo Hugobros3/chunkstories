@@ -1076,7 +1076,6 @@ public class WorldRenderer
 
 		//Add decals
 		decalsRenderer.renderDecals(renderingContext);
-
 		// Solid blocks done, now render water & lights
 		
 		renderingContext.setBlendMode(BlendMode.MIX);

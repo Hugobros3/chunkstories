@@ -216,6 +216,9 @@ public class DecalsRenderer implements DecalsManager
 			renderingContext.bindAlbedoTexture(diffuseTexture);
 			//decalsShader.setUniformSampler(0, "diffuseTexture", diffuseTexture);
 			
+			if(!decalType.verticesObject.isDataPresent())
+				continue;
+			
 			//decalType.verticesObject.bind();
 			renderingContext.bindAttribute("vertexIn", decalType.verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, 4 * (3 + 2), 0));
 			renderingContext.bindAttribute("texCoordIn", decalType.verticesObject.asAttributeSource(VertexFormat.FLOAT, 2, 4 * (3 + 2), 4 * 3));
@@ -226,9 +229,6 @@ public class DecalsRenderer implements DecalsManager
 			//decalType.verticesObject.drawElementsTriangles(decalType.kount);
 		}
 
-		//glEnable(GL_DEPTH_TEST);
 		glDepthMask(true);
-		
-		//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	}
 }
