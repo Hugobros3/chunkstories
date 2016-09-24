@@ -207,7 +207,7 @@ public class FarTerrainRenderer
 	{
 		cameraChunkX = (int) (-camera.pos.getX() / 32);
 		cameraChunkZ = (int) (-camera.pos.getZ() / 32);
-
+		
 		Thread asynchGenerateThread = new Thread()
 		{
 			@Override

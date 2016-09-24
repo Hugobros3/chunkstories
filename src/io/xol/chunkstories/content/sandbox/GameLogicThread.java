@@ -37,7 +37,7 @@ public class GameLogicThread extends Thread implements GameLogic
 		this.world = world;
 		this.world.setLogicThread(this);
 		
-		this.setName("world " + world.getWorldInfo().getInternalName()+" logic thread");
+		this.setName("World " + world.getWorldInfo().getInternalName()+" logic thread");
 		this.setPriority(Constants.MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY);
 		
 		gameLogicScheduler = new GameLogicScheduler();
@@ -48,8 +48,7 @@ public class GameLogicThread extends Thread implements GameLogic
 	public void run()
 	{
 		//Installs a custom SecurityManager
-		System.out.println(System.getSecurityManager());
-		//System.setSecurityManager(securityManager);
+		System.out.println("Security manager: "+System.getSecurityManager());
 
 		while (!die)
 		{

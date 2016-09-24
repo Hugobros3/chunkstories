@@ -111,6 +111,7 @@ public class RenderingContext implements RenderingInterface
 			flush();
 
 			texturingConfiguration = new TexturingConfigurationImplementation();
+			TexturingConfigurationImplementation.resetBoundTextures();
 			attributesConfiguration = new AttributesConfigurationImplementation();
 			//resetAllVertexAttributesLocations();
 			//disableUnusedVertexAttributes();

@@ -176,8 +176,6 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 			//If the texture isn't already bound to this texture id
 			if (!(boundTextures.get(textureUnitId) == texture))
 			{
-				//if(entry.getKey().equals("alb2o"))
-				//	System.out.println("k");
 				
 				//Select a valid, free texturing unit
 				selectTextureUnit(textureUnitId);
@@ -185,14 +183,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 				//Bind the texture to this texturing unit
 				texture.bind();
 			}
-			//else
-			//	if(entry.getKey().equals("alb2o"))
-			//		System.out.println("still bound ok");
-			//Set the uniform location to this texturing unit
 			shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
-
-			//if(entry.getKey().equals("alb2o"))
-			//	System.out.println("entry:"+texture.glId + "-" +  textureUnitId + " / " + textureLocation);
 			
 			boundTextures.put(textureUnitId, texture);
 
@@ -237,6 +228,11 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 		glActiveTexture(GL_TEXTURE0 + id);
 	}
 
+	public static void resetBoundTextures()
+	{
+		boundTextures.clear();
+	}
+	
 	@Override
 	public Map<String, Texture2D> getBoundTextures2D()
 	{

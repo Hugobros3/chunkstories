@@ -178,8 +178,10 @@ public class Texture2D extends Texture
 
 		if (scheduledForLoad)
 		{
-			System.out.println("main thread called, actually loading");
+			long ms = System.currentTimeMillis();
+			System.out.print("main thread called, actually loading the texture ... ");
 			this.loadTextureFromDisk();
+			System.out.print((System.currentTimeMillis()-ms) + "ms \n");
 		}
 	}
 	

@@ -35,7 +35,7 @@ vec3 getSkyColor(float time, vec3 eyeDirection)
 {
 	float sunEyeDot = dot(normalize(eyeDirection), normalize(sunPos));
 
-	vec4 skyGlow = texture2D(sunSetRiseTexture, vec2(time, clamp(0.5 - sunEyeDot * 0.5, 0.0, 1.0)));
+	vec4 skyGlow = texture2D(sunSetRiseTexture, vec2(time, clamp(0.5 - pow(sunEyeDot, 2.0) * 0.5, 0.0, 1.0)));
 	vec3 skyColor = vec3(0.0);
 	
 	//We compute the gradient ourselves to avoid color banding

@@ -1,7 +1,5 @@
 package io.xol.engine.graphics.textures;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.*;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +41,8 @@ public class TexturesHandler
 			return;
 		}
 		//glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, id);
+		//glBindTexture(GL_TEXTURE_2D, id);
+		throw new UnsupportedOperationException("Obsolete crap");
 	}
 	
 	public static int getTextureID(String name)
@@ -74,7 +73,8 @@ public class TexturesHandler
 			return;
 		}
 		//glEnable(GL_TEXTURE_CUBE_MAP);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+		throw new UnsupportedOperationException("Obsolete crap");
 	}
 	
 	public static int getCubemapID(String name)

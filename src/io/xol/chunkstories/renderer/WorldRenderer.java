@@ -1304,8 +1304,8 @@ public class WorldRenderer
 		renderingContext.bindTexture2D("metaBuffer", materialBuffer);
 		renderingContext.bindTexture2D("blockLightmap", lightmapTexture);
 		renderingContext.bindTexture2D("shadowMap", shadowMapBuffer);
+		
 		renderingContext.bindTexture2D("sunSetRiseTexture", sunGlowTexture);
-
 		renderingContext.bindTexture2D("skyTextureSunny", skyTextureSunny);
 		renderingContext.bindTexture2D("skyTextureRaining", skyTextureRaining);
 
@@ -1405,7 +1405,7 @@ public class WorldRenderer
 		if (RenderingConfig.doBloom)
 		{
 			//glBindTexture(GL_TEXTURE_2D, shadedBuffer.getId());
-			shadedBuffer.bind();
+			//shadedBuffer.bind();
 			
 			shadedBuffer.setMipMapping(true);
 			int max_mipmap = (int) (Math.ceil(Math.log(Math.max(scrH, scrW)) / Math.log(2))) - 1;

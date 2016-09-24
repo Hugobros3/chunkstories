@@ -3,7 +3,7 @@
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="create_run_jar">
-        <jar destfile="C:/Users/gobrosse/git/chunkstories/chunkstories.jar">
+        <jar destfile="C:/Users/Hugo/git/chunkstories/chunkstories.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="io.xol.chunkstories.client.Client"/>
@@ -11,14 +11,14 @@
                 <attribute name="Rsrc-Class-Path" value="./ jinput.jar lwjgl.jar lz4-1.3.0.jar PNGDecoder.jar jorbis.jar jansi-1.12.jar json-simple-1.1.1.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
-            <fileset dir="C:/Users/gobrosse/git/chunkstories/bin"/>
-            <zipfileset dir="C:\Users\gobrosse\git\chunkstories\lib\lwjgl\jar" includes="jinput.jar"/>
-            <zipfileset dir="C:\Users\gobrosse\git\chunkstories\lib\lwjgl\jar" includes="lwjgl.jar"/>
-            <zipfileset dir="C:\Users\gobrosse\git\chunkstories\lib" includes="lz4-1.3.0.jar"/>
-            <zipfileset dir="C:\Users\gobrosse\git\chunkstories\lib" includes="PNGDecoder.jar"/>
-            <zipfileset dir="C:\Users\gobrosse\git\chunkstories\lib" includes="jorbis.jar"/>
-            <zipfileset dir="C:\Users\gobrosse\git\chunkstories\lib" includes="jansi-1.12.jar"/>
-            <zipfileset dir="C:\Users\gobrosse\git\chunkstories\lib" includes="json-simple-1.1.1.jar"/>
+            <fileset dir="C:/Users/Hugo/git/chunkstories/bin"/>
+            <zipfileset dir="C:\Users\Hugo\git\chunkstories\lib\lwjgl\jar" includes="jinput.jar"/>
+            <zipfileset dir="C:\Users\Hugo\git\chunkstories\lib\lwjgl\jar" includes="lwjgl.jar"/>
+            <zipfileset dir="C:\Users\Hugo\git\chunkstories\lib" includes="lz4-1.3.0.jar"/>
+            <zipfileset dir="C:\Users\Hugo\git\chunkstories\lib" includes="PNGDecoder.jar"/>
+            <zipfileset dir="C:\Users\Hugo\git\chunkstories\lib" includes="jorbis.jar"/>
+            <zipfileset dir="C:\Users\Hugo\git\chunkstories\lib" includes="jansi-1.12.jar"/>
+            <zipfileset dir="C:\Users\Hugo\git\chunkstories\lib" includes="json-simple-1.1.1.jar"/>
         </jar>
     </target>
 </project>

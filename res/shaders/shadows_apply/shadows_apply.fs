@@ -161,10 +161,9 @@ void main() {
 	vec3 sum = (cameraSpacePosition.xyz);
 	float dist = length(sum)-fogStartDistance;
 	float fogFactor = (dist) / (fogEndDistance-fogStartDistance);
-	float fogIntensity = clamp(fogFactor, 0.0, 0.9);
+	float fogIntensity = clamp(fogFactor, 0.0, 1.0);
 	
-	vec3 fogColor = gl_Fog.color.rgb;
-	fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz - camPos).xyz));
+	vec3 fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz - camPos).xyz));
 	
 	gl_FragColor = mix(shadingColor, vec4(fogColor,shadingColor.a), fogIntensity);
 }
