@@ -158,7 +158,7 @@ public class WeatherEffectsRenderer
 		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		weatherShader.setUniform1f("time", (System.currentTimeMillis() - lastRender) / 1000f);
 		
-		renderingContext.bindTexture2D("lightmap", TexturesHandler.getTexture("environement/lightcolors.png"));
+		renderingContext.bindTexture2D("lightmap", TexturesHandler.getTexture("./environement/lightcolors.png"));
 		//weatherShader.setUniformSampler(0, "lightmap", TexturesHandler.getTexture("environement/lightcolors.png"));
 		weatherShader.setUniform1f("sunTime", worldRenderer.getSky().time);
 		//raindropsData.flip();

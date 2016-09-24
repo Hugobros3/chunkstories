@@ -53,7 +53,7 @@ public class EntityZombie extends EntityHumanoid
 			super.setupRender(renderingContext);
 			
 			//Player textures
-			Texture2D playerTexture = TexturesHandler.getTexture("models/zombie_s3.png");
+			Texture2D playerTexture = TexturesHandler.getTexture("./models/zombie_s3.png");
 			playerTexture.setLinearFiltering(false);
 			
 			renderingContext.bindAlbedoTexture(playerTexture);

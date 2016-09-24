@@ -212,9 +212,9 @@ public class CloudsRenderer
 		renderingContext.currentShader().setUniform3f("sunPos", skyRenderer.getSunPosition());
 		ShaderInterface cloudsShader = renderingContext.currentShader();
 		
-		Texture2D glowTexture = TexturesHandler.getTexture("environement/glow.png");
-		Texture2D skyTextureSunny = TexturesHandler.getTexture("environement/sky.png");
-		Texture2D skyTextureRaining = TexturesHandler.getTexture("environement/sky_rain.png");
+		Texture2D glowTexture = TexturesHandler.getTexture("./textures/environement/glow.png");
+		Texture2D skyTextureSunny = TexturesHandler.getTexture("./textures/environement/sky.png");
+		Texture2D skyTextureRaining = TexturesHandler.getTexture("./textures/environement/sky_rain.png");
 		
 		renderingContext.bindTexture2D("sunSetRiseTexture", glowTexture);
 		renderingContext.bindTexture2D("skyTextureSunny", skyTextureSunny);

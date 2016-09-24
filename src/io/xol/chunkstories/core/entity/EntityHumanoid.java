@@ -184,15 +184,15 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		public void setupRender(RenderingInterface renderingContext)
 		{
 			//Player textures
-			Texture2D playerTexture = TexturesHandler.getTexture("models/humanoid_test.png");
+			Texture2D playerTexture = TexturesHandler.getTexture("./models/humanoid_test.png");
 			playerTexture.setLinearFiltering(false);
 
 			renderingContext.bindAlbedoTexture(playerTexture);
 
-			renderingContext.bindNormalTexture(TexturesHandler.getTexture("models/humanoid_normal.png"));
-			TexturesHandler.getTexture("models/humanoid_normal.png").setLinearFiltering(false);
+			renderingContext.bindNormalTexture(TexturesHandler.getTexture("./models/humanoid_normal.png"));
+			TexturesHandler.getTexture("./models/humanoid_normal.png").setLinearFiltering(false);
 
-			renderingContext.bindNormalTexture(TexturesHandler.getTexture("textures/normalnormal.png"));
+			renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
 		}
 
 		@Override

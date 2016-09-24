@@ -230,6 +230,8 @@ public class GameContent
 		if(fileSystem.containsKey(textureName))
 			return fileSystem.get(textureName).getFirst();
 		
+		System.out.println("Unfit texture access : "+textureName);
+		
 		if (textureName.endsWith(".png"))
 			textureName = textureName.substring(0, textureName.length() - 4);
 		File checkTexturesFolder = new File("./res/textures/" + textureName + ".png");
@@ -242,6 +244,7 @@ public class GameContent
 		if (checkRootFolder.exists())
 			return checkRootFolder;
 		File checkGameFolder = new File(GameDirectory.getGameFolderPath() + "/" + textureName + ".png");
+		
 		if (checkGameFolder.exists())
 			return checkGameFolder;
 		return null;
@@ -259,7 +262,8 @@ public class GameContent
 		
 		if(fileSystem.containsKey(fileName))
 			return fileSystem.get(fileName).getFirst();
-		
+	
+		System.out.println("Unfit file access : "+fileName);
 		
 		File checkRootFolder = new File("./" + fileName);
 		if (checkRootFolder.exists())

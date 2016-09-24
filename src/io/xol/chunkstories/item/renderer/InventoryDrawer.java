@@ -70,7 +70,7 @@ public class InventoryDrawer
 		int internalHeight = (height + (summary ? 0 : 1) + blankLines) * 24 * scale;
 		int slotSize = 24 * scale;
 
-		Texture2D inventoryTexture = TexturesHandler.getTexture("gui/inventory/inventory.png");
+		Texture2D inventoryTexture = TexturesHandler.getTexture("./textures/gui/inventory/inventory.png");
 		inventoryTexture.setLinearFiltering(false);
 		
 		Vector4f color = new Vector4f(1f, 1f, 1f, summary ? 0.5f : 1f);

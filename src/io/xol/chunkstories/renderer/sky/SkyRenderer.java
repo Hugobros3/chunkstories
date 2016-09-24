@@ -66,17 +66,17 @@ public class SkyRenderer
 		
 		
 		//skyShader.use(true);
-		renderingContext.bindTexture2D("cloudsNoise", TexturesHandler.getTexture("environement/cloudsStatic.png"));
+		renderingContext.bindTexture2D("cloudsNoise", TexturesHandler.getTexture("./textures/environement/cloudsStatic.png"));
 		
-		Texture2D glowTexture = TexturesHandler.getTexture("environement/glow.png");
+		Texture2D glowTexture = TexturesHandler.getTexture("./textures/environement/glow.png");
 		renderingContext.bindTexture2D("sunSetRiseTexture", glowTexture);
 		
 		glowTexture.setLinearFiltering(true);
 		glowTexture.setTextureWrapping(false);
 		glowTexture.setTextureWrapping(false);
 
-		Texture2D skyTextureSunny = TexturesHandler.getTexture("environement/sky.png");
-		Texture2D skyTextureRaining = TexturesHandler.getTexture("environement/sky_rain.png");
+		Texture2D skyTextureSunny = TexturesHandler.getTexture("./textures/environement/sky.png");
+		Texture2D skyTextureRaining = TexturesHandler.getTexture("./textures/environement/sky_rain.png");
 		
 		renderingContext.bindTexture2D("skyTextureSunny", skyTextureSunny);
 		renderingContext.bindTexture2D("skyTextureRaining", skyTextureRaining);

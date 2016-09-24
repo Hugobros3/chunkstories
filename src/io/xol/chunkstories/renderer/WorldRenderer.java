@@ -201,17 +201,18 @@ public class WorldRenderer
 	float apertureModifier = 1f;
 
 	//Sky stuff
-	Texture2D sunGlowTexture = TexturesHandler.getTexture("environement/glow.png");
-	Texture2D skyTextureSunny = TexturesHandler.getTexture("environement/sky.png");
-	Texture2D skyTextureRaining = TexturesHandler.getTexture("environement/sky_rain.png");
+	Texture2D sunGlowTexture = TexturesHandler.getTexture("./textures/environement/glow.png");
+	Texture2D skyTextureSunny = TexturesHandler.getTexture("./textures/environement/sky.png");
+	Texture2D skyTextureRaining = TexturesHandler.getTexture("./textures/environement/sky_rain.png");
 
-	Texture2D lightmapTexture = TexturesHandler.getTexture("environement/light.png");
-	Texture2D waterNormalTexture = TexturesHandler.getTexture("water/shallow.png");
+	Texture2D lightmapTexture = TexturesHandler.getTexture("./textures/environement/light.png");
+	Texture2D waterNormalTexture = TexturesHandler.getTexture("./textures/water/shallow.png");
 
 	//Blocks atlases
-	Texture2D blocksAlbedoTexture = TexturesHandler.getTexture("tiles_merged_albedo.png");
-	Texture2D blocksNormalTexture = TexturesHandler.getTexture("tiles_merged_normal.png");
-	Texture2D blocksMaterialTexture = TexturesHandler.getTexture("tiles_merged_material.png");
+	//TODO load these directly from memory
+	Texture2D blocksAlbedoTexture = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
+	Texture2D blocksNormalTexture = TexturesHandler.getTexture("./textures/tiles_merged_normal.png");
+	Texture2D blocksMaterialTexture = TexturesHandler.getTexture("./textures/tiles_merged_material.png");
 
 	//SSAO (disabled)
 	Vector3f ssao_kernel[];
@@ -1102,7 +1103,7 @@ public class WorldRenderer
 			
 			//liquidBlocksShader.setUniformSampler(1, "normalTextureDeep", TexturesHandler.getTexture("water/deep.png"));
 			//liquidBlocksShader.setUniformSampler(2, "normalTextureShallow", waterNormalTexture);
-			renderingContext.bindTexture2D("normalTextureDeep", TexturesHandler.getTexture("water/deep.png"));
+			renderingContext.bindTexture2D("normalTextureDeep", TexturesHandler.getTexture("./textures/water/deep.png"));
 			renderingContext.bindTexture2D("normalTextureShallow", waterNormalTexture);
 			
 			//liquidBlocksShader.setUniformSampler(3, "lightColors", lightmapTexture);

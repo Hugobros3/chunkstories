@@ -188,7 +188,7 @@ public class ParticlesRenderer implements ParticlesManager
 		particlesShader.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		renderingContext.getCamera().setupShader(particlesShader);
 		
-		renderingContext.bindTexture2D("lightColors", TexturesHandler.getTexture("environement/light.png"));
+		renderingContext.bindTexture2D("lightColors", TexturesHandler.getTexture("./textures/environement/light.png"));
 
 		//Vertex attributes
 
