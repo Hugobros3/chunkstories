@@ -1,5 +1,9 @@
 package io.xol.chunkstories.api.plugin;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -14,10 +18,6 @@ import java.util.jar.JarFile;
 
 import io.xol.chunkstories.api.exceptions.PluginInfoException;
 import io.xol.chunkstories.api.plugin.commands.Command;
-
-//(c) 2015-2016 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class PluginInformation extends URLClassLoader
 {
@@ -140,7 +140,7 @@ public class PluginInformation extends URLClassLoader
 	@Override
 	protected Class<?> findClass(String name) throws ClassNotFoundException
 	{
-		System.out.println(name);
+		System.out.println("Looking for class "+name + " in plugin "+jar);
 		return super.findClass(name);
 	}
 }

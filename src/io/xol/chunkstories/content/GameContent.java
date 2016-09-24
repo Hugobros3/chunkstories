@@ -203,7 +203,8 @@ public class GameContent
 					//System.out.println("Found override for ressource : " + filteredName + " in modDir : " + modsDir);
 				}
 				fileSystem.get(filteredName).addLast(f);
-				//System.out.println("Found ressocurce "+filteredName);
+				
+				//System.out.println("Found ressource "+filteredName);
 				//fileSystem.put(filteredName, f);
 			}
 		}
