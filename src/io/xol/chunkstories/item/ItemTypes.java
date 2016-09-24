@@ -31,16 +31,6 @@ public class ItemTypes
 	{
 		Arrays.fill(items, null);
 		dictionary.clear();
-
-		/*File vanillaFolder = new File("./" + "res/items/");
-		for (File f : vanillaFolder.listFiles())
-		{
-			if (!f.isDirectory() && f.getName().endsWith(".items"))
-			{
-				ChunkStoriesLogger.getInstance().log("Reading items definitions in : " + f.getAbsolutePath());
-				readitemsDefinitions(f);
-			}
-		}*/
 		
 		Iterator<File> i = GameContent.getAllFilesByExtension("items");
 		while(i.hasNext())
@@ -50,7 +40,7 @@ public class ItemTypes
 			readitemsDefinitions(f);
 		}
 	}
-
+	
 	private static void readitemsDefinitions(File f)
 	{
 		if (!f.exists())
@@ -76,8 +66,8 @@ public class ItemTypes
 						ChunkStoriesLogger.getInstance().warning("Syntax error in file : " + f + " : ");
 						continue;
 					}
+					
 					//Eventually add the item
-
 					items[currentItemType.getID()] = currentItemType;
 					dictionary.put(currentItemType.getInternalName(), currentItemType);
 				}
@@ -115,14 +105,14 @@ public class ItemTypes
 							className = split[3];
 						try
 						{
-							Class<?> rawClass = Class.forName(className);
+							Class<?> rawClass = GameContent.getClassByName(className);
 							if (rawClass == null)
 							{
-								ChunkStoriesLogger.getInstance().warning("item " + className + " does not exist in codebase.");
+								ChunkStoriesLogger.getInstance().warning("Item class " + className + " does not exist in codebase.");
 							}
 							else if (!(Item.class.isAssignableFrom(rawClass)))
 							{
-								ChunkStoriesLogger.getInstance().warning("item " + className + " is not extending the Item class.");
+								ChunkStoriesLogger.getInstance().warning("Item class " + className + " is not extending the Item class.");
 							}
 							else
 							{
@@ -142,7 +132,7 @@ public class ItemTypes
 							}
 
 						}
-						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
+						catch (NoSuchMethodException | SecurityException | IllegalArgumentException e)
 						{
 							e.printStackTrace();
 						}

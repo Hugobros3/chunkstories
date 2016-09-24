@@ -1,5 +1,9 @@
 package io.xol.chunkstories.voxel;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.content.GameContent;
@@ -18,10 +22,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-//(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
 
 public class Voxels
 {
@@ -70,16 +70,25 @@ public class Voxels
 						{
 							try
 							{
-								Class<?> customVoxelClass = Class.forName(splitted[3]);
+								Class<?> customVoxelClass = GameContent.getClassByName(splitted[3]); // Class.forName(splitted[3]);
+								if (customVoxelClass == null)
+								{
+									ChunkStoriesLogger.getInstance().warning("Voxel class " + splitted[3] + " does not exist in codebase.");
+								}
+								else if (!(Voxel.class.isAssignableFrom(customVoxelClass)))
+								{
+									ChunkStoriesLogger.getInstance().warning("Voxel class " + splitted[3] + " is not extending the Voxel base class.");
+								}
+								else
+								{
+									Class[] types = { Integer.TYPE, String.class };
+									Constructor constructor = customVoxelClass.getConstructor(types);
 
-								Class[] types = { Integer.TYPE, String.class };
-								Constructor constructor = customVoxelClass.getConstructor(types);
-
-								Object[] parameters = { id, name };
-								voxel = (Voxel) constructor.newInstance(parameters);
-
+									Object[] parameters = { id, name };
+									voxel = (Voxel) constructor.newInstance(parameters);
+								}
 							}
-							catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
+							catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 							{
 								e.printStackTrace();
 							}
@@ -189,7 +198,8 @@ public class Voxels
 								ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected parameter.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 						}
 						else
-							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", voxel parameters are reserved to classes extending VoxelDefault !", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
+							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", voxel parameters are reserved to classes extending VoxelDefault !", ChunkStoriesLogger.LogType.GAMEMODE,
+									ChunkStoriesLogger.LogLevel.WARN);
 					}
 				}
 				ln++;
@@ -209,29 +219,9 @@ public class Voxels
 		//Discard previous voxels
 		Arrays.fill(voxels, null);
 		attributedIds.clear();
-		
-		// Load .voxels files
-		// From vanilla
-		/*File vanillaFolder = new File("./" + "res/voxels/");
-		for (File f : vanillaFolder.listFiles())
-		{
-			if (!f.isDirectory() && f.getName().endsWith(".voxels"))
-			{
-				ChunkStoriesLogger.getInstance().log("Reading voxels definitions in : " + f.getAbsolutePath());
-				readVoxelsDefinitions(f);
-			}
-		}
 
-		for (Voxel vo : voxels)
-		{
-			if (vo != null)
-			{
-				//vo.color = VoxelTextures.getTextureColorAVG(vo.getVoxelTexture(0, new BlockRenderInfo()).name);
-			}
-		}*/
-		
 		Iterator<File> i = GameContent.getAllFilesByExtension("voxels");
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			File f = i.next();
 			ChunkStoriesLogger.getInstance().log("Reading voxels definitions in : " + f.getAbsolutePath());
@@ -241,7 +231,9 @@ public class Voxels
 
 	/**
 	 * Get a voxel by it's id
-	 * @param voxelId The id of the voxel
+	 * 
+	 * @param voxelId
+	 *            The id of the voxel
 	 * @return
 	 */
 	public static Voxel get(int voxelId)
@@ -286,7 +278,7 @@ public class Voxels
 		}
 		return id;
 	}
-	
+
 	public static Set<Integer> getAllLoadedVoxelIds()
 	{
 		return attributedIds;

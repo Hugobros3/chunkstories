@@ -78,7 +78,7 @@ public class PacketsProcessor
 						String packetName = splitted[2];
 						try
 						{
-							Class<?> untypedClass = Class.forName(splitted[3]);
+							Class<?> untypedClass = GameContent.getClassByName(splitted[3]);
 							if (!Packet.class.isAssignableFrom(untypedClass))
 								throw new SyntaxErrorException(ln, f, splitted[3] + " is not a subclass of Packet");
 							@SuppressWarnings("unchecked")
@@ -92,9 +92,8 @@ public class PacketsProcessor
 							PacketType packetType = new PacketType(packetId, packetName, packetClass, constructor, !allowed.equals("server"), !allowed.equals("client"));
 							packetTypes[packetId] = packetType;
 							packetIds.put(splitted[3], packetId);
-							//System.out.println(packetId + " " + packetName);
 						}
-						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
+						catch (NoSuchMethodException | SecurityException | IllegalArgumentException e)
 						{
 							e.printStackTrace();
 						}

@@ -1,5 +1,9 @@
 package io.xol.chunkstories.entity;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -18,16 +22,6 @@ public class EntityComponents
 	public static void reload()
 	{
 		entityComponentsIds.clear();
-		
-		/*File vanillaFolder = new File("./" + "res/entities/");
-		for (File f : vanillaFolder.listFiles())
-		{
-			if (!f.isDirectory() && f.getName().endsWith(".components"))
-			{
-				ChunkStoriesLogger.getInstance().log("Reading entity components definitions in : " + f.getAbsolutePath());
-				readEntityComponentsDefinitions(f);
-			}
-		}*/
 		
 		Iterator<File> i = GameContent.getAllFilesByExtension("components");
 		while(i.hasNext())

@@ -60,14 +60,14 @@ public class ParticleTypes
 
 						try
 						{
-							Class<?> rawClass = Class.forName(className);
+							Class<?> rawClass = GameContent.getClassByName(className);
 							if (rawClass == null)
 							{
-								ChunkStoriesLogger.getInstance().warning("particle " + className + " does not exist in codebase.");
+								ChunkStoriesLogger.getInstance().warning("Particle class " + className + " does not exist in codebase.");
 							}
 							else if (!(ParticleType.class.isAssignableFrom(rawClass)))
 							{
-								ChunkStoriesLogger.getInstance().warning("particle " + className + " is not extending the ParticleType class.");
+								ChunkStoriesLogger.getInstance().warning("Particle class " + className + " is not extending the ParticleType class.");
 							}
 							else
 							{
@@ -85,11 +85,12 @@ public class ParticleTypes
 								ParticleType type = constructor.newInstance(new Object[] {id, particleName});
 								particleTypesById.put(id, type);
 								particleTypesByName.put(particleName, type);
-								System.out.println("Loaded particle "+type + "ok.");
+								
+								//System.out.println("Loaded particle "+type + "ok.");
 							}
 
 						}
-						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e)
+						catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e)
 						{
 							e.printStackTrace();
 						}

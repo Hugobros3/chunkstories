@@ -29,15 +29,6 @@ public class Entities
 	{
 		entitiesIds.clear();
 		entitiesTypes.clear();
-		/*File vanillaFolder = new File("./" + "res/entities/");
-		for (File f : vanillaFolder.listFiles())
-		{
-			if (!f.isDirectory() && f.getName().endsWith(".entities"))
-			{
-				ChunkStoriesLogger.getInstance().log("Reading entities definitions in : " + f.getAbsolutePath());
-				readEntitiesDefinitions(f);
-			}
-		}*/
 		
 		Iterator<File> i = GameContent.getAllFilesByExtension("entities");
 		while(i.hasNext())
@@ -74,10 +65,14 @@ public class Entities
 						
 						try
 						{
-							Class<?> entityClass = Class.forName(className);
+							Class<?> entityClass = GameContent.getClassByName(className);
 							if(entityClass == null)
 							{
-								System.out.println("Entity "+className+" does not exist in codebase.");
+								System.out.println("Entity class "+className+" does not exist in codebase.");
+							}
+							else if (!(Entity.class.isAssignableFrom(entityClass)))
+							{
+								ChunkStoriesLogger.getInstance().warning("Entity class " + entityClass + " is not implementing the Entity interface.");
 							}
 							else
 							{
@@ -85,10 +80,6 @@ public class Entities
 								Class[] types = { WorldImplementation.class, Double.TYPE, Double.TYPE , Double.TYPE  };
 								@SuppressWarnings("unchecked")
 								Constructor<? extends Entity> constructor = (Constructor<? extends Entity>) entityClass.getConstructor(types);
-								
-								//Field eId = entityClass.getField("allocatedID");
-								//System.out.println("Setting "+className+" id to : "+id);
-								//eId.setShort(null, id);
 								
 								if(constructor == null)
 								{
@@ -99,12 +90,10 @@ public class Entities
 									entitiesTypes.put(id, constructor);
 									entitiesIds.put(className, id);
 								}
-								//Object[] parameters = { id, name };
-								//voxel = (Voxel) constructor.newInstance(parameters);
 							}
 
 						}
-						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
+						catch (NoSuchMethodException | SecurityException | IllegalArgumentException e)
 						{
 							e.printStackTrace();
 						}

@@ -203,7 +203,7 @@ public class GameContent
 					//System.out.println("Found override for ressource : " + filteredName + " in modDir : " + modsDir);
 				}
 				fileSystem.get(filteredName).addLast(f);
-				System.out.println("Found ressocurce "+filteredName);
+				//System.out.println("Found ressocurce "+filteredName);
 				//fileSystem.put(filteredName, f);
 			}
 		}
@@ -320,5 +320,24 @@ public class GameContent
 			}
 			
 		};
+	}
+
+	public static Class<?> getClassByName(String className)
+	{
+		//First try to load it from classpath
+		try
+		{
+			Class<?> inBaseClasspath = Class.forName(className);
+			if(inBaseClasspath != null)
+				return inBaseClasspath;
+		}
+		catch (ClassNotFoundException e)
+		{
+			e.printStackTrace();
+		}
+		//If this fails, try to obtain it from one of the loaded mods
+		
+		//If all fail, return null
+		return null;
 	}
 }
