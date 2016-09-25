@@ -97,13 +97,13 @@ public class GameContent
 	
 	static ConcurrentHashMap<String, Deque<File>> fileSystem = new ConcurrentHashMap<String, Deque<File>>();
 
-	static Set<String> mods = new HashSet<String>();
+	static Set<String> modsOldStyle = new HashSet<String>();
 	static boolean allModsEnabled = false;
 	
 	public static void setEnabledMods(String... modsEnabled)
 	{
 		//Build a set of required mods
-		mods.clear();
+		modsOldStyle.clear();
 		allModsEnabled = false;
 		for (String s : modsEnabled)
 		{
@@ -111,7 +111,7 @@ public class GameContent
 			if(s.equals("*"))
 				allModsEnabled = true;
 			else
-				mods.add(s);
+				modsOldStyle.add(s);
 		}
 		//System.out.println("MODS"+allModsEnabled);
 	}
@@ -131,7 +131,7 @@ public class GameContent
 		
 		//Enable external mods
 		//Set<String> alreadyEnabledMods = new HashSet<String>();
-		for(String modName : mods)
+		for(String modName : modsOldStyle)
 		{
 			modName = modName.replace('\\', '/');
 			if(modName.contains("/"))
