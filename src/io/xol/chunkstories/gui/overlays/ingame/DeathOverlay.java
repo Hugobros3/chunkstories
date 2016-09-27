@@ -1,4 +1,4 @@
-package io.xol.chunkstories.gui.menus;
+package io.xol.chunkstories.gui.overlays.ingame;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
@@ -67,7 +67,7 @@ public class DeathOverlay extends Overlay
 		{
 			//if(Client.world != null)
 			//	Client.world.unloadEverything();
-			mainScene.gameWindows.changeScene(new MainMenu(mainScene.gameWindows, false));
+			mainScene.gameWindow.changeScene(new MainMenu(mainScene.gameWindow, false));
 		}
 	}
 	

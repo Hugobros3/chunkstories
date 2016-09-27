@@ -55,17 +55,17 @@ public class TexturesHandler
 	{
 		for(Texture2D texture : loadedTextures.values())
 		{
-			texture.destroy();
-			//texture.loadTextureFromDisk();
+			Asset newAsset = Mods.getAsset(texture.getName());
+			texture.setAsset(newAsset);
+			texture.loadTextureFromAsset();
 		}
-		loadedTextures.clear();
-		
+
 		for(Cubemap cubemap : loadedCubemaps.values())
 		{
-			cubemap.destroy();
-			//cubemap.loadCubemapFromDisk();
+			cubemap.loadCubemapFromDisk();
+			//Asset newAsset = Mods.getAsset(cubemap.getName());
+			//cubemap.setAsset(newAsset);
 		}
-		loadedCubemaps.clear();
 	}
 
 	public static Texture2D nullTexture()

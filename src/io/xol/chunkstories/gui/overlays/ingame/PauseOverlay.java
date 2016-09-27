@@ -1,9 +1,10 @@
-package io.xol.chunkstories.gui.menus;
+package io.xol.chunkstories.gui.overlays.ingame;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
 import io.xol.chunkstories.input.Inputs;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;

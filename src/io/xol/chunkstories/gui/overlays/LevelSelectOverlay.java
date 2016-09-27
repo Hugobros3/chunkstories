@@ -1,4 +1,4 @@
-package io.xol.chunkstories.gui.menus;
+package io.xol.chunkstories.gui.overlays;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

@@ -17,6 +17,8 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -71,9 +73,12 @@ public class VoxelItemRenderer implements ItemRenderer
 		//ShaderProgram program = ShadersLibrary.getShaderProgram("inventory_blockmodel");
 		//renderingContext.setCurrentShader(program);
 		
-		glEnable(GL_CULL_FACE);
+		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
+		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		
+		/*glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
-		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);*/
 
 		program.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		program.setUniform2f("dekal", screenPositionX + pile.getItem().getSlotsWidth() * slotSize / 2, screenPositionY + pile.getItem().getSlotsHeight() * slotSize / 2);
@@ -207,8 +212,7 @@ public class VoxelItemRenderer implements ItemRenderer
 			Vector4f lightposition = new Vector4f(0.0, 0.0, 0.0, 1.0);
 			Matrix4f.transform(handTransformation, lightposition, lightposition);
 			
-			Vector3d pos = location.clone();
-			Light heldBlockLight = new Light(new Vector3f(0.5f, 0.45f, 0.4f).scale(2.0f), new Vector3f((float) pos.getX(), (float) pos.getY(), (float) pos.getZ()).add(new Vector3f(lightposition.x, lightposition.y, lightposition.z)), 15f);
+			Light heldBlockLight = new Light(new Vector3f(0.5f, 0.45f, 0.4f).scale(2.0f), new Vector3f(lightposition.x, lightposition.y, lightposition.z), 15f);
 			context.addLight(heldBlockLight);	
 			
 			//If we hold a light source, prepare the shader accordingly

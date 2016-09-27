@@ -1,8 +1,6 @@
-package io.xol.engine.graphics.util;
+package io.xol.engine.graphics.fonts;
 
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.fonts.Glyph;
-import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.geometry.TextMeshObject;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.math.HexTools;
@@ -42,9 +40,9 @@ public class TrueTypeFontRenderer
 		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleX, ALIGN_CENTER, clipX, new Vector4f(1, 1, 1, 1), target);
 	}
 
-	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scale, float scaleY)
+	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scale)
 	{
-		drawString(trueTypeFont, x, y, whatchars, scale, scaleY, ALIGN_LEFT, -1, new Vector4f(1, 1, 1, 1));
+		drawString(trueTypeFont, x, y, whatchars, scale, scale, ALIGN_LEFT, -1, new Vector4f(1, 1, 1, 1));
 	}
 
 	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4f color)

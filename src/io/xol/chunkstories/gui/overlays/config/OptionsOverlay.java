@@ -1,4 +1,4 @@
-package io.xol.chunkstories.gui.menus;
+package io.xol.chunkstories.gui.overlays.config;
 
 import java.util.ArrayList;
 import java.util.Iterator;

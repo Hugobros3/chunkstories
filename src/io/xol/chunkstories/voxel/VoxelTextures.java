@@ -182,8 +182,6 @@ public class VoxelTextures
 						break;
 					}
 
-					System.out.println("name:"+vt.name);
-					System.out.println("asset:"+"./voxels/textures/" + vt.name + ".png");
 					imageBuffer = ImageIO.read(Mods.getAsset("./voxels/textures/" + vt.name + ".png").read());
 					//imageBuffer = ImageIO.read(GameContent.getTextureFileLocation());
 

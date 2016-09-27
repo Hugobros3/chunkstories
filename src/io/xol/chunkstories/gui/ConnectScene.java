@@ -52,7 +52,6 @@ public class ConnectScene extends Scene
 		color = 0.5f;
 		drawCenteredText(message, GameWindowOpenGL.windowHeight / 2 - 32, 32, color, color, color, 1f);
 		FontRenderer2.drawTextUsingSpecificFontRVBA(12, 12, 0, 32, "Copyright 2016 XolioWare Interactive", BitmapFont.SMALLFONTS, 1f, 0.3f, 0.3f, 0.3f);
-		super.update(renderingContext);
 		
 		if (cancelButton.clicked())
 			cancelConnection();

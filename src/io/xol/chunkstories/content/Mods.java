@@ -344,10 +344,8 @@ public class Mods
 	{
 		AssetHierarchy asset = avaibleAssets.get(assetName);
 		if(asset == null)
-		{
-			System.out.println("can't find asset "+assetName);
 			return null;
-		}
+		
 		return asset.topInstance();
 	}
 	

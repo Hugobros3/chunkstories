@@ -1,7 +1,6 @@
 package io.xol.chunkstories.content.mods.exceptions;
 
 import java.util.Collection;
-import java.util.Set;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

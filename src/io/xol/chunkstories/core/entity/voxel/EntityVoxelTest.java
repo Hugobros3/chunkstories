@@ -1,13 +1,9 @@
 package io.xol.chunkstories.core.entity.voxel;
 
 import io.xol.chunkstories.api.entity.EntityVoxel;
-import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
-import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.math.lalgb.Vector3f;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

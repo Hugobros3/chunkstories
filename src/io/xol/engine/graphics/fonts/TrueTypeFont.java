@@ -37,11 +37,12 @@ import io.xol.engine.math.lalgb.Vector4f;
  * @original author Kevin Glass (kevglass)
  * @original author Peter Korzuszek (genail)
  * @new version edited by David Aaron Muhar (bobjob)
+ * @new version edited by Hugo Devillers (gobrosse)
  */
 public class TrueTypeFont
 {
-	//public static TrueTypeFont smallfonts = new TrueTypeFont("res/font/smallfonts.ttf", 12F);
 	public static TrueTypeFont arial11px = new TrueTypeFont("res/font/arial.ttf", 8F);
+	public static TrueTypeFont arial9f = new TrueTypeFont("res/font/arial_actual.ttf", 12f);
 	public static TrueTypeFont haettenschweiler = new TrueTypeFont("res/font/haettenschweiler.ttf", 16f);
 
 	public final static int ALIGN_LEFT = 0, ALIGN_RIGHT = 1, ALIGN_CENTER = 2;

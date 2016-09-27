@@ -28,7 +28,7 @@ import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.content.sandbox.GameLogicThread;
 import io.xol.chunkstories.gui.GameplayScene;
 import io.xol.chunkstories.gui.MainMenu;
-import io.xol.chunkstories.gui.menus.InventoryOverlay;
+import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.WorldClientCommon;

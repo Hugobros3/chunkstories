@@ -3,7 +3,7 @@ package io.xol.chunkstories.gui;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.graphics.util.TrueTypeFontRenderer;
+import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
 import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.misc.ColorsTools;
 

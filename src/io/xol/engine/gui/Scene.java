@@ -7,29 +7,18 @@ import io.xol.engine.graphics.RenderingContext;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Scene
+public abstract class Scene
 {
 	protected GuiElementsHandler guiHandler = new GuiElementsHandler();
 	
-	public GameWindowOpenGL gameWindows;
-	public boolean resized = false;
+	public GameWindowOpenGL gameWindow;
 
-	public Scene(GameWindowOpenGL XolioWindow)
+	public Scene(GameWindowOpenGL gameWindow)
 	{
-		gameWindows = XolioWindow;
+		this.gameWindow = gameWindow;
 	}
 
-	public void update(RenderingContext renderingContext)
-	{
-		if (resized)
-		{
-			resized = false;
-		}
-
-		//Draw any remaining buffers
-		renderingContext.getGuiRenderer().drawBuffer();
-		GameWindowOpenGL.tick();
-	}
+	public abstract void update(RenderingContext renderingContext);
 
 	public void onResize()
 	{

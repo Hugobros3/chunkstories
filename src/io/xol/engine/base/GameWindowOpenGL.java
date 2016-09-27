@@ -19,7 +19,7 @@ import org.lwjgl.LWJGLException;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.chunkstories.gui.menus.MessageBoxOverlay;
+import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.graphics.GLCalls;
@@ -51,12 +51,12 @@ public class GameWindowOpenGL
 	public String windowName;
 	public static int windowWidth = 1024;
 	public static int windowHeight = 640;
-	public static boolean resized = false;
+	//public static boolean resized = false;
 	public static boolean forceResize = false;
 
 	public static int targetFPS = 60;
 
-	public static String engineVersion = "2.2d";
+	public static String engineVersion = "2.3";
 
 	public static GameWindowOpenGL instance;
 
@@ -191,8 +191,6 @@ public class GameWindowOpenGL
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 				//Resize window logic
-				if (resized)
-					resized = false;
 				if (Display.wasResized() || forceResize)
 				{
 					if (forceResize)
@@ -203,11 +201,7 @@ public class GameWindowOpenGL
 					glViewport(0, 0, Display.getWidth(), Display.getHeight());
 
 					if (currentScene != null)
-					{
 						currentScene.onResize();
-						currentScene.resized = true;
-					}
-					resized = true;
 				}
 
 				//Do scene changes etc
@@ -215,7 +209,7 @@ public class GameWindowOpenGL
 					r.run();
 				mainThreadQueue.clear();
 
-				// Update audio streams
+				// Update audio
 				soundManager.update();
 
 				// Run scene content
@@ -237,6 +231,7 @@ public class GameWindowOpenGL
 					}
 
 					renderingContext.getGuiRenderer().drawBuffer();
+					GameWindowOpenGL.tick();
 				}
 
 				//Clamp fps
@@ -265,8 +260,9 @@ public class GameWindowOpenGL
 				GLCalls.nextFrame();
 			}
 			System.out.println("Copyright 2015-2016 XolioWare Interactive");
-			Client.onClose();
+			
 			soundManager.destroy();
+			Client.onClose();
 			Display.destroy();
 			System.exit(0);
 		}
@@ -451,12 +447,12 @@ public class GameWindowOpenGL
 		return lastFPS;
 	}
 
-	public void changeScene(Scene s)
+	public void changeScene(Scene scene)
 	{
 		Mouse.setGrabbed(false);
 		if (currentScene != null)
 			currentScene.destroy();
-		currentScene = s;
+		currentScene = scene;
 	}
 
 	public void close()

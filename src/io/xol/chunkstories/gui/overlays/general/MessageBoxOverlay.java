@@ -1,4 +1,4 @@
-package io.xol.chunkstories.gui.menus;
+package io.xol.chunkstories.gui.overlays.general;
 
 import java.util.Random;
 

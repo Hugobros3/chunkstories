@@ -2,6 +2,7 @@ package io.xol.engine.graphics.textures;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.lwjgl.opengl.ARBFramebufferObject;
@@ -27,6 +28,7 @@ public class Texture2D extends Texture
 {
 	//String name;
 	private Asset asset;
+	private String assetName;
 	
 	int width, height;
 	boolean wrapping = true;
@@ -47,17 +49,11 @@ public class Texture2D extends Texture
 	{
 		return type;
 	}
-
-	/*public Texture2D(String name)
-	{
-		this(TextureFormat.RGBA_8BPP);
-		this.name = name;
-		loadTextureFromDisk();
-	}*/
 	
 	public Texture2D(Asset asset)
 	{
 		this(TextureFormat.RGBA_8BPP);
+		this.assetName = asset.getName();
 		this.asset = asset;
 		loadTextureFromAsset();
 	}
@@ -72,22 +68,18 @@ public class Texture2D extends Texture
 		}
 		scheduledForLoad = false;
 
-		/*File textureFile = GameContent.getTextureFileLocation(name);
-		if (textureFile == null)
-		{
-			ChunkStoriesLogger.getInstance().warning("Couldn't load texture " + name + ", no file found on disk matching this name.");
-			return -1;
-		}*/
-		
 		//TODO we probably don't need half this shit
 		bind();
 		try
 		{
-			PNGDecoder decoder = new PNGDecoder(asset.read());
+			InputStream is = asset.read();
+			PNGDecoder decoder = new PNGDecoder(is);
 			width = decoder.getWidth();
 			height = decoder.getHeight();
 			ByteBuffer temp = ByteBuffer.allocateDirect(4 * width * height);
 			decoder.decode(temp, width * 4, Format.RGBA);
+			is.close();
+			
 			//ChunkStoriesLogger.getInstance().log("decoded " + width + " by " + height + " pixels (" + name + ")", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.DEBUG);
 			temp.flip();
 			bind();
@@ -343,5 +335,19 @@ public class Texture2D extends Texture
 	{
 		int surface = getWidth() * getHeight();
 		return surface * type.getBytesPerTexel();
+	}
+
+	public String getName()
+	{
+		if(assetName != null)
+			return assetName;
+		
+		//TODO split loaded textures from vanilla ones
+		throw new UnsupportedOperationException();
+	}
+
+	public void setAsset(Asset newAsset)
+	{
+		this.asset = newAsset;
 	}
 }

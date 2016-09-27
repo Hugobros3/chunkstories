@@ -1,4 +1,4 @@
-package io.xol.chunkstories.gui.menus;
+package io.xol.chunkstories.gui.overlays;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -169,7 +169,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		}
 		
 		Client.world = null;
-		this.mainScene.gameWindows.changeScene(new ConnectScene(mainScene.gameWindows, ip, port));
+		this.mainScene.gameWindow.changeScene(new ConnectScene(mainScene.gameWindow, ip, port));
 	}
 
 	@Override

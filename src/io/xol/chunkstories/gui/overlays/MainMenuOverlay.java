@@ -1,4 +1,4 @@
-package io.xol.chunkstories.gui.menus;
+package io.xol.chunkstories.gui.overlays;
 
 import java.util.Random;
 
@@ -9,6 +9,12 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.gui.ng.NgButton;
+import io.xol.chunkstories.gui.overlays.config.LogPolicyAsk;
+import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
+import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
+import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
+import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
@@ -28,6 +34,8 @@ public class MainMenuOverlay extends Overlay
 	Button multiPlayer = new Button(0, 0, 300, 32, ("Find a server ... "), BitmapFont.SMALLFONTS, 1);
 	Button optionsMenu = new Button(0, 0, 300, 32, ("Game options"), BitmapFont.SMALLFONTS, 1);
 	Button exitGame = new Button(0, 0, 300, 32, ("Exit game"), BitmapFont.SMALLFONTS, 1);
+	
+	NgButton k = new NgButton(0, 0, "KKK");
 
 	public MainMenuOverlay(OverlayableScene scene, Overlay parent)
 	{
@@ -37,6 +45,8 @@ public class MainMenuOverlay extends Overlay
 		guiHandler.add(multiPlayer);
 		guiHandler.add(optionsMenu);
 		guiHandler.add(exitGame);
+		
+		guiHandler.add(k);
 	}
 
 	@Override
@@ -70,6 +80,9 @@ public class MainMenuOverlay extends Overlay
 
 		exitGame.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320 - 48 * 3);
 		exitGame.draw();
+		
+		k.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320 - 48 * 4);
+		k.draw();
 
 		if (singlePlayer.clicked())
 			mainScene.changeOverlay(new LevelSelectOverlay(mainScene, this));
@@ -78,7 +91,7 @@ public class MainMenuOverlay extends Overlay
 		else if (optionsMenu.clicked())
 			mainScene.changeOverlay(new OptionsOverlay(mainScene, this));
 		else if (exitGame.clicked())
-			this.mainScene.gameWindows.close();
+			this.mainScene.gameWindow.close();
 
 		String version = "ChunkStories " + VersionInfo.version + " - (c) 2016 XolioWare Interactive";
 		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth - 20 - FontRenderer2.getTextLengthUsingFont(32, version, BitmapFont.SMALLFONTS), 10, 0, 32, version, BitmapFont.SMALLFONTS);

@@ -29,6 +29,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -43,9 +44,9 @@ import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
 import io.xol.chunkstories.gui.ChatPanel.ChatPanelOverlay;
-import io.xol.chunkstories.gui.menus.DeathOverlay;
-import io.xol.chunkstories.gui.menus.InventoryOverlay;
-import io.xol.chunkstories.gui.menus.PauseOverlay;
+import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
+import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
+import io.xol.chunkstories.gui.overlays.ingame.PauseOverlay;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
@@ -76,7 +77,7 @@ public class GameplayScene extends OverlayableScene
 	Entity player;
 
 	private boolean guiHidden = false;
-	boolean shouldCM = false;
+	boolean shouldTakeACubemap = false;
 
 	public GameplayScene(GameWindowOpenGL w, boolean multiPlayer)
 	{
@@ -129,12 +130,7 @@ public class GameplayScene extends OverlayableScene
 		}
 
 		if(player != null && ((EntityLiving)player).isDead() && !(this.currentOverlay instanceof DeathOverlay))
-		{
-			System.out.println("You dieded");
 			this.changeOverlay(new DeathOverlay(this, null));
-			//player = null;
-		}
-		//if (Client.getInstance().getControlledEntity() == null)
 		
 		//Get the player location
 		Vector3d cameraPosition = renderingContext.getCamera().getCameraPosition();
@@ -199,9 +195,9 @@ public class GameplayScene extends OverlayableScene
 			}
 		}
 		//Cubemap rendering trigger (can't run it while main render is occuring)
-		if (shouldCM)
+		if (shouldTakeACubemap)
 		{
-			shouldCM = false;
+			shouldTakeACubemap = false;
 			worldRenderer.renderWorldCubemap(null, 512, false);
 		}
 		//Blit the final 3d image
@@ -216,7 +212,7 @@ public class GameplayScene extends OverlayableScene
 
 			//Draw inventory
 			if (player != null && inventoryDrawer != null)
-				inventoryDrawer.drawPlayerInventorySummary(gameWindows.renderingContext, GameWindowOpenGL.windowWidth / 2 - 7, 64 + 64);
+				inventoryDrawer.drawPlayerInventorySummary(gameWindow.renderingContext, GameWindowOpenGL.windowWidth / 2 - 7, 64 + 64);
 
 			//Draw health
 			if (player != null && player instanceof EntityLiving)
@@ -249,12 +245,11 @@ public class GameplayScene extends OverlayableScene
 		}
 		Client.profiler.reset("gui");
 
-		super.update(renderingContext);
 		// Check connection didn't died and change scene if it has
 		if (Client.connection != null)
 		{
 			if (!Client.connection.isAlive() || Client.connection.hasFailed())
-				gameWindows.changeScene(new MainMenu(gameWindows, "Connection failed : " + Client.connection.getLatestErrorMessage()));
+				gameWindow.changeScene(new MainMenu(gameWindow, "Connection failed : " + Client.connection.getLatestErrorMessage()));
 		}
 
 		if (!Display.isActive() && this.currentOverlay == null)
@@ -294,7 +289,7 @@ public class GameplayScene extends OverlayableScene
 
 		KeyBind keyBind = ((ClientInputsManager) Client.getInstance().getInputsManager()).getKeyBoundForLWJGL2xKey(keyCode);
 
-		if (keyBind != null)
+		if (!guiHidden && keyBind != null)
 		{
 			//Block inputs if chatting
 			if (Client.getInstance().getInputsManager().getInputByName("chat").equals(keyBind))
@@ -335,7 +330,7 @@ public class GameplayScene extends OverlayableScene
 			//	((EntityPlayer) player).toggleNoclip();
 		}
 		else if (keyCode == Keyboard.KEY_F8)
-			shouldCM = true;
+			shouldTakeACubemap = true;
 		else if (keyCode == Keyboard.KEY_F12)
 		{
 			Client.getInstance().reloadAssets();
@@ -357,7 +352,7 @@ public class GameplayScene extends OverlayableScene
 			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) cameraPosition.getX(), (float) cameraPosition.getY(), (float) cameraPosition.getZ(), 1.0f, 1.0f);
 			flashLight = !flashLight;
 		}*/
-		else if(keyBind != null && keyBind.getName().startsWith("inventorySlot"))
+		else if(!guiHidden && keyBind != null && keyBind.getName().startsWith("inventorySlot"))
 		{
 			int requestedInventorySlot = Integer.parseInt(keyBind.getName().replace("inventorySlot", ""));
 			//Match zero onto last slot
@@ -381,7 +376,7 @@ public class GameplayScene extends OverlayableScene
 				return true;
 			}
 		}
-		else if (Client.getInstance().getInputsManager().getInputByName("inventory").equals(keyBind))
+		else if (!guiHidden && Client.getInstance().getInputsManager().getInputByName("inventory").equals(keyBind))
 		{
 			if (player != null)
 			{
@@ -395,6 +390,7 @@ public class GameplayScene extends OverlayableScene
 		else if (Client.getInstance().getInputsManager().getInputByName("exit").equals(keyBind))
 		{
 			focus(false);
+			guiHidden = false;
 			this.changeOverlay(new PauseOverlay(this, null));
 		}
 		return false;
@@ -584,7 +580,7 @@ public class GameplayScene extends OverlayableScene
 		//Location selectedBlockLocation = ((EntityControllable) player).getBlockLookingAt(false);
 
 		int ec = 0;
-		Iterator i = Client.world.getAllLoadedEntities();
+		IterableIterator<Entity> i = Client.world.getAllLoadedEntities();
 		while(i.hasNext())
 		{
 			i.next();
