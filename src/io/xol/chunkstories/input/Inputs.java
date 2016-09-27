@@ -1,9 +1,6 @@
 package io.xol.chunkstories.input;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -12,7 +9,8 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.client.ClientInputsManager;
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.chunkstories.server.ServerInputsManager;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -40,7 +38,7 @@ public class Inputs
 		return new Iterator<Input>()
 		{
 
-			Iterator<File> i = GameContent.getAllFilesByExtension("inputs");
+			Iterator<Asset> i = Mods.getAllAssetsByExtension("inputs");
 			Iterator<Input> fileInputsIterator = null;
 			Input input = null;
 
@@ -87,109 +85,98 @@ public class Inputs
 		};
 	}
 
-	private static Iterator<Input> loadKeyBindsFile(File f, InputsManager inputManager)
+	private static Iterator<Input> loadKeyBindsFile(Asset asset, InputsManager inputManager)
 	{
-		if (!f.exists())
+		if (asset == null)
 			return null;
 
 		//System.out.println("Reading " + f);
 
-		try
+		return new Iterator<Input>()
 		{
-			return new Iterator<Input>()
+
+			BufferedReader reader = new BufferedReader(asset.reader());
+
+			Input input = null;
+
+			@Override
+			public boolean hasNext()
 			{
+				if (input != null)
+					return true;
 
-				FileReader fileReader = new FileReader(f);
-				BufferedReader reader = new BufferedReader(fileReader);
-
-				Input input = null;
-
-				@Override
-				public boolean hasNext()
+				//Read until we get a good one
+				String line = "";
+				try
 				{
-					if (input != null)
-						return true;
-
-					//Read until we get a good one
-					String line = "";
-					try
+					while ((line = reader.readLine()) != null)
 					{
-						while ((line = reader.readLine()) != null)
+						//System.out.println("Reading " + line);
+						if (line.startsWith("#"))
 						{
-							//System.out.println("Reading " + line);
-							if (line.startsWith("#"))
+							// It's a comment, ignore.
+						}
+						else
+						{
+							String splitted[] = line.split(" ");
+							if (splitted.length >= 3)
 							{
-								// It's a comment, ignore.
-							}
-							else
-							{
-								String splitted[] = line.split(" ");
-								if (splitted.length >= 3)
+								/*
+								 * There goes the fun
+								 */
+								if (inputManager instanceof ClientInputsManager)
 								{
-									/*
-									 * There goes the fun
-									 */
-									if (inputManager instanceof ClientInputsManager)
+									if (splitted[0].equals("keyBind"))
 									{
-										if (splitted[0].equals("keyBind"))
+										input = new KeyBindImplementation(splitted[1], splitted[2]);
+										for(int i = 3; i < splitted.length; i++)
 										{
-											input = new KeyBindImplementation(splitted[1], splitted[2]);
-											for(int i = 3; i < splitted.length; i++)
-											{
-												if(splitted[i].equals("hidden"))
-													((KeyBindImplementation) input).setEditable(false);
-											}
-											return true;
+											if(splitted[i].equals("hidden"))
+												((KeyBindImplementation) input).setEditable(false);
 										}
-									}
-									else if(inputManager instanceof ServerInputsManager)
-									{
-										input = new InputVirtual(splitted[1]);
 										return true;
 									}
 								}
-								else if(splitted.length >= 2)
+								else if(inputManager instanceof ServerInputsManager)
 								{
-									if (splitted[0].equals("virtual"))
-									{
-										input = new InputVirtual(splitted[1]);
-										return true;
-									}
+									input = new InputVirtual(splitted[1]);
+									return true;
+								}
+							}
+							else if(splitted.length >= 2)
+							{
+								if (splitted[0].equals("virtual"))
+								{
+									input = new InputVirtual(splitted[1]);
+									return true;
 								}
 							}
 						}
-						reader.close();
-						return false;
 					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
-						System.out.println(f);
-					}
-
+					reader.close();
 					return false;
 				}
-
-				@Override
-				public Input next()
+				catch (IOException e)
 				{
-					if (input == null)
-						hasNext();
-
-					Input z = input;
-					input = null;
-					return z;
+					e.printStackTrace();
+					System.out.println(asset);
 				}
 
-			};
-		}
-		catch (FileNotFoundException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+				return false;
+			}
 
-		return null;
+			@Override
+			public Input next()
+			{
+				if (input == null)
+					hasNext();
+
+				Input z = input;
+				input = null;
+				return z;
+			}
+
+		};
 	}
 
 	/*public static void main(String[] a)

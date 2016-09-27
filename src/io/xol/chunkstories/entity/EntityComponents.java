@@ -5,14 +5,13 @@ package io.xol.chunkstories.entity;
 //http://xol.io
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 public class EntityComponents
@@ -23,23 +22,22 @@ public class EntityComponents
 	{
 		entityComponentsIds.clear();
 		
-		Iterator<File> i = GameContent.getAllFilesByExtension("components");
+		Iterator<Asset> i = Mods.getAllAssetsByExtension("components");
 		while(i.hasNext())
 		{
-			File f = i.next();
-			ChunkStoriesLogger.getInstance().log("Reading entity components definitions in : " + f.getAbsolutePath());
+			Asset f = i.next();
+			ChunkStoriesLogger.getInstance().log("Reading entity components definitions in : " + f);
 			readEntityComponentsDefinitions(f);
 		}
 	}
 
-	private static void readEntityComponentsDefinitions(File f)
+	private static void readEntityComponentsDefinitions(Asset f)
 	{
-		if (!f.exists())
+		if (f == null)
 			return;
 		try
 		{
-			FileReader fileReader = new FileReader(f);
-			BufferedReader reader = new BufferedReader(fileReader);
+			BufferedReader reader = new BufferedReader(f.reader());
 			String line = "";
 			while ((line = reader.readLine()) != null)
 			{

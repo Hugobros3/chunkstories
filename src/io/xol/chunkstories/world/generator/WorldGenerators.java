@@ -2,18 +2,18 @@ package io.xol.chunkstories.world.generator;
 
 import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
 import io.xol.chunkstories.api.world.WorldGenerator;
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.Mods.AssetHierarchy;
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.chunkstories.core.generator.BlankWorldGenerator;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Deque;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -30,18 +30,21 @@ public class WorldGenerators
 		//Loads all generators
 		generators.clear();
 		generatorsClasses.clear();
-		Deque<File> packetsFiles = GameContent.getAllFileInstances("./data/worldGenerators.txt");
-		for (File f : packetsFiles)
+		AssetHierarchy packetsFiles = Mods.getAssetInstances("./data/worldGenerators.txt");
+		
+		Iterator<Asset> i = packetsFiles.iterator();
+		while(i.hasNext())
 		{
-			loadWorldGeneratorsFile(f);
+			Asset a = i.next();
+			loadWorldGeneratorsFile(a);
 		}
 	}
 
-	private static void loadWorldGeneratorsFile(File f)
+	private static void loadWorldGeneratorsFile(Asset a)
 	{
-		if (!f.exists())
+		if (a == null)
 			return;
-		try (FileReader fileReader = new FileReader(f); BufferedReader reader = new BufferedReader(fileReader);)
+		try (BufferedReader reader = new BufferedReader(a.reader());)
 		{
 			String line = "";
 			int ln = 0;
@@ -61,7 +64,7 @@ public class WorldGenerators
 						{
 							Class<?> untypedClass = Class.forName(splitted[1]);
 							if (!WorldGenerator.class.isAssignableFrom(untypedClass))
-								throw new SyntaxErrorException(ln, f, splitted[1] + " is not a subclass of WorldGenerator");
+								throw new SyntaxErrorException(ln, a, splitted[1] + " is not a subclass of WorldGenerator");
 							@SuppressWarnings("unchecked")
 							Class<? extends WorldGenerator> generatorClass = (Class<? extends WorldGenerator>) untypedClass;
 

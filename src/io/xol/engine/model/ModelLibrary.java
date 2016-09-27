@@ -1,10 +1,10 @@
 package io.xol.engine.model;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.mods.Asset;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -15,15 +15,15 @@ public class ModelLibrary
 	// This class holds static model info
 	// static Map<String, ObjMeshLegacy> models = new HashMap<String, ObjMeshLegacy>();
 	
-	static Map<File, ObjMeshRenderable> objModelsRenderable = new HashMap<File, ObjMeshRenderable>();
-	static Map<File, ObjMeshComplete> objModelsComplete = new HashMap<File, ObjMeshComplete>();
+	static Map<Asset, ObjMeshRenderable> objModelsRenderable = new HashMap<Asset, ObjMeshRenderable>();
+	static Map<Asset, ObjMeshComplete> objModelsComplete = new HashMap<Asset, ObjMeshComplete>();
 
 	/**
 	 * @return Returns an ObjMeshRenderable and does not requires to keep the vertex data on main memory. ( It can be present but isn't mandatory, ie if somewhere else in the code it is requested we use the complete objMesh )
 	 */
 	public static ObjMeshRenderable getRenderableMesh(String name)
 	{
-		File file = GameContent.getFileLocation(name);
+		Asset file = Mods.getAsset(name);
 		if(file != null)
 		{
 			//Don't load something that is already loaded !
@@ -49,7 +49,7 @@ public class ModelLibrary
 	 */
 	public static ObjMeshComplete getCompleteMesh(String name)
 	{
-		File file = GameContent.getFileLocation(name);
+		Asset file = Mods.getAsset(name);
 		if(file != null)
 		{
 			if(objModelsComplete.containsKey(file))

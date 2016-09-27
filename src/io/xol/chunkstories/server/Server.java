@@ -14,16 +14,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
-import io.xol.engine.misc.FancyParser;
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.api.plugin.Scheduler;
-import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
-import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.content.Mods;
 import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.content.sandbox.GameLogicThread;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
@@ -51,7 +47,7 @@ public class Server implements Runnable, ServerInterface
 			if (s.contains("--mods"))
 			{
 				String[] modsString = s.replace("--mods=", "").split(",");
-				GameContent.setEnabledMods(modsString);
+				Mods.setEnabledMods(modsString);
 			}
 			else if (s.contains("--dir"))
 			{
@@ -109,8 +105,7 @@ public class Server implements Runnable, ServerInterface
 			log.info("Starting ChunkStories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
 			connectionsManager = new ServerConnectionsManager(this);
 
-			
-			GameContent.reload();
+			Mods.reload();
 			// Load world
 			String worldName = serverConfig.getProp("world", "world");
 			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;

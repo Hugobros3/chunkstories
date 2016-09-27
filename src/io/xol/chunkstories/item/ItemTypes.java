@@ -2,12 +2,11 @@ package io.xol.chunkstories.item;
 
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -32,23 +31,22 @@ public class ItemTypes
 		Arrays.fill(items, null);
 		dictionary.clear();
 		
-		Iterator<File> i = GameContent.getAllFilesByExtension("items");
+		Iterator<Asset> i = Mods.getAllAssetsByExtension("items");
 		while(i.hasNext())
 		{
-			File f = i.next();
-			ChunkStoriesLogger.getInstance().log("Reading items definitions in : " + f.getAbsolutePath());
+			Asset f = i.next();
+			ChunkStoriesLogger.getInstance().log("Reading items definitions in : " + f);
 			readitemsDefinitions(f);
 		}
 	}
 	
-	private static void readitemsDefinitions(File f)
+	private static void readitemsDefinitions(Asset f)
 	{
-		if (!f.exists())
+		if (f == null)
 			return;
 		try
 		{
-			FileReader fileReader = new FileReader(f);
-			BufferedReader reader = new BufferedReader(fileReader);
+			BufferedReader reader = new BufferedReader(f.reader());
 			String line = "";
 
 			ItemTypeImpl currentItemType = null;
@@ -105,7 +103,7 @@ public class ItemTypes
 							className = split[3];
 						try
 						{
-							Class<?> rawClass = GameContent.getClassByName(className);
+							Class<?> rawClass = Mods.getClassByName(className);
 							if (rawClass == null)
 							{
 								ChunkStoriesLogger.getInstance().warning("Item class " + className + " does not exist in codebase.");

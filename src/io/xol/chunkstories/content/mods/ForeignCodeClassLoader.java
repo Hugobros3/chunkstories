@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -18,41 +19,44 @@ import java.util.zip.ZipEntry;
 /**
  * Foreign content is anything found inside a jar and loaded by the game engine. Security measures applies unless configured otherwise
  */
-public class ForeignCode extends URLClassLoader
+public class ForeignCodeClassLoader extends URLClassLoader
 {
 	Mod responsibleMod;
 	List<String> classes = new ArrayList<String>();
-	
-	public ForeignCode(Mod responsibleMod, File file, ClassLoader parentLoader) throws IOException
+
+	public ForeignCodeClassLoader(Mod responsibleMod, File file, ClassLoader parentLoader) throws IOException
 	{
 		super(new URL[] { file.toURI().toURL() }, parentLoader);
 		assert parentLoader != null;
-		
+
 		this.responsibleMod = responsibleMod;
-		
+
 		JarFile jar = new JarFile(file);
-		
+
 		//Lists classes to be found in that jarFile
 		Enumeration<? extends ZipEntry> e = jar.entries();
-		while(e.hasMoreElements())
+		while (e.hasMoreElements())
 		{
 			ZipEntry entry = e.nextElement();
-			if(!entry.isDirectory())
+			if (!entry.isDirectory())
 			{
-				String className = entry.getName();
-				System.out.println("Found class " + className);
-				classes.add(className);
+				if (entry.getName().endsWith(".class"))
+				{
+					String className = entry.getName();
+					System.out.println("Found class " + className);
+					classes.add(className);
+				}
 			}
 		}
-		
+
 		jar.close();
 	}
-	
-	public Iterator<String> getClasses()
+
+	public Collection<String> classes()
 	{
-		return classes.iterator();
+		return classes;
 	}
-	
+
 	public Mod getResponsibleMod()
 	{
 		return responsibleMod;

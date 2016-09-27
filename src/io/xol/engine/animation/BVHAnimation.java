@@ -2,12 +2,16 @@ package io.xol.engine.animation;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Quaternion4d;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -28,9 +32,9 @@ public class BVHAnimation implements SkeletonAnimator
 	//Matrix4f[] cachedAnimations;
 	//int totalCachedFrames;
 
-	public static void main(String a[])
+	public static void main(String a[]) throws FileNotFoundException
 	{
-		BVHAnimation test = new BVHAnimation(new File("res/models/human.bvh"));
+		BVHAnimation test = new BVHAnimation(new FileInputStream(new File("res/animations/human/human.bvh")));
 		System.out.println(test.toString());
 
 		float rotX = (float) (Math.random() * 2.0 * Math.PI);
@@ -115,11 +119,16 @@ public class BVHAnimation implements SkeletonAnimator
 		System.out.println(matrix);
 	}
 
-	public BVHAnimation(File file)
+	public BVHAnimation(Asset asset)
 	{
-		load(file);
+		load(asset.read());
 	}
 	
+	public BVHAnimation(FileInputStream fileInputStream)
+	{
+		load(fileInputStream);
+	}
+
 	/*public void buildAnimationCache()
 	{
 		double totalAnimationTime = frames * frameTime;
@@ -275,14 +284,14 @@ public class BVHAnimation implements SkeletonAnimator
 		return null;
 	}
 
-	private void load(File file)
+	private void load(InputStream is)
 	{
 		bones.clear();
 		try
 		{
 			BVHTreeBone currentBone = null;
 			int readingFrame = 0;
-			BufferedReader reader = new BufferedReader(new FileReader(file));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 			String line = "";
 			boolean readingMotion = false;
 			boolean readingDest = false;

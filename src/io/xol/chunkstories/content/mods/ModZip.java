@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
@@ -107,6 +108,11 @@ public class ModZip extends Mod
 		{
 			return ModZip.this;
 		}
+		
+		public String toString()
+		{
+			return "[Asset: "+assetName+" from mod "+ModZip.this+"]";
+		}
 	}
 
 	@Override
@@ -129,9 +135,9 @@ public class ModZip extends Mod
 	}
 
 	@Override
-	public Iterator<Asset> assets()
+	public IterableIterator<Asset> assets()
 	{
-		return new Iterator<Asset>()
+		return new IterableIterator<Asset>()
 		{
 			Iterator<ModZipAsset> iz = assets.values().iterator();
 

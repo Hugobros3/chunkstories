@@ -10,6 +10,7 @@ import org.lwjgl.BufferUtils;
 
 import static org.lwjgl.openal.AL10.*;
 
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.engine.sound.SoundData;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -20,14 +21,14 @@ public class SoundDataOggSample extends SoundData
 {
 	int alId = -1;
 	
-	public SoundDataOggSample(File f)
+	public SoundDataOggSample(Asset asset)
 	{
-		if(f.exists())
+		if(asset != null)
 		{
 			try
 			{
 				ByteArrayOutputStream oggData = new ByteArrayOutputStream();
-				OggInputStream oggInput = new OggInputStream(new DataInputStream(new FileInputStream(f)));
+				OggInputStream oggInput = new OggInputStream(new DataInputStream(asset.read()));
 				while (!oggInput.atEnd()) {
 					oggData.write(oggInput.read());
 				}

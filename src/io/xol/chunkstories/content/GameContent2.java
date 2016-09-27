@@ -29,7 +29,7 @@ import io.xol.engine.sound.library.SoundsLibrary;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class GameContent
+public class GameContent2
 {
 	public static void reload()
 	{

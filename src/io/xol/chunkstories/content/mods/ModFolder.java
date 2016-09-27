@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
@@ -104,6 +105,11 @@ public class ModFolder extends Mod
 		{
 			return ModFolder.this;
 		}
+		
+		public String toString()
+		{
+			return "[Asset: "+assetName+" from mod "+ModFolder.this+"]";
+		}
 	}
 	@Override
 	public String getMD5Hash()
@@ -117,9 +123,9 @@ public class ModFolder extends Mod
 	}
 
 	@Override
-	public Iterator<Asset> assets()
+	public IterableIterator<Asset> assets()
 	{
-		return new Iterator<Asset>() {
+		return new IterableIterator<Asset>() {
 			Iterator<ModFolderAsset> iz = assets.values().iterator();
 
 			@Override

@@ -6,7 +6,8 @@ package io.xol.chunkstories.voxel;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.chunkstories.materials.Materials;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -31,14 +32,13 @@ public class Voxels
 	public static int lastAllocatedId;
 
 	@SuppressWarnings("rawtypes")
-	private static void readVoxelsDefinitions(File f)
+	private static void readVoxelsDefinitions(Asset f)
 	{
-		if (!f.exists())
+		if (f == null)
 			return;
 		try
 		{
-			FileReader fileReader = new FileReader(f);
-			BufferedReader reader = new BufferedReader(fileReader);
+			BufferedReader reader = new BufferedReader(f.reader());
 
 			String line = "";
 
@@ -70,7 +70,7 @@ public class Voxels
 						{
 							try
 							{
-								Class<?> customVoxelClass = GameContent.getClassByName(splitted[3]); // Class.forName(splitted[3]);
+								Class<?> customVoxelClass = Mods.getClassByName(splitted[3]); // Class.forName(splitted[3]);
 								if (customVoxelClass == null)
 								{
 									ChunkStoriesLogger.getInstance().warning("Voxel class " + splitted[3] + " does not exist in codebase.");
@@ -220,11 +220,11 @@ public class Voxels
 		Arrays.fill(voxels, null);
 		attributedIds.clear();
 
-		Iterator<File> i = GameContent.getAllFilesByExtension("voxels");
+		Iterator<Asset> i = Mods.getAllAssetsByExtension("voxels");
 		while (i.hasNext())
 		{
-			File f = i.next();
-			ChunkStoriesLogger.getInstance().log("Reading voxels definitions in : " + f.getAbsolutePath());
+			Asset f = i.next();
+			ChunkStoriesLogger.getInstance().log("Reading voxels definitions in : " + f);
 			readVoxelsDefinitions(f);
 		}
 	}

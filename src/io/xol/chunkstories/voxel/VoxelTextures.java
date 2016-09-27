@@ -4,28 +4,25 @@ import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
-import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
-
-import io.xol.chunkstories.content.GameContent;
-import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.Mods.AssetHierarchy;
+import io.xol.chunkstories.content.mods.Asset;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -55,21 +52,23 @@ public class VoxelTextures
 			List<VoxelTexture> voxelTexturesSortedBySize = new ArrayList<VoxelTexture>();
 
 			//for (File f : folder.listFiles())
-			Iterator<Entry<String, Deque<File>>> allFiles = GameContent.getAllUniqueEntries();
-			Entry<String, Deque<File>> entry;
-			File f;
+			
+			Iterator<AssetHierarchy> allFiles = Mods.getAllUniqueEntries();
+			//Iterator<Entry<String, Deque<File>>> allFiles = GameContent.getAllUniqueEntries();
+			AssetHierarchy entry;
+			Asset f;
 			while (allFiles.hasNext())
 			{
 				entry = allFiles.next();
-				if (entry.getKey().startsWith("./voxels/textures/"))
+				if (entry.getName().startsWith("./voxels/textures/"))
 				{
-					String name = entry.getKey().replace("./voxels/textures/", "");
+					String name = entry.getName().replace("./voxels/textures/", "");
 					if(name.contains("/"))
 						continue;
-					f = entry.getValue().getFirst();
-					if (!f.isDirectory() && f.exists() && f.getName().endsWith(".png"))
+					f = entry.topInstance();
+					if (f.getName().endsWith(".png"))
 					{
-						String textureName = f.getName().replace(".png", "");
+						String textureName = name.replace(".png", "");
 						//System.out.println("texName:"+textureName+" "+entry.getKey());
 						if (!texMap.containsKey(textureName))
 						{
@@ -183,7 +182,10 @@ public class VoxelTextures
 						break;
 					}
 
-					imageBuffer = ImageIO.read(GameContent.getTextureFileLocation("./voxels/textures/" + vt.name + ".png"));
+					System.out.println("name:"+vt.name);
+					System.out.println("asset:"+"./voxels/textures/" + vt.name + ".png");
+					imageBuffer = ImageIO.read(Mods.getAsset("./voxels/textures/" + vt.name + ".png").read());
+					//imageBuffer = ImageIO.read(GameContent.getTextureFileLocation());
 
 					float alphaTotal = 0;
 					int nonNullPixels = 0;
@@ -214,11 +216,11 @@ public class VoxelTextures
 					
 					//colors.put(vt.name, new Vector4f(color.x, color.y, color.z, alphaTotal));
 					// Do also the normal maps !
-					File normalMap = GameContent.getTextureFileLocation("./voxels/textures/normal/" + vt.name + ".png");
-					if (normalMap == null || !normalMap.exists())
-						normalMap = GameContent.getTextureFileLocation("./voxels/textures/normal/notex.png");
+					Asset normalMap = Mods.getAsset("./voxels/textures/normal/" + vt.name + ".png");
+					if (normalMap == null)
+						normalMap = Mods.getAsset("./voxels/textures/normal/notex.png");
 
-					imageBuffer = ImageIO.read(normalMap);
+					imageBuffer = ImageIO.read(normalMap.read());
 					for (int x = 0; x < vt.imageFileDimensions; x++)
 					{
 						for (int y = 0; y < vt.imageFileDimensions; y++)
@@ -228,11 +230,11 @@ public class VoxelTextures
 						}
 					}
 					// And the materials !
-					File materialMap = GameContent.getTextureFileLocation("./voxels/textures/material/" + vt.name + ".png");
-					if (materialMap == null || !materialMap.exists())
-						materialMap = GameContent.getTextureFileLocation("./voxels/textures/material/notex.png");
+					Asset materialMap = Mods.getAsset("./voxels/textures/material/" + vt.name + ".png");
+					if (materialMap == null)
+						materialMap = Mods.getAsset("./voxels/textures/material/notex.png");
 
-					imageBuffer = ImageIO.read(materialMap);
+					imageBuffer = ImageIO.read(materialMap.read());
 					for (int x = 0; x < vt.imageFileDimensions; x++)
 					{
 						for (int y = 0; y < vt.imageFileDimensions; y++)
@@ -254,7 +256,8 @@ public class VoxelTextures
 					sizeRequired *= 2;
 			}
 			// Read textures metadata
-			readTexturesMeta(GameContent.getFileLocation("./voxels/textures/meta.txt"));
+			//TODO read all overrides in priority
+			readTexturesMeta(Mods.getAsset("./voxels/textures/meta.txt"));
 		}
 		catch (Exception e)
 		{
@@ -262,14 +265,13 @@ public class VoxelTextures
 		}
 	}
 
-	private static void readTexturesMeta(File f)
+	private static void readTexturesMeta(Asset asset)
 	{
-		if (!f.exists())
+		if (asset == null)
 			return;
 		try
 		{
-			FileReader fileReader = new FileReader(f);
-			BufferedReader reader = new BufferedReader(fileReader);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(asset.read()));
 
 			String line = "";
 
@@ -286,7 +288,7 @@ public class VoxelTextures
 					if (line.startsWith("texture"))
 					{
 						if (vt != null)
-							System.out.println("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected 'texture' token.");
+							System.out.println("Warning ! Parse error in file " + asset + ", line " + ln + ", unexpected 'texture' token.");
 						String splitted[] = line.split(" ");
 						String name = splitted[1];
 
@@ -299,7 +301,7 @@ public class VoxelTextures
 							vt = null;
 						}
 						else
-							System.out.println("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected 'end' token.");
+							System.out.println("Warning ! Parse error in file " + asset + ", line " + ln + ", unexpected 'end' token.");
 					}
 					else if (line.startsWith("\t"))
 					{
@@ -315,12 +317,12 @@ public class VoxelTextures
 								vt.textureScale = Integer.parseInt(parameterValue);
 								break;
 							default:
-								System.out.println("Warning ! Parse error in file " + f + ", line " + ln + ", unknown parameter '" + parameterName + "'");
+								System.out.println("Warning ! Parse error in file " + asset + ", line " + ln + ", unknown parameter '" + parameterName + "'");
 								break;
 							}
 						}
 						else
-							System.out.println("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected parameter.");
+							System.out.println("Warning ! Parse error in file " + asset + ", line " + ln + ", unexpected parameter.");
 					}
 				}
 				ln++;
@@ -333,12 +335,12 @@ public class VoxelTextures
 		}
 	}
 
-	public static int getImageSize(File file)
+	public static int getImageSize(Asset asset)
 	{
 		try
 		{
 			ImageReader reader = ImageIO.getImageReadersBySuffix("png").next();
-			ImageInputStream stream = new FileImageInputStream(file);
+			ImageInputStream stream = ImageIO.createImageInputStream(asset.read());
 			reader.setInput(stream);
 			int size = reader.getWidth(reader.getMinIndex());
 			return size;

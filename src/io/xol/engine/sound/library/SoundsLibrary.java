@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
 import io.xol.engine.sound.SoundData;
 import io.xol.engine.sound.SoundDataBuffered;
 import io.xol.engine.sound.ogg.SoundDataOggSample;
@@ -23,7 +23,7 @@ public class SoundsLibrary
 	
 	public static SoundData obtainOggSample(String soundEffect)
 	{
-		SoundDataOggSample sd = new SoundDataOggSample(GameContent.getFileLocation(soundEffect));
+		SoundDataOggSample sd = new SoundDataOggSample(Mods.getAsset("./"+soundEffect));
 		sd.name = soundEffect;
 		if(sd.loadedOk())
 			return sd;
@@ -79,17 +79,12 @@ public class SoundsLibrary
 	private static SoundDataBuffered obtainOggStream(String musicName)
 	{
 		SoundDataOggStream sd;
-		try
-		{
-			sd = new SoundDataOggStream(new FileInputStream(GameContent.getFileLocation(musicName)));
-			sd.name = musicName;
-			if(sd.loadedOk())
-				return sd;
-		}
-		catch (FileNotFoundException e)
-		{
-			e.printStackTrace();
-		}
+		
+		sd = new SoundDataOggStream(Mods.getAsset("./"+musicName).read());
+		sd.name = musicName;
+		if(sd.loadedOk())
+			return sd;
+		
 		return null;
 	}
 	

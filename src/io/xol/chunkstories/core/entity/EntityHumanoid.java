@@ -409,7 +409,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 	@Override
 	public CollisionBox[] getCollisionBoxes()
 	{
-		return new CollisionBox[] { new CollisionBox(0.5, 2.00, 0.5) };
+		return new CollisionBox[] { new CollisionBox(0.5, 1.90, 0.5) };
 	}
 	
 	@Override

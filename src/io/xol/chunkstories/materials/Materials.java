@@ -1,15 +1,14 @@
 package io.xol.chunkstories.materials;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import io.xol.chunkstories.api.material.Material;
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -24,22 +23,21 @@ public class Materials
 	{
 		materials.clear();
 		
-		Iterator<File> i = GameContent.getAllFilesByExtension("materials");
+		Iterator<Asset> i = Mods.getAllAssetsByExtension("materials");
 		while(i.hasNext())
 		{
-			File f = i.next();
+			Asset f = i.next();
 			readitemsDefinitions(f);
 		}
 	}
 
-	private static void readitemsDefinitions(File f)
+	private static void readitemsDefinitions(Asset f)
 	{
-		if (!f.exists())
+		if (f == null)
 			return;
 		try
 		{
-			FileReader fileReader = new FileReader(f);
-			BufferedReader reader = new BufferedReader(fileReader);
+			BufferedReader reader = new BufferedReader(f.reader());
 			String line = "";
 
 			MaterialImplementation material = null;

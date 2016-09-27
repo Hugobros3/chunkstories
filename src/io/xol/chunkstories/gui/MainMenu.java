@@ -72,13 +72,16 @@ public class MainMenu extends OverlayableScene
 		if (possibleSkyboxes == null || possibleSkyboxes.length == 0)
 		{
 			// No skyboxes screen avaible, default to basic skybox
-			skyBox = "./res/textures/skybox";
+			skyBox = "./textures/skybox";
 		} else
 		{
 			// Choose a random one.
 			Random rnd = new Random();
 			skyBox = "./skyboxscreens/" + possibleSkyboxes[rnd.nextInt(possibleSkyboxes.length)];
 		}
+		
+		//TODO uncuck this
+		skyBox = "./textures/skybox";
 		cam.rotationX = 25;
 		cam.rotationY = -45;
 	}

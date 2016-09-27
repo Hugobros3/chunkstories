@@ -1,8 +1,9 @@
 package io.xol.engine.graphics.textures;
 
-import io.xol.chunkstories.tools.ChunkStoriesLogger;
-
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.mods.Asset;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -26,28 +27,14 @@ public class TexturesHandler
 		}
 		else
 		{
-			Texture2D texture = new Texture2D(name);
+			Asset asset = Mods.getAsset(name);
+			if(asset == null)
+				return nullTexture();
+			
+			Texture2D texture = new Texture2D(asset);
 			loadedTextures.put(name, texture);
 			return texture;
 		}
-	}
-	
-	public static void bindTexture(String name)
-	{
-		int id = getTextureID(name);
-		if(id < 0)
-		{
-			ChunkStoriesLogger.getInstance().info("Failed to bind texture "+name+", not loaded properly on disk.");
-			return;
-		}
-		//glEnable(GL_TEXTURE_2D);
-		//glBindTexture(GL_TEXTURE_2D, id);
-		throw new UnsupportedOperationException("Obsolete crap");
-	}
-	
-	public static int getTextureID(String name)
-	{
-		return getTexture(name).getId();
 	}
 
 	public static Cubemap getCubemap(String name)
@@ -64,35 +51,21 @@ public class TexturesHandler
 		}
 	}
 	
-	public static void bindCubemap(String name)
-	{
-		int id = getCubemapID(name);
-		if(id < 0)
-		{
-			ChunkStoriesLogger.getInstance().info("Failed to bind Cubemap "+name+", not loaded properly on disk.");
-			return;
-		}
-		//glEnable(GL_TEXTURE_CUBE_MAP);
-		//glBindTexture(GL_TEXTURE_CUBE_MAP, id);
-		throw new UnsupportedOperationException("Obsolete crap");
-	}
-	
-	public static int getCubemapID(String name)
-	{
-		return getCubemap(name).getID();
-	}
-	
 	public static void reloadAll()
 	{
 		for(Texture2D texture : loadedTextures.values())
 		{
-			texture.loadTextureFromDisk();
+			texture.destroy();
+			//texture.loadTextureFromDisk();
 		}
+		loadedTextures.clear();
 		
 		for(Cubemap cubemap : loadedCubemaps.values())
 		{
-			cubemap.loadCubemapFromDisk();
+			cubemap.destroy();
+			//cubemap.loadCubemapFromDisk();
 		}
+		loadedCubemaps.clear();
 	}
 
 	public static Texture2D nullTexture()

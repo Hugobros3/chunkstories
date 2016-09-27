@@ -1,10 +1,9 @@
 package io.xol.engine.animation;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
 import io.xol.engine.animation.BVHAnimation;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -22,7 +21,7 @@ public class BVHLibrary
 	public static BVHAnimation loadAnimation(String name)
 	{
 		System.out.println(name);
-		BVHAnimation anim = new BVHAnimation(GameContent.getFileLocation(name));
+		BVHAnimation anim = new BVHAnimation(Mods.getAsset(name));
 		animations.put(name, anim);
 		return anim;
 	}

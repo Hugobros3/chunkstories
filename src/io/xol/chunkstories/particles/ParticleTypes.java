@@ -11,7 +11,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import io.xol.chunkstories.api.particles.ParticleType;
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -28,19 +29,19 @@ public class ParticleTypes
 		particleTypesById.clear();
 		particleTypesByName.clear();
 		
-		Iterator<File> i = GameContent.getAllFilesByExtension("particles");
+		Iterator<Asset> i = Mods.getAllAssetsByExtension("particles");
 		while(i.hasNext())
 		{
-			File f = i.next();
+			Asset f = i.next();
 			loadParticlesFile(f);
 		}
 	}
 
-	private static void loadParticlesFile(File f)
+	private static void loadParticlesFile(Asset f)
 	{
-		if (!f.exists())
+		if (f == null)
 			return;
-		try (FileReader fileReader = new FileReader(f); BufferedReader reader = new BufferedReader(fileReader);)
+		try (BufferedReader reader = new BufferedReader(f.reader());)
 		{
 			String line = "";
 			while ((line = reader.readLine()) != null)
@@ -60,7 +61,7 @@ public class ParticleTypes
 
 						try
 						{
-							Class<?> rawClass = GameContent.getClassByName(className);
+							Class<?> rawClass = Mods.getClassByName(className);
 							if (rawClass == null)
 							{
 								ChunkStoriesLogger.getInstance().warning("Particle class " + className + " does not exist in codebase.");

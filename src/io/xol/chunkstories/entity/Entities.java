@@ -2,13 +2,12 @@ package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -30,23 +29,22 @@ public class Entities
 		entitiesIds.clear();
 		entitiesTypes.clear();
 		
-		Iterator<File> i = GameContent.getAllFilesByExtension("entities");
+		Iterator<Asset> i = Mods.getAllAssetsByExtension("entities");
 		while(i.hasNext())
 		{
-			File f = i.next();
-			ChunkStoriesLogger.getInstance().log("Reading entities definitions in : " + f.getAbsolutePath());
+			Asset f = i.next();
+			ChunkStoriesLogger.getInstance().log("Reading entities definitions in : " + f);
 			readEntitiesDefinitions(f);
 		}
 	}
 
-	private static void readEntitiesDefinitions(File f)
+	private static void readEntitiesDefinitions(Asset f)
 	{
-		if (!f.exists())
+		if (f == null)
 			return;
 		try
 		{
-			FileReader fileReader = new FileReader(f);
-			BufferedReader reader = new BufferedReader(fileReader);
+			BufferedReader reader = new BufferedReader(f.reader());
 			String line = "";
 			while ((line = reader.readLine()) != null)
 			{
@@ -65,7 +63,7 @@ public class Entities
 						
 						try
 						{
-							Class<?> entityClass = GameContent.getClassByName(className);
+							Class<?> entityClass = Mods.getClassByName(className);
 							if(entityClass == null)
 							{
 								System.out.println("Entity class "+className+" does not exist in codebase.");

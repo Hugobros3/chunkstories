@@ -1,8 +1,6 @@
 package io.xol.engine.model;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +9,7 @@ import java.util.Map;
 
 import org.lwjgl.BufferUtils;
 
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -24,14 +23,14 @@ public class WavefrontLoader
 	private static List<float[]> texcoords = new ArrayList<float[]>();
 	private static List<float[]> normals = new ArrayList<float[]>();
 
-	public static ObjMeshComplete loadWavefrontFormatMesh(File file)
+	public static ObjMeshComplete loadWavefrontFormatMesh(Asset asset)
 	{
-		return (ObjMeshComplete) loadWavefrontFormatMeshInternal(file, LoadInto.OBJ_MESH);
+		return (ObjMeshComplete) loadWavefrontFormatMeshInternal(asset, LoadInto.OBJ_MESH);
 	}
 	
-	public static ObjMeshRenderable loadWavefrontFormatMeshRenderable(File file)
+	public static ObjMeshRenderable loadWavefrontFormatMeshRenderable(Asset asset)
 	{
-		return (ObjMeshRenderable) loadWavefrontFormatMeshInternal(file, LoadInto.OBJ_MESH_ONLY_RENDERABLE);
+		return (ObjMeshRenderable) loadWavefrontFormatMeshInternal(asset, LoadInto.OBJ_MESH_ONLY_RENDERABLE);
 	}
 
 	//Various ways of calling the same function
@@ -40,7 +39,7 @@ public class WavefrontLoader
 		OBJ_MESH, OBJ_MESH_ONLY_RENDERABLE, VOXEL_MODEL, FLOAT_BUFFER
 	}
 
-	private static Object loadWavefrontFormatMeshInternal(File file, LoadInto mode)
+	private static Object loadWavefrontFormatMeshInternal(Asset asset, LoadInto mode)
 	{
 		// Reset values
 		vertices.clear();
@@ -59,7 +58,7 @@ public class WavefrontLoader
 		try
 		{
 			// Read the actual file
-			BufferedReader reader = new BufferedReader(new FileReader(file));
+			BufferedReader reader = new BufferedReader(asset.reader());
 			String[] splitted;
 			String[] e;
 			String l;

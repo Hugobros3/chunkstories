@@ -1,7 +1,5 @@
 package io.xol.engine.graphics.textures;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -16,7 +14,7 @@ import static org.lwjgl.opengl.GL14.*;
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
@@ -27,7 +25,8 @@ import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
 
 public class Texture2D extends Texture
 {
-	String name;
+	//String name;
+	private Asset asset;
 	
 	int width, height;
 	boolean wrapping = true;
@@ -49,14 +48,21 @@ public class Texture2D extends Texture
 		return type;
 	}
 
-	public Texture2D(String name)
+	/*public Texture2D(String name)
 	{
 		this(TextureFormat.RGBA_8BPP);
 		this.name = name;
 		loadTextureFromDisk();
+	}*/
+	
+	public Texture2D(Asset asset)
+	{
+		this(TextureFormat.RGBA_8BPP);
+		this.asset = asset;
+		loadTextureFromAsset();
 	}
 
-	public int loadTextureFromDisk()
+	public int loadTextureFromAsset()
 	{
 		if (!GameWindowOpenGL.isMainGLWindow())
 		{
@@ -66,17 +72,18 @@ public class Texture2D extends Texture
 		}
 		scheduledForLoad = false;
 
-		File textureFile = GameContent.getTextureFileLocation(name);
+		/*File textureFile = GameContent.getTextureFileLocation(name);
 		if (textureFile == null)
 		{
 			ChunkStoriesLogger.getInstance().warning("Couldn't load texture " + name + ", no file found on disk matching this name.");
 			return -1;
-		}
+		}*/
+		
 		//TODO we probably don't need half this shit
 		bind();
 		try
 		{
-			PNGDecoder decoder = new PNGDecoder(new FileInputStream(textureFile));
+			PNGDecoder decoder = new PNGDecoder(asset.read());
 			width = decoder.getWidth();
 			height = decoder.getHeight();
 			ByteBuffer temp = ByteBuffer.allocateDirect(4 * width * height);
@@ -176,11 +183,11 @@ public class Texture2D extends Texture
 		glBindTexture(GL_TEXTURE_2D, glId);
 		currentlyBoundId = glId;
 
-		if (scheduledForLoad)
+		if (scheduledForLoad && asset != null)
 		{
 			long ms = System.currentTimeMillis();
 			System.out.print("main thread called, actually loading the texture ... ");
-			this.loadTextureFromDisk();
+			this.loadTextureFromAsset();
 			System.out.print((System.currentTimeMillis()-ms) + "ms \n");
 		}
 	}
@@ -241,6 +248,7 @@ public class Texture2D extends Texture
 	{
 		//System.out.println("Computing mipmap for "+name);
 		bind();
+		
 		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 		//Regenerate the mipmaps only when necessary
 		if (RenderingConfig.gl_openGL3Capable)
@@ -249,8 +257,6 @@ public class Texture2D extends Texture
 			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
 
 		mipmapsUpToDate = true;
-		//setFiltering();
-		//setFiltering();
 	}
 
 	public void setLinearFiltering(boolean on)

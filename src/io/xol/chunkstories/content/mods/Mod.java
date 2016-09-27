@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.mods.exceptions.MalformedModTxtException;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
 
@@ -73,7 +74,7 @@ public abstract class Mod
 	
 	public abstract Asset getAssetByName(String name);
 	
-	public abstract Iterator<Asset> assets();
+	public abstract IterableIterator<Asset> assets();
 	
 	public void loadClasses()
 	{

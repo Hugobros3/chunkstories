@@ -4,13 +4,11 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Deque;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -22,7 +20,9 @@ import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.Mods.AssetHierarchy;
+import io.xol.chunkstories.content.mods.Asset;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -44,20 +44,22 @@ public class PacketsProcessor
 	{
 		//Loads *all* possible packets types
 		packetIds.clear();
-		Deque<File> packetsFiles = GameContent.getAllFileInstances("./data/packetsTypes.txt");
-		for (File f : packetsFiles)
+		AssetHierarchy packetsFiles = Mods.getAssetInstances("./data/packetsTypes.txt");
+		Iterator<Asset> i = packetsFiles.iterator();
+		while(i.hasNext())
 		{
-			loadPacketFile(f);
+			Asset a = i.next();
+			loadPacketFile(a);
 		}
 	}
 
-	private static void loadPacketFile(File f)
+	private static void loadPacketFile(Asset f)
 	{
-		if (!f.exists())
+		if (f == null)
 			return;
 		
 		ChunkStoriesLogger.getInstance().log("Loading packets in "+f);
-		try (FileReader fileReader = new FileReader(f); BufferedReader reader = new BufferedReader(fileReader);)
+		try (BufferedReader reader = new BufferedReader(f.reader());)
 		{
 			String line = "";
 			int ln = 0;
@@ -78,7 +80,7 @@ public class PacketsProcessor
 						String packetName = splitted[2];
 						try
 						{
-							Class<?> untypedClass = GameContent.getClassByName(splitted[3]);
+							Class<?> untypedClass = Mods.getClassByName(splitted[3]);
 							if (!Packet.class.isAssignableFrom(untypedClass))
 								throw new SyntaxErrorException(ln, f, splitted[3] + " is not a subclass of Packet");
 							@SuppressWarnings("unchecked")
