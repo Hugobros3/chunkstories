@@ -1,7 +1,5 @@
 package io.xol.chunkstories.world.chunk;
 
-import java.util.Iterator;
-
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;

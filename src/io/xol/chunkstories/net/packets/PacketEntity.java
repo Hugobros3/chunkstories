@@ -13,7 +13,6 @@ import io.xol.chunkstories.world.WorldImplementation;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.concurrent.locks.Lock;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz

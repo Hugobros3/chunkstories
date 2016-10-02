@@ -44,6 +44,11 @@ public class TrueTypeFontRenderer
 	{
 		drawString(trueTypeFont, x, y, whatchars, scale, scale, ALIGN_LEFT, -1, new Vector4f(1, 1, 1, 1));
 	}
+	
+	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scale, Vector4f color)
+	{
+		drawString(trueTypeFont, x, y, whatchars, scale, scale, ALIGN_LEFT, -1, color);
+	}
 
 	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4f color)
 	{

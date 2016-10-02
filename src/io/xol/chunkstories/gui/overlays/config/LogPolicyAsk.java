@@ -7,9 +7,7 @@ import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.math.lalgb.Vector4f;
 
@@ -26,7 +24,7 @@ public class LogPolicyAsk extends Overlay
 		guiHandler.add(denyButton);
 	}
 
-	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	//GuiElementsHandler guiHandler = new GuiElementsHandler();
 	Button acceptButton = new Button(0, 0, 300, 32, ("I'm ok with this"), BitmapFont.SMALLFONTS, 1);
 	Button denyButton = new Button(0, 0, 300, 32, ("No thanks."), BitmapFont.SMALLFONTS, 1);
 	

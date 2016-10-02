@@ -2,16 +2,12 @@ package io.xol.chunkstories.gui.overlays.ingame;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
-import io.xol.chunkstories.input.Inputs;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
-import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.math.lalgb.Vector4f;
 
@@ -21,7 +17,7 @@ import io.xol.engine.math.lalgb.Vector4f;
 
 public class PauseOverlay extends Overlay
 {
-	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	//GuiElementsHandler guiHandler = new GuiElementsHandler();
 	
 	Button resumeButton = new Button(0, 0, 320, 32, "Resume", BitmapFont.SMALLFONTS, 1);
 	Button optionsButton = new Button(0, 0, 320, 32, "Options", BitmapFont.SMALLFONTS, 1);

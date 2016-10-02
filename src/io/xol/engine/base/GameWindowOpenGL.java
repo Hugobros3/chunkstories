@@ -222,6 +222,13 @@ public class GameWindowOpenGL
 					// then do the game logic
 					try
 					{
+						currentScene.guiHandler.rescaleGui(getScalingFactor());
+						if(currentScene instanceof OverlayableScene)
+						{
+							OverlayableScene o = (OverlayableScene)currentScene;
+							if(o.currentOverlay != null)
+								o.currentOverlay.guiHandler.rescaleGui(getScalingFactor());
+						}
 						currentScene.update(renderingContext);
 					}
 					//Fucking tired of handling npes everywhere
@@ -271,6 +278,11 @@ public class GameWindowOpenGL
 			System.out.println("A fatal error occured ! If you see the dev, show him this message !");
 			e.printStackTrace();
 		}
+	}
+	
+	public static int getScalingFactor()
+	{
+		return windowWidth > 1024 ? 2 : 1;
 	}
 
 	public static void sync(int fps)

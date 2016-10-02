@@ -8,8 +8,6 @@ import static org.lwjgl.opengl.GL11.*;
 
 import static org.lwjgl.opengl.ARBDrawInstanced.*;
 
-import io.xol.engine.base.GameWindowOpenGL;
-
 public class GLCalls
 {
 	static long verticesDrawn;

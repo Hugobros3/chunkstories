@@ -1,11 +1,8 @@
 package io.xol.chunkstories.core.item.renderers;
 
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
-
-import static org.lwjgl.opengl.GL11.*;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;

@@ -6,7 +6,6 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.core.entity.ai.GenericLivingAI;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 

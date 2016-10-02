@@ -14,7 +14,6 @@ import java.util.List;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.chunkstories.client.Client;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.textures.GBufferTexture;
 

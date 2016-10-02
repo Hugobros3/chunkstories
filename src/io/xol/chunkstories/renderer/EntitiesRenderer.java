@@ -6,15 +6,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.locks.Lock;
-
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;

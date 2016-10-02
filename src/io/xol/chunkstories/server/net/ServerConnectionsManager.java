@@ -1,7 +1,6 @@
 package io.xol.chunkstories.server.net;
 
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.UsersPrivileges;
 import io.xol.engine.misc.ColorsTools;

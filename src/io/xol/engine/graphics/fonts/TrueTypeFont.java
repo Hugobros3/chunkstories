@@ -3,10 +3,7 @@ package io.xol.engine.graphics.fonts;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
-import io.xol.engine.graphics.util.GuiRenderer;
 import io.xol.engine.math.HexTools;
-import io.xol.engine.misc.ColorsTools;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -17,17 +14,12 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import javax.imageio.ImageIO;
-
 import java.awt.GraphicsEnvironment;
-
-import io.xol.engine.math.lalgb.Vector4f;
 
 /**
  * A TrueType font implementation originally for Slick, edited for Bobjob's Engine, edited for Chunk Stories engine
@@ -42,7 +34,9 @@ import io.xol.engine.math.lalgb.Vector4f;
 public class TrueTypeFont
 {
 	public static TrueTypeFont arial11px = new TrueTypeFont("res/font/arial.ttf", 8F);
-	public static TrueTypeFont arial9f = new TrueTypeFont("res/font/arial_actual.ttf", 12f);
+	public static TrueTypeFont arial12px9pt = new TrueTypeFont("res/font/arial_actual.ttf", 12f);
+	public static TrueTypeFont arial24px18pt = new TrueTypeFont("res/font/arial_actual.ttf", 24f);
+	public static TrueTypeFont arial11px8pt = new TrueTypeFont("res/font/arial_actual.ttf", 11f);
 	public static TrueTypeFont haettenschweiler = new TrueTypeFont("res/font/haettenschweiler.ttf", 16f);
 
 	public final static int ALIGN_LEFT = 0, ALIGN_RIGHT = 1, ALIGN_CENTER = 2;

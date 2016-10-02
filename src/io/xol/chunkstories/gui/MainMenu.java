@@ -2,15 +2,15 @@ package io.xol.chunkstories.gui;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.content.Mods;
 import io.xol.chunkstories.gui.overlays.LoginOverlay;
 import io.xol.chunkstories.gui.overlays.MainMenuOverlay;
@@ -18,23 +18,16 @@ import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fbo.FrameBufferObject;
-import io.xol.engine.graphics.shaders.ShaderProgram;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.GBufferTexture;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.engine.base.GameWindowOpenGL;
 
 public class MainMenu extends OverlayableScene
 {
-	// GUI Objects
-	Overlay currentOverlay = new MainMenuOverlay(this, null);
-
 	// Stuff for rendering the background
-	ShaderProgram blurH;
-	ShaderProgram blurV;
-	ShaderProgram menuSkyBox;
-	ShaderProgram blit;
 
 	String skyBox;
 	Camera cam = new Camera();
@@ -52,13 +45,12 @@ public class MainMenu extends OverlayableScene
 	public MainMenu(GameWindowOpenGL XolioWindow, boolean askForLogin)
 	{
 		super(XolioWindow);
-		menuSkyBox = ShadersLibrary.getShaderProgram("mainMenuSkyBox");
-		blurH = ShadersLibrary.getShaderProgram("blurH");
-		blurV = ShadersLibrary.getShaderProgram("blurV");
-		blit = ShadersLibrary.getShaderProgram("blit");
 		selectRandomSkybox();
+		
 		if(askForLogin)
 			currentOverlay = new LoginOverlay(this, null);
+		else
+			currentOverlay = new MainMenuOverlay(this, null);
 	}
 
 	public MainMenu(GameWindowOpenGL eng, String string)
@@ -143,7 +135,7 @@ public class MainMenu extends OverlayableScene
 		// Render this shit boy
 		unblurredFBO.bind();
 		cam.justSetup(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		renderingContext.useShader("mainMenuSkyBox");
+		ShaderInterface menuSkyBox = renderingContext.useShader("mainMenuSkyBox");
 		//menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);
 		
@@ -155,7 +147,7 @@ public class MainMenu extends OverlayableScene
 		
 		// Blurring to H
 		blurredHFBO.bind();
-		renderingContext.useShader("blurH");
+		ShaderInterface blurH = renderingContext.useShader("blurH");
 		//blurH.use(true);
 		blurH.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		
@@ -166,7 +158,7 @@ public class MainMenu extends OverlayableScene
 		for (int i = 0; i < 1; i++)
 		{
 			blurredVFBO.bind();
-			renderingContext.useShader("blurV");
+			ShaderInterface blurV = renderingContext.useShader("blurV");
 			//blurV.use(true);
 			blurV.setUniform1f("lookupScale", 1);
 			blurV.setUniform2f("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
@@ -176,7 +168,7 @@ public class MainMenu extends OverlayableScene
 			renderingContext.drawFSQuad();
 
 			blurredHFBO.bind();
-			renderingContext.useShader("blurH");
+			blurH = renderingContext.useShader("blurH");
 			//blurH.use(true);
 			blurH.setUniform2f("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
 			//blurH.setUniformSampler(0, "inputTexture", blurredV.getId());
@@ -185,7 +177,7 @@ public class MainMenu extends OverlayableScene
 		}
 
 		blurredVFBO.bind();
-		renderingContext.useShader("blurV");
+		ShaderInterface blurV = renderingContext.useShader("blurV");
 		//blurV.use(true);
 		blurV.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		//blurV.setUniformSampler(0, "inputTexture", blurredH.getId());
@@ -194,16 +186,27 @@ public class MainMenu extends OverlayableScene
 		//blurV.use(false);
 
 		FrameBufferObject.unbind();
-		renderingContext.useShader("blit");
+		ShaderInterface blit = renderingContext.useShader("background");
 		//blit.use(true);
 		blit.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		//blit.setUniformSampler(0, "diffuseTexture", blurredV.getId());
-		renderingContext.bindTexture2D("inputTexture", blurredV);
+		//renderingContext.bindTexture2D("inputTexture", blurredV);
+		Texture2D backgroundTexture = TexturesHandler.getTexture("./textures/gui/bright.png");
+		backgroundTexture.setLinearFiltering(false);
+		renderingContext.bindTexture2D("diffuseTexture", backgroundTexture);
 		renderingContext.drawFSQuad();
-		FrameBufferObject.unbind();
-		currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		
+		//FrameBufferObject.unbind();
+
+		Texture2D logoTexture = TexturesHandler.getTexture("./textures/gui/icon.png");
+		//System.out.println(logoTexture.getId());
+		float alphaIcon = (float) (0.25 + Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 3000f)) * 0.25f);
+		renderingContext.setBlendMode(BlendMode.MIX);
+		float diagonal = (float) Math.sqrt(GameWindowOpenGL.windowWidth * GameWindowOpenGL.windowWidth + GameWindowOpenGL.windowHeight * GameWindowOpenGL.windowHeight);
+		float iconSize = (float) (diagonal / 3 + 50 * Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 30000f)));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(GameWindowOpenGL.windowWidth / 2 - iconSize / 2, GameWindowOpenGL.windowHeight / 2 - iconSize / 2, GameWindowOpenGL.windowWidth / 2 + iconSize / 2, GameWindowOpenGL.windowHeight / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true, new Vector4f(1.0, 1.0, 1.0, alphaIcon));
 		//renderingContext.getGuiRenderer().drawBuffer();
+		
+		currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	}
 
 	@Override

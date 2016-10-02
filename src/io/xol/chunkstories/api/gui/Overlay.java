@@ -2,6 +2,7 @@ package io.xol.chunkstories.api.gui;
 
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.gui.GuiElementsHandler;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -9,6 +10,7 @@ import io.xol.engine.graphics.RenderingContext;
 
 public abstract class Overlay
 {
+	public GuiElementsHandler guiHandler = new GuiElementsHandler();
 	public OverlayableScene mainScene;
 	public Overlay parent;
 
@@ -27,7 +29,9 @@ public abstract class Overlay
 
 	public boolean onClick(int posx, int posy, int button)
 	{
-		return false;
+		if (button == 0)
+			guiHandler.handleClick(posx, posy);
+		return true;
 	}
 	
 	public boolean onScroll(int dy)

@@ -18,10 +18,10 @@ import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.GuiElement;
 import io.xol.engine.math.lalgb.Vector4f;
@@ -32,7 +32,7 @@ import io.xol.engine.math.lalgb.Vector4f;
 
 public class OptionsOverlay extends Overlay
 {
-	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	//GuiElementsHandler guiHandler = new GuiElementsHandler();
 	Button exitButton = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
 
 	List<ConfigTab> configTabs = new ArrayList<ConfigTab>();
@@ -202,7 +202,8 @@ public class OptionsOverlay extends Overlay
 				width = textWidth;
 			}
 			int textDekal = -textWidth;
-			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 8, "gui/scalableField", 32, 2);
+			TexturesHandler.getTexture("./textures/gui/scalableField.png").setLinearFiltering(false);
+			CorneredBoxDrawer.drawCorneredBoxTiled(posx - 4, posy, width + 8, height + 16, 8, "./textures/gui/scalableField.png", 32, 2);
 			ObjectRenderer.renderTexturedRect(posx - 160 + 320 * (Float.parseFloat(value)-min)/(max-min), posy, 64, 64, 0, 0, 32, 32, 32, "gui/barCursor");
 			FontRenderer2.drawTextUsingSpecificFont(textDekal + posx, posy - height / 2, 0, size * 32, text, font);
 			return width * 2 * size - 12;

@@ -18,13 +18,12 @@ import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
-import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.LocalWorldButton;
 import io.xol.engine.gui.elements.Button;
 
 public class LevelSelectOverlay extends Overlay
 {
-	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	//GuiElementsHandler guiHandler = new GuiElementsHandler();
 	Button backOption = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
 	Button newWorldOption = new Button(0, 0, 300, 32, ("New..."), BitmapFont.SMALLFONTS, 1);
 	List<WorldInfo> localWorlds = new ArrayList<WorldInfo>();

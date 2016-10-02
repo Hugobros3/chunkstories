@@ -10,7 +10,6 @@ import io.xol.chunkstories.api.rendering.Renderable;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.Primitive;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
 import io.xol.engine.graphics.textures.Texture2D;

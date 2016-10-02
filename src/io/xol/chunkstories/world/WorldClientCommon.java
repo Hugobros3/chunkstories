@@ -1,9 +1,7 @@
 package io.xol.chunkstories.world;
 
-import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.renderer.WorldRenderer;

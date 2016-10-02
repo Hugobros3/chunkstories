@@ -24,7 +24,6 @@ import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.GuiElement;
 import io.xol.engine.gui.elements.InputText;
@@ -37,8 +36,7 @@ import io.xol.engine.net.HttpRequester;
 
 public class ServerSelectionOverlay extends Overlay implements HttpRequester
 {
-
-	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	//GuiElementsHandler guiHandler = new GuiElementsHandler();
 	InputText ipForm = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
 	Button backOption = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
 	Button connectButton = new Button(0, 0, 128, 32, "Connect", BitmapFont.SMALLFONTS, 1);

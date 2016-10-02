@@ -1,7 +1,5 @@
 package io.xol.chunkstories.gui.overlays;
 
-import java.util.Random;
-
 import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.VersionInfo;
@@ -11,31 +9,27 @@ import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.ng.NgButton;
 import io.xol.chunkstories.gui.overlays.config.LogPolicyAsk;
+import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
 import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
-//import io.xol.engine.base.font.TrueTypeFont;
-import io.xol.engine.gui.GuiElementsHandler;
-import io.xol.engine.gui.elements.Button;
 import io.xol.engine.math.lalgb.Vector4f;
 
 public class MainMenuOverlay extends Overlay
 {
-	GuiElementsHandler guiHandler = new GuiElementsHandler();
-	Button singlePlayer = new Button(0, 0, 300, 32, ("Single player"), BitmapFont.SMALLFONTS, 1);
-	Button multiPlayer = new Button(0, 0, 300, 32, ("Find a server ... "), BitmapFont.SMALLFONTS, 1);
-	Button optionsMenu = new Button(0, 0, 300, 32, ("Game options"), BitmapFont.SMALLFONTS, 1);
-	Button exitGame = new Button(0, 0, 300, 32, ("Exit game"), BitmapFont.SMALLFONTS, 1);
+	//GuiElementsHandler guiHandler = new GuiElementsHandler();
+	NgButton singlePlayer = new NgButton(0, 0,("Singleplayer"));
+	NgButton multiPlayer = new NgButton(0, 0, ("Server Browser"));
+	NgButton modsOption = new NgButton(0, 0,("Mods"));
+	NgButton optionsMenu = new NgButton(0, 0,("Settings"));
+	NgButton exitGame = new NgButton(0, 0, ("Quit"));
 	
-	NgButton k = new NgButton(0, 0, "KKK");
+	NgButton k = new NgButton(0, 0, "Singleplayer");
 
 	public MainMenuOverlay(OverlayableScene scene, Overlay parent)
 	{
@@ -43,6 +37,7 @@ public class MainMenuOverlay extends Overlay
 		// Gui buttons
 		guiHandler.add(singlePlayer);
 		guiHandler.add(multiPlayer);
+		guiHandler.add(modsOption);
 		guiHandler.add(optionsMenu);
 		guiHandler.add(exitGame);
 		
@@ -57,44 +52,66 @@ public class MainMenuOverlay extends Overlay
 			this.mainScene.changeOverlay(new LogPolicyAsk(mainScene, this));
 		}
 		
-		ObjectRenderer.renderTexturedRectAlpha(384 - 32 - 4, GameWindowOpenGL.windowHeight - 192, 768, 768, "logo", 1f);
-		//FontRenderer2.drawTextUsingSpecificFontRVBA(384 + 192, GameWindowOpenGL.windowHeight - 256 - 16, 0, 48, "Indev " + VersionInfo.version, BitmapFont.SMALLFONTS, 1, 0.5f, 1, 1);
-
-		Random rng = new Random();
-		rng.setSeed(System.currentTimeMillis() / 100);
-
-		char[] bytes = new char[16];
-		for (int i = 0; i < 16; i++)
-			bytes[i] = (char) ((rng.nextInt() % 512));
+		float totalLengthOfButtons = 0;
+		float spacing = -1;
 		
-		renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, 384 + 192, GameWindowOpenGL.windowHeight - 256 - 16, "Kektest > ?. :)", 2, 2, new Vector4f(1.0f));
-
-		singlePlayer.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320);
+		totalLengthOfButtons += singlePlayer.getWidth();
+		totalLengthOfButtons += spacing;
+		
+		totalLengthOfButtons += multiPlayer.getWidth();
+		totalLengthOfButtons += spacing;
+		
+		totalLengthOfButtons += modsOption.getWidth();
+		totalLengthOfButtons += spacing;
+		
+		totalLengthOfButtons += optionsMenu.getWidth();
+		totalLengthOfButtons += spacing;
+		
+		totalLengthOfButtons += exitGame.getWidth();
+		
+		float buttonDisplayX = GameWindowOpenGL.windowWidth / 2 - totalLengthOfButtons / 2;
+		float buttonDisplayY = 32;
+		
+		singlePlayer.setPosition(buttonDisplayX, buttonDisplayY);
+		buttonDisplayX += singlePlayer.getWidth() + spacing;
 		singlePlayer.draw();
 
-		multiPlayer.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320 - 48);
+		multiPlayer.setPosition(buttonDisplayX, buttonDisplayY);
+		buttonDisplayX += multiPlayer.getWidth() + spacing;
 		multiPlayer.draw();
 
-		optionsMenu.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320 - 48 * 2);
+		modsOption.setPosition(buttonDisplayX, buttonDisplayY);
+		buttonDisplayX += modsOption.getWidth() + spacing;
+		modsOption.draw();
+
+		optionsMenu.setPosition(buttonDisplayX, buttonDisplayY);
+		buttonDisplayX += optionsMenu.getWidth() + spacing;
 		optionsMenu.draw();
 
-		exitGame.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320 - 48 * 3);
+		exitGame.setPosition(buttonDisplayX, buttonDisplayY);
+		buttonDisplayX += exitGame.getWidth() + spacing;
 		exitGame.draw();
-		
-		k.setPosition(x + 220, GameWindowOpenGL.windowHeight - 320 - 48 * 4);
-		k.draw();
 
 		if (singlePlayer.clicked())
 			mainScene.changeOverlay(new LevelSelectOverlay(mainScene, this));
 		else if (multiPlayer.clicked())
 			mainScene.changeOverlay(new ServerSelectionOverlay(mainScene, this, false));
+		else if (modsOption.clicked())
+			mainScene.changeOverlay(new ModsSelectionOverlay(mainScene, this));
 		else if (optionsMenu.clicked())
 			mainScene.changeOverlay(new OptionsOverlay(mainScene, this));
 		else if (exitGame.clicked())
 			this.mainScene.gameWindow.close();
 
-		String version = "ChunkStories " + VersionInfo.version + " - (c) 2016 XolioWare Interactive";
-		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth - 20 - FontRenderer2.getTextLengthUsingFont(32, version, BitmapFont.SMALLFONTS), 10, 0, 32, version, BitmapFont.SMALLFONTS);
+		Vector4f noticeColor = new Vector4f(100/255f, 100/255f, 100/255f, 1);
+		String version = "Chunk Stories Client " + VersionInfo.version;
+		TrueTypeFont.arial11px8pt.getWidth(version);
+		renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px8pt, 4, 0, version, 1, noticeColor);
+	
+		String copyrightNotice = "Copyright (c) 2016-2017 XolioWare Interactive";
+		float noticeDekal = TrueTypeFont.arial11px8pt.getWidth(copyrightNotice);
+		renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px8pt, GameWindowOpenGL.windowWidth - noticeDekal - 4, 0, copyrightNotice, 1, noticeColor);
+	
 	}
 
 	@Override

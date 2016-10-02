@@ -31,7 +31,7 @@ public class EntityComponentAnimation extends EntityComponent
 		
 		this.animationStartTimer = System.currentTimeMillis();
 		
-		this.pushComponentEveryone();
+		//this.pushComponentEveryone();
 	}
 	
 	public String getAnimationName()

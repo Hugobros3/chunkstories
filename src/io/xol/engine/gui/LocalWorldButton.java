@@ -15,7 +15,6 @@ import org.lwjgl.input.Mouse;
 
 public class LocalWorldButton extends Button
 {
-
 	int posx;
 	int posy;
 
@@ -42,15 +41,12 @@ public class LocalWorldButton extends Button
 	{
 		if (hasFocus() || isMouseOver())
 		{
-			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 8, "gui/scalableButtonOver", 32, 2);
+			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 8, "./textures/gui/scalableButtonOver.png", 32, 2);
 		}
 		else
 		{
-			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 8, "gui/scalableButton", 32, 2);
+			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 8, "./textures/gui/scalableButton.png", 32, 2);
 		}
-		// ObjectRenderer.renderTexturedRect(posx, posy, 64, 64,
-		// "internal://res/textures/gui/info.png");
-		// if(info.hasLogo)
 		ObjectRenderer.renderTexturedRect(posx - width / 2 + 32 + 4, posy, 64, 64, "gameDir://worlds/" + info.getInternalName() + "/info.png");
 
 		FontRenderer2.setLengthCutoff(true, width - 72);

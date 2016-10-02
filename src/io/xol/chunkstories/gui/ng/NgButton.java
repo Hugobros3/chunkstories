@@ -3,12 +3,13 @@ package io.xol.chunkstories.gui.ng;
 import org.lwjgl.input.Mouse;
 
 import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
+import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
-import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.GuiElement;
+import io.xol.engine.math.lalgb.Vector4f;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -33,33 +34,31 @@ public class NgButton extends GuiElement
 
 	public int getWidth()
 	{
-		//System.out.println(size);
-		int width = FontRenderer2.getTextLengthUsingFont(size * 16, text, font);
-		return width + 0;
+		int width = TrueTypeFont.arial12px9pt.getWidth(text);
+		return (width + 8) * scale;
 	}
 
 	public boolean isMouseOver()
 	{
-		int width = 0;
-		return (Mouse.getX() >= posx - width / 2 - 4 && Mouse.getX() < posx + width / 2 + 4 && Mouse.getY() >= posy - height / 2 - 4 && Mouse.getY() <= posy + height / 2 + 4);
+		int width = getWidth();
+		return (Mouse.getX() >= posx && Mouse.getX() < posx + width && Mouse.getY() >= posy && Mouse.getY() <= posy + height * scale);
 	}
 
 	public void draw()
 	{
-		int width = TrueTypeFont.arial9f.getWidth(text);
+		int width = getWidth();
 		
-		//int textDekal = -width / 2;
+		Texture2D buttonTexture = TexturesHandler.getTexture("./textures/gui/scalableButton2.png");
 		if (hasFocus() || isMouseOver())
-		{
-			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 4, "./textures/gui/scalableButtonOver.png", 32, 1);
-		}
-		else
-		{
-			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy - 64, (int) (126 + 0 * Math.sin((154871 % 50000) / 500f)), 128, 4, "./textures/gui/scalableButtonOver.png", 32, 1);
-		}
+			buttonTexture = TexturesHandler.getTexture("./textures/gui/scalableButtonOver2.png");
+			
+		buttonTexture.setLinearFiltering(false);
+		CorneredBoxDrawer.drawCorneredBoxTiled(posx + (width) / 2, posy + 9 * scale, width, 18 * scale, 4 * scale, buttonTexture, 32, scale);
 		
-		TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial9f, posx, posy, "I fucking love memes Singleplayer", 1);
-		//FontRenderer2.drawTextUsingSpecificFont(0 + posx, posy - height / 2, 0, size * 32, text, font);
+		//if(scale == 1)
+			TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial12px9pt, posx + 4 * scale, posy, text, scale, new Vector4f(76/255f, 76/255f, 76/255f, 1));
+		//else
+		//	TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial24px18pt, posx + 4 * scale, posy + 2, text, scale / 2, new Vector4f(76/255f, 76/255f, 76/255f, 1));
 	}
 
 	public boolean clicked()

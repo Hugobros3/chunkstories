@@ -4,6 +4,7 @@ import org.lwjgl.input.Mouse;
 
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
+import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -52,11 +53,13 @@ public class Button extends GuiElement
 		int textDekal = -textWidth;
 		if (hasFocus() || isMouseOver())
 		{
-			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 8, "gui/scalableButtonOver", 32, 2);
+			TexturesHandler.getTexture("./textures/gui/scalableButtonOver.png").setLinearFiltering(false);
+			CorneredBoxDrawer.drawCorneredBoxTiled(posx - 4, posy, width + 8, height + 16, 4, "./textures/gui/scalableButtonOver.png", 32, 2);
 		}
 		else
 		{
-			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 8, "gui/scalableButton", 32, 2);
+			TexturesHandler.getTexture("./textures/gui/scalableButton.png").setLinearFiltering(false);
+			CorneredBoxDrawer.drawCorneredBoxTiled(posx - 4, posy, width + 8, height + 16, 4, "./textures/gui/scalableButton.png", 32, 2);
 		}
 		FontRenderer2.drawTextUsingSpecificFont(textDekal + posx, posy - height / 2, 0, size * 32, text, font);
 		return width * 2 * size - 12;

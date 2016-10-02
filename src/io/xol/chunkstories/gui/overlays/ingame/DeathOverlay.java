@@ -8,7 +8,6 @@ import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
-import io.xol.engine.gui.GuiElementsHandler;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.math.HexTools;
 import io.xol.engine.math.lalgb.Vector4f;
@@ -19,7 +18,7 @@ import io.xol.engine.math.lalgb.Vector4f;
 
 public class DeathOverlay extends Overlay
 {
-	GuiElementsHandler guiHandler = new GuiElementsHandler();
+	//GuiElementsHandler guiHandler = new GuiElementsHandler();
 	
 	Button respawnButton = new Button(0, 0, 320, 32, "tryhard", BitmapFont.SMALLFONTS, 1);
 	Button exitButton = new Button(0, 0, 320, 32, "ragequit", BitmapFont.SMALLFONTS, 1);

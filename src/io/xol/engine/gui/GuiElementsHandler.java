@@ -1,5 +1,7 @@
 package io.xol.engine.gui;
 
+import io.xol.chunkstories.gui.ng.NgButton;
+import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.GuiElement;
 import io.xol.engine.gui.elements.InputText;
@@ -61,18 +63,25 @@ public class GuiElementsHandler
 			{
 				Button but = (Button) obj;
 				if (but.isMouseOver())
-				{
-					// System.out.println("clik"+obj.toString());
 					but.clicked = true;
-				}
+			}
+			if (obj instanceof NgButton)
+			{
+				NgButton but = (NgButton) obj;
+				if (but.isMouseOver())
+					but.clicked = true;
+			}
+			if (obj instanceof ScrollableContainer)
+			{
+				ScrollableContainer but = (ScrollableContainer) obj;
+				if (but.isMouseOver(x, y))
+					but.handleClick(0, x, y);
 			}
 			else if(obj instanceof InputText)
 			{
 				InputText inp = (InputText)obj;
 				if(inp.isMouseOver())
-				{
 					changeFocus(objects.indexOf(inp));
-				}
 			}
 		}
 	}
@@ -114,5 +123,13 @@ public class GuiElementsHandler
 	public InputText getInputText(int i)
 	{
 		return (InputText) objects.get(i);
+	}
+
+	public void rescaleGui(int scale)
+	{
+		for (GuiElement obj : objects)
+		{
+			obj.setScale(scale);
+		}
 	}
 }

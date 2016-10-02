@@ -10,9 +10,9 @@ import io.xol.engine.gui.Scene;
 
 public abstract class OverlayableScene extends Scene
 {
-	public OverlayableScene(GameWindowOpenGL XolioWindow)
+	public OverlayableScene(GameWindowOpenGL gameWindow)
 	{
-		super(XolioWindow);
+		super(gameWindow);
 	}
 
 	public Overlay currentOverlay = null;

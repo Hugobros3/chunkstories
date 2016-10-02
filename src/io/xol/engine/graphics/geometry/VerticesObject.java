@@ -380,7 +380,6 @@ public class VerticesObject
 
 	public static long updateVerticesObjects()
 	{
-		int destroyedVerticesObjects = 0;
 		long vram = 0;
 
 		//synchronized (objectsToDestroy)
@@ -393,7 +392,8 @@ public class VerticesObject
 				VerticesObject object = i.next();
 
 				if (object.destroy())
-					destroyedVerticesObjects++;
+				{
+				}
 
 				i.remove();
 			}
@@ -413,7 +413,6 @@ public class VerticesObject
 				glDeleteBuffers(openGLID);
 				//System.out.println("Destroyed orphan VerticesObject id #"+id);
 
-				destroyedVerticesObjects++;
 				i.remove();
 			}
 		}

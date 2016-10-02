@@ -2,8 +2,6 @@ package io.xol.engine.sound.ogg;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 
 import org.lwjgl.BufferUtils;

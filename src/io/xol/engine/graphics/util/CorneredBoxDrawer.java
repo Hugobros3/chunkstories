@@ -9,7 +9,7 @@ import io.xol.engine.math.lalgb.Vector4f;
 public class CorneredBoxDrawer
 {
 
-	public static void drawCorneredBoxTiled(float posx, float posy, int width, int height, int cornerSize, String textureName, int textureSize, int scale)
+	public static void drawCorneredBoxTiled(float posx, float posy, int width, int height, int cornerSize, Texture2D texture, int textureSize, int scale)
 	{
 		RenderingContext renderingContext = GameWindowOpenGL.instance.renderingContext;
 		GuiRenderer guiRenderer = renderingContext.getGuiRenderer();
@@ -21,11 +21,10 @@ public class CorneredBoxDrawer
 		float botRightCornerY = posy + height / 2;
 		
 		//Debug helper
-		guiRenderer.drawBoxWindowsSpace(topLeftCornerX, topLeftCornerY, botRightCornerX, botRightCornerY, 0, 0, 0, 0, null, true, false, new Vector4f(1.0, 1.0, 0.0, 1.0));
+		//guiRenderer.drawBoxWindowsSpace(topLeftCornerX, topLeftCornerY, botRightCornerX, botRightCornerY, 0, 0, 0, 0, null, true, false, new Vector4f(1.0, 1.0, 0.0, 1.0));
 		
 		int cornerSizeScaled = scale * cornerSize;
 		
-		Texture2D texture = TexturesHandler.getTexture(textureName);
 		float textureSizeInternal = textureSize - cornerSize * 2;
 		
 		int insideWidth = width - cornerSizeScaled * 2;
@@ -92,6 +91,12 @@ public class CorneredBoxDrawer
 		guiRenderer.drawBoxWindowsSpace(botRightCornerX - cornerSizeScaled, topLeftCornerY, botRightCornerX, topLeftCornerY + cornerSizeScaled
 				, texCoordInsideBottomRight, 1.0f, 1.0f, texCoordInsideBottomRight, texture, true, false, new Vector4f(1.0, 1.0, 1.0, 1.0));
 		
+	}
+
+	public static void drawCorneredBoxTiled(int posx, int posy, int width, int height, int cornerSize, String textureName, int textureSize, int scale)
+	{
+		Texture2D texture = TexturesHandler.getTexture(textureName);
+		drawCorneredBoxTiled(posx, posy, width, height, cornerSize, texture, textureSize, scale);
 	}
 
 	public static void drawCorneredBox(float posx, float posy, int width, int height, int cornerSize, String texture)

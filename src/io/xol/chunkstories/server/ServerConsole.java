@@ -2,9 +2,6 @@ package io.xol.chunkstories.server;
 
 import java.util.Iterator;
 
-import static org.fusesource.jansi.Ansi.*;
-import static org.fusesource.jansi.Ansi.Color.*;
-
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
