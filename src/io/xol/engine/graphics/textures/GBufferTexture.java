@@ -14,7 +14,7 @@ import static org.lwjgl.opengl.GL30.*;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class GBufferTexture extends Texture2D implements RenderTarget
+public class GBufferTexture extends Texture2DAsset implements RenderTarget
 {
 	public GBufferTexture(TextureFormat type, int w, int h)
 	{

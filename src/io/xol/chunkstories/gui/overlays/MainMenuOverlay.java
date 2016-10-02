@@ -95,7 +95,7 @@ public class MainMenuOverlay extends Overlay
 		if (singlePlayer.clicked())
 			mainScene.changeOverlay(new LevelSelectOverlay(mainScene, this));
 		else if (multiPlayer.clicked())
-			mainScene.changeOverlay(new ServerSelectionOverlay(mainScene, this, false));
+			mainScene.changeOverlay(new ServerSelectionOverlayNg(mainScene, this, false));
 		else if (modsOption.clicked())
 			mainScene.changeOverlay(new ModsSelectionOverlay(mainScene, this));
 		else if (optionsMenu.clicked())

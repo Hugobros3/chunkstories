@@ -25,7 +25,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VerticesObject;
-import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.Texture2DAsset;
 import io.xol.engine.gui.Scene;
 import io.xol.engine.misc.CPUModelDetection;
 import io.xol.engine.sound.ALSoundManager;
@@ -185,7 +185,7 @@ public class GameWindowOpenGL
 			{
 				//Update pending actions
 				vramUsageVerticesObjects = VerticesObject.updateVerticesObjects();
-				Texture2D.destroyPendingTextureObjects();
+				Texture2DAsset.destroyPendingTextureObjects();
 
 				//Clear windows
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

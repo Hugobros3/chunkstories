@@ -40,7 +40,7 @@ public class ObjectRenderer
 	public static void renderTexturedRotatedRectRVBA(float xpos, float ypos, float w, float h, float rot, float tcsx, float tcsy, float tcex, float tcey, String textureName, float r, float v, float b, float a)
 	{
 
-		if (textureName.startsWith("internal://"))
+		/*if (textureName.startsWith("internal://"))
 			textureName = textureName.substring("internal://".length());
 		else if (textureName.startsWith("gameDir://"))
 			textureName = textureName.substring("gameDir://".length());//GameDirectory.getGameFolderPath() + "/" + tex.substring("gameDir://".length());
@@ -48,7 +48,8 @@ public class ObjectRenderer
 			textureName = ("./" + textureName.replace("../", "") + ".png");
 		else
 			textureName = ("./textures/" + textureName + ".png");
-
+		 */
+		
 		Texture2D texture = TexturesHandler.getTexture(textureName);
 		
 		texture.setLinearFiltering(false);

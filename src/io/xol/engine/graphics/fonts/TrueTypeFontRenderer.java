@@ -2,7 +2,7 @@ package io.xol.engine.graphics.fonts;
 
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.TextMeshObject;
-import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.Texture2DAsset;
 import io.xol.engine.math.HexTools;
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.engine.misc.ColorsTools;
@@ -107,7 +107,7 @@ public class TrueTypeFontRenderer
 		{
 			charCurrent = whatchars.charAt(i);
 
-			Texture2D pageTexture = trueTypeFont.glTextures[charCurrent / 256];
+			Texture2DAsset pageTexture = trueTypeFont.glTextures[charCurrent / 256];
 
 			//Generates any required unicode page
 			if (pageTexture == null)
@@ -179,7 +179,7 @@ public class TrueTypeFontRenderer
 	/** Default font texture height */
 	private int textureHeight = 512;
 
-	private void drawQuad(float startX, float startY, float width, float height, float srcX, float srcY, float srcX2, float srcY2, Texture2D pageTexture, Vector4f colorModified)
+	private void drawQuad(float startX, float startY, float width, float height, float srcX, float srcY, float srcX2, float srcY2, Texture2DAsset pageTexture, Vector4f colorModified)
 	{
 		renderingContext.getGuiRenderer().drawBoxWindowsSpace(startX, startY, startX + width, startY + height, srcX, srcY, srcX2, srcY2, pageTexture, false, true, colorModified);
 	}

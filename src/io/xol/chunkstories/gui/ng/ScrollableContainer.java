@@ -68,9 +68,9 @@ public class ScrollableContainer extends GuiElement
 			if(i >= elements.size())
 				break;
 			ContainerElement element = elements.get(i);
+			startY -= element.height * scale;
 			if(startY - element.height * scale < this.posy)
 				break;
-			startY -= element.height * scale;
 			startY -= 4 * scale;
 			i++;
 			

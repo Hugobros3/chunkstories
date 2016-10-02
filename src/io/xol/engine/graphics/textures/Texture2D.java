@@ -1,22 +1,33 @@
 package io.xol.engine.graphics.textures;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import static org.lwjgl.opengl.GL11.GL_LINEAR;
+import static org.lwjgl.opengl.GL11.GL_LINEAR_MIPMAP_LINEAR;
+import static org.lwjgl.opengl.GL11.GL_NEAREST;
+import static org.lwjgl.opengl.GL11.GL_NEAREST_MIPMAP_NEAREST;
+import static org.lwjgl.opengl.GL11.GL_NICEST;
+import static org.lwjgl.opengl.GL11.GL_REPEAT;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_WRAP_T;
+import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL11.glHint;
+import static org.lwjgl.opengl.GL11.glTexImage2D;
+import static org.lwjgl.opengl.GL11.glTexParameteri;
+import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_BASE_LEVEL;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_MAX_LEVEL;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL14.GL_GENERATE_MIPMAP_HINT;
+
 import java.nio.ByteBuffer;
 
 import org.lwjgl.opengl.ARBFramebufferObject;
 import org.lwjgl.opengl.GL30;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL14.*;
 
-import de.matthiasmann.twl.utils.PNGDecoder;
-import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.content.mods.Asset;
-import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
 
@@ -24,84 +35,20 @@ import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Texture2D extends Texture
+public abstract class Texture2D extends Texture
 {
-	//String name;
-	private Asset asset;
-	private String assetName;
-	
-	int width, height;
+	protected int width;
+	protected int height;
 	boolean wrapping = true;
 	boolean mipmapping = false;
-	boolean mipmapsUpToDate = false;
+	protected boolean mipmapsUpToDate = false;
 	boolean linearFiltering = true;
 	int baseMipmapLevel = 0;
 	int maxMipmapLevel = 1000;
+	protected boolean scheduledForLoad = false;
+	static int currentlyBoundId = 0;
 
-	private boolean scheduledForLoad = false;
-
-	public Texture2D(TextureFormat type)
-	{
-		super(type);
-	}
-
-	public TextureFormat getType()
-	{
-		return type;
-	}
-	
-	public Texture2D(Asset asset)
-	{
-		this(TextureFormat.RGBA_8BPP);
-		this.assetName = asset.getName();
-		this.asset = asset;
-		loadTextureFromAsset();
-	}
-
-	public int loadTextureFromAsset()
-	{
-		if (!GameWindowOpenGL.isMainGLWindow())
-		{
-			System.out.println("isn't main thread, scheduling load");
-			scheduledForLoad = true;
-			return -1;
-		}
-		scheduledForLoad = false;
-
-		//TODO we probably don't need half this shit
-		bind();
-		try
-		{
-			InputStream is = asset.read();
-			PNGDecoder decoder = new PNGDecoder(is);
-			width = decoder.getWidth();
-			height = decoder.getHeight();
-			ByteBuffer temp = ByteBuffer.allocateDirect(4 * width * height);
-			decoder.decode(temp, width * 4, Format.RGBA);
-			is.close();
-			
-			//ChunkStoriesLogger.getInstance().log("decoded " + width + " by " + height + " pixels (" + name + ")", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.DEBUG);
-			temp.flip();
-			bind();
-			glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(), (ByteBuffer) temp);
-		
-			applyTextureParameters();
-
-		}
-		catch (FileNotFoundException e)
-		{
-			ChunkStoriesLogger.getInstance().info("Clouldn't find file : " + e.getMessage());
-		}
-		catch (IOException e)
-		{
-			ChunkStoriesLogger.getInstance().warning("Error loading file : " + e.getMessage());
-			e.printStackTrace();
-		}
-		mipmapsUpToDate = false;
-		return glId;
-	}
-
-	private void applyTextureParameters()
+	protected void applyTextureParameters()
 	{
 		//Generate mipmaps
 		if (mipmapping)
@@ -110,7 +57,7 @@ public class Texture2D extends Texture
 				GL30.glGenerateMipmap(GL_TEXTURE_2D);
 			else if (RenderingConfig.gl_fbExtCapable)
 				ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
-
+	
 			mipmapsUpToDate = true;
 		}
 		if (!wrapping)
@@ -134,14 +81,14 @@ public class Texture2D extends Texture
 	public boolean uploadTextureData(int width, int height, int level, ByteBuffer data)
 	{
 		int k = currentlyBoundId;
-
+	
 		glActiveTexture(GL_TEXTURE0 + 15);
 		bind();
 		this.width = width;
 		this.height = height;
-
+	
 		glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(), (ByteBuffer) data);
-
+	
 		applyTextureParameters();
 		
 		if(k > 0)
@@ -160,8 +107,11 @@ public class Texture2D extends Texture
 		return glId;
 	}
 
-	static int currentlyBoundId = 0;
-	
+	public Texture2D(TextureFormat type)
+	{
+		super(type);
+	}
+
 	public void bind()
 	{
 		if (!GameWindowOpenGL.isMainGLWindow())
@@ -171,20 +121,10 @@ public class Texture2D extends Texture
 		{
 			aquireID();
 		}
-
+	
 		glBindTexture(GL_TEXTURE_2D, glId);
 		currentlyBoundId = glId;
-
-		if (scheduledForLoad && asset != null)
-		{
-			long ms = System.currentTimeMillis();
-			System.out.print("main thread called, actually loading the texture ... ");
-			this.loadTextureFromAsset();
-			System.out.print((System.currentTimeMillis()-ms) + "ms \n");
-		}
 	}
-	
-	// Texture modifications
 
 	/**
 	 * Determines if a texture will loop arround itself or clamp to it's edges
@@ -194,12 +134,12 @@ public class Texture2D extends Texture
 		if (glId < 0) // Don't bother with invalid textures
 			return;
 		boolean applyParameters = false;
-
+	
 		if (wrapping != on) // We changed something so we redo them
 			applyParameters = true;
-
+	
 		wrapping = on;
-
+	
 		if (!applyParameters)
 			return;
 		bind();
@@ -220,12 +160,12 @@ public class Texture2D extends Texture
 		if (glId < 0) // Don't bother with invalid textures
 			return;
 		boolean applyParameters = false;
-
+	
 		if (mipmapping != on) // We changed something so we redo them
 			applyParameters = true;
-
+	
 		mipmapping = on;
-
+	
 		if (!applyParameters)
 			return;
 		bind();
@@ -247,7 +187,7 @@ public class Texture2D extends Texture
 			GL30.glGenerateMipmap(GL_TEXTURE_2D);
 		else if (RenderingConfig.gl_fbExtCapable)
 			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
-
+	
 		mipmapsUpToDate = true;
 	}
 
@@ -256,19 +196,18 @@ public class Texture2D extends Texture
 		if (glId < 0) // Don't bother with invalid textures
 			return;
 		boolean applyParameters = false;
-
+	
 		if (linearFiltering != on) // We changed something so we redo them
 			applyParameters = true;
-
+	
 		linearFiltering = on;
-
+	
 		if (!applyParameters)
 			return;
 		bind();
 		setFiltering();
 	}
 
-	// Private function that sets both filering scheme and mipmap usage.
 	private void setFiltering()
 	{
 		//System.out.println("Set filtering called for "+name+" "+linearFiltering);
@@ -284,7 +223,7 @@ public class Texture2D extends Texture
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			}
-
+	
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, baseMipmapLevel);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, maxMipmapLevel);
 		}
@@ -308,13 +247,13 @@ public class Texture2D extends Texture
 		if (glId < 0) // Don't bother with invalid textures
 			return;
 		boolean applyParameters = false;
-
+	
 		if (this.baseMipmapLevel != baseLevel || this.maxMipmapLevel != maxLevel) // We changed something so we redo them
 			applyParameters = true;
-
+	
 		baseMipmapLevel = baseLevel;
 		maxMipmapLevel = maxLevel;
-
+	
 		if (!applyParameters)
 			return;
 		bind();
@@ -337,17 +276,6 @@ public class Texture2D extends Texture
 		return surface * type.getBytesPerTexel();
 	}
 
-	public String getName()
-	{
-		if(assetName != null)
-			return assetName;
-		
-		//TODO split loaded textures from vanilla ones
-		throw new UnsupportedOperationException();
-	}
+	public abstract String getName();
 
-	public void setAsset(Asset newAsset)
-	{
-		this.asset = newAsset;
-	}
 }

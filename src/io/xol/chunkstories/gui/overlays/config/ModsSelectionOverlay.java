@@ -33,6 +33,7 @@ public class ModsSelectionOverlay extends Overlay
 		guiHandler.add(applyMods);
 		guiHandler.add(locateExtMod);
 		guiHandler.add(openModsFolder);
+		
 		guiHandler.add(backOption);
 		
 		guiHandler.add(modsContainer);
@@ -53,13 +54,43 @@ public class ModsSelectionOverlay extends Overlay
 		backOption.setPosition(positionStartX + 8, 8);
 		backOption.draw();
 
+		// Display buttons
+		
+		float totalLengthOfButtons = 0;
+		float spacing = -1;
+		
+		totalLengthOfButtons += applyMods.getWidth();
+		totalLengthOfButtons += spacing;
+		
+		totalLengthOfButtons += locateExtMod.getWidth();
+		totalLengthOfButtons += spacing;
+		
+		totalLengthOfButtons += openModsFolder.getWidth();
+		totalLengthOfButtons += spacing;
+		
+		float buttonDisplayX = GameWindowOpenGL.windowWidth / 2 - totalLengthOfButtons / 2;
+		float buttonDisplayY = 4;
+
+		locateExtMod.setPosition(buttonDisplayX, buttonDisplayY);
+		buttonDisplayX += locateExtMod.getWidth() + spacing;
+		locateExtMod.draw();
+
+		openModsFolder.setPosition(buttonDisplayX, buttonDisplayY);
+		buttonDisplayX += openModsFolder.getWidth() + spacing;
+		openModsFolder.draw();
+		
+		applyMods.setPosition(buttonDisplayX, buttonDisplayY);
+		buttonDisplayX += applyMods.getWidth() + spacing;
+		applyMods.draw();
+		
+		
 		if (backOption.clicked())
 			this.mainScene.changeOverlay(this.parent);
 		
 		int s = GameWindowOpenGL.getScalingFactor();
 		
 		modsContainer.setPosition((width - 480 * s) / 2, 32);
-		modsContainer.setDimensions(480 * s, height - 32 - 32);
+		modsContainer.setDimensions(480 * s, height - 32 - 32 * s);
 		modsContainer.render();
 	}
 	

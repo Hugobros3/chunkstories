@@ -1,5 +1,6 @@
 package io.xol.engine.gui;
 
+import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
@@ -47,8 +48,10 @@ public class LocalWorldButton extends Button
 		{
 			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 8, "./textures/gui/scalableButton.png", 32, 2);
 		}
-		ObjectRenderer.renderTexturedRect(posx - width / 2 + 32 + 4, posy, 64, 64, "gameDir://worlds/" + info.getInternalName() + "/info.png");
+		ObjectRenderer.renderTexturedRect(posx - width / 2 + 32 + 4, posy, 64, 64, GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
 
+		//System.out.println("a+"+GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
+		
 		FontRenderer2.setLengthCutoff(true, width - 72);
 		FontRenderer2.drawTextUsingSpecificFont(posx - width / 2 + 72, posy, 0, 1 * 32, info.getName() + "#CCCCCC    Size : " + info.getSize().toString() + " ( " + info.getSize().sizeInChunks / 32 + "x" + info.getSize().sizeInChunks / 32 + " km )", BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFontRVBA(posx - width / 2 + 72, posy - 32, 0, 1 * 32, info.getDescription(), BitmapFont.SMALLFONTS, 1.0f, 0.8f, 0.8f, 0.8f);

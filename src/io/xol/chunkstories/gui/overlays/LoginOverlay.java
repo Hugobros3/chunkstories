@@ -52,7 +52,7 @@ public class LoginOverlay extends Overlay implements HttpRequester
 	{
 		if (can_next)
 			mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));
-		ObjectRenderer.renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2 + 180, 512, 512, "logo");
+		ObjectRenderer.renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2 + 180, 512, 512, "./textures/logo.png");
 
 		guiHandler.getButton(2).setPosition(GameWindowOpenGL.windowWidth / 2 - 245 + 58, GameWindowOpenGL.windowHeight / 2 - 80);
 

@@ -1,5 +1,6 @@
 package io.xol.engine.graphics.textures;
 
+import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.content.Mods;
@@ -27,13 +28,29 @@ public class TexturesHandler
 		}
 		else
 		{
-			Asset asset = Mods.getAsset(name);
-			if(asset == null)
-				return nullTexture();
-			
-			Texture2D texture = new Texture2D(asset);
-			loadedTextures.put(name, texture);
-			return texture;
+			if(name.startsWith("./"))
+			{
+				Asset asset = Mods.getAsset(name);
+				if(asset == null)
+					return nullTexture();
+				
+				Texture2D texture = new Texture2DAsset(asset);
+				loadedTextures.put(name, texture);
+				return texture;
+			}
+			else
+			{
+				System.out.println(name);
+				
+				//TODO check we are allowed to do this !
+				File file = new File(name);
+				if(file == null || file.exists())
+					return nullTexture();
+				
+				Texture2D texture = new Texture2DFile(file);
+				loadedTextures.put(name, texture);
+				return texture;
+			}
 		}
 	}
 
@@ -55,9 +72,16 @@ public class TexturesHandler
 	{
 		for(Texture2D texture : loadedTextures.values())
 		{
-			Asset newAsset = Mods.getAsset(texture.getName());
-			texture.setAsset(newAsset);
-			texture.loadTextureFromAsset();
+			if(texture instanceof Texture2DAsset)
+			{
+				Asset newAsset = Mods.getAsset(texture.getName());
+				((Texture2DAsset) texture).setAsset(newAsset);
+				((Texture2DAsset) texture).loadTextureFromAsset();
+			}
+			else if(texture instanceof Texture2DFile)
+			{
+				((Texture2DFile) texture).loadTextureFromFile();
+			}
 		}
 
 		for(Cubemap cubemap : loadedCubemaps.values())

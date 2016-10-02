@@ -8,16 +8,16 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.ConnectScene;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.gui.ng.ScrollableContainer;
+import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
+import io.xol.chunkstories.gui.overlays.ServerSelectionOverlayNg.ServerSelectionZone.ServerGuiItem;
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
@@ -25,7 +25,6 @@ import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.elements.Button;
-import io.xol.engine.gui.elements.GuiElement;
 import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
@@ -34,16 +33,18 @@ import io.xol.engine.net.HttpRequester;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerSelectionOverlay extends Overlay implements HttpRequester
+public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 {
 	InputText ipForm = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
 	Button backOption = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
 	Button connectButton = new Button(0, 0, 128, 32, "Connect", BitmapFont.SMALLFONTS, 1);
+	
 	ServerSelectionZone serverSelectionZone = new ServerSelectionZone();
+	
 	boolean autologin;
 	private boolean movedInList = false;
 
-	public ServerSelectionOverlay(OverlayableScene scene, Overlay parent, boolean a)
+	public ServerSelectionOverlayNg(OverlayableScene scene, Overlay parent, boolean a)
 	{
 		super(scene, parent);
 		guiHandler.add(ipForm);
@@ -91,8 +92,14 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		{
 			this.mainScene.changeOverlay(this.parent);
 		}
-		
+
+
 		updateServers();
+		int s = GameWindowOpenGL.getScalingFactor();
+		
+		serverSelectionZone.setPosition((w - 480 * s) / 2, 32);
+		serverSelectionZone.setDimensions(480 * s, h - 32 - 128);
+		serverSelectionZone.render();
 	}
 
 	// Controls handling
@@ -172,13 +179,6 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
-		ServerData sd = serverSelectionZone.click();
-		if(sd != null)
-		{
-			ipForm.text = sd.ip + (sd.port == 30410 ? "" : sd.port);
-			login();
-		}
-		else
 			guiHandler.handleClick(posx, posy);
 		return true;
 	}
@@ -188,50 +188,44 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		FontRenderer2.drawTextUsingSpecificFontRVBA(GameWindowOpenGL.windowWidth - decx - FontRenderer2.getTextLengthUsingFont(basesize, t, BitmapFont.SMALLFONTS), height, 0, basesize, t, BitmapFont.SMALLFONTS, a, r, v, b);
 	}
 
-	// Load-save server's list
-	List<ServerData> servers = new ArrayList<ServerData>();
 	int currentServer = 0;
 	int oldServer = 0;
 
 	private void updateServers()
 	{
-		if (servers.size() == 0)
+		if (serverSelectionZone.elements.size() == 0)
 			return;
 
 		if (currentServer < 0)
 			currentServer = 0;
-		if (currentServer > servers.size() - 1)
-			currentServer = servers.size() - 1;
+		if (currentServer > serverSelectionZone.elements.size() - 1)
+			currentServer = serverSelectionZone.elements.size() - 1;
 
 		if (movedInList)
 		{
 			movedInList = false;
-			ipForm.text = servers.get(currentServer).ip + (servers.get(currentServer).port == 30410 ? "" : servers.get(currentServer).port);
+			ipForm.text = ((ServerGuiItem) serverSelectionZone.elements.get(currentServer)).ip + (((ServerGuiItem) serverSelectionZone.elements.get(currentServer)).port == 30410 ? "" : ((ServerGuiItem) serverSelectionZone.elements.get(currentServer)).port);
 		}
-		serverSelectionZone.render();
 	}
 
 	private void f6()
 	{
-		int index = 0;
-		for (ServerData sd : servers)
+		for (ContainerElement ce : serverSelectionZone.elements)
 		{
 			try
 			{
-				ServerData lel = new ServerData(sd.ip, sd.port);
-				servers.set(index, lel);
+				((ServerGuiItem) ce).reload();
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			}
-			index++;
 		}
 	}
 	
-	public class ServerSelectionZone extends GuiElement
+	public class ServerSelectionZone extends ScrollableContainer
 	{
-		public void render()
+		/*public void render()
 		{
 			int posy = GameWindowOpenGL.windowHeight - 100 * (1 + 1);
 			int i = 0;
@@ -249,9 +243,9 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 				sd.render(posy, focus);
 				i++;
 			}
-		}
+		}*/
 		
-		public ServerData click()
+		/*public ServerData click()
 		{
 			int posy = GameWindowOpenGL.windowHeight - 100 * (1 + 1);
 			int i = 0;
@@ -267,12 +261,45 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 				i++;
 			}
 			return null;
+		}*/
+		
+		class ServerGuiItem extends ContainerElement {
+
+			ServerDataLoader sd;
+			public String ip;
+			public int port;
+			
+			public ServerGuiItem(String ip, int port)
+			{
+				super("Loading server info for "+ip+":"+port, "");
+				this.ip = ip;
+				this.port = port;
+				this.sd = new ServerDataLoader(this, ip, port);
+			}
+
+			@Override
+			public void clicked()
+			{
+				if(sd != null && sd.infoLoaded)
+				{
+					ipForm.text = sd.ip + (sd.port == 30410 ? "" : sd.port);
+					login();
+				}
+			}
+			
+			public void reload()
+			{
+				if(sd.infoError || sd.infoLoaded)
+					this.sd = new ServerDataLoader(this, ip, port);
+			}
 		}
 	}
 
-	// Sub-class for server data
-	public class ServerData extends Thread
+	// Sub-class for server data loading
+	public class ServerDataLoader extends Thread
 	{
+		ServerGuiItem parent;
+		
 		public String ip;
 		public int port;
 		String name = "Loading...";
@@ -284,8 +311,10 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		long connectStart;
 		long ping = 42;
 
-		public ServerData(String ip, int port)
+		public ServerDataLoader(ServerGuiItem parent, String ip, int port)
 		{
+			this.parent = parent;
+			
 			this.ip = ip;
 			this.port = port;
 			this.setName("ServerData updater " + ip + port);
@@ -306,7 +335,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 		}
 
 		@Override
-		public synchronized void run()
+		public void run()
 		{
 			try
 			{
@@ -317,15 +346,16 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 				out.write((byte)0x00);
 				out.writeUTF("info");
 				ping = System.currentTimeMillis() - connectStart;
-				String mdr = "";
-				//System.out.println("kek:"+mdr+"port:"+port);
-				while (!mdr.startsWith("info/done"))
+				String lineRead = "";
+				
+				while (!lineRead.startsWith("info/done"))
 				{
+					//Discard first byte, assummed to be packed id
 					in.readByte();
-					mdr = in.readUTF();
-					if (mdr.startsWith("info/"))
+					lineRead = in.readUTF();
+					if (lineRead.startsWith("info/"))
 					{
-						String data[] = mdr.replace("info/", "").split(":");
+						String data[] = lineRead.replace("info/", "").split(":");
 						if (data[0].equals("name"))
 							name = data[1];
 						if (data[0].equals("version"))
@@ -335,9 +365,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 						if (data[0].equals("connected"))
 							gameMode = data[1] + " / " + data[2];
 					}
-					//System.out.println("server_prompter:"+mdr);
 				}
-				//System.out.println("kok:"+mdr);
 				infoLoaded = true;
 				in.close();
 				out.close();
@@ -349,9 +377,14 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 				description = "Couldn't update.";
 				gameMode = "Couldn't update.";
 				version = "Unkwnow version";
+				
 				infoError = true;
 				infoLoaded = true;
 			}
+			
+			parent.name = name;
+			parent.descriptionLines = description + "\n "+gameMode;
+			parent.topRightString = version;
 		}
 	}
 
@@ -359,7 +392,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 	public void handleHttpRequest(String info, String result)
 	{
 		// Will load fucking servers !
-		servers.clear();
+		serverSelectionZone.elements.clear();
 		if (info.equals("serversList"))
 		{
 			try
@@ -367,7 +400,7 @@ public class ServerSelectionOverlay extends Overlay implements HttpRequester
 				for (String line : result.split(";"))
 				{
 					String address = line.split(":")[2];
-					servers.add(new ServerData(address, 30410));
+					serverSelectionZone.elements.add(serverSelectionZone.new ServerGuiItem(address, 30410));
 				}
 			}
 			catch (Exception e)

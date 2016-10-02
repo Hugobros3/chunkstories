@@ -83,9 +83,9 @@ public class InputText extends GuiElement
 		if(txtlen > len)
 			len = txtlen;
 		if (hasFocus())
-			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "gui/textbox");
+			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "./textures/gui/textbox.png");
 		else
-			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "gui/textboxnofocus");
+			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "./textures/gui/textboxnofocus.png");
 		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text + ((hasFocus() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 		// System.out.println(text);
 	}
@@ -97,9 +97,9 @@ public class InputText extends GuiElement
 		if(txtlen > len)
 			len = txtlen;
 		if (hasFocus())
-			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "gui/textboxtransp");
+			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "./textures/gui/textboxtransp.png");
 		else
-			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "gui/textboxnofocustransp");
+			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "./textures/gui/textboxnofocustransp.png");
 		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text + ((hasFocus() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 		// System.out.println(text);
 	}
@@ -111,9 +111,9 @@ public class InputText extends GuiElement
 		char c : text.toCharArray())
 			passworded += "*";
 		if (hasFocus())
-			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textbox");
+			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "./textures/gui/textbox.png");
 		else
-			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "gui/textboxnofocus");
+			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "./textures/gui/textboxnofocus.png");
 		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, passworded + ((hasFocus() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 
 	}
