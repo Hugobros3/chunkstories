@@ -36,11 +36,31 @@ public class VerticesObject
 
 	private Object waitingToUploadMainThread;
 	private Object waitingToUploadDeffered;
-
+	
 	private final WeakReference<VerticesObject> selfReference;
 
+	private final UploadRegime uploadRegimeHint;
+	
+	public enum UploadRegime {
+		FAST(GL_STREAM_DRAW),
+		ONCE(GL_STATIC_DRAW);
+		
+		UploadRegime(int glId)
+		{
+			this.glId = glId;
+		}
+		int glId;
+	}
+	
 	public VerticesObject()
 	{
+		this(UploadRegime.ONCE);
+	}
+
+	public VerticesObject(UploadRegime uploadRegimeHint)
+	{
+		this.uploadRegimeHint = uploadRegimeHint;
+		
 		//Increment counter and create weak reference to this object
 		totalVerticesObjects++;
 		selfReference = new WeakReference<VerticesObject>(this);
@@ -201,7 +221,7 @@ public class VerticesObject
 		{
 			dataSize = ((ByteBuffer) dataToUpload).limit();
 
-			glBufferData(GL_ARRAY_BUFFER, (ByteBuffer) dataToUpload, GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, (ByteBuffer) dataToUpload, uploadRegimeHint.glId);
 			isDataPresent = true;
 			return true;
 		}
@@ -209,7 +229,7 @@ public class VerticesObject
 		{
 			dataSize = ((FloatBuffer) dataToUpload).limit() * 4;
 
-			glBufferData(GL_ARRAY_BUFFER, (FloatBuffer) dataToUpload, GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, (FloatBuffer) dataToUpload, uploadRegimeHint.glId);
 			isDataPresent = true;
 			return true;
 		}
@@ -217,7 +237,7 @@ public class VerticesObject
 		{
 			dataSize = ((IntBuffer) dataToUpload).limit() * 4;
 
-			glBufferData(GL_ARRAY_BUFFER, (IntBuffer) dataToUpload, GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, (IntBuffer) dataToUpload, uploadRegimeHint.glId);
 			isDataPresent = true;
 			return true;
 		}
@@ -225,7 +245,7 @@ public class VerticesObject
 		{
 			dataSize = ((DoubleBuffer) dataToUpload).limit() * 8;
 
-			glBufferData(GL_ARRAY_BUFFER, (DoubleBuffer) dataToUpload, GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, (DoubleBuffer) dataToUpload, uploadRegimeHint.glId);
 			isDataPresent = true;
 			return true;
 		}
@@ -233,7 +253,7 @@ public class VerticesObject
 		{
 			dataSize = ((ShortBuffer) dataToUpload).limit() * 2;
 
-			glBufferData(GL_ARRAY_BUFFER, (ShortBuffer) dataToUpload, GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, (ShortBuffer) dataToUpload, uploadRegimeHint.glId);
 			isDataPresent = true;
 			return true;
 		}

@@ -174,7 +174,7 @@ public class VoxelItemRenderer implements ItemRenderer
 
 			renderingContext.bindAttribute("vertexIn", mesh.asAttributeSource(VertexFormat.FLOAT, 3, 24, 0));
 			renderingContext.bindAttribute("texCoordIn", mesh.asAttributeSource(VertexFormat.FLOAT, 3, 24, 12));
-			renderingContext.bindAttribute("normalIn", mesh.asAttributeSource(VertexFormat.U1010102, 3, 24, 20));
+			renderingContext.bindAttribute("normalIn", mesh.asAttributeSource(VertexFormat.U1010102, 4, 24, 20));
 			
 			//renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 24, 0 + 0, mesh);
 			//renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 24, 0 + 12, mesh);

@@ -8,6 +8,7 @@ import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
+import io.xol.engine.graphics.geometry.VerticesObject.UploadRegime;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
@@ -35,7 +36,7 @@ public class GuiRenderer
 	public Vector4f currentColor = new Vector4f(1f, 1f, 1f, 1f);
 
 	// GL stuff
-	VerticesObject guiDrawData = new VerticesObject();
+	VerticesObject guiDrawData = new VerticesObject(UploadRegime.FAST);
 	
 	public GuiRenderer(RenderingContext renderingContext)
 	{
