@@ -26,7 +26,7 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.Mods;
 import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.content.sandbox.GameLogicThread;
-import io.xol.chunkstories.gui.GameplayScene;
+import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -171,8 +171,8 @@ public class Client implements /*ClientSideController, */ClientInterface
 	@Override
 	public boolean hasFocus()
 	{
-		if (windows.getCurrentScene() instanceof GameplayScene)
-			return ((GameplayScene) windows.getCurrentScene()).hasFocus();
+		if (windows.getCurrentScene() instanceof Ingame)
+			return ((Ingame) windows.getCurrentScene()).hasFocus();
 		return false;
 	}
 
@@ -193,8 +193,8 @@ public class Client implements /*ClientSideController, */ClientInterface
 	@Override
 	public void printChat(String textToPrint)
 	{
-		if (windows.getCurrentScene() instanceof GameplayScene)
-			((GameplayScene) windows.getCurrentScene()).chat.insert(textToPrint);
+		if (windows.getCurrentScene() instanceof Ingame)
+			((Ingame) windows.getCurrentScene()).chat.insert(textToPrint);
 	}
 
 	@Override
@@ -205,9 +205,9 @@ public class Client implements /*ClientSideController, */ClientInterface
 
 	public void openInventory(Inventory otherInventory)
 	{
-		if (windows.getCurrentScene() instanceof GameplayScene)
+		if (windows.getCurrentScene() instanceof Ingame)
 		{
-			GameplayScene gmp = (GameplayScene) windows.getCurrentScene();
+			Ingame gmp = (Ingame) windows.getCurrentScene();
 
 			gmp.focus(false);
 			if (otherInventory != null)
@@ -234,7 +234,7 @@ public class Client implements /*ClientSideController, */ClientInterface
 				Client.world = world;
 				clientSideController = new ClientWorldController(Client.this, world);
 
-				Client.windows.changeScene(new GameplayScene(windows, false));
+				Client.windows.changeScene(new Ingame(windows, false));
 			}
 		});
 	}

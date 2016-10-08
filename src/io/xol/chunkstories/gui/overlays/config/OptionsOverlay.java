@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.gui.GameplayScene;
+import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.input.KeyBindImplementation;
 import io.xol.engine.graphics.RenderingContext;
@@ -259,8 +259,8 @@ public class OptionsOverlay extends Overlay
 				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }).setApplyAction(new Runnable(){
 					@Override
 					public void run()
-					{if (mainScene instanceof GameplayScene && shouldReload){
-						GameplayScene gps = ((GameplayScene) mainScene);
+					{if (mainScene instanceof Ingame && shouldReload){
+						Ingame gps = ((Ingame) mainScene);
 						gps.worldRenderer.resizeShadowMaps();
 					}}
 				}),
@@ -316,8 +316,8 @@ public class OptionsOverlay extends Overlay
 				new ConfigButtonToggle("doBloom").setApplyAction(new Runnable(){
 					@Override
 					public void run()
-					{if (mainScene instanceof GameplayScene && shouldReload){
-						GameplayScene gps = ((GameplayScene) mainScene);
+					{if (mainScene instanceof Ingame && shouldReload){
+						Ingame gps = ((Ingame) mainScene);
 						gps.worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 					}
 					ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig()); }

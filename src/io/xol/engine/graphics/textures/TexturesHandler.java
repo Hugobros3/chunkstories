@@ -40,11 +40,9 @@ public class TexturesHandler
 			}
 			else
 			{
-				System.out.println(name);
-				
 				//TODO check we are allowed to do this !
 				File file = new File(name);
-				if(file == null || file.exists())
+				if(file == null || !file.exists())
 					return nullTexture();
 				
 				Texture2D texture = new Texture2DFile(file);

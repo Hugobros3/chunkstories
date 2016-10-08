@@ -191,9 +191,10 @@ public class MainMenu extends OverlayableScene
 		blit.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		//blit.setUniformSampler(0, "diffuseTexture", blurredV.getId());
 		//renderingContext.bindTexture2D("inputTexture", blurredV);
-		Texture2D backgroundTexture = TexturesHandler.getTexture("./textures/gui/bright.png");
+		Texture2D backgroundTexture = TexturesHandler.getTexture("./textures/gui/darker.png");
 		backgroundTexture.setLinearFiltering(false);
 		renderingContext.bindTexture2D("diffuseTexture", backgroundTexture);
+		renderingContext.bindTexture2D("backgroundTexture", blurredV);
 		renderingContext.drawFSQuad();
 		//FrameBufferObject.unbind();
 

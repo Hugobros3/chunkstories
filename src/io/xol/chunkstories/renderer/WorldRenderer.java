@@ -1348,7 +1348,7 @@ public class WorldRenderer
 	/**
 	 * Renders the final image to the screen
 	 */
-	public void blitScreen()
+	public void blitScreen(float pauseFade)
 	{
 		if (RenderingConfig.debugPasses)
 			glFinish();
@@ -1376,6 +1376,7 @@ public class WorldRenderer
 		renderingContext.bindTexture2D("shadowMap", this.shadowMapBuffer);
 		renderingContext.bindTexture2D("bloomBuffer", this.bloomBuffer);
 		renderingContext.bindTexture2D("ssaoBuffer", this.ssaoBuffer);
+		renderingContext.bindTexture2D("pauseOverlayTexture", TexturesHandler.getTexture("./textures/gui/darker.png"));
 		//postProcess.setUniformSampler(8, "debugBuffer", (System.currentTimeMillis() % 1000 < 500 ) ? this.loadedChunksMapD : this.loadedChunksMap);
 		renderingContext.bindTexture2D("debugBuffer", (System.currentTimeMillis() % 1000 < 500) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
 		//renderingContext.bindTexture2D("debugBuffer", this.shadowMapBuffer);
@@ -1383,14 +1384,15 @@ public class WorldRenderer
 		Voxel vox = Voxels.get(world.getVoxelData(camera.pos.negate()));
 		postProcess.setUniform1f("underwater", vox.isVoxelLiquid() ? 1 : 0);
 		postProcess.setUniform1f("time", animationTimer);
+		postProcess.setUniform1f("pauseOverlayFade", pauseFade);
 
-		Vector3f sunPos = sky.getSunPosition();
-		postProcess.setUniform3f("sunPos", sunPos.x, sunPos.y, sunPos.z);
+		//Vector3f sunPos = sky.getSunPosition();
+		//postProcess.setUniform3f("sunPos", sunPos.x, sunPos.y, sunPos.z);
 
 		camera.setupShader(postProcess);
 
-		postProcess.setUniform1f("viewWidth", scrW);
-		postProcess.setUniform1f("viewHeight", scrH);
+		//postProcess.setUniform1f("viewWidth", scrW);
+		//postProcess.setUniform1f("viewHeight", scrH);
 
 		postProcess.setUniform1f("apertureModifier", apertureModifier);
 

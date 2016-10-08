@@ -90,8 +90,6 @@ public class Inputs
 		if (asset == null)
 			return null;
 
-		//System.out.println("Reading " + f);
-
 		return new Iterator<Input>()
 		{
 

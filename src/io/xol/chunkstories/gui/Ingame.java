@@ -43,7 +43,7 @@ import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
-import io.xol.chunkstories.gui.ChatPanel.ChatPanelOverlay;
+import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.PauseOverlay;
@@ -64,7 +64,7 @@ import io.xol.chunkstories.voxel.Voxels;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class GameplayScene extends OverlayableScene
+public class Ingame extends OverlayableScene
 {
 	// Renderer
 	public WorldRenderer worldRenderer;
@@ -72,21 +72,21 @@ public class GameplayScene extends OverlayableScene
 	InventoryDrawer inventoryDrawer;
 
 	Camera camera = new Camera();
-	public ChatPanel chat = new ChatPanel();
-	boolean focus = true;
+	public Chat chat = new Chat();
+	protected boolean focus = true;
 	Entity player;
 
 	private boolean guiHidden = false;
 	boolean shouldTakeACubemap = false;
 
-	public GameplayScene(GameWindowOpenGL w, boolean multiPlayer)
+	public Ingame(GameWindowOpenGL window, boolean multiPlayer)
 	{
-		super(w);
-		w.renderingContext.setCamera(camera);
+		super(window);
+		window.renderingContext.setCamera(camera);
 
 		//We need a world to work on
 		if (Client.world == null)
-			w.changeScene(new MainMenu(w, false));
+			window.changeScene(new MainMenu(window, false));
 
 		Client.worldThread = new GameLogicThread(Client.world, new UnthrustedUserContentSecurityManager());
 
@@ -116,6 +116,8 @@ public class GameplayScene extends OverlayableScene
 		return focus;
 	}
 
+	float pauseOverlayFade = 0.0f;
+	
 	@Override
 	public void update(RenderingContext renderingContext)
 	{
@@ -141,27 +143,10 @@ public class GameplayScene extends OverlayableScene
 
 		Location selectedBlock = null;
 		if (player instanceof EntityPlayer)
-		{
 			selectedBlock = ((EntityPlayer) player).getBlockLookingAt(true);
-		}
+		
 		if (player != null)
 			player.setupCamera(camera);
-		//Temp
-		/*if (flashLight)
-		{
-			float transformedViewH = (float) ((camera.rotationX) / 180 * Math.PI);
-			// System.out.println(Math.sin(transformedViewV)+"f");
-			Vector3f viewerCamDirVector = new Vector3f((float) (Math.sin((-camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)), (float) (Math.sin(transformedViewH)),
-					(float) (Math.cos((-camera.rotationY) / 180 * Math.PI) * Math.cos(transformedViewH)));
-			Vector3f lightPosition = new Vector3f((float) cameraPosition.getX(), (float) cameraPosition.getY(), (float) cameraPosition.getZ());
-			viewerCamDirVector.scale(-0.5f);
-			Vector3f.add(viewerCamDirVector, lightPosition, lightPosition);
-			viewerCamDirVector.scale(-1f);
-			viewerCamDirVector.normalise();
-
-			//System.out.println("fl");
-			worldRenderer.getRenderingContext().addLight(new DefferedSpotLight(new Vector3f(1f, 1f, 0.9f).scale(2.0f), lightPosition, 45f, 35f, viewerCamDirVector));
-		}*/
 		
 		//Main render call
 		worldRenderer.renderWorldAtCamera(camera);
@@ -185,7 +170,6 @@ public class GameplayScene extends OverlayableScene
 
 			for (CollisionBox b : player.getTranslatedCollisionBoxes())
 				b.debugDraw(0, 1, 1, 1);
-			//glDisable(GL_DEPTH_TEST);
 
 			Iterator<Entity> ie = Client.world.getAllLoadedEntities();
 			while (ie.hasNext())
@@ -201,8 +185,23 @@ public class GameplayScene extends OverlayableScene
 			worldRenderer.renderWorldCubemap(null, 512, false);
 		}
 		//Blit the final 3d image
-		worldRenderer.blitScreen();
-
+		worldRenderer.blitScreen(pauseOverlayFade);
+		
+		//Fades in & out the overlay
+		if(this.currentOverlay == null)
+		{
+			if(pauseOverlayFade > 0.0)
+				pauseOverlayFade -= 0.1;
+		}
+		else if(this.currentOverlay != null)
+		{
+			float maxFade = 1.0f;
+			if(this.currentOverlay instanceof ChatPanelOverlay)
+				maxFade = 0.25f;
+			if(pauseOverlayFade < maxFade)
+				pauseOverlayFade += 0.1;
+		}
+		
 		//Draw the GUI
 		if (!guiHidden)
 		{
@@ -228,7 +227,6 @@ public class GameplayScene extends OverlayableScene
 				int horizontalBitsToDraw = (int) (8 + 118 * livingPlayer.getHealth() / livingPlayer.getMaxHealth());
 				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f,
 						32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
-
 			}
 
 			if (currentOverlay == null && !chat.chatting)
@@ -239,9 +237,8 @@ public class GameplayScene extends OverlayableScene
 			else
 				renderingContext.getGuiRenderer().renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "gui/cursor");
 
-
 			if (RenderingConfig.showDebugInfo)
-				debug(renderingContext);
+				drawF3debugMenu(renderingContext);
 		}
 		Client.profiler.reset("gui");
 
@@ -304,8 +301,6 @@ public class GameplayScene extends OverlayableScene
 			Client.getInstance().getPluginsManager().fireEvent(event);
 			if (event.isCancelled())
 				return true;
-			//else if (((EntityControllable) this.player).handleInteraction(keyBind, Client.getInstance()))
-			//	return true;
 		}
 
 		//Function keys
@@ -321,23 +316,22 @@ public class GameplayScene extends OverlayableScene
 		}
 		else if (keyCode == Keyboard.KEY_F4)
 		{
-			//Client.world.getParticlesHolder().addParticle(new ParticleSmoke(Client.world, loc.x + (Math.random() - 0.5) * 30, loc.y + (Math.random()) * 10, loc.z + (Math.random() - 0.5) * 30));
-			//Client.world.getParticlesHolder().addParticle(new ParticleLight(Client.world, loc.x + (Math.random() - 0.5) * 30, loc.y + (Math.random()) * 10, loc.z + (Math.random() - 0.5) * 30));
+		
 		}
 		else if (keyCode == Keyboard.KEY_F6)
 		{
-			//if (player instanceof EntityPlayer)
-			//	((EntityPlayer) player).toggleNoclip();
+			
 		}
 		else if (keyCode == Keyboard.KEY_F8)
 			shouldTakeACubemap = true;
-		else if (keyCode == Keyboard.KEY_F12)
+		//CTRL-F12 reloads
+		else if ((Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == Keyboard.KEY_F12)
 		{
 			Client.getInstance().reloadAssets();
 			worldRenderer.reloadContentSpecificStuff();
 		}
-		//Redraw chunks
-		else if (keyCode == 19)
+		//CTRL-R redraws chunks
+		else if ((Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == 19)
 		{
 			((ParticlesRenderer) Client.world.getParticlesManager()).cleanAllParticles();
 			Client.world.redrawEverything();
@@ -345,13 +339,6 @@ public class GameplayScene extends OverlayableScene
 			ChunksRenderer.renderStart = System.currentTimeMillis();
 			worldRenderer.flagModified();
 		}
-		//TODO move this to core content plugin
-		/*else if (Client.getInstance().getInputsManager().getInputByName("use").equals(keyBind) && player != null)
-		{
-			Location cameraPosition = player.getLocation();
-			Client.getInstance().getSoundManager().playSoundEffect("sfx/flashlight.ogg", (float) cameraPosition.getX(), (float) cameraPosition.getY(), (float) cameraPosition.getZ(), 1.0f, 1.0f);
-			flashLight = !flashLight;
-		}*/
 		else if(!guiHidden && keyBind != null && keyBind.getName().startsWith("inventorySlot"))
 		{
 			int requestedInventorySlot = Integer.parseInt(keyBind.getName().replace("inventorySlot", ""));
@@ -387,6 +374,7 @@ public class GameplayScene extends OverlayableScene
 					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) player).getInventory() }));
 			}
 		}
+		//Exit brings up the pause menu
 		else if (Client.getInstance().getInputsManager().getInputByName("exit").equals(keyBind))
 		{
 			focus(false);
@@ -438,8 +426,6 @@ public class GameplayScene extends OverlayableScene
 			ClientInputPressedEvent event = new ClientInputPressedEvent(mButton);
 			if (mButton != null)
 				Client.getInstance().getPluginsManager().fireEvent(event);
-			//if (!event.isCancelled())
-			//	return ((EntityControllable) this.player).handleInteraction(mButton, Client.getInstance());
 		}
 		//TODO it does not handle the special clicks yet, maybye do it somewhere else, like in binds ?
 		return false;
@@ -519,9 +505,6 @@ public class GameplayScene extends OverlayableScene
 	@Override
 	public void destroy()
 	{
-		//Client.world.destroy();
-		//Client.worldThread.stopLogicThread();
-		
 		this.worldRenderer.destroy();
 		
 		if (Client.connection != null)
@@ -531,7 +514,7 @@ public class GameplayScene extends OverlayableScene
 		}
 	}
 
-	private void debug(RenderingInterface renderingInterface)
+	private void drawF3debugMenu(RenderingInterface renderingInterface)
 	{
 		int timeTook = Client.profiler.timeTook();
 		String debugInfo = Client.profiler.reset("gui").toString();

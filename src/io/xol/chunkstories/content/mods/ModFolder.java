@@ -41,7 +41,8 @@ public class ModFolder extends Mod
 		
 		recursiveFolderRead(folder);
 		
-		loadModInformation(getAssetByName("./mod.txt"));
+		this.modInfo = new ModInfo(getAssetByName("./mod.txt").read());
+		//loadModInformation();
 	}
 	
 	private void recursiveFolderRead(File file)
@@ -140,6 +141,12 @@ public class ModFolder extends Mod
 				return iz.next();
 			}
 		};
+	}
+
+	@Override
+	public String getLoadString()
+	{
+		return folder.getAbsolutePath();
 	}
 
 }

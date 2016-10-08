@@ -21,6 +21,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 public class ModZip extends Mod
 {
+	final File fileLocation;
 	final ZipFile zipFile;
 	final Map<String, ModZipAsset> assets = new HashMap<String, ModZipAsset>();
 
@@ -39,6 +40,7 @@ public class ModZip extends Mod
 
 	public ModZip(File zippedMod) throws ModLoadFailureException
 	{
+		fileLocation = zippedMod;
 		try
 		{
 			this.zipFile = new ZipFile(zippedMod);
@@ -56,7 +58,8 @@ public class ModZip extends Mod
 				}
 			}
 
-			loadModInformation(getAssetByName("./mod.txt"));
+			this.modInfo = new ModInfo(getAssetByName("./mod.txt").read());
+			//loadModInformation(getAssetByName("./mod.txt"));
 		}
 		catch (IOException e)
 		{
@@ -153,5 +156,11 @@ public class ModZip extends Mod
 				return iz.next();
 			}
 		};
+	}
+
+	@Override
+	public String getLoadString()
+	{
+		return fileLocation.getAbsolutePath();
 	}
 }

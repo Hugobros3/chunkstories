@@ -68,7 +68,6 @@ public class ConnectScene extends Scene
 	void cancelConnection()
 	{
 		Client.getInstance().exitToMainMenu();
-		//this.eng.changeScene(new MainMenu(eng, false));
 	}
 
 	@Override

@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * A list that has only unique elements
  */
-public class UniqueList<K> implements List<K>
+public class UniqueList<K> implements List<K>, Collection<K>
 {
 	Set<K> set = new HashSet<K>();
 	List<K> list = new LinkedList<K>();

@@ -1,20 +1,16 @@
-#version 120
-attribute vec2 vertexIn;
-varying vec2 f_texcoord;
-varying vec4 texcoord;
+#version 130
+in vec2 vertexIn;
+out vec2 texCoord;
+out vec2 pauseOverlayCoords;
 
-varying vec2 scaledPixel;
-
-uniform float viewWidth;
-uniform float viewHeight;
+uniform vec2 screenViewportSize;
  
+const vec2 backgroundSize = vec2(1024);
+	
 void main(void) {
 
-  gl_Position = vec4(-1.0+vertexIn*2.0, 0.0, 1.0);
+  gl_Position = vec4(vertexIn, 0.0, 1.0);
   
-  f_texcoord = (vertexIn);
-  
-  texcoord = vec4(f_texcoord,0,0);
-  
-  scaledPixel = vec2(1.0/viewWidth,1.0/viewHeight);
+  texCoord = vertexIn.xy * 0.5 + vec2(0.5);
+  pauseOverlayCoords = ( ( vertexIn.xy * 0.5 + vec2(0.5) ) * screenViewportSize ) / backgroundSize;
 }

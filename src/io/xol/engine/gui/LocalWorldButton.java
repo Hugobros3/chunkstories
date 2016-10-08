@@ -48,6 +48,8 @@ public class LocalWorldButton extends Button
 		{
 			CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, height, 8, "./textures/gui/scalableButton.png", 32, 2);
 		}
+		
+		//System.out.println(GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
 		ObjectRenderer.renderTexturedRect(posx - width / 2 + 32 + 4, posy, 64, 64, GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
 
 		//System.out.println("a+"+GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");

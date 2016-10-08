@@ -47,7 +47,10 @@ public class ScrollableContainer extends GuiElement
 			i++;
 			
 			if(element.isMouseOver())
+			{
 				element.clicked();
+				break;
+			}
 		}
 	}
 	
