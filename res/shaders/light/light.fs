@@ -72,7 +72,7 @@ void main() {
 		//Optional : cone light, view direction influence
 		if(lightAngle[i] > 0.0)
 		{
-			float dotCone = dot(lightRay, lightDir[i]);
+			float dotCone = dot(-1.0 * lightRay, lightDir[i]);
 			float cosAngle = cos(lightAngle[i]);
 			
 			lightAmount.rgb *= clamp(30.0*(dotCone-cosAngle), 0.0, 1.0);

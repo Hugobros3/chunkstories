@@ -222,23 +222,6 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				//animationsData.add(new AnimatableData(location.castToSimplePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
 			}
 			
-			/*List<RenderableAnimatable.AnimatableData> animationsData = new LinkedList<AnimatableData>();
-
-			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
-			{
-				Location location = entity.getPredictedLocation();
-				
-				if(renderingContext.isThisAShadowPass() && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
-					continue;
-				
-				entity.cachedSkeleton.lodUpdate(renderingContext);
-
-				int bl = entity.getWorld().getBlocklightLevelLocation(location);
-				int sl = entity.getWorld().getSunlightLevelLocation(location);
-				
-				animationsData.add(new AnimatableData(location.castToSimplePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
-			}*/
-
 			//Instanciate all players
 			//ModelLibrary.getRenderableMesh("./models/human.obj").renderInstanciated(renderingContext, animationsData);
 

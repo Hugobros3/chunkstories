@@ -55,7 +55,7 @@ void main(){
 	//Grabs normal from texture and corrects the format
 	vec3 normalMapped = texture2D(normalTexture, texCoordPassed).xyz;
     normalMapped = normalMapped * 2.0 - 1.0;
-	normalMapped.x = -normalMapped.x;
+	normalMapped.x = normalMapped.x;
 	
 	//Apply it
 	normal = perturb_normal(normal, eyeDirection, texCoordPassed, normalMapped);

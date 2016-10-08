@@ -8,12 +8,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
+
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 /**
  * Foreign content is anything found inside a jar and loaded by the game engine. Security measures applies unless configured otherwise
@@ -21,7 +23,7 @@ import java.util.zip.ZipEntry;
 public class ForeignCodeClassLoader extends URLClassLoader
 {
 	Mod responsibleMod;
-	List<String> classes = new ArrayList<String>();
+	Map<String, Class<?>> classes = new HashMap<String, Class<?>>();
 
 	public ForeignCodeClassLoader(Mod responsibleMod, File file, ClassLoader parentLoader) throws IOException
 	{
@@ -41,9 +43,29 @@ public class ForeignCodeClassLoader extends URLClassLoader
 			{
 				if (entry.getName().endsWith(".class"))
 				{
-					String className = entry.getName();
-					System.out.println("Found class " + className);
-					classes.add(className);
+					String className = entry.getName().replace('/', '.');
+					className = className.substring(0, className.length() - 6);
+					
+					//Skip subclasses
+					if(className.contains("$"))
+						continue;
+					
+					System.out.println("Found class " + className + " in jarfile, loading it...");
+					
+					try
+					{
+						Class<?> loadedClass = this.findClass(className);
+						
+						classes.put(className, loadedClass);
+					}
+					catch (ClassNotFoundException e1)
+					{
+						ChunkStoriesLogger.getInstance().error("Class "+className+" was to be found in .jar file but classloader could not load it.");
+						e1.printStackTrace();
+						
+						continue;
+					}
+					//classes.add(className);
 				}
 			}
 		}
@@ -53,7 +75,12 @@ public class ForeignCodeClassLoader extends URLClassLoader
 
 	public Collection<String> classes()
 	{
-		return classes;
+		return classes.keySet();
+	}
+	
+	public Class<?> obtainClass(String className)
+	{
+		return classes.get(className);
 	}
 
 	public Mod getResponsibleMod()

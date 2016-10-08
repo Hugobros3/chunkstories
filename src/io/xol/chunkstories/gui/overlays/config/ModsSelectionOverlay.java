@@ -1,8 +1,5 @@
 package io.xol.chunkstories.gui.overlays.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.ng.NgButton;
@@ -10,6 +7,8 @@ import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
+import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector4f;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -131,6 +130,33 @@ public class ModsSelectionOverlay extends Overlay
 			public void clicked()
 			{
 				System.out.println("Kboom ! + "+name);
+			}
+			
+			@Override
+			public void render()
+			{
+				int s = ModsScrollableContainer.this.scale;
+				//Setup textures
+				Texture2D bgTexture = TexturesHandler.getTexture(isMouseOver() ? "./textures/gui/modsOver.png" : "./textures/gui/mods.png");
+				bgTexture.setLinearFiltering(false);
+				
+				//Render graphical base
+				GameWindowOpenGL.instance.renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, bgTexture, true, false, new Vector4f(1.0, 1.0, 1.0, 1.0));
+				//Render icon
+				GameWindowOpenGL.instance.renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX + 4 * s, positionY + 4 * s, 64 * s, 64 * s, 0, 1, 1, 0, TexturesHandler.getTexture(iconTextureLocation), true, false, new Vector4f(1.0, 1.0, 1.0, 1.0));
+				//Text !
+				if(name != null)
+					GameWindowOpenGL.instance.renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial12px9pt, positionX + 70 * s, positionY + 54 * s, name, s, new Vector4f(0.0, 0.0, 0.0, 1.0));
+				
+				if(topRightString != null)
+				{
+					int dekal = width - TrueTypeFont.arial12px9pt.getWidth(topRightString) - 4;
+					GameWindowOpenGL.instance.renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial12px9pt, positionX + dekal* s, positionY + 54 * s, topRightString, s, new Vector4f(0.25, 0.25, 0.25, 1.0));
+				}
+				
+				if(descriptionLines != null)
+					GameWindowOpenGL.instance.renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial12px9pt, positionX + 70 * s, positionY + 38 * s, descriptionLines, s, new Vector4f(0.25, 0.25, 0.25, 1.0));
+				
 			}
 			
 		}

@@ -410,8 +410,22 @@ public class Mods
 			e.printStackTrace();
 		}
 		//If this fails, try to obtain it from one of the loaded mods
+		System.out.println("Looking for class "+className+" in loaded mods");
 		
-		//TODO
+		ForeignCodeClassLoader loader = avaibleForeignClasses.get(className);
+		
+		if(loader == null)
+		{
+			System.out.println("WARNING: Class "+className + " was not found in any loaded mod.");
+			return null;
+		}
+		
+		Class<?> loadedClass = loader.obtainClass(className);
+		
+		if(loadedClass != null)
+			return loadedClass;
+		
+		System.out.println("WARNING: Failed to load class "+className);
 		
 		//If all fail, return null
 		return null;
@@ -529,7 +543,7 @@ public class Mods
 		part = System.nanoTime();
 		
 		//Total
-		System.out.println("Assets reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
+		System.out.println("Assets reload took "+Math.floor(((System.nanoTime() - total) / 1000L) / 100f) / 10f + "ms ");
 		
 		//Inputs.loadKeyBindsClient();
 	}
