@@ -12,6 +12,7 @@ import io.xol.engine.graphics.geometry.VerticesObject.UploadRegime;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
@@ -28,7 +29,7 @@ public class GuiRenderer
 	private RenderingContext renderingContext;
 	
 	public int MAX_ELEMENTS = 1024;
-	public FloatBuffer buf;
+	public ByteBuffer buf;
 	public int elementsToDraw = 0;
 	public Texture2D currentTexture;
 	public boolean alphaBlending = false;
@@ -42,9 +43,9 @@ public class GuiRenderer
 	{
 		this.renderingContext = renderingContext;
 		// Buffer contains MAX_ELEMENTS of 2 triangles, each defined by 3
-		// vertices, themselves defined by 4 floats : 'xy' positions, and
+		// vertices, themselves defined by 4 floats and 4 bytes : 'xy' positions, and
 		// textures coords 'ts'.
-		buf = BufferUtils.createFloatBuffer(4 * (2 + 2) * 3 * 2 * MAX_ELEMENTS);
+		buf = BufferUtils.createByteBuffer((4 * 1 + (2 + 2) * 4) * 3 * 2 * MAX_ELEMENTS);
 	}
 
 	public void drawBoxWindowsSpace(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4f color)
@@ -61,10 +62,8 @@ public class GuiRenderer
 
 	public void drawBox(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4f color)
 	{
-		//if (color == null)
-		//	color = new Vector4f(1f, 1f, 1f, 1f);
-
-		if (elementsToDraw >= 6 * 1024)
+		//Maximum buffer size was reached, in clear the number of vertices in the buffer = 6 * max elements, max elements being the max amount of drawBox calls until drawBuffer()
+		if (elementsToDraw >= 6 * MAX_ELEMENTS)
 			drawBuffer();
 		
 		if (color != null && color.w < 1)
@@ -84,35 +83,22 @@ public class GuiRenderer
 
 	}
 
-	public void debugDraw()
-	{
-		setState(TexturesHandler.getTexture("./textures/logo.png"), false, true, new Vector4f(1f, 1f, 1f, 1f));
-
-		addVertice(new float[] { -1, -1 }, new float[] { 0, 1 });
-		addVertice(new float[] { -1, 1 }, new float[] { 0, 0 });
-		addVertice(new float[] { 1, 1 }, new float[] { 1, 0 });
-
-		addVertice(new float[] { -1, -1 }, new float[] { 0, 1 });
-		addVertice(new float[] { 1, -1 }, new float[] { 1, 1 });
-		addVertice(new float[] { 1, 1 }, new float[] { 1, 0 });
-	}
-
 	protected void addVertice(float vx, float vy, float t, float s)
 	{
-		buf.put(vx);
-		buf.put(vy);
-		buf.put(t);
-		buf.put(s);
+		// 2x4 bytes of float vertex position
+		buf.putFloat(vx);
+		buf.putFloat(vy);
+		// 2x4 bytes of float texture coords
+		buf.putFloat(t);
+		buf.putFloat(s);
+		// 1x4 bytes of ubyte norm color data
+		buf.put((byte)(int)(currentColor.x * 255));
+		buf.put((byte)(int)(currentColor.y * 255));
+		buf.put((byte)(int)(currentColor.z * 255));
+		buf.put((byte)(int)(currentColor.w * 255));
 		elementsToDraw++;
 	}
 	
-	protected void addVertice(float[] vertexIn, float[] texCoordIn)
-	{
-		buf.put(vertexIn);
-		buf.put(texCoordIn);
-		elementsToDraw++;
-	}
-
 	/**
 	 * Called before adding anything to the drawBuffer, if it's the same kind as
 	 * before we keep filling it, if not we empty it first by drawing the
@@ -123,19 +109,19 @@ public class GuiRenderer
 		if(color == null)
 			color = new Vector4f(1.0F);
 		
+		//Only texture changes trigger a buffer flush now
 		if (texture != currentTexture || 
-				alpha != alphaBlending || 
-				useTexture != textureEnabled || 
-				(!color.equals(currentColor)))
+				useTexture != textureEnabled )
 		{
 			drawBuffer();
 		}
+		
 		currentTexture = texture;
 		alphaBlending = alpha;
 		currentColor = color;
 		useTexture = textureEnabled;
 	}
-
+	
 	/**
 	 * Draw the data in the buffer.
 	 */
@@ -147,28 +133,18 @@ public class GuiRenderer
 		// Upload data and draw it.
 		buf.flip();
 		this.guiDrawData.uploadData(buf);
-
 		buf.clear();
-		renderingContext.useShader("gui");
 		
+		renderingContext.useShader("gui");
 		renderingContext.currentShader().setUniform1f("useTexture", useTexture ? 1f : 0f);
-		if(currentColor != null)
-		{	
-			renderingContext.currentShader().setUniform4f("color", currentColor);
-		}
-		else
-			throw new RuntimeException("No color specified");
-			
-			//renderingContext.currentShader().setUniform4f("color", 1f, 1f, 1f, 1f);
 		
 		renderingContext.bindTexture2D("sampler", currentTexture);
 		
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
-		//glDisable(GL_DEPTH_TEST);
-		if (alphaBlending)
+		//TODO depreacated alpha_test mode
+		if (alphaBlending || true)
 		{
 			renderingContext.setBlendMode(BlendMode.MIX);
-			//glEnable(GL_BLEND);
 		}
 		else
 		{
@@ -176,8 +152,9 @@ public class GuiRenderer
 		}
 		
 		renderingContext.setCullingMode(CullingMode.DISABLED);
-		renderingContext.bindAttribute("vertexIn", guiDrawData.asAttributeSource(VertexFormat.FLOAT, 2, 16, 0));
-		renderingContext.bindAttribute("texCoordIn", guiDrawData.asAttributeSource(VertexFormat.FLOAT, 2, 16, 8));
+		renderingContext.bindAttribute("vertexIn", guiDrawData.asAttributeSource(VertexFormat.FLOAT, 2, 20, 0));
+		renderingContext.bindAttribute("texCoordIn", guiDrawData.asAttributeSource(VertexFormat.FLOAT, 2, 20, 8));
+		renderingContext.bindAttribute("colorIn", guiDrawData.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 20, 16));
 		
 		renderingContext.draw(Primitive.TRIANGLE, 0, elementsToDraw);
 		renderingContext.flush();
@@ -187,8 +164,7 @@ public class GuiRenderer
 
 	public void free()
 	{
-		//glDeleteBuffers(glVBO);
-		//shader.free();
+		guiDrawData.destroy();
 	}
 	
 	//TODO remove completely
