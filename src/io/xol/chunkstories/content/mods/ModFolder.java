@@ -112,12 +112,7 @@ public class ModFolder extends Mod
 			return "[Asset: "+assetName+" from mod "+ModFolder.this+"]";
 		}
 	}
-	@Override
-	public String getMD5Hash()
-	{
-		throw new UnsupportedOperationException("TODO");
-	}
-
+	
 	@Override
 	public void close()
 	{

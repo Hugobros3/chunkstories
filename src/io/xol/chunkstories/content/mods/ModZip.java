@@ -53,7 +53,7 @@ public class ModZip extends Mod
 				{
 					String assetName = "./" + entry.getName();
 
-					System.out.println("Found asset " + assetName);
+					//System.out.println("Found asset " + assetName);
 					assets.put(assetName, new ModZipAsset(assetName, entry));
 				}
 			}
@@ -116,12 +116,6 @@ public class ModZip extends Mod
 		{
 			return "[Asset: "+assetName+" from mod "+ModZip.this+"]";
 		}
-	}
-
-	@Override
-	public String getMD5Hash()
-	{
-		throw new UnsupportedOperationException("TODO");
 	}
 
 	@Override

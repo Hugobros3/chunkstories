@@ -59,16 +59,46 @@ public class Mods
 	{
 		try
 		{
-			setEnabledMods("C:\\Users\\Hugo\\workspace2\\Dogez-Plugin for CS\\mods\\dogez_content", "modInZip", "OveriddenModInZip", "md5:df9f7c813fdc72029b41758ef8dbb528", "md5:7f46165474d11ee5836777d85df2cdab:http://xol.io");
+			setEnabledMods("dogez_content");
+			//setEnabledMods("C:\\Users\\Hugo\\workspace2\\Dogez-Plugin for CS\\mods\\dogez_content", "modInZip", "OveriddenModInZip", "md5:df9f7c813fdc72029b41758ef8dbb528", "md5:7f46165474d11ee5836777d85df2cdab:http://xol.io");
 			loadEnabledMods();
 		}
 		catch (NotAllModsLoadedException e)
 		{
 			System.out.print(e.getMessage());
 		}
-
+				
+		for(Mod mod : getCurrentlyLoadedMods())
+			System.out.println(mod.getMD5Hash());
+			
+		try
+		{
+			setEnabledMods("dogez_content2");
+			//setEnabledMods("C:\\Users\\Hugo\\workspace2\\Dogez-Plugin for CS\\mods\\dogez_content", "modInZip", "OveriddenModInZip", "md5:df9f7c813fdc72029b41758ef8dbb528", "md5:7f46165474d11ee5836777d85df2cdab:http://xol.io");
+			loadEnabledMods();
+		}
+		catch (NotAllModsLoadedException e)
+		{
+			System.out.print(e.getMessage());
+		}
+				
+		for(Mod mod : getCurrentlyLoadedMods())
+			System.out.println(mod.getMD5Hash());
 		
-
+		try
+		{
+			setEnabledMods("dogez_content");
+			//setEnabledMods("C:\\Users\\Hugo\\workspace2\\Dogez-Plugin for CS\\mods\\dogez_content", "modInZip", "OveriddenModInZip", "md5:df9f7c813fdc72029b41758ef8dbb528", "md5:7f46165474d11ee5836777d85df2cdab:http://xol.io");
+			loadEnabledMods();
+		}
+		catch (NotAllModsLoadedException e)
+		{
+			System.out.print(e.getMessage());
+		}
+				
+		for(Mod mod : getCurrentlyLoadedMods())
+			System.out.println(mod.getMD5Hash());
+		
 		System.out.println("Done");
 	}
 

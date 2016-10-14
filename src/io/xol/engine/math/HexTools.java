@@ -36,6 +36,17 @@ public class HexTools
 		return value;
 	}
 	
+	public static String byteArrayAsHexString(byte[] array)
+	{
+		String s = "";
+		for(byte b : array)
+		{
+			s += hexTable[(b >> 4) & 0xF];
+			s += hexTable[(b >> 0) & 0xF];
+		}
+		return s.toLowerCase();
+	}
+	
 	public static String intToHex(int i)
 	{
 		// System.out.println("wtf "+i);
