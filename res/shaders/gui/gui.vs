@@ -1,11 +1,16 @@
-#version 120
-attribute vec2 vertexIn;
-attribute vec2 texCoordIn;
+#version 130
+in vec2 vertexIn;
+in vec2 texCoordIn;
+in vec4 colorIn;
 
-varying vec2 texCoordPassed;
+//Simply transfer data
+out vec2 texCoordPassed;
+out vec4 colorPassed;
+
 void main(void) {
 
   texCoordPassed = vec2(texCoordIn);
+  colorPassed = colorIn;
   gl_Position = vec4(vertexIn, 0.0, 1.0);
   
 }
