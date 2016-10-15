@@ -56,7 +56,7 @@ public class ClientInputPressedEvent extends CancellableEvent implements ClientE
 				return;
 			
 			//Send input to server
-			if (entityControlled instanceof WorldClientRemote)
+			if (entityControlled.getWorld() instanceof WorldClientRemote)
 			{
 				ClientToServerConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
 				PacketInput packet = new PacketInput(true);

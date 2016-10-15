@@ -73,8 +73,8 @@ public class PacketInput extends PacketSynch
 			}
 			
 			//If we pressed the input, apply game logic
-			if(pressed)
-				entity.handleInteraction(input, entity.getControllerComponent().getController());
+			//if(pressed)
+			//	entity.handleInteraction(input, entity.getControllerComponent().getController());
 		}
 	}
 }

@@ -173,7 +173,7 @@ public class Mods
 					System.out.println("Looking for mod " + name + " on the local filesystem");
 
 					//First look for it in the directory section
-					File modDirectory = new File(serverMods.getAbsolutePath() + "/" + name);
+					File modDirectory = new File(modsDir.getAbsolutePath() + "/" + name);
 					if (modDirectory.exists())
 					{
 						mod = new ModFolder(modDirectory);
@@ -182,7 +182,7 @@ public class Mods
 					else
 					{
 						//Then look for a .zip file in the same directory
-						File zippedMod = new File(serverMods.getAbsolutePath() + "/" + name + ".zip");
+						File zippedMod = new File(modsDir.getAbsolutePath() + "/" + name + ".zip");
 						if (zippedMod.exists())
 						{
 							mod = new ModZip(zippedMod);

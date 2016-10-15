@@ -933,8 +933,13 @@ public class WorldRenderer
 				// Update if chunk was modified
 				if ((chunk.isMarkedForReRender() || chunk.needsLightningUpdates()) && !chunk.isAirChunk())
 					chunksRenderer.requestChunkRender(chunk);
+				
+				//TODO refactor chunk mesh pipeline to prevent this
+				//if (chunkRenderData != null && !chunkRenderData.isUploaded())
+				//	System.out.println("WOW");
+				
 				// Don't bother if it don't render anything
-				if (chunkRenderData == null || !chunkRenderData.isUploaded()|| chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)
+				if (chunkRenderData == null || !chunkRenderData.isUploaded() || chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)
 					continue;
 
 				// If we're doing shadows

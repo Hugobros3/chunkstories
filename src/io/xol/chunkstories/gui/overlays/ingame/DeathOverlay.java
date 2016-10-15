@@ -2,7 +2,6 @@ package io.xol.chunkstories.gui.overlays.ingame;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.engine.base.GameWindowOpenGL;

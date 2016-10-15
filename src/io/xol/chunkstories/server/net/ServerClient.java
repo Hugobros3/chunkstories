@@ -180,6 +180,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 
 	public void closeSocket()
 	{
+		Thread.dumpStack();
 		if (alreadyKilled)
 			return;
 		died = true;
@@ -313,6 +314,8 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 
 	public void disconnect(String disconnectionMessage)
 	{
+		Thread.dumpStack();
+		System.out.println(disconnectionMessage);
 		sendInternalTextMessage("disconnect/" + disconnectionMessage);
 		closeSocket();
 		//Remove the connection from the set in the manager

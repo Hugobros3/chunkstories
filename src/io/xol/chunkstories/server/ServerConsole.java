@@ -184,6 +184,11 @@ public class ServerConsole
 					}
 				}
 			}
+			else if (cmd.equals("gc"))
+			{
+				emitter.sendMessage("Performing gc...");
+				System.gc();
+			}
 			// Rights check
 			if (emitter.hasPermission("server.admin"))
 			{
