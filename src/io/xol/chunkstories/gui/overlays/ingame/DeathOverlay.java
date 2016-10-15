@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
@@ -57,16 +58,15 @@ public class DeathOverlay extends Overlay
 
 		if(respawnButton.clicked())
 		{
-			if(Client.connection != null)
-				Client.connection.sendTextMessage("world/respawn");
+			//TODO this has no functionality whatsoever for local worlds yet
+			if(Client.getInstance().getWorld() instanceof WorldClientRemote)
+				((WorldClientRemote) Client.getInstance().getWorld()).getConnection().sendTextMessage("world/respawn");
 			mainScene.changeOverlay(parent);
 		}
 		
 		if(exitButton.clicked())
 		{
-			//if(Client.world != null)
-			//	Client.world.unloadEverything();
-			mainScene.gameWindow.changeScene(new MainMenu(mainScene.gameWindow, false));
+			Client.getInstance().exitToMainMenu();
 		}
 	}
 	

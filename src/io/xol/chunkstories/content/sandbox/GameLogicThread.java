@@ -35,16 +35,27 @@ public class GameLogicThread extends Thread implements GameLogic
 	public GameLogicThread(WorldImplementation world, SecurityManager securityManager)
 	{
 		this.world = world;
-		this.world.setLogicThread(this);
 		
 		this.setName("World " + world.getWorldInfo().getInternalName()+" logic thread");
 		this.setPriority(Constants.MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY);
 		
 		gameLogicScheduler = new GameLogicScheduler();
 		
-		this.start();
+		//this.start();
 	}
 
+	long lastNano;
+	
+	private void nanoCheckStep(int maxNs, String warn)
+	{
+		long took = System.nanoTime() - lastNano;
+		//Took more than n ms ?
+		if(took > maxNs * 1000000)
+			System.out.println(warn + " " + (double)(took / 1000L) / 1000 + "ms");
+		
+		lastNano = System.nanoTime();
+	}
+	
 	public void run()
 	{
 		//Installs a custom SecurityManager
@@ -54,6 +65,7 @@ public class GameLogicThread extends Thread implements GameLogic
 		{
 			//Dirty performance metric :]
 			//perfMetric();
+			//nanoCheckStep(20, "Loop was more than 20ms");
 			
 			//Timings
 			fps = 1f / ((System.nanoTime() - lastTimeNs) / 1000f / 1000f / 1000f);
@@ -71,13 +83,18 @@ public class GameLogicThread extends Thread implements GameLogic
 					p.updateUsedWorldBits();
 				}
 			}
+			//nanoCheckStep(1, "World bits");
 			
 			//Processes incomming pending packets in synch with game logic
 			if(world instanceof WorldNetworked)
 				((WorldNetworked) world).processIncommingPackets();
 			
+			//nanoCheckStep(2, "Incomming packets");
+			
 			//Tick the world ( mostly entities )
 			world.tick();
+			
+			//nanoCheckStep(5, "Tick");
 			
 			//Every second, unloads unused stuff
 			if(world.getTicksElapsed() % 60 == 0)
@@ -96,7 +113,11 @@ public class GameLogicThread extends Thread implements GameLogic
 				world.unloadUselessData();
 			}
 			
+			//nanoCheckStep(1, "unload");
+			
 			gameLogicScheduler.runScheduledTasks();
+			
+			//nanoCheckStep(1, "schedule");
 			
 			//Game logic is 60 ticks/s
 			sync(getTargetFps());

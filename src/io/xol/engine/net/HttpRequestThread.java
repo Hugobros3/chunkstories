@@ -2,12 +2,18 @@ package io.xol.engine.net;
 
 import io.xol.engine.net.HttpRequester;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class HttpRequestThread extends Thread
 {
 	HttpRequester requester;
 	String info;
 	String address;
 	String params;
+	
+	boolean done = false;
 
 	public HttpRequestThread(HttpRequester requester, String info,
 			String address, String params)
@@ -17,6 +23,8 @@ public class HttpRequestThread extends Thread
 		this.address = address;
 		this.params = params;
 		this.setName("Http Request Thread (" + info + "/" + address + ")");
+		
+		this.start();
 	}
 
 	@Override
@@ -26,5 +34,34 @@ public class HttpRequestThread extends Thread
 		if (result == null)
 			result = "null";
 		requester.handleHttpRequest(info, result);
+		
+		//Tell anyone listening we are done
+		done = true;
+		synchronized(this)
+		{
+			notifyAll();
+		}
+	}
+
+	/**
+	 * Wait() until thread is done with the request.
+	 */
+	public void waitUntilTermination()
+	{
+		while(!done)
+		{
+			synchronized(this)
+			{
+				try
+				{
+					wait(100L);
+				}
+				catch (InterruptedException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

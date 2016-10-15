@@ -108,11 +108,10 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			{
 				// Offline-mode !
 				System.out.println("Warning : Offline-mode is on, letting " + this.name + " connecting without verification");
-				
 				postTokenCheck();
 			}
 			else
-				new HttpRequestThread(this, "checktoken", "http://chunkstories.xyz/api/serverTokenChecker.php", "username=" + this.name + "&token=" + token).start();
+				new HttpRequestThread(this, "checktoken", "http://chunkstories.xyz/api/serverTokenChecker.php", "username=" + this.name + "&token=" + token);
 		}
 	}
 
@@ -258,7 +257,8 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			disconnect(playerConnectionEvent.getRefusedConnectionMessage());
 			return;
 		}
-		//Announce
+		
+		//Announce player login
 		Server.getInstance().getHandler().sendAllChat(playerConnectionEvent.getConnectionMessage());
 		//Aknowledge the login
 		sendInternalTextMessage("login/ok");

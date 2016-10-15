@@ -33,6 +33,8 @@ import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.content.sandbox.GameLogicThread;
+import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -55,7 +57,6 @@ import io.xol.engine.misc.ConfigFile;
 public abstract class WorldImplementation implements World
 {
 	protected WorldInfo worldInfo;
-	private GameLogic gameLogicThread;
 	private final File folder;
 
 	//protected final boolean client;
@@ -74,6 +75,7 @@ public abstract class WorldImplementation implements World
 
 	//Who does the actual work
 	public IOTasks ioHandler;
+	private GameLogicThread worldThread;
 
 	// RAM-eating depreacated monster
 	// public ChunksData chunksData;
@@ -127,6 +129,14 @@ public abstract class WorldImplementation implements World
 			this.folder = null;
 			this.internalData = null;
 		}
+		
+		//Start the world logic thread
+		worldThread = new GameLogicThread(this, new UnthrustedUserContentSecurityManager());
+	}
+
+	public void startLogic()
+	{
+		worldThread.start();
 	}
 
 	@Override
@@ -591,7 +601,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void saveEverything()
 	{
-		System.out.println("Saving world");
+		System.out.println("Saving all parts of world "+worldInfo.getName());
 		regions.saveAll();
 		getRegionsSummariesHolder().saveAllLoadedSummaries();
 
@@ -1005,22 +1015,19 @@ public abstract class WorldImplementation implements World
 	{
 		return this.worldTicksCounter;
 	}
-
-	public void setLogicThread(GameLogic gameLogicThread)
-	{
-		this.gameLogicThread = gameLogicThread;
-	}
 	
 	@Override
 	public GameLogic getGameLogic()
 	{
-		return gameLogicThread;
+		return worldThread;
 	}
 
 	@Override
 	public void destroy()
 	{
-		//this.chunksData.destroy();
+		//Stop the game logic first
+		worldThread.stopLogicThread();
+		
 		this.regions.destroy();
 		this.getRegionsSummariesHolder().destroy();
 		//this.logic.shutdown();
@@ -1029,6 +1036,8 @@ public abstract class WorldImplementation implements World
 			this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
 			this.internalData.save();
 		}
+		
+		//Kill the IO handler
 		ioHandler.kill();
 	}
 

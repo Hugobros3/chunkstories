@@ -130,7 +130,7 @@ public class LoginOverlay extends Overlay implements HttpRequester
 		else
 		{
 			logging_in = true;
-			new HttpRequestThread(this, "login", "http://chunkstories.xyz/api/login.php", "user=" + guiHandler.getInputText(0).text + "&pass=" + guiHandler.getInputText(1).text).start();
+			new HttpRequestThread(this, "login", "http://chunkstories.xyz/api/login.php", "user=" + guiHandler.getInputText(0).text + "&pass=" + guiHandler.getInputText(1).text);
 		}
 	}
 	

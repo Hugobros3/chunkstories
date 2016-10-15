@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.net.packets.PacketInput;
+import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -31,34 +32,40 @@ public class ClientInputPressedEvent extends CancellableEvent implements ClientE
 	}
 
 	// Specific event code
-	
+
 	public ClientInputPressedEvent(Input input)
 	{
 		this.input = input;
 	}
-	
+
 	Input input;
-	
+
 	public Input getInput()
 	{
 		return input;
 	}
-	
+
 	public void defaultBehaviour()
 	{
-		if(!this.isCancelled())
+		if (!this.isCancelled())
 		{
+			final EntityControllable entityControlled = Client.getInstance().getClientSideController().getControlledEntity();
+
+			//There has to be a controlled entity for sending inputs to make sense.
+			if(entityControlled == null)
+				return;
+			
 			//Send input to server
-			ClientToServerConnection connection = this.getClient().getServerConnection();
-			if(connection != null)
+			if (entityControlled instanceof WorldClientRemote)
 			{
+				ClientToServerConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
 				PacketInput packet = new PacketInput(true);
 				packet.input = input;
 				connection.sendPacket(packet);
 			}
+
 			//Handle interaction locally
-			final EntityControllable entityControlled = Client.getInstance().getClientSideController().getControlledEntity();
-			if(entityControlled != null)
+			if (entityControlled != null)
 				entityControlled.handleInteraction(input, Client.getInstance().getClientSideController());
 		}
 	}

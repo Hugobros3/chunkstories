@@ -1,16 +1,14 @@
 package io.xol.chunkstories.client.net;
 
-import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.RemoteServer;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.PacketText;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
-import io.xol.engine.net.HttpRequestThread;
-import io.xol.engine.net.HttpRequester;
-
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.engine.concurrency.Fence;
+import io.xol.engine.concurrency.SimpleFence;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
@@ -24,62 +22,66 @@ import java.util.Set;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ClientToServerConnection extends Thread implements HttpRequester, RemoteServer
+public class ClientToServerConnection extends Thread implements RemoteServer
 {
 	//This objects connects to a server
-	public String ip = "";
-	public int port = 30410;
+	private String ip = "";
+	private int port = 30410;
 
 	//Network stuff
 	private Socket socket;
-	PacketsProcessor packetsProcessor;
+	private PacketsProcessor packetsProcessor;
 	private DataInputStream in;
 	private SendQueue sendQueue;
 
-	// Do we want to connect or merely to grab info ?
-	boolean whoisMode = false;
-
 	// Status check
-	boolean connected = false;
-	public boolean authentificated = false;
+	private SimpleFence authFence = new SimpleFence();
 	boolean failed = false;
-	String latestErrorMessage = "";
-	public String connectionStatus = "Establishing connection...";
+	private String latestErrorMessage = "";
+	private String connectionStatus = "Establishing connection...";
 
+	private ClientSideConnectionSequence connectionSequence;
+	
 	// Receiving buffers
 	public List<String> chatReceived = new ArrayList<String>();
-	public List<String> techReceived = new ArrayList<String>();
 
 	// Code magic here
 	boolean die = false;
-	boolean dead = false;
+	boolean closeMethodAlreadyCalled = false;
 	
-	public ClientToServerConnection(String i, int p)
+	public ClientToServerConnection(ClientSideConnectionSequence connectionSequence, String ip, int port)
 	{
-		ip = i;
-		port = p;
-		packetsProcessor = new PacketsProcessor(this);
+		this.connectionSequence = connectionSequence;
+		this.ip = ip;
+		this.port = port;
+		
+		this.packetsProcessor = new PacketsProcessor(this);
 		this.setName("Server Connection thread - " + ip);
-		connect();
+		
+		//Start the connection
+		this.start();
+		
 	}
 
 	// Connect on/off
-
-	public boolean connect()
+	public boolean openSocket()
 	{
-		System.out.println("Connecting to " + ip + ":" + port + ".");
+		ChunkStoriesLogger.getInstance().info("Connecting to " + ip + ":" + port + ".");
 		try
 		{
+			//Opens the socket
 			socket = new Socket(ip, port);
 			in = new DataInputStream(socket.getInputStream());
+			//Create the sendQueue thread
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			sendQueue = new SendQueue(this, out, packetsProcessor);
 			sendQueue.start();
+			
+			/*
 			connectionStatus = "Established, waiting for login token...";
-			this.start();
+			
 			sendTextMessage("info");
-			auth();
-			connected = true;
+			login();*/
 			return true;
 		}
 		catch (Exception e)
@@ -92,18 +94,48 @@ public class ClientToServerConnection extends Thread implements HttpRequester, R
 		}
 	}
 
+	// run
+	@Override
+	public void run()
+	{
+		openSocket();
+		
+		while (!die)
+		{
+			// Just wait for the goddamn packets to come !
+			try
+			{
+				Packet packet = packetsProcessor.getPacket(in, true);
+				packet.process(this, in, packetsProcessor);
+			}
+			catch (Exception e)
+			{
+				if (!die) // If the thread was killed then there is no point
+							// handling the error.
+				{
+					// close();
+					failed = true;
+					latestErrorMessage = "Fatal error while handling connection to " + ip + ":" + port + ". (" + e.getClass().getName() + ")";
+					System.out.println(latestErrorMessage);
+					close();
+					e.printStackTrace();
+				}
+			}
+		}
+		System.out.println("Letting thread die as it finished it's job.");
+	}
+
 	// @SuppressWarnings("deprecation")
 	public void close()
 	{
-		if (dead)
+		if (closeMethodAlreadyCalled)
 			return;
-		dead = true;
+		closeMethodAlreadyCalled = true;
 		try
 		{
 			in.close();
 			sendQueue.kill();
 			socket.close();
-			connected = false;
 			die = true;
 		}
 		catch (Exception e)
@@ -123,24 +155,22 @@ public class ClientToServerConnection extends Thread implements HttpRequester, R
 			// System.out.println(msg.substring(5, msg.length()));
 			chatReceived.add(msg.substring(5, msg.length()));
 		}
-		if (msg.startsWith("world/"))
+		else if (msg.startsWith("world/"))
 		{
 			System.out.println("Received a message about the world, but no remote world exists as of now...\nFaulty message : \n" + msg.substring(6, msg.length()));
 			// Client.word.handleWorldMessage(msg.substring(6, msg.length()));
 		}
-		if (msg.startsWith("disconnect/"))
+		else if (msg.startsWith("disconnect/"))
 		{
 			latestErrorMessage = msg.replace("disconnect/", "");
 			failed = true;
 			System.out.println("Disconnected by server : "+msg.replace("disconnect/", ""));
 			close();
 		}
-		if (msg.equals("login/ok"))
+		else if (msg.equals("login/ok"))
 		{
-			authentificated = true;
+			authFence.signal();
 		}
-		else
-			techReceived.add(msg);
 	}
 
 	public void sendTextMessage(String msg)
@@ -185,57 +215,6 @@ public class ClientToServerConnection extends Thread implements HttpRequester, R
 		}
 		return null;
 	}
-
-	// auth
-	private void auth()
-	{
-		if (Client.offline)
-		{
-			// If online-mode, send dummy info
-			sendTextMessage("login/start");
-
-			sendTextMessage("login/username:" + Client.username);
-			sendTextMessage("login/logintoken:nopenopenopenopenope");
-			sendTextMessage("login/version:"+VersionInfo.networkProtocolVersion);
-			sendTextMessage("login/confirm");
-		}
-		else
-		{
-			// Before sending the server the info it needs for authentification
-			// we need a valid login token so
-			// we fire up a http request to grab one
-			new HttpRequestThread(this, "token", "http://chunkstories.xyz/api/serverTokenObtainer.php", "username=" + Client.username + "&sessid=" + Client.session_key).start();
-		}
-	}
-
-	// run
-	@Override
-	public void run()
-	{
-		while (!die)
-		{
-			// Just wait for the goddamn packets to come !
-			try
-			{
-				Packet packet = packetsProcessor.getPacket(in, true);
-				packet.process(this, in, packetsProcessor);
-			}
-			catch (Exception e)
-			{
-				if (!die) // If the thread was killed then there is no point
-							// handling the error.
-				{
-					// close();
-					failed = true;
-					latestErrorMessage = "Fatal error while handling connection to " + ip + ":" + port + ". (" + e.getClass().getName() + ")";
-					System.out.println(latestErrorMessage);
-					close();
-					e.printStackTrace();
-				}
-			}
-		}
-		System.out.println("Letting thread die as it finished it's job.");
-	}
 	
 	public boolean hasFailed()
 	{
@@ -246,35 +225,7 @@ public class ClientToServerConnection extends Thread implements HttpRequester, R
 	{
 		return this.latestErrorMessage;
 	}
-
-	@Override
-	public void handleHttpRequest(String info, String result)
-	{
-		// System.out.println("Request "+info+" got answered: "+result);
-		if (info.equals("token"))
-		{
-			if (result.startsWith("ok"))
-			{
-				String token = result.split(":")[1];
-
-				sendTextMessage("login/start");
-
-				sendTextMessage("login/username:" + Client.username);
-				sendTextMessage("login/logintoken:" + token);
-				sendTextMessage("login/version:"+VersionInfo.networkProtocolVersion);
-				sendTextMessage("login/confirm");
-				connectionStatus = "Token obtained, logging in...";
-			}
-			else
-			{
-				close();
-				failed = true;
-				latestErrorMessage = "Could not obtain token from XolioWare Interactive servers ( " + result + " ).";
-				System.out.println("no token");
-			}
-		}
-	}
-
+	
 	@Override
 	public long getUUID()
 	{
@@ -322,5 +273,15 @@ public class ClientToServerConnection extends Thread implements HttpRequester, R
 	public boolean isSubscribedTo(Entity entity)
 	{
 		return controlledEntity.contains(entity);
+	}
+
+	public Fence getAuthentificationFence()
+	{
+		return authFence;
+	}
+
+	public PacketsProcessor getPacketsProcessor()
+	{
+		return packetsProcessor;
 	}
 }

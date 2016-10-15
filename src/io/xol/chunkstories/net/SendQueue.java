@@ -25,7 +25,6 @@ public class SendQueue extends Thread
 	Queue<Packet> sendQueue = new ConcurrentLinkedQueue<Packet>();
 	AtomicBoolean die = new AtomicBoolean(false);
 	Semaphore workTodo = new Semaphore(0);
-	//AtomicBoolean sleepy = new AtomicBoolean(false);
 
 	PacketsProcessor processor;
 	DataOutputStream out;
@@ -145,22 +144,16 @@ public class SendQueue extends Thread
 	@Override
 	public void run()
 	{
-		int k = 0;
-
 		while (!die.get())
 		{
 			//workTodo.acquireUninterruptibly();
 
 			Packet packet = sendQueue.poll();
 
-			k++;
-
 			if (packet == null)
 			{
 				try
 				{
-					//System.out.println("\nFlushing " + k + " packets\nStill" + sendQueue.size() + " in send queue ");
-					k = 0;
 					out.flush();
 				}
 				catch (IOException e)
@@ -168,28 +161,13 @@ public class SendQueue extends Thread
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
-				//workTodo.acquireUninterruptibly();
-				/*try
-				{
-					synchronized (this)
-					{
-						//Wait if no more job to do.
-						sleepy.set(true);
-						wait();
-					}
-				}
-				catch (InterruptedException e)
-				{
-					e.printStackTrace();
-				}*/
 			}
 			else
 				try
 				{
-						if (!(packet instanceof PacketDummy))
-							processor.sendPacketHeader(out, packet);
-						packet.send(destinator, out);
+					if (!(packet instanceof PacketDummy))
+						processor.sendPacketHeader(out, packet);
+					packet.send(destinator, out);
 				}
 				catch (IOException e)
 				{

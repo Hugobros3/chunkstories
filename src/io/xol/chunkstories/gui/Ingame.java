@@ -32,14 +32,13 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientInputsManager;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.content.sandbox.GameLogicThread;
-import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
@@ -59,6 +58,8 @@ import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.world.WorldClientCommon;
+import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -66,49 +67,54 @@ import io.xol.chunkstories.voxel.Voxels;
 
 public class Ingame extends OverlayableScene
 {
+	final private WorldClientCommon world;
+	
 	// Renderer
 	public WorldRenderer worldRenderer;
 	SelectionRenderer selectionRenderer;
 	InventoryDrawer inventoryDrawer;
 
 	Camera camera = new Camera();
-	public Chat chat = new Chat();
+	public Chat chat;
 	protected boolean focus = true;
 	Entity player;
 
 	private boolean guiHidden = false;
 	boolean shouldTakeACubemap = false;
 
-	public Ingame(GameWindowOpenGL window, boolean multiPlayer)
+	public Ingame(GameWindowOpenGL window, WorldClientCommon world)
 	{
 		super(window);
+		this.world = world;
 		window.renderingContext.setCamera(camera);
-
-		//We need a world to work on
-		if (Client.world == null)
-			window.changeScene(new MainMenu(window, false));
-
-		Client.worldThread = new GameLogicThread(Client.world, new UnthrustedUserContentSecurityManager());
 
 		//Spawn manually the player if we're in Singleplayer
 		//TODO this should be managed by a proper localhost server rather than this appalling hack
-		if (Client.world instanceof WorldMaster)
+		if (world instanceof WorldMaster)
 		{
 			//TODO remember a proper spawn location
-			Client.getInstance().getClientSideController().setControlledEntity(new EntityPlayer(Client.world, 0, 100, 0, Client.username));
+			Client.getInstance().getClientSideController().setControlledEntity(new EntityPlayer(world, 0, 100, 0, Client.username));
 
 			((EntityControllable) Client.getInstance().getClientSideController().getControlledEntity()).getControllerComponent().setController(Client.getInstance().getClientSideController());
-			Client.world.addEntity(Client.getInstance().getClientSideController().getControlledEntity());
+			world.addEntity(Client.getInstance().getClientSideController().getControlledEntity());
 		}
 
 		//Creates the rendering stuff
-		worldRenderer = new WorldRenderer(Client.world);
+		worldRenderer = new WorldRenderer(world);
 		worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		selectionRenderer = new SelectionRenderer(Client.world, worldRenderer);
+		selectionRenderer = new SelectionRenderer(world, worldRenderer);
+		
+		chat = new Chat(this);
+		
 		//Give focus
 		focus(true);
 	}
 
+	public World getWorld()
+	{
+		return world;
+	}
+	
 	public boolean hasFocus()
 	{
 		if (this.currentOverlay != null)
@@ -163,15 +169,15 @@ public class Ingame extends OverlayableScene
 				for (int j = ((int) cameraPosition.getY()) - drawDebugDist; j <= ((int) cameraPosition.getY()) + drawDebugDist; j++)
 					for (int k = ((int) cameraPosition.getZ()) - drawDebugDist; k <= ((int) cameraPosition.getZ()) + drawDebugDist; k++)
 					{
-						data = Client.world.getVoxelData(i, j, k);
+						data = world.getVoxelData(i, j, k);
 						id = VoxelFormat.id(data);
-						Voxels.get(id).debugRenderCollision(Client.world, i, j, k);
+						Voxels.get(id).debugRenderCollision(world, i, j, k);
 					}
 
 			for (CollisionBox b : player.getTranslatedCollisionBoxes())
 				b.debugDraw(0, 1, 1, 1);
 
-			Iterator<Entity> ie = Client.world.getAllLoadedEntities();
+			Iterator<Entity> ie = world.getAllLoadedEntities();
 			while (ie.hasNext())
 			{
 				for (CollisionBox b : ie.next().getTranslatedCollisionBoxes())
@@ -243,10 +249,12 @@ public class Ingame extends OverlayableScene
 		Client.profiler.reset("gui");
 
 		// Check connection didn't died and change scene if it has
-		if (Client.connection != null)
+		if (world instanceof WorldClientRemote)
 		{
-			if (!Client.connection.isAlive() || Client.connection.hasFailed())
-				gameWindow.changeScene(new MainMenu(gameWindow, "Connection failed : " + Client.connection.getLatestErrorMessage()));
+			
+			if (!((WorldClientRemote) world).getConnection().isAlive() || ((WorldClientRemote) world).getConnection().hasFailed())
+				Client.getInstance().exitToMainMenu("Connection terminated : " + ((WorldClientRemote) world).getConnection().getLatestErrorMessage());
+				
 		}
 
 		if (!Display.isActive() && this.currentOverlay == null)
@@ -333,8 +341,8 @@ public class Ingame extends OverlayableScene
 		//CTRL-R redraws chunks
 		else if ((Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == 19)
 		{
-			((ParticlesRenderer) Client.world.getParticlesManager()).cleanAllParticles();
-			Client.world.redrawEverything();
+			((ParticlesRenderer) world.getParticlesManager()).cleanAllParticles();
+			world.redrawEverything();
 			worldRenderer.chunksRenderer.clear();
 			ChunksRenderer.renderStart = System.currentTimeMillis();
 			worldRenderer.flagModified();
@@ -506,12 +514,6 @@ public class Ingame extends OverlayableScene
 	public void destroy()
 	{
 		this.worldRenderer.destroy();
-		
-		if (Client.connection != null)
-		{
-			Client.connection.close();
-			Client.connection = null;
-		}
 	}
 
 	private void drawF3debugMenu(RenderingInterface renderingInterface)
@@ -526,13 +528,13 @@ public class Ingame extends OverlayableScene
 		int bx = ((int) camera.pos.getX());
 		int by = ((int) camera.pos.getY());
 		int bz = ((int) camera.pos.getZ());
-		int data = Client.world.getVoxelData(bx, by, bz);
+		int data = world.getVoxelData(bx, by, bz);
 		int bl = (data & 0x0F000000) >> 0x18;
 		int sl = (data & 0x00F00000) >> 0x14;
 		int cx = bx / 32;
 		int cy = by / 32;
 		int cz = bz / 32;
-		int csh = Client.world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(bx, bz);
+		int csh = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(bx, bz);
 
 		float angleX = -1;
 		if (player != null && player instanceof EntityLiving)
@@ -563,21 +565,21 @@ public class Ingame extends OverlayableScene
 		//Location selectedBlockLocation = ((EntityControllable) player).getBlockLookingAt(false);
 
 		int ec = 0;
-		IterableIterator<Entity> i = Client.world.getAllLoadedEntities();
+		IterableIterator<Entity> i = world.getAllLoadedEntities();
 		while(i.hasNext())
 		{
 			i.next();
 			ec++;
 		}
 		
-		Chunk current = Client.world.getChunk(cx, cy, cz);
+		Chunk current = world.getChunk(cx, cy, cz);
 		int x_top = GameWindowOpenGL.windowHeight - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + worldRenderer.renderedChunks) + "Entities " + ec + " Particles :"
-				+ ((ParticlesRenderer) Client.world.getParticlesManager()).count() + " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + worldRenderer.getWorld().getGameLogic().getSimulationFps(), BitmapFont.SMALLFONTS);
+				+ ((ParticlesRenderer) world.getParticlesManager()).count() + " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + worldRenderer.getWorld().getGameLogic().getSimulationFps(), BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Frame timings : " + debugInfo, BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + Client.world.getRegionsHolder().countChunksWithData() + "/"
-				+ Client.world.getRegionsHolder().countChunks() + " " + Math.floor(Client.world.getRegionsHolder().countChunksWithData() * 4 * 32 * 32 * 32 / (1024L * 1024 / 100f)) / 100f + "Mb used by chunks"
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + world.getRegionsHolder().countChunksWithData() + "/"
+				+ world.getRegionsHolder().countChunks() + " " + Math.floor(world.getRegionsHolder().countChunksWithData() * 4 * 32 * 32 * 32 / (1024L * 1024 / 100f)) / 100f + "Mb used by chunks"
 
 				, BitmapFont.SMALLFONTS);
 
@@ -589,7 +591,7 @@ public class Ingame extends OverlayableScene
 
 		
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16,
-				"Chunks to bake : " + worldRenderer.chunksRenderer.todoQueue.size() + " - " + Client.world.ioHandler.toString(), BitmapFont.SMALLFONTS);
+				"Chunks to bake : " + worldRenderer.chunksRenderer.todoQueue.size() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16,
 				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " Block looking at : bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
 		
@@ -619,7 +621,7 @@ public class Ingame extends OverlayableScene
 		int nbChunks = 0;
 		long octelsTotal = 0;
 
-		ChunksIterator i = Client.world.getAllLoadedChunks();
+		ChunksIterator i = world.getAllLoadedChunks();
 		Chunk c;
 		while (i.hasNext())
 		{
@@ -642,7 +644,7 @@ public class Ingame extends OverlayableScene
 	@SuppressWarnings("unused")
 	private String getLoadedTerrainVramFootprint()
 	{
-		int nbChunks = Client.world.getRegionsSummariesHolder().countSummaries();
+		int nbChunks = world.getRegionsSummariesHolder().countSummaries();
 		long octelsTotal = nbChunks * 256 * 256 * (1 + 1) * 4;
 
 		return nbChunks + " regions, storing " + octelsTotal / 1024 / 1024 + "Mb of data";

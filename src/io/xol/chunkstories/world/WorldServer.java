@@ -6,6 +6,7 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -96,9 +97,9 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			//Sends the construction info for the world, and then the player entity
 			worldInfo.sendInfo(sender);
 
+			//TODO only spawn the player when he asks to
 			PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.getProfile(), this);
 			Server.getInstance().getPluginsManager().fireEvent(playerSpawnEvent);
-
 		}
 		else if (message.equals("respawn"))
 		{

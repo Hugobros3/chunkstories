@@ -125,6 +125,11 @@ public class Mods
 		File modsDir = new File(GameDirectory.getGameFolderPath() + "/mods");
 		if (!modsDir.exists())
 			modsDir.mkdirs();
+		
+		//Server mods
+		File serverMods = new File(GameDirectory.getGameFolderPath() + "/servermods");
+		if (!serverMods.exists())
+			serverMods.mkdirs();
 
 		for (String name : modsEnabled)
 		{
@@ -148,7 +153,7 @@ public class Mods
 					System.out.println("Looking for hashed mod " + hash + " (url = " + url + ")");
 
 					//Look for the mod zip in local fs first.
-					File zippedMod = new File(modsDir.getAbsolutePath() + "/" + hash + ".zip");
+					File zippedMod = new File(serverMods.getAbsolutePath() + "/" + hash + ".zip");
 					if (zippedMod.exists())
 					{
 						//Awesome we found it !
@@ -168,7 +173,7 @@ public class Mods
 					System.out.println("Looking for mod " + name + " on the local filesystem");
 
 					//First look for it in the directory section
-					File modDirectory = new File(modsDir.getAbsolutePath() + "/" + name);
+					File modDirectory = new File(serverMods.getAbsolutePath() + "/" + name);
 					if (modDirectory.exists())
 					{
 						mod = new ModFolder(modDirectory);
@@ -177,7 +182,7 @@ public class Mods
 					else
 					{
 						//Then look for a .zip file in the same directory
-						File zippedMod = new File(modsDir.getAbsolutePath() + "/" + name + ".zip");
+						File zippedMod = new File(serverMods.getAbsolutePath() + "/" + name + ".zip");
 						if (zippedMod.exists())
 						{
 							mod = new ModZip(zippedMod);

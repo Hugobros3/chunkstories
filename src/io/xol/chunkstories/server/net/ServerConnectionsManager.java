@@ -104,7 +104,7 @@ public class ServerConnectionsManager extends Thread
 		if (in.startsWith("login/"))
 			c.handleLogin(in.substring(6, in.length()));
 		else if (in.startsWith("info"))
-			sendServerMOTD(c);
+			sendServerIntel(c);
 		// Checks for auth
 		if (!c.isAuthentificated())
 			return;
@@ -148,13 +148,13 @@ public class ServerConnectionsManager extends Thread
 	 * Sends general information about the server
 	 * @param client
 	 */
-	private void sendServerMOTD(ServerClient client)
+	private void sendServerIntel(ServerClient client)
 	{
 		client.sendInternalTextMessage("info/name:" + Server.getInstance().getServerConfig().getProp("server-name", "unnamedserver@" + hostname));
 		client.sendInternalTextMessage("info/motd:" + Server.getInstance().getServerConfig().getProp("server-desc", "Default description."));
 		client.sendInternalTextMessage("info/connected:" + Server.getInstance().getHandler().getNumberOfAuthentificatedClients() + ":" + maxClients);
 		client.sendInternalTextMessage("info/version:" + VersionInfo.version);
-		client.sendInternalTextMessage("info/nogame");
+		client.sendInternalTextMessage("info/mods:"+server.getModsString());
 		client.sendInternalTextMessage("info/done");
 	}
 

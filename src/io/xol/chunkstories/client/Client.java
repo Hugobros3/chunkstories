@@ -21,19 +21,20 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
-import io.xol.chunkstories.client.net.ClientToServerConnection;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.Mods;
 import io.xol.chunkstories.content.PluginsManager;
-import io.xol.chunkstories.content.sandbox.GameLogicThread;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.MainMenu;
+import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.WorldClientCommon;
 
-public class Client implements /*ClientSideController, */ClientInterface
+public class Client implements ClientInterface
 {
 	public static ConfigFile clientConfig = new ConfigFile("./config/client.cfg");
 
@@ -41,20 +42,20 @@ public class Client implements /*ClientSideController, */ClientInterface
 
 	public static boolean offline = false;
 
-	public static ClientToServerConnection connection;
+	//public static ClientToServerConnection connection;
 	public static GameWindowOpenGL windows;
 	public static WorldClientCommon world;
-	public static GameLogicThread worldThread;
+	//public static GameLogicThread worldThread;
 
 	public static String username = "Unknow";
-	public static String session_key = "nopeMLG";
+	public static String session_key = "";
 
 	public static DebugProfiler profiler = new DebugProfiler();
 
 	private ClientSideController clientSideController;
 
 	//public EntityControllable controlledEntity;
-	public static Client clientController;
+	public static Client client;
 
 	public PluginsManager pluginsManager;
 
@@ -101,7 +102,7 @@ public class Client implements /*ClientSideController, */ClientInterface
 
 	public Client()
 	{
-		clientController = this;
+		client = this;
 		// Start logs
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
@@ -120,13 +121,13 @@ public class Client implements /*ClientSideController, */ClientInterface
 		Mods.reloadClientContent();
 		windows.changeScene(new MainMenu(windows, true));
 		//Load 
-		pluginsManager = new PluginsManager(clientController);
+		pluginsManager = new PluginsManager(client);
 		windows.run();
 	}
 
 	public static Client getInstance()
 	{
-		return clientController;
+		return client;
 	}
 
 	public static void onStart()
@@ -197,12 +198,6 @@ public class Client implements /*ClientSideController, */ClientInterface
 			((Ingame) windows.getCurrentScene()).chat.insert(textToPrint);
 	}
 
-	@Override
-	public ClientToServerConnection getServerConnection()
-	{
-		return connection;
-	}
-
 	public void openInventory(Inventory otherInventory)
 	{
 		if (windows.getCurrentScene() instanceof Ingame)
@@ -224,6 +219,12 @@ public class Client implements /*ClientSideController, */ClientInterface
 	}
 
 	@Override
+	public WorldClient getWorld()
+	{
+		return world;
+	}
+
+	@Override
 	public void changeWorld(WorldClientCommon world)
 	{
 		windows.queueTask(new Runnable()
@@ -231,10 +232,26 @@ public class Client implements /*ClientSideController, */ClientInterface
 			@Override
 			public void run()
 			{
+				//Setup the new world and make a controller for it
 				Client.world = world;
 				clientSideController = new ClientWorldController(Client.this, world);
+				world.startLogic();
 
-				Client.windows.changeScene(new Ingame(windows, false));
+				//Change the scene
+				Ingame ingameScene = new Ingame(windows, world);
+
+				//We want to keep the connection overlay when getting into a server
+				ConnectionOverlay overlay = null;
+				if(Client.windows.getCurrentScene() instanceof OverlayableScene && ((OverlayableScene)Client.windows.getCurrentScene()).currentOverlay instanceof ConnectionOverlay)
+				{
+					overlay = (ConnectionOverlay) ((OverlayableScene)Client.windows.getCurrentScene()).currentOverlay;
+					//If that happen, we want this connection overlay to forget he was originated from a server browser or whatever
+					overlay.mainScene = ingameScene;
+					overlay.parent = null;
+				}
+				
+				ingameScene.changeOverlay(overlay);
+				Client.windows.changeScene(ingameScene);
 			}
 		});
 	}
@@ -250,12 +267,30 @@ public class Client implements /*ClientSideController, */ClientInterface
 				if (world != null)
 				{
 					Client.world.destroy();
-					Client.worldThread.stopLogicThread();
 					Client.world = null;
 				}
 				clientSideController = null;
 
 				Client.windows.changeScene(new MainMenu(windows, false));
+			}
+		});
+	}
+
+	public void exitToMainMenu(String errorMessage)
+	{
+		windows.queueTask(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if (world != null)
+				{
+					Client.world.destroy();
+					Client.world = null;
+				}
+				clientSideController = null;
+
+				Client.windows.changeScene(new MainMenu(windows, errorMessage));
 			}
 		});
 	}

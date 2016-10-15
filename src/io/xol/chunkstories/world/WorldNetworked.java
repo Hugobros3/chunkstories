@@ -6,6 +6,7 @@ package io.xol.chunkstories.world;
 
 public interface WorldNetworked
 {
+	
 	/**
 	 * Temp
 	 */

@@ -151,7 +151,8 @@ public class InventoryOverlay extends Overlay
 							packetMove.newY = y;
 							packetMove.itemPile = selectedItem;
 							packetMove.amount = selectedItemAmount;
-							Client.connection.sendPacket(packetMove);
+							
+							((WorldClientRemote) Client.world).getConnection().pushPacket(packetMove);
 							//selectedItem = selectedItem.moveTo(inventories[i], x, y, selectedItemAmount);
 							//if(selectedItem.moveTo(inventories[i], x, y, selectedItemAmount))
 								selectedItem = null;
@@ -175,7 +176,7 @@ public class InventoryOverlay extends Overlay
 			packetMove.newY = 0;
 			packetMove.amount = selectedItemAmount;
 			packetMove.itemPile = selectedItem;
-			Client.connection.sendPacket(packetMove);
+			((WorldClientRemote) Client.world).getConnection().pushPacket(packetMove);
 			selectedItem = null;//selectedItem.moveTo(inventories[i], x, y);
 		}
 		return true;

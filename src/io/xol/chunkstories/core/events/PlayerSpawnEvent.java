@@ -18,7 +18,6 @@ import io.xol.chunkstories.world.WorldImplementation;
 public class PlayerSpawnEvent extends Event
 {
 	// Every event class has to have this
-	
 	static EventListeners listeners = new EventListeners();
 	
 	@Override

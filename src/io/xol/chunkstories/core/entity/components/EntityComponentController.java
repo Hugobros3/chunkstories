@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.exceptions.UnauthorizedClientActionException;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -75,11 +76,16 @@ public class EntityComponentController extends EntityComponent
 				if (clientUUID == controllerUUID)
 				{
 					EntityControllable controlledEntity = (EntityControllable) entity;
-					Client.getInstance().getServerConnection().subscribe(entity);
+					
+					//Subscribe the WorldMaster link to the controlled entity so he gets updates
+					//TODO sort out local hosted worlds properly
+					if(entity.getWorld() instanceof WorldClientRemote)
+						((WorldClientRemote) controlledEntity.getWorld()).getConnection().subscribe(entity);
+					//Client.getInstance().getServerConnection().subscribe(entity);
 					controller = Client.getInstance().getClientSideController();
 
 					Client.getInstance().getClientSideController().setControlledEntity(controlledEntity);
-					System.out.println("controlledEntity lel");
+					System.out.println("The client is now in control of entity "+controlledEntity);
 				}
 				else
 				{

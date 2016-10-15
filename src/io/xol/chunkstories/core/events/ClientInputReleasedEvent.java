@@ -1,11 +1,14 @@
 package io.xol.chunkstories.core.events;
 
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.events.categories.ClientEvent;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.net.packets.PacketInput;
+import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -44,10 +47,16 @@ public class ClientInputReleasedEvent extends Event implements ClientEvent
 	
 	public void defaultBehaviour()
 	{
-		//Always tell the sever we let go the input
-		ClientToServerConnection connection = this.getClient().getServerConnection();
-		if(connection != null)
+		final EntityControllable entityControlled = Client.getInstance().getClientSideController().getControlledEntity();
+
+		//There has to be a controlled entity for sending inputs to make sense.
+		if(entityControlled == null)
+			return;
+		
+		//Send input to server
+		if (entityControlled instanceof WorldClientRemote)
 		{
+			ClientToServerConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
 			PacketInput packet = new PacketInput(true);
 			packet.input = input;
 			connection.sendPacket(packet);

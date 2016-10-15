@@ -2,6 +2,7 @@ package io.xol.chunkstories.world;
 
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
 
@@ -13,23 +14,36 @@ import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 
 public class WorldClientRemote extends WorldClientCommon implements WorldNetworked
 {
+	private ClientToServerConnection connection;
 	private PacketsProcessor packetsProcessor;
 
-	public WorldClientRemote(WorldInfo info, PacketsProcessor packetsProcessor)
+	public WorldClientRemote(WorldInfo info, ClientToServerConnection connection)
 	{
 		super(info);
 
-		this.packetsProcessor = packetsProcessor;
+		this.connection = connection;
+		this.packetsProcessor = connection.getPacketsProcessor();
 
 		ioHandler = new IOTasksMultiplayerClient(this, packetsProcessor.getClientToServerConnection());
 		ioHandler.start();
 
+	}
+	
+	public ClientToServerConnection getConnection()
+	{
+		return connection;
 	}
 
 	@Override
 	public SoundManager getSoundManager()
 	{
 		return Client.getInstance().getSoundManager();
+	}
+	
+	public void destroy() {
+		
+		super.destroy();
+		connection.close();
 	}
 
 	@Override
@@ -41,7 +55,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldNetwork
 		while (packet != null)
 		{
 			//System.out.println(packet);
-			packet.process(this.getClient().getServerConnection(), packetsProcessor);
+			packet.process(this.getConnection(), packetsProcessor);
 			packet = packetsProcessor.getPendingSynchPacket();
 			packetsThisTick++;
 		}

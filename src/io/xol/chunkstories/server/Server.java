@@ -21,6 +21,7 @@ import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.Mods;
 import io.xol.chunkstories.content.PluginsManager;
+import io.xol.chunkstories.content.mods.Mod;
 import io.xol.chunkstories.content.sandbox.GameLogicThread;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
@@ -78,7 +79,7 @@ public class Server implements Runnable, ServerInterface
 	private long initTimestamp = System.currentTimeMillis() / 1000;
 
 	private WorldServer world;
-	private GameLogicThread worldThread;
+	//private GameLogicThread worldThread;
 
 	private ServerConnectionsManager connectionsManager;
 	private ServerConsole console = new ServerConsole(this);
@@ -88,6 +89,9 @@ public class Server implements Runnable, ServerInterface
 	// Sleeper thread to keep servers list updated
 	private ServerAnnouncerThread announcer;
 
+	// What mods are required to join this server ?
+	private String modsString;
+	
 	@Override
 	public void run()
 	{
@@ -105,14 +109,26 @@ public class Server implements Runnable, ServerInterface
 			log.info("Starting ChunkStories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
 			connectionsManager = new ServerConnectionsManager(this);
 
+			//Loads the mods
 			Mods.reload();
-			// Load world
+			
+			//Build the modstring
+			modsString = "";
+			for(Mod mod : Mods.getCurrentlyLoadedMods())
+			{
+				modsString += "md5:" + mod.getMD5Hash() + ";";
+			}
+			if(modsString.length() > 1)
+				modsString = modsString.substring(0, modsString.length() - 1);
+			
+			// Load the world
 			String worldName = serverConfig.getProp("world", "world");
 			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
 			if (new File(worldDir).exists())
 			{
 				world = new WorldServer(this, worldDir);
-				worldThread = new GameLogicThread(world, new UnthrustedUserContentSecurityManager());
+				
+				//worldThread = new GameLogicThread(world, new UnthrustedUserContentSecurityManager());
 			}
 			else
 			{
@@ -130,6 +146,9 @@ public class Server implements Runnable, ServerInterface
 			// Load plugins
 			pluginsManager = new PluginsManager(this);
 			pluginsManager.reloadPlugins();
+			
+			//Finally start logic
+			world.startLogic();
 		}
 		catch (Exception e)
 		{ // Exceptions stuff
@@ -243,9 +262,8 @@ public class Server implements Runnable, ServerInterface
 		world.saveEverything();
 		log.info("Shutting down plugins ...");
 		pluginsManager.disablePlugins();
-		log.info("Done, shutting down threads ... ");
-		worldThread.stopLogicThread();
-		log.info("Game logic done");
+		log.info("Done, closing worlds");
+		world.destroy();
 		world.ioHandler.shutdown();
 		log.info("IO done");
 		
@@ -360,5 +378,13 @@ public class Server implements Runnable, ServerInterface
 	public void broadcastMessage(String message)
 	{
 		this.connectionsManager.sendAllChat(message);
+	}
+
+	/**
+	 * Returns a formatted list of installed mods
+	 */
+	public String getModsString()
+	{
+		return modsString;
 	}
 }

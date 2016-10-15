@@ -13,11 +13,11 @@ import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.ConnectScene;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.gui.overlays.ServerSelectionOverlayNg.ServerSelectionZone.ServerGuiItem;
+import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
@@ -61,7 +61,7 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 			// System.out.println("ls-load:"+autologin);
 		}
 		//Create the HTTP request to poll actives servers.
-		new HttpRequestThread(this, "serversList", "http://chunkstories.xyz/api/listServers.php", "").start();
+		new HttpRequestThread(this, "serversList", "http://chunkstories.xyz/api/listServers.php", "");
 	}
 
 	@Override
@@ -134,7 +134,7 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 		else if (Client.getInstance().getInputsManager().getInputByName("enter").isPressed())
 			login();
 		else if (k == 63) // F5
-			new HttpRequestThread(this, "serversList", "http://chunkstories.xyz/api/listServers.php", "").start();
+			new HttpRequestThread(this, "serversList", "http://chunkstories.xyz/api/listServers.php", "");
 		else if (k == 64) // F6 ?
 			f6();
 		else if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
@@ -173,7 +173,9 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 		}
 		
 		Client.world = null;
-		this.mainScene.gameWindow.changeScene(new ConnectScene(mainScene.gameWindow, ip, port));
+		
+		this.mainScene.changeOverlay(new ConnectionOverlay(mainScene, mainScene.currentOverlay, ip, port));
+		//this.mainScene.gameWindow.changeScene(new ConnectScene(mainScene.gameWindow, ip, port));
 	}
 
 	@Override

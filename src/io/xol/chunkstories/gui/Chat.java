@@ -23,6 +23,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityRotateable;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.Entities;
+import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -30,8 +31,14 @@ import io.xol.chunkstories.entity.Entities;
 
 public class Chat
 {
+	Ingame ingame;
+	
+	public Chat(Ingame ingame)
+	{
+		this.ingame = ingame;
+	}
+	
 	int chatHistorySize = 150;
-
 	InputText inputBox = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
 
 	public boolean chatting = false;
@@ -40,7 +47,7 @@ public class Chat
 	int sentMessages = 0;
 	int sentHistory = 0;
 
-	class ChatLine
+	private class ChatLine
 	{
 		public ChatLine(String text)
 		{
@@ -196,8 +203,8 @@ public class Chat
 						((EntityRotateable) controlledEntity).getEntityRotationComponent().setRotation(180, 0);
 					}
 				}
-				else if (Client.connection != null)
-					Client.connection.sendTextMessage("chat/" + inputBox.text);
+				else if (ingame.getWorld() instanceof WorldClientRemote)
+					((WorldClientRemote) ingame.getWorld()).getConnection().sendTextMessage("chat/" + inputBox.text);
 				else
 					insert(ColorsTools.getUniqueColorPrefix(Client.username) + Client.username + "#FFFFFF > " + inputBox.text);
 
@@ -290,8 +297,9 @@ public class Chat
 	public void update()
 	{
 		String m;
-		if (Client.connection != null)
-			while ((m = Client.connection.getLastChatMessage()) != null)
+		//Grabs messages from the remote server connection buffer
+		if (ingame.getWorld() instanceof WorldClientRemote)
+			while ((m = ((WorldClientRemote) ingame.getWorld()).getConnection().getLastChatMessage()) != null)
 				insert(m);
 		if (!chatting)
 			inputBox.text = "<Press T to chat> lol no one can ever see dis!!!!ии";
