@@ -146,7 +146,7 @@ public class SendQueue extends Thread
 	{
 		while (!die.get())
 		{
-			//workTodo.acquireUninterruptibly();
+			workTodo.acquireUninterruptibly();
 
 			Packet packet = sendQueue.poll();
 

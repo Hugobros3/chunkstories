@@ -213,10 +213,15 @@ public class FarTerrainRenderer
 			@Override
 			public void run()
 			{
+				int tookIntoAccount = farTerrainUpdatesToTakeIntoAccount.get();
+				
 				Thread.currentThread().setName("Far terrain rebuilder thread");
 				Thread.currentThread().setPriority(Constants.TERRAIN_RENDERER_THREAD_PRIORITY);
 
 				generateArround();
+				
+				//System.out.println("Took into account "+ tookIntoAccount+" updates");
+				farTerrainUpdatesToTakeIntoAccount.addAndGet(-tookIntoAccount);
 			}
 		};
 		asynchGenerateThread.start();
