@@ -27,6 +27,7 @@ import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
+import io.xol.chunkstories.server.propagation.ServerModsProvider;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldServer;
 
@@ -90,7 +91,7 @@ public class Server implements Runnable, ServerInterface
 	private ServerAnnouncerThread announcer;
 
 	// What mods are required to join this server ?
-	private String modsString;
+	private ServerModsProvider modsProvider;
 	
 	@Override
 	public void run()
@@ -112,14 +113,7 @@ public class Server implements Runnable, ServerInterface
 			//Loads the mods
 			Mods.reload();
 			
-			//Build the modstring
-			modsString = "";
-			for(Mod mod : Mods.getCurrentlyLoadedMods())
-			{
-				modsString += "md5:" + mod.getMD5Hash() + ";";
-			}
-			if(modsString.length() > 1)
-				modsString = modsString.substring(0, modsString.length() - 1);
+			modsProvider = new ServerModsProvider(this);
 			
 			// Load the world
 			String worldName = serverConfig.getProp("world", "world");
@@ -381,10 +375,10 @@ public class Server implements Runnable, ServerInterface
 	}
 
 	/**
-	 * Returns a formatted list of installed mods
+	 * Returns the mods provider
 	 */
-	public String getModsString()
+	public ServerModsProvider getModsProvider()
 	{
-		return modsString;
+		return modsProvider;
 	}
 }

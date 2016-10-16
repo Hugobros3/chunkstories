@@ -157,4 +157,9 @@ public class ModZip extends Mod
 	{
 		return fileLocation.getAbsolutePath();
 	}
+	
+	public File getZipFileLocation()
+	{
+		return fileLocation;
+	}
 }

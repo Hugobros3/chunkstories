@@ -14,6 +14,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldNetworked;
 import io.xol.chunkstories.world.WorldServer;
@@ -85,9 +86,16 @@ public class GameLogicThread extends Thread implements GameLogic
 			}
 			//nanoCheckStep(1, "World bits");
 			
-			//Processes incomming pending packets in synch with game logic
+			//Processes incomming pending packets in synch with game logic and flush outgoing ones
 			if(world instanceof WorldNetworked)
+			{
 				((WorldNetworked) world).processIncommingPackets();
+				//TODO clean
+				if(world instanceof WorldClientRemote)
+					((WorldClientRemote) world).getConnection().flush();
+				if(world instanceof WorldServer)
+					Server.getInstance().getHandler().flushAll();
+			}
 			
 			//nanoCheckStep(2, "Incomming packets");
 			

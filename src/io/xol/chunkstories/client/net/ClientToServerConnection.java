@@ -11,6 +11,7 @@ import io.xol.engine.concurrency.Fence;
 import io.xol.engine.concurrency.SimpleFence;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -155,6 +156,11 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 			// System.out.println(msg.substring(5, msg.length()));
 			chatReceived.add(msg.substring(5, msg.length()));
 		}
+		else if (msg.startsWith("info/mods:"))
+		{
+			serverModString = msg.substring(10, msg.length());
+			modsInfo.signal();
+		}
 		else if (msg.startsWith("world/"))
 		{
 			System.out.println("Received a message about the world, but no remote world exists as of now...\nFaulty message : \n" + msg.substring(6, msg.length()));
@@ -201,6 +207,11 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 			System.out.println("Fatal error while handling connection to " + ip + ":" + port + ". (" + e.getClass().getName() + ")");
 			e.printStackTrace();
 		}
+	}
+	
+	public void flush()
+	{
+		sendQueue.flush();
 	}
 	
 	// accessor
@@ -283,5 +294,51 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 	public PacketsProcessor getPacketsProcessor()
 	{
 		return packetsProcessor;
+	}
+
+	SimpleFence modsInfo = new SimpleFence();
+	String serverModString = null;
+	
+	public String obtainModsString()
+	{
+		this.sendTextMessage("mods");
+		this.flush();
+		modsInfo.traverse();
+		return serverModString;
+	}
+
+	private String expectedFileTag = null;
+	private File saveReceivedFileAt = null;
+	private SimpleFence fileFence;
+	
+	public void obtainModFile(String md5Required, File file)
+	{
+		saveReceivedFileAt = file;
+		expectedFileTag = "md5:"+md5Required;
+		fileFence = new SimpleFence();
+		
+		System.out.println("Asking for "+md5Required);
+		this.sendTextMessage("send-mod/md5:"+md5Required);
+		this.flush();
+		
+		fileFence.traverse();
+	}
+
+	public String getExpectedFileTag()
+	{
+		return expectedFileTag;
+	}
+
+	public File getExpectedFileLocationToSaveAt()
+	{
+		return saveReceivedFileAt;
+	}
+	
+	public void fileReceived(String tag)
+	{
+		if(tag.equals(expectedFileTag))
+		{
+			fileFence.signal();
+		}
 	}
 }

@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.net.packets.PacketDummy;
+import io.xol.chunkstories.net.packets.PacketText;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -11,9 +12,8 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -22,9 +22,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SendQueue extends Thread
 {
-	Queue<Packet> sendQueue = new ConcurrentLinkedQueue<Packet>();
+	BlockingQueue<Packet> sendQueue = new LinkedBlockingQueue<Packet>();
 	AtomicBoolean die = new AtomicBoolean(false);
-	Semaphore workTodo = new Semaphore(0);
+	//Semaphore workTodo = new Semaphore(0);
 
 	PacketsProcessor processor;
 	DataOutputStream out;
@@ -81,6 +81,9 @@ public class SendQueue extends Thread
 		this.destinator = destinator;
 	}
 
+	Packet DIE = new PacketText(false);
+	Packet FLUSH = new PacketText(false);
+	
 	/**
 	 * Queue a packet for sending, no synchronisation needed
 	 */
@@ -89,6 +92,7 @@ public class SendQueue extends Thread
 		if (die.get())
 			return;
 
+		//Synch packets have to be built when submitted
 		if (packet instanceof PacketSynch)
 		{
 			//Get our thread's buffers
@@ -131,26 +135,42 @@ public class SendQueue extends Thread
 		else
 			sendQueue.add(packet);
 
-		workTodo.release();
-		/*if(sleepy.get())
-		{
-			synchronized (this)
-			{
-				notifyAll();
-			}
-		}*/
+		//workTodo.release();
+		
+		
 	}
 
+	public void flush()
+	{
+		sendQueue.add(FLUSH);
+	}
+	
 	@Override
 	public void run()
 	{
 		while (!die.get())
 		{
-			workTodo.acquireUninterruptibly();
-
-			Packet packet = sendQueue.poll();
+			Packet packet = null;
+			
+			try
+			{
+				packet = sendQueue.take();
+			}
+			catch (InterruptedException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			if(packet == DIE)
+				break;
 
 			if (packet == null)
+			{
+				System.out.println("ASSERTION FAILED : THE SEND QUEUE CAN'T CONTAIN NULL PACKETS.");
+				System.exit(-1);
+			}
+			else if(packet == FLUSH)
 			{
 				try
 				{
@@ -195,7 +215,9 @@ public class SendQueue extends Thread
 			//Really that's just disconnection
 		}
 		die.set(true);
-		workTodo.release(10);
+		sendQueue.add(DIE);
+		
+		//workTodo.release(10);
 		synchronized (this)
 		{
 			notifyAll();

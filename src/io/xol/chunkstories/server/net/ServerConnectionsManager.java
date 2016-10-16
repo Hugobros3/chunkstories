@@ -1,11 +1,13 @@
 package io.xol.chunkstories.server.net;
 
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.net.packets.PacketFile;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.UsersPrivileges;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.net.HttpRequests;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -98,26 +100,58 @@ public class ServerConnectionsManager extends Thread
 		}
 	}
 
-	public void handle(ServerClient c, String in)
+	//TODO move to ServerClient
+	public void handle(ServerClient client, String in)
 	{
 		// Non-login mandatory requests
 		if (in.startsWith("login/"))
-			c.handleLogin(in.substring(6, in.length()));
+			client.handleLogin(in.substring(6, in.length()));
 		else if (in.startsWith("info"))
-			sendServerIntel(c);
+			sendServerIntel(client);
+		else if(in.equals("mods"))
+			client.sendInternalTextMessage("info/mods:"+server.getModsProvider().getModsString());
+		else if(in.equals("icon-file"))
+		{
+			PacketFile iconPacket = new PacketFile(false);
+			iconPacket.file = new File("server-icon.png");
+			iconPacket.fileTag = "server-icon";
+			client.pushPacket(iconPacket);
+		}
 		// Checks for auth
-		if (!c.isAuthentificated())
+		if (!client.isAuthentificated())
 			return;
 		
 		// Login-mandatory requests ( you need to be authentificated to use them )
 		if (in.equals("co/off"))
 		{
-			c.closeSocket();
-			clients.remove(c);
+			client.closeSocket();
+			clients.remove(client);
+		}
+		else if (in.startsWith("send-mod/")) //md5:
+		{
+			String modDescriptor = in.substring(9);
+			
+			String md5 = modDescriptor.substring(4);
+			System.out.println(client + " asked for "+md5);
+			
+			//Give him what he asked for.
+			File found = server.getModsProvider().obtainModRedistribuable(md5);
+			if(found == null)
+			{
+				System.out.println("Though luck !");
+			}
+			else
+			{
+				System.out.println("Pushing mod md5 "+md5 + "to user.");
+				PacketFile iconPacket = new PacketFile(false);
+				iconPacket.file = found;
+				iconPacket.fileTag = modDescriptor;
+				client.pushPacket(iconPacket);
+			}
 		}
 		else if (in.startsWith("world/"))
 		{
-			Server.getInstance().getWorld().handleWorldMessage(c, in.substring(6, in.length()));
+			Server.getInstance().getWorld().handleWorldMessage(client, in.substring(6, in.length()));
 		}
 		else if (in.startsWith("chat/"))
 		{
@@ -135,11 +169,11 @@ public class ServerConnectionsManager extends Thread
 					args = chatMsg.substring(chatMsg.indexOf(" ")+1, chatMsg.length()).split(" ");
 				}
 				
-				server.getConsole().dispatchCommand(c.getProfile(), cmdName, args);
+				server.getConsole().dispatchCommand(client.getProfile(), cmdName, args);
 			}
 			else if (chatMsg.length() > 0)
 			{
-				sendAllChat(c.getProfile().getDisplayName() + " > " + chatMsg);
+				sendAllChat(client.getProfile().getDisplayName() + " > " + chatMsg);
 			}
 		}
 	}
@@ -148,14 +182,16 @@ public class ServerConnectionsManager extends Thread
 	 * Sends general information about the server
 	 * @param client
 	 */
+	//TODO move to ServerClient
 	private void sendServerIntel(ServerClient client)
 	{
 		client.sendInternalTextMessage("info/name:" + Server.getInstance().getServerConfig().getProp("server-name", "unnamedserver@" + hostname));
 		client.sendInternalTextMessage("info/motd:" + Server.getInstance().getServerConfig().getProp("server-desc", "Default description."));
 		client.sendInternalTextMessage("info/connected:" + Server.getInstance().getHandler().getNumberOfAuthentificatedClients() + ":" + maxClients);
 		client.sendInternalTextMessage("info/version:" + VersionInfo.version);
-		client.sendInternalTextMessage("info/mods:"+server.getModsString());
+		client.sendInternalTextMessage("info/mods:"+server.getModsProvider().getModsString());
 		client.sendInternalTextMessage("info/done");
+		client.flush();
 	}
 
 	public void sendAllChat(String chat)
@@ -171,6 +207,12 @@ public class ServerConnectionsManager extends Thread
 			if (client.isAuthentificated())
 				client.sendInternalTextMessage(raw);
 		}
+	}
+	
+	public void flushAll()
+	{
+		for (ServerClient client : clients)
+			client.flush();
 	}
 
 	private void acceptConnection(ServerClient serverClient)

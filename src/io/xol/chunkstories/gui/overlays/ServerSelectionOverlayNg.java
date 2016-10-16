@@ -6,6 +6,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -13,6 +15,7 @@ import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
@@ -277,6 +280,7 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 				this.ip = ip;
 				this.port = port;
 				this.sd = new ServerDataLoader(this, ip, port);
+				this.iconTextureLocation = GameDirectory.getGameFolderPath()+"/cache/server-icon-"+ip+"-"+port+".png";
 			}
 
 			@Override
@@ -347,6 +351,8 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 				out.write((byte)0x00);
 				out.writeUTF("info");
+				out.flush();
+				
 				ping = System.currentTimeMillis() - connectStart;
 				String lineRead = "";
 				
@@ -355,6 +361,7 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 					//Discard first byte, assummed to be packed id
 					in.readByte();
 					lineRead = in.readUTF();
+					//System.out.println("red:"+lineRead);
 					if (lineRead.startsWith("info/"))
 					{
 						String data[] = lineRead.replace("info/", "").split(":");
@@ -368,6 +375,34 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 							gameMode = data[1] + " / " + data[2];
 					}
 				}
+				
+				//Requests icon file
+				out.write((byte)0x00);
+				out.writeUTF("icon-file");
+				out.flush();
+				//Expect reply immediately
+				byte expect = in.readByte();
+				System.out.println("Expected:"+expect);
+				String tag = in.readUTF();
+				long fileLength = in.readLong();
+				System.out.println("fileLength:"+fileLength);
+				
+				if (fileLength > 0)
+				{
+					File file = new File(GameDirectory.getGameFolderPath()+"/cache/server-icon-"+ip+"-"+port+".png");
+					FileOutputStream fos = new FileOutputStream(file);
+					long remaining = fileLength;
+					byte[] buffer = new byte[4096];
+					while (remaining > 0)
+					{
+						long toRead = Math.min(4096, remaining);
+						int actuallyRead = in.read(buffer, 0, (int) toRead);
+						fos.write(buffer, 0, (int) actuallyRead);
+						remaining -= actuallyRead;
+					}
+					fos.close();
+				}
+				
 				infoLoaded = true;
 				in.close();
 				out.close();

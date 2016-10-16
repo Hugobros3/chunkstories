@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.engine.misc.IconLoader;
 import io.xol.engine.misc.NativesLoader;
@@ -186,9 +187,22 @@ public class Client implements ClientInterface
 	@Override
 	public void reloadAssets()
 	{
-		Mods.reload();
-		inputsManager.reload();
-		Mods.reloadClientContent();
+		SimpleFence waitForReload = new SimpleFence();
+		
+		windows.queueTask(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				Mods.reload();
+				inputsManager.reload();
+				Mods.reloadClientContent();
+				
+				waitForReload.signal();
+			}
+		});
+		
+		waitForReload.traverse();
 	}
 
 	@Override

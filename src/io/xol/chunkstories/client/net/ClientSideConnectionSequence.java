@@ -1,7 +1,13 @@
 package io.xol.chunkstories.client.net;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.content.Mods;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
 
@@ -30,14 +36,58 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 		connection.getAuthentificationFence().traverse();
 		//Obtain the mods list, check if we have them enabled
 		
+		status = "Asking server required mods...";
+		String modsString = connection.obtainModsString();
+		Set<String> requiredMd5s = new HashSet<String>();
+		Set<String> toDownload = new HashSet<String>();
+		
+		for(String requiredMod : modsString.split(";"))
+		{
+			if(requiredMod.startsWith("md5:"))
+			{
+				requiredMod = requiredMod.substring(4, requiredMod.length());
+				String md5Required = requiredMod.contains(":") ? requiredMod.split(":")[0] : requiredMod;
+				System.out.println("Mod with md5="+md5Required+" required.");
+				
+				requiredMd5s.add(md5Required);
+				
+				File cached = new File(GameDirectory.getGameFolderPath()+"/servermods/"+md5Required+".zip");
+				if(!cached.exists())
+					//Gib me
+					toDownload.add(md5Required);
+			}
+			//TODO handle ? or define it in spec
+			
+		}
 		//if not check we have them downloaded
-		
-		//if not check if the server can provide them
-		
-		//And download them
+		for(String md5Required : toDownload)
+		{
+			status = "Downloading mod "+md5Required;
+			connection.obtainModFile(md5Required, new File(GameDirectory.getGameFolderPath()+"/servermods/"+md5Required+".zip"));
+		}
+		//Now enable all this
+		String[] requiredMods = new String[requiredMd5s.size()];
+		int i = 0;
+		for(String m : requiredMd5s)
+		{
+			requiredMods[i++] = "md5:"+m;
+		}
+		Mods.setEnabledMods(requiredMods);
+		status = "Reloading mods...";
+		try
+		{
+			Thread.sleep(150);
+		}
+		catch (InterruptedException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Client.getInstance().reloadAssets();
 		
 		//Ask the server world info and if allowed where to spawn and preload chunks
 		connection.sendTextMessage("world/info");
+		connection.flush();
 		status = "Loading world...";
 		
 		//Ask the server to eventually spawn the player entity
@@ -72,6 +122,7 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 			connection.sendTextMessage("login/logintoken:nopenopenopenopenope");
 			connection.sendTextMessage("login/version:"+VersionInfo.networkProtocolVersion);
 			connection.sendTextMessage("login/confirm");
+			connection.flush();
 			
 			status = "Offline-mode enabled, skipping login token phase";
 		}
