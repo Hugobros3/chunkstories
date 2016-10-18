@@ -13,7 +13,6 @@ import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 

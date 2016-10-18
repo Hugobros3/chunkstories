@@ -39,7 +39,7 @@ public class PacketFile extends Packet
 			FileInputStream fis = new FileInputStream(file);
 			byte[] buffer = new byte[4096];
 			int read;
-			while(1 == 1)
+			while(true)
 			{
 				read = fis.read(buffer);
 				//System.out.println("read"+read);

@@ -25,7 +25,6 @@ import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
-import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
@@ -230,44 +229,6 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 	
 	public class ServerSelectionZone extends ScrollableContainer
 	{
-		/*public void render()
-		{
-			int posy = GameWindowOpenGL.windowHeight - 100 * (1 + 1);
-			int i = 0;
-			boolean focus;
-			for (ServerData sd : servers)
-			{
-				focus = i == currentServer;
-				//focus = false;
-				posy +=  - i * 70;
-				if(Mouse.getX() > 20 && Mouse.getX() < GameWindowOpenGL.windowWidth - 52
-						&& Mouse.getY() > posy - 32 && Mouse.getY() < posy + 32)
-				{
-					focus = true;
-				}
-				sd.render(posy, focus);
-				i++;
-			}
-		}*/
-		
-		/*public ServerData click()
-		{
-			int posy = GameWindowOpenGL.windowHeight - 100 * (1 + 1);
-			int i = 0;
-			for (ServerData sd : servers)
-			{
-				//focus = false;
-				posy +=  - i * 70;
-				if(Mouse.getX() > 20 && Mouse.getX() < GameWindowOpenGL.windowWidth - 52
-						&& Mouse.getY() > posy - 32 && Mouse.getY() < posy + 32)
-				{
-					return sd;
-				}
-				i++;
-			}
-			return null;
-		}*/
-		
 		class ServerGuiItem extends ContainerElement {
 
 			ServerDataLoader sd;
@@ -327,19 +288,6 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 			this.start();
 		}
 
-		public void render(int posy, boolean focus)
-		{
-			int offset = focus ? 32 : 0;
-			ObjectRenderer.renderTexturedRect(52, posy, 64, 64, 0, 0 + offset, 31, 32 + offset, 64f, "gui/server_data");
-			int width = GameWindowOpenGL.windowWidth - 52 - 32 - 64;
-			ObjectRenderer.renderTexturedRect(36 + width / 2, posy, width, 64, 16, 0 + offset, 31, 32 + offset, 64f, "gui/server_data");
-			ObjectRenderer.renderTexturedRect(width + 64, posy, 33 * 2, 64, 31, 0 + offset, 64, 32 + offset, 64f, "gui/server_data");
-			// text
-			FontRenderer2.drawTextUsingSpecificFont(28, posy, 0, 32, (infoError ? "#FF0000" : "") + name + " #AAAAAA- " + ip + (port == 30410 ? "" : ":" + port) + "- " + version + (infoError ? "" : " - " + ping + "ms"), BitmapFont.SMALLFONTS);
-			if (infoLoaded)
-				FontRenderer2.drawTextUsingSpecificFont(28, posy - 26, 0, 32, (infoError ? "#FF0000" : "") + description + " #AAAAAA (" + gameMode + ")", BitmapFont.SMALLFONTS);
-		}
-
 		@Override
 		public void run()
 		{
@@ -383,7 +331,8 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 				//Expect reply immediately
 				byte expect = in.readByte();
 				System.out.println("Expected:"+expect);
-				String tag = in.readUTF();
+				//Read and discard tag, we know what we are expecting
+				in.readUTF();
 				long fileLength = in.readLong();
 				System.out.println("fileLength:"+fileLength);
 				

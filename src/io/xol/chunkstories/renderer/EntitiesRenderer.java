@@ -63,7 +63,6 @@ public class EntitiesRenderer
 			}
 		}
 
-		@SuppressWarnings("unused")
 		int entitiesRendered = 0;
 		
 		for (Entry<Class<? extends EntityRenderable>, List<EntityRenderable>> entry : renderableEntitiesTypes.entrySet())
