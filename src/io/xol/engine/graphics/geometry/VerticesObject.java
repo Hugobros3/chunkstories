@@ -101,6 +101,7 @@ public class VerticesObject
 	/**
 	 * <i>Implementation internals, don't mess with this !</i><br/>
 	 */
+	@Deprecated
 	public static void unbind()
 	{
 		bind(0);

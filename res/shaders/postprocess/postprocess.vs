@@ -1,4 +1,4 @@
-#version 130
+#version 150 core
 in vec2 vertexIn;
 out vec2 texCoord;
 out vec2 pauseOverlayCoords;

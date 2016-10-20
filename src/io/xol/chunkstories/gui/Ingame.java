@@ -574,7 +574,7 @@ public class Ingame extends OverlayableScene
 		
 		Chunk current = world.getChunk(cx, cy, cz);
 		int x_top = GameWindowOpenGL.windowHeight - 16;
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + worldRenderer.renderedChunks) + "Entities " + ec + " Particles :"
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + worldRenderer.renderedChunks) + " Entities " + ec + " Particles :"
 				+ ((ParticlesRenderer) world.getParticlesManager()).count() + " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + worldRenderer.getWorld().getGameLogic().getSimulationFps(), BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Frame timings : " + debugInfo, BitmapFont.SMALLFONTS);

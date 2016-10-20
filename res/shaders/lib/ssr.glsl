@@ -100,7 +100,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	if(color.a == 0.0)
 	{
 		<ifdef doDynamicCubemaps>
-		skyColor = textureCube(environmentCubemap, vec3(normSkyDirection.x, -normSkyDirection.y, -normSkyDirection.z)).rgb;
+		skyColor = texture(environmentCubemap, vec3(normSkyDirection.x, -normSkyDirection.y, -normSkyDirection.z)).rgb;
 		
 		//skyColor = pow(skyColor.rgb, vec3(gamma));
 		skyColor *= showSkybox;

@@ -1,4 +1,4 @@
-#version 150
+#version 150 core
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -97,7 +97,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 		//Are we inside the shadowmap zone edge ?
 		edgeSmoother = 1.0-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5) - 0.45)*20.0+max(0,abs(coordinatesInShadowmap.y-0.5) - 0.45)*20.0, 1.0), 0.0, 1.0);
 		//
-		shadowIllumination += clamp((shadow2D(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0).r * 1.5 - 0.25), 0.0, 1.0);
+		shadowIllumination += clamp((texture(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0) * 1.5 - 0.25), 0.0, 1.0);
 	}
 	
 	float sunlightAmount = ( directionalLightning * ( mix( shadowIllumination, meta.y, 1-edgeSmoother) ) ) * shadowVisiblity;

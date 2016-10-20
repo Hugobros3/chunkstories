@@ -352,6 +352,8 @@ public class VoxelTextures
 
 	public static VoxelTexture getVoxelTexture(String textureName)
 	{
+		//textureName = "kek";
+		
 		if (texMap.containsKey(textureName))
 			return texMap.get(textureName);
 		return texMap.get("notex");

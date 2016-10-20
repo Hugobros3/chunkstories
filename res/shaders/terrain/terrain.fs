@@ -1,4 +1,4 @@
-#version 150
+#version 150 core
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -83,7 +83,7 @@ void main()
 	float voxelId = texture(groundTexture, textureCoord).r;
 	
 	//512-voxel types summary... not best
-	vec4 diffuseColor = texture1D(blocksTexturesSummary, voxelId/512.0);
+	vec4 diffuseColor = texture(blocksTexturesSummary, voxelId/512.0);
 	
 	//Apply plants color if alpha is < 1.0
 	if(diffuseColor.a < 1.0)
@@ -154,7 +154,7 @@ void main()
 		
 		//Sample cubemap if enabled
 		<ifdef doDynamicCubemaps>
-		reflected = textureCube(environmentCubemap, vec3(reflectionVector.x, -reflectionVector.y, -reflectionVector.z)).rgb;
+		reflected = texture(environmentCubemap, vec3(reflectionVector.x, -reflectionVector.y, -reflectionVector.z)).rgb;
 		<endif doDynamicCubemaps>
 		
 		//Add sunlight reflection

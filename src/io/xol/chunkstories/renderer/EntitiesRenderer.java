@@ -86,6 +86,8 @@ public class EntitiesRenderer
 		
 		//l.unlock();
 		
+		//System.out.println(entitiesRendered);
+		
 		return entitiesRendered;
 	}
 

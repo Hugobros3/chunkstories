@@ -1,4 +1,4 @@
-#version 150
+#version 150 core
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -14,6 +14,8 @@ in vec3 eyeDirection;
 in vec4 lightMapCoords;
 in float fresnelTerm;
 in float waterFogI;
+
+out vec4 fragColor;
 
 //Block and sun Lightning
 uniform float sunIntensity; // Adjusts the lightmap coordinates
@@ -83,5 +85,5 @@ void main(){
 	
 	baseColor.rgb = mix(refracted.rgb, baseColor.rgb, clamp(waterFogI2*(1.0-underwater), 0.0, 1.0));
 	
-	gl_FragData[0] = vec4(baseColor);
+	fragColor = vec4(baseColor);
 }

@@ -1,4 +1,4 @@
-#version 150
+#version 150 core
 uniform sampler2D shadedBuffer;
 
 uniform sampler2D albedoBuffer;
@@ -100,11 +100,11 @@ void main() {
 	compositeColor.rgb *= mix(vec3(1.0), overlayColor, clamp(pauseOverlayFade, 0.0, 1.0));
 	
 	//Ouputs
-	gl_FragColor = compositeColor;
+	fragColor = compositeColor;
 	
 	//Debug flag
 	<ifdef debugGBuffers>
-	gl_FragColor = getDebugShit(f_texcoord);
+	fragColor = getDebugShit(texCoord);
 	<endif debugGBuffers>
 }
 
@@ -134,7 +134,7 @@ vec4 getDebugShit(vec2 coords)
 		}
 		else
 		{
-			shit = texture2DLod(debugBuffer, sampleCoords, 4.0);
+			shit = vec4(texture2D(debugBuffer, sampleCoords).x);
 			//shit = vec4(1.0, 0.5, 0.0, 1.0) * texture2D(normalBuffer, sampleCoords).w;
 			//shit.yz += texture2D(metaBuffer, sampleCoords).xy;
 			<ifdef dynamicGrass>

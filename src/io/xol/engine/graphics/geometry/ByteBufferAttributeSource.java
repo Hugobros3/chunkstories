@@ -10,8 +10,11 @@ import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 
 import static org.lwjgl.opengl.GL20.*;
 
+@Deprecated
 public class ByteBufferAttributeSource implements AttributeSource
 {
+	static VerticesObject sorryILied = new VerticesObject();
+	
 	ByteBuffer byteBuffer;
 	VertexFormat format;
 	int dimensions, stride;
@@ -27,7 +30,9 @@ public class ByteBufferAttributeSource implements AttributeSource
 	@Override
 	public void setup(int gl_AttributeLocation)
 	{
-		VerticesObject.unbind();
-		glVertexAttribPointer(gl_AttributeLocation, dimensions, format.glId, format.normalized, stride, byteBuffer);
+		sorryILied.uploadData(byteBuffer);
+		sorryILied.asAttributeSource(format, dimensions, stride, 0L).setup(gl_AttributeLocation);
+		//VerticesObject.unbind();
+		//glVertexAttribPointer(gl_AttributeLocation, dimensions, format.glId, format.normalized, stride, byteBuffer);
 	}
 }

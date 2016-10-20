@@ -1,22 +1,22 @@
-#version 140
+#version 150 core
 //Entry attributes
-attribute vec4 vertexIn;
-attribute vec2 texCoordIn;
-attribute vec4 colorIn;
-attribute vec4 normalIn;
+in vec4 vertexIn;
+in vec2 texCoordIn;
+in vec4 colorIn;
+in vec4 normalIn;
 
-varying vec2 texcoord;
-varying vec3 lightMapCoords;
-varying float fresnelTerm;
-varying float chunkFade;
-varying float rainWetness;
-varying float fogI;
-varying vec4 modelview;
-varying vec3 eye;
+out vec2 texcoord;
+out vec3 lightMapCoords;
+out float fresnelTerm;
+out float chunkFade;
+out float rainWetness;
+out float fogI;
+out vec4 modelview;
+out vec3 eye;
 
-varying vec3 varyingNormal;
-varying vec4 varyingVertex;
-varying vec4 colorPassed;
+out vec3 varyingNormal;
+out vec4 varyingVertex;
+out vec4 colorPassed;
 
 uniform float useColorIn;
 uniform float useNormalIn;

@@ -1,8 +1,7 @@
-#version 150
+#version 150 core
 // Copyright 2015 XolioWare Interactive
 
 in float height;
-
 out vec4 fragColor;
 
 void main()

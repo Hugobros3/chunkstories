@@ -608,7 +608,6 @@ public class WorldRenderer
 									localMapCommands.put((byte) (ajustedChunkX - cameraChunkX));
 									localMapCommands.put((byte) (ajustedChunkZ - cameraChunkZ));
 									localMapCommands.put((byte) (chunk.getChunkY()));
-									//System.out.println(chunk.chunkY);
 									localMapCommands.put((byte) 0x00);
 
 									localMapElements++;
@@ -652,7 +651,6 @@ public class WorldRenderer
 			//glDepthFunc(GL_LEQUAL);
 			fboLoadedChunksBot.bind();
 
-			System.out.println(localMapElements);
 			renderingContext.draw(Primitive.POINT, 0, localMapElements);
 
 			//renderingContext.setBlendMode(BlendMode.MIX);

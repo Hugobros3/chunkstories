@@ -105,7 +105,7 @@ public class GameWindowOpenGL
 			Display.setTitle(windowName);
 			Display.setResizable(true);
 			PixelFormat pixelFormat = new PixelFormat();
-			Display.create(pixelFormat, new ContextAttribs(3, 2).withProfileCore(true).withDebug(true));
+			Display.create(pixelFormat, new ContextAttribs(3, 2).withProfileCore(true));
 
 			systemInfo();
 			glInfo();

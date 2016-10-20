@@ -1,4 +1,4 @@
-#version 150
+#version 150 core
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -12,6 +12,10 @@ in vec2 texCoordPassed; // Coordinate
 in vec3 eyeDirection; // eyeDirection-position
 in vec4 lightMapCoords; //Computed in vertex shader
 in float fresnelTerm;
+
+out vec4 outDiffuseColor;
+out vec4 outNormalColor;
+out vec4 outMaterialColor;
 
 //Block and sun Lightning
 uniform float sunIntensity; // Adjusts the lightmap coordinates
@@ -100,7 +104,7 @@ void main(){
 	if(baseColor.a < 1.0)
 		discard;
 	
-	gl_FragData[0] = vec4(baseColor);
-	gl_FragData[1] = vec4(encodeNormal(normal).xy, spec, 1.0);
-	gl_FragData[2] = vec4(lightMapCoords.xyz, 1);
+	outDiffuseColor = vec4(baseColor);
+	outNormalColor = vec4(encodeNormal(normal).xy, spec, 1.0);
+	outMaterialColor = vec4(lightMapCoords.xyz, 1);
 }

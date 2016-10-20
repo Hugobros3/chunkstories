@@ -1,18 +1,18 @@
-#version 150
+#version 150 core
 // Copyright 2015 XolioWare Interactive
 
 //General data
-varying vec2 texcoord; // Coordinate
-varying vec3 eye; // eye-position
-varying float chunkFade;
-varying vec3 varyingNormal;
-varying vec4 varyingVertex;
-varying vec4 colorPassed;
-varying float fresnelTerm;
-varying float rainWetness;
-varying vec4 vertexColor; // Vertex color : red is for blocklight, green is sunlight
-varying vec3 lightMapCoords; //Computed in vertex shader
-varying vec4 modelview;
+in vec2 texcoord; // Coordinate
+in vec3 eye; // eye-position
+in float chunkFade;
+in vec3 varyingNormal;
+in vec4 varyingVertex;
+in vec4 colorPassed;
+in float fresnelTerm;
+in float rainWetness;
+in vec4 vertexColor; // Vertex color : red is for blocklight, green is sunlight
+in vec3 lightMapCoords; //Computed in vertex shader
+in vec4 modelview;
 
 uniform float useColorIn;
 uniform float useNormalIn;
@@ -58,6 +58,9 @@ uniform vec3 vegetationColor;
 const vec3 shadowColor = vec3(0.20, 0.20, 0.31);
 const float shadowStrength = 0.75;
 
+out vec4 outDiffuseColor;
+out vec4 outNormalColor;
+out vec4 outMaterialColor;
 
 <include ../lib/normalmapping.glsl>
 
@@ -117,10 +120,9 @@ void main(){
 	vec3 finalColor = baseColor*blockColor;
 	
 	//Diffuse G-Buffer
-	gl_FragData[0] = vec4(finalColor,chunkFade+1);
+	outDiffuseColor = vec4(finalColor,chunkFade+1);
 	//Normal G-Buffer
-	gl_FragData[1] = vec4(encodeNormal(normal).xy, spec, 1.0);
+	outNormalColor = vec4(encodeNormal(normal).xy, spec, 1.0);
 	//Metadata color G-buffer
-	
-	gl_FragData[2] = vec4(lightMapCoords, 1.0f);
+	outMaterialColor = vec4(lightMapCoords, 1.0f);
 }
