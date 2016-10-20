@@ -1,4 +1,4 @@
-#version 130
+#version 150
 uniform sampler2D shadedBuffer;
 
 uniform sampler2D albedoBuffer;
@@ -49,6 +49,8 @@ const vec4 waterColor = vec4(0.2, 0.4, 0.45, 1.0);
 
 vec4 getDebugShit(vec2 coords);
 
+out vec4 fragColor;
+
 void main() {
 	vec2 finalCoords = texCoord;
 	
@@ -57,7 +59,7 @@ void main() {
 	finalCoords.y += underwater*cos(finalCoords.y * 60.0 + time * 1.0) / screenViewportSize.y * 2.0;
 	
 	// Sampling
-	vec4 compositeColor = texture2D(shadedBuffer, finalCoords);
+	vec4 compositeColor = texture(shadedBuffer, finalCoords);
 	
 	// Tints pixels blue underwater
 	compositeColor = mix(compositeColor, compositeColor * waterColor, underwater);
@@ -66,7 +68,7 @@ void main() {
 	
 	//Applies bloom
 	<ifdef doBloom>
-	compositeColor.rgb += texture2D(bloomBuffer, finalCoords).rgb;
+	compositeColor.rgb += texture(bloomBuffer, finalCoords).rgb;
 	<endif doBloom>
 	
 	//Gamma-corrects stuff
@@ -82,14 +84,14 @@ void main() {
     compositeColor.rgb = its2 + rnd2.xyz;
 	
 	//Applies pause overlay
-	compositeColor.rgb *= mix(vec3(1.0), texture2D(pauseOverlayTexture, pauseOverlayCoords).rgb, pauseOverlayFade);
+	compositeColor.rgb *= mix(vec3(1.0), texture(pauseOverlayTexture, pauseOverlayCoords).rgb, pauseOverlayFade);
 	
 	//Ouputs
-	gl_FragColor = compositeColor;
+	fragColor = compositeColor;
 	
 	//Debug flag
 	<ifdef debugGBuffers>
-	gl_FragColor = getDebugShit(f_texcoord);
+	fragColor = getDebugShit(texCoord);
 	<endif debugGBuffers>
 }
 
@@ -105,27 +107,27 @@ vec4 getDebugShit(vec2 coords)
 	if(coords.x > 0.5)
 	{
 		if(coords.y > 0.5)
-			shit = pow(texture2D(shadedBuffer, sampleCoords, 0.0), vec4(gammaInv));
+			shit = pow(texture(shadedBuffer, sampleCoords, 0.0), vec4(gammaInv));
 		else
-			shit = texture2D(normalBuffer, sampleCoords);
+			shit = texture(normalBuffer, sampleCoords);
 	}
 	else
 	{
 		if(coords.y > 0.5)
 		{
-			shit = texture2D(albedoBuffer, sampleCoords);
+			shit = texture(albedoBuffer, sampleCoords);
 			//if(shit.a == 0)
 			shit += (1.0-shit.a) * vec4(1.0, 0.0, 1.0, 1.0);
 		}
 		else
 		{
-			shit = texture2DLod(debugBuffer, sampleCoords, 4.0);
-			//shit = vec4(1.0, 0.5, 0.0, 1.0) * texture2D(normalBuffer, sampleCoords).w;
-			//shit.yz += texture2D(metaBuffer, sampleCoords).xy;
+			shit = texture(debugBuffer, sampleCoords);
+			//shit = vec4(1.0, 0.5, 0.0, 1.0) * texture(normalBuffer, sampleCoords).w;
+			//shit.yz += texture(metaBuffer, sampleCoords).xy;
 			<ifdef dynamicGrass>
 			
-			shit = vec4(1.0, 1.0, 1.0, 1.0) * texture2D(bloomBuffer, sampleCoords).x * 1.0;
-			//shit = texture2DLod(debugBuffer, sampleCoords, 80.0);
+			shit = vec4(1.0, 1.0, 1.0, 1.0) * texture(bloomBuffer, sampleCoords).x * 1.0;
+			//shit = textureLod(debugBuffer, sampleCoords, 80.0);
 			<endif dynamicGrass>
 		}
 	}

@@ -1,4 +1,4 @@
-#version 130
+#version 150
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -51,7 +51,7 @@ uniform float underwater;
 
 vec3 mixedTextures(float blend, vec2 coords)
 {
-	return mix(texture2D(normalTextureShallow, coords).rgb, texture2D(normalTextureDeep, coords * 0.125).rgb, 0);
+	return mix(texture(normalTextureShallow, coords).rgb, texture(normalTextureDeep, coords * 0.125).rgb, 0);
 }
 
 void main(){
@@ -78,7 +78,7 @@ void main(){
 	//Basic texture color
 	vec2 coords = (gl_FragCoord.xy)/screenSize;
 	
-	vec4 baseColor = texture2D(diffuseTexture, texCoordPassed);
+	vec4 baseColor = texture(diffuseTexture, texCoordPassed);
 	
 	float spec = fresnelTerm;
 	vec4 worldspaceFragment = convertScreenSpaceToCameraSpace(coords, gl_FragCoord.z);
@@ -88,7 +88,7 @@ void main(){
 	spec = dynamicFresnelTerm;
 	<endif perPixelFresnel>
 	
-	baseColor = texture2D(readbackShadedBufferTemp, gl_FragCoord.xy / screenSize);
+	baseColor = texture(readbackShadedBufferTemp, gl_FragCoord.xy / screenSize);
 	
 	spec *= 1-underwater;
 	

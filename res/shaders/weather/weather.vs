@@ -1,9 +1,9 @@
-#version 130
+#version 150
 
 //Entry attributes
-attribute vec4 vertexIn;
+in vec4 vertexIn;
 
-varying vec4 interpolatedColor;
+out vec4 interpolatedColor;
 
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
@@ -24,9 +24,9 @@ uniform float sunIntensity;
 const float gamma = 2.2;
 const float gammaInv = 1/2.2;
 
-vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
+vec4 textureGammaIn(sampler2D sampler, vec2 coords)
 {
-	return pow(texture2D(sampler, coords), vec4(gamma));
+	return pow(texture(sampler, coords), vec4(gamma));
 }
 
 vec4 gammaOutput(vec4 inputValue)
@@ -35,7 +35,7 @@ vec4 gammaOutput(vec4 inputValue)
 }
 
 void main(){
-	interpolatedColor = vec4(0.5, 0.5, 0.6, 0.5 + 0.5 * sunIntensity) * texture2DGammaIn(lightmap, vec2(sunTime, 1.0));
+	interpolatedColor = vec4(0.5, 0.5, 0.6, 0.5 + 0.5 * sunIntensity) * textureGammaIn(lightmap, vec2(sunTime, 1.0));
 	
 	float maxHeight = vertexIn.w;
 	vec3 vertexPosition = vertexIn.xyz;

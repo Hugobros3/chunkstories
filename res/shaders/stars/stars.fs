@@ -1,11 +1,11 @@
-#version 120
+#version 150
 // Copyright 2015 XolioWare Interactive
 
-varying vec4 calculatedLight;
+in vec4 calculatedLight;
 
 uniform vec3 color;
 
-varying float blend;
+in float blend;
 
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
@@ -16,8 +16,10 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
+out vec4 fragColor;
+
 void main()
 {
 	//Diffuse G-Buffer
-	gl_FragColor = vec4(color, clamp(blend * 0.5, 0.0, 1.0));
+	fragColor = vec4(color, clamp(blend * 0.5, 0.0, 1.0));
 }

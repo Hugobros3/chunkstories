@@ -1,11 +1,11 @@
-#version 120
+#version 150
 //Entry attributes
-attribute vec2 vertexIn;
+in vec2 vertexIn;
 
 uniform vec2 screenSize;
 
-varying float height;
-varying float pos;
+out float height;
+out float pos;
 
 void main(){
 	pos = vertexIn.x;

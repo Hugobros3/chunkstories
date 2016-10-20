@@ -5,5 +5,8 @@ package io.xol.chunkstories.api.rendering;
 //http://xol.io
 
 public enum Primitive {
-	POINT, LINE, TRIANGLE, QUAD;
+	POINT, LINE, TRIANGLE, 
+	
+	@Deprecated
+	QUAD;
 }

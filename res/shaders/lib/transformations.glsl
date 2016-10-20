@@ -28,7 +28,7 @@ vec4 convertScreenSpaceToCameraSpace(vec2 screenSpaceCoordinates, float depth) {
 
 vec4 convertScreenSpaceToCameraSpace(vec2 screenSpaceCoordinates, sampler2D depthBuffer)
 {
-    vec4 cameraSpacePosition = projectionMatrixInv * vec4(vec3(screenSpaceCoordinates * 2.0 - vec2(1.0), texture2D(depthBuffer, screenSpaceCoordinates, 0.0).x * 2.0 - 1.0), 1.0);
+    vec4 cameraSpacePosition = projectionMatrixInv * vec4(vec3(screenSpaceCoordinates * 2.0 - vec2(1.0), texture(depthBuffer, screenSpaceCoordinates, 0.0).x * 2.0 - 1.0), 1.0);
     cameraSpacePosition /= cameraSpacePosition.w;
     return cameraSpacePosition;
 }

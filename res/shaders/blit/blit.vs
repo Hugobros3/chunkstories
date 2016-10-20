@@ -1,7 +1,8 @@
+#version 150
 uniform vec2 screenSize;
 
-attribute vec3 vertexIn;
-varying vec2 texCoord;
+in vec3 vertexIn;
+out vec2 texCoord;
 
 void main()
 {

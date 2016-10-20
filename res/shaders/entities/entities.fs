@@ -1,4 +1,4 @@
-#version 140
+#version 150
 // Copyright 2015 XolioWare Interactive
 
 //General data
@@ -68,7 +68,7 @@ void main(){
 	if(useNormalIn < 1.0)
 		normal = vec3(0.0, 1.0, 0.0);
 		
-	vec3 normalMapped = texture2D(normalTexture, texcoord).xyz;
+	vec3 normalMapped = texture(normalTexture, texcoord).xyz;
     normalMapped = normalMapped * 2.0 - 1.0;
 	//normalMapped.x = -normalMapped.x;
 	
@@ -76,13 +76,13 @@ void main(){
 	normal = normalize(normalMatrix * normal);
 		
 	//Basic texture color
-	vec3 baseColor = texture2D(diffuseTexture, texcoord).rgb;
+	vec3 baseColor = texture(diffuseTexture, texcoord).rgb;
 	
 	if(useColorIn > 0.0)
 		baseColor = colorPassed.rgb;
 	
 	//Texture transparency
-	float alpha = texture2D(diffuseTexture, texcoord).a;
+	float alpha = texture(diffuseTexture, texcoord).a;
 	
 	//if(useColorIn > 0.0)
 	//	alpha *= colorPassed.a;
@@ -99,10 +99,10 @@ void main(){
 	spec = rainWetness * dynamicFresnelTerm;
 	<endif perPixelFresnel>
 	
-	//vec3 finalLight = texture2D(lightColors,lightMapCoords.xy).rgb;
+	//vec3 finalLight = texture(lightColors,lightMapCoords.xy).rgb;
 	
-	vec3 blockLight = texture2D(lightColors,vec2(lightMapCoords.x, 0)).rgb;
-	vec3 sunLight = texture2D(lightColors,vec2(0, lightMapCoords.y)).rgb;
+	vec3 blockLight = texture(lightColors,vec2(lightMapCoords.x, 0)).rgb;
+	vec3 sunLight = texture(lightColors,vec2(0, lightMapCoords.y)).rgb;
 	
 	sunLight = mix(sunLight, sunLight * shadowColor, shadowVisiblity * 0.75);
 	

@@ -6,6 +6,7 @@ package io.xol.engine.base;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 
 import java.util.HashSet;
 import java.util.Queue;
@@ -33,6 +34,7 @@ import io.xol.engine.sound.ALSoundManager;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GLContext;
@@ -103,7 +105,7 @@ public class GameWindowOpenGL
 			Display.setTitle(windowName);
 			Display.setResizable(true);
 			PixelFormat pixelFormat = new PixelFormat();
-			Display.create(pixelFormat);
+			Display.create(pixelFormat, new ContextAttribs(3, 2).withProfileCore(true).withDebug(true));
 
 			systemInfo();
 			glInfo();
@@ -181,6 +183,10 @@ public class GameWindowOpenGL
 		try
 		{
 			Client.onStart();
+			
+			int vao = glGenVertexArrays();
+			glBindVertexArray(vao);
+			
 			while (!Display.isCloseRequested() && !closeRequest)
 			{
 				//Update pending actions

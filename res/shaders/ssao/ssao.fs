@@ -1,4 +1,4 @@
-#version 130
+#version 150
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -26,6 +26,8 @@ uniform int kernelsPerFragment;
 
 <include ../lib/transformations.glsl>
 
+out vec4 fragColor;
+
 float isTooFar(float z)
 {
   float n = 0.1; // camera z near
@@ -44,7 +46,7 @@ void main()
 	vec3 worldspace = convertScreenSpaceToCameraSpace(screenCoord, depthBuffer).xyz;
 	
 	vec3 color = vec3(1.0);
-	vec3 normal = texture2D(normalTexture, screenCoord).xyz * 2.0 - 1.0;
+	vec3 normal = texture(normalTexture, screenCoord).xyz * 2.0 - 1.0;
 	
 	vec3 randomVec = texture(noiseTexture, screenCoord * noiseScale).xyz * 2 - 1.0; 
 	
@@ -77,5 +79,5 @@ void main()
 	
 	//color = vec3(0.8, 0.5, 0.5) * linearizeDepth2(texture(depthBuffer, screenCoord).x);
 		
-	gl_FragColor = vec4(color*(1-occlusion * (isTooFar(texture(depthBuffer, screenCoord).x))), 1.0);//texture2D(comp_light, screenCoord);
+	fragColor = vec4(color*(1-occlusion * (isTooFar(texture(depthBuffer, screenCoord).x))), 1.0);//texture(comp_light, screenCoord);
 }

@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemAk47;
+import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.Voxels;
@@ -168,6 +169,9 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				if (EntityHumanoid.this instanceof EntityWithSelectedItem)
 					selectedItem = ((EntityWithSelectedItem) EntityHumanoid.this).getSelectedItemComponent().getSelectedItem();
 
+				if (Arrays.asList("boneArmLU", "boneArmLD").contains(boneName) && selectedItem != null && selectedItem.getItem() instanceof ItemVoxel)
+					return true;
+				
 				if (Arrays.asList("boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD").contains(boneName) && selectedItem != null)
 					return false;
 
@@ -380,13 +384,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 								1f)
 						.setAttenuationEnd(10);
 
-			//System.out.println("footstep");
-			//System.out.println(horizontalSpeed.length());
-			//System.out.println(voxelStandingOn.getName() + "	" + material.getName());
 		}
-
-		//if(this instanceof EntityZombie)
-		//	System.out.println(metersWalked + "" + this);
 	}
 
 	@Override

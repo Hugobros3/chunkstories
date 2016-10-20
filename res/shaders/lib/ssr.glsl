@@ -11,7 +11,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	// Is the reflection pointing in the right direction ?
 	
 	
-	vec4 color = vec4(0.0);// texture2D(comp_diffuse, screenSpacePosition2D); // vec4(pow(texture2D(gcolor, screenSpacePosition2D).rgb, vec3(3.0f + 1.2f)), 0.0);
+	vec4 color = vec4(0.0);// texture(comp_diffuse, screenSpacePosition2D); // vec4(pow(texture(gcolor, screenSpacePosition2D).rgb, vec3(3.0f + 1.2f)), 0.0);
    
 	const int maxRefinements = 3;
 	int numRefinements = 0;
@@ -75,11 +75,11 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
     }
 	<endif doRealtimeReflections>
 	
-	color = texture2D(albedoBuffer, finalSamplePos);
+	color = texture(albedoBuffer, finalSamplePos);
 	
 	if(numSteps > 38)
 		color.a = 0.0f;
-	if(texture2D(depthBuffer, screenSpaceCoords, 0.0).x == 1.0)
+	if(texture(depthBuffer, screenSpaceCoords, 0.0).x == 1.0)
 		color.a = 0.0f;
 	if(outOfViewport)
 		color.a = 0.0f;
@@ -95,7 +95,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	
 	skyColor += vec3(sunSpecular);
 		
-	skyColor *= showSkybox;//texture2D(blocklights, lightMapUV).rgb;
+	skyColor *= showSkybox;//texture(blocklights, lightMapUV).rgb;
 	
 	if(color.a == 0.0)
 	{
@@ -113,8 +113,8 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	else
 	{
 		vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(finalSamplePos, depthBuffer);
-		vec4 pixelNormal = texture2D(normalBuffer, finalSamplePos);
-		vec4 pixelMeta = texture2D(metaBuffer, finalSamplePos);
+		vec4 pixelNormal = texture(normalBuffer, finalSamplePos);
+		vec4 pixelMeta = texture(metaBuffer, finalSamplePos);
 		
 		color = computeLight(color, decodeNormal(pixelNormal), cameraSpacePosition, pixelMeta, pixelNormal.z);
 	}

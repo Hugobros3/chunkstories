@@ -24,7 +24,6 @@ public class SendQueue extends Thread
 {
 	BlockingQueue<Packet> sendQueue = new LinkedBlockingQueue<Packet>();
 	AtomicBoolean die = new AtomicBoolean(false);
-	//Semaphore workTodo = new Semaphore(0);
 
 	PacketsProcessor processor;
 	DataOutputStream out;
@@ -134,10 +133,6 @@ public class SendQueue extends Thread
 		}
 		else
 			sendQueue.add(packet);
-
-		//workTodo.release();
-		
-		
 	}
 
 	public void flush()
@@ -158,7 +153,6 @@ public class SendQueue extends Thread
 			}
 			catch (InterruptedException e1)
 			{
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			
@@ -178,8 +172,7 @@ public class SendQueue extends Thread
 				}
 				catch (IOException e)
 				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					//That's basically terminated connection exceptions
 				}
 			}
 			else
@@ -200,7 +193,6 @@ public class SendQueue extends Thread
 					ChunkStoriesLogger.getInstance().error("Error : Unknown packet exception");
 					e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 				}
-			//sleepy.set(false);
 		}
 	}
 
@@ -217,7 +209,6 @@ public class SendQueue extends Thread
 		die.set(true);
 		sendQueue.add(DIE);
 		
-		//workTodo.release(10);
 		synchronized (this)
 		{
 			notifyAll();

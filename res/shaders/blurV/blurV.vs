@@ -1,8 +1,9 @@
+#version 150
 uniform vec2 screenSize;
 
-attribute vec2 vertexIn;
-varying vec2 texCoord;
-varying vec2 texCoordBlur[14];
+in vec2 vertexIn;
+out vec2 texCoord;
+out vec2 texCoordBlur[14];
 
 uniform float lookupScale;
 

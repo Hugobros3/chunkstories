@@ -471,13 +471,11 @@ public class WorldRenderer
 			
 			renderingContext.useShader("loaded_map");
 			localMapCommands.clear();
-
 			
 			renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 			renderingContext.setCullingMode(CullingMode.DISABLED);
-			renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
+			renderingContext.setBlendMode(BlendMode.DISABLED);
 			renderingContext.setDepthTestMode(DepthTestMode.GREATER_OR_EQUAL);
-			
 			
 			/*glEnable(GL_DEPTH_TEST);
 			glDisable(GL_CULL_FACE);
@@ -654,6 +652,7 @@ public class WorldRenderer
 			//glDepthFunc(GL_LEQUAL);
 			fboLoadedChunksBot.bind();
 
+			System.out.println(localMapElements);
 			renderingContext.draw(Primitive.POINT, 0, localMapElements);
 
 			//renderingContext.setBlendMode(BlendMode.MIX);
@@ -684,7 +683,7 @@ public class WorldRenderer
 			return; // No shadows at night :)
 		
 		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
-		renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
+		renderingContext.setBlendMode(BlendMode.DISABLED);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		
 		/*glCullFace(GL_BACK);
@@ -735,7 +734,7 @@ public class WorldRenderer
 		//glDisable(GL_BLEND);
 
 		terrainShader = renderingContext.useShader("terrain");
-		renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
+		renderingContext.setBlendMode(BlendMode.DISABLED);
 		//renderingContext.setCurrentShader(terrainShader);
 		//terrainShader.use(true);
 		camera.setupShader(terrainShader);

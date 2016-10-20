@@ -1,4 +1,4 @@
-#version 130
+#version 150
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -11,11 +11,6 @@ in vec3 normalPassed;
 in vec4 vertexPassed;
 in vec2 texCoordPassed; // Coordinate
 in vec3 eyeDirection; // eyeDirection-position
-
-//Framebuffer outputs
-out vec4 diffuseOutput;
-out vec4 normalOutput;
-out vec4 materialOutput;
 
 //Blocks textures
 uniform sampler2D diffuseTexture; // Blocks diffuse texture atlas
@@ -45,6 +40,10 @@ uniform float mapSize;
 
 <include ../lib/normalmapping.glsl>
 
+out vec4 outDiffuseColor;
+out vec4 outNormalColor;
+out vec4 outMaterialColor;
+
 void main(){
 	
 	vec3 normal = normalPassed;
@@ -53,7 +52,7 @@ void main(){
 	float normalGiven = length(normalPassed);
 	
 	//Grabs normal from texture and corrects the format
-	vec3 normalMapped = texture2D(normalTexture, texCoordPassed).xyz;
+	vec3 normalMapped = texture(normalTexture, texCoordPassed).xyz;
     normalMapped = normalMapped * 2.0 - 1.0;
 	normalMapped.x = normalMapped.x;
 	
@@ -64,10 +63,10 @@ void main(){
 	//If no normal given, face camera
 	normal = mix(vec3(0,0,1), normal, normalGiven);
 	//Basic texture color
-	vec3 surfaceDiffuseColor = texture2D(diffuseTexture, texCoordPassed).rgb;
+	vec3 surfaceDiffuseColor = texture(diffuseTexture, texCoordPassed).rgb;
 	
 	//Texture transparency
-	float alpha = texture2D(diffuseTexture, texCoordPassed).a;
+	float alpha = texture(diffuseTexture, texCoordPassed).a;
 	
 	//alpha = 1;
 	//baseColor = vec3(1, 0.5, 0.5);
@@ -76,13 +75,13 @@ void main(){
 		discard;
 	
 	else if(alpha < 1)
-		surfaceDiffuseColor *= texture2D(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
+		surfaceDiffuseColor *= texture(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
 	
 	
 	//Rain makes shit glint
 	float specularity = 0;
 	
-	vec4 material = texture2D(materialTexture, texCoordPassed);
+	vec4 material = texture(materialTexture, texCoordPassed);
 	
 	specularity = material.r*rainWetness + (material.g + rainWetness) * fresnelTerm + material.b;
 	<ifdef perPixelFresnel>
@@ -94,7 +93,7 @@ void main(){
 	//surfaceDiffuseColor = vec3(1.0);
 	
 	//Diffuse G-Buffer
-	gl_FragData[0] = vec4(surfaceDiffuseColor, 1.0);
-	gl_FragData[1] = vec4(encodeNormal(normal).xy, specularity, 1.0);
-	gl_FragData[2] = vec4(lightMapCoords, material.a);
+	outDiffuseColor = vec4(surfaceDiffuseColor, 1.0);
+	outNormalColor = vec4(encodeNormal(normal).xy, specularity, 1.0);
+	outMaterialColor = vec4(lightMapCoords, material.a);
 }

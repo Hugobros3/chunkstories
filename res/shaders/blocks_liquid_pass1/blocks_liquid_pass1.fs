@@ -1,4 +1,4 @@
-#version 130
+#version 150
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -59,15 +59,15 @@ void main(){
 	//Basic texture color
 	vec2 coords = (gl_FragCoord.xy)/screenSize;
 	
-	vec4 baseColor = texture2D(diffuseTexture, texCoordPassed);
+	vec4 baseColor = texture(diffuseTexture, texCoordPassed);
 	
 	vec4 worldspaceFragment = convertScreenSpaceToCameraSpace(coords, readbackDepthBufferTemp);
 	
 	//Pass 1
-	vec4 meta = texture2D(readbackMetaBufferTemp, coords);
+	vec4 meta = texture(readbackMetaBufferTemp, coords);
 	
-	vec3 blockLight = texture2DGammaIn(lightColors,vec2(meta.x, 0)).rgb;
-	vec3 sunLight = texture2DGammaIn(lightColors,vec2(0, meta.y)).rgb;
+	vec3 blockLight = textureGammaIn(lightColors,vec2(meta.x, 0)).rgb;
+	vec3 sunLight = textureGammaIn(lightColors,vec2(0, meta.y)).rgb;
 	
 	sunLight = mix(sunLight, sunLight * shadowColor, shadowVisiblity * 0.75);
 	
@@ -76,7 +76,7 @@ void main(){
 	finalLight *= (1-meta.z);
 
 	//coords += 15.0 * (1 - length(worldspaceFragment) / viewDistance) * vec2( normal.xz ) / screenSize;
-	vec4 refracted = texture2D(readbackAlbedoBufferTemp, coords);
+	vec4 refracted = texture(readbackAlbedoBufferTemp, coords);
 	
 	float waterFogI2 = length(worldspaceFragment) / viewDistance;
 	refracted.rgb *= pow(finalLight + vec3(1.0) * (1-refracted.a*lightMapCoords.g), vec3(gammaInv));

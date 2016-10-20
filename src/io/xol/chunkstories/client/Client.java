@@ -189,6 +189,15 @@ public class Client implements ClientInterface
 	{
 		SimpleFence waitForReload = new SimpleFence();
 		
+		if(GameWindowOpenGL.isMainGLWindow())
+		{
+			Mods.reload();
+			inputsManager.reload();
+			Mods.reloadClientContent();
+			
+			return;
+		}
+		
 		windows.queueTask(new Runnable()
 		{
 			@Override

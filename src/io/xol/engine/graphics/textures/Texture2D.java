@@ -181,7 +181,6 @@ public abstract class Texture2D extends Texture
 		//System.out.println("Computing mipmap for "+name);
 		bind();
 		
-		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 		//Regenerate the mipmaps only when necessary
 		if (RenderingConfig.gl_openGL3Capable)
 			GL30.glGenerateMipmap(GL_TEXTURE_2D);

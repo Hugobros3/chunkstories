@@ -10,7 +10,7 @@ vec4 getSkyTexture(vec2 coordinates)
 {
 	float greyFactor = clamp((overcastFactor - 0.2) / 0.5, 0.0, 1.0);
 	float darkFactor = clamp((overcastFactor - 0.5), 0.0, 1.0);
-	return mix(texture2D(skyTextureSunny, coordinates), mix(texture2D(skyTextureRaining, coordinates), vec4(0.0), darkFactor), greyFactor);
+	return mix(texture(skyTextureSunny, coordinates), mix(texture(skyTextureRaining, coordinates), vec4(0.0), darkFactor), greyFactor);
 }
 
 //Returns the sky color without sun, depending on direction and time
@@ -20,7 +20,7 @@ vec3 getSkyColorWOSun(float time, vec3 eyeDirection)
 {	
 	float sunEyeDot = dot(normalize(eyeDirection), normalize(sunPos));
 	
-	vec4 skyGlow = texture2D(sunSetRiseTexture, vec2(time, clamp(0.5 - sunEyeDot * 0.5, 0.0, 1.0)));
+	vec4 skyGlow = texture(sunSetRiseTexture, vec2(time, clamp(0.5 - sunEyeDot * 0.5, 0.0, 1.0)));
 	vec3 skyColor = getSkyTexture(vec2(time, clamp(1.0-normalize(eyeDirection).y, 0.0, 1.0))).rgb;
     
 	//Overcast renders sunrise/set aura less visible
@@ -35,7 +35,7 @@ vec3 getSkyColor(float time, vec3 eyeDirection)
 {
 	float sunEyeDot = dot(normalize(eyeDirection), normalize(sunPos));
 
-	vec4 skyGlow = texture2D(sunSetRiseTexture, vec2(time, clamp(0.5 - pow(sunEyeDot, 2.0) * 0.5, 0.0, 1.0)));
+	vec4 skyGlow = texture(sunSetRiseTexture, vec2(time, clamp(0.5 - pow(sunEyeDot, 2.0) * 0.5, 0.0, 1.0)));
 	vec3 skyColor = vec3(0.0);
 	
 	//We compute the gradient ourselves to avoid color banding
@@ -57,7 +57,7 @@ vec3 getSkyColorDiffuse(float time, vec3 eyeDirection)
 {
 	float sunEyeDot = 1.0 + dot(normalize(eyeDirection), normalize(sunPos));
 
-	vec4 skyGlow = texture2D(sunSetRiseTexture, vec2(time, clamp(0.5 - sunEyeDot * 0.5, 0.0, 1.0)));
+	vec4 skyGlow = texture(sunSetRiseTexture, vec2(time, clamp(0.5 - sunEyeDot * 0.5, 0.0, 1.0)));
 	vec3 skyColor = vec3(0.0);
 	
 	//We compute the gradient ourselves to avoid color banding

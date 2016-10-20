@@ -1,13 +1,11 @@
 package io.xol.chunkstories.server.net;
 
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.net.packets.PacketFile;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.UsersPrivileges;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.net.HttpRequests;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -100,90 +98,12 @@ public class ServerConnectionsManager extends Thread
 		}
 	}
 
-	//TODO move to ServerClient
-	public void handle(ServerClient client, String in)
-	{
-		// Non-login mandatory requests
-		if (in.startsWith("login/"))
-			client.handleLogin(in.substring(6, in.length()));
-		else if (in.startsWith("info"))
-			sendServerIntel(client);
-		else if(in.equals("mods"))
-			client.sendInternalTextMessage("info/mods:"+server.getModsProvider().getModsString());
-		else if(in.equals("icon-file"))
-		{
-			PacketFile iconPacket = new PacketFile(false);
-			iconPacket.file = new File("server-icon.png");
-			iconPacket.fileTag = "server-icon";
-			client.pushPacket(iconPacket);
-		}
-		// Checks for auth
-		if (!client.isAuthentificated())
-			return;
-		
-		// Login-mandatory requests ( you need to be authentificated to use them )
-		if (in.equals("co/off"))
-		{
-			client.closeSocket();
-			clients.remove(client);
-		}
-		else if (in.startsWith("send-mod/")) //md5:
-		{
-			String modDescriptor = in.substring(9);
-			
-			String md5 = modDescriptor.substring(4);
-			System.out.println(client + " asked for "+md5);
-			
-			//Give him what he asked for.
-			File found = server.getModsProvider().obtainModRedistribuable(md5);
-			if(found == null)
-			{
-				System.out.println("Though luck !");
-			}
-			else
-			{
-				System.out.println("Pushing mod md5 "+md5 + "to user.");
-				PacketFile iconPacket = new PacketFile(false);
-				iconPacket.file = found;
-				iconPacket.fileTag = modDescriptor;
-				client.pushPacket(iconPacket);
-			}
-		}
-		else if (in.startsWith("world/"))
-		{
-			Server.getInstance().getWorld().handleWorldMessage(client, in.substring(6, in.length()));
-		}
-		else if (in.startsWith("chat/"))
-		{
-			String chatMsg = in.substring(5, in.length());
-			//Console commands start with a /
-			if (chatMsg.startsWith("/"))
-			{
-				chatMsg = chatMsg.substring(1, chatMsg.length());
-				
-				String cmdName = chatMsg.toLowerCase();
-				String[] args = {};
-				if (chatMsg.contains(" "))
-				{
-					cmdName = chatMsg.substring(0, chatMsg.indexOf(" "));
-					args = chatMsg.substring(chatMsg.indexOf(" ")+1, chatMsg.length()).split(" ");
-				}
-				
-				server.getConsole().dispatchCommand(client.getProfile(), cmdName, args);
-			}
-			else if (chatMsg.length() > 0)
-			{
-				sendAllChat(client.getProfile().getDisplayName() + " > " + chatMsg);
-			}
-		}
-	}
-
 	/**
 	 * Sends general information about the server
 	 * @param client
 	 */
 	//TODO move to ServerClient
-	private void sendServerIntel(ServerClient client)
+	void sendServerIntel(ServerClient client)
 	{
 		client.sendInternalTextMessage("info/name:" + Server.getInstance().getServerConfig().getProp("server-name", "unnamedserver@" + hostname));
 		client.sendInternalTextMessage("info/motd:" + Server.getInstance().getServerConfig().getProp("server-desc", "Default description."));
@@ -228,7 +148,7 @@ public class ServerConnectionsManager extends Thread
 			serverClient.disconnect("Server is full");
 	}
 
-	public void removeDeadConnection(ServerClient serverClient)
+	void removeDeadConnection(ServerClient serverClient)
 	{
 		if(clients.contains(serverClient))
 			clients.remove(serverClient);

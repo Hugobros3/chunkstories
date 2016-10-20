@@ -1,7 +1,8 @@
+#version 150
 //Entry attributes
-attribute vec4 vertexIn;
+in vec4 vertexIn;
 
-varying float height;
+out float height;
 
 void main(){
 	//XY -> XZ position relative to camera's chunk

@@ -1,4 +1,4 @@
-#version 130
+#version 150
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -35,9 +35,9 @@ uniform mat3 normalMatrixInv;
 
 void main()
 {
-	vec4 color = texture2D(diffuseTexture, texCoordPassed);
+	vec4 color = texture(diffuseTexture, texCoordPassed);
 	
-	float depth = texture2D(zBuffer, gl_FragCoord.xy / screenViewportSize ).x;
+	float depth = texture(zBuffer, gl_FragCoord.xy / screenViewportSize ).x;
 	
 	vec3 normal = vec3(0.0, 1.0, 0.0);
 	

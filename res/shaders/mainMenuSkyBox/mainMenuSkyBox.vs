@@ -1,10 +1,10 @@
-varying vec2 vertex;
+#version 150
+in vec2 vertexIn;
 
-attribute vec2 vertexIn;
+out vec2 vertex;
+out vec3 eyeDirection;
 
 uniform vec3 sunPos;
-
-varying vec3 eyeDirection;
 
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;

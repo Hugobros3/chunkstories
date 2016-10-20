@@ -130,7 +130,7 @@ public class SkyRenderer
 		renderingContext.flush();
 		glDepthMask(true);
 		
-		renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
+		renderingContext.setBlendMode(BlendMode.DISABLED);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		
 		cloudsRenderer.renderClouds(renderingContext);

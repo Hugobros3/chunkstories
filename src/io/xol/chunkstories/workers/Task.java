@@ -2,28 +2,26 @@ package io.xol.chunkstories.workers;
 
 public abstract class Task
 {
-	TasksPool<? extends Task> executor;
 	boolean done = false;
-	
-	public void setExecutor(TasksPool<? extends Task> executor)
-	{
-		this.executor = executor;
-	}
-	
-	public void marksDone()
-	{
-		done = true;
-	}
+	boolean cancelled = false;
 	
 	public boolean isDone()
 	{
 		return done;
 	}
 	
-	public abstract boolean execute();
-	
 	public void cancel()
 	{
-		executor.cancelTask(this);
+		cancelled = true;
 	}
+
+	public final boolean run()
+	{
+		if (!done && (cancelled || runTask()))
+			done = true;
+		
+		return done;
+	}
+
+	abstract boolean runTask();
 }

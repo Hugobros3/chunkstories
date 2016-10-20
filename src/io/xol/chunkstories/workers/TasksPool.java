@@ -17,10 +17,4 @@ public abstract class TasksPool<T extends Task>
 		tasksQueue.add(task);
 		tasksCounter.release();
 	}
-
-	public void cancelTask(Task task)
-	{
-		if(tasksQueue.remove(task))
-			tasksCounter.acquireUninterruptibly();
-	}
 }
