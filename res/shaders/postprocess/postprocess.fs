@@ -49,6 +49,11 @@ const vec4 waterColor = vec4(0.2, 0.4, 0.45, 1.0);
 
 vec4 getDebugShit(vec2 coords);
 
+float poltergeist(vec2 coordinate, float seed)
+{
+    return fract(sin(dot(coordinate*seed, vec2(12.9898, 78.233)))*43758.5453);
+}
+
 void main() {
 	vec2 finalCoords = texCoord;
 	
@@ -82,7 +87,15 @@ void main() {
     compositeColor.rgb = its2 + rnd2.xyz;
 	
 	//Applies pause overlay
-	compositeColor.rgb *= mix(vec3(1.0), texture2D(pauseOverlayTexture, pauseOverlayCoords).rgb, pauseOverlayFade);
+	vec3 overlayColor = texture2D(pauseOverlayTexture, pauseOverlayCoords).rgb;
+	overlayColor = vec3(
+	
+	( mod(gl_FragCoord.x + gl_FragCoord.y, 2.0) * 0.45 + 0.55 )
+	* 
+	( poltergeist(gl_FragCoord.xy, time) * 0.15 + 0.85 )
+	
+	);
+	compositeColor.rgb *= mix(vec3(1.0), overlayColor, clamp(pauseOverlayFade, 0.0, 1.0));
 	
 	//Ouputs
 	gl_FragColor = compositeColor;

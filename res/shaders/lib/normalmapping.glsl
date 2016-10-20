@@ -22,6 +22,7 @@ mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
 
 vec3 perturb_normal( vec3 N, vec3 V, vec2 texcoord, vec3 normalMapDirection)
 {
+	normalMapDirection.x *= -1;
     // N, la normale interpolée et
     // V, le vecteur vue (vertex dirigé vers l'œil)
 	mat3 TBN = cotangent_frame(N, -V, texcoord);

@@ -173,6 +173,7 @@ voxel soil 36
 	opaque: false
 	selfOpaque: true
 	model: 'steps.m6'
+	material: dirt
 	collisionBox: [0.0, 0.0, 0.0, 1.0, 0.875, 1.0]
 end
 
