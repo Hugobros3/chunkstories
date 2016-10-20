@@ -1,4 +1,4 @@
-#version 130
+#version 150
 uniform sampler2D shadedBuffer;
 
 uniform sampler2D albedoBuffer;
@@ -49,6 +49,8 @@ const vec4 waterColor = vec4(0.2, 0.4, 0.45, 1.0);
 
 vec4 getDebugShit(vec2 coords);
 
+out vec4 fragColor;
+
 float poltergeist(vec2 coordinate, float seed)
 {
     return fract(sin(dot(coordinate*seed, vec2(12.9898, 78.233)))*43758.5453);
@@ -62,7 +64,7 @@ void main() {
 	finalCoords.y += underwater*cos(finalCoords.y * 60.0 + time * 1.0) / screenViewportSize.y * 2.0;
 	
 	// Sampling
-	vec4 compositeColor = texture2D(shadedBuffer, finalCoords);
+	vec4 compositeColor = texture(shadedBuffer, finalCoords);
 	
 	// Tints pixels blue underwater
 	compositeColor = mix(compositeColor, compositeColor * waterColor, underwater);

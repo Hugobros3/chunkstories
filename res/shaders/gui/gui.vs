@@ -1,4 +1,4 @@
-#version 130
+#version 150 core
 in vec2 vertexIn;
 in vec2 texCoordIn;
 in vec4 colorIn;

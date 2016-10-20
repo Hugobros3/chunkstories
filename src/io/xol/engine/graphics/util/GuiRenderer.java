@@ -147,7 +147,7 @@ public class GuiRenderer
 		}
 		else
 		{
-			renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
+			//renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
 		}
 		
 		renderingContext.setCullingMode(CullingMode.DISABLED);

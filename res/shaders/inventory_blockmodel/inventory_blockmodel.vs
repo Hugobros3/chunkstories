@@ -1,13 +1,13 @@
+#version 150
 //Entry attributes
-attribute vec3 vertexIn;
-attribute vec2 texCoordIn;
-attribute vec3 normalIn;
+in vec3 vertexIn;
+in vec2 texCoordIn;
+in vec3 normalIn;
 
-varying vec2 texCoord;
+out vec2 texCoord;
+out vec4 interpolatedColor;
 
 //uniform vec4 colorIn;
-
-varying vec4 interpolatedColor;
 
 uniform mat4 transformation;
 

@@ -8,6 +8,7 @@ import io.xol.chunkstories.core.events.PlayerLoginEvent;
 import io.xol.chunkstories.core.events.PlayerLogoutEvent;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
+import io.xol.chunkstories.net.packets.PacketFile;
 import io.xol.chunkstories.net.packets.PacketText;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
@@ -22,6 +23,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -66,11 +68,89 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		this.socketPort = socket.getPort();
 		
 		this.packetsProcessor = new PacketsProcessor(this);
-		this.setName("Client thread on port" + socketPort);
+		this.setName(this.toString());
 	}
 
 	// Here's the usefull things !
 
+	public void handle(String in)
+	{
+		// Non-login mandatory requests
+		if (in.startsWith("login/"))
+			this.handleLogin(in.substring(6, in.length()));
+		else if (in.startsWith("info"))
+			this.connectionsManager.sendServerIntel(this);
+		else if(in.equals("mods"))
+			this.sendInternalTextMessage("info/mods:"+Server.getInstance().getModsProvider().getModsString());
+		else if(in.equals("icon-file"))
+		{
+			PacketFile iconPacket = new PacketFile(false);
+			iconPacket.file = new File("server-icon.png");
+			iconPacket.fileTag = "server-icon";
+			this.pushPacket(iconPacket);
+		}
+		// Checks for auth
+		if (!this.isAuthentificated())
+			return;
+		
+		// Login-mandatory requests ( you need to be authentificated to use them )
+		if (in.equals("co/off"))
+		{
+			this.disconnect("Client terminated connection");
+			//clients.remove(client);
+		}
+		else if (in.startsWith("send-mod/")) //md5:
+		{
+			String modDescriptor = in.substring(9);
+			
+			String md5 = modDescriptor.substring(4);
+			System.out.println(this + " asked for "+md5);
+			
+			//Give him what he asked for.
+			File found = Server.getInstance().getModsProvider().obtainModRedistribuable(md5);
+			if(found == null)
+			{
+				System.out.println("Though luck !");
+			}
+			else
+			{
+				System.out.println("Pushing mod md5 "+md5 + "to user.");
+				PacketFile modUploadPacket = new PacketFile(false);
+				modUploadPacket.file = found;
+				modUploadPacket.fileTag = modDescriptor;
+				this.pushPacket(modUploadPacket);
+			}
+		}
+		else if (in.startsWith("world/"))
+		{
+			Server.getInstance().getWorld().handleWorldMessage(this, in.substring(6, in.length()));
+		}
+		else if (in.startsWith("chat/"))
+		{
+			String chatMsg = in.substring(5, in.length());
+			//Console commands start with a /
+			if (chatMsg.startsWith("/"))
+			{
+				chatMsg = chatMsg.substring(1, chatMsg.length());
+				
+				String cmdName = chatMsg.toLowerCase();
+				String[] args = {};
+				if (chatMsg.contains(" "))
+				{
+					cmdName = chatMsg.substring(0, chatMsg.indexOf(" "));
+					args = chatMsg.substring(chatMsg.indexOf(" ")+1, chatMsg.length()).split(" ");
+				}
+				
+				Server.getInstance().getConsole().dispatchCommand(this.getProfile(), cmdName, args);
+			}
+			else if (chatMsg.length() > 0)
+			{
+				connectionsManager.sendAllChat(this.getProfile().getDisplayName() + " > " + chatMsg);
+			}
+		}
+	}
+	
+	
 	public void handleLogin(String m)
 	{
 		if (m.startsWith("username:"))
@@ -108,7 +188,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			{
 				// Offline-mode !
 				System.out.println("Warning : Offline-mode is on, letting " + this.name + " connecting without verification");
-				postTokenCheck();
+				afterLoginValidation();
 			}
 			else
 				new HttpRequestThread(this, "checktoken", "http://chunkstories.xyz/api/serverTokenChecker.php", "username=" + this.name + "&token=" + token);
@@ -178,15 +258,13 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		}
 	}
 
-	public void closeSocket()
+	void closeSocket()
 	{
 		if (alreadyKilled)
 			return;
 		died = true;
 		if (getProfile() != null)
 		{
-			//authentificated = true;
-			//profile = new ServerPlayer(this);
 			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(getProfile());
 			Server.getInstance().getPluginsManager().fireEvent(playerDisconnectionEvent);
 
@@ -244,9 +322,20 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 	/**
 	 * Called after the login token has been checked, or in the case of an offline-mode server, after the client requested to login.
 	 */
-	private void postTokenCheck()
+	private void afterLoginValidation()
 	{
+		//Prevent user from logging in from two places
+		ServerClient contender = this.connectionsManager.getAuthentificatedClientByName(name);
+		if(contender != null)
+		{
+			//SECURITY: this allows someone with one username's credentials to obtain his ip.
+			//TBH I'm not too worried about it, if they have your logins they probably can pwn you 10 different ways.
+			disconnect("You are already logged in. ("+contender+"). ");
+			return;
+		}
+		
 		setProfile(new ServerPlayer(this));
+
 		//This changes the destinator from a ServerClient to a ServerPlayer, letting know outgoing packets and especially entity components about all the
 		//specifics of the player : name, entity he subscribed to, etc
 		this.sendQueue.setDestinator(this.getProfile());
@@ -267,6 +356,9 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		Server.getInstance().getHandler().sendAllChat(playerConnectionEvent.getConnectionMessage());
 		//Aknowledge the login
 		sendInternalTextMessage("login/ok");
+
+		//Fluff
+		this.setName(this.toString());
 	}
 	
 	@Override
@@ -275,7 +367,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		if (tag.equals("checktoken"))
 		{
 			if (result.equals("ok"))
-				postTokenCheck();
+				afterLoginValidation();
 			else
 				disconnect("Invalid session id !");
 		}
@@ -315,13 +407,26 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 	{
 		this.profile = profile;
 	}
-
-	public void disconnect(String disconnectionMessage)
+	
+	public void disconnect()
 	{
-		System.out.println(disconnectionMessage);
-		sendInternalTextMessage("disconnect/" + disconnectionMessage);
+		disconnect("Unknown reason");
+	}
+
+	public void disconnect(String disconnectionReason)
+	{
+		ChunkStoriesLogger.getInstance().info("Disconnecting client "+this+" for reason "+disconnectionReason);
+		sendInternalTextMessage("disconnect/" + disconnectionReason);
 		closeSocket();
 		//Remove the connection from the set in the manager
 		this.connectionsManager.removeDeadConnection(this);
+	}
+	
+	public String toString()
+	{
+		if(isAuthentificated())
+			return "[Connected user '"+getProfile().getName()+"' from "+this.getIp()+"]";
+		else
+			return "[Unknown connection from "+this.getIp()+"]";
 	}
 }

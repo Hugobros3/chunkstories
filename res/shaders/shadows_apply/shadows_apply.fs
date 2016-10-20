@@ -1,4 +1,4 @@
-#version 130
+#version 150
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -54,6 +54,8 @@ uniform vec3 shadowColor;
 uniform vec3 sunColor;
 uniform float shadowStrength;
 
+out vec4 fragColor;
+
 <include ../sky/sky.glsl>
 <include ../lib/transformations.glsl>
 <include ../lib/shadowTricks.glsl>
@@ -73,8 +75,8 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	vec3 finalLight = vec3(1.0, 1.0, 0.0);
 	
 	//Block light input, modified linearly according to time of day
-	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0.0, meta.y)).rgb;
-	baseLight *= texture2DGammaIn(lightColors, vec2(time, 1.0)).rgb;
+	vec3 baseLight = textureGammaIn(blockLightmap, vec2(0.0, meta.y)).rgb;
+	baseLight *= textureGammaIn(lightColors, vec2(time, 1.0)).rgb;
 	
 	<ifdef shadows>
 	float clamped = 10 * clamp(NdotL, 0.0, 0.1);
@@ -116,11 +118,11 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 		//finalLight = pow(finalLight, vec3(gamma));
 	<endif !shadows>
 	
-	finalLight += texture2DGammaIn(blockLightmap, vec2(meta.x, 0.0)).rgb;
+	finalLight += textureGammaIn(blockLightmap, vec2(meta.x, 0.0)).rgb;
 	float ssao = 1.0-meta.z;
 	<ifdef ssao>
 		//If SSAO is disabled, we use the crappy free vertex AO ( byproduct of block/sunlight merging in code )
-		ssao *= texture2D(ssaoBuffer, screenCoord).x;
+		ssao *= texture(ssaoBuffer, screenCoord).x;
 	<endif ssao>
 	
 	//SSAO * 0.5 + 0.5
@@ -138,12 +140,12 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 void main() {
     vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(screenCoord, depthBuffer);
 	
-	vec4 normalBufferData = texture2D(normalBuffer, screenCoord);
-	vec4 pixelMeta = texture2D(metaBuffer, screenCoord);
+	vec4 normalBufferData = texture(normalBuffer, screenCoord);
+	vec4 pixelMeta = texture(metaBuffer, screenCoord);
 	
 	vec3 pixelNormal = decodeNormal(normalBufferData);
 	
-	vec4 shadingColor = texture2D(albedoBuffer, screenCoord);
+	vec4 shadingColor = texture(albedoBuffer, screenCoord);
 	//shadingColor.rgb = normalize(shadingColor.rgb);
 	
 	if(shadingColor.a > 0.0)
@@ -165,5 +167,5 @@ void main() {
 	
 	vec3 fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz - camPos).xyz));
 	
-	gl_FragColor = mix(shadingColor, vec4(fogColor,shadingColor.a), fogIntensity);
+	fragColor = mix(shadingColor, vec4(fogColor,shadingColor.a), fogIntensity);
 }

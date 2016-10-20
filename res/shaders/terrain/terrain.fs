@@ -1,4 +1,4 @@
-#version 130
+#version 150
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -72,22 +72,22 @@ uniform float ignoreWorldCulling;
 void main()
 {
 	//Computes the zone covered by actual chunks
-	float heightCoveredStart = texture2D(loadedChunksMapBot,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0;
-	float heightCoveredEnd = texture2D(loadedChunksMapTop,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 + 32.0;
+	float heightCoveredStart = texture(loadedChunksMapBot,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0;
+	float heightCoveredEnd = texture(loadedChunksMapTop,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 + 32.0;
 	
 	//Discards the fragment if it is within
 	if(vertexPassed.y+0.0 > heightCoveredStart && vertexPassed.y-0.0-32.0 < heightCoveredEnd && ignoreWorldCulling < 1.0)
 		discard;
 
 	//int voxelDataActual = voxelData;
-	float voxelId = texture2D(groundTexture, textureCoord).r;
+	float voxelId = texture(groundTexture, textureCoord).r;
 	
 	//512-voxel types summary... not best
 	vec4 diffuseColor = texture1D(blocksTexturesSummary, voxelId/512.0);
 	
 	//Apply plants color if alpha is < 1.0
 	if(diffuseColor.a < 1.0)
-		diffuseColor.rgb *= texture2D(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
+		diffuseColor.rgb *= texture(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
 	
 	//Apply gamma then
 	diffuseColor.rgb = pow(diffuseColor.rgb, vec3(gamma));
@@ -101,10 +101,10 @@ void main()
 		diffuseColor.rgb = pow(vec3(51 / 255.0, 105 / 255.0, 110 / 255.0), vec3(gamma));
 	
 		//Build water texture
-		vec3 nt = 1.0*(texture2D(normalTexture,(vertexPassed.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
-		nt += 1.0*(texture2D(normalTexture,(vertexPassed.xz/2.0+vec2(-time,-2.0*time)/150.0)/2.0).rgb*2.0-1.0);
-		nt += 0.5*(texture2D(normalTexture,(vertexPassed.zx*0.8+vec2(400.0, sin(-time/5.0)+time/25.0)/350.0)/10.0).rgb*2.0-1.0);
-		nt += 0.25*(texture2D(normalTexture,(vertexPassed.zx*0.1+vec2(400.0, sin(-time/5.0)-time/25.0)/250.0)/15.0).rgb*2.0-1.0);
+		vec3 nt = 1.0*(texture(normalTexture,(vertexPassed.xz/5.0+vec2(0.0,time)/50.0)/15.0).rgb*2.0-1.0);
+		nt += 1.0*(texture(normalTexture,(vertexPassed.xz/2.0+vec2(-time,-2.0*time)/150.0)/2.0).rgb*2.0-1.0);
+		nt += 0.5*(texture(normalTexture,(vertexPassed.zx*0.8+vec2(400.0, sin(-time/5.0)+time/25.0)/350.0)/10.0).rgb*2.0-1.0);
+		nt += 0.25*(texture(normalTexture,(vertexPassed.zx*0.1+vec2(400.0, sin(-time/5.0)-time/25.0)/250.0)/15.0).rgb*2.0-1.0);
 		
 		nt = normalize(nt);
 		
@@ -121,8 +121,8 @@ void main()
 	}
 	
 	//Computes blocky light
-	vec3 baseLight = texture2DGammaIn(blockLightmap, vec2(0.0, 1.0)).rgb;
-	baseLight *= texture2DGammaIn(lightColors, vec2(time, 1.0)).rgb;
+	vec3 baseLight = textureGammaIn(blockLightmap, vec2(0.0, 1.0)).rgb;
+	baseLight *= textureGammaIn(lightColors, vec2(time, 1.0)).rgb;
 	
 	//Compute side illumination by sun
 	float NdotL = clamp(dot(normal, normalize(sunPos)), 0.0, 1.0);

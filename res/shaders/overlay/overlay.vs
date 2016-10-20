@@ -1,9 +1,10 @@
+#version 150
 //Entry attributes
-attribute vec3 vertexIn;
+in vec3 vertexIn;
 
 uniform vec4 colorIn;
 
-varying vec4 interpolatedColor;
+out vec4 interpolatedColor;
 
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;

@@ -1,4 +1,4 @@
-#version 130
+#version 150
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -30,6 +30,8 @@ uniform float lightAngle[64];
 
 uniform int lightsToRender;
 
+out vec4 fragColor;
+
 //Gamma constants
 <include ../lib/gamma.glsl>
 <include ../lib/transformations.glsl>
@@ -40,11 +42,11 @@ void main() {
 	vec4 totalLight = vec4(0.0);
 	
 	//Get normal from g-buffer
-	vec3 normal = decodeNormal(texture2D(normalBuffer, screenCoord));
+	vec3 normal = decodeNormal(texture(normalBuffer, screenCoord));
 	vec3 normalWorld = normalize(normalMatrixInv * normal);
 	
 	//Get reflectivity of surface
-	float spec = texture2D(normalBuffer, screenCoord).z;
+	float spec = texture(normalBuffer, screenCoord).z;
 	
 	vec3 pixelPositionCamera = convertScreenSpaceToCameraSpace(screenCoord, depthBuffer).xyz;
 	//Discard if too far from camera
@@ -83,5 +85,5 @@ void main() {
 		}
 		totalLight += max(lightAmount, 0.0);
 	}
-	gl_FragColor = totalLight * texture2DGammaIn(diffuseBuffer, screenCoord);
+	fragColor = totalLight * textureGammaIn(diffuseBuffer, screenCoord);
 }

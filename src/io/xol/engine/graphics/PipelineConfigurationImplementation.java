@@ -127,20 +127,20 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 		switch (blendMode)
 		{
 		case DISABLED:
-			alphaTest(false);
+			//alphaTest(false);
 			blend(false);
 			break;
-		case ALPHA_TEST:
-			alphaTest(true);
-			blend(false);
-			break;
+		//case ALPHA_TEST:
+		//	alphaTest(true);
+		//	blend(false);
+		//	break;
 		case MIX:
-			alphaTest(false);
+			//alphaTest(false);
 			blend(true);
 			blendFunc(blendMode);
 			break;
 		case ADD:
-			alphaTest(true);
+			//alphaTest(true);
 			blend(true);
 			blendFunc(blendMode);
 			break;

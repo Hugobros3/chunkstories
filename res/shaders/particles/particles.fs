@@ -1,4 +1,4 @@
-#version 130
+#version 150
 // Copyright 2015 XolioWare Interactive
 
 //General data
@@ -25,9 +25,9 @@ uniform sampler2D diffuseGBuffer;
 const float gamma = 2.2;
 const float gammaInv = 0.45454545454;
 
-vec4 texture2DGammaIn(sampler2D sampler, vec2 coords)
+vec4 textureGammaIn(sampler2D sampler, vec2 coords)
 {
-	return pow(texture2D(sampler, coords), vec4(gamma));
+	return pow(texture(sampler, coords), vec4(gamma));
 }
 
 vec4 gammaOutput(vec4 inputValue)
@@ -41,20 +41,20 @@ varying float back;
 
 void main(){
 	//Basic texture color
-	vec3 baseColor = texture2D(diffuseTexture, texcoord.st).rgb;
+	vec3 baseColor = texture(diffuseTexture, texcoord.st).rgb;
 	
 	//light coloring
-	vec3 finalLight = texture2D(lightColors,lightMapCoords).rgb;
+	vec3 finalLight = texture(lightColors,lightMapCoords).rgb;
 	
 	//Texture transparency
-	float alpha = texture2D(diffuseTexture, texcoord.st).a;
+	float alpha = texture(diffuseTexture, texcoord.st).a;
 	
 	//Rain makes shit glint
 	float specular = 0.0;
 	//specular+=1;
 	//Shadow
 	
-	vec4 source = texture2D(diffuseGBuffer, gl_FragCoord.xy);
+	vec4 source = texture(diffuseGBuffer, gl_FragCoord.xy);
 	
 	if(alpha < 1.0)
 		discard;

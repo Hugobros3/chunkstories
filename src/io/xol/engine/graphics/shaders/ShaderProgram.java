@@ -24,6 +24,7 @@ import org.lwjgl.BufferUtils;
 import io.xol.engine.math.lalgb.Matrix4f;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -112,6 +113,21 @@ public class ShaderProgram implements ShaderInterface
 		glShaderSource(vertexShaderId, vertexSource);
 		glCompileShader(vertexShaderId);
 
+		//Anti-Apple bullshit : Apple being so tight-ass about gl 3.2 CORE spec won't let me have gl_FragColor[] in GLSL 150.
+		//So I'll just declare out values in my fragment shaders by order of expected bound MRT and roll this hack.
+		int j = 0;
+		for (String line : fragSource.toString().split("\n"))
+		{
+			//We're still GLSL 130
+			if (line.startsWith("out "))
+			{
+				String outputName = line.split(" ")[2].replace(";", "");
+				//System.out.println("Binding frag output " + outputName + " to location : " + j);
+				glBindFragDataLocation(shaderProgramId, j, outputName);
+				j++;
+			}
+		}
+		
 		glShaderSource(fragShaderId, fragSource);
 		glCompileShader(fragShaderId);
 
@@ -484,16 +500,6 @@ public class ShaderProgram implements ShaderInterface
 	public String toString()
 	{
 		return "[ShaderProgram : " + this.filename + "]";
-	}
-
-	public static void main(String[] a)
-	{
-		HashMap<String, Object> setUniforms = new HashMap<String, Object>(256);
-
-		System.out.println(setUniforms.put("aaa", 15));
-		System.out.println(setUniforms.put("aaa", 15));
-		System.out.println(setUniforms.put("aaa", 16));
-		System.out.println(check(setUniforms, 16));
 	}
 
 	static boolean check(HashMap<String, Object> setUniforms2, Object o)

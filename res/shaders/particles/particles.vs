@@ -1,4 +1,4 @@
-#version 130
+#version 150
 
 varying vec4 texcoord;
 varying vec2 lightMapCoords;
@@ -67,7 +67,7 @@ void main(){
 	
 	//Compute lightmap coords
 	lightMapCoords = vec2(0.0, 1.0);
-	//baseLight *= texture2DGammaIn(lightColors, vec2(time, 1.0)).rgb;
+	//baseLight *= textureGammaIn(lightColors, vec2(time, 1.0)).rgb;
 	
 	
 	modelview = modelViewMatrix * v;

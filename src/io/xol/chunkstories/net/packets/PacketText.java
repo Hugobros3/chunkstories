@@ -7,7 +7,6 @@ import java.io.IOException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.server.Server;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -44,6 +43,6 @@ public class PacketText extends Packet
 		if(processor.isClient)
 			processor.getClientToServerConnection().handleTextPacket(text);
 		else
-			Server.getInstance().getHandler().handle(processor.getServerClient(), text);
+			processor.getServerClient().handle(text);
 	}
 }

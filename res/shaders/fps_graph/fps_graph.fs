@@ -1,10 +1,12 @@
-#version 120
+#version 150
 // Copyright 2015 XolioWare Interactive
 
 uniform float currentTiming;
 
-varying float height;
-varying float pos;
+in float height;
+in float pos;
+
+out vec4 fragColor;
 
 void main()
 {
@@ -14,5 +16,5 @@ void main()
 	float r = max(height - 0.6f, 0.0) / 33.3f;
 	float g = 1-max(height - 16.6f, 0.0) / 33.3f;
 	
-	gl_FragColor = vec4(r, g, 0.0, alpha );
+	fragColor = vec4(r, g, 0.0, alpha );
 }
