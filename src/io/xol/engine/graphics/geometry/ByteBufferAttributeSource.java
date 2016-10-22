@@ -8,8 +8,6 @@ import java.nio.ByteBuffer;
 
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 
-import static org.lwjgl.opengl.GL20.*;
-
 @Deprecated
 public class ByteBufferAttributeSource implements AttributeSource
 {

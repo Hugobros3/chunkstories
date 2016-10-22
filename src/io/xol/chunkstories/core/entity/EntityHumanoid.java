@@ -169,8 +169,9 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				if (EntityHumanoid.this instanceof EntityWithSelectedItem)
 					selectedItem = ((EntityWithSelectedItem) EntityHumanoid.this).getSelectedItemComponent().getSelectedItem();
 
-				if (Arrays.asList("boneArmLU", "boneArmLD").contains(boneName) && selectedItem != null && selectedItem.getItem() instanceof ItemVoxel)
-					return true;
+				if (Arrays.asList("boneArmRU", "boneArmRD").contains(boneName) && selectedItem != null)
+					if(selectedItem.getItem() instanceof ItemVoxel)
+						return true;
 				
 				if (Arrays.asList("boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD").contains(boneName) && selectedItem != null)
 					return false;
