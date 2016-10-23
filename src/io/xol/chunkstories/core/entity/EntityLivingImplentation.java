@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.components.EntityComponentAnimation;
 import io.xol.chunkstories.core.entity.components.EntityComponentHealth;
@@ -215,6 +216,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		
 		public void lodUpdate(RenderingInterface renderingContext)
 		{
+			
 			double distance = getLocation().distanceTo(renderingContext.getCamera().getCameraPosition());
 			double targetFps = RenderingConfig.animationCacheFrameRate;
 			
@@ -268,6 +270,10 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		{
 			//if(true)
 			//	dataSource.getBoneHierarchyTransformationMatrixWithOffset(nameOfEndBone, animationTime);
+			
+			//Don't mess with the client
+			if(Client.getInstance() != null && Client.getInstance().getClientSideController().getControlledEntity() == EntityLivingImplentation.this)
+				return dataSource.getBoneHierarchyTransformationMatrixWithOffset(nameOfEndBone, animationTime);
 			
 			CachedData cachedData = cachedBones.get(nameOfEndBone);
 			//If the matrix exists and doesn't need an update

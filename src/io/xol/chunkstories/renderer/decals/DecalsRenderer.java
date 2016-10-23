@@ -226,6 +226,8 @@ public class DecalsRenderer implements DecalsManager
 			//renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2), 4 * 3);
 			
 			renderingContext.draw(Primitive.TRIANGLE, 0, decalType.kount);
+			
+			renderingContext.flush();
 			//decalType.verticesObject.drawElementsTriangles(decalType.kount);
 		}
 

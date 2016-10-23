@@ -51,11 +51,28 @@ public class DefaultItemRenderer implements ItemRenderer
 	@Override
 	public void renderItemInWorld(RenderingInterface renderingInterface, ItemPile pile, World world, Location location, Matrix4f handTransformation)
 	{
-		handTransformation.rotate((float) (Math.PI / 2f), new Vector3f(0.0, 0.0, 1.0));
-		handTransformation.rotate((float) (Math.PI / 2f), new Vector3f(0.0, 1.0, 0.0));
-		handTransformation.translate(new Vector3f(-0.05, -0.15, 0.0));
-		handTransformation.scale(new Vector3f(0.35));
-		renderingInterface.setObjectMatrix(handTransformation);
+		Matrix4f handTransformation2 = handTransformation.clone();
+		
+		handTransformation2.rotate((float) (Math.PI / 2f), new Vector3f(0.0, 0.0, 1.0));
+		handTransformation2.rotate((float) (Math.PI / 2f), new Vector3f(0.0, 1.0, 0.0));
+		handTransformation2.translate(new Vector3f(-0.05, -0.15, 0.0));
+		handTransformation2.scale(new Vector3f(0.35));
+		renderingInterface.setObjectMatrix(handTransformation2);
+
+		TexturesHandler.getTexture(pile.getTextureName()).setLinearFiltering(false);
+		Texture2D texture = TexturesHandler.getTexture(pile.getTextureName());
+		if(texture == null)
+			texture = TexturesHandler.getTexture("res/items/icons/notex.png");
+		
+		//texture = TexturesHandler.getTexture("res/textures/notex.png");
+		texture.setLinearFiltering(false);
+		renderingInterface.bindAlbedoTexture(texture);
+		
+		draw3DPlane(renderingInterface);
+	}
+	
+	protected void draw3DPlane(RenderingInterface renderingInterface)
+	{
 		if(defaultPlane == null)
 		{
 			defaultPlane = new VerticesObject();
@@ -126,15 +143,6 @@ public class DefaultItemRenderer implements ItemRenderer
 			buf.flip();
 			defaultPlane.uploadData(buf);
 		}
-
-		TexturesHandler.getTexture(pile.getTextureName()).setLinearFiltering(false);
-		Texture2D texture = TexturesHandler.getTexture(pile.getTextureName());
-		if(texture == null)
-			texture = TexturesHandler.getTexture("res/items/icons/notex.png");
-		
-		//texture = TexturesHandler.getTexture("res/textures/notex.png");
-		texture.setLinearFiltering(false);
-		renderingInterface.bindAlbedoTexture(texture);
 		
 		renderingInterface.bindAttribute("vertexIn", defaultPlane.asAttributeSource(VertexFormat.FLOAT, 3, 0, 0));
 		renderingInterface.bindAttribute("texCoordIn", defaultPlane.asAttributeSource(VertexFormat.FLOAT, 2, 0, 4 * 3 * 6));

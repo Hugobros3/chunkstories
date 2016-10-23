@@ -14,12 +14,26 @@ import io.xol.engine.model.ModelLibrary;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Ak47ViewModelRenderer extends DefaultItemRenderer
+public class ObjViewModelRenderer extends DefaultItemRenderer
 {
+	final String objName;
+	final String albedoTextureName;
+	final String normalTextureName;
+	//TODO
+	final String materialTextureName = null;
+
+	public ObjViewModelRenderer(Item item, String objName, String albedoTextureName)
+	{
+		this(item, objName, albedoTextureName, "./textures/normalnormal.png");
+	}
 	
-	public Ak47ViewModelRenderer(Item item)
+	public ObjViewModelRenderer(Item item, String objName, String albedoTextureName, String normalTextureName)
 	{
 		super(item);
+		
+		this.objName = objName;
+		this.albedoTextureName = albedoTextureName;
+		this.normalTextureName = normalTextureName;
 	}
 
 	@Override
@@ -32,11 +46,10 @@ public class Ak47ViewModelRenderer extends DefaultItemRenderer
 	public void renderItemInWorld(RenderingInterface renderingContext, ItemPile pile, World world, Location location, Matrix4f handTransformation)
 	{
 		renderingContext.setObjectMatrix(handTransformation);
-		//renderingContext.sendBoneTransformationMatrix(null);
-		//renderingContext.getCurrentShader().setUniformFloat3("objectPosition", 0, 0, 0);
-		renderingContext.bindAlbedoTexture(TexturesHandler.getTexture("./models/ak47.hq.png"));
-		renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
-		ModelLibrary.getRenderableMesh("./models/ak47.hq.obj").render(renderingContext);
+		
+		renderingContext.bindAlbedoTexture(TexturesHandler.getTexture(albedoTextureName));
+		renderingContext.bindNormalTexture(TexturesHandler.getTexture(normalTextureName));
+		ModelLibrary.getRenderableMesh(objName).render(renderingContext);
 	}
 
 }

@@ -10,17 +10,20 @@ item 2 item_voxel_1x2 io.xol.chunkstories.core.item.ItemVoxel
 	height: 2
 end
 
-item 128 weapon_ak47 io.xol.chunkstories.core.item.ItemAk47
+item 128 weapon_ak47 io.xol.chunkstories.core.item.ItemWeapon
 	width: 3
 	height: 3
 	maxStackSize: 1
-	roundsPerMinute: 631.0
+	roundsPerMinute: 600.0
 	fireMode: fullauto
 	reloadCooldown: 1500
 	range: 95
 	soundRange: 160
 	accuracy: 1.9
 	damage: 50
+	fireSound: sounds/weapons/ak47/shootNear.ogg
+	modelObj: ./models/ak47.hq.obj
+	modelDiffuse: ./models/ak47.hq.png
 end
 
 item 129 mag_ak47 io.xol.chunkstories.core.item.ItemAk47Magazine

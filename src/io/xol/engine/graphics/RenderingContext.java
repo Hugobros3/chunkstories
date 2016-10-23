@@ -201,7 +201,7 @@ public class RenderingContext implements RenderingInterface
 	{
 		if (objectMatrix == null)
 			objectMatrix = new Matrix4f();
-		currentObjectMatrix = objectMatrix;
+		currentObjectMatrix = objectMatrix.clone();
 		return this.currentObjectMatrix;
 	}
 

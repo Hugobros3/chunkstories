@@ -121,7 +121,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 					entitySign.cachedText = entitySign.signText.getSignText();
 				}
 				// Display it
-				mutrix.translate(new Vector3f(0.0f, 0.15f, 0.055f));
+				mutrix.translate(new Vector3f(0.0f, 1.15f, 0.055f));
 				renderingContext.setObjectMatrix(mutrix);
 				entitySign.renderData.render(renderingContext);
 			}
