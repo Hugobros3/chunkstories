@@ -53,8 +53,8 @@ void main()
 	
 	//color = vec4(vec3(depth), 1.0);
 	
-	//if(color.a < 0.5)
-	//	discard;
+	if(color.a == 0.0)
+		discard;
 	
 	//color.rgb = vec3(texCoordPassed, 0.0);
 	

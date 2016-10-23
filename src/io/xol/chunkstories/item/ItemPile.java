@@ -35,44 +35,16 @@ public class ItemPile implements CSFSerializable
 	{
 		this(ItemTypes.getItemTypeByName(itemName).newItem());
 	}
-
-	public ItemPile(String itemName, String[] info)
-	{
-		this(ItemTypes.getItemTypeByName(itemName).newItem(), info);
-	}
 	
 	public ItemPile(Item item)
 	{
 		this.item = item;
-		//this.data = item.getItemData();
-		item.onCreate(this, null);
 	}
 
 	public ItemPile(Item item, int amount)
 	{
 		this(item);
 		this.amount = amount;
-	}
-
-	public ItemPile(Item item, String[] info)
-	{
-		this.item = item;
-		//this.data = item.getItemData();
-		item.onCreate(this, info);
-	}
-
-	/**
-	 * For items that require special arguments, you can call setInfo on them to apply onCreate once more with proper arguments
-	 * 
-	 * @param info
-	 * @return
-	 */
-	public ItemPile setInfo(String[] info)
-	{
-		item.onCreate(this, info);
-		if (inventory != null)
-			this.inventory.pushComponentController();
-		return this;
 	}
 
 	/**

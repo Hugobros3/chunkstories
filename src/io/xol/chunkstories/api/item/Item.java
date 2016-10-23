@@ -19,7 +19,7 @@ public class Item
 	private final ItemType type;
 	
 	protected ItemRenderer itemRenderer;
-
+	
 	public Item(ItemType type)
 	{
 		this.type = type;
@@ -39,19 +39,6 @@ public class Item
 	public ItemRenderer getItemRenderer()
 	{
 		return itemRenderer;
-	}
-	
-	/**
-	 * Called on creation of an itemPile of this object (you should override this if you need something in particular in your item data,
-	 * and/or if you want to specify subtypes to your item using the info[] tags
-	 * @param pile
-	 * @param info When spawning an item it parses everything after itemname: and returns an array of strings separated by ':'
-	 * ie : myitem:prout:22 infers an String[] info = {"prout", "22"};
-	 */
-	@Deprecated
-	public void onCreate(ItemPile pile, String[] info)
-	{
-		
 	}
 	
 	/**

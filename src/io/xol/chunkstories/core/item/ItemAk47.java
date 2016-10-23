@@ -123,10 +123,7 @@ public class ItemAk47 extends Item implements DamageCause
 
 						Vector3d reflected = new Vector3d();
 						Vector3d.sub(shooter.getDirectionLookingAt(), NxNbyI2x, reflected);
-
-						//System.out.println("normal: "+normal);
-						//System.out.println("reflected: "+reflected);
-
+						
 						//shotBlock.setX(shotBlock.getX() + 1);
 						int data = user.getWorld().getVoxelData(shotBlock);
 						Voxel voxel = Voxels.get(data);

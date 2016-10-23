@@ -5,7 +5,9 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.materials.Materials;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
@@ -20,7 +22,7 @@ public class VoxelDefault implements Voxel
 {
 	protected int voxelID = 0;
 	protected String voxelName;
-	
+
 	VoxelTexture[] texture = new VoxelTexture[6];
 
 	boolean liquid = false;
@@ -52,7 +54,7 @@ public class VoxelDefault implements Voxel
 	{
 		voxelID = id;
 		voxelName = name;
-		
+
 		material = Materials.getMaterial(name);
 	}
 
@@ -109,7 +111,7 @@ public class VoxelDefault implements Voxel
 	{
 		return self_opaque;
 	}
-	
+
 	@Override
 	public boolean isAffectedByWind()
 	{
@@ -236,15 +238,16 @@ public class VoxelDefault implements Voxel
 	@Override
 	public ItemPile[] getItems()
 	{
-		return new ItemPile[] {
+		ItemVoxel itemVoxel = (ItemVoxel) ItemTypes.getItemTypeByName("item_voxel").newItem();
+		itemVoxel.voxel = this;
 
-		new ItemPile("item_voxel", new String[] { "" + this.voxelID }).duplicate() };
+		return new ItemPile[] { new ItemPile(itemVoxel) };
 	}
 
 	public boolean equals(Object o)
 	{
 		//Only the id matters
-		if(o instanceof VoxelDefault)
+		if (o instanceof VoxelDefault)
 		{
 			return (((VoxelDefault) o).getId() == this.getId());
 		}

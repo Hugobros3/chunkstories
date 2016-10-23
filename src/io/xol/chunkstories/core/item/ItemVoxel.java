@@ -36,7 +36,7 @@ public class ItemVoxel extends Item
 		itemRenderer = new VoxelItemRenderer(this);
 	}
 
-	@Override
+	/*@Override
 	public void onCreate(ItemPile pile, String[] info)
 	{
 		//ItemDataVoxel idv = (ItemDataVoxel) pile.data;
@@ -45,7 +45,7 @@ public class ItemVoxel extends Item
 		if (info != null && info.length > 1)
 			voxelMeta = Integer.parseInt(info[1]) % 16;
 	}
-
+*/
 	@Override
 	public String getTextureName(ItemPile pile)
 	{

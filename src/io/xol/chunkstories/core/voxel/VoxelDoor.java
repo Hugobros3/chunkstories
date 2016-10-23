@@ -11,7 +11,9 @@ import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -332,7 +334,11 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 		if (top)
 			return new ItemPile[] {};
 
-		return new ItemPile[] { new ItemPile("item_voxel_1x2", new String[] { "" + this.voxelID }).duplicate() };
+
+		ItemVoxel itemVoxel = (ItemVoxel)ItemTypes.getItemTypeByName("item_voxel_1x2").newItem();
+		itemVoxel.voxel = this;		
+		
+		return new ItemPile[] { new ItemPile(itemVoxel) };
 	}
 
 	@Override

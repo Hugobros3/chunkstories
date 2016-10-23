@@ -29,8 +29,6 @@ uniform vec3 sunPos; // Sun position
 
 uniform float time;
 uniform vec3 camPos;
-//TODO get rid of this legacy bs
-uniform vec3 objectPosition;
 
 uniform float vegetation;
 uniform float viewDistance;
@@ -75,8 +73,6 @@ void main(){
 	}
 	else
 	{
-		v+=vec4(objectPosition,0);
-	
 		varyingVertex = v;
 		varyingNormal = objectMatrixNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
 	}

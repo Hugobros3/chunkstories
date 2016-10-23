@@ -28,10 +28,13 @@ import io.xol.chunkstories.core.entity.components.EntityComponentFlying;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentName;
 import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
+import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
 import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
+import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
@@ -434,7 +437,11 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 						if (voxelID > 0)
 						{
 							//Spawn new itemPile in his inventory
-							ItemPile itemVoxel = new ItemPile("item_voxel", new String[] { "" + voxelID, "" + voxelMeta });
+							ItemVoxel item = (ItemVoxel)ItemTypes.getItemTypeByName("item_voxel").newItem();
+							item.voxel = Voxels.get(voxelID);
+							item.voxelMeta = voxelMeta;
+							
+							ItemPile itemVoxel = new ItemPile(item);
 							this.inventoryComponent.setItemPileAt(getSelectedItemComponent().getSelectedSlot(), 0, itemVoxel);
 							return true;
 						}

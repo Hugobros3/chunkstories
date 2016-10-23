@@ -214,8 +214,8 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				
 				entity.cachedSkeleton.lodUpdate(renderingContext);
 
-				int bl = entity.getWorld().getBlocklightLevelLocation(location);
-				int sl = entity.getWorld().getSunlightLevelLocation(location);
+				//int bl = entity.getWorld().getBlocklightLevelLocation(location);
+				//int sl = entity.getWorld().getSunlightLevelLocation(location);
 				
 				Matrix4f matrix = new Matrix4f();
 				matrix.translate(location.castToSimplePrecision());
