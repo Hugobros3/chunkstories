@@ -150,7 +150,7 @@ public class GameWindowOpenGL
 		float glVersionf = Float.parseFloat(glVersion.split("\\.")[0] + "." + glVersion.split("\\.")[1]);
 		ChunkStoriesLogger.getInstance().log("OpenGL VERSION STRING = " + glGetString(GL_VERSION) + " parsed: " + glVersionf);
 		ChunkStoriesLogger.getInstance().log("OpenGL Extensions avaible : " + glGetString(GL_EXTENSIONS));
-		if (glVersionf < 3.1f)
+		if (glVersionf < 3.2f)
 		{
 			RenderingConfig.gl_openGL3Capable = false;
 			if (GLContext.getCapabilities().GL_EXT_framebuffer_object && GLContext.getCapabilities().GL_ARB_texture_rg)
@@ -170,11 +170,12 @@ public class GameWindowOpenGL
 			}
 		}
 		else
-			System.out.println("OpenGL 3.0 Hardware detected.");
+			System.out.println("OpenGL 3.2+ Hardware detected.");
 
 		//Check for various limitations
 		RenderingConfig.gl_MaxTextureUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS);
 		RenderingConfig.gl_IsInstancingSupported = GLContext.getCapabilities().GL_ARB_draw_instanced;
+		RenderingConfig.gl_InstancedArrays = GLContext.getCapabilities().GL_ARB_instanced_arrays;
 
 	}
 

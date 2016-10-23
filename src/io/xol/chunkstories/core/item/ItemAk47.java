@@ -5,12 +5,10 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Controller;
-import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -29,7 +27,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ItemAk47 extends Item implements DamageCause
+public class ItemAk47 extends ItemWeapon
 {
 	public ItemAk47(ItemType type)
 	{

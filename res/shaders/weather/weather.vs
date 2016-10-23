@@ -35,10 +35,13 @@ vec4 gammaOutput(vec4 inputValue)
 }
 
 void main(){
-	interpolatedColor = vec4(0.5, 0.5, 0.6, 0.5 + 0.5 * sunIntensity) * textureGammaIn(lightmap, vec2(sunTime, 1.0));
+	interpolatedColor = vec4(0.5, 0.5, 0.6, 0.0) * textureGammaIn(lightmap, vec2(sunTime, 1.0));
 	
 	float maxHeight = vertexIn.w;
 	vec3 vertexPosition = vertexIn.xyz;
+	
+	interpolatedColor.a = 1.0 - clamp((maxHeight - vertexPosition.y - 20.0) / 1.0, 0.0, 1.0);
+	//Falling at 20m/s
 	vertexPosition.y -= time * 20;
 	if(vertexPosition.y < maxHeight)
 	{

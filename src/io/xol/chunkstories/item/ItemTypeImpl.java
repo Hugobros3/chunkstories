@@ -2,6 +2,8 @@ package io.xol.chunkstories.item;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
@@ -20,6 +22,8 @@ public class ItemTypeImpl implements ItemType
 	private int maxStackSize = 100;
 	
 	private Constructor<? extends Item> itemConstructor;
+	
+	private Map<String, String> customProperties = new HashMap<String, String>();
 
 	public ItemTypeImpl(int id)
 	{
@@ -105,5 +109,17 @@ public class ItemTypeImpl implements ItemType
 	public boolean equals(ItemType type)
 	{
 		return type.getID() == this.getID();
+	}
+
+	@Override
+	public String getProperty(String propertyName, String defaultValue)
+	{
+		String r = customProperties.get(propertyName);
+		return r != null ? r : defaultValue;
+	}
+	
+	public void setup(String propertyName, String value)
+	{
+		customProperties.put(propertyName, value);
 	}
 }

@@ -14,12 +14,20 @@ item 128 weapon_ak47 io.xol.chunkstories.core.item.ItemAk47
 	width: 3
 	height: 3
 	maxStackSize: 1
+	roundsPerMinute: 631.0
+	fireMode: fullauto
+	reloadCooldown: 1500
+	range: 95
+	soundRange: 160
+	accuracy: 1.9
+	damage: 50
 end
 
 item 129 mag_ak47 io.xol.chunkstories.core.item.ItemAk47Magazine
 	width: 2
 	height: 2
 	maxStackSize: 30
+	forWeapon: weapon_ak47
 end
 
 item 130 he_grenade io.xol.chunkstories.core.item.ItemHeGrenade
