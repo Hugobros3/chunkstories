@@ -77,7 +77,6 @@ void main(){
 	else if(alpha < 1)
 		surfaceDiffuseColor *= texture(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
 	
-	
 	//Rain makes shit glint
 	float specularity = 0;
 	

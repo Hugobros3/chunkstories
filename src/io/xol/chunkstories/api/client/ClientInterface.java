@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.content.PluginsManager;
 
 import io.xol.chunkstories.world.WorldClientCommon;
