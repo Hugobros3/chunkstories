@@ -16,7 +16,7 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 public class EntityZombie extends EntityHumanoid
 {
 	int i = 0;
-	AI zombieAi;
+	AI<?> zombieAi;
 
 	public EntityZombie(WorldImplementation w, double x, double y, double z)
 	{
@@ -34,13 +34,10 @@ public class EntityZombie extends EntityHumanoid
 		zombieAi.tick();
 		super.tick();
 		
-		//System.out.println(this.getVelocityComponent().getVelocity());
-
 		if(Double.isNaN(this.getEntityRotationComponent().getHorizontalRotation()))
 		{
 			System.out.println("nan !" + this);
 			this.getEntityRotationComponent().setRotation(0.0, 0.0);
-			//this.setLocation(new Location(entity.getWorld(), entity.getLocation().clone().add(new Vector3d(Math.random() * 0.5, 0.0, Math.random() * 0.5))));
 		}
 	}
 

@@ -8,12 +8,7 @@ import java.nio.FloatBuffer;
 
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 
-<<<<<<< HEAD
-import static org.lwjgl.opengl.GL20.*;
-
 @Deprecated
-=======
->>>>>>> refs/remotes/ssh-xolio/master
 public class FloatBufferAttributeSource implements AttributeSource
 {
 	static VerticesObject sorryILied = new VerticesObject();
