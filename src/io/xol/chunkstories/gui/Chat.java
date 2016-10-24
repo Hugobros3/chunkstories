@@ -22,7 +22,10 @@ import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.entity.interfaces.EntityRotateable;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.entity.Entities;
+import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -166,6 +169,18 @@ public class Chat
 							ie.remove();
 						}
 					}
+				}
+				else if (inputBox.text.startsWith("/locgive"))
+				{
+					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
+					String itemName = inputBox.text.split(" ")[1];
+					((EntityPlayer) controlledEntity).getInventory().addItemPile(new ItemPile(ItemTypes.getItemTypeByName(itemName).newItem()));
+				}
+				else if (inputBox.text.startsWith("/locclearinv"))
+				{
+					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
+					((EntityPlayer) controlledEntity).getInventory().clear();
+					System.out.println("CLEARED");
 				}
 				else if (inputBox.text.startsWith("/locsave"))
 				{

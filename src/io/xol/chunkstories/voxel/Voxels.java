@@ -18,14 +18,17 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 public class Voxels
 {
 	public static Voxel[] voxels = new Voxel[65536];
 	public static Set<Integer> attributedIds = new HashSet<Integer>();
+	public static Map<String, Voxel> voxelsByName = new HashMap<String, Voxel>();
 	public static int voxelTypes = 0;
 	public static int lastAllocatedId;
 
@@ -108,6 +111,7 @@ public class Voxels
 						{
 							voxels[voxel.getId()] = voxel;
 							attributedIds.add(voxel.getId());
+							voxelsByName.put(voxel.getName(), voxel);
 							voxel = null;
 							loadedVoxels++;
 						}
@@ -217,6 +221,7 @@ public class Voxels
 		//Discard previous voxels
 		Arrays.fill(voxels, null);
 		attributedIds.clear();
+		voxelsByName.clear();
 
 		Iterator<Asset> i = Mods.getAllAssetsByExtension("voxels");
 		while (i.hasNext())
@@ -249,6 +254,11 @@ public class Voxels
 			return voxels[0];
 		}
 		return v;
+	}
+
+	public static Voxel getVoxelTypeByName(String voxelName)
+	{
+		return voxelsByName.get(voxelName);
 	}
 
 	public static int getNextValidVoxelId(int id)

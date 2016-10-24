@@ -30,7 +30,7 @@ public class ParticleVoxelFragment extends ParticleType
 		
 		VoxelTexture tex;
 		
-		int timer = 145; // 30s
+		int timer = 1450; // 30s
 		Vector3d vel = new Vector3d();
 		
 		float rightX, topY, leftX, bottomY;

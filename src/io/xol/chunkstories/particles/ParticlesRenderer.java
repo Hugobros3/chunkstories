@@ -37,34 +37,35 @@ public class ParticlesRenderer implements ParticlesManager
 
 	final Map<ParticleType, Set<ParticleData>> particles = new ConcurrentHashMap<ParticleType, Set<ParticleData>>();
 
-	//ShaderProgram particlesShader = ShadersLibrary.getShaderProgram("particles");
-
-	//TODO use objects
-	//int billboardSquareVBO, particlesPositionsVBO, texCoordsVBO;
-	VerticesObject billboardSquare, particlesPositions, texCoords;
+		
+	//VerticesObject billboardSquare;
+	VerticesObject particlesPositions, texCoords;
 	FloatBuffer particlesPositionsBuffer, textureCoordinatesBuffer;
 
 	public ParticlesRenderer(World world)
 	{
 		this.world = world;
 
-		billboardSquare = new VerticesObject();
+		//billboardSquare = new VerticesObject();
 		//billboardSquareVBO = glGenBuffers();
 		
 		//320kb
-		FloatBuffer fb = BufferUtils.createFloatBuffer(4 * 2 * 10000);
+		/*FloatBuffer fb = BufferUtils.createFloatBuffer(6 * 2 * 10000);
 		for (int i = 0; i < 10000; i++)
 		{
 			fb.put(new float[] { 1, 1 });
 			fb.put(new float[] { 1, -1 });
 			fb.put(new float[] { -1, -1 });
+			//fb.put(new float[] { -1, 1 });
+			fb.put(new float[] { 1, 1 });
+			fb.put(new float[] { -1, -1 });
 			fb.put(new float[] { -1, 1 });
 		}
-		fb.flip();
+		fb.flip();*/
 		
 		//glBindBuffer(GL_ARRAY_BUFFER, billboardSquareVBO);
 		//glBufferData(GL_ARRAY_BUFFER, fb, GL_STATIC_DRAW);
-		billboardSquare.uploadData(fb);
+		//billboardSquare.uploadData(fb);
 
 		particlesPositions = new VerticesObject();
 		texCoords = new VerticesObject();
@@ -72,9 +73,9 @@ public class ParticlesRenderer implements ParticlesManager
 		//texCoordsVBO = glGenBuffers();
 		
 		//480kb
-		particlesPositionsBuffer = BufferUtils.createFloatBuffer(4 * 3 * 10000);
+		particlesPositionsBuffer = BufferUtils.createFloatBuffer(6 * 3 * 10000);
 		//320kb
-		textureCoordinatesBuffer = BufferUtils.createFloatBuffer(4 * 2 * 10000);
+		textureCoordinatesBuffer = BufferUtils.createFloatBuffer(6 * 2 * 10000);
 	}
 
 	public int count()
@@ -169,18 +170,6 @@ public class ParticlesRenderer implements ParticlesManager
 		
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.MIX);
-		/*glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glBlendEquation(GL_FUNC_ADD);
-		glDisable(GL_CULL_FACE);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.0f);*/
-
-		// glDisable(GL_DEPTH_TEST);
-
-		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		// glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-		// glDepthMask(false);
 
 		ShaderInterface particlesShader = renderingContext.useShader("particles");
 		//renderingContext.setCurrentShader(particlesShader);
@@ -225,8 +214,8 @@ public class ParticlesRenderer implements ParticlesManager
 					//Iterate over dem particles
 					ParticleData p = iterator.next();
 
-					//If > 40k elements, buffer is full, draw it
-					if (elements >= 40000)
+					//If > 60k elements, buffer is full, draw it
+					if (elements >= 60000)
 					{
 						drawBuffers(renderingContext, elements, haveTextureCoordinates);
 						totalDrawn += elements;
@@ -237,6 +226,16 @@ public class ParticlesRenderer implements ParticlesManager
 					particlesPositionsBuffer.put((float) p.y);
 					particlesPositionsBuffer.put((float) p.z);
 
+					particlesPositionsBuffer.put((float) p.x);
+					particlesPositionsBuffer.put((float) p.y);
+					particlesPositionsBuffer.put((float) p.z);
+
+					particlesPositionsBuffer.put((float) p.x);
+					particlesPositionsBuffer.put((float) p.y);
+					particlesPositionsBuffer.put((float) p.z);
+
+					//Second triangle
+					
 					particlesPositionsBuffer.put((float) p.x);
 					particlesPositionsBuffer.put((float) p.y);
 					particlesPositionsBuffer.put((float) p.z);
@@ -271,11 +270,17 @@ public class ParticlesRenderer implements ParticlesManager
 						textureCoordinatesBuffer.put(texCoords.getTextureCoordinateXBottomLeft());
 						textureCoordinatesBuffer.put(texCoords.getTextureCoordinateYBottomLeft());
 
-						textureCoordinatesBuffer.put(texCoords.getTextureCoordinateXBottomRight());
-						textureCoordinatesBuffer.put(texCoords.getTextureCoordinateYBottomRight());
+						textureCoordinatesBuffer.put(texCoords.getTextureCoordinateXBottomLeft());
+						textureCoordinatesBuffer.put(texCoords.getTextureCoordinateYBottomLeft());
+						
+						textureCoordinatesBuffer.put(texCoords.getTextureCoordinateXTopRight());
+						textureCoordinatesBuffer.put(texCoords.getTextureCoordinateYTopRight());
+
+						textureCoordinatesBuffer.put(texCoords.getTextureCoordinateXTopLeft());
+						textureCoordinatesBuffer.put(texCoords.getTextureCoordinateYBottomLeft());
 					}
 
-					elements += 4;
+					elements += 6;
 				}
 				if (elements > 0)
 				{
@@ -347,13 +352,13 @@ public class ParticlesRenderer implements ParticlesManager
 		}
 
 		//glBindBuffer(GL_ARRAY_BUFFER, billboardSquareVBO);
-		renderingContext.bindAttribute("billboardSquareCoordsIn", billboardSquare.asAttributeSource(VertexFormat.FLOAT, 2, 8, 0));
+		//renderingContext.bindAttribute("billboardSquareCoordsIn", billboardSquare.asAttributeSource(VertexFormat.FLOAT, 2, 8, 0));
 		//renderingContext.setVertexAttributePointerLocation("billboardSquareCoordsIn", 2, GL_FLOAT, false, 8, 0, billboardSquare);
 		// glDrawElements(GL_POINTS, elements,
 		// GL_UNSIGNED_BYTE, 0);
 		//glPointSize(4f);
 		
-		renderingContext.draw(Primitive.QUAD, 0, elements);
+		renderingContext.draw(Primitive.TRIANGLE, 0, elements);
 		renderingContext.unbindAttributes();
 		//GLCalls.drawArrays(GL_QUADS, 0, elements);
 

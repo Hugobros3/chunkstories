@@ -16,6 +16,7 @@ public class RenderingConfig
 	public static boolean gl_IsInstancingSupported;
 	public static boolean gl_openGL3Capable = true;
 	public static boolean gl_fbExtCapable = false;
+	public static boolean gl_InstancedArrays;
 
 	// RENDERING
 	public static float viewDistance = 150;

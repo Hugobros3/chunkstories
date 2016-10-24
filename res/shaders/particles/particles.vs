@@ -25,7 +25,6 @@ uniform float viewDistance;
 varying vec4 modelview;
 
 attribute vec4 particlesPositionIn;
-attribute vec2 billboardSquareCoordsIn;
 attribute vec2 textureCoordinatesIn;
 
 uniform float areTextureCoordinatesIninatesSupplied;
@@ -47,11 +46,21 @@ varying float back;
 uniform float fogStartDistance;
 uniform float fogEndDistance;
 
+const vec2 vertices[] = vec2[]( vec2(1.0 ,  1.0),
+								vec2(-1.0,  1.0),
+								vec2(-1.0, -1.0),
+								vec2(-1.0, -1.0),
+								vec2(1.0 ,  1.0),
+								vec2(1.0,  -1.0)
+								);
+
 void main(){
 	//Usual variable passing
 	
+	vec2 proceduralVertex = vertices[gl_VertexID % 6];
+	
 	if(areTextureCoordinatesIninatesSupplied < 0.5)
-		texcoord = vec4(billboardSquareCoordsIn*0.5+0.5, 0, 0);
+		texcoord = vec4(proceduralVertex*0.5+0.5, 0, 0);
 	else
 		texcoord = vec4(textureCoordinatesIn, 0, 0);
 	
@@ -72,7 +81,7 @@ void main(){
 	
 	modelview = modelViewMatrix * v;
 	
-	modelview += vec4(billboardSquareCoordsIn*billboardSize, 0.0, 0.0);
+	modelview += vec4(proceduralVertex*billboardSize, 0.0, 0.0);
 	
 	vec4 clochard = projectionMatrix * modelview;
 	

@@ -20,7 +20,7 @@ public class RenderingCommandSingleInstance extends RenderingCommandImplementati
 {
 	Matrix4f objectMatrix;
 	int sunLight, blockLight;
-	
+
 	public RenderingCommandSingleInstance(Primitive primitive, ShaderInterface shaderInterface, TexturingConfiguration texturingConfiguration, AttributesConfiguration attributesConfiguration, UniformsConfiguration uniformsConfiguration,
 			PipelineConfiguration pipelineConfiguration, Matrix4f objectMatrix, int start, int count)
 	{
@@ -32,31 +32,30 @@ public class RenderingCommandSingleInstance extends RenderingCommandImplementati
 	{
 		//Debug
 		throw new UnsupportedOperationException();
-		
-		/*assert mergeWith.canMerge(this);
 
+		/*assert mergeWith.canMerge(this);
+		
 		for (Matrix4f foreightObject : mergeWith.getObjectsMatrices())
 			objectMatrices.add(foreightObject);
-
+		
 		return this;*/
 	}
 
-	@Override
-	public void render(RenderingInterface renderingInterface) throws RenderingException
+	private void setup(RenderingInterface renderingInterface) throws RenderingException
 	{
 		//Make sure to use the right shader
-		((ShaderProgram)shaderInterface).use();
-		
+		((ShaderProgram) shaderInterface).use();
+
 		//Setups vertex attributes
 		this.attributesConfiguration.setup(renderingInterface);
-		
+
 		//Bind required textures
 		this.texturingConfiguration.setup(renderingInterface);
-		
+
 		//Compute & send the object matrix
-		if(objectMatrix != null)
+		if (objectMatrix != null)
 		{
-			((ShaderProgram)this.shaderInterface).applyUniformAttribute("objectMatrix", objectMatrix);
+			((ShaderProgram) this.shaderInterface).applyUniformAttribute("objectMatrix", objectMatrix);
 			//this.shaderInterface.setUniformMatrix4f("objectMatrix", objectMatrix);
 			Matrix4f.invert(objectMatrix, temp);
 			Matrix4f.transpose(temp, temp);
@@ -72,18 +71,24 @@ public class RenderingCommandSingleInstance extends RenderingCommandImplementati
 			normal.m20 = temp.m20;
 			normal.m21 = temp.m21;
 			normal.m22 = temp.m22;
-			((ShaderProgram)this.shaderInterface).applyUniformAttribute("objectMatrixNormal", normal);
+			((ShaderProgram) this.shaderInterface).applyUniformAttribute("objectMatrixNormal", normal);
 			//this.shaderInterface.setUniformMatrix3f("objectMatrixNormal", normal);
 		}
-		
+
 		//Setup pipeline state
 		this.pipelineConfiguration.setup(renderingInterface);
-		
+
 		//Updates uniforms
 		this.uniformsConfiguration.setup(renderingInterface);
-		
+
+	}
+
+	@Override
+	public void render(RenderingInterface renderingInterface) throws RenderingException
+	{
+		setup(renderingInterface);
+
 		//Do the draw call
 		GLCalls.drawArrays_(modes[primitive.ordinal()], start, count);
-		
 	}
 }

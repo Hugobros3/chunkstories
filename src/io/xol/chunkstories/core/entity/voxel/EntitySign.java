@@ -86,7 +86,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 				diffuse.setLinearFiltering(false);
 				renderingContext.bindAlbedoTexture(diffuse);
 				renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
-				renderingContext.currentShader().setUniform3f("objectPosition", entitySign.getLocation());
+				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
 
 				int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
 
@@ -101,6 +101,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 
 				Matrix4f mutrix = new Matrix4f();
 				mutrix.translate(new Vector3f(0.5f, 0.0f, 0.5f));
+				mutrix.translate(entitySign.getLocation().castToSimplePrecision());
 				mutrix.rotate((float) Math.PI * 2.0f * (-facing) / 16f, new Vector3f(0, 1, 0));
 				if (isPost)
 					mutrix.translate(new Vector3f(0.0f, 0.0f, -0.5f));

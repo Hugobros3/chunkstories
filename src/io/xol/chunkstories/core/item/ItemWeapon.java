@@ -1,0 +1,256 @@
+package io.xol.chunkstories.core.item;
+
+import java.util.Iterator;
+
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.ClientSideController;
+import io.xol.chunkstories.api.entity.Controller;
+import io.xol.chunkstories.api.entity.DamageCause;
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.core.entity.EntityPlayer;
+import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
+import io.xol.chunkstories.core.events.ClientInputPressedEvent;
+import io.xol.chunkstories.core.item.renderers.ObjViewModelRenderer;
+import io.xol.chunkstories.item.ItemPile;
+import io.xol.chunkstories.item.renderer.LegacyDogeZItemRenderer;
+import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.voxel.Voxels;
+import io.xol.engine.math.lalgb.Vector3d;
+
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
+public class ItemWeapon extends Item implements DamageCause
+{
+	final boolean automatic;
+	final double rpm;
+	final String soundName;
+	final double damage;
+	final double accuracy;
+	final double range;
+	final double soundRange;
+	final int shots;
+	final double shake;
+
+	private boolean wasTriggerPressedLastTick = false;
+	private long lastShot = 0L;
+
+	public ItemWeapon(ItemType type)
+	{
+		super(type);
+
+		automatic = type.getProperty("fireMode", "semiauto").equals("fullauto");
+		rpm = Double.parseDouble(type.getProperty("roundsPerMinute", "60.0"));
+		soundName = type.getProperty("fireSound", "sounds/sfx/shoot.ogg");
+
+		damage = Double.parseDouble(type.getProperty("damage", "1.0"));
+		accuracy = Double.parseDouble(type.getProperty("accuracy", "0.0"));
+		range = Double.parseDouble(type.getProperty("range", "1000.0"));
+		soundRange = Double.parseDouble(type.getProperty("soundRange", "1000.0"));
+
+		shots = Integer.parseInt(type.getProperty("shots", "1"));
+		shake = Double.parseDouble(type.getProperty("shake", accuracy + ""));
+
+		String modelName = type.getProperty("modelObj", "none");
+		if (!modelName.equals("none"))
+		{
+			itemRenderer = new ObjViewModelRenderer(this, modelName, type.getProperty("modelDiffuse", "none"));
+		}
+		else
+			itemRenderer = new LegacyDogeZItemRenderer(this);
+	}
+
+	/**
+	 * Should be called when the owner has this item selected
+	 * 
+	 * @param owner
+	 */
+	public void tickInHand(Entity owner, ItemPile itemPile)
+	{
+		if (owner instanceof EntityControllable && ((EntityControllable) owner).getController() != null)
+		{
+			EntityControllable owner2 = ((EntityControllable) owner);
+			Controller controller = owner2.getController();
+
+			//For now only client-side players can trigger shooting actions
+			if (controller instanceof ClientSideController)
+			{
+				if (!((ClientSideController) controller).hasFocus())
+					return;
+				if (controller.getInputsManager().getInputByName("mouse.left").isPressed())
+				{
+					if ((automatic || !wasTriggerPressedLastTick) && (System.currentTimeMillis() - lastShot) / 1000.0d > 1.0 / (rpm / 60.0))
+					{
+
+						ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
+						Client.getInstance().getPluginsManager().fireEvent(event);
+						lastShot = System.currentTimeMillis();
+					}
+				}
+				wasTriggerPressedLastTick = controller.getInputsManager().getInputByName("mouse.left").isPressed();
+			}
+		}
+	}
+
+	@Override
+	public boolean handleInteraction(Entity user, ItemPile pile, Input input, Controller controller)
+	{
+		//Don't do anything with the left mouse click
+		if (input.getName().startsWith("mouse."))
+		{
+			//System.out.println(input);
+			return true;
+		}
+		if (input.getName().equals("shootGun"))
+		{
+			if (user instanceof EntityLiving)
+			{
+				EntityLiving shooter = (EntityLiving) user;
+				//Jerk client view a bit
+				if (shooter.getWorld() instanceof WorldClient)
+				{
+					EntityComponentRotation rot = ((EntityLiving) user).getEntityRotationComponent();
+					rot.applyInpulse(shake * (Math.random() - 0.5) * 3.0, shake * -(Math.random() - 0.25) * 5.0);
+				}
+
+				//Play sounds
+				if (controller != null)
+					controller.getSoundManager().playSoundEffect(this.soundName, user.getLocation(), 1.0f, 1.0f).setAttenuationEnd((float) soundRange);
+
+
+				//Raytrace shot
+				Vector3d eyeLocation = new Vector3d(shooter.getLocation());
+				if (shooter instanceof EntityPlayer)
+					eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
+				
+				//For each shot
+				for (int ss = 0; ss < shots; ss++)
+				{
+					Vector3d direction = shooter.getDirectionLookingAt();
+					direction.add(new Vector3d(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
+					direction.normalize();
+					
+					//Find wall collision
+					Location shotBlock = user.getWorld().raytraceSolid(eyeLocation, direction, range);
+
+					Vector3d nearestLocation = null;
+
+					if (shotBlock != null)
+					{
+						Location shotBlockOuter = user.getWorld().raytraceSolidOuter(eyeLocation, direction, range);
+						if (shotBlockOuter != null)
+						{
+							Vector3d normal = shotBlockOuter.sub(shotBlock);
+
+							double NbyI2x = 2.0 * Vector3d.dot(direction, normal);
+							Vector3d NxNbyI2x = new Vector3d(normal);
+							NxNbyI2x.scale(NbyI2x);
+
+							Vector3d reflected = new Vector3d();
+							Vector3d.sub(direction, NxNbyI2x, reflected);
+
+							//shotBlock.setX(shotBlock.getX() + 1);
+							int data = user.getWorld().getVoxelData(shotBlock);
+							Voxel voxel = Voxels.get(data);
+
+							//This seems fine
+
+							for (CollisionBox box : voxel.getTranslatedCollisionBoxes(user.getWorld(), (int) shotBlock.getX(), (int) shotBlock.getY(), (int) shotBlock.getZ()))
+							{
+								Vector3d thisLocation = box.collidesWith(eyeLocation, direction);
+								if (thisLocation != null)
+								{
+									if (nearestLocation == null || nearestLocation.distanceTo(eyeLocation) > thisLocation.distanceTo(eyeLocation))
+										nearestLocation = thisLocation;
+								}
+							}
+
+							//Position adjustements so shot blocks always shoot proper particles
+							if (shotBlock.getX() - nearestLocation.getX() <= -1.0)
+								nearestLocation.add(-0.01, 0, 0);
+							if (shotBlock.getY() - nearestLocation.getY() <= -1.0)
+								nearestLocation.add(0, -0.01, 0);
+							if (shotBlock.getZ() - nearestLocation.getZ() <= -1.0)
+								nearestLocation.add(0, 0, -0.01);
+
+							for (int i = 0; i < 25; i++)
+							{
+								Vector3d untouchedReflection = new Vector3d(reflected);
+
+								Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+								random.scale(0.5);
+								untouchedReflection.add(random);
+								untouchedReflection.normalize();
+
+								untouchedReflection.scale(0.25);
+
+								Vector3d ppos = new Vector3d(nearestLocation);
+								//ppos.add(untouchedReflection);
+								//FragmentData fragParticule = ((FragmentData)shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("voxel_frag"), ppos));
+								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
+								//fragParticule.setVelocity(untouchedReflection);
+								//fragParticule.setData(data);
+							}
+
+							controller.getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");
+						}
+					}
+
+					//Hitreg takes place on server bois
+					if (shooter.getWorld() instanceof WorldMaster)
+					{
+						//Iterate over each found entities
+						Iterator<Entity> shotEntities = user.getWorld().rayTraceEntities(eyeLocation, direction, 256f);
+						while (shotEntities.hasNext())
+						{
+							Entity shotEntity = shotEntities.next();
+							//Don't shoot itself & only living things get shot
+							if (!shotEntity.equals(shooter) && shotEntity instanceof EntityLiving)
+							{
+								//Get hit location
+								Vector3d hitPoint = shotEntity.collidesWith(eyeLocation, direction);
+
+								//Deal damage
+								((EntityLiving) shotEntity).damage(shooter, (float) damage);
+
+								//Spawn blood particles
+								Vector3d bloodDir = direction.normalize().scale(0.25);
+								for (int i = 0; i < 25; i++)
+								{
+									Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+									random.scale(0.25);
+									random.add(bloodDir);
+
+									shooter.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("blood", hitPoint, random);
+									//((BloodData) shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("blood"), hitPoint)).setVelocity(random);
+								}
+
+								//Spawn blood on walls
+								if (nearestLocation != null)
+									shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3d(3.0), "blood");
+							}
+						}
+					}
+
+				}
+
+				controller.getParticlesManager().spawnParticleAtPosition("muzzle", eyeLocation);
+				//shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("muzzle"), eyeLocation);
+				//shooter.getWorld().addParticle(new ParticleMuzzleFlash(shooter.getWorld(), eyeLocation));
+				return (shooter.getWorld() instanceof WorldMaster);
+			}
+		}
+		return false;
+	}
+
+}

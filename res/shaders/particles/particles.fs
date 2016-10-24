@@ -62,7 +62,7 @@ void main(){
 	//Diffuse G-Buffer
 	gl_FragData[0] = vec4(baseColor,alpha);
 	//Normal G-Buffer + reflections
-	gl_FragData[1] = vec4(encodeNormal(vec3(0.0, 0.0, 1.0)).xy, 0.0, 0.0);
+	gl_FragData[1] = vec4(encodeNormal(vec3(0.0, 0.0, 1.0)).xy, 0.0, 1.0);
 	//Light color G-buffer
 	gl_FragData[2] = vec4(lightMapCoords, 0.0,1.0);
 }

@@ -195,13 +195,13 @@ public class RenderingContext implements RenderingInterface
 	{
 		return trueTypeFontRenderer;
 	}
-	
+
 	@Override
 	public Matrix4f setObjectMatrix(Matrix4f objectMatrix)
 	{
 		if (objectMatrix == null)
 			objectMatrix = new Matrix4f();
-		currentObjectMatrix = objectMatrix;
+		currentObjectMatrix = objectMatrix.clone();
 		return this.currentObjectMatrix;
 	}
 
@@ -303,14 +303,19 @@ public class RenderingContext implements RenderingInterface
 		RenderingCommandImplementation command = new RenderingCommandSingleInstance(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix,
 				startAt, count);
 
+		queue(command);
+
+		return command;
+	}
+
+	private void queue(RenderingCommandImplementation command)
+	{
 		//Limit to how many commands it may stack
 		if (queuedCommandsIndex >= 1024)
 			flush();
 
 		queuedCommands[queuedCommandsIndex] = command;
 		queuedCommandsIndex++;
-
-		return command;
 	}
 
 	@Override
@@ -330,7 +335,7 @@ public class RenderingContext implements RenderingInterface
 		{
 			e.printStackTrace();
 		}
-		
+
 		queuedCommandsIndex = 0;
 	}
 

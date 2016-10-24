@@ -136,6 +136,16 @@ public class ItemTypes
 						}
 					}
 				}
+				else
+				{
+					//Unknown property ? add it to the unknown ones !
+					if(line.contains(": "))
+					{
+						String propertyName = line.split(": ")[0];
+						String value = line.split(": ")[1];
+						currentItemType.setup(propertyName, value);
+					}
+				}
 			}
 			reader.close();
 		}

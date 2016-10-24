@@ -17,9 +17,6 @@ import static org.lwjgl.opengl.GL11.*;
 
 public abstract class RenderingCommandImplementation implements RenderingCommand
 {
-	//For merging draw calls
-	//List<Matrix4f> objectMatrices = new LinkedList<Matrix4f>();
-
 	//Draw call paramters
 	protected Primitive primitive;
 	int start, count;
@@ -105,52 +102,6 @@ public abstract class RenderingCommandImplementation implements RenderingCommand
 
 		return true;
 	}
-
-	/*@Override
-	public void render(RenderingInterface renderingInterface) throws RenderingException
-	{
-		//Make sure to use the right shader
-		((ShaderProgram)shaderInterface).use();
-		
-		//Setups vertex attributes
-		this.attributesConfiguration.setup(renderingInterface);
-		
-		//Bind required textures
-		this.texturingConfiguration.setup(renderingInterface);
-		
-		//Compute & send the object matrix
-		Matrix4f objectMatrix = renderingInterface.getObjectMatrix();
-		if(objectMatrix != null)
-		{
-			this.shaderInterface.setUniformMatrix4f("objectMatrix", objectMatrix);
-			Matrix4f.invert(objectMatrix, temp);
-			Matrix4f.transpose(temp, temp);
-			//TODO make a clean function for this
-			normal.m00 = temp.m00;
-			normal.m01 = temp.m01;
-			normal.m02 = temp.m02;
-
-			normal.m10 = temp.m10;
-			normal.m11 = temp.m11;
-			normal.m12 = temp.m12;
-
-			normal.m20 = temp.m20;
-			normal.m21 = temp.m21;
-			normal.m22 = temp.m22;
-			this.shaderInterface.setUniformMatrix3f("objectMatrixNormal", normal);
-		}
-		
-		//Setup pipeline state
-		this.pipelineConfiguration.setup(renderingInterface);
-		
-		//Updates uniforms
-		this.uniformsConfiguration.setup(renderingInterface);
-		
-		//Do the draw call
-		GLCalls.drawArrays_(modes[primitive.ordinal()], start, count);
-		
-	}*/
-	
 
 	@Override
 	public Primitive getPrimitive()

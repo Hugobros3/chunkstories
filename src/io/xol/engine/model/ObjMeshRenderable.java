@@ -139,22 +139,6 @@ public class ObjMeshRenderable implements Renderable
 
 	private void prepareDraw(RenderingInterface renderingContext)
 	{
-		//System.out.println("slt");
-		
-		//renderingContext.resetAllVertexAttributesLocations();
-		//renderingContext.disableUnusedVertexAttributes();
-
-		/*int vertexIn = renderingContext.currentShader().getVertexAttributeLocation("vertexIn");
-		int texCoordIn = renderingContext.currentShader().getVertexAttributeLocation("texCoordIn");
-		int normalIn = renderingContext.currentShader().getVertexAttributeLocation("normalIn");
-
-		renderingContext.enableVertexAttribute(vertexIn);
-		renderingContext.enableVertexAttribute(texCoordIn);
-		if (normalIn != -1)
-			renderingContext.enableVertexAttribute(normalIn);*/
-
-		//System.out.println("ColorIn in is at :"+renderingContext.getCurrentShader().getVertexAttributeLocation("colorIn"));
-
 		renderingContext.currentShader().setUniform1f("useColorIn", 0.0f);
 		renderingContext.currentShader().setUniform1f("useNormalIn", 1.0f);
 
@@ -165,17 +149,8 @@ public class ObjMeshRenderable implements Renderable
 		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		
 		renderingContext.bindAttribute("texCoordIn", texCoordDataOnGpu.asAttributeSource(VertexFormat.FLOAT, 2));
-		//texCoordDataOnGpu.bind();
-		//renderingContext.setVertexAttributePointerLocation(texCoordIn, 2, GL_FLOAT, false, 0, 0);
+		renderingContext.bindAttribute("normalIn", normalsDataOnGpu.asAttributeSource(VertexFormat.FLOAT, 3));
 		
-		//if (normalIn != -1)
-		{
-
-			renderingContext.bindAttribute("normalIn", normalsDataOnGpu.asAttributeSource(VertexFormat.FLOAT, 3));
-			//normalsDataOnGpu.bind();
-			//renderingContext.setVertexAttributePointerLocation(normalIn, 3, GL_FLOAT, true, 0, 0);
-		}
-
 	}
 
 	Texture2D instancesDataTexture = new GBufferTexture(TextureFormat.RGBA_32F, 32, 32);

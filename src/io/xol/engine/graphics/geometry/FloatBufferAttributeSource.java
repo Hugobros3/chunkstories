@@ -8,11 +8,16 @@ import java.nio.FloatBuffer;
 
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 
+<<<<<<< HEAD
 import static org.lwjgl.opengl.GL20.*;
 
 @Deprecated
+=======
+>>>>>>> refs/remotes/ssh-xolio/master
 public class FloatBufferAttributeSource implements AttributeSource
 {
+	static VerticesObject sorryILied = new VerticesObject();
+	
 	FloatBuffer buffer;
 	int dimensions, stride;
 
@@ -31,8 +36,10 @@ public class FloatBufferAttributeSource implements AttributeSource
 	@Override
 	public void setup(int gl_AttributeLocation)
 	{
-		VerticesObject.unbind();
-		glVertexAttribPointer(gl_AttributeLocation, dimensions, false, stride, buffer);
+		sorryILied.uploadData(buffer);
+		sorryILied.asAttributeSource(VertexFormat.FLOAT, dimensions, stride, 0L).setup(gl_AttributeLocation);
+		//VerticesObject.unbind();
+		//glVertexAttribPointer(gl_AttributeLocation, dimensions, false, stride, buffer);
 	}
 
 }

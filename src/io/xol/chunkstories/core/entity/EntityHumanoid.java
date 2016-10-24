@@ -13,8 +13,8 @@ import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.core.item.ItemAk47;
 import io.xol.chunkstories.core.item.ItemVoxel;
+import io.xol.chunkstories.core.item.ItemWeapon;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.Voxels;
@@ -79,7 +79,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 					//BVHAnimation animation = BVHLibrary.getAnimation("res/animations/human/standstill.bvh");
 					if (selectedItemPile != null)
 					{
-						if (selectedItemPile.getItem() instanceof ItemAk47)
+						if (selectedItemPile.getItem() instanceof ItemWeapon)
 							return BVHLibrary.getAnimation("./animations/human/holding-rifle.bvh");
 						else
 							return BVHLibrary.getAnimation("./animations/human/holding-item.bvh");
@@ -169,8 +169,9 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				if (EntityHumanoid.this instanceof EntityWithSelectedItem)
 					selectedItem = ((EntityWithSelectedItem) EntityHumanoid.this).getSelectedItemComponent().getSelectedItem();
 
-				if (Arrays.asList("boneArmLU", "boneArmLD").contains(boneName) && selectedItem != null && selectedItem.getItem() instanceof ItemVoxel)
-					return true;
+				if (Arrays.asList("boneArmRU", "boneArmRD").contains(boneName) && selectedItem != null)
+					if(selectedItem.getItem() instanceof ItemVoxel)
+						return true;
 				
 				if (Arrays.asList("boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD").contains(boneName) && selectedItem != null)
 					return false;
@@ -213,8 +214,8 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				
 				entity.cachedSkeleton.lodUpdate(renderingContext);
 
-				int bl = entity.getWorld().getBlocklightLevelLocation(location);
-				int sl = entity.getWorld().getSunlightLevelLocation(location);
+				//int bl = entity.getWorld().getBlocklightLevelLocation(location);
+				//int sl = entity.getWorld().getSunlightLevelLocation(location);
 				
 				Matrix4f matrix = new Matrix4f();
 				matrix.translate(location.castToSimplePrecision());

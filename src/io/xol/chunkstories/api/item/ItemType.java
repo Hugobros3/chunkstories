@@ -13,15 +13,25 @@ public interface ItemType
 	/**
 	 * @return Returns the associated ID in the .items files
 	 */
-	int getID();
+	public int getID();
 	
-	String getInternalName();
+	/**
+	 * @return The name this item is declared by
+	 */
+	public String getInternalName();
 
-	int getSlotsWidth();
+	public int getSlotsWidth();
 
-	int getSlotsHeight();
+	public int getSlotsHeight();
 
-	int getMaxStackSize();
+	public int getMaxStackSize();
+	
+	/**
+	 * @param propertyName Name of the property to look for
+	 * @param defaultValue The value to return if the above isn't present
+	 * @return Arbitrary properties defined in .items files
+	 */
+	public String getProperty(String propertyName, String defaultValue);
 
-	Item newItem();
+	public Item newItem();
 }
