@@ -30,7 +30,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ItemWeapon extends Item implements DamageCause
+public class ItemFirearm extends Item implements DamageCause
 {
 	final boolean automatic;
 	final double rpm;
@@ -45,7 +45,7 @@ public class ItemWeapon extends Item implements DamageCause
 	private boolean wasTriggerPressedLastTick = false;
 	private long lastShot = 0L;
 
-	public ItemWeapon(ItemType type)
+	public ItemFirearm(ItemType type)
 	{
 		super(type);
 
@@ -108,7 +108,6 @@ public class ItemWeapon extends Item implements DamageCause
 		//Don't do anything with the left mouse click
 		if (input.getName().startsWith("mouse."))
 		{
-			//System.out.println(input);
 			return true;
 		}
 		if (input.getName().equals("shootGun"))
@@ -126,7 +125,6 @@ public class ItemWeapon extends Item implements DamageCause
 				//Play sounds
 				if (controller != null)
 					controller.getSoundManager().playSoundEffect(this.soundName, user.getLocation(), 1.0f, 1.0f).setAttenuationEnd((float) soundRange);
-
 
 				//Raytrace shot
 				Vector3d eyeLocation = new Vector3d(shooter.getLocation());

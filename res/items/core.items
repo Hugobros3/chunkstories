@@ -10,7 +10,7 @@ item 2 item_voxel_1x2 io.xol.chunkstories.core.item.ItemVoxel
 	height: 2
 end
 
-item 128 weapon_ak47 io.xol.chunkstories.core.item.ItemWeapon
+item 128 weapon_ak47 io.xol.chunkstories.core.item.ItemFirearm
 	width: 3
 	height: 3
 	maxStackSize: 1
@@ -26,7 +26,7 @@ item 128 weapon_ak47 io.xol.chunkstories.core.item.ItemWeapon
 	modelDiffuse: ./models/ak47.hq.png
 end
 
-item 129 mag_ak47 io.xol.chunkstories.core.item.ItemAk47Magazine
+item 129 mag_ak47 io.xol.chunkstories.core.item.ItemFirearmMagazine
 	width: 2
 	height: 2
 	maxStackSize: 30
