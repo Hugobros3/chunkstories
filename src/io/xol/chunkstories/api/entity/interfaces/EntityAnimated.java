@@ -1,7 +1,6 @@
 package io.xol.chunkstories.api.entity.interfaces;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.core.entity.components.EntityComponentAnimation;
 import io.xol.engine.animation.SkeletonAnimator;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -10,7 +9,5 @@ import io.xol.engine.animation.SkeletonAnimator;
 
 public interface EntityAnimated extends Entity
 {
-	public EntityComponentAnimation getAnimationComponent();
-	
 	public SkeletonAnimator getAnimatedSkeleton();
 }

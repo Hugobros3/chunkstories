@@ -10,7 +10,6 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.core.entity.components.EntityComponentAnimation;
 import io.xol.chunkstories.core.entity.components.EntityComponentHealth;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.core.events.EntityDamageEvent;
@@ -34,7 +33,6 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	long deathDespawnTimer = 600;
 
 	EntityComponentRotation entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
-	EntityComponentAnimation entityAnimationComponent = new EntityComponentAnimation(this);
 	EntityComponentHealth entityHealthComponent;
 
 	protected SkeletonAnimator animatedSkeleton;
@@ -51,11 +49,6 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	public SkeletonAnimator getAnimatedSkeleton()
 	{
 		return animatedSkeleton;
-	}
-
-	public EntityComponentAnimation getAnimationComponent()
-	{
-		return entityAnimationComponent;
 	}
 
 	@Override

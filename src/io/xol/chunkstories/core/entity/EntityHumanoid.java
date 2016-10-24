@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemVoxel;
-import io.xol.chunkstories.core.item.ItemWeapon;
+import io.xol.chunkstories.core.item.ItemFirearm;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.Voxels;
@@ -79,7 +79,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 					//BVHAnimation animation = BVHLibrary.getAnimation("res/animations/human/standstill.bvh");
 					if (selectedItemPile != null)
 					{
-						if (selectedItemPile.getItem() instanceof ItemWeapon)
+						if (selectedItemPile.getItem() instanceof ItemFirearm)
 							return BVHLibrary.getAnimation("./animations/human/holding-rifle.bvh");
 						else
 							return BVHLibrary.getAnimation("./animations/human/holding-item.bvh");
