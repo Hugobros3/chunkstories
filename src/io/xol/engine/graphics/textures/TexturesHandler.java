@@ -73,8 +73,16 @@ public class TexturesHandler
 			if(texture instanceof Texture2DAsset)
 			{
 				Asset newAsset = Mods.getAsset(texture.getName());
-				((Texture2DAsset) texture).setAsset(newAsset);
-				((Texture2DAsset) texture).loadTextureFromAsset();
+				if(newAsset != null)
+				{
+					((Texture2DAsset) texture).setAsset(newAsset);
+					((Texture2DAsset) texture).loadTextureFromAsset();
+				}
+				else
+				{
+					texture.destroy();
+					loadedTextures.remove(texture);
+				}
 			}
 			else if(texture instanceof Texture2DFile)
 			{
