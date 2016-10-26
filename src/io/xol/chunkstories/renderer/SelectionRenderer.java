@@ -30,12 +30,8 @@ public class SelectionRenderer
 		int y = (int) location.getY();
 		int z = (int) location.getZ();
 		glColor4f(1, 1, 1, 1.0f);
-		glLineWidth(2);
-		glDisable(GL_CULL_FACE);
-		GL11.glEnable(GL11.GL_BLEND);
 		//GL11.glBlendFunc(GL11.GL_ONE_MINUS_SRC_COLOR, GL11.GL_ZERO);
 		//GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
-		GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
 		//GL11.glBlendEquation(GL11.);
 		glBegin(GL_LINES);
 		VoxelContext bri = new VoxelContext(world, x, y, z);
@@ -48,8 +44,6 @@ public class SelectionRenderer
 			cubeVertices((float) box.xpos, (float) box.ypos, (float) box.zpos, (float) box.xw, (float) box.h, (float) box.zw);
 		glEnd();
 		glColor4f(1, 1, 1, 1);
-		GL14.glBlendEquation(GL14.GL_FUNC_ADD);
-		GL11.glDisable(GL11.GL_BLEND);
 	}
 
 	public static void cubeVertices(float x, float y, float z, float xw, float h, float zw)

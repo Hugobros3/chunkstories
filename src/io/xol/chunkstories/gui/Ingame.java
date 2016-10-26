@@ -165,6 +165,8 @@ public class Ingame extends OverlayableScene
 		{
 			int id, data;
 			int drawDebugDist = 6;
+			cameraPosition.negate();
+			
 			for (int i = ((int) cameraPosition.getX()) - drawDebugDist; i <= ((int) cameraPosition.getX()) + drawDebugDist; i++)
 				for (int j = ((int) cameraPosition.getY()) - drawDebugDist; j <= ((int) cameraPosition.getY()) + drawDebugDist; j++)
 					for (int k = ((int) cameraPosition.getZ()) - drawDebugDist; k <= ((int) cameraPosition.getZ()) + drawDebugDist; k++)

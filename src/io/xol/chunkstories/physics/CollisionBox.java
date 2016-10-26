@@ -273,18 +273,10 @@ public class CollisionBox implements Collidable
 
 	public void debugDraw(float r, float g, float b, float a)
 	{
-		// glTranslated(xpos-xw/2,ypos,zpos-zw/2);
-
-		//System.out.println("Debug drawing at "+xpos+" y:"+ypos+" z:"+(zpos-zw/2));
-
-		glDisable(GL_TEXTURE_2D);
 		glColor4f(r, g, b, a);
-		glLineWidth(2);
+		glLineWidth(1);
 		glDisable(GL_CULL_FACE);
-		//glDepthFunc(GL_LEQUAL);
-		// glDisable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
-		// glBlendFunc(GL_ONE_MINUS_SRC_COLOR,GL_ONE);
+		
 		glBegin(GL_LINES);
 		glVertex3d(xpos - xw / 2, ypos, zpos - zw / 2);
 		glVertex3d(xpos + xw / 2, ypos, zpos - zw / 2);

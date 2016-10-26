@@ -89,35 +89,21 @@ public class OverlayRenderer
 	{
 		RenderingContext renderingContext = GameWindowOpenGL.getInstance().getRenderingContext();
 		
-		//System.out.println("ntm");
-		
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.MIX);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		
-		/*glDisable(GL_CULL_FACE);
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		GL11.glDisable(GL11.GL_ALPHA_TEST);
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glDepthFunc(GL11.GL_LEQUAL);*/
 		ShaderInterface overlayProgram = renderingContext.useShader("overlay");//ShadersLibrary.getShaderProgram("overlay");
-		//GameWindowOpenGL.getInstance().getRenderingContext().setCurrentShader(overlayProgram);
-		//overlayProgram.use(true);
 		camera.setupShader(overlayProgram);
 		overlayProgram.setUniform4f("colorIn", color);
 		
-		
-		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, GL_FLOAT, false, 0, 0);
 		data.flip();
-		//glBindBuffer(GL_ARRAY_BUFFER, 0);
 		
 		renderingContext.bindAttribute("vertexIn", new FloatBufferAttributeSource(data, 3));
-		//renderingContext.setVertexAttributePointerLocation(vertexIn, 3, false, 0, data);
 		
 		renderingContext.draw(mode == GL_TRIANGLES ? Primitive.TRIANGLE : Primitive.LINE, 0, size);
-		//GLCalls.drawArrays(mode, 0, size);
 		renderingContext.setBlendMode(BlendMode.DISABLED);
-		//GL11.glDisable(GL11.GL_BLEND);
+		renderingContext.flush();
 		data.clear();
 		size = 0;
 	}
