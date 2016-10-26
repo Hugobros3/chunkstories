@@ -32,7 +32,8 @@ public class WorldInfo
 	
 	public WorldInfo(String name, String seed, String description, WorldSize size, String generator)
 	{
-		this.setName(name);
+		this.internalName = name;
+		this.name = name;
 		this.setSeed(seed);
 		this.setDescription(description);
 		this.setSize(size);
