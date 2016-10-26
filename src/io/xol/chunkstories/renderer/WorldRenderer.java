@@ -1642,7 +1642,7 @@ public class WorldRenderer
 		Texture2D vegetationTexture = null;
 		if (world.getFolderPath() != null)
 			vegetationTexture = TexturesHandler.getTexture(world.getFolderPath() + "/grassColor.png");
-		if (vegetationTexture == TexturesHandler.nullTexture())
+		if (vegetationTexture == null || vegetationTexture == TexturesHandler.nullTexture())
 			vegetationTexture = TexturesHandler.getTexture("./textures/environement/grassColor.png");
 		vegetationTexture.setMipMapping(true);
 		vegetationTexture.setLinearFiltering(true);
