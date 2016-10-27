@@ -16,6 +16,7 @@ import java.util.List;
 import org.lwjgl.input.Keyboard;
 
 import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
@@ -150,10 +151,18 @@ public class Chat
 					if (inputBox.text.contains(" "))
 					{
 						int id = Integer.parseInt(inputBox.text.split(" ")[1]);
-						Entity test = Entities.newEntity(Client.world, (short) id);
-						Entity player = Client.getInstance().getClientSideController().getControlledEntity();
-						test.setLocation(player.getLocation());
-						Client.world.addEntity(test);
+						int count = 1;
+						if(inputBox.text.split(" ").length > 2)
+							count = Integer.parseInt(inputBox.text.split(" ")[2]);
+						
+						for(int ii = 0; ii < count; ii++)
+							for(int jj = 0; jj < count; jj++)
+							{
+								Entity test = Entities.newEntity(Client.world, (short) id);
+								Entity player = Client.getInstance().getClientSideController().getControlledEntity();
+								test.setLocation(new Location(Client.world, player.getLocation().clone().add(ii * 3, 0, jj * 3)));
+								Client.world.addEntity(test);
+							}
 					}
 				}
 				else if (inputBox.text.startsWith("/locbutcher"))
@@ -174,7 +183,15 @@ public class Chat
 				{
 					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
 					String itemName = inputBox.text.split(" ")[1];
-					((EntityPlayer) controlledEntity).getInventory().addItemPile(new ItemPile(ItemTypes.getItemTypeByName(itemName).newItem()));
+					
+					try{
+					ItemPile it = new ItemPile(ItemTypes.getItemTypeByName(itemName).newItem());
+					((EntityPlayer) controlledEntity).getInventory().addItemPile(it);
+					}
+					catch(NullPointerException npe)
+					{
+						
+					}
 				}
 				else if (inputBox.text.startsWith("/locclearinv"))
 				{

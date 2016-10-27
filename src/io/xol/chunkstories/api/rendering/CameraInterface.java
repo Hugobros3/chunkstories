@@ -18,4 +18,6 @@ public interface CameraInterface
 	public Vector3f getViewDirection();
 
 	public Vector3d getCameraPosition();
+
+	public Vector3f transform3DCoordinate(Vector3f vector3f);
 }

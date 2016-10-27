@@ -58,7 +58,7 @@ import io.xol.chunkstories.renderer.lights.LightsRenderer;
 import io.xol.chunkstories.renderer.sky.SkyRenderer;
 import io.xol.chunkstories.renderer.terrain.FarTerrainRenderer;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
+import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
@@ -1303,8 +1303,8 @@ public class WorldRenderer
 		while (ei.hasNext())
 		{
 			e = ei.next();
-			if (e instanceof EntityHUD)
-				((EntityHUD) e).drawHUD(renderingContext);
+			if (e instanceof EntityOverlay)
+				((EntityOverlay) e).drawEntityOverlay(renderingContext);
 		}
 	}
 

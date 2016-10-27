@@ -2,9 +2,6 @@ package io.xol.chunkstories.renderer;
 
 import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
 
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL14;
-
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.physics.CollisionBox;

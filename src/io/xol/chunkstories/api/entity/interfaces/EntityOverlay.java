@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.entity.interfaces;
 
-import io.xol.engine.graphics.RenderingContext;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -9,7 +9,7 @@ import io.xol.engine.graphics.RenderingContext;
 /**
  * An entity that draws 2d stuff on screen upon rendering
  */
-public interface EntityHUD
+public interface EntityOverlay
 {
-	public abstract void drawHUD(RenderingContext renderingContext);
+	public abstract void drawEntityOverlay(RenderingInterface renderingInterface);
 }

@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
-import io.xol.chunkstories.api.entity.interfaces.EntityHUD;
+import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
@@ -28,6 +28,8 @@ import io.xol.chunkstories.core.entity.components.EntityComponentFlying;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentName;
 import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
+import io.xol.chunkstories.core.item.ItemFirearm;
+import io.xol.chunkstories.core.item.ItemOverlay;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
 import io.xol.chunkstories.item.ItemPile;
@@ -37,7 +39,6 @@ import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -50,7 +51,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 /**
  * Core/Vanilla player, has all the functionality you'd want from it
  */
-public class EntityPlayer extends EntityHumanoid implements EntityControllable, EntityHUD, EntityNameable, EntityWithInventory, EntityWithSelectedItem, EntityCreative, EntityFlying
+public class EntityPlayer extends EntityHumanoid implements EntityControllable, EntityOverlay, EntityNameable, EntityWithInventory, EntityWithSelectedItem, EntityCreative, EntityFlying
 {
 	//Add the controller component to whatever else the superclass may have
 	EntityComponentController controllerComponent = new EntityComponentController(this, this.getComponents().getLastComponent());
@@ -85,6 +86,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		selectedItemComponent = new EntityComponentSelectedItem(this, inventoryComponent);
 	}
 
+	//TODO Don't use fucking Mouse class
 	public void moveCamera()
 	{
 		if(isDead())
@@ -96,10 +98,18 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		float rotH = this.getEntityRotationComponent().getHorizontalRotation();
 		float rotV = this.getEntityRotationComponent().getVerticalRotation();
 
+		float modifier = 1.0f;
+		if(this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemFirearm)
+		{
+			ItemFirearm item = (ItemFirearm) this.getSelectedItemComponent().getSelectedItem().getItem();
+			if(item.isScoped())
+				modifier = 1.0f / item.getScopeSlow();
+		}
+		
 		if (lastPX != -1f)
 		{
-			rotH += (cPX - GameWindowOpenGL.windowWidth / 2) / 3f * RenderingConfig.mouseSensitivity;
-			rotV -= (cPY - GameWindowOpenGL.windowHeight / 2) / 3f * RenderingConfig.mouseSensitivity;
+			rotH += modifier * (cPX - GameWindowOpenGL.windowWidth / 2) / 3f * RenderingConfig.mouseSensitivity;
+			rotV -= modifier * (cPY - GameWindowOpenGL.windowHeight / 2) / 3f * RenderingConfig.mouseSensitivity;
 		}
 
 		lastPX = cPX;
@@ -318,7 +328,15 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			camera.rotationX = this.getEntityRotationComponent().getVerticalRotation();
 			camera.rotationY = this.getEntityRotationComponent().getHorizontalRotation();
 
-			camera.fov = (float) (RenderingConfig.fov + ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) > 0.07 * 0.07 ? ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) - 0.07 * 0.07) * 500 : 0));
+			float modifier = 1.0f;
+			if(this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemFirearm)
+			{
+				ItemFirearm item = (ItemFirearm) this.getSelectedItemComponent().getSelectedItem().getItem();
+				if(item.isScoped())
+					modifier = 1.0f / item.getScopeZoom();
+			}
+			
+			camera.fov = modifier * (float) (RenderingConfig.fov + ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) > 0.07 * 0.07 ? ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) - 0.07 * 0.07) * 500 : 0));
 			camera.alUpdate();
 		}
 	}
@@ -338,15 +356,29 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	}
 
 	@Override
-	public void drawHUD(RenderingContext renderingContext)
+	public void drawEntityOverlay(RenderingInterface renderingContext)
 	{
 		if (this.equals(Client.getInstance().getClientSideController().getControlledEntity()))
-			return; // Don't render your own tag
+		{
+			//If we're using an item that can render an overlay
+			if(this.getSelectedItemComponent().getSelectedItem() != null)
+			{
+				ItemPile pile = this.getSelectedItemComponent().getSelectedItem();
+				if(pile.getItem() instanceof ItemOverlay)
+					((ItemOverlay) pile.getItem()).drawItemOverlay(renderingContext);
+			}
+		
+			//We don't want to render our own tag do we ?
+			return;
+		}
+		
+		//Renders the nametag above the player heads
 		Vector3d pos = getLocation();
 		
 		//don't render tags too far out
 		if(pos.distanceTo(renderingContext.getCamera().getCameraPosition()) > 32f)
 			return;
+		
 		Vector3f posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3f((float) pos.getX(), (float) pos.getY() + 2.0f, (float) pos.getZ()));
 
 		float scale = posOnScreen.z;

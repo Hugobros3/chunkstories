@@ -13,10 +13,14 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMod
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
+
+//TODO: make interface for those
+import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
 import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.util.GuiRenderer;
+
 import io.xol.engine.math.lalgb.Matrix4f;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -127,4 +131,6 @@ public interface RenderingInterface
 	public void addLight(Light light);
 
 	public GuiRenderer getGuiRenderer();
+
+	public TrueTypeFontRenderer getTrueTypeFontRenderer();
 }

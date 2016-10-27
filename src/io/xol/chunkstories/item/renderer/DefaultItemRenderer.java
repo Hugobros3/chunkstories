@@ -73,10 +73,11 @@ public class DefaultItemRenderer implements ItemRenderer
 	
 	protected void draw3DPlane(RenderingInterface renderingInterface)
 	{
+		defaultPlane = null;
 		if(defaultPlane == null)
 		{
 			defaultPlane = new VerticesObject();
-			ByteBuffer buf = BufferUtils.createByteBuffer(4 * 3 * 6 + 4 * 2 * 6 + 4 * 3 * 6);
+			ByteBuffer buf = BufferUtils.createByteBuffer(2 * (4 * 3 * 6 + 4 * 2 * 6 + 4 * 3 * 6));
 			//Vertex pos data
 			buf.putFloat(0.0f);
 			buf.putFloat(-1.0f);
@@ -101,6 +102,32 @@ public class DefaultItemRenderer implements ItemRenderer
 			buf.putFloat(0.0f);
 			buf.putFloat(1.0f);
 			buf.putFloat(-1.0f);
+			//Flipped version
+
+			buf.putFloat(0.0f);
+			buf.putFloat(-1.0f);
+			buf.putFloat(1.0f);
+
+			buf.putFloat(0.0f);
+			buf.putFloat(-1.0f);
+			buf.putFloat(-1.0f);
+			
+			buf.putFloat(0.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(-1.0f);
+
+			buf.putFloat(0.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+
+			buf.putFloat(0.0f);
+			buf.putFloat(-1.0f);
+			buf.putFloat(1.0f);
+
+			buf.putFloat(0.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(-1.0f);
+			
 			//Vertex texcoord data
 			buf.putFloat(0.0f);
 			buf.putFloat(0.0f);
@@ -119,6 +146,26 @@ public class DefaultItemRenderer implements ItemRenderer
 
 			buf.putFloat(1.0f);
 			buf.putFloat(1.0f);
+			//Flipped
+
+			buf.putFloat(0.0f);
+			buf.putFloat(0.0f);
+
+			buf.putFloat(0.0f);
+			buf.putFloat(1.0f);
+
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+
+			buf.putFloat(1.0f);
+			buf.putFloat(0.0f);
+			
+			buf.putFloat(0.0f);
+			buf.putFloat(0.0f);
+
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			
 			//Normals
 			buf.putFloat(1.0f);
 			buf.putFloat(1.0f);
@@ -139,14 +186,36 @@ public class DefaultItemRenderer implements ItemRenderer
 			buf.putFloat(1.0f);
 			buf.putFloat(1.0f);
 			buf.putFloat(1.0f);
+			//And again
+
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			buf.putFloat(1.0f);
+			
 			
 			buf.flip();
 			defaultPlane.uploadData(buf);
 		}
 		
 		renderingInterface.bindAttribute("vertexIn", defaultPlane.asAttributeSource(VertexFormat.FLOAT, 3, 0, 0));
-		renderingInterface.bindAttribute("texCoordIn", defaultPlane.asAttributeSource(VertexFormat.FLOAT, 2, 0, 4 * 3 * 6));
-		renderingInterface.bindAttribute("normalIn", defaultPlane.asAttributeSource(VertexFormat.FLOAT, 3, 0, 4 * 3 * 6 + 4 * 2 * 6));
+		renderingInterface.bindAttribute("texCoordIn", defaultPlane.asAttributeSource(VertexFormat.FLOAT, 2, 0, 2 * 4 * 3 * 6));
+		renderingInterface.bindAttribute("normalIn", defaultPlane.asAttributeSource(VertexFormat.FLOAT, 3, 0, 2 *( 4 * 3 * 6 + 4 * 2 * 6)));
 		
 		renderingInterface.draw(Primitive.TRIANGLE, 0, 6);
 	}

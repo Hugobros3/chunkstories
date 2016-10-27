@@ -11,8 +11,11 @@ import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
@@ -24,13 +27,18 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.LegacyDogeZItemRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.Voxels;
+import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.fonts.TrueTypeFont;
+import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.Vector4f;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ItemFirearm extends Item implements DamageCause
+public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 {
 	final boolean automatic;
 	final double rpm;
@@ -41,9 +49,16 @@ public class ItemFirearm extends Item implements DamageCause
 	final double soundRange;
 	final int shots;
 	final double shake;
+	
+	final boolean scopedWeapon;
+	final float scopeZoom;
+	final float scopeSlow;
+	final String scopeTexture;
 
 	private boolean wasTriggerPressedLastTick = false;
 	private long lastShot = 0L;
+	
+	private boolean isScoped = false;
 
 	public ItemFirearm(ItemType type)
 	{
@@ -59,8 +74,14 @@ public class ItemFirearm extends Item implements DamageCause
 		soundRange = Double.parseDouble(type.getProperty("soundRange", "1000.0"));
 
 		shots = Integer.parseInt(type.getProperty("shots", "1"));
-		shake = Double.parseDouble(type.getProperty("shake", accuracy + ""));
+		shake = Double.parseDouble(type.getProperty("shake", accuracy / 4.0 + ""));
+		
+		scopedWeapon = type.getProperty("scoped", "false").equals("true");
+		scopeZoom = Float.parseFloat(type.getProperty("scopeZoom", "2.0"));
+		scopeSlow = Float.parseFloat(type.getProperty("scopeSlow", "2.0"));
 
+		scopeTexture = type.getProperty("scopeTexture", "./textures/gui/scope.png");
+		
 		String modelName = type.getProperty("modelObj", "none");
 		if (!modelName.equals("none"))
 		{
@@ -68,6 +89,40 @@ public class ItemFirearm extends Item implements DamageCause
 		}
 		else
 			itemRenderer = new LegacyDogeZItemRenderer(this);
+		
+		if(scopedWeapon)
+			itemRenderer = new ScopedWeaponItemRenderer(itemRenderer);
+	}
+	
+	class ScopedWeaponItemRenderer implements ItemRenderer {
+
+		ItemRenderer itemRenderer;
+		
+		public ScopedWeaponItemRenderer(ItemRenderer itemRenderer)
+		{
+			this.itemRenderer = itemRenderer;
+		}
+
+		@Override
+		public void renderItemInInventory(RenderingInterface renderingInterface, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
+		{
+			itemRenderer.renderItemInInventory(renderingInterface, pile, screenPositionX, screenPositionY, scaling);
+		}
+
+		@Override
+		public void renderItemInWorld(RenderingInterface renderingInterface, ItemPile pile, World world, Location location, Matrix4f handTransformation)
+		{
+			if(pile.inventory != null)
+			{
+				if(pile.inventory.getHolder() != null)
+				{
+					Entity clientEntity = Client.getInstance().getClientSideController().getControlledEntity();
+					if(isScoped() && clientEntity.equals(pile.inventory.getHolder()))
+						return;
+				}
+			}
+			itemRenderer.renderItemInWorld(renderingInterface, pile, world, location, handTransformation);
+		}
 	}
 
 	/**
@@ -91,12 +146,15 @@ public class ItemFirearm extends Item implements DamageCause
 				{
 					if ((automatic || !wasTriggerPressedLastTick) && (System.currentTimeMillis() - lastShot) / 1000.0d > 1.0 / (rpm / 60.0))
 					{
-
+						//Fire virtual input
 						ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
 						Client.getInstance().getPluginsManager().fireEvent(event);
 						lastShot = System.currentTimeMillis();
 					}
 				}
+				
+				isScoped = this.isScopedWeapon() && controller.getInputsManager().getInputByName("mouse.right").isPressed();
+				
 				wasTriggerPressedLastTick = controller.getInputsManager().getInputByName("mouse.left").isPressed();
 			}
 		}
@@ -251,4 +309,63 @@ public class ItemFirearm extends Item implements DamageCause
 		return false;
 	}
 
+	@Override
+	public void drawItemOverlay(RenderingInterface renderingInterface)
+	{
+		if(isScoped())
+			drawScope(renderingInterface);
+		
+		EntityLiving shooter = (EntityLiving) Client.getInstance().getClientSideController().getControlledEntity();
+		
+		Vector3d eyeLocation = new Vector3d(shooter.getLocation());
+		if (shooter instanceof EntityPlayer)
+			eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
+		
+		Vector3d direction = shooter.getDirectionLookingAt();
+		direction.add(new Vector3d(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
+		direction.normalize();
+		
+		Location shotBlock = shooter.getWorld().raytraceSolid(eyeLocation, direction, 256);
+		
+		String dist = "-1m";
+		if(shotBlock != null)
+			dist = Math.floor(shotBlock.distanceTo(shooter.getLocation()))+"m";
+		
+		renderingInterface.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, dist, 1);
+		
+	}
+
+	private void drawScope(RenderingInterface renderingInterface)
+	{
+		//Temp, rendering interface should provide us
+		int min = Math.min(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		int max = Math.max(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		
+		int bandwidth = (max - min) / 2;
+		int x = 0;
+		
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x+=bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4f(0.0, 0.0, 0.0, 1.0));
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x+=min, GameWindowOpenGL.windowHeight, 0, 1, 1, 0, TexturesHandler.getTexture(scopeTexture), false, false, null);
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x+=bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4f(0.0, 0.0, 0.0, 1.0));
+	}
+	
+	public boolean isScoped()
+	{
+		return isScoped;
+	}
+
+	public boolean isScopedWeapon()
+	{
+		return scopedWeapon;
+	}
+
+	public float getScopeZoom()
+	{
+		return scopeZoom;
+	}
+
+	public float getScopeSlow()
+	{
+		return scopeSlow;
+	}
 }
