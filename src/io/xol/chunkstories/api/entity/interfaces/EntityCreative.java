@@ -10,4 +10,15 @@ import io.xol.chunkstories.core.entity.components.EntityComponentCreativeMode;
 public interface EntityCreative extends Entity
 {
 	public EntityComponentCreativeMode getCreativeModeComponent();
+	
+	public default boolean isCreativeMode()
+	{
+		return getCreativeModeComponent().isCreativeMode();
+	}
+
+	public default void setCreativeMode(boolean creativeMode)
+	{
+		getCreativeModeComponent().setCreativeMode(creativeMode);
+	}
+
 }

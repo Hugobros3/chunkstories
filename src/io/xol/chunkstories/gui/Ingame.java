@@ -367,7 +367,7 @@ public class Ingame extends OverlayableScene
 				
 				ItemPile p = ((EntityWithInventory) player).getInventory().getItemPileAt(requestedInventorySlot, 0);
 				if(p != null)
-					requestedInventorySlot = p.x;
+					requestedInventorySlot = p.getX();
 				((EntityWithSelectedItem) player).getSelectedItemComponent().setSelectedSlot(requestedInventorySlot);
 				
 				return true;
@@ -494,7 +494,7 @@ public class Ingame extends OverlayableScene
 					selectedInventorySlot += ((EntityWithInventory) player).getInventory().getWidth();
 				selected = ((EntityWithInventory) player).getInventory().getItemPileAt(selectedInventorySlot, 0);
 				if (selected != null)
-					selectedInventorySlot = selected.x;
+					selectedInventorySlot = selected.getX();
 			}
 			//Switch slot
 			if (originalSlot != selectedInventorySlot)

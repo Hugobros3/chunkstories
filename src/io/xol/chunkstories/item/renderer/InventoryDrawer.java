@@ -106,7 +106,7 @@ public class InventoryDrawer
 				if (summary)
 				{
 					ItemPile summaryBarSelected = getInventory().getItemPileAt(highlightSlot, 0);
-					if (summaryBarSelected != null && i == summaryBarSelected.x)
+					if (summaryBarSelected != null && i == summaryBarSelected.getX())
 					{
 						sumSlots2HL = summaryBarSelected.item.getSlotsWidth();
 					}
@@ -121,7 +121,7 @@ public class InventoryDrawer
 				}
 				else
 				{
-					if (mouseOver || (selectedPile != null && thisPile != null && selectedPile.x == thisPile.x && selectedPile.y == thisPile.y))
+					if (mouseOver || (selectedPile != null && thisPile != null && selectedPile.getX() == thisPile.getX() && selectedPile.getY() == thisPile.getY()))
 					{
 						context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize, y + cornerSize + j * slotSize, slotSize, slotSize, 32f / 256f, 176 / 256f, 56 / 256f, 152 / 256f, inventoryTexture, true, true, color);
 					}
@@ -211,8 +211,8 @@ public class InventoryDrawer
 				{
 					int amountToDisplay = pile.getAmount();
 					//If we selected this item
-					if ((InventoryOverlay.selectedItem != null && InventoryOverlay.selectedItem.inventory != null && getInventory().equals(InventoryOverlay.selectedItem.inventory) && InventoryOverlay.selectedItem.x == i
-							&& InventoryOverlay.selectedItem.y == j))
+					if ((InventoryOverlay.selectedItem != null && InventoryOverlay.selectedItem.getInventory() != null && getInventory().equals(InventoryOverlay.selectedItem.getInventory()) && InventoryOverlay.selectedItem.getX() == i
+							&& InventoryOverlay.selectedItem.getY() == j))
 					{
 						amountToDisplay -= InventoryOverlay.selectedItemAmount;
 					}

@@ -4,6 +4,8 @@ config/*
 counter.jar
 genbench.txt
 launcher.jar
+chunkstories.jar
+server.jar
 readme.txt
 spec.txt
 *.class
@@ -20,8 +22,11 @@ plugins/*
 .classpath
 .project
 .*
+logs-reporter.jar
 mods/*
 screenshots/*
 xolioz*
 namalsk*
 skybox*
+cache/*
+servermods/*

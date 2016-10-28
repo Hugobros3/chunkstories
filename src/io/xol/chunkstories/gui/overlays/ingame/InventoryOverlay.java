@@ -127,7 +127,7 @@ public class InventoryOverlay extends Overlay
 					}
 					else if(button == 0)
 					{
-						if(x == selectedItem.x && y == selectedItem.y)
+						if(x == selectedItem.getX() && y == selectedItem.getY())
 						{
 							//System.out.println("item put back into place so meh");
 							selectedItem = null;
@@ -143,9 +143,9 @@ public class InventoryOverlay extends Overlay
 						else if(Client.world instanceof WorldClientRemote)
 						{
 							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(true);
-							packetMove.from = selectedItem.inventory;
-							packetMove.oldX = selectedItem.x;
-							packetMove.oldY = selectedItem.y;
+							packetMove.from = selectedItem.getInventory();
+							packetMove.oldX = selectedItem.getX();
+							packetMove.oldY = selectedItem.getY();
 							packetMove.to = inventories[i];
 							packetMove.newX = x;
 							packetMove.newY = y;
@@ -168,9 +168,9 @@ public class InventoryOverlay extends Overlay
 		if(selectedItem != null && Client.world instanceof WorldClientRemote)
 		{
 			PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(true);
-			packetMove.from = selectedItem.inventory;
-			packetMove.oldX = selectedItem.x;
-			packetMove.oldY = selectedItem.y;
+			packetMove.from = selectedItem.getInventory();
+			packetMove.oldX = selectedItem.getX();
+			packetMove.oldY = selectedItem.getY();
 			packetMove.to = null;
 			packetMove.newX = 0;
 			packetMove.newY = 0;
