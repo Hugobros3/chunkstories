@@ -731,6 +731,7 @@ public abstract class WorldImplementation implements World
 		rayDirection[1] = direction.getY();
 		rayDirection[2] = direction.getZ();
 		int voxelCoords[] = new int[] { x, y, z };
+		int voxelDelta[] = new int[] { 0, 0, 0 };
 		double[] deltaDist = new double[3];
 		double[] next = new double[3];
 		int step[] = new int[3];
@@ -808,10 +809,14 @@ public abstract class WorldImplementation implements World
 			}
 			next[side] += deltaDist[side];
 			voxelCoords[side] += step[side];
+			voxelDelta[side] += step[side];
 
-			distance += 1;
+			//System.out.println(deltaDist[side]);
+			distance += deltaDist[side];
+			
+			//System.out.println(Math.sqrt(voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2])+ " < "+Math.sqrt(limit * limit));
 		}
-		while (distance < limit);
+		while (voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2] < limit * limit);
 		return null;
 	}
 

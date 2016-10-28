@@ -325,13 +325,13 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		direction.add(new Vector3d(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
 		direction.normalize();
 		
-		Location shotBlock = shooter.getWorld().raytraceSolid(eyeLocation, direction, 256);
+		Location shotBlock = shooter.getWorld().raytraceSolid(eyeLocation, direction, 5000);
 		
 		String dist = "-1m";
 		if(shotBlock != null)
 			dist = Math.floor(shotBlock.distanceTo(shooter.getLocation()))+"m";
 		
-		renderingInterface.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, dist, 1);
+		//renderingInterface.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, dist, 1);
 		
 	}
 
