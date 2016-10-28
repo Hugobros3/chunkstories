@@ -21,10 +21,9 @@ public class ItemPile implements CSFSerializable
 	private int amount = 1;
 	public Item item;
 
-	public EntityComponentInventory inventory;
-	public int x, y;
-
-	//public ItemData data = null;
+	private EntityComponentInventory inventory;
+	private int x;
+	private int y;
 
 	/**
 	 * Creates an item pile of the item type named 'itemName'
@@ -120,7 +119,7 @@ public class ItemPile implements CSFSerializable
 					//System.out.println("moving into itself");
 					
 					//Remove temporarily
-					destinationInventory.setItemPileAt(x, y, null);
+					destinationInventory.setItemPileAt(x, getY(), null);
 					
 					//Check if can be placed now
 					if(destinationInventory.canPlaceItemAt(destinationX, destinationY, this))
@@ -130,7 +129,7 @@ public class ItemPile implements CSFSerializable
 					}
 	
 					//Add back if it couldn't
-					destinationInventory.setItemPileAt(x, y, this);
+					destinationInventory.setItemPileAt(x, getY(), this);
 					return false;
 				}
 				
@@ -162,7 +161,7 @@ public class ItemPile implements CSFSerializable
 
 		//If everything was moved we destroy this pile ... if it ever existed ( /dev/null inventories, creative mode etc )
 		else if (currentInventory != null)
-			currentInventory.setItemPileAt(this.x, this.y, null);
+			currentInventory.setItemPileAt(this.x, this.getY(), null);
 
 		//Success conditions : either we transfered all or we transfered at least one
 		return leftFromTransaction == null || leftFromTransaction.getAmount() < amountToTransfer;
@@ -211,6 +210,36 @@ public class ItemPile implements CSFSerializable
 	
 	public String toString()
 	{
-		return "[ItemPile t:"+getItem()+" a:"+amount+" i:"+inventory+" x:"+x+" y:"+y+" ]";
+		return "[ItemPile t:"+getItem()+" a:"+amount+" i:"+inventory+" x:"+x+" y:"+getY()+" ]";
+	}
+
+	public EntityComponentInventory getInventory()
+	{
+		return inventory;
+	}
+
+	public void setInventory(EntityComponentInventory inventory)
+	{
+		this.inventory = inventory;
+	}
+
+	public int getX()
+	{
+		return x;
+	}
+
+	public void setX(int x)
+	{
+		this.x = x;
+	}
+
+	public int getY()
+	{
+		return y;
+	}
+
+	public void setY(int y)
+	{
+		this.y = y;
 	}
 }

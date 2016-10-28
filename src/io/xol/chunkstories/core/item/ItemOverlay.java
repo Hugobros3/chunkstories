@@ -1,6 +1,7 @@
 package io.xol.chunkstories.core.item;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.item.ItemPile;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -11,5 +12,5 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
  */
 public interface ItemOverlay
 {
-	public void drawItemOverlay(RenderingInterface renderingInterface);
+	public void drawItemOverlay(RenderingInterface renderingInterface, ItemPile itemPile);
 }

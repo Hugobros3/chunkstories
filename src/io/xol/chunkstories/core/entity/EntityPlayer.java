@@ -365,7 +365,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			{
 				ItemPile pile = this.getSelectedItemComponent().getSelectedItem();
 				if(pile.getItem() instanceof ItemOverlay)
-					((ItemOverlay) pile.getItem()).drawItemOverlay(renderingContext);
+					((ItemOverlay) pile.getItem()).drawItemOverlay(renderingContext, pile);
 			}
 		
 			//We don't want to render our own tag do we ?

@@ -8,7 +8,7 @@ import io.xol.chunkstories.item.ItemPile;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface Inventory
+public interface Inventory extends Iterable<ItemPile>
 {
 	ItemPile getItemPileAt(int x, int y);
 

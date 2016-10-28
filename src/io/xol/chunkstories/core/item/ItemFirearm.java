@@ -8,7 +8,9 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemRenderer;
@@ -59,6 +61,8 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 	private long lastShot = 0L;
 	
 	private boolean isScoped = false;
+	
+	private ItemPile currentMagazine;
 
 	public ItemFirearm(ItemType type)
 	{
@@ -112,12 +116,12 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		@Override
 		public void renderItemInWorld(RenderingInterface renderingInterface, ItemPile pile, World world, Location location, Matrix4f handTransformation)
 		{
-			if(pile.inventory != null)
+			if(pile.getInventory() != null)
 			{
-				if(pile.inventory.getHolder() != null)
+				if(pile.getInventory().getHolder() != null)
 				{
 					Entity clientEntity = Client.getInstance().getClientSideController().getControlledEntity();
-					if(isScoped() && clientEntity.equals(pile.inventory.getHolder()))
+					if(isScoped() && clientEntity.equals(pile.getInventory().getHolder()))
 						return;
 				}
 			}
@@ -144,6 +148,14 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 					return;
 				if (controller.getInputsManager().getInputByName("mouse.left").isPressed())
 				{
+					//Check for bullet presence (or creative mode)
+					boolean bulletPresence = (owner instanceof EntityCreative && ((EntityCreative) owner).isCreativeMode()) || checkBulletAndConsume(itemPile);
+					if(!bulletPresence && !wasTriggerPressedLastTick)
+					{
+						//Dry.ogg
+						return;
+					}
+					
 					if ((automatic || !wasTriggerPressedLastTick) && (System.currentTimeMillis() - lastShot) / 1000.0d > 1.0 / (rpm / 60.0))
 					{
 						//Fire virtual input
@@ -251,11 +263,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 								untouchedReflection.scale(0.25);
 
 								Vector3d ppos = new Vector3d(nearestLocation);
-								//ppos.add(untouchedReflection);
-								//FragmentData fragParticule = ((FragmentData)shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("voxel_frag"), ppos));
 								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
-								//fragParticule.setVelocity(untouchedReflection);
-								//fragParticule.setData(data);
 							}
 
 							controller.getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");
@@ -288,7 +296,6 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 									random.add(bloodDir);
 
 									shooter.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("blood", hitPoint, random);
-									//((BloodData) shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("blood"), hitPoint)).setVelocity(random);
 								}
 
 								//Spawn blood on walls
@@ -301,16 +308,56 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 				}
 
 				controller.getParticlesManager().spawnParticleAtPosition("muzzle", eyeLocation);
-				//shooter.getWorld().addParticle(ParticleTypes.getParticleTypeByName("muzzle"), eyeLocation);
-				//shooter.getWorld().addParticle(new ParticleMuzzleFlash(shooter.getWorld(), eyeLocation));
 				return (shooter.getWorld() instanceof WorldMaster);
 			}
 		}
 		return false;
 	}
+	
+	private boolean checkBulletAndConsume(ItemPile weaponInstance)
+	{
+		if(currentMagazine == null)
+			if(!findMagazine(weaponInstance))
+				return false;
+
+		if(currentMagazine.getAmount() <= 0)
+		{
+			currentMagazine = null;
+			return false;
+		}
+
+		currentMagazine.setAmount(currentMagazine.getAmount() - 1);
+			
+		if(currentMagazine.getAmount() <= 0)
+		{
+			currentMagazine.getInventory().setItemPileAt(currentMagazine.getX(), currentMagazine.getY(), null);
+			currentMagazine = null;
+		}
+
+		return true;
+		
+	}
+	
+	private boolean findMagazine(ItemPile weaponInstance)
+	{
+		Inventory inventory = weaponInstance.getInventory();
+		for(ItemPile pile : inventory)
+		{
+			if(pile.getItem() instanceof ItemFirearmMagazine)
+			{
+				ItemFirearmMagazine magazineItem = (ItemFirearmMagazine) pile.getItem();
+				if(magazineItem.isSuitableFor(this) && pile.getAmount() > 0)
+				{
+					currentMagazine = pile;
+					break;
+				}
+			}
+		}
+		return currentMagazine != null;
+	}
 
 	@Override
-	public void drawItemOverlay(RenderingInterface renderingInterface)
+	public void drawItemOverlay(RenderingInterface renderingInterface, ItemPile pile)
 	{
 		if(isScoped())
 			drawScope(renderingInterface);

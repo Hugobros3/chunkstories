@@ -130,9 +130,9 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		//If empty and has space, put it in.
 		if(currentPileAtLocation == null && canPlaceItemAt(x, y, itemPile))
 		{
-			itemPile.inventory = this;
-			itemPile.x = x;
-			itemPile.y = y;
+			itemPile.setInventory(this);
+			itemPile.setX(x);
+			itemPile.setY(y);
 			contents[x % width][y % height] = itemPile;
 			
 			//Push changes
@@ -215,9 +215,9 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		
 		if (canPlaceItemAt(x, y, pile))
 		{
-			pile.inventory = this;
-			pile.x = x;
-			pile.y = y;
+			pile.setInventory(this);
+			pile.setX(x);
+			pile.setY(y);
 			contents[x % width][y % height] = pile;
 		}
 		else
@@ -325,7 +325,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		for(int i = 0; i < width; i++)
 			for(int j = 0; j < height ; j++)
 				if(contents[i][j] != null)
-					contents[i][j].inventory = this;
+					contents[i][j].setInventory(this);
 	}
 	
 	@Override
@@ -372,9 +372,9 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 				{
 					item = itemType.newItem();
 					contents[i][j] = new ItemPile(item, stream);
-					contents[i][j].inventory = this;
-					contents[i][j].x = i;
-					contents[i][j].y = j;
+					contents[i][j].setInventory(this);
+					contents[i][j].setX(i);
+					contents[i][j].setY(j);
 				}
 			}
 	}
