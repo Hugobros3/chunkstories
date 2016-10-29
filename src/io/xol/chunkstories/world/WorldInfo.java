@@ -135,7 +135,7 @@ public class WorldInfo
 	 */
 	public void sendInfo(ServerClient user)
 	{
-		PacketWorldInfo packet = new PacketWorldInfo(false);
+		PacketWorldInfo packet = new PacketWorldInfo();
 		packet.info = this;
 		user.pushPacket(packet);
 	}

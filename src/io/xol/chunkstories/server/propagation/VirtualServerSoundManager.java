@@ -58,7 +58,7 @@ public class VirtualServerSoundManager implements SoundManager
 
 		public void addSourceToPlayer(SoundSourceVirtual soundSource)
 		{
-			PacketSoundSource packet = new PacketSoundSource(false);
+			PacketSoundSource packet = new PacketSoundSource();
 			packet.soundSourceToSend = soundSource;
 			serverPlayer.getPlayerConnection().pushPacket(packet);
 			playingSoundSources.add(new WeakReference<SoundSourceVirtual>(soundSource));

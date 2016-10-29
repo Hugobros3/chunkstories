@@ -24,11 +24,6 @@ public class PacketTime extends Packet
 	public long time;
 	public float overcastFactor;
 	
-	public PacketTime(boolean client)
-	{
-		super(client);
-	}
-
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{

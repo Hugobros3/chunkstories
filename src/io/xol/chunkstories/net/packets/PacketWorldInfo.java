@@ -17,11 +17,6 @@ import java.io.IOException;
 
 public class PacketWorldInfo extends Packet
 {
-	public PacketWorldInfo(boolean client)
-	{
-		super(client);
-	}
-
 	public WorldInfo info;
 	
 	@Override

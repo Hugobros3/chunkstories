@@ -3,6 +3,7 @@ package io.xol.chunkstories.net.packets;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.core.events.PlayerInputPressedEvent;
@@ -20,17 +21,12 @@ import java.io.IOException;
 /**
  * Transfers client's input to the server
  */
-public class PacketInput extends PacketSynch
+public class PacketInput extends PacketSynchPrepared
 {
 	public Input input;
 
-	public PacketInput(boolean client)
-	{
-		super(client);
-	}
-
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeLong(input.getHash());
 		out.writeBoolean(input.isPressed() | input instanceof InputVirtual);

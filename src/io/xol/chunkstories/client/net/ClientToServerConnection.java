@@ -99,7 +99,9 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 	@Override
 	public void run()
 	{
-		openSocket();
+		//Don't even try if we fail to open the socket.
+		if(!openSocket())
+			return;
 		
 		while (!die)
 		{
@@ -183,7 +185,7 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 	{
 		try
 		{
-			PacketText packet = new PacketText(true);
+			PacketText packet = new PacketText();
 			packet.text = msg;
 			sendQueue.queue(packet);
 		}

@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Region;
+import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
 import io.xol.chunkstories.core.entity.components.EntityComponentPosition;
 import io.xol.chunkstories.core.entity.components.EntityComponentVelocity;
 import io.xol.chunkstories.item.inventory.CSFSerializable;
@@ -25,6 +26,8 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public interface Entity extends Collidable, CSFSerializable
 {
+	public EntityComponentExistence getComponentExistence();
+	
 	public EntityComponentPosition getEntityComponentPosition();
 	
 	/**

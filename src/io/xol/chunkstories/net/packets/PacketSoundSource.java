@@ -7,6 +7,7 @@ import java.io.IOException;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.client.Client;
@@ -20,17 +21,17 @@ import io.xol.engine.sound.sources.SoundSourceVirtual;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PacketSoundSource extends PacketSynch
+public class PacketSoundSource extends PacketSynchPrepared
 {
 	public SoundSourceVirtual soundSourceToSend;
 
-	public PacketSoundSource(boolean client)
+	public PacketSoundSource()
 	{
-		super(client);
+		
 	}
 
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeUTF(soundSourceToSend.getSoundName());
 		out.writeLong(soundSourceToSend.soundSourceUUID);

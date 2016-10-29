@@ -20,11 +20,6 @@ import io.xol.chunkstories.api.net.PacketSender;
 public class PacketDummy extends Packet
 {
 	public byte[] data;
-	
-	protected PacketDummy(boolean client)
-	{
-		super(client);
-	}
 
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException

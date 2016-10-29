@@ -16,12 +16,6 @@ import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 
 public class PacketChunkCompressedData extends Packet
 {
-
-	public PacketChunkCompressedData(boolean client)
-	{
-		super(client);
-	}
-
 	public void setPosition(int x, int y, int z)
 	{
 		this.x = x;

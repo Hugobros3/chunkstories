@@ -80,7 +80,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				
 				player.updateTrackedEntities();
 			}
-			PacketTime packetTime = new PacketTime(false);
+			PacketTime packetTime = new PacketTime();
 			packetTime.time = this.worldTime;
 			packetTime.overcastFactor = this.getWeather();
 			player.pushPacket(packetTime);
@@ -147,7 +147,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		{
 			int blocksViewDistance = 256;
 			int sizeInBlocks = getWorldInfo().getSize().sizeInChunks * 32;
-			PacketVoxelUpdate packet = new PacketVoxelUpdate(false);
+			PacketVoxelUpdate packet = new PacketVoxelUpdate();
 			packet.x = x;
 			packet.y = y;
 			packet.z = z;

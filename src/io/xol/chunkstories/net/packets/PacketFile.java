@@ -18,13 +18,6 @@ import io.xol.chunkstories.api.net.PacketSender;
 
 public class PacketFile extends Packet
 {
-
-	public PacketFile(boolean client)
-	{
-		super(client);
-		// TODO Auto-generated constructor stub
-	}
-
 	public String fileTag;
 	public File file;
 

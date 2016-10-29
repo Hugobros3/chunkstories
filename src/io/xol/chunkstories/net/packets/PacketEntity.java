@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.exceptions.UnknownComponentException;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
@@ -18,23 +19,53 @@ import java.io.IOException;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class PacketEntity extends PacketSynch
+public class PacketEntity extends PacketSynch implements PacketPrepared
 {
-	
 	private short entityTypeID;
 	private long entityUUID;
 
-	public Entity entityToUpdate;
-	public EntityComponent updateOneComponent;
-	public EntityComponent updateManyComponents;
-	
-	public PacketEntity(boolean client)
+	private Entity entityToUpdate;
+	//public EntityComponent updateOneComponent;
+	//public EntityComponent updateManyComponents;
+
+	public PacketEntity()
 	{
-		super(client);
+		
+	}
+	
+	public PacketEntity(Entity entityToUpdate) throws IOException
+	{
+		this.entityToUpdate = entityToUpdate;
+		
+		entityUUID = entityToUpdate.getUUID();
+		entityTypeID = entityToUpdate.getEID();
+		
+		this.getSynchPacketOutputStream().writeLong(entityUUID);
+		this.getSynchPacketOutputStream().writeShort(entityTypeID);
 	}
 
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void prepare(PacketDestinator destinator) throws IOException
+	{
+		//System.out.println("preparing packet");
+		
+		//If the entity no longer exists, we make sure we tell the player so he doesn't spawn it again
+		if(!entityToUpdate.exists())
+		{
+			//System.out.println("Sending an update about a non-existent entity to "+destinator+", appending with existence component for clarification.");
+			//System.out.println("We should avoid doing that btw.");
+			//Thread.dumpStack();
+			entityToUpdate.getComponentExistence().pushComponentInStream(destinator, this.getSynchPacketOutputStream());
+		}
+		
+		//Write a 0 to mark the end of the components updates
+		this.getSynchPacketOutputStream().writeInt(0);
+		
+		//Finalizes the synch packet and lets the game build another
+		this.finalizeSynchPacket();
+	}
+	
+	/*public void secnd(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		//No other updates than the entity destruction itself can be sent once it has been removed
 		if(!entityToUpdate.exists() && updateOneComponent != null && !(updateOneComponent instanceof EntityComponentExistence))
@@ -64,7 +95,7 @@ public class PacketEntity extends PacketSynch
 		
 		//Then write 0
 		out.writeInt((int)0);
-	}
+	}*/
 
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, UnknownComponentException
 	{

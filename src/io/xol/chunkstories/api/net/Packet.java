@@ -13,27 +13,13 @@ import io.xol.chunkstories.net.packets.PacketsProcessor;
 
 public abstract class Packet
 {
-	//Who are we talking to ?
-	private boolean isClient = false;
-	private boolean isServer = false;
-	
-	public Packet(boolean client)
+	public Packet()
 	{
-		this.isClient = client;
-		this.isServer = !client;
+		
 	}
 	
 	public abstract void send(PacketDestinator destinator, DataOutputStream out) throws IOException;
 	
+	//TODO Make that an alternative, mandatory constructor
 	public abstract void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, PacketProcessingException;
-
-	public boolean isSentFromClient()
-	{
-		return isClient;
-	}
-
-	public boolean isSentFromServer()
-	{
-		return isServer;
-	}
 }

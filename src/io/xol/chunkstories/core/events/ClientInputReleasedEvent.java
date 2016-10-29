@@ -57,7 +57,7 @@ public class ClientInputReleasedEvent extends Event implements ClientEvent
 		if (entityControlled.getWorld() instanceof WorldClientRemote)
 		{
 			ClientToServerConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
-			PacketInput packet = new PacketInput(true);
+			PacketInput packet = new PacketInput();
 			packet.input = input;
 			connection.sendPacket(packet);
 		}

@@ -73,6 +73,11 @@ public abstract class EntityImplementation implements Entity
 		//To avoid NPEs
 		voxelIn = Voxels.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 	}
+	
+	public EntityComponentExistence getComponentExistence()
+	{
+		return this.existenceComponent;
+	}
 
 	public EntityComponentPosition getEntityComponentPosition()
 	{

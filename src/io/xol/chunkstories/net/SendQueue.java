@@ -2,6 +2,8 @@ package io.xol.chunkstories.net;
 
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketPrepared;
+import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.net.packets.PacketDummy;
 import io.xol.chunkstories.net.packets.PacketText;
@@ -31,41 +33,6 @@ public class SendQueue extends Thread
 	//Reference to what we are sending stuff to, used in packet creation logic to look for implemented interfaces ( remote server, unlogged in client, logged in client etc )
 	PacketDestinator destinator;
 
-	//Used to buffer and compute the length synch packets to send
-
-	//To avoid an HORRIBLE mess we have to have one temporary buffer per thread sending packets,
-	//as we have no idea how many madmen will spawn zillions of concurrent threads to spam shit
-
-	//NOTE: I just had my greatest breakthrought of the week with this, this field used to not be static and I had issues with world unloading on server
-	// namely the ServerPlayer ( implementing WorldUser ) object would not get garbage collected and thus it's reference in the various world bits would hold
-	// indefinitly. It appears that the cause was this ThreadLocal variable, because it is an inner class, it's always referencing it's parent/holder class
-	// and thus the "destinator" field referencing the ServerPlayer ( once he authentificates himself ) would be accessible throught this object.
-	// This becomes a problem with the ThreadLocal type : because ThreadLocal variables are local to threads they are stored in a Map inside the Thread's class, and
-	// these are NOT gc'ed until the thread dies. Meaning that pushing a packet from the tick() loop caused this buffer to get intialized, making a permanent reference to the
-	// player in the world ticking thread. The static qualifier prevents all this, I lost 5 hours to this ... 
-	static ThreadLocal<SynchBuffer> synchBuffer = new ThreadLocal<SynchBuffer>()
-	{
-		@Override
-		protected SynchBuffer initialValue()
-		{
-			return new SynchBuffer();
-		}
-	};
-
-	//With a custom subclass because the two objects are needed and rely on each other
-	static class SynchBuffer
-	{
-
-		SynchBuffer()
-		{
-			this.baos = new ByteArrayOutputStream(262144);
-			this.outSynch = new DataOutputStream(baos);
-		}
-
-		public ByteArrayOutputStream baos;
-		public DataOutputStream outSynch;
-	}
-
 	public SendQueue(PacketDestinator destinator, DataOutputStream out, PacketsProcessor processor)
 	{
 		this.destinator = destinator;
@@ -80,9 +47,9 @@ public class SendQueue extends Thread
 		this.destinator = destinator;
 	}
 
-	Packet DIE = new PacketText(false);
-	Packet FLUSH = new PacketText(false);
-	
+	Packet DIE = new PacketText();
+	Packet FLUSH = new PacketText();
+
 	/**
 	 * Queue a packet for sending, no synchronisation needed
 	 */
@@ -91,15 +58,27 @@ public class SendQueue extends Thread
 		if (die.get())
 			return;
 
+		//Prepare packets when queuing them
+		try
+		{
+			if (packet instanceof PacketPrepared)
+				((PacketPrepared) packet).prepare(destinator);
+		}
+		catch (IOException e)
+		{
+			ChunkStoriesLogger.getInstance().error("Error : unable to buffer PacketPrepared " + packet);
+			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
+		}
+
 		//Synch packets have to be built when submitted
-		if (packet instanceof PacketSynch)
+		/*if (packet instanceof PacketSynch)
 		{
 			//Get our thread's buffers
 			SynchBuffer synchBuffer = SendQueue.synchBuffer.get();
-
+		
 			ByteArrayOutputStream baos = synchBuffer.baos;
 			DataOutputStream outSynch = synchBuffer.outSynch;
-
+		
 			//Reset it
 			baos.reset();
 			try
@@ -107,16 +86,16 @@ public class SendQueue extends Thread
 				//Send the packet in the buffer
 				packet.send(destinator, outSynch);
 				outSynch.flush();
-
+		
 				//How many bytes were written ?
 				int packetSize = baos.size();
-
+		
 				//Make a dummy packet out of the stuff we got
 				PacketSynchSendable sendablePacket = new PacketSynchSendable(packet.isSentFromClient());
 				sendablePacket.data = baos.toByteArray();
 				sendablePacket.packetLength = packetSize;
 				sendablePacket.packetType = processor.getPacketId(packet);
-
+		
 				//Add that one instead of the real one
 				sendQueue.add(sendablePacket);
 			}
@@ -131,22 +110,22 @@ public class SendQueue extends Thread
 				e.printStackTrace();
 			}
 		}
-		else
-			sendQueue.add(packet);
+		else*/
+		sendQueue.add(packet);
 	}
 
 	public void flush()
 	{
 		sendQueue.add(FLUSH);
 	}
-	
+
 	@Override
 	public void run()
 	{
 		while (!die.get())
 		{
 			Packet packet = null;
-			
+
 			try
 			{
 				packet = sendQueue.take();
@@ -155,8 +134,8 @@ public class SendQueue extends Thread
 			{
 				e1.printStackTrace();
 			}
-			
-			if(packet == DIE)
+
+			if (packet == DIE)
 				break;
 
 			if (packet == null)
@@ -164,7 +143,7 @@ public class SendQueue extends Thread
 				System.out.println("ASSERTION FAILED : THE SEND QUEUE CAN'T CONTAIN NULL PACKETS.");
 				System.exit(-1);
 			}
-			else if(packet == FLUSH)
+			else if (packet == FLUSH)
 			{
 				try
 				{
@@ -208,7 +187,7 @@ public class SendQueue extends Thread
 		}
 		die.set(true);
 		sendQueue.add(DIE);
-		
+
 		synchronized (this)
 		{
 			notifyAll();

@@ -58,7 +58,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 				
 				if(holder.isDiskDataLoaded())
 				{
-					PacketChunkCompressedData packet = new PacketChunkCompressedData(false);
+					PacketChunkCompressedData packet = new PacketChunkCompressedData();
 					packet.setPosition(chunkX, chunkY, chunkZ);
 					packet.data = holder.getCompressedData(chunkX, chunkY, chunkZ);
 					client.pushPacket(packet);
@@ -131,7 +131,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 				if(summary == null || !summary.isLoaded())
 					return false;
 				
-				PacketRegionSummary packet = new PacketRegionSummary(false);
+				PacketRegionSummary packet = new PacketRegionSummary();
 				packet.summary = summary;
 				client.pushPacket(packet);
 				return true;

@@ -14,11 +14,6 @@ import io.xol.chunkstories.api.net.PacketSender;
 
 public class PacketText extends Packet
 {
-	public PacketText(boolean client)
-	{
-		super(client);
-	}
-
 	public String text;
 
 	@Override

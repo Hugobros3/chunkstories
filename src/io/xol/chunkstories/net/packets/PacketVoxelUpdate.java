@@ -1,6 +1,7 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -19,18 +20,13 @@ import java.io.IOException;
  * @author gobrosse
  *
  */
-public class PacketVoxelUpdate extends PacketSynch
+public class PacketVoxelUpdate extends PacketSynchPrepared
 {
 	public int x, y, z;
 	public int data;
 	
-	public PacketVoxelUpdate(boolean client)
-	{
-		super(client);
-	}
-
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeInt(x);
 		out.writeInt(y);

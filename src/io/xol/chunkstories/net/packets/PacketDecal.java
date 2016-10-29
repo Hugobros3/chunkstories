@@ -6,8 +6,8 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.math.lalgb.Vector3d;
 
@@ -15,20 +15,15 @@ import io.xol.engine.math.lalgb.Vector3d;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PacketDecal extends PacketSynch
+public class PacketDecal extends PacketSynchPrepared
 {
 	public String decalName;
 	public Vector3d position;
 	public Vector3d orientation;
 	public Vector3d size;
-	
-	public PacketDecal(boolean client)
-	{
-		super(client);
-	}
 
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeUTF(decalName);
 		out.writeDouble(position.getX());

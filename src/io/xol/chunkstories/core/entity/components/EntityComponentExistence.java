@@ -26,31 +26,39 @@ public final class EntityComponentExistence extends EntityComponent
 	}
 
 	boolean exists = true;
-	
+
 	public boolean exists()
 	{
 		return exists;
 	}
-	
+
 	public void destroyEntity()
 	{
 		exists = false;
 		this.pushComponentEveryone();
 	}
-	
+
 	@Override
 	public void push(StreamTarget to, DataOutputStream dos) throws IOException
 	{
-		if(to instanceof Subscriber)
+		//Never lie on a entity existing when it doesn't.
+		if (!exists)
 		{
-			if(!((Subscriber)to).isSubscribedTo(entity))
+			dos.writeBoolean(false);
+			return;
+		}
+		//We can pretend it doesn't so the client despawns it
+		else if (to instanceof Subscriber)
+		{
+			if (!((Subscriber) to).isSubscribedTo(entity))
 			{
-				System.out.println(to+" is not in the subscribers list, telling him the entity doesn't exist anymore >:D");
+				System.out.println(to + " is not in the subscribers list, telling him the entity doesn't exist anymore >:D");
 				dos.writeBoolean(false);
 				return;
 			}
 		}
-		dos.writeBoolean(exists);
+		//Or just be honest
+		dos.writeBoolean(true);
 	}
 
 	@Override
@@ -59,7 +67,7 @@ public final class EntityComponentExistence extends EntityComponent
 		boolean existedBefore = exists;
 		boolean willExist = dis.readBoolean();
 		//If the entity existedBefore and we are not the world master, we remove it from our world ( it's a despawn packet )
-		if(!willExist && existedBefore && !(entity.getWorld() instanceof WorldMaster))
+		if (!willExist && existedBefore && !(entity.getWorld() instanceof WorldMaster))
 		{
 			//System.out.println("Debug : removed entity "+entity + "from world");
 			entity.removeFromWorld();

@@ -24,11 +24,6 @@ public class PacketRegionSummary extends Packet
 	// Client-side
 	public int rx, rz;
 	public byte[] compressedData;
-	
-	public PacketRegionSummary(boolean client)
-	{
-		super(client);
-	}
 
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException

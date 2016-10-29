@@ -25,11 +25,6 @@ public class PacketItemUsage extends Packet
 	
 	public ItemUsage usage;
 	public byte complementInfo;
-	
-	public PacketItemUsage(boolean client)
-	{
-		super(client);
-	}
 
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException

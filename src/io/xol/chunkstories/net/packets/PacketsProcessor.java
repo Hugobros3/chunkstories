@@ -86,7 +86,7 @@ public class PacketsProcessor
 							@SuppressWarnings("unchecked")
 							Class<? extends Packet> packetClass = (Class<? extends Packet>) untypedClass;
 
-							Class<?>[] types = { Boolean.TYPE };
+							Class<?>[] types = { };
 							Constructor<? extends Packet> constructor = packetClass.getConstructor(types);
 
 							String allowed = splitted[4];
@@ -133,7 +133,7 @@ public class PacketsProcessor
 
 		public Packet createNew(boolean isClient, boolean sending) throws IllegalPacketException
 		{
-			Object[] parameters = { isClient };
+			Object[] parameters = {  };
 			try
 			{
 				Packet packet = packetConstructor.newInstance(parameters);

@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.core.events.PlayerMoveItemEvent;
@@ -20,15 +21,10 @@ import java.io.IOException;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PacketInventoryMoveItemPile extends PacketSynch
+public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 {
-	public PacketInventoryMoveItemPile(boolean client)
-	{
-		super(client);
-	}
-
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		//Describe the move
 		out.writeInt(oldX);
@@ -55,6 +51,7 @@ public class PacketInventoryMoveItemPile extends PacketSynch
 			out.writeLong(((Entity)to.getHolder()).getUUID());
 			//System.out.println("writing uuid"+((Entity)to.holder).getUUID());
 		}
+		
 		//Describe the itemPile if we are trying to spawn an item from nowhere
 		if(from == null || from.getHolder() == null)
 		{

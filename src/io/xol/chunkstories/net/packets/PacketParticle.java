@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.client.Client;
@@ -15,19 +16,14 @@ import io.xol.engine.math.lalgb.Vector3d;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PacketParticle extends PacketSynch
+public class PacketParticle extends PacketSynchPrepared
 {
 	public String particleName = "";
 	public Vector3d position;
 	public Vector3d velocity;
 
-	public PacketParticle(boolean client)
-	{
-		super(client);
-	}
-
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeUTF(particleName);
 		out.writeDouble(position.getX());

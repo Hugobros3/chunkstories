@@ -48,7 +48,7 @@ public class VirtualServerDecalsManager implements DecalsManager
 	
 	void tellPlayer(Player player, Vector3d position, Vector3d orientation, Vector3d size, String decalName)
 	{
-		PacketDecal packet = new PacketDecal(false);
+		PacketDecal packet = new PacketDecal();
 		
 		packet.decalName = decalName;
 		packet.position = position;

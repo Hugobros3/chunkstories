@@ -2,6 +2,7 @@ package io.xol.chunkstories.api.entity.components;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.net.Packet;
 
@@ -12,7 +13,7 @@ import io.xol.chunkstories.api.net.Packet;
 /**
  * A subscriber wants to be kept up-to-date with the latest changes in his environment
  */
-public interface Subscriber
+public interface Subscriber extends StreamTarget
 {
 	/**
 	 * @return An unique ID to discriminate it against all others

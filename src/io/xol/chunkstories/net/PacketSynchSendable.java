@@ -15,11 +15,6 @@ public class PacketSynchSendable extends PacketDummy
 	public short packetType;
 	public int packetLength;
 	
-	protected PacketSynchSendable(boolean client)
-	{
-		super(client);
-	}
-	
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{

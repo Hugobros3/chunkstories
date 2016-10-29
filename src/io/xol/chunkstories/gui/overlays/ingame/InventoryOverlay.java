@@ -142,7 +142,7 @@ public class InventoryOverlay extends Overlay
 						}
 						else if(Client.world instanceof WorldClientRemote)
 						{
-							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(true);
+							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile();
 							packetMove.from = selectedItem.getInventory();
 							packetMove.oldX = selectedItem.getX();
 							packetMove.oldY = selectedItem.getY();
@@ -167,7 +167,7 @@ public class InventoryOverlay extends Overlay
 		}
 		if(selectedItem != null && Client.world instanceof WorldClientRemote)
 		{
-			PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(true);
+			PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile();
 			packetMove.from = selectedItem.getInventory();
 			packetMove.oldX = selectedItem.getX();
 			packetMove.oldY = selectedItem.getY();
