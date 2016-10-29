@@ -51,7 +51,8 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 	final double soundRange;
 	final int shots;
 	final double shake;
-	
+	final long reloadCooldown;
+
 	final boolean scopedWeapon;
 	final float scopeZoom;
 	final float scopeSlow;
@@ -59,9 +60,11 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 
 	private boolean wasTriggerPressedLastTick = false;
 	private long lastShot = 0L;
-	
+
+	private long cooldownEnd = 0L;
+
 	private boolean isScoped = false;
-	
+
 	private ItemPile currentMagazine;
 
 	public ItemFirearm(ItemType type)
@@ -77,15 +80,17 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		range = Double.parseDouble(type.getProperty("range", "1000.0"));
 		soundRange = Double.parseDouble(type.getProperty("soundRange", "1000.0"));
 
+		reloadCooldown = Long.parseLong(type.getProperty("reloadCooldown", "150"));
+
 		shots = Integer.parseInt(type.getProperty("shots", "1"));
 		shake = Double.parseDouble(type.getProperty("shake", accuracy / 4.0 + ""));
-		
+
 		scopedWeapon = type.getProperty("scoped", "false").equals("true");
 		scopeZoom = Float.parseFloat(type.getProperty("scopeZoom", "2.0"));
 		scopeSlow = Float.parseFloat(type.getProperty("scopeSlow", "2.0"));
 
 		scopeTexture = type.getProperty("scopeTexture", "./textures/gui/scope.png");
-		
+
 		String modelName = type.getProperty("modelObj", "none");
 		if (!modelName.equals("none"))
 		{
@@ -93,15 +98,16 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		}
 		else
 			itemRenderer = new LegacyDogeZItemRenderer(this);
-		
-		if(scopedWeapon)
+
+		if (scopedWeapon)
 			itemRenderer = new ScopedWeaponItemRenderer(itemRenderer);
 	}
-	
-	class ScopedWeaponItemRenderer implements ItemRenderer {
+
+	class ScopedWeaponItemRenderer implements ItemRenderer
+	{
 
 		ItemRenderer itemRenderer;
-		
+
 		public ScopedWeaponItemRenderer(ItemRenderer itemRenderer)
 		{
 			this.itemRenderer = itemRenderer;
@@ -116,12 +122,12 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		@Override
 		public void renderItemInWorld(RenderingInterface renderingInterface, ItemPile pile, World world, Location location, Matrix4f handTransformation)
 		{
-			if(pile.getInventory() != null)
+			if (pile.getInventory() != null)
 			{
-				if(pile.getInventory().getHolder() != null)
+				if (pile.getInventory().getHolder() != null)
 				{
 					Entity clientEntity = Client.getInstance().getClientSideController().getControlledEntity();
-					if(isScoped() && clientEntity.equals(pile.getInventory().getHolder()))
+					if (isScoped() && clientEntity.equals(pile.getInventory().getHolder()))
 						return;
 				}
 			}
@@ -149,24 +155,24 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 				if (controller.getInputsManager().getInputByName("mouse.left").isPressed())
 				{
 					//Check for bullet presence (or creative mode)
-					boolean bulletPresence = (owner instanceof EntityCreative && ((EntityCreative) owner).isCreativeMode()) || checkBulletAndConsume(itemPile);
-					if(!bulletPresence && !wasTriggerPressedLastTick)
+					boolean bulletPresence = (owner instanceof EntityCreative && ((EntityCreative) owner).isCreativeMode()) || checkBullet(itemPile);
+					if (!bulletPresence && !wasTriggerPressedLastTick)
 					{
 						//Dry.ogg
-						return;
+						//return;
 					}
-					
-					if ((automatic || !wasTriggerPressedLastTick) && (System.currentTimeMillis() - lastShot) / 1000.0d > 1.0 / (rpm / 60.0))
+					else if ((automatic || !wasTriggerPressedLastTick) && (System.currentTimeMillis() - lastShot) / 1000.0d > 1.0 / (rpm / 60.0))
 					{
+						System.out.println((System.currentTimeMillis() - lastShot));
 						//Fire virtual input
 						ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
 						Client.getInstance().getPluginsManager().fireEvent(event);
 						lastShot = System.currentTimeMillis();
 					}
 				}
-				
+
 				isScoped = this.isScopedWeapon() && controller.getInputsManager().getInputByName("mouse.right").isPressed();
-				
+
 				wasTriggerPressedLastTick = controller.getInputsManager().getInputByName("mouse.left").isPressed();
 			}
 		}
@@ -185,6 +191,27 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 			if (user instanceof EntityLiving)
 			{
 				EntityLiving shooter = (EntityLiving) user;
+
+				//Serverside checks
+				//if (user.getWorld() instanceof WorldMaster)
+				{
+					//Is the reload cooldown done
+					if (cooldownEnd > System.currentTimeMillis())
+						return false;
+
+					//Do we have any bullets to shoot
+					boolean bulletPresence = (user instanceof EntityCreative && ((EntityCreative) user).isCreativeMode()) || checkBullet(pile);
+					if (!bulletPresence)
+					{
+						//Dry.ogg
+						return true;
+					}
+					else if(!(user instanceof EntityCreative && ((EntityCreative) user).isCreativeMode()))
+					{
+						consumeBullet(pile);
+					}
+				}
+
 				//Jerk client view a bit
 				if (shooter.getWorld() instanceof WorldClient)
 				{
@@ -200,14 +227,14 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 				Vector3d eyeLocation = new Vector3d(shooter.getLocation());
 				if (shooter instanceof EntityPlayer)
 					eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
-				
+
 				//For each shot
 				for (int ss = 0; ss < shots; ss++)
 				{
 					Vector3d direction = shooter.getDirectionLookingAt();
 					direction.add(new Vector3d(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
 					direction.normalize();
-					
+
 					//Find wall collision
 					Location shotBlock = user.getWorld().raytraceSolid(eyeLocation, direction, range);
 
@@ -313,40 +340,49 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		}
 		return false;
 	}
-	
-	private boolean checkBulletAndConsume(ItemPile weaponInstance)
+
+	private boolean checkBullet(ItemPile weaponInstance)
 	{
-		if(currentMagazine == null)
-			if(!findMagazine(weaponInstance))
+		if (currentMagazine == null)
+			if (!findMagazine(weaponInstance))
 				return false;
 
-		if(currentMagazine.getAmount() <= 0)
+		if (currentMagazine.getAmount() <= 0)
 		{
 			currentMagazine = null;
 			return false;
 		}
 
+		return true;
+
+	}
+
+	private void consumeBullet(ItemPile weaponInstance)
+	{
+		assert currentMagazine != null;
+
 		currentMagazine.setAmount(currentMagazine.getAmount() - 1);
-			
-		if(currentMagazine.getAmount() <= 0)
+
+		if (currentMagazine.getAmount() <= 0)
 		{
 			currentMagazine.getInventory().setItemPileAt(currentMagazine.getX(), currentMagazine.getY(), null);
 			currentMagazine = null;
-		}
 
-		return true;
-		
+			//Set reload cooldown
+			if (findMagazine(weaponInstance))
+				cooldownEnd = System.currentTimeMillis() + this.reloadCooldown;
+		}
 	}
-	
+
 	private boolean findMagazine(ItemPile weaponInstance)
 	{
 		Inventory inventory = weaponInstance.getInventory();
-		for(ItemPile pile : inventory)
+		for (ItemPile pile : inventory)
 		{
-			if(pile.getItem() instanceof ItemFirearmMagazine)
+			if (pile != null && pile.getItem() instanceof ItemFirearmMagazine)
 			{
 				ItemFirearmMagazine magazineItem = (ItemFirearmMagazine) pile.getItem();
-				if(magazineItem.isSuitableFor(this) && pile.getAmount() > 0)
+				if (magazineItem.isSuitableFor(this) && pile.getAmount() > 0)
 				{
 					currentMagazine = pile;
 					break;
@@ -359,27 +395,36 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 	@Override
 	public void drawItemOverlay(RenderingInterface renderingInterface, ItemPile pile)
 	{
-		if(isScoped())
-			drawScope(renderingInterface);
-		
-		EntityLiving shooter = (EntityLiving) Client.getInstance().getClientSideController().getControlledEntity();
-		
-		Vector3d eyeLocation = new Vector3d(shooter.getLocation());
-		if (shooter instanceof EntityPlayer)
-			eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
-		
-		Vector3d direction = shooter.getDirectionLookingAt();
-		direction.add(new Vector3d(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
-		direction.normalize();
-		
-		Location shotBlock = shooter.getWorld().raytraceSolid(eyeLocation, direction, 5000);
-		
-		String dist = "-1m";
-		if(shotBlock != null)
-			dist = Math.floor(shotBlock.distanceTo(shooter.getLocation()))+"m";
-		
-		//renderingInterface.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, dist, 1);
-		
+		EntityLiving clientControlledEntity = (EntityLiving) Client.getInstance().getClientSideController().getControlledEntity();
+		if (clientControlledEntity != null && pile.getInventory() != null && pile.getInventory().getHolder() != null && pile.getInventory().getHolder().equals(clientControlledEntity))
+		{
+			if (isScoped())
+				drawScope(renderingInterface);
+
+			Vector3d eyeLocation = new Vector3d(clientControlledEntity.getLocation());
+			if (clientControlledEntity instanceof EntityPlayer)
+				eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) clientControlledEntity).eyePosition, 0.0));
+
+			Vector3d direction = clientControlledEntity.getDirectionLookingAt();
+			direction.add(new Vector3d(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
+			direction.normalize();
+
+			Location shotBlock = clientControlledEntity.getWorld().raytraceSolid(eyeLocation, direction, 5000);
+
+			String dist = "-1m";
+			if (shotBlock != null)
+				dist = Math.floor(shotBlock.distanceTo(clientControlledEntity.getLocation())) + "m";
+
+			//renderingInterface.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, dist, 1);
+
+			//display reload cooldownt text
+			if (cooldownEnd > System.currentTimeMillis())
+			{
+				String reloadText = "Reloading weapon, please wait";
+				int cooldownLength = TrueTypeFont.arial11px.getWidth(reloadText);
+				renderingInterface.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, -cooldownLength + GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, reloadText, 2);
+			}
+		}
 	}
 
 	private void drawScope(RenderingInterface renderingInterface)
@@ -387,15 +432,15 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		//Temp, rendering interface should provide us
 		int min = Math.min(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		int max = Math.max(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		
+
 		int bandwidth = (max - min) / 2;
 		int x = 0;
-		
-		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x+=bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4f(0.0, 0.0, 0.0, 1.0));
-		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x+=min, GameWindowOpenGL.windowHeight, 0, 1, 1, 0, TexturesHandler.getTexture(scopeTexture), false, false, null);
-		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x+=bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4f(0.0, 0.0, 0.0, 1.0));
+
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4f(0.0, 0.0, 0.0, 1.0));
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += min, GameWindowOpenGL.windowHeight, 0, 1, 1, 0, TexturesHandler.getTexture(scopeTexture), false, false, null);
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4f(0.0, 0.0, 0.0, 1.0));
 	}
-	
+
 	public boolean isScoped()
 	{
 		return isScoped;

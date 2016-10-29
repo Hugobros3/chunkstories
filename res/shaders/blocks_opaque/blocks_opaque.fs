@@ -4,7 +4,7 @@
 // http://xol.io
 
 //Passed variables
-in vec3 lightMapCoords; //Computed in vertex shader
+in vec2 worldLight; //Computed in vertex shader
 in float fresnelTerm;
 in float rainWetness;
 in vec3 normalPassed;
@@ -82,10 +82,10 @@ void main(){
 	
 	vec4 material = texture(materialTexture, texCoordPassed);
 	
-	specularity = material.r*rainWetness + (material.g + rainWetness) * fresnelTerm + material.b;
+	specularity = (material.g + rainWetness) * fresnelTerm;
 	<ifdef perPixelFresnel>
 	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalMatrix * normalize(eyeDirection), vec3(normal)), 0.0, 1.0);
-	specularity = material.r*rainWetness + (material.g + rainWetness) * dynamicFresnelTerm + material.b;
+	specularity = (material.g + rainWetness) * dynamicFresnelTerm;
 	<endif perPixelFresnel>
 	
 	//surfaceDiffuseColor = normalize(surfaceDiffuseColor) * 0.75;
@@ -94,5 +94,5 @@ void main(){
 	//Diffuse G-Buffer
 	outDiffuseColor = vec4(surfaceDiffuseColor, 1.0);
 	outNormalColor = vec4(encodeNormal(normal).xy, specularity, 1.0);
-	outMaterialColor = vec4(lightMapCoords, material.a);
+	outMaterialColor = vec4(worldLight, material.r, material.a);
 }

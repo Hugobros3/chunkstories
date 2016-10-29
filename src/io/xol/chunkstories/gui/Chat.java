@@ -36,12 +36,12 @@ import io.xol.chunkstories.world.WorldClientRemote;
 public class Chat
 {
 	Ingame ingame;
-	
+
 	public Chat(Ingame ingame)
 	{
 		this.ingame = ingame;
 	}
-	
+
 	int chatHistorySize = 150;
 	InputText inputBox = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
 
@@ -152,11 +152,11 @@ public class Chat
 					{
 						int id = Integer.parseInt(inputBox.text.split(" ")[1]);
 						int count = 1;
-						if(inputBox.text.split(" ").length > 2)
+						if (inputBox.text.split(" ").length > 2)
 							count = Integer.parseInt(inputBox.text.split(" ")[2]);
-						
-						for(int ii = 0; ii < count; ii++)
-							for(int jj = 0; jj < count; jj++)
+
+						for (int ii = 0; ii < count; ii++)
+							for (int jj = 0; jj < count; jj++)
 							{
 								Entity test = Entities.newEntity(Client.world, (short) id);
 								Entity player = Client.getInstance().getClientSideController().getControlledEntity();
@@ -181,16 +181,24 @@ public class Chat
 				}
 				else if (inputBox.text.startsWith("/locgive"))
 				{
-					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
-					String itemName = inputBox.text.split(" ")[1];
-					
-					try{
-					ItemPile it = new ItemPile(ItemTypes.getItemTypeByName(itemName).newItem());
-					((EntityPlayer) controlledEntity).getInventory().addItemPile(it);
-					}
-					catch(NullPointerException npe)
+
+					try
 					{
+						Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
+						String itemName = inputBox.text.split(" ")[1];
 						
+						int c = 1;
+						if (inputBox.text.split(" ").length >= 3)
+							c = Integer.parseInt(inputBox.text.split(" ")[2]);
+						
+						ItemPile it = new ItemPile(ItemTypes.getItemTypeByName(itemName).newItem());
+						it.setAmount(c);
+						
+						((EntityPlayer) controlledEntity).getInventory().addItemPile(it);
+					}
+					catch (Throwable npe)
+					{
+
 					}
 				}
 				else if (inputBox.text.startsWith("/locclearinv"))

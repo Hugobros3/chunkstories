@@ -6,7 +6,7 @@ in vec4 colorIn;
 in vec4 normalIn;
 
 out vec2 texcoord;
-out vec3 lightMapCoords;
+out vec2 worldLight;
 out float fresnelTerm;
 out float chunkFade;
 out float rainWetness;
@@ -41,7 +41,7 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
-uniform vec2 worldLight;
+uniform vec2 worldLightIn;
 
 uniform mat4 objectMatrix;
 uniform mat3 objectMatrixNormal;
@@ -86,11 +86,11 @@ void main(){
 	
 	if(isUsingInstancedData > 0)
 	{
-		lightMapCoords = vec3(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 4, 32), (gl_InstanceID * 8 + 1) / 32), 0).xy / 15.0, 0.0);
+		worldLight = vec2(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 4, 32), (gl_InstanceID * 8 + 1) / 32), 0).xy / 15.0);
 	}
 	else
-		lightMapCoords = vec3(worldLight / 15.0, 0);
-	//lightMapCoords.y *= sunIntensity;
+		worldLight = vec2(worldLightIn / 15.0);
+	//worldLight.y *= sunIntensity;
 	
 	//Translate vertex
 	modelview = modelViewMatrix * v;

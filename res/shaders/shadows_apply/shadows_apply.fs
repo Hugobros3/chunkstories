@@ -61,9 +61,10 @@ out vec4 fragColor;
 <include ../lib/shadowTricks.glsl>
 <include ../lib/normalmapping.glsl>
 
-vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 meta, float specular)
+vec4 computeLight(vec4 inputColor2, vec3 normal, vec4 worldSpacePosition, vec4 meta, float specular)
 {
-	inputColor.rgb = pow(inputColor.rgb, vec3(gamma));
+	vec4 inputColor = vec4(0.0);
+	inputColor.rgb = pow(inputColor2.rgb, vec3(gamma));
 
 	float NdotL = clamp(dot(normalize(normal), normalize(normalMatrix * sunPos )), -1.0, 1.0);
 
@@ -104,6 +105,8 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	
 	finalLight = mix(pow(sunColor, vec3(gamma)), baseLight * pow(shadowColor, vec3(gamma)), (1.0 - sunlightAmount) * shadowStrength);
 	
+	finalLight += inputColor2.rgb * 5.0 * meta.b;
+	
 	<endif shadows>
 	<ifdef !shadows>
 		// Simple lightning for lower end machines
@@ -119,18 +122,7 @@ vec4 computeLight(vec4 inputColor, vec3 normal, vec4 worldSpacePosition, vec4 me
 	<endif !shadows>
 	
 	finalLight += textureGammaIn(blockLightmap, vec2(meta.x, 0.0)).rgb;
-	float ssao = 1.0-meta.z;
-	<ifdef ssao>
-		//If SSAO is disabled, we use the crappy free vertex AO ( byproduct of block/sunlight merging in code )
-		ssao *= texture(ssaoBuffer, screenCoord).x;
-	<endif ssao>
 	
-	//SSAO * 0.5 + 0.5
-	//(1-Z) * 0.5 + 0.5
-	//0.5 - Z * 0.5 + 0.5
-	//1.0 - Z * 0.5
-	
-	finalLight *= clamp(ssao * 0.5 + 0.5, 0.0, 1.0);
 	inputColor.rgb *= finalLight;
 	
 	return inputColor;

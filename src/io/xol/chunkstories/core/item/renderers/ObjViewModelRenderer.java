@@ -20,7 +20,7 @@ public class ObjViewModelRenderer extends DefaultItemRenderer
 	final String albedoTextureName;
 	final String normalTextureName;
 	//TODO
-	final String materialTextureName = null;
+	final String materialTextureName;
 
 	public ObjViewModelRenderer(Item item, String objName, String albedoTextureName)
 	{
@@ -29,11 +29,17 @@ public class ObjViewModelRenderer extends DefaultItemRenderer
 	
 	public ObjViewModelRenderer(Item item, String objName, String albedoTextureName, String normalTextureName)
 	{
+		this(item, objName, albedoTextureName, normalTextureName, "./textures/defaultmaterial.png");
+	}
+	
+	public ObjViewModelRenderer(Item item, String objName, String albedoTextureName, String normalTextureName, String materialTextureName)
+	{
 		super(item);
 		
 		this.objName = objName;
 		this.albedoTextureName = albedoTextureName;
 		this.normalTextureName = normalTextureName;
+		this.materialTextureName = materialTextureName;
 	}
 
 	@Override
@@ -49,6 +55,7 @@ public class ObjViewModelRenderer extends DefaultItemRenderer
 		
 		renderingContext.bindAlbedoTexture(TexturesHandler.getTexture(albedoTextureName));
 		renderingContext.bindNormalTexture(TexturesHandler.getTexture(normalTextureName));
+		renderingContext.bindMaterialTexture(TexturesHandler.getTexture(materialTextureName));
 		ModelLibrary.getRenderableMesh(objName).render(renderingContext);
 	}
 

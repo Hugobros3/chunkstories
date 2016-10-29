@@ -11,7 +11,7 @@ in vec4 colorPassed;
 in float fresnelTerm;
 in float rainWetness;
 in vec4 vertexColor; // Vertex color : red is for blocklight, green is sunlight
-in vec3 lightMapCoords; //Computed in vertex shader
+in vec2 worldLight; //Computed in vertex shader
 in vec4 modelview;
 
 uniform float useColorIn;
@@ -19,20 +19,16 @@ uniform float useNormalIn;
 
 //Diffuse colors
 uniform sampler2D diffuseTexture; // Blocks diffuse texture atlas
+uniform sampler2D normalTexture; // Blocks normal texture atlas
+uniform sampler2D materialTexture; // Blocks normal texture atlas
 uniform vec3 blockColor;
 
-uniform sampler2D normalTexture; // Blocks normal texture atlas
 
 //Chunk fading into view
 uniform float chunkTransparency;
 
 //Debug
 uniform vec3 blindFactor; // can white-out all the colors
-
-//Block and sun Lightning
-uniform float sunIntensity; // Adjusts the lightmap coordinates
-uniform sampler2D lightColors; // Sampler to lightmap
-uniform vec3 sunPos; // Sun position
 
 //Normal mapping
 
@@ -87,6 +83,8 @@ void main(){
 	//Texture transparency
 	float alpha = texture(diffuseTexture, texcoord).a;
 	
+	vec4 material = texture(materialTexture, texcoord);
+	
 	//if(useColorIn > 0.0)
 	//	alpha *= colorPassed.a;
 	
@@ -102,21 +100,6 @@ void main(){
 	spec = rainWetness * dynamicFresnelTerm;
 	<endif perPixelFresnel>
 	
-	//vec3 finalLight = texture(lightColors,lightMapCoords.xy).rgb;
-	
-	vec3 blockLight = texture(lightColors,vec2(lightMapCoords.x, 0)).rgb;
-	vec3 sunLight = texture(lightColors,vec2(0, lightMapCoords.y)).rgb;
-	
-	sunLight = mix(sunLight, sunLight * shadowColor, shadowVisiblity * 0.75);
-	
-	vec3 finalLight = blockLight * (1-sunLight);
-	finalLight += sunLight;
-	
-	//ao term
-	//finalLight *= vec3(1,1,1)*clamp(1-lightMapCoords.z, 0.0, 1.0);
-	
-	//finalLight+=1.0;
-	
 	vec3 finalColor = baseColor*blockColor;
 	
 	//Diffuse G-Buffer
@@ -124,5 +107,5 @@ void main(){
 	//Normal G-Buffer
 	outNormalColor = vec4(encodeNormal(normal).xy, spec, 1.0);
 	//Metadata color G-buffer
-	outMaterialColor = vec4(lightMapCoords, 1.0f);
+	outMaterialColor = vec4(worldLight, material.r, material.a);
 }

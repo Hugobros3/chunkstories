@@ -11,7 +11,7 @@ in vec4 normalIn;
 
 //Passed variables
 out vec2 texCoordPassed;
-out vec3 lightMapCoords;
+out vec2 worldLight;
 out float fresnelTerm;
 out vec3 normalPassed;
 out vec4 vertexPassed;
@@ -69,10 +69,10 @@ void main(){
 	
 	//Compute lightmap coords
 	rainWetness = wetness*clamp((colorIn.g * 16.0 - 15.0),0,1.0);
-	lightMapCoords = vec3(vec2(colorIn.r, colorIn.g)*(1.0 - colorIn.b * 0.15), 0*colorIn.b);
+	worldLight = vec2(colorIn.r, colorIn.g)*(1.0 - colorIn.b * 0.15);
 	
-	//lightMapCoords = vec3(colorIn.rgb);
-	//lightMapCoords.y *= sunIntensity;
+	//worldLight = vec3(colorIn.rgb);
+	//worldLight.y *= sunIntensity;
 	
 	gl_Position = modelViewProjectionMatrix * v;
 	

@@ -66,6 +66,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 			diffuse.setLinearFiltering(false);
 			renderingContext.bindAlbedoTexture(diffuse);
 			renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
+			renderingContext.bindMaterialTexture(TexturesHandler.getTexture("./textures/defaultmaterial.png"));
 		}
 
 		@Override

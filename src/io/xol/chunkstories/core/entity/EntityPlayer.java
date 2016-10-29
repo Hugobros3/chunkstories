@@ -376,11 +376,15 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		Vector3d pos = getLocation();
 		
 		//don't render tags too far out
-		if(pos.distanceTo(renderingContext.getCamera().getCameraPosition()) > 32f)
+		if(pos.distanceTo(renderingContext.getCamera().getCameraPosition().negate()) > 32f)
+			return;
+		
+		//Don't render a dead player tag
+		if(this.getHealth() <= 0)
 			return;
 		
 		Vector3f posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3f((float) pos.getX(), (float) pos.getY() + 2.0f, (float) pos.getZ()));
-
+		
 		float scale = posOnScreen.z;
 		String txt = name.getName();// + rotH;
 		float dekal = TrueTypeFont.arial11px.getWidth(txt) * 16 * scale;

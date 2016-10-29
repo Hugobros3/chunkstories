@@ -116,8 +116,6 @@ public class ItemPile implements CSFSerializable
 			{
 				if(alreadyHere != null && alreadyHere.equals(this))
 				{
-					//System.out.println("moving into itself");
-					
 					//Remove temporarily
 					destinationInventory.setItemPileAt(x, getY(), null);
 					

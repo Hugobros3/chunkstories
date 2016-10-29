@@ -14,7 +14,7 @@ public class EntityComponentPublicInventory extends EntityComponentInventory
 	}
 
 	@Override
-	public void sendUpdates()
+	public void refreshCompleteInventory()
 	{
 		this.pushComponentEveryone();
 	}

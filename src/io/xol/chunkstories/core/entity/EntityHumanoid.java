@@ -194,10 +194,12 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 			renderingContext.bindAlbedoTexture(playerTexture);
 
-			renderingContext.bindNormalTexture(TexturesHandler.getTexture("./models/humanoid_normal.png"));
 			TexturesHandler.getTexture("./models/humanoid_normal.png").setLinearFiltering(false);
-
+			
+			//renderingContext.bindNormalTexture(TexturesHandler.getTexture("./models/humanoid_normal.png"));
+			renderingContext.bindAlbedoTexture(TexturesHandler.getTexture("./models/humanoid_test.png"));
 			renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
+			renderingContext.bindMaterialTexture(TexturesHandler.getTexture("./textures/defaultmaterial.png"));
 		}
 
 		@Override
@@ -213,16 +215,11 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 					continue;
 				
 				entity.cachedSkeleton.lodUpdate(renderingContext);
-
-				//int bl = entity.getWorld().getBlocklightLevelLocation(location);
-				//int sl = entity.getWorld().getSunlightLevelLocation(location);
 				
 				Matrix4f matrix = new Matrix4f();
 				matrix.translate(location.castToSimplePrecision());
 				renderingContext.setObjectMatrix(matrix);
 
-				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
-				//renderingContext.currentShader().setUniform3f("objectPosition", location.castToSimplePrecision());
 				ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
 				//animationsData.add(new AnimatableData(location.castToSimplePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
 			}
@@ -231,7 +228,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			//ModelLibrary.getRenderableMesh("./models/human.obj").renderInstanciated(renderingContext, animationsData);
 
 			//Render items in hands
-			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
+			for (EntityHumanoid entity : renderableEntitiesIterator)
 			{
 
 				if(renderingContext.isThisAShadowPass() && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)

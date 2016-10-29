@@ -59,6 +59,8 @@ public class VoxelItemRenderer implements ItemRenderer
 	@Override
 	public void renderItemInInventory(RenderingInterface renderingContext, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
 	{
+		//voxelItemsModelBuffer.clear();
+		
 		if (((ItemVoxel) pile.getItem()).getVoxel() instanceof VoxelCustomIcon)
 		{
 			defaultItemRenderer.renderItemInInventory(renderingContext, pile, screenPositionX, screenPositionY, scaling);
@@ -72,10 +74,6 @@ public class VoxelItemRenderer implements ItemRenderer
 		
 		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
-		
-		/*glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		glEnable(GL_DEPTH_TEST);*/
 
 		program.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		program.setUniform2f("dekal", screenPositionX + pile.getItem().getSlotsWidth() * slotSize / 2, screenPositionY + pile.getItem().getSlotsHeight() * slotSize / 2);
@@ -213,13 +211,21 @@ public class VoxelItemRenderer implements ItemRenderer
 			context.addLight(heldBlockLight);	
 			
 			//If we hold a light source, prepare the shader accordingly
-			context.currentShader().setUniform2f("worldLight", ((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevelLocation(location));
+			context.currentShader().setUniform2f("worldLightIn", ((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevelLocation(location));
 			
 		}
 		
 		Texture2D texture = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
 		texture.setLinearFiltering(false);
 		context.bindAlbedoTexture(texture);
+		
+		Texture2D textureNormal = TexturesHandler.getTexture("./textures/tiles_merged_normal.png");
+		textureNormal.setLinearFiltering(false);
+		context.bindAlbedoTexture(textureNormal);
+		
+		Texture2D textureMaterial = TexturesHandler.getTexture("./textures/tiles_merged_material.png");
+		textureMaterial.setLinearFiltering(false);
+		context.bindAlbedoTexture(textureMaterial);
 
 		VoxelContext bri = new VoxelContext(0);
 		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));

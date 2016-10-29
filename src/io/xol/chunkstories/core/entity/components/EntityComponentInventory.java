@@ -25,7 +25,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 {
 	public int width;
 	public int height;
-	
+
 	//What does this inventory belong to ?
 	public EntityWithInventory holder;
 
@@ -40,16 +40,12 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		contents = new ItemPile[width][height];
 	}
 
-	public void sendUpdates()
-	{
-		pushComponentController();
-	}
-	
+
 	public ItemPile[][] getContents()
 	{
 		return contents;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#getItem(int, int)
 	 */
@@ -57,7 +53,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	public ItemPile getItemPileAt(int x, int y)
 	{
 		if (contents[x % width][y % height] != null)
-			return contents[x % width][y % height] ;
+			return contents[x % width][y % height];
 		else
 		{
 			ItemPile p;
@@ -74,7 +70,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 					p = contents[i % width][j % height];
 					if (p != null)
 					{
-						if(i+p.item.getSlotsWidth()-1 >= x && j+p.item.getSlotsHeight()-1 >= y)
+						if (i + p.item.getSlotsWidth() - 1 >= x && j + p.item.getSlotsHeight() - 1 >= y)
 							return p;
 					}
 				}
@@ -111,7 +107,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 					p = contents[i % width][j % height];
 					if (p != null)
 					{
-						if(i+p.item.getSlotsWidth()-1 >= x && j+p.item.getSlotsHeight()-1 >= y)
+						if (i + p.item.getSlotsWidth() - 1 >= x && j + p.item.getSlotsHeight() - 1 >= y)
 							return false;
 					}
 				}
@@ -128,61 +124,61 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	{
 		ItemPile currentPileAtLocation = this.getItemPileAt(x, y);
 		//If empty and has space, put it in.
-		if(currentPileAtLocation == null && canPlaceItemAt(x, y, itemPile))
+		if (currentPileAtLocation == null && canPlaceItemAt(x, y, itemPile))
 		{
 			itemPile.setInventory(this);
 			itemPile.setX(x);
 			itemPile.setY(y);
 			contents[x % width][y % height] = itemPile;
-			
+
 			//Push changes
-			if(this.holder != null)
-				this.sendUpdates();
-			
+			if (this.holder != null)
+				this.refreshCompleteInventory();
+
 			//There is nothing left
 			return null;
 		}
 		//If the two piles are similar we can try to merge them
-		if(currentPileAtLocation != null)
+		if (currentPileAtLocation != null)
 		{
 			//System.out.println("currentPileAtLocation.equals(itemPile)"+currentPileAtLocation.equals(itemPile));
 			//System.out.println("=="+(currentPileAtLocation == itemPile));
 			//System.out.println("currentPileAtLocation:"+currentPileAtLocation);
 			//System.out.println("itemPile:"+itemPile);
 		}
-		
-		if(currentPileAtLocation != null && currentPileAtLocation.canMergeWith(itemPile) && !currentPileAtLocation.equals(itemPile))
+
+		if (currentPileAtLocation != null && currentPileAtLocation.canMergeWith(itemPile) && !currentPileAtLocation.equals(itemPile))
 		{
 			Item item = currentPileAtLocation.getItem();
 			int currentAmount = currentPileAtLocation.getAmount();
 			int wouldBeAddedAmount = itemPile.getAmount();
-			
+
 			//The existing pile is not already full
-			if(currentAmount < item.getMaxStackSize())
+			if (currentAmount < item.getMaxStackSize())
 			{
 				int totalAmount = currentAmount + wouldBeAddedAmount;
 				//How much can we add ?
 				int addableAmmount = Math.min(totalAmount, item.getMaxStackSize()) - currentAmount;
-				
+
 				currentPileAtLocation.setAmount(currentAmount + addableAmmount);
 				//If we could add all to the first stack, discard the second pile
-				if(addableAmmount == wouldBeAddedAmount)
+				if (addableAmmount == wouldBeAddedAmount)
 				{
 					//Push changes
-					if(this.holder != null)
-						this.sendUpdates();
-					
+					if (this.holder != null)
+						this.refreshCompleteInventory();
+
 					return null;
 				}
 				//If we couldn't, reduce it's size
 				else
 				{
 					itemPile.setAmount(wouldBeAddedAmount - addableAmmount);
-					
+
 					//Push changes
-					if(this.holder != null)
-						this.sendUpdates();
-					
+					if (this.holder != null)
+						this.refreshCompleteInventory();
+
 					return itemPile;
 				}
 			}
@@ -190,7 +186,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		//If none of the above can be done, return the original pile.
 		return itemPile;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#setItemPileAt(int, int, io.xol.chunkstories.item.ItemPile)
 	 */
@@ -200,19 +196,19 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		if (pile == null)
 		{
 			contents[x % width][y % height] = null;
-			
-			if(this.holder != null)
-				this.sendUpdates();
-			
+
+			if (this.holder != null)
+				this.refreshCompleteInventory();
+
 			return true;
 		}
 		ItemPile temp = null;
-		if(contents[x % width][y % height] != null)
+		if (contents[x % width][y % height] != null)
 		{
 			temp = contents[x % width][y % height];
 			contents[x % width][y % height] = null;
 		}
-		
+
 		if (canPlaceItemAt(x, y, pile))
 		{
 			pile.setInventory(this);
@@ -226,20 +222,20 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			return false;
 		}
 
-		if(this.holder != null)
-			this.sendUpdates();
+		if (this.holder != null)
+			this.refreshCompleteInventory();
 		return true;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#addItemPile(io.xol.chunkstories.item.ItemPile)
 	 */
 	@Override
 	public ItemPile addItemPile(ItemPile pile)
 	{
-		for(int i = 0; i < width; i++)
-			for(int j = 0; j < height; j++)
-				if(placeItemPileAt(i, j, pile) == null)
+		for (int j = 0; j < height; j++)
+			for (int i = 0; i < width; i++)
+				if (placeItemPileAt(i, j, pile) == null)
 					return null;
 		return pile;
 	}
@@ -257,13 +253,13 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		{
 			public int i = 0;
 			public int j = 0;
-			
-			ItemPile current = null;
+
+			ItemPile current = contents[0][0];
 
 			@Override
 			public boolean hasNext()
 			{
-				while(current == null && !reachedEnd())
+				while (current == null && !reachedEnd())
 				{
 					i++;
 					if (i >= width)
@@ -271,7 +267,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 						i = 0;
 						j++;
 					}
-					if(reachedEnd())
+					if (reachedEnd())
 						return false;
 					current = contents[i][j];
 				}
@@ -282,11 +278,11 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			{
 				return j >= height;
 			}
-			
+
 			@Override
 			public ItemPile next()
 			{
-				if(reachedEnd())
+				if (reachedEnd())
 					return null;
 				do
 				{
@@ -298,7 +294,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 						j++;
 					}
 				}
-				while(current == null && !reachedEnd());
+				while (current == null && !reachedEnd());
 				return current;
 			}
 
@@ -314,6 +310,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 
 	/**
 	 * Copy the contents of another Inventory.
+	 * 
 	 * @param inventory
 	 */
 	public void load(EntityComponentInventory inventory)
@@ -322,27 +319,75 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		this.height = inventory.height;
 		contents = inventory.contents;
 		//Update inventory references
-		for(int i = 0; i < width; i++)
-			for(int j = 0; j < height ; j++)
-				if(contents[i][j] != null)
+		for (int i = 0; i < width; i++)
+			for (int j = 0; j < height; j++)
+				if (contents[i][j] != null)
 					contents[i][j].setInventory(this);
 	}
-	
-	@Override
-	protected void push(StreamTarget destinator, DataOutputStream stream) throws IOException
+
+	protected enum UpdateMode
 	{
+		MOVE_ITEM, CHANGE_ITEM, REFRESH;
+	}
+
+	public void refreshCompleteInventory()
+	{
+		pushComponentController();
+	}
+	
+	public void refreshItemSlot(int x, int y, ItemPile pileChanged)
+	{
+		
+	}
+	
+	public void pushItemMove(int xFrom, int yFrom, int xTo, int yTo)
+	{
+		
+	}
+	
+	protected void pushOnlyItemChange(int x, int y, ItemPile pileChanged, StreamTarget destinator, DataOutputStream stream) throws IOException
+	{
+		System.out.println("push item change");
+		stream.writeByte(UpdateMode.CHANGE_ITEM.ordinal());
+
+		stream.writeInt(x);
+		stream.writeInt(y);
+
+		if (pileChanged == null)
+			stream.writeInt(0);
+		else
+		{
+			stream.writeInt(pileChanged.getItem().getID());
+			pileChanged.saveCSF(stream);
+		}
+	}
+
+	protected void pushOnlyItemMove(int xFrom, int yFrom, int xTo, int yTo, StreamTarget destinator, DataOutputStream stream) throws IOException
+	{
+		System.out.println("push item move");
+		stream.writeByte(UpdateMode.MOVE_ITEM.ordinal());
+
+		stream.writeInt(xFrom);
+		stream.writeInt(yFrom);
+		
+		stream.writeInt(xTo);
+		stream.writeInt(yTo);
+	}
+
+	protected void pushWholeInventoryRefresh(StreamTarget destinator, DataOutputStream stream) throws IOException
+	{
+		System.out.println("push refresh");
+		stream.writeByte(UpdateMode.REFRESH.ordinal());
+
 		stream.writeInt(width);
 		stream.writeInt(height);
-		/*boolean hasName = name != null;
-		stream.writeBoolean(hasName);
-		if(hasName)
-			stream.writeUTF(name);*/
+
 		ItemPile pile;
-		for(int i = 0; i < width; i++)
-			for(int j = 0; j < height ; j++)
+		for (int i = 0; i < width; i++)
+			for (int j = 0; j < height; j++)
 			{
 				pile = contents[i][j];
-				if(pile == null)
+				if (pile == null)
 					stream.writeInt(0);
 				else
 				{
@@ -353,22 +398,46 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	}
 
 	@Override
+	protected void push(StreamTarget destinator, DataOutputStream stream) throws IOException
+	{
+		pushWholeInventoryRefresh(destinator, stream);
+	}
+
+	@Override
 	protected void pull(StreamSource from, DataInputStream stream) throws IOException
+	{
+		UpdateMode mode = UpdateMode.values()[stream.readByte()];
+
+		System.out.println("Received " + mode + " inventory update");
+
+		switch (mode)
+		{
+		case REFRESH:
+			pullWholeInventoryRefresh(from, stream);
+			break;
+		case CHANGE_ITEM:
+			pullItemChange(from, stream);
+			break;
+		case MOVE_ITEM:
+			pullItemMove(from, stream);
+			break;
+		}
+	}
+
+	protected void pullWholeInventoryRefresh(StreamSource from, DataInputStream stream) throws IOException
 	{
 		this.width = stream.readInt();
 		this.height = stream.readInt();
-		/*boolean hasName = stream.readBoolean();
-		if(hasName)
-			name = stream.readUTF();*/
+
 		contents = new ItemPile[width][height];
 		int id;
 		Item item;
-		for(int i = 0; i < width; i++)
-			for(int j = 0; j < height ; j++)
+		for (int i = 0; i < width; i++)
+			for (int j = 0; j < height; j++)
 			{
 				id = stream.readInt() & 0x00FFFFFF;
 				ItemType itemType = ItemTypes.getItemTypeById(id);
-				if(itemType != null)
+				if (itemType != null)
 				{
 					item = itemType.newItem();
 					contents[i][j] = new ItemPile(item, stream);
@@ -378,7 +447,56 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 				}
 			}
 	}
-	
+
+	protected void pullItemChange(StreamSource from, DataInputStream stream) throws IOException
+	{
+		int x = stream.readInt();
+		int y = stream.readInt();
+
+		int id = stream.readInt() & 0x00FFFFFF;
+		ItemType itemType = ItemTypes.getItemTypeById(id);
+
+		ItemPile newItemPile = null;
+		if (itemType != null)
+		{
+			Item item = itemType.newItem();
+			newItemPile = new ItemPile(item, stream);
+			newItemPile.setInventory(this);
+			newItemPile.setX(x);
+			newItemPile.setY(y);
+		}
+
+		this.contents[x][y] = newItemPile;
+	}
+
+	protected void pullItemMove(StreamSource from, DataInputStream stream) throws IOException
+	{
+		int xFrom = stream.readInt();
+		int yFrom = stream.readInt();
+
+		int xTo = stream.readInt();
+		int yTo = stream.readInt();
+		
+		//Actually swaps items
+		ItemPile temp = this.contents[xTo][yTo];
+		
+		this.contents[xTo][yTo] = this.contents[xFrom][yFrom];
+		this.contents[xFrom][yFrom] = temp;
+		
+		//Updates items if necessary
+		if(this.contents[xFrom][yFrom] != null)
+		{
+			this.contents[xFrom][yFrom].setX(xFrom);
+			this.contents[xFrom][yFrom].setY(yFrom);
+		}
+		
+		if(this.contents[xTo][yTo] != null)
+		{
+			this.contents[xTo][yTo].setX(xTo);
+			this.contents[xTo][yTo].setY(yTo);
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#clear()
 	 */
@@ -387,8 +505,8 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	{
 		contents = new ItemPile[width][height];
 
-		if(this.holder != null)
-			this.sendUpdates();
+		if (this.holder != null)
+			this.refreshCompleteInventory();
 	}
 
 	/* (non-Javadoc)
@@ -399,7 +517,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	{
 		int size = 0;
 		Iterator<ItemPile> i = this.iterator();
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			i.next();
 			size++;
@@ -413,9 +531,9 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	@Override
 	public String getHolderName()
 	{
-		if(holder != null)
+		if (holder != null)
 		{
-			if(holder instanceof EntityNameable)
+			if (holder instanceof EntityNameable)
 				return ((EntityNameable) holder).getName();
 			return holder.getClass().getSimpleName();
 		}
