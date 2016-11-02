@@ -68,7 +68,7 @@ public class RegionImplementation implements Region
 		for (int i = 0; i < 8; i++)
 			for (int j = 0; j < 8; j++)
 				for (int k = 0; k < 8; k++)
-					chunkHolders[i * 64 + j *8 + k] = new ChunkHolderImplementation(this, loadedChunks, i, j, k);
+					chunkHolders[i * 64 + j *8 + k] = new ChunkHolderImplementation(this, loadedChunks, regionX * 8 + i, regionY * 8 + j, regionZ * 8 + k);
 
 		//Unique UUID
 		uuid = random.nextLong();

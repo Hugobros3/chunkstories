@@ -13,8 +13,6 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 
 /**
  * Iterates over an entire world and gives all *loaded* chunks of it
- * 
- * @author Hugo
  */
 public class WorldChunksIterator implements ChunksIterator
 {

@@ -213,6 +213,9 @@ public class ChunkHolderImplementation implements ChunkHolder
 				return false;
 		}
 		
+		//if(users.size() == 1)
+		//	System.out.println("red flag");
+		
 		users.add(new WeakReference<WorldUser>(user));
 		
 		if(chunk == null)
@@ -260,7 +263,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 			if (u == null)
 				i.remove();
 			
-			//System.out.println("chunk used by "+u.hashCode());
+			//System.out.println("chunk used by "+u);
 		}
 		
 		if(users.isEmpty())
@@ -305,19 +308,19 @@ public class ChunkHolderImplementation implements ChunkHolder
 	@Override
 	public int getInRegionX()
 	{
-		return x;
+		return x & 0x7;
 	}
 
 	@Override
 	public int getInRegionY()
 	{
-		return y;
+		return y & 0x7;
 	}
 
 	@Override
 	public int getInRegionZ()
 	{
-		return z;
+		return z & 0x7;
 	}
 
 	public void setChunk(CubicChunk chunk)
@@ -348,17 +351,30 @@ public class ChunkHolderImplementation implements ChunkHolder
 		return getInRegionZ() + region.getRegionZ() * 8;
 	}
 	
-	@Override
+	/*@Override
 	public int hashCode()
 	{
 		return uuid;
-	}
+	}*/
 	
 	@Override
 	public boolean equals(Object o)
 	{
 		if(o instanceof ChunkHolderImplementation)
-			return ((ChunkHolderImplementation)o).uuid == uuid;
+		{
+			ChunkHolderImplementation ch = ((ChunkHolderImplementation)o);
+			//boolean thoroughTest = ch.x == x && ch.y == y && ch.z == z;
+			boolean fastTest = ch.uuid == uuid;
+
+			/*if(fastTest != thoroughTest)
+			{
+				System.out.println("Grosse merde !"+thoroughTest+" != "+fastTest);
+				System.out.println(x+" "+y+" "+z + " " + ch.uuid);
+			}*/
+			
+			return fastTest;
+		}
+			
 		return false;
 	}
 }
