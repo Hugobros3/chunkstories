@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
@@ -92,7 +93,7 @@ public class WorldRegionsHolder
 
 	long prout = 0;
 	
-	public Chunk getChunk(int chunkX, int chunkY, int chunkZ)
+	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ)
 	{
 		RegionImplementation holder = getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
 		if (holder != null)

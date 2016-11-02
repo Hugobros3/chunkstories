@@ -70,7 +70,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		@Override
 		public boolean run()
 		{
-			Region region = world.getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
+			RegionImplementation region = world.getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
 			
 			CubicChunk c = null;// new CubicChunk(region, chunkX, chunkY, chunkZ);
 			

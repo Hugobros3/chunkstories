@@ -877,11 +877,20 @@ public class WorldRenderer
 				}
 				if (!isShadowPass)
 				{
+					Matrix4f matrix = new Matrix4f();
+					matrix.translate(new Vector3f( vboDekalX, chunk.getChunkY() * 32f, vboDekalZ));
+					this.renderingContext.setObjectMatrix(matrix);
 					opaqueBlocksShader.setUniform3f("objectPosition", vboDekalX, chunk.getChunkY() * 32f, vboDekalZ);
 				}
 				else
-					shadowsPassShader.setUniform3f("objectPosition", vboDekalX, chunk.getChunkY() * 32f, vboDekalZ);
-				
+				{
+
+					Matrix4f matrix = new Matrix4f();
+					matrix.translate(new Vector3f( vboDekalX, chunk.getChunkY() * 32f, vboDekalZ));
+					this.renderingContext.setObjectMatrix(matrix);
+					
+				}
+					
 				if (!Keyboard.isKeyDown(Keyboard.KEY_F4))
 					if (isShadowPass)
 						renderedVerticesShadow += chunkRenderData.renderCubeSolidBlocks(renderingContext);

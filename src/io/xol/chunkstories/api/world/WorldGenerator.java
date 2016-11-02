@@ -1,7 +1,7 @@
 package io.xol.chunkstories.api.world;
 
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.api.world.chunk.Region;
+import io.xol.chunkstories.world.region.RegionImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -23,7 +23,8 @@ public abstract class WorldGenerator
 	 * @param cz
 	 * @return a CubicChunk object
 	 */
-	public abstract Chunk generateChunk(Region region, int cx, int cy, int cz);
+	//TODO sort this out
+	public abstract Chunk generateChunk(RegionImplementation region, int cx, int cy, int cz);
 
 	/**
 	 * Returns the data {@link VoxelFormat} for summary generation

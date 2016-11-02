@@ -200,7 +200,7 @@ public class ChunksRenderer extends Thread
 									}
 									catch (Exception e)
 									{
-
+										e.printStackTrace();
 									}
 							}
 							else
@@ -241,9 +241,12 @@ public class ChunksRenderer extends Thread
 			int relx = x < 0 ? 0 : (x >= 32 ? 2 : 1);
 			int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
 			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
-			Chunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
+			int[] target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
+			x &= 0x1F;
+			y &= 0x1F;
+			z &= 0x1F;
 			if (target != null)
-				data = target.getVoxelData(x, y, z);
+				data = target[x * 1024 + y * 32 + z];
 		}
 		else
 		{
@@ -271,10 +274,13 @@ public class ChunksRenderer extends Thread
 			int relx = x < 0 ? 0 : (x >= 32 ? 2 : 1);
 			int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
 			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
-			Chunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
-			if (target != null && !target.isAirChunk())
+			int[] target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
+			if (target != null)
 			{
-				data = target.getVoxelData(x, y, z);
+				x &= 0x1F;
+				y &= 0x1F;
+				z &= 0x1F;
+				data = target[x * 1024 + y * 32 + z];
 				int blockID = VoxelFormat.id(data);
 				return Voxels.get(blockID).isVoxelOpaque() ? -1 : VoxelFormat.sunlight(data);
 			}
@@ -314,9 +320,12 @@ public class ChunksRenderer extends Thread
 			int relx = x < 0 ? 0 : (x >= 32 ? 2 : 1);
 			int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
 			int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
-			Chunk target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
+			int[] target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
+			x &= 0x1F;
+			y &= 0x1F;
+			z &= 0x1F;
 			if (target != null)
-				data = target.getVoxelData(x, y, z);
+				data = target[x * 1024 + y * 32 + z];
 		}
 		else
 		{
@@ -876,7 +885,7 @@ public class ChunksRenderer extends Thread
 
 	public static long renderStart = 0;
 
-	public Chunk[] cache = new CubicChunk[27];
+	public int[][] cache = new int[27][];
 
 	Deque<Integer> blockSources = new ArrayDeque<Integer>();
 	Deque<Integer> sunSources = new ArrayDeque<Integer>();
@@ -932,7 +941,13 @@ public class ChunksRenderer extends Thread
 		for (int relx = -1; relx <= 1; relx++)
 			for (int rely = -1; rely <= 1; rely++)
 				for (int relz = -1; relz <= 1; relz++)
-					cache[((relx + 1) * 3 + (rely + 1)) * 3 + (relz + 1)] = work.world.getChunk(cx + relx, cy + rely, cz + relz);
+				{
+					CubicChunk chunk2 = work.world.getChunk(cx + relx, cy + rely, cz + relz);
+					if(chunk2 != null)
+						cache[((relx + 1) * 3 + (rely + 1)) * 3 + (relz + 1)] = chunk2.chunkVoxelData;
+					else
+						cache[((relx + 1) * 3 + (rely + 1)) * 3 + (relz + 1)] = null;
+				}
 
 		// Expensive bullshit
 

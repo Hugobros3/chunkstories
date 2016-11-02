@@ -185,7 +185,7 @@ public class IOTasks extends Thread
 			if (chunkSlot.isChunkLoaded())
 				return true;
 
-			Region region = chunkSlot.getRegion();
+			RegionImplementation region = chunkSlot.getRegion();
 			int cx = region.getRegionX() * 8 + chunkSlot.getInRegionX();
 			int cy = region.getRegionY() * 8 + chunkSlot.getInRegionY();
 			int cz = region.getRegionZ() * 8 + chunkSlot.getInRegionZ();

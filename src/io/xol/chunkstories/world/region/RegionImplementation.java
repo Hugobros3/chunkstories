@@ -199,7 +199,7 @@ public class RegionImplementation implements Region
 	}
 
 	@Override
-	public Chunk getChunk(int chunkX, int chunkY, int chunkZ)
+	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ)
 	{
 		return chunkHolders[(chunkX & 7) * 64 + (chunkY & 7) * 8 + (chunkZ & 7)].getChunk();
 	}

@@ -73,7 +73,7 @@ public class DefaultItemRenderer implements ItemRenderer
 	
 	protected void draw3DPlane(RenderingInterface renderingInterface)
 	{
-		defaultPlane = null;
+		//defaultPlane = null;
 		if(defaultPlane == null)
 		{
 			defaultPlane = new VerticesObject();

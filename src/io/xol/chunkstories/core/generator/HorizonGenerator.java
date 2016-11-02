@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.engine.math.random.SeededSimplexNoiseGenerator;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -30,7 +31,7 @@ public class HorizonGenerator extends WorldGenerator
 	}
 	
 	@Override
-	public Chunk generateChunk(Region region, int cx, int cy, int cz)
+	public Chunk generateChunk(RegionImplementation region, int cx, int cy, int cz)
 	{
 		rnd.setSeed(cx * 32 + cz + 48716148);
 		

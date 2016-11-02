@@ -59,9 +59,12 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 		this.packetsProcessor = new PacketsProcessor(this);
 		this.setName("Server Connection thread - " + ip);
 		
+		//Don't even try if we fail to open the socket.
+		if(!openSocket())
+			return;
+		
 		//Start the connection
 		this.start();
-		
 	}
 
 	// Connect on/off
@@ -99,10 +102,6 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 	@Override
 	public void run()
 	{
-		//Don't even try if we fail to open the socket.
-		if(!openSocket())
-			return;
-		
 		while (!die)
 		{
 			// Just wait for the goddamn packets to come !
