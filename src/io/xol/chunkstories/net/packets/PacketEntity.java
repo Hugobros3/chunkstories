@@ -47,8 +47,6 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 	@Override
 	public void prepare(PacketDestinator destinator) throws IOException
 	{
-		//System.out.println("preparing packet");
-		
 		//If the entity no longer exists, we make sure we tell the player so he doesn't spawn it again
 		if(!entityToUpdate.exists())
 		{

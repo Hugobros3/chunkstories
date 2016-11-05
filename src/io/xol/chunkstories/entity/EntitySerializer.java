@@ -45,7 +45,7 @@ public class EntitySerializer
 		{
 			long entityUUID = in.readLong();
 			
-			//When we reach -1 in a stream of entities, it means we reached the end.
+			//When we reach id -1 in a stream of entities, it means we reached the end.
 			if(entityUUID == -1)
 				return null;
 			
@@ -62,15 +62,6 @@ public class EntitySerializer
 					throw new UnknownComponentException(componentId, entity.getClass());
 				componentId = in.readInt();
 			}
-			
-			//System.out.println("Read serialized entity from : "+source);
-			//System.out.println(entity.exists()+" - "+entity);
-			
-			/*-if(!entity.exists())
-			{
-				System.out.println("LOADED NON-EXISTENT ENTITY : "+entity);
-				((EntityImplementation)entity).existenceComponent.exists = true;
-			}*/
 			
 			return entity;
 		}
