@@ -446,7 +446,7 @@ public class VerticesObject
 			WeakReference<VerticesObject> reference = i2.next();
 
 			VerticesObject verticesObject = reference.get();
-			if (verticesObject != null)
+			if (verticesObject != null && verticesObject.openGLID != -2)
 			{
 				//Send deffered uploads
 				verticesObject.uploadPendingDefferedData();

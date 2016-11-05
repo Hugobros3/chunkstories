@@ -196,7 +196,7 @@ public class WorldRenderer
 	public int renderedChunks = 0;
 
 	//Bloom avg color buffer
-	ByteBuffer shadedMipmapZeroLevelColor = null;//BufferUtils.createByteBuffer(4 * 3);
+	ByteBuffer shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(4 * 3);
 	//Bloom aperture
 	float apertureModifier = 1f;
 
@@ -1227,10 +1227,11 @@ public class WorldRenderer
 				//System.out.println(fBuffer + " " + max_mipmap);
 				//shadedMipmapZeroLevelColor.rewind();
 
-				//illDownIndex++;
+				illDownIndex++;
 				//if (illDownIndex % 50 == 0)
 				if (System.currentTimeMillis() - lastIllCalc > 1000)
 				{
+					
 					lastIllCalc = System.currentTimeMillis();
 					//shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(12);
 					//if(!shadedMipmapZeroLevelColor.hasRemaining())
@@ -1248,6 +1249,8 @@ public class WorldRenderer
 						//shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(tmpBuffer.capacity());
 						//shadedMipmapZeroLevelColor.put(tmpBuffer);
 						shadedMipmapZeroLevelColor = illuminationDownloader[illDownIndex / 50 % illDownBuffers].readPBO();
+						
+						//System.out.println(shadedMipmapZeroLevelColor);
 						//System.out.println("read took "+Math.floor((System.nanoTime()-nanoR)/10f)/100f+"µs ");
 						//System.out.println("Read "+shadedMipmapZeroLevelColor.capacity() + "bytes.");
 						//System.out.println("glError : "+glGetError());
@@ -1262,9 +1265,11 @@ public class WorldRenderer
 					shadedMipmapZeroLevelColor.rewind();
 
 				this.shadedBuffer.computeMipmaps();
-
+				
 				if (shadedMipmapZeroLevelColor != null)
 				{
+					//System.out.println(":c");
+					
 					if (!shadedMipmapZeroLevelColor.hasRemaining())
 						shadedMipmapZeroLevelColor.rewind();
 					//System.out.println(shadedMipmapZeroLevelColor);
@@ -1278,7 +1283,7 @@ public class WorldRenderer
 					luma = (float) Math.pow(luma, 1d / 2.2);
 					//System.out.println("luma:"+luma + " aperture:"+ this.apertureModifier);
 
-					float targetLuma = 0.55f;
+					float targetLuma = 0.65f;
 					float lumaMargin = 0.15f;
 
 					if (luma < targetLuma - lumaMargin)
@@ -1288,7 +1293,7 @@ public class WorldRenderer
 					}
 					else if (luma > targetLuma + lumaMargin)
 					{
-						if (apertureModifier > 1.0)
+						if (apertureModifier > 0.99)
 							apertureModifier *= 0.999;
 					}
 					else

@@ -178,7 +178,7 @@ public abstract class Texture2D extends Texture
 
 	public void computeMipmaps()
 	{
-		//System.out.println("Computing mipmap for "+name);
+		//System.out.println("Computing mipmap for "+glId);
 		bind();
 		
 		//Regenerate the mipmaps only when necessary
