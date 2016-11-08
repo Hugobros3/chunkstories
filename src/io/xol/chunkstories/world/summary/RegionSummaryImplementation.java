@@ -426,7 +426,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		
 		if(!worldSummariesHolder.removeSummary(this))
 		{
-			System.out.println("Someone tryed to remove a summary twice !!!");
+			//System.out.println("Someone tryed to remove a summary twice !!!");
 		}
 	}
 

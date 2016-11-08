@@ -1,4 +1,4 @@
-package io.xol.chunkstories.importer;
+package io.xol.chunkstories.tools.converter;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,11 +9,18 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
+import io.xol.chunkstories.api.world.chunk.ChunkHolder;
+import io.xol.chunkstories.api.world.chunk.Region;
+import io.xol.chunkstories.api.world.chunk.WorldUser;
+import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.content.Mods;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.WorldTool;
@@ -27,16 +34,17 @@ import io.xol.chunkstories.world.WorldInfo;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class AnvilExporter
+/**
+ * This program loads a mcanvil game file and makes a chunk stories world file with them.
+ */
+public class MinecraftMapConverter implements WorldUser
 {
-
-	//This program loads a mcanvil game file and makes a chunk stories world file with them.
-
 	static boolean verbose = false;
-	static MinecraftRegion region;
 
 	public static void main(String[] arguments)
 	{
+		MinecraftMapConverter user = new MinecraftMapConverter();
+		
 		//Start logs
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
@@ -137,27 +145,33 @@ public class AnvilExporter
 			double completion = 0.0;
 			long lastPercentageShow = System.currentTimeMillis();
 
+			Set<Region> registeredCS_Regions = new HashSet<Region>();
+			Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
+			Set<RegionSummary> registeredCS_Summaries = new HashSet<RegionSummary>();
+
 			try
 			{
 				for (int minecraftRegionX = mcRegionStartX; minecraftRegionX < mcRegionEndX; minecraftRegionX++)
 				{
 					for (int minecraftRegionZ = mcRegionStartZ; minecraftRegionZ < mcRegionEndZ; minecraftRegionZ++)
 					{
+						MinecraftRegion minecraftRegion;
+						
 						String mcrPath = mcWorldName + "/region/r." + minecraftRegionX + "." + minecraftRegionZ + ".mca";
 
 						File regionFile = new File(mcrPath);
 						if (regionFile.exists())
 						{
 							//verbose("Loading mc region file "+mcrPath);
-							region = new MinecraftRegion(regionFile);
+							minecraftRegion = new MinecraftRegion(regionFile);
 						}
 						else
 						{
-							region = null;
+							minecraftRegion = null;
 							verbose("mc region file " + mcrPath + " doesn't exist !");
 						}
-
-						//Iterate over each chunk within the region
+						
+						//Iterate over each chunk within the minecraft region
 						for (int minecraftCurrentChunkXinsideRegion = 0; minecraftCurrentChunkXinsideRegion < 32; minecraftCurrentChunkXinsideRegion++)
 						{
 							for (int minecraftCuurrentChunkZinsideRegion = 0; minecraftCuurrentChunkZinsideRegion < 32; minecraftCuurrentChunkZinsideRegion++)
@@ -170,26 +184,47 @@ public class AnvilExporter
 								if (chunkStoriesCurrentChunkX >= 0 && chunkStoriesCurrentChunkX < size.sizeInChunks * 32 && chunkStoriesCurrentChunkZ >= 0 && chunkStoriesCurrentChunkZ < size.sizeInChunks * 32)
 								{
 									//Load the chunk
-									MinecraftChunk chunk = null;
+									MinecraftChunk minecraftChunk = null;
 									try
 									{
-										if (region != null)
-											chunk = region.getChunk(minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion);
-										if (chunk != null)
+										//Tries loading the Minecraft chunk
+										if (minecraftRegion != null)
+											minecraftChunk = minecraftRegion.getChunk(minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion);
+										
+										if (minecraftChunk != null)
 										{
+											//If it succeed, we first require to load the corresponding chunkstories stuff
+											
+											//First grab the region
+											/*Region region = exported.aquireRegionWorldCoordinates(user, chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
+											if(region != null)
+												registeredCS_Regions.add(region);*/
+
+											RegionSummary summary = exported.getRegionsSummariesHolder().aquireRegionSummaryWorldCoordinates(user, chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ);
+											if(summary != null)
+												registeredCS_Summaries.add(summary);
+											
+											//Then the chunks
+											for(int y = 0; y < 256; y+= 32)
+											{
+												ChunkHolder holder = exported.aquireChunkHolderWorldCoordinates(user, chunkStoriesCurrentChunkX, y, chunkStoriesCurrentChunkZ);
+												if(holder != null)
+													registeredCS_Holders.add(holder);
+											}
+												
 											for (int x = 0; x < 16; x++)
 												for (int z = 0; z < 16; z++)
 													for (int y = 0; y < 256; y++)
 													{
 														//Translate each block
-														int mcId = chunk.getBlockID(x, y, z) & 0xFFF;
-														int meta = chunk.getBlockMeta(x, y, z) & 0xF;
+														int mcId = minecraftChunk.getBlockID(x, y, z) & 0xFFF;
+														int meta = minecraftChunk.getBlockMeta(x, y, z) & 0xF;
 														//Ignore air blocks
 														if (mcId != 0)
 														{
 															int dataToSet = cachedIdsMatrix[mcId * 16 + meta];//IDsConverter.getChunkStoriesIdFromMinecraft(mcId, meta);
 															if (dataToSet == -2)
-																dataToSet = IDsConverter.getChunkStoriesIdFromMinecraftComplex(mcId, meta, region, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
+																dataToSet = IDsConverter.getChunkStoriesIdFromMinecraftComplex(mcId, meta, minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
 
 															if (dataToSet != -1)
 															{
@@ -205,7 +240,7 @@ public class AnvilExporter
 														}
 													}
 											//Converts external data such as signs
-											chunk.postProcess(exported, chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
+											minecraftChunk.postProcess(exported, chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
 										}
 									}
 									catch (Exception e)
@@ -221,24 +256,35 @@ public class AnvilExporter
 
 										if (completion >= 100.0 || (System.currentTimeMillis() - lastPercentageShow > 5000))
 										{
-											verbose(completion + "% ... ");
+											verbose(completion + "% ... ("+exported.getRegionsHolder().countChunks()+")");
 											lastPercentageShow = System.currentTimeMillis();
 										}
 									}
 
 								}
-								if (exported.getRegionsHolder().countChunksWithData() > 256)
+								if (exported.getRegionsHolder().countChunks() > 256)
 								{
 									//Save world
-									verbose("More than 256 chunks in memory, saving and unloading before continuing");
+									verbose("before:"+exported.getRegionsHolder().countChunks());
+									verbose("More than 256 chunks already in memory, saving and unloading before continuing");
 									exported.saveEverything();
-									exported.unloadEverything();
+									for(Region region : registeredCS_Regions)
+										region.unregisterUser(user);
+									
+									for(ChunkHolder holder : registeredCS_Holders)
+										holder.unregisterUser(user);
+									
+									for(RegionSummary summary : registeredCS_Summaries)
+										summary.unregisterUser(user);
+										
+									exported.unloadUselessData();
+									verbose("after:"+exported.getRegionsHolder().countChunks());
 								}
 							}
 						}
 						//Close region
-						if (region != null)
-							region.close();
+						if (minecraftRegion != null)
+							minecraftRegion.close();
 						System.gc();
 					}
 				}

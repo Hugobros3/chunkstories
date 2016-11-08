@@ -376,7 +376,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 
 	protected void pushWholeInventoryRefresh(StreamTarget destinator, DataOutputStream stream) throws IOException
 	{
-		System.out.println("push refresh");
+		//System.out.println("push refresh");
 		stream.writeByte(UpdateMode.REFRESH.ordinal());
 
 		stream.writeInt(width);
@@ -408,7 +408,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	{
 		UpdateMode mode = UpdateMode.values()[stream.readByte()];
 
-		System.out.println("Received " + mode + " inventory update");
+		//System.out.println("Received " + mode + " inventory update");
 
 		switch (mode)
 		{
