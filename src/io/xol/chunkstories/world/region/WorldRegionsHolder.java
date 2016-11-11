@@ -57,7 +57,6 @@ public class WorldRegionsHolder
 	private RegionImplementation getOrCreateRegion(int regionX, int regionY, int regionZ)
 	{
 		RegionImplementation holder = null;
-		
 
 		int key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY;
 		//RegionLocation key = new RegionLocation(regionX, regionY, regionZ);

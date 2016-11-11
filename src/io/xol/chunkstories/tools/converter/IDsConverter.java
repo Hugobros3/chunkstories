@@ -1,4 +1,4 @@
-package io.xol.chunkstories.importer;
+package io.xol.chunkstories.tools.converter;
 
 import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.api.voxel.VoxelFormat;

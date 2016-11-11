@@ -30,10 +30,9 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public void requestRegionLoad(RegionImplementation holder)
+	public void requestRegionLoad(RegionImplementation region)
 	{
-		//System.out.println("Load chunk holder"+holder);
-		IOTask task = new IOTaskLoadRegion(holder);
+		IOTask task = new IOTaskLoadRegion(region);
 		if(tasks.add(task))
 		{
 			task.run();
