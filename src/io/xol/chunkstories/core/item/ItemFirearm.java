@@ -163,7 +163,6 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 					}
 					else if ((automatic || !wasTriggerPressedLastTick) && (System.currentTimeMillis() - lastShot) / 1000.0d > 1.0 / (rpm / 60.0))
 					{
-						System.out.println((System.currentTimeMillis() - lastShot));
 						//Fire virtual input
 						ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
 						Client.getInstance().getPluginsManager().fireEvent(event);

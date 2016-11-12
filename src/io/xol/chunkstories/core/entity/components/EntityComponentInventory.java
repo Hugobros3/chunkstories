@@ -7,21 +7,25 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.csf.StreamSource;
 import io.xol.chunkstories.api.csf.StreamTarget;
+import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
+import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityComponentInventory extends EntityComponent implements Iterable<ItemPile>, Inventory
+public class EntityComponentInventory extends EntityComponent implements Inventory
 {
 	public int width;
 	public int height;
@@ -70,7 +74,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 					p = contents[i % width][j % height];
 					if (p != null)
 					{
-						if (i + p.item.getSlotsWidth() - 1 >= x && j + p.item.getSlotsHeight() - 1 >= y)
+						if (i + p.getItem().getSlotsWidth() - 1 >= x && j + p.getItem().getSlotsHeight() - 1 >= y)
 							return p;
 					}
 				}
@@ -93,12 +97,12 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		{
 			ItemPile p;
 			//Iterate the inventory up to the new pile x end ( position + width - 1 )
-			for (int i = 0; i < x + (itemPile.item.getSlotsWidth()); i++)
+			for (int i = 0; i < x + (itemPile.getItem().getSlotsWidth()); i++)
 			{
 				// If the item width would overflow the limits of the inventory
 				if (i >= width)
 					return false;
-				for (int j = 0; j < y + (itemPile.item.getSlotsHeight()); j++)
+				for (int j = 0; j < y + (itemPile.getItem().getSlotsHeight()); j++)
 				{
 					// If overflow in height
 					if (j >= height)
@@ -107,7 +111,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 					p = contents[i % width][j % height];
 					if (p != null)
 					{
-						if (i + p.item.getSlotsWidth() - 1 >= x && j + p.item.getSlotsHeight() - 1 >= y)
+						if (i + p.getItem().getSlotsWidth() - 1 >= x && j + p.getItem().getSlotsHeight() - 1 >= y)
 							return false;
 					}
 				}
@@ -133,7 +137,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 
 			//Push changes
 			if (this.holder != null)
-				this.refreshCompleteInventory();
+				this.refreshItemSlot(x, y, contents[x % width][y % height]);
 
 			//There is nothing left
 			return null;
@@ -166,7 +170,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 				{
 					//Push changes
 					if (this.holder != null)
-						this.refreshCompleteInventory();
+						this.refreshItemSlot(x, y, contents[x % width][y % height]);
 
 					return null;
 				}
@@ -177,7 +181,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 
 					//Push changes
 					if (this.holder != null)
-						this.refreshCompleteInventory();
+						this.refreshItemSlot(x, y, contents[x % width][y % height]);
 
 					return itemPile;
 				}
@@ -198,7 +202,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			contents[x % width][y % height] = null;
 
 			if (this.holder != null)
-				this.refreshCompleteInventory();
+				this.refreshItemSlot(x, y, contents[x % width][y % height]);
 
 			return true;
 		}
@@ -223,7 +227,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		}
 
 		if (this.holder != null)
-			this.refreshCompleteInventory();
+			this.refreshItemSlot(x, y, contents[x % width][y % height]);
 		return true;
 	}
 
@@ -284,18 +288,13 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			{
 				if (reachedEnd())
 					return null;
-				do
-				{
-					current = contents[i][j];
-					i++;
-					if (i >= width)
-					{
-						i = 0;
-						j++;
-					}
-				}
-				while (current == null && !reachedEnd());
-				return current;
+				
+				if(current == null)
+					hasNext();
+				
+				ItemPile r = current;
+				current = null;
+				return r;
 			}
 
 			@Override
@@ -337,12 +336,20 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	
 	public void refreshItemSlot(int x, int y, ItemPile pileChanged)
 	{
+		//System.out.println("Updating slot: "+x+", "+y+" to "+pileChanged);
 		
+		Packet packetItemUpdate = new PacketInventoryPartialUpdate(this, x, y, pileChanged);
+		Controller controller = null;
+		if(entity instanceof EntityControllable)
+			controller = ((EntityControllable) entity).getControllerComponent().getController();
+		
+		if(controller != null)
+			controller.pushPacket(packetItemUpdate);
 	}
 	
 	public void pushItemMove(int xFrom, int yFrom, int xTo, int yTo)
 	{
-		
+		throw new UnsupportedOperationException();
 	}
 	
 	protected void pushOnlyItemChange(int x, int y, ItemPile pileChanged, StreamTarget destinator, DataOutputStream stream) throws IOException

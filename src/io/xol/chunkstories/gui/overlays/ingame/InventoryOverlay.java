@@ -59,8 +59,8 @@ public class InventoryOverlay extends Overlay
 			/*int textureId = TexturesHandler.getTextureID(selectedItem.getTextureName());
 			if(textureId == -1)
 				textureId = TexturesHandler.getTexture("res/items/icons/notex.png").getID();*/
-			int width = slotSize * selectedItem.item.getSlotsWidth();
-			int height = slotSize * selectedItem.item.getSlotsHeight();
+			int width = slotSize * selectedItem.getItem().getSlotsWidth();
+			int height = slotSize * selectedItem.getItem().getSlotsHeight();
 			//GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX() - width / 2, Mouse.getY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
 			
 			//

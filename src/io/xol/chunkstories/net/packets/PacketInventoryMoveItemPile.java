@@ -2,15 +2,14 @@ package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.Inventory;
-import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.core.events.PlayerMoveItemEvent;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
+import io.xol.chunkstories.net.InventoryTranslator;
 import io.xol.chunkstories.server.Server;
 
 import java.io.DataInputStream;
@@ -23,6 +22,11 @@ import java.io.IOException;
 
 public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 {
+	public ItemPile itemPile;
+	public Inventory from, to;
+	public int oldX, oldY, newX, newY;
+	public int amount;
+	
 	@Override
 	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
@@ -55,19 +59,16 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		//Describe the itemPile if we are trying to spawn an item from nowhere
 		if(from == null || from.getHolder() == null)
 		{
-			out.writeInt(itemPile.item.getID());
+			out.writeInt(itemPile.getItem().getID());
 			itemPile.saveCSF(out);
 		}
 	}
 
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
-		read(in);
-		process(processor);
-	}
-	
-	public void read(DataInputStream in) throws IOException
-	{
+		//read(in);
+		//process(processor);
+		
 		oldX = in.readInt();
 		oldY = in.readInt();
 		newX = in.readInt();
@@ -75,49 +76,18 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		
 		amount = in.readInt();
 		
-		holderTypeFrom = in.readByte();
-		if(holderTypeFrom == 0x01)
-			eIdFrom = in.readLong();
+		from = InventoryTranslator.obtainInventoryHandle(in, processor);
 		
-		holderTypeTo = in.readByte();
-		if(holderTypeTo == 0x01)
-			eIdTo = in.readLong();
+		to = InventoryTranslator.obtainInventoryHandle(in, processor);
 		
-		if(holderTypeFrom == 0x00)
+		//If this pile is spawned from the void
+		if(from == null)
 		{
 			Item item = ItemTypes.getItemTypeById(in.readInt()).newItem();
 			itemPile = new ItemPile(item, in);
-		}
-	}
-	
-	public ItemPile itemPile;
-	public Inventory from, to;
-	public int oldX, oldY, newX, newY;
-	public int amount;
-
-	byte holderTypeFrom, holderTypeTo;
-	
-	long eIdFrom, eIdTo;
-	
-	public void process(PacketsProcessor processor)
-	{
-		//System.out.println(eIdFrom+"="+eIdTo +"   " + holderTypeFrom+":"+holderTypeTo);
-		
-		if(holderTypeFrom == 0x01)
-		{
-			EntityWithInventory entity = (EntityWithInventory) processor.getWorld().getEntityByUUID(eIdFrom);
-			if(entity != null)
-				from = entity.getInventory();
-		}
-		if(holderTypeTo == 0x01)
-		{
-			EntityWithInventory entity = (EntityWithInventory) processor.getWorld().getEntityByUUID(eIdTo);
-			if(entity != null)
-				to = entity.getInventory();
 		}
 		
 		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(processor.getServerClient().getProfile(), this);
 		Server.getInstance().getPluginsManager().fireEvent(moveItemEvent);
 	}
-
 }

@@ -89,8 +89,8 @@ public class VoxelItemRenderer implements ItemRenderer
 		Voxel voxel = ((ItemVoxel) pile.getItem()).getVoxel();
 		if (voxel == null)
 		{
-			int width = slotSize * pile.item.getSlotsWidth();
-			int height = slotSize * pile.item.getSlotsHeight();
+			int width = slotSize * pile.getItem().getSlotsWidth();
+			int height = slotSize * pile.getItem().getSlotsHeight();
 			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, TexturesHandler.getTexture("./items/icons/notex.png"), true, true, null);
 			return;
 		}

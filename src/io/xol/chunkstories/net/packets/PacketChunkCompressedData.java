@@ -54,8 +54,6 @@ public class PacketChunkCompressedData extends Packet
 		z = in.readInt();
 		
 		int length = in.readInt();
-
-		//System.out.println(length+"b packet received x:"+x+"y:"+y+"z:"+z);
 		
 		if(length > 0)
 		{

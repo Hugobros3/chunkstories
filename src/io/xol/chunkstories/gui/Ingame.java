@@ -483,7 +483,7 @@ public class Ingame extends OverlayableScene
 				selectedInventorySlot %= ((EntityWithInventory) player).getInventory().getWidth();
 				selected = ((EntityWithInventory) player).getInventory().getItemPileAt(selectedInventorySlot, 0);
 				if (selected != null)
-					selectedInventorySlot += selected.item.getSlotsWidth();
+					selectedInventorySlot += selected.getItem().getSlotsWidth();
 				else
 					selectedInventorySlot++;
 			}

@@ -10,14 +10,32 @@ import io.xol.chunkstories.item.ItemPile;
 
 public interface Inventory extends Iterable<ItemPile>
 {
-	ItemPile getItemPileAt(int x, int y);
+	/**
+	 * How many slots wide is this inventory
+	 */
+	public int getWidth();
+	
+	/**
+	 * How many slots high is this inventory
+	 */
+	public int getHeight();
+	
+	/**
+	 * Returns the ItemPile in that position. This functions considers the fact that some items are wider than others, thus checking different positions can
+	 * return the same items.
+	 */
+	public ItemPile getItemPileAt(int x, int y);
 
-	boolean canPlaceItemAt(int x, int y, ItemPile pile);
+	/**
+	 * Checks if a spot in the inventory is eligible for placement of an ItemPile.
+	 * Takes into account the size of the items, as well as item stacking.
+	 */
+	public boolean canPlaceItemAt(int x, int y, ItemPile pile);
 
 	/**
 	 * Tries to place an item at that location, it returns the argument 'pile' if it can't place it.
 	 */
-	ItemPile placeItemPileAt(int x, int y, ItemPile pile);
+	public ItemPile placeItemPileAt(int x, int y, ItemPile pile);
 
 	/**
 	 * Tries to replace the pile in the inventory with another pile
@@ -25,39 +43,32 @@ public interface Inventory extends Iterable<ItemPile>
 	 * that the game will not let you do so.
 	 * @return true if it succeeds, false else
 	 */
-	boolean setItemPileAt(int x, int y, ItemPile pile);
+	public boolean setItemPileAt(int x, int y, ItemPile pile);
 
 	/**
 	 * Try to add a pile to this inventory.
 	 * @param pile
 	 * @return Null if it succeeds or the input pile if it fails
 	 */
-	ItemPile addItemPile(ItemPile pile);
+	public ItemPile addItemPile(ItemPile pile);
 
 	/**
 	 * Iterates over every ItemPile
 	 */
-	IterableIterator<ItemPile> iterator();
+	public IterableIterator<ItemPile> iterator();
 	
-	ItemPile[][] getContents();
-	
-	EntityWithInventory getHolder();
-	
-	int getWidth();
-	
-	int getHeight();
+	public EntityWithInventory getHolder();
 
 	/**
-	 * Removes all itempiles in the inventory.
+	 * Removes all ItemPiles in the inventory.
 	 */
-	void clear();
+	public void clear();
 
 	/**
-	 * Counts the ammount of stuff this inventory contains.
-	 * @return
+	 * Counts the amount of stuff this inventory contains.
 	 */
-	int size();
+	public int size();
 
-	String getHolderName();
+	public String getHolderName();
 
 }
