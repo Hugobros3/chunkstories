@@ -35,7 +35,7 @@ vec4 gammaOutput(vec4 inputValue)
 }
 
 void main(){
-	interpolatedColor = vec4(0.5, 0.5, 0.6, 0.0) * textureGammaIn(lightmap, vec2(sunTime, 1.0));
+	interpolatedColor = vec4(0.3, 0.3, 0.4, 0.0) * textureGammaIn(lightmap, vec2(sunTime, 1.0));
 	
 	float maxHeight = vertexIn.w;
 	vec3 vertexPosition = vertexIn.xyz;

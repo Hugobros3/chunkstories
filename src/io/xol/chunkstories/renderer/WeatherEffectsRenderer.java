@@ -155,7 +155,7 @@ public class WeatherEffectsRenderer
 		
 		//System.out.println("rainIntensity"+rainIntensity);
 		
-		renderingContext.draw(Primitive.TRIANGLE, 0, 2000 + (int)(9000 * rainIntensity));
+		renderingContext.draw(Primitive.TRIANGLE, 0, 20000 + (int)(90000 * rainIntensity));
 		//GLCalls.drawArrays(GL_TRIANGLES, 0, 2000 + (int)(9000 * rainIntensity));
 		//glDisable(GL_BLEND);
 		
