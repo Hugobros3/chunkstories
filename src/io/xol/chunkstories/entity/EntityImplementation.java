@@ -21,6 +21,7 @@ import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.exceptions.IllegalUUIDChangeException;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
@@ -578,9 +579,30 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public Iterator<Subscriber> getAllSubscribers()
+	public IterableIterator<Subscriber> getAllSubscribers()
 	{
-		return subscribers.iterator();
+		return new IterableIterator<Subscriber>() {
+
+			Iterator<Subscriber> i = subscribers.iterator();
+			
+			@Override
+			public boolean hasNext()
+			{
+				return i.hasNext();
+			}
+
+			@Override
+			public Subscriber next()
+			{
+				return i.next();
+			}
+
+			@Override
+			public Iterator<Subscriber> iterator()
+			{
+				return this;
+			}};
+		
 	}
 
 	@Override

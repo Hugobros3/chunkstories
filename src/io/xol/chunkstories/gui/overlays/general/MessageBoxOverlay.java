@@ -32,10 +32,10 @@ public class MessageBoxOverlay extends Overlay
 	@Override
 	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
 	{
-		ObjectRenderer.renderTexturedRectAlpha(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight / 2 + 256, 1024, 1024, "logo", 1f);
-		FontRenderer2.drawTextUsingSpecificFontRVBA(GameWindowOpenGL.windowWidth/2+192, GameWindowOpenGL.windowHeight / 2 + 160, 0, 48, "Indev " + VersionInfo.version, BitmapFont.SMALLFONTS, 1, 0.5f, 1, 1);
+		//ObjectRenderer.renderTexturedRectAlpha(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight / 2 + 256, 1024, 1024, "logo", 1f);
+		//FontRenderer2.drawTextUsingSpecificFontRVBA(GameWindowOpenGL.windowWidth/2+192, GameWindowOpenGL.windowHeight / 2 + 160, 0, 48, "Indev " + VersionInfo.version, BitmapFont.SMALLFONTS, 1, 0.5f, 1, 1);
 
-		int dekal = TrueTypeFont.arial11px.getWidth(message);
+		int dekal = TrueTypeFont.arial11px.getWidth(message) / 2;
 		renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, GameWindowOpenGL.windowWidth/2-dekal*1.5f, GameWindowOpenGL.windowHeight / 2 + 64, message, 3f, 3f, new Vector4f(1,0.2f,0.2f,1));
 		
 		okButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight / 2 - 32);

@@ -2,7 +2,6 @@ package io.xol.chunkstories.world.io;
 
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;

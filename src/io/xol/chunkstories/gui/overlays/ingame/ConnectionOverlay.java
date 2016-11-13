@@ -48,5 +48,9 @@ public class ConnectionOverlay extends Overlay
 		//Once the connection sequence is done, we hide this overlay
 		if(connectionSequence.isDone())
 			this.mainScene.changeOverlay(parent);
+		
+		String fail = connectionSequence.hasFailed();
+		if(fail != null)
+			Client.getInstance().exitToMainMenu(fail);
 	}
 }

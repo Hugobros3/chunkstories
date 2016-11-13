@@ -8,14 +8,12 @@ import io.xol.chunkstories.api.utils.IterableIterator;
 
 public class EntityWorldIterator implements IterableIterator<Entity>
 {
-	Set<Entity> entities;
 	Iterator<Entity> ie;
 	Entity currentEntity;
 
-	public EntityWorldIterator(Set<Entity> entities)
+	public EntityWorldIterator(Iterator<Entity> ie)
 	{
-		this.entities = entities;
-		ie = entities.iterator();
+		this.ie = ie;
 	}
 
 	@Override
@@ -28,6 +26,7 @@ public class EntityWorldIterator implements IterableIterator<Entity>
 	public Entity next()
 	{
 		currentEntity = ie.next();
+		//System.out.println(currentEntity);
 		return currentEntity;
 	}
 

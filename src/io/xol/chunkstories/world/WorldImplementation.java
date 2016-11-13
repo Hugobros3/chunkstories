@@ -2,8 +2,7 @@ package io.xol.chunkstories.world;
 
 import java.io.File;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -91,8 +90,8 @@ public abstract class WorldImplementation implements World
 	protected WorldRenderer renderer;
 	
 	// Temporary entity list
-	protected Set<Entity> entities = ConcurrentHashMap.newKeySet();
-	//private ConcurrentHashMap<Long, Entity> localEntitiesByUUID = new ConcurrentHashMap<Long, Entity>();//new LinkedBlockingQueue<Entity>();
+	protected EntitiesHolder entities = new EntitiesHolder();
+	
 	public ReadWriteLock entitiesLock = new ReentrantReadWriteLock();
 
 	// Particles
@@ -190,7 +189,7 @@ public abstract class WorldImplementation implements World
 		updatedLocation.setWorld(this);
 		entity.setLocation(updatedLocation);
 
-		this.entities.add(entity);
+		this.entities.insertEntity(entity);
 
 		//System.out.println("added " + entity + "to the worlde");
 	}
@@ -207,18 +206,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public boolean removeEntityByUUID(long uuid)
 	{
-		Entity entityFound = null;
-		Iterator<Entity> iter = this.getAllLoadedEntities();
-		while (iter.hasNext())
-		{
-			Entity next = iter.next();
-			if (next.getUUID() == uuid)
-			{
-				entityFound = next;
-				break;
-				//iter.remove();
-			}
-		}
+		Entity entityFound = this.getEntityByUUID(uuid);
 
 		if (entityFound != null)
 			return entityFound.removeFromWorld();
@@ -233,7 +221,7 @@ public abstract class WorldImplementation implements World
 	 */
 	public boolean removeEntityFromList(Entity entity)
 	{
-		return entities.remove(entity);
+		return entities.removeEntity(entity);
 	}
 
 	@Override
@@ -250,8 +238,8 @@ public abstract class WorldImplementation implements World
 			{
 				entity = iter.next();
 
-				//Check entity's chunk is loaded
-				Location entityLocation = entity.getLocation();
+				//Check entity's region is loaded
+				//Location entityLocation = entity.getLocation();
 				if (entity.getRegion() != null && entity.getRegion().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
 				{
 					//If we're the client world and this is our controlled entity we execute the tickClientController() and tick() methods
@@ -321,13 +309,14 @@ public abstract class WorldImplementation implements World
 	@Override
 	public IterableIterator<Entity> getAllLoadedEntities()
 	{
-		return new EntityWorldIterator(entities);
+		return new EntityWorldIterator(entities.iterator());
 	}
 
 	@Override
 	public Entity getEntityByUUID(long entityID)
 	{
-		Iterator<Entity> ie = getAllLoadedEntities();
+		return entities.getEntityByUUID(entityID);
+		/*Iterator<Entity> ie = getAllLoadedEntities();
 		Entity e;
 		while (ie.hasNext())
 		{
@@ -335,7 +324,7 @@ public abstract class WorldImplementation implements World
 			if (e.getUUID() == entityID)
 				return e;
 		}
-		return null;
+		return null;*/
 	}
 
 	@Override

@@ -21,5 +21,6 @@ packet 0x0B PACKET_INPUT io.xol.chunkstories.net.packets.PacketInput client
 packet 0x0C PACKET_PARTICLE io.xol.chunkstories.net.packets.PacketParticle server
 packet 0x0D PACKET_DECAL io.xol.chunkstories.net.packets.PacketDecal server
 packet 0x0E PACKET_FILE io.xol.chunkstories.net.packets.PacketFile server
+packet 0x0F PACKET_VELOCITY_DELTA io.xol.chunkstories.net.packets.PacketVelocityDelta server
 
 #Be sensible and add your own ones after The game has an hardlimit of arround 32768 packet types possible

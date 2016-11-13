@@ -12,6 +12,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -43,7 +44,7 @@ public class EntitiesRenderer
 
 	public int renderEntities(RenderingContext renderingContext)
 	{
-		//Lock l = ((WorldImplementation)world).entitiesLock.readLock();
+		((WorldImplementation)world).entitiesLock.readLock().lock();
 		//l.lock();
 		
 		//Sort them by type
@@ -85,6 +86,7 @@ public class EntitiesRenderer
 		}
 		
 		//l.unlock();
+		((WorldImplementation)world).entitiesLock.readLock().unlock();
 		
 		//System.out.println(entitiesRendered);
 		

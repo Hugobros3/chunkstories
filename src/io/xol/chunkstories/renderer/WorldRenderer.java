@@ -1048,7 +1048,8 @@ public class WorldRenderer
 
 		// Particles rendering
 		((ParticlesRenderer) this.world.getParticlesManager()).render(renderingContext);
-
+		this.renderingContext.flush();
+		
 		// Draw world shaded with sunlight and vertex light
 		glDepthMask(false);
 		renderShadedBlocks();
@@ -1196,7 +1197,9 @@ public class WorldRenderer
 		renderingContext.bindTexture2D("bloomBuffer", this.bloomBuffer);
 		renderingContext.bindTexture2D("ssaoBuffer", this.ssaoBuffer);
 		renderingContext.bindTexture2D("pauseOverlayTexture", TexturesHandler.getTexture("./textures/gui/darker.png"));
-		renderingContext.bindTexture2D("debugBuffer", (System.currentTimeMillis() % 1000 < 500) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
+		//renderingContext.bindTexture2D("debugBuffer", (System.currentTimeMillis() % 1000 < 500) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
+		renderingContext.bindTexture2D("debugBuffer", this.materialBuffer);
+
 
 		Voxel vox = Voxels.get(world.getVoxelData(camera.pos.negate()));
 		postProcess.setUniform1f("underwater", vox.isVoxelLiquid() ? 1 : 0);
@@ -1312,6 +1315,8 @@ public class WorldRenderer
 			apertureModifier = 1.0f;
 
 		//Draw entities Huds
+		//TODO entitiesRenderer
+		world.entitiesLock.readLock().lock();
 		Iterator<Entity> ei = world.getAllLoadedEntities();
 		Entity e;
 		while (ei.hasNext())
@@ -1320,6 +1325,7 @@ public class WorldRenderer
 			if (e instanceof EntityOverlay)
 				((EntityOverlay) e).drawEntityOverlay(renderingContext);
 		}
+		world.entitiesLock.readLock().unlock();
 	}
 
 	private void SSAO(int quality)

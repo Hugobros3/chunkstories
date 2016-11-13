@@ -25,8 +25,8 @@ public class GenericLivingAI extends AI<EntityLiving>
 	{
 		if(entity.isDead())
 		{
-			entity.getVelocityComponent().setVelocityX(0);
-			entity.getVelocityComponent().setVelocityZ(0);
+			//entity.getVelocityComponent().setVelocityX(0);
+			//entity.getVelocityComponent().setVelocityZ(0);
 			return;
 		}
 		
@@ -40,7 +40,8 @@ public class GenericLivingAI extends AI<EntityLiving>
 		
 		if(Voxels.get(entity.getWorld().getVoxelData(entity.getLocation())).isVoxelLiquid())
 		{
-			entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
+			if(entity.getVelocityComponent().getVelocity().getY() < 0.15)
+				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
 			//System.out.println("vel:");
 		}
 			

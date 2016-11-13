@@ -50,6 +50,9 @@ public class WorldClientRemote extends WorldClientCommon implements WorldNetwork
 	public void processIncommingPackets()
 	{
 		//Accepts and processes synched packets
+
+		entitiesLock.writeLock().lock();
+		
 		int packetsThisTick = 0;
 		PendingSynchPacket packet = packetsProcessor.getPendingSynchPacket();
 		while (packet != null)
@@ -59,6 +62,8 @@ public class WorldClientRemote extends WorldClientCommon implements WorldNetwork
 			packet = packetsProcessor.getPendingSynchPacket();
 			packetsThisTick++;
 		}
+
+		entitiesLock.writeLock().unlock();
 		//if(packetsThisTick > 0)
 		//	System.out.println(packetsThisTick+"packets for "+this.entities.size()+ " entities");
 	}

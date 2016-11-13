@@ -143,14 +143,6 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 			return null;
 		}
 		//If the two piles are similar we can try to merge them
-		if (currentPileAtLocation != null)
-		{
-			//System.out.println("currentPileAtLocation.equals(itemPile)"+currentPileAtLocation.equals(itemPile));
-			//System.out.println("=="+(currentPileAtLocation == itemPile));
-			//System.out.println("currentPileAtLocation:"+currentPileAtLocation);
-			//System.out.println("itemPile:"+itemPile);
-		}
-
 		if (currentPileAtLocation != null && currentPileAtLocation.canMergeWith(itemPile) && !currentPileAtLocation.equals(itemPile))
 		{
 			Item item = currentPileAtLocation.getItem();
@@ -326,7 +318,9 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 
 	protected enum UpdateMode
 	{
-		MOVE_ITEM, CHANGE_ITEM, REFRESH;
+		//MOVE_ITEM, 
+		//CHANGE_ITEM, 
+		REFRESH;
 	}
 
 	public void refreshCompleteInventory()
@@ -351,39 +345,9 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 	{
 		throw new UnsupportedOperationException();
 	}
-	
-	protected void pushOnlyItemChange(int x, int y, ItemPile pileChanged, StreamTarget destinator, DataOutputStream stream) throws IOException
-	{
-		System.out.println("push item change");
-		stream.writeByte(UpdateMode.CHANGE_ITEM.ordinal());
-
-		stream.writeInt(x);
-		stream.writeInt(y);
-
-		if (pileChanged == null)
-			stream.writeInt(0);
-		else
-		{
-			stream.writeInt(pileChanged.getItem().getID());
-			pileChanged.saveCSF(stream);
-		}
-	}
-
-	protected void pushOnlyItemMove(int xFrom, int yFrom, int xTo, int yTo, StreamTarget destinator, DataOutputStream stream) throws IOException
-	{
-		System.out.println("push item move");
-		stream.writeByte(UpdateMode.MOVE_ITEM.ordinal());
-
-		stream.writeInt(xFrom);
-		stream.writeInt(yFrom);
-		
-		stream.writeInt(xTo);
-		stream.writeInt(yTo);
-	}
 
 	protected void pushWholeInventoryRefresh(StreamTarget destinator, DataOutputStream stream) throws IOException
 	{
-		//System.out.println("push refresh");
 		stream.writeByte(UpdateMode.REFRESH.ordinal());
 
 		stream.writeInt(width);
@@ -413,7 +377,12 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 	@Override
 	protected void pull(StreamSource from, DataInputStream stream) throws IOException
 	{
-		UpdateMode mode = UpdateMode.values()[stream.readByte()];
+		//Unused
+		stream.readByte();
+		
+		pullWholeInventoryRefresh(from, stream);
+		
+		/*UpdateMode mode = UpdateMode.values()[stream.readByte()];
 
 		//System.out.println("Received " + mode + " inventory update");
 
@@ -428,7 +397,7 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 		case MOVE_ITEM:
 			pullItemMove(from, stream);
 			break;
-		}
+		}*/
 	}
 
 	protected void pullWholeInventoryRefresh(StreamSource from, DataInputStream stream) throws IOException
@@ -454,56 +423,7 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 				}
 			}
 	}
-
-	protected void pullItemChange(StreamSource from, DataInputStream stream) throws IOException
-	{
-		int x = stream.readInt();
-		int y = stream.readInt();
-
-		int id = stream.readInt() & 0x00FFFFFF;
-		ItemType itemType = ItemTypes.getItemTypeById(id);
-
-		ItemPile newItemPile = null;
-		if (itemType != null)
-		{
-			Item item = itemType.newItem();
-			newItemPile = new ItemPile(item, stream);
-			newItemPile.setInventory(this);
-			newItemPile.setX(x);
-			newItemPile.setY(y);
-		}
-
-		this.contents[x][y] = newItemPile;
-	}
-
-	protected void pullItemMove(StreamSource from, DataInputStream stream) throws IOException
-	{
-		int xFrom = stream.readInt();
-		int yFrom = stream.readInt();
-
-		int xTo = stream.readInt();
-		int yTo = stream.readInt();
-		
-		//Actually swaps items
-		ItemPile temp = this.contents[xTo][yTo];
-		
-		this.contents[xTo][yTo] = this.contents[xFrom][yFrom];
-		this.contents[xFrom][yFrom] = temp;
-		
-		//Updates items if necessary
-		if(this.contents[xFrom][yFrom] != null)
-		{
-			this.contents[xFrom][yFrom].setX(xFrom);
-			this.contents[xFrom][yFrom].setY(yFrom);
-		}
-		
-		if(this.contents[xTo][yTo] != null)
-		{
-			this.contents[xTo][yTo].setX(xTo);
-			this.contents[xTo][yTo].setY(yTo);
-		}
-	}
-
+	
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#clear()
 	 */

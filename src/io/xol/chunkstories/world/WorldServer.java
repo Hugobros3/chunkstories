@@ -178,6 +178,8 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	@Override
 	public void processIncommingPackets()
 	{
+		entitiesLock.writeLock().lock();
+		
 		Iterator<ServerClient> clientsIterator = server.getHandler().getAuthentificatedClients();
 		while (clientsIterator.hasNext())
 		{
@@ -192,6 +194,8 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			}
 
 		}
+		
+		entitiesLock.writeLock().unlock();
 	}
 
 	@Override

@@ -158,6 +158,9 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 					boolean bulletPresence = (owner instanceof EntityCreative && ((EntityCreative) owner).isCreativeMode()) || checkBullet(itemPile);
 					if (!bulletPresence && !wasTriggerPressedLastTick)
 					{
+						//Play sounds
+						if (controller != null)
+							controller.getSoundManager().playSoundEffect("sounds/dogez/weapon/default/dry.ogg", owner.getLocation(), 1.0f, 1.0f).setAttenuationEnd((float) soundRange);
 						//Dry.ogg
 						//return;
 					}
@@ -315,7 +318,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 
 								//Spawn blood particles
 								Vector3d bloodDir = direction.normalize().scale(0.25);
-								for (int i = 0; i < 25; i++)
+								for (int i = 0; i < 250; i++)
 								{
 									Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
 									random.scale(0.25);
