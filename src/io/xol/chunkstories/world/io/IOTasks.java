@@ -616,18 +616,21 @@ public class IOTasks extends Thread
 			return true;
 		}
 
+		/*
+		 * This code was utter bullshit. You know it, I know it.
+		
 		@Override
 		public boolean equals(Object o)
 		{
-			/*if(o instanceof IOTaskLoadSummary)
+			if(o instanceof IOTaskLoadSummary)
 			{
 				IOTaskLoadSummary comp = ((IOTaskLoadSummary)o);
-				if(comp.summary.rx == this.summary.rx && comp.summary.rz == this.summary.rz)
+				if(comp.summary.getRegionX() == this.summary.getRegionX() && comp.summary.getRegionZ() == this.summary.getRegionZ())
 					return true;
-			}*/
+			}
 			//All saves request are unique
-			return false;
-		}
+			//return false;
+		}*/
 
 		@Override
 		public int hashCode()

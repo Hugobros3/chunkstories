@@ -94,6 +94,8 @@ public class UniqueQueue<T> implements Queue<T>
 	{
 		if(internalSet.remove(o))
 			return internalQueue.remove(o); //True
+		//System.out.println("Did not contain "+o);
+		//Thread.dumpStack();
 		return false;
 	}
 
@@ -119,6 +121,11 @@ public class UniqueQueue<T> implements Queue<T>
 	@Override
 	public int size()
 	{
+		if(internalSet.size() != internalQueue.size())
+		{
+			System.out.println("Critical error : UniqueQueue incoherence ( size differs between backing set and queue )");
+			Runtime.getRuntime().exit(-4);
+		}
 		return internalSet.size();
 	}
 

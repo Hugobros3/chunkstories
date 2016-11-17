@@ -592,7 +592,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void saveEverything()
 	{
-		System.out.println("Saving all parts of world "+worldInfo.getName());
+		//System.out.println("Saving all parts of world "+worldInfo.getName());
 		regions.saveAll();
 		getRegionsSummariesHolder().saveAllLoadedSummaries();
 

@@ -9,7 +9,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -256,7 +255,7 @@ public class MinecraftMapConverter implements WorldUser
 
 										if (completion >= 100.0 || (System.currentTimeMillis() - lastPercentageShow > 5000))
 										{
-											verbose(completion + "% ... ("+exported.getRegionsHolder().countChunks()+")");
+											verbose(completion + "% ... ("+exported.getRegionsHolder().countChunks()+" chunks loaded ) using " + Runtime.getRuntime().freeMemory()/1024/1024+"/"+Runtime.getRuntime().maxMemory()/1024/1024+"Mb ");
 											lastPercentageShow = System.currentTimeMillis();
 										}
 									}
@@ -265,8 +264,7 @@ public class MinecraftMapConverter implements WorldUser
 								if (exported.getRegionsHolder().countChunks() > 256)
 								{
 									//Save world
-									verbose("before:"+exported.getRegionsHolder().countChunks());
-									verbose("More than 256 chunks already in memory, saving and unloading before continuing");
+									//verbose("More than 256 chunks already in memory, saving and unloading before continuing");
 									exported.saveEverything();
 									for(Region region : registeredCS_Regions)
 										region.unregisterUser(user);
@@ -278,7 +276,7 @@ public class MinecraftMapConverter implements WorldUser
 										summary.unregisterUser(user);
 										
 									exported.unloadUselessData();
-									verbose("after:"+exported.getRegionsHolder().countChunks());
+									
 								}
 							}
 						}
