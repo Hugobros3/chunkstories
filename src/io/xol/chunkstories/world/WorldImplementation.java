@@ -820,7 +820,7 @@ public abstract class WorldImplementation implements World
 		if (blocksCollision != null)
 			blocksLimit = blocksCollision.distanceTo(initialPosition);
 
-		return raytraceEntitiesIgnoringVoxels(initialPosition, direction, blocksLimit);
+		return raytraceEntitiesIgnoringVoxels(initialPosition, direction, Math.min(blocksLimit, limit));
 	}
 
 	@Override

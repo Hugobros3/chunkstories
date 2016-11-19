@@ -34,8 +34,9 @@ public class EntityRayIterator implements Iterator<Entity>
 		{
 			Entity entity = iterator.next();
 			//Distance check
-			if(limit != -1 || entity.getLocation().distanceTo(initialPosition) <= limit)
+			if(limit == -1 || entity.getLocation().distanceTo(initialPosition) <= limit)
 			{
+				
 				Vector3d toEntity = new Vector3d(entity.getLocation());
 				toEntity.sub(initialPosition);
 				//Check direction of the line to avoid hitting hitself, backtracking and wrapping arround the world
