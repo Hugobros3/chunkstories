@@ -36,19 +36,21 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public abstract class EntityImplementation implements Entity
 {
-	public long entityUUID = -1;
+	//Crucial stuff
+	private long entityUUID = -1;
+	private boolean hasSpawned = false;
+	protected WorldImplementation world;
 
-	Set<Subscriber> subscribers = new HashSet<Subscriber>();
+	//Multiplayer-related
+	protected Set<Subscriber> subscribers = new HashSet<Subscriber>();
 
-	public WorldImplementation world;
-
+	//Basic components
 	protected EntityComponentExistence existenceComponent = new EntityComponentExistence(this, null);
 	protected EntityComponentPosition positionComponent = new EntityComponentPosition(this, existenceComponent);
 	private EntityComponentVelocity velocityComponent = new EntityComponentVelocity(this, positionComponent);
 
-	//public Vector3d velocity;
-	public Vector3d acceleration;
-
+	//Physics system info
+	//TODO: refactor this out
 	public boolean collision_top = false;
 	public boolean collision_bot = false;
 	public boolean collision_left = false;
@@ -58,9 +60,8 @@ public abstract class EntityImplementation implements Entity
 
 	public Vector3d blockedMomentum = new Vector3d();
 
-	public Voxel voxelIn;
-
-	private boolean hasSpawned = false;
+	//Hacky bullshit
+	protected Voxel voxelIn;
 
 	public EntityImplementation(WorldImplementation w, double x, double y, double z)
 	{
@@ -68,8 +69,6 @@ public abstract class EntityImplementation implements Entity
 
 		positionComponent.setWorld(w);
 		positionComponent.setPositionXYZ(x, y, z);
-
-		acceleration = new Vector3d();
 
 		//To avoid NPEs
 		voxelIn = Voxels.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));

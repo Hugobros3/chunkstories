@@ -111,12 +111,12 @@ public class IOTasksMultiplayerClient extends IOTasks
 			return true;
 		}
 
-		@Override
+		/*@Override
 		public boolean equals(Object o)
 		{
 			//All packets are unique
 			return false;
-		}
+		}*/
 
 		@Override
 		public int hashCode()
@@ -214,12 +214,12 @@ public class IOTasksMultiplayerClient extends IOTasks
 			return true;
 		}
 
-		@Override
+		/*@Override
 		public boolean equals(Object o)
 		{
 			//All packets are unique
 			return false;
-		}
+		}*/
 
 		@Override
 		public int hashCode()

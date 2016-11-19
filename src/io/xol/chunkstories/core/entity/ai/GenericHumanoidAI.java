@@ -1,10 +1,11 @@
 package io.xol.chunkstories.core.entity.ai;
 
+import java.util.Random;
+
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityLiving;
-import io.xol.chunkstories.core.entity.EntityLivingImplentation;
+import io.xol.chunkstories.core.entity.EntityHumanoid;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -13,9 +14,11 @@ import io.xol.engine.math.lalgb.Vector3d;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class GenericLivingAI extends AI<EntityLiving>
+public class GenericHumanoidAI extends AI<EntityHumanoid>
 {
-	public GenericLivingAI(EntityLiving entity)
+	static Random rng = new Random();
+	
+	public GenericHumanoidAI(EntityHumanoid entity)
 	{
 		super(entity);
 		currentTask = new AiTaskLookArround(5f);
@@ -25,6 +28,8 @@ public class GenericLivingAI extends AI<EntityLiving>
 	{
 		if(entity.isDead())
 		{
+			//Dead entities shouldn't be moving
+			
 			//entity.getVelocityComponent().setVelocityX(0);
 			//entity.getVelocityComponent().setVelocityZ(0);
 			return;
@@ -33,11 +38,13 @@ public class GenericLivingAI extends AI<EntityLiving>
 		if(currentTask != null)
 			currentTask.execute();
 		
-		if(Math.random() > 0.9990)
+		//Random grunge
+		if(rng.nextFloat() > 0.9990)
 		{
 			entity.getWorld().getSoundManager().playSoundEffect("sounds/sfx/zombie.ogg", entity.getLocation(), (float) (0.9 + Math.random() * 0.2), 1.0f);//.setPitch();
 		}
 		
+		//Water-jump
 		if(Voxels.get(entity.getWorld().getVoxelData(entity.getLocation())).isVoxelLiquid())
 		{
 			if(entity.getVelocityComponent().getVelocity().getY() < 0.15)
@@ -91,9 +98,9 @@ public class GenericLivingAI extends AI<EntityLiving>
 			{
 				for(Entity entityToLook : entity.getWorld().getAllLoadedEntities())
 				{
-					if(!entityToLook.equals(entity) && entityToLook.getLocation().distanceTo(GenericLivingAI.this.entity.getLocation()) <= lookAtNearbyEntities && entityToLook instanceof EntityLiving && !((EntityLiving) entityToLook).isDead())
+					if(!entityToLook.equals(entity) && entityToLook.getLocation().distanceTo(GenericHumanoidAI.this.entity.getLocation()) <= lookAtNearbyEntities && entityToLook instanceof EntityHumanoid && !((EntityHumanoid) entityToLook).isDead())
 					{
-						GenericLivingAI.this.setAiTask(new AiTaskLookAtEntity((EntityLiving) entityToLook, 10f, this));
+						GenericHumanoidAI.this.setAiTask(new AiTaskLookAtEntity((EntityHumanoid) entityToLook, 10f, this));
 						lookAtEntityCoolDown = (int) (Math.random() * 60 * 5);
 						return;
 					}
@@ -102,7 +109,7 @@ public class GenericLivingAI extends AI<EntityLiving>
 			
 			if(Math.random() > 0.9990)
 			{
-				GenericLivingAI.this.setAiTask(new AiTaskGoSomewhere(
+				GenericHumanoidAI.this.setAiTask(new AiTaskGoSomewhere(
 				new Location(entity.getWorld(), entity.getLocation().clone().add((Math.random() * 2.0 - 1.0) * 10, 0, (Math.random() * 2.0 - 1.0) * 10)), 505));
 				return;
 			}
@@ -114,13 +121,13 @@ public class GenericLivingAI extends AI<EntityLiving>
 	
 	class AiTaskLookAtEntity extends AiTask {
 
-		EntityLiving entityFollowed;
+		EntityHumanoid entityFollowed;
 		float maxDistance;
 		AiTask previousTask;
 		
 		int timeBeforeDoingSomethingElse;
 		
-		public AiTaskLookAtEntity(EntityLiving entity, float maxDistance, AiTask previousTask)
+		public AiTaskLookAtEntity(EntityHumanoid entity, float maxDistance, AiTask previousTask)
 		{
 			this.entityFollowed = entity;
 			this.maxDistance = maxDistance;
@@ -135,14 +142,14 @@ public class GenericLivingAI extends AI<EntityLiving>
 			
 			if(timeBeforeDoingSomethingElse <= 0 || entityFollowed == null || entityFollowed.isDead())
 			{
-				GenericLivingAI.this.setAiTask(previousTask);
+				GenericHumanoidAI.this.setAiTask(previousTask);
 				return;
 			}
 
 			if(entityFollowed.getLocation().distanceTo(entity.getLocation()) > maxDistance)
 			{
 				System.out.println("too far"+entityFollowed.getLocation().distanceTo(entity.getLocation()));
-				GenericLivingAI.this.setAiTask(previousTask);
+				GenericHumanoidAI.this.setAiTask(previousTask);
 				return;
 			}
 
@@ -180,7 +187,7 @@ public class GenericLivingAI extends AI<EntityLiving>
 			
 			if(timeOut == 0)
 			{
-				GenericLivingAI.this.setAiTask(new AiTaskLookArround(5f));
+				GenericHumanoidAI.this.setAiTask(new AiTaskLookArround(5f));
 				return;
 			}
 			
@@ -188,7 +195,7 @@ public class GenericLivingAI extends AI<EntityLiving>
 			
 			if(delta.length() < 0.25)
 			{
-				GenericLivingAI.this.setAiTask(new AiTaskLookArround(5f));
+				GenericHumanoidAI.this.setAiTask(new AiTaskLookArround(5f));
 				return;
 			}	
 			
@@ -200,12 +207,12 @@ public class GenericLivingAI extends AI<EntityLiving>
 			entity.getVelocityComponent().setVelocityX(delta.getX());
 			entity.getVelocityComponent().setVelocityZ(delta.getZ());
 			
-			if(((EntityLivingImplentation)entity).collision_bot)
+			if(((EntityHumanoid)entity).collision_bot)
 			{
-				if(		((EntityLivingImplentation)entity).collision_left || 
-						((EntityLivingImplentation)entity).collision_right || 
-						((EntityLivingImplentation)entity).collision_north || 
-						((EntityLivingImplentation)entity).collision_south)
+				if(		((EntityHumanoid)entity).collision_left || 
+						((EntityHumanoid)entity).collision_right || 
+						((EntityHumanoid)entity).collision_north || 
+						((EntityHumanoid)entity).collision_south)
 				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
 			}
 			
@@ -214,7 +221,7 @@ public class GenericLivingAI extends AI<EntityLiving>
 		
 	}
 
-	private void makeEntityLookAt(EntityLiving entity, Vector3d delta)
+	private void makeEntityLookAt(EntityHumanoid entity, Vector3d delta)
 	{
 		Vector2f deltaHorizontal = new Vector2f((float)delta.getX(), (float)delta.getZ());
 		Vector2f deltaVertical = new Vector2f(deltaHorizontal.length(),(float) delta.getY());

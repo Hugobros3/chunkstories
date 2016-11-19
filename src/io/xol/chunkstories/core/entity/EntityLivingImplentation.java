@@ -28,17 +28,19 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public abstract class EntityLivingImplentation extends EntityImplementation implements EntityLiving
 {
-	//public long lastDamageTook = 0;
-	private long damageCooldown = 0;
-
-	long deathDespawnTimer = 600;
-
+	//Head/body rotation
 	EntityComponentRotation entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
-	EntityComponentHealth entityHealthComponent;
-
-	protected SkeletonAnimator animatedSkeleton;
-
+	
+	//Movement stuff
+	public Vector3d acceleration = new Vector3d();
+	
+	//Damage/health stuff
+	private EntityComponentHealth entityHealthComponent;
+	private long damageCooldown = 0;
 	private DamageCause lastDamageCause;
+	long deathDespawnTimer = 600;
+	
+	protected SkeletonAnimator animatedSkeleton;
 
 	public EntityLivingImplentation(WorldImplementation w, double x, double y, double z)
 	{

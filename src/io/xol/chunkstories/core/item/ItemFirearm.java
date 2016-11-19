@@ -292,7 +292,10 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 								untouchedReflection.scale(0.25);
 
 								Vector3d ppos = new Vector3d(nearestLocation);
-								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
+								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);	
+								
+								controller.getSoundManager().playSoundEffect(Voxels.get(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.05f);
+								
 							}
 
 							controller.getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");

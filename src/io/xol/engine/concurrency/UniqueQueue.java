@@ -121,11 +121,11 @@ public class UniqueQueue<T> implements Queue<T>
 	@Override
 	public int size()
 	{
-		if(internalSet.size() != internalQueue.size())
+		/*if(internalSet.size() != internalQueue.size())
 		{
-			System.out.println("Critical error : UniqueQueue incoherence ( size differs between backing set and queue )");
+			System.out.println("Critical error : UniqueQueue incoherence ( size differs between backing set and queue : "+internalSet.size()+" != "+ internalQueue.size()+")");
 			Runtime.getRuntime().exit(-4);
-		}
+		}*/
 		return internalSet.size();
 	}
 

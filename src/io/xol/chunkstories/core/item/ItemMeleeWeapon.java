@@ -84,13 +84,13 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 					eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
 
 				//Find wall collision
-				Location shotBlock = owner.getWorld().raytraceSolid(eyeLocation, direction, range+2);
+				Location shotBlock = owner.getWorld().raytraceSolid(eyeLocation, direction, range);
 
 				Vector3d nearestLocation = null;
 
 				if (shotBlock != null)
 				{
-					Location shotBlockOuter = owner.getWorld().raytraceSolidOuter(eyeLocation, direction, range+2);
+					Location shotBlockOuter = owner.getWorld().raytraceSolidOuter(eyeLocation, direction, range);
 					if (shotBlockOuter != null)
 					{
 						Vector3d normal = shotBlockOuter.sub(shotBlock);
@@ -139,6 +139,8 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 
 							Vector3d ppos = new Vector3d(nearestLocation);
 							owner.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
+							
+							owner.getWorld().getSoundManager().playSoundEffect(Voxels.get(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.25f);
 						}
 
 						owner.getWorld().getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");
@@ -149,7 +151,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 				if (shooter.getWorld() instanceof WorldMaster)
 				{
 					//Iterate over each found entities
-					Iterator<Entity> shotEntities = owner.getWorld().rayTraceEntities(eyeLocation, direction, range+1);
+					Iterator<Entity> shotEntities = owner.getWorld().rayTraceEntities(eyeLocation, direction, range);
 					while (shotEntities.hasNext())
 					{
 						Entity shotEntity = shotEntities.next();
@@ -219,10 +221,6 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 		public void renderItemInWorld(RenderingInterface renderingInterface, ItemPile pile, World world, Location location, Matrix4f handTransformation)
 		{
 			Matrix4f matrixed = new Matrix4f(handTransformation);
-			
-			matrixed.translate(new Vector3f(0, 0.25, 0));
-			
-			matrixed.scale(new Vector3f(itemRenderScale));
 
 			float rot = 0;
 
@@ -245,8 +243,13 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 				}
 			}
 
+			float dekal = -0.45f;
+			matrixed.translate(new Vector3f(0, dekal, 0));
 			matrixed.rotate(rot, new Vector3f(0, 0, 1));
-
+			matrixed.translate(new Vector3f(0, 0.25 - dekal, 0));
+			
+			matrixed.scale(new Vector3f(itemRenderScale));
+			
 			itemRenderer.renderItemInWorld(renderingInterface, pile, world, location, matrixed);
 		}
 	}
