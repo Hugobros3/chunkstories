@@ -32,11 +32,15 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			
 			//entity.getVelocityComponent().setVelocityX(0);
 			//entity.getVelocityComponent().setVelocityZ(0);
+			entity.getTargetVelocity().setX(0);
+			entity.getTargetVelocity().setZ(0);
 			return;
 		}
 		
 		if(currentTask != null)
 			currentTask.execute();
+		
+		//System.out.println(currentTask);
 		
 		//Random grunge
 		if(rng.nextFloat() > 0.9990)
@@ -114,8 +118,10 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 				return;
 			}
 
-			entity.getVelocityComponent().setVelocityX(0);
-			entity.getVelocityComponent().setVelocityZ(0);
+			entity.getTargetVelocity().setX(0);
+			entity.getTargetVelocity().setZ(0);
+			//entity.getVelocityComponent().setVelocityX(0);
+			//entity.getVelocityComponent().setVelocityZ(0);
 		}
 	}
 	
@@ -148,7 +154,7 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 
 			if(entityFollowed.getLocation().distanceTo(entity.getLocation()) > maxDistance)
 			{
-				System.out.println("too far"+entityFollowed.getLocation().distanceTo(entity.getLocation()));
+				//System.out.println("too far"+entityFollowed.getLocation().distanceTo(entity.getLocation()));
 				GenericHumanoidAI.this.setAiTask(previousTask);
 				return;
 			}
@@ -157,8 +163,70 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			
 			makeEntityLookAt(entity, delta);
 			
-			entity.getVelocityComponent().setVelocityX(0);
-			entity.getVelocityComponent().setVelocityZ(0);
+			entity.getTargetVelocity().setX(0);
+			entity.getTargetVelocity().setZ(0);
+			//entity.getVelocityComponent().setVelocityX(0);
+			//entity.getVelocityComponent().setVelocityZ(0);
+		}
+		
+	}
+	
+	class AiTaskGoAtEntity extends AiTask {
+
+		EntityHumanoid entityFollowed;
+		float maxDistance;
+		AiTask previousTask;
+		
+		double entitySpeed = 0.02;
+		
+		public AiTaskGoAtEntity(EntityHumanoid entity, float maxDistance, AiTask previousTask)
+		{
+			this.entityFollowed = entity;
+			this.maxDistance = maxDistance;
+			this.previousTask = previousTask;
+		}
+
+		@Override
+		public void execute()
+		{
+			
+			if(entityFollowed == null || entityFollowed.isDead())
+			{
+				GenericHumanoidAI.this.setAiTask(previousTask);
+				return;
+			}
+
+			if(entityFollowed.getLocation().distanceTo(entity.getLocation()) > maxDistance)
+			{
+				System.out.println("Entity too far"+entityFollowed.getLocation().distanceTo(entity.getLocation()));
+				GenericHumanoidAI.this.setAiTask(previousTask);
+				return;
+			}
+			
+			Vector3d delta = entityFollowed.getLocation().clone().sub(entity.getLocation());
+			
+			makeEntityLookAt(entity, delta.clone().negate());
+			
+			delta.setY(0);
+			
+			//System.out.println("CUCK +"+delta);
+			
+			delta.normalize().scale(entitySpeed);
+
+			entity.getTargetVelocity().setX(delta.getX());
+			entity.getTargetVelocity().setZ(delta.getZ());
+			
+			//entity.getVelocityComponent().setVelocityX(delta.getX());
+			//entity.getVelocityComponent().setVelocityZ(delta.getZ());
+			
+			if(((EntityHumanoid)entity).collision_bot)
+			{
+				if(		((EntityHumanoid)entity).collision_left || 
+						((EntityHumanoid)entity).collision_right || 
+						((EntityHumanoid)entity).collision_north || 
+						((EntityHumanoid)entity).collision_south)
+				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
+			}
 		}
 		
 	}
@@ -199,13 +267,21 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 				return;
 			}	
 			
+			makeEntityLookAt(entity, delta.clone().negate());
+			
+			delta.setY(0);
+			
 			double entitySpeed = 0.02;
 			
 			//System.out.println("CUCK +"+delta);
 			
 			delta.normalize().scale(entitySpeed);
-			entity.getVelocityComponent().setVelocityX(delta.getX());
-			entity.getVelocityComponent().setVelocityZ(delta.getZ());
+
+			entity.getTargetVelocity().setX(delta.getX());
+			entity.getTargetVelocity().setZ(delta.getZ());
+			
+			//entity.getVelocityComponent().setVelocityX(delta.getX());
+			//entity.getVelocityComponent().setVelocityZ(delta.getZ());
 			
 			if(((EntityHumanoid)entity).collision_bot)
 			{
@@ -215,8 +291,6 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 						((EntityHumanoid)entity).collision_south)
 				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
 			}
-			
-			makeEntityLookAt(entity, delta.clone().negate());
 		}
 		
 	}

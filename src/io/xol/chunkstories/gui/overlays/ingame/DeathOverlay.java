@@ -1,5 +1,7 @@
 package io.xol.chunkstories.gui.overlays.ingame;
 
+import org.lwjgl.input.Mouse;
+
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -62,6 +64,9 @@ public class DeathOverlay extends Overlay
 				((WorldClientRemote) Client.getInstance().getWorld()).getConnection().sendTextMessage("world/respawn");
 			mainScene.changeOverlay(parent);
 		}
+		
+		if(Mouse.isGrabbed())
+			Mouse.setGrabbed(false);
 		
 		if(exitButton.clicked())
 		{

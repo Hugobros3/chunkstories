@@ -271,6 +271,11 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		return new EntityHumanoidRenderer<EntityHumanoid>();
 	}
 
+	public Vector3d getTargetVelocity()
+	{
+		return targetVelocity;
+	}
+
 	@Override
 	public void tick()
 	{
