@@ -5,15 +5,15 @@ voxel stonebrickStairs 21 io.xol.chunkstories.core.voxel.VoxelStairs
 	material: stone
 end
 
-voxel cobbleStairs 49 io.xol.chunkstories.core.voxel.VoxelStairs
-	texture: stonebrick
+voxel brickStairs 22 io.xol.chunkstories.core.voxel.VoxelStairs
+	texture: redbricks16
 	opaque: false
 	model: 'stairs.m0'
 	material: stone
 end
 
-voxel brickStairs 22 io.xol.chunkstories.core.voxel.VoxelStairs
-	texture: redbricks16
+voxel cobbleStairs 49 io.xol.chunkstories.core.voxel.VoxelStairs
+	texture: stonebrick
 	opaque: false
 	model: 'stairs.m0'
 	material: stone

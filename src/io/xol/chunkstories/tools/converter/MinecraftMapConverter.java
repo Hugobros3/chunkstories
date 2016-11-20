@@ -144,7 +144,7 @@ public class MinecraftMapConverter implements WorldUser
 			double completion = 0.0;
 			long lastPercentageShow = System.currentTimeMillis();
 
-			Set<Region> registeredCS_Regions = new HashSet<Region>();
+			//Set<Region> registeredCS_Regions = new HashSet<Region>();
 			Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
 			Set<RegionSummary> registeredCS_Summaries = new HashSet<RegionSummary>();
 
@@ -266,8 +266,8 @@ public class MinecraftMapConverter implements WorldUser
 									//Save world
 									//verbose("More than 256 chunks already in memory, saving and unloading before continuing");
 									exported.saveEverything();
-									for(Region region : registeredCS_Regions)
-										region.unregisterUser(user);
+									//for(Region region : registeredCS_Regions)
+									//	region.unregisterUser(user);
 									
 									for(ChunkHolder holder : registeredCS_Holders)
 										holder.unregisterUser(user);
@@ -275,6 +275,9 @@ public class MinecraftMapConverter implements WorldUser
 									for(RegionSummary summary : registeredCS_Summaries)
 										summary.unregisterUser(user);
 										
+									registeredCS_Summaries.clear();
+									registeredCS_Holders.clear();
+									
 									exported.unloadUselessData();
 									
 								}

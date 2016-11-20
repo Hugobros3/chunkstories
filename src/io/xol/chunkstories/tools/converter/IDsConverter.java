@@ -26,7 +26,7 @@ public class IDsConverter
 		if (minecraftBlockId == 0)
 			return 0;
 		//quartz, clay, netherrack, bedrock
-		else if (minecraftBlockId == 7 || minecraftBlockId == 172 || minecraftBlockId == 155 || minecraftBlockId == 156 || minecraftBlockId == 87 || minecraftBlockId == 112 || minecraftBlockId == 113 || minecraftBlockId == 114)
+		else if (minecraftBlockId == 7 || minecraftBlockId == 172 || minecraftBlockId == 155 || minecraftBlockId == 156 || minecraftBlockId == 87 || minecraftBlockId == 113)
 
 			return 1;
 		//snow
@@ -98,9 +98,21 @@ public class IDsConverter
 			return VoxelFormat.format(48, minecraftMetaData >= 8 ? 1 : 0, 0, 0);
 		else if (minecraftBlockId == 44 && minecraftMetaData % 8 == 4)
 			return VoxelFormat.format(45, minecraftMetaData >= 8 ? 1 : 0, 0, 0);
+		//Netherbrick half slab
+		else if (minecraftBlockId == 44 && minecraftMetaData % 8 == 6)
+			return VoxelFormat.format(81, minecraftMetaData >= 8 ? 1 : 0, 0, 0);
 		//wood slab
 		else if (minecraftBlockId == 126)
 			return VoxelFormat.format(46, minecraftMetaData >= 8 ? 1 : 0, 0, 0);
+		//Netherbrick slab -> ardoise
+		else if (minecraftBlockId == 43 && minecraftMetaData % 8 == 6)
+			return 82;
+		else if (minecraftBlockId == 43 && minecraftMetaData % 8 == 6)
+			return 82;
+		//Bookshelf
+		else if(minecraftBlockId == 47)
+			return 83;
+		//Netherbrick normal
 		//Full halfblock
 		else if (minecraftBlockId == 43)
 			return 43;
@@ -109,6 +121,12 @@ public class IDsConverter
 		{
 			minecraftMetaData %= 8;
 			return VoxelFormat.format(22, minecraftMetaData, 0, 0);
+		}
+		//Netherbrick stairs
+		else if (minecraftBlockId == 114)
+		{
+			minecraftMetaData %= 8;
+			return VoxelFormat.format(84, minecraftMetaData, 0, 0);
 		}
 		//Cobble stairs
 		else if (minecraftBlockId == 67)
@@ -165,7 +183,7 @@ public class IDsConverter
 			return -2;
 		}
 		//Wood log
-		else if (minecraftBlockId == 17)
+		else if (minecraftBlockId == 17 || minecraftBlockId == 162)
 			return 8;
 		//flowers
 		else if (minecraftBlockId == 37)
