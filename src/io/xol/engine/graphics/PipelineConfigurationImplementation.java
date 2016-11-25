@@ -208,26 +208,6 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 			currentDepthFunc = depthFunc;
 		}
 	}
-	
-	private void alphaTest(boolean on)
-	{
-		if (on)
-		{
-			if (!isAlphaTestEnabled)
-				glEnable(GL_ALPHA_TEST);
-		}
-		else
-		{
-			if (isAlphaTestEnabled)
-				glDisable(GL_ALPHA_TEST);
-		}
-		isAlphaTestEnabled = on;
-		if(!alphaModeOk)
-		{
-			alphaModeOk = true;
-			glAlphaFunc(GL_GREATER, 0.0f);
-		}
-	}
 
 	private void blend(boolean on)
 	{
@@ -270,11 +250,8 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	
 	private static boolean isBlendEnabled = false;
 	private static int currentDepthFunc = -1;
-	private static boolean isAlphaTestEnabled = false;
 	private static boolean isBlendingEnabled = false;
 	private static int currentBlendFunc = -1;
 	private static boolean isCullingEnabled = false;
 	private static int currentCullFunc = -1;
-	
-	private static boolean alphaModeOk = false;
 }
