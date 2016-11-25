@@ -30,9 +30,9 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 
 	public PacketInventoryPartialUpdate()
 	{
-		
+
 	}
-	
+
 	public PacketInventoryPartialUpdate(Inventory inventory, int slotx, int sloty, ItemPile newItemPile)
 	{
 		this.inventory = inventory;
@@ -45,14 +45,15 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		InventoryTranslator.writeInventoryHandle(out, inventory);
-		
+
 		out.writeInt(slotx);
 		out.writeInt(sloty);
-		
-		if(itemPile == null)
+
+		if (itemPile == null)
 			out.writeInt(0);
-		else{
-			out.writeInt(itemPile.getItem().getID());
+		else
+		{
+			//out.writeInt(itemPile.getItem().getID());
 			itemPile.saveCSF(out);
 		}
 	}
@@ -61,10 +62,10 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, PacketProcessingException
 	{
 		inventory = InventoryTranslator.obtainInventoryHandle(in, processor);
-		
+
 		int slotx = in.readInt();
 		int sloty = in.readInt();
-		
+
 		/*int itemId = in.readInt();
 		
 		if(itemId != 0)
@@ -74,7 +75,7 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 		}
 		else
 			itemPile = null;*/
-		
+
 		try
 		{
 			itemPile = new ItemPile(in);
@@ -89,8 +90,8 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 			ChunkStoriesLogger.getInstance().log(e.getMessage(), LogLevel.WARN);
 			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 		}
-		
-		if(inventory != null)
+
+		if (inventory != null)
 			inventory.setItemPileAt(slotx, sloty, itemPile);
 	}
 

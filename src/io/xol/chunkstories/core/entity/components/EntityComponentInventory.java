@@ -365,7 +365,6 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 					stream.writeInt(0);
 				else
 				{
-					stream.writeInt(pile.getItem().getID());
 					pile.saveCSF(stream);
 				}
 			}

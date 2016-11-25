@@ -103,6 +103,8 @@ public class ItemPile implements CSFSerializable
 	@Override
 	public void saveCSF(DataOutputStream stream) throws IOException
 	{
+		stream.writeInt(item.getID());
+		
 		stream.writeInt(amount);
 		item.save(stream);
 	}

@@ -63,7 +63,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		//Describe the itemPile if we are trying to spawn an item from nowhere
 		if(from == null || from.getHolder() == null)
 		{
-			out.writeInt(itemPile.getItem().getID());
+			//out.writeInt(itemPile.getItem().getID());
 			itemPile.saveCSF(out);
 		}
 	}

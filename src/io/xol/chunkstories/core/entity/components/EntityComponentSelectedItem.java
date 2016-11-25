@@ -96,7 +96,7 @@ public class EntityComponentSelectedItem extends EntityComponent
 		{
 			//System.out.println("Sending item");
 			dos.writeBoolean(true);
-			dos.writeInt(pile.getItem().getID());
+			//dos.writeInt(pile.getItem().getID());
 			pile.saveCSF(dos);
 		}
 	}
