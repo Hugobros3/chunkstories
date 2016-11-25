@@ -12,13 +12,12 @@ import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
-import io.xol.chunkstories.item.inventory.CSFSerializable;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ItemPile implements CSFSerializable
+public class ItemPile
 {
 	private final Item item;
 	
@@ -59,7 +58,7 @@ public class ItemPile implements CSFSerializable
 	{
 		this.item = item;
 		//this.data = item.getItemData();
-		loadCSF(stream);
+		loadInternalItemData(stream);
 	}
 
 	public ItemPile(ItemType type)
@@ -79,7 +78,7 @@ public class ItemPile implements CSFSerializable
 		
 		this.item = itemType.newItem();
 
-		loadCSF(stream);
+		loadInternalItemData(stream);
 	}
 
 	public String getTextureName()
@@ -93,15 +92,13 @@ public class ItemPile implements CSFSerializable
 		return item;
 	}
 
-	@Override
-	public void loadCSF(DataInputStream stream) throws IOException
+	private void loadInternalItemData(DataInputStream stream) throws IOException
 	{
 		this.amount = stream.readInt();
 		item.load(stream);
 	}
 
-	@Override
-	public void saveCSF(DataOutputStream stream) throws IOException
+	public void saveItemIntoStream(DataOutputStream stream) throws IOException
 	{
 		stream.writeInt(item.getID());
 		
@@ -213,9 +210,9 @@ public class ItemPile implements CSFSerializable
 		ByteArrayOutputStream data = new ByteArrayOutputStream();
 		try
 		{
-			this.saveCSF(new DataOutputStream(data));
+			this.saveItemIntoStream(new DataOutputStream(data));
 			ByteArrayInputStream stream = new ByteArrayInputStream(data.toByteArray());
-			pile.loadCSF(new DataInputStream(stream));
+			pile.loadInternalItemData(new DataInputStream(stream));
 		}
 		catch (IOException e)
 		{

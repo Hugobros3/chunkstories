@@ -5,8 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.csf.StreamSource;
-import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
@@ -18,6 +16,8 @@ import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.net.Packet;
+import io.xol.chunkstories.api.serialization.StreamSource;
+import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
@@ -365,7 +365,7 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 					stream.writeInt(0);
 				else
 				{
-					pile.saveCSF(stream);
+					pile.saveItemIntoStream(stream);
 				}
 			}
 	}

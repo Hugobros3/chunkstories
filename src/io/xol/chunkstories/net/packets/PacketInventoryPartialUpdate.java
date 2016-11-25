@@ -54,7 +54,7 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 		else
 		{
 			//out.writeInt(itemPile.getItem().getID());
-			itemPile.saveCSF(out);
+			itemPile.saveItemIntoStream(out);
 		}
 	}
 

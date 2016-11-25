@@ -64,7 +64,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		if(from == null || from.getHolder() == null)
 		{
 			//out.writeInt(itemPile.getItem().getID());
-			itemPile.saveCSF(out);
+			itemPile.saveItemIntoStream(out);
 		}
 	}
 
