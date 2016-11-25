@@ -150,7 +150,7 @@ public class FrameBufferObject
 		}
 	}
 
-	public void bind()
+	void bind()
 	{
 		//Don't rebind twice
 		if(fbo_id == bound)
@@ -162,7 +162,7 @@ public class FrameBufferObject
 		bound = fbo_id;
 	}
 
-	public static void unbind()
+	static void unbind()
 	{
 		GameWindowOpenGL.instance.renderingContext.flush();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

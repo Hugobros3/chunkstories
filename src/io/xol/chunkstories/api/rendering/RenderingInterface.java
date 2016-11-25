@@ -20,7 +20,6 @@ import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.util.GuiRenderer;
-
 import io.xol.engine.math.lalgb.Matrix4f;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -31,9 +30,14 @@ public interface RenderingInterface
 {
 	public CameraInterface getCamera();
 
+	//TODO improve
 	public boolean isThisAShadowPass();
+
+	public void addLight(Light light);
 	
-	/* shaders */
+	public RenderTargetManager getRenderTargetManager();
+	
+	/* Shaders */
 	
 	public ShaderInterface useShader(String shaderName) throws InvalidShaderException, ShaderCompileException;
 	
@@ -55,7 +59,7 @@ public interface RenderingInterface
 	
 	public TexturingConfiguration bindCubemap(String cubemapSamplerName, Cubemap cubemapTexture);
 	
-	/* Object location */
+	/* Object location & Instance Data */
 	
 	/**
 	 * returns the current object matrix
@@ -94,8 +98,7 @@ public interface RenderingInterface
 	 */
 	public AttributesConfiguration getAttributesConfiguration();
 	
-	/**
-	 * If attributeSource != null, setups the currently bound vertex shader attribute input 'attributeName' with it
+	/** If attributeSource != null, setups the currently bound vertex shader attribute input 'attributeName' with it
 	 * If attibuteSource == null, disables the shader input 'attributeName'
 	 * @throws AttributeNotPresentException If 'attributeName' doesn't resolve to a real attribute location
 	 * Returns the configuration of the bound vertex shader inputs
@@ -119,6 +122,8 @@ public interface RenderingInterface
 	 */
 	public void flush();
 	
+	/* Statistics */
+	
 	public default long getTotalVramUsage()
 	{
 		return getVertexDataVramUsage() + getTextureDataVramUsage();
@@ -127,8 +132,8 @@ public interface RenderingInterface
 	public long getVertexDataVramUsage();
 	
 	public long getTextureDataVramUsage();
-
-	public void addLight(Light light);
+	
+	/* Specific renderers / helpers */
 
 	public GuiRenderer getGuiRenderer();
 

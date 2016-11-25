@@ -133,7 +133,9 @@ public class MainMenu extends OverlayableScene
 		}
 		
 		// Render this shit boy
-		unblurredFBO.bind();
+		
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(unblurredFBO);
+		//unblurredFBO.bind();
 		cam.justSetup(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		ShaderInterface menuSkyBox = renderingContext.useShader("mainMenuSkyBox");
 		//menuSkyBox.use(true);
@@ -146,7 +148,8 @@ public class MainMenu extends OverlayableScene
 		renderingContext.drawFSQuad();
 		
 		// Blurring to H
-		blurredHFBO.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(blurredHFBO);
+		//blurredHFBO.bind();
 		ShaderInterface blurH = renderingContext.useShader("blurH");
 		//blurH.use(true);
 		blurH.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
@@ -157,7 +160,8 @@ public class MainMenu extends OverlayableScene
 
 		for (int i = 0; i < 1; i++)
 		{
-			blurredVFBO.bind();
+			renderingContext.getRenderTargetManager().setCurrentRenderTarget(blurredVFBO);
+			//blurredVFBO.bind();
 			ShaderInterface blurV = renderingContext.useShader("blurV");
 			//blurV.use(true);
 			blurV.setUniform1f("lookupScale", 1);
@@ -167,7 +171,8 @@ public class MainMenu extends OverlayableScene
 			renderingContext.bindTexture2D("inputTexture", blurredH);
 			renderingContext.drawFSQuad();
 
-			blurredHFBO.bind();
+			renderingContext.getRenderTargetManager().setCurrentRenderTarget(blurredHFBO);
+			//blurredHFBO.bind();
 			blurH = renderingContext.useShader("blurH");
 			//blurH.use(true);
 			blurH.setUniform2f("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
@@ -176,7 +181,8 @@ public class MainMenu extends OverlayableScene
 			renderingContext.drawFSQuad();
 		}
 
-		blurredVFBO.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(blurredVFBO);
+		//blurredVFBO.bind();
 		ShaderInterface blurV = renderingContext.useShader("blurV");
 		//blurV.use(true);
 		blurV.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
@@ -185,7 +191,8 @@ public class MainMenu extends OverlayableScene
 		renderingContext.drawFSQuad();
 		//blurV.use(false);
 
-		FrameBufferObject.unbind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(null);
+		//FrameBufferObject.unbind();
 		ShaderInterface blit = renderingContext.useShader("background");
 		//blit.use(true);
 		blit.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);

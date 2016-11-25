@@ -4,6 +4,9 @@ package io.xol.engine.graphics.fbo;
 //http://chunkstories.xyz
 //http://xol.io
 
+/**
+ * Different kinds of stuff qualify as a render target, mostly textures
+ */
 public interface RenderTarget
 {
 	public void attacAshDepth();

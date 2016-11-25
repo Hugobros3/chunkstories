@@ -13,10 +13,12 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingM
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.RenderTargetManager;
 import io.xol.chunkstories.api.rendering.RenderingCommand;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.graphics.fbo.OpenGLRenderTargetManager;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
@@ -27,7 +29,7 @@ import io.xol.engine.graphics.textures.Texture;
 import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
-import io.xol.engine.graphics.util.GuiRenderer;
+import io.xol.engine.graphics.util.GuiRendererImplementation;
 
 import java.nio.FloatBuffer;
 import java.util.Iterator;
@@ -52,7 +54,7 @@ public class RenderingContext implements RenderingInterface
 
 	private List<Light> lights = new LinkedList<Light>();
 
-	private GuiRenderer guiRenderer;
+	private GuiRendererImplementation guiRenderer;
 	private TrueTypeFontRenderer trueTypeFontRenderer;
 
 	//Texturing
@@ -65,12 +67,17 @@ public class RenderingContext implements RenderingInterface
 
 	private int queuedCommandsIndex;
 	private RenderingCommand[] queuedCommands = new RenderingCommand[1024];
+	
+	private final RenderTargetManager renderTargetManager;
 	//private Deque<RenderingCommandImplementation> commands = new ArrayDeque<RenderingCommandImplementation>();
 
 	public RenderingContext(GameWindowOpenGL windows)
 	{
 		mainWindows = windows;
-		guiRenderer = new GuiRenderer(this);
+		
+		renderTargetManager = new OpenGLRenderTargetManager(this);
+		
+		guiRenderer = new GuiRendererImplementation(this);
 		trueTypeFontRenderer = new TrueTypeFontRenderer(this);
 	}
 
@@ -186,7 +193,7 @@ public class RenderingContext implements RenderingInterface
 		return lights.iterator();
 	}
 
-	public GuiRenderer getGuiRenderer()
+	public GuiRendererImplementation getGuiRenderer()
 	{
 		return guiRenderer;
 	}
@@ -349,5 +356,11 @@ public class RenderingContext implements RenderingInterface
 	public long getTextureDataVramUsage()
 	{
 		return Texture.getTotalVramUsage();
+	}
+
+	@Override
+	public RenderTargetManager getRenderTargetManager()
+	{
+		return renderTargetManager;
 	}
 }
