@@ -46,11 +46,6 @@ public class OverlayRenderer
 
 	}
 
-	public static void glLineWidth(float lineWidth)
-	{
-		GL11.glLineWidth(lineWidth);
-	}
-
 	public static void glColor4f(float r, float g, float b, float a)
 	{
 		color = new Vector4f(r, g, b, a);

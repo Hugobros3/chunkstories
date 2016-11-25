@@ -7,6 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Inventory;
+import io.xol.chunkstories.api.exceptions.NullItemException;
+import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
@@ -52,7 +54,8 @@ public class ItemPile implements CSFSerializable
 	 * @param stream
 	 * @throws IOException
 	 */
-	public ItemPile(Item item, DataInputStream stream) throws IOException
+	@Deprecated
+	public ItemPile(Item item, DataInputStream stream) throws IOException, UndefinedItemTypeException
 	{
 		this.item = item;
 		//this.data = item.getItemData();
@@ -62,6 +65,21 @@ public class ItemPile implements CSFSerializable
 	public ItemPile(ItemType type)
 	{
 		this(type.newItem());
+	}
+
+	public ItemPile(DataInputStream stream) throws IOException, UndefinedItemTypeException, NullItemException
+	{
+		int itemId = stream.readInt();
+		if(itemId == 0)
+			throw new NullItemException(stream);
+		
+		ItemType itemType = ItemTypes.getItemTypeById(itemId);
+		if(itemType == null)
+			throw new UndefinedItemTypeException(itemId);
+		
+		this.item = itemType.newItem();
+
+		loadCSF(stream);
 	}
 
 	public String getTextureName()

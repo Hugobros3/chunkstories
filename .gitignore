@@ -30,3 +30,9 @@ namalsk*
 skybox*
 cache/*
 servermods/*
+dz4cs/
+apitrace*
+wrappers/
+*.exe
+*.hprof
+*.trace

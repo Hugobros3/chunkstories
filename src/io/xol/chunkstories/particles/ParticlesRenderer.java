@@ -17,8 +17,6 @@ import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Vector3d;
 
-import static org.lwjgl.opengl.GL11.*;
-
 import java.nio.FloatBuffer;
 import java.util.Iterator;
 import java.util.Map;

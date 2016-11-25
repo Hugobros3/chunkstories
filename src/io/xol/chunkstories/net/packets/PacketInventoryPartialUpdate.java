@@ -5,7 +5,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Inventory;
+import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
+import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
@@ -13,6 +15,8 @@ import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.net.InventoryTranslator;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -22,7 +26,7 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 {
 	private Inventory inventory;
 	private int slotx, sloty;
-	private ItemPile newItemPile;
+	private ItemPile itemPile;
 
 	public PacketInventoryPartialUpdate()
 	{
@@ -34,7 +38,7 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 		this.inventory = inventory;
 		this.slotx = slotx;
 		this.sloty = sloty;
-		this.newItemPile = newItemPile;
+		this.itemPile = newItemPile;
 	}
 
 	@Override
@@ -45,11 +49,11 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 		out.writeInt(slotx);
 		out.writeInt(sloty);
 		
-		if(newItemPile == null)
+		if(itemPile == null)
 			out.writeInt(0);
 		else{
-			out.writeInt(newItemPile.getItem().getID());
-			newItemPile.saveCSF(out);
+			out.writeInt(itemPile.getItem().getID());
+			itemPile.saveCSF(out);
 		}
 	}
 
@@ -61,18 +65,33 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 		int slotx = in.readInt();
 		int sloty = in.readInt();
 		
-		int itemId = in.readInt();
+		/*int itemId = in.readInt();
 		
 		if(itemId != 0)
 		{
 			Item item = ItemTypes.getItemTypeById(itemId).newItem();
-			newItemPile = new ItemPile(item, in);
+			itemPile = new ItemPile(item, in);
 		}
 		else
-			newItemPile = null;
+			itemPile = null;*/
+		
+		try
+		{
+			itemPile = new ItemPile(in);
+		}
+		catch (NullItemException e)
+		{
+			itemPile = null;
+		}
+		catch (UndefinedItemTypeException e)
+		{
+			//This is slightly more problematic
+			ChunkStoriesLogger.getInstance().log(e.getMessage(), LogLevel.WARN);
+			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
+		}
 		
 		if(inventory != null)
-			inventory.setItemPileAt(slotx, sloty, newItemPile);
+			inventory.setItemPileAt(slotx, sloty, itemPile);
 	}
 
 }

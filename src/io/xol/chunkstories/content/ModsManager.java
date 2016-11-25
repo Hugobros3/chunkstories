@@ -30,6 +30,7 @@ import io.xol.chunkstories.materials.Materials;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.particles.ParticleTypes;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.voxel.models.VoxelModels;
@@ -446,16 +447,17 @@ public class ModsManager
 		}
 		catch (ClassNotFoundException e)
 		{
-			e.printStackTrace();
+			//We don't really care about this
+			//e.printStackTrace();
 		}
 		//If this fails, try to obtain it from one of the loaded mods
-		System.out.println("Looking for class "+className+" in loaded mods");
+		ChunkStoriesLogger.getInstance().log("Looking for class "+className+" in loaded mods", LogLevel.DEBUG);
 		
 		ForeignCodeClassLoader loader = avaibleForeignClasses.get(className);
 		
 		if(loader == null)
 		{
-			System.out.println("WARNING: Class "+className + " was not found in any loaded mod.");
+			ChunkStoriesLogger.getInstance().log("Class "+className + " was not found in any loaded mod.", LogLevel.ERROR);
 			return null;
 		}
 		
@@ -464,7 +466,7 @@ public class ModsManager
 		if(loadedClass != null)
 			return loadedClass;
 		
-		System.out.println("WARNING: Failed to load class "+className);
+		ChunkStoriesLogger.getInstance().log("WARNING: Failed to load class "+className, LogLevel.ERROR);
 		
 		//If all fail, return null
 		return null;

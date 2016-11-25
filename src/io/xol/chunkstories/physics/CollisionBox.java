@@ -274,7 +274,6 @@ public class CollisionBox implements Collidable
 	public void debugDraw(float r, float g, float b, float a)
 	{
 		glColor4f(r, g, b, a);
-		glLineWidth(1);
 		glDisable(GL_CULL_FACE);
 		
 		glBegin(GL_LINES);

@@ -2,6 +2,8 @@ package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.Inventory;
+import io.xol.chunkstories.api.exceptions.NullItemException;
+import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
@@ -11,6 +13,8 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.net.InventoryTranslator;
 import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -83,8 +87,23 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		//If this pile is spawned from the void
 		if(from == null)
 		{
-			Item item = ItemTypes.getItemTypeById(in.readInt()).newItem();
-			itemPile = new ItemPile(item, in);
+			try
+			{
+				itemPile = new ItemPile(in);
+			}
+			catch (NullItemException e)
+			{
+				//This ... isn't supposed to happen
+				ChunkStoriesLogger.getInstance().log("User "+sender+" is trying to spawn a null ItemPile for some reason.", LogLevel.WARN);
+			}
+			catch (UndefinedItemTypeException e)
+			{
+				//This is slightly more problematic
+				ChunkStoriesLogger.getInstance().log(e.getMessage(), LogLevel.WARN);
+				e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
+			}
+			//Item item = ItemTypes.getItemTypeById(in.readInt()).newItem();
+			//itemPile = new ItemPile(item, in);
 		}
 		
 		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(processor.getServerClient().getProfile(), this);

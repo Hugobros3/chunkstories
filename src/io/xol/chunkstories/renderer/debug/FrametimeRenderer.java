@@ -1,6 +1,5 @@
 package io.xol.chunkstories.renderer.debug;
 
-import static org.lwjgl.opengl.GL11.*;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
@@ -38,7 +37,7 @@ public class FrametimeRenderer
 		data.put(lel * 4 + 2, lel);
 		data.put(lel * 4 + 3, elapsedTime/1000000f);
 		//System.out.println("ntm");
-		glLineWidth(1);
+		//glLineWidth(1);
 		
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.MIX);

@@ -1,8 +1,5 @@
 package io.xol.chunkstories.core.entity.voxel;
 
-import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
-import static org.lwjgl.opengl.GL11.glDisable;
-
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
@@ -108,7 +105,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 					mutrix.translate(new Vector3f(0.0f, 0.0f, -0.5f));
 				renderingContext.setObjectMatrix(mutrix);
 
-				glDisable(GL_CULL_FACE);
+				//glDisable(GL_CULL_FACE);
 				if (isPost)
 					ModelLibrary.getRenderableMesh("./models/sign_post.obj").render(renderingContext);
 				else

@@ -1,5 +1,6 @@
 package io.xol.chunkstories.item;
 
+import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.mods.Asset;
@@ -155,14 +156,14 @@ public class ItemTypes
 		}
 	}
 
-	public static ItemType getItemTypeById(int id)
+	public static ItemType getItemTypeById(int id)// throws UndefinedItemTypeException
 	{
 		//Quick & dirty sanitization
 		id = id & 0x00FFFFFF;
 		return items[id];
 	}
 
-	public static ItemType getItemTypeByName(String itemName)
+	public static ItemType getItemTypeByName(String itemName)// throws UndefinedItemTypeException
 	{
 		if (dictionary.containsKey(itemName))
 			return dictionary.get(itemName);
