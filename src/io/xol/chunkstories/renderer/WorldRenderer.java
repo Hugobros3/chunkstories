@@ -24,7 +24,6 @@ import javax.imageio.ImageIO;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
 
-import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
 
@@ -338,20 +337,12 @@ public class WorldRenderer
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
 		//fboShadedBuffer.bind();
 
-		// Draw sky
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		long t = System.nanoTime();
 		sky.time = (world.worldTime % 10000) / 10000f;
 		//sky.skyShader.use(true);
 		//sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
 		//glViewport(0, 0, scrW, scrH);
 		sky.render(renderingContext);
 
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		if (RenderingConfig.debugPasses)
-			System.out.println("sky took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		// Move camera to relevant position
 		// fboGBuffers.setEnabledRenderTargets(true, false, false);
@@ -369,12 +360,6 @@ public class WorldRenderer
 		//fboShadedBuffer.bind();
 		fboShadedBuffer.setEnabledRenderTargets();
 		weatherEffectsRenderer.renderEffects(renderingContext);
-
-		// Debug
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		if (RenderingConfig.debugPasses)
-			System.out.println("total took " + (System.nanoTime() - t) / 1000000.0 + "ms ( " + 1 / ((System.nanoTime() - t) / 1000000000.0) + " fps)");
 
 		//Disable depth check
 		//glDisable(GL_DEPTH_TEST);
@@ -662,7 +647,8 @@ public class WorldRenderer
 		
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(shadowMapFBO);
 		//shadowMapFBO.bind();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		renderingContext.getRenderTargetManager().clearBoundRenderTargetZ(1.0f);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shadowsPassShader = renderingContext.useShader("shadows");
 		
@@ -729,18 +715,10 @@ public class WorldRenderer
 		if (Keyboard.isKeyDown(Keyboard.KEY_F10))
 			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		long t = System.nanoTime();
 		if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
 			renderedVertices += farTerrainRenderer.draw(renderingContext, terrainShader);
 
 		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);
-
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		if (RenderingConfig.debugPasses)
-			System.out.println("terrain took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 		
 		renderingContext.flush();
 	}
@@ -750,7 +728,6 @@ public class WorldRenderer
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 
-		long t;
 		animationTimer = (float) (((System.currentTimeMillis() % 100000) / 200f) % 100.0);
 
 		int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
@@ -825,9 +802,6 @@ public class WorldRenderer
 		
 		renderingContext.setIsShadowPass(isShadowPass);
 
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		t = System.nanoTime();
 
 		int chunksRendered = 0;
 		for (int XXX = 0; XXX < 1; XXX++)
@@ -932,10 +906,6 @@ public class WorldRenderer
 		// Done looping chunks, now entities
 		if (!isShadowPass)
 		{
-			if (RenderingConfig.debugPasses)
-				glFinish();
-			if (RenderingConfig.debugPasses)
-				System.out.println("blocks took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 			// Select shader
 			renderingContext.useShader("entities");
@@ -1018,7 +988,9 @@ public class WorldRenderer
 				renderingContext.bindTexture2D("readbackAlbedoBufferTemp", this.albedoBuffer);
 				renderingContext.bindTexture2D("readbackMetaBufferTemp", this.materialBuffer);
 				renderingContext.bindTexture2D("readbackDepthBufferTemp", this.zBuffer);
-				glDepthMask(false);
+				
+				renderingContext.getRenderTargetManager().setDepthMask(false);
+				//glDepthMask(false);
 			}
 			else if (pass == 2)
 			{
@@ -1027,7 +999,9 @@ public class WorldRenderer
 				fboGBuffers.setEnabledRenderTargets();
 				renderingContext.bindTexture2D("readbackShadedBufferTemp", this.shadedBuffer);
 				renderingContext.bindTexture2D("readbackDepthBufferTemp", this.zBuffer);
-				glDepthMask(true);
+				
+				renderingContext.getRenderTargetManager().setDepthMask(true);
+				//glDepthMask(true);
 			}
 			for (ChunkRenderable chunk : renderList)
 			{
@@ -1069,9 +1043,11 @@ public class WorldRenderer
 		this.renderingContext.flush();
 		
 		// Draw world shaded with sunlight and vertex light
-		glDepthMask(false);
+		renderingContext.getRenderTargetManager().setDepthMask(false);
+		//glDepthMask(false);
 		renderShadedBlocks();
-		glDepthMask(true);
+		renderingContext.getRenderTargetManager().setDepthMask(true);
+		//glDepthMask(true);
 
 		// Compute SSAO
 		if (RenderingConfig.ssaoQuality > 0)
@@ -1095,7 +1071,8 @@ public class WorldRenderer
 		// Disable depth read/write
 		
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
-		glDepthMask(false);
+		renderingContext.getRenderTargetManager().setDepthMask(false);
+		//glDepthMask(false);
 		
 		lightShader = renderingContext.useShader("light");
 		
@@ -1114,7 +1091,8 @@ public class WorldRenderer
 		
 		LightsRenderer.renderPendingLights(renderingContext);
 		//Cleanup
-		glDepthMask(true);
+		renderingContext.getRenderTargetManager().setDepthMask(false);
+		//glDepthMask(true);
 		
 		renderingContext.setBlendMode(BlendMode.MIX);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
@@ -1125,13 +1103,6 @@ public class WorldRenderer
 	 */
 	public void renderShadedBlocks()
 	{
-		if (Keyboard.isKeyDown(Keyboard.KEY_F7))
-			return;
-		if (RenderingConfig.debugPasses)
-			glFinish();
-
-		long t = System.nanoTime();
-
 		applyShadowsShader = renderingContext.useShader("shadows_apply");
 		setupShadowColors(applyShadowsShader);
 
@@ -1180,12 +1151,6 @@ public class WorldRenderer
 		sky.setupShader(applyShadowsShader);
 
 		renderingContext.drawFSQuad();
-		
-		if (RenderingConfig.debugPasses)
-			glFinish();
-
-		if (RenderingConfig.debugPasses)
-			System.out.println("shadows pass took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 	}
@@ -1197,10 +1162,6 @@ public class WorldRenderer
 	 */
 	public void blitScreen(float pauseFade)
 	{
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		long t = System.nanoTime();
-
 		// We render to the screen.
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(null);
 		//FrameBufferObject.unbind();
@@ -1235,11 +1196,6 @@ public class WorldRenderer
 		renderingContext.drawFSQuad();
 		//drawFSQuad();
 
-		if (RenderingConfig.debugPasses)
-			glFinish();
-
-		if (RenderingConfig.debugPasses)
-			System.out.println("final blit took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		if (RenderingConfig.doBloom)
 		{			
@@ -1556,7 +1512,8 @@ public class WorldRenderer
 				renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
 				//this.fboShadedBuffer.bind();
 
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			// Scene rendering
 			if (onlyTerrain)

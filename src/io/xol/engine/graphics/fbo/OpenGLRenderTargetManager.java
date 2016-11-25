@@ -37,7 +37,7 @@ public class OpenGLRenderTargetManager implements RenderTargetManager
 		this.fbo = fbo;
 	}
 
-	private boolean depthMask = false;
+	private boolean depthMask = true;
 
 	@Override
 	public void setDepthMask(boolean depthMask)

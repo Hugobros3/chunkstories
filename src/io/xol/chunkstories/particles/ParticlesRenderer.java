@@ -310,7 +310,8 @@ public class ParticlesRenderer implements ParticlesManager
 
 		//ObjectRenderer.drawFSQuad(billCoordVAL);
 
-		glDepthMask(true);
+		renderingContext.getRenderTargetManager().setDepthMask(true);
+		//glDepthMask(true);
 
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 		

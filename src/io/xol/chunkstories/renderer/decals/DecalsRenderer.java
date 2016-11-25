@@ -1,7 +1,5 @@
 package io.xol.chunkstories.renderer.decals;
 
-import static org.lwjgl.opengl.GL11.*;
-
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -203,7 +201,8 @@ public class DecalsRenderer implements DecalsManager
 		//glEnable(GL_BLEND);
 		
 		//glDisable(GL_DEPTH_TEST);
-		glDepthMask(false);
+		renderingContext.getRenderTargetManager().setDepthMask(false);
+		//glDepthMask(false);
 		//glDepthFunc(GL_LEQUAL);
 
 		for(DecalType decalType : decalsTypes.values())
@@ -231,6 +230,7 @@ public class DecalsRenderer implements DecalsManager
 			//decalType.verticesObject.drawElementsTriangles(decalType.kount);
 		}
 
-		glDepthMask(true);
+		renderingContext.getRenderTargetManager().setDepthMask(true);
+		//glDepthMask(true);
 	}
 }
