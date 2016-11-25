@@ -5,7 +5,6 @@ import java.nio.IntBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
@@ -70,13 +69,18 @@ public class IOTasksMultiplayerClient extends IOTasks
 		@Override
 		public boolean run()
 		{
-			Region region = world.getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
+			RegionImplementation region = world.getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
 			
 			CubicChunk c = null;// new CubicChunk(region, chunkX, chunkY, chunkZ);
 			
 			//In any client scenario we don't need to check for a chunk holder to be already present neither do we need
 			//to let it load.
 
+			if(region == null)
+			{
+				System.out.println("Notice: received chunk data for a chunk within an unloaded region. Ignoring.");
+			}
+			
 			if (data != null)
 			{
 				try
@@ -107,12 +111,12 @@ public class IOTasksMultiplayerClient extends IOTasks
 			return true;
 		}
 
-		@Override
+		/*@Override
 		public boolean equals(Object o)
 		{
 			//All packets are unique
 			return false;
-		}
+		}*/
 
 		@Override
 		public int hashCode()
@@ -210,12 +214,12 @@ public class IOTasksMultiplayerClient extends IOTasks
 			return true;
 		}
 
-		@Override
+		/*@Override
 		public boolean equals(Object o)
 		{
 			//All packets are unique
 			return false;
-		}
+		}*/
 
 		@Override
 		public int hashCode()

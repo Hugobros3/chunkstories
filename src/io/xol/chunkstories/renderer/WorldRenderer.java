@@ -196,7 +196,7 @@ public class WorldRenderer
 	public int renderedChunks = 0;
 
 	//Bloom avg color buffer
-	ByteBuffer shadedMipmapZeroLevelColor = null;//BufferUtils.createByteBuffer(4 * 3);
+	ByteBuffer shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(4 * 3);
 	//Bloom aperture
 	float apertureModifier = 1f;
 
@@ -877,11 +877,20 @@ public class WorldRenderer
 				}
 				if (!isShadowPass)
 				{
+					Matrix4f matrix = new Matrix4f();
+					matrix.translate(new Vector3f( vboDekalX, chunk.getChunkY() * 32f, vboDekalZ));
+					this.renderingContext.setObjectMatrix(matrix);
 					opaqueBlocksShader.setUniform3f("objectPosition", vboDekalX, chunk.getChunkY() * 32f, vboDekalZ);
 				}
 				else
-					shadowsPassShader.setUniform3f("objectPosition", vboDekalX, chunk.getChunkY() * 32f, vboDekalZ);
-				
+				{
+
+					Matrix4f matrix = new Matrix4f();
+					matrix.translate(new Vector3f( vboDekalX, chunk.getChunkY() * 32f, vboDekalZ));
+					this.renderingContext.setObjectMatrix(matrix);
+					
+				}
+					
 				if (!Keyboard.isKeyDown(Keyboard.KEY_F4))
 					if (isShadowPass)
 						renderedVerticesShadow += chunkRenderData.renderCubeSolidBlocks(renderingContext);
@@ -1039,7 +1048,8 @@ public class WorldRenderer
 
 		// Particles rendering
 		((ParticlesRenderer) this.world.getParticlesManager()).render(renderingContext);
-
+		this.renderingContext.flush();
+		
 		// Draw world shaded with sunlight and vertex light
 		glDepthMask(false);
 		renderShadedBlocks();
@@ -1187,7 +1197,9 @@ public class WorldRenderer
 		renderingContext.bindTexture2D("bloomBuffer", this.bloomBuffer);
 		renderingContext.bindTexture2D("ssaoBuffer", this.ssaoBuffer);
 		renderingContext.bindTexture2D("pauseOverlayTexture", TexturesHandler.getTexture("./textures/gui/darker.png"));
-		renderingContext.bindTexture2D("debugBuffer", (System.currentTimeMillis() % 1000 < 500) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
+		//renderingContext.bindTexture2D("debugBuffer", (System.currentTimeMillis() % 1000 < 500) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
+		renderingContext.bindTexture2D("debugBuffer", this.materialBuffer);
+
 
 		Voxel vox = Voxels.get(world.getVoxelData(camera.pos.negate()));
 		postProcess.setUniform1f("underwater", vox.isVoxelLiquid() ? 1 : 0);
@@ -1218,10 +1230,11 @@ public class WorldRenderer
 				//System.out.println(fBuffer + " " + max_mipmap);
 				//shadedMipmapZeroLevelColor.rewind();
 
-				//illDownIndex++;
+				illDownIndex++;
 				//if (illDownIndex % 50 == 0)
 				if (System.currentTimeMillis() - lastIllCalc > 1000)
 				{
+					
 					lastIllCalc = System.currentTimeMillis();
 					//shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(12);
 					//if(!shadedMipmapZeroLevelColor.hasRemaining())
@@ -1239,6 +1252,8 @@ public class WorldRenderer
 						//shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(tmpBuffer.capacity());
 						//shadedMipmapZeroLevelColor.put(tmpBuffer);
 						shadedMipmapZeroLevelColor = illuminationDownloader[illDownIndex / 50 % illDownBuffers].readPBO();
+						
+						//System.out.println(shadedMipmapZeroLevelColor);
 						//System.out.println("read took "+Math.floor((System.nanoTime()-nanoR)/10f)/100f+"µs ");
 						//System.out.println("Read "+shadedMipmapZeroLevelColor.capacity() + "bytes.");
 						//System.out.println("glError : "+glGetError());
@@ -1253,9 +1268,11 @@ public class WorldRenderer
 					shadedMipmapZeroLevelColor.rewind();
 
 				this.shadedBuffer.computeMipmaps();
-
+				
 				if (shadedMipmapZeroLevelColor != null)
 				{
+					//System.out.println(":c");
+					
 					if (!shadedMipmapZeroLevelColor.hasRemaining())
 						shadedMipmapZeroLevelColor.rewind();
 					//System.out.println(shadedMipmapZeroLevelColor);
@@ -1269,7 +1286,7 @@ public class WorldRenderer
 					luma = (float) Math.pow(luma, 1d / 2.2);
 					//System.out.println("luma:"+luma + " aperture:"+ this.apertureModifier);
 
-					float targetLuma = 0.55f;
+					float targetLuma = 0.65f;
 					float lumaMargin = 0.15f;
 
 					if (luma < targetLuma - lumaMargin)
@@ -1279,7 +1296,7 @@ public class WorldRenderer
 					}
 					else if (luma > targetLuma + lumaMargin)
 					{
-						if (apertureModifier > 1.0)
+						if (apertureModifier > 0.99)
 							apertureModifier *= 0.999;
 					}
 					else
@@ -1298,6 +1315,8 @@ public class WorldRenderer
 			apertureModifier = 1.0f;
 
 		//Draw entities Huds
+		//TODO entitiesRenderer
+		world.entitiesLock.readLock().lock();
 		Iterator<Entity> ei = world.getAllLoadedEntities();
 		Entity e;
 		while (ei.hasNext())
@@ -1306,6 +1325,7 @@ public class WorldRenderer
 			if (e instanceof EntityOverlay)
 				((EntityOverlay) e).drawEntityOverlay(renderingContext);
 		}
+		world.entitiesLock.readLock().unlock();
 	}
 
 	private void SSAO(int quality)

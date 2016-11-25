@@ -67,11 +67,17 @@ public class EntityComponentVelocity extends EntityComponent
 		this.pushComponentEveryone();
 	}
 
+	public void addVelocity(Vector3d delta)
+	{
+		this.addVelocity(delta.getX(), delta.getY(), delta.getZ());
+	}
+
 	public void addVelocity(double x, double y, double z)
 	{
 		this.velocity.add(x, y, z);
 		
-		this.pushComponentEveryone();
+		this.pushComponentEveryoneButController();
+		//Notify the controller otherwise: 
 	}
 
 	@Override

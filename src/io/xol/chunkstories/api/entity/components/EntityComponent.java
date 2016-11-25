@@ -103,11 +103,6 @@ public abstract class EntityComponent
 			if(controller != null && subscriber.equals(controller))
 				continue;
 			
-			/*PacketEntity packet = new PacketEntity();
-			packet.entityToUpdate = entity;
-			
-			packet.updateOneComponent = this;
-			subscriber.pushPacket(packet);*/
 			try {
 				PacketEntity packet = new PacketEntity(entity);
 				this.pushComponentInStream(subscriber, packet.getSynchPacketOutputStream());
@@ -120,13 +115,6 @@ public abstract class EntityComponent
 	{
 		//You may check that subscriber has subscribed to said entity ?
 		//Re : nope because we send the EntityExistence (hint: false) component to [just] unsubscribed guys so it wouldn't work
-		
-		/*PacketEntity packet = new PacketEntity();
-		packet.entityToUpdate = entity;
-		
-		//Set the packet to "just update that component" mode
-		packet.updateOneComponent = this;
-		subscriber.pushPacket(packet);*/
 		try {
 			PacketEntity packet = new PacketEntity(entity);
 			this.pushComponentInStream(subscriber, packet.getSynchPacketOutputStream());
@@ -155,12 +143,6 @@ public abstract class EntityComponent
 			this.pushAllComponentsInStream(subscriber, packet.getSynchPacketOutputStream());
 			subscriber.pushPacket(packet);
 		} catch (IOException e){ }
-		/*PacketEntity packet = new PacketEntity();
-		packet.entityToUpdate = entity;
-		
-		//Set the packet to "update everything in the chained list" mode
-		packet.updateManyComponents = this;
-		subscriber.pushPacket(packet);*/
 	}
 	
 	public boolean tryPullComponentInStream(int componentId, StreamSource from, DataInputStream dis) throws IOException

@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.csf.OfflineSerializedData;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
 import io.xol.chunkstories.entity.EntitySerializer;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -51,7 +52,7 @@ public class CSFRegionFile implements OfflineSerializedData
 			size += in.read();
 			chunksSizes[a] = size;
 		}
-		
+
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
@@ -62,13 +63,13 @@ public class CSFRegionFile implements OfflineSerializedData
 					// fill it
 					if (size > 0)
 					{
-						byte[] buffer  = new byte[size];
+						byte[] buffer = new byte[size];
 						in.read(buffer, 0, size);
 						holder.getChunkHolder(a, b, c).setCompressedData(buffer);
 						// i++;
 					}
 				}
-		
+
 		/*
 		//Lock the holder compressed chunks array !
 		holder.compressedChunksLock.beginWrite();
@@ -90,39 +91,47 @@ public class CSFRegionFile implements OfflineSerializedData
 				}
 		//Unlock it immediatly afterwards
 		holder.compressedChunksLock.endWrite();*/
-		
+
 		//We pretend it's loaded sooner so we can add the entities and they will load their chunks data if needed
 		holder.setDiskDataLoaded(true);
 
 		//don't tick the world entities until we get this straight
 		holder.world.entitiesLock.writeLock().lock();
 
+		//Older version case
 		if (in.available() <= 0)
 		{
-			System.out.println("Old version file, no entities to be found anyway");
+			//System.out.println("Old version file, no entities to be found anyway");
 			in.close();
-			
+
 			holder.world.entitiesLock.writeLock().unlock();
 			//holder.world.entitiesLock.unlock();
 			return;
 		}
 
-		DataInputStream dis = new DataInputStream(in);
-
-		//Read entities until we hit -1
-		Entity entity = null;
-		do
+		try
 		{
-			entity = EntitySerializer.readEntityFromStream(dis, this, holder.world);
-			if (entity != null)
-				holder.world.addEntity(entity);
+			DataInputStream dis = new DataInputStream(in);
+
+			//Read entities until we hit -1
+			Entity entity = null;
+			do
+			{
+				entity = EntitySerializer.readEntityFromStream(dis, this, holder.world);
+				if (entity != null)
+					holder.world.addEntity(entity);
+			}
+			while (entity != null);
+
 		}
-		while (entity != null);
+		catch (Exception e)
+		{
+			ChunkStoriesLogger.getInstance().info("Error while loading "+file);
+			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
+		}
 
 		holder.world.entitiesLock.writeLock().unlock();
-		//holder.world.entitiesLock.unlock();
-
-		// System.out.println("read "+i+" compressed chunks");
+		
 		in.close();
 	}
 
@@ -134,15 +143,15 @@ public class CSFRegionFile implements OfflineSerializedData
 		FileOutputStream out = new FileOutputStream(file);
 		// int[] chunksSizes = new int[8*8*8];
 		// First write the index
-		
+
 		byte[][][][] compressedVersions = new byte[8][8][8][];
-		
+
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
 				{
 					int chunkSize = 0;
-					
+
 					byte[] chunkCompressedVersion = holder.getChunkHolder(a, b, c).getCompressedData();
 					if (chunkCompressedVersion != null)
 					{
@@ -169,8 +178,6 @@ public class CSFRegionFile implements OfflineSerializedData
 		//don't tick the world entities until we get this straight
 		holder.world.entitiesLock.readLock().lock();
 
-		//System.out.println("writing region file of " + holder);
-
 		DataOutputStream dos = new DataOutputStream(out);
 
 		Iterator<Entity> holderEntities = holder.getEntitiesWithinRegion();
@@ -178,16 +185,14 @@ public class CSFRegionFile implements OfflineSerializedData
 		{
 			Entity entity = holderEntities.next();
 			//Don't save controllable entities
-			if (entity.exists() && !(entity instanceof EntityUnsaveable && !((EntityUnsaveable)entity).shouldSaveIntoRegion()))
+			if (entity.exists() && !(entity instanceof EntityUnsaveable && !((EntityUnsaveable) entity).shouldSaveIntoRegion()))
 			{
 				EntitySerializer.writeEntityToStream(dos, this, entity);
 				//System.out.println("wrote " + entity);
 			}
 		}
 		dos.writeLong(-1);
-
-		//System.out.println("done");
-
+		
 		holder.world.entitiesLock.readLock().unlock();
 		//holder.world.entitiesLock.unlock();
 

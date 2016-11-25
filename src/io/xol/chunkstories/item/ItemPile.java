@@ -18,8 +18,9 @@ import io.xol.chunkstories.item.inventory.CSFSerializable;
 
 public class ItemPile implements CSFSerializable
 {
+	private final Item item;
+	
 	private int amount = 1;
-	public Item item;
 
 	private EntityComponentInventory inventory;
 	private int x;
@@ -27,8 +28,6 @@ public class ItemPile implements CSFSerializable
 
 	/**
 	 * Creates an item pile of the item type named 'itemName'
-	 * 
-	 * @param itemName
 	 */
 	public ItemPile(String itemName)
 	{
@@ -170,7 +169,7 @@ public class ItemPile implements CSFSerializable
 		this.amount = amount;
 
 		if (inventory != null)
-			this.inventory.pushComponentController();
+			this.inventory.refreshItemSlot(x, y, this);
 
 		return this;
 	}
@@ -186,9 +185,7 @@ public class ItemPile implements CSFSerializable
 	}
 
 	/**
-	 * Returns an exact copy of this pile
-	 * 
-	 * @return
+	 * Returns an exact copy of this pile ( serializes and unserializes )
 	 */
 	public ItemPile duplicate()
 	{

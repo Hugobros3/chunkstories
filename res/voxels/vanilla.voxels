@@ -244,7 +244,7 @@ voxel forestgrass_prop 65
 	affectedByWind: true
 end
 
-voxel rails 66
+voxel rails 66 io.xol.chunkstories.core.voxel.VoxelRail
 	solid: false
 	opaque: false
 	model: 'rails'
@@ -271,6 +271,39 @@ end
 voxel iron_door_top 73 io.xol.chunkstories.core.voxel.VoxelDoor
 	opaque: false
 	model: 'door.m0'
+end
+
+voxel path 80
+	opaque: false
+	selfOpaque: true
+	model: 'steps.m6'
+	texture: dirt
+	material: dirt
+	collisionBox: [0.0, 0.0, 0.0, 1.0, 0.875, 1.0]
+end
+
+voxel ardoiseSlab 81 io.xol.chunkstories.core.voxel.VoxelHalfTile
+	opaque: false
+	texture: ardoise
+	#textures: '~', '~', '~Side', '~Side', '~Side', '~Side'
+	model: 'halftile.bottom'
+	material: stone
+end
+
+voxel ardoise 82
+	material: stone
+end
+
+voxel bookshelf 83
+	textures: '~', '~', '~', '~', 'planks', 'planks'
+	material: bluntwood
+end
+
+voxel ardoiseStairs 84 io.xol.chunkstories.core.voxel.VoxelStairs
+	texture: ardoise
+	opaque: false
+	model: 'stairs.m0'
+	material: stone
 end
 
 voxel water 128 io.xol.chunkstories.core.voxel.VoxelLiquid

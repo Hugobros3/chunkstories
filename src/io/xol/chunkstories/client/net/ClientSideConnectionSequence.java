@@ -166,7 +166,14 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 	
 	public boolean isDone()
 	{
-		return isDone || !this.connection.isAlive();
+		return isDone;
+	}
+	
+	public String hasFailed()
+	{
+		if(this.connection.hasFailed() || !this.connection.isAlive())
+			return this.connection.getLatestErrorMessage();
+		return null;
 	}
 
 	public String getStatus()

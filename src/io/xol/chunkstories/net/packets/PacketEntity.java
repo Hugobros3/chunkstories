@@ -1,18 +1,14 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.exceptions.UnknownComponentException;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
-import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
 import io.xol.chunkstories.entity.Entities;
-import io.xol.chunkstories.world.WorldImplementation;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -25,8 +21,6 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 	private long entityUUID;
 
 	private Entity entityToUpdate;
-	//public EntityComponent updateOneComponent;
-	//public EntityComponent updateManyComponents;
 
 	public PacketEntity()
 	{
@@ -47,8 +41,6 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 	@Override
 	public void prepare(PacketDestinator destinator) throws IOException
 	{
-		//System.out.println("preparing packet");
-		
 		//If the entity no longer exists, we make sure we tell the player so he doesn't spawn it again
 		if(!entityToUpdate.exists())
 		{
@@ -105,7 +97,7 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 		if(entityTypeID == -1)
 			return;
 		
-		((WorldImplementation)processor.getWorld()).entitiesLock.writeLock().lock();;
+		//((WorldImplementation)processor.getWorld()).entitiesLock.writeLock().lock();
 		Entity entity = processor.getWorld().getEntityByUUID(this.entityUUID);
 		
 		boolean addToWorld = false;
@@ -122,8 +114,6 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 		//Loop throught all components
 		while(componentId != 0)
 		{
-			//System.out.println("got component "+componentId+" for entity "+entity);
-			
 			if(!entity.getComponents().tryPullComponentInStream(componentId, sender, in))
 				throw new UnknownComponentException(componentId, entity.getClass());
 			componentId = in.readInt();
@@ -137,7 +127,7 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 				processor.getWorld().addEntity(entity);
 		}
 		//lock.unlock();
-		((WorldImplementation)processor.getWorld()).entitiesLock.writeLock().unlock();
+		//((WorldImplementation)processor.getWorld()).entitiesLock.writeLock().unlock();
 		//((WorldImplementation)processor.getWorld()).entitiesLock.unlock();
 	}
 }

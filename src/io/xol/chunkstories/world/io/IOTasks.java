@@ -2,7 +2,6 @@ package io.xol.chunkstories.world.io;
 
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -185,7 +184,7 @@ public class IOTasks extends Thread
 			if (chunkSlot.isChunkLoaded())
 				return true;
 
-			Region region = chunkSlot.getRegion();
+			RegionImplementation region = chunkSlot.getRegion();
 			int cx = region.getRegionX() * 8 + chunkSlot.getInRegionX();
 			int cy = region.getRegionY() * 8 + chunkSlot.getInRegionY();
 			int cz = region.getRegionZ() * 8 + chunkSlot.getInRegionZ();
@@ -617,18 +616,21 @@ public class IOTasks extends Thread
 			return true;
 		}
 
+		/*
+		 * This code was utter bullshit. You know it, I know it.
+		
 		@Override
 		public boolean equals(Object o)
 		{
-			/*if(o instanceof IOTaskLoadSummary)
+			if(o instanceof IOTaskLoadSummary)
 			{
 				IOTaskLoadSummary comp = ((IOTaskLoadSummary)o);
-				if(comp.summary.rx == this.summary.rx && comp.summary.rz == this.summary.rz)
+				if(comp.summary.getRegionX() == this.summary.getRegionX() && comp.summary.getRegionZ() == this.summary.getRegionZ())
 					return true;
-			}*/
+			}
 			//All saves request are unique
-			return false;
-		}
+			//return false;
+		}*/
 
 		@Override
 		public int hashCode()

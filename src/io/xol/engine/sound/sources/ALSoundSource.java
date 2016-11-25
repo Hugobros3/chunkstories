@@ -26,7 +26,7 @@ public class ALSoundSource extends SoundSourceAbstract
 	public int openAlSourceId;
 
 	public SoundData soundData;
-	
+
 	SoundEffect effect;
 
 	ALSoundSource(float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain)
@@ -42,9 +42,9 @@ public class ALSoundSource extends SoundSourceAbstract
 	public ALSoundSource(String soundEffect, float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain) throws SoundEffectNotFoundException
 	{
 		this(x, y, z, loop, ambient, pitch, gain);
-		
+
 		this.soundData = SoundsLibrary.obtainSample(soundEffect);
-		if(soundData == null)
+		if (soundData == null)
 			throw new SoundEffectNotFoundException();
 	}
 
@@ -54,7 +54,7 @@ public class ALSoundSource extends SoundSourceAbstract
 		this.effect = soundEffect;
 		return this;
 	}
-	
+
 	public void play()
 	{
 		openAlSourceId = alGenSources();
@@ -98,14 +98,14 @@ public class ALSoundSource extends SoundSourceAbstract
 			}
 		}
 		ALSoundManager alManager = ((ALSoundManager) manager);
-		if (isAmbient)
+		/*if (isAmbient)
 		{
 			//To get rid of spatialization we tp the ambient sources to the listener
 			x = alManager.x;
 			y = alManager.y;
 			z = alManager.z;
-		}
-		if(effect != null)
+		}*/
+		if (effect != null)
 			effectSlotId = alManager.getSlotForEffect(effect);
 		updateSource();
 	}
@@ -150,7 +150,7 @@ public class ALSoundSource extends SoundSourceAbstract
 	}
 
 	int effectSlotId = -1;
-	
+
 	private void updateSource()
 	{
 		alSource3f(openAlSourceId, AL_POSITION, x, y, z);
@@ -158,7 +158,7 @@ public class ALSoundSource extends SoundSourceAbstract
 		{
 			efxSlot = alGenAuxiliaryEffectSlots();
 			alAuxiliaryEffectSloti(efxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
-
+		
 			if (reverbEffectSlot == -1)
 			{
 				reverbEffectSlot = alGenEffects();
@@ -196,14 +196,23 @@ public class ALSoundSource extends SoundSourceAbstract
 		{
 			alSourcef(openAlSourceId, AL_PITCH, pitch);
 			alSourcef(openAlSourceId, AL_GAIN, gain);
-			alSourcef(openAlSourceId, AL_ROLLOFF_FACTOR, isAmbient ? 0f : 1f);
+			//alSourcef(openAlSourceId, AL_ROLLOFF_FACTOR, isAmbient ? 0f : 1f);
+
+			if (isAmbient)
+			{
+				alSourcei(openAlSourceId, AL_SOURCE_RELATIVE, AL_TRUE);
+				alSource3f(openAlSourceId, AL_POSITION, 0.0f, 0.0f, 0.0f);
+				alSource3f(openAlSourceId, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+			}
+			alSourcei(openAlSourceId, AL_ROLLOFF_FACTOR, isAmbient ? 0 : 1);
+
 			alSourcef(openAlSourceId, AL_REFERENCE_DISTANCE, attenuationStart);
 			alSourcef(openAlSourceId, AL_MAX_DISTANCE, attenuationEnd);
 			//System.out.println(efxSlot + ":"+reverbEffectSlot);
-			if(effectSlotId != -1)
+			if (effectSlotId != -1)
 				alSource3i(openAlSourceId, AL_AUXILIARY_SEND_FILTER, effectSlotId, 0, AL_FILTER_NULL);
 			else
-			    alSource3i(openAlSourceId, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 0, AL_FILTER_NULL);
+				alSource3i(openAlSourceId, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 0, AL_FILTER_NULL);
 			//alSource3i(alId, AL_AUXILIARY_SEND_FILTER, efxSlot, 0, AL_FILTER_NULL);
 			updateProperties = false;
 		}

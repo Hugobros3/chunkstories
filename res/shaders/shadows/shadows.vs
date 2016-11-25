@@ -52,7 +52,7 @@ void main(){
 	}
 	else
 	{
-		v.xyz += objectPosition;
+		//v.xyz += objectPosition;
 	}
 		
 	gl_Position = accuratizeShadowIn(depthMVP * v);

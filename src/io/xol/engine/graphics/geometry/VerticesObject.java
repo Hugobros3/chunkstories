@@ -432,7 +432,8 @@ public class VerticesObject
 			{
 				//Gives back orphan buffers
 				glDeleteBuffers(openGLID);
-				//System.out.println("Destroyed orphan VerticesObject id #"+id);
+				totalVerticesObjects--;
+				System.out.println("Destroyed orphan VerticesObject id #"+openGLID);
 
 				i.remove();
 			}
@@ -445,7 +446,7 @@ public class VerticesObject
 			WeakReference<VerticesObject> reference = i2.next();
 
 			VerticesObject verticesObject = reference.get();
-			if (verticesObject != null)
+			if (verticesObject != null && verticesObject.openGLID != -2)
 			{
 				//Send deffered uploads
 				verticesObject.uploadPendingDefferedData();

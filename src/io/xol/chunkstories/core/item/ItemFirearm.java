@@ -158,12 +158,14 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 					boolean bulletPresence = (owner instanceof EntityCreative && ((EntityCreative) owner).isCreativeMode()) || checkBullet(itemPile);
 					if (!bulletPresence && !wasTriggerPressedLastTick)
 					{
+						//Play sounds
+						if (controller != null)
+							controller.getSoundManager().playSoundEffect("sounds/dogez/weapon/default/dry.ogg", owner.getLocation(), 1.0f, 1.0f).setAttenuationEnd((float) soundRange);
 						//Dry.ogg
 						//return;
 					}
 					else if ((automatic || !wasTriggerPressedLastTick) && (System.currentTimeMillis() - lastShot) / 1000.0d > 1.0 / (rpm / 60.0))
 					{
-						System.out.println((System.currentTimeMillis() - lastShot));
 						//Fire virtual input
 						ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
 						Client.getInstance().getPluginsManager().fireEvent(event);
@@ -290,7 +292,10 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 								untouchedReflection.scale(0.25);
 
 								Vector3d ppos = new Vector3d(nearestLocation);
-								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
+								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);	
+								
+								controller.getSoundManager().playSoundEffect(Voxels.get(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.05f);
+								
 							}
 
 							controller.getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");
@@ -316,7 +321,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 
 								//Spawn blood particles
 								Vector3d bloodDir = direction.normalize().scale(0.25);
-								for (int i = 0; i < 25; i++)
+								for (int i = 0; i < 250; i++)
 								{
 									Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
 									random.scale(0.25);

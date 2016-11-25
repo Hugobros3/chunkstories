@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.xol.chunkstories.api.entity.DamageCause;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -27,17 +28,19 @@ import io.xol.engine.math.lalgb.Vector3d;
 
 public abstract class EntityLivingImplentation extends EntityImplementation implements EntityLiving
 {
-	public long lastDamageTook = 0;
-	public long damageCooldown = 0;
-
-	long deathDespawnTimer = 600;
-
+	//Head/body rotation
 	EntityComponentRotation entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
-	EntityComponentHealth entityHealthComponent;
-
+	
+	//Movement stuff
+	public Vector3d acceleration = new Vector3d();
+	
+	//Damage/health stuff
+	private EntityComponentHealth entityHealthComponent;
+	private long damageCooldown = 0;
+	private DamageCause lastDamageCause;
+	long deathDespawnTimer = 600;
+	
 	protected SkeletonAnimator animatedSkeleton;
-
-	DamageCause lastDamageCause;
 
 	public EntityLivingImplentation(WorldImplementation w, double x, double y, double z)
 	{
@@ -77,6 +80,9 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	@Override
 	public float damage(DamageCause cause, float damage)
 	{
+		if(damageCooldown > System.currentTimeMillis())
+			return 0f;
+		
 		EntityDamageEvent event = new EntityDamageEvent(this, cause, damage);
 		this.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
 
@@ -84,7 +90,20 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		{
 			entityHealthComponent.damage(event.getDamageDealt());
 			lastDamageCause = cause;
-			return event.getDamageDealt();
+			
+			damageCooldown = System.currentTimeMillis() + cause.getCooldownInMs();
+			
+			float damageDealt = event.getDamageDealt();
+			
+			//Applies knockback
+			if(cause instanceof Entity)
+			{
+				Entity attacker = (Entity)cause;
+				Vector3d attackerToVictim = this.getLocation().sub(attacker.getLocation().add(0, -0.5, 0)).normalize().scale(1/60d).scale(damageDealt / 10f);
+				this.getVelocityComponent().addVelocity(attackerToVictim);
+			}
+			
+			return damageDealt;
 		}
 
 		return 0f;

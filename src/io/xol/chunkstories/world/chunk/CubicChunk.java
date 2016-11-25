@@ -11,6 +11,8 @@ import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.region.RegionImplementation;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -25,8 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CubicChunk implements Chunk, ChunkRenderable
 {
-	public World world;
-	public Region holder;
+	public WorldImplementation world;
+	public RegionImplementation holder;
 	private int chunkX;
 	private int chunkY;
 	private int chunkZ;
@@ -96,7 +98,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		}
 	};
 
-	public CubicChunk(Region holder, int chunkX, int chunkY, int chunkZ)
+	public CubicChunk(RegionImplementation holder, int chunkX, int chunkY, int chunkZ)
 	{
 		this.holder = holder;
 		this.world = holder.getWorld();
@@ -107,7 +109,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		uuid = ((chunkX << world.getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | chunkY ) << world.getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | chunkZ;
 	}
 
-	public CubicChunk(Region holder, int chunkX, int chunkY, int chunkZ, int[] data)
+	public CubicChunk(RegionImplementation holder, int chunkX, int chunkY, int chunkZ, int[] data)
 	{
 		this(holder, chunkX, chunkY, chunkZ);
 

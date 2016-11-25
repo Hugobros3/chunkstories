@@ -108,7 +108,7 @@ public class InventoryDrawer
 					ItemPile summaryBarSelected = getInventory().getItemPileAt(highlightSlot, 0);
 					if (summaryBarSelected != null && i == summaryBarSelected.getX())
 					{
-						sumSlots2HL = summaryBarSelected.item.getSlotsWidth();
+						sumSlots2HL = summaryBarSelected.getItem().getSlotsWidth();
 					}
 					if (sumSlots2HL > 0 || (summaryBarSelected == null && highlightSlot == i))
 					{
@@ -176,51 +176,36 @@ public class InventoryDrawer
 		context.getGuiRenderer().drawBuffer();
 
 		//Draw the actual items
-		for (int i = 0; i < getInventory().getWidth(); i++)
+		for (ItemPile pile : getInventory())
 		{
-			for (int j = 0; j < height; j++)
+			int i = pile.getX();
+			int j = pile.getY();
+			if (pile != null && (!summary || j == 0))
 			{
-				ItemPile pile = getInventory().getContents()[i][j];
-				if (pile != null)
-				{
-					/*int amountToDisplay = pile.getAmount();
-					//If we selected this item
-					if ((InventoryOverlay.selectedItem != null && InventoryOverlay.selectedItem.inventory != null && getInventory().equals(InventoryOverlay.selectedItem.inventory) && InventoryOverlay.selectedItem.x == i
-							&& InventoryOverlay.selectedItem.y == j))
-					{
-						amountToDisplay -= InventoryOverlay.selectedItemAmount;
-					}*/
-
-					int center = summary ? slotSize * (pile.item.getSlotsHeight() - 1) / 2 : 0;
-					pile.getItem().getItemRenderer().renderItemInInventory(context, pile, x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, scale);
-
-					/*if (amountToDisplay != 1)
-						TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, x + cornerSize + ((pile.getItem().getSlotsWidth() - 1.0f) + i) * slotSize, y + cornerSize + j * slotSize, amountToDisplay + "", scale, scale,
-								new Vector4f(1, 1, 1, 1));*/
-				}
+				int center = summary ? slotSize * (pile.getItem().getSlotsHeight() - 1) / 2 : 0;
+				pile.getItem().getItemRenderer().renderItemInInventory(context, pile, x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, scale);
 			}
 		}
 
-		//Draw the actual items amounts
-		for (int i = 0; i < getInventory().getWidth(); i++)
+		//Draws the item's text ( done later to allow gpu commands merging )
+		for (ItemPile pile : getInventory())
 		{
-			for (int j = 0; j < height; j++)
-			{
-				ItemPile pile = getInventory().getContents()[i][j];
-				if (pile != null)
-				{
-					int amountToDisplay = pile.getAmount();
-					//If we selected this item
-					if ((InventoryOverlay.selectedItem != null && InventoryOverlay.selectedItem.getInventory() != null && getInventory().equals(InventoryOverlay.selectedItem.getInventory()) && InventoryOverlay.selectedItem.getX() == i
-							&& InventoryOverlay.selectedItem.getY() == j))
-					{
-						amountToDisplay -= InventoryOverlay.selectedItemAmount;
-					}
+			int i = pile.getX();
+			int j = pile.getY();
 
-					if (amountToDisplay > 1)
-						TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, x + cornerSize + ((pile.getItem().getSlotsWidth() - 1.0f) + i) * slotSize, y + cornerSize + j * slotSize, amountToDisplay + "", scale, scale,
-								new Vector4f(1, 1, 1, 1));
+			if (pile != null && (!summary || j == 0))
+			{
+				int amountToDisplay = pile.getAmount();
+				//If we selected this item
+				if ((InventoryOverlay.selectedItem != null && InventoryOverlay.selectedItem.getInventory() != null && getInventory().equals(InventoryOverlay.selectedItem.getInventory()) && InventoryOverlay.selectedItem.getX() == i
+						&& InventoryOverlay.selectedItem.getY() == j))
+				{
+					amountToDisplay -= InventoryOverlay.selectedItemAmount;
 				}
+
+				if (amountToDisplay > 1)
+					TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, x + cornerSize + ((pile.getItem().getSlotsWidth() - 1.0f) + i) * slotSize, y + cornerSize + j * slotSize, amountToDisplay + "", scale, scale,
+							new Vector4f(1, 1, 1, 1));
 			}
 		}
 	}

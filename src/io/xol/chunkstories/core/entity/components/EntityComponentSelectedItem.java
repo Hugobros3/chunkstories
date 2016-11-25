@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import io.xol.chunkstories.api.csf.OfflineSerializedData;
 import io.xol.chunkstories.api.csf.StreamSource;
 import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Entity;
@@ -122,5 +123,13 @@ public class EntityComponentSelectedItem extends EntityComponent
 		}
 		
 		this.pushComponentEveryoneButController();
+	}
+	
+	public void pushComponentInStream(StreamTarget to, DataOutputStream dos) throws IOException
+	{
+		if(to instanceof OfflineSerializedData)
+			System.out.println("Not writing component SelectedItem to offline data");
+		else
+			super.pushComponentInStream(to, dos);
 	}
 }

@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.random.SeededSimplexNoiseGenerator;
 
@@ -28,7 +29,7 @@ public class NoiseWorldGenerator extends WorldGenerator
 	}
 
 	@Override
-	public Chunk generateChunk(Region region, int cx, int cy, int cz)
+	public Chunk generateChunk(RegionImplementation region, int cx, int cy, int cz)
 	{
 		//rnd.setSeed(cx * 32 + cz + 48716148);
 		

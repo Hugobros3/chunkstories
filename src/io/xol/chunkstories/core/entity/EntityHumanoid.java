@@ -36,8 +36,7 @@ import io.xol.engine.model.ModelLibrary;
 public abstract class EntityHumanoid extends EntityLivingImplentation implements EntityWithClientPrediction
 {
 	double jumpForce = 0;
-	double targetVectorX;
-	double targetVectorZ;
+	protected Vector3d targetVelocity = new Vector3d(0);
 
 	boolean justJumped = false;
 	boolean justLanded = false;
@@ -272,6 +271,11 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		return new EntityHumanoidRenderer<EntityHumanoid>();
 	}
 
+	public Vector3d getTargetVelocity()
+	{
+		return targetVelocity;
+	}
+
 	@Override
 	public void tick()
 	{
@@ -287,7 +291,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		}
 
 		//Set acceleration vector to wanted speed - actual speed
-		acceleration = new Vector3d(targetVectorX - getVelocityComponent().getVelocity().getX(), 0, targetVectorZ - getVelocityComponent().getVelocity().getZ());
+		acceleration = new Vector3d(targetVelocity.getX() - getVelocityComponent().getVelocity().getX(), 0, targetVelocity.getZ() - getVelocityComponent().getVelocity().getZ());
 
 		//Limit maximal acceleration depending if we're on the groud or not, we accelerate 2x faster on ground
 		double maxAcceleration = collision_bot ? 0.010 : 0.005;
@@ -300,7 +304,6 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		}
 
 		//Tick : will move the entity, solve velocity/acceleration and so on
-
 		handleWalkingEtcSounds();
 
 		super.tick();

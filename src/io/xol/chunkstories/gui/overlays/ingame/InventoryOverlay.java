@@ -25,7 +25,6 @@ public class InventoryOverlay extends Overlay
 	Inventory[] inventories;
 	InventoryDrawer[] drawers;
 
-	
 	public static ItemPile selectedItem;
 	public static int selectedItemAmount;
 
@@ -49,8 +48,22 @@ public class InventoryOverlay extends Overlay
 		for (int i = 0; i < drawers.length; i++)
 		{
 			int thisWidth = inventories[i].getWidth();
-			drawers[i].drawInventoryCentered(mainScene.gameWindow.renderingContext, GameWindowOpenGL.windowWidth / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, GameWindowOpenGL.windowHeight / 2, 2, false, 4 - i*4);
+			drawers[i].drawInventoryCentered(mainScene.gameWindow.renderingContext, GameWindowOpenGL.windowWidth / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, GameWindowOpenGL.windowHeight / 2, 2, false, 4 - i * 4);
 			widthAccumulation += 1 + thisWidth;
+
+			int[] highlight = drawers[i].getSelectedSlot();
+			if (highlight != null)
+			{
+				ItemPile pileHighlighted = inventories[i].getItemPileAt(highlight[0], highlight[1]);
+				if (pileHighlighted != null)
+				{
+					int mx = Mouse.getX();
+					int my = Mouse.getY();
+					
+					renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, mx, my, pileHighlighted.getItem().getInternalName(), 2);
+					//System.out.println(pileHighlighted);
+				}
+			}
 		}
 
 		if (selectedItem != null)
@@ -59,16 +72,17 @@ public class InventoryOverlay extends Overlay
 			/*int textureId = TexturesHandler.getTextureID(selectedItem.getTextureName());
 			if(textureId == -1)
 				textureId = TexturesHandler.getTexture("res/items/icons/notex.png").getID();*/
-			int width = slotSize * selectedItem.item.getSlotsWidth();
-			int height = slotSize * selectedItem.item.getSlotsHeight();
+			int width = slotSize * selectedItem.getItem().getSlotsWidth();
+			int height = slotSize * selectedItem.getItem().getSlotsHeight();
 			//GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX() - width / 2, Mouse.getY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
-			
+
 			//
 			selectedItem.getItem().getItemRenderer().renderItemInInventory(mainScene.gameWindow.renderingContext, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
-			
-			if(selectedItemAmount > 1)
-				renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, Mouse.getX() - width / 2 + (selectedItem.getItem().getSlotsWidth() - 1.0f) * slotSize , Mouse.getY() - height / 2, selectedItemAmount+"", 2, 2, new Vector4f(1,1,1,1));
-				
+
+			if (selectedItemAmount > 1)
+				renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, Mouse.getX() - width / 2 + (selectedItem.getItem().getSlotsWidth() - 1.0f) * slotSize, Mouse.getY() - height / 2, selectedItemAmount + "", 2, 2,
+						new Vector4f(1, 1, 1, 1));
+
 		}
 		//System.out.println(inventories[0]);
 	}
@@ -100,47 +114,47 @@ public class InventoryOverlay extends Overlay
 					int y = c[1];
 					if (selectedItem == null)
 					{
-						if(button == 0)
+						if (button == 0)
 						{
 							selectedItem = inventories[i].getItemPileAt(x, y);
 							selectedItemAmount = selectedItem == null ? 0 : selectedItem.getAmount();
 						}
-						else if(button == 1)
+						else if (button == 1)
 						{
 							selectedItem = inventories[i].getItemPileAt(x, y);
 							selectedItemAmount = selectedItem == null ? 0 : 1;
 						}
-						else if(button == 2)
+						else if (button == 2)
 						{
 							selectedItem = inventories[i].getItemPileAt(x, y);
-							selectedItemAmount = selectedItem == null ? 0 : (selectedItem.getAmount() > 1 ? selectedItem.getAmount()/2 : 1);
+							selectedItemAmount = selectedItem == null ? 0 : (selectedItem.getAmount() > 1 ? selectedItem.getAmount() / 2 : 1);
 						}
 						//selectedItemInv = inventory;
 					}
-					else if(button == 1)
+					else if (button == 1)
 					{
-						if(selectedItem.equals(inventories[i].getItemPileAt(x, y)))
+						if (selectedItem.equals(inventories[i].getItemPileAt(x, y)))
 						{
-							if(selectedItemAmount < inventories[i].getItemPileAt(x, y).getAmount())
+							if (selectedItemAmount < inventories[i].getItemPileAt(x, y).getAmount())
 								selectedItemAmount++;
 						}
 					}
-					else if(button == 0)
+					else if (button == 0)
 					{
-						if(x == selectedItem.getX() && y == selectedItem.getY())
+						if (x == selectedItem.getX() && y == selectedItem.getY())
 						{
 							//System.out.println("item put back into place so meh");
 							selectedItem = null;
 							return true;
 						}
-						
+
 						if (Client.world instanceof WorldClientLocal)
 						{
 							//If move was successfull
-							if(selectedItem.moveItemPileTo(inventories[i], x, y, selectedItemAmount))
+							if (selectedItem.moveItemPileTo(inventories[i], x, y, selectedItemAmount))
 								selectedItem = null;
 						}
-						else if(Client.world instanceof WorldClientRemote)
+						else if (Client.world instanceof WorldClientRemote)
 						{
 							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile();
 							packetMove.from = selectedItem.getInventory();
@@ -151,21 +165,20 @@ public class InventoryOverlay extends Overlay
 							packetMove.newY = y;
 							packetMove.itemPile = selectedItem;
 							packetMove.amount = selectedItemAmount;
-							
+
 							((WorldClientRemote) Client.world).getConnection().pushPacket(packetMove);
 							//selectedItem = selectedItem.moveTo(inventories[i], x, y, selectedItemAmount);
 							//if(selectedItem.moveTo(inventories[i], x, y, selectedItemAmount))
-								selectedItem = null;
+							selectedItem = null;
 						}
-						else
-							if(selectedItem.moveItemPileTo(inventories[i], x, y, selectedItemAmount))
-								selectedItem = null;
+						else if (selectedItem.moveItemPileTo(inventories[i], x, y, selectedItemAmount))
+							selectedItem = null;
 					}
 					return true;
 				}
 			}
 		}
-		if(selectedItem != null && Client.world instanceof WorldClientRemote)
+		if (selectedItem != null && Client.world instanceof WorldClientRemote)
 		{
 			PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile();
 			packetMove.from = selectedItem.getInventory();

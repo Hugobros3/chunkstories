@@ -7,21 +7,25 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.csf.StreamSource;
 import io.xol.chunkstories.api.csf.StreamTarget;
+import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
+import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityComponentInventory extends EntityComponent implements Iterable<ItemPile>, Inventory
+public class EntityComponentInventory extends EntityComponent implements Inventory
 {
 	public int width;
 	public int height;
@@ -70,7 +74,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 					p = contents[i % width][j % height];
 					if (p != null)
 					{
-						if (i + p.item.getSlotsWidth() - 1 >= x && j + p.item.getSlotsHeight() - 1 >= y)
+						if (i + p.getItem().getSlotsWidth() - 1 >= x && j + p.getItem().getSlotsHeight() - 1 >= y)
 							return p;
 					}
 				}
@@ -93,12 +97,12 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		{
 			ItemPile p;
 			//Iterate the inventory up to the new pile x end ( position + width - 1 )
-			for (int i = 0; i < x + (itemPile.item.getSlotsWidth()); i++)
+			for (int i = 0; i < x + (itemPile.getItem().getSlotsWidth()); i++)
 			{
 				// If the item width would overflow the limits of the inventory
 				if (i >= width)
 					return false;
-				for (int j = 0; j < y + (itemPile.item.getSlotsHeight()); j++)
+				for (int j = 0; j < y + (itemPile.getItem().getSlotsHeight()); j++)
 				{
 					// If overflow in height
 					if (j >= height)
@@ -107,7 +111,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 					p = contents[i % width][j % height];
 					if (p != null)
 					{
-						if (i + p.item.getSlotsWidth() - 1 >= x && j + p.item.getSlotsHeight() - 1 >= y)
+						if (i + p.getItem().getSlotsWidth() - 1 >= x && j + p.getItem().getSlotsHeight() - 1 >= y)
 							return false;
 					}
 				}
@@ -133,20 +137,12 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 
 			//Push changes
 			if (this.holder != null)
-				this.refreshCompleteInventory();
+				this.refreshItemSlot(x, y, contents[x % width][y % height]);
 
 			//There is nothing left
 			return null;
 		}
 		//If the two piles are similar we can try to merge them
-		if (currentPileAtLocation != null)
-		{
-			//System.out.println("currentPileAtLocation.equals(itemPile)"+currentPileAtLocation.equals(itemPile));
-			//System.out.println("=="+(currentPileAtLocation == itemPile));
-			//System.out.println("currentPileAtLocation:"+currentPileAtLocation);
-			//System.out.println("itemPile:"+itemPile);
-		}
-
 		if (currentPileAtLocation != null && currentPileAtLocation.canMergeWith(itemPile) && !currentPileAtLocation.equals(itemPile))
 		{
 			Item item = currentPileAtLocation.getItem();
@@ -166,7 +162,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 				{
 					//Push changes
 					if (this.holder != null)
-						this.refreshCompleteInventory();
+						this.refreshItemSlot(x, y, contents[x % width][y % height]);
 
 					return null;
 				}
@@ -177,7 +173,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 
 					//Push changes
 					if (this.holder != null)
-						this.refreshCompleteInventory();
+						this.refreshItemSlot(x, y, contents[x % width][y % height]);
 
 					return itemPile;
 				}
@@ -198,7 +194,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			contents[x % width][y % height] = null;
 
 			if (this.holder != null)
-				this.refreshCompleteInventory();
+				this.refreshItemSlot(x, y, contents[x % width][y % height]);
 
 			return true;
 		}
@@ -223,7 +219,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		}
 
 		if (this.holder != null)
-			this.refreshCompleteInventory();
+			this.refreshItemSlot(x, y, contents[x % width][y % height]);
 		return true;
 	}
 
@@ -284,18 +280,13 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 			{
 				if (reachedEnd())
 					return null;
-				do
-				{
-					current = contents[i][j];
-					i++;
-					if (i >= width)
-					{
-						i = 0;
-						j++;
-					}
-				}
-				while (current == null && !reachedEnd());
-				return current;
+				
+				if(current == null)
+					hasNext();
+				
+				ItemPile r = current;
+				current = null;
+				return r;
 			}
 
 			@Override
@@ -327,7 +318,9 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 
 	protected enum UpdateMode
 	{
-		MOVE_ITEM, CHANGE_ITEM, REFRESH;
+		//MOVE_ITEM, 
+		//CHANGE_ITEM, 
+		REFRESH;
 	}
 
 	public void refreshCompleteInventory()
@@ -337,46 +330,24 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	
 	public void refreshItemSlot(int x, int y, ItemPile pileChanged)
 	{
+		//System.out.println("Updating slot: "+x+", "+y+" to "+pileChanged);
 		
+		Packet packetItemUpdate = new PacketInventoryPartialUpdate(this, x, y, pileChanged);
+		Controller controller = null;
+		if(entity instanceof EntityControllable)
+			controller = ((EntityControllable) entity).getControllerComponent().getController();
+		
+		if(controller != null)
+			controller.pushPacket(packetItemUpdate);
 	}
 	
 	public void pushItemMove(int xFrom, int yFrom, int xTo, int yTo)
 	{
-		
-	}
-	
-	protected void pushOnlyItemChange(int x, int y, ItemPile pileChanged, StreamTarget destinator, DataOutputStream stream) throws IOException
-	{
-		System.out.println("push item change");
-		stream.writeByte(UpdateMode.CHANGE_ITEM.ordinal());
-
-		stream.writeInt(x);
-		stream.writeInt(y);
-
-		if (pileChanged == null)
-			stream.writeInt(0);
-		else
-		{
-			stream.writeInt(pileChanged.getItem().getID());
-			pileChanged.saveCSF(stream);
-		}
-	}
-
-	protected void pushOnlyItemMove(int xFrom, int yFrom, int xTo, int yTo, StreamTarget destinator, DataOutputStream stream) throws IOException
-	{
-		System.out.println("push item move");
-		stream.writeByte(UpdateMode.MOVE_ITEM.ordinal());
-
-		stream.writeInt(xFrom);
-		stream.writeInt(yFrom);
-		
-		stream.writeInt(xTo);
-		stream.writeInt(yTo);
+		throw new UnsupportedOperationException();
 	}
 
 	protected void pushWholeInventoryRefresh(StreamTarget destinator, DataOutputStream stream) throws IOException
 	{
-		System.out.println("push refresh");
 		stream.writeByte(UpdateMode.REFRESH.ordinal());
 
 		stream.writeInt(width);
@@ -406,9 +377,14 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 	@Override
 	protected void pull(StreamSource from, DataInputStream stream) throws IOException
 	{
-		UpdateMode mode = UpdateMode.values()[stream.readByte()];
+		//Unused
+		stream.readByte();
+		
+		pullWholeInventoryRefresh(from, stream);
+		
+		/*UpdateMode mode = UpdateMode.values()[stream.readByte()];
 
-		System.out.println("Received " + mode + " inventory update");
+		//System.out.println("Received " + mode + " inventory update");
 
 		switch (mode)
 		{
@@ -421,7 +397,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 		case MOVE_ITEM:
 			pullItemMove(from, stream);
 			break;
-		}
+		}*/
 	}
 
 	protected void pullWholeInventoryRefresh(StreamSource from, DataInputStream stream) throws IOException
@@ -447,56 +423,7 @@ public class EntityComponentInventory extends EntityComponent implements Iterabl
 				}
 			}
 	}
-
-	protected void pullItemChange(StreamSource from, DataInputStream stream) throws IOException
-	{
-		int x = stream.readInt();
-		int y = stream.readInt();
-
-		int id = stream.readInt() & 0x00FFFFFF;
-		ItemType itemType = ItemTypes.getItemTypeById(id);
-
-		ItemPile newItemPile = null;
-		if (itemType != null)
-		{
-			Item item = itemType.newItem();
-			newItemPile = new ItemPile(item, stream);
-			newItemPile.setInventory(this);
-			newItemPile.setX(x);
-			newItemPile.setY(y);
-		}
-
-		this.contents[x][y] = newItemPile;
-	}
-
-	protected void pullItemMove(StreamSource from, DataInputStream stream) throws IOException
-	{
-		int xFrom = stream.readInt();
-		int yFrom = stream.readInt();
-
-		int xTo = stream.readInt();
-		int yTo = stream.readInt();
-		
-		//Actually swaps items
-		ItemPile temp = this.contents[xTo][yTo];
-		
-		this.contents[xTo][yTo] = this.contents[xFrom][yFrom];
-		this.contents[xFrom][yFrom] = temp;
-		
-		//Updates items if necessary
-		if(this.contents[xFrom][yFrom] != null)
-		{
-			this.contents[xFrom][yFrom].setX(xFrom);
-			this.contents[xFrom][yFrom].setY(yFrom);
-		}
-		
-		if(this.contents[xTo][yTo] != null)
-		{
-			this.contents[xTo][yTo].setX(xTo);
-			this.contents[xTo][yTo].setY(yTo);
-		}
-	}
-
+	
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#clear()
 	 */

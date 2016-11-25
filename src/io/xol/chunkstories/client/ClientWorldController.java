@@ -12,6 +12,7 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -19,6 +20,7 @@ import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.Math2;
+import io.xol.engine.math.lalgb.Vector3f;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -34,6 +36,8 @@ public class ClientWorldController implements ClientSideController
 	Set<Integer> dontWasteTimeDude = new HashSet<Integer>();
 	Set<ChunkHolder> usedChunks = new HashSet<ChunkHolder>();
 	Set<RegionSummary> usedRegionSummaries = new HashSet<RegionSummary>();
+	
+	//int sanity = 0, sanity2 = 0;
 	
 	ClientWorldController(Client client, WorldClientCommon world)
 	{
@@ -108,8 +112,11 @@ public class ClientWorldController implements ClientSideController
 					if(holder == null)
 						continue;
 					
+					//sanity++;
 					if(usedChunks.add(holder))
 					{
+						//sanity2++;
+						
 						dontWasteTimeDude.add(summed);
 					}
 				}
@@ -141,11 +148,25 @@ public class ClientWorldController implements ClientSideController
 				
 				dontWasteTimeDude.remove(summed);
 				
+				//sanity--;
+				//sanity2--;
 				i.remove();
 				holder.unregisterUser(this);
 			}
 		}
 		
+		/*System.out.println("Printing debug info");
+		Vector3f cameraReference = new Vector3f(cameraChunkX * 32, cameraChunkY * 32, cameraChunkZ * 32);
+		for(Chunk c : world.getAllLoadedChunks())
+		{
+			Vector3f chunkPos = new Vector3f(c.getChunkX() * 32, c.getChunkY() * 32, c.getChunkZ() * 32);
+			System.out.println(c.getChunkX()+" "+c.getChunkY()+" "+c.getChunkZ() + "Distance: "+(chunkPos.sub(cameraReference).length()));
+		}
+		System.out.println("Done.");*/
+		
+		//System.out.println(sanity+" 2: "+sanity2+" T:"+usedChunks.size());
+		//System.out.println("Supposedly used chunks: "+usedChunks.size());
+		//System.out.println("Actually loaded chunks: "+world.getRegionsHolder().countChunks());
 
 		int summaryDistance = 32;
 		for (int chunkX = (cameraChunkX - summaryDistance); chunkX < cameraChunkX + summaryDistance; chunkX++)

@@ -2,8 +2,7 @@ package io.xol.chunkstories.world;
 
 import java.io.File;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -42,9 +41,11 @@ import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.EntityRayIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
+import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.region.WorldRegionsHolder;
 import io.xol.chunkstories.world.summary.WorldRegionSummariesHolder;
 import io.xol.engine.math.lalgb.Vector3d;
@@ -89,8 +90,8 @@ public abstract class WorldImplementation implements World
 	protected WorldRenderer renderer;
 	
 	// Temporary entity list
-	protected Set<Entity> entities = ConcurrentHashMap.newKeySet();
-	//private ConcurrentHashMap<Long, Entity> localEntitiesByUUID = new ConcurrentHashMap<Long, Entity>();//new LinkedBlockingQueue<Entity>();
+	protected EntitiesHolder entities = new EntitiesHolder();
+	
 	public ReadWriteLock entitiesLock = new ReentrantReadWriteLock();
 
 	// Particles
@@ -188,7 +189,7 @@ public abstract class WorldImplementation implements World
 		updatedLocation.setWorld(this);
 		entity.setLocation(updatedLocation);
 
-		this.entities.add(entity);
+		this.entities.insertEntity(entity);
 
 		//System.out.println("added " + entity + "to the worlde");
 	}
@@ -205,18 +206,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public boolean removeEntityByUUID(long uuid)
 	{
-		Entity entityFound = null;
-		Iterator<Entity> iter = this.getAllLoadedEntities();
-		while (iter.hasNext())
-		{
-			Entity next = iter.next();
-			if (next.getUUID() == uuid)
-			{
-				entityFound = next;
-				break;
-				//iter.remove();
-			}
-		}
+		Entity entityFound = this.getEntityByUUID(uuid);
 
 		if (entityFound != null)
 			return entityFound.removeFromWorld();
@@ -231,7 +221,7 @@ public abstract class WorldImplementation implements World
 	 */
 	public boolean removeEntityFromList(Entity entity)
 	{
-		return entities.remove(entity);
+		return entities.removeEntity(entity);
 	}
 
 	@Override
@@ -248,8 +238,8 @@ public abstract class WorldImplementation implements World
 			{
 				entity = iter.next();
 
-				//Check entity's chunk is loaded
-				Location entityLocation = entity.getLocation();
+				//Check entity's region is loaded
+				//Location entityLocation = entity.getLocation();
 				if (entity.getRegion() != null && entity.getRegion().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
 				{
 					//If we're the client world and this is our controlled entity we execute the tickClientController() and tick() methods
@@ -319,13 +309,14 @@ public abstract class WorldImplementation implements World
 	@Override
 	public IterableIterator<Entity> getAllLoadedEntities()
 	{
-		return new EntityWorldIterator(entities);
+		return new EntityWorldIterator(entities.iterator());
 	}
 
 	@Override
 	public Entity getEntityByUUID(long entityID)
 	{
-		Iterator<Entity> ie = getAllLoadedEntities();
+		return entities.getEntityByUUID(entityID);
+		/*Iterator<Entity> ie = getAllLoadedEntities();
 		Entity e;
 		while (ie.hasNext())
 		{
@@ -333,7 +324,7 @@ public abstract class WorldImplementation implements World
 			if (e.getUUID() == entityID)
 				return e;
 		}
-		return null;
+		return null;*/
 	}
 
 	@Override
@@ -601,7 +592,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void saveEverything()
 	{
-		System.out.println("Saving all parts of world "+worldInfo.getName());
+		//System.out.println("Saving all parts of world "+worldInfo.getName());
 		regions.saveAll();
 		getRegionsSummariesHolder().saveAllLoadedSummaries();
 
@@ -829,7 +820,7 @@ public abstract class WorldImplementation implements World
 		if (blocksCollision != null)
 			blocksLimit = blocksCollision.distanceTo(initialPosition);
 
-		return raytraceEntitiesIgnoringVoxels(initialPosition, direction, blocksLimit);
+		return raytraceEntitiesIgnoringVoxels(initialPosition, direction, Math.min(blocksLimit, limit));
 	}
 
 	@Override
@@ -915,19 +906,19 @@ public abstract class WorldImplementation implements World
 	}
 	
 	@Override
-	public Chunk getChunkWorldCoordinates(Location location)
+	public CubicChunk getChunkWorldCoordinates(Location location)
 	{
 		return getChunkWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 
 	@Override
-	public Chunk getChunkWorldCoordinates(int worldX, int worldY, int worldZ)
+	public CubicChunk getChunkWorldCoordinates(int worldX, int worldY, int worldZ)
 	{
 		return getChunk(worldX / 32, worldY / 32, worldZ / 32);
 	}
 
 	@Override
-	public Chunk getChunk(int chunkX, int chunkY, int chunkZ)
+	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ)
 	{
 		chunkX = chunkX % getSizeInChunks();
 		chunkZ = chunkZ % getSizeInChunks();
@@ -954,19 +945,19 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public Region aquireRegion(WorldUser user, int regionX, int regionY, int regionZ)
+	public RegionImplementation aquireRegion(WorldUser user, int regionX, int regionY, int regionZ)
 	{
 		return this.getRegionsHolder().aquireRegion(user, regionX, regionY, regionZ);
 	}
 
 	@Override
-	public Region aquireRegionChunkCoordinates(WorldUser user, int chunkX, int chunkY, int chunkZ)
+	public RegionImplementation aquireRegionChunkCoordinates(WorldUser user, int chunkX, int chunkY, int chunkZ)
 	{
 		return aquireRegion(user, chunkX / 8, chunkY / 8, chunkZ / 8);
 	}
 
 	@Override
-	public Region aquireRegionWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ)
+	public RegionImplementation aquireRegionWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldY = sanitizeVerticalCoordinate(worldY);
@@ -976,19 +967,19 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public Region aquireRegionLocation(WorldUser user, Location location)
+	public RegionImplementation aquireRegionLocation(WorldUser user, Location location)
 	{
 		return aquireRegionWorldCoordinates(user, (int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 	
 	@Override
-	public Region getRegionLocation(Location location)
+	public RegionImplementation getRegionLocation(Location location)
 	{
 		return getRegionWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
 	}
 
 	@Override
-	public Region getRegionWorldCoordinates(int worldX, int worldY, int worldZ)
+	public RegionImplementation getRegionWorldCoordinates(int worldX, int worldY, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldY = sanitizeVerticalCoordinate(worldY);
@@ -998,13 +989,13 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public Region getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ)
+	public RegionImplementation getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ)
 	{
 		return getRegion(chunkX / 8, chunkY / 8, chunkZ / 8);
 	}
 
 	@Override
-	public Region getRegion(int regionX, int regionY, int regionZ)
+	public RegionImplementation getRegion(int regionX, int regionY, int regionZ)
 	{
 		return regions.getRegion(regionX, regionY, regionZ);
 	}

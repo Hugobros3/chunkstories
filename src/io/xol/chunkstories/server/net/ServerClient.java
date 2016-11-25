@@ -312,7 +312,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		if(sendQueue != null)
 			sendQueue.queue(packet);
 		else
-			System.out.println("Fuck off"+packet+this);
+			Thread.dumpStack();
 	}
 
 	public void flush()
@@ -425,6 +425,9 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 
 	public String toString()
 	{
+		if(died)
+			return "[Zombie connection !]";
+		
 		if (isAuthentificated())
 			return "[Connected user '" + getProfile().getName() + "' from " + this.getIp() + "]";
 		else

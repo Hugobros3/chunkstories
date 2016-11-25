@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.region.RegionImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -26,7 +27,7 @@ public class FlatGenerator extends WorldGenerator
 	int ws;
 	
 	@Override
-	public Chunk generateChunk(Region region, int cx, int cy, int cz)
+	public Chunk generateChunk(RegionImplementation region, int cx, int cy, int cz)
 	{
 		rnd.setSeed(cx * 32 + cz + 48716148);
 		
