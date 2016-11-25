@@ -214,7 +214,7 @@ public class RenderingContext implements RenderingInterface
 	public void setWorldLight(int sunLight, int blockLight)
 	{
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	static VerticesObject fsQuadVertices = null;

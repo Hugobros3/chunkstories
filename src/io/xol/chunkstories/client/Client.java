@@ -24,7 +24,7 @@ import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.MainMenu;
@@ -81,7 +81,7 @@ public class Client implements ClientInterface
 			else if (s.contains("--mods"))
 			{
 				String[] modsString = s.replace("--mods=", "").split(",");
-				Mods.setEnabledMods(modsString);
+				ModsManager.setEnabledMods(modsString);
 			}
 			else if (s.contains("--dir"))
 			{
@@ -113,13 +113,13 @@ public class Client implements ClientInterface
 		RenderingConfig.define();
 		NativesLoader.load();
 		// Load last gamemode
-		Mods.reload();
+		ModsManager.reload();
 		inputsManager = new ClientInputsManager();
 		// Gl init
 		windows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);
 		windows.createContext();
 
-		Mods.reloadClientContent();
+		ModsManager.reloadClientContent();
 		windows.changeScene(new MainMenu(windows, true));
 		//Load 
 		pluginsManager = new PluginsManager(client);
@@ -191,9 +191,9 @@ public class Client implements ClientInterface
 		
 		if(GameWindowOpenGL.isMainGLWindow())
 		{
-			Mods.reload();
+			ModsManager.reload();
 			inputsManager.reload();
-			Mods.reloadClientContent();
+			ModsManager.reloadClientContent();
 			
 			return;
 		}
@@ -203,9 +203,9 @@ public class Client implements ClientInterface
 			@Override
 			public void run()
 			{
-				Mods.reload();
+				ModsManager.reload();
 				inputsManager.reload();
-				Mods.reloadClientContent();
+				ModsManager.reloadClientContent();
 				
 				waitForReload.signal();
 			}

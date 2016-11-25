@@ -1,4 +1,4 @@
-package io.xol.chunkstories.content.mods;
+package io.xol.chunkstories.api.mods;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,6 +27,9 @@ public interface Asset
 	 */
 	public InputStream read();
 
+	/**
+	 * Accesses the asset data.
+	 */
 	public default Reader reader()
 	{
 		return new InputStreamReader(read());

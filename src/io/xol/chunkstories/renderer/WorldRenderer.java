@@ -636,7 +636,7 @@ public class WorldRenderer
 	public void shadowPass()
 	{
 		Client.profiler.startSection("shadows");
-		// float worldTime = (world.worldTime%1000+1000)%1000;
+		
 		if (this.getShadowVisibility() == 0f)
 			return; // No shadows at night :)
 		
@@ -644,21 +644,22 @@ public class WorldRenderer
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		
-		int size = (shadowMapBuffer).getWidth();
+		int shadowMapTextureSize = shadowMapBuffer.getWidth();
 		
 		shadowMapFBO.bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shadowsPassShader = renderingContext.useShader("shadows");
 		
-		int fun = 10;// / hdPass ? 3 : 8;
-		if (size > 1024)
-			fun = 15;
-		else if (size > 2048)
-			fun = 20;
+		int shadowRange = 128;
+		if (shadowMapTextureSize > 1024)
+			shadowRange = 192;
+		else if (shadowMapTextureSize > 2048)
+			shadowRange = 256;
 
-		int fun2 = 200;// hdPass ? 100 : 200;
-		Matrix4f depthProjectionMatrix = MatrixHelper.getOrthographicMatrix(-fun * 10, fun * 10, -fun * 10, fun * 10, -fun2, fun2);
+		int shadowDepthRange = 200;
+		Matrix4f depthProjectionMatrix = MatrixHelper.getOrthographicMatrix(-shadowRange, shadowRange, -shadowRange, shadowRange, -shadowDepthRange, shadowDepthRange);
+		
 		Matrix4f depthViewMatrix = MatrixHelper.getLookAtMatrix(sky.getSunPosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
 		Matrix4f.mul(depthProjectionMatrix, depthViewMatrix, depthMatrix);
@@ -667,7 +668,7 @@ public class WorldRenderer
 		shadowMVP.translate(new Vector3f((float) camera.pos.getX(), (float) camera.pos.getY(), (float) camera.pos.getZ()));
 
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
-		shadowsPassShader.setUniformMatrix4f("localTransform", new Matrix4f());
+		
 		shadowsPassShader.setUniform1f("entity", 0);
 		renderWorld(true, -1);
 	}
@@ -701,7 +702,6 @@ public class WorldRenderer
 		renderingContext.bindTexture2D("normalTexture", waterNormalTexture);
 		setupShadowColors(terrainShader);
 		terrainShader.setUniform1f("time", sky.time);
-
 
 		renderingContext.bindTexture2D("vegetationColorTexture", getGrassTexture());
 		terrainShader.setUniform1f("mapSize", sizeInChunks * 32);
@@ -915,8 +915,8 @@ public class WorldRenderer
 			// Select shader
 			renderingContext.useShader("entities");
 
-			entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
-			entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
+			//entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
+			//entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
 
 			entitiesShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
 			entitiesShader.setUniform1f("shadowVisiblity", shadowVisiblity);
@@ -1675,7 +1675,6 @@ public class WorldRenderer
 	}
 
 	//Math helper functions
-
 	private boolean checkChunkOcclusion(Chunk chunk, int correctedCX, int correctedCY, int correctedCZ)
 	{
 		Vector3f center = new Vector3f(correctedCX * 32 + 16, correctedCY * 32 + 15, correctedCZ * 32 + 16);

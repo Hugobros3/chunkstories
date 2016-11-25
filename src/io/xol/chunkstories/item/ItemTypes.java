@@ -2,8 +2,8 @@ package io.xol.chunkstories.item;
 
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
-import io.xol.chunkstories.content.Mods;
-import io.xol.chunkstories.content.mods.Asset;
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.BufferedReader;
@@ -31,7 +31,7 @@ public class ItemTypes
 		Arrays.fill(items, null);
 		dictionary.clear();
 		
-		Iterator<Asset> i = Mods.getAllAssetsByExtension("items");
+		Iterator<Asset> i = ModsManager.getAllAssetsByExtension("items");
 		while(i.hasNext())
 		{
 			Asset f = i.next();
@@ -103,7 +103,7 @@ public class ItemTypes
 							className = split[3];
 						try
 						{
-							Class<?> rawClass = Mods.getClassByName(className);
+							Class<?> rawClass = ModsManager.getClassByName(className);
 							if (rawClass == null)
 							{
 								ChunkStoriesLogger.getInstance().warning("Item class " + className + " does not exist in codebase.");

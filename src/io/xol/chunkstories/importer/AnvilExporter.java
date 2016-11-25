@@ -14,7 +14,7 @@ import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
-import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.Voxels;
@@ -43,7 +43,7 @@ public class AnvilExporter
 		String time = sdf.format(cal.getTime());
 		ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File("./logs/" + time + ".log")));
 
-		Mods.reload();
+		ModsManager.reload();
 
 		if (arguments.length < 5)
 		{

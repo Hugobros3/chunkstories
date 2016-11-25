@@ -14,9 +14,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import io.xol.chunkstories.content.mods.Asset;
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.content.mods.ForeignCodeClassLoader;
-import io.xol.chunkstories.content.mods.Mod;
+import io.xol.chunkstories.content.mods.ModImplementation;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
@@ -45,11 +46,13 @@ import io.xol.engine.sound.library.SoundsLibrary;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Mods
+public class ModsManager
 {
+	//TODO : Staticize this
+	
 	private static Mod baseAssets;
 	private static String[] modsEnabled = new String[0];
-	private static UniqueList<Mod> enabledMods = new UniqueList<Mod>();
+	private static UniqueList<ModImplementation> enabledMods = new UniqueList<ModImplementation>();
 	private static Map<String, AssetHierarchy> avaibleAssets = new HashMap<String, AssetHierarchy>();
 	private static Map<String, ForeignCodeClassLoader> avaibleForeignClasses = new HashMap<String, ForeignCodeClassLoader>();
 
@@ -107,7 +110,7 @@ public class Mods
 	 */
 	public static void setEnabledMods(String... modsEnabled)
 	{
-		Mods.modsEnabled = modsEnabled;
+		ModsManager.modsEnabled = modsEnabled;
 	}
 
 	/**
@@ -135,7 +138,7 @@ public class Mods
 		{
 			try
 			{
-				Mod mod = null;
+				ModImplementation mod = null;
 
 				//Servers give a md5 hash for their required mods
 				if (name.startsWith("md5:"))
@@ -598,7 +601,7 @@ public class Mods
 		return modsEnabled;
 	}
 
-	public static Collection<Mod> getCurrentlyLoadedMods()
+	public static Collection<ModImplementation> getCurrentlyLoadedMods()
 	{
 		return enabledMods;
 	}

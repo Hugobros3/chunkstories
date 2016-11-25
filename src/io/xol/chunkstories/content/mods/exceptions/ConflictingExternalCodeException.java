@@ -1,10 +1,6 @@
 package io.xol.chunkstories.content.mods.exceptions;
 
-//(c) 2015-2016 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
-
-import io.xol.chunkstories.content.mods.Mod;
+import io.xol.chunkstories.api.mods.Mod;
 
 public class ConflictingExternalCodeException extends ModLoadFailureException
 {

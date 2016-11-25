@@ -141,14 +141,8 @@ public class GuiRenderer
 		
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		//TODO depreacated alpha_test mode
-		if (alphaBlending || true)
-		{
-			renderingContext.setBlendMode(BlendMode.MIX);
-		}
-		else
-		{
-			//renderingContext.setBlendMode(BlendMode.ALPHA_TEST);
-		}
+		
+		renderingContext.setBlendMode(BlendMode.MIX);
 		
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 		renderingContext.bindAttribute("vertexIn", guiDrawData.asAttributeSource(VertexFormat.FLOAT, 2, 20, 0));
@@ -195,7 +189,6 @@ public class GuiRenderer
 
 	public void renderTexturedRotatedRectRVBA(float xpos, float ypos, float w, float h, float rot, float tcsx, float tcsy, float tcex, float tcey, String textureName, float r, float v, float b, float a)
 	{
-
 		if (textureName.startsWith("internal://"))
 			textureName = textureName.substring("internal://".length());
 		else if (textureName.startsWith("gameDir://"))

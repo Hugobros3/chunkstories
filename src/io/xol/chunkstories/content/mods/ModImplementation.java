@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.mods.Mod;
+import io.xol.chunkstories.api.mods.ModInfo;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
 import io.xol.engine.math.HexTools;
@@ -16,7 +19,7 @@ import io.xol.engine.math.HexTools;
 //http://chunkstories.xyz
 //http://xol.io
 
-public abstract class Mod
+public abstract class ModImplementation implements Mod
 {
 	protected ModInfo modInfo;
 	protected String md5hash;
@@ -35,20 +38,24 @@ public abstract class Mod
 		}
 	}
 	
-	Mod() throws ModLoadFailureException
+	ModImplementation() throws ModLoadFailureException
 	{
 		
 	}
 	
+	@Override
 	public abstract Asset getAssetByName(String name);
 	
+	@Override
 	public abstract IterableIterator<Asset> assets();
 	
+	@Override
 	public ModInfo getModInfo()
 	{
 		return modInfo;
 	}
 	
+	@Override
 	public String getMD5Hash()
 	{
 		if(md5hash == null)
@@ -56,7 +63,7 @@ public abstract class Mod
 		return md5hash;
 	}
 	
-	private void computeMD5Hash()
+	private synchronized void computeMD5Hash()
 	{
 		//Makes a sorted list of the names of all the assets
 		List<String> assetsSorted = new ArrayList<String>();

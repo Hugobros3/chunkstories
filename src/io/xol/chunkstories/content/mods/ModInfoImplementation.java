@@ -5,25 +5,46 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import io.xol.chunkstories.api.mods.Mod;
+import io.xol.chunkstories.api.mods.ModInfo;
 import io.xol.chunkstories.content.mods.exceptions.MalformedModTxtException;
 
-public class ModInfo
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
+public class ModInfoImplementation implements ModInfo
 {
+	private Mod mod;
+	
 	private String name;
 	private String version = "undefined";
 	private String description = "No description given";
 	
+	public Mod getMod()
+	{
+		return mod;
+	}
+	
+	@Override
 	public String getName()
 	{
 		return name;
 	}
 	
+	@Override
 	public String getVersion()
 	{
 		return version;
 	}
+
+	@Override
+	public String getDescription()
+	{
+		return description;
+	}
 	
-	public ModInfo(InputStream inputStream) throws MalformedModTxtException
+	public ModInfoImplementation(Mod mod, InputStream inputStream) throws MalformedModTxtException
 	{
 		if(inputStream == null)
 			throw new MalformedModTxtException(this);
@@ -62,10 +83,5 @@ public class ModInfo
 		if(this.name == null)
 			throw new MalformedModTxtException(this);
 		
-	}
-
-	public String getDescription()
-	{
-		return description;
 	}
 }

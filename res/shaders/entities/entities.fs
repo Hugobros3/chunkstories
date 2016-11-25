@@ -35,9 +35,6 @@ uniform vec3 blindFactor; // can white-out all the colors
 //Shadow shit
 uniform float shadowVisiblity; // Used for night transitions, hides shadows
 
-//Weather
-uniform float wetness;
-
 //Matrices
 
 uniform mat4 projectionMatrix;
