@@ -212,7 +212,9 @@ public class ItemPile
 		{
 			this.saveItemIntoStream(new DataOutputStream(data));
 			ByteArrayInputStream stream = new ByteArrayInputStream(data.toByteArray());
-			pile.loadInternalItemData(new DataInputStream(stream));
+			DataInputStream dis = new DataInputStream(stream);
+			dis.readInt();
+			pile.loadInternalItemData(dis);
 		}
 		catch (IOException e)
 		{

@@ -328,7 +328,6 @@ public class WorldRenderer
 		camera.translate();
 
 		
-		
 		// Clear G-Buffers and bind shaded HDR rendertarget
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboGBuffers);
 		//fboGBuffers.bind();
@@ -736,6 +735,7 @@ public class WorldRenderer
 		float shadowVisiblity = getShadowVisibility();
 		chunksViewDistance = sizeInChunks / 2;
 
+		
 		if (!isShadowPass)
 		{
 			renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
@@ -1091,7 +1091,7 @@ public class WorldRenderer
 		
 		LightsRenderer.renderPendingLights(renderingContext);
 		//Cleanup
-		renderingContext.getRenderTargetManager().setDepthMask(false);
+		renderingContext.getRenderTargetManager().setDepthMask(true);
 		//glDepthMask(true);
 		
 		renderingContext.setBlendMode(BlendMode.MIX);

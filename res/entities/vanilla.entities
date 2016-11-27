@@ -8,3 +8,4 @@
 #5 io.xol.chunkstories.core.entity.voxel.EntityVoxelTest
 6 io.xol.chunkstories.core.entity.voxel.EntityChest
 7 io.xol.chunkstories.core.entity.voxel.EntitySign
+8 io.xol.chunkstories.core.entity.EntityGroundItem

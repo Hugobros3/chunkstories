@@ -124,8 +124,8 @@ public class SkyRenderer
 			renderingContext.draw(Primitive.POINT, 0, NB_STARS);
 		}
 		
-		renderingContext.flush();
 		renderingContext.getRenderTargetManager().setDepthMask(true);
+		renderingContext.flush();
 		//glDepthMask(true);
 		
 		renderingContext.setBlendMode(BlendMode.DISABLED);
