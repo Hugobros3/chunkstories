@@ -35,7 +35,7 @@ import io.xol.engine.graphics.geometry.ByteBufferAttributeSource;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Cubemap;
-import io.xol.engine.graphics.textures.GBufferTexture;
+import io.xol.engine.graphics.textures.Texture2DRenderTarget;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -120,21 +120,21 @@ public class WorldRenderer
 	private RenderingContext renderingContext;
 
 	// Main Rendertarget (HDR)
-	private GBufferTexture shadedBuffer = new GBufferTexture(RGB_HDR, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget shadedBuffer = new Texture2DRenderTarget(RGB_HDR, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private int illDownIndex = 0;
 	private int illDownBuffers = 1;
 	private long lastIllCalc = 8;
 	private PBOPacker illuminationDownloader[] = new PBOPacker[illDownBuffers];
 
 	// G-Buffers
-	public GBufferTexture zBuffer = new GBufferTexture(DEPTH_RENDERBUFFER, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture albedoBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture normalBuffer = new GBufferTexture(RGBA_3x10_2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture materialBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	public Texture2DRenderTarget zBuffer = new Texture2DRenderTarget(DEPTH_RENDERBUFFER, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget albedoBuffer = new Texture2DRenderTarget(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget normalBuffer = new Texture2DRenderTarget(RGBA_3x10_2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget materialBuffer = new Texture2DRenderTarget(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	// Bloom texture
-	private GBufferTexture bloomBuffer = new GBufferTexture(RGB_HDR, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
-	private GBufferTexture ssaoBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget bloomBuffer = new Texture2DRenderTarget(RGB_HDR, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
+	private Texture2DRenderTarget ssaoBuffer = new Texture2DRenderTarget(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	// FBOs
 	private FrameBufferObject fboGBuffers = new FrameBufferObject(zBuffer, albedoBuffer, normalBuffer, materialBuffer);
@@ -143,18 +143,18 @@ public class WorldRenderer
 	private FrameBufferObject fboBloom = new FrameBufferObject(null, bloomBuffer);
 	private FrameBufferObject fboSSAO = new FrameBufferObject(null, ssaoBuffer);
 
-	private GBufferTexture blurIntermediateBuffer = new GBufferTexture(RGB_HDR, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
+	private Texture2DRenderTarget blurIntermediateBuffer = new Texture2DRenderTarget(RGB_HDR, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
 	private FrameBufferObject fboBlur = new FrameBufferObject(null, blurIntermediateBuffer);
 
 	// 64x64 texture used to cull distant mesh
-	private GBufferTexture loadedChunksMapTop = new GBufferTexture(DEPTH_RENDERBUFFER, 64, 64);
+	private Texture2DRenderTarget loadedChunksMapTop = new Texture2DRenderTarget(DEPTH_RENDERBUFFER, 64, 64);
 	private FrameBufferObject fboLoadedChunksTop = new FrameBufferObject(loadedChunksMapTop);
-	private GBufferTexture loadedChunksMapBot = new GBufferTexture(DEPTH_RENDERBUFFER, 64, 64);
+	private Texture2DRenderTarget loadedChunksMapBot = new Texture2DRenderTarget(DEPTH_RENDERBUFFER, 64, 64);
 	private FrameBufferObject fboLoadedChunksBot = new FrameBufferObject(loadedChunksMapBot);
 
 	// Shadow maps
 	private int shadowMapResolution = 0;
-	private GBufferTexture shadowMapBuffer = new GBufferTexture(DEPTH_SHADOWMAP, 256, 256);
+	private Texture2DRenderTarget shadowMapBuffer = new Texture2DRenderTarget(DEPTH_SHADOWMAP, 256, 256);
 	private FrameBufferObject shadowMapFBO = new FrameBufferObject(shadowMapBuffer);
 
 	//Environment map
@@ -162,8 +162,8 @@ public class WorldRenderer
 	private Cubemap environmentMap = new Cubemap(TextureFormat.RGB_HDR, ENVMAP_SIZE);
 	//private Cubemap environmentMapBlurry = new Cubemap(TextureType.RGB_HDR, ENVMAP_SIZE);
 	//Temp buffers
-	private GBufferTexture environmentMapBufferHDR = new GBufferTexture(RGB_HDR, ENVMAP_SIZE, ENVMAP_SIZE);
-	private GBufferTexture environmentMapBufferZ = new GBufferTexture(DEPTH_RENDERBUFFER, ENVMAP_SIZE, ENVMAP_SIZE);
+	private Texture2DRenderTarget environmentMapBufferHDR = new Texture2DRenderTarget(RGB_HDR, ENVMAP_SIZE, ENVMAP_SIZE);
+	private Texture2DRenderTarget environmentMapBufferZ = new Texture2DRenderTarget(DEPTH_RENDERBUFFER, ENVMAP_SIZE, ENVMAP_SIZE);
 
 	private FrameBufferObject environmentMapFastFbo = new FrameBufferObject(environmentMapBufferZ, environmentMapBufferHDR);
 	private FrameBufferObject environmentMapFBO = new FrameBufferObject(null, environmentMap.getFace(0));

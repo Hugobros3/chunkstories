@@ -67,6 +67,8 @@ public class DefaultItemRenderer implements ItemRenderer
 		//texture = TexturesHandler.getTexture("res/textures/notex.png");
 		texture.setLinearFiltering(false);
 		renderingInterface.bindAlbedoTexture(texture);
+		//renderingInterface.bindNormalTexture(TexturesHandler.getTexture("res/textures/normalnormal.png"));
+		//renderingInterface.bindMaterialTexture(TexturesHandler.getTexture("res/textures/defaultmaterial.png"));
 		
 		draw3DPlane(renderingInterface);
 	}

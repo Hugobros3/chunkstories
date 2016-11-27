@@ -19,6 +19,7 @@ import io.xol.engine.graphics.shaders.ShaderProgram;
 //http://xol.io
 
 import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL20.glUniform1i;
 
 public class TexturingConfigurationImplementation implements TexturingConfiguration
 {
@@ -153,7 +154,8 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 				texture.bind();
 			}
 			//Set the uniform location to this texturing unit
-			shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
+			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
+			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
 
 			boundTextures.put(textureUnitId, texture);
 
@@ -173,17 +175,17 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 			if (textureLocation == -1)
 				continue;
 
-			//If the texture isn't already bound to this texture id
 			if (!(boundTextures.get(textureUnitId) == texture))
 			{
-				
 				//Select a valid, free texturing unit
 				selectTextureUnit(textureUnitId);
 
 				//Bind the texture to this texturing unit
 				texture.bind();
 			}
-			shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
+			//Set the uniform location to this texturing unit
+			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
+			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
 			
 			boundTextures.put(textureUnitId, texture);
 
@@ -212,7 +214,8 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 				texture.bind();
 			}
 			//Set the uniform location to this texturing unit
-			shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
+			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
+			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
 
 			boundTextures.put(textureUnitId, texture);
 

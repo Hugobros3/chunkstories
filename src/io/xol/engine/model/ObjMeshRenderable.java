@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.animation.SkeletonAnimator;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
-import io.xol.engine.graphics.textures.GBufferTexture;
+import io.xol.engine.graphics.textures.Texture2DRenderTarget;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -153,7 +153,7 @@ public class ObjMeshRenderable implements Renderable
 		
 	}
 
-	Texture2D instancesDataTexture = new GBufferTexture(TextureFormat.RGBA_32F, 32, 32);
+	Texture2D instancesDataTexture = new Texture2DRenderTarget(TextureFormat.RGBA_32F, 32, 32);
 	ByteBuffer instancesDataBuffer = BufferUtils.createByteBuffer(32 * 32 * 4 * 4);
 
 	/*public void renderInstanciated(RenderingContext renderingContext, Collection<AnimatableData> instancesData)

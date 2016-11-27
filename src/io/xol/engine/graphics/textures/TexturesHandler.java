@@ -72,12 +72,13 @@ public class TexturesHandler
 		{
 			if(texture instanceof Texture2DAsset)
 			{
-				Asset newAsset = ModsManager.getAsset(texture.getName());
+				Asset newAsset = ModsManager.getAsset(((Texture2DAsset) texture).getName());
 				if(newAsset != null)
 				{
 					((Texture2DAsset) texture).setAsset(newAsset);
 					((Texture2DAsset) texture).loadTextureFromAsset();
 				}
+				//If the asset is no longer avaible, don't update the texture and delete it
 				else
 				{
 					texture.destroy();
