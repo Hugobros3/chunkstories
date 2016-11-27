@@ -40,7 +40,7 @@ public class JPanelBackground extends JPanel{
         if(logo != null)
         {
             g.drawImage(bg, 0, 360, null); // see javadoc for more info on the parameters
-            g.drawImage(logo, 0+24, 360+24, null); // see javadoc for more info on the parameters
+            g.drawImage(logo, 0+0, 360+16, null); // see javadoc for more info on the parameters
         }
     }
 }
