@@ -6,8 +6,11 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.csf.StreamSource;
 import io.xol.chunkstories.api.csf.StreamTarget;
+import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.net.packets.PacketVelocityDelta;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -69,15 +72,24 @@ public class EntityComponentVelocity extends EntityComponent
 
 	public void addVelocity(Vector3d delta)
 	{
-		this.addVelocity(delta.getX(), delta.getY(), delta.getZ());
+		this.velocity.add(delta);
+		
+		this.pushComponentEveryoneButController();
+		//Notify the controller otherwise: 
+		if(entity instanceof EntityControllable)
+		{
+			Controller controller = ((EntityControllable) entity).getControllerComponent().getController();
+			if(controller != null)
+			{
+				PacketVelocityDelta packet = new PacketVelocityDelta(delta);
+				controller.pushPacket(packet);
+			}
+		}
 	}
 
 	public void addVelocity(double x, double y, double z)
 	{
-		this.velocity.add(x, y, z);
-		
-		this.pushComponentEveryoneButController();
-		//Notify the controller otherwise: 
+		this.addVelocity(new Vector3d(x, y, z));
 	}
 
 	@Override

@@ -99,7 +99,13 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			if(cause instanceof Entity)
 			{
 				Entity attacker = (Entity)cause;
-				Vector3d attackerToVictim = this.getLocation().sub(attacker.getLocation().add(0, -0.5, 0)).normalize().scale(1/60d).scale(damageDealt / 10f);
+				Vector3d attackerToVictim = this.getLocation().sub(attacker.getLocation().add(0, 0, 0));
+				attackerToVictim.setY(0);
+				attackerToVictim.normalize();
+				attackerToVictim.setY(0.35);
+				attackerToVictim.scale(damageDealt / 120f);
+				
+				//.scale(1/60d).scale(damageDealt / 10f);
 				this.getVelocityComponent().addVelocity(attackerToVictim);
 			}
 			

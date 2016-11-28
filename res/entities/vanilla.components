@@ -14,3 +14,4 @@
 13 io.xol.chunkstories.core.entity.components.EntityComponentSignText
 14 io.xol.chunkstories.core.entity.components.EntityComponentAnimation
 15 io.xol.chunkstories.core.entity.components.EntityComponentVelocity
+16 io.xol.chunkstories.core.entity.components.EntityComponentFoodLevel

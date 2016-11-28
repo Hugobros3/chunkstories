@@ -44,7 +44,7 @@ public class PacketVelocityDelta extends PacketSynchPrepared
 	@Override
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, PacketProcessingException
 	{
-		delta = new Vector3d(delta.getX(), delta.getY(), delta.getZ());
+		delta = new Vector3d(in.readDouble(), in.readDouble(), in.readDouble());
 		
 		EntityControllable entity = Client.getInstance().getClientSideController().getControlledEntity();
 		if(entity != null)

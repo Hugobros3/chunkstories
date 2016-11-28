@@ -17,23 +17,23 @@ import io.xol.chunkstories.core.events.EntityDeathEvent;
 
 public class EntityComponentHealth extends EntityComponent
 {
-	public float health;
+	public float value;
 	
 	public EntityComponentHealth(Entity entity, float health)
 	{
 		super(entity);
-		this.health = health;
+		this.value = health;
 	}
 
 	public float getHealth()
 	{
-		return health;
+		return value;
 	}
 	
 	public void setHealth(float health)
 	{
 		boolean wasntDead = health > 0.0;
-		this.health = health;
+		this.value = health;
 		
 		if(health < 0.0 && wasntDead)
 		{
@@ -52,10 +52,10 @@ public class EntityComponentHealth extends EntityComponent
 	
 	public void damage(float dmg)
 	{
-		boolean wasntDead = health > 0.0;
-		this.health -= dmg;
+		boolean wasntDead = value > 0.0;
+		this.value -= dmg;
 
-		if(health < 0.0 && wasntDead)
+		if(value < 0.0 && wasntDead)
 		{
 			EntityDeathEvent entityDeathEvent = new EntityDeathEvent(entity);
 			entity.getWorld().getGameLogic().getPluginsManager().fireEvent(entityDeathEvent);
@@ -63,7 +63,7 @@ public class EntityComponentHealth extends EntityComponent
 		
 		if(entity.getWorld() instanceof WorldMaster)
 		{
-			if(health > 0.0)
+			if(value > 0.0)
 				this.pushComponentController();
 			else
 				this.pushComponentEveryone();
@@ -73,13 +73,13 @@ public class EntityComponentHealth extends EntityComponent
 	@Override
 	public void push(StreamTarget destinator, DataOutputStream dos) throws IOException
 	{
-		dos.writeFloat(health);
+		dos.writeFloat(value);
 	}
 
 	@Override
 	public void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
-		health = dis.readFloat();
+		value = dis.readFloat();
 	}
 
 }
