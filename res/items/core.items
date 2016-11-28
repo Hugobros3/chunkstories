@@ -33,5 +33,5 @@ item 129 mag_ak47 io.xol.chunkstories.core.item.ItemFirearmMagazine
 	forWeapon: weapon_ak47
 end
 
-item 130 he_grenade io.xol.chunkstories.core.item.ItemHeGrenade
+item 130 he_grenade
 end

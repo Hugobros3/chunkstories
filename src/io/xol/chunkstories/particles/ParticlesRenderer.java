@@ -36,9 +36,7 @@ public class ParticlesRenderer implements ParticlesManager
 	final World world;
 
 	final Map<ParticleType, Set<ParticleData>> particles = new ConcurrentHashMap<ParticleType, Set<ParticleData>>();
-
-		
-	//VerticesObject billboardSquare;
+	
 	VerticesObject particlesPositions, texCoords;
 	FloatBuffer particlesPositionsBuffer, textureCoordinatesBuffer;
 
@@ -46,31 +44,8 @@ public class ParticlesRenderer implements ParticlesManager
 	{
 		this.world = world;
 
-		//billboardSquare = new VerticesObject();
-		//billboardSquareVBO = glGenBuffers();
-		
-		//320kb
-		/*FloatBuffer fb = BufferUtils.createFloatBuffer(6 * 2 * 10000);
-		for (int i = 0; i < 10000; i++)
-		{
-			fb.put(new float[] { 1, 1 });
-			fb.put(new float[] { 1, -1 });
-			fb.put(new float[] { -1, -1 });
-			//fb.put(new float[] { -1, 1 });
-			fb.put(new float[] { 1, 1 });
-			fb.put(new float[] { -1, -1 });
-			fb.put(new float[] { -1, 1 });
-		}
-		fb.flip();*/
-		
-		//glBindBuffer(GL_ARRAY_BUFFER, billboardSquareVBO);
-		//glBufferData(GL_ARRAY_BUFFER, fb, GL_STATIC_DRAW);
-		//billboardSquare.uploadData(fb);
-
 		particlesPositions = new VerticesObject();
 		texCoords = new VerticesObject();
-		//particlesPositionsVBO = glGenBuffers();
-		//texCoordsVBO = glGenBuffers();
 		
 		//480kb
 		particlesPositionsBuffer = BufferUtils.createFloatBuffer(6 * 3 * 10000);
@@ -164,15 +139,11 @@ public class ParticlesRenderer implements ParticlesManager
 	public int render(RenderingContext renderingContext)
 	{
 		int totalDrawn = 0;
-		//particlesShader.use(true);
-		// TexturesHandler.bindTexture("./res/textures/smoke.png");
-		//glEnable(GL_BLEND);
 		
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.MIX);
 
 		ShaderInterface particlesShader = renderingContext.useShader("particles");
-		//renderingContext.setCurrentShader(particlesShader);
 
 		particlesShader.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		renderingContext.getCamera().setupShader(particlesShader);
@@ -180,17 +151,10 @@ public class ParticlesRenderer implements ParticlesManager
 		renderingContext.bindTexture2D("lightColors", TexturesHandler.getTexture("./textures/environement/light.png"));
 
 		//Vertex attributes
-
-		//glEnablezVertexAttribArray(texcoordVAL);
-
-		// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+		
 		//For all present particles types
 		for (ParticleType particleType : particles.keySet())
 		{
-
-			//synchronized (list)
-			//{
 			//Don't bother rendering empty sets
 			if (particles.get(particleType).size() > 0)
 			{
@@ -198,12 +162,8 @@ public class ParticlesRenderer implements ParticlesManager
 				boolean haveTextureCoordinates = false;
 
 				particleType.beginRenderingForType(renderingContext);
-				//particlesShader.setUniformSampler(0, "diffuseTexture", TexturesHandler.getTexture(list.get(0).getTextureName()));
-				//particlesShader.setUniformFloat("billboardSize", list.get(0).getSize());
 
 				particleType.getTexture().setLinearFiltering(false);
-				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 				textureCoordinatesBuffer.clear();
 				particlesPositionsBuffer.clear();
@@ -250,14 +210,6 @@ public class ParticlesRenderer implements ParticlesManager
 
 					if (p instanceof ParticleDataWithTextureCoordinates)
 					{
-						/*
-						 * 
-						fb.put(new float[] { 1, 1 });
-						fb.put(new float[] { 1, -1 });
-						fb.put(new float[] { -1, -1 });
-						fb.put(new float[] { -1, 1 });
-						 */
-
 						haveTextureCoordinates = true;
 
 						ParticleDataWithTextureCoordinates texCoords = (ParticleDataWithTextureCoordinates) p;
@@ -287,41 +239,16 @@ public class ParticlesRenderer implements ParticlesManager
 					drawBuffers(renderingContext, elements, haveTextureCoordinates);
 					totalDrawn += elements;
 					elements = 0;
-
-					/*particlesPositionsBuffer.flip();
 					
-					glBindBuffer(GL_ARRAY_BUFFER, particlesPositionsVBO);
-					glBufferData(GL_ARRAY_BUFFER, particlesPositionsBuffer, GL_STATIC_DRAW);
-					renderingContext.setVertexAttributePointerLocation(billCoordVAL, 3, GL_FLOAT, false, 12, 0);
-					
-					glBindBuffer(GL_ARRAY_BUFFER, billboardSquareVBO);
-					renderingContext.setVertexAttributePointerLocation(planeVAL, 2, GL_FLOAT, false, 8, 0);
-					// glDrawElements(GL_POINTS, elements, GL_UNSIGNED_BYTE,
-					// 0);
-					//glPointSize(4f);
-					GLCalls.drawArrays(GL_QUADS, 0, elements);
-					totalDrawn += elements;*/
 				}
 			}
-			//}
 		}
 		// We done here
-		//glDisablezVertexAttribArray(texcoordVAL);
-
-		//ObjectRenderer.drawFSQuad(billCoordVAL);
 
 		glDepthMask(true);
-
-		renderingContext.setBlendMode(BlendMode.DISABLED);
 		
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		//glBlendEquation(GL_FUNC_ADD);
-		//glDisable(GL_BLEND);
-
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+		renderingContext.setBlendMode(BlendMode.DISABLED);
 		renderLights(renderingContext);
-
 		return totalDrawn;
 	}
 
@@ -332,35 +259,21 @@ public class ParticlesRenderer implements ParticlesManager
 		// Render it now
 		particlesPositionsBuffer.flip();
 
-		//glBindBuffer(GL_ARRAY_BUFFER, particlesPositionsVBO);
-		//glBufferData(GL_ARRAY_BUFFER, particlesPositionsBuffer, GL_STATIC_DRAW);
 		particlesPositions.uploadData(particlesPositionsBuffer);
 		
 		renderingContext.bindAttribute("particlesPositionIn", particlesPositions.asAttributeSource(VertexFormat.FLOAT, 3, 12, 0));
-		//renderingContext.setVertexAttributePointerLocation("particlesPositionIn", 3, GL_FLOAT, false, 12, 0, particlesPositions);
-		//renderingContext.setVertexAttributePointerLocation(billCoordVAL, 3, GL_FLOAT, false, 12, 0);
-
+		
 		if (haveTextureCoordinates)
 		{
 			textureCoordinatesBuffer.flip();
-			//glBindBuffer(GL_ARRAY_BUFFER, texCoordsVBO);
-			//glBufferData(GL_ARRAY_BUFFER, textureCoordinatesBuffer, GL_STATIC_DRAW);
 			texCoords.uploadData(textureCoordinatesBuffer);
 
 			renderingContext.bindAttribute("textureCoordinatesIn", texCoords.asAttributeSource(VertexFormat.FLOAT, 2, 8, 0));
-			//renderingContext.setVertexAttributePointerLocation("textureCoordinatesIn", 2, GL_FLOAT, false, 8, 0, texCoords);
 		}
-
-		//glBindBuffer(GL_ARRAY_BUFFER, billboardSquareVBO);
-		//renderingContext.bindAttribute("billboardSquareCoordsIn", billboardSquare.asAttributeSource(VertexFormat.FLOAT, 2, 8, 0));
-		//renderingContext.setVertexAttributePointerLocation("billboardSquareCoordsIn", 2, GL_FLOAT, false, 8, 0, billboardSquare);
-		// glDrawElements(GL_POINTS, elements,
-		// GL_UNSIGNED_BYTE, 0);
-		//glPointSize(4f);
 		
 		renderingContext.draw(Primitive.TRIANGLE, 0, elements);
+		renderingContext.flush();
 		renderingContext.unbindAttributes();
-		//GLCalls.drawArrays(GL_QUADS, 0, elements);
 
 		// And then clear the buffer to start over
 		particlesPositionsBuffer.clear();

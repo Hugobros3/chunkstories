@@ -1,10 +1,13 @@
 package io.xol.chunkstories.entity;
 
 import java.util.Iterator;
-import java.util.Set;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.utils.IterableIterator;
+
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 public class EntityWorldIterator implements IterableIterator<Entity>
 {
