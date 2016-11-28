@@ -129,14 +129,14 @@ public abstract class EntityComponent
 		push(to, dos);
 	}
 	
-	public void pushAllComponentsInStream(StreamTarget to, DataOutputStream dos) throws IOException
+	public final void pushAllComponentsInStream(StreamTarget to, DataOutputStream dos) throws IOException
 	{
 		pushComponentInStream(to, dos);
 		if(next != null)
 			next.pushAllComponentsInStream(to, dos);
 	}
 
-	public void pushAllComponents(Subscriber subscriber)
+	public final void pushAllComponents(Subscriber subscriber)
 	{
 		try {
 			PacketEntity packet = new PacketEntity(entity);
@@ -145,7 +145,7 @@ public abstract class EntityComponent
 		} catch (IOException e){ }
 	}
 	
-	public boolean tryPullComponentInStream(int componentId, StreamSource from, DataInputStream dis) throws IOException
+	public final boolean tryPullComponentInStream(int componentId, StreamSource from, DataInputStream dis) throws IOException
 	{
 		//Does the Id match ?
 		if(this.getEntityComponentId() == componentId)
@@ -163,7 +163,7 @@ public abstract class EntityComponent
 	
 	protected abstract void pull(StreamSource from, DataInputStream dis) throws IOException;
 
-	public int getEntityComponentId(){
+	public final int getEntityComponentId(){
 		//System.out.println("debug : "+this.getClass().getName()+" id = "+EntityComponents.getIdForClass(this.getClass().getName()));
 		return EntityComponents.getIdForClass(this.getClass().getName());
 	}
