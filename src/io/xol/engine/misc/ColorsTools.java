@@ -120,6 +120,22 @@ public class ColorsTools
 
 	static MessageDigest md;
 	
+	public static int getUniqueColorCode(String text)
+	{
+		if(md == null)
+			try{
+				md = MessageDigest.getInstance("MD5");;
+			} catch(Exception e)
+		{
+				
+		}
+		byte[] fun = md.digest(text.getBytes());
+		int r = fun[0] & 0xFF;
+		int g = fun[1] & 0xFF;
+		int b = fun[2] & 0xFF;
+		return r * 255 * 255 + g * 255 + b;
+	}
+	
 	public static String getUniqueColorPrefix(String text)
 	{
 		if(md == null)

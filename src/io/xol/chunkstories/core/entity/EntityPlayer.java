@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.entity;
 import org.lwjgl.input.Mouse;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
-
+import io.xol.engine.misc.ColorsTools;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Controller;
@@ -66,10 +66,13 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	protected boolean noclip = true;
 
+	//Nasty bullshit
 	float lastPX = -1f;
 	float lastPY = -1f;
 	
 	Location lastCameraLocation;
+	
+	int variant;
 
 	public EntityPlayer(WorldImplementation w, double x, double y, double z)
 	{
@@ -82,6 +85,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	{
 		super(w, x, y, z);
 		this.name.setName(name);
+		
+		variant = ColorsTools.getUniqueColorCode(name) % 6;
+		
 		inventoryComponent = new EntityComponentInventory(this, 10, 4);
 		selectedItemComponent = new EntityComponentSelectedItem(this, inventoryComponent);
 	}
@@ -402,9 +408,11 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		public void setupRender(RenderingInterface renderingContext)
 		{
 			super.setupRender(renderingContext);
+
+			variant = ColorsTools.getUniqueColorCode(name.getName()) % 6;
 			
 			//Player textures
-			Texture2D playerTexture = TexturesHandler.getTexture("./models/guyA.png");
+			Texture2D playerTexture = TexturesHandler.getTexture("./models/variant"+variant+".png");
 			playerTexture.setLinearFiltering(false);
 			
 			renderingContext.bindAlbedoTexture(playerTexture);
