@@ -30,3 +30,14 @@ namalsk*
 skybox*
 cache/*
 servermods/*
+dz4cs/
+apitrace*
+wrappers/
+scripts/
+*.exe
+*.hprof
+*.trace
+/converter.jar
+/converter_ids_cache.csv
+/dogez_content.zip
+/injectee.dll

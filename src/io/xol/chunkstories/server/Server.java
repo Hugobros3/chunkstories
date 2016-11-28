@@ -19,7 +19,7 @@ import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.content.PluginsManager;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.ServerClient;
@@ -46,7 +46,7 @@ public class Server implements Runnable, ServerInterface
 			if (s.contains("--mods"))
 			{
 				String[] modsString = s.replace("--mods=", "").split(",");
-				Mods.setEnabledMods(modsString);
+				ModsManager.setEnabledMods(modsString);
 			}
 			else if (s.contains("--dir"))
 			{
@@ -108,7 +108,7 @@ public class Server implements Runnable, ServerInterface
 			connectionsManager = new ServerConnectionsManager(this);
 
 			//Loads the mods
-			Mods.reload();
+			ModsManager.reload();
 			
 			modsProvider = new ServerModsProvider(this);
 			

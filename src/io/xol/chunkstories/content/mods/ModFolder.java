@@ -13,11 +13,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
-public class ModFolder extends Mod
+public class ModFolder extends ModImplementation
 {
 	final File folder;
 	final Map<String, ModFolderAsset> assets = new HashMap<String, ModFolderAsset>();
@@ -41,7 +43,7 @@ public class ModFolder extends Mod
 		
 		recursiveFolderRead(folder);
 		
-		this.modInfo = new ModInfo(getAssetByName("./mod.txt").read());
+		this.modInfo = new ModInfoImplementation(this, getAssetByName("./mod.txt").read());
 		//loadModInformation();
 	}
 	

@@ -43,7 +43,7 @@ public class TrueTypeFont
 	public final static int ALIGN_LEFT = 0, ALIGN_RIGHT = 1, ALIGN_CENTER = 2;
 	/** Array that holds necessary information about the font characters */
 
-	public Texture2DAsset glTextures[];
+	public Texture2D glTextures[];
 	public Glyph glyphs[];
 
 	/** Boolean flag on whether AntiAliasing is enabled or not */
@@ -69,7 +69,7 @@ public class TrueTypeFont
 
 	TrueTypeFont()
 	{
-		glTextures = new Texture2DAsset[256];
+		glTextures = new Texture2D[256];
 		glyphs = new Glyph[65536];
 	}
 
@@ -143,7 +143,7 @@ public class TrueTypeFont
 
 	}
 
-	public Texture2DAsset createSet(int offset)
+	public Texture2D createSet(int offset)
 	{
 		// If there are custom chars then I expand the font texture twice
 
@@ -322,7 +322,7 @@ public class TrueTypeFont
 		return fontHeight;
 	}
 
-	public static Texture2DAsset loadImageIntoOpenGLTexture(int offset, BufferedImage bufferedImage)
+	public static Texture2D loadImageIntoOpenGLTexture(int offset, BufferedImage bufferedImage)
 	{
 		try
 		{
@@ -355,7 +355,7 @@ public class TrueTypeFont
 			}
 			byteBuffer.flip();
 
-			Texture2DAsset texture = new Texture2DAsset(TextureFormat.RGBA_8BPP);
+			Texture2D texture = new Texture2D(TextureFormat.RGBA_8BPP);
 
 			texture.uploadTextureData(width, height, byteBuffer);
 			texture.setLinearFiltering(false);

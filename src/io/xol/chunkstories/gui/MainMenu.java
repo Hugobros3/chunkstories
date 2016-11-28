@@ -11,14 +11,14 @@ import java.util.Random;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.gui.overlays.LoginOverlay;
 import io.xol.chunkstories.gui.overlays.MainMenuOverlay;
 import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fbo.FrameBufferObject;
-import io.xol.engine.graphics.textures.GBufferTexture;
+import io.xol.engine.graphics.textures.Texture2DRenderTarget;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -32,9 +32,9 @@ public class MainMenu extends OverlayableScene
 	String skyBox;
 	Camera cam = new Camera();
 
-	private GBufferTexture unblurred = new GBufferTexture(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture blurredH = new GBufferTexture(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture blurredV = new GBufferTexture(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget unblurred = new Texture2DRenderTarget(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget blurredH = new Texture2DRenderTarget(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget blurredV = new Texture2DRenderTarget(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	private FrameBufferObject unblurredFBO = new FrameBufferObject(null, unblurred);
 	private FrameBufferObject blurredHFBO = new FrameBufferObject(null, blurredH);
@@ -84,7 +84,7 @@ public class MainMenu extends OverlayableScene
 		List<String> splashes = new ArrayList<String>();
 		try
 		{
-			InputStreamReader ipsr = new InputStreamReader(Mods.getAsset("./splash.txt").read(), "UTF-8");
+			InputStreamReader ipsr = new InputStreamReader(ModsManager.getAsset("./splash.txt").read(), "UTF-8");
 			BufferedReader br = new BufferedReader(ipsr);
 			String ligne;
 			while ((ligne = br.readLine()) != null)
@@ -133,7 +133,9 @@ public class MainMenu extends OverlayableScene
 		}
 		
 		// Render this shit boy
-		unblurredFBO.bind();
+		
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(unblurredFBO);
+		//unblurredFBO.bind();
 		cam.justSetup(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		ShaderInterface menuSkyBox = renderingContext.useShader("mainMenuSkyBox");
 		//menuSkyBox.use(true);
@@ -146,7 +148,8 @@ public class MainMenu extends OverlayableScene
 		renderingContext.drawFSQuad();
 		
 		// Blurring to H
-		blurredHFBO.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(blurredHFBO);
+		//blurredHFBO.bind();
 		ShaderInterface blurH = renderingContext.useShader("blurH");
 		//blurH.use(true);
 		blurH.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
@@ -157,7 +160,8 @@ public class MainMenu extends OverlayableScene
 
 		for (int i = 0; i < 1; i++)
 		{
-			blurredVFBO.bind();
+			renderingContext.getRenderTargetManager().setCurrentRenderTarget(blurredVFBO);
+			//blurredVFBO.bind();
 			ShaderInterface blurV = renderingContext.useShader("blurV");
 			//blurV.use(true);
 			blurV.setUniform1f("lookupScale", 1);
@@ -167,7 +171,8 @@ public class MainMenu extends OverlayableScene
 			renderingContext.bindTexture2D("inputTexture", blurredH);
 			renderingContext.drawFSQuad();
 
-			blurredHFBO.bind();
+			renderingContext.getRenderTargetManager().setCurrentRenderTarget(blurredHFBO);
+			//blurredHFBO.bind();
 			blurH = renderingContext.useShader("blurH");
 			//blurH.use(true);
 			blurH.setUniform2f("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
@@ -176,7 +181,8 @@ public class MainMenu extends OverlayableScene
 			renderingContext.drawFSQuad();
 		}
 
-		blurredVFBO.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(blurredVFBO);
+		//blurredVFBO.bind();
 		ShaderInterface blurV = renderingContext.useShader("blurV");
 		//blurV.use(true);
 		blurV.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
@@ -185,7 +191,8 @@ public class MainMenu extends OverlayableScene
 		renderingContext.drawFSQuad();
 		//blurV.use(false);
 
-		FrameBufferObject.unbind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(null);
+		//FrameBufferObject.unbind();
 		ShaderInterface blit = renderingContext.useShader("background");
 		//blit.use(true);
 		blit.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);

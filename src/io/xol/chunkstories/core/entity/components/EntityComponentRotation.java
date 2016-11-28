@@ -4,10 +4,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import io.xol.chunkstories.api.csf.StreamSource;
-import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.serialization.StreamSource;
+import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;

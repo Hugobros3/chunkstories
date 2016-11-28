@@ -3,8 +3,8 @@ package io.xol.engine.graphics.textures;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.xol.chunkstories.content.Mods;
-import io.xol.chunkstories.content.mods.Asset;
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.content.ModsManager;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -30,7 +30,7 @@ public class TexturesHandler
 		{
 			if(name.startsWith("./"))
 			{
-				Asset asset = Mods.getAsset(name);
+				Asset asset = ModsManager.getAsset(name);
 				if(asset == null)
 					return nullTexture();
 				
@@ -72,12 +72,13 @@ public class TexturesHandler
 		{
 			if(texture instanceof Texture2DAsset)
 			{
-				Asset newAsset = Mods.getAsset(texture.getName());
+				Asset newAsset = ModsManager.getAsset(((Texture2DAsset) texture).getName());
 				if(newAsset != null)
 				{
 					((Texture2DAsset) texture).setAsset(newAsset);
 					((Texture2DAsset) texture).loadTextureFromAsset();
 				}
+				//If the asset is no longer avaible, don't update the texture and delete it
 				else
 				{
 					texture.destroy();

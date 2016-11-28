@@ -20,9 +20,9 @@ import javax.imageio.stream.ImageInputStream;
 
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
-import io.xol.chunkstories.content.Mods;
-import io.xol.chunkstories.content.Mods.AssetHierarchy;
-import io.xol.chunkstories.content.mods.Asset;
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.content.ModsManager.AssetHierarchy;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -53,7 +53,7 @@ public class VoxelTextures
 
 			//for (File f : folder.listFiles())
 			
-			Iterator<AssetHierarchy> allFiles = Mods.getAllUniqueEntries();
+			Iterator<AssetHierarchy> allFiles = ModsManager.getAllUniqueEntries();
 			//Iterator<Entry<String, Deque<File>>> allFiles = GameContent.getAllUniqueEntries();
 			AssetHierarchy entry;
 			Asset f;
@@ -182,7 +182,7 @@ public class VoxelTextures
 						break;
 					}
 
-					imageBuffer = ImageIO.read(Mods.getAsset("./voxels/textures/" + vt.name + ".png").read());
+					imageBuffer = ImageIO.read(ModsManager.getAsset("./voxels/textures/" + vt.name + ".png").read());
 					//imageBuffer = ImageIO.read(GameContent.getTextureFileLocation());
 
 					float alphaTotal = 0;
@@ -214,9 +214,9 @@ public class VoxelTextures
 					
 					//colors.put(vt.name, new Vector4f(color.x, color.y, color.z, alphaTotal));
 					// Do also the normal maps !
-					Asset normalMap = Mods.getAsset("./voxels/textures/normal/" + vt.name + ".png");
+					Asset normalMap = ModsManager.getAsset("./voxels/textures/normal/" + vt.name + ".png");
 					if (normalMap == null)
-						normalMap = Mods.getAsset("./voxels/textures/normal/notex.png");
+						normalMap = ModsManager.getAsset("./voxels/textures/normal/notex.png");
 
 					imageBuffer = ImageIO.read(normalMap.read());
 					for (int x = 0; x < vt.imageFileDimensions; x++)
@@ -228,9 +228,9 @@ public class VoxelTextures
 						}
 					}
 					// And the materials !
-					Asset materialMap = Mods.getAsset("./voxels/textures/material/" + vt.name + ".png");
+					Asset materialMap = ModsManager.getAsset("./voxels/textures/material/" + vt.name + ".png");
 					if (materialMap == null)
-						materialMap = Mods.getAsset("./voxels/textures/material/notex.png");
+						materialMap = ModsManager.getAsset("./voxels/textures/material/notex.png");
 
 					imageBuffer = ImageIO.read(materialMap.read());
 					for (int x = 0; x < vt.imageFileDimensions; x++)
@@ -255,7 +255,7 @@ public class VoxelTextures
 			}
 			// Read textures metadata
 			//TODO read all overrides in priority
-			readTexturesMeta(Mods.getAsset("./voxels/textures/meta.txt"));
+			readTexturesMeta(ModsManager.getAsset("./voxels/textures/meta.txt"));
 		}
 		catch (Exception e)
 		{

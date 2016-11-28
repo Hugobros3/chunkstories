@@ -86,7 +86,7 @@ void main(){
 	
 	if(isUsingInstancedData > 0)
 	{
-		worldLight = vec2(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 4, 32), (gl_InstanceID * 8 + 1) / 32), 0).xy / 15.0);
+		worldLight = vec2(texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 4, 32), (gl_InstanceID * 8 + 5) / 32), 0).xy / 15.0);
 	}
 	else
 		worldLight = vec2(worldLightIn / 15.0);

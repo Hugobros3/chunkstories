@@ -5,21 +5,25 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.csf.StreamSource;
-import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
+import io.xol.chunkstories.api.exceptions.NullItemException;
+import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.net.Packet;
+import io.xol.chunkstories.api.serialization.StreamSource;
+import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -43,7 +47,6 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 		this.height = height;
 		contents = new ItemPile[width][height];
 	}
-
 
 	public ItemPile[][] getContents()
 	{
@@ -280,10 +283,10 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 			{
 				if (reachedEnd())
 					return null;
-				
-				if(current == null)
+
+				if (current == null)
 					hasNext();
-				
+
 				ItemPile r = current;
 				current = null;
 				return r;
@@ -327,20 +330,20 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 	{
 		pushComponentController();
 	}
-	
+
 	public void refreshItemSlot(int x, int y, ItemPile pileChanged)
 	{
 		//System.out.println("Updating slot: "+x+", "+y+" to "+pileChanged);
-		
+
 		Packet packetItemUpdate = new PacketInventoryPartialUpdate(this, x, y, pileChanged);
 		Controller controller = null;
-		if(entity instanceof EntityControllable)
+		if (entity instanceof EntityControllable)
 			controller = ((EntityControllable) entity).getControllerComponent().getController();
-		
-		if(controller != null)
+
+		if (controller != null)
 			controller.pushPacket(packetItemUpdate);
 	}
-	
+
 	public void pushItemMove(int xFrom, int yFrom, int xTo, int yTo)
 	{
 		throw new UnsupportedOperationException();
@@ -362,8 +365,7 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 					stream.writeInt(0);
 				else
 				{
-					stream.writeInt(pile.getItem().getID());
-					pile.saveCSF(stream);
+					pile.saveItemIntoStream(stream);
 				}
 			}
 	}
@@ -379,13 +381,13 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 	{
 		//Unused
 		stream.readByte();
-		
+
 		pullWholeInventoryRefresh(from, stream);
-		
+
 		/*UpdateMode mode = UpdateMode.values()[stream.readByte()];
-
+		
 		//System.out.println("Received " + mode + " inventory update");
-
+		
 		switch (mode)
 		{
 		case REFRESH:
@@ -406,12 +408,33 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 		this.height = stream.readInt();
 
 		contents = new ItemPile[width][height];
-		int id;
-		Item item;
+		//int id;
+		//Item item;
 		for (int i = 0; i < width; i++)
 			for (int j = 0; j < height; j++)
 			{
-				id = stream.readInt() & 0x00FFFFFF;
+				ItemPile itemPile;
+				try
+				{
+					itemPile = new ItemPile(stream);
+					//Then add the thing
+					contents[i][j] = itemPile;
+					contents[i][j].setInventory(this);
+					contents[i][j].setX(i);
+					contents[i][j].setY(j);
+				}
+				catch (NullItemException e)
+				{
+					//Don't do anything about it, no big deal
+				}
+				catch (UndefinedItemTypeException e)
+				{
+					//This is slightly more problematic
+					ChunkStoriesLogger.getInstance().log(e.getMessage(), LogLevel.WARN);
+					e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
+				}
+
+				/*id = stream.readInt() & 0x00FFFFFF;
 				ItemType itemType = ItemTypes.getItemTypeById(id);
 				if (itemType != null)
 				{
@@ -420,10 +443,10 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 					contents[i][j].setInventory(this);
 					contents[i][j].setX(i);
 					contents[i][j].setY(j);
-				}
+				}*/
 			}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.entity.core.components.EntityInventory#clear()
 	 */

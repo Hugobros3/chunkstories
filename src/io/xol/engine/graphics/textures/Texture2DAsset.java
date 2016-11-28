@@ -9,7 +9,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
-import io.xol.chunkstories.content.mods.Asset;
+import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.base.GameWindowOpenGL;
 
@@ -22,15 +22,10 @@ public class Texture2DAsset extends Texture2D
 	//String name;
 	Asset asset;
 	String assetName;
-	
-	public Texture2DAsset(TextureFormat type)
-	{
-		super(type);
-	}
 
 	public Texture2DAsset(Asset asset)
 	{
-		this(TextureFormat.RGBA_8BPP);
+		super(TextureFormat.RGBA_8BPP);
 		this.assetName = asset.getName();
 		this.asset = asset;
 		loadTextureFromAsset();
@@ -42,10 +37,11 @@ public class Texture2DAsset extends Texture2D
 		
 		if (scheduledForLoad && asset != null)
 		{
+			//TODO defer to asynch thread
 			long ms = System.currentTimeMillis();
 			System.out.print("main thread called, actually loading the texture ... ");
 			this.loadTextureFromAsset();
-			System.out.print((System.currentTimeMillis()-ms) + "ms \n");
+			System.out.print(" took "+(System.currentTimeMillis()-ms) + "ms \n");
 		}
 	}
 	
@@ -96,7 +92,15 @@ public class Texture2DAsset extends Texture2D
 
 	public void setAsset(Asset newAsset)
 	{
+		if(newAsset == null)
+			throw new NullPointerException();
+		
 		this.asset = newAsset;
+	}
+	
+	public Asset getAsset()
+	{
+		return this.asset;
 	}
 
 	public String getName()

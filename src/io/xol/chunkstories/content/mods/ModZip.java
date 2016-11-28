@@ -15,11 +15,13 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
-public class ModZip extends Mod
+public class ModZip extends ModImplementation
 {
 	final File fileLocation;
 	final ZipFile zipFile;
@@ -58,7 +60,7 @@ public class ModZip extends Mod
 				}
 			}
 
-			this.modInfo = new ModInfo(getAssetByName("./mod.txt").read());
+			this.modInfo = new ModInfoImplementation(this, getAssetByName("./mod.txt").read());
 			//loadModInformation(getAssetByName("./mod.txt"));
 		}
 		catch (IOException e)

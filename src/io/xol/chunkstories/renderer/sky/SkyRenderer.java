@@ -17,8 +17,6 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 
-import static org.lwjgl.opengl.GL11.*;
-
 import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Vector3f;
 
@@ -57,7 +55,8 @@ public class SkyRenderer
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 		
-		glDepthMask(false);
+		renderingContext.getRenderTargetManager().setDepthMask(false);
+		//glDepthMask(false);
 
 		Vector3f sunPosVector = getSunPosition();
 		double[] sunpos = { sunPosVector.x, sunPosVector.y, sunPosVector.z };
@@ -101,8 +100,6 @@ public class SkyRenderer
 
 		renderingContext.setBlendMode(BlendMode.MIX);
 		
-		glPointSize(1f);
-
 		ShaderInterface starsShader = renderingContext.useShader("stars");
 		
 		//starsShader.use(true);
@@ -127,8 +124,9 @@ public class SkyRenderer
 			renderingContext.draw(Primitive.POINT, 0, NB_STARS);
 		}
 		
+		renderingContext.getRenderTargetManager().setDepthMask(true);
 		renderingContext.flush();
-		glDepthMask(true);
+		//glDepthMask(true);
 		
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);

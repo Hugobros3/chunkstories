@@ -24,7 +24,6 @@ import javax.imageio.ImageIO;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
 
-import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
 
@@ -36,7 +35,7 @@ import io.xol.engine.graphics.geometry.ByteBufferAttributeSource;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.Cubemap;
-import io.xol.engine.graphics.textures.GBufferTexture;
+import io.xol.engine.graphics.textures.Texture2DRenderTarget;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -121,21 +120,21 @@ public class WorldRenderer
 	private RenderingContext renderingContext;
 
 	// Main Rendertarget (HDR)
-	private GBufferTexture shadedBuffer = new GBufferTexture(RGB_HDR, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget shadedBuffer = new Texture2DRenderTarget(RGB_HDR, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	private int illDownIndex = 0;
 	private int illDownBuffers = 1;
 	private long lastIllCalc = 8;
 	private PBOPacker illuminationDownloader[] = new PBOPacker[illDownBuffers];
 
 	// G-Buffers
-	public GBufferTexture zBuffer = new GBufferTexture(DEPTH_RENDERBUFFER, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture albedoBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture normalBuffer = new GBufferTexture(RGBA_3x10_2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private GBufferTexture materialBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	public Texture2DRenderTarget zBuffer = new Texture2DRenderTarget(DEPTH_RENDERBUFFER, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget albedoBuffer = new Texture2DRenderTarget(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget normalBuffer = new Texture2DRenderTarget(RGBA_3x10_2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget materialBuffer = new Texture2DRenderTarget(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	// Bloom texture
-	private GBufferTexture bloomBuffer = new GBufferTexture(RGB_HDR, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
-	private GBufferTexture ssaoBuffer = new GBufferTexture(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget bloomBuffer = new Texture2DRenderTarget(RGB_HDR, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
+	private Texture2DRenderTarget ssaoBuffer = new Texture2DRenderTarget(RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 
 	// FBOs
 	private FrameBufferObject fboGBuffers = new FrameBufferObject(zBuffer, albedoBuffer, normalBuffer, materialBuffer);
@@ -144,18 +143,18 @@ public class WorldRenderer
 	private FrameBufferObject fboBloom = new FrameBufferObject(null, bloomBuffer);
 	private FrameBufferObject fboSSAO = new FrameBufferObject(null, ssaoBuffer);
 
-	private GBufferTexture blurIntermediateBuffer = new GBufferTexture(RGB_HDR, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
+	private Texture2DRenderTarget blurIntermediateBuffer = new Texture2DRenderTarget(RGB_HDR, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
 	private FrameBufferObject fboBlur = new FrameBufferObject(null, blurIntermediateBuffer);
 
 	// 64x64 texture used to cull distant mesh
-	private GBufferTexture loadedChunksMapTop = new GBufferTexture(DEPTH_RENDERBUFFER, 64, 64);
+	private Texture2DRenderTarget loadedChunksMapTop = new Texture2DRenderTarget(DEPTH_RENDERBUFFER, 64, 64);
 	private FrameBufferObject fboLoadedChunksTop = new FrameBufferObject(loadedChunksMapTop);
-	private GBufferTexture loadedChunksMapBot = new GBufferTexture(DEPTH_RENDERBUFFER, 64, 64);
+	private Texture2DRenderTarget loadedChunksMapBot = new Texture2DRenderTarget(DEPTH_RENDERBUFFER, 64, 64);
 	private FrameBufferObject fboLoadedChunksBot = new FrameBufferObject(loadedChunksMapBot);
 
 	// Shadow maps
 	private int shadowMapResolution = 0;
-	private GBufferTexture shadowMapBuffer = new GBufferTexture(DEPTH_SHADOWMAP, 256, 256);
+	private Texture2DRenderTarget shadowMapBuffer = new Texture2DRenderTarget(DEPTH_SHADOWMAP, 256, 256);
 	private FrameBufferObject shadowMapFBO = new FrameBufferObject(shadowMapBuffer);
 
 	//Environment map
@@ -163,8 +162,8 @@ public class WorldRenderer
 	private Cubemap environmentMap = new Cubemap(TextureFormat.RGB_HDR, ENVMAP_SIZE);
 	//private Cubemap environmentMapBlurry = new Cubemap(TextureType.RGB_HDR, ENVMAP_SIZE);
 	//Temp buffers
-	private GBufferTexture environmentMapBufferHDR = new GBufferTexture(RGB_HDR, ENVMAP_SIZE, ENVMAP_SIZE);
-	private GBufferTexture environmentMapBufferZ = new GBufferTexture(DEPTH_RENDERBUFFER, ENVMAP_SIZE, ENVMAP_SIZE);
+	private Texture2DRenderTarget environmentMapBufferHDR = new Texture2DRenderTarget(RGB_HDR, ENVMAP_SIZE, ENVMAP_SIZE);
+	private Texture2DRenderTarget environmentMapBufferZ = new Texture2DRenderTarget(DEPTH_RENDERBUFFER, ENVMAP_SIZE, ENVMAP_SIZE);
 
 	private FrameBufferObject environmentMapFastFbo = new FrameBufferObject(environmentMapBufferZ, environmentMapBufferHDR);
 	private FrameBufferObject environmentMapFBO = new FrameBufferObject(null, environmentMap.getFace(0));
@@ -329,46 +328,37 @@ public class WorldRenderer
 		camera.translate();
 
 		
-		
 		// Clear G-Buffers and bind shaded HDR rendertarget
-		fboGBuffers.bind();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		fboShadedBuffer.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboGBuffers);
+		//fboGBuffers.bind();
+		renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
+		//fboShadedBuffer.bind();
 
-		// Draw sky
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		long t = System.nanoTime();
 		sky.time = (world.worldTime % 10000) / 10000f;
 		//sky.skyShader.use(true);
 		//sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
 		//glViewport(0, 0, scrW, scrH);
 		sky.render(renderingContext);
 
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		if (RenderingConfig.debugPasses)
-			System.out.println("sky took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		// Move camera to relevant position
 		// fboGBuffers.setEnabledRenderTargets(true, false, false);
 
-		fboGBuffers.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboGBuffers);
+		//fboGBuffers.bind();
 		fboGBuffers.setEnabledRenderTargets();
 		
 		// Render world
 		renderWorld(false, chunksToRenderLimit);
 
 		// Render weather
-		fboShadedBuffer.bind();
+
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
+		//fboShadedBuffer.bind();
 		fboShadedBuffer.setEnabledRenderTargets();
 		weatherEffectsRenderer.renderEffects(renderingContext);
-
-		// Debug
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		if (RenderingConfig.debugPasses)
-			System.out.println("total took " + (System.nanoTime() - t) / 1000000.0 + "ms ( " + 1 / ((System.nanoTime() - t) / 1000000000.0) + " fps)");
 
 		//Disable depth check
 		//glDisable(GL_DEPTH_TEST);
@@ -378,7 +368,8 @@ public class WorldRenderer
 			renderBloom();
 
 		//Bind shaded buffer in case some other rendering is to be done
-		fboShadedBuffer.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
+		//fboShadedBuffer.bind();
 		fboShadedBuffer.setEnabledRenderTargets();
 
 		Client.profiler.startSection("done");
@@ -436,14 +427,19 @@ public class WorldRenderer
 			int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
 
 			//Iterates over all loaded chunks to generate list and map
-			fboLoadedChunksBot.bind();
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboLoadedChunksBot);
+			//fboLoadedChunksBot.bind();
+			renderingContext.getRenderTargetManager().clearBoundRenderTargetZ(1.0f);
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			fboLoadedChunksTop.bind();
+			renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboLoadedChunksTop);
+			//fboLoadedChunksTop.bind();
 			//glViewport(0, 0, 64, 64);
-			glClearDepth(0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glClearDepth(1f);
+			
+			renderingContext.getRenderTargetManager().clearBoundRenderTargetZ(0.0f);
+			//glClearDepth(0f);
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			//glClearDepth(1f);
 			this.loadedChunksMapTop.setLinearFiltering(false);
 			this.loadedChunksMapTop.setMipMapping(false);
 			this.loadedChunksMapTop.setTextureWrapping(false);
@@ -617,11 +613,13 @@ public class WorldRenderer
 			
 			renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 			
-			fboLoadedChunksBot.bind();
+			renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboLoadedChunksBot);
+			//fboLoadedChunksBot.bind();
 
 			renderingContext.draw(Primitive.POINT, 0, localMapElements);
 
-			FrameBufferObject.unbind();
+			renderingContext.getRenderTargetManager().setCurrentRenderTarget(null);
+			//FrameBufferObject.unbind();
 
 			// Now delete from the worker threads what we won't need anymore
 			chunksRenderer.purgeUselessWork(cameraChunkX, cameraChunkY, cameraChunkZ, sizeInChunks, chunksViewDistance);
@@ -636,7 +634,7 @@ public class WorldRenderer
 	public void shadowPass()
 	{
 		Client.profiler.startSection("shadows");
-		// float worldTime = (world.worldTime%1000+1000)%1000;
+		
 		if (this.getShadowVisibility() == 0f)
 			return; // No shadows at night :)
 		
@@ -644,21 +642,24 @@ public class WorldRenderer
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		
-		int size = (shadowMapBuffer).getWidth();
+		int shadowMapTextureSize = shadowMapBuffer.getWidth();
 		
-		shadowMapFBO.bind();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(shadowMapFBO);
+		//shadowMapFBO.bind();
+		renderingContext.getRenderTargetManager().clearBoundRenderTargetZ(1.0f);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shadowsPassShader = renderingContext.useShader("shadows");
 		
-		int fun = 10;// / hdPass ? 3 : 8;
-		if (size > 1024)
-			fun = 15;
-		else if (size > 2048)
-			fun = 20;
+		int shadowRange = 128;
+		if (shadowMapTextureSize > 1024)
+			shadowRange = 192;
+		else if (shadowMapTextureSize > 2048)
+			shadowRange = 256;
 
-		int fun2 = 200;// hdPass ? 100 : 200;
-		Matrix4f depthProjectionMatrix = MatrixHelper.getOrthographicMatrix(-fun * 10, fun * 10, -fun * 10, fun * 10, -fun2, fun2);
+		int shadowDepthRange = 200;
+		Matrix4f depthProjectionMatrix = MatrixHelper.getOrthographicMatrix(-shadowRange, shadowRange, -shadowRange, shadowRange, -shadowDepthRange, shadowDepthRange);
+		
 		Matrix4f depthViewMatrix = MatrixHelper.getLookAtMatrix(sky.getSunPosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
 		Matrix4f.mul(depthProjectionMatrix, depthViewMatrix, depthMatrix);
@@ -667,7 +668,7 @@ public class WorldRenderer
 		shadowMVP.translate(new Vector3f((float) camera.pos.getX(), (float) camera.pos.getY(), (float) camera.pos.getZ()));
 
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
-		shadowsPassShader.setUniformMatrix4f("localTransform", new Matrix4f());
+		
 		shadowsPassShader.setUniform1f("entity", 0);
 		renderWorld(true, -1);
 	}
@@ -702,7 +703,6 @@ public class WorldRenderer
 		setupShadowColors(terrainShader);
 		terrainShader.setUniform1f("time", sky.time);
 
-
 		renderingContext.bindTexture2D("vegetationColorTexture", getGrassTexture());
 		terrainShader.setUniform1f("mapSize", sizeInChunks * 32);
 		renderingContext.bindTexture2D("loadedChunksMapTop", loadedChunksMapTop);
@@ -714,18 +714,10 @@ public class WorldRenderer
 		if (Keyboard.isKeyDown(Keyboard.KEY_F10))
 			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		long t = System.nanoTime();
 		if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
 			renderedVertices += farTerrainRenderer.draw(renderingContext, terrainShader);
 
 		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);
-
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		if (RenderingConfig.debugPasses)
-			System.out.println("terrain took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 		
 		renderingContext.flush();
 	}
@@ -735,7 +727,6 @@ public class WorldRenderer
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 
-		long t;
 		animationTimer = (float) (((System.currentTimeMillis() % 100000) / 200f) % 100.0);
 
 		int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
@@ -744,9 +735,11 @@ public class WorldRenderer
 		float shadowVisiblity = getShadowVisibility();
 		chunksViewDistance = sizeInChunks / 2;
 
+		
 		if (!isShadowPass)
 		{
-			this.fboShadedBuffer.bind();
+			renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
+			//this.fboShadedBuffer.bind();
 
 			Client.profiler.startSection("blocks");
 			this.fboGBuffers.setEnabledRenderTargets();
@@ -809,9 +802,6 @@ public class WorldRenderer
 		
 		renderingContext.setIsShadowPass(isShadowPass);
 
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		t = System.nanoTime();
 
 		int chunksRendered = 0;
 		for (int XXX = 0; XXX < 1; XXX++)
@@ -916,16 +906,12 @@ public class WorldRenderer
 		// Done looping chunks, now entities
 		if (!isShadowPass)
 		{
-			if (RenderingConfig.debugPasses)
-				glFinish();
-			if (RenderingConfig.debugPasses)
-				System.out.println("blocks took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 			// Select shader
 			renderingContext.useShader("entities");
 
-			entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
-			entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
+			//entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
+			//entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
 
 			entitiesShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
 			entitiesShader.setUniform1f("shadowVisiblity", shadowVisiblity);
@@ -996,20 +982,26 @@ public class WorldRenderer
 
 			if (pass == 1)
 			{
-				fboShadedBuffer.bind();
+				renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
+				//fboShadedBuffer.bind();
 				fboShadedBuffer.setEnabledRenderTargets(true);
 				renderingContext.bindTexture2D("readbackAlbedoBufferTemp", this.albedoBuffer);
 				renderingContext.bindTexture2D("readbackMetaBufferTemp", this.materialBuffer);
 				renderingContext.bindTexture2D("readbackDepthBufferTemp", this.zBuffer);
-				glDepthMask(false);
+				
+				renderingContext.getRenderTargetManager().setDepthMask(false);
+				//glDepthMask(false);
 			}
 			else if (pass == 2)
 			{
-				fboGBuffers.bind();
+				renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboGBuffers);
+				//fboGBuffers.bind();
 				fboGBuffers.setEnabledRenderTargets();
 				renderingContext.bindTexture2D("readbackShadedBufferTemp", this.shadedBuffer);
 				renderingContext.bindTexture2D("readbackDepthBufferTemp", this.zBuffer);
-				glDepthMask(true);
+				
+				renderingContext.getRenderTargetManager().setDepthMask(true);
+				//glDepthMask(true);
 			}
 			for (ChunkRenderable chunk : renderList)
 			{
@@ -1051,16 +1043,19 @@ public class WorldRenderer
 		this.renderingContext.flush();
 		
 		// Draw world shaded with sunlight and vertex light
-		glDepthMask(false);
+		renderingContext.getRenderTargetManager().setDepthMask(false);
+		//glDepthMask(false);
 		renderShadedBlocks();
-		glDepthMask(true);
+		renderingContext.getRenderTargetManager().setDepthMask(true);
+		//glDepthMask(true);
 
 		// Compute SSAO
 		if (RenderingConfig.ssaoQuality > 0)
 			this.SSAO(RenderingConfig.ssaoQuality);
 
 		renderLightsDeffered();
-		fboShadedBuffer.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
+		//fboShadedBuffer.bind();
 		fboShadedBuffer.setEnabledRenderTargets(true);
 		renderTerrain(chunksToRenderLimit != -1);
 	}
@@ -1070,12 +1065,14 @@ public class WorldRenderer
 		Client.profiler.startSection("lights");
 
 		//We work on the shaded buffer
-		this.fboShadedBuffer.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
+		//this.fboShadedBuffer.bind();
 		// Deffered lightning
 		// Disable depth read/write
 		
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
-		glDepthMask(false);
+		renderingContext.getRenderTargetManager().setDepthMask(false);
+		//glDepthMask(false);
 		
 		lightShader = renderingContext.useShader("light");
 		
@@ -1094,7 +1091,8 @@ public class WorldRenderer
 		
 		LightsRenderer.renderPendingLights(renderingContext);
 		//Cleanup
-		glDepthMask(true);
+		renderingContext.getRenderTargetManager().setDepthMask(true);
+		//glDepthMask(true);
 		
 		renderingContext.setBlendMode(BlendMode.MIX);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
@@ -1105,13 +1103,6 @@ public class WorldRenderer
 	 */
 	public void renderShadedBlocks()
 	{
-		if (Keyboard.isKeyDown(Keyboard.KEY_F7))
-			return;
-		if (RenderingConfig.debugPasses)
-			glFinish();
-
-		long t = System.nanoTime();
-
 		applyShadowsShader = renderingContext.useShader("shadows_apply");
 		setupShadowColors(applyShadowsShader);
 
@@ -1122,7 +1113,8 @@ public class WorldRenderer
 		
 		Vector3f sunPos = sky.getSunPosition();
 
-		fboShadedBuffer.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
+		//fboShadedBuffer.bind();
 
 		float lightMultiplier = 1.0f;
 
@@ -1159,12 +1151,6 @@ public class WorldRenderer
 		sky.setupShader(applyShadowsShader);
 
 		renderingContext.drawFSQuad();
-		
-		if (RenderingConfig.debugPasses)
-			glFinish();
-
-		if (RenderingConfig.debugPasses)
-			System.out.println("shadows pass took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 	}
@@ -1176,12 +1162,9 @@ public class WorldRenderer
 	 */
 	public void blitScreen(float pauseFade)
 	{
-		if (RenderingConfig.debugPasses)
-			glFinish();
-		long t = System.nanoTime();
-
 		// We render to the screen.
-		FrameBufferObject.unbind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(null);
+		//FrameBufferObject.unbind();
 		
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.DISABLED);
@@ -1213,11 +1196,6 @@ public class WorldRenderer
 		renderingContext.drawFSQuad();
 		//drawFSQuad();
 
-		if (RenderingConfig.debugPasses)
-			glFinish();
-
-		if (RenderingConfig.debugPasses)
-			System.out.println("final blit took " + (System.nanoTime() - t) / 1000000.0 + "ms");
 
 		if (RenderingConfig.doBloom)
 		{			
@@ -1330,7 +1308,8 @@ public class WorldRenderer
 
 	private void SSAO(int quality)
 	{
-		fboSSAO.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboSSAO);
+		//fboSSAO.bind();
 		fboSSAO.setEnabledRenderTargets();
 
 		renderingContext.useShader("ssao");
@@ -1372,7 +1351,8 @@ public class WorldRenderer
 		// Blur the thing
 
 		// Vertical pass
-		fboBlur.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboBlur);
+		//fboBlur.bind();
 		
 		blurV = renderingContext.useShader("blurV");
 		blurV.setUniform2f("screenSize", scrW, scrH);
@@ -1381,7 +1361,8 @@ public class WorldRenderer
 		renderingContext.drawFSQuad();
 
 		// Horizontal pass
-		this.fboSSAO.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboSSAO);
+		//this.fboSSAO.bind();
 		
 		blurH = renderingContext.useShader("blurH");
 		blurH.setUniform2f("screenSize", scrW, scrH);
@@ -1404,13 +1385,15 @@ public class WorldRenderer
 		int max_mipmap = (int) (Math.ceil(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
 		bloomShader.setUniform1f("max_mipmap", max_mipmap);
 
-		this.fboBloom.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboBloom);
+		//this.fboBloom.bind();
 		this.fboBloom.setEnabledRenderTargets();
 		renderingContext.drawFSQuad();
 
 		// Blur bloom
 		// Vertical pass
-		fboBlur.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboBlur);
+		//fboBlur.bind();
 		
 		blurV = renderingContext.useShader("blurV");
 		blurV.setUniform2f("screenSize", scrW / 2f, scrH / 2f);
@@ -1419,14 +1402,16 @@ public class WorldRenderer
 		renderingContext.drawFSQuad();
 
 		// Horizontal pass
-		this.fboBloom.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboBloom);
+		//this.fboBloom.bind();
 		
 		blurH = renderingContext.useShader("blurH");
 		blurH.setUniform2f("screenSize", scrW / 2f, scrH / 2f);
 		renderingContext.bindTexture2D("inputTexture", blurIntermediateBuffer);
 		renderingContext.drawFSQuad();
 
-		fboBlur.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboBlur);
+		//fboBlur.bind();
 		
 		blurV = renderingContext.useShader("blurV");
 
@@ -1436,7 +1421,8 @@ public class WorldRenderer
 		renderingContext.drawFSQuad();
 
 		// Horizontal pass
-		this.fboBloom.bind();
+		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboBloom);
+		//this.fboBloom.bind();
 		
 		blurH = renderingContext.useShader("blurH");
 		blurH.setUniform2f("screenSize", scrW / 4f, scrH / 4f);
@@ -1520,11 +1506,14 @@ public class WorldRenderer
 			}
 
 			if (useFastBuffer)
-				environmentMapFastFbo.bind();
+				renderingContext.getRenderTargetManager().setCurrentRenderTarget(environmentMapFastFbo);
+				//environmentMapFastFbo.bind();
 			else
-				this.fboShadedBuffer.bind();
+				renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
+				//this.fboShadedBuffer.bind();
 
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			// Scene rendering
 			if (onlyTerrain)
@@ -1548,7 +1537,8 @@ public class WorldRenderer
 
 				renderingContext.useShader("blit");
 
-				this.environmentMapFBO.bind();
+				renderingContext.getRenderTargetManager().setCurrentRenderTarget(environmentMapFBO);
+				//this.environmentMapFBO.bind();
 				this.environmentMapFBO.setColorAttachement(0, cubemap.getFace(f));
 
 				if (useFastBuffer)
@@ -1695,7 +1685,6 @@ public class WorldRenderer
 	}
 
 	//Math helper functions
-
 	private boolean checkChunkOcclusion(Chunk chunk, int correctedCX, int correctedCY, int correctedCZ)
 	{
 		Vector3f center = new Vector3f(correctedCX * 32 + 16, correctedCY * 32 + 15, correctedCZ * 32 + 16);

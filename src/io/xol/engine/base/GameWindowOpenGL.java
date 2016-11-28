@@ -195,7 +195,8 @@ public class GameWindowOpenGL
 				Texture2DAsset.destroyPendingTextureObjects();
 
 				//Clear windows
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
+				//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 				//Resize window logic
 				if (Display.wasResized() || forceResize)

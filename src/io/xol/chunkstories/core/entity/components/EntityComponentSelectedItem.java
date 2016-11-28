@@ -4,17 +4,21 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import io.xol.chunkstories.api.csf.OfflineSerializedData;
-import io.xol.chunkstories.api.csf.StreamSource;
-import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.exceptions.NullItemException;
+import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.serialization.OfflineSerializedData;
+import io.xol.chunkstories.api.serialization.StreamSource;
+import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -92,8 +96,8 @@ public class EntityComponentSelectedItem extends EntityComponent
 		{
 			//System.out.println("Sending item");
 			dos.writeBoolean(true);
-			dos.writeInt(pile.getItem().getID());
-			pile.saveCSF(dos);
+			//dos.writeInt(pile.getItem().getID());
+			pile.saveItemIntoStream(dos);
 		}
 	}
 
@@ -106,9 +110,30 @@ public class EntityComponentSelectedItem extends EntityComponent
 		if(itemIncluded)
 		{
 			//System.out.println("reading item from packet for entity"+entity);
-			ItemPile pile;
+			//ItemPile pile;
 			
-			int id = dis.readInt() & 0x00FFFFFF;
+			ItemPile itemPile = null;
+			try
+			{
+				itemPile = new ItemPile(dis);
+			}
+			catch (NullItemException e)
+			{
+				//Don't do anything about it, no big deal
+			}
+			catch (UndefinedItemTypeException e)
+			{
+				//This is slightly more problematic
+				ChunkStoriesLogger.getInstance().log(e.getMessage(), LogLevel.WARN);
+				e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
+			}
+
+			//Ensures only client worlds accepts such pushes
+			if(!(entity.getWorld() instanceof WorldMaster))
+				inventory.setItemPileAt(selectedSlot, 0, itemPile);
+			
+			
+			/*int id = dis.readInt() & 0x00FFFFFF;
 			ItemType itemType = ItemTypes.getItemTypeById(id);
 			if(itemType != null)
 			{
@@ -119,7 +144,7 @@ public class EntityComponentSelectedItem extends EntityComponent
 					//System.out.println("got held item for "+entity + " : "+pile);
 					inventory.setItemPileAt(selectedSlot, 0, pile);
 				}
-			}
+			}*/
 		}
 		
 		this.pushComponentEveryoneButController();

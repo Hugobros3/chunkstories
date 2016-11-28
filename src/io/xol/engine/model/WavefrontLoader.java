@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.chunkstories.content.mods.Asset;
+import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive

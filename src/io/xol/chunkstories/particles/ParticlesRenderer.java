@@ -245,8 +245,14 @@ public class ParticlesRenderer implements ParticlesManager
 		}
 		// We done here
 
-		glDepthMask(true);
+		renderingContext.getRenderTargetManager().setDepthMask(true);
+		//glDepthMask(true);
 		
+		//ObjectRenderer.drawFSQuad(billCoordVAL);
+
+		renderingContext.getRenderTargetManager().setDepthMask(true);
+		//glDepthMask(true);
+
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 		renderLights(renderingContext);
 		return totalDrawn;

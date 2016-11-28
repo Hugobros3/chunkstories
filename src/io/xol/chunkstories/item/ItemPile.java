@@ -7,16 +7,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Inventory;
+import io.xol.chunkstories.api.exceptions.NullItemException;
+import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
-import io.xol.chunkstories.item.inventory.CSFSerializable;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ItemPile implements CSFSerializable
+public class ItemPile
 {
 	private final Item item;
 	
@@ -52,16 +53,32 @@ public class ItemPile implements CSFSerializable
 	 * @param stream
 	 * @throws IOException
 	 */
-	public ItemPile(Item item, DataInputStream stream) throws IOException
+	@Deprecated
+	public ItemPile(Item item, DataInputStream stream) throws IOException, UndefinedItemTypeException
 	{
 		this.item = item;
 		//this.data = item.getItemData();
-		loadCSF(stream);
+		loadInternalItemData(stream);
 	}
 
 	public ItemPile(ItemType type)
 	{
 		this(type.newItem());
+	}
+
+	public ItemPile(DataInputStream stream) throws IOException, UndefinedItemTypeException, NullItemException
+	{
+		int itemId = stream.readInt();
+		if(itemId == 0)
+			throw new NullItemException(stream);
+		
+		ItemType itemType = ItemTypes.getItemTypeById(itemId);
+		if(itemType == null)
+			throw new UndefinedItemTypeException(itemId);
+		
+		this.item = itemType.newItem();
+
+		loadInternalItemData(stream);
 	}
 
 	public String getTextureName()
@@ -75,16 +92,16 @@ public class ItemPile implements CSFSerializable
 		return item;
 	}
 
-	@Override
-	public void loadCSF(DataInputStream stream) throws IOException
+	private void loadInternalItemData(DataInputStream stream) throws IOException
 	{
 		this.amount = stream.readInt();
 		item.load(stream);
 	}
 
-	@Override
-	public void saveCSF(DataOutputStream stream) throws IOException
+	public void saveItemIntoStream(DataOutputStream stream) throws IOException
 	{
+		stream.writeInt(item.getID());
+		
 		stream.writeInt(amount);
 		item.save(stream);
 	}
@@ -193,9 +210,11 @@ public class ItemPile implements CSFSerializable
 		ByteArrayOutputStream data = new ByteArrayOutputStream();
 		try
 		{
-			this.saveCSF(new DataOutputStream(data));
+			this.saveItemIntoStream(new DataOutputStream(data));
 			ByteArrayInputStream stream = new ByteArrayInputStream(data.toByteArray());
-			pile.loadCSF(new DataInputStream(stream));
+			DataInputStream dis = new DataInputStream(stream);
+			dis.readInt();
+			pile.loadInternalItemData(dis);
 		}
 		catch (IOException e)
 		{

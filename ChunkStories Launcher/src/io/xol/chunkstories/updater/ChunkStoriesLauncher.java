@@ -20,6 +20,8 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
+import io.xol.chunkstories.content.GameDirectory;
+
 public class ChunkStoriesLauncher{
 	
 	public static JLabel label = new JLabel();
@@ -44,7 +46,7 @@ public class ChunkStoriesLauncher{
 		JFrame window = new JFrame();
 		//window.setUndecorated(true); // Remove title bar
 		window.setSize(720, 480);
-		window.setTitle("Chunk Stories Launcher");
+		window.setTitle("Chunk Stories Launcher 1.1");
 		window.setLocationRelativeTo(null);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setContentPane(panel);
@@ -80,7 +82,6 @@ public class ChunkStoriesLauncher{
 		play.setBounds(590, 360+12+32+8, 112, 24);
 		
 		
-		thread.checkVersion();
 		progress.setSize(390, 20);
 		update.addActionListener(thread);
 		play.addActionListener(new GameLauncher());
@@ -90,11 +91,13 @@ public class ChunkStoriesLauncher{
 		progress.setStringPainted(true);
 		label.setForeground(Color.white);
 		panel.add(label);
-		label.setBounds(240, 380+24, 320, 20);
+		label.setBounds(240+16, 380+24, 320, 20);
 		panel.add(progress);
-		progress.setBounds(240, 380, 320, 20);
+		progress.setBounds(240+16, 380, 320, 20);
 		
 		window.setVisible(true);
+		
+		thread.checkVersion();
 
 		if(args.length > 0 && args[0].equals("-auto"))
 		{

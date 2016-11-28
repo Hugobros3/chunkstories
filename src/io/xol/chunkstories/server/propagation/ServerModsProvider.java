@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import io.xol.chunkstories.content.Mods;
-import io.xol.chunkstories.content.mods.Asset;
-import io.xol.chunkstories.content.mods.Mod;
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.mods.Mod;
+import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.server.Server;
@@ -44,7 +44,7 @@ public class ServerModsProvider
 
 		//Build the modstring
 		modsString = "";
-		for (Mod mod : Mods.getCurrentlyLoadedMods())
+		for (Mod mod : ModsManager.getCurrentlyLoadedMods())
 		{
 			String hash = mod.getMD5Hash();
 			System.out.println("Mod " + mod + " md5 = " + hash);

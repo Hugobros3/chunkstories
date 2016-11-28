@@ -536,22 +536,6 @@ public abstract class EntityImplementation implements Entity
 		return exists();
 	}
 
-	/**
-	 * Loads the object state from the stream
-	 */
-	public void loadCSF(DataInputStream stream) throws IOException
-	{
-
-	}
-
-	/**
-	 * Writes the object state to a stream
-	 */
-	public void saveCSF(DataOutputStream stream) throws IOException
-	{
-
-	}
-
 	public boolean exists()
 	{
 		return existenceComponent.exists();

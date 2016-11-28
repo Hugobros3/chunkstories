@@ -11,10 +11,10 @@ import java.util.Set;
 import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.Mods;
-import io.xol.chunkstories.content.mods.Asset;
-import io.xol.chunkstories.content.mods.Mod;
+import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.content.mods.ModImplementation;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
@@ -63,11 +63,11 @@ public class ModsSelectionOverlay extends Overlay
 	private void buildModsList()
 	{
 		modsContainer.elements.clear();
-		Collection<String> currentlyEnabledMods = Arrays.asList(Mods.getEnabledMods());
+		Collection<String> currentlyEnabledMods = Arrays.asList(ModsManager.getEnabledMods());
 		
 		Set<String> uniqueMods = new HashSet<String>();
 		//First put in already loaded mods
-		for(Mod mod : Mods.getCurrentlyLoadedMods())
+		for(ModImplementation mod : ModsManager.getCurrentlyLoadedMods())
 		{
 			//Should use md5 hash instead ;)
 			if(uniqueMods.add(mod.getModInfo().getName().toLowerCase()))
@@ -173,9 +173,9 @@ public class ModsSelectionOverlay extends Overlay
 			
 			String[] ok = new String[modsEnabled.size()];
 			modsEnabled.toArray(ok);
-			Mods.setEnabledMods(ok);
-			Mods.reload();
-			Mods.reloadClientContent();
+			ModsManager.setEnabledMods(ok);
+			ModsManager.reload();
+			ModsManager.reloadClientContent();
 			buildModsList();
 		}
 		
@@ -216,9 +216,9 @@ public class ModsSelectionOverlay extends Overlay
 			boolean enabled;
 			
 			Texture2D icon;
-			Mod mod;
+			ModImplementation mod;
 			
-			public ModItem(Mod mod, boolean enabled)
+			public ModItem(ModImplementation mod, boolean enabled)
 			{
 				super(mod.getModInfo().getName(), mod.getModInfo().getDescription());
 				this.mod = mod;

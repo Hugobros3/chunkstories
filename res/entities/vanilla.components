@@ -15,3 +15,4 @@
 14 io.xol.chunkstories.core.entity.components.EntityComponentAnimation
 15 io.xol.chunkstories.core.entity.components.EntityComponentVelocity
 16 io.xol.chunkstories.core.entity.components.EntityComponentFoodLevel
+17 io.xol.chunkstories.core.entity.EntityGroundItemPileComponent

@@ -29,7 +29,6 @@ import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelTextures;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-import static org.lwjgl.opengl.GL11.*;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -143,7 +142,6 @@ public class FarTerrainRenderer
 		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		//glEnable(GL_CULL_FACE); // culling for our glorious terrain
-		glLineWidth(1.0f);
 
 		//Sort to draw near first
 		List<RegionMesh> regionsMeshesToRenderSorted = new ArrayList<RegionMesh>(regionsToRender);

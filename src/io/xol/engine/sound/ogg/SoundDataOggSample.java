@@ -8,7 +8,7 @@ import org.lwjgl.BufferUtils;
 
 import static org.lwjgl.openal.AL10.*;
 
-import io.xol.chunkstories.content.mods.Asset;
+import io.xol.chunkstories.api.mods.Asset;
 import io.xol.engine.sound.SoundData;
 
 //(c) 2015-2016 XolioWare Interactive

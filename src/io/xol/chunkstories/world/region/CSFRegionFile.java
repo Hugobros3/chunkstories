@@ -9,9 +9,9 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.xol.chunkstories.api.csf.OfflineSerializedData;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
+import io.xol.chunkstories.api.serialization.OfflineSerializedData;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 

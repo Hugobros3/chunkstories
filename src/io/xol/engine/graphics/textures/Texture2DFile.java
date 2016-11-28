@@ -1,7 +1,6 @@
 package io.xol.engine.graphics.textures;
 
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.glTexImage2D;
+import static org.lwjgl.opengl.GL11.*;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -19,9 +18,13 @@ import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.base.GameWindowOpenGL;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class Texture2DFile extends Texture2D
 {
-	File file;
+	private File file;
 
 	public Texture2DFile(File file)
 	{
@@ -87,7 +90,6 @@ public class Texture2DFile extends Texture2D
 		return glId;
 	}
 
-	@Override
 	public String getName()
 	{
 		return file.getAbsolutePath();

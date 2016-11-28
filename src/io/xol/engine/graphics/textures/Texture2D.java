@@ -1,26 +1,8 @@
 package io.xol.engine.graphics.textures;
 
-import static org.lwjgl.opengl.GL11.GL_LINEAR;
-import static org.lwjgl.opengl.GL11.GL_LINEAR_MIPMAP_LINEAR;
-import static org.lwjgl.opengl.GL11.GL_NEAREST;
-import static org.lwjgl.opengl.GL11.GL_NEAREST_MIPMAP_NEAREST;
-import static org.lwjgl.opengl.GL11.GL_NICEST;
-import static org.lwjgl.opengl.GL11.GL_REPEAT;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_WRAP_S;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_WRAP_T;
-import static org.lwjgl.opengl.GL11.glBindTexture;
-import static org.lwjgl.opengl.GL11.glHint;
-import static org.lwjgl.opengl.GL11.glTexImage2D;
-import static org.lwjgl.opengl.GL11.glTexParameteri;
-import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
-import static org.lwjgl.opengl.GL12.GL_TEXTURE_BASE_LEVEL;
-import static org.lwjgl.opengl.GL12.GL_TEXTURE_MAX_LEVEL;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
-import static org.lwjgl.opengl.GL14.GL_GENERATE_MIPMAP_HINT;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.*;
+import static org.lwjgl.opengl.GL13.*;
 
 import java.nio.ByteBuffer;
 
@@ -35,7 +17,7 @@ import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
 //http://chunkstories.xyz
 //http://xol.io
 
-public abstract class Texture2D extends Texture
+public class Texture2D extends Texture
 {
 	protected int width;
 	protected int height;
@@ -47,6 +29,11 @@ public abstract class Texture2D extends Texture
 	int maxMipmapLevel = 1000;
 	protected boolean scheduledForLoad = false;
 	static int currentlyBoundId = 0;
+
+	public Texture2D(TextureFormat type)
+	{
+		super(type);
+	}
 
 	protected void applyTextureParameters()
 	{
@@ -105,11 +92,6 @@ public abstract class Texture2D extends Texture
 	public int getId()
 	{
 		return glId;
-	}
-
-	public Texture2D(TextureFormat type)
-	{
-		super(type);
 	}
 
 	public void bind()
@@ -275,6 +257,6 @@ public abstract class Texture2D extends Texture
 		return surface * type.getBytesPerTexel();
 	}
 
-	public abstract String getName();
+	//public abstract String getName();
 
 }

@@ -7,8 +7,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import io.xol.chunkstories.api.material.Material;
-import io.xol.chunkstories.content.Mods;
-import io.xol.chunkstories.content.mods.Asset;
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -23,7 +23,7 @@ public class Materials
 	{
 		materials.clear();
 		
-		Iterator<Asset> i = Mods.getAllAssetsByExtension("materials");
+		Iterator<Asset> i = ModsManager.getAllAssetsByExtension("materials");
 		while(i.hasNext())
 		{
 			Asset f = i.next();

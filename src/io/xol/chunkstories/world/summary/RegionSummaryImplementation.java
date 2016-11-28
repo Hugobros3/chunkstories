@@ -10,7 +10,6 @@ import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
-import io.xol.engine.graphics.textures.Texture2DAsset;
 import io.xol.engine.graphics.textures.TextureFormat;
 
 import java.io.File;
@@ -83,8 +82,8 @@ public class RegionSummaryImplementation implements RegionSummary
 		//Create rendering stuff only if we're a client world
 		if(world instanceof WorldClient)
 		{
-			heightsTexture = new Texture2DAsset(TextureFormat.RED_32F);
-			voxelTypesTexture = new Texture2DAsset(TextureFormat.RED_32F);
+			heightsTexture = new Texture2D(TextureFormat.RED_32F);
+			voxelTypesTexture = new Texture2D(TextureFormat.RED_32F);
 			verticesObject = new VerticesObject();
 		}
 		

@@ -3,7 +3,7 @@ package io.xol.engine.sound.library;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.content.Mods;
+import io.xol.chunkstories.content.ModsManager;
 import io.xol.engine.sound.SoundData;
 import io.xol.engine.sound.SoundDataBuffered;
 import io.xol.engine.sound.ogg.SoundDataOggSample;
@@ -21,7 +21,7 @@ public class SoundsLibrary
 	
 	public static SoundData obtainOggSample(String soundEffect)
 	{
-		SoundDataOggSample sd = new SoundDataOggSample(Mods.getAsset("./"+soundEffect));
+		SoundDataOggSample sd = new SoundDataOggSample(ModsManager.getAsset("./"+soundEffect));
 		sd.name = soundEffect;
 		if(sd.loadedOk())
 			return sd;
@@ -78,7 +78,7 @@ public class SoundsLibrary
 	{
 		SoundDataOggStream sd;
 		
-		sd = new SoundDataOggStream(Mods.getAsset("./"+musicName).read());
+		sd = new SoundDataOggStream(ModsManager.getAsset("./"+musicName).read());
 		sd.name = musicName;
 		if(sd.loadedOk())
 			return sd;

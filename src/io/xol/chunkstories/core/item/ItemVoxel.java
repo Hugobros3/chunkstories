@@ -109,6 +109,8 @@ public class ItemVoxel extends Item
 		voxelMeta = stream.readByte();
 		//((ItemDataVoxel) itemPile.data).voxel = VoxelTypes.get(stream.readInt());
 		//((ItemDataVoxel) itemPile.data).voxelMeta = stream.readByte();
+		
+		System.out.println("loaded my bits");
 	}
 
 	@Override
@@ -119,6 +121,9 @@ public class ItemVoxel extends Item
 		else
 			stream.writeInt(1);
 		stream.writeByte((byte) ((ItemDataVoxel) itemPile.data).voxelMeta);*/
+		
+		System.out.println("saved my bits");
+		
 		if(voxel != null)
 			stream.writeInt(voxel.getId());
 		else

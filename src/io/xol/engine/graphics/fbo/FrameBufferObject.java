@@ -15,7 +15,7 @@ import java.util.List;
 import org.lwjgl.BufferUtils;
 
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.textures.GBufferTexture;
+import io.xol.engine.graphics.textures.Texture2DRenderTarget;
 
 public class FrameBufferObject
 {
@@ -24,7 +24,7 @@ public class FrameBufferObject
 
 	int fbo_id;
 
-	public FrameBufferObject(GBufferTexture depth, RenderTarget... colors)
+	public FrameBufferObject(Texture2DRenderTarget depth, RenderTarget... colors)
 	{
 		fbo_id = glGenFramebuffers();
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
@@ -150,7 +150,7 @@ public class FrameBufferObject
 		}
 	}
 
-	public void bind()
+	void bind()
 	{
 		//Don't rebind twice
 		if(fbo_id == bound)
@@ -162,7 +162,7 @@ public class FrameBufferObject
 		bound = fbo_id;
 	}
 
-	public static void unbind()
+	static void unbind()
 	{
 		GameWindowOpenGL.instance.renderingContext.flush();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
