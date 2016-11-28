@@ -72,8 +72,8 @@ uniform float ignoreWorldCulling;
 void main()
 {
 	//Computes the zone covered by actual chunks
-	float heightCoveredStart = texture(loadedChunksMapBot,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0;
-	float heightCoveredEnd = texture(loadedChunksMapTop,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 + 32.0;
+	float heightCoveredStart = texture(loadedChunksMapBot,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 - 1.0;
+	float heightCoveredEnd = texture(loadedChunksMapTop,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 + 33.0;
 	
 	//Discards the fragment if it is within
 	if(vertexPassed.y+0.0 > heightCoveredStart && vertexPassed.y-0.0-32.0 < heightCoveredEnd && ignoreWorldCulling < 1.0)
