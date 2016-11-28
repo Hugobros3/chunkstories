@@ -4,21 +4,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-<<<<<<< HEAD
-import io.xol.chunkstories.api.csf.StreamSource;
-import io.xol.chunkstories.api.csf.StreamTarget;
 import io.xol.chunkstories.api.entity.Controller;
-=======
->>>>>>> branch 'master' of ssh://gobrosse@kekzer.xol.io:22222/home/gobrosse/repo/chunkstories
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
-<<<<<<< HEAD
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.net.packets.PacketVelocityDelta;
-=======
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
->>>>>>> branch 'master' of ssh://gobrosse@kekzer.xol.io:22222/home/gobrosse/repo/chunkstories
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
