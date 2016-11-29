@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.entity.Entities;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -53,7 +54,7 @@ public class ServerConsole
 			}
 			else if (cmd.equals("info"))
 			{
-				//System.out.println("<<CUCK SUPRÊME>>");
+				//System.out.println("<<CUCK SUPRï¿½ME>>");
 				emitter.sendMessage("#00FFD0The server's ip is " + server.getHandler().getIP());
 				emitter.sendMessage("#00FFD0It's running version " + VersionInfo.version + " of the server software.");
 				emitter.sendMessage("#00FFD0" + server.getWorld().getRegionsHolder().toString());
@@ -180,6 +181,28 @@ public class ServerConsole
 						state = !state;
 						client.sendMessage("creative : " + state);
 						((EntityCreative) controlledEntity).getCreativeModeComponent().setCreativeMode(state);
+						return true;
+					}
+				}
+			}
+			else if (cmd.equals("food"))
+			{
+				if (emitter instanceof Player)
+				{
+					if(arguments.length == 0)
+					{
+						emitter.sendMessage("syntax : /food <foodlevel>");
+						return true;
+					}
+					float foodLevel = Float.parseFloat(arguments[0]);
+					
+					Player client = ((Player) emitter);
+
+					Entity controlledEntity = client.getControlledEntity();
+					if (controlledEntity != null && controlledEntity instanceof EntityPlayer)
+					{
+						((EntityPlayer) controlledEntity).setFoodLevel(foodLevel);
+						client.sendMessage("Food level : " + foodLevel);
 						return true;
 					}
 				}

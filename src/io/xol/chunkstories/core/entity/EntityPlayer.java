@@ -19,12 +19,14 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.components.EntityComponentController;
 import io.xol.chunkstories.core.entity.components.EntityComponentCreativeMode;
 import io.xol.chunkstories.core.entity.components.EntityComponentFlying;
+import io.xol.chunkstories.core.entity.components.EntityComponentFoodLevel;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentName;
 import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
@@ -64,14 +66,17 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	EntityComponentCreativeMode creativeMode = new EntityComponentCreativeMode(this, this.getComponents().getLastComponent());
 	EntityComponentFlying flying = new EntityComponentFlying(this, this.getComponents().getLastComponent());
 
+	//FOOD
+	EntityComponentFoodLevel foodLevel = new EntityComponentFoodLevel(this, 100);
+
 	protected boolean noclip = true;
 
 	//Nasty bullshit
 	float lastPX = -1f;
 	float lastPY = -1f;
-	
+
 	Location lastCameraLocation;
-	
+
 	int variant;
 
 	public EntityPlayer(WorldImplementation w, double x, double y, double z)
@@ -85,9 +90,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	{
 		super(w, x, y, z);
 		this.name.setName(name);
-		
+
 		variant = ColorsTools.getUniqueColorCode(name) % 6;
-		
+
 		inventoryComponent = new EntityComponentInventory(this, 10, 4);
 		selectedItemComponent = new EntityComponentSelectedItem(this, inventoryComponent);
 	}
@@ -95,9 +100,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	//TODO Don't use fucking Mouse class
 	public void moveCamera()
 	{
-		if(isDead())
+		if (isDead())
 			return;
-		
+
 		float cPX = Mouse.getX();
 		float cPY = Mouse.getY();
 
@@ -105,13 +110,13 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		float rotV = this.getEntityRotationComponent().getVerticalRotation();
 
 		float modifier = 1.0f;
-		if(this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemFirearm)
+		if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemFirearm)
 		{
 			ItemFirearm item = (ItemFirearm) this.getSelectedItemComponent().getSelectedItem().getItem();
-			if(item.isScoped())
+			if (item.isScoped())
 				modifier = 1.0f / item.getScopeSlow();
 		}
-		
+
 		if (lastPX != -1f)
 		{
 			rotH += modifier * (cPX - GameWindowOpenGL.windowWidth / 2) / 3f * RenderingConfig.mouseSensitivity;
@@ -127,14 +132,69 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	// Server-side updating
 	@Override
-	public void tick()
+	public void tick(WorldAuthority authority)
 	{
+		//This is a controllable entity, take care of controlling
+		if (authority.isClient())
+			tickClientController(Client.getInstance().getClientSideController());
+
 		//Tick item in hand if one such exists
 		ItemPile pileSelected = getSelectedItemComponent().getSelectedItem();
-		if(pileSelected != null)
-			pileSelected.getItem().tickInHand(this, pileSelected);
-		
-		super.tick();
+		if (pileSelected != null)
+			pileSelected.getItem().tickInHand(authority, this, pileSelected);
+
+		//Food/health decrease over time
+		if (authority.isMaster())
+		{
+			//Take damage when starving
+			if ((world.getTicksElapsed() % 100L) == 0L)
+			{
+				if (this.getFoodLevel() == 0)
+					this.damage(EntityComponentFoodLevel.HUNGER_DAMAGE_CAUSE, 1);
+				else
+				{
+					//27 minutes to start starving at 0.1 starveFactor
+					//Takes 100hp / ( 0.6rtps * 0.1 hp/hit )
+
+					//Starve slowly if inactive
+					float starve = 0.03f;
+
+					//Walking drains you
+					if (this.getVelocityComponent().getVelocity().length() > 0.3)
+					{
+						starve = 0.06f;
+						//Running is even worse
+						if (this.getVelocityComponent().getVelocity().length() > 0.7)
+							starve = 0.15f;
+					}
+
+					float newfoodLevel = this.getFoodLevel() - starve;
+					this.setFoodLevel(newfoodLevel);
+					//System.out.println("new food level:"+newfoodLevel);
+				}
+			}
+
+			//It restores hp
+			if (getFoodLevel() > 20)
+			{
+				if (this.getHealth() < this.getMaxHealth())
+				{
+					this.setHealth(this.getHealth() + 0.01f);
+
+
+					float newfoodLevel = this.getFoodLevel() - 0.01f;
+					this.setFoodLevel(newfoodLevel);
+				}
+			}
+			
+			//else
+			//	System.out.println("prout"+(world.getTicksElapsed() % 10L));
+
+			//System.out.println(this.getVelocityComponent().getVelocity().length());
+		}
+
+		super.tick(authority);
+
 	}
 
 	// client-side method for updating the player movement
@@ -150,6 +210,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 				tickNormalMove(controller);
 		}
 
+		//TODO check if this is needed
 		//Instead of creating a packet and dealing with it ourselves, we instead push the relevant components
 		this.positionComponent.pushComponentEveryoneButController();
 		//In that case that means pushing to the server.
@@ -157,9 +218,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	public void tickNormalMove(ClientSideController controller)
 	{
-		if(isDead())
+		if (isDead())
 			return;
-		
+
 		boolean focus = controller.hasFocus();
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
@@ -208,7 +269,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		else
 			horizontalSpeed = 0.0;
 		// Water slows you down
-		
+
 		//if (inWater)
 		//	horizontalSpeed *= 0.45;
 
@@ -227,7 +288,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 				blockedMomentum.scale(0.20);
 			}
 
-			for(double d = 0.25; d < 0.5; d+= 0.05)
+			for (double d = 0.25; d < 0.5; d += 0.05)
 			{
 				//I don't want any of this to reflect on the object, because it causes ugly jumps in the animation
 				Vector3d canMoveUp = this.canMoveWithCollisionRestrain(new Vector3d(0.0, d, 0.0));
@@ -245,12 +306,12 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 						Vector3d afterJump = new Vector3d(tryFromHigher);
 						afterJump.add(blockedMomentum);
 						afterJump.sub(blockedMomentumRemaining);
-	
+
 						//land distance = whatever is left of our -0.55 delta when it hits the ground
 						Vector3d landDistance = this.canMoveWithCollisionRestrain(afterJump, new Vector3d(0.0, -d, 0.0));
 						afterJump.add(new Vector3d(0.0, -d, 0.0));
 						afterJump.sub(landDistance);
-	
+
 						this.setLocation(new Location(world, afterJump));
 						break;
 					}
@@ -265,7 +326,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 		targetVelocity.setX(Math.sin((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed);
 		targetVelocity.setZ(Math.cos((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed);
-		
+
 		//targetVelocityX = Math.sin((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed;
 		//targetVelocityZ = Math.cos((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed;
 
@@ -279,15 +340,11 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		getVelocityComponent().setVelocity(0, 0, 0);
 		eyePosition = 1.65;
 		float camspeed = 0.125f;
-		//if (Keyboard.isKeyDown(42))
 		if (controller.getInputsManager().getInputByName("flyFast").isPressed())
 			camspeed = 1f;
-		//if (Keyboard.isKeyDown(Keyboard.KEY_LMENU)) //56
 		if (controller.getInputsManager().getInputByName("flyReallyFast").isPressed())
 			camspeed = 5f;
-		
-		//camspeed = 1f;
-		
+
 		if (controller.getInputsManager().getInputByName("back").isPressed())
 		{
 			float a = (float) ((-this.getEntityRotationComponent().getHorizontalRotation()) / 180f * Math.PI);
@@ -330,7 +387,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		synchronized (this)
 		{
 			lastCameraLocation = getLocation();
-			
+
 			camera.pos = lastCameraLocation.clone().negate();
 			camera.pos.add(0d, -eyePosition, 0d);
 
@@ -338,14 +395,16 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			camera.rotationY = this.getEntityRotationComponent().getHorizontalRotation();
 
 			float modifier = 1.0f;
-			if(this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemFirearm)
+			if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemFirearm)
 			{
 				ItemFirearm item = (ItemFirearm) this.getSelectedItemComponent().getSelectedItem().getItem();
-				if(item.isScoped())
+				if (item.isScoped())
 					modifier = 1.0f / item.getScopeZoom();
 			}
-			
-			camera.fov = modifier * (float) (RenderingConfig.fov + ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) > 0.07 * 0.07 ? ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) - 0.07 * 0.07) * 500 : 0));
+
+			camera.fov = modifier * (float) (RenderingConfig.fov
+					+ ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) > 0.07 * 0.07
+							? ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) - 0.07 * 0.07) * 500 : 0));
 			camera.alUpdate();
 		}
 	}
@@ -357,7 +416,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		initialPosition.add(new Vector3d(0, eyePosition, 0));
 
 		Vector3d direction = getDirectionLookingAt();
-		
+
 		if (inside)
 			return world.raytraceSelectable(new Location(world, initialPosition), direction, 256.0);
 		else
@@ -370,30 +429,30 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if (this.equals(Client.getInstance().getClientSideController().getControlledEntity()))
 		{
 			//If we're using an item that can render an overlay
-			if(this.getSelectedItemComponent().getSelectedItem() != null)
+			if (this.getSelectedItemComponent().getSelectedItem() != null)
 			{
 				ItemPile pile = this.getSelectedItemComponent().getSelectedItem();
-				if(pile.getItem() instanceof ItemOverlay)
+				if (pile.getItem() instanceof ItemOverlay)
 					((ItemOverlay) pile.getItem()).drawItemOverlay(renderingContext, pile);
 			}
-		
+
 			//We don't want to render our own tag do we ?
 			return;
 		}
-		
+
 		//Renders the nametag above the player heads
 		Vector3d pos = getLocation();
-		
+
 		//don't render tags too far out
-		if(pos.distanceTo(renderingContext.getCamera().getCameraPosition().negate()) > 32f)
+		if (pos.distanceTo(renderingContext.getCamera().getCameraPosition().negate()) > 32f)
 			return;
-		
+
 		//Don't render a dead player tag
-		if(this.getHealth() <= 0)
+		if (this.getHealth() <= 0)
 			return;
-		
+
 		Vector3f posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3f((float) pos.getX(), (float) pos.getY() + 2.0f, (float) pos.getZ()));
-		
+
 		float scale = posOnScreen.z;
 		String txt = name.getName();// + rotH;
 		float dekal = TrueTypeFont.arial11px.getWidth(txt) * 16 * scale;
@@ -402,31 +461,31 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, posOnScreen.x - dekal / 2, posOnScreen.y, txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
 	}
 
-	class EntityPlayerRenderer<H extends EntityHumanoid> extends EntityHumanoidRenderer<H> {
-		
+	class EntityPlayerRenderer<H extends EntityHumanoid> extends EntityHumanoidRenderer<H>
+	{
+
 		@Override
 		public void setupRender(RenderingInterface renderingContext)
 		{
 			super.setupRender(renderingContext);
 
 			variant = ColorsTools.getUniqueColorCode(name.getName()) % 6;
-			
+
 			//Player textures
-			Texture2D playerTexture = TexturesHandler.getTexture("./models/variant"+variant+".png");
+			Texture2D playerTexture = TexturesHandler.getTexture("./models/variant" + variant + ".png");
 			playerTexture.setLinearFiltering(false);
-			
+
 			renderingContext.bindAlbedoTexture(playerTexture);
 		}
-		
-		
+
 	}
-	
+
 	@Override
 	public EntityRenderer<? extends EntityRenderable> getEntityRenderer()
 	{
 		return new EntityPlayerRenderer<EntityPlayer>();
 	}
-	
+
 	@Override
 	public String getName()
 	{
@@ -484,10 +543,10 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 						if (voxelID > 0)
 						{
 							//Spawn new itemPile in his inventory
-							ItemVoxel item = (ItemVoxel)ItemTypes.getItemTypeByName("item_voxel").newItem();
+							ItemVoxel item = (ItemVoxel) ItemTypes.getItemTypeByName("item_voxel").newItem();
 							item.voxel = Voxels.get(voxelID);
 							item.voxelMeta = voxelMeta;
-							
+
 							ItemPile itemVoxel = new ItemPile(item);
 							this.inventoryComponent.setItemPileAt(getSelectedItemComponent().getSelectedSlot(), 0, itemVoxel);
 							return true;
@@ -497,7 +556,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			}
 		}
 		//Here goes generic entity response to interaction
-		
+
 		//				n/a
 
 		//Then we check if the world minds being interacted with
@@ -552,5 +611,15 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	{
 		//System.out.println("predict");
 		return lastCameraLocation != null ? lastCameraLocation : getLocation();
+	}
+
+	public float getFoodLevel()
+	{
+		return foodLevel.getValue();
+	}
+
+	public void setFoodLevel(float level)
+	{
+		foodLevel.setValue(level);
 	}
 }

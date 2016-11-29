@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.Location;
 //http://chunkstories.xyz
 //http://xol.io
 
+//TODO refactor out
 public interface EntityWithClientPrediction
 {
 	/**

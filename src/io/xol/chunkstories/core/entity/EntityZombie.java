@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
+import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.core.entity.ai.AggressiveHumanoidAI;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -34,16 +35,28 @@ public class EntityZombie extends EntityHumanoid
 		zombieAi = new AggressiveHumanoidAI(this, 10, zombieTargets);
 	}
 
+	@Override
+	public float getStartHealth()
+	{
+		return 50f;
+	}
+
 	public boolean renderable()
 	{
 		return true;
 	}
 	
-	public void tick()
+	@Override
+	public void tick(WorldAuthority authority)
 	{
-		zombieAi.tick();
-		super.tick();
+		//AI works on master
+		if(authority.isMaster())
+			zombieAi.tick();
 		
+		//Ticks the entity
+		super.tick(authority);
+		
+		//Anti-glitch
 		if(Double.isNaN(this.getEntityRotationComponent().getHorizontalRotation()))
 		{
 			System.out.println("nan !" + this);

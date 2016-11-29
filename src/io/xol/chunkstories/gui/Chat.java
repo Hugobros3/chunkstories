@@ -134,6 +134,20 @@ public class Chat
 
 					}
 				}
+				else if (inputBox.text.startsWith("/locfood"))
+				{
+					try
+					{
+						float foodLevel = Float.parseFloat(inputBox.text.split(" ")[1]);
+						EntityPlayer player = (EntityPlayer) Client.getInstance().getClientSideController().getControlledEntity();
+						player.setFoodLevel(foodLevel);
+						insert("Food set to "+foodLevel);
+					}
+					catch (Exception e)
+					{
+
+					}
+				}
 				else if (inputBox.text.startsWith("/locw"))
 				{
 					try
@@ -342,7 +356,7 @@ public class Chat
 			while ((m = ((WorldClientRemote) ingame.getWorld()).getConnection().getLastChatMessage()) != null)
 				insert(m);
 		if (!chatting)
-			inputBox.text = "<Press T to chat> lol no one can ever see dis!!!!ии";
+			inputBox.text = "<Press T to chat> lol no one can ever see dis!!!!пїЅпїЅ";
 		inputBox.setFocus(true);
 	}
 

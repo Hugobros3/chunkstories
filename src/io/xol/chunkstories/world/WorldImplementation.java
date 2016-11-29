@@ -23,6 +23,7 @@ import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -227,6 +228,18 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void tick()
 	{
+		//First what kind of world are we
+		WorldAuthority authority;
+		if(this instanceof WorldMaster && this instanceof WorldClient)
+			authority = WorldAuthority.CLIENT_LOCALHOST;
+		else if(this instanceof WorldClient)
+			authority = WorldAuthority.CLIENT_ONLY;
+		else if(this instanceof WorldMaster)
+			authority = WorldAuthority.SERVER;
+		else
+			authority = WorldAuthority.NONE;
+		
+		
 		//Place the entire tick() method in a try/catch
 		try
 		{
@@ -242,6 +255,9 @@ public abstract class WorldImplementation implements World
 				//Location entityLocation = entity.getLocation();
 				if (entity.getRegion() != null && entity.getRegion().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
 				{
+					entity.tick(authority);
+					
+					/*
 					//If we're the client world and this is our controlled entity we execute the tickClientController() and tick() methods
 					if (this instanceof WorldClient && entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.getInstance().getClientSideController().getControlledEntity() != null && Client.getInstance().getClientSideController().getControlledEntity().equals(entity))
 					{
@@ -280,6 +296,8 @@ public abstract class WorldImplementation implements World
 					//Server should not tick client's entities, only ticks if their controller isn't present
 					else if (this instanceof WorldMaster && (!(entity instanceof EntityControllable) || ((EntityControllable) entity).getControllerComponent().getController() == null))
 						entity.tick();
+						
+						*/
 				}
 				//Tries to snap the entity to the region if it ends up being loaded
 				else if(entity.getRegion() == null)

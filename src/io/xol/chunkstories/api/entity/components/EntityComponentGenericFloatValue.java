@@ -23,6 +23,7 @@ public class EntityComponentGenericFloatValue extends EntityComponent
 	public EntityComponentGenericFloatValue(Entity entity, float defaultValue)
 	{
 		super(entity);
+		this.value = defaultValue;
 	}
 	
 	public float getValue()
@@ -33,6 +34,8 @@ public class EntityComponentGenericFloatValue extends EntityComponent
 	public boolean setValue(float newValue)
 	{
 		this.value = newValue;
+		
+		this.pushComponentEveryone();
 		return true;
 	}
 

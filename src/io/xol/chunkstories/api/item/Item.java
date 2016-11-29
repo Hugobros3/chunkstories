@@ -7,6 +7,7 @@ import java.io.IOException;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 
@@ -45,7 +46,7 @@ public class Item
 	 * Should be called when the owner has this item selected
 	 * @param owner
 	 */
-	public void tickInHand(Entity owner, ItemPile itemPile)
+	public void tickInHand(WorldAuthority authority, Entity owner, ItemPile itemPile)
 	{
 		
 	}

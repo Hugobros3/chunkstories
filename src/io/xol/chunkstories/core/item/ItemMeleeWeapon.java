@@ -16,6 +16,7 @@ import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.EntityPlayer;
@@ -70,7 +71,8 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 		itemRenderer = new MeleeWeaponRenderer(itemRenderer);
 	}
 
-	public void tickInHand(Entity owner, ItemPile itemPile)
+	@Override
+	public void tickInHand(WorldAuthority authority, Entity owner, ItemPile itemPile)
 	{
 		//Only happening server-side
 		//if (owner.getWorld() instanceof WorldMaster)

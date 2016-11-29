@@ -1,5 +1,6 @@
 package io.xol.chunkstories.gui;
 
+import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector4f;
 
@@ -68,7 +69,7 @@ import io.xol.chunkstories.world.WorldClientRemote;
 public class Ingame extends OverlayableScene
 {
 	final private WorldClientCommon world;
-	
+
 	// Renderer
 	public WorldRenderer worldRenderer;
 	SelectionRenderer selectionRenderer;
@@ -103,9 +104,9 @@ public class Ingame extends OverlayableScene
 		worldRenderer = new WorldRenderer(world);
 		worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		selectionRenderer = new SelectionRenderer(world, worldRenderer);
-		
+
 		chat = new Chat(this);
-		
+
 		//Give focus
 		focus(true);
 	}
@@ -114,7 +115,7 @@ public class Ingame extends OverlayableScene
 	{
 		return world;
 	}
-	
+
 	public boolean hasFocus()
 	{
 		if (this.currentOverlay != null)
@@ -123,7 +124,7 @@ public class Ingame extends OverlayableScene
 	}
 
 	float pauseOverlayFade = 0.0f;
-	
+
 	@Override
 	public void update(RenderingContext renderingContext)
 	{
@@ -137,9 +138,9 @@ public class Ingame extends OverlayableScene
 				inventoryDrawer = null;
 		}
 
-		if(player != null && ((EntityLiving)player).isDead() && !(this.currentOverlay instanceof DeathOverlay))
+		if (player != null && ((EntityLiving) player).isDead() && !(this.currentOverlay instanceof DeathOverlay))
 			this.changeOverlay(new DeathOverlay(this, null));
-		
+
 		//Get the player location
 		Vector3d cameraPosition = renderingContext.getCamera().getCameraPosition();
 
@@ -150,10 +151,10 @@ public class Ingame extends OverlayableScene
 		Location selectedBlock = null;
 		if (player instanceof EntityPlayer)
 			selectedBlock = ((EntityPlayer) player).getBlockLookingAt(true);
-		
+
 		if (player != null)
 			player.setupCamera(camera);
-		
+
 		//Main render call
 		worldRenderer.renderWorldAtCamera(camera);
 
@@ -166,7 +167,7 @@ public class Ingame extends OverlayableScene
 			int id, data;
 			int drawDebugDist = 6;
 			cameraPosition.negate();
-			
+
 			for (int i = ((int) cameraPosition.getX()) - drawDebugDist; i <= ((int) cameraPosition.getX()) + drawDebugDist; i++)
 				for (int j = ((int) cameraPosition.getY()) - drawDebugDist; j <= ((int) cameraPosition.getY()) + drawDebugDist; j++)
 					for (int k = ((int) cameraPosition.getZ()) - drawDebugDist; k <= ((int) cameraPosition.getZ()) + drawDebugDist; k++)
@@ -194,22 +195,22 @@ public class Ingame extends OverlayableScene
 		}
 		//Blit the final 3d image
 		worldRenderer.blitScreen(pauseOverlayFade);
-		
+
 		//Fades in & out the overlay
-		if(this.currentOverlay == null)
+		if (this.currentOverlay == null)
 		{
-			if(pauseOverlayFade > 0.0)
+			if (pauseOverlayFade > 0.0)
 				pauseOverlayFade -= 0.1;
 		}
-		else if(this.currentOverlay != null)
+		else if (this.currentOverlay != null)
 		{
 			float maxFade = 1.0f;
-			if(this.currentOverlay instanceof ChatPanelOverlay)
+			if (this.currentOverlay instanceof ChatPanelOverlay)
 				maxFade = 0.25f;
-			if(pauseOverlayFade < maxFade)
+			if (pauseOverlayFade < maxFade)
 				pauseOverlayFade += 0.1;
 		}
-		
+
 		//Draw the GUI
 		if (!guiHidden)
 		{
@@ -221,6 +222,7 @@ public class Ingame extends OverlayableScene
 			if (player != null && inventoryDrawer != null)
 				inventoryDrawer.drawPlayerInventorySummary(gameWindow.renderingContext, GameWindowOpenGL.windowWidth / 2 - 7, 64 + 64);
 
+			//TODO : move this crap into the EntityOverlays shit
 			//Draw health
 			if (player != null && player instanceof EntityLiving)
 			{
@@ -232,31 +234,47 @@ public class Ingame extends OverlayableScene
 				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale, 256 * scale, 32 * scale, 0, 32f / 256f, 1, 0,
 						TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, null);
 
-				int horizontalBitsToDraw = (int) (8 + 118 * livingPlayer.getHealth() / livingPlayer.getMaxHealth());
+				//Health
+				int horizontalBitsToDraw = (int) (8 + 118 * Math2.clamp(livingPlayer.getHealth() / livingPlayer.getMaxHealth(), 0.0, 1.0));
 				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f,
 						32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
+
+				//Food
+				if (livingPlayer instanceof EntityPlayer)
+				{
+					EntityPlayer playerPlayer = (EntityPlayer)livingPlayer;
+					
+					horizontalBitsToDraw = (int) (0 + 126 * Math2.clamp(playerPlayer.getFoodLevel() / 100f, 0.0, 1.0));
+					renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(
+							GameWindowOpenGL.windowWidth / 2 + 0 * 128 * scale + 0, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0.5f , 64f / 256f, 0.5f + horizontalBitsToDraw / 256f,
+							32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
+				}
 			}
 
-			if (currentOverlay == null && !chat.chatting)
-				focus(true);
-			// Draw overlay
+			// Draw current overlay
 			if (currentOverlay != null)
 				currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+			//Or draw cursor
 			else
 				renderingContext.getGuiRenderer().renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "gui/cursor");
 
+			//Draw debug info
 			if (RenderingConfig.showDebugInfo)
 				drawF3debugMenu(renderingContext);
 		}
+		//Lack of overlay should infer autofocus
+		if (currentOverlay == null && !chat.chatting)
+			focus(true);
+
 		Client.profiler.reset("gui");
 
 		// Check connection didn't died and change scene if it has
 		if (world instanceof WorldClientRemote)
 		{
-			
+
 			if (!((WorldClientRemote) world).getConnection().isAlive() || ((WorldClientRemote) world).getConnection().hasFailed())
 				Client.getInstance().exitToMainMenu("Connection terminated : " + ((WorldClientRemote) world).getConnection().getLatestErrorMessage());
-				
+
 		}
 
 		if (!Display.isActive() && this.currentOverlay == null)
@@ -279,15 +297,15 @@ public class Ingame extends OverlayableScene
 
 	public boolean onKeyRepeatEvent(int keyCode)
 	{
-		if(currentOverlay != null && currentOverlay instanceof ChatPanelOverlay)
+		if (currentOverlay != null && currentOverlay instanceof ChatPanelOverlay)
 		{
-			ChatPanelOverlay chatPanel = (ChatPanelOverlay)currentOverlay;
+			ChatPanelOverlay chatPanel = (ChatPanelOverlay) currentOverlay;
 			return chatPanel.handleKeypress(keyCode);
 		}
-		
+
 		return false;
 	}
-	
+
 	@Override
 	public boolean onKeyDown(int keyCode)
 	{
@@ -326,11 +344,11 @@ public class Ingame extends OverlayableScene
 		}
 		else if (keyCode == Keyboard.KEY_F4)
 		{
-		
+
 		}
 		else if (keyCode == Keyboard.KEY_F6)
 		{
-			
+
 		}
 		else if (keyCode == Keyboard.KEY_F8)
 			shouldTakeACubemap = true;
@@ -349,27 +367,27 @@ public class Ingame extends OverlayableScene
 			ChunksRenderer.renderStart = System.currentTimeMillis();
 			worldRenderer.flagModified();
 		}
-		else if(!guiHidden && keyBind != null && keyBind.getName().startsWith("inventorySlot"))
+		else if (!guiHidden && keyBind != null && keyBind.getName().startsWith("inventorySlot"))
 		{
 			int requestedInventorySlot = Integer.parseInt(keyBind.getName().replace("inventorySlot", ""));
 			//Match zero onto last slot
-			if(requestedInventorySlot == 0)
+			if (requestedInventorySlot == 0)
 				requestedInventorySlot = 10;
-			
+
 			//Map to zero-indexed inventory
 			requestedInventorySlot--;
-			
-			if(player != null && player instanceof EntityWithSelectedItem)
+
+			if (player != null && player instanceof EntityWithSelectedItem)
 			{
 				//Do not accept request to select non-existent inventories slots
-				if(requestedInventorySlot > ((EntityWithInventory) player).getInventory().getWidth())
+				if (requestedInventorySlot > ((EntityWithInventory) player).getInventory().getWidth())
 					return false;
-				
+
 				ItemPile p = ((EntityWithInventory) player).getInventory().getItemPileAt(requestedInventorySlot, 0);
-				if(p != null)
+				if (p != null)
 					requestedInventorySlot = p.getX();
 				((EntityWithSelectedItem) player).getSelectedItemComponent().setSelectedSlot(requestedInventorySlot);
-				
+
 				return true;
 			}
 		}
@@ -568,22 +586,24 @@ public class Ingame extends OverlayableScene
 
 		int ec = 0;
 		IterableIterator<Entity> i = world.getAllLoadedEntities();
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			i.next();
 			ec++;
 		}
-		
+
 		Chunk current = world.getChunk(cx, cy, cz);
 		int x_top = GameWindowOpenGL.windowHeight - 16;
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + worldRenderer.renderedChunks) + " Entities " + ec + " Particles :"
-				+ ((ParticlesRenderer) world.getParticlesManager()).count() + " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + worldRenderer.getWorld().getGameLogic().getSimulationFps(), BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20,
+				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + worldRenderer.renderedChunks) + " Entities " + ec + " Particles :" + ((ParticlesRenderer) world.getParticlesManager()).count()
+						+ " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + worldRenderer.getWorld().getGameLogic().getSimulationFps(),
+				BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Frame timings : " + debugInfo, BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + world.getRegionsHolder().countChunksWithData() + "/"
 				+ world.getRegionsHolder().countChunks() + " " + Math.floor(world.getRegionsHolder().countChunksWithData() * 4 * 32 * 32 * 32 / (1024L * 1024 / 100f)) / 100f + "Mb used by chunks"
 
-				, BitmapFont.SMALLFONTS);
+		, BitmapFont.SMALLFONTS);
 
 		//FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + getLoadedChunksVramFootprint() + ", " + getLoadedTerrainVramFootprint(), BitmapFont.SMALLFONTS);
 
@@ -591,12 +611,10 @@ public class Ingame extends OverlayableScene
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram + "Mb as " + Texture2D.getTotalNumberOfTextureObjects() + " textures using " + Texture2D.getTotalVramUsage() / 1024 / 1024 + "Mb + "
 				+ VerticesObject.getTotalNumberOfVerticesObjects() + " Vertices objects using " + renderingInterface.getVertexDataVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
 
-		
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16,
-				"Chunks to bake : " + worldRenderer.chunksRenderer.todoQueue.size() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : " + worldRenderer.chunksRenderer.todoQueue.size() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16,
 				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " Block looking at : bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
-		
+
 		if (current == null)
 			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk null", BitmapFont.SMALLFONTS);
 		else if (current instanceof ChunkRenderable)
@@ -609,7 +627,7 @@ public class Ingame extends OverlayableScene
 			else
 				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk : " + current + " - No rendering data", BitmapFont.SMALLFONTS);
 		}
-		
+
 		if (player != null && player instanceof EntityLiving)
 		{
 			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Current Region : " + this.player.getWorld().getRegionChunkCoordinates(cx, cy, cz), BitmapFont.SMALLFONTS);
@@ -632,7 +650,7 @@ public class Ingame extends OverlayableScene
 				continue;
 			if (c instanceof ChunkRenderable)
 			{
-				ChunkRenderData chunkRenderData = ((ChunkRenderable)c).getChunkRenderData();
+				ChunkRenderData chunkRenderData = ((ChunkRenderable) c).getChunkRenderData();
 				if (chunkRenderData != null)
 				{
 					nbChunks++;

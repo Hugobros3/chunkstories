@@ -25,6 +25,7 @@ import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -120,9 +121,9 @@ public abstract class EntityImplementation implements Entity
 
 	// Ran each tick
 	@Override
-	public void tick()
+	public void tick(WorldAuthority authority)
 	{
-
+		//Don't do much
 	}
 
 	@Override
