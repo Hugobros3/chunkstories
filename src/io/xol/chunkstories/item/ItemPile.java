@@ -185,6 +185,13 @@ public class ItemPile
 	{
 		this.amount = amount;
 
+		if(amount == 0 && inventory != null)
+		{
+			inventory.setItemPileAt(x, y, null);
+			this.inventory.refreshItemSlot(x, y, null);
+			return null;
+		}
+		
 		if (inventory != null)
 			this.inventory.refreshItemSlot(x, y, this);
 
