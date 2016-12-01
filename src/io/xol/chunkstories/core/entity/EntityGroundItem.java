@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
+import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -16,6 +17,7 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 public class EntityGroundItem extends EntityImplementation implements EntityRenderable
 {
+	private long spawnTime;
 	private final EntityGroundItemPileComponent itemPileWithin;
 	
 	public EntityGroundItem(WorldImplementation world, double x, double y, double z)
@@ -28,8 +30,33 @@ public class EntityGroundItem extends EntityImplementation implements EntityRend
 	{
 		super(world, x, y, z);
 		itemPileWithin = new EntityGroundItemPileComponent(this, itemPile);
+		spawnTime = System.currentTimeMillis();
 	}
 
+	public ItemPile getItemPile()
+	{
+		return itemPileWithin.itemPile;
+	}
+	
+	public void setItemPile(ItemPile itemPile)
+	{
+		itemPileWithin.setItemPile(itemPile);
+		spawnTime = System.currentTimeMillis();
+	}
+	
+	public boolean canBePickedUpYet()
+	{
+		return System.currentTimeMillis() - spawnTime > 2000L;
+	}
+	
+	@Override
+	public void tick(WorldAuthority authority)
+	{
+		this.moveWithCollisionRestrain(0, -0.05, 0, true);
+		super.tick(authority);
+	}
+	
+	
 	static EntityRenderer<EntityGroundItem> entityRenderer = new EntityGroundItemRenderer();
 	
 	static class EntityGroundItemRenderer implements EntityRenderer<EntityGroundItem> {

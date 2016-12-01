@@ -7,6 +7,7 @@ import io.xol.engine.misc.ColorsTools;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Controller;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
@@ -143,6 +144,31 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if (pileSelected != null)
 			pileSelected.getItem().tickInHand(authority, this, pileSelected);
 
+		//Auto-pickups items on the ground
+		if (authority.isMaster() && (world.getTicksElapsed() % 60L) == 0L)
+		{
+			//TODO localize
+			for(Entity e : world.getAllLoadedEntities())
+			{
+				if(e instanceof EntityGroundItem && e.getLocation().distanceTo(this.getLocation()) < 3.0f)
+				{
+					EntityGroundItem eg = (EntityGroundItem)e;
+					if(!eg.canBePickedUpYet())
+						continue;
+					
+					ItemPile pile = eg.getItemPile();
+					if(pile != null)
+					{
+						ItemPile left = this.inventoryComponent.addItemPile(pile);
+						if(left == null)
+							eg.removeFromWorld();
+						else
+							eg.setItemPile(left);
+					}
+				}
+			}
+		}
+		
 		//Food/health decrease over time
 		if (authority.isMaster())
 		{

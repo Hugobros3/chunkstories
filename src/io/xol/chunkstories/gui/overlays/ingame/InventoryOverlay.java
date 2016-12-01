@@ -79,7 +79,7 @@ public class InventoryOverlay extends Overlay
 			//
 			selectedItem.getItem().getItemRenderer().renderItemInInventory(mainScene.gameWindow.renderingContext, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
 
-			if (selectedItemAmount > 1)
+			if (selectedItemAmount != 1)
 				renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, Mouse.getX() - width / 2 + (selectedItem.getItem().getSlotsWidth() - 1.0f) * slotSize, Mouse.getY() - height / 2, selectedItemAmount + "", 2, 2,
 						new Vector4f(1, 1, 1, 1));
 
