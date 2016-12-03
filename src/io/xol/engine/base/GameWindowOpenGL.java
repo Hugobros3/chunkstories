@@ -285,6 +285,7 @@ public class GameWindowOpenGL
 		{
 			System.out.println("A fatal error occured ! If you see the dev, show him this message !");
 			e.printStackTrace();
+			System.exit(-1);
 		}
 	}
 	

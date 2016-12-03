@@ -21,6 +21,8 @@
 			<fileset dir="C:/Users/Hugo/git/chunkstories/bin/">
 				<include
 					name="io/xol/chunkstories/content/GameDirectory.class" />
+				<include
+					name="io/xol/chunkstories/bugsreporter/ReportThread.class" />
 			</fileset>
 
 		</jar>

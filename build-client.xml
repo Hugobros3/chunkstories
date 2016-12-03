@@ -5,20 +5,10 @@
     <target name="create_run_jar">
         <jar destfile="chunkstories.jar">
             <manifest>
-                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
-                <attribute name="Rsrc-Main-Class" value="io.xol.chunkstories.client.Client"/>
-                <attribute name="Class-Path" value="."/>
-                <attribute name="Rsrc-Class-Path" value="./ jinput.jar lwjgl.jar lz4-1.3.0.jar PNGDecoder.jar jorbis.jar jansi-1.12.jar json-simple-1.1.1.jar"/>
+                <attribute name="Main-Class" value="io.xol.chunkstories.client.Client"/>
+                <attribute name="Class-Path" value="./lib/jansi-1.12.jar ./lib/PNGDecoder.jar ./lib/lz4-1.3.0.jar ./lib/jorbis.jar ./lib/json-simple-1.1.1.jar ./lib/lwjgl/jar/lwjgl.jar ./lib/lwjgl/jar/jinput.jar"/>
             </manifest>
-            <zipfileset src="jar-in-jar-loader.zip"/>
-            <fileset dir="./bin"/>
-            <zipfileset dir="./lib/lwjgl/jar" includes="jinput.jar"/>
-            <zipfileset dir="./lib/lwjgl/jar" includes="lwjgl.jar"/>
-            <zipfileset dir="./lib/" includes="lz4-1.3.0.jar"/>
-            <zipfileset dir="./lib/" includes="PNGDecoder.jar"/>
-            <zipfileset dir="./lib/" includes="jorbis.jar"/>
-            <zipfileset dir="./lib/" includes="jansi-1.12.jar"/>
-            <zipfileset dir="./lib/" includes="json-simple-1.1.1.jar"/>
+            <fileset dir="bin/"/>
         </jar>
     </target>
 </project>

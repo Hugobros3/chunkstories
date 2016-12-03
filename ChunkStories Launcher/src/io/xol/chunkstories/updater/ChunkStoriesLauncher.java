@@ -84,7 +84,7 @@ public class ChunkStoriesLauncher{
 		
 		progress.setSize(390, 20);
 		update.addActionListener(thread);
-		play.addActionListener(new GameLauncher());
+		play.addActionListener(new GameLauncher(window));
 		
 		progress.setVisible(false);
 		

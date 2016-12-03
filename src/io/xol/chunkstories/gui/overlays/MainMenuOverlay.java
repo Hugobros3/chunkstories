@@ -125,6 +125,12 @@ public class MainMenuOverlay extends Overlay
 
 		if (k == Keyboard.KEY_R)
 			mainScene.changeOverlay(new MessageBoxOverlay(mainScene, this, "Error : error"));
+		
+		if (k == Keyboard.KEY_C && Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
+		{
+			//Fabricated crash
+			throw new RuntimeException("Epic crash");
+		}
 		return false;
 	}
 

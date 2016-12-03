@@ -20,7 +20,7 @@ import javax.swing.JProgressBar;
 //http://chunkstories.xyz
 //http://xol.io
 
-class ReportThread extends Thread implements ActionListener{
+public class ReportThread extends Thread implements ActionListener{
 
 		String username;
 		File logFile;
@@ -40,7 +40,8 @@ class ReportThread extends Thread implements ActionListener{
 		@Override
 		public void run()
 		{
-			progress.setString("Uploading file "+logFile);
+			if(progress != null)
+				progress.setString("Uploading file "+logFile);
 			String url = "http://chunkstories.xyz/debug/upload.php";
 			String charset = "UTF-8";
 			try

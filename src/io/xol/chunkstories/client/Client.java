@@ -99,6 +99,8 @@ public class Client implements ClientInterface
 		Thread.currentThread().setName("Main OpenGL Rendering thread");
 		Thread.currentThread().setPriority(Constants.MAIN_GL_THREAD_PRIORITY);
 		new Client();
+		
+		System.exit(-1);
 	}
 
 	public Client()
