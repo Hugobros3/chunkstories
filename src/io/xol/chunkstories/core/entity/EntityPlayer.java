@@ -359,17 +359,19 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		eyePosition = 1.65;// + Math.sin(metersWalked * 5d) * 0.035d;
 	}
 
+	public static float flySpeed = 0.125f;
+	
 	public void tickFlyMove(ClientSideController controller)
 	{
 		if (!controller.hasFocus())
 			return;
 		getVelocityComponent().setVelocity(0, 0, 0);
 		eyePosition = 1.65;
-		float camspeed = 0.125f;
-		if (controller.getInputsManager().getInputByName("flyFast").isPressed())
-			camspeed = 1f;
+		float camspeed = flySpeed;
 		if (controller.getInputsManager().getInputByName("flyReallyFast").isPressed())
-			camspeed = 5f;
+			camspeed *= 8 * 5f;
+		else if (controller.getInputsManager().getInputByName("flyFast").isPressed())
+			camspeed *= 8f;
 
 		if (controller.getInputsManager().getInputByName("back").isPressed())
 		{

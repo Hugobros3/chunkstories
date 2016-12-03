@@ -148,6 +148,19 @@ public class Chat
 
 					}
 				}
+				else if (inputBox.text.startsWith("/locspeed"))
+				{
+					try
+					{
+						float flySpeed = Float.parseFloat(inputBox.text.split(" ")[1]);
+						EntityPlayer.flySpeed = flySpeed;
+						insert("Flying speed set to "+flySpeed);
+					}
+					catch (Exception e)
+					{
+
+					}
+				}
 				else if (inputBox.text.startsWith("/locw"))
 				{
 					try
