@@ -198,7 +198,7 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 
 			if(entityFollowed.getLocation().distanceTo(entity.getLocation()) > maxDistance)
 			{
-				System.out.println("Entity too far"+entityFollowed.getLocation().distanceTo(entity.getLocation()));
+				//System.out.println("Entity too far"+entityFollowed.getLocation().distanceTo(entity.getLocation()));
 				GenericHumanoidAI.this.setAiTask(previousTask);
 				return;
 			}

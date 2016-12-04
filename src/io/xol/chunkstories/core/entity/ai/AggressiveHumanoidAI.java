@@ -46,7 +46,7 @@ public class AggressiveHumanoidAI extends GenericHumanoidAI
 					//Check target is in set
 					if (targetsTypes.contains(entityToLook.getClass()))
 					{
-						System.out.println("Found new target : " + entityToLook);
+						//System.out.println("Found new target : " + entityToLook);
 						
 						//Play a warning sound
 						entity.getWorld().getSoundManager().playSoundEffect("sounds/sfx/zombie.ogg", entity.getLocation(), (float) (1.5 + Math.random() * 0.2), 1.5f);//.setPitch();

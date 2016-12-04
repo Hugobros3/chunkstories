@@ -5,8 +5,8 @@ keyBind left Q
 keyBind right D
 keyBind jump SPACE
 keyBind run LCONTROL
-keyBind use E
-keyBind inventory I
+keyBind use F
+keyBind inventory E
 keyBind exit ESCAPE
 keyBind enter RETURN
 keyBind chat T

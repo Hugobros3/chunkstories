@@ -254,8 +254,8 @@ public class Server implements Runnable, ServerInterface
 		log.info("Shutting down plugins ...");
 		pluginsManager.disablePlugins();
 		log.info("Done, closing worlds");
-		world.destroy();
 		world.ioHandler.shutdown();
+		world.destroy();
 		log.info("IO done");
 		
 		log.info("Saving configuration");

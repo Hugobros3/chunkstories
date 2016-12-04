@@ -141,7 +141,7 @@ public class ServerConsole
 				emitter.sendMessage("#00FFD0" + player.getControlledEntity().getRegion());
 				return true;
 			}
-			else if (cmd.equals("spawnEntity"))
+			else if (cmd.equals("spawnEntity") && emitter.hasPermission("server.admin"))
 			{
 				int id = Integer.parseInt(arguments[0]);
 				Entity test = Entities.newEntity(server.getWorld(), (short) id);
@@ -151,7 +151,16 @@ public class ServerConsole
 				emitter.sendMessage("#00FFD0" + "Spawned " + test.getClass().getSimpleName() + " at player");
 				return true;
 			}
-			else if (cmd.equals("fly"))
+			else if (cmd.equals("say") && emitter.hasPermission("server.admin"))
+			{
+				String message = "";
+				for(String a : arguments)
+				{
+					message+=a+" ";
+				}
+				Server.getInstance().broadcastMessage("#FFFF00SERVER: "+message);
+			}
+			else if (cmd.equals("fly") && emitter.hasPermission("server.admin"))
 			{
 				if (emitter instanceof Player)
 				{
@@ -168,7 +177,7 @@ public class ServerConsole
 					}
 				}
 			}
-			else if (cmd.equals("creative"))
+			else if (cmd.equals("creative") && emitter.hasPermission("server.admin"))
 			{
 				if (emitter instanceof Player)
 				{
@@ -185,7 +194,7 @@ public class ServerConsole
 					}
 				}
 			}
-			else if (cmd.equals("food"))
+			else if (cmd.equals("food") && emitter.hasPermission("server.admin"))
 			{
 				if (emitter instanceof Player)
 				{

@@ -124,12 +124,15 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 				}
 			}
 		}
-		System.out.println("Letting thread die as it finished it's job.");
+		System.out.println("Connection to host closed.");
 	}
 
 	// @SuppressWarnings("deprecation")
 	public void close()
 	{
+
+		Thread.dumpStack();
+		
 		if (closeMethodAlreadyCalled)
 			return;
 		closeMethodAlreadyCalled = true;

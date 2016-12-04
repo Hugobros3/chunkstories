@@ -311,13 +311,12 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 	{
 		if(sendQueue != null)
 			sendQueue.queue(packet);
-		else
-			Thread.dumpStack();
 	}
 
 	public void flush()
 	{
-		sendQueue.flush();
+		if(sendQueue != null)
+			sendQueue.flush();
 	}
 
 	/**
@@ -416,6 +415,8 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 
 	public void disconnect(String disconnectionReason)
 	{
+		Thread.dumpStack();
+		
 		ChunkStoriesLogger.getInstance().info("Disconnecting client " + this + " for reason " + disconnectionReason);
 		sendInternalTextMessage("disconnect/" + disconnectionReason);
 		closeSocket();

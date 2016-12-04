@@ -2,17 +2,13 @@ package io.xol.chunkstories.world;
 
 import java.io.File;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.entity.interfaces.EntityWithClientPrediction;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.particles.ParticlesManager;
@@ -30,8 +26,6 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
-import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.sandbox.GameLogicThread;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
@@ -93,7 +87,7 @@ public abstract class WorldImplementation implements World
 	// Temporary entity list
 	protected EntitiesHolder entities = new EntitiesHolder();
 	
-	public ReadWriteLock entitiesLock = new ReentrantReadWriteLock();
+	public ReadWriteLock entitiesLock = new ReentrantReadWriteLock(true);
 
 	// Particles
 	private ParticlesRenderer particlesHolder;
@@ -305,7 +299,10 @@ public abstract class WorldImplementation implements World
 
 			}
 			entitiesLock.writeLock().unlock();
+			//entitiesLock.writeLock().notifyAll();
 
+			//System.out.println("Unlocked !");
+			
 			//Update particles subsystem if it exists
 			if (getParticlesManager() != null && getParticlesManager() instanceof ParticlesRenderer)
 				((ParticlesRenderer) getParticlesManager()).updatePhysics();
