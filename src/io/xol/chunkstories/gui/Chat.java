@@ -23,6 +23,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.entity.interfaces.EntityRotateable;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.entity.Entities;
 import io.xol.chunkstories.item.ItemPile;
@@ -121,6 +122,10 @@ public class Chat
 				{
 					//java.util.Arrays.fill(chatHistory, "");
 					chat.clear();
+				}
+				else if (inputBox.text.equals("I am Mr Debug"))
+				{
+					RenderingConfig.isDebugAllowed = true;
 				}
 				else if (inputBox.text.startsWith("/loctime"))
 				{
