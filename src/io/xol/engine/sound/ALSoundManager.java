@@ -145,11 +145,11 @@ public class ALSoundManager implements SoundManager
 	}
 
 	@Override
-	public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain)
+	public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain, float attStart, float attEnd)
 	{
 		try
 		{
-			ALSoundSource ss = new ALSoundSource(soundEffect, x, y, z, false, false, pitch, gain);
+			ALSoundSource ss = new ALSoundSource(soundEffect, x, y, z, false, false, pitch, gain, attStart, attEnd);
 			addSoundSource(ss);
 			return ss;
 		}
@@ -207,11 +207,11 @@ public class ALSoundManager implements SoundManager
 	}
 
 	@Override
-	public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient)
+	public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient, float attStart, float attEnd)
 	{
 		try
 		{
-			ALSoundSource ss = new ALBufferedSoundSource(musicName, x, y, z, false, ambient, pitch, gain);
+			ALSoundSource ss = new ALBufferedSoundSource(musicName, x, y, z, false, ambient, pitch, gain, attStart, attEnd);
 			addSoundSource(ss);
 			return ss;
 		}

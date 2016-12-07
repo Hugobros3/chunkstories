@@ -29,6 +29,12 @@ public interface SoundManager
 		return playSoundEffect(soundEffect, location.getX(), location.getY(), location.getZ(), pitch, gain);
 	}
 
+	/** Overloads with default attenuation values */
+	public default SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain)
+	{
+		return this.playSoundEffect(soundEffect, x, y, z, pitch, gain, 1.0f, 25f);
+	}
+	
 	/**
 	 * Plays a soundEffect in the world
 	 * @param soundEffect The name of the soundEffect, has to include the full path from %moddir%/sounds/ and the extension.
@@ -39,7 +45,7 @@ public interface SoundManager
 	 * @param gain The gain of the sound, ie volume
 	 * @return
 	 */
-	public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain);
+	public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain, float attStart, float attEnd);
 
 	/**
 	 * Plays a soundEffect with no context in the world, for gui or other sounds that need no attenuation or position.
@@ -48,6 +54,12 @@ public interface SoundManager
 	 */
 	public SoundSource playSoundEffect(String soundEffect);
 
+	/** Overloads with default attenuation values */
+	public default SoundSource playMusic(String soundEffect, float x, float y, float z, float pitch, float gain, boolean ambient)
+	{
+		return this.playMusic(soundEffect, x, y, z, pitch, gain, ambient, 1.0f, 25f);
+	}
+	
 	/**
 	 * Plays streamed music or long files ( > 15s ) where playSoundEffect fails
 	 * @param musicName The name of the music, has to include the full path from %moddir%/sounds/ and the extension.
@@ -59,7 +71,7 @@ public interface SoundManager
 	 * @param ambient Wether or not the music should be part of the game world or be like playSoundEffect(sfx) 
 	 * @return
 	 */
-	public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient);
+	public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient, float attStart, float attEnd);
 
 	public default SoundSource getSoundSourceByUUID(long UUID)
 	{

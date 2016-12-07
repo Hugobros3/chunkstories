@@ -9,9 +9,9 @@ import io.xol.engine.sound.library.SoundsLibrary;
 
 public class ALBufferedSoundSource extends ALSoundSource
 {
-	public ALBufferedSoundSource(String soundEffect, float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain) throws SoundEffectNotFoundException
+	public ALBufferedSoundSource(String soundEffect, float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain, float attStart, float attEnd) throws SoundEffectNotFoundException
 	{
-		super(x, y, z, loop, ambient, pitch, gain);
+		super(x, y, z, loop, ambient, pitch, gain, attStart, attEnd);
 		this.soundData = SoundsLibrary.obtainBufferedSample(soundEffect);
 		if(soundData == null)
 			throw new SoundEffectNotFoundException();

@@ -29,9 +29,9 @@ public class ALSoundSource extends SoundSourceAbstract
 
 	SoundEffect effect;
 
-	ALSoundSource(float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain)
+	ALSoundSource(float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain, float attStart, float attEnd)
 	{
-		super(x, y, z, loop, ambient, pitch, gain);
+		super(x, y, z, loop, ambient, pitch, gain, attStart, attEnd);
 	}
 
 	public void setUUID(long uUID)
@@ -39,9 +39,9 @@ public class ALSoundSource extends SoundSourceAbstract
 		this.soundSourceUUID = uUID;
 	}
 
-	public ALSoundSource(String soundEffect, float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain) throws SoundEffectNotFoundException
+	public ALSoundSource(String soundEffect, float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain, float attStart, float attEnd) throws SoundEffectNotFoundException
 	{
-		this(x, y, z, loop, ambient, pitch, gain);
+		this(x, y, z, loop, ambient, pitch, gain, attStart, attEnd);
 
 		this.soundData = SoundsLibrary.obtainSample(soundEffect);
 		if (soundData == null)

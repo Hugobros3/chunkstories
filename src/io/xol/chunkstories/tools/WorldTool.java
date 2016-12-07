@@ -46,7 +46,7 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	{
 
 		@Override
-		public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain)
+		public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain, float attStart, float attEnd)
 		{
 
 			return null;
@@ -60,7 +60,7 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 		}
 
 		@Override
-		public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient)
+		public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient, float attStart, float attEnd)
 		{
 
 			return null;

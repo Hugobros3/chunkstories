@@ -39,7 +39,7 @@ public abstract class SoundSourceAbstract implements SoundSource
 		return soundSourceUUID;
 	}
 	
-	public SoundSourceAbstract(float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain)
+	public SoundSourceAbstract(float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain, float attStart, float attEnd)
 	{
 		this();
 		
@@ -50,6 +50,9 @@ public abstract class SoundSourceAbstract implements SoundSource
 		this.pitch = pitch;
 		this.loop = loop;
 		this.isAmbient = ambient;
+		
+		this.attenuationStart = attStart;
+		this.attenuationEnd = attEnd;
 	}
 
 	/**

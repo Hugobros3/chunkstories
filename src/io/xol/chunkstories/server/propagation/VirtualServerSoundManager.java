@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;
@@ -13,6 +14,7 @@ import io.xol.chunkstories.net.packets.PacketSoundSource;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
+import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.sound.sources.SoundSourceVirtual;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -32,7 +34,6 @@ public class VirtualServerSoundManager implements SoundManager
 
 	public class ServerPlayerVirtualSoundManager implements SoundManager
 	{
-
 		ServerPlayer serverPlayer;
 
 		//As above, individual players have their playing sound sources kept track of
@@ -56,27 +57,24 @@ public class VirtualServerSoundManager implements SoundManager
 			//Player should only be aware of sound's existence if close enought, this will be ensured later
 		}
 
-		public void addSourceToPlayer(SoundSourceVirtual soundSource)
+		protected void addSourceToPlayer(SoundSourceVirtual soundSource)
 		{
-			PacketSoundSource packet = new PacketSoundSource();
-			packet.soundSourceToSend = soundSource;
-			serverPlayer.getPlayerConnection().pushPacket(packet);
 			playingSoundSources.add(new WeakReference<SoundSourceVirtual>(soundSource));
 		}
 
 		@Override
-		public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain)
+		public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain, float attStart, float attEnd)
 		{
-			SoundSourceVirtual soundSource = new SoundSourceVirtual(soundEffect, x, y, z, false, false, pitch, gain, false);
+			SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualServerSoundManager.this, soundEffect, x, y, z, false, false, pitch, gain, false, attStart, attEnd);
 			//Play the sound effect for everyone
 			addSourceToEveryone(soundSource, this);
 			return soundSource;
 		}
 
 		@Override
-		public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient)
+		public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient, float attStart, float attEnd)
 		{
-			SoundSourceVirtual soundSource = new SoundSourceVirtual(musicName, x, y, z, false, ambient, pitch, gain, true);
+			SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualServerSoundManager.this, musicName, x, y, z, false, ambient, pitch, gain, true, attStart, attEnd);
 			//Play the sound effect for everyone
 			addSourceToEveryone(soundSource, this);
 			return soundSource;
@@ -174,8 +172,28 @@ public class VirtualServerSoundManager implements SoundManager
 		@Override
 		public void setListenerPosition(float x, float y, float z, FloatBuffer rot)
 		{
-			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException("Irrelevant");
+		}
 
+		public boolean couldHearSource(SoundSourceVirtual soundSource)
+		{
+			if(soundSource.isAmbient)
+				return true;
+			
+			if(soundSource.gain <= 0)
+				return true;
+			
+			//special case, we want to make sure the players always know when we shut up a source
+			if(soundSource.stopped)
+				return true;
+			
+			Location loc = serverPlayer.getLocation();
+			
+			//Null location == Not spawned == No positional sounds for you
+			if(loc == null)
+				return false;
+			
+			return loc.distanceTo(new Vector3d(soundSource.x, soundSource.y, soundSource.z)) < soundSource.attenuationEnd + 1.0;
 		}
 	}
 
@@ -198,21 +216,54 @@ public class VirtualServerSoundManager implements SoundManager
 
 	private void addSourceToEveryone(SoundSourceVirtual soundSource, ServerPlayerVirtualSoundManager exceptHim)
 	{
+		//Create the sound creation packet
+		PacketSoundSource packet = new PacketSoundSource(soundSource);
+		
 		Iterator<ServerPlayerVirtualSoundManager> i = playersSoundManagers.iterator();
 		while (i.hasNext())
 		{
 			ServerPlayerVirtualSoundManager playerSoundManager = i.next();
-			if (!playerSoundManager.equals(exceptHim))
+			//Send it to all players than could hear it
+			if (exceptHim == null || !playerSoundManager.equals(exceptHim))
+			{
+				if(!playerSoundManager.couldHearSource(soundSource))
+					continue;
+				
+				//Creates the soundSource and adds it weakly to the player's list
+				playerSoundManager.serverPlayer.pushPacket(packet);
+				//TODO maybe not relevant since for updating we iterate over all players then do a distance check 
 				playerSoundManager.addSourceToPlayer(soundSource);
+			}
 		}
 
 		allPlayingSoundSources.add(new WeakReference<SoundSourceVirtual>(soundSource));
 	}
+	
+	public void updateSourceForEveryone(SoundSourceVirtual soundSource, ServerPlayerVirtualSoundManager exceptHim)
+	{
+		//Create the update packet
+		PacketSoundSource packet = new PacketSoundSource(soundSource);
+		
+		Iterator<ServerPlayerVirtualSoundManager> i = playersSoundManagers.iterator();
+		while (i.hasNext())
+		{
+			ServerPlayerVirtualSoundManager playerSoundManager = i.next();
+			//Send it to all players than could hear it
+			if (exceptHim == null || !playerSoundManager.equals(exceptHim))
+			{
+				if(!playerSoundManager.couldHearSource(soundSource))
+					continue;
+				
+				//Updates the soundSource
+				playerSoundManager.serverPlayer.pushPacket(packet);
+			}
+		}
+	}
 
 	@Override
-	public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain)
+	public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain, float attStart, float attEnd)
 	{
-		SoundSourceVirtual soundSource = new SoundSourceVirtual(soundEffect, x, y, z, false, false, pitch, gain, false);
+		SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualServerSoundManager.this, soundEffect, x, y, z, false, false, pitch, gain, false, attStart, attEnd);
 		//Play the sound effect for everyone
 		addSourceToEveryone(soundSource, null);
 		return soundSource;
@@ -226,9 +277,9 @@ public class VirtualServerSoundManager implements SoundManager
 	}
 
 	@Override
-	public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient)
+	public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient, float attStart, float attEnd)
 	{
-		SoundSourceVirtual soundSource = new SoundSourceVirtual(musicName, x, y, z, false, ambient, pitch, gain, true);
+		SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualServerSoundManager.this, musicName, x, y, z, false, ambient, pitch, gain, true, attStart, attEnd);
 		//Play the sound effect for everyone
 		addSourceToEveryone(soundSource, null);
 		return soundSource;

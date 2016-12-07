@@ -9,7 +9,6 @@ import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.sound.ALSoundManager;
@@ -28,6 +27,11 @@ public class PacketSoundSource extends PacketSynchPrepared
 	public PacketSoundSource()
 	{
 		
+	}
+	
+	public PacketSoundSource(SoundSourceVirtual soundSource)
+	{
+		this.soundSourceToSend = soundSource;
 	}
 
 	@Override
@@ -73,9 +77,9 @@ public class PacketSoundSource extends PacketSynchPrepared
 			try
 			{
 				if (buffered)
-					soundSource = new ALBufferedSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain);
+					soundSource = new ALBufferedSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain, attenuationStart, attenuationEnd);
 				else
-					soundSource = new ALSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain);
+					soundSource = new ALSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain, attenuationStart, attenuationEnd);
 				
 				//Match the UUIDs
 				soundSource.setUUID(UUID);
