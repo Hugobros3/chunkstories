@@ -4,6 +4,7 @@ import org.lwjgl.input.Mouse;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.engine.misc.ColorsTools;
+import io.xol.engine.model.ModelLibrary;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Controller;
@@ -19,6 +20,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
+import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -45,6 +47,7 @@ import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3d;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -148,19 +151,19 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if (authority.isMaster() && (world.getTicksElapsed() % 60L) == 0L)
 		{
 			//TODO localize
-			for(Entity e : world.getAllLoadedEntities())
+			for (Entity e : world.getAllLoadedEntities())
 			{
-				if(e instanceof EntityGroundItem && e.getLocation().distanceTo(this.getLocation()) < 3.0f)
+				if (e instanceof EntityGroundItem && e.getLocation().distanceTo(this.getLocation()) < 3.0f)
 				{
-					EntityGroundItem eg = (EntityGroundItem)e;
-					if(!eg.canBePickedUpYet())
+					EntityGroundItem eg = (EntityGroundItem) e;
+					if (!eg.canBePickedUpYet())
 						continue;
-					
+
 					ItemPile pile = eg.getItemPile();
-					if(pile != null)
+					if (pile != null)
 					{
 						ItemPile left = this.inventoryComponent.addItemPile(pile);
-						if(left == null)
+						if (left == null)
 							eg.removeFromWorld();
 						else
 							eg.setItemPile(left);
@@ -168,7 +171,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 				}
 			}
 		}
-		
+
 		//Food/health decrease over time
 		if (authority.isMaster())
 		{
@@ -207,12 +210,11 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 				{
 					this.setHealth(this.getHealth() + 0.01f);
 
-
 					float newfoodLevel = this.getFoodLevel() - 0.01f;
 					this.setFoodLevel(newfoodLevel);
 				}
 			}
-			
+
 			//else
 			//	System.out.println("prout"+(world.getTicksElapsed() % 10L));
 
@@ -360,7 +362,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	}
 
 	public static float flySpeed = 0.125f;
-	
+
 	public void tickFlyMove(ClientSideController controller)
 	{
 		if (!controller.hasFocus())
@@ -489,23 +491,65 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, posOnScreen.x - dekal / 2, posOnScreen.y, txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
 	}
 
-	class EntityPlayerRenderer<H extends EntityHumanoid> extends EntityHumanoidRenderer<H>
+	class EntityPlayerRenderer<H extends EntityPlayer> extends EntityHumanoidRenderer<H>
 	{
 
 		@Override
 		public void setupRender(RenderingInterface renderingContext)
 		{
 			super.setupRender(renderingContext);
-
-			variant = ColorsTools.getUniqueColorCode(name.getName()) % 6;
-
-			//Player textures
-			Texture2D playerTexture = TexturesHandler.getTexture("./models/variant" + variant + ".png");
-			playerTexture.setLinearFiltering(false);
-
-			renderingContext.bindAlbedoTexture(playerTexture);
 		}
 
+		@Override
+		public int forEach(RenderingInterface renderingContext, RenderingIterator<H> renderableEntitiesIterator)
+		{
+			int e = 0;
+
+			for (EntityPlayer entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
+			{
+				Location location = entity.getPredictedLocation();
+
+				if (!(renderingContext.isThisAShadowPass() && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f))
+				{
+					entity.cachedSkeleton.lodUpdate(renderingContext);
+
+					Matrix4f matrix = new Matrix4f();
+					matrix.translate(location.castToSimplePrecision());
+					renderingContext.setObjectMatrix(matrix);
+
+					variant = ColorsTools.getUniqueColorCode(entity.getName()) % 6;
+
+					//Player textures
+					Texture2D playerTexture = TexturesHandler.getTexture("./models/variant" + variant + ".png");
+					playerTexture.setLinearFiltering(false);
+
+					renderingContext.bindAlbedoTexture(playerTexture);
+
+					ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
+					//animationsData.add(new AnimatableData(location.castToSimplePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
+			
+					ItemPile selectedItemPile = null;
+
+					if (entity instanceof EntityWithSelectedItem)
+						selectedItemPile = ((EntityWithSelectedItem) entity).getSelectedItemComponent().getSelectedItem();
+
+					renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
+
+					if (selectedItemPile != null)
+					{
+						Matrix4f itemMatrix = new Matrix4f();
+						itemMatrix.translate(entity.getPredictedLocation().castToSimplePrecision());
+
+						Matrix4f.mul(itemMatrix, entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000), itemMatrix);
+
+						selectedItemPile.getItem().getItemRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
+					}
+				}
+				e++;
+			}
+
+			return e;
+		}
 	}
 
 	@Override
