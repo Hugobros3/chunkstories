@@ -48,6 +48,8 @@ public class RenderingConfig
 	public static int animationCacheMaxSize = 128 * 1024; // 128kb max per animation
 	public static int animationCacheFrameRate = 60;
 	
+	public static boolean isDebugAllowed = false;
+	
 	public static void define()
 	{
 		viewDistance = Client.getConfig().getInteger("viewDistance", 128);

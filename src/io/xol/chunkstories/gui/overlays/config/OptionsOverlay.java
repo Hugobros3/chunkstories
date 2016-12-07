@@ -204,7 +204,7 @@ public class OptionsOverlay extends Overlay
 			int textDekal = -textWidth;
 			TexturesHandler.getTexture("./textures/gui/scalableField.png").setLinearFiltering(false);
 			CorneredBoxDrawer.drawCorneredBoxTiled(posx - 4, posy, width + 8, height + 16, 8, "./textures/gui/scalableField.png", 32, 2);
-			ObjectRenderer.renderTexturedRect(posx - 160 + 320 * (Float.parseFloat(value)-min)/(max-min), posy, 64, 64, 0, 0, 32, 32, 32, "gui/barCursor");
+			ObjectRenderer.renderTexturedRect(posx - 160 + 320 * (Float.parseFloat(value)-min)/(max-min), posy, 64, 64, 0, 0, 32, 32, 32, "./textures/gui/barCursor.png");
 			FontRenderer2.drawTextUsingSpecificFont(textDekal + posx, posy - height / 2, 0, size * 32, text, font);
 			return width * 2 * size - 12;
 		}
@@ -379,19 +379,33 @@ public class OptionsOverlay extends Overlay
 				}*/));
 		
 		configTabs.add(new ConfigTab("Sound", new ConfigButton[] {}));
-		configTabs.add(new ConfigTab("Debug", new ConfigButton[] { 
-				new ConfigButtonToggle("debugGBuffers").setApplyAction(new Runnable(){
-					@Override
-					public void run()
-					{
-						ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
-					}
-				}),
-				new ConfigButtonToggle("physicsVisualization"),
-				new ConfigButtonToggle("showDebugInfo"),
-				new ConfigButtonToggle("frametimeGraph"),
-				new ConfigButtonMultiChoice("log-policy",new String[] { "send", "dont" }),
-				}));
+		
+		if(RenderingConfig.isDebugAllowed)
+		{
+			configTabs.add(new ConfigTab("Debug", new ConfigButton[] { 
+					new ConfigButtonToggle("debugGBuffers").setApplyAction(new Runnable(){
+						@Override
+						public void run()
+						{
+							ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
+						}
+					}),
+					new ConfigButtonToggle("physicsVisualization"),
+					new ConfigButtonToggle("showDebugInfo"),
+					new ConfigButtonToggle("frametimeGraph"),
+					new ConfigButtonMultiChoice("log-policy",new String[] { "send", "dont" }),
+					}));
+		}
+		else
+		{
+			configTabs.add(new ConfigTab("Debug", new ConfigButton[] { 
+					
+					//No cheat-allowing debug functions
+					new ConfigButtonToggle("showDebugInfo"),
+					new ConfigButtonToggle("frametimeGraph"),
+					new ConfigButtonMultiChoice("log-policy",new String[] { "send", "dont" }),
+					}));
+		}
 
 		for (ConfigTab tab : configTabs)
 		{

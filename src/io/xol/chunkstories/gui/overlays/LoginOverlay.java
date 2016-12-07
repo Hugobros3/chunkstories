@@ -2,6 +2,7 @@ package io.xol.chunkstories.gui.overlays;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
@@ -154,6 +155,12 @@ public class LoginOverlay extends Overlay implements HttpRequester
 				Client.getConfig().setString("autologin", "ok");
 				Client.getConfig().setString("user", guiHandler.getInputText(0).text);
 				Client.getConfig().setString("pass", guiHandler.getInputText(1).text);
+				
+				if(Client.username.equals("Gobrosse") || Client.username.equals("kektest"))
+				{
+					RenderingConfig.isDebugAllowed = true;
+				}
+				
 				can_next = true;
 			}
 			else if (result.startsWith("ko"))

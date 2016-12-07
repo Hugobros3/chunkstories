@@ -47,6 +47,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
@@ -714,7 +715,7 @@ public class WorldRenderer
 		if (Keyboard.isKeyDown(Keyboard.KEY_F10))
 			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
-		if (!InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9))
+		if (!(InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9) && RenderingConfig.isDebugAllowed))
 			renderedVertices += farTerrainRenderer.draw(renderingContext, terrainShader);
 
 		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);
@@ -881,7 +882,7 @@ public class WorldRenderer
 					
 				}
 					
-				if (!Keyboard.isKeyDown(Keyboard.KEY_F4))
+				if (!Keyboard.isKeyDown(Keyboard.KEY_F4) || !RenderingConfig.isDebugAllowed)
 					if (isShadowPass)
 						renderedVerticesShadow += chunkRenderData.renderCubeSolidBlocks(renderingContext);
 					else
@@ -890,7 +891,7 @@ public class WorldRenderer
 						renderedVertices += chunkRenderData.renderCubeSolidBlocks(renderingContext);
 					}
 
-				if (!Keyboard.isKeyDown(Keyboard.KEY_F5))
+				if (!Keyboard.isKeyDown(Keyboard.KEY_F5) || !RenderingConfig.isDebugAllowed)
 					if (isShadowPass)
 						renderedVerticesShadow += chunkRenderData.renderCustomSolidBlocks(renderingContext);
 					else
@@ -898,6 +899,12 @@ public class WorldRenderer
 						renderedChunks++;
 						renderedVertices += chunkRenderData.renderCustomSolidBlocks(renderingContext);
 					}
+				
+				if(Keyboard.isKeyDown(Keyboard.KEY_F4) && (Client.username.equals("Alexix200")))
+				{
+					Ingame ig = ((Ingame)Client.windows.getCurrentScene());
+					ig.chat.insert("#60FF30Alexix sombre merde raclure de \ncheater incorrigible");
+				}
 
 			}
 		
@@ -941,7 +948,7 @@ public class WorldRenderer
 		// Render entities
 		
 
-		if (!Keyboard.isKeyDown(Keyboard.KEY_F6))
+		if (!Keyboard.isKeyDown(Keyboard.KEY_F6) || !RenderingConfig.isDebugAllowed)
 			entitiesRenderer.renderEntities(renderingContext);
 
 		if (isShadowPass)
