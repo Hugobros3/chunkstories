@@ -162,7 +162,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 					{
 						//Play sounds
 						if (controller != null)
-							controller.getSoundManager().playSoundEffect("sounds/dogez/weapon/default/dry.ogg", owner.getLocation(), 1.0f, 1.0f).setAttenuationEnd((float) soundRange);
+							controller.getSoundManager().playSoundEffect("sounds/dogez/weapon/default/dry.ogg", (float)owner.getLocation().getX(), (float)owner.getLocation().getY(), (float)owner.getLocation().getZ(), 1.0f, 1.0f, 1f, (float)soundRange);
 						//Dry.ogg
 						//return;
 					}
@@ -174,7 +174,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 						lastShot = System.currentTimeMillis();
 					}
 				}
-
+				
 				isScoped = this.isScopedWeapon() && controller.getInputsManager().getInputByName("mouse.right").isPressed();
 
 				wasTriggerPressedLastTick = controller.getInputsManager().getInputByName("mouse.left").isPressed();
@@ -225,8 +225,13 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 
 				//Play sounds
 				if (controller != null)
-					controller.getSoundManager().playSoundEffect(this.soundName, user.getLocation(), 1.0f, 1.0f).setAttenuationEnd((float) soundRange);
+				{
+					//controller.getSoundManager().playSoundEffect(this.soundName, user.getLocation(), 1.0f, 1.0f).setAttenuationEnd((float) soundRange);
+					
+					controller.getSoundManager().playSoundEffect(this.soundName, (float)user.getLocation().getY(), (float)user.getLocation().getZ(), (float)user.getLocation().getX(), 1.0f, 1.0f, 1.0f, (float) soundRange);
 
+				}
+				
 				//Raytrace shot
 				Vector3d eyeLocation = new Vector3d(shooter.getLocation());
 				if (shooter instanceof EntityPlayer)

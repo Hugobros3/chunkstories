@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
@@ -214,8 +215,17 @@ public class Server implements Runnable, ServerInterface
 	{
 		String txt = "" + ansi().fg(BLACK).bg(CYAN);
 		
+		int ec = 0;
+		IterableIterator<Entity> i = world.getAllLoadedEntities();
+		while(i.hasNext())
+		{
+			i.next();
+			ec++;
+		}
+		
 		txt += "Chunk Stories Server " + VersionInfo.version;
 		txt += " | world running at " + world.getGameLogic().getSimulationFps()+" Fps";
+		txt += " | " + ec + " Entities";
 		txt += " | " + this.connectionsManager.getNumberOfAuthentificatedClients() + "/" + this.connectionsManager.getMaxClients() + " players";
 		txt += " | " + this.world.getRegionsHolder().getStats() + " + " + this.world.getRegionsSummariesHolder().countSummaries() + " summaries ";
 		txt += " | " + this.world.ioHandler.toString();
