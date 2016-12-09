@@ -4,10 +4,11 @@ import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.particles.ParticlesManager;
+import io.xol.chunkstories.api.plugin.PluginManager;
+import io.xol.chunkstories.api.plugin.context.PluginExecutionContext;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.content.PluginsManager;
 
 import io.xol.chunkstories.world.WorldClientCommon;
 
@@ -15,15 +16,11 @@ import io.xol.chunkstories.world.WorldClientCommon;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface ClientInterface
+public interface ClientInterface extends PluginExecutionContext
 {
 	public ClientSideController getClientSideController();
 	
-	public SoundManager getSoundManager();
-	
-	public PluginsManager getPluginsManager();
-
-	public InputsManager getInputsManager();
+	public PluginManager getPluginManager();
 
 	/** Prints some text into the client chat */
 	public void printChat(String textToPrint);
@@ -55,6 +52,10 @@ public interface ClientInterface
 	 * Reloads all assets, shaders, sounds and whatnot from the mods and the main game.
 	 */
 	public void reloadAssets();
+	
+	public SoundManager getSoundManager();
+
+	public InputsManager getInputsManager();
 
 	public ParticlesManager getParticlesManager();
 

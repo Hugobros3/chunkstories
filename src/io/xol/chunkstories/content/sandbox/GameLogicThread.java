@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.plugin.Scheduler;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.content.PluginsManager;
+import io.xol.chunkstories.content.DefaultPluginManager;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldClientRemote;
@@ -211,12 +211,12 @@ public class GameLogicThread extends Thread implements GameLogic
 	 * @see io.xol.chunkstories.content.sandbox.GameLogic#getPluginsManager()
 	 */
 	@Override
-	public PluginsManager getPluginsManager()
+	public DefaultPluginManager getPluginsManager()
 	{
 		if(world instanceof WorldClient)
-			return Client.getInstance().getPluginsManager();
+			return Client.getInstance().getPluginManager();
 		else if(world instanceof WorldServer)
-			return Server.getInstance().getPluginsManager();
+			return Server.getInstance().getPluginManager();
 		return null;
 	}
 	

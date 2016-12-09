@@ -1,6 +1,6 @@
 package io.xol.engine.graphics;
 
-import io.xol.chunkstories.api.exceptions.RenderingException;
+import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingCommand;
 import io.xol.chunkstories.api.rendering.RenderingInterface;

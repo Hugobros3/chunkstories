@@ -1,4 +1,4 @@
-package io.xol.chunkstories.api.exceptions;
+package io.xol.chunkstories.api.exceptions.rendering;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

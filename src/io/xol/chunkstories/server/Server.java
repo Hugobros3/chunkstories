@@ -12,16 +12,16 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.plugin.ServerPluginManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.ModsManager;
-import io.xol.chunkstories.content.PluginsManager;
+import io.xol.chunkstories.content.DefaultPluginManager;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
@@ -55,13 +55,13 @@ public class Server implements Runnable, ServerInterface
 			}
 			else
 			{
-				System.out.println("Chunk Stories server arguments : \n"
-						+ "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n" + "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument" + "" + "");
+				System.out.println("Chunk Stories server arguments : \n" + "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n"
+						+ "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument" + "" + "");
 
 				//Runtime.getRuntime().exit(0);
 			}
 		}
-		
+
 		server = new Server();
 		server.run();
 	}
@@ -78,19 +78,18 @@ public class Server implements Runnable, ServerInterface
 	private long initTimestamp = System.currentTimeMillis() / 1000;
 
 	private WorldServer world;
-	//private GameLogicThread worldThread;
 
 	private ServerConnectionsManager connectionsManager;
 	private ServerConsole console = new ServerConsole(this);
 
-	private PluginsManager pluginsManager;
+	private ServerPluginManager pluginsManager;
 
 	// Sleeper thread to keep servers list updated
 	private ServerAnnouncerThread announcer;
 
 	// What mods are required to join this server ?
 	private ServerModsProvider modsProvider;
-	
+
 	@Override
 	public void run()
 	{
@@ -110,16 +109,16 @@ public class Server implements Runnable, ServerInterface
 
 			//Loads the mods
 			ModsManager.reload();
-			
+
 			modsProvider = new ServerModsProvider(this);
-			
+
 			// Load the world
 			String worldName = serverConfig.getProp("world", "world");
 			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
 			if (new File(worldDir).exists())
 			{
 				world = new WorldServer(this, worldDir);
-				
+
 				//worldThread = new GameLogicThread(world, new UnthrustedUserContentSecurityManager());
 			}
 			else
@@ -136,9 +135,9 @@ public class Server implements Runnable, ServerInterface
 			// init network
 			connectionsManager.start();
 			// Load plugins
-			pluginsManager = new PluginsManager(this);
+			pluginsManager = new ServerPluginManager(this);
 			pluginsManager.reloadPlugins();
-			
+
 			//Finally start logic
 			world.startLogic();
 		}
@@ -158,7 +157,7 @@ public class Server implements Runnable, ServerInterface
 				while (!br.ready() && running.get())
 				{
 					printTopScreenDebug();
-					
+
 					Thread.sleep(1000L);
 				}
 				if (!running.get())
@@ -177,7 +176,7 @@ public class Server implements Runnable, ServerInterface
 						args = unparsedCommandText.substring(unparsedCommandText.indexOf(" ") + 1, unparsedCommandText.length()).split(" ");
 					}
 
-					console.dispatchCommand(this, cmdName, args);
+					console.dispatchCommand(console, cmdName, args);
 
 					System.out.print("> ");
 					System.out.flush();
@@ -214,24 +213,24 @@ public class Server implements Runnable, ServerInterface
 	private void printTopScreenDebug()
 	{
 		String txt = "" + ansi().fg(BLACK).bg(CYAN);
-		
+
 		int ec = 0;
 		IterableIterator<Entity> i = world.getAllLoadedEntities();
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			i.next();
 			ec++;
 		}
-		
+
 		txt += "Chunk Stories Server " + VersionInfo.version;
-		txt += " | world running at " + world.getGameLogic().getSimulationFps()+" Fps";
+		txt += " | world running at " + world.getGameLogic().getSimulationFps() + " Fps";
 		txt += " | " + ec + " Entities";
 		txt += " | " + this.connectionsManager.getNumberOfAuthentificatedClients() + "/" + this.connectionsManager.getMaxClients() + " players";
 		txt += " | " + this.world.getRegionsHolder().getStats() + " + " + this.world.getRegionsSummariesHolder().countSummaries() + " summaries ";
 		txt += " | " + this.world.ioHandler.toString();
-		
+
 		txt += ansi().bg(BLACK).fg(WHITE);
-		
+
 		System.out.print(ansi().saveCursorPosition().cursor(0, 0).eraseLine().fg(RED) + txt + ansi().restoreCursorPosition());
 		System.out.flush();
 	}
@@ -247,7 +246,7 @@ public class Server implements Runnable, ServerInterface
 	}
 
 	@Override
-	public PluginsManager getPluginsManager()
+	public DefaultPluginManager getPluginManager()
 	{
 		return pluginsManager;
 	}
@@ -258,7 +257,7 @@ public class Server implements Runnable, ServerInterface
 		log.info("Killing all connections");
 		connectionsManager.closeAll();
 		connectionsManager.closeConnection();
-		
+
 		log.info("Saving map ...");
 		world.saveEverything();
 		log.info("Shutting down plugins ...");
@@ -267,7 +266,7 @@ public class Server implements Runnable, ServerInterface
 		world.ioHandler.shutdown();
 		world.destroy();
 		log.info("IO done");
-		
+
 		log.info("Saving configuration");
 		serverConfig.save();
 		UsersPrivileges.save();
@@ -316,21 +315,9 @@ public class Server implements Runnable, ServerInterface
 	}
 
 	@Override
-	public String getName()
+	public String toString()
 	{
-		return "Server console " + VersionInfo.version + "";
-	}
-
-	@Override
-	public void sendMessage(String msg)
-	{
-		System.out.println(ColorsTools.convertToAnsi("#FF00FF" + msg));
-	}
-
-	@Override
-	public boolean hasPermission(String permissionNode)
-	{
-		return true;
+		return "[ChunkStoriesServer " + VersionInfo.version + "]";
 	}
 
 	@Override

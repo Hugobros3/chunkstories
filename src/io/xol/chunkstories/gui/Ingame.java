@@ -326,7 +326,7 @@ public class Ingame extends OverlayableScene
 
 			ClientInputPressedEvent event = new ClientInputPressedEvent(keyBind);
 
-			Client.getInstance().getPluginsManager().fireEvent(event);
+			Client.getInstance().getPluginManager().fireEvent(event);
 			if (event.isCancelled())
 				return true;
 		}
@@ -420,7 +420,7 @@ public class Ingame extends OverlayableScene
 		{
 			ClientInputReleasedEvent event = new ClientInputReleasedEvent(keyBind);
 
-			Client.getInstance().getPluginsManager().fireEvent(event);
+			Client.getInstance().getPluginManager().fireEvent(event);
 			return true;
 		}
 
@@ -453,7 +453,7 @@ public class Ingame extends OverlayableScene
 		{
 			ClientInputPressedEvent event = new ClientInputPressedEvent(mButton);
 			if (mButton != null)
-				Client.getInstance().getPluginsManager().fireEvent(event);
+				Client.getInstance().getPluginManager().fireEvent(event);
 		}
 		//TODO it does not handle the special clicks yet, maybye do it somewhere else, like in binds ?
 		return false;
@@ -479,7 +479,7 @@ public class Ingame extends OverlayableScene
 		{
 			ClientInputReleasedEvent event = new ClientInputReleasedEvent(mButton);
 			if (mButton != null)
-				Client.getInstance().getPluginsManager().fireEvent(event);
+				Client.getInstance().getPluginManager().fireEvent(event);
 		}
 
 		return false;

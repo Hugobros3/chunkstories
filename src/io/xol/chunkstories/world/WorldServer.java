@@ -99,7 +99,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 			//TODO only spawn the player when he asks to
 			PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.getProfile(), this);
-			Server.getInstance().getPluginsManager().fireEvent(playerSpawnEvent);
+			Server.getInstance().getPluginManager().fireEvent(playerSpawnEvent);
 		}
 		else if (message.equals("respawn"))
 		{
@@ -114,7 +114,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				if(player.getControlledEntity() == null || (player.getControlledEntity() instanceof EntityLiving && ((EntityLiving)player.getControlledEntity()).isDead()))
 				{
 					PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.getProfile(), this);
-					Server.getInstance().getPluginsManager().fireEvent(playerSpawnEvent);
+					Server.getInstance().getPluginManager().fireEvent(playerSpawnEvent);
 					sender.sendChat("Respawning ...");
 				}
 				else

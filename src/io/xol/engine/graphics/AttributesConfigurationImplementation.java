@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import io.xol.chunkstories.api.exceptions.AttributeNotPresentException;
+import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;

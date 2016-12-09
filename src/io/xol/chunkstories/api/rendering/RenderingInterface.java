@@ -1,8 +1,8 @@
 package io.xol.chunkstories.api.rendering;
 
-import io.xol.chunkstories.api.exceptions.AttributeNotPresentException;
-import io.xol.chunkstories.api.exceptions.InvalidShaderException;
-import io.xol.chunkstories.api.exceptions.ShaderCompileException;
+import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
+import io.xol.chunkstories.api.exceptions.rendering.InvalidShaderException;
+import io.xol.chunkstories.api.exceptions.rendering.ShaderCompileException;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;

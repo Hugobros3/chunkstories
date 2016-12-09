@@ -1,7 +1,7 @@
 package io.xol.engine.graphics;
 
-import io.xol.chunkstories.api.exceptions.AttributeNotPresentException;
-import io.xol.chunkstories.api.exceptions.RenderingException;
+import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
+import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;

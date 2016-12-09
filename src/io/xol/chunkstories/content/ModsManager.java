@@ -16,6 +16,8 @@ import java.util.Map;
 
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.Mod;
+import io.xol.chunkstories.api.plugin.PluginInformation;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.mods.ForeignCodeClassLoader;
 import io.xol.chunkstories.content.mods.ModImplementation;
 import io.xol.chunkstories.content.mods.ModFolder;
@@ -606,6 +608,34 @@ public class ModsManager
 	public static Collection<ModImplementation> getCurrentlyLoadedMods()
 	{
 		return enabledMods;
+	}
+
+	public static IterableIterator<PluginInformation> getModsPlugins()
+	{
+		return new IterableIterator<PluginInformation>(){
+
+			@Override
+			public boolean hasNext()
+			{
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public PluginInformation next()
+			{
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Iterator<PluginInformation> iterator()
+			{
+				// TODO Auto-generated method stub
+				return null;
+			}
+			
+		};
 	}
 	
 }

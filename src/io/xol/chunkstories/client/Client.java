@@ -20,12 +20,13 @@ import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
+import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.ModsManager;
-import io.xol.chunkstories.content.PluginsManager;
+import io.xol.chunkstories.content.DefaultPluginManager;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -58,7 +59,7 @@ public class Client implements ClientInterface
 	//public EntityControllable controlledEntity;
 	public static Client client;
 
-	public PluginsManager pluginsManager;
+	public ClientPluginManager pluginsManager;
 
 	public static void main(String[] args)
 	{
@@ -124,7 +125,7 @@ public class Client implements ClientInterface
 		ModsManager.reloadClientContent();
 		windows.changeScene(new MainMenu(windows, true));
 		//Load 
-		pluginsManager = new PluginsManager(client);
+		pluginsManager = new ClientPluginManager(client);
 		windows.run();
 	}
 
@@ -181,7 +182,7 @@ public class Client implements ClientInterface
 	}
 
 	@Override
-	public PluginsManager getPluginsManager()
+	public DefaultPluginManager getPluginManager()
 	{
 		return pluginsManager;
 	}

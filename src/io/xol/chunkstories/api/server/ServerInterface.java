@@ -2,13 +2,13 @@ package io.xol.chunkstories.api.server;
 
 import java.util.Iterator;
 import io.xol.chunkstories.api.plugin.PluginManager;
-import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
+import io.xol.chunkstories.api.plugin.context.PluginExecutionContext;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface ServerInterface extends CommandEmitter
+public interface ServerInterface extends PluginExecutionContext
 {
 	public Iterator<Player> getConnectedPlayers();
 
@@ -16,7 +16,7 @@ public interface ServerInterface extends CommandEmitter
 	
 	public Player getPlayerByUUID(long UUID);
 
-	public PluginManager getPluginsManager();
+	public PluginManager getPluginManager();
 
 	public void broadcastMessage(String message);
 }

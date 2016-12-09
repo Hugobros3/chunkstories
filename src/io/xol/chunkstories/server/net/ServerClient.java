@@ -266,7 +266,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		if (getProfile() != null)
 		{
 			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(getProfile());
-			Server.getInstance().getPluginsManager().fireEvent(playerDisconnectionEvent);
+			Server.getInstance().getPluginManager().fireEvent(playerDisconnectionEvent);
 
 			Server.getInstance().getHandler().sendAllChat(playerDisconnectionEvent.getLogoutMessage());
 
@@ -343,7 +343,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 
 		//Fire the login event
 		PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(getProfile());
-		Server.getInstance().getPluginsManager().fireEvent(playerConnectionEvent);
+		Server.getInstance().getPluginManager().fireEvent(playerConnectionEvent);
 		boolean allowPlayerIn = !playerConnectionEvent.isCancelled();
 		//Do we allow him in ?
 		if (!allowPlayerIn)

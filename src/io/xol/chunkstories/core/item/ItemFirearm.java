@@ -170,7 +170,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 					{
 						//Fire virtual input
 						ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
-						Client.getInstance().getPluginsManager().fireEvent(event);
+						Client.getInstance().getPluginManager().fireEvent(event);
 						lastShot = System.currentTimeMillis();
 					}
 				}

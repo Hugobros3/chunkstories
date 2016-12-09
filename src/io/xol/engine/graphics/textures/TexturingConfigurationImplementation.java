@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import io.xol.chunkstories.api.exceptions.NotEnoughtTextureUnitsException;
+import io.xol.chunkstories.api.exceptions.rendering.NotEnoughtTextureUnitsException;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
 import io.xol.chunkstories.client.RenderingConfig;

@@ -18,6 +18,10 @@ import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.misc.FoldersUtils;
 
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 /**
  * Provides mods for connected users
  */
@@ -47,7 +51,7 @@ public class ServerModsProvider
 		for (Mod mod : ModsManager.getCurrentlyLoadedMods())
 		{
 			String hash = mod.getMD5Hash();
-			System.out.println("Mod " + mod + " md5 = " + hash);
+			//System.out.println("Mod " + mod + " md5 = " + hash);
 			ChunkStoriesLogger.getInstance().info("Building distribuable zipfile for mod " + mod.getModInfo().getName());
 			if (mod instanceof ModZip)
 			{

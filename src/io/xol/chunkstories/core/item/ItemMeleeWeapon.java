@@ -91,7 +91,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 							return;
 						
 						ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
-						Client.getInstance().getPluginsManager().fireEvent(event);
+						Client.getInstance().getPluginManager().fireEvent(event);
 						hasHitYet = true;
 					}
 				}

@@ -107,6 +107,6 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		}
 		
 		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(processor.getServerClient().getProfile(), this);
-		Server.getInstance().getPluginsManager().fireEvent(moveItemEvent);
+		Server.getInstance().getPluginManager().fireEvent(moveItemEvent);
 	}
 }

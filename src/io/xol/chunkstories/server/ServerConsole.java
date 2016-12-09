@@ -14,14 +14,17 @@ import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.entity.Entities;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.engine.misc.ColorsTools;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerConsole
+/** Handles basic commands and forwards not-so-basic commands to plugins
+ *  Can send command itself */
+public class ServerConsole implements CommandEmitter
 {
-	Server server;
+	private Server server;
 
 	public ServerConsole(Server server)
 	{
@@ -36,7 +39,7 @@ public class ServerConsole
 			//First try to handle the plugins commands
 			try
 			{
-				if (server.getPluginsManager().dispatchCommand(emitter, cmd, arguments))
+				if (server.getPluginManager().dispatchCommand(emitter, cmd, arguments))
 					return true;
 			}
 			catch (Exception e)
@@ -44,6 +47,7 @@ public class ServerConsole
 				emitter.sendMessage("An exception happened while handling your command : " + e.getLocalizedMessage());
 				e.printStackTrace();
 			}
+			
 			//Then try the world commands
 
 			// No rights needed
@@ -54,7 +58,6 @@ public class ServerConsole
 			}
 			else if (cmd.equals("info"))
 			{
-				//System.out.println("<<CUCK SUPR�ME>>");
 				emitter.sendMessage("#00FFD0The server's ip is " + server.getHandler().getIP());
 				emitter.sendMessage("#00FFD0It's running version " + VersionInfo.version + " of the server software.");
 				emitter.sendMessage("#00FFD0" + server.getWorld().getRegionsHolder().toString());
@@ -69,7 +72,7 @@ public class ServerConsole
 				emitter.sendMessage("#00FFD0" + " /list");
 				emitter.sendMessage("#00FFD0" + " /info");
 				emitter.sendMessage("#00FFD0" + " /uptime");
-				for (Command command : server.getPluginsManager().commandsHandlers.keySet())
+				for (Command command : server.getPluginManager().commands())
 				{
 					emitter.sendMessage("#00FFD0 /" + command.getName());
 				}
@@ -80,10 +83,10 @@ public class ServerConsole
 			{
 				String list = "";
 				int i = 0;
-				for (ChunkStoriesPlugin csp : server.getPluginsManager().activePlugins)
+				for (ChunkStoriesPlugin csp : server.getPluginManager().activePlugins)
 				{
 					i++;
-					list += csp.getName() + (i == server.getPluginsManager().activePlugins.size() ? "" : ", ");
+					list += csp.getName() + (i == server.getPluginManager().activePlugins.size() ? "" : ", ");
 				}
 				emitter.sendMessage("#00FFD0" + i + " active plugins : " + list);
 				return true;
@@ -171,7 +174,7 @@ public class ServerConsole
 					{
 						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().isFlying();
 						state = !state;
-						client.sendMessage("flying : " + state);
+						client.sendMessage("Flying mode set to: " + state);
 						((EntityFlying) controlledEntity).getFlyingComponent().setFlying(state);
 						return true;
 					}
@@ -188,7 +191,7 @@ public class ServerConsole
 					{
 						boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().isCreativeMode();
 						state = !state;
-						client.sendMessage("creative : " + state);
+						client.sendMessage("Creative mode set to: " + state);
 						((EntityCreative) controlledEntity).getCreativeModeComponent().setCreativeMode(state);
 						return true;
 					}
@@ -211,7 +214,29 @@ public class ServerConsole
 					if (controlledEntity != null && controlledEntity instanceof EntityPlayer)
 					{
 						((EntityPlayer) controlledEntity).setFoodLevel(foodLevel);
-						client.sendMessage("Food level : " + foodLevel);
+						client.sendMessage("Food level set to: " + foodLevel);
+						return true;
+					}
+				}
+			}
+			else if (cmd.equals("health") && emitter.hasPermission("server.admin"))
+			{
+				if (emitter instanceof Player)
+				{
+					if(arguments.length == 0)
+					{
+						emitter.sendMessage("syntax : /health <health>");
+						return true;
+					}
+					float healthLevel = Float.parseFloat(arguments[0]);
+					
+					Player client = ((Player) emitter);
+
+					Entity controlledEntity = client.getControlledEntity();
+					if (controlledEntity != null && controlledEntity instanceof EntityPlayer)
+					{
+						((EntityPlayer) controlledEntity).setHealth(healthLevel);
+						client.sendMessage("Health level set to: " + healthLevel);
 						return true;
 					}
 				}
@@ -251,7 +276,7 @@ public class ServerConsole
 				else if (arguments.length >= 1 && cmd.equals("kick"))
 				{
 					ServerClient clientByName = server.getHandler().getAuthentificatedClientByName(arguments[0]);
-					String kickReason = "refrain from portraying an imbecile attitude";
+					String kickReason = "Please exert refrain from portrayal of such imbecile attitudes";
 					//Recreate the argument
 					if (arguments.length >= 2)
 					{
@@ -290,5 +315,24 @@ public class ServerConsole
 		}
 
 		return false;
+	}
+
+	@Override
+	public String getName()
+	{
+		return "[SERVER CONSOLE]";
+	}
+
+	@Override
+	public void sendMessage(String msg)
+	{
+		System.out.println(ColorsTools.convertToAnsi("#FF00FF" + msg));
+	}
+
+	@Override
+	public boolean hasPermission(String permissionNode)
+	{
+		// Console has ALL permissions
+		return true;
 	}
 }

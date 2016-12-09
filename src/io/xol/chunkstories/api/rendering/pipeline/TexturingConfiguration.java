@@ -2,7 +2,7 @@ package io.xol.chunkstories.api.rendering.pipeline;
 
 import java.util.Map;
 
-import io.xol.chunkstories.api.exceptions.NotEnoughtTextureUnitsException;
+import io.xol.chunkstories.api.exceptions.rendering.NotEnoughtTextureUnitsException;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.engine.graphics.textures.Texture2D;
 
