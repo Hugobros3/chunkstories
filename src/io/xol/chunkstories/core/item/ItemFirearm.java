@@ -162,7 +162,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 					{
 						//Play sounds
 						if (controller != null)
-							controller.getSoundManager().playSoundEffect("sounds/dogez/weapon/default/dry.ogg", (float)owner.getLocation().getX(), (float)owner.getLocation().getY(), (float)owner.getLocation().getZ(), 1.0f, 1.0f, 1f, (float)soundRange);
+							controller.getSoundManager().playSoundEffect("sounds/dogez/weapon/default/dry.ogg", owner.getLocation(), 1.0f, 1.0f, 1f, (float)soundRange);
 						//Dry.ogg
 						//return;
 					}
@@ -228,7 +228,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 				{
 					//controller.getSoundManager().playSoundEffect(this.soundName, user.getLocation(), 1.0f, 1.0f).setAttenuationEnd((float) soundRange);
 					
-					controller.getSoundManager().playSoundEffect(this.soundName, (float)user.getLocation().getY(), (float)user.getLocation().getZ(), (float)user.getLocation().getX(), 1.0f, 1.0f, 1.0f, (float) soundRange);
+					controller.getSoundManager().playSoundEffect(this.soundName, (float)user.getLocation().getX(), (float)user.getLocation().getY(), (float)user.getLocation().getZ(), 1.0f, 1.0f, 1.0f, (float) soundRange);
 
 				}
 				

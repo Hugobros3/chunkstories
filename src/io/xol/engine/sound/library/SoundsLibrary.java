@@ -21,7 +21,7 @@ public class SoundsLibrary
 	
 	public static SoundData obtainOggSample(String soundEffect)
 	{
-		SoundDataOggSample sd = new SoundDataOggSample(ModsManager.getAsset("./"+soundEffect));
+		SoundDataOggSample sd = new SoundDataOggSample(ModsManager.getAsset(soundEffect));
 		sd.name = soundEffect;
 		if(sd.loadedOk())
 			return sd;
@@ -32,6 +32,9 @@ public class SoundsLibrary
 	{
 		if(soundEffect == null)
 			return null;
+
+		if(!soundEffect.startsWith("./"))
+			soundEffect = "./" + soundEffect;
 		
 		SoundData sd = soundsData.get(soundEffect);
 		if(sd != null)
@@ -64,6 +67,9 @@ public class SoundsLibrary
 	 */
 	public static SoundData obtainBufferedSample(String musicName)
 	{
+		if(!musicName.startsWith("./"))
+			musicName = "./" + musicName;
+		
 		SoundDataBuffered sd;
 		if (musicName.endsWith(".ogg"))
 		{
@@ -78,7 +84,7 @@ public class SoundsLibrary
 	{
 		SoundDataOggStream sd;
 		
-		sd = new SoundDataOggStream(ModsManager.getAsset("./"+musicName).read());
+		sd = new SoundDataOggStream(ModsManager.getAsset(musicName).read());
 		sd.name = musicName;
 		if(sd.loadedOk())
 			return sd;

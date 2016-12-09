@@ -4,6 +4,7 @@ import java.nio.FloatBuffer;
 import java.util.Iterator;
 
 import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.Vector3f;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -13,20 +14,40 @@ public interface SoundManager
 {
 	// Abstract, API-Level class to define how the SoundManager should be used
 	
-	/**
-	 * Overloads playSoundEffect with doubles instead of floats
-	 */
+	/** Overloads playSoundEffect with doubles instead of floats and default attenuation */
 	public default SoundSource playSoundEffect(String soundEffect, double x, double y, double z, float pitch, float gain)
 	{
-		return playSoundEffect(soundEffect, (float)x, (float)y, (float)z, pitch, gain);
+		return this.playSoundEffect(soundEffect, (float)x, (float)y, (float)z, pitch, gain);
+	}
+	
+	/** Overloads playSoundEffect with doubles instead of floats */
+	public default SoundSource playSoundEffect(String soundEffect, double x, double y, double z, float pitch, float gain, float attStart, float attEnd)
+	{
+		return this.playSoundEffect(soundEffect, (float)x, (float)y, (float)z, pitch, gain, attStart, attEnd);
+	}
+	
+	/** Overloads playSoundEffect with a vector3f instead of individual components and default attenuation */
+	public default SoundSource playSoundEffect(String soundEffect, Vector3f location, float pitch, float gain)
+	{
+		return this.playSoundEffect(soundEffect, location.x, location.y, location.z, pitch, gain);
 	}
 
-	/**
-	 * Overloads playSoundEffect with a vector3d instead of individual components
-	 */
+	/** Overloads playSoundEffect with a vector3d instead of individual components and default attenuation */
 	public default SoundSource playSoundEffect(String soundEffect, Vector3d location, float pitch, float gain)
 	{
-		return playSoundEffect(soundEffect, location.getX(), location.getY(), location.getZ(), pitch, gain);
+		return this.playSoundEffect(soundEffect, location.getX(), location.getY(), location.getZ(), pitch, gain);
+	}
+	
+	/** Overloads playSoundEffect with a vector3f instead of individual components */
+	public default SoundSource playSoundEffect(String soundEffect, Vector3f location, float pitch, float gain, float attStart, float attEnd)
+	{
+		return this.playSoundEffect(soundEffect, location.x, location.y, location.z, pitch, gain, attStart, attEnd);
+	}
+	
+	/** Overloads playSoundEffect with a vector3d instead of individual components */
+	public default SoundSource playSoundEffect(String soundEffect, Vector3d location, float pitch, float gain, float attStart, float attEnd)
+	{
+		return this.playSoundEffect(soundEffect, location.getX(), location.getY(), location.getZ(), pitch, gain, attStart, attEnd);
 	}
 
 	/** Overloads with default attenuation values */
@@ -39,10 +60,12 @@ public interface SoundManager
 	 * Plays a soundEffect in the world
 	 * @param soundEffect The name of the soundEffect, has to include the full path from %moddir%/sounds/ and the extension.
 	 * @param x Position in the world, X
-	 * @param y '' y
-	 * @param z '' z
+	 * @param y Position in the world, Y
+	 * @param z Position in the world, Z
 	 * @param pitch The pitch of the sound, keep it between 0.5 - 2.0 for best results
 	 * @param gain The gain of the sound, ie volume
+	 * @param attStart The gain of the sound, ie volume
+	 * @param attEnd The gain of the sound, ie volume
 	 * @return
 	 */
 	public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain, float attStart, float attEnd);
