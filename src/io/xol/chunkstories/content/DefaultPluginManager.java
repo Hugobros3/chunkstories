@@ -216,7 +216,14 @@ public abstract class DefaultPluginManager implements PluginManager
 
 		try
 		{
-			return command.getHandler().handleCommand(emitter, command, arguments);
+			CommandHandler handler = command.getHandler();
+			
+			if(handler != null)
+				return handler.handleCommand(emitter, command, arguments);
+			else
+				emitter.sendMessage("#FF2020No handler defined for this command !");
+			
+			return false;
 		}
 		catch (Throwable t)
 		{
