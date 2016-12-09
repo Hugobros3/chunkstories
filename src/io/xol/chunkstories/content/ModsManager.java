@@ -632,7 +632,7 @@ public class ModsManager
 			public Iterator<PluginInformation> iterator()
 			{
 				// TODO Auto-generated method stub
-				return null;
+				return this;
 			}
 			
 		};

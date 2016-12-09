@@ -9,4 +9,7 @@ import io.xol.chunkstories.api.plugin.PluginManager;
 public interface PluginExecutionContext
 {
 	public PluginManager getPluginManager();
+	
+	/** Prints some text, usefull for debug purposes */
+	public void print(String message);
 }

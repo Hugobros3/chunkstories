@@ -100,7 +100,7 @@ public class Client implements ClientInterface
 		Thread.currentThread().setName("Main OpenGL Rendering thread");
 		Thread.currentThread().setPriority(Constants.MAIN_GL_THREAD_PRIORITY);
 		new Client();
-		
+
 		System.exit(-1);
 	}
 
@@ -191,16 +191,16 @@ public class Client implements ClientInterface
 	public void reloadAssets()
 	{
 		SimpleFence waitForReload = new SimpleFence();
-		
-		if(GameWindowOpenGL.isMainGLWindow())
+
+		if (GameWindowOpenGL.isMainGLWindow())
 		{
 			ModsManager.reload();
 			inputsManager.reload();
 			ModsManager.reloadClientContent();
-			
+
 			return;
 		}
-		
+
 		windows.queueTask(new Runnable()
 		{
 			@Override
@@ -209,11 +209,11 @@ public class Client implements ClientInterface
 				ModsManager.reload();
 				inputsManager.reload();
 				ModsManager.reloadClientContent();
-				
+
 				waitForReload.signal();
 			}
 		});
-		
+
 		waitForReload.traverse();
 	}
 
@@ -268,14 +268,14 @@ public class Client implements ClientInterface
 
 				//We want to keep the connection overlay when getting into a server
 				ConnectionOverlay overlay = null;
-				if(Client.windows.getCurrentScene() instanceof OverlayableScene && ((OverlayableScene)Client.windows.getCurrentScene()).currentOverlay instanceof ConnectionOverlay)
+				if (Client.windows.getCurrentScene() instanceof OverlayableScene && ((OverlayableScene) Client.windows.getCurrentScene()).currentOverlay instanceof ConnectionOverlay)
 				{
-					overlay = (ConnectionOverlay) ((OverlayableScene)Client.windows.getCurrentScene()).currentOverlay;
+					overlay = (ConnectionOverlay) ((OverlayableScene) Client.windows.getCurrentScene()).currentOverlay;
 					//If that happen, we want this connection overlay to forget he was originated from a server browser or whatever
 					overlay.mainScene = ingameScene;
 					overlay.parent = null;
 				}
-				
+
 				ingameScene.changeOverlay(overlay);
 				Client.windows.changeScene(ingameScene);
 			}
@@ -319,5 +319,12 @@ public class Client implements ClientInterface
 				Client.windows.changeScene(new MainMenu(windows, errorMessage));
 			}
 		});
+	}
+
+	@Override
+	public void print(String message)
+	{
+		ChunkStoriesLogger.getInstance().info(message);
+		printChat(message);
 	}
 }

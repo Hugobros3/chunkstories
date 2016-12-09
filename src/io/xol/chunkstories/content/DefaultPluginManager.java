@@ -150,9 +150,6 @@ public abstract class DefaultPluginManager implements PluginManager
 		{
 			try
 			{
-				// Instanciate the plugin after all
-				ChunkStoriesPlugin pluginInstance = pluginInformation.createInstance(pluginExecutionContext);
-
 				// Add commands support
 				for (Command command : pluginInformation.commands)
 				{
@@ -163,9 +160,6 @@ public abstract class DefaultPluginManager implements PluginManager
 						continue;
 					}
 
-					//The default handler
-					command.setHandler(pluginInstance);
-
 					commands.add(command);
 
 					for (String alias : command.aliases())
@@ -173,6 +167,9 @@ public abstract class DefaultPluginManager implements PluginManager
 							ChunkStoriesLogger.getInstance().warning("Plugin " + pluginInformation + " tried to register alias " + alias + " for command " + command + ".");
 
 				}
+				
+				// Instanciate the plugin after all
+				ChunkStoriesPlugin pluginInstance = pluginInformation.createInstance(pluginExecutionContext);
 
 				activePlugins.add(pluginInstance);
 				pluginInstance.onEnable();

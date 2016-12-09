@@ -375,4 +375,11 @@ public class Server implements Runnable, ServerInterface
 	{
 		return modsProvider;
 	}
+
+	
+	@Override
+	public void print(String message)
+	{
+		ChunkStoriesLogger.getInstance().info(message);
+	}
 }
