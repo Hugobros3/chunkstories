@@ -156,9 +156,9 @@ public class Camera implements CameraInterface
 		
 		modelViewMatrix4f.setIdentity();
 		// Rotate the modelview matrix
+		modelViewMatrix4f.rotate((float) (rotationZ / 180 * Math.PI), new Vector3f( 0.0f, 0.0f, 1.0f));
 		modelViewMatrix4f.rotate((float) (rotationX / 180 * Math.PI), new Vector3f( 1.0f, 0.0f, 0.0f));
 		modelViewMatrix4f.rotate((float) (rotationY / 180 * Math.PI), new Vector3f( 0.0f, 1.0f, 0.0f));
-		modelViewMatrix4f.rotate((float) (rotationZ / 180 * Math.PI), new Vector3f( 0.0f, 0.0f, 1.0f));
 		
 		Vector3f position = pos.castToSimplePrecision();
 		position = position.negate(position);

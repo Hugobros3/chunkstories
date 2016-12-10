@@ -28,6 +28,7 @@ import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.entity.Entities;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
+import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -56,6 +57,8 @@ public class Chat
 	{
 		public ChatLine(String text)
 		{
+			if(text == null)
+				text = "";
 			this.text = text;
 			time = System.currentTimeMillis();
 		}
@@ -118,6 +121,36 @@ public class Chat
 			}
 			else if (k == 28)
 			{
+				if(inputBox.text.startsWith("/"))
+				{
+					String chatMsg = inputBox.text;
+					
+					chatMsg = chatMsg.substring(1, chatMsg.length());
+
+					String cmdName = chatMsg.toLowerCase();
+					String[] args = {};
+					if (chatMsg.contains(" "))
+					{
+						cmdName = chatMsg.substring(0, chatMsg.indexOf(" "));
+						args = chatMsg.substring(chatMsg.indexOf(" ") + 1, chatMsg.length()).split(" ");
+					}
+
+					if (Client.getInstance().getPluginManager().dispatchCommand(Client.getInstance(), cmdName, args))
+					{
+						if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
+						{
+							sent.add(0, inputBox.text);
+							sentMessages++;
+						}
+						
+						inputBox.text = "";
+						chatting = false;
+						sentHistory = 0;
+						mainScene.changeOverlay(parent);
+						return true;
+					}
+				}
+				
 				if (inputBox.text.equals("/locclear"))
 				{
 					//java.util.Arrays.fill(chatHistory, "");

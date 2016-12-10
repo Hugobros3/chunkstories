@@ -12,6 +12,7 @@ import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.DefaultPluginManager;
+import io.xol.chunkstories.core.events.WorldTickEvent;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldClientRemote;
@@ -98,6 +99,8 @@ public class GameLogicThread extends Thread implements GameLogic
 			}
 			
 			//nanoCheckStep(2, "Incomming packets");
+			
+			this.getPluginsManager().fireEvent(new WorldTickEvent(world));
 			
 			//Tick the world ( mostly entities )
 			world.tick();

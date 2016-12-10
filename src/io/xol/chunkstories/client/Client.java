@@ -198,6 +198,8 @@ public class Client implements ClientInterface
 			inputsManager.reload();
 			ModsManager.reloadClientContent();
 
+			getPluginManager().reloadPlugins();
+
 			return;
 		}
 
@@ -210,6 +212,8 @@ public class Client implements ClientInterface
 				inputsManager.reload();
 				ModsManager.reloadClientContent();
 
+				getPluginManager().reloadPlugins();
+				
 				waitForReload.signal();
 			}
 		});
@@ -326,5 +330,23 @@ public class Client implements ClientInterface
 	{
 		ChunkStoriesLogger.getInstance().info(message);
 		printChat(message);
+	}
+
+	@Override
+	public String getName()
+	{
+		return username;
+	}
+
+	@Override
+	public void sendMessage(String msg)
+	{
+		print(msg);
+	}
+
+	@Override
+	public boolean hasPermission(String permissionNode)
+	{
+		return true;
 	}
 }

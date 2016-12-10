@@ -41,6 +41,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientInputsManager;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.EntityPlayer;
+import io.xol.chunkstories.core.events.CameraSetupEvent;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
 import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
@@ -147,6 +148,7 @@ public class Ingame extends OverlayableScene
 		// Update the player
 		if (player instanceof EntityControllable)
 			((EntityControllable) player).setupCamera(Client.getInstance().getClientSideController());
+		
 
 		Location selectedBlock = null;
 		if (player instanceof EntityPlayer)
@@ -154,6 +156,8 @@ public class Ingame extends OverlayableScene
 
 		if (player != null)
 			player.setupCamera(camera);
+		
+		Client.getInstance().getPluginManager().fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
 
 		//Main render call
 		worldRenderer.renderWorldAtCamera(camera);

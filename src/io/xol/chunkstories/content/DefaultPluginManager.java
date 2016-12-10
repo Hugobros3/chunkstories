@@ -214,6 +214,7 @@ public abstract class DefaultPluginManager implements PluginManager
 		if (command == null)
 			return false;
 
+		
 		try
 		{
 			CommandHandler handler = command.getHandler();

@@ -12,6 +12,7 @@ import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.content.mods.ModImplementation;
@@ -174,8 +175,9 @@ public class ModsSelectionOverlay extends Overlay
 			String[] ok = new String[modsEnabled.size()];
 			modsEnabled.toArray(ok);
 			ModsManager.setEnabledMods(ok);
-			ModsManager.reload();
-			ModsManager.reloadClientContent();
+			/*ModsManager.reload();
+			ModsManager.reloadClientContent();*/
+			Client.getInstance().reloadAssets();
 			buildModsList();
 		}
 		

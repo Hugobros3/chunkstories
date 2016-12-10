@@ -258,6 +258,9 @@ public class TrueTypeFont
 
 	public int getLinesHeight(String whatchars, int clipX)
 	{
+		if(whatchars == null)
+			return 0;
+		
 		boolean clip = clipX != -1;
 		int lines = 1;
 		int i = 1;

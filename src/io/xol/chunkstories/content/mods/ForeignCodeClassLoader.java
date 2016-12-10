@@ -66,6 +66,10 @@ public class ForeignCodeClassLoader extends URLClassLoader
 						
 						continue;
 					}
+					catch(LinkageError le)
+					{
+						//Don't care
+					}
 					//classes.add(className);
 				}
 			}

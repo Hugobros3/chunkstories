@@ -47,6 +47,7 @@ import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.core.events.WorldPostRenderingEvent;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
@@ -328,7 +329,6 @@ public class WorldRenderer
 		camera.justSetup(scrW, scrH);
 		camera.translate();
 
-		
 		// Clear G-Buffers and bind shaded HDR rendertarget
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboGBuffers);
 		//fboGBuffers.bind();
@@ -361,6 +361,8 @@ public class WorldRenderer
 		fboShadedBuffer.setEnabledRenderTargets();
 		weatherEffectsRenderer.renderEffects(renderingContext);
 
+		Client.getInstance().getPluginManager().fireEvent(new WorldPostRenderingEvent(world, this, renderingContext));
+		
 		//Disable depth check
 		//glDisable(GL_DEPTH_TEST);
 

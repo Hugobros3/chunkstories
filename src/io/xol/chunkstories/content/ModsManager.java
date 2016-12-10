@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import io.xol.chunkstories.api.exceptions.plugins.PluginLoadException;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.plugin.PluginInformation;
@@ -60,6 +61,7 @@ public class ModsManager
 	private static Map<String, ForeignCodeClassLoader> avaibleForeignClasses = new HashMap<String, ForeignCodeClassLoader>();
 
 	private static File cacheFolder = null;
+	private static List<PluginInformation> pluginsWithinEnabledMods = new ArrayList<PluginInformation>();
 
 	public static void main(String a[])
 	{
@@ -249,6 +251,8 @@ public class ModsManager
 		avaibleAssets.clear();
 		avaibleForeignClasses.clear();
 		
+		pluginsWithinEnabledMods.clear();
+		
 		//Obtain a cache folder
 		if (cacheFolder == null)
 		{
@@ -346,8 +350,21 @@ public class ModsManager
 			
 			for(String className : classLoader.classes())
 			{
-				System.out.println("class "+className+" found in jar "+asset);
+				//System.out.println("class "+className+" found in jar "+asset);
 				avaibleForeignClasses.put(className, classLoader);
+			}
+			
+			//Checks if it may load as a plugin
+			try
+			{
+				PluginInformation pluginInformation = new PluginInformation(cachedJarLocation, PluginInformation.class.getClassLoader());
+				System.out.println("Found plugin "+pluginInformation+" from within "+asset.getSource());
+				pluginsWithinEnabledMods.add(pluginInformation);
+			}
+			catch (PluginLoadException e)
+			{
+				System.out.println("Not really fit for a plugin");
+				e.printStackTrace();
 			}
 		}
 		catch (IOException e)
@@ -614,25 +631,24 @@ public class ModsManager
 	{
 		return new IterableIterator<PluginInformation>(){
 
+			Iterator<PluginInformation> i = pluginsWithinEnabledMods.iterator();
+			
 			@Override
 			public boolean hasNext()
 			{
-				// TODO Auto-generated method stub
-				return false;
+				return i.hasNext();
 			}
 
 			@Override
 			public PluginInformation next()
 			{
-				// TODO Auto-generated method stub
-				return null;
+				return i.next();
 			}
 
 			@Override
 			public Iterator<PluginInformation> iterator()
 			{
-				// TODO Auto-generated method stub
-				return this;
+				return i;
 			}
 			
 		};
