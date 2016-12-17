@@ -24,7 +24,6 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
-import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.item.renderers.ObjViewModelRenderer;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.LegacyDogeZItemRenderer;
@@ -169,8 +168,11 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 					else if ((automatic || !wasTriggerPressedLastTick) && (System.currentTimeMillis() - lastShot) / 1000.0d > 1.0 / (rpm / 60.0))
 					{
 						//Fire virtual input
-						ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
-						Client.getInstance().getPluginManager().fireEvent(event);
+						//ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
+						//Client.getInstance().getPluginManager().fireEvent(event);
+						
+						Client.getInstance().getInputsManager().onInputPressed(controller.getInputsManager().getInputByName("shootGun"));
+						
 						lastShot = System.currentTimeMillis();
 					}
 				}

@@ -8,7 +8,6 @@ import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.math.lalgb.Vector3d;
 

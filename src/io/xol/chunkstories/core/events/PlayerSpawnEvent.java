@@ -1,21 +1,15 @@
 package io.xol.chunkstories.core.events;
 
-import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityLiving;
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.events.Event;
+import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.server.Player;
-import io.xol.chunkstories.core.entity.EntityPlayer;
-import io.xol.chunkstories.entity.SerializedEntityFile;
-import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PlayerSpawnEvent extends Event
+public class PlayerSpawnEvent extends CancellableEvent
 {
 	// Every event class has to have this
 	static EventListeners listeners = new EventListeners();
@@ -46,31 +40,6 @@ public class PlayerSpawnEvent extends Event
 	public Player getPlayer()
 	{
 		return player;
-	}
-	
-	@Override
-	public void defaultBehaviour()
-	{
-		Entity entity = null;
-		
-		SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + player.getName().toLowerCase() + ".csf");
-		if(playerEntityFile.exists())
-			entity = playerEntityFile.read(world);
-		
-		if(entity == null || ((entity instanceof EntityLiving) && (((EntityLiving) entity).isDead())))
-		{
-			System.out.println("Created entity named "+entity+":"+player.getDisplayName());
-			entity = new EntityPlayer(world, 0d, 0d, 0d, player.getName());
-			entity.setLocation(world.getDefaultSpawnLocation());
-		}
-		else
-			entity.setUUID(-1);
-		
-		Server.getInstance().getWorld().addEntity(entity);
-		if(entity instanceof EntityControllable)
-			player.setControlledEntity((EntityControllable) entity);
-		else
-			System.out.println("Error : entity is not controllable");
 	}
 	
 }

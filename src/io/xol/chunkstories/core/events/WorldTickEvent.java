@@ -7,24 +7,24 @@ import io.xol.chunkstories.api.world.World;
 public class WorldTickEvent extends Event
 {
 	// Every event class has to have this
-	
+
 	static EventListeners listeners = new EventListeners();
-	
+
 	@Override
 	public EventListeners getListeners()
 	{
 		return listeners;
 	}
-	
+
 	public static EventListeners getListenersStatic()
 	{
 		return listeners;
 	}
-	
+
 	// Specific event code
-	
+
 	private World world;
-	
+
 	public WorldTickEvent(World world)
 	{
 		this.world = world;
@@ -34,11 +34,4 @@ public class WorldTickEvent extends Event
 	{
 		return world;
 	}
-	
-	@Override
-	public void defaultBehaviour()
-	{
-		//Do nothing
-	}
-	
 }

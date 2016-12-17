@@ -9,8 +9,9 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.client.ClientInputsManager;
 import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.input.lwjgl2.KeyBindImplementation;
+import io.xol.chunkstories.input.lwjgl2.Lwjgl2ClientInputsManager;
 import io.xol.chunkstories.server.ServerInputsManager;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -122,7 +123,7 @@ public class Inputs
 								/*
 								 * There goes the fun
 								 */
-								if (inputManager instanceof ClientInputsManager)
+								if (inputManager instanceof Lwjgl2ClientInputsManager)
 								{
 									if (splitted[0].equals("keyBind"))
 									{

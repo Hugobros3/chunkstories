@@ -20,7 +20,6 @@ import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.EntityPlayer;
-import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.item.renderers.ObjViewModelRenderer;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.LegacyDogeZItemRenderer;
@@ -90,8 +89,10 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 						if (!((ClientSideController) controller).hasFocus())
 							return;
 						
-						ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
-						Client.getInstance().getPluginManager().fireEvent(event);
+						//ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
+						//Client.getInstance().getPluginManager().fireEvent(event);
+
+						Client.getInstance().getInputsManager().onInputPressed(controller.getInputsManager().getInputByName("shootGun"));
 						hasHitYet = true;
 					}
 				}

@@ -6,15 +6,18 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
-import io.xol.chunkstories.api.net.RemoteServer;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.PlayerSpawnEvent;
+import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
 import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
@@ -98,8 +101,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			worldInfo.sendInfo(sender);
 
 			//TODO only spawn the player when he asks to
-			PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.getProfile(), this);
-			Server.getInstance().getPluginManager().fireEvent(playerSpawnEvent);
+			spawnPlayer(sender.getProfile());
 		}
 		else if (message.equals("respawn"))
 		{
@@ -111,10 +113,10 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			}
 			else
 			{
+				//Only allow to respawn if the current entity is null or dead
 				if(player.getControlledEntity() == null || (player.getControlledEntity() instanceof EntityLiving && ((EntityLiving)player.getControlledEntity()).isDead()))
 				{
-					PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(sender.getProfile(), this);
-					Server.getInstance().getPluginManager().fireEvent(playerSpawnEvent);
+					spawnPlayer(sender.getProfile());
 					sender.sendChat("Respawning ...");
 				}
 				else
@@ -139,6 +141,37 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		}
 	}
 	
+	private void spawnPlayer(ServerPlayer player)
+	{
+		PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(player, this);
+		Server.getInstance().getPluginManager().fireEvent(playerSpawnEvent);
+		
+		if(!playerSpawnEvent.isCancelled())
+		{
+			Entity entity = null;
+			
+			SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + player.getName().toLowerCase() + ".csf");
+			if(playerEntityFile.exists())
+				entity = playerEntityFile.read(this);
+			
+			if(entity == null || ((entity instanceof EntityLiving) && (((EntityLiving) entity).isDead())))
+			{
+				//System.out.println("Created entity named "+entity+":"+player.getDisplayName());
+				
+				entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName());
+				entity.setLocation(this.getDefaultSpawnLocation());
+			}
+			else
+				entity.setUUID(-1);
+			
+			Server.getInstance().getWorld().addEntity(entity);
+			if(entity instanceof EntityControllable)
+				player.setControlledEntity((EntityControllable) entity);
+			else
+				System.out.println("Error : entity is not controllable");
+		}
+	}
+
 	@Override
 	protected int actuallySetsDataAt(int x, int y, int z, int newData, Entity entity)
 	{

@@ -1,20 +1,23 @@
 package io.xol.chunkstories.net.packets;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.Inventory;
+import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
-import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.core.entity.EntityGroundItem;
 import io.xol.chunkstories.core.events.PlayerMoveItemEvent;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.net.InventoryTranslator;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
+import io.xol.chunkstories.world.WorldImplementation;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -70,9 +73,6 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
-		//read(in);
-		//process(processor);
-		
 		oldX = in.readInt();
 		oldY = in.readInt();
 		newX = in.readInt();
@@ -102,11 +102,52 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 				ChunkStoriesLogger.getInstance().log(e.getMessage(), LogLevel.WARN);
 				e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 			}
-			//Item item = ItemTypes.getItemTypeById(in.readInt()).newItem();
-			//itemPile = new ItemPile(item, in);
 		}
 		
-		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(processor.getServerClient().getProfile(), this);
+		Player player = processor.getServerClient().getProfile();
+		
+		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(player, this);
 		Server.getInstance().getPluginManager().fireEvent(moveItemEvent);
+		
+		if(!moveItemEvent.isCancelled())
+		{
+			//System.out.println("Asking to move "+pile+" to "+packet.newX+":"+packet.newY);
+			if(from == null)
+			{
+				//player.sendMessage("Notice : dragging stuff from /dev/null to your inventory should be limited by permission.");
+				if(player.hasPermission("items.spawn") || (player.getControlledEntity() != null 
+						&& player.getControlledEntity() instanceof EntityCreative && ((EntityCreative) player.getControlledEntity()).getCreativeModeComponent().isCreativeMode()))
+				{
+					
+				}
+				else
+				{
+					player.sendMessage("#C00000You are neither in creative mode nor have the items.spawn permission.");
+					return;
+				}
+			}
+			
+			//If target inventory is null, this means the item was dropped
+			if(to == null)
+			{
+				//TODO this really needs some kind of permissions system
+				//TODO or not ? Maybe the cancellable event deal can prevent this
+				
+				Entity playerEntity = player.getControlledEntity();
+				if(playerEntity == null)
+				{
+					System.out.println("fuck off");
+					return;
+				}
+				
+				Location loc = playerEntity.getLocation();
+				EntityGroundItem entity = new EntityGroundItem((WorldImplementation) loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), itemPile);
+				loc.getWorld().addEntity(entity);
+				
+				player.sendMessage("Notice : throwing stuff on ground is still glitchy and experimental.");
+			}
+			
+			itemPile.moveItemPileTo(to, newX, newY, amount);
+		}
 	}
 }

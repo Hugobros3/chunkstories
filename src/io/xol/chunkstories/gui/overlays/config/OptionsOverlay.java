@@ -13,7 +13,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.chunkstories.input.KeyBindImplementation;
+import io.xol.chunkstories.input.lwjgl2.KeyBindImplementation;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;

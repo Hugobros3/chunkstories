@@ -1,0 +1,194 @@
+package io.xol.chunkstories.input.lwjgl2;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import io.xol.chunkstories.api.client.ClientInputsManager;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.net.ClientToServerConnection;
+import io.xol.chunkstories.core.events.ClientInputPressedEvent;
+import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
+import io.xol.chunkstories.input.Inputs;
+import io.xol.chunkstories.net.packets.PacketInput;
+import io.xol.chunkstories.world.WorldClientRemote;
+
+//(c) 2015-2016 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
+public class Lwjgl2ClientInputsManager implements ClientInputsManager
+{
+	Set<Input> inputs = new HashSet<Input>();
+	Set<KeyBindImplementation> keyboardInputs = new HashSet<KeyBindImplementation>();
+	Map<Long, Input> inputsMap = new HashMap<Long, Input>();
+
+	public Lwjgl2ClientInputsManager()
+	{
+		reload();
+	}
+	
+	public Iterator<Input> getAllInputs()
+	{
+		return inputs.iterator();
+	}
+
+	/**
+	 * Returns null or a KeyBind matching the name
+	 * 
+	 * @param keyCode
+	 * @return
+	 */
+	public Input getInputByName(String bindName)
+	{
+		if(bindName.equals("mouse.left"))
+			return LEFT;
+		if(bindName.equals("mouse.right"))
+			return RIGHT;
+		if(bindName.equals("mouse.middle"))
+			return MIDDLE;
+		for (Input keyBind : inputs)
+		{
+			if (keyBind.getName().equals(bindName))
+				return keyBind;
+		}
+		return null;
+	}
+
+	/**
+	 * Returns null or a KeyBind matching the pressed key
+	 * 
+	 * @param keyCode
+	 * @return
+	 */
+	public KeyBind getKeyBoundForLWJGL2xKey(int keyCode)
+	{
+		for (Input keyBind : inputs)
+		{
+			if (keyBind instanceof KeyBindImplementation && ((KeyBindImplementation) keyBind).getLWJGL2xKey() == keyCode)
+				return (KeyBind) keyBind;
+		}
+		return null;
+	}
+	
+	public Input getInputFromHash(long hash)
+	{
+		if(hash == 0)
+			return LEFT;
+		else if(hash == 1)
+			return RIGHT;
+		else if(hash == 2)
+			return MIDDLE;
+		
+		return inputsMap.get(hash);
+	}
+	
+	//Debug
+	public void reloadBoundKeysFromConfig()
+	{
+		for (Input keyBind : inputs)
+		{
+			if (keyBind instanceof KeyBindImplementation)
+				((KeyBindImplementation) keyBind).reload();
+		}
+	}
+	
+	public static Lwjgl2MouseButton LEFT = new Lwjgl2MouseButton("mouse.left", 0);
+	public static Lwjgl2MouseButton RIGHT = new Lwjgl2MouseButton("mouse.right", 1);
+	public static Lwjgl2MouseButton MIDDLE = new Lwjgl2MouseButton("mouse.middle", 2);
+
+	public void reload()
+	{
+		inputs.clear();
+		inputsMap.clear();
+		keyboardInputs.clear();
+		Iterator<Input> i = Inputs.loadKeyBindsIntoManager(this);
+		while(i.hasNext())
+		{
+			Input input = i.next();
+			inputs.add(input);
+			inputsMap.put(input.getHash(), input);
+			
+			if(input instanceof KeyBindImplementation)
+			{
+				keyboardInputs.add((KeyBindImplementation) input);
+			}
+		}
+
+		//Add physical mouse buttons
+		inputs.add(LEFT);
+		inputsMap.put(LEFT.getHash(), LEFT);
+		inputs.add(RIGHT);
+		inputsMap.put(RIGHT.getHash(), RIGHT);
+		inputs.add(MIDDLE);
+		inputsMap.put(MIDDLE.getHash(), MIDDLE);
+	}
+
+	public void pollLWJGLInputs()
+	{
+		for(Input input : this.inputs)
+		{
+			if(input instanceof LWJGLPollable)
+				((LWJGLPollable) input).updateStatus();
+		}
+	}
+
+	public boolean onInputPressed(Input input)
+	{
+		ClientInputPressedEvent event = new ClientInputPressedEvent(input);
+
+		Client.getInstance().getPluginManager().fireEvent(event);
+		if (event.isCancelled())
+			return false;
+		
+		final EntityControllable entityControlled = Client.getInstance().getClientSideController().getControlledEntity();
+
+		//There has to be a controlled entity for sending inputs to make sense.
+		if(entityControlled == null)
+			return false;
+		
+		//Send input to server
+		if (entityControlled.getWorld() instanceof WorldClientRemote)
+		{
+			ClientToServerConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
+			PacketInput packet = new PacketInput();
+			packet.input = input;
+			connection.sendPacket(packet);
+		}
+
+		//Handle interaction locally
+		return entityControlled.handleInteraction(input, Client.getInstance().getClientSideController());
+	}
+
+	@Override
+	public boolean onInputReleased(Input input)
+	{
+		ClientInputReleasedEvent event = new ClientInputReleasedEvent(input);
+
+		Client.getInstance().getPluginManager().fireEvent(event);
+		//if (event.isCancelled())
+		//	return false;
+		
+		final EntityControllable entityControlled = Client.getInstance().getClientSideController().getControlledEntity();
+
+		//There has to be a controlled entity for sending inputs to make sense.
+		if(entityControlled == null)
+			return false;
+		
+		//Send input to server
+		if (entityControlled.getWorld() instanceof WorldClientRemote)
+		{
+			ClientToServerConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
+			PacketInput packet = new PacketInput();
+			packet.input = input;
+			connection.sendPacket(packet);
+		}
+		
+		return true;
+	}
+}

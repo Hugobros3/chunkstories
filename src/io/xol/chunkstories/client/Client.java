@@ -32,6 +32,7 @@ import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
+import io.xol.chunkstories.input.lwjgl2.Lwjgl2ClientInputsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -40,7 +41,7 @@ public class Client implements ClientInterface
 {
 	public static ConfigFile clientConfig = new ConfigFile("./config/client.cfg");
 
-	public static ClientInputsManager inputsManager;
+	public static Lwjgl2ClientInputsManager inputsManager;
 
 	public static boolean offline = false;
 
@@ -117,7 +118,7 @@ public class Client implements ClientInterface
 		NativesLoader.load();
 		// Load last gamemode
 		ModsManager.reload();
-		inputsManager = new ClientInputsManager();
+		inputsManager = new Lwjgl2ClientInputsManager();
 		// Gl init
 		windows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);
 		windows.createContext();
@@ -146,7 +147,7 @@ public class Client implements ClientInterface
 	}
 
 	@Override
-	public ClientInputsManager getInputsManager()
+	public Lwjgl2ClientInputsManager getInputsManager()
 	{
 		return inputsManager;
 	}

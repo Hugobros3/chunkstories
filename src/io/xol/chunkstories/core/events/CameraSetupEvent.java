@@ -34,11 +34,4 @@ public class CameraSetupEvent extends Event
 	{
 		return camera;
 	}
-	
-	@Override
-	public void defaultBehaviour()
-	{
-		// TODO Auto-generated method stub
-		
-	}
 }

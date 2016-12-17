@@ -46,10 +46,4 @@ public class PlayerInputReleasedEvent extends Event
 	{
 		return input;
 	}
-
-	@Override
-	public void defaultBehaviour()
-	{
-		
-	}
 }

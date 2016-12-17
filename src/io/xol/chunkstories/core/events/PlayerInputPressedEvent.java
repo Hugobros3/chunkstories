@@ -41,13 +41,7 @@ public class PlayerInputPressedEvent extends CancellableEvent
 	{
 		return input;
 	}
-
-	@Override
-	public void defaultBehaviour()
-	{
-		
-	}
-
+	
 	public Player getPlayer()
 	{
 		return player;

@@ -1,4 +1,4 @@
-package io.xol.chunkstories.input;
+package io.xol.chunkstories.input.lwjgl2;
 
 import io.xol.chunkstories.api.input.Input;
 

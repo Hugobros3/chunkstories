@@ -6,3 +6,5 @@
 #These are here for demo/debug
 4 spotlight io.xol.chunkstories.core.particles.ParticleSetupLight
 5 light io.xol.chunkstories.core.particles.ParticleLight
+
+6 snow io.xol.chunkstories.core.particles.ParticleSnow

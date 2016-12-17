@@ -52,10 +52,4 @@ public class PlayerLogoutEvent extends Event implements PlayerEvent
 	{
 		return player;
 	}
-
-	@Override
-	public void defaultBehaviour()
-	{
-		
-	}
 }

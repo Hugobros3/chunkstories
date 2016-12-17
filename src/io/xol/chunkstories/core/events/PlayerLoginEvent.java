@@ -63,10 +63,4 @@ public class PlayerLoginEvent extends CancellableEvent implements PlayerEvent
 	{
 		return player;
 	}
-
-	@Override
-	public void defaultBehaviour()
-	{
-		
-	}
 }

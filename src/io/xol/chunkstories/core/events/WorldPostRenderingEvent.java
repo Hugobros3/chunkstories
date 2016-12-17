@@ -52,11 +52,4 @@ public class WorldPostRenderingEvent extends Event
 	{
 		return renderingInterface;
 	}
-
-	@Override
-	public void defaultBehaviour()
-	{
-		// TODO Auto-generated method stub
-		
-	}
 }

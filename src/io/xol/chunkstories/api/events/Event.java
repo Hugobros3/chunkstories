@@ -12,5 +12,5 @@ public abstract class Event
 	 * Executed when the event has been passed to all listening plugins.
 	 * May check if event was canceled if the implementation allows it
 	 */
-	public abstract void defaultBehaviour();
+	//public abstract void defaultBehaviour();
 }

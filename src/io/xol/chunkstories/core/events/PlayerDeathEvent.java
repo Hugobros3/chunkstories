@@ -1,11 +1,8 @@
 package io.xol.chunkstories.core.events;
 
-import java.io.File;
-
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.server.Player;
-import io.xol.chunkstories.server.Server;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -46,24 +43,6 @@ public class PlayerDeathEvent extends Event
 	public void setDeathMessage(String deathMessage)
 	{
 		this.deathMessage = deathMessage;
-	}
-
-	@Override
-	public void defaultBehaviour()
-	{
-		//When a player dies, delete his save
-		File playerSavefile = new File("./players/" + player.getName().toLowerCase() + ".csf");
-		if(playerSavefile.exists())
-		{
-			System.out.println("Removing player file as he died :");
-			playerSavefile.delete();
-		}
-		
-		//TODO have a proper clean way of doing this
-		if(deathMessage != null)
-		{
-			Server.getInstance().broadcastMessage(deathMessage);
-		}
 	}
 
 	public Player getPlayer()

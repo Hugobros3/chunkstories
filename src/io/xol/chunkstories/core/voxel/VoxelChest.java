@@ -4,7 +4,6 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.voxel.VoxelEntity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -40,7 +39,7 @@ public class VoxelChest extends VoxelEntity
 	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input, int voxelData)
 	{
 		//Open GUI
-		if(input.equals(MouseButton.RIGHT) && entity.getWorld() instanceof WorldClient)
+		if(input.getName().equals("mouse.right") && entity.getWorld() instanceof WorldClient)
 		{	
 			Client.getInstance().openInventory(((EntityChest)this.getVoxelEntity(voxelLocation)).getInventory());
 			return true;

@@ -2,7 +2,6 @@ package io.xol.chunkstories.api.client;
 
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Inventory;
-import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
@@ -56,7 +55,7 @@ public interface ClientInterface extends PluginExecutionContext, CommandEmitter
 	
 	public SoundManager getSoundManager();
 
-	public InputsManager getInputsManager();
+	public ClientInputsManager getInputsManager();
 
 	public ParticlesManager getParticlesManager();
 

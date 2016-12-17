@@ -42,12 +42,6 @@ public class EntityDamageEvent extends CancellableEvent
 		this.damage = damage;
 	}
 	
-	@Override
-	public void defaultBehaviour()
-	{
-		
-	}
-	
 	public Entity getEntity()
 	{
 		return entity;

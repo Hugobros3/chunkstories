@@ -28,7 +28,6 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
-import io.xol.chunkstories.api.input.MouseButton;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -38,16 +37,14 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.ClientInputsManager;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.CameraSetupEvent;
-import io.xol.chunkstories.core.events.ClientInputPressedEvent;
-import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
 import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.PauseOverlay;
+import io.xol.chunkstories.input.lwjgl2.Lwjgl2ClientInputsManager;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
@@ -316,7 +313,7 @@ public class Ingame extends OverlayableScene
 		if (currentOverlay != null && currentOverlay.handleKeypress(keyCode))
 			return true;
 
-		KeyBind keyBind = ((ClientInputsManager) Client.getInstance().getInputsManager()).getKeyBoundForLWJGL2xKey(keyCode);
+		KeyBind keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
 
 		if (!guiHidden && keyBind != null)
 		{
@@ -328,10 +325,7 @@ public class Ingame extends OverlayableScene
 				return true;
 			}
 
-			ClientInputPressedEvent event = new ClientInputPressedEvent(keyBind);
-
-			Client.getInstance().getPluginManager().fireEvent(event);
-			if (event.isCancelled())
+			if(Client.getInstance().getInputsManager().onInputPressed(keyBind) == true)
 				return true;
 		}
 
@@ -341,7 +335,9 @@ public class Ingame extends OverlayableScene
 			guiHidden = !guiHidden;
 		}
 		else if (keyCode == Keyboard.KEY_F2)
+		{
 			chat.insert(worldRenderer.screenShot());
+		}
 		else if (keyCode == Keyboard.KEY_F3)
 		{
 			RenderingConfig.showDebugInfo = !RenderingConfig.showDebugInfo;
@@ -371,7 +367,8 @@ public class Ingame extends OverlayableScene
 			ChunksRenderer.renderStart = System.currentTimeMillis();
 			worldRenderer.flagModified();
 		}
-		else if (!guiHidden && keyBind != null && keyBind.getName().startsWith("inventorySlot"))
+		//Item slots selection
+		else if (keyBind != null && keyBind.getName().startsWith("inventorySlot"))
 		{
 			int requestedInventorySlot = Integer.parseInt(keyBind.getName().replace("inventorySlot", ""));
 			//Match zero onto last slot
@@ -418,14 +415,12 @@ public class Ingame extends OverlayableScene
 
 	public boolean onKeyUp(int keyCode)
 	{
-		KeyBind keyBind = ((ClientInputsManager) Client.getInstance().getInputsManager()).getKeyBoundForLWJGL2xKey(keyCode);
+		KeyBind keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
 
 		if (keyBind != null)
 		{
-			ClientInputReleasedEvent event = new ClientInputReleasedEvent(keyBind);
-
-			Client.getInstance().getPluginManager().fireEvent(event);
-			return true;
+			if(Client.getInstance().getInputsManager().onInputReleased(keyBind) == true)
+				return true;
 		}
 
 		return false;
@@ -440,25 +435,23 @@ public class Ingame extends OverlayableScene
 		if (player == null)
 			return false;
 
-		MouseButton mButton = null;
+		Input mButton = null;
 		switch (button)
 		{
 		case 0:
-			mButton = MouseButton.LEFT;
+			mButton = Lwjgl2ClientInputsManager.LEFT;
 			break;
 		case 1:
-			mButton = MouseButton.RIGHT;
+			mButton = Lwjgl2ClientInputsManager.RIGHT;
 			break;
 		case 2:
-			mButton = MouseButton.MIDDLE;
+			mButton = Lwjgl2ClientInputsManager.MIDDLE;
 			break;
 		}
+		
 		if (mButton != null)
-		{
-			ClientInputPressedEvent event = new ClientInputPressedEvent(mButton);
-			if (mButton != null)
-				Client.getInstance().getPluginManager().fireEvent(event);
-		}
+			Client.getInstance().getInputsManager().onInputPressed(mButton);
+		
 		//TODO it does not handle the special clicks yet, maybye do it somewhere else, like in binds ?
 		return false;
 	}
@@ -469,22 +462,18 @@ public class Ingame extends OverlayableScene
 		switch (button)
 		{
 		case 0:
-			mButton = MouseButton.LEFT;
+			mButton = Lwjgl2ClientInputsManager.LEFT;
 			break;
 		case 1:
-			mButton = MouseButton.RIGHT;
+			mButton = Lwjgl2ClientInputsManager.RIGHT;
 			break;
 		case 2:
-			mButton = MouseButton.MIDDLE;
+			mButton = Lwjgl2ClientInputsManager.MIDDLE;
 			break;
-
 		}
+		
 		if (mButton != null)
-		{
-			ClientInputReleasedEvent event = new ClientInputReleasedEvent(mButton);
-			if (mButton != null)
-				Client.getInstance().getPluginManager().fireEvent(event);
-		}
+			Client.getInstance().getInputsManager().onInputReleased(mButton);
 
 		return false;
 	}

@@ -1,9 +1,10 @@
-package io.xol.chunkstories.input;
+package io.xol.chunkstories.input.lwjgl2;
 
 import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.input.Inputs;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

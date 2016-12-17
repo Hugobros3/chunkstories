@@ -1,16 +1,17 @@
 package io.xol.chunkstories.core.events;
 
-import io.xol.chunkstories.api.entity.Controller;
-import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.api.server.Player;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
+/**
+ * This event is called upon confirmed death of a living entity.
+ * You can't and shouldn't prevent it from dying here, instead use the EntityDamageEvent to cancel the damage.
+ */
 public class EntityDeathEvent extends Event
 {
 	// Every event class has to have this
@@ -30,33 +31,14 @@ public class EntityDeathEvent extends Event
 	
 	// Specific event code
 	
-	Entity entity;
+	EntityLiving entity;
 	
-	public EntityDeathEvent(Entity entity)
+	public EntityDeathEvent(EntityLiving entity)
 	{
 		this.entity = entity;
 	}
 	
-	@Override
-	public void defaultBehaviour()
-	{
-		if(entity instanceof EntityControllable)
-		{
-			Controller controller = ((EntityControllable) entity).getControllerComponent().getController();
-			if(controller != null)
-				controller.setControlledEntity(null);
-			
-			if(controller instanceof Player)
-			{
-				Player player = (Player)controller;
-				
-				PlayerDeathEvent event = new PlayerDeathEvent(player);
-				entity.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
-			}
-		}
-	}
-	
-	public Entity getEntity()
+	public EntityLiving getEntity()
 	{
 		return entity;
 	}
