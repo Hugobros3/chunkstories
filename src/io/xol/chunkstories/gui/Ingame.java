@@ -278,10 +278,11 @@ public class Ingame extends OverlayableScene
 
 		}
 
+		//Auto-switch to pause if it detects the game isn't in focus anymore
 		if (!Display.isActive() && this.currentOverlay == null)
 		{
 			focus(false);
-			this.changeOverlay(new PauseOverlay(this, null));
+			this.changeOverlay(new PauseOverlay(this, currentOverlay));
 		}
 	}
 

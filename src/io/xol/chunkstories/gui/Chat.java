@@ -389,9 +389,9 @@ public class Chat
 				alpha = 0;
 			if (alpha > 1 || chatting)
 				alpha = 1;
-			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, 9, (linesDrew - 1) * 26 + 100 + (chatting ? 50 : 0), line.text, 2, 2, 500, new Vector4f(1, 1, 1, alpha));
+			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, 9, (linesDrew - 1) * 26 + 180 + (chatting ? 50 : 0), line.text, 2, 2, 500, new Vector4f(1, 1, 1, alpha));
 		}
-		inputBox.setPosition(12, 112);
+		inputBox.setPosition(12, 192);
 		if (chatting)
 			inputBox.drawWithBackGroundTransparent();
 	}

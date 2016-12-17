@@ -263,7 +263,7 @@ public class TrueTypeFont
 		
 		boolean clip = clipX != -1;
 		int lines = 1;
-		int i = 1;
+		int i = 0;
 		char charCurrent;
 		Glyph glyph;
 		int totalwidth = 0;
@@ -283,7 +283,8 @@ public class TrueTypeFont
 				{
 					if (!(i > 1 && whatchars.toCharArray()[i - 1] == '#'))
 					{
-						i += 6;
+						i += 7;
+						continue;
 					}
 				}
 				else if (charCurrent == '\n')

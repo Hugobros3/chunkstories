@@ -117,12 +117,6 @@ public class TrueTypeFontRenderer
 
 			if (glyph != null)
 			{
-				if (clip && (totalwidth + (glyph.width)) > clipX / scaleX)
-				{
-					startY -= trueTypeFont.getHeight();
-					totalwidth = 0;
-					continue;
-				}
 				//Detects and parses #C0L0R codes
 				if (charCurrent == '#' && whatchars.length() - i - 1 >= 6 && (whatchars.toCharArray()[i + 1] != '#') && HexTools.isHexOnly(whatchars.substring(i + 1, i + 7)))
 				{
@@ -131,7 +125,8 @@ public class TrueTypeFontRenderer
 						String colorCode = whatchars.substring(i + 1, i + 7);
 						int rgb[] = ColorsTools.hexToRGB(colorCode);
 						colorModified = new Vector4f(rgb[0] / 255.0f * color.x, rgb[1] / 255.0f * color.y, rgb[2] / 255.0f * color.z, color.w);
-						i += 6;
+						i += 7;
+						continue;
 					}
 				}
 				else if (charCurrent == '\n')
@@ -150,6 +145,13 @@ public class TrueTypeFontRenderer
 				}
 				else
 				{
+					if (clip && (totalwidth + (glyph.width)) > clipX / scaleX)
+					{
+						startY -= trueTypeFont.getHeight();
+						totalwidth = 0;
+						continue;
+					}
+					
 					if(target == null)
 					{
 						//renderingContext.getGuiRenderer().setState(pageTexture, true, true, colorModified);
