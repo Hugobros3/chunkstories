@@ -103,6 +103,10 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 				e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 			}
 		}
+		else
+		{
+			itemPile = from.getItemPileAt(oldX, oldY);
+		}
 		
 		Player player = processor.getServerClient().getProfile();
 		

@@ -39,8 +39,6 @@ public class PlayerMoveItemEvent extends CancellableEvent
 		this.packet = packet;
 
 		pile = packet.itemPile;
-		if(pile == null && packet.from != null)
-			pile = packet.from.getItemPileAt(packet.oldX, packet.oldY);
 	}
 
 	public Player getPlayer()
