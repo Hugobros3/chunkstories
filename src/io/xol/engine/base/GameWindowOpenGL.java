@@ -9,6 +9,7 @@ import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -184,10 +185,10 @@ public class GameWindowOpenGL
 		try
 		{
 			Client.onStart();
-			
+
 			int vao = glGenVertexArrays();
 			glBindVertexArray(vao);
-			
+
 			while (!Display.isCloseRequested() && !closeRequest)
 			{
 				//Update pending actions
@@ -213,9 +214,15 @@ public class GameWindowOpenGL
 				}
 
 				//Do scene changes etc
-				for (Runnable r : mainThreadQueue)
-					r.run();
-				mainThreadQueue.clear();
+				synchronized (mainThreadQueue)
+				{
+					Iterator<Runnable> i = mainThreadQueue.iterator();
+					while(i.hasNext())
+					{
+						i.next().run();
+						i.remove();
+					}
+				}
 
 				// Update audio
 				soundManager.update();
@@ -231,10 +238,10 @@ public class GameWindowOpenGL
 					try
 					{
 						currentScene.guiHandler.rescaleGui(getScalingFactor());
-						if(currentScene instanceof OverlayableScene)
+						if (currentScene instanceof OverlayableScene)
 						{
-							OverlayableScene o = (OverlayableScene)currentScene;
-							if(o.currentOverlay != null)
+							OverlayableScene o = (OverlayableScene) currentScene;
+							if (o.currentOverlay != null)
 								o.currentOverlay.guiHandler.rescaleGui(getScalingFactor());
 						}
 						currentScene.update(renderingContext);
@@ -275,7 +282,7 @@ public class GameWindowOpenGL
 				GLCalls.nextFrame();
 			}
 			System.out.println("Copyright 2015-2016 XolioWare Interactive");
-			
+
 			soundManager.destroy();
 			Client.onClose();
 			Display.destroy();
@@ -288,7 +295,7 @@ public class GameWindowOpenGL
 			System.exit(-1);
 		}
 	}
-	
+
 	public static int getScalingFactor()
 	{
 		return windowWidth > 1024 ? 2 : 1;

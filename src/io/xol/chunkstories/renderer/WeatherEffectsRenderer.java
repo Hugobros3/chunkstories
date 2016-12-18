@@ -24,9 +24,9 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 
 public class WeatherEffectsRenderer
 {
-	Random random = new Random();
-	WorldImplementation world;
-	WorldRenderer worldRenderer;
+	private Random random = new Random();
+	private WorldImplementation world;
+	private WorldRenderer worldRenderer;
 
 	public WeatherEffectsRenderer(WorldImplementation world, WorldRenderer worldRenderer)
 	{

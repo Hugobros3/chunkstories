@@ -26,7 +26,6 @@ public class WorldClientRemote extends WorldClientCommon implements WorldNetwork
 
 		ioHandler = new IOTasksMultiplayerClient(this, packetsProcessor.getClientToServerConnection());
 		ioHandler.start();
-
 	}
 	
 	public ClientToServerConnection getConnection()
@@ -53,6 +52,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldNetwork
 
 		entitiesLock.writeLock().lock();
 		
+		@SuppressWarnings("unused")
 		int packetsThisTick = 0;
 		PendingSynchPacket packet = packetsProcessor.getPendingSynchPacket();
 		while (packet != null)

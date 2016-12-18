@@ -260,8 +260,8 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{if (mainScene instanceof Ingame && shouldReload){
-						Ingame gps = ((Ingame) mainScene);
-						gps.worldRenderer.resizeShadowMaps();
+						Client.getInstance().getWorld().getWorldRenderer().resizeShadowMaps();
+						//gps.worldRenderer.resizeShadowMaps();
 					}}
 				}),
 				new ConfigButtonToggle("dynamicGrass").setApplyAction(new Runnable(){
@@ -317,8 +317,7 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{if (mainScene instanceof Ingame && shouldReload){
-						Ingame gps = ((Ingame) mainScene);
-						gps.worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+						Client.getInstance().getWorld().getWorldRenderer().setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 					}
 					ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig()); }
 				}),

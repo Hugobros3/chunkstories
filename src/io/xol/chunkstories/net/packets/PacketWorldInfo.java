@@ -18,7 +18,7 @@ import java.io.IOException;
 public class PacketWorldInfo extends Packet
 {
 	public WorldInfo info;
-	
+
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
@@ -46,7 +46,7 @@ public class PacketWorldInfo extends Packet
 		read(in);
 		process(processor);
 	}
-	
+
 	public void read(DataInputStream in) throws IOException
 	{
 		short length = in.readShort();
@@ -58,16 +58,25 @@ public class PacketWorldInfo extends Packet
 		char[] chars2 = new char[length / 2];
 		for (int i = 0; i < chars2.length; i++)
 			chars2[i] = (char) ((bytes[i * 2] << 8) + (bytes[i * 2 + 1] & 0xFF));
-		
+
 		info = new WorldInfo(new String(chars2), "");
 	}
 
 	public void process(PacketsProcessor processor)
 	{
-		if(processor.isClient)
+		if (processor.isClient)
 		{
-			WorldClientRemote world = new WorldClientRemote(info, processor.getClientToServerConnection());
-			Client.getInstance().changeWorld(world);
+			//Asks
+			Client client = Client.getInstance();
+			client.windows.queueTask(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					WorldClientRemote world = new WorldClientRemote(info, processor.getClientToServerConnection());
+					Client.getInstance().changeWorld(world);
+				}
+			});
 		}
 	}
 

@@ -177,10 +177,13 @@ public class WorldRenderer
 	private EntitiesRenderer entitiesRenderer;
 	
 	// Sky
-	private SkyRenderer sky;
+	private SkyRenderer skyRenderer;
 
 	// Decals
 	private DecalsRenderer decalsRenderer;
+	
+	//Particles
+	private ParticlesRenderer particlesRenderer;
 
 	//Far terrain mesher
 	private FarTerrainRenderer farTerrainRenderer;
@@ -231,11 +234,11 @@ public class WorldRenderer
 	{
 		// Link world
 		world = w;
-		world.linkWorldRenderer(this);
 		entitiesRenderer = new EntitiesRenderer(world);
+		particlesRenderer = new ParticlesRenderer(world);
 		farTerrainRenderer = new FarTerrainRenderer(world);
 		weatherEffectsRenderer = new WeatherEffectsRenderer(world, this);
-		sky = new SkyRenderer(world, this);
+		skyRenderer = new SkyRenderer(world, this);
 		decalsRenderer = new DecalsRenderer(this);
 		sizeInChunks = world.getSizeInChunks();
 		resizeShadowMaps();
@@ -337,11 +340,11 @@ public class WorldRenderer
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
 		//fboShadedBuffer.bind();
 
-		sky.time = (world.worldTime % 10000) / 10000f;
+		skyRenderer.time = (world.worldTime % 10000) / 10000f;
 		//sky.skyShader.use(true);
 		//sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
 		//glViewport(0, 0, scrW, scrH);
-		sky.render(renderingContext);
+		skyRenderer.render(renderingContext);
 
 
 		// Move camera to relevant position
@@ -663,7 +666,7 @@ public class WorldRenderer
 		int shadowDepthRange = 200;
 		Matrix4f depthProjectionMatrix = MatrixHelper.getOrthographicMatrix(-shadowRange, shadowRange, -shadowRange, shadowRange, -shadowDepthRange, shadowDepthRange);
 		
-		Matrix4f depthViewMatrix = MatrixHelper.getLookAtMatrix(sky.getSunPosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
+		Matrix4f depthViewMatrix = MatrixHelper.getLookAtMatrix(skyRenderer.getSunPosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
 		Matrix4f.mul(depthProjectionMatrix, depthViewMatrix, depthMatrix);
 		Matrix4f shadowMVP = new Matrix4f(depthMatrix);
@@ -684,9 +687,9 @@ public class WorldRenderer
 		terrainShader = renderingContext.useShader("terrain");
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 		camera.setupShader(terrainShader);
-		sky.setupShader(terrainShader);
+		skyRenderer.setupShader(terrainShader);
 
-		terrainShader.setUniform3f("sunPos", sky.getSunPosition());
+		terrainShader.setUniform3f("sunPos", skyRenderer.getSunPosition());
 		terrainShader.setUniform1f("time", animationTimer);
 		terrainShader.setUniform1f("terrainHeight", world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int) camera.pos.getX(), (int) camera.pos.getZ()));
 		terrainShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
@@ -704,7 +707,7 @@ public class WorldRenderer
 		renderingContext.bindTexture2D("lightColors", lightColors);
 		renderingContext.bindTexture2D("normalTexture", waterNormalTexture);
 		setupShadowColors(terrainShader);
-		terrainShader.setUniform1f("time", sky.time);
+		terrainShader.setUniform1f("time", skyRenderer.time);
 
 		renderingContext.bindTexture2D("vegetationColorTexture", getGrassTexture());
 		terrainShader.setUniform1f("mapSize", sizeInChunks * 32);
@@ -734,7 +737,7 @@ public class WorldRenderer
 
 		int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
 
-		Vector3f sunPos = sky.getSunPosition();
+		Vector3f sunPos = skyRenderer.getSunPosition();
 		float shadowVisiblity = getShadowVisibility();
 		chunksViewDistance = sizeInChunks / 2;
 
@@ -1120,7 +1123,7 @@ public class WorldRenderer
 
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		
-		Vector3f sunPos = sky.getSunPosition();
+		Vector3f sunPos = skyRenderer.getSunPosition();
 
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
 		//fboShadedBuffer.bind();
@@ -1148,7 +1151,7 @@ public class WorldRenderer
 
 		renderingContext.bindCubemap("environmentCubemap", environmentMap);
 
-		applyShadowsShader.setUniform1f("time", sky.time);
+		applyShadowsShader.setUniform1f("time", skyRenderer.time);
 
 		applyShadowsShader.setUniform1f("shadowMapResolution", shadowMapResolution);
 		applyShadowsShader.setUniform1f("shadowVisiblity", getShadowVisibility());
@@ -1157,7 +1160,7 @@ public class WorldRenderer
 
 		// Matrices for screen-space transformations
 		camera.setupShader(applyShadowsShader);
-		sky.setupShader(applyShadowsShader);
+		skyRenderer.setupShader(applyShadowsShader);
 
 		renderingContext.drawFSQuad();
 
@@ -1531,8 +1534,8 @@ public class WorldRenderer
 				camera.translate();
 
 				//Draw sky
-				sky.time = (world.worldTime % 10000) / 10000f;
-				sky.render(renderingContext);
+				skyRenderer.time = (world.worldTime % 10000) / 10000f;
+				skyRenderer.render(renderingContext);
 
 				this.renderTerrain(true);
 			}
@@ -1708,10 +1711,12 @@ public class WorldRenderer
 
 	public void destroy()
 	{
-		sky.destroy();
-		chunksRenderer.killThread();
+		skyRenderer.destroy();
+		particlesRenderer.destroy();
 		farTerrainRenderer.destroy();
+		skyRenderer.destroy();
 		entitiesRenderer.clearLoadedEntitiesRenderers();
+		chunksRenderer.killThread();
 	}
 
 	public World getWorld()
@@ -1728,10 +1733,15 @@ public class WorldRenderer
 	{
 		return farTerrainRenderer;
 	}
+
+	public ParticlesRenderer getParticlesRenderer()
+	{
+		return particlesRenderer;
+	}
 	
 	public SkyRenderer getSky()
 	{
-		return sky;
+		return skyRenderer;
 	}
 	
 	public void reloadContentSpecificStuff()

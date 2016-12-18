@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.world;
 
-import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.renderer.WorldRenderer;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -13,9 +13,7 @@ import io.xol.chunkstories.renderer.WorldRenderer;
  */
 public interface WorldClient extends World
 {
-	public Client getClient();
-
-	public void linkWorldRenderer(WorldRenderer renderer);
+	public ClientInterface getClient();
 	
 	public WorldRenderer getWorldRenderer();
 }

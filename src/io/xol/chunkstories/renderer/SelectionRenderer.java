@@ -13,12 +13,10 @@ import io.xol.chunkstories.physics.CollisionBox;
 public class SelectionRenderer
 {
 	World world;
-	WorldRenderer worldRenderer;
 
-	public SelectionRenderer(World w, WorldRenderer r)
+	public SelectionRenderer(World w)
 	{
 		world = w;
-		worldRenderer = r;
 	}
 
 	public void drawSelectionBox(Location location)

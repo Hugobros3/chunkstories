@@ -28,13 +28,15 @@ import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.entity.Entities;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
-import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
+/**
+ * KILL ME
+ */
 public class Chat
 {
 	Ingame ingame;
@@ -368,7 +370,7 @@ public class Chat
 			scroll = 0;
 		if (scroll > chatHistorySize)
 			scroll = chatHistorySize;
-		int ST = scroll;
+		int scrollLinesSkip = scroll;
 		int linesDrew = 0;
 		int maxLines = 14;
 		Iterator<ChatLine> i = chat.iterator();
@@ -376,20 +378,22 @@ public class Chat
 		{
 			//if (a >= chatHistorySize - lines)
 			ChatLine line = i.next();
-			if (ST > 0)
+			if (scrollLinesSkip > 0)
 			{
-				ST--;
+				scrollLinesSkip--;
 				continue;
 			}
-			//System.out.println("added" +line.text);
-			int actualLines = TrueTypeFont.arial11px.getLinesHeight(line.text, 250);
+			
+			int chatWidth = Math.max(750, Client.getInstance().windows.windowWidth / 2 - 10);
+			
+			int actualLines = TrueTypeFont.arial11px.getLinesHeight(line.text, chatWidth/2);
 			linesDrew += actualLines;
 			float alpha = (line.time + 10000L - System.currentTimeMillis()) / 1000f;
 			if (alpha < 0)
 				alpha = 0;
 			if (alpha > 1 || chatting)
 				alpha = 1;
-			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, 9, (linesDrew - 1) * 26 + 180 + (chatting ? 50 : 0), line.text, 2, 2, 500, new Vector4f(1, 1, 1, alpha));
+			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, 9, (linesDrew - 1) * 26 + 180 + (chatting ? 50 : 0), line.text, 2, 2, chatWidth, new Vector4f(1, 1, 1, alpha));
 		}
 		inputBox.setPosition(12, 192);
 		if (chatting)

@@ -867,11 +867,6 @@ public abstract class WorldImplementation implements World
 		return particlesHolder;
 	}
 
-	public void setParticlesManager(ParticlesRenderer particlesHolder)
-	{
-		this.particlesHolder = particlesHolder;
-	}
-
 	@Override
 	public ChunkHolder aquireChunkHolderLocation(WorldUser user, Location location)
 	{
