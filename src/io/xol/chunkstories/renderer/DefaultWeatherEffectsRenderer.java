@@ -7,13 +7,16 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Vector2f;
-import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.WorldEffectsRenderer;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.graphics.RenderingContext;
+import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -22,13 +25,13 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class WeatherEffectsRenderer
+public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 {
 	private Random random = new Random();
-	private WorldImplementation world;
+	private WorldClientCommon world;
 	private WorldRenderer worldRenderer;
 
-	public WeatherEffectsRenderer(WorldImplementation world, WorldRenderer worldRenderer)
+	public DefaultWeatherEffectsRenderer(WorldClientCommon world, WorldRenderer worldRenderer)
 	{
 		this.world = world;
 		this.worldRenderer = worldRenderer;
@@ -44,9 +47,9 @@ public class WeatherEffectsRenderer
 
 	VerticesObject rainVerticesBuffer = new VerticesObject();
 
-	private void generateRainForOneSecond(RenderingContext renderingContext)
+	private void generateRainForOneSecond(RenderingInterface renderingContex, float rainPresence)
 	{
-		float rainIntensity = Math.min(Math.max(0.0f, world.getWeather() - 0.5f) / 0.3f, 1.0f);
+		float rainIntensity = Math.min(Math.max(0.0f, rainPresence - 0.5f) / 0.3f, 1.0f);
 
 		bufferOffset %= 110000;
 		bufferOffset += 10000;
@@ -120,16 +123,28 @@ public class WeatherEffectsRenderer
 	private SoundSource rainSoundSource;
 
 	// Rain falls at ~10m/s, so we prepare in advance 10 meters of rain to fall until we add some more on top
-	public void renderEffects(RenderingContext renderingContext)
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.WeatherEffectsRenderer#renderEffects(io.xol.chunkstories.api.rendering.RenderingInterface)
+	 */
+	@Override
+	public void renderEffects(RenderingInterface renderingContext)
 	{
-		viewX = (int) -renderingContext.getCamera().pos.getX();
-		viewY = (int) -renderingContext.getCamera().pos.getY();
-		viewZ = (int) -renderingContext.getCamera().pos.getZ();
-		if (world.getWeather() > 0.5)
+		viewX = (int) renderingContext.getCamera().getCameraPosition().getX();
+		viewY = (int) renderingContext.getCamera().getCameraPosition().getY();
+		viewZ = (int) renderingContext.getCamera().getCameraPosition().getZ();
+		
+		float rainPresence = world.getWeather();
+		
+		float snowPresence = getSnowPresence();
+		
+		rainPresence -= snowPresence;
+		//rainPresence = Math2.clamp(rainPresence, 0f, 1f);
+		
+		if (rainPresence > 0.5)
 		{
-			renderRain(renderingContext);
+			renderRain(renderingContext, rainPresence);
 
-			float rainIntensity = world.getWeather() * 2.0f - 1.0f;
+			float rainIntensity = rainPresence * 2.0f - 1.0f;
 
 			if (Client.getInstance().getClientSideController().getControlledEntity() != null)
 			{
@@ -158,15 +173,26 @@ public class WeatherEffectsRenderer
 		}
 	}
 
+	private float getSnowPresence()
+	{
+		Entity e = Client.getInstance().getClientSideController().getControlledEntity();
+		if(e != null)
+		{
+			return world.getWeather()*Math2.clamp((e.getLocation().getY() - 20) / 20, 0, 1);
+		}
+		
+		return 0;
+	}
+
 	//int vboId = -1;
 
-	private void renderRain(RenderingContext renderingContext)
+	private void renderRain(RenderingInterface renderingContext, float rainPresence)
 	{
 		ShaderInterface weatherShader = renderingContext.useShader("weather");
 
 		if ((System.currentTimeMillis() - lastRender) >= 1000 || Math.abs(viewX - lastX) > 10 || Math.abs(viewZ - lastZ) > 10)
 		{
-			generateRainForOneSecond(renderingContext);
+			generateRainForOneSecond(renderingContext, rainPresence);
 			lastRender = System.currentTimeMillis();
 		}
 
@@ -183,10 +209,10 @@ public class WeatherEffectsRenderer
 
 		renderingContext.bindAttribute("vertexIn", rainVerticesBuffer.asAttributeSource(VertexFormat.FLOAT, 4));
 
-		float rainIntensity = Math.min(Math.max(0.0f, world.getWeather() - 0.5f) / 0.3f, 1.0f);
+		float rainIntensity = Math.min(Math.max(0.0f, rainPresence - 0.5f) / 0.3f, 1.0f);
 
 		//System.out.println("rainIntensity"+rainIntensity);
-
+		
 		renderingContext.draw(Primitive.TRIANGLE, 0, 20000 + (int) (90000 * rainIntensity));
 		//GLCalls.drawArrays(GL_TRIANGLES, 0, 2000 + (int)(9000 * rainIntensity));
 		//glDisable(GL_BLEND);
@@ -194,6 +220,10 @@ public class WeatherEffectsRenderer
 		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.WeatherEffectsRenderer#destroy()
+	 */
+	@Override
 	public void destroy()
 	{
 		if (rainSoundSource != null)
@@ -203,5 +233,21 @@ public class WeatherEffectsRenderer
 		}
 
 		rainVerticesBuffer.destroy();
+	}
+
+	@Override
+	public void tick()
+	{
+		//Spawn some snow arround
+		float snowPresence = getSnowPresence();
+		
+		Entity e = Client.getInstance().getClientSideController().getControlledEntity();
+		if (e != null && world.getWorldRenderer() != null)
+		{
+			Location loc = e.getLocation();
+
+			for (int i = 0; i < snowPresence * 10; i++)
+				world.getParticlesManager().spawnParticleAtPosition("snow", loc.add(Math.random() * 20 - 10, Math.random() * 20, Math.random() * 20 - 10));
+		}
 	}
 }

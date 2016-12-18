@@ -44,7 +44,7 @@ public class EntityComponentHealth extends EntityComponent
 
 	public void setHealth(float health)
 	{
-		boolean wasntDead = health > 0.0;
+		boolean wasntDead = value > 0.0;
 		this.value = health;
 
 		if (health <= 0.0 && wasntDead)

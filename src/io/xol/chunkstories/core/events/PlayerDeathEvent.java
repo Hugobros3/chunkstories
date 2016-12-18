@@ -33,6 +33,7 @@ public class PlayerDeathEvent extends Event
 	public PlayerDeathEvent(Player player)
 	{
 		this.player = player;
+		this.deathMessage = player.getDisplayName()+" died.";
 	}
 	
 	public String getDeathMessage()

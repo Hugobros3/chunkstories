@@ -204,7 +204,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			}
 
 			//It restores hp
-			if (getFoodLevel() > 20)
+			if (getFoodLevel() > 20 && !this.isDead())
 			{
 				if (this.getHealth() < this.getMaxHealth())
 				{

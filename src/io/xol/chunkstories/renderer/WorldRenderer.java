@@ -61,6 +61,7 @@ import io.xol.chunkstories.renderer.terrain.FarTerrainRenderer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.WorldEffectsRenderer;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
@@ -189,7 +190,7 @@ public class WorldRenderer
 	private FarTerrainRenderer farTerrainRenderer;
 
 	//Rain snow etc
-	public WeatherEffectsRenderer weatherEffectsRenderer;
+	private WorldEffectsRenderer weatherEffectsRenderer;
 
 	//For shaders animations
 	float animationTimer = 0.0f;
@@ -237,7 +238,7 @@ public class WorldRenderer
 		entitiesRenderer = new EntitiesRenderer(world);
 		particlesRenderer = new ParticlesRenderer(world);
 		farTerrainRenderer = new FarTerrainRenderer(world);
-		weatherEffectsRenderer = new WeatherEffectsRenderer(world, this);
+		weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
 		skyRenderer = new SkyRenderer(world, this);
 		decalsRenderer = new DecalsRenderer(this);
 		sizeInChunks = world.getSizeInChunks();
@@ -1706,6 +1707,14 @@ public class WorldRenderer
 	private float getWorldWetness()
 	{
 		float wetFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.5f) / 0.3f, 1.0f);
+		
+		//Special case of cancelling out by snow
+		Entity e = Client.getInstance().getClientSideController().getControlledEntity();
+		if(e != null)
+		{
+			return wetFactor * (1f - Math2.clamp((e.getLocation().getY() - 10) / 20, 0, 1));
+		}
+		
 		return wetFactor;
 	}
 
@@ -1748,5 +1757,10 @@ public class WorldRenderer
 	{
 		farTerrainRenderer.markVoxelTexturesSummaryDirty();
 		entitiesRenderer.clearLoadedEntitiesRenderers();
+	}
+
+	public WorldEffectsRenderer getWorldEffectsRenderer()
+	{
+		return this.weatherEffectsRenderer;
 	}
 }
