@@ -1667,7 +1667,7 @@ public class WorldRenderer
 			vegetationTexture = TexturesHandler.getTexture(world.getFolderPath() + "/grassColor.png");
 		if (vegetationTexture == null || vegetationTexture == TexturesHandler.nullTexture())
 			vegetationTexture = TexturesHandler.getTexture("./textures/environement/grassColor.png");
-		vegetationTexture.setMipMapping(true);
+		vegetationTexture.setMipMapping(false);
 		vegetationTexture.setLinearFiltering(true);
 		return vegetationTexture;
 	}
@@ -1723,7 +1723,6 @@ public class WorldRenderer
 		skyRenderer.destroy();
 		particlesRenderer.destroy();
 		farTerrainRenderer.destroy();
-		skyRenderer.destroy();
 		entitiesRenderer.clearLoadedEntitiesRenderers();
 		chunksRenderer.killThread();
 	}
