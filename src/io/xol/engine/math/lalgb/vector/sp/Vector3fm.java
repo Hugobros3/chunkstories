@@ -193,13 +193,13 @@ public class Vector3fm extends Vector3am<Float>
 		if(object instanceof Vector3fm)
 		{
 			Vector3fm vec = (Vector3fm)object;
-			return vec.x == x && vec.y == y && vec.z == z;
+			return (float)vec.x == (float)x && (float)vec.y == (float)y && (float)vec.z == (float)z;
 		}
 		//If it's sort of a vector
 		else if(object instanceof Vector3<?>)
 		{
 			Vector3<Float> vec = ((Vector3<?>) object).castToSinglePrecision();
-			return vec.getX() == x && vec.getY() == y && vec.getZ() == z;
+			return (float)vec.getX() == (float)x && (float)vec.getY() == (float)y && (float)vec.getZ() == (float)z;
 		}
 		return false;
 	}

@@ -232,13 +232,13 @@ public class Vector4fm extends Vector4am<Float>
 		if(object instanceof Vector4fm)
 		{
 			Vector4fm vec = (Vector4fm)object;
-			return vec.x == x && vec.y == y && vec.z == z && vec.w == w;
+			return (float)vec.x == (float)x && (float)vec.y == (float)y && (float)vec.z == (float)z && (float)vec.w == (float)w;
 		}
 		//If it's sort of a vector
 		else if(object instanceof Vector4<?>)
 		{
 			Vector4<Float> vec = ((Vector4<?>) object).castToSinglePrecision();
-			return vec.getX() == x && vec.getY() == y && vec.getZ() == z && vec.getW() == w;
+			return (float)vec.getX() == (float)x && (float)vec.getY() == (float)y && (float)vec.getZ() == (float)z && (float)vec.getW() == (float)w;
 		}
 		return false;
 	}

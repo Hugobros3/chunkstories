@@ -36,6 +36,7 @@ public class MatrixHelper
 			up = new Vector3fm(1.0f, 0.0f, 0.0f);
 		
 		Vector3<Float> positionSP = position.castToSinglePrecision();
+		//System.out.println(positionSP);
 		
 		Matrix4f matrix = new Matrix4f();
 		matrix.setIdentity();
@@ -46,10 +47,12 @@ public class MatrixHelper
 		f.sub(positionSP);
 		//Vector3fm.sub(direction, position, f);
 		f.normalize();
-		VectorCrossProduct.cross33(f, u, s);
+		VectorCrossProduct.cross33(f, up, s);
 		s.normalize();
 		VectorCrossProduct.cross33(s, f, u);
 
+		//System.out.println(u);
+		
 		matrix.m00 = s.getX();
 		matrix.m10 = s.getY();
 		matrix.m20 = s.getZ();
@@ -62,7 +65,7 @@ public class MatrixHelper
 		matrix.m30 = -s.dot(positionSP);
 		matrix.m31 = -u.dot(positionSP);
 		matrix.m32 = f.dot(positionSP);
-
+		
 		return matrix;
 	}
 

@@ -673,6 +673,8 @@ public class WorldRenderer
 		Matrix4f.mul(depthProjectionMatrix, depthViewMatrix, depthMatrix);
 		Matrix4f shadowMVP = new Matrix4f(depthMatrix);
 
+		//System.out.println(depthViewMatrix);
+		
 		shadowMVP.translate(new Vector3fm((float)(double) camera.pos.getX(), (float)(double) camera.pos.getY(), (float)(double) camera.pos.getZ()));
 
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
