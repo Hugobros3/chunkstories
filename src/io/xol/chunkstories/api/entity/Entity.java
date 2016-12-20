@@ -18,7 +18,7 @@ import io.xol.chunkstories.core.entity.components.EntityComponentVelocity;
 import io.xol.chunkstories.physics.Collidable;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -60,13 +60,13 @@ public interface Entity extends Collidable
 	public void tick(WorldAuthority authorityType);
 
 	//TODO refactor these properly
-	public void moveWithoutCollisionRestrain(Vector3d delta);
+	public void moveWithoutCollisionRestrain(Vector3dm delta);
 	
 	public void moveWithoutCollisionRestrain(double mx, double my, double mz);
 	
-	public Vector3d moveWithCollisionRestrain(Vector3d vec);
+	public Vector3dm moveWithCollisionRestrain(Vector3dm vec);
 	
-	public Vector3d moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions);
+	public Vector3dm moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions);
 	
 	public EntityComponentVelocity getVelocityComponent();
 	

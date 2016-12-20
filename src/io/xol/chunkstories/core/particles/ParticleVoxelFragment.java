@@ -13,7 +13,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -31,7 +31,7 @@ public class ParticleVoxelFragment extends ParticleType
 		VoxelTexture tex;
 		
 		int timer = 1450; // 30s
-		Vector3d vel = new Vector3d();
+		Vector3dm vel = new Vector3dm();
 		
 		float rightX, topY, leftX, bottomY;
 		
@@ -45,10 +45,10 @@ public class ParticleVoxelFragment extends ParticleType
 			//System.out.println("id+"+id + " "+ tex.atlasOffset / 32768f);
 		}
 		
-		public void setVelocity(Vector3d vel)
+		public void setVelocity(Vector3dm vel)
 		{
 			this.vel = vel;
-			this.add(vel.castToSimplePrecision());
+			this.add(vel.castToSinglePrecision());
 		}
 
 		@Override
@@ -166,12 +166,12 @@ public class ParticleVoxelFragment extends ParticleType
 		if (!((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY() - 0.1, b.getZ()))
 			b.vel.setY(b.vel.getY() + -0.89/60.0);
 		else
-			b.vel.zero();
+			b.vel.set(0d, 0d, 0d);
 		
 		// 60th square of 0.5
 		b.vel.scale(0.98581402);
 		if(b.vel.length() < 0.1/60.0)
-			b.vel.zero();
+			b.vel.set(0d, 0d, 0d);
 		
 		if(b.timer < 0)
 			b.destroy();

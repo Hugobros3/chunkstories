@@ -8,7 +8,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.core.entity.EntityHumanoid;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.engine.math.lalgb.Vector2f;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -32,8 +32,8 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			
 			//entity.getVelocityComponent().setVelocityX(0);
 			//entity.getVelocityComponent().setVelocityZ(0);
-			entity.getTargetVelocity().setX(0);
-			entity.getTargetVelocity().setZ(0);
+			entity.getTargetVelocity().setX(0d);
+			entity.getTargetVelocity().setZ(0d);
 			return;
 		}
 		
@@ -114,12 +114,12 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			if(Math.random() > 0.9990)
 			{
 				GenericHumanoidAI.this.setAiTask(new AiTaskGoSomewhere(
-				new Location(entity.getWorld(), entity.getLocation().clone().add((Math.random() * 2.0 - 1.0) * 10, 0, (Math.random() * 2.0 - 1.0) * 10)), 505));
+				new Location(entity.getWorld(), entity.getLocation().clone().add((Math.random() * 2.0 - 1.0) * 10, 0d, (Math.random() * 2.0 - 1.0) * 10)), 505));
 				return;
 			}
 
-			entity.getTargetVelocity().setX(0);
-			entity.getTargetVelocity().setZ(0);
+			entity.getTargetVelocity().setX(0d);
+			entity.getTargetVelocity().setZ(0d);
 			//entity.getVelocityComponent().setVelocityX(0);
 			//entity.getVelocityComponent().setVelocityZ(0);
 		}
@@ -159,12 +159,12 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 				return;
 			}
 
-			Vector3d delta = entity.getLocation().clone().sub(entityFollowed.getLocation());
+			Vector3dm delta = entity.getLocation().clone().sub(entityFollowed.getLocation());
 			
 			makeEntityLookAt(entity, delta);
 			
-			entity.getTargetVelocity().setX(0);
-			entity.getTargetVelocity().setZ(0);
+			entity.getTargetVelocity().setX(0d);
+			entity.getTargetVelocity().setZ(0d);
 			//entity.getVelocityComponent().setVelocityX(0);
 			//entity.getVelocityComponent().setVelocityZ(0);
 		}
@@ -203,11 +203,11 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 				return;
 			}
 			
-			Vector3d delta = entityFollowed.getLocation().clone().sub(entity.getLocation());
+			Vector3dm delta = entityFollowed.getLocation().clone().sub(entity.getLocation());
 			
 			makeEntityLookAt(entity, delta.clone().negate());
 			
-			delta.setY(0);
+			delta.setY(0d);
 			
 			//System.out.println("CUCK +"+delta);
 			
@@ -259,7 +259,7 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 				return;
 			}
 			
-			Vector3d delta = location.clone().sub(entity.getLocation());
+			Vector3dm delta = location.clone().sub(entity.getLocation());
 			
 			if(delta.length() < 0.25)
 			{
@@ -269,7 +269,7 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			
 			makeEntityLookAt(entity, delta.clone().negate());
 			
-			delta.setY(0);
+			delta.setY(0d);
 			
 			double entitySpeed = 0.02;
 			
@@ -295,10 +295,10 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 		
 	}
 
-	private void makeEntityLookAt(EntityHumanoid entity, Vector3d delta)
+	private void makeEntityLookAt(EntityHumanoid entity, Vector3dm delta)
 	{
-		Vector2f deltaHorizontal = new Vector2f((float)delta.getX(), (float)delta.getZ());
-		Vector2f deltaVertical = new Vector2f(deltaHorizontal.length(),(float) delta.getY());
+		Vector2f deltaHorizontal = new Vector2f((float)(double)delta.getX(), (float)(double)delta.getZ());
+		Vector2f deltaVertical = new Vector2f(deltaHorizontal.length(),(float)(double) delta.getY());
 		deltaHorizontal.normalize();
 		deltaVertical.normalize();
 		

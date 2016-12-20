@@ -26,7 +26,7 @@ import io.xol.chunkstories.item.renderer.LegacyDogeZItemRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -119,31 +119,31 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 		{
 			//Actually hits
 			EntityLiving shooter = (EntityLiving) owner;
-			Vector3d direction = shooter.getDirectionLookingAt();
+			Vector3dm direction = shooter.getDirectionLookingAt();
 
-			Vector3d eyeLocation = new Vector3d(shooter.getLocation());
+			Vector3dm eyeLocation = new Vector3dm(shooter.getLocation());
 			if (shooter instanceof EntityPlayer)
-				eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
+				eyeLocation.add(new Vector3dm(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
 
 			//Find wall collision
 			Location shotBlock = owner.getWorld().raytraceSolid(eyeLocation, direction, range);
 
-			Vector3d nearestLocation = null;
+			Vector3dm nearestLocation = null;
 
 			if (shotBlock != null)
 			{
 				Location shotBlockOuter = owner.getWorld().raytraceSolidOuter(eyeLocation, direction, range);
 				if (shotBlockOuter != null)
 				{
-					Vector3d normal = shotBlockOuter.sub(shotBlock);
+					Vector3dm normal = shotBlockOuter.sub(shotBlock);
 
 					double NbyI2x = 2.0 * direction.dot(normal);
-					Vector3d NxNbyI2x = new Vector3d(normal);
+					Vector3dm NxNbyI2x = new Vector3dm(normal);
 					NxNbyI2x.scale(NbyI2x);
 
-					Vector3d reflected = new Vector3d(direction);
+					Vector3dm reflected = new Vector3dm(direction);
 					reflected.sub(NxNbyI2x);
-					//Vector3d.sub(direction, NxNbyI2x, reflected);
+					//Vector3dm.sub(direction, NxNbyI2x, reflected);
 
 					//shotBlock.setX(shotBlock.getX() + 1);
 					int data = owner.getWorld().getVoxelData(shotBlock);
@@ -151,9 +151,9 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 
 					//This seems fine
 
-					for (CollisionBox box : voxel.getTranslatedCollisionBoxes(owner.getWorld(), (int) shotBlock.getX(), (int) shotBlock.getY(), (int) shotBlock.getZ()))
+					for (CollisionBox box : voxel.getTranslatedCollisionBoxes(owner.getWorld(), (int)(double) shotBlock.getX(), (int)(double) shotBlock.getY(), (int)(double) shotBlock.getZ()))
 					{
-						Vector3d thisLocation = box.collidesWith(eyeLocation, direction);
+						Vector3dm thisLocation = box.collidesWith(eyeLocation, direction);
 						if (thisLocation != null)
 						{
 							if (nearestLocation == null || nearestLocation.distanceTo(eyeLocation) > thisLocation.distanceTo(eyeLocation))
@@ -163,30 +163,30 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 
 					//Position adjustements so shot blocks always shoot proper particles
 					if (shotBlock.getX() - nearestLocation.getX() <= -1.0)
-						nearestLocation.add(-0.01, 0, 0);
+						nearestLocation.add(-0.01, 0.0, 0.0);
 					if (shotBlock.getY() - nearestLocation.getY() <= -1.0)
-						nearestLocation.add(0, -0.01, 0);
+						nearestLocation.add(0.0, -0.01, 0.0);
 					if (shotBlock.getZ() - nearestLocation.getZ() <= -1.0)
-						nearestLocation.add(0, 0, -0.01);
+						nearestLocation.add(0.0, 0.0, -0.01);
 
 					for (int i = 0; i < 25; i++)
 					{
-						Vector3d untouchedReflection = new Vector3d(reflected);
+						Vector3dm untouchedReflection = new Vector3dm(reflected);
 
-						Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+						Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
 						random.scale(0.5);
 						untouchedReflection.add(random);
 						untouchedReflection.normalize();
 
 						untouchedReflection.scale(0.25);
 
-						Vector3d ppos = new Vector3d(nearestLocation);
+						Vector3dm ppos = new Vector3dm(nearestLocation);
 						owner.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
 
 						owner.getWorld().getSoundManager().playSoundEffect(Voxels.get(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.25f);
 					}
 
-					owner.getWorld().getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");
+					owner.getWorld().getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3dm(0.5), "bullethole");
 				}
 			}
 
@@ -202,16 +202,16 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 					if (!shotEntity.equals(shooter) && shotEntity instanceof EntityLiving)
 					{
 						//Get hit location
-						Vector3d hitPoint = shotEntity.collidesWith(eyeLocation, direction);
+						Vector3dm hitPoint = shotEntity.collidesWith(eyeLocation, direction);
 
 						//Deal damage
 						((EntityLiving) shotEntity).damage(shooter, (float) damage);
 
 						//Spawn blood particles
-						Vector3d bloodDir = direction.normalize().scale(0.25);
+						Vector3dm bloodDir = direction.normalize().scale(0.25);
 						for (int i = 0; i < 250; i++)
 						{
-							Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+							Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
 							random.scale(0.25);
 							random.add(bloodDir);
 
@@ -220,7 +220,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 
 						//Spawn blood on walls
 						if (nearestLocation != null)
-							shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3d(3.0), "blood");
+							shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3dm(3.0), "blood");
 					}
 				}
 			}

@@ -129,9 +129,9 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 	@Override
 	public void renderEffects(RenderingInterface renderingContext)
 	{
-		viewX = (int) renderingContext.getCamera().getCameraPosition().getX();
-		viewY = (int) renderingContext.getCamera().getCameraPosition().getY();
-		viewZ = (int) renderingContext.getCamera().getCameraPosition().getZ();
+		viewX = (int)(double) renderingContext.getCamera().getCameraPosition().getX();
+		viewY = (int)(double) renderingContext.getCamera().getCameraPosition().getY();
+		viewZ = (int)(double) renderingContext.getCamera().getCameraPosition().getZ();
 		
 		float rainPresence = world.getWeather();
 		

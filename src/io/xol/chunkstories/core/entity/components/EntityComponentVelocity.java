@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.net.packets.PacketVelocityDelta;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -24,14 +24,14 @@ public class EntityComponentVelocity extends EntityComponent
 		super(entity, previous);
 	}
 
-	private Vector3d velocity = new Vector3d();
+	private Vector3dm velocity = new Vector3dm();
 	
-	public Vector3d getVelocity()
+	public Vector3dm getVelocity()
 	{
 		return velocity;
 	}
 
-	public void setVelocity(Vector3d velocity)
+	public void setVelocity(Vector3dm velocity)
 	{
 		this.velocity.setX(velocity.getX());
 		this.velocity.setY(velocity.getY());
@@ -70,7 +70,7 @@ public class EntityComponentVelocity extends EntityComponent
 		this.pushComponentEveryone();
 	}
 
-	public void addVelocity(Vector3d delta)
+	public void addVelocity(Vector3dm delta)
 	{
 		this.velocity.add(delta);
 		
@@ -89,7 +89,7 @@ public class EntityComponentVelocity extends EntityComponent
 
 	public void addVelocity(double x, double y, double z)
 	{
-		this.addVelocity(new Vector3d(x, y, z));
+		this.addVelocity(new Vector3dm(x, y, z));
 	}
 
 	@Override

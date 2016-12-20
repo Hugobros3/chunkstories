@@ -1,7 +1,10 @@
 package io.xol.engine.math.lalgb.vector.dp;
 
 import io.xol.engine.math.lalgb.vector.Vector2;
+import io.xol.engine.math.lalgb.vector.Vector2m;
 import io.xol.engine.math.lalgb.vector.Vector3;
+import io.xol.engine.math.lalgb.vector.Vector3m;
+import io.xol.engine.math.lalgb.vector.abs.Vector2am;
 import io.xol.engine.math.lalgb.vector.abs.Vector3am;
 
 public class Vector3dm extends Vector3am<Double>
@@ -113,5 +116,80 @@ public class Vector3dm extends Vector3am<Double>
 	{
 		return this.x * vector.getX() + this.y * vector.getY();
 	}
+	
+	public Vector3dm clone()
+	{
+		return new Vector3dm(this);
+	}
 
+	@Override
+	public Vector3dm add(Double a, Double b, Double c)
+	{
+		this.x += a;
+		this.y += b;
+		this.z += c;
+		return this;
+	}
+
+	@Override
+	public Vector2m<Double> add(Double a, Double b)
+	{
+		this.x += a;
+		this.y += b;
+		return this;
+	}
+
+	@Override
+	public Double distanceTo(Vector3<Double> vector)
+	{
+		double dx = this.x - vector.getX();
+		double dy = this.y - vector.getY();
+		double dz = this.z - vector.getZ();
+		return Math.sqrt(dx * dx + dy * dy + dz * dz);
+	}
+
+	@Override
+	public Double distanceTo(Vector2<Double> vector)
+	{
+		double dx = this.x - vector.getX();
+		double dy = this.y - vector.getY();
+		return Math.sqrt(dx * dx + dy * dy);
+	}
+
+	public void set(Vector3dm vector)
+	{
+		this.x = vector.x;
+		this.y = vector.y;
+		this.z = vector.z;
+	}
+	
+	public Vector3dm castToDoublePrecision()
+	{
+		//No need to build objects
+		return this;
+	}
+
+	@Override
+	public boolean equals(Object object)
+	{
+		//If it's the same kind of vector
+		if(object instanceof Vector3dm)
+		{
+			Vector3dm vec = (Vector3dm)object;
+			return (double)vec.x == (double)x && (double)vec.y == (double)y && (double)vec.z == (double)z;
+		}
+		//If it's sort of a vector
+		else if(object instanceof Vector3<?>)
+		{
+			Vector3<Double> vec = ((Vector3<?>) object).castToDoublePrecision();
+			return (double)vec.getX() == (double)x && (double)vec.getY() == (double)y && (double)vec.getZ() == (double)z;
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return (int) (x * 10000 + y * 100 + z);
+	}
 }

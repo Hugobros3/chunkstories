@@ -61,12 +61,12 @@ public class ParticleSmoke extends ParticleType
 		if (!((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY(), b.getZ()))
 			b.vel.setY(b.vel.getY() + -0.89/60.0);
 		else
-			b.vel.zero();
+			b.vel.set(0d, 0d, 0d);
 		
 		// 60th square of 0.5
 		b.vel.scale(0.98581402);
 		if(b.vel.length() < 0.1/60.0)
-			b.vel.zero();
+			b.vel.set(0d, 0d, 0d);
 		
 		if(b.timer < 0)
 			b.destroy();

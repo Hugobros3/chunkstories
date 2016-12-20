@@ -33,7 +33,7 @@ import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.Vector4f;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -230,41 +230,41 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 				{
 					//controller.getSoundManager().playSoundEffect(this.soundName, user.getLocation(), 1.0f, 1.0f).setAttenuationEnd((float) soundRange);
 					
-					controller.getSoundManager().playSoundEffect(this.soundName, (float)user.getLocation().getX(), (float)user.getLocation().getY(), (float)user.getLocation().getZ(), 1.0f, 1.0f, 1.0f, (float) soundRange);
+					controller.getSoundManager().playSoundEffect(this.soundName, (float)(double)user.getLocation().getX(), (float)(double)user.getLocation().getY(), (float)(double)user.getLocation().getZ(), 1.0f, 1.0f, 1.0f, (float) soundRange);
 
 				}
 				
 				//Raytrace shot
-				Vector3d eyeLocation = new Vector3d(shooter.getLocation());
+				Vector3dm eyeLocation = new Vector3dm(shooter.getLocation());
 				if (shooter instanceof EntityPlayer)
-					eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
+					eyeLocation.add(new Vector3dm(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
 
 				//For each shot
 				for (int ss = 0; ss < shots; ss++)
 				{
-					Vector3d direction = shooter.getDirectionLookingAt();
-					direction.add(new Vector3d(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
+					Vector3dm direction = shooter.getDirectionLookingAt();
+					direction.add(new Vector3dm(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
 					direction.normalize();
 
 					//Find wall collision
 					Location shotBlock = user.getWorld().raytraceSolid(eyeLocation, direction, range);
 
-					Vector3d nearestLocation = null;
+					Vector3dm nearestLocation = null;
 
 					if (shotBlock != null)
 					{
 						Location shotBlockOuter = user.getWorld().raytraceSolidOuter(eyeLocation, direction, range);
 						if (shotBlockOuter != null)
 						{
-							Vector3d normal = shotBlockOuter.sub(shotBlock);
+							Vector3dm normal = shotBlockOuter.sub(shotBlock);
 
 							double NbyI2x = 2.0 * direction.dot(normal);
-							Vector3d NxNbyI2x = new Vector3d(normal);
+							Vector3dm NxNbyI2x = new Vector3dm(normal);
 							NxNbyI2x.scale(NbyI2x);
 
-							Vector3d reflected = new Vector3d(direction);
+							Vector3dm reflected = new Vector3dm(direction);
 							reflected.sub(NxNbyI2x);
-							//Vector3d.sub(direction, NxNbyI2x, reflected);
+							//Vector3dm.sub(direction, NxNbyI2x, reflected);
 
 							//shotBlock.setX(shotBlock.getX() + 1);
 							int data = user.getWorld().getVoxelData(shotBlock);
@@ -272,9 +272,9 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 
 							//This seems fine
 
-							for (CollisionBox box : voxel.getTranslatedCollisionBoxes(user.getWorld(), (int) shotBlock.getX(), (int) shotBlock.getY(), (int) shotBlock.getZ()))
+							for (CollisionBox box : voxel.getTranslatedCollisionBoxes(user.getWorld(), (int)(double) shotBlock.getX(), (int)(double) shotBlock.getY(), (int)(double) shotBlock.getZ()))
 							{
-								Vector3d thisLocation = box.collidesWith(eyeLocation, direction);
+								Vector3dm thisLocation = box.collidesWith(eyeLocation, direction);
 								if (thisLocation != null)
 								{
 									if (nearestLocation == null || nearestLocation.distanceTo(eyeLocation) > thisLocation.distanceTo(eyeLocation))
@@ -284,31 +284,31 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 
 							//Position adjustements so shot blocks always shoot proper particles
 							if (shotBlock.getX() - nearestLocation.getX() <= -1.0)
-								nearestLocation.add(-0.01, 0, 0);
+								nearestLocation.add(-0.01, 0d, 0d);
 							if (shotBlock.getY() - nearestLocation.getY() <= -1.0)
-								nearestLocation.add(0, -0.01, 0);
+								nearestLocation.add(0d, -0.01, 0d);
 							if (shotBlock.getZ() - nearestLocation.getZ() <= -1.0)
-								nearestLocation.add(0, 0, -0.01);
+								nearestLocation.add(0d, 0d, -0.01);
 
 							for (int i = 0; i < 25; i++)
 							{
-								Vector3d untouchedReflection = new Vector3d(reflected);
+								Vector3dm untouchedReflection = new Vector3dm(reflected);
 
-								Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+								Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
 								random.scale(0.5);
 								untouchedReflection.add(random);
 								untouchedReflection.normalize();
 
 								untouchedReflection.scale(0.25);
 
-								Vector3d ppos = new Vector3d(nearestLocation);
+								Vector3dm ppos = new Vector3dm(nearestLocation);
 								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);	
 								
 								controller.getSoundManager().playSoundEffect(Voxels.get(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.05f);
 								
 							}
 
-							controller.getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");
+							controller.getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3dm(0.5), "bullethole");
 						}
 					}
 
@@ -324,16 +324,16 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 							if (!shotEntity.equals(shooter) && shotEntity instanceof EntityLiving)
 							{
 								//Get hit location
-								Vector3d hitPoint = shotEntity.collidesWith(eyeLocation, direction);
+								Vector3dm hitPoint = shotEntity.collidesWith(eyeLocation, direction);
 
 								//Deal damage
 								((EntityLiving) shotEntity).damage(shooter, (float) damage);
 
 								//Spawn blood particles
-								Vector3d bloodDir = direction.normalize().scale(0.25);
+								Vector3dm bloodDir = direction.normalize().scale(0.25);
 								for (int i = 0; i < 250; i++)
 								{
-									Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+									Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
 									random.scale(0.25);
 									random.add(bloodDir);
 
@@ -342,7 +342,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 
 								//Spawn blood on walls
 								if (nearestLocation != null)
-									shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3d(3.0), "blood");
+									shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3dm(3.0), "blood");
 							}
 						}
 					}
@@ -416,12 +416,12 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 			if (isScoped())
 				drawScope(renderingInterface);
 
-			Vector3d eyeLocation = new Vector3d(clientControlledEntity.getLocation());
+			Vector3dm eyeLocation = new Vector3dm(clientControlledEntity.getLocation());
 			if (clientControlledEntity instanceof EntityPlayer)
-				eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) clientControlledEntity).eyePosition, 0.0));
+				eyeLocation.add(new Vector3dm(0.0, ((EntityPlayer) clientControlledEntity).eyePosition, 0.0));
 
-			Vector3d direction = clientControlledEntity.getDirectionLookingAt();
-			direction.add(new Vector3d(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
+			Vector3dm direction = clientControlledEntity.getDirectionLookingAt();
+			direction.add(new Vector3dm(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
 			direction.normalize();
 
 			Location shotBlock = clientControlledEntity.getWorld().raytraceSolid(eyeLocation, direction, 5000);

@@ -35,6 +35,9 @@ public interface Vector4m<T extends Number> extends Vector4<T>, Vector3m<T>
 	
 	// Allowed operations
 	
+	/** Adds this vector to the components */
+	public Vector4m<T> add(T a, T b, T c, T d);
+	
 	public Vector4m<T> add(Vector4m<T> vector);
 	
 	public Vector4m<T> sub(Vector4m<T> vector);

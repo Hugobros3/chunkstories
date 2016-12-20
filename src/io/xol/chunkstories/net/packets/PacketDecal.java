@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -18,9 +18,9 @@ import io.xol.engine.math.lalgb.Vector3d;
 public class PacketDecal extends PacketSynchPrepared
 {
 	public String decalName;
-	public Vector3d position;
-	public Vector3d orientation;
-	public Vector3d size;
+	public Vector3dm position;
+	public Vector3dm orientation;
+	public Vector3dm size;
 
 	@Override
 	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
@@ -43,17 +43,17 @@ public class PacketDecal extends PacketSynchPrepared
 		//System.out.println("cuck");
 		
 		decalName = in.readUTF();
-		position = new Vector3d();
+		position = new Vector3dm();
 		position.setX(in.readDouble());
 		position.setY(in.readDouble());
 		position.setZ(in.readDouble());
 
-		orientation = new Vector3d();
+		orientation = new Vector3dm();
 		orientation.setX(in.readDouble());
 		orientation.setY(in.readDouble());
 		orientation.setZ(in.readDouble());
 
-		size = new Vector3d();
+		size = new Vector3dm();
 		size.setX(in.readDouble());
 		size.setY(in.readDouble());
 		size.setZ(in.readDouble());

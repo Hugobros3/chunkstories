@@ -194,9 +194,9 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				if (clientEntity == null)
 					continue;
 				Location loc = clientEntity.getLocation();
-				int plocx = (int) loc.getX();
-				int plocy = (int) loc.getY();
-				int plocz = (int) loc.getZ();
+				int plocx = (int)(double) loc.getX();
+				int plocy = (int)(double) loc.getY();
+				int plocz = (int)(double) loc.getZ();
 				//TODO use proper configurable values for this
 				if (!((LoopingMathHelper.moduloDistance(x, plocx, sizeInBlocks) > blocksViewDistance + 2) || (LoopingMathHelper.moduloDistance(z, plocz, sizeInBlocks) > blocksViewDistance + 2) || (y - plocy) > 4 * 32))
 				{

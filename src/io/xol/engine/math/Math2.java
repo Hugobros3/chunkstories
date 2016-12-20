@@ -1,6 +1,6 @@
 package io.xol.engine.math;
 
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -47,12 +47,12 @@ public class Math2
 		return vec;
 	}
 	
-	public static Vector3d mix(Vector3d a, Vector3d b, double f)
+	public static Vector3dm mix(Vector3dm a, Vector3dm b, double f)
 	{
-		Vector3d vec = new Vector3d();
-		vec.setX(mix(a.getX(), b.getX(), f));
-		vec.setY(mix(a.getY(), b.getY(), f));
-		vec.setZ(mix(a.getZ(), b.getZ(), f));
+		Vector3dm vec = new Vector3dm();
+		vec.setX(mixd(a.getX(), b.getX(), f));
+		vec.setY(mixd(a.getY(), b.getY(), f));
+		vec.setZ(mixd(a.getZ(), b.getZ(), f));
 		return vec;
 	}
 

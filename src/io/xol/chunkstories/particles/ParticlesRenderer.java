@@ -15,7 +15,7 @@ import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 import java.nio.FloatBuffer;
 import java.util.Iterator;
@@ -61,18 +61,18 @@ public class ParticlesRenderer implements ParticlesManager
 		return a;
 	}
 
-	public void spawnParticleAtPosition(String particleTypeName, Vector3d location)
+	public void spawnParticleAtPosition(String particleTypeName, Vector3dm location)
 	{
 		spawnParticleAtPositionWithVelocity(particleTypeName, location, null);
 	}
 
-	public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3d location, Vector3d velocity)
+	public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dm location, Vector3dm velocity)
 	{
 		ParticleType particleType = ParticleTypes.getParticleTypeByName(particleTypeName);
 		if (particleType == null || location == null)
 			return;
 
-		ParticleData particleData = particleType.createNew(world, (float) location.getX(), (float) location.getY(), (float) location.getZ());
+		ParticleData particleData = particleType.createNew(world, (float)(double) location.getX(), (float)(double) location.getY(), (float)(double) location.getZ());
 		if (velocity != null && particleData instanceof ParticleDataWithVelocity)
 			((ParticleDataWithVelocity) particleData).setVelocity(velocity);
 

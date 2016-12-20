@@ -49,7 +49,7 @@ import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -310,7 +310,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		//Auto-step logic
 		if (collision_bot && (Math.abs(this.blockedMomentum.getX()) > 0.0005d || Math.abs(this.blockedMomentum.getZ()) > 0.0005d))
 		{
-			blockedMomentum.setY(0);
+			blockedMomentum.setY(0d);
 			if (blockedMomentum.length() > 0.20d)
 			{
 				blockedMomentum.normalize();
@@ -320,25 +320,25 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			for (double d = 0.25; d < 0.5; d += 0.05)
 			{
 				//I don't want any of this to reflect on the object, because it causes ugly jumps in the animation
-				Vector3d canMoveUp = this.canMoveWithCollisionRestrain(new Vector3d(0.0, d, 0.0));
+				Vector3dm canMoveUp = this.canMoveWithCollisionRestrain(new Vector3dm(0.0, d, 0.0));
 				//It can go up that bit
 				if (canMoveUp.length() == 0.0f)
 				{
 					//Would it help with being stuck ?
-					Vector3d tryFromHigher = new Vector3d(this.getLocation());
-					tryFromHigher.add(new Vector3d(0.0, d, 0.0));
-					Vector3d blockedMomentumRemaining = this.canMoveWithCollisionRestrain(tryFromHigher, blockedMomentum);
+					Vector3dm tryFromHigher = new Vector3dm(this.getLocation());
+					tryFromHigher.add(new Vector3dm(0.0, d, 0.0));
+					Vector3dm blockedMomentumRemaining = this.canMoveWithCollisionRestrain(tryFromHigher, blockedMomentum);
 					//If length of remaining momentum < of what we requested it to do, that means it *did* go a bit further away
 					if (blockedMomentumRemaining.length() < blockedMomentum.length())
 					{
 						//Where would this land ?
-						Vector3d afterJump = new Vector3d(tryFromHigher);
+						Vector3dm afterJump = new Vector3dm(tryFromHigher);
 						afterJump.add(blockedMomentum);
 						afterJump.sub(blockedMomentumRemaining);
 
 						//land distance = whatever is left of our -0.55 delta when it hits the ground
-						Vector3d landDistance = this.canMoveWithCollisionRestrain(afterJump, new Vector3d(0.0, -d, 0.0));
-						afterJump.add(new Vector3d(0.0, -d, 0.0));
+						Vector3dm landDistance = this.canMoveWithCollisionRestrain(afterJump, new Vector3dm(0.0, -d, 0.0));
+						afterJump.add(new Vector3dm(0.0, -d, 0.0));
 						afterJump.sub(landDistance);
 
 						this.setLocation(new Location(world, afterJump));
@@ -443,10 +443,10 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	@Override
 	public Location getBlockLookingAt(boolean inside)
 	{
-		Vector3d initialPosition = new Vector3d(getLocation());
-		initialPosition.add(new Vector3d(0, eyePosition, 0));
+		Vector3dm initialPosition = new Vector3dm(getLocation());
+		initialPosition.add(new Vector3dm(0, eyePosition, 0));
 
-		Vector3d direction = getDirectionLookingAt();
+		Vector3dm direction = getDirectionLookingAt();
 
 		if (inside)
 			return world.raytraceSelectable(new Location(world, initialPosition), direction, 256.0);
@@ -472,7 +472,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		}
 
 		//Renders the nametag above the player heads
-		Vector3d pos = getLocation();
+		Vector3dm pos = getLocation();
 
 		//don't render tags too far out
 		if (pos.distanceTo(renderingContext.getCamera().getCameraPosition().negate()) > 32f)
@@ -482,7 +482,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if (this.getHealth() <= 0)
 			return;
 
-		Vector3fm posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3fm((float) pos.getX(), (float) pos.getY() + 2.0f, (float) pos.getZ()));
+		Vector3fm posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3fm((float)(double) pos.getX(), (float)(double) pos.getY() + 2.0f, (float)(double) pos.getZ()));
 
 		float scale = posOnScreen.getZ();
 		String txt = name.getName();// + rotH;
@@ -515,7 +515,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					entity.cachedSkeleton.lodUpdate(renderingContext);
 
 					Matrix4f matrix = new Matrix4f();
-					matrix.translate(location.castToSimplePrecision());
+					matrix.translate(location.castToSinglePrecision());
 					renderingContext.setObjectMatrix(matrix);
 
 					variant = ColorsTools.getUniqueColorCode(entity.getName()) % 6;
@@ -527,7 +527,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					renderingContext.bindAlbedoTexture(playerTexture);
 
 					ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
-					//animationsData.add(new AnimatableData(location.castToSimplePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
+					//animationsData.add(new AnimatableData(location.castToSinglePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
 			
 					ItemPile selectedItemPile = null;
 
@@ -539,7 +539,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					if (selectedItemPile != null)
 					{
 						Matrix4f itemMatrix = new Matrix4f();
-						itemMatrix.translate(entity.getPredictedLocation().castToSimplePrecision());
+						itemMatrix.translate(entity.getPredictedLocation().castToSinglePrecision());
 
 						Matrix4f.mul(itemMatrix, entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000), itemMatrix);
 

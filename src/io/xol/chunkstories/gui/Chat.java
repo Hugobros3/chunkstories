@@ -227,7 +227,7 @@ public class Chat
 							{
 								Entity test = Entities.newEntity(Client.world, (short) id);
 								Entity player = Client.getInstance().getClientSideController().getControlledEntity();
-								test.setLocation(new Location(Client.world, player.getLocation().clone().add(ii * 3, 0, jj * 3)));
+								test.setLocation(new Location(Client.world, player.getLocation().clone().add(ii * 3.0, 0.0, jj * 3.0)));
 								Client.world.addEntity(test);
 							}
 					}

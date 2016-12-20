@@ -99,7 +99,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 
 				Matrix4f mutrix = new Matrix4f();
 				mutrix.translate(new Vector3fm(0.5f, 0.0f, 0.5f));
-				mutrix.translate(entitySign.getLocation().castToSimplePrecision());
+				mutrix.translate(entitySign.getLocation().castToSinglePrecision());
 				mutrix.rotate((float) Math.PI * 2.0f * (-facing) / 16f, new Vector3fm(0, 1, 0));
 				if (isPost)
 					mutrix.translate(new Vector3fm(0.0f, 0.0f, -0.5f));

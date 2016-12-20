@@ -1,5 +1,6 @@
 package io.xol.engine.math.lalgb;
 
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -9,15 +10,15 @@ import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
 public class Quaternion4d
 {
 	public double s;
-	public Vector3d v;
+	public Vector3dm v;
 	
 	public Quaternion4d()
 	{
 		s = 0.0;
-		v = new Vector3d(0.0);
+		v = new Vector3dm(0.0);
 	}
 	
-	public Quaternion4d(double s, Vector3d v)
+	public Quaternion4d(double s, Vector3dm v)
 	{
 		this.s = s;
 		this.v = v.clone();
@@ -26,7 +27,7 @@ public class Quaternion4d
 	public Quaternion4d(Quaternion4d quat)
 	{
 		this.s = quat.s;
-		this.v = quat.v.clone();
+		this.v = new Vector3dm(quat.v);
 	}
 	
 	public Quaternion4d add(Quaternion4d quat)
@@ -65,11 +66,11 @@ public class Quaternion4d
 		// [ Sa.Sb - a.b ,
 		out.s = a.s * b.s - a.v.dot(b.v);
 		// Sa.b + Sb.a + a x b ]
-		Vector3d aBv = b.v.clone().scale(a.s);
-		Vector3d vBa = a.v.clone().scale(b.s);
+		Vector3dm aBv = b.v.clone().scale(a.s);
+		Vector3dm vBa = a.v.clone().scale(b.s);
 		
 		out.v = aBv.add(vBa).add(VectorCrossProduct.cross33(a.v, b.v));
-		//out.v = Vector3d.add(aBv, vBa, null).add(Vector3d.cross(a.v, b.v));
+		//out.v = Vector3dm.add(aBv, vBa, null).add(Vector3dm.cross(a.v, b.v));
 		
 		return out;
 	}
@@ -82,7 +83,7 @@ public class Quaternion4d
 	public double norm()
 	{
 		return Math.sqrt(s * s + v.dot(v) * v.dot(v));
-		//return Math.sqrt(s * s + Vector3d.dot(v, v) * Vector3d.dot(v, v));
+		//return Math.sqrt(s * s + Vector3dm.dot(v, v) * Vector3dm.dot(v, v));
 	}
 	
 	public Quaternion4d normalize()
@@ -104,13 +105,13 @@ public class Quaternion4d
 		return a.s * b.s + a.v.getX() * b.v.getX() + a.v.getY() * b.v.getY() + a.v.getZ() * b.v.getZ();
 	}
 	
-	public static Quaternion4d fromAxisAngle(Vector3d axis, double angle)
+	public static Quaternion4d fromAxisAngle(Vector3dm axis, double angle)
 	{
 		angle /= 2.0;
 		return new Quaternion4d(Math.cos(angle), axis.clone().scale(Math.sin(angle)));
 	}
 	
-	public static Vector3d rotate(Vector3d vector, Vector3d axis, double angle)
+	public static Vector3dm rotate(Vector3dm vector, Vector3dm axis, double angle)
 	{
 		//Make quaternion out of the vector
 		Quaternion4d p = new Quaternion4d(0.0, vector);

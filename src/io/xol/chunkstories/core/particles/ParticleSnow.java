@@ -8,7 +8,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 public class ParticleSnow extends ParticleType
 {
@@ -22,14 +22,14 @@ public class ParticleSnow extends ParticleType
 	public class SnowData extends ParticleData implements ParticleDataWithVelocity {
 		
 		int hp = 60 * 2; // 5s
-		Vector3d vel = new Vector3d((Math.random() * 0.5 - 0.25) * 0.5, -Math.random() * 0.15 - 0.10, (Math.random() * 0.5 - 0.25) * 0.5);
+		Vector3dm vel = new Vector3dm((Math.random() * 0.5 - 0.25) * 0.5, -Math.random() * 0.15 - 0.10, (Math.random() * 0.5 - 0.25) * 0.5);
 		
 		public SnowData(float x, float y, float z)
 		{
 			super(x, y, z);
 		}
 		
-		public void setVelocity(Vector3d vel)
+		public void setVelocity(Vector3dm vel)
 		{
 			this.vel = vel;
 		}
@@ -60,7 +60,7 @@ public class ParticleSnow extends ParticleType
 		if (((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY(), b.getZ()))
 		{
 			b.hp--;
-			b.vel.zero();
+			b.vel.set(0d, 0d, 0d);
 		}
 		
 		// 60th square of 0.5

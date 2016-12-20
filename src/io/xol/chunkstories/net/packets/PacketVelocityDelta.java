@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -26,12 +26,12 @@ public class PacketVelocityDelta extends PacketSynchPrepared
 		
 	}
 	
-	public PacketVelocityDelta(Vector3d delta)
+	public PacketVelocityDelta(Vector3dm delta)
 	{
 		this.delta = delta;
 	}
 	
-	private Vector3d delta;
+	private Vector3dm delta;
 	
 	@Override
 	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
@@ -44,7 +44,7 @@ public class PacketVelocityDelta extends PacketSynchPrepared
 	@Override
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, PacketProcessingException
 	{
-		delta = new Vector3d(in.readDouble(), in.readDouble(), in.readDouble());
+		delta = new Vector3dm(in.readDouble(), in.readDouble(), in.readDouble());
 		
 		EntityControllable entity = Client.getInstance().getClientSideController().getControlledEntity();
 		if(entity != null)

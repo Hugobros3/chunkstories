@@ -8,7 +8,7 @@ import io.xol.chunkstories.net.packets.PacketParticle;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -33,13 +33,13 @@ public class VirtualServerParticlesManager implements ParticlesManager
 		}
 
 		@Override
-		public void spawnParticleAtPosition(String particleTypeName, Vector3d position)
+		public void spawnParticleAtPosition(String particleTypeName, Vector3dm position)
 		{
 			spawnParticleAtPositionWithVelocity(particleTypeName, position, null);
 		}
 
 		@Override
-		public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3d position, Vector3d velocity)
+		public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dm position, Vector3dm velocity)
 		{
 			Iterator<Player> i = worldServer.getPlayers();
 			while(i.hasNext())
@@ -52,7 +52,7 @@ public class VirtualServerParticlesManager implements ParticlesManager
 
 	}
 	
-	void tellPlayer(Player player, String particleTypeName, Vector3d location, Vector3d velocity)
+	void tellPlayer(Player player, String particleTypeName, Vector3dm location, Vector3dm velocity)
 	{
 		PacketParticle packet = new PacketParticle();
 		packet.particleName = particleTypeName;
@@ -62,13 +62,13 @@ public class VirtualServerParticlesManager implements ParticlesManager
 	}
 
 	@Override
-	public void spawnParticleAtPosition(String particleTypeName, Vector3d position)
+	public void spawnParticleAtPosition(String particleTypeName, Vector3dm position)
 	{
 		spawnParticleAtPositionWithVelocity(particleTypeName, position, null);
 	}
 
 	@Override
-	public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3d location, Vector3d velocity)
+	public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dm location, Vector3dm velocity)
 	{
 		Iterator<Player> i = worldServer.getPlayers();
 		while(i.hasNext())

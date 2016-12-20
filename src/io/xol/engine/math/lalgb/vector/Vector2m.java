@@ -28,6 +28,9 @@ public interface Vector2m<T extends Number> extends Vector2<T>, VectorMutable<T>
 	public Vector2<T> asImmutable();
 	
 	// Allowed operations
+
+	/** Adds this vector to the components */
+	public Vector2m<T> add(T a, T b);
 	
 	public Vector2m<T> add(Vector2<T> vector);
 	

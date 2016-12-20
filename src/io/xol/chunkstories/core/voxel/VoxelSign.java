@@ -13,7 +13,7 @@ import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.lalgb.Vector2f;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -60,11 +60,11 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 		
 		if(entity != null)
 		{
-			Vector3d blockLocation = new Vector3d(x + 0.5, y, z + 0.5);
+			Vector3dm blockLocation = new Vector3dm(x + 0.5, y, z + 0.5);
 			blockLocation.sub(entity.getLocation());
 			blockLocation.negate();
 			
-			Vector2f direction = new Vector2f((float)blockLocation.getX(), (float)blockLocation.getZ());
+			Vector2f direction = new Vector2f((float)(double)blockLocation.getX(), (float)(double)blockLocation.getZ());
 			direction.normalize();
 			//System.out.println("x:"+direction.x+"y:"+direction.y);
 			

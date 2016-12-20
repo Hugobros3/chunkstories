@@ -29,7 +29,7 @@ import io.xol.engine.animation.BVHLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.model.ModelLibrary;
 
@@ -40,7 +40,7 @@ import io.xol.engine.model.ModelLibrary;
 public abstract class EntityHumanoid extends EntityLivingImplentation implements EntityWithClientPrediction
 {
 	double jumpForce = 0;
-	protected Vector3d targetVelocity = new Vector3d(0);
+	protected Vector3dm targetVelocity = new Vector3dm(0);
 
 	boolean justJumped = false;
 	boolean justLanded = false;
@@ -90,7 +90,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				}
 			}
 
-			Vector3d vel = getVelocityComponent().getVelocity();
+			Vector3dm vel = getVelocityComponent().getVelocity();
 
 			double horizSpd = Math.sqrt(vel.getX() * vel.getX() + vel.getZ() * vel.getZ());
 
@@ -108,7 +108,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 		public Matrix4f getBoneTransformationMatrix(String boneName, double animationTime)
 		{
-			Vector3d vel = getVelocityComponent().getVelocity();
+			Vector3dm vel = getVelocityComponent().getVelocity();
 
 			double horizSpd = Math.sqrt(vel.getX() * vel.getX() + vel.getZ() * vel.getZ());
 
@@ -129,7 +129,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				animationTime *= 1.5;
 			else if (Arrays.asList(new String[] { "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD", "boneItemInHand", "boneTorso" }).contains(boneName))
 			{
-				//Vector3d vel = getVelocityComponent().getVelocity();
+				//Vector3dm vel = getVelocityComponent().getVelocity();
 				//double horizSpd = Math.sqrt(vel.getX() * vel.getX() + vel.getZ() * vel.getZ());
 
 				//System.out.println((horizSpd / 0.065) * 0.3);
@@ -220,11 +220,11 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				entity.cachedSkeleton.lodUpdate(renderingContext);
 
 				Matrix4f matrix = new Matrix4f();
-				matrix.translate(location.castToSimplePrecision());
+				matrix.translate(location.castToSinglePrecision());
 				renderingContext.setObjectMatrix(matrix);
 
 				ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
-				//animationsData.add(new AnimatableData(location.castToSimplePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
+				//animationsData.add(new AnimatableData(location.castToSinglePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
 			}
 
 			//Instanciate all players
@@ -247,7 +247,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				if (selectedItemPile != null)
 				{
 					Matrix4f itemMatrix = new Matrix4f();
-					itemMatrix.translate(entity.getPredictedLocation().castToSimplePrecision());
+					itemMatrix.translate(entity.getPredictedLocation().castToSinglePrecision());
 
 					Matrix4f.mul(itemMatrix, entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000), itemMatrix);
 
@@ -274,7 +274,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		return new EntityHumanoidRenderer<EntityHumanoid>();
 	}
 
-	public Vector3d getTargetVelocity()
+	public Vector3dm getTargetVelocity()
 	{
 		return targetVelocity;
 	}
@@ -311,7 +311,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			}
 
 			//Set acceleration vector to wanted speed - actual speed
-			acceleration = new Vector3d(targetVelocity.getX() - getVelocityComponent().getVelocity().getX(), 0, targetVelocity.getZ() - getVelocityComponent().getVelocity().getZ());
+			acceleration = new Vector3dm(targetVelocity.getX() - getVelocityComponent().getVelocity().getX(), 0, targetVelocity.getZ() - getVelocityComponent().getVelocity().getZ());
 
 			//Limit maximal acceleration depending if we're on the groud or not, we accelerate 2x faster on ground
 			double maxAcceleration = collision_bot ? 0.010 : 0.005;
@@ -361,8 +361,8 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 		lastTickOnGround = this.isEntityOnGround();
 
 		//Bobbing
-		Vector3d horizontalSpeed = this.getVelocityComponent().getVelocity().clone();
-		horizontalSpeed.setY(0);
+		Vector3dm horizontalSpeed = this.getVelocityComponent().getVelocity().clone();
+		horizontalSpeed.setY(0d);
 
 		if (isEntityOnGround())
 			metersWalked += Math.abs(horizontalSpeed.length());

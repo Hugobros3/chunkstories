@@ -7,7 +7,7 @@ package io.xol.chunkstories.renderer.decals;
 import java.nio.ByteBuffer;
 
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.engine.math.lalgb.vector.Vector3;
@@ -23,7 +23,7 @@ public class TrianglesClipper
 
 	private static ByteBuffer out;
 
-	public static synchronized int clipTriangles(ByteBuffer in, ByteBuffer out, Matrix4f rotationMatrix, Vector3<Double> originPosition, Vector3<Float> direction, Vector3<Float> size)
+	public static synchronized int clipTriangles(ByteBuffer in, ByteBuffer out, Matrix4f rotationMatrix, Vector3<Double> originPosition, Vector3<Float> direction, Vector3<Double> size)
 	{
 		int actualCount = 0;
 

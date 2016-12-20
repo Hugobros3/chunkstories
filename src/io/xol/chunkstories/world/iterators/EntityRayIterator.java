@@ -8,7 +8,7 @@ import java.util.List;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -17,13 +17,13 @@ import io.xol.engine.math.lalgb.Vector3d;
 public class EntityRayIterator implements Iterator<Entity>
 {
 	WorldImplementation world;
-	Vector3d initialPosition;
-	Vector3d direction;
+	Vector3dm initialPosition;
+	Vector3dm direction;
 	
 	List<Entity> sortedEntities = new ArrayList<Entity>();
 	Iterator<Entity> lazyFuck;
 	
-	public EntityRayIterator(WorldImplementation world, Vector3d initialPosition, Vector3d direction, double limit)
+	public EntityRayIterator(WorldImplementation world, Vector3dm initialPosition, Vector3dm direction, double limit)
 	{
 		this.world = world;
 		this.initialPosition = initialPosition;
@@ -37,7 +37,7 @@ public class EntityRayIterator implements Iterator<Entity>
 			if(limit == -1 || entity.getLocation().distanceTo(initialPosition) <= limit)
 			{
 				
-				Vector3d toEntity = new Vector3d(entity.getLocation());
+				Vector3dm toEntity = new Vector3dm(entity.getLocation());
 				toEntity.sub(initialPosition);
 				//Check direction of the line to avoid hitting hitself, backtracking and wrapping arround the world
 				if(direction.dot(toEntity) > 0)

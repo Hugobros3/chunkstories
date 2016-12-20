@@ -25,7 +25,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.animation.SkeletonAnimator;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector2f;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -37,7 +37,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	EntityComponentRotation entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
 
 	//Movement stuff
-	public Vector3d acceleration = new Vector3d();
+	public Vector3dm acceleration = new Vector3dm();
 
 	//Damage/health stuff
 	private EntityComponentHealth entityHealthComponent;
@@ -104,11 +104,11 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			if (cause instanceof Entity)
 			{
 				Entity attacker = (Entity) cause;
-				Vector3d attackerToVictim = this.getLocation().sub(attacker.getLocation().add(0, 0, 0));
-				attackerToVictim.setY(0);
+				Vector3dm attackerToVictim = this.getLocation().sub(attacker.getLocation().add(0d, 0d, 0d));
+				attackerToVictim.setY(0d);
 				attackerToVictim.normalize();
 				attackerToVictim.setY(0.35);
-				attackerToVictim.scale(damageDealt / 120f);
+				attackerToVictim.scale(damageDealt / 120d);
 
 				//.scale(1/60d).scale(damageDealt / 10f);
 				this.getVelocityComponent().addVelocity(attackerToVictim);
@@ -148,7 +148,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		
 		if(tick)
 		{
-			Vector3d velocity = getVelocityComponent().getVelocity();
+			Vector3dm velocity = getVelocityComponent().getVelocity();
 
 			Vector2f headRotationVelocity = this.getEntityRotationComponent().tickInpulse();
 			getEntityRotationComponent().addRotation(headRotationVelocity.getX(), headRotationVelocity.getY());
@@ -192,9 +192,9 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			velocity.setZ(velocity.getZ() + acceleration.getZ());
 
 			//TODO ugly
-			if (!world.isChunkLoaded((int) positionComponent.getLocation().getX() / 32, (int) positionComponent.getLocation().getY() / 32, (int) positionComponent.getLocation().getZ() / 32))
+			if (!world.isChunkLoaded((int)(double) positionComponent.getLocation().getX() / 32, (int)(double) positionComponent.getLocation().getY() / 32, (int)(double) positionComponent.getLocation().getZ() / 32))
 			{
-				velocity.zero();
+				velocity.set(0d, 0d, 0d);
 			}
 
 			//Eventually moves
@@ -202,14 +202,14 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 
 			//Collisions
 			if (collision_left || collision_right)
-				velocity.setX(0);
+				velocity.setX(0d);
 			if (collision_north || collision_south)
-				velocity.setZ(0);
+				velocity.setZ(0d);
 			// Stap it
 			if (collision_bot && velocity.getY() < 0)
-				velocity.setY(0);
+				velocity.setY(0d);
 			else if (collision_top)
-				velocity.setY(0);
+				velocity.setY(0d);
 
 			getVelocityComponent().setVelocity(velocity);
 		}
@@ -226,7 +226,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		return entityRotationComponent;
 	}
 
-	public Vector3d getDirectionLookingAt()
+	public Vector3dm getDirectionLookingAt()
 	{
 		return getEntityRotationComponent().getDirectionLookingAt();
 	}

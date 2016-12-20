@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -45,7 +45,7 @@ public class EntityComponentPosition extends EntityComponent
 		this.pushComponentEveryone();
 	}
 	
-	public void setPosition(Vector3d position)
+	public void setPosition(Vector3dm position)
 	{
 		this.pos.setX(position.getX());
 		this.pos.setY(position.getY());

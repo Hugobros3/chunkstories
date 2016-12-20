@@ -127,9 +127,9 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 
 		Location otherPartLocation = new Location(voxelLocation);
 		if (top)
-			otherPartLocation.add(0, -1, 0);
+			otherPartLocation.add(0.0, -1.0, 0.0);
 		else
-			otherPartLocation.add(0, 1, 0);
+			otherPartLocation.add(0.0, 1.0, 0.0);
 
 		int otherLocationId = VoxelFormat.id(otherPartLocation.getVoxelDataAtLocation());
 		if (Voxels.get(otherLocationId) instanceof VoxelDoor)

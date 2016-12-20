@@ -14,7 +14,7 @@ import io.xol.chunkstories.net.packets.PacketSoundSource;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.sound.sources.SoundSourceVirtual;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -193,7 +193,7 @@ public class VirtualServerSoundManager implements SoundManager
 			if(loc == null)
 				return false;
 			
-			return loc.distanceTo(new Vector3d(soundSource.x, soundSource.y, soundSource.z)) < soundSource.attenuationEnd + 1.0;
+			return loc.distanceTo(new Vector3dm(soundSource.x, soundSource.y, soundSource.z)) < soundSource.attenuationEnd + 1.0;
 		}
 	}
 

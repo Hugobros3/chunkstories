@@ -110,9 +110,9 @@ public class Vector2f
 		this.y = y;
 	}
 
-	/*public Vector3d castToDP()
+	/*public Vector3dm castToDP()
 	{
-		Vector3d vec = new Vector3d();
+		Vector3dm vec = new Vector3dm();
 		vec.x = x;
 		vec.y = y;
 		return vec;

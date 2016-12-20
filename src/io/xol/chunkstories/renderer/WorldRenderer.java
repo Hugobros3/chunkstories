@@ -43,7 +43,7 @@ import io.xol.engine.graphics.util.PBOPacker;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.Math2;
 import io.xol.engine.math.MatrixHelper;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
@@ -392,7 +392,7 @@ public class WorldRenderer
 	 */
 	public void updateRender(Camera camera)
 	{
-		Vector3d pos = new Vector3d(camera.pos).negate();
+		Vector3dm pos = new Vector3dm(camera.pos).negate();
 		// Called every frame, this method takes care of updating the world :
 		// It will keep up to date the camera position, as well as a list of
 		// to-render chunks in order to fill empty VBO space
@@ -468,7 +468,7 @@ public class WorldRenderer
 			int localMapElements = 0;
 
 			Set<Chunk> floodFillSet = new HashSet<Chunk>();
-			Set<Vector3d> floodFillMask = new HashSet<Vector3d>();
+			Set<Vector3dm> floodFillMask = new HashSet<Vector3dm>();
 
 			Deque<Integer> deque = new ArrayDeque<Integer>();
 
@@ -502,9 +502,9 @@ public class WorldRenderer
 
 				Chunk chunk = world.getChunk(chunkX, chunkY, chunkZ);
 
-				if (floodFillMask.contains(new Vector3d(chunkX, chunkY, chunkZ)))
+				if (floodFillMask.contains(new Vector3dm(chunkX, chunkY, chunkZ)))
 					continue;
-				floodFillMask.add(new Vector3d(chunkX, chunkY, chunkZ));
+				floodFillMask.add(new Vector3dm(chunkX, chunkY, chunkZ));
 
 				if (chunk != null)
 				{
@@ -512,14 +512,14 @@ public class WorldRenderer
 						sideFrom = -1;
 
 					floodFillSet.add(chunk);
-					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][2]) && (ajustedChunkX - cameraChunkX) < chunksViewDistance && !floodFillMask.contains(new Vector3d(chunkX + 1, chunkY, chunkZ)))
+					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][2]) && (ajustedChunkX - cameraChunkX) < chunksViewDistance && !floodFillMask.contains(new Vector3dm(chunkX + 1, chunkY, chunkZ)))
 					{
 						deque.push(ajustedChunkX + 1);
 						deque.push(chunkY);
 						deque.push(ajustedChunkZ);
 						deque.push(0);
 					}
-					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][0]) && -(ajustedChunkX - cameraChunkX) < chunksViewDistance && !floodFillMask.contains(new Vector3d(chunkX - 1, chunkY, chunkZ)))
+					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][0]) && -(ajustedChunkX - cameraChunkX) < chunksViewDistance && !floodFillMask.contains(new Vector3dm(chunkX - 1, chunkY, chunkZ)))
 					{
 						deque.push(ajustedChunkX - 1);
 						deque.push(chunkY);
@@ -527,14 +527,14 @@ public class WorldRenderer
 						deque.push(2);
 					}
 
-					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][4]) && (chunkY - cameraChunkY) < verticalDistance && !floodFillMask.contains(new Vector3d(chunkX, chunkY + 1, chunkZ)))
+					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][4]) && (chunkY - cameraChunkY) < verticalDistance && !floodFillMask.contains(new Vector3dm(chunkX, chunkY + 1, chunkZ)))
 					{
 						deque.push(ajustedChunkX);
 						deque.push(chunkY + 1);
 						deque.push(ajustedChunkZ);
 						deque.push(5);
 					}
-					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][5]) && -(chunkY - cameraChunkY) < verticalDistance && !floodFillMask.contains(new Vector3d(chunkX, chunkY - 1, chunkZ)))
+					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][5]) && -(chunkY - cameraChunkY) < verticalDistance && !floodFillMask.contains(new Vector3dm(chunkX, chunkY - 1, chunkZ)))
 					{
 						deque.push(ajustedChunkX);
 						deque.push(chunkY - 1);
@@ -542,14 +542,14 @@ public class WorldRenderer
 						deque.push(4);
 					}
 
-					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][1]) && (ajustedChunkZ - cameraChunkZ) < chunksViewDistance && !floodFillMask.contains(new Vector3d(chunkX, chunkY, chunkZ + 1)))
+					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][1]) && (ajustedChunkZ - cameraChunkZ) < chunksViewDistance && !floodFillMask.contains(new Vector3dm(chunkX, chunkY, chunkZ + 1)))
 					{
 						deque.push(ajustedChunkX);
 						deque.push(chunkY);
 						deque.push(ajustedChunkZ + 1);
 						deque.push(3);
 					}
-					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][3]) && -(ajustedChunkZ - cameraChunkZ) < chunksViewDistance && !floodFillMask.contains(new Vector3d(chunkX, chunkY, chunkZ - 1)))
+					if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][3]) && -(ajustedChunkZ - cameraChunkZ) < chunksViewDistance && !floodFillMask.contains(new Vector3dm(chunkX, chunkY, chunkZ - 1)))
 					{
 						deque.push(ajustedChunkX);
 						deque.push(chunkY);
@@ -673,7 +673,7 @@ public class WorldRenderer
 		Matrix4f.mul(depthProjectionMatrix, depthViewMatrix, depthMatrix);
 		Matrix4f shadowMVP = new Matrix4f(depthMatrix);
 
-		shadowMVP.translate(new Vector3fm((float) camera.pos.getX(), (float) camera.pos.getY(), (float) camera.pos.getZ()));
+		shadowMVP.translate(new Vector3fm((float)(double) camera.pos.getX(), (float)(double) camera.pos.getY(), (float)(double) camera.pos.getZ()));
 
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
 		
@@ -693,7 +693,7 @@ public class WorldRenderer
 
 		terrainShader.setUniform3f("sunPos", skyRenderer.getSunPosition());
 		terrainShader.setUniform1f("time", animationTimer);
-		terrainShader.setUniform1f("terrainHeight", world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int) camera.pos.getX(), (int) camera.pos.getZ()));
+		terrainShader.setUniform1f("terrainHeight", world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int)(double) camera.pos.getX(), (int)(double) camera.pos.getZ()));
 		terrainShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
 		terrainShader.setUniform1f("shadowVisiblity", getShadowVisibility());
 		waterNormalTexture.setLinearFiltering(true);

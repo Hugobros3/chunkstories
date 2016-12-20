@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Quaternion4d;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -41,9 +41,9 @@ public class BVHAnimation implements SkeletonAnimator
 		float rotY = (float) (Math.random() * 2.0 * Math.PI);
 		float rotZ = (float) (Math.random() * 2.0 * Math.PI);
 
-		Quaternion4d quaternionXLower = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotX);
-		Quaternion4d quaternionYLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotY);
-		Quaternion4d quaternionZLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZ);
+		Quaternion4d quaternionXLower = Quaternion4d.fromAxisAngle(new Vector3dm(1.0, 0.0, 0.0), rotX);
+		Quaternion4d quaternionYLower = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 1.0, 0.0), rotY);
+		Quaternion4d quaternionZLower = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 0.0, 1.0), rotZ);
 		Quaternion4d total = new Quaternion4d(quaternionXLower);
 		total = total.mult(quaternionYLower);
 		total.normalize();
@@ -75,9 +75,9 @@ public class BVHAnimation implements SkeletonAnimator
 		//System.out.println(quaternionYLower);
 		//System.out.println(quaternionZLower);
 
-		mX = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotX).toMatrix4f();
-		mY = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotY).toMatrix4f();
-		mZ = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZ).toMatrix4f();
+		mX = Quaternion4d.fromAxisAngle(new Vector3dm(1.0, 0.0, 0.0), rotX).toMatrix4f();
+		mY = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 1.0, 0.0), rotY).toMatrix4f();
+		mZ = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 0.0, 1.0), rotZ).toMatrix4f();
 
 		//System.out.println("Old:\n"+matrix);
 		//System.out.println("New:\n"+Matrix4f.mul(Matrix4f.mul(mX, mY, null), mZ, null));

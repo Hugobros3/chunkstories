@@ -43,7 +43,7 @@ import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.region.WorldRegionsHolder;
 import io.xol.chunkstories.world.summary.WorldRegionSummariesHolder;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.misc.ConfigFile;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -349,9 +349,9 @@ public abstract class WorldImplementation implements World
 	}
 	
 	@Override
-	public int getVoxelData(Vector3d location)
+	public int getVoxelData(Vector3dm location)
 	{
-		return getVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ());
+		return getVoxelData((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
 	}
 
 	@Override
@@ -372,7 +372,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void setVoxelData(Location location, int data)
 	{
-		setVoxelData((int) location.getX(), (int) location.getY(), (int) location.getZ(), data);
+		setVoxelData((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ(), data);
 	}
 
 	@Override
@@ -384,7 +384,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void setVoxelData(Location location, int data, Entity entity)
 	{
-		actuallySetsDataAt((int) location.getX(), (int) location.getY(), (int) location.getZ(), data, entity);
+		actuallySetsDataAt((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ(), data, entity);
 	}
 
 	@Override
@@ -557,7 +557,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public int getSunlightLevelLocation(Location location)
 	{
-		return getSunlightLevelWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
+		return getSunlightLevelWorldCoordinates((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
 	}
 
 	@Override
@@ -575,7 +575,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public int getBlocklightLevelLocation(Location location)
 	{
-		return getBlocklightLevelWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
+		return getBlocklightLevelWorldCoordinates((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
 	}
 
 	@Override
@@ -696,24 +696,24 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit)
+	public Location raytraceSolid(Vector3dm initialPosition, Vector3dm direction, double limit)
 	{
 		return raytraceSolid(initialPosition, direction, limit, false, false);
 	}
 
 	@Override
-	public Location raytraceSolidOuter(Vector3d initialPosition, Vector3d direction, double limit)
+	public Location raytraceSolidOuter(Vector3dm initialPosition, Vector3dm direction, double limit)
 	{
 		return raytraceSolid(initialPosition, direction, limit, true, false);
 	}
 
 	@Override
-	public Location raytraceSelectable(Location initialPosition, Vector3d direction, double limit)
+	public Location raytraceSelectable(Location initialPosition, Vector3dm direction, double limit)
 	{
 		return raytraceSolid(initialPosition, direction, limit, false, true);
 	}
 
-	private Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit, boolean outer, boolean selectable)
+	private Location raytraceSolid(Vector3dm initialPosition, Vector3dm direction, double limit, boolean outer, boolean selectable)
 	{
 		direction.normalize();
 		//direction.scale(0.02);
@@ -774,7 +774,7 @@ public abstract class WorldImplementation implements World
 				for (CollisionBox box : vox.getTranslatedCollisionBoxes(this, x, y, z))
 				{
 					//System.out.println(box);
-					Vector3d collisionPoint = box.collidesWith(initialPosition, direction);
+					Vector3dm collisionPoint = box.collidesWith(initialPosition, direction);
 					if (collisionPoint != null)
 					{
 						collides = true;
@@ -827,11 +827,11 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public Iterator<Entity> rayTraceEntities(Vector3d initialPosition, Vector3d direction, double limit)
+	public Iterator<Entity> rayTraceEntities(Vector3dm initialPosition, Vector3dm direction, double limit)
 	{
 		double blocksLimit = limit;
 
-		Vector3d blocksCollision = this.raytraceSolid(initialPosition, direction, limit);
+		Vector3dm blocksCollision = this.raytraceSolid(initialPosition, direction, limit);
 		if (blocksCollision != null)
 			blocksLimit = blocksCollision.distanceTo(initialPosition);
 
@@ -839,7 +839,7 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3d initialPosition, Vector3d direction, double limit)
+	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3dm initialPosition, Vector3dm direction, double limit)
 	{
 		return new EntityRayIterator(this, initialPosition, direction, limit);
 	}
@@ -870,7 +870,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public ChunkHolder aquireChunkHolderLocation(WorldUser user, Location location)
 	{
-		return aquireChunkHolder(user, (int) location.getX(), (int) location.getY(), (int) location.getZ());
+		return aquireChunkHolder(user, (int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
 	}
 	
 	@Override
@@ -918,7 +918,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public CubicChunk getChunkWorldCoordinates(Location location)
 	{
-		return getChunkWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
+		return getChunkWorldCoordinates((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
 	}
 
 	@Override
@@ -979,13 +979,13 @@ public abstract class WorldImplementation implements World
 	@Override
 	public RegionImplementation aquireRegionLocation(WorldUser user, Location location)
 	{
-		return aquireRegionWorldCoordinates(user, (int) location.getX(), (int) location.getY(), (int) location.getZ());
+		return aquireRegionWorldCoordinates(user, (int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
 	}
 	
 	@Override
 	public RegionImplementation getRegionLocation(Location location)
 	{
-		return getRegionWorldCoordinates((int) location.getX(), (int) location.getY(), (int) location.getZ());
+		return getRegionWorldCoordinates((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
 	}
 
 	@Override

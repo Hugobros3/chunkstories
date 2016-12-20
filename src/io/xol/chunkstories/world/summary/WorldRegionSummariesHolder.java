@@ -92,7 +92,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 	@Override
 	public RegionSummaryImplementation aquireRegionSummaryLocation(WorldUser worldUser, Location location)
 	{
-		return aquireRegionSummary(worldUser, (int)location.getX(), (int)location.getZ());
+		return aquireRegionSummary(worldUser, (int)(double)location.getX(), (int)(double)location.getZ());
 	}
 	
 	@Override
@@ -110,7 +110,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 	@Override
 	public RegionSummary getRegionSummaryLocation(Location location)
 	{
-		return getRegionSummaryWorldCoordinates((int)location.getX(), (int)location.getZ());
+		return getRegionSummaryWorldCoordinates((int)(double)location.getX(), (int)(double)location.getZ());
 	}
 
 	public RegionSummaryImplementation getRegionSummaryWorldCoordinates(int worldX, int worldZ)

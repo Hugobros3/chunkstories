@@ -19,7 +19,7 @@ import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
 
 import io.xol.chunkstories.world.WorldInfo;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -97,7 +97,7 @@ public interface World
 	 * Returns the block data at the specified location
 	 * @return The raw block data, see {@link VoxelFormat}
 	 */
-	public int getVoxelData(Vector3d location);
+	public int getVoxelData(Vector3dm location);
 
 	/**
 	 * Returns the block data at the specified location
@@ -316,35 +316,35 @@ public interface World
 	 * @param limit Between 0 and a finite number
 	 * @return The exact location of the intersection or null if it didn't found one
 	 */
-	public Location raytraceSolid(Vector3d initialPosition, Vector3d direction, double limit);
+	public Location raytraceSolid(Vector3dm initialPosition, Vector3dm direction, double limit);
 	
 	/**
 	 * Raytraces throught the world to find a solid block
 	 * @param limit Between 0 and a finite number
 	 * @return The exact location of the step just before the intersection ( as to get the adjacent block ) or null if it didn't found one
 	 */
-	public Location raytraceSolidOuter(Vector3d initialPosition, Vector3d direction, double limit);
+	public Location raytraceSolidOuter(Vector3dm initialPosition, Vector3dm direction, double limit);
 	
 	/**
 	 * Raytraces throught the world to find a solid or selectable block
 	 * @param limit Between 0 and a finite number
 	 * @return The exact location of the intersection or null if it didn't found one
 	 */
-	public Location raytraceSelectable(Location initialPosition, Vector3d direction, double limit);
+	public Location raytraceSelectable(Location initialPosition, Vector3dm direction, double limit);
 	
 	/**
 	 * Takes into account the voxel terrain and will stop at a solid block, <b>warning</b> limit can't be == -1 !
 	 * @param limit Between 0 and a finite number
 	 * @return Returns all entities that intersects with the ray within the limit, ordered nearest to furthest
 	 */
-	public Iterator<Entity> rayTraceEntities(Vector3d initialPosition, Vector3d direction, double limit);
+	public Iterator<Entity> rayTraceEntities(Vector3dm initialPosition, Vector3dm direction, double limit);
 
 	/**
 	 * Ignores any terrain
 	 * @param limit Either -1 or between 0 and a finite number
 	 * @return Returns all entities that intersects with the ray within the limit, ordered nearest to furthest
 	 */
-	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3d initialPosition, Vector3d direction, double limit);
+	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3dm initialPosition, Vector3dm direction, double limit);
 	
 	/* Various managers */
 	

@@ -28,7 +28,7 @@ public class VoxelContext
 	
 	public VoxelContext(Location location)
 	{
-		this(location.getWorld(), (int)location.getX(), (int)location.getY(), (int)location.getZ());
+		this(location.getWorld(), (int)(double)location.getX(), (int)(double)location.getY(), (int)(double)location.getZ());
 	}
 
 	public VoxelContext(World world, int x, int y, int z)

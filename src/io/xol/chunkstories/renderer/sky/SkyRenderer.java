@@ -92,7 +92,7 @@ public class SkyRenderer
 		skyTextureRaining.setTextureWrapping(false);
 
 		//skyShader.setUniformSamplerCube(2, "skybox", TexturesHandler.idCubemap("res/textures/skybox"));
-		skyShader.setUniform3f("camPos", renderingContext.getCamera().pos.castToSimplePrecision());
+		skyShader.setUniform3f("camPos", renderingContext.getCamera().pos.castToSinglePrecision());
 		skyShader.setUniform3f("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
 		skyShader.setUniform1f("time", time);
 		renderingContext.getCamera().setupShader(skyShader);

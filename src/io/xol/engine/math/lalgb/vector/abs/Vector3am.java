@@ -2,6 +2,8 @@ package io.xol.engine.math.lalgb.vector.abs;
 
 import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.Vector3m;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 public abstract class Vector3am<T extends Number> extends Vector2am<T> implements Vector3m<T>
 {
@@ -47,5 +49,22 @@ public abstract class Vector3am<T extends Number> extends Vector2am<T> implement
 	public Vector3<T> asImmutable()
 	{
 		return this;
+	}
+
+	@Override
+	public Vector3m<Float> castToSinglePrecision()
+	{
+		return new Vector3fm(this);
+	}
+
+	@Override
+	public Vector3m<Double> castToDoublePrecision()
+	{
+		return new Vector3dm(this);
+	}
+
+	public String toString()
+	{
+		return "["+this.getClass().getSimpleName()+" x:"+getX()+" y:"+getY()+" z:"+getZ()+"]";
 	}
 }

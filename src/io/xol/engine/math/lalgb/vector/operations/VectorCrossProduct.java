@@ -1,6 +1,6 @@
 package io.xol.engine.math.lalgb.vector.operations;
 
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.Vector3m;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
@@ -9,15 +9,15 @@ import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 public class VectorCrossProduct
 {
 	
-	public static Vector3d cross33(Vector3d left, Vector3d right)
+	public static Vector3dm cross33(Vector3dm left, Vector3dm right)
 	{
 		return cross33(left, right, null);
 	}
 	
-	public static Vector3d cross33(Vector3d left, Vector3d right, Vector3d dest)
+	public static Vector3dm cross33(Vector3dm left, Vector3dm right, Vector3dm dest)
 	{
 		if (dest == null)
-			dest = new Vector3d();
+			dest = new Vector3dm();
 		//dest.set(left.y * right.z - left.z * right.y, right.x * left.z - right.z * left.x, left.x * right.y - left.y * right.x);
 		//dest.set(left.y * right.z - left.z * right.y, right.x * left.z - right.z * left.x, left.x * right.y - left.y * right.x);
 

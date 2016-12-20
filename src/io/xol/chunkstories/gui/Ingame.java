@@ -1,7 +1,7 @@
 package io.xol.chunkstories.gui;
 
 import io.xol.engine.math.Math2;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.Vector4f;
 
 import java.util.Iterator;
@@ -52,6 +52,7 @@ import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.SelectionRenderer;
+import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
@@ -68,7 +69,7 @@ public class Ingame extends OverlayableScene
 	final private WorldClientCommon world;
 
 	// Renderer
-	//public WorldRenderer worldRenderer;
+	public WorldRenderer worldRenderer;
 	SelectionRenderer selectionRenderer;
 	InventoryDrawer inventoryDrawer;
 
@@ -98,9 +99,8 @@ public class Ingame extends OverlayableScene
 		}
 
 		//Creates the rendering stuff
-		
-		//worldRenderer = new WorldRenderer(world);
-		world.getWorldRenderer().setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		worldRenderer = new WorldRenderer(world);
+		worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		selectionRenderer = new SelectionRenderer(world);
 
 		chat = new Chat(this);
@@ -140,12 +140,13 @@ public class Ingame extends OverlayableScene
 			this.changeOverlay(new DeathOverlay(this, null));
 
 		//Get the player location
-		Vector3d cameraPosition = renderingContext.getCamera().getCameraPosition();
+		Vector3dm cameraPosition = renderingContext.getCamera().getCameraPosition();
 
 		// Update the player
 		if (player instanceof EntityControllable)
 			((EntityControllable) player).setupCamera(Client.getInstance().getClientSideController());
 		
+
 		Location selectedBlock = null;
 		if (player instanceof EntityPlayer)
 			selectedBlock = ((EntityPlayer) player).getBlockLookingAt(true);
@@ -156,7 +157,7 @@ public class Ingame extends OverlayableScene
 		Client.getInstance().getPluginManager().fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
 
 		//Main render call
-		world.getWorldRenderer().renderWorldAtCamera(camera);
+		worldRenderer.renderWorldAtCamera(camera);
 
 		if (selectedBlock != null && player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().isCreativeMode())
 			selectionRenderer.drawSelectionBox(selectedBlock);
@@ -168,9 +169,9 @@ public class Ingame extends OverlayableScene
 			int drawDebugDist = 6;
 			cameraPosition.negate();
 
-			for (int i = ((int) cameraPosition.getX()) - drawDebugDist; i <= ((int) cameraPosition.getX()) + drawDebugDist; i++)
-				for (int j = ((int) cameraPosition.getY()) - drawDebugDist; j <= ((int) cameraPosition.getY()) + drawDebugDist; j++)
-					for (int k = ((int) cameraPosition.getZ()) - drawDebugDist; k <= ((int) cameraPosition.getZ()) + drawDebugDist; k++)
+			for (int i = ((int)(double) cameraPosition.getX()) - drawDebugDist; i <= ((int)(double) cameraPosition.getX()) + drawDebugDist; i++)
+				for (int j = ((int)(double) cameraPosition.getY()) - drawDebugDist; j <= ((int)(double) cameraPosition.getY()) + drawDebugDist; j++)
+					for (int k = ((int)(double) cameraPosition.getZ()) - drawDebugDist; k <= ((int)(double) cameraPosition.getZ()) + drawDebugDist; k++)
 					{
 						data = world.getVoxelData(i, j, k);
 						id = VoxelFormat.id(data);
@@ -191,10 +192,10 @@ public class Ingame extends OverlayableScene
 		if (shouldTakeACubemap)
 		{
 			shouldTakeACubemap = false;
-			world.getWorldRenderer().renderWorldCubemap(null, 512, false);
+			worldRenderer.renderWorldCubemap(null, 512, false);
 		}
 		//Blit the final 3d image
-		world.getWorldRenderer().blitScreen(pauseOverlayFade);
+		worldRenderer.blitScreen(pauseOverlayFade);
 
 		//Fades in & out the overlay
 		if (this.currentOverlay == null)
@@ -271,6 +272,7 @@ public class Ingame extends OverlayableScene
 		// Check connection didn't died and change scene if it has
 		if (world instanceof WorldClientRemote)
 		{
+
 			if (!((WorldClientRemote) world).getConnection().isAlive() || ((WorldClientRemote) world).getConnection().hasFailed())
 				Client.getInstance().exitToMainMenu("Connection terminated : " + ((WorldClientRemote) world).getConnection().getLatestErrorMessage());
 
@@ -335,7 +337,7 @@ public class Ingame extends OverlayableScene
 		}
 		else if (keyCode == Keyboard.KEY_F2)
 		{
-			chat.insert(world.getWorldRenderer().screenShot());
+			chat.insert(worldRenderer.screenShot());
 		}
 		else if (keyCode == Keyboard.KEY_F3)
 		{
@@ -355,16 +357,16 @@ public class Ingame extends OverlayableScene
 		else if ((Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == Keyboard.KEY_F12)
 		{
 			Client.getInstance().reloadAssets();
-			world.getWorldRenderer().reloadContentSpecificStuff();
+			worldRenderer.reloadContentSpecificStuff();
 		}
 		//CTRL-R redraws chunks
 		else if ((Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == 19)
 		{
 			((ParticlesRenderer) world.getParticlesManager()).cleanAllParticles();
 			world.redrawEverything();
+			worldRenderer.chunksRenderer.clear();
 			ChunksRenderer.renderStart = System.currentTimeMillis();
-			world.getWorldRenderer().chunksRenderer.clear();
-			world.getWorldRenderer().flagModified();
+			worldRenderer.flagModified();
 		}
 		//Item slots selection
 		else if (keyBind != null && keyBind.getName().startsWith("inventorySlot"))
@@ -516,7 +518,7 @@ public class Ingame extends OverlayableScene
 	@Override
 	public void onResize()
 	{
-		world.getWorldRenderer().setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	}
 
 	/**
@@ -525,7 +527,7 @@ public class Ingame extends OverlayableScene
 	@Override
 	public void destroy()
 	{
-		this.world.getWorldRenderer().destroy();
+		this.worldRenderer.destroy();
 	}
 
 	private void drawF3debugMenu(RenderingInterface renderingInterface)
@@ -537,9 +539,9 @@ public class Ingame extends OverlayableScene
 
 		long total = Runtime.getRuntime().totalMemory();
 		long used = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		int bx = ((int) camera.pos.getX());
-		int by = ((int) camera.pos.getY());
-		int bz = ((int) camera.pos.getZ());
+		int bx = ((int)(double) camera.pos.getX());
+		int by = ((int)(double) camera.pos.getY());
+		int bz = ((int)(double) camera.pos.getZ());
 		int data = world.getVoxelData(bx, by, bz);
 		int bl = (data & 0x0F000000) >> 0x18;
 		int sl = (data & 0x00F00000) >> 0x14;
@@ -587,8 +589,8 @@ public class Ingame extends OverlayableScene
 		Chunk current = world.getChunk(cx, cy, cz);
 		int x_top = GameWindowOpenGL.windowHeight - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20,
-				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + world.getWorldRenderer().renderedChunks) + " Entities " + ec + " Particles :" + ((ParticlesRenderer) world.getParticlesManager()).count()
-						+ " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + world.getWorldRenderer().getWorld().getGameLogic().getSimulationFps(),
+				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + worldRenderer.renderedChunks) + " Entities " + ec + " Particles :" + ((ParticlesRenderer) world.getParticlesManager()).count()
+						+ " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + worldRenderer.getWorld().getGameLogic().getSimulationFps(),
 				BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Frame timings : " + debugInfo, BitmapFont.SMALLFONTS);
@@ -603,7 +605,7 @@ public class Ingame extends OverlayableScene
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram + "Mb as " + Texture2D.getTotalNumberOfTextureObjects() + " textures using " + Texture2D.getTotalVramUsage() / 1024 / 1024 + "Mb + "
 				+ VerticesObject.getTotalNumberOfVerticesObjects() + " Vertices objects using " + renderingInterface.getVertexDataVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
 
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : " + world.getWorldRenderer().chunksRenderer.todoQueue.size() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : " + worldRenderer.chunksRenderer.todoQueue.size() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16,
 				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " Block looking at : bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
 

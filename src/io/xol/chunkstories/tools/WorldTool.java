@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -114,14 +114,14 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	{
 
 		@Override
-		public void spawnParticleAtPosition(String particleTypeName, Vector3d location)
+		public void spawnParticleAtPosition(String particleTypeName, Vector3dm location)
 		{
 			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
-		public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3d location, Vector3d velocity)
+		public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dm location, Vector3dm velocity)
 		{
 			// TODO Auto-generated method stub
 			
@@ -140,7 +140,7 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	{
 
 		@Override
-		public void drawDecal(Vector3d position, Vector3d orientation, Vector3d size, String decalName)
+		public void drawDecal(Vector3dm position, Vector3dm orientation, Vector3dm size, String decalName)
 		{
 			// TODO Auto-generated method stub
 			

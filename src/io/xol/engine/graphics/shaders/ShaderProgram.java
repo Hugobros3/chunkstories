@@ -15,7 +15,7 @@ import java.util.Map.Entry;
 
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Vector2f;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.engine.math.lalgb.vector.Vector3;
@@ -305,16 +305,9 @@ public class ShaderProgram implements ShaderInterface
 	}
 
 	@Override
-	public void setUniform3f(String uniformName, Vector3d uniformData)
-	{
-		uncommitedUniforms.put(uniformName, uniformData);
-		//uniformsAttributes3Float.put(uniformName, uniformData.castToSimplePrecision());
-	}
-
-	@Override
 	public void setUniform3f(String uniformName, Vector3<?> uniformData)
 	{
-		uncommitedUniforms.put(uniformName, uniformData);
+		uncommitedUniforms.put(uniformName, uniformData.castToSinglePrecision());
 		//uniformsAttributes3Float.put(uniformName, uniformData);
 	}
 
@@ -398,8 +391,6 @@ public class ShaderProgram implements ShaderInterface
 			glUniform1i(uniformLocation, (Integer)uniformData);
 		else if(uniformData instanceof Vector2f)
 			glUniform2f(uniformLocation, ((Vector2f)uniformData).getX(), ((Vector2f)uniformData).getY());
-		else if(uniformData instanceof Vector3d)
-			glUniform3f(uniformLocation, (float)((Vector3d)uniformData).getX(), (float)((Vector3d)uniformData).getY(), (float)((Vector3d)uniformData).getZ());
 		else if(uniformData instanceof Vector4f)
 			glUniform4f(uniformLocation, ((Vector4f)uniformData).getX(), ((Vector4f)uniformData).getY(), ((Vector4f)uniformData).getZ(), ((Vector4f)uniformData).getW());
 		//New vectors

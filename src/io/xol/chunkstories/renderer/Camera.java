@@ -9,7 +9,7 @@ import java.nio.FloatBuffer;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 import org.lwjgl.BufferUtils;
 
@@ -31,7 +31,7 @@ public class Camera implements CameraInterface
 	public float rotationY = 0.0f;
 	public float rotationZ = 0.0f;
 	//Camera positions
-	public Vector3d pos = new Vector3d();
+	public Vector3dm pos = new Vector3dm();
 	
 	//Mouse pointer tracking
 	float lastPX = -1f;
@@ -163,7 +163,7 @@ public class Camera implements CameraInterface
 		modelViewMatrix4f.rotate((float) (rotationX / 180 * Math.PI), new Vector3fm( 1.0f, 0.0f, 0.0f));
 		modelViewMatrix4f.rotate((float) (rotationY / 180 * Math.PI), new Vector3fm( 0.0f, 1.0f, 0.0f));
 		
-		Vector3m<Float> position = pos.castToSimplePrecision();
+		Vector3m<Float> position = pos.castToSinglePrecision();
 		position = position.negate();
 		
 		float rotH = rotationY;
@@ -233,7 +233,7 @@ public class Camera implements CameraInterface
 		
 		// Recreate the 3 vectors for the algorithm
 
-		Vector3m<Float> position = pos.castToSimplePrecision();
+		Vector3m<Float> position = pos.castToSinglePrecision();
 		position = position.negate();
 		//Vector3fm position = new Vector3fm((float)-camPosX, (float)-camPosY, (float)-camPosZ);
 		
@@ -429,7 +429,7 @@ public class Camera implements CameraInterface
 		untranslatedMVP4f.load(modelViewMatrix4f);
 		Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
 
-		modelViewMatrix4f.translate(pos.castToSimplePrecision());
+		modelViewMatrix4f.translate(pos.castToSinglePrecision());
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
 	}
@@ -515,7 +515,7 @@ public class Camera implements CameraInterface
 	 * @see io.xol.chunkstories.renderer.CameraInterface#getCameraPosition()
 	 */
 	@Override
-	public Vector3d getCameraPosition()
+	public Vector3dm getCameraPosition()
 	{
 		return this.pos.clone().negate();
 	}

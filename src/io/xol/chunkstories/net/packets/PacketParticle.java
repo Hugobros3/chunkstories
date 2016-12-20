@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -18,8 +18,8 @@ import io.xol.engine.math.lalgb.Vector3d;
 public class PacketParticle extends PacketSynchPrepared
 {
 	public String particleName = "";
-	public Vector3d position;
-	public Vector3d velocity;
+	public Vector3dm position;
+	public Vector3dm velocity;
 
 	@Override
 	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
@@ -41,13 +41,13 @@ public class PacketParticle extends PacketSynchPrepared
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, PacketProcessingException
 	{
 		particleName = in.readUTF();
-		position = new Vector3d();
+		position = new Vector3dm();
 		position.setX(in.readDouble());
 		position.setY(in.readDouble());
 		position.setZ(in.readDouble());
 		if(in.readBoolean())
 		{
-			velocity = new Vector3d();
+			velocity = new Vector3dm();
 			velocity.setX(in.readDouble());
 			velocity.setY(in.readDouble());
 			velocity.setZ(in.readDouble());

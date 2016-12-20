@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 //http://chunkstories.xyz
 //http://xol.io
 
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
@@ -22,7 +22,7 @@ public interface CameraInterface
 
 	public Vector3fm getViewDirection();
 
-	public Vector3d getCameraPosition();
+	public Vector3dm getCameraPosition();
 
 	public Vector3fm transform3DCoordinate(Vector3fm vector3f);
 }

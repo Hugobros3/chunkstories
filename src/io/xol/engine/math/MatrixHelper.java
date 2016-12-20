@@ -1,7 +1,7 @@
 package io.xol.engine.math;
 
 import io.xol.engine.math.lalgb.Matrix4f;
-
+import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
@@ -30,10 +30,12 @@ public class MatrixHelper
 		return matrix;
 	}
 
-	public static Matrix4f getLookAtMatrix(Vector3fm position, Vector3fm direction, Vector3fm up)
+	public static Matrix4f getLookAtMatrix(Vector3<?> position, Vector3<Float> direction, Vector3<Float> up)
 	{
 		if(direction.getY() == 1.0f || direction.getY() == -1.0f)
 			up = new Vector3fm(1.0f, 0.0f, 0.0f);
+		
+		Vector3<Float> positionSP = position.castToSinglePrecision();
 		
 		Matrix4f matrix = new Matrix4f();
 		matrix.setIdentity();
@@ -41,10 +43,9 @@ public class MatrixHelper
 		Vector3fm u = new Vector3fm();
 		Vector3fm s = new Vector3fm();
 		
-		f.sub(position);
+		f.sub(positionSP);
 		//Vector3fm.sub(direction, position, f);
 		f.normalize();
-		up.normalize();
 		VectorCrossProduct.cross33(f, u, s);
 		s.normalize();
 		VectorCrossProduct.cross33(s, f, u);
@@ -58,9 +59,9 @@ public class MatrixHelper
 		matrix.m02 = -f.getX();
 		matrix.m12 = -f.getY();
 		matrix.m22 = -f.getZ();
-		matrix.m30 = -s.dot(position);
-		matrix.m31 = -u.dot(position);
-		matrix.m32 = f.dot(position);
+		matrix.m30 = -s.dot(positionSP);
+		matrix.m31 = -u.dot(positionSP);
+		matrix.m32 = f.dot(positionSP);
 
 		return matrix;
 	}

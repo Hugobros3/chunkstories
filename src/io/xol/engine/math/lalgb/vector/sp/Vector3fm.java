@@ -23,9 +23,25 @@ public class Vector3fm extends Vector3am<Float>
 		this.z = value;
 	}
 	
-	public Vector3fm(Vector3<?> vec)
+	public <N extends Number> Vector3fm(Vector3<N> vec)
 	{
-		this((float)vec.getX(), (float)vec.getY(), (float)vec.getZ());
+		this(vec.getX(), vec.getY(), vec.getZ());
+	}
+	
+	public <N extends Number> Vector3fm(N x, N y, N z)
+	{
+		if(x instanceof Double)
+		{
+			this.x = (float)(double)x;
+			this.y = (float)(double)y;
+			this.z = (float)(double)z;
+		}
+		else
+		{
+			this.x = (float)x;
+			this.y = (float)y;
+			this.z = (float)z;
+		}
 	}
 	
 	public Vector3fm(float x, float y, float z)
@@ -41,7 +57,7 @@ public class Vector3fm extends Vector3am<Float>
 		this.y = (float)y;
 		this.z = (float)z;
 	}
-	
+
 	@Override
 	public Float length()
 	{
@@ -131,9 +147,61 @@ public class Vector3fm extends Vector3am<Float>
 		return new Vector3fm(this);
 	}
 
-	public String toString()
+	@Override
+	public Vector3fm add(Float a, Float b, Float c)
 	{
-		return "[Vector3fm x:"+getX()+" y:"+getY()+" z:"+getZ()+"]";
+		this.x += a;
+		this.y += b;
+		this.z += c;
+		return this;
+	}
+
+	@Override
+	public Vector3fm add(Float a, Float b)
+	{
+		this.x += a;
+		this.y += b;
+		return this;
+	}
+
+	@Override
+	public Float distanceTo(Vector3<Float> vector)
+	{
+		float dx = this.x - vector.getX();
+		float dy = this.y - vector.getY();
+		float dz = this.z - vector.getZ();
+		return (float)Math.sqrt(dx * dx + dy * dy + dz * dz);
+	}
+
+	@Override
+	public Float distanceTo(Vector2<Float> vector)
+	{
+		float dx = this.x - vector.getX();
+		float dy = this.y - vector.getY();
+		return (float)Math.sqrt(dx * dx + dy * dy);
+	}
+	
+	public Vector3fm castToSinglePrecision()
+	{
+		//No need to build objects
+		return this;
+	}
+
+	public boolean equals(Object object)
+	{
+		//If it's the same kind of vector
+		if(object instanceof Vector3fm)
+		{
+			Vector3fm vec = (Vector3fm)object;
+			return vec.x == x && vec.y == y && vec.z == z;
+		}
+		//If it's sort of a vector
+		else if(object instanceof Vector3<?>)
+		{
+			Vector3<Float> vec = ((Vector3<?>) object).castToSinglePrecision();
+			return vec.getX() == x && vec.getY() == y && vec.getZ() == z;
+		}
+		return false;
 	}
 
 }

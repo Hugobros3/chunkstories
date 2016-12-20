@@ -3,7 +3,7 @@ package io.xol.chunkstories.api.sound;
 import java.nio.FloatBuffer;
 import java.util.Iterator;
 
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 
@@ -34,7 +34,7 @@ public interface SoundManager
 	}
 
 	/** Overloads playSoundEffect with a vector3d instead of individual components and default attenuation */
-	public default SoundSource playSoundEffect(String soundEffect, Vector3d location, float pitch, float gain)
+	public default SoundSource playSoundEffect(String soundEffect, Vector3dm location, float pitch, float gain)
 	{
 		return this.playSoundEffect(soundEffect, location.getX(), location.getY(), location.getZ(), pitch, gain);
 	}
@@ -46,7 +46,7 @@ public interface SoundManager
 	}
 	
 	/** Overloads playSoundEffect with a vector3d instead of individual components */
-	public default SoundSource playSoundEffect(String soundEffect, Vector3d location, float pitch, float gain, float attStart, float attEnd)
+	public default SoundSource playSoundEffect(String soundEffect, Vector3dm location, float pitch, float gain, float attStart, float attEnd)
 	{
 		return this.playSoundEffect(soundEffect, location.getX(), location.getY(), location.getZ(), pitch, gain, attStart, attEnd);
 	}

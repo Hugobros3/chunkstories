@@ -29,7 +29,7 @@ import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -59,7 +59,7 @@ public abstract class EntityImplementation implements Entity
 	public boolean collision_north = false;
 	public boolean collision_south = false;
 
-	public Vector3d blockedMomentum = new Vector3d();
+	public Vector3dm blockedMomentum = new Vector3dm();
 
 	//Hacky bullshit
 	protected Voxel voxelIn;
@@ -129,7 +129,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void moveWithoutCollisionRestrain(double mx, double my, double mz)
 	{
-		Vector3d pos = new Vector3d(positionComponent.getLocation());
+		Vector3dm pos = new Vector3dm(positionComponent.getLocation());
 		pos.setX(pos.getX() + mx);
 		pos.setY(pos.getY() + my);
 		pos.setZ(pos.getZ() + mz);
@@ -137,9 +137,9 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public void moveWithoutCollisionRestrain(Vector3d delta)
+	public void moveWithoutCollisionRestrain(Vector3dm delta)
 	{
-		Vector3d pos = new Vector3d(positionComponent.getLocation());
+		Vector3dm pos = new Vector3dm(positionComponent.getLocation());
 		pos.add(delta);
 		positionComponent.setPosition(pos);
 	}
@@ -160,20 +160,20 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public Vector3d moveWithCollisionRestrain(Vector3d vec)
+	public Vector3dm moveWithCollisionRestrain(Vector3dm vec)
 	{
 		return moveWithCollisionRestrain(vec, false);
 	}
 
-	public Vector3d moveWithCollisionRestrain(Vector3d vec, boolean writeCollisions)
+	public Vector3dm moveWithCollisionRestrain(Vector3dm vec, boolean writeCollisions)
 	{
 		return moveWithCollisionRestrain(this.getLocation(), vec, writeCollisions, false);
 	}
 
 	@Override
-	public Vector3d moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions)
+	public Vector3dm moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions)
 	{
-		return moveWithCollisionRestrain(new Vector3d(mx, my, mz), writeCollisions);
+		return moveWithCollisionRestrain(new Vector3dm(mx, my, mz), writeCollisions);
 	}
 
 	/**
@@ -181,7 +181,7 @@ public abstract class EntityImplementation implements Entity
 	 * 
 	 * @return The remaining distance in each dimension if he got stuck ( with vec3(0.0, 0.0, 0.0) meaning it can move without colliding with anything )
 	 */
-	public Vector3d canMoveWithCollisionRestrain(Vector3d delta)
+	public Vector3dm canMoveWithCollisionRestrain(Vector3dm delta)
 	{
 		return moveWithCollisionRestrain(this.getLocation(), delta, false, true);
 	}
@@ -193,13 +193,13 @@ public abstract class EntityImplementation implements Entity
 	 *            Change the origin of the movement from the default ( current entity position )
 	 * @return The remaining distance in each dimension if he got stuck ( with vec3(0.0, 0.0, 0.0) meaning it can move without colliding with anything )
 	 */
-	public Vector3d canMoveWithCollisionRestrain(Vector3d from, Vector3d delta)
+	public Vector3dm canMoveWithCollisionRestrain(Vector3dm from, Vector3dm delta)
 	{
 		return moveWithCollisionRestrain(from, delta, false, true);
 	}
 
 	// Convinience method
-	private Vector3d moveWithCollisionRestrain(Vector3d from, Vector3d delta, boolean writeCollisions, boolean onlyTest)
+	private Vector3dm moveWithCollisionRestrain(Vector3dm from, Vector3dm delta, boolean writeCollisions, boolean onlyTest)
 	{
 		int id, data;
 
@@ -214,18 +214,18 @@ public abstract class EntityImplementation implements Entity
 			collision_south = false;
 		}
 		//Extract the current position
-		Vector3d pos = new Vector3d(from);
+		Vector3dm pos = new Vector3dm(from);
 
 		//Keep biggest distanceToTravel in each dimension
-		Vector3d maxDistanceToTravel = new Vector3d(0.0);
+		Vector3dm maxDistanceToTravel = new Vector3dm(0.0);
 
 		//Iterate over every box
 		//CollisionBox[] translatedBoxes = getCollisionBoxes();
 		for (int r = 0; r < getCollisionBoxes().length; r++)
 		{
 			// Make a normalized double vector and keep the original length
-			Vector3d vec = new Vector3d(delta);
-			Vector3d distanceToTravel = new Vector3d(delta);
+			Vector3dm vec = new Vector3dm(delta);
+			Vector3dm distanceToTravel = new Vector3dm(delta);
 			double len = vec.length();
 			vec.normalize();
 			vec.scale(0.25d);
@@ -250,7 +250,7 @@ public abstract class EntityImplementation implements Entity
 				}
 				else
 				{
-					vec = new Vector3d(delta);
+					vec = new Vector3dm(delta);
 					vec.normalize();
 					vec.scale(len - distanceTraveled);
 					distanceTraveled = len;
@@ -266,9 +266,9 @@ public abstract class EntityImplementation implements Entity
 				Voxel vox;
 				checkerZ = getCollisionBoxes()[r].translate(pos.getX(), pos.getY(), pos.getZ() + pmz);
 				// Z part
-				for (int i = ((int) pos.getX()) - radius; i <= ((int) pos.getX()) + radius; i++)
-					for (int j = ((int) pos.getY() - 1); j <= ((int) pos.getY()) + (int) Math.ceil(checkerY.h) + 1; j++)
-						for (int k = ((int) pos.getZ()) - radius; k <= ((int) pos.getZ()) + radius; k++)
+				for (int i = ((int)(double) pos.getX()) - radius; i <= ((int)(double) pos.getX()) + radius; i++)
+					for (int j = ((int)(double) pos.getY() - 1); j <= ((int)(double) pos.getY()) + (int) Math.ceil(checkerY.h) + 1; j++)
+						for (int k = ((int)(double) pos.getZ()) - radius; k <= ((int)(double) pos.getZ()) + radius; k++)
 						{
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
@@ -304,7 +304,7 @@ public abstract class EntityImplementation implements Entity
 													if (writeCollisions)
 														collision_north = true;
 												}
-												vec.setZ(0);
+												vec.setZ(0d);
 												checkerZ = getCollisionBoxes()[r].translate(pos.getX(), pos.getY(), pos.getZ() + pmz);
 											}
 										}
@@ -315,9 +315,9 @@ public abstract class EntityImplementation implements Entity
 				pos.setZ(pos.getZ() + pmz);
 				checkerX = getCollisionBoxes()[r].translate(pos.getX() + pmx, pos.getY(), pos.getZ());
 				// X-part
-				for (int i = ((int) pos.getX()) - radius; i <= ((int) pos.getX()) + radius; i++)
-					for (int j = ((int) pos.getY() - 1); j <= ((int) pos.getY()) + (int) Math.ceil(checkerY.h) + 1; j++)
-						for (int k = ((int) pos.getZ()) - radius; k <= ((int) pos.getZ()) + radius; k++)
+				for (int i = ((int)(double) pos.getX()) - radius; i <= ((int)(double) pos.getX()) + radius; i++)
+					for (int j = ((int)(double) pos.getY() - 1); j <= ((int)(double) pos.getY()) + (int) Math.ceil(checkerY.h) + 1; j++)
+						for (int k = ((int)(double) pos.getZ()) - radius; k <= ((int)(double) pos.getZ()) + radius; k++)
 						{
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
@@ -354,7 +354,7 @@ public abstract class EntityImplementation implements Entity
 													if (writeCollisions)
 														collision_right = true;
 												}
-												vec.setX(0);
+												vec.setX(0d);
 												checkerX = getCollisionBoxes()[r].translate(pos.getX() + pmx, pos.getY(), pos.getZ());
 											}
 										}
@@ -365,9 +365,9 @@ public abstract class EntityImplementation implements Entity
 				distanceToTravel.setX(distanceToTravel.getX() - pmx);
 
 				checkerY = getCollisionBoxes()[r].translate(pos.getX(), pos.getY() + pmy, pos.getZ());
-				for (int i = ((int) pos.getX()) - radius; i <= ((int) pos.getX()) + radius; i++)
-					for (int j = ((int) pos.getY()) - 1; j <= ((int) pos.getY()) + (int) Math.ceil(checkerY.h) + 1; j++)
-						for (int k = ((int) pos.getZ()) - radius; k <= ((int) pos.getZ()) + radius; k++)
+				for (int i = ((int)(double) pos.getX()) - radius; i <= ((int)(double) pos.getX()) + radius; i++)
+					for (int j = ((int)(double) pos.getY()) - 1; j <= ((int)(double) pos.getY()) + (int) Math.ceil(checkerY.h) + 1; j++)
+						for (int k = ((int)(double) pos.getZ()) - radius; k <= ((int)(double) pos.getZ()) + radius; k++)
 						{
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
@@ -401,7 +401,7 @@ public abstract class EntityImplementation implements Entity
 													if (writeCollisions)
 														collision_top = true;
 												}
-												vec.setY(0);
+												vec.setY(0d);
 												checkerY = getCollisionBoxes()[r].translate(pos.getX(), pos.getY() + pmy, pos.getZ());
 											}
 										}
@@ -449,11 +449,11 @@ public abstract class EntityImplementation implements Entity
 		return false;
 	}
 
-	public Vector3d collidesWith(Vector3d lineStart, Vector3d lineDirection)
+	public Vector3dm collidesWith(Vector3dm lineStart, Vector3dm lineDirection)
 	{
 		for (CollisionBox box : this.getTranslatedCollisionBoxes())
 		{
-			Vector3d collides = box.collidesWith(lineStart, lineDirection);
+			Vector3dm collides = box.collidesWith(lineStart, lineDirection);
 			if (collides != null)
 				return collides;
 		}
@@ -478,7 +478,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void setupCamera(Camera camera)
 	{
-		camera.pos = new Vector3d(positionComponent.getLocation()).negate();
+		camera.pos = new Vector3dm(positionComponent.getLocation()).negate();
 
 		//Default FOV
 		camera.fov = RenderingConfig.fov;
@@ -627,6 +627,6 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public boolean isEntityOnGround()
 	{
-		return this.canMoveWithCollisionRestrain(new Vector3d(0.0, -0.01, 0.0)).length() == 0.01;
+		return this.canMoveWithCollisionRestrain(new Vector3dm(0.0, -0.01, 0.0)).length() == 0.01;
 	}
 }

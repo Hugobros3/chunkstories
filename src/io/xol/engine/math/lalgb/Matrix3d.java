@@ -2,6 +2,8 @@ package io.xol.engine.math.lalgb;
 
 import java.nio.FloatBuffer;
 
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -59,7 +61,7 @@ public class Matrix3d
 		this.m22 = cloneme.m22;
 	}
 	
-	public Matrix3d(Vector3d rightDirection, Vector3d upDirection, Vector3d frontDirection)
+	public Matrix3d(Vector3dm rightDirection, Vector3dm upDirection, Vector3dm frontDirection)
 	{
 		//1,0,0 * M = front
 		//0,1,0 * M = up
@@ -224,10 +226,10 @@ public class Matrix3d
 		return dest;
 	}
 
-	public static Vector3d transform(Matrix3d left, Vector3d right, Vector3d dest)
+	public static Vector3dm transform(Matrix3d left, Vector3dm right, Vector3dm dest)
 	{
 		if (dest == null)
-			dest = new Vector3d();
+			dest = new Vector3dm();
 
 		double x = left.m00 * right.getX() + left.m10 * right.getY() + left.m20 * right.getZ();
 		double y = left.m01 * right.getX() + left.m11 * right.getY() + left.m21 * right.getZ();
@@ -240,10 +242,10 @@ public class Matrix3d
 		return dest;
 	}
 	
-	public static Vector3d transform(Vector3d left, Matrix3d right, Vector3d dest)
+	public static Vector3dm transform(Vector3dm left, Matrix3d right, Vector3dm dest)
 	{
 		if (dest == null)
-			dest = new Vector3d();
+			dest = new Vector3dm();
 
 		double x = left.getX() * right.m00 + left.getY() * right.m01 + left.getZ() * right.m02;
 		double y = left.getX() * right.m10 + left.getY() * right.m11 + left.getZ() * right.m12;

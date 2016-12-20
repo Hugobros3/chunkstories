@@ -29,7 +29,8 @@ import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.MatrixHelper;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.Vector3;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
@@ -67,7 +68,7 @@ public class DecalsRenderer implements DecalsManager
 			return texture;
 		}
 		
-		void addDecal(Vector3d position, Vector3d orientation, Vector3d size)
+		void addDecal(Vector3dm position, Vector3dm orientation, Vector3dm size)
 		{
 			decalsByteBuffer.limit(decalsByteBuffer.capacity());
 			
@@ -75,7 +76,7 @@ public class DecalsRenderer implements DecalsManager
 			
 			orientation.normalize();
 
-			Vector3fm lookAt = orientation.castToSimplePrecision();
+			Vector3<Float> lookAt = orientation.castToSinglePrecision();
 			
 			Vector3fm up = new Vector3fm(0.0f, 1.0f, 0.0f);
 			VectorCrossProduct.cross33(lookAt, up, up);
@@ -84,9 +85,9 @@ public class DecalsRenderer implements DecalsManager
 			Matrix4f rotationMatrix = MatrixHelper.getLookAtMatrix(new Vector3fm(0.0f), lookAt, up);
 			
 			VoxelBaker virtualRenderBytebuffer = new DecalsVoxelBaker(bbuf);
-			Vector3d size2 = new Vector3d(size);
+			Vector3dm size2 = new Vector3dm(size);
 			size2.scale(1.5);
-			size2.add(new Vector3d(0.5));
+			size2.add(new Vector3dm(0.5));
 			//TODO use proper dda ?
 			try{
 			for (int x = 0; x < size2.getX(); x++)
@@ -101,8 +102,8 @@ public class DecalsRenderer implements DecalsManager
 						//Matrix4f.transform(rotationMatrix, rotateMe, rotateMe);
 
 						Location location = new Location(world, position);
-						location.add(new Vector3d(rotateMe.x, rotateMe.y, rotateMe.z));
-						location.add(new Vector3d(0.5));
+						location.add(new Vector3dm(rotateMe.getX(), rotateMe.getY(), rotateMe.getZ()));
+						location.add(new Vector3dm(0.5));
 
 						int idThere = VoxelFormat.id(world.getVoxelData(location));
 
@@ -115,7 +116,7 @@ public class DecalsRenderer implements DecalsManager
 							if (model == null)
 								model = VoxelModels.getVoxelModel("default");
 
-							model.renderInto(virtualRenderBytebuffer, bri, world.getChunkWorldCoordinates(location), (int) location.getX(), (int) location.getY(), (int) location.getZ());
+							model.renderInto(virtualRenderBytebuffer, bri, world.getChunkWorldCoordinates(location), (int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
 						}
 
 					}
@@ -158,13 +159,13 @@ public class DecalsRenderer implements DecalsManager
 		this.world = worldRenderer.getWorld();
 	}
 	
-	public void drawDecal(Vector3d position, Vector3d orientation, Vector3d size, String decalName)
+	public void drawDecal(Vector3dm position, Vector3dm orientation, Vector3dm size, String decalName)
 	{
 		Texture2D texture = TexturesHandler.getTexture("./textures/decals/"+decalName+".png");
 		drawDecal(position, orientation, size, texture);
 	}
 
-	public void drawDecal(Vector3d position, Vector3d orientation, Vector3d size, Texture2D texture)
+	public void drawDecal(Vector3dm position, Vector3dm orientation, Vector3dm size, Texture2D texture)
 	{
 		if(texture == null)
 			return;

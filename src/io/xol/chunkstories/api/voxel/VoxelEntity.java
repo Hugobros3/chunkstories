@@ -25,7 +25,7 @@ public abstract class VoxelEntity extends VoxelDefault implements VoxelLogic, Vo
 	
 	public Entity getVoxelEntity(Location location)
 	{
-		return getVoxelEntity(location.getWorld(), (int)location.getX(), (int)location.getY(), (int)location.getZ());
+		return getVoxelEntity(location.getWorld(), (int)(double)location.getX(), (int)(double)location.getY(), (int)(double)location.getZ());
 	}
 	
 	public EntityVoxel getVoxelEntity(World world, int worldX, int worldY, int worldZ)

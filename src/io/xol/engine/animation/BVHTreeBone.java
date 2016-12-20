@@ -6,7 +6,7 @@ import java.util.List;
 import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Quaternion4d;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -196,14 +196,14 @@ public class BVHTreeBone
 			rotZUpper = toRad(animationData[frameUpper][2]);
 		}
 
-		Quaternion4d quaternionXLower = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotXLower);
-		Quaternion4d quaternionYLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotYLower);
-		Quaternion4d quaternionZLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZLower);
+		Quaternion4d quaternionXLower = Quaternion4d.fromAxisAngle(new Vector3dm(1.0, 0.0, 0.0), rotXLower);
+		Quaternion4d quaternionYLower = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 1.0, 0.0), rotYLower);
+		Quaternion4d quaternionZLower = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 0.0, 1.0), rotZLower);
 		Quaternion4d totalLower = quaternionXLower.mult(quaternionYLower).mult(quaternionZLower);
 
-		Quaternion4d quaternionXUpper = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotXUpper);
-		Quaternion4d quaternionYUpper = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotYUpper);
-		Quaternion4d quaternionZUpper = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZUpper);
+		Quaternion4d quaternionXUpper = Quaternion4d.fromAxisAngle(new Vector3dm(1.0, 0.0, 0.0), rotXUpper);
+		Quaternion4d quaternionYUpper = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 1.0, 0.0), rotYUpper);
+		Quaternion4d quaternionZUpper = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 0.0, 1.0), rotZUpper);
 		Quaternion4d totalUpper = (quaternionXUpper.mult(quaternionYUpper)).mult(quaternionZUpper);
 		
 		Quaternion4d total = Quaternion4d.slerp(totalLower, totalUpper, t);

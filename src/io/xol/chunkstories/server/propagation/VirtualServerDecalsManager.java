@@ -8,7 +8,7 @@ import io.xol.chunkstories.net.packets.PacketDecal;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -33,7 +33,7 @@ public class VirtualServerDecalsManager implements DecalsManager
 		}
 
 		@Override
-		public void drawDecal(Vector3d position, Vector3d orientation, Vector3d size, String decalName)
+		public void drawDecal(Vector3dm position, Vector3dm orientation, Vector3dm size, String decalName)
 		{
 			Iterator<Player> i = worldServer.getPlayers();
 			while(i.hasNext())
@@ -46,7 +46,7 @@ public class VirtualServerDecalsManager implements DecalsManager
 
 	}
 	
-	void tellPlayer(Player player, Vector3d position, Vector3d orientation, Vector3d size, String decalName)
+	void tellPlayer(Player player, Vector3dm position, Vector3dm orientation, Vector3dm size, String decalName)
 	{
 		PacketDecal packet = new PacketDecal();
 		
@@ -59,7 +59,7 @@ public class VirtualServerDecalsManager implements DecalsManager
 	}
 	
 	@Override
-	public void drawDecal(Vector3d position, Vector3d orientation, Vector3d size, String decalName)
+	public void drawDecal(Vector3dm position, Vector3dm orientation, Vector3dm size, String decalName)
 	{
 		Iterator<Player> i = worldServer.getPlayers();
 		while(i.hasNext())

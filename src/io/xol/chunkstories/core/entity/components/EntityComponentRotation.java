@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.engine.math.lalgb.Vector2f;
-import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -41,15 +41,15 @@ public class EntityComponentRotation extends EntityComponent
 	/**
 	 * @return A vector3d for the direction
 	 */
-	public Vector3d getDirectionLookingAt()
+	public Vector3dm getDirectionLookingAt()
 	{
-		Vector3d direction = new Vector3d();
+		Vector3dm direction = new Vector3dm();
 
-		float a = (float) ((-getHorizontalRotation()) / 360f * 2 * Math.PI);
-		float b = (float) ((getVerticalRotation()) / 360f * 2 * Math.PI);
-		direction.setX(-(float) Math.sin(a) * (float) Math.cos(b));
-		direction.setY(-(float) Math.sin(b));
-		direction.setZ(-(float) Math.cos(a) * (float) Math.cos(b));
+		double a = ((-getHorizontalRotation()) / 360f * 2 * Math.PI);
+		double b = ((getVerticalRotation()) / 360f * 2 * Math.PI);
+		direction.setX(-Math.sin(a) * Math.cos(b));
+		direction.setY(-Math.sin(b));
+		direction.setZ(-Math.cos(a) * Math.cos(b));
 
 		return direction.normalize();
 	}
