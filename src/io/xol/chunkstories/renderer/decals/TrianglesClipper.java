@@ -49,7 +49,7 @@ public class TrianglesClipper
 
 			//Skip backward-facing tris
 			Vector3f normal = new Vector3f(in.getFloat(), in.getFloat(), in.getFloat());
-			if (Vector3f.dot(normal, direction) >= 0)
+			if (normal.dot(direction) >= 0)
 			{
 				for (int i = 0; i < 6; i++)
 					in.getFloat();

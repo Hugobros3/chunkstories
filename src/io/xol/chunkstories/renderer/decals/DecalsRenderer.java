@@ -32,6 +32,7 @@ import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3d;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -76,8 +77,8 @@ public class DecalsRenderer implements DecalsManager
 			Vector3f lookAt = orientation.castToSimplePrecision();
 			
 			Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
-			Vector3f.cross(lookAt, up, up);
-			Vector3f.cross(up, lookAt, up);
+			VectorCrossProduct.cross33(lookAt, up, up);
+			VectorCrossProduct.cross33(up, lookAt, up);
 			
 			Matrix4f rotationMatrix = MatrixHelper.getLookAtMatrix(new Vector3f(0.0f), lookAt, up);
 			

@@ -1344,7 +1344,7 @@ public class WorldRenderer
 			for (int i = 0; i < ssao_kernel_size; i++)
 			{
 				Vector3f vec = new Vector3f((float) Math.random() * 2f - 1f, (float) Math.random() * 2f - 1f, (float) Math.random());
-				vec.normalize(vec);
+				vec.normalize();
 				float scale = ((float) i) / ssao_kernel_size;
 				scale = Math2.mix(0.1f, 1.0f, scale * scale);
 				vec.scale(scale);

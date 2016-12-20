@@ -17,6 +17,7 @@ import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
 
 public class Camera implements CameraInterface
 {
@@ -78,8 +79,8 @@ public class Camera implements CameraInterface
 		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 		
 		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
-		Vector3f.cross(lookAt, up, up);
-		Vector3f.cross(up, lookAt, up);
+		VectorCrossProduct.cross33(lookAt, up, up);
+		VectorCrossProduct.cross33(up, lookAt, up);
 		
 		FloatBuffer listenerOrientation = getFloatBuffer(new float[]{
 				lookAt.getX(), lookAt.getY(), lookAt.getZ(), up.getX(), up.getY(), up.getZ()
@@ -161,7 +162,7 @@ public class Camera implements CameraInterface
 		modelViewMatrix4f.rotate((float) (rotationY / 180 * Math.PI), new Vector3f( 0.0f, 1.0f, 0.0f));
 		
 		Vector3f position = pos.castToSimplePrecision();
-		position = position.negate(position);
+		position = position.negate();
 		
 		float rotH = rotationY;
 		float rotV = rotationX;
@@ -171,8 +172,8 @@ public class Camera implements CameraInterface
 		//Vector3f direction = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 		
 		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
-		Vector3f.cross(lookAt, up, up);
-		Vector3f.cross(up, lookAt, up);
+		VectorCrossProduct.cross33(lookAt, up, up);
+		VectorCrossProduct.cross33(up, lookAt, up);
 		
 		Vector3f.add(position, lookAt, lookAt);
 		position.scale(0);
@@ -198,13 +199,13 @@ public class Camera implements CameraInterface
 			Vector3f.sub(p2, p1, v);
 			Vector3f.sub(p3, p1, u);
 			n = new Vector3f();
-			Vector3f.cross(v, u, n);
+			VectorCrossProduct.cross33(v, u, n);
 			n.normalize();
 			A = n.getX();
 			B = n.getY();
 			C = n.getZ();
 			//n.negate();
-			D = -Vector3f.dot(p1, n);
+			D = -p1.dot(n);
 		}
 		
 		public float distance(Vector3f point)
@@ -227,7 +228,7 @@ public class Camera implements CameraInterface
 		// Recreate the 3 vectors for the algorithm
 
 		Vector3f position = pos.castToSimplePrecision();
-		position = position.negate(position);
+		position = position.negate();
 		//Vector3f position = new Vector3f((float)-camPosX, (float)-camPosY, (float)-camPosZ);
 		
 		float rotH = rotationY;
@@ -237,8 +238,8 @@ public class Camera implements CameraInterface
 		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 		
 		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
-		Vector3f.cross(lookAt, up, up);
-		Vector3f.cross(up, lookAt, up);
+		VectorCrossProduct.cross33(lookAt, up, up);
+		VectorCrossProduct.cross33(up, lookAt, up);
 		
 		Vector3f.add(position, lookAt, lookAt);
 		
@@ -248,11 +249,11 @@ public class Camera implements CameraInterface
 		Z.normalize();
 		
 		Vector3f X = new Vector3f();
-		Vector3f.cross(up, Z, X);
+		VectorCrossProduct.cross33(up, Z, X);
 		X.normalize();
 
 		Vector3f Y = new Vector3f();
-		Vector3f.cross(Z, X, Y);
+		VectorCrossProduct.cross33(Z, X, Y);
 		
 		Vector3f nearCenterPoint = new Vector3f();
 		temp = new Vector3f(Z);

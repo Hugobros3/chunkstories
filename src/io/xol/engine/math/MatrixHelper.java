@@ -2,6 +2,7 @@ package io.xol.engine.math;
 
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -39,11 +40,11 @@ public class MatrixHelper
 		Vector3f u = new Vector3f();
 		Vector3f s = new Vector3f();
 		Vector3f.sub(direction, position, f);
-		f.normalize(f);
-		up.normalize(u);
-		Vector3f.cross(f, u, s);
-		s.normalize(s);
-		Vector3f.cross(s, f, u);
+		f.normalize();
+		u = up.normalize();
+		VectorCrossProduct.cross33(f, u, s);
+		s.normalize();
+		VectorCrossProduct.cross33(s, f, u);
 
 		matrix.m00 = s.getX();
 		matrix.m10 = s.getY();
@@ -54,9 +55,9 @@ public class MatrixHelper
 		matrix.m02 = -f.getX();
 		matrix.m12 = -f.getY();
 		matrix.m22 = -f.getZ();
-		matrix.m30 = -Vector3f.dot(s, position);
-		matrix.m31 = -Vector3f.dot(u, position);
-		matrix.m32 = Vector3f.dot(f, position);
+		matrix.m30 = -s.dot(position);
+		matrix.m31 = -u.dot(position);
+		matrix.m32 = f.dot(position);
 
 		return matrix;
 	}
