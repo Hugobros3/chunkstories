@@ -6,6 +6,7 @@ import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.Vector2;
 import io.xol.engine.math.lalgb.vector.Vector3;
+import io.xol.engine.math.lalgb.vector.Vector4;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -29,7 +30,7 @@ public interface ShaderInterface
 	
 	public void setUniform4f(String uniformName, double uniformData_x, double uniformData_y, double uniformData_z, double uniformData_w);
 	
-	public void setUniform4f(String uniformName, Vector4fm uniformData);
+	public void setUniform4f(String uniformName, Vector4<?> uniformData);
 	
 	//public void setUniform4f(String uniformName, Vector4d uniformData);
 	

@@ -321,9 +321,9 @@ public class ShaderProgram implements ShaderInterface
 	}
 
 	@Override
-	public void setUniform4f(String uniformName, Vector4fm uniformData)
+	public void setUniform4f(String uniformName, Vector4<?> uniformData)
 	{
-		uncommitedUniforms.put(uniformName, uniformData);
+		uncommitedUniforms.put(uniformName, uniformData.castToSinglePrecision());
 		//uniformsAttributes4Float.put(uniformName, uniformData);
 	}
 
@@ -395,12 +395,12 @@ public class ShaderProgram implements ShaderInterface
 		else if(uniformData instanceof Vector4fm)
 			glUniform4f(uniformLocation, ((Vector4fm)uniformData).getX(), ((Vector4fm)uniformData).getY(), ((Vector4fm)uniformData).getZ(), ((Vector4fm)uniformData).getW());
 		//New vectors
-		else if(uniformData instanceof Vector2)
-			glUniform2f(uniformLocation, (float)((Vector2<?>)uniformData).getX(), (float)((Vector2<?>)uniformData).getY());
-		else if(uniformData instanceof Vector3)
-			glUniform3f(uniformLocation, (float)((Vector3<?>)uniformData).getX(), (float)((Vector3<?>)uniformData).getY(), (float)((Vector3<?>)uniformData).getZ());
 		else if(uniformData instanceof Vector4)
 			glUniform4f(uniformLocation, (float)((Vector4<?>)uniformData).getX(), (float)((Vector4<?>)uniformData).getY(), (float)((Vector4<?>)uniformData).getZ(), (float)((Vector4<?>)uniformData).getW());
+		else if(uniformData instanceof Vector3)
+			glUniform3f(uniformLocation, (float)((Vector3<?>)uniformData).getX(), (float)((Vector3<?>)uniformData).getY(), (float)((Vector3<?>)uniformData).getZ());
+		else if(uniformData instanceof Vector2)
+			glUniform2f(uniformLocation, (float)((Vector2<?>)uniformData).getX(), (float)((Vector2<?>)uniformData).getY());
 		
 		else if(uniformData instanceof Matrix4f)
 		{
