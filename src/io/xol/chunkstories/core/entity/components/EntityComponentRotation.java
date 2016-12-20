@@ -9,8 +9,8 @@ import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
+import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -21,7 +21,7 @@ public class EntityComponentRotation extends EntityComponent
 	private float rotationHorizontal = 0f;
 	private float rotationVertical = 0f;
 	
-	private Vector2f rotationImpulse = new Vector2f();
+	private Vector2fm rotationImpulse = new Vector2fm();
 	
 	public EntityComponentRotation(Entity entity, EntityComponent previous)
 	{
@@ -95,13 +95,13 @@ public class EntityComponentRotation extends EntityComponent
 	 */
 	public void applyInpulse(double inpulseHorizontal, double inpulseVertical)
 	{
-		rotationImpulse.add(new Vector2f((float)inpulseHorizontal, (float)inpulseVertical));
+		rotationImpulse.add(new Vector2fm((float)inpulseHorizontal, (float)inpulseVertical));
 	}
 	
 	/**
 	 * Reduces the acceleration and returns it
 	 */
-	public Vector2f tickInpulse()
+	public Vector2fm tickInpulse()
 	{
 		rotationImpulse.scale(0.50f);
 		if(rotationImpulse.length() < 0.05)

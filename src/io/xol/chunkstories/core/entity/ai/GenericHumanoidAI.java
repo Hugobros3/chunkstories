@@ -7,8 +7,8 @@ import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.core.entity.EntityHumanoid;
 import io.xol.chunkstories.voxel.Voxels;
-import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
+import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -297,8 +297,8 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 
 	private void makeEntityLookAt(EntityHumanoid entity, Vector3dm delta)
 	{
-		Vector2f deltaHorizontal = new Vector2f((float)(double)delta.getX(), (float)(double)delta.getZ());
-		Vector2f deltaVertical = new Vector2f(deltaHorizontal.length(),(float)(double) delta.getY());
+		Vector2fm deltaHorizontal = new Vector2fm((float)(double)delta.getX(), (float)(double)delta.getZ());
+		Vector2fm deltaVertical = new Vector2fm(deltaHorizontal.length(),(float)(double) delta.getY());
 		deltaHorizontal.normalize();
 		deltaVertical.normalize();
 		

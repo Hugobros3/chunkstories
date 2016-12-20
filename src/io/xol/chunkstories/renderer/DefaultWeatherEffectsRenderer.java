@@ -6,7 +6,7 @@ import java.util.Random;
 import org.lwjgl.BufferUtils;
 
 import io.xol.engine.math.Math2;
-import io.xol.engine.math.lalgb.Vector2f;
+import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
@@ -53,7 +53,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 
 		bufferOffset %= 110000;
 		bufferOffset += 10000;
-		Vector2f view2drop = new Vector2f();
+		Vector2fm view2drop = new Vector2fm();
 		for (int i = 0; i < 100000; i++)
 		{
 			// We want to always leave alone the topmost part of the array until it has gone out of view

@@ -24,8 +24,8 @@ import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.animation.SkeletonAnimator;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
+import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -150,7 +150,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		{
 			Vector3dm velocity = getVelocityComponent().getVelocity();
 
-			Vector2f headRotationVelocity = this.getEntityRotationComponent().tickInpulse();
+			Vector2fm headRotationVelocity = this.getEntityRotationComponent().tickInpulse();
 			getEntityRotationComponent().addRotation(headRotationVelocity.getX(), headRotationVelocity.getY());
 
 			voxelIn = Voxels.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));

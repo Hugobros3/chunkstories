@@ -12,8 +12,8 @@ import io.xol.chunkstories.core.entity.voxel.EntitySign;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
+import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -64,7 +64,7 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 			blockLocation.sub(entity.getLocation());
 			blockLocation.negate();
 			
-			Vector2f direction = new Vector2f((float)(double)blockLocation.getX(), (float)(double)blockLocation.getZ());
+			Vector2fm direction = new Vector2fm((float)(double)blockLocation.getX(), (float)(double)blockLocation.getZ());
 			direction.normalize();
 			//System.out.println("x:"+direction.x+"y:"+direction.y);
 			

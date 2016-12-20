@@ -2,9 +2,9 @@ package io.xol.chunkstories.api.rendering.pipeline;
 
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector2f;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
+import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.Vector2;
 import io.xol.engine.math.lalgb.vector.Vector3;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -21,7 +21,7 @@ public interface ShaderInterface
 	
 	public void setUniform2f(String uniformName, double uniformData_x, double uniformData_y);
 	
-	public void setUniform2f(String uniformName, Vector2f uniformData);
+	public void setUniform2f(String uniformName, Vector2<?> uniformData);
 	
 	public void setUniform3f(String uniformName, double uniformData_x, double uniformData_y, double uniformData_z);
 	
