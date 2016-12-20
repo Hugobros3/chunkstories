@@ -15,7 +15,7 @@ import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
@@ -393,7 +393,7 @@ public class Chat
 				alpha = 0;
 			if (alpha > 1 || chatting)
 				alpha = 1;
-			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, 9, (linesDrew - 1) * 26 + 180 + (chatting ? 50 : 0), line.text, 2, 2, chatWidth, new Vector4f(1, 1, 1, alpha));
+			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, 9, (linesDrew - 1) * 26 + 180 + (chatting ? 50 : 0), line.text, 2, 2, chatWidth, new Vector4fm(1, 1, 1, alpha));
 		}
 		inputBox.setPosition(12, 192);
 		if (chatting)

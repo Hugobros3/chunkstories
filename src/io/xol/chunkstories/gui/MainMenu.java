@@ -22,7 +22,7 @@ import io.xol.engine.graphics.textures.Texture2DRenderTarget;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.base.GameWindowOpenGL;
 
 public class MainMenu extends OverlayableScene
@@ -211,7 +211,7 @@ public class MainMenu extends OverlayableScene
 		renderingContext.setBlendMode(BlendMode.MIX);
 		float diagonal = (float) Math.sqrt(GameWindowOpenGL.windowWidth * GameWindowOpenGL.windowWidth + GameWindowOpenGL.windowHeight * GameWindowOpenGL.windowHeight);
 		float iconSize = (float) (diagonal / 3 + 50 * Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 30000f)));
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(GameWindowOpenGL.windowWidth / 2 - iconSize / 2, GameWindowOpenGL.windowHeight / 2 - iconSize / 2, GameWindowOpenGL.windowWidth / 2 + iconSize / 2, GameWindowOpenGL.windowHeight / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true, new Vector4f(1.0, 1.0, 1.0, alphaIcon));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(GameWindowOpenGL.windowWidth / 2 - iconSize / 2, GameWindowOpenGL.windowHeight / 2 - iconSize / 2, GameWindowOpenGL.windowWidth / 2 + iconSize / 2, GameWindowOpenGL.windowHeight / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true, new Vector4fm(1.0, 1.0, 1.0, alphaIcon));
 		//renderingContext.getGuiRenderer().drawBuffer();
 		
 		currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);

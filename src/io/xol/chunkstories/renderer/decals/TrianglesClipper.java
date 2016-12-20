@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
@@ -75,9 +75,9 @@ public class TrianglesClipper
 
 	private static int cull(Vector3fm vert1, Vector3fm vert2, Vector3fm vert3)
 	{
-		Vector4f tv1 = Matrix4f.transform(toClipSpace, new Vector4f(vert1, 1.0f), null);
-		Vector4f tv2 = Matrix4f.transform(toClipSpace, new Vector4f(vert2, 1.0f), null);
-		Vector4f tv3 = Matrix4f.transform(toClipSpace, new Vector4f(vert3, 1.0f), null);
+		Vector4fm tv1 = Matrix4f.transform(toClipSpace, new Vector4fm(vert1.getX(), vert1.getY(), vert1.getZ(), 1.0f), null);
+		Vector4fm tv2 = Matrix4f.transform(toClipSpace, new Vector4fm(vert2.getX(), vert2.getY(), vert2.getZ(), 1.0f), null);
+		Vector4fm tv3 = Matrix4f.transform(toClipSpace, new Vector4fm(vert3.getX(), vert3.getY(), vert3.getZ(), 1.0f), null);
 
 		if (tv1.getX() < 0.0 && tv2.getX() < 0.0 && tv3.getX() < 0.0)
 			return 0;
@@ -90,10 +90,10 @@ public class TrianglesClipper
 		return cullLeft(tv1, tv2, tv3);
 	}
 
-	private static int cullLeft(Vector4f vert1, Vector4f vert2, Vector4f vert3)
+	private static int cullLeft(Vector4fm vert1, Vector4fm vert2, Vector4fm vert3)
 	{
 		//Sort
-		Vector4f v1, v2, v3;
+		Vector4fm v1, v2, v3;
 		if (vert1.getX() > vert2.getX())
 		{
 			if (vert1.getX() > vert3.getX())
@@ -165,14 +165,14 @@ public class TrianglesClipper
 		{
 			float d2to1 = v2.getX() - v1.getX();
 			float d2tb = v2.getX();
-			Vector4f v2to1 = new Vector4f(v1).sub(v2);
+			Vector4fm v2to1 = new Vector4fm(v1).sub(v2);
 			v2to1.scale((d2tb) / d2to1);
 			v2to1.add(v2);
 			int t = cullRight(v2to1, v2, v3);
 			
 			float d3to1 = v3.getX() - v1.getX();
 			float d3tb = v3.getX();
-			Vector4f v3to1 = new Vector4f(v1).sub(v3);
+			Vector4fm v3to1 = new Vector4fm(v1).sub(v3);
 			v3to1.scale((d3tb) / d3to1);
 			v3to1.add(v3);
 			return t + cullRight(v2to1, v3, v3to1);
@@ -183,12 +183,12 @@ public class TrianglesClipper
 			float d3tb = v3.getX();
 			
 			float d3to1 = v3.getX() - v1.getX();
-			Vector4f v3to1 = new Vector4f(v1).sub(v3);
+			Vector4fm v3to1 = new Vector4fm(v1).sub(v3);
 			v3to1.scale((d3tb) / d3to1);
 			v3to1.add(v3);
 			
 			float d3to2 = v3.getX() - v2.getX();
-			Vector4f v3to2 = new Vector4f(v2).sub(v3);
+			Vector4fm v3to2 = new Vector4fm(v2).sub(v3);
 			v3to2.scale((d3tb) / d3to2);
 			v3to2.add(v3);
 			
@@ -209,7 +209,7 @@ public class TrianglesClipper
 		}
 	}
 
-	private static int cullRight(Vector4f v1, Vector4f v2, Vector4f v3)
+	private static int cullRight(Vector4fm v1, Vector4fm v2, Vector4fm v3)
 	{
 		float border = 1.0f;
 		//One point is clipping
@@ -219,7 +219,7 @@ public class TrianglesClipper
 			//Continue the two segments up to the border
 			float d2t3 = v3.getX() - v2.getX();
 			float d2tb = border - v2.getX();
-			Vector4f v2to3 = new Vector4f(v3).sub(v2);
+			Vector4fm v2to3 = new Vector4fm(v3).sub(v2);
 			v2to3.scale((d2tb) / d2t3);
 			v2to3.add(v2);
 			//System.out.println(v2to3+" is in of clip ("+v2to3.x+")");
@@ -227,7 +227,7 @@ public class TrianglesClipper
 
 			float d1t3 = v3.getX() - v1.getX();
 			float d1tb = border - v1.getX();
-			Vector4f v1to3 = new Vector4f(v3).sub(v1);
+			Vector4fm v1to3 = new Vector4fm(v3).sub(v1);
 			v1to3.scale((d1tb) / d1t3);
 			v1to3.add(v1);
 			//System.out.println(v1to3+" is in of clip ("+v1to3.x+")");
@@ -239,13 +239,13 @@ public class TrianglesClipper
 		{
 			float d1t3 = v3.getX() - v1.getX();
 			float d1tb = border - v1.getX();
-			Vector4f v1to3 = new Vector4f(v3).sub(v1);
+			Vector4fm v1to3 = new Vector4fm(v3).sub(v1);
 			v1to3.scale((d1tb) / d1t3);
 			v1to3.add(v1);
 			//other one
 			float d1t2 = v2.getX() - v1.getX();
 			//float d1tb = border - v1.x;
-			Vector4f v1to2 = new Vector4f(v2).sub(v1);
+			Vector4fm v1to2 = new Vector4fm(v2).sub(v1);
 			v1to2.scale((d1tb) / d1t2);
 			v1to2.add(v1);
 
@@ -262,9 +262,9 @@ public class TrianglesClipper
 		}
 	}
 
-	private static int cullTop(Vector4f vert1, Vector4f vert2, Vector4f vert3)
+	private static int cullTop(Vector4fm vert1, Vector4fm vert2, Vector4fm vert3)
 	{
-		Vector4f v1, v2, v3;
+		Vector4fm v1, v2, v3;
 		if (vert1.getY() > vert2.getY())
 		{
 			if (vert1.getY() > vert3.getY())
@@ -338,7 +338,7 @@ public class TrianglesClipper
 			//Continue the two segments up to the border
 			float d2t3 = v3.getY() - v2.getY();
 			float d2tb = border - v2.getY();
-			Vector4f v2to3 = new Vector4f(v3).sub(v2);
+			Vector4fm v2to3 = new Vector4fm(v3).sub(v2);
 			v2to3.scale((d2tb) / d2t3);
 			v2to3.add(v2);
 			//System.out.println(v2to3+" is in of clip ("+v2to3.y+")");
@@ -346,7 +346,7 @@ public class TrianglesClipper
 
 			float d1t3 = v3.getY() - v1.getY();
 			float d1tb = border - v1.getY();
-			Vector4f v1to3 = new Vector4f(v3).sub(v1);
+			Vector4fm v1to3 = new Vector4fm(v3).sub(v1);
 			v1to3.scale((d1tb) / d1t3);
 			v1to3.add(v1);
 			//System.out.println(v1to3+" is in of clip ("+v1to3.y+")");
@@ -358,13 +358,13 @@ public class TrianglesClipper
 		{
 			float d1t3 = v3.getY() - v1.getY();
 			float d1tb = border - v1.getY();
-			Vector4f v1to3 = new Vector4f(v3).sub(v1);
+			Vector4fm v1to3 = new Vector4fm(v3).sub(v1);
 			v1to3.scale((d1tb) / d1t3);
 			v1to3.add(v1);
 			//other one
 			float d1t2 = v2.getY() - v1.getY();
 			//float d1tb = border - v1.y;
-			Vector4f v1to2 = new Vector4f(v2).sub(v1);
+			Vector4fm v1to2 = new Vector4fm(v2).sub(v1);
 			v1to2.scale((d1tb) / d1t2);
 			v1to2.add(v1);
 
@@ -381,7 +381,7 @@ public class TrianglesClipper
 		}
 	}
 
-	private static int cullBot(Vector4f v1, Vector4f v2, Vector4f v3)
+	private static int cullBot(Vector4fm v1, Vector4fm v2, Vector4fm v3)
 	{
 		float border = 0.0f;
 		//One point is clipping
@@ -389,14 +389,14 @@ public class TrianglesClipper
 		{
 			float d2to1 = v2.getY() - v1.getY();
 			float d2tb = v2.getY();
-			Vector4f v2to1 = new Vector4f(v1).sub(v2);
+			Vector4fm v2to1 = new Vector4fm(v1).sub(v2);
 			v2to1.scale((d2tb) / d2to1);
 			v2to1.add(v2);
 			int t = cullDone(v2to1, v2, v3);
 			
 			float d3to1 = v3.getY() - v1.getY();
 			float d3tb = v3.getY();
-			Vector4f v3to1 = new Vector4f(v1).sub(v3);
+			Vector4fm v3to1 = new Vector4fm(v1).sub(v3);
 			v3to1.scale((d3tb) / d3to1);
 			v3to1.add(v3);
 			return t + cullDone(v2to1, v3, v3to1);
@@ -407,12 +407,12 @@ public class TrianglesClipper
 			float d3tb = v3.getY();
 			
 			float d3to1 = v3.getY() - v1.getY();
-			Vector4f v3to1 = new Vector4f(v1).sub(v3);
+			Vector4fm v3to1 = new Vector4fm(v1).sub(v3);
 			v3to1.scale((d3tb) / d3to1);
 			v3to1.add(v3);
 			
 			float d3to2 = v3.getY() - v2.getY();
-			Vector4f v3to2 = new Vector4f(v2).sub(v3);
+			Vector4fm v3to2 = new Vector4fm(v2).sub(v3);
 			v3to2.scale((d3tb) / d3to2);
 			v3to2.add(v3);
 			
@@ -433,7 +433,7 @@ public class TrianglesClipper
 		}
 	}
 
-	private static int cullDone(Vector4f vert1, Vector4f vert2, Vector4f vert3)
+	private static int cullDone(Vector4fm vert1, Vector4fm vert2, Vector4fm vert3)
 	{
 		out(vert1);
 		out(vert2);
@@ -442,14 +442,14 @@ public class TrianglesClipper
 		return 1;
 	}
 
-	private static void out(Vector4f tm)
+	private static void out(Vector4fm tm)
 	{
 		//Wrap round out buffer
 		if (out.position() == out.capacity())
 			out.position(0);
 		
 		//out(vert, tm.x, tm.y);
-		Vector4f keke = Matrix4f.transform(fromClipSpace, tm, null);
+		Vector4fm keke = Matrix4f.transform(fromClipSpace, tm, null);
 
 		out.putFloat((float) keke.getX());
 		out.putFloat((float) keke.getY());

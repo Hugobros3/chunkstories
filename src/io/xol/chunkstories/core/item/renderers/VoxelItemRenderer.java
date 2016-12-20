@@ -2,7 +2,7 @@ package io.xol.chunkstories.core.item.renderers;
 
 import io.xol.engine.math.lalgb.Matrix4f;
 
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 import java.nio.ByteBuffer;
@@ -205,7 +205,7 @@ public class VoxelItemRenderer implements ItemRenderer
 
 		if (((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00) > 0)
 		{
-			Vector4f lightposition = new Vector4f(0.0, 0.0, 0.0, 1.0);
+			Vector4fm lightposition = new Vector4fm(0.0, 0.0, 0.0, 1.0);
 			Matrix4f.transform(handTransformation, lightposition, lightposition);
 			
 			Light heldBlockLight = new Light(new Vector3fm(0.5f, 0.45f, 0.4f).scale(2.0f), new Vector3fm(lightposition.getX(), lightposition.getY(), lightposition.getZ()), 15f);

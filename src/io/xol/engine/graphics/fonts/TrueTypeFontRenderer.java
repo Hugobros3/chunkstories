@@ -4,7 +4,7 @@ import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.TextMeshObject;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.math.HexTools;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.misc.ColorsTools;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -32,37 +32,37 @@ public class TrueTypeFontRenderer
 
 	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, int clipX)
 	{
-		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleX, ALIGN_LEFT, clipX, new Vector4f(1, 1, 1, 1));
+		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleX, ALIGN_LEFT, clipX, new Vector4fm(1, 1, 1, 1));
 	}
 	
 	public void drawStringIngame(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, int clipX, TextMeshObject target)
 	{
-		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleX, ALIGN_CENTER, clipX, new Vector4f(1, 1, 1, 1), target);
+		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleX, ALIGN_CENTER, clipX, new Vector4fm(1, 1, 1, 1), target);
 	}
 
 	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scale)
 	{
-		drawString(trueTypeFont, x, y, whatchars, scale, scale, ALIGN_LEFT, -1, new Vector4f(1, 1, 1, 1));
+		drawString(trueTypeFont, x, y, whatchars, scale, scale, ALIGN_LEFT, -1, new Vector4fm(1, 1, 1, 1));
 	}
 	
-	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scale, Vector4f color)
+	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scale, Vector4fm color)
 	{
 		drawString(trueTypeFont, x, y, whatchars, scale, scale, ALIGN_LEFT, -1, color);
 	}
 
-	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4f color)
+	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4fm color)
 	{
 		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, color);
 	}
 
-	public void drawStringWithShadow(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, Vector4f color)
+	public void drawStringWithShadow(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, Vector4fm color)
 	{
 		drawStringWithShadow(trueTypeFont, x, y, whatchars, scaleX, scaleY, -1, color);
 	}
 
-	public void drawStringWithShadow(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4f color)
+	public void drawStringWithShadow(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4fm color)
 	{
-		Vector4f colorDarkened = new Vector4f(color);
+		Vector4fm colorDarkened = new Vector4fm(color);
 		colorDarkened.setX(colorDarkened.getX() * 0.2f);
 		colorDarkened.setY(colorDarkened.getY() * 0.2f);
 		colorDarkened.setZ(colorDarkened.getZ() * 0.2f);
@@ -72,15 +72,15 @@ public class TrueTypeFontRenderer
 
 	public void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int format)
 	{
-		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleY, format, -1, new Vector4f(1, 1, 1, 1));
+		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleY, format, -1, new Vector4fm(1, 1, 1, 1));
 	}
 
-	private void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int alignement, int clipX, Vector4f color)
+	private void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int alignement, int clipX, Vector4fm color)
 	{
 		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleY, alignement, clipX, color, null);
 	}
 	
-	private void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int alignement, int clipX, Vector4f color, TextMeshObject target)
+	private void drawString(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int alignement, int clipX, Vector4fm color, TextMeshObject target)
 	{
 		boolean clip = clipX != -1;
 
@@ -91,7 +91,7 @@ public class TrueTypeFontRenderer
 		int i = 0;
 		float startY = 0;
 
-		Vector4f colorModified = new Vector4f(color);
+		Vector4fm colorModified = new Vector4fm(color);
 		String lines[] = whatchars.split("\n");
 		if(lines.length == 0)
 			return;
@@ -124,7 +124,7 @@ public class TrueTypeFontRenderer
 					{
 						String colorCode = whatchars.substring(i + 1, i + 7);
 						int rgb[] = ColorsTools.hexToRGB(colorCode);
-						colorModified = new Vector4f(rgb[0] / 255.0f * color.getX(), rgb[1] / 255.0f * color.getY(), rgb[2] / 255.0f * color.getZ(), color.getW());
+						colorModified = new Vector4fm(rgb[0] / 255.0f * color.getX(), rgb[1] / 255.0f * color.getY(), rgb[2] / 255.0f * color.getZ(), color.getW());
 						i += 7;
 						continue;
 					}
@@ -181,7 +181,7 @@ public class TrueTypeFontRenderer
 	/** Default font texture height */
 	private int textureHeight = 512;
 
-	private void drawQuad(float startX, float startY, float width, float height, float srcX, float srcY, float srcX2, float srcY2, Texture2D pageTexture, Vector4f colorModified)
+	private void drawQuad(float startX, float startY, float width, float height, float srcX, float srcY, float srcX2, float srcY2, Texture2D pageTexture, Vector4fm colorModified)
 	{
 		renderingContext.getGuiRenderer().drawBoxWindowsSpace(startX, startY, startX + width, startY + height, srcX, srcY, srcX2, srcY2, pageTexture, false, true, colorModified);
 	}

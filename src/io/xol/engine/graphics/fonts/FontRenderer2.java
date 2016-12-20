@@ -4,7 +4,7 @@ package io.xol.engine.graphics.fonts;
 // http://chunkstories.xyz
 // http://xol.io
 
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -35,7 +35,7 @@ public class FontRenderer2
 		Texture2D fontTexture = TexturesHandler.getTexture("./textures/font/" + font.name + ".png");
 		fontTexture.setLinearFiltering(false);
 		
-		Vector4f color = new Vector4f(r, v, b, alpha);
+		Vector4fm color = new Vector4fm(r, v, b, alpha);
 
 		float baseX = xpos;
 		float baseY = ypos;
@@ -102,7 +102,7 @@ public class FontRenderer2
 						int rgb[] = ColorsTools.hexToRGB(colorCode);
 						// System.out.println("colorcode found ! - "+colorCode
 						// +" rgb:"+rgb[1]);
-						color = new Vector4f(rgb[0] / 255.0f, rgb[1] / 255.0f, rgb[2] / 255.0f, alpha);
+						color = new Vector4fm(rgb[0] / 255.0f, rgb[1] / 255.0f, rgb[2] / 255.0f, alpha);
 						skip = 6;
 					}
 				}

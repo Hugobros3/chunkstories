@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
 import io.xol.engine.graphics.textures.Texture2D;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -38,9 +38,9 @@ public class TextMeshObject implements Renderable
 	private int temp = 0;
 
 	private Texture2D currentTexture;
-	private Vector4f currentColor;
+	private Vector4fm currentColor;
 
-	public void setState(Texture2D texture, Vector4f color)
+	public void setState(Texture2D texture, Vector4fm color)
 	{
 		//If we changed texture, render the temp stuff
 		if (currentTexture != null && !texture.equals(currentTexture))

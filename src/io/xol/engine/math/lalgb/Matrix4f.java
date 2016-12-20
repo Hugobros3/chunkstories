@@ -4,6 +4,7 @@ import java.nio.FloatBuffer;
 
 import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -251,10 +252,10 @@ public class Matrix4f
 	}
 
 	//From LWJGL
-	public static Vector4f transform(Matrix4f left, Vector4f right, Vector4f dest)
+	public static Vector4fm transform(Matrix4f left, Vector4fm right, Vector4fm dest)
 	{
 		if (dest == null)
-			dest = new Vector4f();
+			dest = new Vector4fm();
 
 		float x = left.m00 * right.getX() + left.m10 * right.getY() + left.m20 * right.getZ() + left.m30 * right.getW();
 		float y = left.m01 * right.getX() + left.m11 * right.getY() + left.m21 * right.getZ() + left.m31 * right.getW();

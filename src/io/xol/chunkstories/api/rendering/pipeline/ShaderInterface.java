@@ -3,7 +3,7 @@ package io.xol.chunkstories.api.rendering.pipeline;
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.Vector2;
 import io.xol.engine.math.lalgb.vector.Vector3;
 
@@ -29,7 +29,7 @@ public interface ShaderInterface
 	
 	public void setUniform4f(String uniformName, double uniformData_x, double uniformData_y, double uniformData_z, double uniformData_w);
 	
-	public void setUniform4f(String uniformName, Vector4f uniformData);
+	public void setUniform4f(String uniformName, Vector4fm uniformData);
 	
 	//public void setUniform4f(String uniformName, Vector4d uniformData);
 	

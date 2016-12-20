@@ -86,7 +86,7 @@ public class Vector4fm extends Vector4am<Float>
 	}
 
 	@Override
-	public Vector4m<Float> add(Vector4m<Float> vector)
+	public Vector4fm add(Vector4m<Float> vector)
 	{
 		this.x += vector.getX();
 		this.y += vector.getY();
@@ -96,7 +96,7 @@ public class Vector4fm extends Vector4am<Float>
 	}
 
 	@Override
-	public Vector4m<Float> sub(Vector4m<Float> vector)
+	public Vector4fm sub(Vector4m<Float> vector)
 	{
 		this.x -= vector.getX();
 		this.y -= vector.getY();

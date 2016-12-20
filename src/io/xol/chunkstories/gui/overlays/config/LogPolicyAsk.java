@@ -9,7 +9,7 @@ import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.elements.Button;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -53,7 +53,7 @@ public class LogPolicyAsk extends Overlay
 	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
 	{
 		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4f(0.0, 0.0, 0.0, 0.5));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
 		
 		FontRenderer2.drawTextUsingSpecificFont(30, GameWindowOpenGL.windowHeight-64, 0, 64, "Chunk Stories indev log policy", BitmapFont.SMALLFONTS);
 		

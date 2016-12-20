@@ -32,7 +32,7 @@ import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
@@ -98,7 +98,7 @@ public class DecalsRenderer implements DecalsManager
 						float dy = (float) (y - size2.getY() / 2.0);
 						float dz = (float) (z - size2.getZ() / 2.0);
 
-						Vector4f rotateMe = new Vector4f(dx, dy, dz, 1.0f);
+						Vector4fm rotateMe = new Vector4fm(dx, dy, dz, 1.0f);
 						//Matrix4f.transform(rotationMatrix, rotateMe, rotateMe);
 
 						Location location = new Location(world, position);

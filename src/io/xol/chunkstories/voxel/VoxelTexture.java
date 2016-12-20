@@ -1,6 +1,6 @@
 package io.xol.chunkstories.voxel;
 
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -26,6 +26,6 @@ public class VoxelTexture
 	public int atlasT;
 	public int atlasS;
 	
-	public Vector4f color;
+	public Vector4fm color;
 	public int positionInColorIndex;
 }

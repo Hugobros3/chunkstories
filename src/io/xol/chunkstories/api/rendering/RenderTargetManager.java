@@ -1,7 +1,7 @@
 package io.xol.chunkstories.api.rendering;
 
 import io.xol.engine.graphics.fbo.FrameBufferObject;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -32,9 +32,9 @@ public interface RenderTargetManager
 	
 	/**
 	 * Clears the color render target (if bound) to the color specified
-	 * Giving a null Vector4f is assummed to mean Vector4f(0, 0, 0, 0);
+	 * Giving a null Vector4fm is assummed to mean Vector4fm(0, 0, 0, 0);
 	 */
-	public void clearBoundRenderTargetColor(Vector4f color);
+	public void clearBoundRenderTargetColor(Vector4fm color);
 	
 	/**
 	 * Enables or disable the depth mask ( wether or not depth information is written )

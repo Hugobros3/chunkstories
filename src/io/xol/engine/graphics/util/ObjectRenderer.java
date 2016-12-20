@@ -4,7 +4,7 @@ import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.misc.ColorsTools;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -55,7 +55,7 @@ public class ObjectRenderer
 		texture.setLinearFiltering(false);
 		//TexturesHandler.mipmapLevel(texture, -1);
 
-		GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, texture, false, true, new Vector4f(r, v, b, a));
+		GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, texture, false, true, new Vector4fm(r, v, b, a));
 	}
 
 	public static void renderColoredRect(float xpos, float ypos, float w, float h, float rot, String hex, float a)
@@ -66,6 +66,6 @@ public class ObjectRenderer
 
 	public static void renderColoredRect(float xpos, float ypos, float w, float h, float rot, float r, float v, float b, float a)
 	{
-		GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, 0, 0, 0, 0, null, false, true, new Vector4f(r, v, b, a));
+		GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, 0, 0, 0, 0, null, false, true, new Vector4fm(r, v, b, a));
 	}
 }

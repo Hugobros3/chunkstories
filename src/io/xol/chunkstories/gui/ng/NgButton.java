@@ -9,7 +9,7 @@ import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.gui.elements.GuiElement;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -56,9 +56,9 @@ public class NgButton extends GuiElement
 		CorneredBoxDrawer.drawCorneredBoxTiled(posx + (width) / 2, posy + 9 * scale, width, 18 * scale, 4 * scale, buttonTexture, 32, scale);
 		
 		//if(scale == 1)
-			TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial12px9pt, posx + 4 * scale, posy, text, scale, new Vector4f(76/255f, 76/255f, 76/255f, 1));
+			TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial12px9pt, posx + 4 * scale, posy, text, scale, new Vector4fm(76/255f, 76/255f, 76/255f, 1));
 		//else
-		//	TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial24px18pt, posx + 4 * scale, posy + 2, text, scale / 2, new Vector4f(76/255f, 76/255f, 76/255f, 1));
+		//	TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial24px18pt, posx + 4 * scale, posy + 2, text, scale / 2, new Vector4fm(76/255f, 76/255f, 76/255f, 1));
 	}
 
 	public boolean clicked()

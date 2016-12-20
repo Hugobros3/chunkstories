@@ -2,7 +2,7 @@ package io.xol.chunkstories.core.entity;
 
 import org.lwjgl.input.Mouse;
 
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.model.ModelLibrary;
@@ -489,7 +489,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		float dekal = TrueTypeFont.arial11px.getWidth(txt) * 16 * scale;
 		//System.out.println("dekal"+dekal);
 		if (scale > 0)
-			renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, posOnScreen.getX() - dekal / 2, posOnScreen.getY(), txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
+			renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, posOnScreen.getX() - dekal / 2, posOnScreen.getY(), txt, 16 * scale, 16 * scale, new Vector4fm(1, 1, 1, 1));
 	}
 
 	class EntityPlayerRenderer<H extends EntityPlayer> extends EntityHumanoidRenderer<H>

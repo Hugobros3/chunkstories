@@ -1,6 +1,6 @@
 package io.xol.chunkstories.gui.overlays.general;
 
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.graphics.RenderingContext;
@@ -30,7 +30,7 @@ public class MessageBoxOverlay extends Overlay
 	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
 	{
 		int dekal = TrueTypeFont.arial11px.getWidth(message) / 2;
-		renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, GameWindowOpenGL.windowWidth/2-dekal*1.5f, GameWindowOpenGL.windowHeight / 2 + 64, message, 3f, 3f, new Vector4f(1,0.2f,0.2f,1));
+		renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, GameWindowOpenGL.windowWidth/2-dekal*1.5f, GameWindowOpenGL.windowHeight / 2 + 64, message, 3f, 3f, new Vector4fm(1,0.2f,0.2f,1));
 		
 		okButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight / 2 - 32);
 		okButton.draw();

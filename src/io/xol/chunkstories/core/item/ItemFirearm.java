@@ -34,7 +34,7 @@ import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -451,9 +451,9 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		int bandwidth = (max - min) / 2;
 		int x = 0;
 
-		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4f(0.0, 0.0, 0.0, 1.0));
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4fm(0.0, 0.0, 0.0, 1.0));
 		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += min, GameWindowOpenGL.windowHeight, 0, 1, 1, 0, TexturesHandler.getTexture(scopeTexture), false, false, null);
-		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4f(0.0, 0.0, 0.0, 1.0));
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4fm(0.0, 0.0, 0.0, 1.0));
 	}
 
 	public boolean isScoped()

@@ -14,7 +14,7 @@ import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -81,7 +81,7 @@ public class InventoryOverlay extends Overlay
 
 			if (selectedItemAmount != 1)
 				renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, Mouse.getX() - width / 2 + (selectedItem.getItem().getSlotsWidth() - 1.0f) * slotSize, Mouse.getY() - height / 2, selectedItemAmount + "", 2, 2,
-						new Vector4f(1, 1, 1, 1));
+						new Vector4fm(1, 1, 1, 1));
 
 		}
 		//System.out.println(inventories[0]);

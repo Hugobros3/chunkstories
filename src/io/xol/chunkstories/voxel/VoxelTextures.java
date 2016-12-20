@@ -19,7 +19,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.content.ModsManager;
@@ -33,7 +33,7 @@ public class VoxelTextures
 {
 	static Map<String, VoxelTexture> texMap = new HashMap<String, VoxelTexture>();
 	static int uniquesIds = 0;
-	//static Map<String, Vector4f> colors = new HashMap<String, Vector4f>();
+	//static Map<String, Vector4fm> colors = new HashMap<String, Vector4fm>();
 
 	public static int BLOCK_ATLAS_SIZE;
 	public static int BLOCK_ATLAS_FACTOR;
@@ -213,9 +213,9 @@ public class VoxelTextures
 					if (nonNullPixels > 0)
 						alphaTotal /= nonNullPixels;
 
-					vt.color = new Vector4f(color.getX(), color.getY(), color.getZ(), alphaTotal);
+					vt.color = new Vector4fm(color.getX(), color.getY(), color.getZ(), alphaTotal);
 					
-					//colors.put(vt.name, new Vector4f(color.x, color.y, color.z, alphaTotal));
+					//colors.put(vt.name, new Vector4fm(color.x, color.y, color.z, alphaTotal));
 					// Do also the normal maps !
 					Asset normalMap = ModsManager.getAsset("./voxels/textures/normal/" + vt.name + ".png");
 					if (normalMap == null)
@@ -370,11 +370,11 @@ public class VoxelTextures
 
 	/*public static Vector3fm getTextureColorAVG(String name)
 	{
-		Vector4f colorAlpha = getTextureColorAlphaAVG(name);
+		Vector4fm colorAlpha = getTextureColorAlphaAVG(name);
 		return new Vector3fm(colorAlpha.x, colorAlpha.y, colorAlpha.z);
 	}*/
 
-	/*public static Vector4f getTextureColorAlphaAVG(String name)
+	/*public static Vector4fm getTextureColorAlphaAVG(String name)
 	{
 		if (colors.containsKey(name))
 			return colors.get(name);

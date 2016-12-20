@@ -15,7 +15,7 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.Vector3m;
 import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
@@ -463,7 +463,7 @@ public class Camera implements CameraInterface
 	
 	public Vector3fm transform3DCoordinate(Vector3fm in)
 	{
-		return transform3DCoordinate(new Vector4f(in.getX(), in.getY(), in.getZ(), 1f));
+		return transform3DCoordinate(new Vector4fm(in.getX(), in.getY(), in.getZ(), 1f));
 	}
 	
 	/**
@@ -471,10 +471,10 @@ public class Camera implements CameraInterface
 	 * @param in
 	 * @return
 	 */
-	public Vector3fm transform3DCoordinate(Vector4f in)
+	public Vector3fm transform3DCoordinate(Vector4fm in)
 	{
-		//position = new Vector4f(-(float)e.posX, -(float)e.posY, -(float)e.posZ, 1f);
-		//position = new Vector4f(1f, 1f, 1f, 1);
+		//position = new Vector4fm(-(float)e.posX, -(float)e.posY, -(float)e.posZ, 1f);
+		//position = new Vector4fm(1f, 1f, 1f, 1);
 		Matrix4f mvm = this.modelViewMatrix4f;
 		Matrix4f pm = this.projectionMatrix4f;
 
@@ -488,7 +488,7 @@ public class Camera implements CameraInterface
 
 		//position.scale(1/position.w);
 
-		Vector3fm posOnScreen = new Vector3fm(in.getX(), in.getY(), 0f);
+		Vector3fm posOnScreen = new Vector3fm((float)in.getX(), (float)in.getY(), 0f);
 		float scale = 1/in.getZ();
 		posOnScreen.scale(scale);
 

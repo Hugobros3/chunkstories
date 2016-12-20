@@ -18,7 +18,7 @@ import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 public class MainMenuOverlay extends Overlay
 {
@@ -103,7 +103,7 @@ public class MainMenuOverlay extends Overlay
 		else if (exitGame.clicked())
 			this.mainScene.gameWindow.close();
 
-		Vector4f noticeColor = new Vector4f(100/255f, 100/255f, 100/255f, 1);
+		Vector4fm noticeColor = new Vector4fm(100/255f, 100/255f, 100/255f, 1);
 		String version = "Chunk Stories Client " + VersionInfo.version;
 		TrueTypeFont.arial11px8pt.getWidth(version);
 		renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px8pt, 4, 0, version, 1, noticeColor);

@@ -8,7 +8,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 import io.xol.chunkstories.api.rendering.RenderTargetManager;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 public class OpenGLRenderTargetManager implements RenderTargetManager
 {
@@ -57,7 +57,7 @@ public class OpenGLRenderTargetManager implements RenderTargetManager
 	}
 
 	float depthClearDepth = 1.0f;
-	Vector4f colorClearColor = new Vector4f(0);
+	Vector4fm colorClearColor = new Vector4fm(0);
 
 	private void setClearDepth(float depthClearDepth)
 	{
@@ -66,10 +66,10 @@ public class OpenGLRenderTargetManager implements RenderTargetManager
 		this.depthClearDepth = depthClearDepth;
 	}
 
-	private void setClearColor(Vector4f colorClearColor)
+	private void setClearColor(Vector4fm colorClearColor)
 	{
 		if(colorClearColor == null)
-			colorClearColor = new Vector4f(0);
+			colorClearColor = new Vector4fm(0);
 		
 		if (!this.colorClearColor.equals(colorClearColor))
 			glClearColor(colorClearColor.getX(), colorClearColor.getY(), colorClearColor.getZ(), colorClearColor.getW());
@@ -85,7 +85,7 @@ public class OpenGLRenderTargetManager implements RenderTargetManager
 		
 		//Resets those to default values
 		setClearDepth(1);
-		setClearColor(new Vector4f(0));
+		setClearColor(new Vector4fm(0));
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
@@ -101,7 +101,7 @@ public class OpenGLRenderTargetManager implements RenderTargetManager
 	}
 
 	@Override
-	public void clearBoundRenderTargetColor(Vector4f color)
+	public void clearBoundRenderTargetColor(Vector4fm color)
 	{
 		//Flushes any command before messing them up
 		renderingContext.flush();

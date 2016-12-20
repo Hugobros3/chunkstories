@@ -4,7 +4,7 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
@@ -48,7 +48,7 @@ public class OverlayRenderer
 
 	public static void glColor4f(float r, float g, float b, float a)
 	{
-		color = new Vector4f(r, g, b, a);
+		color = new Vector4fm(r, g, b, a);
 	}
 
 	public static int GL_LINES = GL11.GL_LINES;
@@ -75,7 +75,7 @@ public class OverlayRenderer
 		size++;
 	}
 
-	static Vector4f color = new Vector4f(1f, 1f, 1f, 1f);
+	static Vector4fm color = new Vector4fm(1f, 1f, 1f, 1f);
 	static FloatBuffer data = BufferUtils.createFloatBuffer(3 * 1000);
 	static int size = 0;
 	static int mode = 0;

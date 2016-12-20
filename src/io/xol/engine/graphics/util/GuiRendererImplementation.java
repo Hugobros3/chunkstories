@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.misc.ColorsTools;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -33,7 +33,7 @@ public class GuiRendererImplementation implements GuiRenderer
 	public Texture2D currentTexture;
 	public boolean alphaBlending = false;
 	public boolean useTexture = true;
-	public Vector4f currentColor = new Vector4f(1f, 1f, 1f, 1f);
+	public Vector4fm currentColor = new Vector4fm(1f, 1f, 1f, 1f);
 
 	// GL stuff
 	VerticesObject guiDrawData = new VerticesObject(UploadRegime.FAST);
@@ -48,19 +48,19 @@ public class GuiRendererImplementation implements GuiRenderer
 	}
 
 	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBoxWindowsSpace(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.engine.math.lalgb.Vector4f)
+	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBoxWindowsSpace(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.engine.math.lalgb.Vector4fm)
 	 */
 	@Override
-	public void drawBoxWindowsSpace(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4f color)
+	public void drawBoxWindowsSpace(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4fm color)
 	{
 		drawBox((startX / GameWindowOpenGL.windowWidth) * 2 - 1, (startY / GameWindowOpenGL.windowHeight) * 2 - 1, (endX / GameWindowOpenGL.windowWidth) * 2 - 1, (endY / GameWindowOpenGL.windowHeight) * 2 - 1, textureStartX, textureStartY, textureEndX, textureEndY, texture, alpha, textured, color);
 	}
 	
 	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBoxWindowsSpaceWithSize(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.engine.math.lalgb.Vector4f)
+	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBoxWindowsSpaceWithSize(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.engine.math.lalgb.Vector4fm)
 	 */
 	@Override
-	public void drawBoxWindowsSpaceWithSize(float startX, float startY, float width, float height, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4f color)
+	public void drawBoxWindowsSpaceWithSize(float startX, float startY, float width, float height, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4fm color)
 	{
 		float endX = startX + width;
 		float endY = startY + height;
@@ -68,10 +68,10 @@ public class GuiRendererImplementation implements GuiRenderer
 	}
 
 	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBox(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.engine.math.lalgb.Vector4f)
+	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBox(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.engine.math.lalgb.Vector4fm)
 	 */
 	@Override
-	public void drawBox(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4f color)
+	public void drawBox(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4fm color)
 	{
 		//Maximum buffer size was reached, in clear the number of vertices in the buffer = 6 * max elements, max elements being the max amount of drawBox calls until drawBuffer()
 		if (elementsToDraw >= 6 * MAX_ELEMENTS)
@@ -115,10 +115,10 @@ public class GuiRendererImplementation implements GuiRenderer
 	 * before we keep filling it, if not we empty it first by drawing the
 	 * current buffer.
 	 */
-	public void setState(Texture2D texture, boolean alpha, boolean textureEnabled, Vector4f color)
+	public void setState(Texture2D texture, boolean alpha, boolean textureEnabled, Vector4fm color)
 	{
 		if(color == null)
-			color = new Vector4f(1.0F);
+			color = new Vector4fm(1.0F);
 		
 		//Only texture changes trigger a buffer flush now
 		if (texture != currentTexture || 
@@ -215,7 +215,7 @@ public class GuiRendererImplementation implements GuiRenderer
 		texture.setLinearFiltering(false);
 		//TexturesHandler.mipmapLevel(texture, -1);
 
-		drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, texture, false, true, new Vector4f(r, v, b, a));
+		drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, tcsx, tcsy, tcex, tcey, texture, false, true, new Vector4fm(r, v, b, a));
 	}
 
 	public void renderColoredRect(float xpos, float ypos, float w, float h, float rot, String hex, float a)
@@ -226,6 +226,6 @@ public class GuiRendererImplementation implements GuiRenderer
 
 	public void renderColoredRect(float xpos, float ypos, float w, float h, float rot, float r, float v, float b, float a)
 	{
-		drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, 0, 0, 0, 0, null, false, true, new Vector4f(r, v, b, a));
+		drawBoxWindowsSpace(xpos - w / 2, ypos + h / 2, xpos + w / 2, ypos - h / 2, 0, 0, 0, 0, null, false, true, new Vector4fm(r, v, b, a));
 	}
 }
