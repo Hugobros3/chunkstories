@@ -210,7 +210,7 @@ public class VoxelTextures
 					if (nonNullPixels > 0)
 						alphaTotal /= nonNullPixels;
 
-					vt.color = new Vector4f(color.x, color.y, color.z, alphaTotal);
+					vt.color = new Vector4f(color.getX(), color.getY(), color.getZ(), alphaTotal);
 					
 					//colors.put(vt.name, new Vector4f(color.x, color.y, color.z, alphaTotal));
 					// Do also the normal maps !

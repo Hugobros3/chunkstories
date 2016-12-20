@@ -173,9 +173,9 @@ public class Vector3d
 	public Vector3f castToSimplePrecision()
 	{
 		Vector3f vec = new Vector3f();
-		vec.x = (float) getX();
-		vec.y = (float) getY();
-		vec.z = (float) getZ();
+		vec.setX((float) getX());
+		vec.setY((float) getY());
+		vec.setZ((float) getZ());
 		return vec;
 	}
 

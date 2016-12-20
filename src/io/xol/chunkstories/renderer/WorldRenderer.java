@@ -932,7 +932,7 @@ public class WorldRenderer
 			renderingContext.bindTexture2D("lightColors", lightmapTexture);
 			lightmapTexture.setTextureWrapping(false);
 			entitiesShader.setUniform2f("screenSize", scrW, scrH);
-			entitiesShader.setUniform3f("sunPos", sunPos.x, sunPos.y, sunPos.z);
+			entitiesShader.setUniform3f("sunPos", sunPos.getX(), sunPos.getY(), sunPos.getZ());
 			entitiesShader.setUniform3f("blockColor", 1f, 1f, 1f);
 			entitiesShader.setUniform1f("time", animationTimer);
 
@@ -984,7 +984,7 @@ public class WorldRenderer
 			renderingContext.bindTexture2D("lightColors", lightmapTexture);
 			renderingContext.bindAlbedoTexture(blocksAlbedoTexture);
 			liquidBlocksShader.setUniform2f("screenSize", scrW, scrH);
-			liquidBlocksShader.setUniform3f("sunPos", sunPos.x, sunPos.y, sunPos.z);
+			liquidBlocksShader.setUniform3f("sunPos", sunPos.getX(), sunPos.getY(), sunPos.getZ());
 			liquidBlocksShader.setUniform1f("time", animationTimer);
 
 			camera.setupShader(liquidBlocksShader);
@@ -1344,19 +1344,19 @@ public class WorldRenderer
 			for (int i = 0; i < ssao_kernel_size; i++)
 			{
 				Vector3f vec = new Vector3f((float) Math.random() * 2f - 1f, (float) Math.random() * 2f - 1f, (float) Math.random());
-				vec.normalise(vec);
+				vec.normalize(vec);
 				float scale = ((float) i) / ssao_kernel_size;
 				scale = Math2.mix(0.1f, 1.0f, scale * scale);
 				vec.scale(scale);
 				ssao_kernel[i] = vec;
 				if (RenderingConfig.debugPasses)
-					System.out.println("lerp " + scale + "x " + vec.x);
+					System.out.println("lerp " + scale + "x " + vec.getX());
 			}
 		}
 
 		for (int i = 0; i < ssao_kernel_size; i++)
 		{
-			ssaoShader.setUniform3f("ssaoKernel[" + i + "]", ssao_kernel[i].x, ssao_kernel[i].y, ssao_kernel[i].z);
+			ssaoShader.setUniform3f("ssaoKernel[" + i + "]", ssao_kernel[i].getX(), ssao_kernel[i].getY(), ssao_kernel[i].getZ());
 		}
 
 		renderingContext.drawFSQuad();

@@ -483,12 +483,12 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 		Vector3f posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3f((float) pos.getX(), (float) pos.getY() + 2.0f, (float) pos.getZ()));
 
-		float scale = posOnScreen.z;
+		float scale = posOnScreen.getZ();
 		String txt = name.getName();// + rotH;
 		float dekal = TrueTypeFont.arial11px.getWidth(txt) * 16 * scale;
 		//System.out.println("dekal"+dekal);
 		if (scale > 0)
-			renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, posOnScreen.x - dekal / 2, posOnScreen.y, txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
+			renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, posOnScreen.getX() - dekal / 2, posOnScreen.getY(), txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
 	}
 
 	class EntityPlayerRenderer<H extends EntityPlayer> extends EntityHumanoidRenderer<H>

@@ -39,9 +39,9 @@ public class ParticleSmoke extends ParticleType
 	@Override
 	public void forEach_Rendering(RenderingContext renderingContext, ParticleData data)
 	{
-		data.y += (Math.random() - 0.1) * 0.015;
-		data.x += (Math.random() - 0.5) * 0.015;
-		data.z += (Math.random() - 0.5) * 0.015;
+		data.setY(data.getY() + (Math.random() - 0.1) * 0.015);
+		data.setX(data.getX() + (Math.random() - 0.5) * 0.015);
+		data.setZ(data.getZ() + (Math.random() - 0.5) * 0.015);
 		
 		((ParticleSmokeData)data).timer--;
 		if (((ParticleSmokeData)data).timer < 0)
@@ -54,11 +54,11 @@ public class ParticleSmoke extends ParticleType
 		BloodData b = (BloodData) data;
 		
 		b.timer--;
-		b.x += b.vel.getX();
-		b.y += b.vel.getY();
-		b.z += b.vel.getZ();
+		b.setX(b.getX() + b.vel.getX());
+		b.setY(b.getY() + b.vel.getY());
+		b.setZ(b.getZ() + b.vel.getZ());
 		
-		if (!((WorldImplementation) world).checkCollisionPoint(b.x, b.y, b.z))
+		if (!((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY(), b.getZ()))
 			b.vel.setY(b.vel.getY() + -0.89/60.0);
 		else
 			b.vel.zero();

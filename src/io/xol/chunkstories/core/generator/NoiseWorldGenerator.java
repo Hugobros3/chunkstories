@@ -51,12 +51,12 @@ public class NoiseWorldGenerator extends WorldGenerator
 					int y = b * (32 / wy);
 					int z = c * (32 / wz);
 
-					position.x = cx * 32 + x;
-					position.y = cy * 32 + y;
-					position.z = cz * 32 + z;
+					position.setX(cx * 32 + x);
+					position.setY(cy * 32 + y);
+					position.setZ(cz * 32 + z);
 
 					position.scale(0.05f);
-					generated[wwx * (wwy * c + b) + a] = ssng.noise(position.x, position.y, position.z);
+					generated[wwx * (wwy * c + b) + a] = ssng.noise(position.getX(), position.getY(), position.getZ());
 				}
 
 		for (int x = 0; x < 32; x++)

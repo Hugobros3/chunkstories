@@ -27,7 +27,7 @@ public class Vector4f
 
 	public Vector4f(Vector3f vec, double f)
 	{
-		this(vec.x, vec.y, vec.z, f);
+		this(vec.getX(), vec.getY(), vec.getZ(), f);
 	}
 
 	public Vector4f(double x, double y, double z, double w)

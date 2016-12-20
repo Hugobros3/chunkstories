@@ -29,7 +29,7 @@ public interface SoundManager
 	/** Overloads playSoundEffect with a vector3f instead of individual components and default attenuation */
 	public default SoundSource playSoundEffect(String soundEffect, Vector3f location, float pitch, float gain)
 	{
-		return this.playSoundEffect(soundEffect, location.x, location.y, location.z, pitch, gain);
+		return this.playSoundEffect(soundEffect, location.getX(), location.getY(), location.getZ(), pitch, gain);
 	}
 
 	/** Overloads playSoundEffect with a vector3d instead of individual components and default attenuation */
@@ -41,7 +41,7 @@ public interface SoundManager
 	/** Overloads playSoundEffect with a vector3f instead of individual components */
 	public default SoundSource playSoundEffect(String soundEffect, Vector3f location, float pitch, float gain, float attStart, float attEnd)
 	{
-		return this.playSoundEffect(soundEffect, location.x, location.y, location.z, pitch, gain, attStart, attEnd);
+		return this.playSoundEffect(soundEffect, location.getX(), location.getY(), location.getZ(), pitch, gain, attStart, attEnd);
 	}
 	
 	/** Overloads playSoundEffect with a vector3d instead of individual components */

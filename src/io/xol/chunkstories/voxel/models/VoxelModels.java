@@ -167,7 +167,7 @@ public class VoxelModels
 							texcoord.add(new float[] { Float.parseFloat(tex[0]), Float.parseFloat(tex[1]) });
 							Vector3f normalizeMe = new Vector3f(Float.parseFloat(nor[0]), Float.parseFloat(nor[1]), Float.parseFloat(nor[2]));
 							normalizeMe.normalize();
-							normal.add(new float[] { normalizeMe.x, normalizeMe.y, normalizeMe.z });
+							normal.add(new float[] { normalizeMe.getX(), normalizeMe.getY(), normalizeMe.getZ() });
 							c++;
 							if (c >= 3)
 							{

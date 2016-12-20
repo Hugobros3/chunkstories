@@ -244,16 +244,16 @@ public class BVHAnimation implements SkeletonAnimator
 				while (kek != null)
 				{
 					//Swap yz arround and negate input Y to apply blender -> ingame coordinates system transformation
-					offsetTotal.x += kek.offset.x;
-					offsetTotal.y += kek.offset.z;
-					offsetTotal.z += -kek.offset.y;
+					offsetTotal.setX(offsetTotal.getX() + kek.offset.getX());
+					offsetTotal.setY(offsetTotal.getY() + kek.offset.getZ());
+					offsetTotal.setZ(offsetTotal.getZ() + -kek.offset.getY());
 					kek = kek.parent;
 				}
 				//Negate it and build the offset matrix
 				offsetTotal.negate();
-				offsetMatrix.m30 += offsetTotal.x;
-				offsetMatrix.m31 += offsetTotal.y;
-				offsetMatrix.m32 += offsetTotal.z;
+				offsetMatrix.m30 += offsetTotal.getX();
+				offsetMatrix.m31 += offsetTotal.getY();
+				offsetMatrix.m32 += offsetTotal.getZ();
 			}
 
 		return offsetMatrix;

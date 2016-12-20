@@ -50,7 +50,7 @@ public class ParticleLight extends ParticleType
 	{
 		ParticleLightData data = (ParticleLightData)data2;
 		renderingContext.addLight(new Light(new Vector3f(1.0f, 181f/255f, 79/255f),
-				new Vector3f((float) data.c.x, (float) data.c.y, (float) data.c.z),
+				new Vector3f((float) data.c.getX(), (float) data.c.getY(), (float) data.c.getZ()),
 				15f + (float) Math.random() * 5f));
 	}
 

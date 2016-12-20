@@ -41,9 +41,9 @@ public class Math2
 	public static Vector3f mix(Vector3f a, Vector3f b, double f)
 	{
 		Vector3f vec = new Vector3f();
-		vec.x = mix(a.x, b.x, f);
-		vec.y = mix(a.y, b.y, f);
-		vec.z = mix(a.z, b.z, f);
+		vec.setX(mix(a.getX(), b.getX(), f));
+		vec.setY(mix(a.getY(), b.getY(), f));
+		vec.setZ(mix(a.getZ(), b.getZ(), f));
 		return vec;
 	}
 	

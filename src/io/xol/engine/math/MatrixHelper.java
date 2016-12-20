@@ -30,7 +30,7 @@ public class MatrixHelper
 
 	public static Matrix4f getLookAtMatrix(Vector3f position, Vector3f direction, Vector3f up)
 	{
-		if(direction.y == 1.0f || direction.y == -1.0f)
+		if(direction.getY() == 1.0f || direction.getY() == -1.0f)
 			up = new Vector3f(1.0f, 0.0f, 0.0f);
 		
 		Matrix4f matrix = new Matrix4f();
@@ -39,21 +39,21 @@ public class MatrixHelper
 		Vector3f u = new Vector3f();
 		Vector3f s = new Vector3f();
 		Vector3f.sub(direction, position, f);
-		f.normalise(f);
-		up.normalise(u);
+		f.normalize(f);
+		up.normalize(u);
 		Vector3f.cross(f, u, s);
-		s.normalise(s);
+		s.normalize(s);
 		Vector3f.cross(s, f, u);
 
-		matrix.m00 = s.x;
-		matrix.m10 = s.y;
-		matrix.m20 = s.z;
-		matrix.m01 = u.x;
-		matrix.m11 = u.y;
-		matrix.m21 = u.z;
-		matrix.m02 = -f.x;
-		matrix.m12 = -f.y;
-		matrix.m22 = -f.z;
+		matrix.m00 = s.getX();
+		matrix.m10 = s.getY();
+		matrix.m20 = s.getZ();
+		matrix.m01 = u.getX();
+		matrix.m11 = u.getY();
+		matrix.m21 = u.getZ();
+		matrix.m02 = -f.getX();
+		matrix.m12 = -f.getY();
+		matrix.m22 = -f.getZ();
 		matrix.m30 = -Vector3f.dot(s, position);
 		matrix.m31 = -Vector3f.dot(u, position);
 		matrix.m32 = Vector3f.dot(f, position);

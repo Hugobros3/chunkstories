@@ -170,13 +170,13 @@ public class Matrix3f
 		if (dest == null)
 			dest = new Vector3f();
 
-		float x = left.m00 * right.x + left.m10 * right.y + left.m20 * right.z;
-		float y = left.m01 * right.x + left.m11 * right.y + left.m21 * right.z;
-		float z = left.m02 * right.x + left.m12 * right.y + left.m22 * right.z;
+		float x = left.m00 * right.getX() + left.m10 * right.getY() + left.m20 * right.getZ();
+		float y = left.m01 * right.getX() + left.m11 * right.getY() + left.m21 * right.getZ();
+		float z = left.m02 * right.getX() + left.m12 * right.getY() + left.m22 * right.getZ();
 
-		dest.x = x;
-		dest.y = y;
-		dest.z = z;
+		dest.setX(x);
+		dest.setY(y);
+		dest.setZ(z);
 
 		return dest;
 	}

@@ -52,7 +52,7 @@ public class ParticleMuzzleFlash extends ParticleType
 	public void forEach_Rendering(RenderingContext renderingContext, ParticleData data)
 	{
 		renderingContext.addLight(new Light(new Vector3f(1.0f, 181f/255f, 79/255f),
-				new Vector3f((float) data.x, (float) data.y, (float) data.z),
+				new Vector3f((float) data.getX(), (float) data.getY(), (float) data.getZ()),
 				15f + (float) Math.random() * 5f));
 	}
 

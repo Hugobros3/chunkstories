@@ -180,31 +180,31 @@ public class ParticlesRenderer implements ParticlesManager
 						elements = 0;
 					}
 
-					particlesPositionsBuffer.put((float) p.x);
-					particlesPositionsBuffer.put((float) p.y);
-					particlesPositionsBuffer.put((float) p.z);
+					particlesPositionsBuffer.put((float) p.getX());
+					particlesPositionsBuffer.put((float) p.getY());
+					particlesPositionsBuffer.put((float) p.getZ());
 
-					particlesPositionsBuffer.put((float) p.x);
-					particlesPositionsBuffer.put((float) p.y);
-					particlesPositionsBuffer.put((float) p.z);
+					particlesPositionsBuffer.put((float) p.getX());
+					particlesPositionsBuffer.put((float) p.getY());
+					particlesPositionsBuffer.put((float) p.getZ());
 
-					particlesPositionsBuffer.put((float) p.x);
-					particlesPositionsBuffer.put((float) p.y);
-					particlesPositionsBuffer.put((float) p.z);
+					particlesPositionsBuffer.put((float) p.getX());
+					particlesPositionsBuffer.put((float) p.getY());
+					particlesPositionsBuffer.put((float) p.getZ());
 
 					//Second triangle
 					
-					particlesPositionsBuffer.put((float) p.x);
-					particlesPositionsBuffer.put((float) p.y);
-					particlesPositionsBuffer.put((float) p.z);
+					particlesPositionsBuffer.put((float) p.getX());
+					particlesPositionsBuffer.put((float) p.getY());
+					particlesPositionsBuffer.put((float) p.getZ());
 
-					particlesPositionsBuffer.put((float) p.x);
-					particlesPositionsBuffer.put((float) p.y);
-					particlesPositionsBuffer.put((float) p.z);
+					particlesPositionsBuffer.put((float) p.getX());
+					particlesPositionsBuffer.put((float) p.getY());
+					particlesPositionsBuffer.put((float) p.getZ());
 
-					particlesPositionsBuffer.put((float) p.x);
-					particlesPositionsBuffer.put((float) p.y);
-					particlesPositionsBuffer.put((float) p.z);
+					particlesPositionsBuffer.put((float) p.getX());
+					particlesPositionsBuffer.put((float) p.getY());
+					particlesPositionsBuffer.put((float) p.getZ());
 
 					if (p instanceof ParticleDataWithTextureCoordinates)
 					{

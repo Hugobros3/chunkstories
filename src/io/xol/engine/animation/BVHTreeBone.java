@@ -220,9 +220,9 @@ public class BVHTreeBone
 		//TODO check on that, I'm not sure if you should apply both when possible
 		else
 		{
-			matrix.m30 += offset.x;
-			matrix.m31 += offset.y;
-			matrix.m32 += offset.z;
+			matrix.m30 += offset.getX();
+			matrix.m31 += offset.getY();
+			matrix.m32 += offset.getZ();
 		}
 		
 		return matrix;

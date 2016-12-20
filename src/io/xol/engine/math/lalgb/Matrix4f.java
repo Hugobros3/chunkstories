@@ -218,18 +218,18 @@ public class Matrix4f
 	public static Matrix4f scale(Vector3f vec, Matrix4f src, Matrix4f dest) {
 		if (dest == null)
 			dest = new Matrix4f();
-		dest.m00 = src.m00 * vec.x;
-		dest.m01 = src.m01 * vec.x;
-		dest.m02 = src.m02 * vec.x;
-		dest.m03 = src.m03 * vec.x;
-		dest.m10 = src.m10 * vec.y;
-		dest.m11 = src.m11 * vec.y;
-		dest.m12 = src.m12 * vec.y;
-		dest.m13 = src.m13 * vec.y;
-		dest.m20 = src.m20 * vec.z;
-		dest.m21 = src.m21 * vec.z;
-		dest.m22 = src.m22 * vec.z;
-		dest.m23 = src.m23 * vec.z;
+		dest.m00 = src.m00 * vec.getX();
+		dest.m01 = src.m01 * vec.getX();
+		dest.m02 = src.m02 * vec.getX();
+		dest.m03 = src.m03 * vec.getX();
+		dest.m10 = src.m10 * vec.getY();
+		dest.m11 = src.m11 * vec.getY();
+		dest.m12 = src.m12 * vec.getY();
+		dest.m13 = src.m13 * vec.getY();
+		dest.m20 = src.m20 * vec.getZ();
+		dest.m21 = src.m21 * vec.getZ();
+		dest.m22 = src.m22 * vec.getZ();
+		dest.m23 = src.m23 * vec.getZ();
 		return dest;
 	}
 
@@ -239,10 +239,10 @@ public class Matrix4f
 		if (destination == null)
 			destination = new Matrix4f();
 
-		destination.m30 += source.m00 * vec3.x + source.m10 * vec3.y + source.m20 * vec3.z;
-		destination.m31 += source.m01 * vec3.x + source.m11 * vec3.y + source.m21 * vec3.z;
-		destination.m32 += source.m02 * vec3.x + source.m12 * vec3.y + source.m22 * vec3.z;
-		destination.m33 += source.m03 * vec3.x + source.m13 * vec3.y + source.m23 * vec3.z;
+		destination.m30 += source.m00 * vec3.getX() + source.m10 * vec3.getY() + source.m20 * vec3.getZ();
+		destination.m31 += source.m01 * vec3.getX() + source.m11 * vec3.getY() + source.m21 * vec3.getZ();
+		destination.m32 += source.m02 * vec3.getX() + source.m12 * vec3.getY() + source.m22 * vec3.getZ();
+		destination.m33 += source.m03 * vec3.getX() + source.m13 * vec3.getY() + source.m23 * vec3.getZ();
 
 		return destination;
 	}
@@ -397,24 +397,24 @@ public class Matrix4f
 		float c = (float) Math.cos(angle);
 		float s = (float) Math.sin(angle);
 		float oneminusc = 1.0f - c;
-		float xy = axis.x * axis.y;
-		float yz = axis.y * axis.z;
-		float xz = axis.x * axis.z;
-		float xs = axis.x * s;
-		float ys = axis.y * s;
-		float zs = axis.z * s;
+		float xy = axis.getX() * axis.getY();
+		float yz = axis.getY() * axis.getZ();
+		float xz = axis.getX() * axis.getZ();
+		float xs = axis.getX() * s;
+		float ys = axis.getY() * s;
+		float zs = axis.getZ() * s;
 
-		float f00 = axis.x * axis.x * oneminusc + c;
+		float f00 = axis.getX() * axis.getX() * oneminusc + c;
 		float f01 = xy * oneminusc + zs;
 		float f02 = xz * oneminusc - ys;
 		// n[3] not used
 		float f10 = xy * oneminusc - zs;
-		float f11 = axis.y * axis.y * oneminusc + c;
+		float f11 = axis.getY() * axis.getY() * oneminusc + c;
 		float f12 = yz * oneminusc + xs;
 		// n[7] not used
 		float f20 = xz * oneminusc + ys;
 		float f21 = yz * oneminusc - xs;
-		float f22 = axis.z * axis.z * oneminusc + c;
+		float f22 = axis.getZ() * axis.getZ() * oneminusc + c;
 
 		float t00 = src.m00 * f00 + src.m10 * f01 + src.m20 * f02;
 		float t01 = src.m01 * f00 + src.m11 * f01 + src.m21 * f02;

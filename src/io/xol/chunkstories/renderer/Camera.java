@@ -82,7 +82,7 @@ public class Camera implements CameraInterface
 		Vector3f.cross(up, lookAt, up);
 		
 		FloatBuffer listenerOrientation = getFloatBuffer(new float[]{
-				lookAt.x, lookAt.y, lookAt.z, up.x, up.y, up.z
+				lookAt.getX(), lookAt.getY(), lookAt.getZ(), up.getX(), up.getY(), up.getZ()
 		});
 		//FloatBuffer listenerOrientation = getFloatBuffer(new float[] { (float) Math.sin(a) * 1 * (float) Math.cos(b), (float) Math.sin(b) * 1, (float) Math.cos(a) * 1 * (float) Math.cos(b), 0.0f, 1.0f, 0.0f });
 		Client.getInstance().getSoundManager().setListenerPosition(-pos.getX(), -pos.getY(), -pos.getZ(), listenerOrientation);
@@ -199,17 +199,17 @@ public class Camera implements CameraInterface
 			Vector3f.sub(p3, p1, u);
 			n = new Vector3f();
 			Vector3f.cross(v, u, n);
-			n.normalise();
-			A = n.x;
-			B = n.y;
-			C = n.z;
+			n.normalize();
+			A = n.getX();
+			B = n.getY();
+			C = n.getZ();
 			//n.negate();
 			D = -Vector3f.dot(p1, n);
 		}
 		
 		public float distance(Vector3f point)
 		{
-			return A * point.x + B * point.y + C * point.z + D;
+			return A * point.getX() + B * point.getY() + C * point.getZ() + D;
 		}
 	}
 	
@@ -245,11 +245,11 @@ public class Camera implements CameraInterface
 		// Create the 6 frustrum planes
 		Vector3f Z = new Vector3f();
 		Vector3f.sub(position, lookAt, Z);
-		Z.normalise();
+		Z.normalize();
 		
 		Vector3f X = new Vector3f();
 		Vector3f.cross(up, Z, X);
-		X.normalise();
+		X.normalize();
 
 		Vector3f Y = new Vector3f();
 		Vector3f.cross(Z, X, Y);
@@ -342,37 +342,37 @@ public class Camera implements CameraInterface
 		dimensions.scale(0.5f);
 		
 		//i=0 j=0 k=0
-		corners[0].x = center.x + dimensions.x   * -1;
-		corners[0].y = center.y + dimensions.y   * -1;
-		corners[0].z = center.z + dimensions.z   * -1;
+		corners[0].setX(center.getX() + dimensions.getX()   * -1);
+		corners[0].setY(center.getY() + dimensions.getY()   * -1);
+		corners[0].setZ(center.getZ() + dimensions.getZ()   * -1);
 		//i=0 j=0 k=1
-		corners[1].x = center.x + dimensions.x   * -1;
-		corners[1].y = center.y + dimensions.y   * -1;
-		corners[1].z = center.z + dimensions.z  ;
+		corners[1].setX(center.getX() + dimensions.getX()   * -1);
+		corners[1].setY(center.getY() + dimensions.getY()   * -1);
+		corners[1].setZ(center.getZ() + dimensions.getZ())  ;
 		//i=0 j=1 k=0
-		corners[2].x = center.x + dimensions.x   * -1;
-		corners[2].y = center.y + dimensions.y  ;
-		corners[2].z = center.z + dimensions.z   * -1;
+		corners[2].setX(center.getX() + dimensions.getX()   * -1);
+		corners[2].setY(center.getY() + dimensions.getY())  ;
+		corners[2].setZ(center.getZ() + dimensions.getZ()   * -1);
 		//i=0 j=1 k=1
-		corners[3].x = center.x + dimensions.x   * -1;
-		corners[3].y = center.y + dimensions.y  ;
-		corners[3].z = center.z + dimensions.z  ;
+		corners[3].setX(center.getX() + dimensions.getX()   * -1);
+		corners[3].setY(center.getY() + dimensions.getY())  ;
+		corners[3].setZ(center.getZ() + dimensions.getZ())  ;
 		//i=1 j=0 k=0
-		corners[4].x = center.x + dimensions.x  ;
-		corners[4].y = center.y + dimensions.y   * -1;
-		corners[4].z = center.z + dimensions.z   * -1;
+		corners[4].setX(center.getX() + dimensions.getX())  ;
+		corners[4].setY(center.getY() + dimensions.getY()   * -1);
+		corners[4].setZ(center.getZ() + dimensions.getZ()   * -1);
 		//i=1 j=0 k=1
-		corners[5].x = center.x + dimensions.x  ;
-		corners[5].y = center.y + dimensions.y   * -1;
-		corners[5].z = center.z + dimensions.z  ;
+		corners[5].setX(center.getX() + dimensions.getX())  ;
+		corners[5].setY(center.getY() + dimensions.getY()   * -1);
+		corners[5].setZ(center.getZ() + dimensions.getZ())  ;
 		//i=1 j=1 k=0
-		corners[6].x = center.x + dimensions.x  ;
-		corners[6].y = center.y + dimensions.y  ;
-		corners[6].z = center.z + dimensions.z   * -1;
+		corners[6].setX(center.getX() + dimensions.getX())  ;
+		corners[6].setY(center.getY() + dimensions.getY())  ;
+		corners[6].setZ(center.getZ() + dimensions.getZ()   * -1);
 		//i=1 j=1 k=1
-		corners[7].x = center.x + dimensions.x  ;
-		corners[7].y = center.y + dimensions.y  ;
-		corners[7].z = center.z + dimensions.z  ;
+		corners[7].setX(center.getX() + dimensions.getX())  ;
+		corners[7].setY(center.getY() + dimensions.getY())  ;
+		corners[7].setZ(center.getZ() + dimensions.getZ())  ;
 		
 		for(int i = 0; i < 6; i++)
 		{
@@ -444,7 +444,7 @@ public class Camera implements CameraInterface
 	
 	public Vector3f transform3DCoordinate(Vector3f in)
 	{
-		return transform3DCoordinate(new Vector4f(in.x, in.y, in.z, 1f));
+		return transform3DCoordinate(new Vector4f(in.getX(), in.getY(), in.getZ(), 1f));
 	}
 	
 	/**
@@ -473,9 +473,9 @@ public class Camera implements CameraInterface
 		float scale = 1/in.z;
 		posOnScreen.scale(scale);
 
-		posOnScreen.x = (posOnScreen.x * 0.5f + 0.5f) * viewportWidth;
-		posOnScreen.y = ((posOnScreen.y * 0.5f + 0.5f)) * viewportHeight;
-		posOnScreen.z = scale;
+		posOnScreen.setX((posOnScreen.getX() * 0.5f + 0.5f) * viewportWidth);
+		posOnScreen.setY(((posOnScreen.getY() * 0.5f + 0.5f)) * viewportHeight);
+		posOnScreen.setZ(scale);
 		return posOnScreen;
 	}
 
