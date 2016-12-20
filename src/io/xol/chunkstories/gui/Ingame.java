@@ -69,7 +69,6 @@ public class Ingame extends OverlayableScene
 	final private WorldClientCommon world;
 
 	// Renderer
-	public WorldRenderer worldRenderer;
 	SelectionRenderer selectionRenderer;
 	InventoryDrawer inventoryDrawer;
 
@@ -99,8 +98,7 @@ public class Ingame extends OverlayableScene
 		}
 
 		//Creates the rendering stuff
-		worldRenderer = new WorldRenderer(world);
-		worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		world.getWorldRenderer().setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		selectionRenderer = new SelectionRenderer(world);
 
 		chat = new Chat(this);
@@ -157,7 +155,7 @@ public class Ingame extends OverlayableScene
 		Client.getInstance().getPluginManager().fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
 
 		//Main render call
-		worldRenderer.renderWorldAtCamera(camera);
+		world.getWorldRenderer().renderWorldAtCamera(camera);
 
 		if (selectedBlock != null && player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().isCreativeMode())
 			selectionRenderer.drawSelectionBox(selectedBlock);
@@ -192,10 +190,10 @@ public class Ingame extends OverlayableScene
 		if (shouldTakeACubemap)
 		{
 			shouldTakeACubemap = false;
-			worldRenderer.renderWorldCubemap(null, 512, false);
+			world.getWorldRenderer().renderWorldCubemap(null, 512, false);
 		}
 		//Blit the final 3d image
-		worldRenderer.blitScreen(pauseOverlayFade);
+		world.getWorldRenderer().blitScreen(pauseOverlayFade);
 
 		//Fades in & out the overlay
 		if (this.currentOverlay == null)
@@ -337,7 +335,7 @@ public class Ingame extends OverlayableScene
 		}
 		else if (keyCode == Keyboard.KEY_F2)
 		{
-			chat.insert(worldRenderer.screenShot());
+			chat.insert(world.getWorldRenderer().screenShot());
 		}
 		else if (keyCode == Keyboard.KEY_F3)
 		{
@@ -357,16 +355,16 @@ public class Ingame extends OverlayableScene
 		else if ((Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == Keyboard.KEY_F12)
 		{
 			Client.getInstance().reloadAssets();
-			worldRenderer.reloadContentSpecificStuff();
+			world.getWorldRenderer().reloadContentSpecificStuff();
 		}
 		//CTRL-R redraws chunks
 		else if ((Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == 19)
 		{
 			((ParticlesRenderer) world.getParticlesManager()).cleanAllParticles();
 			world.redrawEverything();
-			worldRenderer.chunksRenderer.clear();
+			world.getWorldRenderer().chunksRenderer.clear();
 			ChunksRenderer.renderStart = System.currentTimeMillis();
-			worldRenderer.flagModified();
+			world.getWorldRenderer().flagModified();
 		}
 		//Item slots selection
 		else if (keyBind != null && keyBind.getName().startsWith("inventorySlot"))
@@ -518,7 +516,7 @@ public class Ingame extends OverlayableScene
 	@Override
 	public void onResize()
 	{
-		worldRenderer.setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		world.getWorldRenderer().setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 	}
 
 	/**
@@ -527,7 +525,7 @@ public class Ingame extends OverlayableScene
 	@Override
 	public void destroy()
 	{
-		this.worldRenderer.destroy();
+		this.world.getWorldRenderer().destroy();
 	}
 
 	private void drawF3debugMenu(RenderingInterface renderingInterface)
@@ -589,8 +587,8 @@ public class Ingame extends OverlayableScene
 		Chunk current = world.getChunk(cx, cy, cz);
 		int x_top = GameWindowOpenGL.windowHeight - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20,
-				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + worldRenderer.renderedChunks) + " Entities " + ec + " Particles :" + ((ParticlesRenderer) world.getParticlesManager()).count()
-						+ " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + worldRenderer.getWorld().getGameLogic().getSimulationFps(),
+				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + world.getWorldRenderer().renderedChunks) + " Entities " + ec + " Particles :" + ((ParticlesRenderer) world.getParticlesManager()).count()
+						+ " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + world.getWorldRenderer().getWorld().getGameLogic().getSimulationFps(),
 				BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Frame timings : " + debugInfo, BitmapFont.SMALLFONTS);
@@ -605,7 +603,7 @@ public class Ingame extends OverlayableScene
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram + "Mb as " + Texture2D.getTotalNumberOfTextureObjects() + " textures using " + Texture2D.getTotalVramUsage() / 1024 / 1024 + "Mb + "
 				+ VerticesObject.getTotalNumberOfVerticesObjects() + " Vertices objects using " + renderingInterface.getVertexDataVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
 
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : " + worldRenderer.chunksRenderer.todoQueue.size() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : " + world.getWorldRenderer().chunksRenderer.todoQueue.size() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16,
 				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " Block looking at : bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
 
