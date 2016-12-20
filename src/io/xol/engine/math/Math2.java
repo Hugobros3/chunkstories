@@ -1,7 +1,7 @@
 package io.xol.engine.math;
 
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -38,9 +38,9 @@ public class Math2
 		return (float)mixd(a, b, f);
 	}
 	
-	public static Vector3f mix(Vector3f a, Vector3f b, double f)
+	public static Vector3fm mix(Vector3fm a, Vector3fm b, double f)
 	{
-		Vector3f vec = new Vector3f();
+		Vector3fm vec = new Vector3fm();
 		vec.setX(mix(a.getX(), b.getX(), f));
 		vec.setY(mix(a.getY(), b.getY(), f));
 		vec.setZ(mix(a.getZ(), b.getZ(), f));

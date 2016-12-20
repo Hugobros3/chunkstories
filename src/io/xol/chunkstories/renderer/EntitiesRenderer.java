@@ -14,9 +14,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.math.lalgb.Matrix3f;
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -154,7 +152,7 @@ public class EntitiesRenderer
 			
 			for (CollisionBox box : currentEntity.getTranslatedCollisionBoxes())
 			{
-				if (renderingContext.isThisAShadowPass() || renderingContext.getCamera().isBoxInFrustrum(new Vector3f(box.xpos, box.ypos + box.h / 2, box.zpos), new Vector3f(box.xw, box.h, box.zw)))
+				if (renderingContext.isThisAShadowPass() || renderingContext.getCamera().isBoxInFrustrum(new Vector3fm(box.xpos, box.ypos + box.h / 2, box.zpos), new Vector3fm(box.xw, box.h, box.zw)))
 				{
 					return true;
 				}

@@ -159,9 +159,9 @@ public class ParticleVoxelFragment extends ParticleType
 		FragmentData b = (FragmentData) data;
 		
 		b.timer--;
-		b.setX(b.getX() + b.vel.getX());
-		b.setY(b.getY() + b.vel.getY());
-		b.setZ(b.getZ() + b.vel.getZ());
+		b.setX((float) (b.getX() + b.vel.getX()));
+		b.setY((float) (b.getY() + b.vel.getY()));
+		b.setZ((float) (b.getZ() + b.vel.getZ()));
 		
 		if (!((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY() - 0.1, b.getZ()))
 			b.vel.setY(b.vel.getY() + -0.89/60.0);

@@ -30,9 +30,10 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.MatrixHelper;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
+
 import io.xol.engine.math.lalgb.Vector4f;
 import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -74,13 +75,13 @@ public class DecalsRenderer implements DecalsManager
 			
 			orientation.normalize();
 
-			Vector3f lookAt = orientation.castToSimplePrecision();
+			Vector3fm lookAt = orientation.castToSimplePrecision();
 			
-			Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+			Vector3fm up = new Vector3fm(0.0f, 1.0f, 0.0f);
 			VectorCrossProduct.cross33(lookAt, up, up);
 			VectorCrossProduct.cross33(up, lookAt, up);
 			
-			Matrix4f rotationMatrix = MatrixHelper.getLookAtMatrix(new Vector3f(0.0f), lookAt, up);
+			Matrix4f rotationMatrix = MatrixHelper.getLookAtMatrix(new Vector3fm(0.0f), lookAt, up);
 			
 			VoxelBaker virtualRenderBytebuffer = new DecalsVoxelBaker(bbuf);
 			Vector3d size2 = new Vector3d(size);
@@ -100,7 +101,7 @@ public class DecalsRenderer implements DecalsManager
 						//Matrix4f.transform(rotationMatrix, rotateMe, rotateMe);
 
 						Location location = new Location(world, position);
-						location.add(new Vector3d(rotateMe.getX(), rotateMe.getY(), rotateMe.getZ()));
+						location.add(new Vector3d(rotateMe.x, rotateMe.y, rotateMe.z));
 						location.add(new Vector3d(0.5));
 
 						int idThere = VoxelFormat.id(world.getVoxelData(location));

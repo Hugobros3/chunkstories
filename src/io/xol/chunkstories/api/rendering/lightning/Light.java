@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.rendering.lightning;
 
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.Vector3;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -8,33 +8,33 @@ import io.xol.engine.math.lalgb.Vector3f;
 
 public class Light
 {
-	public Vector3f color;
-	public Vector3f position;
+	public Vector3<Float> color;
+	public Vector3<Float> position;
 	public float decay;
 
-	public Light(Vector3f color, Vector3f position, float decay)
+	public Light(Vector3<Float> color, Vector3<Float> position, float decay)
 	{
 		this.color = color;
 		this.position = position;
 		this.decay = decay;
 	}
 
-	public Vector3f getColor()
+	public Vector3<Float> getColor()
 	{
 		return color;
 	}
 	
-	public void setColor(Vector3f color)
+	public void setColor(Vector3<Float> color)
 	{
 		this.color = color;
 	}
 
-	public Vector3f getPosition()
+	public Vector3<Float> getPosition()
 	{
 		return position;
 	}
 
-	public void setPosition(Vector3f position)
+	public void setPosition(Vector3<Float> position)
 	{
 		this.position = position;
 	}

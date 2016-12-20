@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.rendering.lightning.SpotLight;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 import java.util.Iterator;
 
@@ -49,7 +49,7 @@ public class LightsRenderer
 
 	public static boolean lightInFrustrum(RenderingContext renderingContext, Light light)
 	{
-		return renderingContext.getCamera().isBoxInFrustrum(light.getPosition(), new Vector3f(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
+		return renderingContext.getCamera().isBoxInFrustrum(light.getPosition(), new Vector3fm(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
 	}
 
 	static ShaderProgram lightShader;

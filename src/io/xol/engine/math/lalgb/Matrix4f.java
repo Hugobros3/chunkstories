@@ -2,6 +2,9 @@ package io.xol.engine.math.lalgb;
 
 import java.nio.FloatBuffer;
 
+import io.xol.engine.math.lalgb.vector.Vector3;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -204,18 +207,18 @@ public class Matrix4f
 		return t;
 	}
 
-	public Matrix4f translate(Vector3f vec3)
+	public Matrix4f translate(Vector3<Float> vec3)
 	{
 		return translate(vec3, this, this);
 	}
 	
-	public Matrix4f scale(Vector3f vec)
+	public Matrix4f scale(Vector3<Float> vec)
 	{
 		return scale(vec, this, this);
 	}
 	
 	//From LWJGL
-	public static Matrix4f scale(Vector3f vec, Matrix4f src, Matrix4f dest) {
+	public static Matrix4f scale(Vector3<Float> vec, Matrix4f src, Matrix4f dest) {
 		if (dest == null)
 			dest = new Matrix4f();
 		dest.m00 = src.m00 * vec.getX();
@@ -234,7 +237,7 @@ public class Matrix4f
 	}
 
 	//From LWJGL
-	public static Matrix4f translate(Vector3f vec3, Matrix4f source, Matrix4f destination)
+	public static Matrix4f translate(Vector3<Float> vec3, Matrix4f source, Matrix4f destination)
 	{
 		if (destination == null)
 			destination = new Matrix4f();
@@ -384,13 +387,13 @@ public class Matrix4f
 		return dest;
 	}
 
-	public Matrix4f rotate(float angle, Vector3f axis)
+	public Matrix4f rotate(float angle, Vector3fm axis)
 	{
 		return rotate(angle, axis, this, this);
 	}
 
 	//From LWJGL
-	public static Matrix4f rotate(float angle, Vector3f axis, Matrix4f src, Matrix4f dest)
+	public static Matrix4f rotate(float angle, Vector3fm axis, Matrix4f src, Matrix4f dest)
 	{
 		if (dest == null)
 			dest = new Matrix4f();

@@ -1,5 +1,7 @@
 package io.xol.engine.math.lalgb;
 
+import io.xol.engine.math.lalgb.vector.Vector3;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -28,7 +30,7 @@ public class Vector4f
 		this(f, f, f, f);
 	}
 
-	public Vector4f(Vector3f vec, double f)
+	public Vector4f(Vector3<Float> vec, double f)
 	{
 		this(vec.getX(), vec.getY(), vec.getZ(), f);
 	}

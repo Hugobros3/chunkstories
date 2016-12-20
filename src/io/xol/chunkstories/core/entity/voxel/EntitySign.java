@@ -16,7 +16,7 @@ import io.xol.engine.graphics.geometry.TextMeshObject;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.model.ModelLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -84,7 +84,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 				diffuse.setLinearFiltering(false);
 				renderingContext.bindAlbedoTexture(diffuse);
 				renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
-				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
+				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3fm(0));
 
 				int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
 
@@ -98,11 +98,11 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 				int facing = VoxelFormat.meta(modelBlockData);
 
 				Matrix4f mutrix = new Matrix4f();
-				mutrix.translate(new Vector3f(0.5f, 0.0f, 0.5f));
+				mutrix.translate(new Vector3fm(0.5f, 0.0f, 0.5f));
 				mutrix.translate(entitySign.getLocation().castToSimplePrecision());
-				mutrix.rotate((float) Math.PI * 2.0f * (-facing) / 16f, new Vector3f(0, 1, 0));
+				mutrix.rotate((float) Math.PI * 2.0f * (-facing) / 16f, new Vector3fm(0, 1, 0));
 				if (isPost)
-					mutrix.translate(new Vector3f(0.0f, 0.0f, -0.5f));
+					mutrix.translate(new Vector3fm(0.0f, 0.0f, -0.5f));
 				renderingContext.setObjectMatrix(mutrix);
 
 				//glDisable(GL_CULL_FACE);
@@ -119,7 +119,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 					entitySign.cachedText = entitySign.signText.getSignText();
 				}
 				// Display it
-				mutrix.translate(new Vector3f(0.0f, 1.15f, 0.055f));
+				mutrix.translate(new Vector3fm(0.0f, 1.15f, 0.055f));
 				renderingContext.setObjectMatrix(mutrix);
 				entitySign.renderData.render(renderingContext);
 			}

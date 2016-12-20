@@ -6,7 +6,42 @@ import io.xol.engine.math.lalgb.vector.abs.Vector3am;
 
 public class Vector3fm extends Vector3am<Float>
 {
-
+	public Vector3fm()
+	{
+		this(0f);
+	}
+	
+	public Vector3fm(double value)
+	{
+		this((float)value);
+	}
+	
+	public Vector3fm(float value)
+	{
+		this.x = value;
+		this.y = value;
+		this.z = value;
+	}
+	
+	public Vector3fm(Vector3<?> vec)
+	{
+		this((float)vec.getX(), (float)vec.getY(), (float)vec.getZ());
+	}
+	
+	public Vector3fm(float x, float y, float z)
+	{
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+	
+	public Vector3fm(double x, double y, double z)
+	{
+		this.x = (float)x;
+		this.y = (float)y;
+		this.z = (float)z;
+	}
+	
 	@Override
 	public Float length()
 	{
@@ -89,6 +124,16 @@ public class Vector3fm extends Vector3am<Float>
 	public Float dot(Vector2<Float> vector)
 	{
 		return this.x * vector.getX() + this.y * vector.getY();
+	}
+	
+	public Vector3fm clone()
+	{
+		return new Vector3fm(this);
+	}
+
+	public String toString()
+	{
+		return "[Vector3fm x:"+getX()+" y:"+getY()+" z:"+getZ()+"]";
 	}
 
 }

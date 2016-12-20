@@ -15,7 +15,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Quaternion4d;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -52,17 +52,17 @@ public class BVHAnimation implements SkeletonAnimator
 		Matrix4f matrix = new Matrix4f();
 
 		//Apply rotations
-		matrix.rotate(rotX, new Vector3f(1, 0, 0));
-		matrix.rotate(rotY, new Vector3f(0, 1, 0));
-		matrix.rotate(rotZ, new Vector3f(0, 0, 1));
+		matrix.rotate(rotX, new Vector3fm(1, 0, 0));
+		matrix.rotate(rotY, new Vector3fm(0, 1, 0));
+		matrix.rotate(rotZ, new Vector3fm(0, 0, 1));
 
 		Matrix4f mX = new Matrix4f();
 		Matrix4f mY = new Matrix4f();
 		Matrix4f mZ = new Matrix4f();
 
-		mX.rotate(rotX, new Vector3f(1, 0, 0));
-		mY.rotate(rotY, new Vector3f(0, 1, 0));
-		mZ.rotate(rotZ, new Vector3f(0, 0, 1));
+		mX.rotate(rotX, new Vector3fm(1, 0, 0));
+		mY.rotate(rotY, new Vector3fm(0, 1, 0));
+		mZ.rotate(rotZ, new Vector3fm(0, 0, 1));
 
 		/*System.out.println("Old:\n"+matrix);
 		System.out.println("New:\n"+Matrix4f.mul(Matrix4f.mul(mX, mY, null), mZ, null));
@@ -233,7 +233,7 @@ public class BVHAnimation implements SkeletonAnimator
 		Matrix4f offsetMatrix = new Matrix4f();
 		
 		new Matrix4f();
-		Vector3f offsetTotal = new Vector3f();
+		Vector3fm offsetTotal = new Vector3fm();
 
 		//Sanity checking
 		for (BVHTreeBone b : bones)
@@ -368,9 +368,9 @@ public class BVHAnimation implements SkeletonAnimator
 					else if (line.startsWith("OFFSET"))
 					{
 						if (readingDest)
-							currentBone.dest = new Vector3f(Float.parseFloat(items[1]), Float.parseFloat(items[2]), Float.parseFloat(items[3]));
+							currentBone.dest = new Vector3fm(Float.parseFloat(items[1]), Float.parseFloat(items[2]), Float.parseFloat(items[3]));
 						else
-							currentBone.offset = new Vector3f(Float.parseFloat(items[1]), Float.parseFloat(items[2]), Float.parseFloat(items[3]));
+							currentBone.offset = new Vector3fm(Float.parseFloat(items[1]), Float.parseFloat(items[2]), Float.parseFloat(items[3]));
 					}
 					else if (line.startsWith("CHANNELS"))
 					{

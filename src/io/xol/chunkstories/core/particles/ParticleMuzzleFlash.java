@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.particles;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.rendering.lightning.Light;
@@ -51,8 +51,8 @@ public class ParticleMuzzleFlash extends ParticleType
 	@Override
 	public void forEach_Rendering(RenderingContext renderingContext, ParticleData data)
 	{
-		renderingContext.addLight(new Light(new Vector3f(1.0f, 181f/255f, 79/255f),
-				new Vector3f((float) data.getX(), (float) data.getY(), (float) data.getZ()),
+		renderingContext.addLight(new Light(new Vector3fm(1.0f, 181f/255f, 79/255f),
+				new Vector3fm((float) data.getX(), (float) data.getY(), (float) data.getZ()),
 				15f + (float) Math.random() * 5f));
 	}
 

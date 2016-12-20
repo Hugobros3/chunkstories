@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.math.random.SeededSimplexNoiseGenerator;
 
 public class NoiseWorldGenerator extends WorldGenerator
@@ -34,7 +34,7 @@ public class NoiseWorldGenerator extends WorldGenerator
 		//rnd.setSeed(cx * 32 + cz + 48716148);
 		
 		CubicChunk chunk = new CubicChunk(region, cx, cy, cz);
-		Vector3f position = new Vector3f();
+		Vector3fm position = new Vector3fm();
 
 		int wx = 8, wy = 4, wz = 8;
 		
@@ -51,9 +51,9 @@ public class NoiseWorldGenerator extends WorldGenerator
 					int y = b * (32 / wy);
 					int z = c * (32 / wz);
 
-					position.setX(cx * 32 + x);
-					position.setY(cy * 32 + y);
-					position.setZ(cz * 32 + z);
+					position.setX((float) (cx * 32 + x));
+					position.setY((float) (cy * 32 + y));
+					position.setZ((float) (cz * 32 + z));
 
 					position.scale(0.05f);
 					generated[wwx * (wwy * c + b) + a] = ssng.noise(position.getX(), position.getY(), position.getZ());

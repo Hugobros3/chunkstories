@@ -8,7 +8,8 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -24,13 +25,13 @@ public class LegacyDogeZItemRenderer extends DefaultItemRenderer
 	@Override
 	public void renderItemInWorld(RenderingInterface renderingInterface, ItemPile pile, World world, Location location, Matrix4f handTransformation)
 	{
-		handTransformation.rotate((float) (Math.PI / 4f), new Vector3f(0.0, 0.0, 1.0));
-		handTransformation.rotate((float) (Math.PI / 2f), new Vector3f(0.0, 1.0, 0.0));
-		handTransformation.translate(new Vector3f(-0.05, -0.05, 0.05));
+		handTransformation.rotate((float) (Math.PI / 4f), new Vector3fm(0.0, 0.0, 1.0));
+		handTransformation.rotate((float) (Math.PI / 2f), new Vector3fm(0.0, 1.0, 0.0));
+		handTransformation.translate(new Vector3fm(-0.05, -0.05, 0.05));
 		
 		int max = pile.getItem().getSlotsWidth() - 1;
 		
-		handTransformation.scale(new Vector3f(0.25 + 0.20 * max));
+		handTransformation.scale(new Vector3fm(0.25 + 0.20 * max));
 		renderingInterface.setObjectMatrix(handTransformation);
 
 		TexturesHandler.getTexture(pile.getTextureName()).setLinearFiltering(false);

@@ -27,7 +27,7 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -271,11 +271,11 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 			}
 
 			float dekal = -0.45f;
-			matrixed.translate(new Vector3f(0, dekal, 0));
-			matrixed.rotate(rot, new Vector3f(0, 0, 1));
-			matrixed.translate(new Vector3f(0, 0.25 - dekal, 0));
+			matrixed.translate(new Vector3fm(0, dekal, 0));
+			matrixed.rotate(rot, new Vector3fm(0, 0, 1));
+			matrixed.translate(new Vector3fm(0, 0.25 - dekal, 0));
 
-			matrixed.scale(new Vector3f(itemRenderScale));
+			matrixed.scale(new Vector3fm(itemRenderScale));
 
 			itemRenderer.renderItemInWorld(renderingInterface, pile, world, location, matrixed);
 		}

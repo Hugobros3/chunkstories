@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.particles;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.rendering.lightning.Light;
@@ -23,13 +23,13 @@ public class ParticleSetupLight extends ParticleType
 	public class ParticleSetupLightData extends ParticleData {
 
 		public int timer = 4800;
-		public Vector3f c;
+		public Vector3fm c;
 		public Light light;
 		
 		public ParticleSetupLightData(float x, float y, float z)
 		{
 			super(x, y, z);
-			c = new Vector3f(Math.random(), Math.random(), Math.random());
+			c = new Vector3fm(Math.random(), Math.random(), Math.random());
 		}
 	}
 

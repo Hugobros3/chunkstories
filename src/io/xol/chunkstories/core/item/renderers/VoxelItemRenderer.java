@@ -1,8 +1,9 @@
 package io.xol.chunkstories.core.item.renderers;
 
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3f;
+
 import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -79,11 +80,11 @@ public class VoxelItemRenderer implements ItemRenderer
 		program.setUniform2f("dekal", screenPositionX + pile.getItem().getSlotsWidth() * slotSize / 2, screenPositionY + pile.getItem().getSlotsHeight() * slotSize / 2);
 		program.setUniform1f("scaling", slotSize / 1.65f);
 		transformation.setIdentity();
-		transformation.scale(new Vector3f(-1f, 1f, 1f));
-		transformation.rotate(toRad(-22.5f), new Vector3f(1.0f, 0.0f, 0.0f));
-		transformation.rotate(toRad(45f), new Vector3f(0.0f, 1.0f, 0.0f));
-		transformation.translate(new Vector3f(-0.5f, -0.5f, -0.5f));
-		//transformation.rotate(45f, new Vector3f(0.0f, 1.0f, 1.0f));
+		transformation.scale(new Vector3fm(-1f, 1f, 1f));
+		transformation.rotate(toRad(-22.5f), new Vector3fm(1.0f, 0.0f, 0.0f));
+		transformation.rotate(toRad(45f), new Vector3fm(0.0f, 1.0f, 0.0f));
+		transformation.translate(new Vector3fm(-0.5f, -0.5f, -0.5f));
+		//transformation.rotate(45f, new Vector3fm(0.0f, 1.0f, 1.0f));
 		//transformation.m02 = -0.5f;
 		program.setUniformMatrix4f("transformation", transformation);
 		Voxel voxel = ((ItemVoxel) pile.getItem()).getVoxel();
@@ -193,8 +194,8 @@ public class VoxelItemRenderer implements ItemRenderer
 	public void renderItemInWorld(RenderingInterface context, ItemPile pile, World world, Location location, Matrix4f handTransformation)
 	{
 		float s = 0.45f;
-		handTransformation.scale(new Vector3f(s, s, s));
-		handTransformation.translate(new Vector3f(-0.25f, -0.5f, -0.5f));
+		handTransformation.scale(new Vector3fm(s, s, s));
+		handTransformation.translate(new Vector3fm(-0.25f, -0.5f, -0.5f));
 		context.setObjectMatrix(handTransformation);
 		Voxel voxel = ((ItemVoxel) pile.getItem()).getVoxel();
 		if (voxel == null)
@@ -207,7 +208,7 @@ public class VoxelItemRenderer implements ItemRenderer
 			Vector4f lightposition = new Vector4f(0.0, 0.0, 0.0, 1.0);
 			Matrix4f.transform(handTransformation, lightposition, lightposition);
 			
-			Light heldBlockLight = new Light(new Vector3f(0.5f, 0.45f, 0.4f).scale(2.0f), new Vector3f(lightposition.getX(), lightposition.getY(), lightposition.getZ()), 15f);
+			Light heldBlockLight = new Light(new Vector3fm(0.5f, 0.45f, 0.4f).scale(2.0f), new Vector3fm(lightposition.getX(), lightposition.getY(), lightposition.getZ()), 15f);
 			context.addLight(heldBlockLight);	
 			
 			//If we hold a light source, prepare the shader accordingly

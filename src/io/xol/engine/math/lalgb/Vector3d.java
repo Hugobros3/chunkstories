@@ -1,6 +1,6 @@
 package io.xol.engine.math.lalgb;
 
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -182,9 +182,9 @@ public class Vector3d
 		return getX() * getX() + getY() * getY() + getZ() * getZ();
 	}
 
-	public Vector3f castToSimplePrecision()
+	public Vector3fm castToSimplePrecision()
 	{
-		Vector3f vec = new Vector3f();
+		Vector3fm vec = new Vector3fm();
 		vec.setX((float) getX());
 		vec.setY((float) getY());
 		vec.setZ((float) getZ());

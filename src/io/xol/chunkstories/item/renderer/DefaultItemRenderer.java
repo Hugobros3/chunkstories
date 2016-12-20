@@ -16,7 +16,7 @@ import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -53,10 +53,10 @@ public class DefaultItemRenderer implements ItemRenderer
 	{
 		Matrix4f handTransformation2 = handTransformation.clone();
 		
-		handTransformation2.rotate((float) (Math.PI / 2f), new Vector3f(0.0, 0.0, 1.0));
-		handTransformation2.rotate((float) (Math.PI / 2f), new Vector3f(0.0, 1.0, 0.0));
-		handTransformation2.translate(new Vector3f(-0.05, -0.15, 0.0));
-		handTransformation2.scale(new Vector3f(0.35));
+		handTransformation2.rotate((float) (Math.PI / 2f), new Vector3fm(0.0, 0.0, 1.0));
+		handTransformation2.rotate((float) (Math.PI / 2f), new Vector3fm(0.0, 1.0, 0.0));
+		handTransformation2.translate(new Vector3fm(-0.05, -0.15, 0.0));
+		handTransformation2.scale(new Vector3fm(0.35));
 		renderingInterface.setObjectMatrix(handTransformation2);
 
 		TexturesHandler.getTexture(pile.getTextureName()).setLinearFiltering(false);

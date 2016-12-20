@@ -1,8 +1,9 @@
 package io.xol.chunkstories.core.entity;
 
 import org.lwjgl.input.Mouse;
-import io.xol.engine.math.lalgb.Vector3f;
+
 import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.chunkstories.api.Location;
@@ -481,7 +482,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if (this.getHealth() <= 0)
 			return;
 
-		Vector3f posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3f((float) pos.getX(), (float) pos.getY() + 2.0f, (float) pos.getZ()));
+		Vector3fm posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3fm((float) pos.getX(), (float) pos.getY() + 2.0f, (float) pos.getZ()));
 
 		float scale = posOnScreen.getZ();
 		String txt = name.getName();// + rotH;
@@ -533,7 +534,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					if (entity instanceof EntityWithSelectedItem)
 						selectedItemPile = ((EntityWithSelectedItem) entity).getSelectedItemComponent().getSelectedItem();
 
-					renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
+					renderingContext.currentShader().setUniform3f("objectPosition", new Vector3fm(0));
 
 					if (selectedItemPile != null)
 					{

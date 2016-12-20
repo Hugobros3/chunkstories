@@ -1,8 +1,9 @@
 package io.xol.engine.math;
 
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3f;
+
 import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -29,19 +30,21 @@ public class MatrixHelper
 		return matrix;
 	}
 
-	public static Matrix4f getLookAtMatrix(Vector3f position, Vector3f direction, Vector3f up)
+	public static Matrix4f getLookAtMatrix(Vector3fm position, Vector3fm direction, Vector3fm up)
 	{
 		if(direction.getY() == 1.0f || direction.getY() == -1.0f)
-			up = new Vector3f(1.0f, 0.0f, 0.0f);
+			up = new Vector3fm(1.0f, 0.0f, 0.0f);
 		
 		Matrix4f matrix = new Matrix4f();
 		matrix.setIdentity();
-		Vector3f f = new Vector3f();
-		Vector3f u = new Vector3f();
-		Vector3f s = new Vector3f();
-		Vector3f.sub(direction, position, f);
+		Vector3fm f = new Vector3fm(direction);
+		Vector3fm u = new Vector3fm();
+		Vector3fm s = new Vector3fm();
+		
+		f.sub(position);
+		//Vector3fm.sub(direction, position, f);
 		f.normalize();
-		u = up.normalize();
+		up.normalize();
 		VectorCrossProduct.cross33(f, u, s);
 		s.normalize();
 		VectorCrossProduct.cross33(s, f, u);

@@ -2,6 +2,8 @@ package io.xol.engine.math.lalgb;
 
 import java.nio.FloatBuffer;
 
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -165,10 +167,10 @@ public class Matrix3f
 		return dest;
 	}
 
-	public static Vector3f transform(Matrix3f left, Vector3f right, Vector3f dest)
+	public static Vector3fm transform(Matrix3f left, Vector3fm right, Vector3fm dest)
 	{
 		if (dest == null)
-			dest = new Vector3f();
+			dest = new Vector3fm();
 
 		float x = left.m00 * right.getX() + left.m10 * right.getY() + left.m20 * right.getZ();
 		float y = left.m01 * right.getX() + left.m11 * right.getY() + left.m21 * right.getZ();

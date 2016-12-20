@@ -30,7 +30,7 @@ import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.model.ModelLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -118,7 +118,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			if (boneName.endsWith("boneHead"))
 			{
 				Matrix4f modify = getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime);
-				modify.rotate((float) (EntityHumanoid.this.getEntityRotationComponent().getVerticalRotation() / 180 * Math.PI), new Vector3f(0, 1, 0));
+				modify.rotate((float) (EntityHumanoid.this.getEntityRotationComponent().getVerticalRotation() / 180 * Math.PI), new Vector3fm(0, 1, 0));
 				return modify;
 			}
 
@@ -138,7 +138,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			Matrix4f characterRotationMatrix = new Matrix4f();
 			//Only the torso is modified, the effect is replicated accross the other bones later
 			if (boneName.endsWith("boneTorso"))
-				characterRotationMatrix.rotate((90 - getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
+				characterRotationMatrix.rotate((90 - getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3fm(0, 0, 1));
 
 			if (Arrays.asList("boneArmLU", "boneArmRU").contains(boneName))
 			{
@@ -151,9 +151,9 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 				if (selectedItem != null)
 				{
-					characterRotationMatrix.translate(new Vector3f(0f, 0f, (float) k));
-					characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-					characterRotationMatrix.translate(new Vector3f(0f, 0f, -(float) k));
+					characterRotationMatrix.translate(new Vector3fm(0f, 0f, (float) k));
+					characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation()) / 180f * 3.14159f, new Vector3fm(0, 1, 0));
+					characterRotationMatrix.translate(new Vector3fm(0f, 0f, -(float) k));
 				}
 			}
 
@@ -242,7 +242,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 				if (entity instanceof EntityWithSelectedItem)
 					selectedItemPile = ((EntityWithSelectedItem) entity).getSelectedItemComponent().getSelectedItem();
 
-				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
+				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3fm(0));
 
 				if (selectedItemPile != null)
 				{

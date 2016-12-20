@@ -53,9 +53,9 @@ public class ParticleSnow extends ParticleType
 	{
 		SnowData b = (SnowData) data;
 		
-		b.setX(b.getX() + b.vel.getX());
-		b.setY(b.getY() + b.vel.getY());
-		b.setZ(b.getZ() + b.vel.getZ());
+		b.setX((float) (b.getX() + b.vel.getX()));
+		b.setY((float) (b.getY() + b.vel.getY()));
+		b.setZ((float) (b.getZ() + b.vel.getZ()));
 		
 		if (((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY(), b.getZ()))
 		{

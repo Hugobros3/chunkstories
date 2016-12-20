@@ -1,7 +1,7 @@
 package io.xol.chunkstories.voxel.models;
 
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -165,7 +165,7 @@ public class VoxelModels
 							String[] nor = splitted[3].split(",");
 							vertices.add(new float[] { Float.parseFloat(vert[0]), Float.parseFloat(vert[1]), Float.parseFloat(vert[2]) });
 							texcoord.add(new float[] { Float.parseFloat(tex[0]), Float.parseFloat(tex[1]) });
-							Vector3f normalizeMe = new Vector3f(Float.parseFloat(nor[0]), Float.parseFloat(nor[1]), Float.parseFloat(nor[2]));
+							Vector3fm normalizeMe = new Vector3fm(Float.parseFloat(nor[0]), Float.parseFloat(nor[1]), Float.parseFloat(nor[2]));
 							normalizeMe.normalize();
 							normal.add(new float[] { normalizeMe.getX(), normalizeMe.getY(), normalizeMe.getZ() });
 							c++;

@@ -18,8 +18,9 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
-import io.xol.engine.math.lalgb.Vector3f;
+
 import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.content.ModsManager.AssetHierarchy;
@@ -187,7 +188,7 @@ public class VoxelTextures
 
 					float alphaTotal = 0;
 					int nonNullPixels = 0;
-					Vector3f color = new Vector3f();
+					Vector3fm color = new Vector3fm();
 					for (int x = 0; x < vt.imageFileDimensions; x++)
 					{
 						for (int y = 0; y < vt.imageFileDimensions; y++)
@@ -202,7 +203,9 @@ public class VoxelTextures
 							float red = ((rgb & 0xFF0000) >> 16) / 255f * alpha;
 							float green = ((rgb & 0x00FF00) >> 8) / 255f * alpha;
 							float blue = (rgb & 0x0000FF) / 255f * alpha;
-							Vector3f.add(color, new Vector3f(red, green, blue), color);
+							
+							color.add(new Vector3fm(red, green, blue));
+							//Vector3fm.add(color, new Vector3fm(red, green, blue), color);
 						}
 					}
 
@@ -365,10 +368,10 @@ public class VoxelTextures
 		return texMap.values().iterator();
 	}
 
-	/*public static Vector3f getTextureColorAVG(String name)
+	/*public static Vector3fm getTextureColorAVG(String name)
 	{
 		Vector4f colorAlpha = getTextureColorAlphaAVG(name);
-		return new Vector3f(colorAlpha.x, colorAlpha.y, colorAlpha.z);
+		return new Vector3fm(colorAlpha.x, colorAlpha.y, colorAlpha.z);
 	}*/
 
 	/*public static Vector4f getTextureColorAlphaAVG(String name)

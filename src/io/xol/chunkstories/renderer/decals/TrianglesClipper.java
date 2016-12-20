@@ -8,8 +8,10 @@ import java.nio.ByteBuffer;
 
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
+
 import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.Vector3;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 /**
  * Straight from the 6th gate of hell, forged in the shattered skulls of fresh babies, this code should not be messed with. Proceed at your own risk.
@@ -21,21 +23,21 @@ public class TrianglesClipper
 
 	private static ByteBuffer out;
 
-	public static synchronized int clipTriangles(ByteBuffer in, ByteBuffer out, Matrix4f rotationMatrix, Vector3d originPosition, Vector3f direction, Vector3d size)
+	public static synchronized int clipTriangles(ByteBuffer in, ByteBuffer out, Matrix4f rotationMatrix, Vector3<Double> originPosition, Vector3<Float> direction, Vector3<Float> size)
 	{
 		int actualCount = 0;
 
 		toClipSpace = new Matrix4f(rotationMatrix);
-		toClipSpace.translate(originPosition.castToSimplePrecision().negate());
+		toClipSpace.translate(new Vector3fm(originPosition).negate());
 		
 		Matrix4f resize = new Matrix4f();
-		resize.scale(new Vector3f(1 / size.getX(), 1 / size.getY(), 1));
+		resize.scale(new Vector3fm(1 / size.getX(), 1 / size.getY(), 1));
 		Matrix4f.transpose(resize, resize);
 
 		Matrix4f.mul(resize, toClipSpace, toClipSpace);
 
 		Matrix4f decal = new Matrix4f();
-		decal.translate(new Vector3f(0.5f, 0.5f, 1.0f));
+		decal.translate(new Vector3fm(0.5f, 0.5f, 1.0f));
 
 		Matrix4f.mul(decal, toClipSpace, toClipSpace);
 
@@ -45,10 +47,10 @@ public class TrianglesClipper
 
 		while (in.hasRemaining())
 		{
-			Vector3f triVert1 = new Vector3f(in.getFloat(), in.getFloat(), in.getFloat());
+			Vector3fm triVert1 = new Vector3fm(in.getFloat(), in.getFloat(), in.getFloat());
 
 			//Skip backward-facing tris
-			Vector3f normal = new Vector3f(in.getFloat(), in.getFloat(), in.getFloat());
+			Vector3fm normal = new Vector3fm(in.getFloat(), in.getFloat(), in.getFloat());
 			if (normal.dot(direction) >= 0)
 			{
 				for (int i = 0; i < 6; i++)
@@ -56,11 +58,11 @@ public class TrianglesClipper
 				continue;
 			}
 
-			Vector3f triVert2 = new Vector3f(in.getFloat(), in.getFloat(), in.getFloat());
+			Vector3fm triVert2 = new Vector3fm(in.getFloat(), in.getFloat(), in.getFloat());
 			//Etc
 			for (int i = 0; i < 3; i++)
 				in.getFloat();
-			Vector3f triVert3 = new Vector3f(in.getFloat(), in.getFloat(), in.getFloat());
+			Vector3fm triVert3 = new Vector3fm(in.getFloat(), in.getFloat(), in.getFloat());
 			//Etc
 			for (int i = 0; i < 3; i++)
 				in.getFloat();
@@ -71,7 +73,7 @@ public class TrianglesClipper
 		return actualCount;
 	}
 
-	private static int cull(Vector3f vert1, Vector3f vert2, Vector3f vert3)
+	private static int cull(Vector3fm vert1, Vector3fm vert2, Vector3fm vert3)
 	{
 		Vector4f tv1 = Matrix4f.transform(toClipSpace, new Vector4f(vert1, 1.0f), null);
 		Vector4f tv2 = Matrix4f.transform(toClipSpace, new Vector4f(vert2, 1.0f), null);

@@ -18,7 +18,8 @@ import java.nio.FloatBuffer;
 import org.lwjgl.BufferUtils;
 
 import io.xol.engine.math.Math2;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -41,12 +42,12 @@ public class SkyRenderer
 		this.cloudsRenderer = new CloudsRenderer(world, this);
 	}
 
-	public Vector3f getSunPosition()
+	public Vector3fm getSunPosition()
 	{
 		float sunloc = (float) (time * Math.PI * 2 / 1.6 - 0.5);
 		float sunangle = 0;
 		float sundistance = 1000;
-		return new Vector3f((float) (400 + sundistance * Math.sin(rad(sunangle)) * Math.cos(sunloc)), (float) (height + sundistance * Math.sin(sunloc)), (float) (sundistance * Math.cos(rad(sunangle)) * Math.cos(sunloc))).normalize();
+		return new Vector3fm((float) (400 + sundistance * Math.sin(rad(sunangle)) * Math.cos(sunloc)), (float) (height + sundistance * Math.sin(sunloc)), (float) (sundistance * Math.cos(rad(sunangle)) * Math.cos(sunloc))).normalize();
 	}
 	
 	public void render(RenderingContext renderingContext)
@@ -58,7 +59,7 @@ public class SkyRenderer
 		renderingContext.getRenderTargetManager().setDepthMask(false);
 		//glDepthMask(false);
 
-		Vector3f sunPosVector = getSunPosition();
+		Vector3fm sunPosVector = getSunPosition();
 		double[] sunpos = { sunPosVector.getX(), sunPosVector.getY(), sunPosVector.getZ() };
 
 		ShaderInterface skyShader = renderingContext.useShader("sky");
@@ -112,7 +113,7 @@ public class SkyRenderer
 			stars = BufferUtils.createFloatBuffer(NB_STARS * 3);
 			for (int i = 0; i < NB_STARS; i++)
 			{
-				Vector3f star = new Vector3f((float) Math.random() * 2f - 1f, (float) Math.random(), (float) Math.random() * 2f - 1f);
+				Vector3fm star = new Vector3fm((float) Math.random() * 2f - 1f, (float) Math.random(), (float) Math.random() * 2f - 1f);
 				star.normalize();
 				star.scale(100f);
 				stars.put(new float[] { star.getX(), star.getY(), star.getZ() });

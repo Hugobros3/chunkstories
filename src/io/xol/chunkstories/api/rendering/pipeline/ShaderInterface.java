@@ -4,8 +4,8 @@ import io.xol.engine.math.lalgb.Matrix3f;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Vector2f;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
 import io.xol.engine.math.lalgb.Vector4f;
+import io.xol.engine.math.lalgb.vector.Vector3;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -25,9 +25,9 @@ public interface ShaderInterface
 	
 	public void setUniform3f(String uniformName, double uniformData_x, double uniformData_y, double uniformData_z);
 	
-	public void setUniform3f(String uniformName, Vector3d uniformData);
+	public void setUniform3f(String uniformName, Vector3<?> uniformData);
 	
-	public void setUniform3f(String uniformName, Vector3f uniformData);
+	public void setUniform3f(String uniformName, Vector3d uniformData);
 	
 	public void setUniform4f(String uniformName, double uniformData_x, double uniformData_y, double uniformData_z, double uniformData_w);
 	

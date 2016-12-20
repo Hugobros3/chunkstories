@@ -13,7 +13,7 @@ import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.TextureFormat;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 import org.lwjgl.BufferUtils;
 
@@ -169,7 +169,7 @@ public class FarTerrainRenderer
 			for (RegionMesh regionMesh : regionsMeshesToRenderSorted)
 			{
 				float height = 1024f;
-				if (!renderingContext.getCamera().isBoxInFrustrum(new Vector3f(regionMesh.regionDisplayedX * 256 + 128, height / 2, regionMesh.regionDisplayedZ * 256 + 128), new Vector3f(256, height, 256)))
+				if (!renderingContext.getCamera().isBoxInFrustrum(new Vector3fm(regionMesh.regionDisplayedX * 256 + 128, height / 2, regionMesh.regionDisplayedZ * 256 + 128), new Vector3fm(256, height, 256)))
 					continue;
 				
 				renderingContext.bindTexture2D("groundTexture", regionMesh.regionSummary.voxelTypesTexture);

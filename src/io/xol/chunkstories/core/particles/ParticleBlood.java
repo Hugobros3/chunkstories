@@ -68,9 +68,9 @@ public class ParticleBlood extends ParticleType
 		BloodData b = (BloodData) data;
 		
 		b.timer--;
-		b.setX(b.getX() + b.vel.getX());
-		b.setY(b.getY() + b.vel.getY());
-		b.setZ(b.getZ() + b.vel.getZ());
+		b.setX((float) (b.getX() + b.vel.getX()));
+		b.setY((float) (b.getY() + b.vel.getY()));
+		b.setZ((float) (b.getZ() + b.vel.getZ()));
 		
 		if (!((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY(), b.getZ()))
 			b.vel.setY(b.vel.getY() + -0.89/60.0);

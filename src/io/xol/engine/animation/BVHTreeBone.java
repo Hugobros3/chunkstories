@@ -7,7 +7,7 @@ import io.xol.engine.math.Math2;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.Quaternion4d;
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -20,9 +20,9 @@ public class BVHTreeBone
 	int id;
 	
 	//Offset from 0.0.0 ( for rigging )
-	Vector3f offset;
+	Vector3fm offset;
 	//Destination vector ( for end bones only )
-	Vector3f dest;
+	Vector3fm dest;
 
 	//Float array containing the data, [frames][channel]
 	float[][] animationData;
@@ -101,9 +101,9 @@ public class BVHTreeBone
 		Matrix4f matrix = new Matrix4f();
 
 		//Apply rotations
-		matrix.rotate(rotX, new Vector3f(1, 0, 0));
-		matrix.rotate(rotY, new Vector3f(0, 1, 0));
-		matrix.rotate(rotZ, new Vector3f(0, 0, 1));
+		matrix.rotate(rotX, new Vector3fm(1, 0, 0));
+		matrix.rotate(rotY, new Vector3fm(0, 1, 0));
+		matrix.rotate(rotZ, new Vector3fm(0, 0, 1));
 		
 		//Apply transformations
 		if (channels == 6)

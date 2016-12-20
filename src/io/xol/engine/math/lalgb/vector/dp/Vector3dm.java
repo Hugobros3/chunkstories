@@ -6,7 +6,30 @@ import io.xol.engine.math.lalgb.vector.abs.Vector3am;
 
 public class Vector3dm extends Vector3am<Double>
 {
+	public Vector3dm()
+	{
+		this(0, 0, 0);
+	}
 
+	public Vector3dm(double x, double y, double z)
+	{
+		this.setX(x);
+		this.setY(y);
+		this.setZ(z);
+	}
+
+	public Vector3dm(Vector3<?> vec)
+	{
+		this.setX((double)vec.getX());
+		this.setY((double)vec.getY());
+		this.setZ((double)vec.getZ());
+	}
+
+	public Vector3dm(double d)
+	{
+		this(d, d, d);
+	}
+	
 	@Override
 	public Double length()
 	{

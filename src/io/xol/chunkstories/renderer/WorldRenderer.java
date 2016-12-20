@@ -25,7 +25,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
 
 import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Vector3f;
+
 
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.GameWindowOpenGL;
@@ -44,6 +44,7 @@ import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.Math2;
 import io.xol.engine.math.MatrixHelper;
 import io.xol.engine.math.lalgb.Vector3d;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameDirectory;
@@ -220,7 +221,7 @@ public class WorldRenderer
 	Texture2D blocksMaterialTexture = TexturesHandler.getTexture("./textures/tiles_merged_material.png");
 
 	//SSAO (disabled)
-	Vector3f ssao_kernel[];
+	Vector3fm ssao_kernel[];
 	int ssao_kernel_size;
 	int ssao_noiseTex = -1;
 
@@ -667,12 +668,12 @@ public class WorldRenderer
 		int shadowDepthRange = 200;
 		Matrix4f depthProjectionMatrix = MatrixHelper.getOrthographicMatrix(-shadowRange, shadowRange, -shadowRange, shadowRange, -shadowDepthRange, shadowDepthRange);
 		
-		Matrix4f depthViewMatrix = MatrixHelper.getLookAtMatrix(skyRenderer.getSunPosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
+		Matrix4f depthViewMatrix = MatrixHelper.getLookAtMatrix(skyRenderer.getSunPosition(), new Vector3fm(0, 0, 0), new Vector3fm(0, 1, 0));
 
 		Matrix4f.mul(depthProjectionMatrix, depthViewMatrix, depthMatrix);
 		Matrix4f shadowMVP = new Matrix4f(depthMatrix);
 
-		shadowMVP.translate(new Vector3f((float) camera.pos.getX(), (float) camera.pos.getY(), (float) camera.pos.getZ()));
+		shadowMVP.translate(new Vector3fm((float) camera.pos.getX(), (float) camera.pos.getY(), (float) camera.pos.getZ()));
 
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
 		
@@ -738,7 +739,7 @@ public class WorldRenderer
 
 		int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
 
-		Vector3f sunPos = skyRenderer.getSunPosition();
+		Vector3fm sunPos = skyRenderer.getSunPosition();
 		float shadowVisiblity = getShadowVisibility();
 		chunksViewDistance = sizeInChunks / 2;
 
@@ -875,7 +876,7 @@ public class WorldRenderer
 				if (!isShadowPass)
 				{
 					Matrix4f matrix = new Matrix4f();
-					matrix.translate(new Vector3f( vboDekalX, chunk.getChunkY() * 32f, vboDekalZ));
+					matrix.translate(new Vector3fm( vboDekalX, chunk.getChunkY() * 32f, vboDekalZ));
 					this.renderingContext.setObjectMatrix(matrix);
 					opaqueBlocksShader.setUniform3f("objectPosition", vboDekalX, chunk.getChunkY() * 32f, vboDekalZ);
 				}
@@ -883,7 +884,7 @@ public class WorldRenderer
 				{
 
 					Matrix4f matrix = new Matrix4f();
-					matrix.translate(new Vector3f( vboDekalX, chunk.getChunkY() * 32f, vboDekalZ));
+					matrix.translate(new Vector3fm( vboDekalX, chunk.getChunkY() * 32f, vboDekalZ));
 					this.renderingContext.setObjectMatrix(matrix);
 					
 				}
@@ -1124,7 +1125,7 @@ public class WorldRenderer
 
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		
-		Vector3f sunPos = skyRenderer.getSunPosition();
+		Vector3fm sunPos = skyRenderer.getSunPosition();
 
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
 		//fboShadedBuffer.bind();
@@ -1340,10 +1341,10 @@ public class WorldRenderer
 		if (ssao_kernel == null)
 		{
 			ssao_kernel_size = 16;//applyShadowsShader.getConstantInt("KERNEL_SIZE"); nvm too much work
-			ssao_kernel = new Vector3f[ssao_kernel_size];
+			ssao_kernel = new Vector3fm[ssao_kernel_size];
 			for (int i = 0; i < ssao_kernel_size; i++)
 			{
-				Vector3f vec = new Vector3f((float) Math.random() * 2f - 1f, (float) Math.random() * 2f - 1f, (float) Math.random());
+				Vector3fm vec = new Vector3fm((float) Math.random() * 2f - 1f, (float) Math.random() * 2f - 1f, (float) Math.random());
 				vec.normalize();
 				float scale = ((float) i) / ssao_kernel_size;
 				scale = Math2.mix(0.1f, 1.0f, scale * scale);
@@ -1678,8 +1679,8 @@ public class WorldRenderer
 
 		terrainShader2.setUniform1f("shadowStrength", 1.0f);
 		float x = 1.2f;
-		terrainShader2.setUniform3f("sunColor", Math2.mix(new Vector3f(x * 255 / 255f, x * 255 / 255f, x * 255 / 255f), new Vector3f(0.5f), sunLightFactor));
-		terrainShader2.setUniform3f("shadowColor", new Vector3f(0.50f, 0.50f, 0.50f));
+		terrainShader2.setUniform3f("sunColor", Math2.mix(new Vector3fm(x * 255 / 255f, x * 255 / 255f, x * 255 / 255f), new Vector3fm(0.5f), sunLightFactor));
+		terrainShader2.setUniform3f("shadowColor", new Vector3fm(0.50f, 0.50f, 0.50f));
 	}
 
 	private float getShadowVisibility()
@@ -1700,8 +1701,8 @@ public class WorldRenderer
 	//Math helper functions
 	private boolean checkChunkOcclusion(Chunk chunk, int correctedCX, int correctedCY, int correctedCZ)
 	{
-		Vector3f center = new Vector3f(correctedCX * 32 + 16, correctedCY * 32 + 15, correctedCZ * 32 + 16);
-		return camera.isBoxInFrustrum(center, new Vector3f(32, 32, 32));
+		Vector3fm center = new Vector3fm(correctedCX * 32 + 16, correctedCY * 32 + 15, correctedCZ * 32 + 16);
+		return camera.isBoxInFrustrum(center, new Vector3fm(32, 32, 32));
 	}
 
 	private float getWorldWetness()

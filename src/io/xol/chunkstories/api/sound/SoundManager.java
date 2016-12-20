@@ -4,7 +4,8 @@ import java.nio.FloatBuffer;
 import java.util.Iterator;
 
 import io.xol.engine.math.lalgb.Vector3d;
-import io.xol.engine.math.lalgb.Vector3f;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -27,7 +28,7 @@ public interface SoundManager
 	}
 	
 	/** Overloads playSoundEffect with a vector3f instead of individual components and default attenuation */
-	public default SoundSource playSoundEffect(String soundEffect, Vector3f location, float pitch, float gain)
+	public default SoundSource playSoundEffect(String soundEffect, Vector3fm location, float pitch, float gain)
 	{
 		return this.playSoundEffect(soundEffect, location.getX(), location.getY(), location.getZ(), pitch, gain);
 	}
@@ -39,7 +40,7 @@ public interface SoundManager
 	}
 	
 	/** Overloads playSoundEffect with a vector3f instead of individual components */
-	public default SoundSource playSoundEffect(String soundEffect, Vector3f location, float pitch, float gain, float attStart, float attEnd)
+	public default SoundSource playSoundEffect(String soundEffect, Vector3fm location, float pitch, float gain, float attStart, float attEnd)
 	{
 		return this.playSoundEffect(soundEffect, location.getX(), location.getY(), location.getZ(), pitch, gain, attStart, attEnd);
 	}
