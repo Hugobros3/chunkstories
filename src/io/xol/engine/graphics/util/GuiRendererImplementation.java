@@ -77,7 +77,7 @@ public class GuiRendererImplementation implements GuiRenderer
 		if (elementsToDraw >= 6 * MAX_ELEMENTS)
 			drawBuffer();
 		
-		if (color != null && color.w < 1)
+		if (color != null && color.getW() < 1)
 		{
 			alpha = true; // Force blending if alpha < 1
 		}
@@ -103,10 +103,10 @@ public class GuiRendererImplementation implements GuiRenderer
 		buf.putFloat(t);
 		buf.putFloat(s);
 		// 1x4 bytes of ubyte norm color data
-		buf.put((byte)(int)(currentColor.x * 255));
-		buf.put((byte)(int)(currentColor.y * 255));
-		buf.put((byte)(int)(currentColor.z * 255));
-		buf.put((byte)(int)(currentColor.w * 255));
+		buf.put((byte)(int)(currentColor.getX() * 255));
+		buf.put((byte)(int)(currentColor.getY() * 255));
+		buf.put((byte)(int)(currentColor.getZ() * 255));
+		buf.put((byte)(int)(currentColor.getW() * 255));
 		elementsToDraw++;
 	}
 	

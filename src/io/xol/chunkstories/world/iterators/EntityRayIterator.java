@@ -40,7 +40,7 @@ public class EntityRayIterator implements Iterator<Entity>
 				Vector3d toEntity = new Vector3d(entity.getLocation());
 				toEntity.sub(initialPosition);
 				//Check direction of the line to avoid hitting hitself, backtracking and wrapping arround the world
-				if(Vector3d.dot(direction, toEntity) > 0)
+				if(direction.dot(toEntity) > 0)
 				{
 					//Line collision checks
 					for(CollisionBox box : entity.getTranslatedCollisionBoxes())

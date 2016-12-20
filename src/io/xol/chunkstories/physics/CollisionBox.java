@@ -82,12 +82,17 @@ public class CollisionBox implements Collidable
 		TP1.set(P1);
 		TP2.set(P2);
 
-		Vector3d tempHit = new Vector3d();
-		Vector3d.sub(TP2, TP1, tempHit);
+		Vector3d tempHit = new Vector3d(TP2);
+		
+		tempHit.sub(TP1);
+		//Vector3d.sub(TP2, TP1, tempHit);
+		
 		tempHit.scale(-fDst1 / (fDst2 - fDst1));
 		TP1.set(P1);
-		//System.out.println("tmp: "+tempHit + "tp1" + TP1);
-		tempHit = Vector3d.add(TP1, tempHit, null);
+		
+		tempHit.add(TP1);
+		//tempHit = Vector3d.add(TP1, tempHit, null);
+		
 		//System.out.println("tmp2: "+tempHit);
 		//Vector3d temphit = TP1.add( ( TP2.sub(TP1) ).scale(-fDst1 / (fDst2 - fDst1)) );
 		hit.set(tempHit);
@@ -161,7 +166,11 @@ public class CollisionBox implements Collidable
 		}
 		if ((tmin < maxDist) && (tmax > minDist)) {
 			
-			return Vector3d.add(lineStart, lineDirection.clone().normalize().scale(tmin), null);
+			Vector3d intersect = new Vector3d(lineStart);
+			
+			intersect.add(lineDirection.clone().normalize().scale(tmin));
+			return intersect;
+			//return Vector3d.add(lineStart, lineDirection.clone().normalize().scale(tmin), null);
 			
 			//return ray.getPointAtDistance(tmin);
 		}

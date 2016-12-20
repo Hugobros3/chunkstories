@@ -100,10 +100,10 @@ public class TextMeshObject implements Renderable
 		tempBuffer.putFloat(textureStartX);
 		tempBuffer.putFloat(textureStartY);
 		//Color
-		tempBuffer.putFloat(currentColor.x);
-		tempBuffer.putFloat(currentColor.y);
-		tempBuffer.putFloat(currentColor.z);
-		tempBuffer.putFloat(currentColor.w);
+		tempBuffer.putFloat(currentColor.getX());
+		tempBuffer.putFloat(currentColor.getY());
+		tempBuffer.putFloat(currentColor.getZ());
+		tempBuffer.putFloat(currentColor.getW());
 	}
 
 	public void done()

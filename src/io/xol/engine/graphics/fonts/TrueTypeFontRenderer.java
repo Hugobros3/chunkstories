@@ -63,9 +63,9 @@ public class TrueTypeFontRenderer
 	public void drawStringWithShadow(TrueTypeFont trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4f color)
 	{
 		Vector4f colorDarkened = new Vector4f(color);
-		colorDarkened.x *= 0.2f;
-		colorDarkened.y *= 0.2f;
-		colorDarkened.z *= 0.2f;
+		colorDarkened.setX(colorDarkened.getX() * 0.2f);
+		colorDarkened.setY(colorDarkened.getY() * 0.2f);
+		colorDarkened.setZ(colorDarkened.getZ() * 0.2f);
 		drawString(trueTypeFont, x + 1 * scaleX, y - 1 * scaleY, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, colorDarkened);
 		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, color);
 	}
@@ -124,7 +124,7 @@ public class TrueTypeFontRenderer
 					{
 						String colorCode = whatchars.substring(i + 1, i + 7);
 						int rgb[] = ColorsTools.hexToRGB(colorCode);
-						colorModified = new Vector4f(rgb[0] / 255.0f * color.x, rgb[1] / 255.0f * color.y, rgb[2] / 255.0f * color.z, color.w);
+						colorModified = new Vector4f(rgb[0] / 255.0f * color.getX(), rgb[1] / 255.0f * color.getY(), rgb[2] / 255.0f * color.getZ(), color.getW());
 						i += 7;
 						continue;
 					}

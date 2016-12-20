@@ -137,12 +137,13 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 				{
 					Vector3d normal = shotBlockOuter.sub(shotBlock);
 
-					double NbyI2x = 2.0 * Vector3d.dot(direction, normal);
+					double NbyI2x = 2.0 * direction.dot(normal);
 					Vector3d NxNbyI2x = new Vector3d(normal);
 					NxNbyI2x.scale(NbyI2x);
 
-					Vector3d reflected = new Vector3d();
-					Vector3d.sub(direction, NxNbyI2x, reflected);
+					Vector3d reflected = new Vector3d(direction);
+					reflected.sub(NxNbyI2x);
+					//Vector3d.sub(direction, NxNbyI2x, reflected);
 
 					//shotBlock.setX(shotBlock.getX() + 1);
 					int data = owner.getWorld().getVoxelData(shotBlock);

@@ -299,13 +299,13 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 	{
 		Vector2f deltaHorizontal = new Vector2f((float)delta.getX(), (float)delta.getZ());
 		Vector2f deltaVertical = new Vector2f(deltaHorizontal.length(),(float) delta.getY());
-		deltaHorizontal.normalise();
-		deltaVertical.normalise();
+		deltaHorizontal.normalize();
+		deltaVertical.normalize();
 		
-		double targetH = Math.acos(deltaHorizontal.y) * 180.0 / Math.PI;
-		double targetV = Math.asin(deltaVertical.y) * 180.0 / Math.PI;
+		double targetH = Math.acos(deltaHorizontal.getY()) * 180.0 / Math.PI;
+		double targetV = Math.asin(deltaVertical.getY()) * 180.0 / Math.PI;
 		
-		if(deltaHorizontal.x > 0.0)
+		if(deltaHorizontal.getX() > 0.0)
 			targetH *= -1;
 		
 		if(targetV > 90f)

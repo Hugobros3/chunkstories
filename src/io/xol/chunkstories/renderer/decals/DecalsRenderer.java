@@ -100,7 +100,7 @@ public class DecalsRenderer implements DecalsManager
 						//Matrix4f.transform(rotationMatrix, rotateMe, rotateMe);
 
 						Location location = new Location(world, position);
-						location.add(new Vector3d(rotateMe.x, rotateMe.y, rotateMe.z));
+						location.add(new Vector3d(rotateMe.getX(), rotateMe.getY(), rotateMe.getZ()));
 						location.add(new Vector3d(0.5));
 
 						int idThere = VoxelFormat.id(world.getVoxelData(location));

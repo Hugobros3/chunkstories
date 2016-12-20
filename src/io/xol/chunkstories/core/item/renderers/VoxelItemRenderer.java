@@ -207,7 +207,7 @@ public class VoxelItemRenderer implements ItemRenderer
 			Vector4f lightposition = new Vector4f(0.0, 0.0, 0.0, 1.0);
 			Matrix4f.transform(handTransformation, lightposition, lightposition);
 			
-			Light heldBlockLight = new Light(new Vector3f(0.5f, 0.45f, 0.4f).scale(2.0f), new Vector3f(lightposition.x, lightposition.y, lightposition.z), 15f);
+			Light heldBlockLight = new Light(new Vector3f(0.5f, 0.45f, 0.4f).scale(2.0f), new Vector3f(lightposition.getX(), lightposition.getY(), lightposition.getZ()), 15f);
 			context.addLight(heldBlockLight);	
 			
 			//If we hold a light source, prepare the shader accordingly

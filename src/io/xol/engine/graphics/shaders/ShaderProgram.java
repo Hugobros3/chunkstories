@@ -395,13 +395,13 @@ public class ShaderProgram implements ShaderInterface
 		else if(uniformData instanceof Integer)
 			glUniform1i(uniformLocation, (Integer)uniformData);
 		else if(uniformData instanceof Vector2f)
-			glUniform2f(uniformLocation, ((Vector2f)uniformData).x, ((Vector2f)uniformData).y);
+			glUniform2f(uniformLocation, ((Vector2f)uniformData).getX(), ((Vector2f)uniformData).getY());
 		else if(uniformData instanceof Vector3f)
 			glUniform3f(uniformLocation, ((Vector3f)uniformData).getX(), ((Vector3f)uniformData).getY(), ((Vector3f)uniformData).getZ());
 		else if(uniformData instanceof Vector3d)
 			glUniform3f(uniformLocation, (float)((Vector3d)uniformData).getX(), (float)((Vector3d)uniformData).getY(), (float)((Vector3d)uniformData).getZ());
 		else if(uniformData instanceof Vector4f)
-			glUniform4f(uniformLocation, ((Vector4f)uniformData).x, ((Vector4f)uniformData).y, ((Vector4f)uniformData).z, ((Vector4f)uniformData).w);
+			glUniform4f(uniformLocation, ((Vector4f)uniformData).getX(), ((Vector4f)uniformData).getY(), ((Vector4f)uniformData).getZ(), ((Vector4f)uniformData).getW());
 		else if(uniformData instanceof Matrix4f)
 		{
 			((Matrix4f)uniformData).store(matrix4fBuffer);

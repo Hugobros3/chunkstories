@@ -470,8 +470,8 @@ public class Camera implements CameraInterface
 
 		//position.scale(1/position.w);
 
-		Vector3f posOnScreen = new Vector3f(in.x, in.y, 0f);
-		float scale = 1/in.z;
+		Vector3f posOnScreen = new Vector3f(in.getX(), in.getY(), 0f);
+		float scale = 1/in.getZ();
 		posOnScreen.scale(scale);
 
 		posOnScreen.setX((posOnScreen.getX() * 0.5f + 0.5f) * viewportWidth);

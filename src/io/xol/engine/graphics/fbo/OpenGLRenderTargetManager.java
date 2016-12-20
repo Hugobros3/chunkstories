@@ -72,7 +72,7 @@ public class OpenGLRenderTargetManager implements RenderTargetManager
 			colorClearColor = new Vector4f(0);
 		
 		if (!this.colorClearColor.equals(colorClearColor))
-			glClearColor(colorClearColor.x, colorClearColor.y, colorClearColor.z, colorClearColor.w);
+			glClearColor(colorClearColor.getX(), colorClearColor.getY(), colorClearColor.getZ(), colorClearColor.getW());
 
 		this.colorClearColor = colorClearColor;
 	}

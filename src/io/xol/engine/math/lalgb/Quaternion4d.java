@@ -1,5 +1,7 @@
 package io.xol.engine.math.lalgb;
 
+import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
+
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -61,12 +63,13 @@ public class Quaternion4d
 			out = new Quaternion4d();
 		
 		// [ Sa.Sb - a.b ,
-		out.s = a.s * b.s - Vector3d.dot(a.v, b.v);
+		out.s = a.s * b.s - a.v.dot(b.v);
 		// Sa.b + Sb.a + a x b ]
 		Vector3d aBv = b.v.clone().scale(a.s);
 		Vector3d vBa = a.v.clone().scale(b.s);
 		
-		out.v = Vector3d.add(aBv, vBa, null).add(Vector3d.cross(a.v, b.v));
+		out.v = aBv.add(vBa).add(VectorCrossProduct.cross33(a.v, b.v));
+		//out.v = Vector3d.add(aBv, vBa, null).add(Vector3d.cross(a.v, b.v));
 		
 		return out;
 	}
@@ -78,7 +81,8 @@ public class Quaternion4d
 	
 	public double norm()
 	{
-		return Math.sqrt(s * s + Vector3d.dot(v, v) * Vector3d.dot(v, v));
+		return Math.sqrt(s * s + v.dot(v) * v.dot(v));
+		//return Math.sqrt(s * s + Vector3d.dot(v, v) * Vector3d.dot(v, v));
 	}
 	
 	public Quaternion4d normalize()

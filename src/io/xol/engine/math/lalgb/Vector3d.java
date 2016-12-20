@@ -83,7 +83,14 @@ public class Vector3d
 		return this;
 	}
 
-	public static Vector3d add(Vector3d left, Vector3d right, Vector3d dest)
+	public void set(double x, double y, double z)
+	{
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+
+	/*public static Vector3d add(Vector3d left, Vector3d right, Vector3d dest)
 	{
 		if (dest == null)
 			dest = new Vector3d();
@@ -118,14 +125,19 @@ public class Vector3d
 		dest.setY(left.getZ() * right.getX() - left.getX() * right.getZ());
 		dest.setZ(left.getX() * right.getY() - left.getY() * right.getX());
 		return dest;
-	}
+	}*/
 
-	public static double dot(Vector3d left, Vector3d right)
+	/*public static double dot(Vector3d left, Vector3d right)
 	{
 		return left.getX() * right.getX() + left.getY() * right.getY() + left.getZ() * right.getZ();
+	}*/
+	
+	public double dot(Vector3d right)
+	{
+		return this.getX() * right.getX() + this.getY() * right.getY() + this.getZ() * right.getZ();
 	}
 
-	public static double angle(Vector3d left, Vector3d right)
+	/*public static double angle(Vector3d left, Vector3d right)
 	{
 		double normalizedDot = dot(left, right) / (left.length() * right.length());
 		if (normalizedDot < -1d)
@@ -133,7 +145,7 @@ public class Vector3d
 		if (normalizedDot > 1d)
 			normalizedDot = 1d;
 		return Math.acos(normalizedDot);
-	}
+	}*/
 
 	public Vector3d negate()
 	{

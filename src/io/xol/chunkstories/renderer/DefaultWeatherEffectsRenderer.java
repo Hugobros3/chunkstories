@@ -65,11 +65,11 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 			//Max height it can fall to before reverting to used
 			float rdMh = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int) rdX, (int) rdZ);
 			//Raindrop size, change orientation to face viewer
-			view2drop.x = rdX - viewX;
-			view2drop.y = rdZ - viewZ;
-			view2drop.normalise();
-			float mx = 0.005f * -view2drop.y;
-			float mz = 0.005f * view2drop.x;
+			view2drop.setX(rdX - viewX);
+			view2drop.setY(rdZ - viewZ);
+			view2drop.normalize();
+			float mx = 0.005f * -view2drop.getY();
+			float mz = 0.005f * view2drop.getX();
 			float rainDropletSize = 0.2f + random.nextFloat() * 0.18f;
 			//Build triangle strip
 

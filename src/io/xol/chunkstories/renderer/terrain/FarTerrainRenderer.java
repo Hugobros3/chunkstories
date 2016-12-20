@@ -100,10 +100,10 @@ public class FarTerrainRenderer
 			{
 				VoxelTexture voxelTexture = i.next();
 
-				bb.put((byte) (voxelTexture.color.x * 255));
-				bb.put((byte) (voxelTexture.color.y * 255));
-				bb.put((byte) (voxelTexture.color.z * 255));
-				bb.put((byte) (voxelTexture.color.w * 255));
+				bb.put((byte) (voxelTexture.color.getX() * 255));
+				bb.put((byte) (voxelTexture.color.getY() * 255));
+				bb.put((byte) (voxelTexture.color.getZ() * 255));
+				bb.put((byte) (voxelTexture.color.getW() * 255));
 
 				voxelTexture.positionInColorIndex = counter;
 				counter++;

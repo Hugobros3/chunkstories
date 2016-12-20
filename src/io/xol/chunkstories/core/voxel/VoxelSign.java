@@ -65,12 +65,12 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 			blockLocation.negate();
 			
 			Vector2f direction = new Vector2f((float)blockLocation.getX(), (float)blockLocation.getZ());
-			direction.normalise();
+			direction.normalize();
 			//System.out.println("x:"+direction.x+"y:"+direction.y);
 			
-			double asAngle = Math.acos(direction.y) / Math.PI * 180;
+			double asAngle = Math.acos(direction.getY()) / Math.PI * 180;
 			asAngle *= -1;
-			if(direction.x < 0)
+			if(direction.getX() < 0)
 				asAngle *= -1;
 			
 			//asAngle += 180.0;
