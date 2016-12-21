@@ -433,7 +433,7 @@ public class VerticesObject
 				//Gives back orphan buffers
 				glDeleteBuffers(openGLID);
 				totalVerticesObjects--;
-				System.out.println("Destroyed orphan VerticesObject id #"+openGLID);
+				//System.out.println("Destroyed orphan VerticesObject id #"+openGLID);
 
 				i.remove();
 			}

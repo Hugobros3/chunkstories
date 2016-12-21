@@ -35,6 +35,9 @@ import io.xol.engine.sound.ALSoundManager;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.ARBDebugOutput;
+import org.lwjgl.opengl.ARBDebugOutputCallback;
+import org.lwjgl.opengl.ARBDebugOutputCallback.Handler;
 import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
@@ -106,7 +109,7 @@ public class GameWindowOpenGL
 			Display.setTitle(windowName);
 			Display.setResizable(true);
 			PixelFormat pixelFormat = new PixelFormat();
-			Display.create(pixelFormat, new ContextAttribs(3, 2).withProfileCore(true));
+			Display.create(pixelFormat, new ContextAttribs(3, 2).withProfileCore(true).withDebug(true));
 
 			systemInfo();
 			glInfo();
@@ -178,6 +181,11 @@ public class GameWindowOpenGL
 		RenderingConfig.gl_IsInstancingSupported = GLContext.getCapabilities().GL_ARB_draw_instanced;
 		RenderingConfig.gl_InstancedArrays = GLContext.getCapabilities().GL_ARB_instanced_arrays;
 
+		if(GLContext.getCapabilities().GL_ARB_debug_output)
+		{
+			ChunkStoriesLogger.getInstance().log("OpenGL debug output extension supported, installing handler");
+			ARBDebugOutput.glDebugMessageCallbackARB(new ARBDebugOutputCallback( new OpenGLDebugOutputCallback()));
+		}
 	}
 
 	public void run()
