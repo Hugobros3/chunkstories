@@ -3,8 +3,6 @@ package io.xol.engine.math.lalgb.vector.dp;
 import io.xol.engine.math.lalgb.vector.Vector2;
 import io.xol.engine.math.lalgb.vector.Vector2m;
 import io.xol.engine.math.lalgb.vector.Vector3;
-import io.xol.engine.math.lalgb.vector.Vector3m;
-import io.xol.engine.math.lalgb.vector.abs.Vector2am;
 import io.xol.engine.math.lalgb.vector.abs.Vector3am;
 
 public class Vector3dm extends Vector3am<Double>

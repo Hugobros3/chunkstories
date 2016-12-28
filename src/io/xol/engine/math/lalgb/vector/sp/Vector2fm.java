@@ -3,7 +3,6 @@ package io.xol.engine.math.lalgb.vector.sp;
 import io.xol.engine.math.lalgb.vector.Vector2;
 import io.xol.engine.math.lalgb.vector.Vector2m;
 import io.xol.engine.math.lalgb.vector.abs.Vector2am;
-import io.xol.engine.math.lalgb.vector.dp.Vector2dm;
 
 public class Vector2fm extends Vector2am<Float>
 {

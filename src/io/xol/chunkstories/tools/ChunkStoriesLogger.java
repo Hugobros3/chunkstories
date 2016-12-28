@@ -136,7 +136,7 @@ public class ChunkStoriesLogger
 	SendReportThread logReportThread;
 	*/
 
-	public void close()
+	private void close()
 	{
 		info("Successfully written log");
 		fileWriter.close();
@@ -192,9 +192,7 @@ public class ChunkStoriesLogger
 		}
 		if (logFile != null && logToFile.compareTo(level) <= 0)
 		{
-
 			fileWriter.append(line + "\n");
-
 		}
 	}
 
@@ -210,9 +208,7 @@ public class ChunkStoriesLogger
 
 	public void save()
 	{
-
-		fileWriter.close();
-
+		fileWriter.flush();
 	}
 
 	public void info(String string)

@@ -3,7 +3,6 @@ package io.xol.engine.math.lalgb.vector.operations;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.Vector3m;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 public class VectorCrossProduct

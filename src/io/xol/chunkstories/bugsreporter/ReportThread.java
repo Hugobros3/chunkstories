@@ -22,19 +22,35 @@ import javax.swing.JProgressBar;
 
 public class ReportThread extends Thread implements ActionListener{
 
-		String username;
-		File logFile;
+		private final String username;
+		private final File logFile;
 		
-		JProgressBar progress;
-		JFrame pane;
+		private final JProgressBar progress;
 		
+		public ReportThread(String username, File logFile)
+		{
+			this.username = username;
+			this.logFile = logFile;
+			
+			this.progress = null;
+		}
+		
+		public ReportThread(String username, File logFile, JProgressBar progress)
+		{
+			this.username = username;
+			this.logFile = logFile;
+			
+			this.progress = progress;
+			//this.pane = pane;
+		}
+		
+		@Deprecated
 		public ReportThread(String username, File logFile, JProgressBar progress, JFrame pane)
 		{
 			this.username = username;
 			this.logFile = logFile;
 			
 			this.progress = progress;
-			this.pane = pane;
 		}
 
 		@Override
@@ -42,6 +58,7 @@ public class ReportThread extends Thread implements ActionListener{
 		{
 			if(progress != null)
 				progress.setString("Uploading file "+logFile);
+			
 			String url = "http://chunkstories.xyz/debug/upload.php";
 			String charset = "UTF-8";
 			try
@@ -91,7 +108,8 @@ public class ReportThread extends Thread implements ActionListener{
 			}
 			
 			//Once it's done reporting
-			System.exit(0);
+			if(progress != null)
+				System.exit(0);
 		}
 
 		@Override

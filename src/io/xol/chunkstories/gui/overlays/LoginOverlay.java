@@ -1,6 +1,7 @@
 package io.xol.chunkstories.gui.overlays;
 
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.bugsreporter.JavaCrashesUploader;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -159,6 +160,13 @@ public class LoginOverlay extends Overlay implements HttpRequester
 				if(Client.username.equals("Gobrosse") || Client.username.equals("kektest"))
 				{
 					RenderingConfig.isDebugAllowed = true;
+				}
+				
+				//If the user didn't opt-out, look for crash files and upload those
+				if(Client.clientConfig.getProp("log-policy", "undefined").equals("send"))
+				{
+					JavaCrashesUploader t = new JavaCrashesUploader();
+					t.start();
 				}
 				
 				can_next = true;

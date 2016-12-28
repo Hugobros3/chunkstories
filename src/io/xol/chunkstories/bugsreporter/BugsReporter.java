@@ -39,7 +39,7 @@ public class BugsReporter
 		if (args.length == 2)
 		{
 			File file = new File(args[1]);
-			thread = new ReportThread(args[0], file, progress, window);
+			thread = new ReportThread(args[0], file, progress);
 
 			panel.add(cancel);
 			cancel.setBounds(240, 120 + 12 + 8, 112, 24);
