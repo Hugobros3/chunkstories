@@ -313,7 +313,7 @@ public class Camera implements CameraInterface
 	private Vector3fm vadd(Vector3fm a, Vector3fm b)
 	{
 		Vector3fm out = new Vector3fm(a);
-		out.sub(b);
+		out.add(b);
 		//Vector3fm.add(a, b, out);
 		return out;
 	}
@@ -357,8 +357,8 @@ public class Camera implements CameraInterface
 		
 		//dimensions.scale(0.5f);
 		
-		final float PLUSONE = -0.5f;
-		final float MINUSONE = 0.5f;
+		final float PLUSONE = 0.5f;
+		final float MINUSONE = -0.5f;
 		
 		//i=0 j=0 k=0
 		corners[0].setX(center.getX() + dimensions.getX()   * MINUSONE);
