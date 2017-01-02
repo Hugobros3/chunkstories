@@ -35,6 +35,7 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.voxel.Voxels;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
@@ -64,7 +65,7 @@ public abstract class WorldImplementation implements World
 	// time so we are not in trouble.
 	// Let's say that the game world runs at 60Ticks per second
 	public long worldTicksCounter = 0;
-	
+
 	//Timecycle counter
 	public long worldTime = 5000;
 	float overcastFactor = 0.2f;
@@ -83,10 +84,10 @@ public abstract class WorldImplementation implements World
 
 	// World-renderer backcall
 	protected WorldRenderer renderer;
-	
+
 	// Temporary entity list
 	protected EntitiesHolder entities = new EntitiesHolder();
-	
+
 	public ReadWriteLock entitiesLock = new ReentrantReadWriteLock(true);
 
 	// Particles
@@ -125,7 +126,7 @@ public abstract class WorldImplementation implements World
 			this.folder = null;
 			this.internalData = null;
 		}
-		
+
 		//Start the world logic thread
 		worldThread = new GameLogicThread(this, new UnthrustedUserContentSecurityManager());
 	}
@@ -224,100 +225,106 @@ public abstract class WorldImplementation implements World
 	{
 		//First what kind of world are we
 		WorldAuthority authority;
-		if(this instanceof WorldMaster && this instanceof WorldClient)
+		if (this instanceof WorldMaster && this instanceof WorldClient)
 			authority = WorldAuthority.CLIENT_LOCALHOST;
-		else if(this instanceof WorldClient)
+		else if (this instanceof WorldClient)
 			authority = WorldAuthority.CLIENT_ONLY;
-		else if(this instanceof WorldMaster)
+		else if (this instanceof WorldMaster)
 			authority = WorldAuthority.SERVER;
 		else
 			authority = WorldAuthority.NONE;
-		
-		
+
 		//Place the entire tick() method in a try/catch
 		try
 		{
 			//Iterates over every entity
-			entitiesLock.writeLock().lock();
-			Iterator<Entity> iter = this.getAllLoadedEntities();
-			Entity entity;
-			while (iter.hasNext())
+			try
 			{
-				entity = iter.next();
-
-				//Check entity's region is loaded
-				//Location entityLocation = entity.getLocation();
-				if (entity.getRegion() != null && entity.getRegion().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
+				entitiesLock.writeLock().lock();
+				Iterator<Entity> iter = this.getAllLoadedEntities();
+				Entity entity;
+				while (iter.hasNext())
 				{
-					entity.tick(authority);
-					
-					/*
-					//If we're the client world and this is our controlled entity we execute the tickClientController() and tick() methods
-					if (this instanceof WorldClient && entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.getInstance().getClientSideController().getControlledEntity() != null && Client.getInstance().getClientSideController().getControlledEntity().equals(entity))
-					{
-						((EntityControllable) entity).tickClientController(Client.getInstance().getClientSideController());
-						entity.tick();
-					}
-					else if(this instanceof WorldClient)
-					{
-						//Some entities feature fancy clientside-prediction, for misc functions such as interpolation positions, spawning particles or playing walking sounds
-						if(entity instanceof EntityWithClientPrediction)
-						{
-							if(entity instanceof EntityControllable)
-							{
-								Controller controller = ((EntityControllable) entity).getControllerComponent().getController();
-								//If this is a remote world, any non-controlled entity could be client-predicted
-								if(this instanceof WorldClientRemote)
-								{
-									//Ok
-								}
-								//If this is a local world/server then only REMOTE clients should be predicted
-								else if(controller != null && !controller.equals(Client.getInstance().getClientSideController()))
-								{
-									//Ok too
-								}
-								//If neither is true, abort
-								else
-									continue;
-							}
-							//Non-controllable, locally simulated entities should not be predicted
-							else if(this instanceof WorldClientLocal)
-								continue;
-							
-							((EntityWithClientPrediction) entity).tickClientPrediction();
-						}
-					}
-					//Server should not tick client's entities, only ticks if their controller isn't present
-					else if (this instanceof WorldMaster && (!(entity instanceof EntityControllable) || ((EntityControllable) entity).getControllerComponent().getController() == null))
-						entity.tick();
-						
-						*/
-				}
-				//Tries to snap the entity to the region if it ends up being loaded
-				else if(entity.getRegion() == null)
-					entity.getEntityComponentPosition().trySnappingToRegion();
+					entity = iter.next();
 
+					//Check entity's region is loaded
+					//Location entityLocation = entity.getLocation();
+					if (entity.getRegion() != null && entity.getRegion().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
+					{
+						entity.tick(authority);
+
+						/*
+						//If we're the client world and this is our controlled entity we execute the tickClientController() and tick() methods
+						if (this instanceof WorldClient && entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.getInstance().getClientSideController().getControlledEntity() != null && Client.getInstance().getClientSideController().getControlledEntity().equals(entity))
+						{
+							((EntityControllable) entity).tickClientController(Client.getInstance().getClientSideController());
+							entity.tick();
+						}
+						else if(this instanceof WorldClient)
+						{
+							//Some entities feature fancy clientside-prediction, for misc functions such as interpolation positions, spawning particles or playing walking sounds
+							if(entity instanceof EntityWithClientPrediction)
+							{
+								if(entity instanceof EntityControllable)
+								{
+									Controller controller = ((EntityControllable) entity).getControllerComponent().getController();
+									//If this is a remote world, any non-controlled entity could be client-predicted
+									if(this instanceof WorldClientRemote)
+									{
+										//Ok
+									}
+									//If this is a local world/server then only REMOTE clients should be predicted
+									else if(controller != null && !controller.equals(Client.getInstance().getClientSideController()))
+									{
+										//Ok too
+									}
+									//If neither is true, abort
+									else
+										continue;
+								}
+								//Non-controllable, locally simulated entities should not be predicted
+								else if(this instanceof WorldClientLocal)
+									continue;
+								
+								((EntityWithClientPrediction) entity).tickClientPrediction();
+							}
+						}
+						//Server should not tick client's entities, only ticks if their controller isn't present
+						else if (this instanceof WorldMaster && (!(entity instanceof EntityControllable) || ((EntityControllable) entity).getControllerComponent().getController() == null))
+							entity.tick();
+							
+							*/
+					}
+					//Tries to snap the entity to the region if it ends up being loaded
+					else if (entity.getRegion() == null)
+						entity.getEntityComponentPosition().trySnappingToRegion();
+
+				}
 			}
-			entitiesLock.writeLock().unlock();
+			finally
+			{
+				entitiesLock.writeLock().unlock();
+			}
 			//entitiesLock.writeLock().notifyAll();
 
 			//System.out.println("Unlocked !");
-			
+
 			//Update particles subsystem if it exists
 			if (getParticlesManager() != null && getParticlesManager() instanceof ParticlesRenderer)
 				((ParticlesRenderer) getParticlesManager()).updatePhysics();
 
 			//Increase the ticks counter
 			worldTicksCounter++;
-			
+
 			//Time cycle
 			if (this instanceof WorldMaster && internalData.getBoolean("doTimeCycle", true))
-				if(worldTicksCounter % 60 == 0)
+				if (worldTicksCounter % 60 == 0)
 					worldTime++;
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			ChunkStoriesLogger.getInstance().log("Exception occured while ticking the world : "+e.getMessage(), LogLevel.CRITICAL);
+			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 		}
 	}
 
@@ -347,11 +354,11 @@ public abstract class WorldImplementation implements World
 	{
 		return regionSummaries;
 	}
-	
+
 	@Override
 	public int getVoxelData(Vector3dm location)
 	{
-		return getVoxelData((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
+		return getVoxelData((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
 	}
 
 	@Override
@@ -362,8 +369,7 @@ public abstract class WorldImplementation implements World
 		z = sanitizeHorizontalCoordinate(z);
 
 		Chunk c = regions.getChunk(x / 32, y / 32, z / 32);
-		
-		
+
 		if (c != null)
 			return c.getVoxelData(x, y, z);
 		return 0;
@@ -372,7 +378,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void setVoxelData(Location location, int data)
 	{
-		setVoxelData((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ(), data);
+		setVoxelData((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ(), data);
 	}
 
 	@Override
@@ -384,7 +390,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void setVoxelData(Location location, int data, Entity entity)
 	{
-		actuallySetsDataAt((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ(), data, entity);
+		actuallySetsDataAt((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ(), data, entity);
 	}
 
 	@Override
@@ -557,7 +563,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public int getSunlightLevelLocation(Location location)
 	{
-		return getSunlightLevelWorldCoordinates((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
+		return getSunlightLevelWorldCoordinates((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
 	}
 
 	@Override
@@ -575,7 +581,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public int getBlocklightLevelLocation(Location location)
 	{
-		return getBlocklightLevelWorldCoordinates((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
+		return getBlocklightLevelWorldCoordinates((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
 	}
 
 	@Override
@@ -618,7 +624,7 @@ public abstract class WorldImplementation implements World
 		this.internalData.setFloat("overcastFactor", overcastFactor);
 		this.internalData.save();
 	}
-	
+
 	/**
 	 * Legacy crap for particle system
 	 */
@@ -630,7 +636,7 @@ public abstract class WorldImplementation implements World
 		{
 
 			Voxel v = Voxels.get(id);
-			
+
 			CollisionBox[] boxes = v.getTranslatedCollisionBoxes(this, (int) posX, (int) posY, (int) posZ);
 			if (boxes != null)
 				for (CollisionBox box : boxes)
@@ -819,7 +825,7 @@ public abstract class WorldImplementation implements World
 
 			//System.out.println(deltaDist[side]);
 			distance += deltaDist[side];
-			
+
 			//System.out.println(Math.sqrt(voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2])+ " < "+Math.sqrt(limit * limit));
 		}
 		while (voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2] < limit * limit);
@@ -870,9 +876,9 @@ public abstract class WorldImplementation implements World
 	@Override
 	public ChunkHolder aquireChunkHolderLocation(WorldUser user, Location location)
 	{
-		return aquireChunkHolder(user, (int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
+		return aquireChunkHolder(user, (int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
 	}
-	
+
 	@Override
 	public ChunkHolder aquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ)
 	{
@@ -885,17 +891,17 @@ public abstract class WorldImplementation implements World
 			chunkZ += getSizeInChunks();
 		return this.getRegionsHolder().aquireChunkHolder(user, chunkX, chunkY, chunkZ);
 	}
-	
+
 	@Override
 	public ChunkHolder aquireChunkHolderWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldY = sanitizeVerticalCoordinate(worldY);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
-		
+
 		return this.getRegionsHolder().aquireChunkHolder(user, worldX / 32, worldY / 32, worldZ / 32);
 	}
-	
+
 	@Override
 	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ)
 	{
@@ -914,11 +920,11 @@ public abstract class WorldImplementation implements World
 		//If it doesn't return null then it exists
 		return this.regions.getChunk(chunkX, chunkY, chunkZ) != null;
 	}
-	
+
 	@Override
 	public CubicChunk getChunkWorldCoordinates(Location location)
 	{
-		return getChunkWorldCoordinates((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
+		return getChunkWorldCoordinates((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
 	}
 
 	@Override
@@ -948,7 +954,7 @@ public abstract class WorldImplementation implements World
 	{
 		return new WorldChunksIterator(this);
 	}
-	
+
 	public WorldRegionsHolder getRegionsHolder()
 	{
 		return regions;
@@ -979,13 +985,13 @@ public abstract class WorldImplementation implements World
 	@Override
 	public RegionImplementation aquireRegionLocation(WorldUser user, Location location)
 	{
-		return aquireRegionWorldCoordinates(user, (int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
+		return aquireRegionWorldCoordinates(user, (int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
 	}
-	
+
 	@Override
 	public RegionImplementation getRegionLocation(Location location)
 	{
-		return getRegionWorldCoordinates((int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
+		return getRegionWorldCoordinates((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
 	}
 
 	@Override
@@ -1021,7 +1027,7 @@ public abstract class WorldImplementation implements World
 	{
 		return this.worldTicksCounter;
 	}
-	
+
 	@Override
 	public GameLogic getGameLogic()
 	{
@@ -1033,7 +1039,7 @@ public abstract class WorldImplementation implements World
 	{
 		//Stop the game logic first
 		worldThread.stopLogicThread();
-		
+
 		this.regions.destroy();
 		this.getRegionsSummariesHolder().destroy();
 		//this.logic.shutdown();
@@ -1042,7 +1048,7 @@ public abstract class WorldImplementation implements World
 			this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
 			this.internalData.save();
 		}
-		
+
 		//Kill the IO handler
 		ioHandler.kill();
 	}

@@ -9,9 +9,9 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.ARBFramebufferObject;
 import org.lwjgl.opengl.GL30;
 
+import io.xol.chunkstories.api.exceptions.rendering.IllegalRenderingThreadException;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.geometry.IllegalRenderingThreadException;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
