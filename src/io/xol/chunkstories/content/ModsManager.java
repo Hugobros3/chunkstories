@@ -34,9 +34,9 @@ import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.particles.ParticleTypes;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.voxel.VoxelTextures;
-import io.xol.chunkstories.voxel.Voxels;
-import io.xol.chunkstories.voxel.models.VoxelModels;
+import io.xol.chunkstories.voxel.VoxelTexturesAtlaser;
+import io.xol.chunkstories.voxel.VoxelsStore;
+import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 import io.xol.chunkstories.world.generator.WorldGenerators;
 import io.xol.engine.animation.BVHLibrary;
 import io.xol.engine.concurrency.UniqueList;
@@ -52,7 +52,7 @@ import io.xol.engine.sound.library.SoundsLibrary;
 
 public class ModsManager
 {
-	//TODO : Staticize this
+	//TODO : un-Staticize this
 	
 	private static Mod baseAssets;
 	private static String[] modsEnabled = new String[0];
@@ -544,7 +544,7 @@ public class ModsManager
 		}
 	}
 
-	public static void reload()
+	public static void reload_()
 	{
 		long total = System.nanoTime();
 		long part = System.nanoTime();
@@ -562,25 +562,25 @@ public class ModsManager
 		System.out.println("fs reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();
 		
-		VoxelTextures.buildTextureAtlas();
+		/*VoxelTexturesAtlaser.buildTextureAtlas();
 		System.out.println("texture atlas reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();
+		part = System.nanoTime();*/
 		
 		Materials.reload();
 		System.out.println("materials reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();
 		
-		VoxelModels.resetAndLoadModels();
+		/*VoxelModelsStore.resetAndLoadModels();
 		System.out.println("voxel models reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();
+		part = System.nanoTime();*/
 		
 		ItemTypes.reload();
 		System.out.println("items reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();
 		
-		Voxels.loadVoxelTypes();
+		/*VoxelsStore.reloadVoxelTypes();
 		System.out.println("voxels reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();
+		part = System.nanoTime();*/
 		
 		Entities.reload();
 		System.out.println("entities reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
@@ -606,15 +606,6 @@ public class ModsManager
 		System.out.println("Assets reload took "+Math.floor(((System.nanoTime() - total) / 1000L) / 100f) / 10f + "ms ");
 		
 		//Inputs.loadKeyBindsClient();
-	}
-
-	public static void reloadClientContent()
-	{
-		TexturesHandler.reloadAll();
-		SoundsLibrary.clean();
-		ModelLibrary.reloadAllModels();
-		BVHLibrary.reloadAllAnimations();
-		ShadersLibrary.reloadAllShaders();
 	}
 
 	public static String[] getEnabledMods()

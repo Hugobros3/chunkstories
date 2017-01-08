@@ -42,7 +42,7 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
@@ -617,7 +617,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 						{
 							//Spawn new itemPile in his inventory
 							ItemVoxel item = (ItemVoxel) ItemTypes.getItemTypeByName("item_voxel").newItem();
-							item.voxel = Voxels.get(voxelID);
+							item.voxel = VoxelsStore.get().getVoxelById(voxelID);
 							item.voxelMeta = voxelMeta;
 
 							ItemPile itemVoxel = new ItemPile(item);

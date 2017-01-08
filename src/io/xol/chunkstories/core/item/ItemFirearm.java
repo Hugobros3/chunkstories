@@ -28,7 +28,7 @@ import io.xol.chunkstories.core.item.renderers.ObjViewModelRenderer;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.LegacyDogeZItemRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -268,7 +268,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 
 							//shotBlock.setX(shotBlock.getX() + 1);
 							int data = user.getWorld().getVoxelData(shotBlock);
-							Voxel voxel = Voxels.get(data);
+							Voxel voxel = VoxelsStore.get().getVoxelById(data);
 
 							//This seems fine
 
@@ -304,7 +304,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 								Vector3dm ppos = new Vector3dm(nearestLocation);
 								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);	
 								
-								controller.getSoundManager().playSoundEffect(Voxels.get(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.05f);
+								controller.getSoundManager().playSoundEffect(VoxelsStore.get().getVoxelById(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.05f);
 								
 							}
 

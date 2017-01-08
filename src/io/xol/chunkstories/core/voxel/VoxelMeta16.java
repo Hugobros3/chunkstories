@@ -1,5 +1,6 @@
 package io.xol.chunkstories.core.voxel;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.core.item.ItemVoxel;
@@ -8,17 +9,17 @@ import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.VoxelTextures;
+import io.xol.chunkstories.voxel.VoxelTexturesAtlaser;
 
 public class VoxelMeta16 extends VoxelDefault
 {
 	VoxelTexture colors[] = new VoxelTexture[16];
 
-	public VoxelMeta16(int id, String name)
+	public VoxelMeta16(Content.Voxels store, int id, String name)
 	{
-		super(id, name);
+		super(store, id, name);
 		for (int i = 0; i < 16; i++)
-			colors[i] = VoxelTextures.getVoxelTexture(name + "." + i);
+			colors[i] = store.textures().getVoxelTextureByName(name + "." + i);
 	}
 
 	@Override

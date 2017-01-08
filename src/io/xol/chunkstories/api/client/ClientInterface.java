@@ -16,7 +16,7 @@ import io.xol.chunkstories.world.WorldClientCommon;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface ClientInterface extends PluginExecutionContext, CommandEmitter
+public interface ClientInterface extends ChunkStories, PluginExecutionContext, CommandEmitter
 {
 	public ClientSideController getClientSideController();
 	

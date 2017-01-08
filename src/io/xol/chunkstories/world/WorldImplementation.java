@@ -36,7 +36,7 @@ import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.EntityRayIterator;
@@ -416,8 +416,8 @@ public abstract class WorldImplementation implements World
 		if (chunk != null)
 		{
 			int formerData = chunk.getVoxelData(x % 32, y % 32, z % 32);
-			Voxel formerVoxel = Voxels.get(formerData);
-			Voxel newVoxel = Voxels.get(newData);
+			Voxel formerVoxel = VoxelsStore.get().getVoxelById(formerData);
+			Voxel newVoxel = VoxelsStore.get().getVoxelById(newData);
 
 			try
 			{
@@ -635,7 +635,7 @@ public abstract class WorldImplementation implements World
 		if (id > 0)
 		{
 
-			Voxel v = Voxels.get(id);
+			Voxel v = VoxelsStore.get().getVoxelById(id);
 
 			CollisionBox[] boxes = v.getTranslatedCollisionBoxes(this, (int) posX, (int) posY, (int) posZ);
 			if (boxes != null)
@@ -695,7 +695,7 @@ public abstract class WorldImplementation implements World
 			return false;
 
 		int dataAtLocation = this.getVoxelData(voxelLocation);
-		Voxel voxel = Voxels.get(dataAtLocation);
+		Voxel voxel = VoxelsStore.get().getVoxelById(dataAtLocation);
 		if (voxel != null && voxel instanceof VoxelInteractive)
 			return ((VoxelInteractive) voxel).handleInteraction(entity, voxelLocation, input, dataAtLocation);
 		return false;
@@ -773,7 +773,7 @@ public abstract class WorldImplementation implements World
 			x = voxelCoords[0];
 			y = voxelCoords[1];
 			z = voxelCoords[2];
-			vox = Voxels.get(this.getVoxelData(x, y, z));
+			vox = VoxelsStore.get().getVoxelById(this.getVoxelData(x, y, z));
 			if (vox.isVoxelSolid() || (selectable && vox.isVoxelSelectable()))
 			{
 				boolean collides = false;

@@ -1,5 +1,6 @@
 package io.xol.chunkstories.core.voxel;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
@@ -19,10 +20,10 @@ import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.VoxelTextures;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelTexturesAtlaser;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModel;
-import io.xol.chunkstories.voxel.models.VoxelModels;
+import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -39,19 +40,19 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 
 	boolean top;
 
-	public VoxelDoor(int id, String name)
+	public VoxelDoor(Content.Voxels store, int id, String name)
 	{
-		super(id, name);
+		super(store, id, name);
 
 		top = name.endsWith("_top");
 
 		if (top)
-			doorTexture = VoxelTextures.getVoxelTexture(name.replace("_top", "") + "_upper");
+			doorTexture = store.textures().getVoxelTextureByName(name.replace("_top", "") + "_upper");
 		else
-			doorTexture = VoxelTextures.getVoxelTexture(name + "_lower");
+			doorTexture = store.textures().getVoxelTextureByName(name + "_lower");
 
 		for (int i = 0; i < 8; i++)
-			models[i] = VoxelModels.getVoxelModel("door.m" + i);
+			models[i] = store.models().getVoxelModelByName("door.m" + i);
 	}
 
 	@Override
@@ -132,7 +133,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 			otherPartLocation.add(0.0, 1.0, 0.0);
 
 		int otherLocationId = VoxelFormat.id(otherPartLocation.getVoxelDataAtLocation());
-		if (Voxels.get(otherLocationId) instanceof VoxelDoor)
+		if (VoxelsStore.get().getVoxelById(otherLocationId) instanceof VoxelDoor)
 		{
 			System.out.println("new door status : " + newState);
 			voxelLocation.getWorld().getSoundManager().playSoundEffect("sounds/sfx/door.ogg", voxelLocation, 1.0f, 1.0f);
@@ -279,7 +280,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 			default:
 				break;
 			}
-			if (Voxels.get(adjacentId) instanceof VoxelDoor)
+			if (VoxelsStore.get().getVoxelById(adjacentId) instanceof VoxelDoor)
 			{
 				hingeSide = true;
 			}
@@ -321,7 +322,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 		world.setVoxelDataWithoutUpdates(x, y, z, 0);
 		int otherData = world.getVoxelData(x, otherY, z);
 		//Remove the other part as well, if it still exists
-		if (Voxels.get(otherData) instanceof VoxelDoor)
+		if (VoxelsStore.get().getVoxelById(otherData) instanceof VoxelDoor)
 		{
 			world.setVoxelData(x, otherY, z, 0);
 		}

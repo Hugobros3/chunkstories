@@ -1,6 +1,5 @@
 package io.xol.chunkstories.item;
 
-import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.mods.Asset;

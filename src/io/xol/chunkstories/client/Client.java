@@ -15,6 +15,7 @@ import io.xol.engine.misc.IconLoader;
 import io.xol.engine.misc.NativesLoader;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Inventory;
@@ -26,7 +27,9 @@ import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.content.ClientGameContent;
 import io.xol.chunkstories.content.DefaultPluginManager;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -39,6 +42,8 @@ import io.xol.chunkstories.world.WorldClientCommon;
 
 public class Client implements ClientInterface
 {
+	private ClientGameContent gameContent;
+	
 	public static ConfigFile clientConfig = new ConfigFile("./config/client.cfg");
 
 	public static Lwjgl2ClientInputsManager inputsManager;
@@ -117,13 +122,16 @@ public class Client implements ClientInterface
 		RenderingConfig.define();
 		NativesLoader.load();
 		// Load last gamemode
-		ModsManager.reload();
+		
+		gameContent = new ClientGameContent(this);
+		
+		//ModsManager.reload();
 		inputsManager = new Lwjgl2ClientInputsManager();
 		// Gl init
 		windows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);
 		windows.createContext();
 
-		ModsManager.reloadClientContent();
+		//ModsManager.reloadClientContent();
 		windows.changeScene(new MainMenu(windows, true));
 		//Load 
 		pluginsManager = new ClientPluginManager(client);
@@ -133,11 +141,6 @@ public class Client implements ClientInterface
 	public static Client getInstance()
 	{
 		return client;
-	}
-
-	public static void onStart()
-	{
-		IconLoader.load();
 	}
 
 	@Override
@@ -195,9 +198,10 @@ public class Client implements ClientInterface
 
 		if (GameWindowOpenGL.isMainGLWindow())
 		{
-			ModsManager.reload();
+			gameContent.reload();
+			//ModsManager.reload();
 			inputsManager.reload();
-			ModsManager.reloadClientContent();
+			//ModsManager.reloadClientContent();
 
 			getPluginManager().reloadPlugins();
 
@@ -209,9 +213,11 @@ public class Client implements ClientInterface
 			@Override
 			public void run()
 			{
-				ModsManager.reload();
+				//ModsManager.reload();
+				gameContent.reload();
+				
 				inputsManager.reload();
-				ModsManager.reloadClientContent();
+				//ModsManager.reloadClientContent();
 
 				getPluginManager().reloadPlugins();
 				
@@ -349,5 +355,11 @@ public class Client implements ClientInterface
 	public boolean hasPermission(String permissionNode)
 	{
 		return true;
+	}
+
+	@Override
+	public Content getContent()
+	{
+		return gameContent;
 	}
 }

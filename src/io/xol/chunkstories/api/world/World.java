@@ -27,7 +27,6 @@ import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 public interface World
 {
-	
 	public WorldInfo getWorldInfo();
 	
 	public WorldGenerator getGenerator();

@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.item.renderers.VoxelItemRenderer;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -87,13 +87,13 @@ public class ItemVoxel extends Item
 			{
 				//int selectedBlockPreviousData = user.getWorld().getDataAt(selectedBlock);
 				//Adding blocks should not erase light if the block's not opaque
-				if (Voxels.get(data2write).isVoxelOpaque())
+				if (VoxelsStore.get().getVoxelById(data2write).isVoxelOpaque())
 				{
 					data2write = VoxelFormat.changeSunlight(data2write, 0);
 					data2write = VoxelFormat.changeBlocklight(data2write, 0);
 				}
-				if(Voxels.get(data2write).getLightLevel(data2write) > 0)
-					data2write = VoxelFormat.changeBlocklight(data2write, Voxels.get(data2write).getLightLevel(data2write));
+				if(VoxelsStore.get().getVoxelById(data2write).getLightLevel(data2write) > 0)
+					data2write = VoxelFormat.changeBlocklight(data2write, VoxelsStore.get().getVoxelById(data2write).getLightLevel(data2write));
 					
 				user.getWorld().setVoxelData(selectedBlock, data2write, user);
 			}
@@ -105,7 +105,7 @@ public class ItemVoxel extends Item
 	@Override
 	public void load(DataInputStream stream) throws IOException
 	{
-		voxel = Voxels.get(stream.readInt());
+		voxel = VoxelsStore.get().getVoxelById(stream.readInt());
 		voxelMeta = stream.readByte();
 		//((ItemDataVoxel) itemPile.data).voxel = VoxelTypes.get(stream.readInt());
 		//((ItemDataVoxel) itemPile.data).voxelMeta = stream.readByte();

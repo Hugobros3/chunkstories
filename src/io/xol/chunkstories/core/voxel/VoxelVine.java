@@ -1,5 +1,7 @@
 package io.xol.chunkstories.core.voxel;
 
+import io.xol.chunkstories.api.Content;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -7,17 +9,16 @@ package io.xol.chunkstories.core.voxel;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.models.VoxelModel;
-import io.xol.chunkstories.voxel.models.VoxelModels;
 
 public class VoxelVine extends VoxelDefault implements VoxelClimbable
 {
 	VoxelModel[] models = new VoxelModel[4];
 
-	public VoxelVine(int id, String name)
+	public VoxelVine(Content.Voxels store, int id, String name)
 	{
-		super(id, name);
+		super(store, id, name);
 		for (int i = 0; i < 4; i++)
-			models[i] = VoxelModels.getVoxelModel("dekal.m" + i);
+			models[i] = store.models().getVoxelModelByName("dekal.m" + i);
 	}
 
 	@Override

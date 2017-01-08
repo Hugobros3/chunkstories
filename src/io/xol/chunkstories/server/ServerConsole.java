@@ -147,7 +147,8 @@ public class ServerConsole implements CommandEmitter
 			else if (cmd.equals("spawnEntity") && emitter.hasPermission("server.admin"))
 			{
 				int id = Integer.parseInt(arguments[0]);
-				Entity test = Entities.newEntity(server.getWorld(), (short) id);
+				Entity test = Entities.getEntityTypeById((short)id).create(server.getWorld());
+						//Entities.newEntity(server.getWorld(), (short) id);
 				test.setLocation(((Player) emitter).getLocation());
 				server.getWorld().addEntity(test);
 

@@ -1,5 +1,6 @@
 package io.xol.chunkstories.core.voxel;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
@@ -16,10 +17,9 @@ import io.xol.chunkstories.world.WorldImplementation;
 public class VoxelEntityTest extends VoxelEntity
 {
 
-	public VoxelEntityTest(int id, String name)
+	public VoxelEntityTest(Content.Voxels store, int id, String name)
 	{
-		super(id, name);
-		// TODO Auto-generated constructor stub
+		super(store, id, name);
 	}
 
 	@Override

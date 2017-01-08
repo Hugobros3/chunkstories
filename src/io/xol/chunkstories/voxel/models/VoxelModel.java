@@ -1,5 +1,6 @@
 package io.xol.chunkstories.voxel.models;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -8,8 +9,7 @@ import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.VoxelTextures;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -17,10 +17,13 @@ import io.xol.chunkstories.voxel.Voxels;
 
 public class VoxelModel implements VoxelRenderer
 {
+	private final Content.Voxels.VoxelModels store;
+	
 	public String name;
 
-	public VoxelModel(String name)
+	public VoxelModel(Content.Voxels.VoxelModels store, String name)
 	{
+		this.store = store;
 		this.name = name;
 	}
 	
@@ -48,7 +51,7 @@ public class VoxelModel implements VoxelRenderer
 
 		float[] lightColors = ChunksRenderer.bakeLightColors(llMb, llMb, llMb, llMb, llMs, llMs, llMs, llMs);
 		
-		String voxelName = Voxels.get(info.data).getName();
+		String voxelName = info.getVoxel().getName();
 		
 		int modelTextureIndex = 0;
 		
@@ -67,7 +70,7 @@ public class VoxelModel implements VoxelRenderer
 		else if(this.texturesNames[modelTextureIndex].equals("_back"))
 			texture = info.getTexture(VoxelSides.BACK);
 		else
-			texture = VoxelTextures.getVoxelTexture(this.texturesNames[modelTextureIndex].replace("~", voxelName));
+			texture = store.parent().textures().getVoxelTextureByName(this.texturesNames[modelTextureIndex].replace("~", voxelName));
 		
 		int useUntil = this.texturesOffsets[modelTextureIndex];
 		int textureS = texture.atlasS;// +mod(sx,texture.textureScale)*offset;
@@ -80,10 +83,10 @@ public class VoxelModel implements VoxelRenderer
 		{
 			int id = VoxelFormat.id(info.neightborhood[j]);
 			int meta = VoxelFormat.meta(info.neightborhood[j]);
-			occTest = Voxels.get(id);
+			occTest = VoxelsStore.get().getVoxelById(id);
 			// If it is, don't draw it.
 			cullingCache[j] = (occTest.isVoxelOpaque() || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])) || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])
-					|| (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
+					|| (info.getVoxel().isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
 			//System.out.println("generating culling cache for voxel "+VoxelFormat.id(info.data)+"y:"+sy+"model"+this.name+" cull:"+j+":"+cullingCache[j]);
 		}
 
@@ -118,7 +121,7 @@ public class VoxelModel implements VoxelRenderer
 				else if(this.texturesNames[modelTextureIndex].equals("_back"))
 					texture = info.getTexture(VoxelSides.BACK);
 				else
-					texture = VoxelTextures.getVoxelTexture(this.texturesNames[modelTextureIndex].replace("~", voxelName));
+					texture = store.parent().textures().getVoxelTextureByName(this.texturesNames[modelTextureIndex].replace("~", voxelName));
 				
 				/*if(!this.texturesNames[modelTextureIndex].equals("~"))
 					texture = VoxelTextures.getVoxelTexture(this.texturesNames[modelTextureIndex].replace("~", voxelName));
@@ -175,5 +178,10 @@ public class VoxelModel implements VoxelRenderer
 		}
 		
 		return this.vertices.length;
+	}
+
+	public Content.Voxels.VoxelModels store()
+	{
+		return store;
 	}
 }

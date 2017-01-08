@@ -24,7 +24,7 @@ import io.xol.chunkstories.core.item.renderers.ObjViewModelRenderer;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.LegacyDogeZItemRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
@@ -147,7 +147,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 
 					//shotBlock.setX(shotBlock.getX() + 1);
 					int data = owner.getWorld().getVoxelData(shotBlock);
-					Voxel voxel = Voxels.get(data);
+					Voxel voxel = VoxelsStore.get().getVoxelById(data);
 
 					//This seems fine
 
@@ -183,7 +183,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 						Vector3dm ppos = new Vector3dm(nearestLocation);
 						owner.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
 
-						owner.getWorld().getSoundManager().playSoundEffect(Voxels.get(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.25f);
+						owner.getWorld().getSoundManager().playSoundEffect(VoxelsStore.get().getVoxelById(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.25f);
 					}
 
 					owner.getWorld().getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3dm(0.5), "bullethole");

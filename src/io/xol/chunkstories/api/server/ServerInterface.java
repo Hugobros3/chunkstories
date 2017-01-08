@@ -1,6 +1,8 @@
 package io.xol.chunkstories.api.server;
 
 import java.util.Iterator;
+
+import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.context.PluginExecutionContext;
 
@@ -8,7 +10,7 @@ import io.xol.chunkstories.api.plugin.context.PluginExecutionContext;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface ServerInterface extends PluginExecutionContext
+public interface ServerInterface extends ChunkStories, PluginExecutionContext
 {
 	public Iterator<Player> getConnectedPlayers();
 

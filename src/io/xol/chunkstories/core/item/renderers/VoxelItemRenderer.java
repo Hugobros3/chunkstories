@@ -28,9 +28,9 @@ import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.RenderByteBuffer;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModel;
-import io.xol.chunkstories.voxel.models.VoxelModels;
+import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.chunk.DummyChunk;
 import io.xol.engine.base.GameWindowOpenGL;
@@ -107,13 +107,11 @@ public class VoxelItemRenderer implements ItemRenderer
 		materialTexture.setLinearFiltering(false);
 		renderingContext.bindMaterialTexture(materialTexture);
 
-		VoxelContext bri = new VoxelContext(0);
-		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));
-		bri.voxelType = Voxels.get(bri.data);
+		VoxelContext bri = new VoxelContext(VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0)));
 		VoxelRenderer model = voxel.getVoxelRenderer(bri);
 		if (model == null || !voxel.isVoxelUsingCustomRenderer())
 		{
-			model = VoxelModels.getVoxelModel("default");
+			model = voxel.store().models().getVoxelModelByName("default");
 		}
 		renderVoxel(renderingContext, voxel, model, bri);
 	}
@@ -228,13 +226,13 @@ public class VoxelItemRenderer implements ItemRenderer
 		textureMaterial.setLinearFiltering(false);
 		context.bindAlbedoTexture(textureMaterial);
 
-		VoxelContext bri = new VoxelContext(0);
-		bri.data = VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0));
-		bri.voxelType = Voxels.get(bri.data);
+		VoxelContext bri = new VoxelContext(VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0)));
+		
+		//bri.voxelType = VoxelsStore.get().getVoxelById(bri.data);
 		VoxelRenderer model = voxel.getVoxelRenderer(bri);
 		if (model == null || !voxel.isVoxelUsingCustomRenderer())
 		{
-			model = VoxelModels.getVoxelModel("default");
+			model = voxel.store().models().getVoxelModelByName("default");
 		}
 		renderVoxel(context, voxel, model, bri);
 	}

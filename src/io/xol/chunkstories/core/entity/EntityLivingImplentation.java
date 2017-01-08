@@ -20,7 +20,7 @@ import io.xol.chunkstories.core.entity.components.EntityComponentHealth;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.core.events.EntityDamageEvent;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.animation.SkeletonAnimator;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -153,7 +153,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			Vector2fm headRotationVelocity = this.getEntityRotationComponent().tickInpulse();
 			getEntityRotationComponent().addRotation(headRotationVelocity.getX(), headRotationVelocity.getY());
 
-			voxelIn = Voxels.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
+			voxelIn = VoxelsStore.get().getVoxelById(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 			boolean inWater = voxelIn.isVoxelLiquid();
 
 			// Gravity

@@ -2,11 +2,12 @@ package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelDefault;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModel;
-import io.xol.chunkstories.voxel.models.VoxelModels;
+import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -14,22 +15,22 @@ import io.xol.chunkstories.voxel.models.VoxelModels;
 
 public class VoxelPane extends VoxelDefault
 {
-	public VoxelPane(int id, String name)
+	public VoxelPane(Content.Voxels store, int id, String name)
 	{
-		super(id, name);
+		super(store, id, name);
 	}
 
 	@Override
 	public VoxelModel getVoxelRenderer(VoxelContext info)
 	{
 		Voxel vox;
-		vox = Voxels.get(info.neightborhood[0]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[0]);
 		boolean connectLeft = vox.isVoxelSolid() || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[1]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[1]);
 		boolean connectFront = vox.isVoxelSolid() || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[2]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[2]);
 		boolean connectRight = vox.isVoxelSolid() || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[3]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[3]);
 		boolean connectBack = vox.isVoxelSolid() || vox.equals(this);
 
 		String type = "default";
@@ -66,7 +67,7 @@ public class VoxelPane extends VoxelDefault
 		else
 			type = "allDir";
 
-		return VoxelModels.getVoxelModel("pane" + "." + type);
+		return store.models().getVoxelModelByName("pane" + "." + type);
 	}
 
 	@Override
@@ -76,13 +77,13 @@ public class VoxelPane extends VoxelDefault
 		CollisionBox[] boxes = new CollisionBox[] { new CollisionBox(0.1, 1, 1.0), new CollisionBox(1.0, 1, 0.1) };
 
 		Voxel vox;
-		vox = Voxels.get(info.neightborhood[0]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[0]);
 		boolean connectLeft = vox.isVoxelSolid() || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[1]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[1]);
 		boolean connectFront = vox.isVoxelSolid() || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[2]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[2]);
 		boolean connectRight = vox.isVoxelSolid() || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[3]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[3]);
 		boolean connectBack = vox.isVoxelSolid() || vox.equals(this);
 
 		if (connectLeft && connectFront && connectRight && connectBack)

@@ -21,7 +21,7 @@ import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.item.ItemFirearm;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.animation.AnimatedSkeleton;
 import io.xol.engine.animation.BVHAnimation;
@@ -369,7 +369,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
 
-		Voxel voxelStandingOn = Voxels.get(world.getVoxelData(this.getLocation().clone().add(0.0, -0.01, 0.0)));
+		Voxel voxelStandingOn = VoxelsStore.get().getVoxelById(world.getVoxelData(this.getLocation().clone().add(0.0, -0.01, 0.0)));
 
 		if (voxelStandingOn == null || !voxelStandingOn.isVoxelSolid() && !voxelStandingOn.isVoxelLiquid())
 			return;

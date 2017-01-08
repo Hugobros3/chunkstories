@@ -104,7 +104,8 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 		//Create an entity if the servers tells you to do so
 		if(entity == null)
 		{
-			entity = Entities.newEntity(processor.getWorld(), this.entityTypeID);
+			entity = Entities.getEntityTypeById(entityTypeID).create(processor.getWorld());
+					//Entities.newEntity(processor.getWorld(), this.entityTypeID);
 			entity.setUUID(entityUUID);
 			
 			addToWorld = true;

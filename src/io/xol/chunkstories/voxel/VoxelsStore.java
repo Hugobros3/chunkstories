@@ -1,5 +1,7 @@
 package io.xol.chunkstories.voxel;
 
+import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.api.mods.Asset;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -12,7 +14,7 @@ import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.materials.Materials;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.voxel.models.VoxelModels;
+import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,17 +27,77 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-public class Voxels
+public class VoxelsStore implements Content.Voxels
 {
-	public static Voxel[] voxels = new Voxel[65536];
-	public static Set<Integer> attributedIds = new HashSet<Integer>();
-	public static Map<String, Voxel> voxelsByName = new HashMap<String, Voxel>();
-	public static int voxelTypes = 0;
-	public static int lastAllocatedId;
-
-	@SuppressWarnings("rawtypes")
-	private static void readVoxelsDefinitions(Asset f)
+	private static VoxelsStore self;
+	
+	public static VoxelsStore get()
 	{
+		return self;
+	}
+	
+	public VoxelsStore(Content content)
+	{
+		this.content = content;
+		this.context = content.getContext();
+		this.textures = new VoxelTexturesAtlaser(context, this);
+		this.models = new VoxelModelsStore(context, this);
+		
+		this.reloadVoxelTypes();
+	}
+	
+	private final ChunkStories context;
+	private final Content content;
+	private final VoxelTexturesAtlaser textures;
+	private final VoxelModelsStore models;
+	
+	public Voxel[] voxels = new Voxel[65536];
+	public Set<Integer> attributedIds = new HashSet<Integer>();
+	public Map<String, Voxel> voxelsByName = new HashMap<String, Voxel>();
+	public int voxelTypes = 0;
+	public int lastAllocatedId;
+
+	@Override
+	public VoxelTextures textures()
+	{
+		return textures;
+	}
+
+	@Override
+	public VoxelModels models()
+	{
+		return models;
+	}
+	
+	public void reload()
+	{
+		this.textures.buildTextureAtlas();
+		this.models.resetAndLoadModels();
+		
+		this.reloadVoxelTypes();
+	}
+	
+	private void reloadVoxelTypes()
+	{
+		//Discard previous voxels
+		Arrays.fill(voxels, null);
+		attributedIds.clear();
+		voxelsByName.clear();
+
+		Iterator<Asset> i = ModsManager.getAllAssetsByExtension("voxels");
+		while (i.hasNext())
+		{
+			Asset f = i.next();
+			ChunkStoriesLogger.getInstance().log("Reading voxels definitions in : " + f);
+			readVoxelsDefinitions(f);
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private void readVoxelsDefinitions(Asset f)
+	{
+		self = this;
+		
 		if (f == null)
 			return;
 		try
@@ -67,7 +129,7 @@ public class Voxels
 							ChunkStoriesLogger.getInstance().log("Voxel redefinition in file " + f + ", line " + ln + ", overriding id " + id + " with " + name, ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 
 						if (splitted.length == 3)
-							voxel = new VoxelDefault(id, name);
+							voxel = new VoxelDefault(this, id, name);
 						else
 						{
 							try
@@ -83,10 +145,10 @@ public class Voxels
 								}
 								else
 								{
-									Class[] types = { Integer.TYPE, String.class };
+									Class[] types = { Content.Voxels.class, Integer.TYPE, String.class };
 									Constructor constructor = customVoxelClass.getConstructor(types);
 
-									Object[] parameters = { id, name };
+									Object[] parameters = { this, id, name };
 									voxel = (Voxel) constructor.newInstance(parameters);
 								}
 							}
@@ -99,7 +161,7 @@ public class Voxels
 						if (voxel instanceof VoxelDefault)
 						{
 							for (int i = 0; i < 6; i++)
-								((VoxelDefault) voxel).texture[i] = VoxelTextures.getVoxelTexture(name);
+								((VoxelDefault) voxel).texture[i] = textures.getVoxelTextureByName(name);
 							// Default collision box
 							CollisionBox box = new CollisionBox(1, 1, 1);
 							box.translate(0.5, 0, 0.5);
@@ -156,12 +218,12 @@ public class Voxels
 									break;
 								case "model":
 									voxDefault.custom_model = true;
-									voxDefault.model = VoxelModels.getVoxelModel(parameterValue.replace("'", "").replace("~", voxel.getName()));
+									voxDefault.model = models.getVoxelModelByName(parameterValue.replace("'", "").replace("~", voxel.getName()));
 									break;
 								case "texture":
 									for (int i = 0; i < 6; i++)
 									{
-										voxDefault.texture[i] = VoxelTextures.getVoxelTexture(parameterValue);
+										voxDefault.texture[i] = textures.getVoxelTextureByName(parameterValue);
 										// System.out.println(textureName);
 									}
 									break;
@@ -170,7 +232,7 @@ public class Voxels
 									for (int i = 0; i < sides.length; i++)
 									{
 										String textureName = sides[i].replace("[", "").replace("]", "").replace("'", "").replace("~", voxel.getName());
-										voxDefault.texture[i] = VoxelTextures.getVoxelTexture(textureName);
+										voxDefault.texture[i] = textures.getVoxelTextureByName(textureName);
 										// System.out.println(textureName);
 									}
 									break;
@@ -190,7 +252,7 @@ public class Voxels
 									voxDefault.billboard = Boolean.parseBoolean(parameterValue);
 									break;
 								case "material":
-									voxDefault.material = Materials.getMaterial(parameterValue);
+									voxDefault.material = Materials.getMaterialByName(parameterValue);
 									break;
 								default:
 									ChunkStoriesLogger.getInstance().log("Parse error in file " + f + ", line " + ln + ", unknown parameter '" + parameterName + "'", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
@@ -217,22 +279,6 @@ public class Voxels
 		}
 	}
 
-	public static void loadVoxelTypes()
-	{
-		//Discard previous voxels
-		Arrays.fill(voxels, null);
-		attributedIds.clear();
-		voxelsByName.clear();
-
-		Iterator<Asset> i = ModsManager.getAllAssetsByExtension("voxels");
-		while (i.hasNext())
-		{
-			Asset f = i.next();
-			ChunkStoriesLogger.getInstance().log("Reading voxels definitions in : " + f);
-			readVoxelsDefinitions(f);
-		}
-	}
-
 	/**
 	 * Get a voxel by it's id
 	 * 
@@ -240,7 +286,7 @@ public class Voxels
 	 *            The id of the voxel
 	 * @return
 	 */
-	public static Voxel get(int voxelId)
+	public Voxel getVoxelById(int voxelId)
 	{
 		//Sanitize
 		voxelId = VoxelFormat.id(voxelId);
@@ -257,39 +303,25 @@ public class Voxels
 		return v;
 	}
 
-	public static Voxel getVoxelTypeByName(String voxelName)
+	public Voxel getVoxelByName(String voxelName)
 	{
 		return voxelsByName.get(voxelName);
 	}
 
-	public static int getNextValidVoxelId(int id)
-	{
-		Voxel v = null;
-		while (v == null)
-		{
-			id++;
-			if (id >= voxels.length)
-				return 0;
-			v = voxels[id];
-		}
-		return id;
-	}
-
-	public static int getPreviousValidVoxelId(int id)
-	{
-		Voxel v = null;
-		while (v == null)
-		{
-			id--;
-			if (id <= 0)
-				return 0;
-			v = voxels[id];
-		}
-		return id;
-	}
-
-	public static Set<Integer> getAllLoadedVoxelIds()
+	public Set<Integer> getAllLoadedVoxelIds()
 	{
 		return attributedIds;
+	}
+
+	@Override
+	public Iterator<Voxel> all()
+	{
+		return voxelsByName.values().iterator();
+	}
+
+	@Override
+	public Content parent()
+	{
+		return content;
 	}
 }

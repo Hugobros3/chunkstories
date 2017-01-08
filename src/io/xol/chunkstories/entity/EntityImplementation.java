@@ -27,7 +27,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
@@ -72,7 +72,7 @@ public abstract class EntityImplementation implements Entity
 		positionComponent.setPositionXYZ(x, y, z);
 
 		//To avoid NPEs
-		voxelIn = Voxels.get(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
+		voxelIn = VoxelsStore.get().getVoxelById(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 	}
 	
 	public EntityComponentExistence getComponentExistence()
@@ -272,7 +272,7 @@ public abstract class EntityImplementation implements Entity
 						{
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
-							vox = Voxels.get(id);
+							vox = VoxelsStore.get().getVoxelById(id);
 							if (vox.isVoxelSolid())
 							{
 								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
@@ -321,7 +321,7 @@ public abstract class EntityImplementation implements Entity
 						{
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
-							vox = Voxels.get(id);
+							vox = VoxelsStore.get().getVoxelById(id);
 							if (vox.isVoxelSolid())
 							{
 								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
@@ -371,7 +371,7 @@ public abstract class EntityImplementation implements Entity
 						{
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
-							vox = Voxels.get(id);
+							vox = VoxelsStore.get().getVoxelById(id);
 							if (vox.isVoxelSolid())
 							{
 								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
@@ -489,7 +489,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public short getEID()
 	{
-		return Entities.getIdForClass(getClass().getName());
+		return Entities.getEntityIdByClassname(getClass().getName());
 	}
 
 	public static short allocatedID = 0;

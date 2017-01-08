@@ -4,7 +4,7 @@ import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -51,21 +51,21 @@ public class CollisionBox implements Collidable
 
 	public boolean collidesWith(World world)
 	{
-		if (Voxels.get(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (Voxels.get(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (Voxels.get(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (Voxels.get(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
 			return true;
-		if (Voxels.get(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
-		if (Voxels.get(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
-		if (Voxels.get(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
-		if (Voxels.get(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
 			return true;
 		return false;
 	}

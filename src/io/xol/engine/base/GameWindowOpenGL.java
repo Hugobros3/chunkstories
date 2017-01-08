@@ -30,6 +30,7 @@ import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2DAsset;
 import io.xol.engine.gui.Scene;
 import io.xol.engine.misc.CPUModelDetection;
+import io.xol.engine.misc.IconLoader;
 import io.xol.engine.sound.ALSoundManager;
 
 import org.lwjgl.Sys;
@@ -192,7 +193,7 @@ public class GameWindowOpenGL
 	{
 		try
 		{
-			Client.onStart();
+			IconLoader.load();
 
 			int vao = glGenVertexArrays();
 			glBindVertexArray(vao);

@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.core.entity.components.EntityComponentSignText;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.geometry.TextMeshObject;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -88,7 +88,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 
 				int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
 
-				Voxel voxel = Voxels.get(modelBlockData);
+				Voxel voxel = VoxelsStore.get().getVoxelById(modelBlockData);
 				boolean isPost = voxel.getName().endsWith("_post");
 
 				int lightSky = VoxelFormat.sunlight(modelBlockData);

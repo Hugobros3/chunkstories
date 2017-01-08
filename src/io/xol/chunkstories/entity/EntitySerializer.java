@@ -51,7 +51,7 @@ public class EntitySerializer
 			
 			short entityTypeID = in.readShort();
 			
-			Entity entity = Entities.newEntity(world, entityTypeID);
+			Entity entity = Entities.getEntityTypeById(entityTypeID).create(world);
 			entity.setUUID(entityUUID);
 			
 			int componentId = in.readInt();
@@ -65,7 +65,7 @@ public class EntitySerializer
 			
 			return entity;
 		}
-		catch (IOException | UnknownComponentException e)
+		catch (NullPointerException | IOException | UnknownComponentException e)
 		{
 			e.printStackTrace();
 		}

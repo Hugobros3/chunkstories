@@ -19,8 +19,8 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
-import io.xol.chunkstories.voxel.Voxels;
-import io.xol.chunkstories.voxel.models.VoxelModels;
+import io.xol.chunkstories.voxel.VoxelsStore;
+import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
@@ -107,14 +107,14 @@ public class DecalsRenderer implements DecalsManager
 
 						int idThere = VoxelFormat.id(world.getVoxelData(location));
 
-						Voxel voxel = Voxels.get(idThere);
+						Voxel voxel = VoxelsStore.get().getVoxelById(idThere);
 						if (voxel != null && idThere > 0 && !voxel.isVoxelLiquid() && voxel.isVoxelSolid())
 						{
 							VoxelContext bri = new VoxelContext(location);
 							VoxelRenderer model = voxel.getVoxelRenderer(bri);
 
 							if (model == null)
-								model = VoxelModels.getVoxelModel("default");
+								model = voxel.store().models().getVoxelModelByName("default");
 
 							model.renderInto(virtualRenderBytebuffer, bri, world.getChunkWorldCoordinates(location), (int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
 						}

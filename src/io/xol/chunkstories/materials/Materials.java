@@ -87,12 +87,12 @@ public class Materials
 		}
 	}
 	
-	public static Material getMaterial(String name)
+	public static Material getMaterialByName(String name)
 	{
 		Material material = materials.get(name);
 		if(material != null)
 			return material;
 		
-		return getMaterial("undefined");
+		return getMaterialByName("undefined");
 	}
 }

@@ -1,5 +1,6 @@
 package io.xol.chunkstories.voxel;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -20,8 +21,10 @@ import io.xol.chunkstories.voxel.models.VoxelRenderer;
 
 public class VoxelDefault implements Voxel
 {
-	protected int voxelID = 0;
-	protected String voxelName;
+	final protected Content.Voxels store;
+	
+	final protected int voxelID;
+	final protected String voxelName;
 
 	VoxelTexture[] texture = new VoxelTexture[6];
 
@@ -50,12 +53,19 @@ public class VoxelDefault implements Voxel
 	 * @param name
 	 *            Voxel internal name for localization
 	 */
-	public VoxelDefault(int id, String name)
+	public VoxelDefault(Content.Voxels store, int id, String name)
 	{
-		voxelID = id;
-		voxelName = name;
+		this.store = store;
+		
+		this.voxelID = id;
+		this.voxelName = name;
 
-		material = Materials.getMaterial(name);
+		this.material = Materials.getMaterialByName(name);
+	}
+	
+	public Content.Voxels store()
+	{
+		return store;
 	}
 
 	/**

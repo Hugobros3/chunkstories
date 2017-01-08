@@ -21,6 +21,9 @@ import javax.imageio.stream.ImageInputStream;
 
 import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.Content.Voxels;
+import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.content.ModsManager.AssetHierarchy;
@@ -29,16 +32,25 @@ import io.xol.chunkstories.content.ModsManager.AssetHierarchy;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class VoxelTextures
+public class VoxelTexturesAtlaser implements Content.Voxels.VoxelTextures
 {
-	static Map<String, VoxelTexture> texMap = new HashMap<String, VoxelTexture>();
-	static int uniquesIds = 0;
+	Map<String, VoxelTexture> texMap = new HashMap<String, VoxelTexture>();
+	int uniquesIds = 0;
 	//static Map<String, Vector4fm> colors = new HashMap<String, Vector4fm>();
 
 	public static int BLOCK_ATLAS_SIZE;
 	public static int BLOCK_ATLAS_FACTOR;
 
-	public static void buildTextureAtlas()
+	private final VoxelsStore voxels;
+	
+	public VoxelTexturesAtlaser(ChunkStories context, VoxelsStore voxels)
+	{
+		this.voxels = voxels;
+		
+		this.buildTextureAtlas();
+	}
+
+	public void buildTextureAtlas()
 	{
 		try
 		{
@@ -266,7 +278,7 @@ public class VoxelTextures
 		}
 	}
 
-	private static void readTexturesMeta(Asset asset)
+	private void readTexturesMeta(Asset asset)
 	{
 		if (asset == null)
 			return;
@@ -336,7 +348,7 @@ public class VoxelTextures
 		}
 	}
 
-	public static int getImageSize(Asset asset)
+	public int getImageSize(Asset asset)
 	{
 		try
 		{
@@ -353,7 +365,7 @@ public class VoxelTextures
 		}
 	}
 
-	public static VoxelTexture getVoxelTexture(String textureName)
+	public VoxelTexture getVoxelTextureByName(String textureName)
 	{
 		//textureName = "kek";
 		
@@ -363,9 +375,15 @@ public class VoxelTextures
 		// return new VoxelTexture(null, "notex");
 	}
 	
-	public static Iterator<VoxelTexture> getAllVoxelTextures()
+	public Iterator<VoxelTexture> all()
 	{
 		return texMap.values().iterator();
+	}
+
+	@Override
+	public Voxels parent()
+	{
+		return voxels;
 	}
 
 	/*public static Vector3fm getTextureColorAVG(String name)

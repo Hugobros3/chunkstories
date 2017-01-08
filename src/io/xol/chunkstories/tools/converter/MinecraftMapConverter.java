@@ -14,16 +14,19 @@ import java.util.Set;
 
 import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
+import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.WorldTool;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.engine.misc.FoldersUtils;
@@ -36,10 +39,13 @@ import io.xol.chunkstories.world.WorldInfo;
 /**
  * This program loads a mcanvil game file and makes a chunk stories world file with them.
  */
-public class MinecraftMapConverter implements WorldUser
+public class MinecraftMapConverter implements ChunkStories, WorldUser
 {
+	static GameContent content;
+	
 	static boolean verbose = false;
 
+	//TODO don't make that static you idiot
 	public static void main(String[] arguments)
 	{
 		MinecraftMapConverter user = new MinecraftMapConverter();
@@ -50,7 +56,7 @@ public class MinecraftMapConverter implements WorldUser
 		String time = sdf.format(cal.getTime());
 		ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File("./logs/" + time + ".log")));
 
-		ModsManager.reload();
+		content = new GameContent(new MinecraftMapConverter());
 
 		if (arguments.length < 5)
 		{
@@ -227,7 +233,7 @@ public class MinecraftMapConverter implements WorldUser
 
 															if (dataToSet != -1)
 															{
-																Voxel voxel = Voxels.get(dataToSet);
+																Voxel voxel = VoxelsStore.get().getVoxelById(dataToSet);
 
 																//Optionally runs whatever the voxel requires to run when placed
 																if (voxel instanceof VoxelLogic)
@@ -354,5 +360,11 @@ public class MinecraftMapConverter implements WorldUser
 	static void say(String s)
 	{
 		System.out.println(s);
+	}
+
+	@Override
+	public Content getContent()
+	{
+		return content;
 	}
 }

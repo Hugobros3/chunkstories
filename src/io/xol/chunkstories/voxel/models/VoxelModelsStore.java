@@ -1,6 +1,10 @@
 package io.xol.chunkstories.voxel.models;
 
+import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.Content.Voxels;
+import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 import java.io.BufferedReader;
@@ -9,6 +13,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -16,11 +21,22 @@ import java.util.Map;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class VoxelModels
+public class VoxelModelsStore implements Content.Voxels.VoxelModels
 {
-	public static Map<String, VoxelModel> models = new HashMap<String, VoxelModel>();
+	private final ChunkStories context;
+	private final VoxelsStore voxels;
+	
+	private Map<String, VoxelModel> models = new HashMap<String, VoxelModel>();
 
-	public static void resetAndLoadModels()
+	public VoxelModelsStore(ChunkStories context, VoxelsStore voxelsLoader)
+	{
+		this.context = context;
+		this.voxels = voxelsLoader;
+		
+		resetAndLoadModels();
+	}
+
+	public void resetAndLoadModels()
 	{
 		models.clear();
 		File vanillaFolder = new File("./res/voxels/blockmodels/");
@@ -35,7 +51,7 @@ public class VoxelModels
 
 	}
 
-	private static void readBlockModel(File f)
+	private void readBlockModel(File f)
 	{
 		if (!f.exists())
 			return;
@@ -74,7 +90,7 @@ public class VoxelModels
 						String bmName = f.getName().replace(".model", "");
 						if (!line.equals("default"))
 							bmName += "." + line;
-						model = new VoxelModel(bmName);
+						model = new VoxelModel(this, bmName);
 						//Textures calculator
 						currentTexture = "_top";
 					}
@@ -215,7 +231,7 @@ public class VoxelModels
 							{
 								String toInclude = splitted[1];
 								toInclude = toInclude.replace("~", model.name.contains(".") ? model.name.split("\\.")[0] : model.name);
-								VoxelModel includeMeh = getVoxelModel(toInclude);
+								VoxelModel includeMeh = getVoxelModelByName(toInclude);
 								if (includeMeh != null)
 								{
 									for (int i = 0; i < includeMeh.vertices.length / 3; i++)
@@ -257,7 +273,7 @@ public class VoxelModels
 		}
 	}
 
-	public static VoxelModel getVoxelModel(String name)
+	public VoxelModel getVoxelModelByName(String name)
 	{
 		if (name.endsWith(".default"))
 			name = name.substring(0, name.length() - 8);
@@ -265,5 +281,17 @@ public class VoxelModels
 			return models.get(name);
 		ChunkStoriesLogger.getInstance().log("Couldn't serve voxel model : " + name, ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.ERROR);
 		return null;
+	}
+
+	@Override
+	public Iterator<VoxelModel> all()
+	{
+		return models.values().iterator();
+	}
+
+	@Override
+	public Voxels parent()
+	{
+		return voxels;
 	}
 }

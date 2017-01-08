@@ -1,12 +1,12 @@
 package io.xol.chunkstories.core.voxel;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModel;
-import io.xol.chunkstories.voxel.models.VoxelModels;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -14,21 +14,21 @@ import io.xol.chunkstories.voxel.models.VoxelModels;
 
 public class VoxelFence extends VoxelDefault
 {
-	public VoxelFence(int id, String name)
+	public VoxelFence(Content.Voxels store, int id, String name)
 	{
-		super(id, name);
+		super(store, id, name);
 	}
 
 	@Override
 	public VoxelModel getVoxelRenderer(VoxelContext info)
 	{
-		Voxel vox = Voxels.get(info.neightborhood[0]);
+		Voxel vox = VoxelsStore.get().getVoxelById(info.neightborhood[0]);
 		boolean connectLeft = (vox.isVoxelSolid() && vox.isVoxelOpaque()) || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[1]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[1]);
 		boolean connectFront = (vox.isVoxelSolid() && vox.isVoxelOpaque()) || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[2]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[2]);
 		boolean connectRight = (vox.isVoxelSolid() && vox.isVoxelOpaque()) || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[3]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[3]);
 		boolean connectBack = (vox.isVoxelSolid() && vox.isVoxelOpaque()) || vox.equals(this);
 		
 		String type = "default";
@@ -63,7 +63,7 @@ public class VoxelFence extends VoxelDefault
 		else if(connectBack)
 			type = "back";
 		
-		return VoxelModels.getVoxelModel("wood_fence"+"."+type);
+		return store.models().getVoxelModelByName("wood_fence"+"."+type);
 	}
 	
 	@Override
@@ -73,13 +73,13 @@ public class VoxelFence extends VoxelDefault
 		CollisionBox[] boxes = new CollisionBox[] { new CollisionBox(0.4, 1.1, 0.4) };
 
 		Voxel vox;
-		vox = Voxels.get(info.neightborhood[0]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[0]);
 		boolean connectLeft = vox.isVoxelSolid() || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[1]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[1]);
 		boolean connectFront = vox.isVoxelSolid() || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[2]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[2]);
 		boolean connectRight = vox.isVoxelSolid() || vox.equals(this);
-		vox = Voxels.get(info.neightborhood[3]);
+		vox = VoxelsStore.get().getVoxelById(info.neightborhood[3]);
 		boolean connectBack = vox.isVoxelSolid() || vox.equals(this);
 
 		if (connectLeft && connectFront && connectRight && connectBack)

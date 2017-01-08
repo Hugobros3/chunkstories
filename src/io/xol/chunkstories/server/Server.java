@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.plugin.ServerPluginManager;
 import io.xol.chunkstories.api.server.Player;
@@ -22,6 +23,7 @@ import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.content.DefaultPluginManager;
+import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
@@ -90,6 +92,8 @@ public class Server implements Runnable, ServerInterface
 	// What mods are required to join this server ?
 	private ServerModsProvider modsProvider;
 
+	private GameContent gameContent;
+	
 	@Override
 	public void run()
 	{
@@ -108,7 +112,8 @@ public class Server implements Runnable, ServerInterface
 			connectionsManager = new ServerConnectionsManager(this);
 
 			//Loads the mods
-			ModsManager.reload();
+			gameContent = new GameContent(this);
+			//ModsManager.reload();
 
 			modsProvider = new ServerModsProvider(this);
 
@@ -381,5 +386,11 @@ public class Server implements Runnable, ServerInterface
 	public void print(String message)
 	{
 		ChunkStoriesLogger.getInstance().info(message);
+	}
+
+	@Override
+	public Content getContent()
+	{
+		return gameContent;
 	}
 }

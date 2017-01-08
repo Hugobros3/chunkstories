@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api.voxel;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
@@ -18,9 +19,9 @@ import io.xol.chunkstories.voxel.VoxelDefault;
  */
 public abstract class VoxelEntity extends VoxelDefault implements VoxelLogic, VoxelInteractive
 {
-	public VoxelEntity(int id, String name)
+	public VoxelEntity(Content.Voxels store, int id, String name)
 	{
-		super(id, name);
+		super(store, id, name);
 	}
 	
 	public Entity getVoxelEntity(Location location)

@@ -1,5 +1,7 @@
 package io.xol.chunkstories.core.voxel;
 
+import io.xol.chunkstories.api.Content;
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -10,9 +12,9 @@ import io.xol.chunkstories.voxel.VoxelDefault;
 
 public class VoxelAir extends VoxelDefault
 {
-	public VoxelAir(int id, String name)
+	public VoxelAir(Content.Voxels store, int id, String name)
 	{
-		super(id, name);
+		super(store, id, name);
 	}
 
 	@Override

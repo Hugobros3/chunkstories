@@ -35,7 +35,7 @@ import io.xol.engine.math.HexTools;
 public class PacketsProcessor
 {
 	//There is 2^15 possible packets
-	static PacketType[] packetTypes = new PacketType[32768];
+	static PacketTypeLoaded[] packetTypes = new PacketTypeLoaded[32768];
 	static Map<String, Short> packetIds = new HashMap<String, Short>();
 	
 	Queue<PendingSynchPacket> pendingSynchPackets = new ConcurrentLinkedQueue<PendingSynchPacket>();
@@ -91,7 +91,7 @@ public class PacketsProcessor
 
 							String allowed = splitted[4];
 
-							PacketType packetType = new PacketType(packetId, packetName, packetClass, constructor, !allowed.equals("server"), !allowed.equals("client"));
+							PacketTypeLoaded packetType = new PacketTypeLoaded(packetId, packetName, packetClass, constructor, !allowed.equals("server"), !allowed.equals("client"));
 							packetTypes[packetId] = packetType;
 							packetIds.put(splitted[3], packetId);
 						}
@@ -111,7 +111,7 @@ public class PacketsProcessor
 		}
 	}
 
-	static class PacketType
+	static class PacketTypeLoaded
 	{
 		short id;
 		String packetName;
@@ -120,7 +120,7 @@ public class PacketsProcessor
 		boolean clientCanSendIt = true;
 		boolean serverCanSendIt = true;
 
-		public PacketType(short id, String packetName, Class<? extends Packet> packetClass, Constructor<? extends Packet> packetConstructor, boolean clientCanSendIt, boolean serverCanSendIt)
+		public PacketTypeLoaded(short id, String packetName, Class<? extends Packet> packetClass, Constructor<? extends Packet> packetConstructor, boolean clientCanSendIt, boolean serverCanSendIt)
 		{
 			super();
 			this.id = id;

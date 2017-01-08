@@ -1,6 +1,7 @@
 package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.content.ModsManager;
@@ -21,13 +22,20 @@ import java.util.Map;
 
 public class Entities
 {
-	static Map<Short, Constructor<? extends Entity>> entitiesTypes = new HashMap<Short, Constructor<? extends Entity>>();
-	static Map<String, Short> entitiesIds = new HashMap<String, Short>();
+	//static Map<Short, Constructor<? extends Entity>> entitiesTypes = new HashMap<Short, Constructor<? extends Entity>>();
+	//static Map<String, Short> entitiesIds = new HashMap<String, Short>();
+	
+	static Map<Short, EntityType> entityTypesById = new HashMap<Short, EntityType>();
+	static Map<String, EntityType> entityTypesByName = new HashMap<String, EntityType>();
+	static Map<String, EntityType> entityTypesByClassname = new HashMap<String, EntityType>();
 	
 	public static void reload()
 	{
-		entitiesIds.clear();
-		entitiesTypes.clear();
+		//entitiesIds.clear();
+		//entitiesTypes.clear();
+		entityTypesById.clear();
+		entityTypesByName.clear();
+		entityTypesByClassname.clear();
 		
 		Iterator<Asset> i = ModsManager.getAllAssetsByExtension("entities");
 		while(i.hasNext())
@@ -61,6 +69,10 @@ public class Entities
 						short id = Short.parseShort(split[0]);
 						String className = split[1];
 						
+						String entityTypeName = className.substring(className.lastIndexOf("."));
+						if(split.length >= 3)
+							entityTypeName = split[2];
+							
 						try
 						{
 							Class<?> entityClass = ModsManager.getClassByName(className);
@@ -85,8 +97,13 @@ public class Entities
 								}
 								else
 								{
-									entitiesTypes.put(id, constructor);
-									entitiesIds.put(className, id);
+									EntityTypeLoaded addMe = new EntityTypeLoaded(entityTypeName, className, constructor, id);
+
+									entityTypesById.put(id, addMe);
+									entityTypesByName.put(entityTypeName, addMe);
+									entityTypesByClassname.put(className, addMe);
+									//entitiesTypes.put(id, constructor);
+									//entitiesIds.put(className, id);
 								}
 							}
 
@@ -105,29 +122,70 @@ public class Entities
 			e.printStackTrace();
 		}
 	}
-
-	public static Entity newEntity(World world, short entityType)
+	
+	public static EntityType getEntityTypeById(short entityId)
 	{
-		if(entitiesTypes.containsKey(entityType))
+		return entityTypesById.get(entityId);
+	}
+	
+	public static short getEntityIdByClassname(String className)
+	{
+		EntityType type = entityTypesByClassname.get(className);
+		if(type == null)
+			return -1;
+		return type.getId();
+	}
+
+	static class EntityTypeLoaded implements EntityType {
+
+		public EntityTypeLoaded(String name, String className, Constructor<? extends Entity> constructor, short id)
+		{
+			super();
+			this.name = name;
+			this.className = className;
+			this.constructor = constructor;
+			this.id = id;
+		}
+
+		@Override
+		public String toString()
+		{
+			return "EntityDefined [name=" + name + ", className=" + className + ", constructor=" + constructor + ", id=" + id + "]";
+		}
+
+		final String name;
+		final String className;
+		final Constructor<? extends Entity> constructor;
+		final short id;
+		
+		@Override
+		public String getName()
+		{
+			return name;
+		}
+
+		@Override
+		public short getId()
+		{
+			return id;
+		}
+
+		@Override
+		public Entity create(World world)
 		{
 			Object[] parameters = { world, 0d, 0d, 0d };
 			try
 			{
-				Entity entity = entitiesTypes.get(entityType).newInstance(parameters);
-				return entity;
+				return constructor.newInstance(parameters);
 			}
 			catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//This is bad
+				ChunkStoriesLogger.getInstance().log("Couldn't instanciate entity "+this+" in world "+world);
+				e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
+				return null;
 			}
 		}
-		return null;
+		
 	}
-	
-	public static short getIdForClass(String className)
-	{
-		return entitiesIds.get(className);
-	}
-
 }

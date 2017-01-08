@@ -71,7 +71,7 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonF
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
@@ -993,7 +993,7 @@ public class WorldRenderer
 			camera.setupShader(liquidBlocksShader);
 
 			//Underwater flag
-			Voxel vox = Voxels.get(world.getVoxelData((int) -camera.pos.getX(), (int) (-camera.pos.getY() + 0), (int) -camera.pos.getZ()));
+			Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int) -camera.pos.getX(), (int) (-camera.pos.getY() + 0), (int) -camera.pos.getZ()));
 			liquidBlocksShader.setUniform1f("underwater", vox.isVoxelLiquid() ? 1 : 0);
 
 			if (pass == 1)
@@ -1200,7 +1200,7 @@ public class WorldRenderer
 		renderingContext.bindTexture2D("debugBuffer", this.materialBuffer);
 
 
-		Voxel vox = Voxels.get(world.getVoxelData(camera.pos.negate()));
+		Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData(camera.pos.negate()));
 		postProcess.setUniform1f("underwater", vox.isVoxelLiquid() ? 1 : 0);
 		postProcess.setUniform1f("time", animationTimer);
 		postProcess.setUniform1f("pauseOverlayFade", pauseFade);

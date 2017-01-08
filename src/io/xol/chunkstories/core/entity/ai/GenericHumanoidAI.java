@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.core.entity.EntityHumanoid;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 
@@ -49,7 +49,7 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 		}
 		
 		//Water-jump
-		if(Voxels.get(entity.getWorld().getVoxelData(entity.getLocation())).isVoxelLiquid())
+		if(VoxelsStore.get().getVoxelById(entity.getWorld().getVoxelData(entity.getLocation())).isVoxelLiquid())
 		{
 			if(entity.getVelocityComponent().getVelocity().getY() < 0.15)
 				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);

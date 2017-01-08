@@ -1,4 +1,4 @@
-# Here you assign entities their ID and class.
+# Here you assign entities their ID and class. An optional name might be provided for convinience, else the simple name of the class will be used.
 # ID 0 is reserved
 
 1 io.xol.chunkstories.core.entity.EntityPlayer

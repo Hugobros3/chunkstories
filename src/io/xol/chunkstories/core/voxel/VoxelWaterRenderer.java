@@ -1,5 +1,6 @@
 package io.xol.chunkstories.core.voxel;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -8,8 +9,7 @@ import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.VoxelTextures;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -18,10 +18,9 @@ import io.xol.chunkstories.voxel.models.VoxelModel;
 
 public class VoxelWaterRenderer extends VoxelModel
 {
-
 	public VoxelWaterRenderer(VoxelModel model)
 	{
-		super(model.name);
+		super(model.store(), model.name);
 		
 		//Copy attributes
 		this.culling = model.culling;
@@ -51,13 +50,13 @@ public class VoxelWaterRenderer extends VoxelModel
 				return 0;
 			
 			int id = chunk.getWorld().getVoxelData(chunk.getChunkX() * 32 + x, chunk.getChunkY() * 32 + y - i, chunk.getChunkZ() * 32 + z);
-			if(Voxels.get(id) != null && Voxels.get(id).isVoxelLiquid())
+			if(VoxelsStore.get().getVoxelById(id) != null && VoxelsStore.get().getVoxelById(id).isVoxelLiquid())
 				depth++;
 			else
 				break;
 		}
 		
-		String voxelName = Voxels.get(info.data).getName();
+		String voxelName = VoxelsStore.get().getVoxelById(info.data).getName();
 		
 		int modelTextureIndex = 0;
 		
@@ -76,7 +75,7 @@ public class VoxelWaterRenderer extends VoxelModel
 		else if(this.texturesNames[modelTextureIndex].equals("_back"))
 			texture = info.getTexture(VoxelSides.BACK);
 		else
-			texture = VoxelTextures.getVoxelTexture(this.texturesNames[modelTextureIndex].replace("~", voxelName));
+			texture = info.getVoxel().store().textures().getVoxelTextureByName(this.texturesNames[modelTextureIndex].replace("~", voxelName));
 		
 		int useUntil = this.texturesOffsets[modelTextureIndex];
 		int textureS = texture.atlasS;// +mod(sx,texture.textureScale)*offset;
@@ -89,10 +88,10 @@ public class VoxelWaterRenderer extends VoxelModel
 		{
 			int id = VoxelFormat.id(info.neightborhood[j]);
 			int meta = VoxelFormat.meta(info.neightborhood[j]);
-			occTest = Voxels.get(id);
+			occTest = VoxelsStore.get().getVoxelById(id);
 			// If it is, don't draw it.
 			cullingCache[j] = (occTest.isVoxelOpaque() || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])) || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])
-					|| (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
+					|| (info.getVoxel().isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
 			//System.out.println("generating culling cache for voxel "+VoxelFormat.id(info.data)+"y:"+sy+"model"+this.name+" cull:"+j+":"+cullingCache[j]);
 		}
 
@@ -127,7 +126,7 @@ public class VoxelWaterRenderer extends VoxelModel
 				else if(this.texturesNames[modelTextureIndex].equals("_back"))
 					texture = info.getTexture(VoxelSides.BACK);
 				else
-					texture = VoxelTextures.getVoxelTexture(this.texturesNames[modelTextureIndex].replace("~", voxelName));
+					texture = info.getVoxel().store().textures().getVoxelTextureByName(this.texturesNames[modelTextureIndex].replace("~", voxelName));
 				
 				useUntil = this.texturesOffsets[modelTextureIndex];
 				textureS = texture.atlasS;// +mod(sx,texture.textureScale)*offset;

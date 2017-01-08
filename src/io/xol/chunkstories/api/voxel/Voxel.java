@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api.voxel;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.ItemPile;
@@ -16,6 +17,8 @@ import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 public interface Voxel
 {
+	public Content.Voxels store();
+	
 	/**
 	 * Get the assignated ID for this voxel
 	 */

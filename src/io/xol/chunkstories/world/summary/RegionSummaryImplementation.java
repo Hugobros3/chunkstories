@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
-import io.xol.chunkstories.voxel.Voxels;
+import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -239,7 +239,7 @@ public class RegionSummaryImplementation implements RegionSummary
 	@Override
 	public void updateOnBlockModification(int worldX, int height, int worldZ, int voxelData)
 	{
-		Voxel voxel = Voxels.get(voxelData);
+		Voxel voxel = VoxelsStore.get().getVoxelById(voxelData);
 		int h = getHeight(worldX, worldZ);
 		//If we place something solid over the last solid thing
 		if ((voxel.isVoxelSolid() || voxel.isVoxelLiquid()) && height >= h)
@@ -264,8 +264,8 @@ public class RegionSummaryImplementation implements RegionSummary
 					loaded = world.isChunkLoaded(worldX / 32, height / 32, worldZ / 32);
 					
 					voxelData = world.getVoxelData(worldX, height, worldZ);
-					solid = Voxels.get(voxelData).isVoxelSolid();
-					liquid = Voxels.get(voxelData).isVoxelLiquid();
+					solid = VoxelsStore.get().getVoxelById(voxelData).isVoxelSolid();
+					liquid = VoxelsStore.get().getVoxelById(voxelData).isVoxelLiquid();
 				}
 				while (height >= 0 && loaded && !solid && !liquid);
 
@@ -377,7 +377,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		for (int i = 0; i < 256 * 256; i++)
 		{
 			int id = ids[i];
-			Voxel v = Voxels.get(id);
+			Voxel v = VoxelsStore.get().getVoxelById(id);
 			if(v.isVoxelLiquid())
 				bb.putFloat(512f);
 			else

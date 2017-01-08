@@ -1,11 +1,12 @@
 package io.xol.chunkstories.core.voxel;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.models.VoxelModel;
-import io.xol.chunkstories.voxel.models.VoxelModels;
+import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -15,11 +16,11 @@ public class Voxel8Steps extends VoxelDefault
 {
 	VoxelModel[] steps = new VoxelModel[8];
 
-	public Voxel8Steps(int id, String name)
+	public Voxel8Steps(Content.Voxels store, int id, String name)
 	{
-		super(id, name);
+		super(store, id, name);
 		for(int i = 0; i < 8; i++)
-			steps[i] = VoxelModels.getVoxelModel("steps.m"+i);
+			steps[i] = store.models().getVoxelModelByName("steps.m"+i);
 		// System.out.println("kekzer");
 	}
 
