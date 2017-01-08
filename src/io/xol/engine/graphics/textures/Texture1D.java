@@ -6,6 +6,8 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 
 import io.xol.chunkstories.api.exceptions.rendering.IllegalRenderingThreadException;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.engine.base.GameWindowOpenGL;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -44,6 +46,16 @@ public class Texture1D extends Texture
 	{
 		if (!GameWindowOpenGL.isMainGLWindow())
 			throw new IllegalRenderingThreadException();
+		
+		//Don't bother
+		if (glId == -2)
+		{
+			ChunkStoriesLogger.getInstance().log("Critical mess-up: Tried to bind a destroyed Texture1D "+this+". Terminating process immediately.", LogLevel.CRITICAL);
+			ChunkStoriesLogger.getInstance().save();
+			Thread.dumpStack();
+			System.exit(-802);
+			//throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
+		}
 		
 		if(glId == -1)
 			aquireID();

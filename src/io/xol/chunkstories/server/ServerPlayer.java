@@ -475,12 +475,13 @@ public class ServerPlayer implements Player
 					}
 				}
 		}
-
+		
 		// ( Removes too far ones )
 		Iterator<Region> regionsIterator = usedRegions.iterator();
-		while(chunkHoldersIterator.hasNext())
+		while(regionsIterator.hasNext())
 		{
 			Region region = regionsIterator.next();
+			
 			if (		(LoopingMathHelper.moduloDistance(	region.getRegionX(), rx, world.getSizeInChunks() / 8) > maxRegionsViewDistance) 
 					|| 	(LoopingMathHelper.moduloDistance(	region.getRegionZ(), rz, world.getSizeInChunks() / 8) > maxRegionsViewDistance)
 					|| 	(Math.abs(							region.getRegionY() - ry) > 1))

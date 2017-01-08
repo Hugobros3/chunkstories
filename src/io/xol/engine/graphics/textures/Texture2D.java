@@ -11,6 +11,8 @@ import org.lwjgl.opengl.GL30;
 
 import io.xol.chunkstories.api.exceptions.rendering.IllegalRenderingThreadException;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.engine.base.GameWindowOpenGL;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -98,6 +100,17 @@ public class Texture2D extends Texture
 	{
 		if (!GameWindowOpenGL.isMainGLWindow())
 			throw new IllegalRenderingThreadException();
+		
+		//Don't bother
+		if (glId == -2)
+		{
+			ChunkStoriesLogger.getInstance().log("Critical mess-up: Tried to bind a destroyed Texture2D "+this+". Terminating process immediately.", LogLevel.CRITICAL);
+			ChunkStoriesLogger.getInstance().save();
+			Thread.dumpStack();
+			System.exit(-801);
+			//throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
+		}
+		
 		//Allow creation only in intial state
 		if (glId == -1)
 		{

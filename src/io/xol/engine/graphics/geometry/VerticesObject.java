@@ -2,6 +2,8 @@ package io.xol.engine.graphics.geometry;
 
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.engine.base.GameWindowOpenGL;
 
 import static org.lwjgl.opengl.GL15.*;
@@ -89,7 +91,13 @@ public class VerticesObject
 	public void bind()
 	{
 		if (openGLID == -2)
-			throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
+		{
+			ChunkStoriesLogger.getInstance().log("Critical mess-up: Tried to bind a destroyed VerticesObject. Terminating process immediately.", LogLevel.CRITICAL);
+			ChunkStoriesLogger.getInstance().save();
+			Thread.dumpStack();
+			System.exit(-800);
+			//throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
+		}
 
 		//Check for and if needed create the buffer
 		if (openGLID == -1)

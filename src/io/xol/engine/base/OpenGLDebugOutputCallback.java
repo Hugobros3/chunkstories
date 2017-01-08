@@ -33,6 +33,10 @@ public class OpenGLDebugOutputCallback implements Handler
 	@Override
 	public void handleMessage(int source, int type, int id, int severity, String message)
 	{
+		//Don't need nvidia spam
+		if(source == GL_DEBUG_SOURCE_API_ARB && type == GL_DEBUG_TYPE_OTHER_ARB)
+			return;
+		
 		String debugString = "GL:";
 		switch (source)
 		{

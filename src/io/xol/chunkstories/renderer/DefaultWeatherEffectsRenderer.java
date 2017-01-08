@@ -178,7 +178,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 		Entity e = Client.getInstance().getClientSideController().getControlledEntity();
 		if(e != null)
 		{
-			return world.getWeather()*Math2.clamp((e.getLocation().getY() - 20) / 20, 0, 1);
+			return world.getWeather()*Math2.clamp((e.getLocation().getY() - 120) / 20, 0, 1);
 		}
 		
 		return 0;

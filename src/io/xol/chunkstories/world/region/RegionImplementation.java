@@ -179,6 +179,7 @@ public class RegionImplementation implements Region
 				i.remove();
 			else
 			{
+				//System.out.println(u);
 				//Remainings of a very long and drawn out garbage collection debugging session :/
 				/*if(u instanceof ServerPlayer)
 				{
@@ -479,6 +480,9 @@ public class RegionImplementation implements Region
 					if(chunkHolders[a * 64 + b * 8 + c].isChunkLoaded() || chunkHolders[a * 64 + b * 8 + c].countUsers() > 0)
 						usedChunks++;
 				}
+		
+		//if(this.regionY == 0)
+		//	System.out.println(usedChunks + " vs " + this.countUsers());
 		
 		return usedChunks == 0 && this.countUsers() == 0;
 	}

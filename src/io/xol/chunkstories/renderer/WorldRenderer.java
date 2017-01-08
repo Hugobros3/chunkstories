@@ -1715,7 +1715,7 @@ public class WorldRenderer
 		Entity e = Client.getInstance().getClientSideController().getControlledEntity();
 		if(e != null)
 		{
-			return wetFactor * (1f - Math2.clamp((e.getLocation().getY() - 10) / 20, 0, 1));
+			return wetFactor * (1f - Math2.clamp((e.getLocation().getY() - 110) / 20, 0, 1));
 		}
 		
 		return wetFactor;

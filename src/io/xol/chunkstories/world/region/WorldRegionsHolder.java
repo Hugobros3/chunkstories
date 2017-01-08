@@ -213,6 +213,11 @@ public class WorldRegionsHolder
 				else
 					region.unload();
 			}
+			else
+			{
+				//if(region.getRegionY() == 0)
+				//	System.out.println("no unload"+region+region.isUnused());
+			}
 		}
 		
 		noConcurrentRegionCreationDestruction.release();

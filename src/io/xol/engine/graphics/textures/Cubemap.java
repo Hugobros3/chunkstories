@@ -9,6 +9,7 @@ import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.engine.graphics.fbo.RenderTarget;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -56,6 +57,17 @@ public class Cubemap extends Texture
 	{
 		if(glId == -1)
 			aquireID();
+		
+		//Don't bother
+		if (glId == -2)
+		{
+			ChunkStoriesLogger.getInstance().log("Critical mess-up: Tried to bind a destroyed Cubemap "+this+". Terminating process immediately.", LogLevel.CRITICAL);
+			ChunkStoriesLogger.getInstance().save();
+			Thread.dumpStack();
+			System.exit(-803);
+			//throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
+		}
+		
 		glBindTexture(GL_TEXTURE_CUBE_MAP, glId);
 	}
 	
