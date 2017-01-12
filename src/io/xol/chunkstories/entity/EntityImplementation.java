@@ -489,7 +489,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public short getEID()
 	{
-		return Entities.getEntityIdByClassname(getClass().getName());
+		return EntityTypesStore.getEntityIdByClassname(getClass().getName());
 	}
 
 	public static short allocatedID = 0;

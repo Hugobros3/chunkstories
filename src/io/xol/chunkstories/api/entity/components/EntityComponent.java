@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
-import io.xol.chunkstories.entity.EntityComponents;
+import io.xol.chunkstories.entity.EntityComponentsStore;
 import io.xol.chunkstories.net.packets.PacketEntity;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -185,7 +185,7 @@ public abstract class EntityComponent
 		//System.out.println("debug : "+this.getClass().getName()+" id = "+EntityComponents.getIdForClass(this.getClass().getName()));
 		try
 		{
-			return EntityComponents.getIdForClass(this.getClass().getName());
+			return EntityComponentsStore.getIdForClass(this.getClass().getName());
 		}
 		catch (NullPointerException npe)
 		{

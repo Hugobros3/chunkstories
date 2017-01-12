@@ -28,8 +28,8 @@ import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
 import io.xol.chunkstories.content.mods.exceptions.ModNotFoundException;
 import io.xol.chunkstories.content.mods.exceptions.NotAllModsLoadedException;
-import io.xol.chunkstories.entity.Entities;
-import io.xol.chunkstories.entity.EntityComponents;
+import io.xol.chunkstories.entity.EntityTypesStore;
+import io.xol.chunkstories.entity.EntityComponentsStore;
 import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.materials.Materials;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
@@ -614,13 +614,15 @@ public class DefaultModsManager implements ModsManager
 		System.out.println("voxels reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();*/
 		
-		Entities.reload();
+		/*
+		EntityTypesStore.reload();
 		System.out.println("entities reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();
 		
-		EntityComponents.reload();
+		EntityComponentsStore.reload();
 		System.out.println("components reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();
+		*/
 		
 		PacketsProcessor.loadPacketsTypes();
 		System.out.println("packets reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");

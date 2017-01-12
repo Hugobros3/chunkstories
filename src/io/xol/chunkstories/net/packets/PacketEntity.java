@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
-import io.xol.chunkstories.entity.Entities;
+import io.xol.chunkstories.entity.EntityTypesStore;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -104,7 +104,7 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 		//Create an entity if the servers tells you to do so
 		if(entity == null)
 		{
-			entity = Entities.getEntityTypeById(entityTypeID).create(processor.getWorld());
+			entity = EntityTypesStore.getEntityTypeById(entityTypeID).create(processor.getWorld());
 					//Entities.newEntity(processor.getWorld(), this.entityTypeID);
 			entity.setUUID(entityUUID);
 			

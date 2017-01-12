@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.core.entity.EntityPlayer;
-import io.xol.chunkstories.entity.Entities;
+import io.xol.chunkstories.entity.EntityTypesStore;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.misc.ColorsTools;
@@ -147,7 +147,7 @@ public class ServerConsole implements CommandEmitter
 			else if (cmd.equals("spawnEntity") && emitter.hasPermission("server.admin"))
 			{
 				int id = Integer.parseInt(arguments[0]);
-				Entity test = Entities.getEntityTypeById((short)id).create(server.getWorld());
+				Entity test = EntityTypesStore.getEntityTypeById((short)id).create(server.getWorld());
 						//Entities.newEntity(server.getWorld(), (short) id);
 				test.setLocation(((Player) emitter).getLocation());
 				server.getWorld().addEntity(test);

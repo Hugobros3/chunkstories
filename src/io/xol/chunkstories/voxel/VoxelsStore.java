@@ -39,7 +39,7 @@ public class VoxelsStore implements Content.Voxels
 	{
 		this.content = content;
 		this.context = content.getContext();
-		this.textures = new VoxelTexturesAtlaser(context, this);
+		this.textures = new VoxelTexturesStoreAndAtlaser(context, this);
 		this.models = new VoxelModelsStore(context, this);
 		
 		this.reloadVoxelTypes();
@@ -47,7 +47,7 @@ public class VoxelsStore implements Content.Voxels
 	
 	private final ChunkStories context;
 	private final Content content;
-	private final VoxelTexturesAtlaser textures;
+	private final VoxelTexturesStoreAndAtlaser textures;
 	private final VoxelModelsStore models;
 	
 	public Voxel[] voxels = new Voxel[65536];

@@ -1,10 +1,12 @@
 package io.xol.chunkstories.entity;
 
+import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.Content.EntityTypes;
+import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
 
@@ -20,16 +22,27 @@ import java.util.Map;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Entities
+public class EntityTypesStore implements EntityTypes
 {
-	//static Map<Short, Constructor<? extends Entity>> entitiesTypes = new HashMap<Short, Constructor<? extends Entity>>();
-	//static Map<String, Short> entitiesIds = new HashMap<String, Short>();
+	private final ChunkStories context;
+	private final Content content;
+	private final EntityComponentsStore entityComponents;
 	
-	static Map<Short, EntityType> entityTypesById = new HashMap<Short, EntityType>();
-	static Map<String, EntityType> entityTypesByName = new HashMap<String, EntityType>();
-	static Map<String, EntityType> entityTypesByClassname = new HashMap<String, EntityType>();
+	private Map<Short, EntityType> entityTypesById = new HashMap<Short, EntityType>();
+	private Map<String, EntityType> entityTypesByName = new HashMap<String, EntityType>();
+	private Map<String, EntityType> entityTypesByClassname = new HashMap<String, EntityType>();
+
+	public EntityTypesStore(Content content)
+	{
+		this.content = content;
+		this.context = content.getContext();
+		
+		this.entityComponents = new EntityComponentsStore(context, this);
+		
+		this.reload();
+	}
 	
-	public static void reload()
+	public void reload()
 	{
 		//entitiesIds.clear();
 		//entitiesTypes.clear();
@@ -37,16 +50,18 @@ public class Entities
 		entityTypesByName.clear();
 		entityTypesByClassname.clear();
 		
-		Iterator<Asset> i = DefaultModsManager.getAllAssetsByExtension("entities");
+		Iterator<Asset> i = content.modsManager().getAllAssetsByExtension("entities");
 		while(i.hasNext())
 		{
 			Asset f = i.next();
 			ChunkStoriesLogger.getInstance().log("Reading entities definitions in : " + f);
 			readEntitiesDefinitions(f);
 		}
+		
+		this.entityComponents.reload();
 	}
 
-	private static void readEntitiesDefinitions(Asset f)
+	private void readEntitiesDefinitions(Asset f)
 	{
 		if (f == null)
 			return;
@@ -75,7 +90,7 @@ public class Entities
 							
 						try
 						{
-							Class<?> entityClass = DefaultModsManager.getClassByName(className);
+							Class<?> entityClass = content.modsManager().getClassByName(className);
 							if(entityClass == null)
 							{
 								System.out.println("Entity class "+className+" does not exist in codebase.");
@@ -123,12 +138,12 @@ public class Entities
 		}
 	}
 	
-	public static EntityType getEntityTypeById(short entityId)
+	public EntityType getEntityTypeById(short entityId)
 	{
 		return entityTypesById.get(entityId);
 	}
 	
-	public static short getEntityIdByClassname(String className)
+	public short getEntityIdByClassname(String className)
 	{
 		EntityType type = entityTypesByClassname.get(className);
 		if(type == null)
@@ -136,7 +151,7 @@ public class Entities
 		return type.getId();
 	}
 
-	static class EntityTypeLoaded implements EntityType {
+	class EntityTypeLoaded implements EntityType {
 
 		public EntityTypeLoaded(String name, String className, Constructor<? extends Entity> constructor, short id)
 		{
@@ -187,5 +202,41 @@ public class Entities
 			}
 		}
 		
+	}
+
+	@Override
+	public EntityType getEntityTypeById(int entityId)
+	{
+		return entityTypesById.get(entityId);
+	}
+
+	@Override
+	public EntityType getEntityTypeByName(String entityName)
+	{
+		return entityTypesByName.get(entityName);
+	}
+
+	@Override
+	public EntityType getEntityTypeByClassname(String className)
+	{
+		return entityTypesByClassname.get(className);
+	}
+
+	@Override
+	public Iterator<EntityType> all()
+	{
+		return this.entityTypesById.values().iterator();
+	}
+
+	@Override
+	public Content parent()
+	{
+		return content;
+	}
+
+	@Override
+	public EntityComponentsStore components()
+	{
+		return entityComponents;
 	}
 }

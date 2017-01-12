@@ -4,8 +4,8 @@ import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.content.mods.exceptions.NotAllModsLoadedException;
-import io.xol.chunkstories.entity.Entities;
-import io.xol.chunkstories.entity.EntityComponents;
+import io.xol.chunkstories.entity.EntityTypesStore;
+import io.xol.chunkstories.entity.EntityComponentsStore;
 import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -21,6 +21,7 @@ public class GameContent implements Content
 	private final ModsManager modsManager;
 
 	private final VoxelsStore voxels;
+	private final EntityTypesStore entities;
 
 	public GameContent(ChunkStories context, String enabledModsLaunchArguments)
 	{
@@ -45,10 +46,7 @@ public class GameContent implements Content
 		ItemTypes.reload();
 
 		voxels = new VoxelsStore(this);
-
-		Entities.reload();
-
-		EntityComponents.reload();
+		entities = new EntityTypesStore(this);
 
 		PacketsProcessor.loadPacketsTypes();
 
@@ -75,10 +73,7 @@ public class GameContent implements Content
 		ItemTypes.reload();
 
 		voxels.reload();
-
-		Entities.reload();
-
-		EntityComponents.reload();
+		entities.reload();
 
 		PacketsProcessor.loadPacketsTypes();
 
@@ -110,8 +105,7 @@ public class GameContent implements Content
 	@Override
 	public EntityTypes entities()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return entities;
 	}
 
 	@Override

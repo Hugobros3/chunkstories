@@ -32,7 +32,7 @@ import io.xol.chunkstories.content.DefaultModsManager.ModsAssetHierarchy;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class VoxelTexturesAtlaser implements Content.Voxels.VoxelTextures
+public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTextures
 {
 	Map<String, VoxelTexture> texMap = new HashMap<String, VoxelTexture>();
 	int uniquesIds = 0;
@@ -44,7 +44,7 @@ public class VoxelTexturesAtlaser implements Content.Voxels.VoxelTextures
 	private final VoxelsStore voxels;
 	private final ChunkStories context;
 	
-	public VoxelTexturesAtlaser(ChunkStories context, VoxelsStore voxels)
+	public VoxelTexturesStoreAndAtlaser(ChunkStories context, VoxelsStore voxels)
 	{
 		this.context = context;
 		this.voxels = voxels;

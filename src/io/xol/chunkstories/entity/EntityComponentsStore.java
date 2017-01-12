@@ -10,19 +10,31 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
-public class EntityComponents
+public class EntityComponentsStore implements Content.EntityTypes.EntityComponents
 {
-	static Map<String, Integer> entityComponentsIds = new HashMap<String, Integer>();
+	private final EntityTypesStore entities;
+	private final ChunkStories context;
+	
+	public EntityComponentsStore(ChunkStories context, EntityTypesStore entities)
+	{
+		this.context = context;
+		this.entities = entities;
+		
+		this.reload();
+	}
+	
+	private Map<String, Integer> entityComponentsIds = new HashMap<String, Integer>();
 
-	public static void reload()
+	public void reload()
 	{
 		entityComponentsIds.clear();
 		
-		Iterator<Asset> i = DefaultModsManager.getAllAssetsByExtension("components");
+		Iterator<Asset> i = context.getContent().modsManager().getAllAssetsByExtension("components");
 		while(i.hasNext())
 		{
 			Asset f = i.next();
@@ -31,7 +43,7 @@ public class EntityComponents
 		}
 	}
 
-	private static void readEntityComponentsDefinitions(Asset f)
+	private void readEntityComponentsDefinitions(Asset f)
 	{
 		if (f == null)
 			return;
@@ -67,7 +79,7 @@ public class EntityComponents
 		}
 	}
 
-	public static int getIdForClass(String className)
+	public int getIdForClass(String className)
 	{
 		return entityComponentsIds.get(className);
 	}

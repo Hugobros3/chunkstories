@@ -25,7 +25,7 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.EntityPlayer;
-import io.xol.chunkstories.entity.Entities;
+import io.xol.chunkstories.entity.EntityTypesStore;
 import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.world.WorldClientRemote;
@@ -225,7 +225,7 @@ public class Chat
 						for (int ii = 0; ii < count; ii++)
 							for (int jj = 0; jj < count; jj++)
 							{
-								Entity test =  Entities.getEntityTypeById((short)id).create(Client.world);// Entities.newEntity(Client.world, (short) id);
+								Entity test =  EntityTypesStore.getEntityTypeById((short)id).create(Client.world);// Entities.newEntity(Client.world, (short) id);
 								Entity player = Client.getInstance().getClientSideController().getControlledEntity();
 								test.setLocation(new Location(Client.world, player.getLocation().clone().add(ii * 3.0, 0.0, jj * 3.0)));
 								Client.world.addEntity(test);
