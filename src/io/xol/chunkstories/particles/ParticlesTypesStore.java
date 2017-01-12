@@ -8,26 +8,39 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.api.particles.ParticleType;
-import io.xol.chunkstories.content.DefaultModsManager;
+import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ParticleTypes
+public class ParticlesTypesStore implements Content.ParticlesTypes
 {
-	private static Map<Integer, ParticleType> particleTypesById = new HashMap<Integer, ParticleType>();
-	private static Map<String, ParticleType> particleTypesByName = new HashMap<String, ParticleType>();
+	private final GameContentStore store;
+	private final ModsManager modsManager;
 	
-	public static void reload()
+	public ParticlesTypesStore(GameContentStore store)
+	{
+		this.store = store;
+		this.modsManager = store.modsManager();
+		
+		reload();
+	}
+	
+	private Map<Integer, ParticleType> particleTypesById = new HashMap<Integer, ParticleType>();
+	private Map<String, ParticleType> particleTypesByName = new HashMap<String, ParticleType>();
+	
+	public void reload()
 	{
 		particleTypesById.clear();
 		particleTypesByName.clear();
 		
-		Iterator<Asset> i = DefaultModsManager.getAllAssetsByExtension("particles");
+		Iterator<Asset> i = modsManager.getAllAssetsByExtension("particles");
 		while(i.hasNext())
 		{
 			Asset f = i.next();
@@ -35,7 +48,7 @@ public class ParticleTypes
 		}
 	}
 
-	private static void loadParticlesFile(Asset f)
+	private void loadParticlesFile(Asset f)
 	{
 		if (f == null)
 			return;
@@ -59,7 +72,7 @@ public class ParticleTypes
 
 						try
 						{
-							Class<?> rawClass = DefaultModsManager.getClassByName(className);
+							Class<?> rawClass = modsManager.getClassByName(className);
 							if (rawClass == null)
 							{
 								ChunkStoriesLogger.getInstance().warning("Particle class " + className + " does not exist in codebase.");
@@ -104,14 +117,28 @@ public class ParticleTypes
 		}
 	}
 
-	public static ParticleType getParticleTypeByName(String string)
+	public ParticleType getParticleTypeByName(String string)
 	{
 		return particleTypesByName.get(string);
 	}
 	
-	public static ParticleType getParticleTypeById(int id)
+	public ParticleType getParticleTypeById(int id)
 	{
 		return particleTypesById.get(id);
+	}
+
+	
+	@Override
+	public Iterator<ParticleType> all()
+	{
+		return this.particleTypesById.values().iterator();
+	}
+
+	@Override
+	public Content parent()
+	{
+		// TODO Auto-generated method stub
+		return store;
 	}
 	
 }

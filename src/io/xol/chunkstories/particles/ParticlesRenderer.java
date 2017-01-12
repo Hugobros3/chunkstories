@@ -1,5 +1,6 @@
 package io.xol.chunkstories.particles;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
@@ -32,6 +33,7 @@ import org.lwjgl.BufferUtils;
 public class ParticlesRenderer implements ParticlesManager
 {
 	final World world;
+	final Content.ParticlesTypes store;
 
 	final Map<ParticleType, Set<ParticleData>> particles = new ConcurrentHashMap<ParticleType, Set<ParticleData>>();
 	
@@ -41,6 +43,7 @@ public class ParticlesRenderer implements ParticlesManager
 	public ParticlesRenderer(World world)
 	{
 		this.world = world;
+		this.store = world.getGameContext().getContent().particles();
 
 		particlesPositions = new VerticesObject();
 		texCoords = new VerticesObject();
@@ -68,7 +71,7 @@ public class ParticlesRenderer implements ParticlesManager
 
 	public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dm location, Vector3dm velocity)
 	{
-		ParticleType particleType = ParticleTypes.getParticleTypeByName(particleTypeName);
+		ParticleType particleType = store.getParticleTypeByName(particleTypeName);
 		if (particleType == null || location == null)
 			return;
 

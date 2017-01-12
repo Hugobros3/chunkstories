@@ -10,7 +10,6 @@ import io.xol.chunkstories.api.mods.Asset;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.materials.MaterialsStore;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;

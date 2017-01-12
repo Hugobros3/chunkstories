@@ -9,7 +9,7 @@ import io.xol.chunkstories.content.mods.exceptions.NotAllModsLoadedException;
 import io.xol.chunkstories.entity.EntityTypesStore;
 import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.materials.MaterialsStore;
-import io.xol.chunkstories.net.packets.PacketsProcessor;
+import io.xol.chunkstories.particles.ParticlesTypesStore;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.generator.WorldGenerators;
 
@@ -27,6 +27,7 @@ public class GameContentStore implements Content
 	private final VoxelsStore voxels;
 	private final EntityTypesStore entities;
 	private final PacketsStore packets;
+	private final ParticlesTypesStore particles;
 
 	public GameContentStore(GameContext context, String enabledModsLaunchArguments)
 	{
@@ -52,10 +53,9 @@ public class GameContentStore implements Content
 		voxels = new VoxelsStore(this);
 		entities = new EntityTypesStore(this);
 		packets = new PacketsStore(this);
+		particles = new ParticlesTypesStore(this);
 
 		WorldGenerators.loadWorldGenerators();
-
-		io.xol.chunkstories.particles.ParticleTypes.reload();
 	}
 
 	public void reload()
@@ -77,10 +77,9 @@ public class GameContentStore implements Content
 		voxels.reload();
 		entities.reload();
 		packets.reload();
+		particles.reload();
 
 		WorldGenerators.loadWorldGenerators();
-
-		io.xol.chunkstories.particles.ParticleTypes.reload();
 	}
 
 	@Override
@@ -108,7 +107,7 @@ public class GameContentStore implements Content
 	}
 
 	@Override
-	public ParticleTypes particles()
+	public ParticlesTypes particles()
 	{
 		// TODO Auto-generated method stub
 		return null;

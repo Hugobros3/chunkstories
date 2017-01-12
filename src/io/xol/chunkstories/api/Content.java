@@ -109,8 +109,8 @@ public interface Content
 		}
 	}
 	
-	public ParticleTypes particles();
-	public interface ParticleTypes {
+	public ParticlesTypes particles();
+	public interface ParticlesTypes {
 		
 		public ParticleType getParticleTypeByName(String string);
 		

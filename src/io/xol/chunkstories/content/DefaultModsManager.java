@@ -33,7 +33,7 @@ import io.xol.chunkstories.entity.EntityComponentsStore;
 import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.materials.MaterialsStore;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
-import io.xol.chunkstories.particles.ParticleTypes;
+import io.xol.chunkstories.particles.ParticlesTypesStore;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.world.generator.WorldGenerators;
@@ -632,9 +632,9 @@ public class DefaultModsManager implements ModsManager
 		System.out.println("generators reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();
 		
-		ParticleTypes.reload();
+		/*ParticleTypes.reload();
 		System.out.println("particles reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();
+		part = System.nanoTime();*/
 		
 		//Total
 		System.out.println("Assets reload took "+Math.floor(((System.nanoTime() - total) / 1000L) / 100f) / 10f + "ms ");
