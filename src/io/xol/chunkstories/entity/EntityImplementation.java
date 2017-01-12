@@ -64,6 +64,8 @@ public abstract class EntityImplementation implements Entity
 	//Hacky bullshit
 	protected Voxel voxelIn;
 
+	private final short eID;
+	
 	public EntityImplementation(WorldImplementation w, double x, double y, double z)
 	{
 		world = w;
@@ -73,6 +75,8 @@ public abstract class EntityImplementation implements Entity
 
 		//To avoid NPEs
 		voxelIn = VoxelsStore.get().getVoxelById(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
+		
+		eID = w.getGameContext().getContent().entities().getEntityIdByClassname(this.getClass().getName());
 	}
 	
 	public EntityComponentExistence getComponentExistence()
@@ -489,7 +493,7 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public short getEID()
 	{
-		return EntityTypesStore.getEntityIdByClassname(getClass().getName());
+		return eID;
 	}
 
 	public static short allocatedID = 0;

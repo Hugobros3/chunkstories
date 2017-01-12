@@ -10,7 +10,6 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
-import io.xol.chunkstories.entity.EntityComponentsStore;
 import io.xol.chunkstories.net.packets.PacketEntity;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -24,6 +23,8 @@ public abstract class EntityComponent
 {
 	protected Entity entity;
 	EntityComponent next;
+	
+	private final int ecID;
 
 	public EntityComponent(Entity entity)
 	{
@@ -32,6 +33,8 @@ public abstract class EntityComponent
 
 	public EntityComponent(Entity entity, EntityComponent previous)
 	{
+		this.ecID = entity.getWorld().getGameContext().getContent().entities().components().getIdForClass(getClass().getName());
+		
 		this.entity = entity;
 		if (previous != null)
 			previous.setNext(this);
@@ -182,8 +185,9 @@ public abstract class EntityComponent
 
 	public final int getEntityComponentId()
 	{
+		return ecID;
 		//System.out.println("debug : "+this.getClass().getName()+" id = "+EntityComponents.getIdForClass(this.getClass().getName()));
-		try
+		/*try
 		{
 			return EntityComponentsStore.getIdForClass(this.getClass().getName());
 		}
@@ -191,6 +195,6 @@ public abstract class EntityComponent
 		{
 			System.out.println("Debug: " + this.getClass().getName());
 			throw npe;
-		}
+		}*/
 	}
 }

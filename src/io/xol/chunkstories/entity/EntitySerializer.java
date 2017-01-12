@@ -51,7 +51,7 @@ public class EntitySerializer
 			
 			short entityTypeID = in.readShort();
 			
-			Entity entity = EntityTypesStore.getEntityTypeById(entityTypeID).create(world);
+			Entity entity = world.getGameContext().getContent().entities().getEntityTypeById(entityTypeID).create(world);
 			entity.setUUID(entityUUID);
 			
 			int componentId = in.readInt();
