@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.voxel.VoxelTexture;
@@ -122,12 +123,32 @@ public interface Content
 	}
 	
 	public PacketTypes packets();
-	public interface PacketTypes{
+	public interface PacketTypes {
 		
 		public Packet createPacketById(int packedID) throws IllegalPacketException;
 		
 		public short getPacketId(Packet packet) throws UnknowPacketException;
 		
 		public Content parent();
+	}
+	
+	public WorldGenerators generators();
+	public interface WorldGenerators {
+		
+		public WorldGeneratorType getWorldGenerator(String name);
+		
+		public String getWorldGeneratorName(WorldGenerator generator);
+		
+		public Iterator<WorldGeneratorType> all();
+		
+		public interface WorldGeneratorType {
+			public String getName();
+			
+			public WorldGenerator instanciate();
+		}
+
+		public Content parent();
+		
+		
 	}
 }

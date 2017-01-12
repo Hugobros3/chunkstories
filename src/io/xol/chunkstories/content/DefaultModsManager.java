@@ -36,7 +36,7 @@ import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.particles.ParticlesTypesStore;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.world.generator.WorldGenerators;
+import io.xol.chunkstories.world.generator.WorldGeneratorsStore;
 import io.xol.engine.concurrency.UniqueList;
 import io.xol.engine.misc.FoldersUtils;
 
@@ -628,9 +628,9 @@ public class DefaultModsManager implements ModsManager
 		System.out.println("packets reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();*/
 		
-		WorldGenerators.loadWorldGenerators();
+		/*WorldGenerators.loadWorldGenerators();
 		System.out.println("generators reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();
+		part = System.nanoTime();*/
 		
 		/*ParticleTypes.reload();
 		System.out.println("particles reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");

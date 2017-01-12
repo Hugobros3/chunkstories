@@ -11,7 +11,7 @@ import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.materials.MaterialsStore;
 import io.xol.chunkstories.particles.ParticlesTypesStore;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.world.generator.WorldGenerators;
+import io.xol.chunkstories.world.generator.WorldGeneratorsStore;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -28,6 +28,7 @@ public class GameContentStore implements Content
 	private final EntityTypesStore entities;
 	private final PacketsStore packets;
 	private final ParticlesTypesStore particles;
+	private final WorldGeneratorsStore generators;
 
 	public GameContentStore(GameContext context, String enabledModsLaunchArguments)
 	{
@@ -54,8 +55,7 @@ public class GameContentStore implements Content
 		entities = new EntityTypesStore(this);
 		packets = new PacketsStore(this);
 		particles = new ParticlesTypesStore(this);
-
-		WorldGenerators.loadWorldGenerators();
+		generators = new WorldGeneratorsStore(this);
 	}
 
 	public void reload()
@@ -78,8 +78,7 @@ public class GameContentStore implements Content
 		entities.reload();
 		packets.reload();
 		particles.reload();
-
-		WorldGenerators.loadWorldGenerators();
+		generators.reload();
 	}
 
 	@Override
@@ -109,8 +108,7 @@ public class GameContentStore implements Content
 	@Override
 	public ParticlesTypes particles()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return particles;
 	}
 
 	@Override
@@ -136,5 +134,11 @@ public class GameContentStore implements Content
 	public Asset getAsset(String assetName)
 	{
 		return modsManager.getAsset(assetName);
+	}
+
+	@Override
+	public WorldGenerators generators()
+	{
+		return generators;
 	}
 }

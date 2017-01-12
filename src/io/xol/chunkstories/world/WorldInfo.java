@@ -10,10 +10,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.net.packets.PacketWorldInfo;
 import io.xol.chunkstories.server.net.ServerClient;
-import io.xol.chunkstories.world.generator.WorldGenerators;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -121,12 +119,6 @@ public class WorldInfo
 	public String[] saveText()
 	{
 		return new String[] { "name: " + getName(), "seed: " + getSeed(), "worldgen: " + getGeneratorName(), "size: " + getSize().name() };
-	}
-
-	public WorldGenerator getGenerator()
-	{
-		WorldGenerator generator = WorldGenerators.getWorldGenerator(this.getGeneratorName());
-		return generator;
 	}
 
 	/**

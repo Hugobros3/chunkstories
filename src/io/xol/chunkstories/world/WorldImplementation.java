@@ -100,7 +100,7 @@ public abstract class WorldImplementation implements World
 	{
 		worldInfo = info;
 		//Creates world generator
-		this.generator = worldInfo.getGenerator();
+		this.generator = this.getGameContext().getContent().generators().getWorldGenerator(info.getGeneratorName()).instanciate();
 
 		this.generator.initialize(this);
 
