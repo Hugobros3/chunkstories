@@ -1,7 +1,7 @@
 package io.xol.chunkstories.voxel;
 
 import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.client.ChunkStories;
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.mods.Asset;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -45,7 +45,7 @@ public class VoxelsStore implements Content.Voxels
 		this.reloadVoxelTypes();
 	}
 	
-	private final ChunkStories context;
+	private final GameContext context;
 	private final Content content;
 	private final VoxelTexturesStoreAndAtlaser textures;
 	private final VoxelModelsStore models;

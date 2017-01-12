@@ -11,16 +11,16 @@ import java.util.Iterator;
 import java.util.Map;
 
 import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.client.ChunkStories;
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 public class EntityComponentsStore implements Content.EntityTypes.EntityComponents
 {
 	private final EntityTypesStore entities;
-	private final ChunkStories context;
+	private final GameContext context;
 	
-	public EntityComponentsStore(ChunkStories context, EntityTypesStore entities)
+	public EntityComponentsStore(GameContext context, EntityTypesStore entities)
 	{
 		this.context = context;
 		this.entities = entities;

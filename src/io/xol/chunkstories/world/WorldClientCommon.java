@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.particles.ParticlesRenderer;
@@ -26,6 +27,11 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 	public Client getClient()
 	{
 		return Client.getInstance();
+	}
+	
+	public GameContext getGameContext()
+	{
+		return getClient();
 	}
 
 	@Override

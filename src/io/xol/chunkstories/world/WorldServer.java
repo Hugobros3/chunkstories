@@ -49,6 +49,11 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		ioHandler = new IOTasksMultiplayerServer(this);
 		ioHandler.start();
 	}
+	
+	public Server getGameContext()
+	{
+		return server;
+	}
 
 	@Override
 	public void tick()

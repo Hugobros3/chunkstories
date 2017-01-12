@@ -23,7 +23,7 @@ import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.Voxels;
-import io.xol.chunkstories.api.client.ChunkStories;
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.content.DefaultModsManager.ModsAssetHierarchy;
@@ -42,9 +42,9 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 	public static int BLOCK_ATLAS_FACTOR;
 
 	private final VoxelsStore voxels;
-	private final ChunkStories context;
+	private final GameContext context;
 	
-	public VoxelTexturesStoreAndAtlaser(ChunkStories context, VoxelsStore voxels)
+	public VoxelTexturesStoreAndAtlaser(GameContext context, VoxelsStore voxels)
 	{
 		this.context = context;
 		this.voxels = voxels;

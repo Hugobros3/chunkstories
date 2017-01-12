@@ -40,7 +40,8 @@ public class SummaryRegenerator
 				return;
 			}
 
-			WorldImplementation world = new WorldTool(csWorldName);//, "", new BlankWorldGenerator(), size);
+			//TODO let implement GameContext
+			WorldImplementation world = new WorldTool(null, csWorldName);//, "", new BlankWorldGenerator(), size);
 			for (int i = 0; i < world.getSizeInChunks() / 8; i++)
 			{
 				for (int j = 0; j < world.getSizeInChunks() / 8; j++)

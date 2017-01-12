@@ -79,7 +79,7 @@ public class Server implements Runnable, ServerInterface
 			ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/serverlogs/" + time + ".log")));
 			log = ChunkStoriesLogger.getInstance();
 
-			log.info("Starting ChunkStories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
+			log.info("Starting Chunkstories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
 			connectionsManager = new ServerConnectionsManager(this);
 
 			//Loads the mods

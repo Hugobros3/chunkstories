@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api.client;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
@@ -16,7 +17,7 @@ import io.xol.chunkstories.world.WorldClientCommon;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface ClientInterface extends ChunkStories, PluginExecutionContext, CommandEmitter
+public interface ClientInterface extends GameContext, PluginExecutionContext, CommandEmitter
 {
 	public ClientSideController getClientSideController();
 	

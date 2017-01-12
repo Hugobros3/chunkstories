@@ -2,7 +2,6 @@ package io.xol.chunkstories.api;
 
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.material.Material;
@@ -21,7 +20,7 @@ import io.xol.chunkstories.voxel.models.VoxelModel;
  */
 public interface Content
 {
-	public ChunkStories getContext();
+	public GameContext getContext();
 	
 	public ModsManager modsManager();
 	

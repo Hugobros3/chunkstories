@@ -2,7 +2,7 @@ package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.EntityTypes;
-import io.xol.chunkstories.api.client.ChunkStories;
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.mods.Asset;
@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class EntityTypesStore implements EntityTypes
 {
-	private final ChunkStories context;
+	private final GameContext context;
 	private final Content content;
 	private final EntityComponentsStore entityComponents;
 	

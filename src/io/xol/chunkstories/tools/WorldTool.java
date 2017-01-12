@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.FloatBuffer;
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundEffect;
@@ -21,17 +22,26 @@ import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 public class WorldTool extends WorldImplementation implements WorldMaster
 {
-	public WorldTool(String worldDir)
+	private final GameContext toolContext;
+	
+	public WorldTool(GameContext toolContext, String worldDir)
 	{
 		super(new WorldInfo(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
 
+		this.toolContext = toolContext;
+		
 		ioHandler = new IOTasksImmediate(this);
 		//ioHandler.start();
 	}
 
-	public WorldTool(File csWorldDir)
+	public WorldTool(GameContext toolContext, File csWorldDir)
 	{
-		this(csWorldDir.getAbsolutePath());
+		this(toolContext, csWorldDir.getAbsolutePath());
+	}
+	
+	public GameContext getGameContext()
+	{
+		return toolContext;
 	}
 
 	@Override

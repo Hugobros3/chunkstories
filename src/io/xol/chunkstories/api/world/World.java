@@ -2,6 +2,7 @@ package io.xol.chunkstories.api.world;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
@@ -33,6 +34,9 @@ public interface World
 	
 	/** Returns the GameLogic thread this world runs on */
 	public GameLogic getGameLogic();
+	
+	/** Returns the GameContext this world lives in */
+	public GameContext getGameContext();
 	
 	/**
 	 * @return The height of the world, default worlds are 1024

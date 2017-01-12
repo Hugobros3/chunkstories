@@ -15,7 +15,7 @@ import java.util.Set;
 import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.client.ChunkStories;
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -37,7 +37,7 @@ import io.xol.chunkstories.world.WorldInfo;
 /**
  * This program loads a mcanvil game file and makes a chunk stories world file with them.
  */
-public class MinecraftMapConverter implements ChunkStories, WorldUser
+public class MinecraftMapConverter implements GameContext, WorldUser
 {
 	static GameContent content;
 	
@@ -145,7 +145,7 @@ public class MinecraftMapConverter implements ChunkStories, WorldUser
 
 			WorldInfo info = new WorldInfo("name: Converted_" + mcWorldName + "\n" + "seed: null\n" + "worldgen: blank\n" + "size: " + size.name(), csWorldName);
 			info.save(new File(csWorldDir + "/info.txt"));
-			WorldImplementation exported = new WorldTool(csWorldDir);
+			WorldImplementation exported = new WorldTool(user, csWorldDir);
 
 			int mcRegionStartX = c2r(minecraftOffsetX);
 			int mcRegionStartZ = c2r(minecraftOffsetZ);
