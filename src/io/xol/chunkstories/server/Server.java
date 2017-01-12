@@ -101,8 +101,7 @@ public class Server implements Runnable, ServerInterface
 				Runtime.getRuntime().exit(0);
 			}
 			// init multiverse
-			announcer = new ServerAnnouncerThread();
-			announcer.init();
+			announcer = new ServerAnnouncerThread(this);
 			announcer.start();
 			// load users privs
 			UsersPrivileges.load();

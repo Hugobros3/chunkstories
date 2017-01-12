@@ -47,15 +47,15 @@ public class ServerConnectionsManager extends Thread
 	{
 		try
 		{
-			serverSocket = new ServerSocket(Server.getInstance().getServerConfig().getIntProp("server-port", "30410"));
-			Server.getInstance().getLogger().info("Started server on port " + serverSocket.getLocalPort() + ", ip=" + serverSocket.getInetAddress());
+			serverSocket = new ServerSocket(server.getServerConfig().getIntProp("server-port", "30410"));
+			server.getLogger().info("Started server on port " + serverSocket.getLocalPort() + ", ip=" + serverSocket.getInetAddress());
 			
 			externalIP = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?ip=1", "");// serverSocket.getInetAddress().getHostAddress();
 			super.start();
 		}
 		catch (IOException e)
 		{
-			Server.getInstance().getLogger().error("Can't open server socket. Double check that there is no other instance already running or an application using server port.");
+			server.getLogger().error("Can't open server socket. Double check that there is no other instance already running or an application using server port.");
 			System.exit(-1);
 		}
 
@@ -71,7 +71,7 @@ public class ServerConnectionsManager extends Thread
 		}
 		catch (IOException e)
 		{
-			Server.getInstance().getLogger().error("An unexpected error happened during network stuff. More info below.");
+			server.getLogger().error("An unexpected error happened during network stuff. More info below.");
 			e.printStackTrace();
 		}
 	}
@@ -93,7 +93,7 @@ public class ServerConnectionsManager extends Thread
 			}
 			catch (IOException e)
 			{
-				Server.getInstance().getLogger().error("An unexpected error happened during network stuff. More info below.");
+				server.getLogger().error("An unexpected error happened during network stuff. More info below.");
 				e.printStackTrace();
 			}
 		}
@@ -106,9 +106,9 @@ public class ServerConnectionsManager extends Thread
 	//TODO move to ServerClient
 	void sendServerIntel(ServerClient client)
 	{
-		client.sendInternalTextMessage("info/name:" + Server.getInstance().getServerConfig().getProp("server-name", "unnamedserver@" + hostname));
-		client.sendInternalTextMessage("info/motd:" + Server.getInstance().getServerConfig().getProp("server-desc", "Default description."));
-		client.sendInternalTextMessage("info/connected:" + Server.getInstance().getHandler().getNumberOfAuthentificatedClients() + ":" + maxClients);
+		client.sendInternalTextMessage("info/name:" + server.getServerConfig().getProp("server-name", "unnamedserver@" + hostname));
+		client.sendInternalTextMessage("info/motd:" + server.getServerConfig().getProp("server-desc", "Default description."));
+		client.sendInternalTextMessage("info/connected:" + server.getHandler().getNumberOfAuthentificatedClients() + ":" + maxClients);
 		client.sendInternalTextMessage("info/version:" + VersionInfo.version);
 		client.sendInternalTextMessage("info/mods:"+server.getModsProvider().getModsString());
 		client.sendInternalTextMessage("info/done");
@@ -117,7 +117,7 @@ public class ServerConnectionsManager extends Thread
 
 	public void sendAllChat(String chat)
 	{
-		Server.getInstance().getLogger().info(ColorsTools.convertToAnsi(chat));
+		server.getLogger().info(ColorsTools.convertToAnsi(chat));
 		sendAllRaw("chat/" + chat);
 	}
 
