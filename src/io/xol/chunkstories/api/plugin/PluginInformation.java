@@ -31,7 +31,7 @@ public class PluginInformation extends URLClassLoader
 {
 	private String pluginName;
 	private String authors;
-	private float pluginVersion;
+	private String pluginVersion;
 	private String entryPointClassName;
 
 	//Keeps a reference to where the jarFile is
@@ -126,7 +126,7 @@ public class PluginInformation extends URLClassLoader
 		return this.pluginName;
 	}
 
-	public float getPluginVersion()
+	public String getPluginVersion()
 	{
 		return this.pluginVersion;
 	}
@@ -170,7 +170,7 @@ public class PluginInformation extends URLClassLoader
 						authors = value;
 						break;
 					case "version":
-						pluginVersion = Float.parseFloat(value);
+						pluginVersion = value;
 						break;
 					case "main":
 						entryPointClassName = value;
