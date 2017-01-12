@@ -8,12 +8,11 @@ import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
-import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.net.InventoryTranslator;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
@@ -66,19 +65,9 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 		int slotx = in.readInt();
 		int sloty = in.readInt();
 
-		/*int itemId = in.readInt();
-		
-		if(itemId != 0)
-		{
-			Item item = ItemTypes.getItemTypeById(itemId).newItem();
-			itemPile = new ItemPile(item, in);
-		}
-		else
-			itemPile = null;*/
-
 		try
 		{
-			itemPile = new ItemPile(in);
+			itemPile = ItemPile.obtainItemPileFromStream(Client.getInstance().getContent().items(), in);
 		}
 		catch (NullItemException e)
 		{

@@ -8,8 +8,8 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemTypes;
-import io.xol.chunkstories.materials.Materials;
+import io.xol.chunkstories.item.ItemTypesStore;
+import io.xol.chunkstories.materials.MaterialsStore;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.models.VoxelModel;
@@ -60,7 +60,7 @@ public class VoxelDefault implements Voxel
 		this.voxelID = id;
 		this.voxelName = name;
 
-		this.material = Materials.getMaterialByName(name);
+		this.material = MaterialsStore.getMaterialByName(name);
 	}
 	
 	public Content.Voxels store()
@@ -248,7 +248,7 @@ public class VoxelDefault implements Voxel
 	@Override
 	public ItemPile[] getItems()
 	{
-		ItemVoxel itemVoxel = (ItemVoxel) ItemTypes.getItemTypeByName("item_voxel").newItem();
+		ItemVoxel itemVoxel = (ItemVoxel) this.store().parent().items().getItemTypeByName("item_voxel").newItem();
 		itemVoxel.voxel = this;
 
 		return new ItemPile[] { new ItemPile(itemVoxel) };

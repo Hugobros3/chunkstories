@@ -16,12 +16,13 @@ import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.GameContext;
+import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -39,7 +40,7 @@ import io.xol.chunkstories.world.WorldInfo;
  */
 public class MinecraftMapConverter implements GameContext, WorldUser
 {
-	static GameContent content;
+	static GameContentStore content;
 	
 	static boolean verbose = false;
 
@@ -54,7 +55,7 @@ public class MinecraftMapConverter implements GameContext, WorldUser
 		String time = sdf.format(cal.getTime());
 		ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File("./logs/" + time + ".log")));
 
-		content = new GameContent(user, null);
+		content = new GameContentStore(user, null);
 		
 		/*
 		 * U N S T A T I C
@@ -375,5 +376,17 @@ public class MinecraftMapConverter implements GameContext, WorldUser
 	public Content getContent()
 	{
 		return content;
+	}
+
+	@Override
+	public PluginManager getPluginManager()
+	{
+		return null;
+	}
+
+	@Override
+	public void print(String message)
+	{
+		System.out.println("GameContext:"+message);
 	}
 }

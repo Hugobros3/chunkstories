@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.plugin;
 
-import io.xol.chunkstories.api.plugin.context.PluginExecutionContext;
+import io.xol.chunkstories.api.GameContext;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -8,11 +8,11 @@ import io.xol.chunkstories.api.plugin.context.PluginExecutionContext;
 
 public abstract class ChunkStoriesPlugin
 {
-	protected final PluginExecutionContext pluginExecutionContext;
+	protected final GameContext pluginExecutionContext;
 	
 	private final PluginInformation pluginInformation;
 	
-	public ChunkStoriesPlugin(PluginInformation pluginInformation, PluginExecutionContext pluginExecutionContext)
+	public ChunkStoriesPlugin(PluginInformation pluginInformation, GameContext pluginExecutionContext)
 	{
 		this.pluginInformation = pluginInformation;
 		this.pluginExecutionContext = pluginExecutionContext;
@@ -23,7 +23,7 @@ public abstract class ChunkStoriesPlugin
 		return pluginInformation;
 	}
 	
-	public PluginExecutionContext getPluginExecutionContext()
+	public GameContext getPluginExecutionContext()
 	{
 		return pluginExecutionContext;
 	}

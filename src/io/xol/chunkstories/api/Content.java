@@ -5,9 +5,13 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.material.Material;
+import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.ModsManager;
+import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.net.packets.IllegalPacketException;
+import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 
@@ -20,9 +24,14 @@ import io.xol.chunkstories.voxel.models.VoxelModel;
  */
 public interface Content
 {
+	/** Returns which context is this content relevant to */
 	public GameContext getContext();
 	
 	public ModsManager modsManager();
+
+	/** Obtains an Asset using it's name string 
+	 *  More advanced options for obtaining assets are avaible using the ModsManager class */
+	public Asset getAsset(String assetName);
 	
 	public Materials materials();
 	public interface Materials {
@@ -109,6 +118,16 @@ public interface Content
 		
 		public Iterator<ParticleType> all();
 
+		public Content parent();
+	}
+	
+	public PacketTypes packets();
+	public interface PacketTypes{
+		
+		public Packet createPacketById(int packedID) throws IllegalPacketException;
+		
+		public short getPacketId(Packet packet) throws UnknowPacketException;
+		
 		public Content parent();
 	}
 }

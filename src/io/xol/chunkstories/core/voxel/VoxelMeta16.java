@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemTypes;
+import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelTexture;
@@ -38,7 +38,7 @@ public class VoxelMeta16 extends VoxelDefault
 		ItemPile[] items = new ItemPile[16];
 		for(int i = 0; i < 16; i++)
 		{
-			ItemVoxel itemVoxel = (ItemVoxel)ItemTypes.getItemTypeByName("item_voxel").newItem();
+			ItemVoxel itemVoxel = (ItemVoxel)this.store().parent().items().getItemTypeByName("item_voxel").newItem();
 			itemVoxel.voxel = this;
 			itemVoxel.voxelMeta = i;			
 			

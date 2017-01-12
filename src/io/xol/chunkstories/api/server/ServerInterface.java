@@ -4,13 +4,12 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.plugin.PluginManager;
-import io.xol.chunkstories.api.plugin.context.PluginExecutionContext;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface ServerInterface extends GameContext, PluginExecutionContext
+public interface ServerInterface extends GameContext
 {
 	public Iterator<Player> getConnectedPlayers();
 

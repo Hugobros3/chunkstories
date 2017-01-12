@@ -6,7 +6,6 @@ import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.plugin.context.PluginExecutionContext;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -17,7 +16,7 @@ import io.xol.chunkstories.world.WorldClientCommon;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface ClientInterface extends GameContext, PluginExecutionContext, CommandEmitter
+public interface ClientInterface extends GameContext, CommandEmitter
 {
 	public ClientSideController getClientSideController();
 	

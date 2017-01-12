@@ -30,8 +30,8 @@ import io.xol.chunkstories.content.mods.exceptions.ModNotFoundException;
 import io.xol.chunkstories.content.mods.exceptions.NotAllModsLoadedException;
 import io.xol.chunkstories.entity.EntityTypesStore;
 import io.xol.chunkstories.entity.EntityComponentsStore;
-import io.xol.chunkstories.item.ItemTypes;
-import io.xol.chunkstories.materials.Materials;
+import io.xol.chunkstories.item.ItemTypesStore;
+import io.xol.chunkstories.materials.MaterialsStore;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.particles.ParticleTypes;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -598,17 +598,17 @@ public class DefaultModsManager implements ModsManager
 		System.out.println("texture atlas reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();*/
 		
-		Materials.reload();
+		/*MaterialsStore.reload();
 		System.out.println("materials reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();
+		part = System.nanoTime();*/
 		
 		/*VoxelModelsStore.resetAndLoadModels();
 		System.out.println("voxel models reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
 		part = System.nanoTime();*/
 		
-		ItemTypes.reload();
+		/*ItemTypesStore.reload();
 		System.out.println("items reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();
+		part = System.nanoTime();*/
 		
 		/*VoxelsStore.reloadVoxelTypes();
 		System.out.println("voxels reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
@@ -624,9 +624,9 @@ public class DefaultModsManager implements ModsManager
 		part = System.nanoTime();
 		*/
 		
-		PacketsProcessor.loadPacketsTypes();
+		/*PacketsProcessor.loadPacketsTypes();
 		System.out.println("packets reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();
+		part = System.nanoTime();*/
 		
 		WorldGenerators.loadWorldGenerators();
 		System.out.println("generators reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
@@ -664,7 +664,7 @@ public class DefaultModsManager implements ModsManager
 	 * @see io.xol.chunkstories.content.ModsManager#getModsPlugins()
 	 */
 	@Override
-	public IterableIterator<PluginInformation> getModsPlugins()
+	public IterableIterator<PluginInformation> getAllModsPlugins()
 	{
 		return new IterableIterator<PluginInformation>(){
 

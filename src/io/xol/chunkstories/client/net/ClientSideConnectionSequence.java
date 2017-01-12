@@ -72,7 +72,7 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 		{
 			requiredMods[i++] = "md5:"+m;
 		}
-		DefaultModsManager.setEnabledMods(requiredMods);
+		Client.getInstance().getContent().modsManager().setEnabledMods(requiredMods);
 		status = "Reloading mods...";
 		try
 		{

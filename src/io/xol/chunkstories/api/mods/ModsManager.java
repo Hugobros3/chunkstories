@@ -37,5 +37,5 @@ public interface ModsManager
 
 	public Collection<Mod> getCurrentlyLoadedMods();
 
-	public IterableIterator<PluginInformation> getModsPlugins();
+	public IterableIterator<PluginInformation> getAllModsPlugins();
 }

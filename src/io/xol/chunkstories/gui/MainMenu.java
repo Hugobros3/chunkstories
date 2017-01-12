@@ -10,6 +10,7 @@ import java.util.Random;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.chunkstories.gui.overlays.LoginOverlay;
@@ -84,7 +85,7 @@ public class MainMenu extends OverlayableScene
 		List<String> splashes = new ArrayList<String>();
 		try
 		{
-			InputStreamReader ipsr = new InputStreamReader(DefaultModsManager.getAsset("./splash.txt").read(), "UTF-8");
+			InputStreamReader ipsr = new InputStreamReader(Client.getInstance().getContent().getAsset("./splash.txt").read(), "UTF-8");
 			BufferedReader br = new BufferedReader(ipsr);
 			String ligne;
 			while ((ligne = br.readLine()) != null)

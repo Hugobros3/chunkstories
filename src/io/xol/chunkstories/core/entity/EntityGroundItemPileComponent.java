@@ -64,7 +64,7 @@ public class EntityGroundItemPileComponent extends EntityComponent
 	{
 		try
 		{
-			itemPile = new ItemPile(dis);
+			itemPile = ItemPile.obtainItemPileFromStream(entity.getWorld().getGameContext().getContent().items(), dis);
 		}
 		catch (UndefinedItemTypeException | NullItemException e)
 		{

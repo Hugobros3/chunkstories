@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventExecutor;
 import io.xol.chunkstories.api.events.EventHandler;
@@ -29,7 +30,6 @@ import io.xol.chunkstories.api.plugin.ServerPluginManager;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.plugin.commands.CommandHandler;
-import io.xol.chunkstories.api.plugin.context.PluginExecutionContext;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -39,14 +39,14 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 public abstract class DefaultPluginManager implements PluginManager
 {
 	//PluginStore store = new PluginStore();
-	private final PluginExecutionContext pluginExecutionContext;
+	private final GameContext pluginExecutionContext;
 
 	public Set<ChunkStoriesPlugin> activePlugins = new HashSet<ChunkStoriesPlugin>();
 
 	public Map<String, Command> commandsAliases = new HashMap<String, Command>();
 	public Set<Command> commands = new HashSet<Command>();
 
-	public DefaultPluginManager(PluginExecutionContext pluginExecutionContext)
+	public DefaultPluginManager(GameContext pluginExecutionContext)
 	{
 		this.pluginExecutionContext = pluginExecutionContext;
 	}
@@ -117,7 +117,7 @@ public abstract class DefaultPluginManager implements PluginManager
 		}
 
 		//Mods too can bundle plugins
-		for (PluginInformation pluginInformation : DefaultModsManager.getModsPlugins())
+		for (PluginInformation pluginInformation : this.pluginExecutionContext.getContent().modsManager().getAllModsPlugins())
 		{
 			//Client only plugins require actually being a client
 			if (pluginInformation.getPluginType() == PluginType.CLIENT_ONLY && !(this instanceof ClientPluginManager))

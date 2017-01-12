@@ -6,24 +6,34 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.content.DefaultModsManager;
+import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Materials
+public class MaterialsStore implements Content.Materials
 {
-	static Map<String, MaterialImplementation> materials = new HashMap<String, MaterialImplementation>();
+	private final GameContentStore store;
+	
+	public MaterialsStore(GameContentStore store)
+	{
+		this.store = store;
+		
+		reload();
+	}
+	
+	Map<String, Material> materials = new HashMap<String, Material>();
 
-	public static void reload()
+	public void reload()
 	{
 		materials.clear();
 		
-		Iterator<Asset> i = DefaultModsManager.getAllAssetsByExtension("materials");
+		Iterator<Asset> i = store.modsManager().getAllAssetsByExtension("materials");
 		while(i.hasNext())
 		{
 			Asset f = i.next();
@@ -31,7 +41,7 @@ public class Materials
 		}
 	}
 
-	private static void readitemsDefinitions(Asset f)
+	private void readitemsDefinitions(Asset f)
 	{
 		if (f == null)
 			return;
@@ -87,12 +97,24 @@ public class Materials
 		}
 	}
 	
-	public static Material getMaterialByName(String name)
+	public Material getMaterialByName(String name)
 	{
 		Material material = materials.get(name);
 		if(material != null)
 			return material;
 		
 		return getMaterialByName("undefined");
+	}
+
+	@Override
+	public Iterator<Material> all()
+	{
+		return materials.values().iterator();
+	}
+
+	@Override
+	public Content parent()
+	{
+		return store;
 	}
 }

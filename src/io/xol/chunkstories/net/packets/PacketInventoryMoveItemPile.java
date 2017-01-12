@@ -73,6 +73,8 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
+		Player player = processor.getServerClient().getProfile();
+		
 		oldX = in.readInt();
 		oldY = in.readInt();
 		newX = in.readInt();
@@ -89,7 +91,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		{
 			try
 			{
-				itemPile = new ItemPile(in);
+				itemPile = ItemPile.obtainItemPileFromStream(player.getWorld().getGameContext().getContent().items(), in);
 			}
 			catch (NullItemException e)
 			{
@@ -107,8 +109,6 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		{
 			itemPile = from.getItemPileAt(oldX, oldY);
 		}
-		
-		Player player = processor.getServerClient().getProfile();
 		
 		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(player, this);
 		Server.getInstance().getPluginManager().fireEvent(moveItemEvent);

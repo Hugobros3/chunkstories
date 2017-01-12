@@ -14,13 +14,11 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
@@ -331,6 +329,11 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 		pushComponentController();
 	}
 
+	public void refreshItemSlot(int x, int y)
+	{
+		refreshItemSlot(x, y, this.contents[x][y]);
+	}
+	
 	public void refreshItemSlot(int x, int y, ItemPile pileChanged)
 	{
 		//System.out.println("Updating slot: "+x+", "+y+" to "+pileChanged);
@@ -416,7 +419,7 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 				ItemPile itemPile;
 				try
 				{
-					itemPile = new ItemPile(stream);
+					itemPile = ItemPile.obtainItemPileFromStream(entity.getWorld().getGameContext().getContent().items(), stream);
 					//Then add the thing
 					contents[i][j] = itemPile;
 					contents[i][j].setInventory(this);

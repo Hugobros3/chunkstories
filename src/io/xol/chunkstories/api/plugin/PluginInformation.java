@@ -18,12 +18,12 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.exceptions.plugins.PluginCreationException;
 import io.xol.chunkstories.api.exceptions.plugins.PluginInfoException;
 import io.xol.chunkstories.api.exceptions.plugins.PluginLoadException;
 import io.xol.chunkstories.api.plugin.commands.Command;
-import io.xol.chunkstories.api.plugin.context.PluginExecutionContext;
 import io.xol.chunkstories.api.server.ServerInterface;
 
 /** Loads the plugin definition from it's Jar file and allows to instanciate it */
@@ -94,7 +94,7 @@ public class PluginInformation extends URLClassLoader
 			{
 				pluginType = PluginType.UNIVERSAL;
 
-				Class<?>[] types = new Class[] { PluginInformation.class, PluginExecutionContext.class };
+				Class<?>[] types = new Class[] { PluginInformation.class, GameContext.class };
 				entryPointConstructor = entryPointClass.getConstructor(types);
 			}
 
@@ -200,7 +200,7 @@ public class PluginInformation extends URLClassLoader
 	}
 
 	@SuppressWarnings("serial")
-	public ChunkStoriesPlugin createInstance(PluginExecutionContext pluginExecutionContext) throws PluginCreationException
+	public ChunkStoriesPlugin createInstance(GameContext pluginExecutionContext) throws PluginCreationException
 	{
 		try
 		{

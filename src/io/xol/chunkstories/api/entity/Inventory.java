@@ -71,4 +71,7 @@ public interface Inventory extends Iterable<ItemPile>
 
 	public String getHolderName();
 
+	/** Marks said slot as updated */
+	public void refreshItemSlot(int x, int y);
+
 }

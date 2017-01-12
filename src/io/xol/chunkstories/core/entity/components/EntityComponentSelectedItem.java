@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemTypes;
+import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 
@@ -115,7 +115,7 @@ public class EntityComponentSelectedItem extends EntityComponent
 			ItemPile itemPile = null;
 			try
 			{
-				itemPile = new ItemPile(dis);
+				itemPile = ItemPile.obtainItemPileFromStream(entity.getWorld().getGameContext().getContent().items(), dis);
 			}
 			catch (NullItemException e)
 			{

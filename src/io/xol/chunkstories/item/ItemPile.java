@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
@@ -23,17 +24,9 @@ public class ItemPile
 	
 	private int amount = 1;
 
-	private EntityComponentInventory inventory;
+	private Inventory inventory;
 	private int x;
 	private int y;
-
-	/**
-	 * Creates an item pile of the item type named 'itemName'
-	 */
-	public ItemPile(String itemName)
-	{
-		this(ItemTypes.getItemTypeByName(itemName).newItem());
-	}
 	
 	public ItemPile(Item item)
 	{
@@ -46,44 +39,29 @@ public class ItemPile
 		this.amount = amount;
 	}
 
-	/**
-	 * Loads an item pile based on the data supplied (for amount and external data)
-	 * 
-	 * @param item
-	 * @param stream
-	 * @throws IOException
-	 */
-	@Deprecated
-	public ItemPile(Item item, DataInputStream stream) throws IOException, UndefinedItemTypeException
-	{
-		this.item = item;
-		//this.data = item.getItemData();
-		loadInternalItemData(stream);
-	}
-
 	public ItemPile(ItemType type)
 	{
 		this(type.newItem());
 	}
 
-	public ItemPile(DataInputStream stream) throws IOException, UndefinedItemTypeException, NullItemException
+	public static ItemPile obtainItemPileFromStream(Content.ItemsTypes context, DataInputStream stream) throws IOException, UndefinedItemTypeException, NullItemException
 	{
 		int itemId = stream.readInt();
 		if(itemId == 0)
 			throw new NullItemException(stream);
 		
-		ItemType itemType = ItemTypes.getItemTypeById(itemId);
+		ItemType itemType = context.getItemTypeById(itemId);
 		if(itemType == null)
 			throw new UndefinedItemTypeException(itemId);
 		
-		this.item = itemType.newItem();
-
-		loadInternalItemData(stream);
+		ItemPile itemPile = new ItemPile(itemType);
+		itemPile.loadInternalItemData(stream);
+		
+		return itemPile;
 	}
 
 	public String getTextureName()
 	{
-		//System.out.println("fck off"+item.getTextureName(this));
 		return item.getTextureName(this);
 	}
 
@@ -92,13 +70,13 @@ public class ItemPile
 		return item;
 	}
 
-	private void loadInternalItemData(DataInputStream stream) throws IOException
+	private final void loadInternalItemData(DataInputStream stream) throws IOException
 	{
 		this.amount = stream.readInt();
 		item.load(stream);
 	}
 
-	public void saveItemIntoStream(DataOutputStream stream) throws IOException
+	public final void saveItemIntoStream(DataOutputStream stream) throws IOException
 	{
 		stream.writeInt(item.getID());
 		
@@ -188,12 +166,12 @@ public class ItemPile
 		if(amount == 0 && inventory != null)
 		{
 			inventory.setItemPileAt(x, y, null);
-			this.inventory.refreshItemSlot(x, y, null);
+			this.inventory.refreshItemSlot(x, y);
 			return null;
 		}
 		
 		if (inventory != null)
-			this.inventory.refreshItemSlot(x, y, this);
+			this.inventory.refreshItemSlot(x, y);
 
 		return this;
 	}
@@ -234,7 +212,7 @@ public class ItemPile
 		return "[ItemPile t:"+getItem()+" a:"+amount+" i:"+inventory+" x:"+x+" y:"+getY()+" ]";
 	}
 
-	public EntityComponentInventory getInventory()
+	public Inventory getInventory()
 	{
 		return inventory;
 	}

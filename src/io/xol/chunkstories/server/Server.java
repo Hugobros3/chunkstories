@@ -22,7 +22,7 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.DefaultPluginManager;
-import io.xol.chunkstories.content.GameContent;
+import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
@@ -83,7 +83,7 @@ public class Server implements Runnable, ServerInterface
 			connectionsManager = new ServerConnectionsManager(this);
 
 			//Loads the mods
-			gameContent = new GameContent(this, modsString);
+			gameContent = new GameContentStore(this, modsString);
 			//ModsManager.reload();
 
 			modsProvider = new ServerModsProvider(this);
@@ -149,7 +149,7 @@ public class Server implements Runnable, ServerInterface
 	// What mods are required to join this server ?
 	private ServerModsProvider modsProvider;
 
-	private GameContent gameContent;
+	private GameContentStore gameContent;
 
 	@Override
 	public void run()

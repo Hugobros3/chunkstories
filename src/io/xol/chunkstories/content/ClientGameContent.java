@@ -11,7 +11,7 @@ import io.xol.engine.sound.library.SoundsLibrary;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ClientGameContent extends GameContent
+public class ClientGameContent extends GameContentStore
 {
 
 	public ClientGameContent(ClientInterface client, String modsStringArgument)

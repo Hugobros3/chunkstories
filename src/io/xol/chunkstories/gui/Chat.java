@@ -26,7 +26,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemTypes;
+import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -257,7 +257,7 @@ public class Chat
 						if (inputBox.text.split(" ").length >= 3)
 							c = Integer.parseInt(inputBox.text.split(" ")[2]);
 						
-						ItemPile it = new ItemPile(ItemTypes.getItemTypeByName(itemName).newItem());
+						ItemPile it = new ItemPile(Client.getInstance().getContent().items().getItemTypeByName(itemName).newItem());
 						it.setAmount(c);
 						
 						((EntityPlayer) controlledEntity).getInventory().addItemPile(it);

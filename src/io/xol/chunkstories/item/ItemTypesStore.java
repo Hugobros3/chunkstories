@@ -1,9 +1,13 @@
 package io.xol.chunkstories.item;
 
+import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.content.DefaultModsManager;
+import io.xol.chunkstories.api.mods.ModsManager;
+import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.BufferedReader;
@@ -18,20 +22,31 @@ import java.util.Map;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ItemTypes
+public class ItemTypesStore implements Content.ItemsTypes
 {
-	public static ItemType[] items = new ItemType[65536];
-	static Map<Short, Constructor<? extends Item>> itemsTypes = new HashMap<Short, Constructor<? extends Item>>();
-	public static Map<String, ItemType> dictionary = new HashMap<String, ItemType>();
-	public static int itemTypes = 0;
-	public static int lastAllocatedId;
+	public ItemType[] items = new ItemType[65536];
+	Map<Short, Constructor<? extends Item>> itemsTypes = new HashMap<Short, Constructor<? extends Item>>();
+	public Map<String, ItemType> dictionary = new HashMap<String, ItemType>();
+	public int itemTypes = 0;
+	public int lastAllocatedId;
 
-	public static void reload()
+	private final Content content;
+	private final ModsManager modsManager;
+	
+	public ItemTypesStore(GameContentStore gameContentStore)
+	{
+		this.content = gameContentStore;
+		this.modsManager = gameContentStore.modsManager();
+		
+		reload();
+	}
+	
+	public void reload()
 	{
 		Arrays.fill(items, null);
 		dictionary.clear();
 		
-		Iterator<Asset> i = DefaultModsManager.getAllAssetsByExtension("items");
+		Iterator<Asset> i = Client.getInstance().getContent().modsManager().getAllAssetsByExtension("items");
 		while(i.hasNext())
 		{
 			Asset f = i.next();
@@ -40,7 +55,7 @@ public class ItemTypes
 		}
 	}
 	
-	private static void readitemsDefinitions(Asset f)
+	private void readitemsDefinitions(Asset f)
 	{
 		if (f == null)
 			return;
@@ -103,7 +118,7 @@ public class ItemTypes
 							className = split[3];
 						try
 						{
-							Class<?> rawClass = DefaultModsManager.getClassByName(className);
+							Class<?> rawClass = modsManager.getClassByName(className);
 							if (rawClass == null)
 							{
 								ChunkStoriesLogger.getInstance().warning("Item class " + className + " does not exist in codebase.");
@@ -124,7 +139,7 @@ public class ItemTypes
 									System.out.println("item " + className + " does not provide a valid constructor.");
 									continue;
 								}
-								currentItemType = new ItemTypeImpl(id);
+								currentItemType = new ItemTypeImpl(this, id);
 								currentItemType.setInternalName(itemName);
 								currentItemType.setConstructor(constructor);
 							}
@@ -155,17 +170,29 @@ public class ItemTypes
 		}
 	}
 
-	public static ItemType getItemTypeById(int id)// throws UndefinedItemTypeException
+	public ItemType getItemTypeById(int id)// throws UndefinedItemTypeException
 	{
 		//Quick & dirty sanitization
 		id = id & 0x00FFFFFF;
 		return items[id];
 	}
 
-	public static ItemType getItemTypeByName(String itemName)// throws UndefinedItemTypeException
+	public ItemType getItemTypeByName(String itemName)// throws UndefinedItemTypeException
 	{
 		if (dictionary.containsKey(itemName))
 			return dictionary.get(itemName);
 		return null;
+	}
+
+	@Override
+	public Iterator<ItemType> all()
+	{
+		return dictionary.values().iterator();
+	}
+
+	@Override
+	public Content parent()
+	{
+		return content;
 	}
 }

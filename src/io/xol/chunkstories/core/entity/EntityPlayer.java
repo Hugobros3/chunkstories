@@ -25,6 +25,7 @@ import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldMaster;
+
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.components.EntityComponentController;
@@ -39,11 +40,11 @@ import io.xol.chunkstories.core.item.ItemOverlay;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
 import io.xol.chunkstories.item.ItemPile;
-import io.xol.chunkstories.item.ItemTypes;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
+
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -616,7 +617,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 						if (voxelID > 0)
 						{
 							//Spawn new itemPile in his inventory
-							ItemVoxel item = (ItemVoxel) ItemTypes.getItemTypeByName("item_voxel").newItem();
+							ItemVoxel item = (ItemVoxel) world.getGameContext().getContent().items().getItemTypeByName("item_voxel").newItem();
 							item.voxel = VoxelsStore.get().getVoxelById(voxelID);
 							item.voxelMeta = voxelMeta;
 

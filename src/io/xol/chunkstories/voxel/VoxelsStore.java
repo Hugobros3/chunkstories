@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.mods.Asset;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.materials.Materials;
+import io.xol.chunkstories.materials.MaterialsStore;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;
@@ -251,7 +251,7 @@ public class VoxelsStore implements Content.Voxels
 									voxDefault.billboard = Boolean.parseBoolean(parameterValue);
 									break;
 								case "material":
-									voxDefault.material = Materials.getMaterialByName(parameterValue);
+									voxDefault.material = parent().materials().getMaterialByName(parameterValue);
 									break;
 								default:
 									ChunkStoriesLogger.getInstance().log("Parse error in file " + f + ", line " + ln + ", unknown parameter '" + parameterName + "'", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);

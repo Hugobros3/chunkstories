@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.xol.chunkstories.api.Content.ItemsTypes;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -16,6 +17,8 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 public class ItemTypeImpl implements ItemType
 {
 	private final int id;
+	private final ItemTypesStore store;
+	
 	private String internalName;
 	private int slotsWidth = 1;
 	private int slotsHeight = 1;
@@ -25,8 +28,9 @@ public class ItemTypeImpl implements ItemType
 	
 	private Map<String, String> customProperties = new HashMap<String, String>();
 
-	public ItemTypeImpl(int id)
+	public ItemTypeImpl(ItemTypesStore store, int id)
 	{
+		this.store = store;
 		this.id = id;
 	}
 
@@ -121,5 +125,11 @@ public class ItemTypeImpl implements ItemType
 	public void setup(String propertyName, String value)
 	{
 		customProperties.put(propertyName, value);
+	}
+
+	@Override
+	public ItemsTypes store()
+	{
+		return store;
 	}
 }

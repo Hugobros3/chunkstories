@@ -67,7 +67,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		this.socket = socket;
 		this.socketPort = socket.getPort();
 
-		this.packetsProcessor = new PacketsProcessor(this);
+		this.packetsProcessor = new PacketsProcessor(this, Server.getInstance().getContent().packets());
 		this.setName(this.toString());
 	}
 

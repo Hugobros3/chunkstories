@@ -3,6 +3,7 @@ package io.xol.chunkstories.client.net;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.RemoteServer;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.PacketText;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
@@ -56,7 +57,7 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 		this.ip = ip;
 		this.port = port;
 		
-		this.packetsProcessor = new PacketsProcessor(this);
+		this.packetsProcessor = new PacketsProcessor(this, Client.getInstance().getContent().packets());
 		this.setName("Server Connection thread - " + ip);
 		
 		//Don't even try if we fail to open the socket.
@@ -130,8 +131,7 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 	// @SuppressWarnings("deprecation")
 	public void close()
 	{
-
-		Thread.dumpStack();
+		//Thread.dumpStack();
 		
 		if (closeMethodAlreadyCalled)
 			return;
@@ -344,5 +344,20 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 		{
 			fileFence.signal();
 		}
+	}
+
+	@Override
+	public void disconnect()
+	{
+		disconnect("Generic disconnect reason");
+	}
+
+	@Override
+	public void disconnect(String disconnectionReason)
+	{
+		failed = true;
+		latestErrorMessage = "Fatal error while handling connection to " + ip + ":" + port + ". (" + disconnectionReason + ")";
+		System.out.println(latestErrorMessage);
+		close();
 	}
 }
