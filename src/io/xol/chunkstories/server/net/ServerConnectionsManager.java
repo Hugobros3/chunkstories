@@ -29,6 +29,7 @@ public class ServerConnectionsManager extends Thread
 	public ServerConnectionsManager(Server server)
 	{
 		this.server = server;
+		this.maxClients = server.getServerConfig().getIntProp("maxusers", "100");
 	}
 	
 	private AtomicBoolean running = new AtomicBoolean(true);
@@ -36,7 +37,7 @@ public class ServerConnectionsManager extends Thread
 	private ServerSocket serverSocket;
 	
 	private Set<ServerClient> clients = ConcurrentHashMap.newKeySet();
-	private int maxClients = Server.getInstance().getServerConfig().getIntProp("maxusers", "100");
+	private int maxClients;
 
 	private String hostname = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?host=1", "");
 	private static String externalIP = "none";

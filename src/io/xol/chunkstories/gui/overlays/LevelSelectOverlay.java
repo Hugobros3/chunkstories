@@ -79,7 +79,7 @@ public class LevelSelectOverlay extends Overlay
 				break;
 			if (worldButton.clicked())
 			{
-				Client.getInstance().changeWorld(new WorldClientLocal(worldButton.info));
+				Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), worldButton.info));
 				//Client.world.startLogic();
 				//this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 			}

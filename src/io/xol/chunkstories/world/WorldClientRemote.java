@@ -17,9 +17,9 @@ public class WorldClientRemote extends WorldClientCommon implements WorldNetwork
 	private ClientToServerConnection connection;
 	private PacketsProcessor packetsProcessor;
 
-	public WorldClientRemote(WorldInfo info, ClientToServerConnection connection)
+	public WorldClientRemote(Client client, WorldInfo info, ClientToServerConnection connection)
 	{
-		super(info);
+		super(client, info);
 
 		this.connection = connection;
 		this.packetsProcessor = connection.getPacketsProcessor();

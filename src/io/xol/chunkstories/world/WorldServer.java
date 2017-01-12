@@ -39,7 +39,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 	public WorldServer(Server server, String worldDir)
 	{
-		super(new WorldInfo(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
+		super(server, new WorldInfo(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
 
 		this.server = server;
 		this.virtualServerSoundManager = new VirtualServerSoundManager(this, server);

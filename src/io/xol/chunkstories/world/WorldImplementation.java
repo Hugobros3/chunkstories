@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
@@ -96,11 +97,15 @@ public abstract class WorldImplementation implements World
 	//Entity IDS counter
 	AtomicLong entitiesUUIDGenerator = new AtomicLong();
 
-	public WorldImplementation(WorldInfo info)
+	protected final GameContext gameContext;
+	
+	public WorldImplementation(GameContext gameContext, WorldInfo info)
 	{
+		this.gameContext = gameContext;
+		
 		worldInfo = info;
 		//Creates world generator
-		this.generator = this.getGameContext().getContent().generators().getWorldGenerator(info.getGeneratorName()).instanciate();
+		this.generator = gameContext.getContent().generators().getWorldGenerator(info.getGeneratorName()).instanciate();
 
 		this.generator.initialize(this);
 

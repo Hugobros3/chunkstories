@@ -11,9 +11,9 @@ import io.xol.chunkstories.world.io.IOTasks;
 
 public class WorldClientLocal extends WorldClientCommon implements WorldMaster
 {
-	public WorldClientLocal(WorldInfo info)
+	public WorldClientLocal(Client client, WorldInfo info)
 	{
-		super(info);
+		super(client, info);
 		
 		ioHandler = new IOTasks(this);
 		ioHandler.start();

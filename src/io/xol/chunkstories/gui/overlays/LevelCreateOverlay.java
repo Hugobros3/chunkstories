@@ -67,7 +67,7 @@ public class LevelCreateOverlay extends Overlay
 			//Client.world.startLogic();
 			//this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 			
-			Client.getInstance().changeWorld(new WorldClientLocal(info));
+			Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), info));
 		}
 	}
 

@@ -73,7 +73,7 @@ public class PacketWorldInfo extends Packet
 				@Override
 				public void run()
 				{
-					WorldClientRemote world = new WorldClientRemote(info, processor.getClientToServerConnection());
+					WorldClientRemote world = new WorldClientRemote(Client.getInstance(), info, processor.getClientToServerConnection());
 					Client.getInstance().changeWorld(world);
 				}
 			});
