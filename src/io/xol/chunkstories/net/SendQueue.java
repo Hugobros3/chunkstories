@@ -3,20 +3,16 @@ package io.xol.chunkstories.net;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketPrepared;
-import io.xol.chunkstories.api.net.PacketSynchPrepared;
-import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.net.packets.PacketDummy;
 import io.xol.chunkstories.net.packets.PacketText;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -25,7 +21,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SendQueue extends Thread
 {
 	BlockingQueue<Packet> sendQueue = new LinkedBlockingQueue<Packet>();
-	AtomicBoolean die = new AtomicBoolean(false);
 
 	PacketsProcessor processor;
 	DataOutputStream out;
@@ -55,9 +50,6 @@ public class SendQueue extends Thread
 	 */
 	public void queue(Packet packet)
 	{
-		if (die.get())
-			return;
-
 		//Prepare packets when queuing them
 		try
 		{
@@ -69,48 +61,7 @@ public class SendQueue extends Thread
 			ChunkStoriesLogger.getInstance().error("Error : unable to buffer PacketPrepared " + packet);
 			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 		}
-
-		//Synch packets have to be built when submitted
-		/*if (packet instanceof PacketSynch)
-		{
-			//Get our thread's buffers
-			SynchBuffer synchBuffer = SendQueue.synchBuffer.get();
 		
-			ByteArrayOutputStream baos = synchBuffer.baos;
-			DataOutputStream outSynch = synchBuffer.outSynch;
-		
-			//Reset it
-			baos.reset();
-			try
-			{
-				//Send the packet in the buffer
-				packet.send(destinator, outSynch);
-				outSynch.flush();
-		
-				//How many bytes were written ?
-				int packetSize = baos.size();
-		
-				//Make a dummy packet out of the stuff we got
-				PacketSynchSendable sendablePacket = new PacketSynchSendable(packet.isSentFromClient());
-				sendablePacket.data = baos.toByteArray();
-				sendablePacket.packetLength = packetSize;
-				sendablePacket.packetType = processor.getPacketId(packet);
-		
-				//Add that one instead of the real one
-				sendQueue.add(sendablePacket);
-			}
-			catch (IOException e)
-			{
-				ChunkStoriesLogger.getInstance().error("Error : unable to buffer PacketSynch " + packet);
-				e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
-			}
-			catch (UnknowPacketException e)
-			{
-				//Definitly not supposed to happen
-				e.printStackTrace();
-			}
-		}
-		else*/
 		sendQueue.add(packet);
 	}
 
@@ -122,7 +73,7 @@ public class SendQueue extends Thread
 	@Override
 	public void run()
 	{
-		while (!die.get())
+		while (true)
 		{
 			Packet packet = null;
 
@@ -152,6 +103,7 @@ public class SendQueue extends Thread
 				catch (IOException e)
 				{
 					//That's basically terminated connection exceptions
+					destinator.disconnect("Broken pipe: Unable to flush: "+e.getMessage());
 				}
 			}
 			else
@@ -165,6 +117,7 @@ public class SendQueue extends Thread
 				{
 					//We don't care about that, it's the motd thing mostly
 					//ChunkStoriesLogger.getInstance().error("Error : unable to send Packet");
+					destinator.disconnect("Broken pipe: Unable to send packet: "+e.getMessage());
 				}
 				catch (UnknowPacketException e)
 				{
@@ -173,10 +126,7 @@ public class SendQueue extends Thread
 					e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 				}
 		}
-	}
 
-	public void kill()
-	{
 		try
 		{
 			out.close();
@@ -185,7 +135,10 @@ public class SendQueue extends Thread
 		{
 			//Really that's just disconnection
 		}
-		die.set(true);
+	}
+
+	public void kill()
+	{
 		sendQueue.add(DIE);
 
 		synchronized (this)

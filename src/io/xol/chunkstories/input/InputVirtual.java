@@ -54,7 +54,7 @@ public class InputVirtual implements KeyBind
 	
 	private void computeHash()
 	{
-		byte[] digested = Inputs.md.digest(name.getBytes());
+		byte[] digested = KeyBindsLoader.md.digest(name.getBytes());
 		hash = (hash & 0x0FFFFFFFFFFFFFFFL) | (((long) digested[0] & 0xF) << 60);
 		hash = (hash & 0xF0FFFFFFFFFFFFFFL) | (((long) digested[1] & 0xF) << 56);
 		hash = (hash & 0xFF0FFFFFFFFFFFFFL) | (((long) digested[2] & 0xF) << 52);

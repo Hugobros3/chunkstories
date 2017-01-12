@@ -33,7 +33,7 @@ import java.net.Socket;
 
 public class ServerClient extends Thread implements HttpRequester, PacketDestinator, PacketSender
 {
-	ServerConnectionsManager connectionsManager;
+	private final ServerConnectionsManager connectionsManager;
 
 	int socketPort = 0;
 
@@ -212,6 +212,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 				ChunkStoriesLogger.getInstance().info("Disconnected " + this + " for causing an " + e.getClass().getSimpleName());
 				e.printStackTrace();
 				disconnect("Exception : " + e.getMessage());
+				return;
 			}
 			catch (IOException e)
 			{
@@ -219,12 +220,14 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 					ChunkStoriesLogger.getInstance().info("Connection lost to " + this.getProfile().getDisplayName() + " (" + this.getName() + ").");
 
 				disconnect("Broken socket");
+				return;
 			}
 			catch (Exception e)
 			{
 				ChunkStoriesLogger.getInstance().info("Disconnected " + this + " for causing an " + e.getClass().getSimpleName());
 				e.printStackTrace();
 				disconnect("Exception : " + e.getMessage());
+				return;
 			}
 		}
 		disconnect("Socket terminated");
@@ -415,7 +418,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 
 	public void disconnect(String disconnectionReason)
 	{
-		Thread.dumpStack();
+		//Thread.dumpStack();
 		
 		ChunkStoriesLogger.getInstance().info("Disconnecting client " + this + " for reason " + disconnectionReason);
 		sendInternalTextMessage("disconnect/" + disconnectionReason);

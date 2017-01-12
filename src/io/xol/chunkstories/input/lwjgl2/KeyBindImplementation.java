@@ -4,7 +4,7 @@ import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.input.Inputs;
+import io.xol.chunkstories.input.KeyBindsLoader;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -68,7 +68,7 @@ public class KeyBindImplementation implements KeyBind, LWJGLPollable
 	
 	private void computeHash(String name2)
 	{
-		byte[] digested = Inputs.md.digest(name2.getBytes());
+		byte[] digested = KeyBindsLoader.md.digest(name2.getBytes());
 		hash = (hash & 0x0FFFFFFFFFFFFFFFL) | (((long) digested[0] & 0xF) << 60);
 		hash = (hash & 0xF0FFFFFFFFFFFFFFL) | (((long) digested[1] & 0xF) << 56);
 		hash = (hash & 0xFF0FFFFFFFFFFFFFL) | (((long) digested[2] & 0xF) << 52);

@@ -11,5 +11,11 @@ import io.xol.chunkstories.api.serialization.StreamTarget;
  */
 public interface PacketDestinator extends StreamTarget
 {
-
+	public void pushPacket(Packet packet);
+	
+	public void flush();
+	
+	public void disconnect();
+	
+	public void disconnect(String disconnectionReason);
 }

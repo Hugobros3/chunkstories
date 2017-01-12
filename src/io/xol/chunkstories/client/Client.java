@@ -124,7 +124,7 @@ public class Client implements ClientInterface
 		//Create game content manager
 		gameContent = new ClientGameContent(this, modsStringArgument);
 		
-		inputsManager = new Lwjgl2ClientInputsManager();
+		inputsManager = new Lwjgl2ClientInputsManager(this);
 		
 		//
 		windows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);

@@ -9,7 +9,7 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.content.DefaultModsManager;
+import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.input.lwjgl2.KeyBindImplementation;
 import io.xol.chunkstories.input.lwjgl2.Lwjgl2ClientInputsManager;
 import io.xol.chunkstories.server.ServerInputsManager;
@@ -18,7 +18,7 @@ import io.xol.chunkstories.server.ServerInputsManager;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Inputs
+public class KeyBindsLoader
 {
 	public static MessageDigest md;
 
@@ -34,12 +34,12 @@ public class Inputs
 		}
 	}
 	
-	public static Iterator<Input> loadKeyBindsIntoManager(InputsManager inputManager)
+	public static Iterator<Input> loadKeyBindsIntoManager(InputsManager inputManager, ModsManager modsManager)
 	{
 		return new Iterator<Input>()
 		{
 
-			Iterator<Asset> i = DefaultModsManager.getAllAssetsByExtension("inputs");
+			Iterator<Asset> i = modsManager.getAllAssetsByExtension("inputs");
 			Iterator<Input> fileInputsIterator = null;
 			Input input = null;
 
