@@ -46,7 +46,7 @@ public class ItemTypesStore implements Content.ItemsTypes
 		Arrays.fill(items, null);
 		dictionary.clear();
 		
-		Iterator<Asset> i = Client.getInstance().getContent().modsManager().getAllAssetsByExtension("items");
+		Iterator<Asset> i = modsManager.getAllAssetsByExtension("items");
 		while(i.hasNext())
 		{
 			Asset f = i.next();

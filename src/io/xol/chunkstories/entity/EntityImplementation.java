@@ -46,9 +46,9 @@ public abstract class EntityImplementation implements Entity
 	protected Set<Subscriber> subscribers = new HashSet<Subscriber>();
 
 	//Basic components
-	protected EntityComponentExistence existenceComponent = new EntityComponentExistence(this, null);
-	protected EntityComponentPosition positionComponent = new EntityComponentPosition(this, existenceComponent);
-	private EntityComponentVelocity velocityComponent = new EntityComponentVelocity(this, positionComponent);
+	final protected EntityComponentExistence existenceComponent;
+	protected EntityComponentPosition positionComponent;
+	private EntityComponentVelocity velocityComponent;
 
 	//Physics system info
 	//TODO: refactor this out
@@ -66,17 +66,21 @@ public abstract class EntityImplementation implements Entity
 
 	private final short eID;
 	
-	public EntityImplementation(WorldImplementation w, double x, double y, double z)
+	public EntityImplementation(WorldImplementation world, double x, double y, double z)
 	{
-		world = w;
+		this.world = world;
 
-		positionComponent.setWorld(w);
+		existenceComponent = new EntityComponentExistence(this, null);
+		positionComponent = new EntityComponentPosition(this, existenceComponent);
+		velocityComponent = new EntityComponentVelocity(this, positionComponent);
+		
+		positionComponent.setWorld(world);
 		positionComponent.setPositionXYZ(x, y, z);
 
 		//To avoid NPEs
 		voxelIn = VoxelsStore.get().getVoxelById(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 		
-		eID = w.getGameContext().getContent().entities().getEntityIdByClassname(this.getClass().getName());
+		eID = world.getGameContext().getContent().entities().getEntityIdByClassname(this.getClass().getName());
 	}
 	
 	public EntityComponentExistence getComponentExistence()

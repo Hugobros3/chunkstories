@@ -1,7 +1,6 @@
 package io.xol.chunkstories.voxel;
 
 import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.mods.Asset;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -37,14 +36,12 @@ public class VoxelsStore implements Content.Voxels
 	public VoxelsStore(Content content)
 	{
 		this.content = content;
-		this.context = content.getContext();
-		this.textures = new VoxelTexturesStoreAndAtlaser(context, this);
-		this.models = new VoxelModelsStore(context, this);
+		this.textures = new VoxelTexturesStoreAndAtlaser(this);
+		this.models = new VoxelModelsStore(this);
 		
 		this.reloadVoxelTypes();
 	}
 	
-	private final GameContext context;
 	private final Content content;
 	private final VoxelTexturesStoreAndAtlaser textures;
 	private final VoxelModelsStore models;
@@ -82,7 +79,7 @@ public class VoxelsStore implements Content.Voxels
 		attributedIds.clear();
 		voxelsByName.clear();
 
-		Iterator<Asset> i = context.getContent().modsManager().getAllAssetsByExtension("voxels");
+		Iterator<Asset> i = content.modsManager().getAllAssetsByExtension("voxels");
 		while (i.hasNext())
 		{
 			Asset f = i.next();
@@ -132,7 +129,7 @@ public class VoxelsStore implements Content.Voxels
 						{
 							try
 							{
-								Class<?> customVoxelClass = context.getContent().modsManager().getClassByName(splitted[3]); // Class.forName(splitted[3]);
+								Class<?> customVoxelClass = content.modsManager().getClassByName(splitted[3]); // Class.forName(splitted[3]);
 								if (customVoxelClass == null)
 								{
 									ChunkStoriesLogger.getInstance().warning("Voxel class " + splitted[3] + " does not exist in codebase.");

@@ -62,18 +62,17 @@ import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 public class EntityPlayer extends EntityHumanoid implements EntityControllable, EntityOverlay, EntityNameable, EntityWithInventory, EntityWithSelectedItem, EntityCreative, EntityFlying
 {
 	//Add the controller component to whatever else the superclass may have
-	EntityComponentController controllerComponent = new EntityComponentController(this, this.getComponents().getLastComponent());
+	EntityComponentController controllerComponent;
 
-	//Declared in constructor, makes no difference at the end of the day
 	EntityComponentInventory inventoryComponent;
 	EntityComponentSelectedItem selectedItemComponent;
 
-	EntityComponentName name = new EntityComponentName(this, this.getComponents().getLastComponent());
-	EntityComponentCreativeMode creativeMode = new EntityComponentCreativeMode(this, this.getComponents().getLastComponent());
-	EntityComponentFlying flying = new EntityComponentFlying(this, this.getComponents().getLastComponent());
+	EntityComponentName name;
+	EntityComponentCreativeMode creativeMode;
+	EntityComponentFlying flying;
 
 	//FOOD
-	EntityComponentFoodLevel foodLevel = new EntityComponentFoodLevel(this, 100);
+	EntityComponentFoodLevel foodLevel;
 
 	protected boolean noclip = true;
 
@@ -88,8 +87,17 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	public EntityPlayer(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
+		
+		controllerComponent = new EntityComponentController(this, this.getComponents().getLastComponent());
+		
 		inventoryComponent = new EntityComponentInventory(this, 10, 4);
 		selectedItemComponent = new EntityComponentSelectedItem(this, inventoryComponent);
+		
+		name = new EntityComponentName(this, this.getComponents().getLastComponent());
+		creativeMode = new EntityComponentCreativeMode(this, this.getComponents().getLastComponent());
+		flying = new EntityComponentFlying(this, this.getComponents().getLastComponent());
+		
+		foodLevel = new EntityComponentFoodLevel(this, 100);
 	}
 
 	public EntityPlayer(WorldImplementation w, double x, double y, double z, String name)

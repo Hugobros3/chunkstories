@@ -91,7 +91,7 @@ public interface Content
 	public EntityTypes entities();
 	public interface EntityTypes {
 		
-		public EntityType getEntityTypeById(int entityId);
+		public EntityType getEntityTypeById(short entityId);
 		
 		public EntityType getEntityTypeByName(String entityName);
 		

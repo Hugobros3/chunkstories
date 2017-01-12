@@ -34,7 +34,7 @@ public class EntityComponentsStore implements Content.EntityTypes.EntityComponen
 	{
 		entityComponentsIds.clear();
 		
-		Iterator<Asset> i = context.getContent().modsManager().getAllAssetsByExtension("components");
+		Iterator<Asset> i = entities.parent().modsManager().getAllAssetsByExtension("components");
 		while(i.hasNext())
 		{
 			Asset f = i.next();

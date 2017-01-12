@@ -34,7 +34,7 @@ import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 public abstract class EntityLivingImplentation extends EntityImplementation implements EntityLiving
 {
 	//Head/body rotation
-	EntityComponentRotation entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
+	EntityComponentRotation entityRotationComponent;
 
 	//Movement stuff
 	public Vector3dm acceleration = new Vector3dm();
@@ -50,6 +50,8 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	public EntityLivingImplentation(WorldImplementation w, double x, double y, double z)
 	{
 		super(w, x, y, z);
+		
+		entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
 		entityHealthComponent = new EntityComponentHealth(this, getStartHealth());
 	}
 

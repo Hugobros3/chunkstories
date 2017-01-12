@@ -23,7 +23,6 @@ import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.Voxels;
-import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.content.DefaultModsManager.ModsAssetHierarchy;
@@ -41,12 +40,12 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 	public static int BLOCK_ATLAS_SIZE;
 	public static int BLOCK_ATLAS_FACTOR;
 
+	private final Content content;
 	private final VoxelsStore voxels;
-	private final GameContext context;
 	
-	public VoxelTexturesStoreAndAtlaser(GameContext context, VoxelsStore voxels)
+	public VoxelTexturesStoreAndAtlaser(VoxelsStore voxels)
 	{
-		this.context = context;
+		this.content = voxels.parent();
 		this.voxels = voxels;
 		
 		this.buildTextureAtlas();
@@ -68,7 +67,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 
 			//for (File f : folder.listFiles())
 			
-			Iterator<ModsAssetHierarchy> allFiles = context.getContent().modsManager().getAllUniqueEntries();
+			Iterator<ModsAssetHierarchy> allFiles = content.modsManager().getAllUniqueEntries();
 			//Iterator<Entry<String, Deque<File>>> allFiles = GameContent.getAllUniqueEntries();
 			AssetHierarchy entry;
 			Asset f;
@@ -197,7 +196,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						break;
 					}
 
-					imageBuffer = ImageIO.read(context.getContent().modsManager().getAsset("./voxels/textures/" + vt.name + ".png").read());
+					imageBuffer = ImageIO.read(content.modsManager().getAsset("./voxels/textures/" + vt.name + ".png").read());
 					//imageBuffer = ImageIO.read(GameContent.getTextureFileLocation());
 
 					float alphaTotal = 0;
@@ -231,9 +230,9 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 					
 					//colors.put(vt.name, new Vector4fm(color.x, color.y, color.z, alphaTotal));
 					// Do also the normal maps !
-					Asset normalMap = context.getContent().modsManager().getAsset("./voxels/textures/normal/" + vt.name + ".png");
+					Asset normalMap = content.modsManager().getAsset("./voxels/textures/normal/" + vt.name + ".png");
 					if (normalMap == null)
-						normalMap = context.getContent().modsManager().getAsset("./voxels/textures/normal/notex.png");
+						normalMap = content.modsManager().getAsset("./voxels/textures/normal/notex.png");
 
 					imageBuffer = ImageIO.read(normalMap.read());
 					for (int x = 0; x < vt.imageFileDimensions; x++)
@@ -245,9 +244,9 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						}
 					}
 					// And the materials !
-					Asset materialMap = context.getContent().modsManager().getAsset("./voxels/textures/material/" + vt.name + ".png");
+					Asset materialMap = content.modsManager().getAsset("./voxels/textures/material/" + vt.name + ".png");
 					if (materialMap == null)
-						materialMap = context.getContent().modsManager().getAsset("./voxels/textures/material/notex.png");
+						materialMap = content.modsManager().getAsset("./voxels/textures/material/notex.png");
 
 					imageBuffer = ImageIO.read(materialMap.read());
 					for (int x = 0; x < vt.imageFileDimensions; x++)
@@ -272,7 +271,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 			}
 			// Read textures metadata
 			//TODO read all overrides in priority
-			readTexturesMeta(context.getContent().modsManager().getAsset("./voxels/textures/meta.txt"));
+			readTexturesMeta(content.modsManager().getAsset("./voxels/textures/meta.txt"));
 		}
 		catch (Exception e)
 		{

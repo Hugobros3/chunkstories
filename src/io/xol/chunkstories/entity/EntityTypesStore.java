@@ -197,17 +197,12 @@ public class EntityTypesStore implements EntityTypes
 			{
 				//This is bad
 				ChunkStoriesLogger.getInstance().log("Couldn't instanciate entity "+this+" in world "+world);
+				e.printStackTrace();
 				e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 				return null;
 			}
 		}
 		
-	}
-
-	@Override
-	public EntityType getEntityTypeById(int entityId)
-	{
-		return entityTypesById.get(entityId);
 	}
 
 	@Override

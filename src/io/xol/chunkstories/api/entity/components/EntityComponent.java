@@ -33,7 +33,7 @@ public abstract class EntityComponent
 
 	public EntityComponent(Entity entity, EntityComponent previous)
 	{
-		this.ecID = entity.getWorld().getGameContext().getContent().entities().components().getIdForClass(getClass().getName());
+		this.ecID = (entity == null || entity.getWorld() == null ) ? -1 : entity.getWorld().getGameContext().getContent().entities().components().getIdForClass(getClass().getName());
 		
 		this.entity = entity;
 		if (previous != null)

@@ -2,7 +2,6 @@ package io.xol.chunkstories.voxel.models;
 
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.Voxels;
-import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
@@ -23,14 +22,12 @@ import java.util.Map;
 
 public class VoxelModelsStore implements Content.Voxels.VoxelModels
 {
-	private final GameContext context;
 	private final VoxelsStore voxels;
 	
 	private Map<String, VoxelModel> models = new HashMap<String, VoxelModel>();
 
-	public VoxelModelsStore(GameContext context, VoxelsStore voxelsLoader)
+	public VoxelModelsStore(VoxelsStore voxelsLoader)
 	{
-		this.context = context;
 		this.voxels = voxelsLoader;
 		
 		resetAndLoadModels();

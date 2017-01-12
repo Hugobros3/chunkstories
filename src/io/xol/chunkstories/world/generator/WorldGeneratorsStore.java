@@ -35,7 +35,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		reload();
 	}
 	
-	public Map<String, WorldGeneratorType> generators;
+	public Map<String, WorldGeneratorType> generators = new HashMap<String, WorldGeneratorType>();
 	public Map<Class<? extends WorldGenerator>, WorldGeneratorType> generatorsClasses = new HashMap<Class<? extends WorldGenerator>, WorldGeneratorType>();
 	
 	public class ActualWorldGeneratorType implements WorldGeneratorType {
