@@ -23,7 +23,7 @@ plugins*
 .project
 .*
 logs-reporter.jar
-mods*
+./mods/*
 screenshots/*
 xolioz*
 namalsk*
