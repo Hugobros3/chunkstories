@@ -161,7 +161,7 @@ public class ServerConsole implements CommandEmitter
 				{
 					message+=a+" ";
 				}
-				Server.getInstance().broadcastMessage("#FFFF00SERVER: "+message);
+				server.broadcastMessage("#FFFF00SERVER: "+message);
 			}
 			else if (cmd.equals("fly") && emitter.hasPermission("server.admin"))
 			{

@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -63,9 +64,9 @@ public class ServerPlayer implements Player
 		serverInputsManager = new ServerInputsManager(this);
 
 		//TODO this should be reset when the user changes world
-		virtualSoundManager = Server.getInstance().getWorld().getSoundManager().new ServerPlayerVirtualSoundManager(this);
-		virtualParticlesManager = Server.getInstance().getWorld().getParticlesManager().new ServerPlayerVirtualParticlesManager(this);
-		virtualDecalsManager = Server.getInstance().getWorld().getDecalsManager().new ServerPlayerVirtualDecalsManager(this);
+		virtualSoundManager = serverClient.getServer().getWorld().getSoundManager().new ServerPlayerVirtualSoundManager(this);
+		virtualParticlesManager = playerConnection.getServer().getWorld().getParticlesManager().new ServerPlayerVirtualParticlesManager(this);
+		virtualDecalsManager = playerConnection.getServer().getWorld().getDecalsManager().new ServerPlayerVirtualDecalsManager(this);
 
 		// Sets dates
 		playerDataFile.setString("lastlogin", "" + System.currentTimeMillis());
@@ -186,7 +187,7 @@ public class ServerPlayer implements Player
 	{
 		if (controlledEntity != null)
 		{
-			Server.getInstance().getWorld().removeEntity(controlledEntity);
+			playerConnection.getServer().getWorld().removeEntity(controlledEntity);
 			System.out.println("removed player entity");
 		}
 		unsubscribeAll();
@@ -290,7 +291,7 @@ public class ServerPlayer implements Player
 	{
 		if (this.playerDataFile.isFieldSet("posX"))
 		{
-			return new Location(Server.getInstance().getWorld(), playerDataFile.getDouble("posX"), playerDataFile.getDouble("posY"), playerDataFile.getDouble("posZ"));
+			return new Location(playerConnection.getServer().getWorld(), playerDataFile.getDouble("posX"), playerDataFile.getDouble("posY"), playerDataFile.getDouble("posZ"));
 		}
 		return null;
 	}
@@ -555,5 +556,11 @@ public class ServerPlayer implements Player
 	public void disconnect(String disconnectionReason)
 	{
 		this.playerConnection.disconnect(disconnectionReason);
+	}
+
+	@Override
+	public ServerInterface getServer()
+	{
+		return playerConnection.getServer();
 	}
 }

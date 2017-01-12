@@ -106,8 +106,7 @@ public class EntityComponentHealth extends EntityComponent
 					}
 
 					if (event.getDeathMessage() != null)
-						Server.getInstance().broadcastMessage(event.getDeathMessage());
-
+						player.getServer().broadcastMessage(event.getDeathMessage());
 				}
 				else
 				{

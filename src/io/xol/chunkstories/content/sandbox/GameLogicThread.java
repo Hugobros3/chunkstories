@@ -95,7 +95,7 @@ public class GameLogicThread extends Thread implements GameLogic
 				if(world instanceof WorldClientRemote)
 					((WorldClientRemote) world).getConnection().flush();
 				if(world instanceof WorldServer)
-					Server.getInstance().getHandler().flushAll();
+					((WorldServer) world).getGameContext().getHandler().flushAll();
 			}
 			
 			//nanoCheckStep(2, "Incomming packets");

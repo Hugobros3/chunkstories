@@ -1,6 +1,7 @@
 package io.xol.chunkstories.server.net;
 
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
@@ -67,7 +68,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		this.socket = socket;
 		this.socketPort = socket.getPort();
 
-		this.packetsProcessor = new PacketsProcessor(this, Server.getInstance().getContent().packets());
+		this.packetsProcessor = new PacketsProcessor(this, connectionsManager.getServer().getContent().packets());
 		this.setName(this.toString());
 	}
 
@@ -81,7 +82,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		else if (in.startsWith("info"))
 			this.connectionsManager.sendServerIntel(this);
 		else if (in.equals("mods"))
-			this.sendInternalTextMessage("info/mods:" + Server.getInstance().getModsProvider().getModsString());
+			this.sendInternalTextMessage("info/mods:" + connectionsManager.getServer().getModsProvider().getModsString());
 		else if (in.equals("icon-file"))
 		{
 			PacketFile iconPacket = new PacketFile();
@@ -108,7 +109,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			System.out.println(this + " asked for " + md5);
 
 			//Give him what he asked for.
-			File found = Server.getInstance().getModsProvider().obtainModRedistribuable(md5);
+			File found = connectionsManager.getServer().getModsProvider().obtainModRedistribuable(md5);
 			if (found == null)
 			{
 				System.out.println("Though luck !");
@@ -124,7 +125,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		}
 		else if (in.startsWith("world/"))
 		{
-			Server.getInstance().getWorld().handleWorldMessage(this, in.substring(6, in.length()));
+			connectionsManager.getServer().getWorld().handleWorldMessage(this, in.substring(6, in.length()));
 		}
 		else if (in.startsWith("chat/"))
 		{
@@ -142,7 +143,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 					args = chatMsg.substring(chatMsg.indexOf(" ") + 1, chatMsg.length()).split(" ");
 				}
 
-				Server.getInstance().getConsole().dispatchCommand(this.getProfile(), cmdName, args);
+				connectionsManager.getServer().getConsole().dispatchCommand(this.getProfile(), cmdName, args);
 			}
 			else if (chatMsg.length() > 0)
 			{
@@ -164,7 +165,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		if (m.startsWith("version:"))
 		{
 			version = m.replace("version:", "");
-			if (Server.getInstance().getServerConfig().getProp("check-version", "true").equals("true"))
+			if (connectionsManager.getServer().getServerConfig().getProp("check-version", "true").equals("true"))
 			{
 				if (Integer.parseInt(version) != VersionInfo.networkProtocolVersion)
 					disconnect("Wrong protocol version ! " + version + " != " + VersionInfo.networkProtocolVersion + " \n Update your game !");
@@ -184,7 +185,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 				disconnect("No valid token supplied");
 				return;
 			}
-			if (Server.getInstance().getServerConfig().getIntProp("offline-mode", "0") == 1)
+			if (connectionsManager.getServer().getServerConfig().getIntProp("offline-mode", "0") == 1)
 			{
 				// Offline-mode !
 				System.out.println("Warning : Offline-mode is on, letting " + this.name + " connecting without verification");
@@ -269,11 +270,11 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		if (getProfile() != null)
 		{
 			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(getProfile());
-			Server.getInstance().getPluginManager().fireEvent(playerDisconnectionEvent);
+			connectionsManager.getServer().getPluginManager().fireEvent(playerDisconnectionEvent);
 
-			Server.getInstance().getHandler().sendAllChat(playerDisconnectionEvent.getLogoutMessage());
+			connectionsManager.getServer().getHandler().sendAllChat(playerDisconnectionEvent.getLogoutMessage());
 
-			//Server.getInstance().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
+			//connectionsManager.getServer().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
 			assert getProfile() != null;
 			getProfile().save();
 			getProfile().destroy();
@@ -346,7 +347,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 
 		//Fire the login event
 		PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(getProfile());
-		Server.getInstance().getPluginManager().fireEvent(playerConnectionEvent);
+		connectionsManager.getServer().getPluginManager().fireEvent(playerConnectionEvent);
 		boolean allowPlayerIn = !playerConnectionEvent.isCancelled();
 		//Do we allow him in ?
 		if (!allowPlayerIn)
@@ -356,7 +357,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		}
 
 		//Announce player login
-		Server.getInstance().getHandler().sendAllChat(playerConnectionEvent.getConnectionMessage());
+		connectionsManager.getServer().getHandler().sendAllChat(playerConnectionEvent.getConnectionMessage());
 		//Aknowledge the login
 		sendInternalTextMessage("login/ok");
 
@@ -436,5 +437,10 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			return "[Connected user '" + getProfile().getName() + "' from " + this.getIp() + "]";
 		else
 			return "[Unknown connection from " + this.getIp() + "]";
+	}
+
+	public Server getServer()
+	{
+		return connectionsManager.getServer();
 	}
 }

@@ -32,6 +32,11 @@ public class ServerConnectionsManager extends Thread
 		this.maxClients = server.getServerConfig().getIntProp("maxusers", "100");
 	}
 	
+	public Server getServer()
+	{
+		return server;
+	}
+	
 	private AtomicBoolean running = new AtomicBoolean(true);
 
 	private ServerSocket serverSocket;

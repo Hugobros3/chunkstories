@@ -1,9 +1,9 @@
 package io.xol.chunkstories.api.server;
 
-import java.util.Iterator;
-
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.plugin.PluginManager;
+import io.xol.chunkstories.api.utils.IterableIterator;
+import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.plugin.PluginManager;
 
 public interface ServerInterface extends GameContext
 {
-	public Iterator<Player> getConnectedPlayers();
+	public IterableIterator<Player> getConnectedPlayers();
 
 	public Player getPlayer(String string);
 	
@@ -20,4 +20,6 @@ public interface ServerInterface extends GameContext
 	public PluginManager getPluginManager();
 
 	public void broadcastMessage(String message);
+
+	public World getWorld();
 }

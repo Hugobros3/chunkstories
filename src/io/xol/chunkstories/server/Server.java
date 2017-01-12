@@ -64,10 +64,13 @@ public class Server implements Runnable, ServerInterface
 		}
 
 		server = new Server(modsString);
+
+		server.run();
 	}
 	
 	public Server(String modsString)
 	{
+		server = this;
 		// Start server services
 		try
 		{
@@ -120,10 +123,9 @@ public class Server implements Runnable, ServerInterface
 			e.printStackTrace();
 			System.exit(-1);
 		}
-
-		this.run();
 	}
 
+	@Deprecated
 	public static Server getInstance()
 	{
 		return server;

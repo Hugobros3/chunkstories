@@ -75,5 +75,7 @@ public interface Player extends CommandEmitter, Controller, Subscriber, PacketDe
 
 	public void updateTrackedEntities();
 
+	public ServerInterface getServer();
+	
 	public WorldServer getWorld();
 }

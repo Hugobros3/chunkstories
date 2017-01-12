@@ -149,7 +149,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	private void spawnPlayer(ServerPlayer player)
 	{
 		PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(player, this);
-		Server.getInstance().getPluginManager().fireEvent(playerSpawnEvent);
+		server.getPluginManager().fireEvent(playerSpawnEvent);
 		
 		if(!playerSpawnEvent.isCancelled())
 		{
@@ -169,7 +169,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			else
 				entity.setUUID(-1);
 			
-			Server.getInstance().getWorld().addEntity(entity);
+			server.getWorld().addEntity(entity);
 			if(entity instanceof EntityControllable)
 				player.setControlledEntity((EntityControllable) entity);
 			else
@@ -256,6 +256,6 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 	public IterableIterator<Player> getPlayers()
 	{
-		return Server.getInstance().getConnectedPlayers();
+		return server.getConnectedPlayers();
 	}
 }
