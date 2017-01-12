@@ -21,8 +21,8 @@ import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
-import io.xol.chunkstories.content.ModsManager;
-import io.xol.chunkstories.content.ModsManager.AssetHierarchy;
+import io.xol.chunkstories.content.DefaultModsManager;
+import io.xol.chunkstories.content.DefaultModsManager.ModsAssetHierarchy;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -44,7 +44,7 @@ public class PacketsProcessor
 	{
 		//Loads *all* possible packets types
 		packetIds.clear();
-		AssetHierarchy packetsFiles = ModsManager.getAssetInstances("./data/packetsTypes.txt");
+		ModsAssetHierarchy packetsFiles = DefaultModsManager.getAssetInstances("./data/packetsTypes.txt");
 		Iterator<Asset> i = packetsFiles.iterator();
 		while(i.hasNext())
 		{
@@ -80,7 +80,7 @@ public class PacketsProcessor
 						String packetName = splitted[2];
 						try
 						{
-							Class<?> untypedClass = ModsManager.getClassByName(splitted[3]);
+							Class<?> untypedClass = DefaultModsManager.getClassByName(splitted[3]);
 							if (!Packet.class.isAssignableFrom(untypedClass))
 								throw new SyntaxErrorException(ln, f, splitted[3] + " is not a subclass of Packet");
 							@SuppressWarnings("unchecked")

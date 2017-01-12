@@ -3,7 +3,7 @@ package io.xol.engine.animation;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.engine.animation.BVHAnimation;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -21,7 +21,7 @@ public class BVHLibrary
 	public static BVHAnimation loadAnimation(String name)
 	{
 		System.out.println(name);
-		BVHAnimation anim = new BVHAnimation(ModsManager.getAsset(name));
+		BVHAnimation anim = new BVHAnimation(DefaultModsManager.getAsset(name));
 		animations.put(name, anim);
 		return anim;
 	}

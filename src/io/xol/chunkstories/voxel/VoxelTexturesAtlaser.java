@@ -25,8 +25,8 @@ import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.content.ModsManager;
-import io.xol.chunkstories.content.ModsManager.AssetHierarchy;
+import io.xol.chunkstories.api.mods.AssetHierarchy;
+import io.xol.chunkstories.content.DefaultModsManager.ModsAssetHierarchy;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -42,9 +42,11 @@ public class VoxelTexturesAtlaser implements Content.Voxels.VoxelTextures
 	public static int BLOCK_ATLAS_FACTOR;
 
 	private final VoxelsStore voxels;
+	private final ChunkStories context;
 	
 	public VoxelTexturesAtlaser(ChunkStories context, VoxelsStore voxels)
 	{
+		this.context = context;
 		this.voxels = voxels;
 		
 		this.buildTextureAtlas();
@@ -66,7 +68,7 @@ public class VoxelTexturesAtlaser implements Content.Voxels.VoxelTextures
 
 			//for (File f : folder.listFiles())
 			
-			Iterator<AssetHierarchy> allFiles = ModsManager.getAllUniqueEntries();
+			Iterator<ModsAssetHierarchy> allFiles = context.getContent().modsManager().getAllUniqueEntries();
 			//Iterator<Entry<String, Deque<File>>> allFiles = GameContent.getAllUniqueEntries();
 			AssetHierarchy entry;
 			Asset f;
@@ -195,7 +197,7 @@ public class VoxelTexturesAtlaser implements Content.Voxels.VoxelTextures
 						break;
 					}
 
-					imageBuffer = ImageIO.read(ModsManager.getAsset("./voxels/textures/" + vt.name + ".png").read());
+					imageBuffer = ImageIO.read(context.getContent().modsManager().getAsset("./voxels/textures/" + vt.name + ".png").read());
 					//imageBuffer = ImageIO.read(GameContent.getTextureFileLocation());
 
 					float alphaTotal = 0;
@@ -229,9 +231,9 @@ public class VoxelTexturesAtlaser implements Content.Voxels.VoxelTextures
 					
 					//colors.put(vt.name, new Vector4fm(color.x, color.y, color.z, alphaTotal));
 					// Do also the normal maps !
-					Asset normalMap = ModsManager.getAsset("./voxels/textures/normal/" + vt.name + ".png");
+					Asset normalMap = context.getContent().modsManager().getAsset("./voxels/textures/normal/" + vt.name + ".png");
 					if (normalMap == null)
-						normalMap = ModsManager.getAsset("./voxels/textures/normal/notex.png");
+						normalMap = context.getContent().modsManager().getAsset("./voxels/textures/normal/notex.png");
 
 					imageBuffer = ImageIO.read(normalMap.read());
 					for (int x = 0; x < vt.imageFileDimensions; x++)
@@ -243,9 +245,9 @@ public class VoxelTexturesAtlaser implements Content.Voxels.VoxelTextures
 						}
 					}
 					// And the materials !
-					Asset materialMap = ModsManager.getAsset("./voxels/textures/material/" + vt.name + ".png");
+					Asset materialMap = context.getContent().modsManager().getAsset("./voxels/textures/material/" + vt.name + ".png");
 					if (materialMap == null)
-						materialMap = ModsManager.getAsset("./voxels/textures/material/notex.png");
+						materialMap = context.getContent().modsManager().getAsset("./voxels/textures/material/notex.png");
 
 					imageBuffer = ImageIO.read(materialMap.read());
 					for (int x = 0; x < vt.imageFileDimensions; x++)
@@ -270,7 +272,7 @@ public class VoxelTexturesAtlaser implements Content.Voxels.VoxelTextures
 			}
 			// Read textures metadata
 			//TODO read all overrides in priority
-			readTexturesMeta(ModsManager.getAsset("./voxels/textures/meta.txt"));
+			readTexturesMeta(context.getContent().modsManager().getAsset("./voxels/textures/meta.txt"));
 		}
 		catch (Exception e)
 		{

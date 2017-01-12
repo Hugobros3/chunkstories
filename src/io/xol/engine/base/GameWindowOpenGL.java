@@ -99,7 +99,7 @@ public class GameWindowOpenGL
 		mainGLThreadId = Thread.currentThread().getId();
 	}
 
-	public void createContext()
+	public void createOpenGLContext()
 	{
 		System.out.println("Initializing XolioWare Interactive 3D Engine v" + engineVersion + " [game:" + windowName + ", width:" + windowWidth + ", height:" + windowHeight + "]");
 		try

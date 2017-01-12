@@ -16,7 +16,9 @@ import java.util.Map;
 
 import io.xol.chunkstories.api.exceptions.plugins.PluginLoadException;
 import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.api.mods.Mod;
+import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.api.plugin.PluginInformation;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.mods.ForeignCodeClassLoader;
@@ -34,97 +36,101 @@ import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.particles.ParticleTypes;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.voxel.VoxelTexturesAtlaser;
-import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 import io.xol.chunkstories.world.generator.WorldGenerators;
-import io.xol.engine.animation.BVHLibrary;
 import io.xol.engine.concurrency.UniqueList;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
-import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.misc.FoldersUtils;
-import io.xol.engine.model.ModelLibrary;
-import io.xol.engine.sound.library.SoundsLibrary;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ModsManager
+public class DefaultModsManager implements ModsManager
 {
 	//TODO : un-Staticize this
 	
-	private static Mod baseAssets;
-	private static String[] modsEnabled = new String[0];
-	private static UniqueList<ModImplementation> enabledMods = new UniqueList<ModImplementation>();
-	private static Map<String, AssetHierarchy> avaibleAssets = new HashMap<String, AssetHierarchy>();
-	private static Map<String, ForeignCodeClassLoader> avaibleForeignClasses = new HashMap<String, ForeignCodeClassLoader>();
+	private Mod baseAssets;
+	private String[] modsEnabled = new String[0];
+	private UniqueList<Mod> enabledMods = new UniqueList<Mod>();
+	private Map<String, ModsAssetHierarchy> avaibleAssets = new HashMap<String, ModsAssetHierarchy>();
+	private Map<String, ForeignCodeClassLoader> avaibleForeignClasses = new HashMap<String, ForeignCodeClassLoader>();
 
-	private static File cacheFolder = null;
-	private static List<PluginInformation> pluginsWithinEnabledMods = new ArrayList<PluginInformation>();
+	private File cacheFolder = null;
+	private List<PluginInformation> pluginsWithinEnabledMods = new ArrayList<PluginInformation>();
+
+	public DefaultModsManager()
+	{
+		this(null);
+	}
+	
+	public DefaultModsManager(String enabledModsAtStart)
+	{
+		if(enabledModsAtStart != null)
+			modsEnabled = enabledModsAtStart.split(",");
+	}
 
 	public static void main(String a[])
 	{
+		ModsManager mm = new DefaultModsManager();
+		
 		try
 		{
-			setEnabledMods("dogez_content");
+			mm.setEnabledMods("dogez_content");
 			//setEnabledMods("C:\\Users\\Hugo\\workspace2\\Dogez-Plugin for CS\\mods\\dogez_content", "modInZip", "OveriddenModInZip", "md5:df9f7c813fdc72029b41758ef8dbb528", "md5:7f46165474d11ee5836777d85df2cdab:http://xol.io");
-			loadEnabledMods();
+			mm.loadEnabledMods();
 		}
 		catch (NotAllModsLoadedException e)
 		{
 			System.out.print(e.getMessage());
 		}
 				
-		for(Mod mod : getCurrentlyLoadedMods())
+		for(Mod mod : mm.getCurrentlyLoadedMods())
 			System.out.println(mod.getMD5Hash());
 			
 		try
 		{
-			setEnabledMods("dogez_content2");
+			mm.setEnabledMods("dogez_content2");
 			//setEnabledMods("C:\\Users\\Hugo\\workspace2\\Dogez-Plugin for CS\\mods\\dogez_content", "modInZip", "OveriddenModInZip", "md5:df9f7c813fdc72029b41758ef8dbb528", "md5:7f46165474d11ee5836777d85df2cdab:http://xol.io");
-			loadEnabledMods();
+			mm.loadEnabledMods();
 		}
 		catch (NotAllModsLoadedException e)
 		{
 			System.out.print(e.getMessage());
 		}
 				
-		for(Mod mod : getCurrentlyLoadedMods())
+		for(Mod mod : mm.getCurrentlyLoadedMods())
 			System.out.println(mod.getMD5Hash());
 		
 		try
 		{
-			setEnabledMods("dogez_content");
+			mm.setEnabledMods("dogez_content");
 			//setEnabledMods("C:\\Users\\Hugo\\workspace2\\Dogez-Plugin for CS\\mods\\dogez_content", "modInZip", "OveriddenModInZip", "md5:df9f7c813fdc72029b41758ef8dbb528", "md5:7f46165474d11ee5836777d85df2cdab:http://xol.io");
-			loadEnabledMods();
+			mm.loadEnabledMods();
 		}
 		catch (NotAllModsLoadedException e)
 		{
 			System.out.print(e.getMessage());
 		}
 				
-		for(Mod mod : getCurrentlyLoadedMods())
+		for(Mod mod : mm.getCurrentlyLoadedMods())
 			System.out.println(mod.getMD5Hash());
 		
 		System.out.println("Done");
 	}
 
-	/**
-	 * Sets the mods to be used
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.content.ModsManager#setEnabledMods(java.lang.String)
 	 */
-	public static void setEnabledMods(String... modsEnabled)
+	@Override
+	public void setEnabledMods(String... modsEnabled)
 	{
-		ModsManager.modsEnabled = modsEnabled;
+		this.modsEnabled = modsEnabled;
 	}
 
-	/**
-	 * Looks for the mods, resolves their paths, download them if possible and necessary, then descend in their data to enumerate contained assets and code
-	 * 
-	 * @throws NotAllModsLoadedException
-	 *             if some of the mods failed to load, note that even if some mods fail to load the game engine will still alter what is loaded
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.content.ModsManager#loadEnabledMods()
 	 */
-	public static void loadEnabledMods() throws NotAllModsLoadedException
+	@Override
+	public void loadEnabledMods() throws NotAllModsLoadedException
 	{
 		enabledMods.clear();
 		List<ModLoadFailureException> modLoadExceptions = new ArrayList<ModLoadFailureException>();
@@ -246,7 +252,7 @@ public class ModsManager
 			throw new NotAllModsLoadedException(modLoadExceptions);
 	}
 
-	private static void buildModsFileSystem()
+	private void buildModsFileSystem()
 	{
 		avaibleAssets.clear();
 		avaibleForeignClasses.clear();
@@ -289,7 +295,7 @@ public class ModsManager
 		loadModAssets(baseAssets);
 	}
 
-	private static void loadModAssets(Mod mod)
+	private void loadModAssets(Mod mod)
 	{
 		//For each asset in the said mod
 		for (Asset asset : mod.assets())
@@ -306,10 +312,10 @@ public class ModsManager
 			}
 
 			//Look for it's entry
-			AssetHierarchy entry = avaibleAssets.get(asset.getName());
+			ModsAssetHierarchy entry = avaibleAssets.get(asset.getName());
 			if (entry == null)
 			{
-				entry = new AssetHierarchy(asset);
+				entry = new ModsAssetHierarchy(asset);
 				avaibleAssets.put(asset.getName(), entry);
 			}
 			else
@@ -320,7 +326,7 @@ public class ModsManager
 		}
 	}
 
-	private static void loadJarFile(Asset asset)
+	private void loadJarFile(Asset asset)
 	{
 		System.out.println("Handling jar file " + asset);
 		try
@@ -373,16 +379,24 @@ public class ModsManager
 		}
 	}
 
-	public static Iterator<AssetHierarchy> getAllUniqueEntries()
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.content.ModsManager#getAllUniqueEntries()
+	 */
+	@Override
+	public Iterator<ModsAssetHierarchy> getAllUniqueEntries()
 	{
 		return avaibleAssets.values().iterator();
 	}
 
-	public static Iterator<Asset> getAllUniqueFilesLocations()
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.content.ModsManager#getAllUniqueFilesLocations()
+	 */
+	@Override
+	public Iterator<Asset> getAllUniqueFilesLocations()
 	{
 		return new Iterator<Asset>()
 		{
-			Iterator<AssetHierarchy> i = getAllUniqueEntries();
+			Iterator<ModsAssetHierarchy> i = getAllUniqueEntries();
 
 			@Override
 			public boolean hasNext()
@@ -399,7 +413,11 @@ public class ModsManager
 		};
 	}
 
-	public static Asset getAsset(String assetName)
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.content.ModsManager#getAsset(java.lang.String)
+	 */
+	@Override
+	public Asset getAsset(String assetName)
 	{
 		AssetHierarchy asset = avaibleAssets.get(assetName);
 		if(asset == null)
@@ -408,16 +426,24 @@ public class ModsManager
 		return asset.topInstance();
 	}
 	
-	public static AssetHierarchy getAssetInstances(String assetName)
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.content.ModsManager#getAssetInstances(java.lang.String)
+	 */
+	@Override
+	public ModsAssetHierarchy getAssetInstances(String assetName)
 	{
 		return avaibleAssets.get(assetName);
 	}
 	
-	public static Iterator<Asset> getAllAssetsByExtension(String extension)
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.content.ModsManager#getAllAssetsByExtension(java.lang.String)
+	 */
+	@Override
+	public Iterator<Asset> getAllAssetsByExtension(String extension)
 	{
 		return new Iterator<Asset>() {
 
-			Iterator<AssetHierarchy> base = getAllUniqueEntries();
+			Iterator<ModsAssetHierarchy> base = getAllUniqueEntries();
 			
 			Asset next = null;
 			
@@ -455,7 +481,11 @@ public class ModsManager
 		};
 	}
 	
-	public static Class<?> getClassByName(String className)
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.content.ModsManager#getClassByName(java.lang.String)
+	 */
+	@Override
+	public Class<?> getClassByName(String className)
 	{
 		//First try to load it from classpath
 		try
@@ -491,13 +521,13 @@ public class ModsManager
 		return null;
 	}	
 	
-	public static class AssetHierarchy implements Iterable<Asset>
+	public class ModsAssetHierarchy implements AssetHierarchy
 	{
 		String assetName;
 		Asset topInstance;
 		Deque<Asset> instances;
 
-		AssetHierarchy(Asset asset)
+		ModsAssetHierarchy(Asset asset)
 		{
 			assetName = asset.getName();
 			instances = new ArrayDeque<Asset>();
@@ -507,11 +537,13 @@ public class ModsManager
 			topInstance = asset;
 		}
 
+		@Override
 		public String getName()
 		{
 			return assetName;
 		}
 		
+		@Override
 		public Asset topInstance()
 		{
 			return topInstance;
@@ -522,13 +554,13 @@ public class ModsManager
 			instances.addLast(asset);
 		}
 
+		@Override
 		public Iterator<Asset> iterator()
 		{
 			return instances.iterator();
 		}
 
 		//Below is hacks for HashSet to function properly
-
 		public int hashCode()
 		{
 			return assetName.hashCode();
@@ -538,13 +570,13 @@ public class ModsManager
 		{
 			if (o instanceof String)
 				return o.equals(assetName);
-			if (o instanceof AssetHierarchy)
-				return ((AssetHierarchy) o).assetName.equals(assetName);
+			if (o instanceof ModsAssetHierarchy)
+				return ((ModsAssetHierarchy) o).assetName.equals(assetName);
 			return false;
 		}
 	}
 
-	public static void reload_()
+	public void reload_()
 	{
 		long total = System.nanoTime();
 		long part = System.nanoTime();
@@ -608,17 +640,29 @@ public class ModsManager
 		//Inputs.loadKeyBindsClient();
 	}
 
-	public static String[] getEnabledMods()
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.content.ModsManager#getEnabledModsString()
+	 */
+	@Override
+	public String[] getEnabledModsString()
 	{
 		return modsEnabled;
 	}
 
-	public static Collection<ModImplementation> getCurrentlyLoadedMods()
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.content.ModsManager#getCurrentlyLoadedMods()
+	 */
+	@Override
+	public Collection<Mod> getCurrentlyLoadedMods()
 	{
 		return enabledMods;
 	}
 
-	public static IterableIterator<PluginInformation> getModsPlugins()
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.content.ModsManager#getModsPlugins()
+	 */
+	@Override
+	public IterableIterator<PluginInformation> getModsPlugins()
 	{
 		return new IterableIterator<PluginInformation>(){
 

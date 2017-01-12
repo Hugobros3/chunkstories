@@ -12,9 +12,9 @@ import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.content.mods.ModImplementation;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModZip;
@@ -64,11 +64,11 @@ public class ModsSelectionOverlay extends Overlay
 	private void buildModsList()
 	{
 		modsContainer.elements.clear();
-		Collection<String> currentlyEnabledMods = Arrays.asList(ModsManager.getEnabledMods());
+		Collection<String> currentlyEnabledMods = Arrays.asList(Client.getInstance().getContent().modsManager().getEnabledModsString());
 		
 		Set<String> uniqueMods = new HashSet<String>();
 		//First put in already loaded mods
-		for(ModImplementation mod : ModsManager.getCurrentlyLoadedMods())
+		for(Mod mod : Client.getInstance().getContent().modsManager().getCurrentlyLoadedMods())
 		{
 			//Should use md5 hash instead ;)
 			if(uniqueMods.add(mod.getModInfo().getName().toLowerCase()))
@@ -167,14 +167,14 @@ public class ModsSelectionOverlay extends Overlay
 				ModItem modItem = (ModItem)e;
 				if(modItem.enabled)
 				{
-					System.out.println("Adding "+modItem.mod.getLoadString()+" to mod path");
-					modsEnabled.add(modItem.mod.getLoadString());
+					System.out.println("Adding "+((ModImplementation) modItem.mod).getLoadString()+" to mod path");
+					modsEnabled.add(((ModImplementation) modItem.mod).getLoadString());
 				}
 			}
 			
 			String[] ok = new String[modsEnabled.size()];
 			modsEnabled.toArray(ok);
-			ModsManager.setEnabledMods(ok);
+			Client.getInstance().getContent().modsManager().setEnabledMods(ok);
 			/*ModsManager.reload();
 			ModsManager.reloadClientContent();*/
 			Client.getInstance().reloadAssets();
@@ -218,16 +218,16 @@ public class ModsSelectionOverlay extends Overlay
 			boolean enabled;
 			
 			Texture2D icon;
-			ModImplementation mod;
+			Mod mod;
 			
-			public ModItem(ModImplementation mod, boolean enabled)
+			public ModItem(Mod mod2, boolean enabled)
 			{
-				super(mod.getModInfo().getName(), mod.getModInfo().getDescription());
-				this.mod = mod;
+				super(mod2.getModInfo().getName(), mod2.getModInfo().getDescription());
+				this.mod = mod2;
 				this.enabled = enabled;
-				this.topRightString = mod.getModInfo().getVersion();
+				this.topRightString = mod2.getModInfo().getVersion();
 				
-				Asset asset = mod.getAssetByName("./modicon.png");
+				Asset asset = mod2.getAssetByName("./modicon.png");
 				if(asset != null)
 					icon = new Texture2DAsset(asset);
 				else

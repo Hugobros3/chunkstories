@@ -2,13 +2,12 @@ package io.xol.chunkstories.content;
 
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.client.ChunkStories;
+import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.content.mods.exceptions.NotAllModsLoadedException;
 import io.xol.chunkstories.entity.Entities;
 import io.xol.chunkstories.entity.EntityComponents;
 import io.xol.chunkstories.item.ItemTypes;
-import io.xol.chunkstories.materials.Materials;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
-import io.xol.chunkstories.particles.ParticleTypes;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.generator.WorldGenerators;
 
@@ -19,18 +18,20 @@ import io.xol.chunkstories.world.generator.WorldGenerators;
 public class GameContent implements Content
 {
 	private final ChunkStories context;
+	private final ModsManager modsManager;
 
 	private final VoxelsStore voxels;
 
-	public GameContent(ChunkStories context)
+	public GameContent(ChunkStories context, String enabledModsLaunchArguments)
 	{
 		this.context = context;
+		this.modsManager = new DefaultModsManager(enabledModsLaunchArguments);
 
 		// ! LOADS MODS
 
 		try
 		{
-			ModsManager.loadEnabledMods();
+			modsManager.loadEnabledMods();
 		}
 		catch (NotAllModsLoadedException e)
 		{
@@ -62,7 +63,7 @@ public class GameContent implements Content
 
 		try
 		{
-			ModsManager.loadEnabledMods();
+			modsManager.loadEnabledMods();
 		}
 		catch (NotAllModsLoadedException e)
 		{
@@ -124,6 +125,12 @@ public class GameContent implements Content
 	public ChunkStories getContext()
 	{
 		return context;
+	}
+
+	@Override
+	public ModsManager modsManager()
+	{
+		return modsManager;
 	}
 
 }

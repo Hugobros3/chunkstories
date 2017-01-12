@@ -14,9 +14,9 @@ import io.xol.engine.sound.library.SoundsLibrary;
 public class ClientGameContent extends GameContent
 {
 
-	public ClientGameContent(ClientInterface client)
+	public ClientGameContent(ClientInterface client, String modsStringArgument)
 	{
-		super(client);
+		super(client, modsStringArgument);
 	}
 
 	@Override

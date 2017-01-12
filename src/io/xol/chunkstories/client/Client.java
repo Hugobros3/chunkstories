@@ -11,7 +11,6 @@ import java.util.Calendar;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.misc.ConfigFile;
-import io.xol.engine.misc.IconLoader;
 import io.xol.engine.misc.NativesLoader;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.VersionInfo;
@@ -26,10 +25,8 @@ import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.content.ClientGameContent;
 import io.xol.chunkstories.content.DefaultPluginManager;
-import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -73,6 +70,7 @@ public class Client implements ClientInterface
 		GameDirectory.check();
 		GameDirectory.initClientPath();
 
+		String modsStringArgument = null;
 		for (String s : args) // Debug arguments
 		{
 			if (s.equals("-oldgl"))
@@ -87,8 +85,7 @@ public class Client implements ClientInterface
 			}
 			else if (s.contains("--mods"))
 			{
-				String[] modsString = s.replace("--mods=", "").split(",");
-				ModsManager.setEnabledMods(modsString);
+				modsStringArgument = s.replace("--mods=", "");
 			}
 			else if (s.contains("--dir"))
 			{
@@ -98,43 +95,48 @@ public class Client implements ClientInterface
 			{
 				System.out.println("Chunk Stories arguments : \n" + "-oldgl Disables OpenGL 3.0+ stuff\n" + "-forceobsolete Forces the game to run even if requirements aren't met\n"
 						+ "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n" + "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument" + "" + "");
-
-				//Runtime.getRuntime().exit(0);
 			}
 		}
-
-		Thread.currentThread().setName("Main OpenGL Rendering thread");
-		Thread.currentThread().setPriority(Constants.MAIN_GL_THREAD_PRIORITY);
-		new Client();
+		
+		new Client(modsStringArgument);
 
 		System.exit(-1);
 	}
 
-	public Client()
+	public Client(String modsStringArgument)
 	{
 		client = this;
+		
+		//Name the thread
+		Thread.currentThread().setName("Main OpenGL Rendering thread");
+		Thread.currentThread().setPriority(Constants.MAIN_GL_THREAD_PRIORITY);
+		
 		// Start logs
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 		String time = sdf.format(cal.getTime());
 		ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/logs/" + time + ".log")));
+		
 		// Load natives
 		RenderingConfig.define();
 		NativesLoader.load();
-		// Load last gamemode
 		
-		gameContent = new ClientGameContent(this);
+		//Create game content manager
+		gameContent = new ClientGameContent(this, modsStringArgument);
 		
-		//ModsManager.reload();
 		inputsManager = new Lwjgl2ClientInputsManager();
-		// Gl init
+		
+		//
 		windows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);
-		windows.createContext();
+		windows.createOpenGLContext();
 
-		//ModsManager.reloadClientContent();
+		//Initlializes windows screen to main menu ( and ask for login )
 		windows.changeScene(new MainMenu(windows, true));
-		//Load 
+		
+		//Creates plugin manager
 		pluginsManager = new ClientPluginManager(client);
+		
+		//Pass control to the windows for main game loop
 		windows.run();
 	}
 

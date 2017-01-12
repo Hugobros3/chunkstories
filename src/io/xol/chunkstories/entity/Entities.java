@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.world.WorldImplementation;
 
@@ -37,7 +37,7 @@ public class Entities
 		entityTypesByName.clear();
 		entityTypesByClassname.clear();
 		
-		Iterator<Asset> i = ModsManager.getAllAssetsByExtension("entities");
+		Iterator<Asset> i = DefaultModsManager.getAllAssetsByExtension("entities");
 		while(i.hasNext())
 		{
 			Asset f = i.next();
@@ -75,7 +75,7 @@ public class Entities
 							
 						try
 						{
-							Class<?> entityClass = ModsManager.getClassByName(className);
+							Class<?> entityClass = DefaultModsManager.getClassByName(className);
 							if(entityClass == null)
 							{
 								System.out.println("Entity class "+className+" does not exist in codebase.");

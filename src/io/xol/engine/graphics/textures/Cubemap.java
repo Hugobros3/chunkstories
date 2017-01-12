@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.engine.graphics.fbo.RenderTarget;
@@ -77,7 +77,7 @@ public class Cubemap extends Texture
 		
 		ByteBuffer temp;
 		String[] names = { "right", "left", "top", "bottom", "front", "back" };
-		if (ModsManager.getAsset((name + "/front.png")) == null)
+		if (DefaultModsManager.getAsset((name + "/front.png")) == null)
 		{
 			ChunkStoriesLogger.getInstance().log("Can't find front.png from CS-format skybox, trying MC format.", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.WARN);
 			names = new String[] { "panorama_1", "panorama_3", "panorama_4", "panorama_5", "panorama_0", "panorama_2" };
@@ -86,7 +86,7 @@ public class Cubemap extends Texture
 		{
 			for (int i = 0; i < 6; i++)
 			{
-				Asset pngFile = ModsManager.getAsset(name + "/" + names[i] + ".png");
+				Asset pngFile = DefaultModsManager.getAsset(name + "/" + names[i] + ".png");
 				if(pngFile == null)
 					throw new FileNotFoundException(name + "/" + names[i] + ".png");
 				PNGDecoder decoder = new PNGDecoder(pngFile.read());

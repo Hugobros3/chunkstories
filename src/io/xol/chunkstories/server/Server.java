@@ -21,7 +21,6 @@ import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.content.DefaultPluginManager;
 import io.xol.chunkstories.content.GameContent;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
@@ -44,12 +43,12 @@ public class Server implements Runnable, ServerInterface
 
 	public static void main(String args[])
 	{
+		String modsString = null;
 		for (String s : args) // Debug arguments
 		{
 			if (s.contains("--mods"))
 			{
-				String[] modsString = s.replace("--mods=", "").split(",");
-				ModsManager.setEnabledMods(modsString);
+				modsString = s.replace("--mods=", "");
 			}
 			else if (s.contains("--dir"))
 			{
@@ -64,38 +63,10 @@ public class Server implements Runnable, ServerInterface
 			}
 		}
 
-		server = new Server();
-		server.run();
+		server = new Server(modsString);
 	}
-
-	public static Server getInstance()
-	{
-		return server;
-	}
-
-	private ChunkStoriesLogger log = null;
-	private ConfigFile serverConfig = new ConfigFile("./config/server.cfg");
-
-	private AtomicBoolean running = new AtomicBoolean(true);
-	private long initTimestamp = System.currentTimeMillis() / 1000;
-
-	private WorldServer world;
-
-	private ServerConnectionsManager connectionsManager;
-	private ServerConsole console = new ServerConsole(this);
-
-	private ServerPluginManager pluginsManager;
-
-	// Sleeper thread to keep servers list updated
-	private ServerAnnouncerThread announcer;
-
-	// What mods are required to join this server ?
-	private ServerModsProvider modsProvider;
-
-	private GameContent gameContent;
 	
-	@Override
-	public void run()
+	public Server(String modsString)
 	{
 		// Start server services
 		try
@@ -112,7 +83,7 @@ public class Server implements Runnable, ServerInterface
 			connectionsManager = new ServerConnectionsManager(this);
 
 			//Loads the mods
-			gameContent = new GameContent(this);
+			gameContent = new GameContent(this, modsString);
 			//ModsManager.reload();
 
 			modsProvider = new ServerModsProvider(this);
@@ -123,8 +94,6 @@ public class Server implements Runnable, ServerInterface
 			if (new File(worldDir).exists())
 			{
 				world = new WorldServer(this, worldDir);
-
-				//worldThread = new GameLogicThread(world, new UnthrustedUserContentSecurityManager());
 			}
 			else
 			{
@@ -152,6 +121,39 @@ public class Server implements Runnable, ServerInterface
 			e.printStackTrace();
 			System.exit(-1);
 		}
+
+		this.run();
+	}
+
+	public static Server getInstance()
+	{
+		return server;
+	}
+
+	private ChunkStoriesLogger log = null;
+	private ConfigFile serverConfig = new ConfigFile("./config/server.cfg");
+
+	private AtomicBoolean running = new AtomicBoolean(true);
+	private long initTimestamp = System.currentTimeMillis() / 1000;
+
+	private WorldServer world;
+
+	private ServerConnectionsManager connectionsManager;
+	private ServerConsole console = new ServerConsole(this);
+
+	private ServerPluginManager pluginsManager;
+
+	// Sleeper thread to keep servers list updated
+	private ServerAnnouncerThread announcer;
+
+	// What mods are required to join this server ?
+	private ServerModsProvider modsProvider;
+
+	private GameContent gameContent;
+
+	@Override
+	public void run()
+	{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		System.out.print("> ");
 		while (running.get())
@@ -381,7 +383,6 @@ public class Server implements Runnable, ServerInterface
 		return modsProvider;
 	}
 
-	
 	@Override
 	public void print(String message)
 	{

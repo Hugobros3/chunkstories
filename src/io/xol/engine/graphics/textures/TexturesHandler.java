@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.content.DefaultModsManager;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -30,7 +30,7 @@ public class TexturesHandler
 		{
 			if(name.startsWith("./"))
 			{
-				Asset asset = ModsManager.getAsset(name);
+				Asset asset = DefaultModsManager.getAsset(name);
 				if(asset == null)
 					return nullTexture();
 				
@@ -72,7 +72,7 @@ public class TexturesHandler
 		{
 			if(texture instanceof Texture2DAsset)
 			{
-				Asset newAsset = ModsManager.getAsset(((Texture2DAsset) texture).getName());
+				Asset newAsset = DefaultModsManager.getAsset(((Texture2DAsset) texture).getName());
 				if(newAsset != null)
 				{
 					((Texture2DAsset) texture).setAsset(newAsset);

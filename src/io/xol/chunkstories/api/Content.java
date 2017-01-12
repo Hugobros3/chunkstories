@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.material.Material;
+import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelTexture;
@@ -21,6 +22,8 @@ import io.xol.chunkstories.voxel.models.VoxelModel;
 public interface Content
 {
 	public ChunkStories getContext();
+	
+	public ModsManager modsManager();
 	
 	public Materials materials();
 	public interface Materials {

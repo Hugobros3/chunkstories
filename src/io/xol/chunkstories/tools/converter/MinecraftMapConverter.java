@@ -19,11 +19,9 @@ import io.xol.chunkstories.api.client.ChunkStories;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
-import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.content.GameContent;
-import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -56,7 +54,18 @@ public class MinecraftMapConverter implements ChunkStories, WorldUser
 		String time = sdf.format(cal.getTime());
 		ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File("./logs/" + time + ".log")));
 
-		content = new GameContent(new MinecraftMapConverter());
+		content = new GameContent(user, null);
+		
+		/*
+		 * U N S T A T I C
+		 * N
+		 * S
+		 * T
+		 * A
+		 * T
+		 * I
+		 * C			plz
+		 */
 
 		if (arguments.length < 5)
 		{

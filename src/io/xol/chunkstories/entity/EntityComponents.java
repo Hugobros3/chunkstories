@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 public class EntityComponents
@@ -22,7 +22,7 @@ public class EntityComponents
 	{
 		entityComponentsIds.clear();
 		
-		Iterator<Asset> i = ModsManager.getAllAssetsByExtension("components");
+		Iterator<Asset> i = DefaultModsManager.getAllAssetsByExtension("components");
 		while(i.hasNext())
 		{
 			Asset f = i.next();

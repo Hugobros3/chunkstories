@@ -7,7 +7,7 @@ import java.util.Set;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
 
@@ -72,7 +72,7 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 		{
 			requiredMods[i++] = "md5:"+m;
 		}
-		ModsManager.setEnabledMods(requiredMods);
+		DefaultModsManager.setEnabledMods(requiredMods);
 		status = "Reloading mods...";
 		try
 		{

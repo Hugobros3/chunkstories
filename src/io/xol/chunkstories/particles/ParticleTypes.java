@@ -10,7 +10,7 @@ import java.util.Map;
 
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.particles.ParticleType;
-import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2016 XolioWare Interactive
@@ -27,7 +27,7 @@ public class ParticleTypes
 		particleTypesById.clear();
 		particleTypesByName.clear();
 		
-		Iterator<Asset> i = ModsManager.getAllAssetsByExtension("particles");
+		Iterator<Asset> i = DefaultModsManager.getAllAssetsByExtension("particles");
 		while(i.hasNext())
 		{
 			Asset f = i.next();
@@ -59,7 +59,7 @@ public class ParticleTypes
 
 						try
 						{
-							Class<?> rawClass = ModsManager.getClassByName(className);
+							Class<?> rawClass = DefaultModsManager.getClassByName(className);
 							if (rawClass == null)
 							{
 								ChunkStoriesLogger.getInstance().warning("Particle class " + className + " does not exist in codebase.");

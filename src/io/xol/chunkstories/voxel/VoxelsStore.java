@@ -10,7 +10,6 @@ import io.xol.chunkstories.api.mods.Asset;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.content.ModsManager;
 import io.xol.chunkstories.materials.Materials;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -84,7 +83,7 @@ public class VoxelsStore implements Content.Voxels
 		attributedIds.clear();
 		voxelsByName.clear();
 
-		Iterator<Asset> i = ModsManager.getAllAssetsByExtension("voxels");
+		Iterator<Asset> i = context.getContent().modsManager().getAllAssetsByExtension("voxels");
 		while (i.hasNext())
 		{
 			Asset f = i.next();
@@ -134,7 +133,7 @@ public class VoxelsStore implements Content.Voxels
 						{
 							try
 							{
-								Class<?> customVoxelClass = ModsManager.getClassByName(splitted[3]); // Class.forName(splitted[3]);
+								Class<?> customVoxelClass = context.getContent().modsManager().getClassByName(splitted[3]); // Class.forName(splitted[3]);
 								if (customVoxelClass == null)
 								{
 									ChunkStoriesLogger.getInstance().warning("Voxel class " + splitted[3] + " does not exist in codebase.");

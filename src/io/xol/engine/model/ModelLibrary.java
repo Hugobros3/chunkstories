@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.content.ModsManager;
+import io.xol.chunkstories.content.DefaultModsManager;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -23,7 +23,7 @@ public class ModelLibrary
 	 */
 	public static ObjMeshRenderable getRenderableMesh(String name)
 	{
-		Asset file = ModsManager.getAsset(name);
+		Asset file = DefaultModsManager.getAsset(name);
 		if(file != null)
 		{
 			//Don't load something that is already loaded !
@@ -49,7 +49,7 @@ public class ModelLibrary
 	 */
 	public static ObjMeshComplete getCompleteMesh(String name)
 	{
-		Asset file = ModsManager.getAsset(name);
+		Asset file = DefaultModsManager.getAsset(name);
 		if(file != null)
 		{
 			if(objModelsComplete.containsKey(file))

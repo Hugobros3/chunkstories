@@ -3,8 +3,8 @@ package io.xol.chunkstories.world.generator;
 import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.world.WorldGenerator;
-import io.xol.chunkstories.content.ModsManager;
-import io.xol.chunkstories.content.ModsManager.AssetHierarchy;
+import io.xol.chunkstories.content.DefaultModsManager;
+import io.xol.chunkstories.content.DefaultModsManager.ModsAssetHierarchy;
 import io.xol.chunkstories.core.generator.BlankWorldGenerator;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
@@ -30,7 +30,7 @@ public class WorldGenerators
 		//Loads all generators
 		generators.clear();
 		generatorsClasses.clear();
-		AssetHierarchy packetsFiles = ModsManager.getAssetInstances("./data/worldGenerators.txt");
+		ModsAssetHierarchy packetsFiles = DefaultModsManager.getAssetInstances("./data/worldGenerators.txt");
 		
 		Iterator<Asset> i = packetsFiles.iterator();
 		while(i.hasNext())
