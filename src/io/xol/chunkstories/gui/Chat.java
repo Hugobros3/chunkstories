@@ -22,10 +22,10 @@ import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.entity.interfaces.EntityRotateable;
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.EntityPlayer;
-import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.world.WorldClientRemote;
 
@@ -166,7 +166,7 @@ public class Chat
 					try
 					{
 						int time = Integer.parseInt(inputBox.text.split(" ")[1]);
-						Client.world.worldTime = time;
+						Client.world.setTime(time);
 					}
 					catch (Exception e)
 					{

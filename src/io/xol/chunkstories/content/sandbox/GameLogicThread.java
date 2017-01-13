@@ -5,8 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import io.xol.chunkstories.Constants;
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
+import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.Scheduler;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -30,13 +32,17 @@ import io.xol.chunkstories.world.region.RegionImplementation;
  */
 public class GameLogicThread extends Thread implements GameLogic
 {
-	private WorldImplementation world;
+	private final GameContext context;
+	
+	private final WorldImplementation world;
+	
 	private GameLogicScheduler gameLogicScheduler;
 	private boolean die = false;
 
 	public GameLogicThread(WorldImplementation world, SecurityManager securityManager)
 	{
 		this.world = world;
+		this.context = world.getGameContext();
 		
 		this.setName("World " + world.getWorldInfo().getInternalName()+" logic thread");
 		this.setPriority(Constants.MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY);
@@ -44,6 +50,11 @@ public class GameLogicThread extends Thread implements GameLogic
 		gameLogicScheduler = new GameLogicScheduler();
 		
 		//this.start();
+	}
+	
+	public GameContext getGameContext()
+	{
+		return context;
 	}
 
 	long lastNano;
@@ -214,13 +225,14 @@ public class GameLogicThread extends Thread implements GameLogic
 	 * @see io.xol.chunkstories.content.sandbox.GameLogic#getPluginsManager()
 	 */
 	@Override
-	public DefaultPluginManager getPluginsManager()
+	public PluginManager getPluginsManager()
 	{
-		if(world instanceof WorldClient)
+		return context.getPluginManager();
+		/*if(world instanceof WorldClient)
 			return Client.getInstance().getPluginManager();
 		else if(world instanceof WorldServer)
 			return Server.getInstance().getPluginManager();
-		return null;
+		return null;*/
 	}
 	
 	public void stopLogicThread()

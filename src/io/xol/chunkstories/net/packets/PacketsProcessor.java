@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
@@ -142,8 +143,12 @@ public class PacketsProcessor
 	{
 		if (this.isClient)
 			return Client.world;
-		else
-			return Server.getInstance().getWorld();
+		
+		Player player = serverClient.getProfile();
+		if(player == null)
+			return null;
+		
+		return player.getWorld();
 	}
 	
 	public PendingSynchPacket getPendingSynchPacket()

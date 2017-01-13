@@ -4,9 +4,9 @@ import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldClientRemote;

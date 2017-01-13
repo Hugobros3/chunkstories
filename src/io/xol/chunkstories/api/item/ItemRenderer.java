@@ -4,7 +4,6 @@ import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.item.ItemPile;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

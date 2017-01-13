@@ -342,7 +342,7 @@ public class WorldRenderer
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
 		//fboShadedBuffer.bind();
 
-		skyRenderer.time = (world.worldTime % 10000) / 10000f;
+		skyRenderer.time = (world.getTime() % 10000) / 10000f;
 		//sky.skyShader.use(true);
 		//sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
 		//glViewport(0, 0, scrW, scrH);
@@ -1538,7 +1538,7 @@ public class WorldRenderer
 				camera.translate();
 
 				//Draw sky
-				skyRenderer.time = (world.worldTime % 10000) / 10000f;
+				skyRenderer.time = (world.getTime() % 10000) / 10000f;
 				skyRenderer.render(renderingContext);
 
 				this.renderTerrain(true);
@@ -1687,7 +1687,7 @@ public class WorldRenderer
 
 	private float getShadowVisibility()
 	{
-		float worldTime = (world.worldTime % 10000 + 10000) % 10000;
+		float worldTime = (world.getTime() % 10000 + 10000) % 10000;
 		int start = 2500;
 		int end = 7500;
 		if (worldTime < start || worldTime > end + 500)

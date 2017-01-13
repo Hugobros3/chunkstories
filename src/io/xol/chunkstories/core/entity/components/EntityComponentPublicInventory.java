@@ -4,9 +4,9 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
+import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
 
 //(c) 2015-2016 XolioWare Interactive

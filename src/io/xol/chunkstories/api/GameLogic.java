@@ -1,7 +1,7 @@
 package io.xol.chunkstories.api;
 
+import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.Scheduler;
-import io.xol.chunkstories.content.DefaultPluginManager;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -9,13 +9,15 @@ import io.xol.chunkstories.content.DefaultPluginManager;
 
 public interface GameLogic
 {
+	public GameContext getGameContext();
+	
 	public int getTargetFps();
 	
 	public double getSimulationFps();
 	
 	public double getSimulationSpeed();
 	
-	public DefaultPluginManager getPluginsManager();
+	public PluginManager getPluginsManager();
 
 	public Scheduler getScheduler();
 }

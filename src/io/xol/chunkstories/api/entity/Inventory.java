@@ -1,8 +1,8 @@
 package io.xol.chunkstories.api.entity;
 
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
+import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.utils.IterableIterator;
-import io.xol.chunkstories.item.ItemPile;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz

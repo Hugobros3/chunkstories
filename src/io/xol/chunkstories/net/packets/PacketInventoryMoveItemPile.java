@@ -6,15 +6,14 @@ import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
+import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.core.entity.EntityGroundItem;
 import io.xol.chunkstories.core.events.PlayerMoveItemEvent;
-import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.net.InventoryTranslator;
-import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -111,7 +110,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		}
 		
 		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(player, this);
-		Server.getInstance().getPluginManager().fireEvent(moveItemEvent);
+		player.getServer().getPluginManager().fireEvent(moveItemEvent);
 		
 		if(!moveItemEvent.isCancelled())
 		{

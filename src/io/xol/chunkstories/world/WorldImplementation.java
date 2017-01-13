@@ -68,8 +68,8 @@ public abstract class WorldImplementation implements World
 	public long worldTicksCounter = 0;
 
 	//Timecycle counter
-	public long worldTime = 5000;
-	float overcastFactor = 0.2f;
+	private long worldTime = 5000;
+	private float overcastFactor = 0.2f;
 
 	//Who does the actual work
 	public IOTasks ioHandler;

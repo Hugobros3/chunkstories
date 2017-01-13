@@ -125,11 +125,11 @@ public class Server implements Runnable, ServerInterface
 		}
 	}
 
-	@Deprecated
+	/*@Deprecated
 	public static Server getInstance()
 	{
 		return server;
-	}
+	}*/
 
 	private ChunkStoriesLogger log = null;
 	private ConfigFile serverConfig = new ConfigFile("./config/server.cfg");

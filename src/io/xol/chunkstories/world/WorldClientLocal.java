@@ -1,6 +1,8 @@
 package io.xol.chunkstories.world;
 
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.sound.SoundManager;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.io.IOTasks;
@@ -30,5 +32,17 @@ public class WorldClientLocal extends WorldClientCommon implements WorldMaster
 	{
 		//TODO when implementing server/client combo make sure we use something to mix behaviours of WorldServer and this
 		return Client.getInstance().getSoundManager();
+	}
+
+	@Override
+	public void spawnPlayer(Player player)
+	{
+		throw new UnsupportedOperationException("spawnPlayer");
+	}
+
+	@Override
+	public IterableIterator<Player> getPlayers()
+	{
+		throw new UnsupportedOperationException("getPlayers");
 	}
 }

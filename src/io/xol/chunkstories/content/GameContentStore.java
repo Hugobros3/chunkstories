@@ -2,13 +2,13 @@ package io.xol.chunkstories.content;
 
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.GameContext;
-import io.xol.chunkstories.api.PacketsStore;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.content.mods.exceptions.NotAllModsLoadedException;
 import io.xol.chunkstories.entity.EntityTypesStore;
 import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.materials.MaterialsStore;
+import io.xol.chunkstories.net.PacketsStore;
 import io.xol.chunkstories.particles.ParticlesTypesStore;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.generator.WorldGeneratorsStore;

@@ -7,9 +7,11 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfo;
@@ -156,5 +158,17 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 			
 		}
 		
+	}
+
+	@Override
+	public void spawnPlayer(Player player)
+	{
+		throw new UnsupportedOperationException("spawnPlayer");
+	}
+
+	@Override
+	public IterableIterator<Player> getPlayers()
+	{
+		throw new UnsupportedOperationException("getPlayers");
 	}
 }

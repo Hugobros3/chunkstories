@@ -20,11 +20,11 @@ public class ServerInputsManager implements InputsManager
 	Set<Input> inputs = new HashSet<Input>();
 	Map<Long, Input> inputsMap = new HashMap<Long, Input>();
 
-	private final ServerPlayer serverPlayer;
+	private final ServerPlayer player;
 	
 	public ServerInputsManager(ServerPlayer serverPlayer)
 	{
-		this.serverPlayer = serverPlayer;
+		this.player = serverPlayer;
 		
 		reload();
 	}
@@ -56,7 +56,7 @@ public class ServerInputsManager implements InputsManager
 		inputsMap.clear();
 		
 		//Load all keys as virtual ones
-		Iterator<Input> i = KeyBindsLoader.loadKeyBindsIntoManager(this, Server.getInstance().getContent().modsManager());
+		Iterator<Input> i = KeyBindsLoader.loadKeyBindsIntoManager(this, player.getServer().getContent().modsManager());
 		while (i.hasNext())
 		{
 			Input input = i.next();

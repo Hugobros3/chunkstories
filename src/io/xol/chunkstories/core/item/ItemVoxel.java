@@ -9,13 +9,13 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.item.renderers.VoxelItemRenderer;
-import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2016 XolioWare Interactive

@@ -1,9 +1,9 @@
 package io.xol.chunkstories.api.voxel;
 
 import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelTexture;

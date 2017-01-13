@@ -17,7 +17,6 @@ import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
 import io.xol.chunkstories.server.Server;
-import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.server.net.ServerClient;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
@@ -67,29 +66,13 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			//System.out.println("client: "+client);
 			if (player.hasSpawned())
 			{
-				//System.out.println(client.getProfile().hasSpawned());
-				//Load 8x4x8 chunks arround player
-				
-				/*Location loc = player.getLocation();
-				int chunkX = (int) (loc.getX() / 32f);
-				int chunkY = (int) (loc.getY() / 32f);
-				int chunkZ = (int) (loc.getZ() / 32f);
-				*/
-				
-				/*for (int cx = chunkX - 4; cx < chunkX + 4; cx++)
-					for (int cy = chunkY - 2; cy < chunkY + 2; cy++)
-						for (int cz = chunkZ - 4; cz < chunkZ + 4; cz++)
-							System.out.println("strangely this does not seem to happen huh..");*/
-							//this.getChunkChunkCoordinates(chunkX, chunkY, chunkZ, true);
-
-				//System.out.println("chunk:"+this.getChunk(chunkX, chunkY, chunkZ, true));
-				//System.out.println("holder:"+client.getProfile().getControlledEntity().getChunkHolder());
-				//Update whatever he controls
-				
+				//Update whatever he sees
 				player.updateTrackedEntities();
 			}
+			
+			//Update time & weather
 			PacketTime packetTime = new PacketTime();
-			packetTime.time = this.worldTime;
+			packetTime.time = this.getTime();
 			packetTime.overcastFactor = this.getWeather();
 			player.pushPacket(packetTime);
 		}
@@ -146,28 +129,37 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		}
 	}
 	
-	private void spawnPlayer(ServerPlayer player)
+	public void spawnPlayer(Player player)
 	{
-		PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(player, this);
+		Entity savedEntity = null;
+		
+		SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + player.getName().toLowerCase() + ".csf");
+		if(playerEntityFile.exists())
+			savedEntity = playerEntityFile.read(this);
+		
+		Location previousLocation = null;
+		if(savedEntity != null)
+			previousLocation = savedEntity.getLocation();
+		
+		PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(player, this, savedEntity, previousLocation);
 		server.getPluginManager().fireEvent(playerSpawnEvent);
 		
 		if(!playerSpawnEvent.isCancelled())
 		{
-			Entity entity = null;
+			Entity entity = playerSpawnEvent.getEntity();
 			
-			SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + player.getName().toLowerCase() + ".csf");
-			if(playerEntityFile.exists())
-				entity = playerEntityFile.read(this);
+			Location actualSpawnLocation = playerSpawnEvent.getSpawnLocation();
+			if(actualSpawnLocation == null)
+				actualSpawnLocation = this.getDefaultSpawnLocation();
 			
 			if(entity == null || ((entity instanceof EntityLiving) && (((EntityLiving) entity).isDead())))
 			{
-				//System.out.println("Created entity named "+entity+":"+player.getDisplayName());
-				
 				entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName());
-				entity.setLocation(this.getDefaultSpawnLocation());
 			}
 			else
 				entity.setUUID(-1);
+			
+			entity.setLocation(actualSpawnLocation);
 			
 			server.getWorld().addEntity(entity);
 			if(entity instanceof EntityControllable)
@@ -177,6 +169,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		}
 	}
 
+	//TODO move into implem
 	@Override
 	protected int actuallySetsDataAt(int x, int y, int z, int newData, Entity entity)
 	{

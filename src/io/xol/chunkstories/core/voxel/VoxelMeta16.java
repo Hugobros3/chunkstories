@@ -1,10 +1,10 @@
 package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.core.item.ItemVoxel;
-import io.xol.chunkstories.item.ItemPile;
 import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelDefault;
