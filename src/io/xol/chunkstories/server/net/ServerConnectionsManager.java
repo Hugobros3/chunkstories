@@ -1,8 +1,8 @@
 package io.xol.chunkstories.server.net;
 
-import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.UsersPrivileges;
+import io.xol.chunkstories.server.net.ServerToClientConnection.FailedToConnectionException;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.net.HttpRequests;
 
@@ -25,22 +25,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ServerConnectionsManager extends Thread
 {
 	private Server server;
-	
+
 	public ServerConnectionsManager(Server server)
 	{
 		this.server = server;
 		this.maxClients = server.getServerConfig().getIntProp("maxusers", "100");
 	}
-	
+
 	public Server getServer()
 	{
 		return server;
 	}
-	
-	private AtomicBoolean running = new AtomicBoolean(true);
+
+	private AtomicBoolean wasCloseConnectionsCalled = new AtomicBoolean(false);
 
 	private ServerSocket serverSocket;
-	
+
 	private Set<ServerToClientConnection> clients = ConcurrentHashMap.newKeySet();
 	private int maxClients;
 
@@ -54,7 +54,7 @@ public class ServerConnectionsManager extends Thread
 		{
 			serverSocket = new ServerSocket(server.getServerConfig().getIntProp("server-port", "30410"));
 			server.getLogger().info("Started server on port " + serverSocket.getLocalPort() + ", ip=" + serverSocket.getInetAddress());
-			
+
 			externalIP = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?ip=1", "");// serverSocket.getInetAddress().getHostAddress();
 			super.start();
 		}
@@ -67,33 +67,51 @@ public class ServerConnectionsManager extends Thread
 		this.setName("ServerConnectionsManager");
 	}
 
-	public void closeConnection()
+	public void closeConnectionsManager()
 	{
-		running.set(false);
-		try
+		if (wasCloseConnectionsCalled.compareAndSet(false, true))
 		{
-			serverSocket.close();
-		}
-		catch (IOException e)
-		{
-			server.getLogger().error("An unexpected error happened during network stuff. More info below.");
-			e.printStackTrace();
+			try
+			{
+				serverSocket.close();
+			}
+			catch (IOException e)
+			{
+				server.getLogger().error("An unexpected error happened during network stuff. More info below.");
+				e.printStackTrace();
+			}
 		}
 	}
 
 	@Override
 	public void run()
 	{
-		while (running.get())
+		while (!wasCloseConnectionsCalled.get())
 		{
 			try
 			{
 				Socket sock = serverSocket.accept();
-				acceptConnection(new ServerToClientConnection(this, sock));
+
+				ServerToClientConnection clientConnection;
+				try
+				{
+					clientConnection = new ServerToClientConnection(this, sock);
+					clients.add(clientConnection);
+					// Check for banned ip
+					if (UsersPrivileges.isIpBanned(clientConnection.getIp()))
+						clientConnection.disconnect("Banned IP address - " + clientConnection.getIp());
+					// Check if too many connected users
+					if (clients.size() > maxClients)
+						clientConnection.disconnect("Server is full");
+				}
+				//Discard failures
+				catch (FailedToConnectionException e)
+				{
+				}
 			}
-			catch(SocketException e)
+			catch (SocketException e)
 			{
-				if(running.get())
+				if (!wasCloseConnectionsCalled.get())
 					e.printStackTrace();
 			}
 			catch (IOException e)
@@ -104,66 +122,32 @@ public class ServerConnectionsManager extends Thread
 		}
 	}
 
-	/**
-	 * Sends general information about the server
-	 * @param client
-	 */
-	//TODO move to ServerClient
-	void sendServerIntel(ServerToClientConnection client)
-	{
-		client.sendInternalTextMessage("info/name:" + server.getServerConfig().getProp("server-name", "unnamedserver@" + hostname));
-		client.sendInternalTextMessage("info/motd:" + server.getServerConfig().getProp("server-desc", "Default description."));
-		client.sendInternalTextMessage("info/connected:" + server.getHandler().getNumberOfAuthentificatedClients() + ":" + maxClients);
-		client.sendInternalTextMessage("info/version:" + VersionInfo.version);
-		client.sendInternalTextMessage("info/mods:"+server.getModsProvider().getModsString());
-		client.sendInternalTextMessage("info/done");
-		client.flush();
-	}
-
-	public void sendAllChat(String chat)
+	public void broadcastChatMessage(String chat)
 	{
 		server.getLogger().info(ColorsTools.convertToAnsi(chat));
-		sendAllRaw("chat/" + chat);
-	}
-
-	public void sendAllRaw(String raw)
-	{
 		for (ServerToClientConnection client : clients)
 		{
 			if (client.isAuthentificated())
-				client.sendInternalTextMessage(raw);
+				client.sendInternalTextMessage("chat/" + chat);
 		}
 	}
-	
+
 	public void flushAll()
 	{
 		for (ServerToClientConnection client : clients)
 			client.flush();
 	}
 
-	private void acceptConnection(ServerToClientConnection serverClient)
-	{
-		serverClient.openSocket();
-		serverClient.start();
-		clients.add(serverClient);
-		// Check for banned ip
-		if (UsersPrivileges.isIpBanned(serverClient.getIp()))
-			serverClient.disconnect("Banned IP address - " + serverClient.getIp());
-		// Check if too many connected users
-		if( clients.size() > maxClients)
-			serverClient.disconnect("Server is full");
-	}
-
 	void removeDeadConnection(ServerToClientConnection serverClient)
 	{
-		if(clients.contains(serverClient))
+		if (clients.contains(serverClient))
 			clients.remove(serverClient);
 	}
 
 	public void closeAll()
 	{
 		Iterator<ServerToClientConnection> clientsIterator = getAllConnectedClients();
-		while(clientsIterator.hasNext())
+		while (clientsIterator.hasNext())
 		{
 			ServerToClientConnection client = clientsIterator.next();
 			//Remove the client first to avoid concurrent mod exception
@@ -203,31 +187,33 @@ public class ServerConnectionsManager extends Thread
 
 	/**
 	 * Returns an iterator that only gives clients that have a valid profile and are loaded.
+	 * 
 	 * @return
 	 */
 	public Iterator<ServerToClientConnection> getAuthentificatedClients()
 	{
-		return new Iterator<ServerToClientConnection>() {
+		return new Iterator<ServerToClientConnection>()
+		{
 
 			Iterator<ServerToClientConnection> allClients = clients.iterator();
 			ServerToClientConnection authentificatedClient = null;
-			
+
 			//Finds the next client possible
 			private void findNextAuthentificatedClient()
 			{
-				while(authentificatedClient == null && allClients.hasNext())
+				while (authentificatedClient == null && allClients.hasNext())
 				{
 					ServerToClientConnection nextClient = allClients.next();
-					if(nextClient.isAuthentificated())
+					if (nextClient.isAuthentificated())
 						authentificatedClient = nextClient;
 				}
 			}
-			
+
 			@Override
 			//If no client can be found, then it's the end
 			public boolean hasNext()
 			{
-				if(authentificatedClient == null)
+				if (authentificatedClient == null)
 					findNextAuthentificatedClient();
 				return authentificatedClient != null;
 			}
@@ -236,17 +222,17 @@ public class ServerConnectionsManager extends Thread
 			//Finds a client if none is ready, returns it after having removed it's reference
 			public ServerToClientConnection next()
 			{
-				if(authentificatedClient == null)
+				if (authentificatedClient == null)
 					findNextAuthentificatedClient();
-				
+
 				ServerToClientConnection client = authentificatedClient;
 				authentificatedClient = null;
-				
+
 				return client;
 			}
 		};
 	}
-	
+
 	public Iterator<ServerToClientConnection> getAllConnectedClients()
 	{
 		return clients.iterator();
@@ -255,5 +241,10 @@ public class ServerConnectionsManager extends Thread
 	public String getIP()
 	{
 		return externalIP;
+	}
+
+	public String getHostname()
+	{
+		return hostname;
 	}
 }

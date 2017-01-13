@@ -682,6 +682,15 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
+	public void setDefaultSpawnLocation(Location location)
+	{
+		internalData.setDouble("defaultSpawnX", location.getX());
+		internalData.setDouble("defaultSpawnY", location.getY());
+		internalData.setDouble("defaultSpawnZ", location.getZ());
+		internalData.save();
+	}
+
+	@Override
 	public void setTime(long time)
 	{
 		this.worldTime = time;

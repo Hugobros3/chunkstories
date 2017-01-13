@@ -274,6 +274,8 @@ public interface World
 	public void destroy();
 
 	public Location getDefaultSpawnLocation();
+	
+	public void setDefaultSpawnLocation(Location location);
 
 	/**
 	 * Sets the time of the World. By default the time is set at 5000 and it uses a 10.000 cycle, 0 being midnight and 5000 being midday

@@ -1,7 +1,6 @@
 package io.xol.chunkstories.server.net;
 
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
@@ -26,7 +25,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -41,16 +44,14 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 	//Streams.
 	Socket socket;
 	PacketsProcessor packetsProcessor;
-	DataInputStream in = null;
+	DataInputStream inputDataStream = null;
 	SendQueue sendQueue;
 
 	boolean validToken = false;
 	String token = "undefined";
 
 	//Did the connection died at some point ?
-	boolean died = false;
-	//Used to pevent calling close() twice
-	boolean alreadyKilled = false;
+	private AtomicBoolean calledCloseSockedOnce = new AtomicBoolean(false);
 
 	public String name = "undefined";
 	//Version of the client he uses
@@ -61,7 +62,7 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 
 	private PacketSender sender = this;
 
-	ServerToClientConnection(ServerConnectionsManager connectionsManager, Socket socket)
+	ServerToClientConnection(ServerConnectionsManager connectionsManager, Socket socket) throws FailedToConnectionException
 	{
 		this.connectionsManager = connectionsManager;
 
@@ -70,20 +71,52 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 
 		this.packetsProcessor = new PacketsProcessor(this, connectionsManager.getServer().getContent().packets());
 		this.setName(this.toString());
+
+		try
+		{
+			this.openSocket();
+			this.start();
+		}
+		catch (IOException e)
+		{
+			System.out.println("Failed to open connection to "+this.getIp()+" - "+e.getMessage());
+			throw new FailedToConnectionException();
+		}
+	}
+
+	public void openSocket() throws IOException
+	{
+		//We get exceptions early if this fails
+		InputStream socketInputStream = socket.getInputStream();
+		OutputStream socketOutputStream = socket.getOutputStream();
+
+		inputDataStream = new DataInputStream(new BufferedInputStream(socketInputStream));
+
+		//The sendQueue is initialized with 'this' as the destinator, 'this', the ServerClient class does not implement the Subscriber interface
+		//but provides the PacketDestinator interface so outgoing packets can know what kind of client they are talking to ( in this very case, an unauthentificated client )
+		//See : postTokenCheck() for more information
+		sendQueue = new SendQueue(this, new DataOutputStream(new BufferedOutputStream(socketOutputStream)), packetsProcessor);
+		sendQueue.start();
+	}
+	
+	class FailedToConnectionException extends Exception {
+		
+		private static final long serialVersionUID = 3423402904369758447L;
+		
 	}
 
 	// Here's the usefull things !
 
-	public void handle(String in)
+	public void handle(String textRequest)
 	{
-		// Non-login mandatory requests
-		if (in.startsWith("login/"))
-			this.handleLogin(in.substring(6, in.length()));
-		else if (in.startsWith("info"))
-			this.connectionsManager.sendServerIntel(this);
-		else if (in.equals("mods"))
+		// These requests don't require a login
+		if (textRequest.startsWith("info"))
+			this.sendServerIntel();
+		else if (textRequest.startsWith("login/"))
+			this.handleLogin(textRequest.substring(6, textRequest.length()));
+		else if (textRequest.equals("mods"))
 			this.sendInternalTextMessage("info/mods:" + connectionsManager.getServer().getModsProvider().getModsString());
-		else if (in.equals("icon-file"))
+		else if (textRequest.equals("icon-file"))
 		{
 			PacketFile iconPacket = new PacketFile();
 			iconPacket.file = new File("server-icon.png");
@@ -91,19 +124,19 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 			this.pushPacket(iconPacket);
 			this.flush();
 		}
-		// Checks for auth
+		// Checks for auth - ignores unauthrorized requests
 		if (!this.isAuthentificated())
 			return;
 
 		// Login-mandatory requests ( you need to be authentificated to use them )
-		if (in.equals("co/off"))
+		if (textRequest.equals("co/off"))
 		{
-			this.disconnect("Client terminated connection");
-			//clients.remove(client);
+			this.disconnect("Client-terminated connection");
 		}
-		else if (in.startsWith("send-mod/")) //md5:
+
+		else if (textRequest.startsWith("send-mod/"))
 		{
-			String modDescriptor = in.substring(9);
+			String modDescriptor = textRequest.substring(9);
 
 			String md5 = modDescriptor.substring(4);
 			System.out.println(this + " asked for " + md5);
@@ -123,55 +156,57 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 				this.pushPacket(modUploadPacket);
 			}
 		}
-		else if (in.startsWith("world/"))
+		else if (textRequest.startsWith("world/"))
 		{
-			connectionsManager.getServer().getWorld().handleWorldMessage(this, in.substring(6, in.length()));
+			connectionsManager.getServer().getWorld().handleWorldMessage(this, textRequest.substring(6, textRequest.length()));
 		}
-		else if (in.startsWith("chat/"))
+		else if (textRequest.startsWith("chat/"))
 		{
-			String chatMsg = in.substring(5, in.length());
-			//Console commands start with a /
-			if (chatMsg.startsWith("/"))
-			{
-				chatMsg = chatMsg.substring(1, chatMsg.length());
+			String chatMessage = textRequest.substring(5, textRequest.length());
 
-				String cmdName = chatMsg.toLowerCase();
+			// Console commands parsing login
+			if (chatMessage.startsWith("/"))
+			{
+				chatMessage = chatMessage.substring(1, chatMessage.length());
+
+				String cmdName = chatMessage.toLowerCase();
 				String[] args = {};
-				if (chatMsg.contains(" "))
+				if (chatMessage.contains(" "))
 				{
-					cmdName = chatMsg.substring(0, chatMsg.indexOf(" "));
-					args = chatMsg.substring(chatMsg.indexOf(" ") + 1, chatMsg.length()).split(" ");
+					cmdName = chatMessage.substring(0, chatMessage.indexOf(" "));
+					args = chatMessage.substring(chatMessage.indexOf(" ") + 1, chatMessage.length()).split(" ");
 				}
 
+				// Sa degage
 				connectionsManager.getServer().getConsole().dispatchCommand(this.getProfile(), cmdName, args);
 			}
-			else if (chatMsg.length() > 0)
+			else if (chatMessage.length() > 0)
 			{
-				connectionsManager.sendAllChat(this.getProfile().getDisplayName() + " > " + chatMsg);
+				connectionsManager.broadcastChatMessage(this.getProfile().getDisplayName() + " > " + chatMessage);
 			}
 		}
 	}
 
-	public void handleLogin(String m)
+	public void handleLogin(String loginRequest)
 	{
-		if (m.startsWith("username:"))
+		if (loginRequest.startsWith("username:"))
 		{
-			this.name = m.replace("username:", "");
+			this.name = loginRequest.replace("username:", "");
 		}
-		if (m.startsWith("logintoken:"))
+		if (loginRequest.startsWith("logintoken:"))
 		{
-			token = m.replace("logintoken:", "");
+			token = loginRequest.replace("logintoken:", "");
 		}
-		if (m.startsWith("version:"))
+		if (loginRequest.startsWith("version:"))
 		{
-			version = m.replace("version:", "");
+			version = loginRequest.replace("version:", "");
 			if (connectionsManager.getServer().getServerConfig().getProp("check-version", "true").equals("true"))
 			{
 				if (Integer.parseInt(version) != VersionInfo.networkProtocolVersion)
 					disconnect("Wrong protocol version ! " + version + " != " + VersionInfo.networkProtocolVersion + " \n Update your game !");
 			}
 		}
-		if (m.startsWith("confirm"))
+		if (loginRequest.startsWith("confirm"))
 		{
 			if (name.equals("undefined"))
 				return;
@@ -196,17 +231,36 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 		}
 	}
 
+	/**
+	 * Sends general information about the server
+	 * 
+	 * @param client
+	 */
+	//TODO move to ServerClient
+	void sendServerIntel()
+	{
+		this.sendInternalTextMessage("info/name:" + getServer().getServerConfig().getProp("server-name", "unnamedserver@" + connectionsManager.getHostname()));
+		this.sendInternalTextMessage("info/motd:" + getServer().getServerConfig().getProp("server-desc", "Default description."));
+		this.sendInternalTextMessage("info/connected:" + getServer().getHandler().getNumberOfAuthentificatedClients() + ":" + connectionsManager.getMaxClients());
+		this.sendInternalTextMessage("info/version:" + VersionInfo.version);
+		this.sendInternalTextMessage("info/mods:" + getServer().getModsProvider().getModsString());
+		this.sendInternalTextMessage("info/done");
+		this.flush();
+
+		this.disconnect("MOTD ONLY");
+	}
+
 	// Just socket bullshit !
 	@Override
 	public void run()
 	{
-		while (!died)
+		while (!this.calledCloseSockedOnce.get())
 		{
 			try
 			{
 				//Process incomming packets
-				Packet packet = packetsProcessor.getPacket(in, false);
-				packet.process(sender, in, packetsProcessor);
+				Packet packet = packetsProcessor.getPacket(inputDataStream, false);
+				packet.process(sender, inputDataStream, packetsProcessor);
 			}
 			catch (IllegalPacketException | UnknowPacketException e)
 			{
@@ -236,66 +290,55 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 
 	public String getIp()
 	{
-		return socket.getInetAddress().getHostAddress();
+		InetAddress inet = socket.getInetAddress();
+		
+		if(inet == null)
+			return "[IP:Unconnected socket]";
+		return inet.getHostAddress();
 	}
 
-	public String getHost()
+	public String getHostname()
 	{
-		return socket.getInetAddress().getHostName();
-	}
-
-	public void openSocket()
-	{
-		try
-		{
-			in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-
-			//The sendQueue is initialized with 'this' as the destinator, 'this', the ServerClient class does not implement the Subscriber interface
-			//but provides the PacketDestinator interface so outgoing packets can know what kind of client they are talking to ( in this very case, an unauthentificated client )
-			//See : postTokenCheck() for more information
-			sendQueue = new SendQueue(this, new DataOutputStream(new BufferedOutputStream(socket.getOutputStream())), packetsProcessor);
-			sendQueue.start();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+		InetAddress inet = socket.getInetAddress();
+		
+		if(inet == null)
+			return "[HN:Unconnected socket]";
+		return inet.getHostName();
 	}
 
 	void closeSocket()
 	{
-		if (alreadyKilled)
-			return;
-		died = true;
-		if (getProfile() != null)
+		if (calledCloseSockedOnce.compareAndSet(false, true))
 		{
-			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(getProfile());
-			connectionsManager.getServer().getPluginManager().fireEvent(playerDisconnectionEvent);
+			if (getProfile() != null)
+			{
+				PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(getProfile());
+				connectionsManager.getServer().getPluginManager().fireEvent(playerDisconnectionEvent);
 
-			connectionsManager.getServer().getHandler().sendAllChat(playerDisconnectionEvent.getLogoutMessage());
+				connectionsManager.getServer().getHandler().broadcastChatMessage(playerDisconnectionEvent.getLogoutMessage());
 
-			//connectionsManager.getServer().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
-			assert getProfile() != null;
-			getProfile().save();
-			getProfile().removePlayerFromWorld();
+				//connectionsManager.getServer().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
+				assert getProfile() != null;
+				getProfile().save();
+				getProfile().removePlayerFromWorld();
+			}
+
+			try
+			{
+				if (inputDataStream != null)
+					inputDataStream.close();
+				if (sendQueue != null)
+					sendQueue.kill();
+
+				//Null-out for server gc ?
+				sendQueue = null;
+				inputDataStream = null;
+			}
+			catch (Exception e)
+			{
+
+			}
 		}
-
-		try
-		{
-			if (in != null)
-				in.close();
-			if (sendQueue != null)
-				sendQueue.kill();
-
-			//Null-out for server gc ?
-			sendQueue = null;
-			in = null;
-		}
-		catch (Exception e)
-		{
-
-		}
-		alreadyKilled = true;
 	}
 
 	public void sendChat(String msg)
@@ -313,13 +356,13 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 
 	public void pushPacket(Packet packet)
 	{
-		if(sendQueue != null)
+		if (sendQueue != null)
 			sendQueue.queue(packet);
 	}
 
 	public void flush()
 	{
-		if(sendQueue != null)
+		if (sendQueue != null)
 			sendQueue.flush();
 	}
 
@@ -357,7 +400,7 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 		}
 
 		//Announce player login
-		connectionsManager.getServer().getHandler().sendAllChat(playerConnectionEvent.getConnectionMessage());
+		connectionsManager.getServer().getHandler().broadcastChatMessage(playerConnectionEvent.getConnectionMessage());
 		//Aknowledge the login
 		sendInternalTextMessage("login/ok");
 
@@ -420,7 +463,7 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 	public void disconnect(String disconnectionReason)
 	{
 		//Thread.dumpStack();
-		
+
 		ChunkStoriesLogger.getInstance().info("Disconnecting client " + this + " for reason " + disconnectionReason);
 		sendInternalTextMessage("disconnect/" + disconnectionReason);
 		closeSocket();
@@ -430,9 +473,9 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 
 	public String toString()
 	{
-		if(died)
+		if (this.calledCloseSockedOnce.get())
 			return "[Zombie connection !]";
-		
+
 		if (isAuthentificated())
 			return "[Connected user '" + getProfile().getName() + "' from " + this.getIp() + "]";
 		else

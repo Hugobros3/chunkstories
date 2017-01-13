@@ -264,7 +264,7 @@ public class Server implements Runnable, ServerInterface
 		// When stopped, close sockets and save config.
 		log.info("Killing all connections");
 		connectionsManager.closeAll();
-		connectionsManager.closeConnection();
+		connectionsManager.closeConnectionsManager();
 
 		log.info("Saving map ...");
 		world.saveEverything();
@@ -373,7 +373,7 @@ public class Server implements Runnable, ServerInterface
 	@Override
 	public void broadcastMessage(String message)
 	{
-		this.connectionsManager.sendAllChat(message);
+		this.connectionsManager.broadcastChatMessage(message);
 	}
 
 	/**

@@ -125,14 +125,9 @@ public class ServerConsole implements CommandEmitter
 				}
 				return true;
 			}
-			else if (cmd.equals("tim"))
+			else if (cmd.equals("save") && emitter.hasPermission("server.admin"))
 			{
-				emitter.sendMessage("#FFDD00" + ((Player) emitter).getLocation().getWorld());
-
-				return true;
-			}
-			else if (cmd.equals("save"))
-			{
+				emitter.sendMessage("#00FFD0Saving the world");
 				server.getWorld().saveEverything();
 				return true;
 			}
@@ -262,7 +257,7 @@ public class ServerConsole implements CommandEmitter
 					while (connectedClientsIterator.hasNext())
 					{
 						ServerToClientConnection client = connectedClientsIterator.next();
-						emitter.sendMessage(client.getIp() + "/" + client.getHost() + " - " + client.name);
+						emitter.sendMessage(client.getIp() + "/" + client.getHostname() + " - " + client.name);
 					}
 					emitter.sendMessage("==done==");
 					return true;
