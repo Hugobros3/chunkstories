@@ -14,9 +14,9 @@ import io.xol.chunkstories.renderer.decals.DecalsRenderer;
 /**
  * Implementation of common methods to WorldClientRemote and WorldClientLocal
  */
-public abstract class WorldClientCommon2 extends WorldImplementation implements WorldClient
+public abstract class WorldClientCommon extends WorldImplementation implements WorldClient
 {
-	public WorldClientCommon2(Client client, WorldInfo info)
+	public WorldClientCommon(Client client, WorldInfo info)
 	{
 		super(client, info);
 		

@@ -16,8 +16,9 @@ import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.net.packets.PacketTime;
 import io.xol.chunkstories.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.net.packets.PacketsProcessor.PendingSynchPacket;
+import io.xol.chunkstories.server.RemoteServerPlayer;
 import io.xol.chunkstories.server.Server;
-import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.server.net.ServerToClientConnection;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
 import io.xol.chunkstories.server.propagation.VirtualServerSoundManager;
@@ -81,7 +82,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		virtualServerSoundManager.update();
 	}
 
-	public void handleWorldMessage(ServerClient sender, String message)
+	public void handleWorldMessage(ServerToClientConnection sender, String message)
 	{
 		if (message.equals("info"))
 		{
@@ -168,7 +169,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				System.out.println("Error : entity is not controllable");
 		}
 	}
-
+	
 	//TODO move into implem
 	@Override
 	protected int actuallySetsDataAt(int x, int y, int z, int newData, Entity entity)
@@ -211,10 +212,10 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	{
 		entitiesLock.writeLock().lock();
 		
-		Iterator<ServerClient> clientsIterator = server.getHandler().getAuthentificatedClients();
+		/*Iterator<ServerToClientConnection> clientsIterator = server.getHandler().getAuthentificatedClients();
 		while (clientsIterator.hasNext())
 		{
-			ServerClient client = clientsIterator.next();
+			ServerToClientConnection client = clientsIterator.next();
 
 			//Get buffered packets from this player
 			PendingSynchPacket packet = client.getPacketsProcessor().getPendingSynchPacket();
@@ -224,6 +225,20 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				packet = client.getPacketsProcessor().getPendingSynchPacket();
 			}
 
+		}*/
+		
+		Iterator<Player> clientsIterator = this.getPlayers();
+		while (clientsIterator.hasNext())
+		{
+			ServerToClientConnection playerConnection = ((RemoteServerPlayer)clientsIterator.next()).getPlayerConnection();
+
+			//Get buffered packets from this player
+			PendingSynchPacket packet = playerConnection.getPacketsProcessor().getPendingSynchPacket();
+			while (packet != null)
+			{
+				packet.process(playerConnection, playerConnection.getPacketsProcessor());
+				packet = playerConnection.getPacketsProcessor().getPendingSynchPacket();
+			}
 		}
 		
 		entitiesLock.writeLock().unlock();
@@ -250,5 +265,20 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	public IterableIterator<Player> getPlayers()
 	{
 		return server.getConnectedPlayers();
+	}
+
+	@Override
+	public Player getPlayerByName(String playerName)
+	{
+		//Does the server have this player ?
+		Player player = server.getPlayerByName(playerName);
+		if(player == null)
+			return null;
+		
+		//We don't want players from other worlds
+		if(!player.getWorld().equals(this))
+			return null;
+		
+		return player;
 	}
 }

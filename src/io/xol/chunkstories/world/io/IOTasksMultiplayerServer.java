@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
-import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.server.net.ServerToClientConnection;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
@@ -32,10 +32,10 @@ public class IOTasksMultiplayerServer extends IOTasks
 	
 	class IOTaskSendCompressedChunk extends IOTask
 	{
-		ServerClient client;
+		ServerToClientConnection client;
 		int chunkX, chunkY, chunkZ;
 		
-		public IOTaskSendCompressedChunk(int x, int y, int z, ServerClient client)
+		public IOTaskSendCompressedChunk(int x, int y, int z, ServerToClientConnection client)
 		{
 			this.client = client;
 			this.chunkX = x;
@@ -98,7 +98,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 		}
 	}
 
-	public void requestCompressedChunkSend(int x, int y, int z, ServerClient sender)
+	public void requestCompressedChunkSend(int x, int y, int z, ServerToClientConnection sender)
 	{
 		IOTaskSendCompressedChunk task = new IOTaskSendCompressedChunk(x, y, z, sender);
 		scheduleTask(task);
@@ -106,10 +106,10 @@ public class IOTasksMultiplayerServer extends IOTasks
 	
 	class IOTaskSendRegionSummary extends IOTask
 	{
-		ServerClient client;
+		ServerToClientConnection client;
 		int rx, rz;
 		
-		public IOTaskSendRegionSummary(int x, int z, ServerClient client)
+		public IOTaskSendRegionSummary(int x, int z, ServerToClientConnection client)
 		{
 			this.client = client;
 			this.rx = x;
@@ -145,7 +145,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 		}
 	}
 
-	public void requestRegionSummary(int x, int z, ServerClient sender)
+	public void requestRegionSummary(int x, int z, ServerToClientConnection sender)
 	{
 		IOTaskSendRegionSummary task = new IOTaskSendRegionSummary(x, z, sender);
 		scheduleTask(task);

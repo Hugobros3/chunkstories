@@ -45,4 +45,10 @@ public class WorldClientLocal extends WorldClientCommon implements WorldMaster
 	{
 		throw new UnsupportedOperationException("getPlayers");
 	}
+
+	@Override
+	public Player getPlayerByName(String playerName)
+	{
+		throw new UnsupportedOperationException("getPlayers");
+	}
 }

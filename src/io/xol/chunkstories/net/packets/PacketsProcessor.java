@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.server.Server;
-import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.server.net.ServerToClientConnection;
 
 //(c) 2015-2016 XolioWare Interactive
 //http://chunkstories.xyz
@@ -30,14 +30,14 @@ public class PacketsProcessor
 
 	//Both clients and server use this class
 	ClientToServerConnection serverConnection;
-	ServerClient serverClient;
+	ServerToClientConnection serverClient;
 
 	public ClientToServerConnection getClientToServerConnection()
 	{
 		return serverConnection;
 	}
 
-	public ServerClient getServerClient()
+	public ServerToClientConnection getServerClient()
 	{
 		return serverClient;
 	}
@@ -51,7 +51,7 @@ public class PacketsProcessor
 		isClient = true;
 	}
 
-	public PacketsProcessor(ServerClient serverClient, Content.PacketTypes store)
+	public PacketsProcessor(ServerToClientConnection serverClient, Content.PacketTypes store)
 	{
 		this.store = store;
 		this.serverClient = serverClient;

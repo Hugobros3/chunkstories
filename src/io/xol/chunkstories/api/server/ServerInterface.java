@@ -13,7 +13,7 @@ public interface ServerInterface extends GameContext
 {
 	public IterableIterator<Player> getConnectedPlayers();
 
-	public Player getPlayer(String string);
+	public Player getPlayerByName(String string);
 	
 	public Player getPlayerByUUID(long UUID);
 

@@ -24,7 +24,7 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.DefaultPluginManager;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
-import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.server.net.ServerToClientConnection;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
 import io.xol.chunkstories.server.propagation.ServerModsProvider;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -305,7 +305,7 @@ public class Server implements Runnable, ServerInterface
 	{
 		return new IterableIterator<Player>()
 		{
-			Iterator<ServerClient> authClients = connectionsManager.getAuthentificatedClients();
+			Iterator<ServerToClientConnection> authClients = connectionsManager.getAuthentificatedClients();
 
 			@Override
 			public boolean hasNext()
@@ -329,9 +329,9 @@ public class Server implements Runnable, ServerInterface
 	}
 
 	@Override
-	public Player getPlayer(String playerName)
+	public Player getPlayerByName(String playerName)
 	{
-		ServerClient clientByThatName = connectionsManager.getAuthentificatedClientByName(playerName);
+		ServerToClientConnection clientByThatName = connectionsManager.getAuthentificatedClientByName(playerName);
 		if (clientByThatName != null)
 			return clientByThatName.getProfile();
 		return null;

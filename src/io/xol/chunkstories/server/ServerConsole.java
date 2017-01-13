@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.core.entity.EntityPlayer;
-import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.server.net.ServerToClientConnection;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.misc.ColorsTools;
 
@@ -258,10 +258,10 @@ public class ServerConsole implements CommandEmitter
 				else if (cmd.equals("clients"))
 				{
 					emitter.sendMessage("==Listing clients==");
-					Iterator<ServerClient> connectedClientsIterator = server.getHandler().getAllConnectedClients();
+					Iterator<ServerToClientConnection> connectedClientsIterator = server.getHandler().getAllConnectedClients();
 					while (connectedClientsIterator.hasNext())
 					{
-						ServerClient client = connectedClientsIterator.next();
+						ServerToClientConnection client = connectedClientsIterator.next();
 						emitter.sendMessage(client.getIp() + "/" + client.getHost() + " - " + client.name);
 					}
 					emitter.sendMessage("==done==");
@@ -275,7 +275,7 @@ public class ServerConsole implements CommandEmitter
 				}
 				else if (arguments.length >= 1 && cmd.equals("kick"))
 				{
-					ServerClient clientByName = server.getHandler().getAuthentificatedClientByName(arguments[0]);
+					ServerToClientConnection clientByName = server.getHandler().getAuthentificatedClientByName(arguments[0]);
 					String kickReason = "Please exert refrain from portrayal of such imbecile attitudes";
 					//Recreate the argument
 					if (arguments.length >= 2)

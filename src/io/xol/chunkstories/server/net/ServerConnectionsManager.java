@@ -41,7 +41,7 @@ public class ServerConnectionsManager extends Thread
 
 	private ServerSocket serverSocket;
 	
-	private Set<ServerClient> clients = ConcurrentHashMap.newKeySet();
+	private Set<ServerToClientConnection> clients = ConcurrentHashMap.newKeySet();
 	private int maxClients;
 
 	private String hostname = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?host=1", "");
@@ -89,7 +89,7 @@ public class ServerConnectionsManager extends Thread
 			try
 			{
 				Socket sock = serverSocket.accept();
-				acceptConnection(new ServerClient(this, sock));
+				acceptConnection(new ServerToClientConnection(this, sock));
 			}
 			catch(SocketException e)
 			{
@@ -109,7 +109,7 @@ public class ServerConnectionsManager extends Thread
 	 * @param client
 	 */
 	//TODO move to ServerClient
-	void sendServerIntel(ServerClient client)
+	void sendServerIntel(ServerToClientConnection client)
 	{
 		client.sendInternalTextMessage("info/name:" + server.getServerConfig().getProp("server-name", "unnamedserver@" + hostname));
 		client.sendInternalTextMessage("info/motd:" + server.getServerConfig().getProp("server-desc", "Default description."));
@@ -128,7 +128,7 @@ public class ServerConnectionsManager extends Thread
 
 	public void sendAllRaw(String raw)
 	{
-		for (ServerClient client : clients)
+		for (ServerToClientConnection client : clients)
 		{
 			if (client.isAuthentificated())
 				client.sendInternalTextMessage(raw);
@@ -137,11 +137,11 @@ public class ServerConnectionsManager extends Thread
 	
 	public void flushAll()
 	{
-		for (ServerClient client : clients)
+		for (ServerToClientConnection client : clients)
 			client.flush();
 	}
 
-	private void acceptConnection(ServerClient serverClient)
+	private void acceptConnection(ServerToClientConnection serverClient)
 	{
 		serverClient.openSocket();
 		serverClient.start();
@@ -154,7 +154,7 @@ public class ServerConnectionsManager extends Thread
 			serverClient.disconnect("Server is full");
 	}
 
-	void removeDeadConnection(ServerClient serverClient)
+	void removeDeadConnection(ServerToClientConnection serverClient)
 	{
 		if(clients.contains(serverClient))
 			clients.remove(serverClient);
@@ -162,10 +162,10 @@ public class ServerConnectionsManager extends Thread
 
 	public void closeAll()
 	{
-		Iterator<ServerClient> clientsIterator = getAllConnectedClients();
+		Iterator<ServerToClientConnection> clientsIterator = getAllConnectedClients();
 		while(clientsIterator.hasNext())
 		{
-			ServerClient client = clientsIterator.next();
+			ServerToClientConnection client = clientsIterator.next();
 			//Remove the client first to avoid concurrent mod exception
 			clientsIterator.remove();
 			client.disconnect("Server is closing.");
@@ -180,7 +180,7 @@ public class ServerConnectionsManager extends Thread
 	public int getNumberOfAuthentificatedClients()
 	{
 		int count = 0;
-		for (ServerClient c : clients)
+		for (ServerToClientConnection c : clients)
 		{
 			if (c.isAuthentificated())
 				count++;
@@ -188,9 +188,9 @@ public class ServerConnectionsManager extends Thread
 		return count;
 	}
 
-	public ServerClient getAuthentificatedClientByName(String name)
+	public ServerToClientConnection getAuthentificatedClientByName(String name)
 	{
-		for (ServerClient c : clients)
+		for (ServerToClientConnection c : clients)
 		{
 			if (c.isAuthentificated())
 			{
@@ -205,19 +205,19 @@ public class ServerConnectionsManager extends Thread
 	 * Returns an iterator that only gives clients that have a valid profile and are loaded.
 	 * @return
 	 */
-	public Iterator<ServerClient> getAuthentificatedClients()
+	public Iterator<ServerToClientConnection> getAuthentificatedClients()
 	{
-		return new Iterator<ServerClient>() {
+		return new Iterator<ServerToClientConnection>() {
 
-			Iterator<ServerClient> allClients = clients.iterator();
-			ServerClient authentificatedClient = null;
+			Iterator<ServerToClientConnection> allClients = clients.iterator();
+			ServerToClientConnection authentificatedClient = null;
 			
 			//Finds the next client possible
 			private void findNextAuthentificatedClient()
 			{
 				while(authentificatedClient == null && allClients.hasNext())
 				{
-					ServerClient nextClient = allClients.next();
+					ServerToClientConnection nextClient = allClients.next();
 					if(nextClient.isAuthentificated())
 						authentificatedClient = nextClient;
 				}
@@ -234,12 +234,12 @@ public class ServerConnectionsManager extends Thread
 
 			@Override
 			//Finds a client if none is ready, returns it after having removed it's reference
-			public ServerClient next()
+			public ServerToClientConnection next()
 			{
 				if(authentificatedClient == null)
 					findNextAuthentificatedClient();
 				
-				ServerClient client = authentificatedClient;
+				ServerToClientConnection client = authentificatedClient;
 				authentificatedClient = null;
 				
 				return client;
@@ -247,7 +247,7 @@ public class ServerConnectionsManager extends Thread
 		};
 	}
 	
-	public Iterator<ServerClient> getAllConnectedClients()
+	public Iterator<ServerToClientConnection> getAllConnectedClients()
 	{
 		return clients.iterator();
 	}

@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.net.packets.PacketSoundSource;
 import io.xol.chunkstories.server.Server;
-import io.xol.chunkstories.server.ServerPlayer;
+import io.xol.chunkstories.server.RemoteServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.sound.sources.SoundSourceVirtual;
@@ -34,12 +34,12 @@ public class VirtualServerSoundManager implements SoundManager
 
 	public class ServerPlayerVirtualSoundManager implements SoundManager
 	{
-		ServerPlayer serverPlayer;
+		RemoteServerPlayer serverPlayer;
 
 		//As above, individual players have their playing sound sources kept track of
 		Set<WeakReference<SoundSourceVirtual>> playingSoundSources = ConcurrentHashMap.newKeySet();
 
-		public ServerPlayerVirtualSoundManager(ServerPlayer serverPlayer)
+		public ServerPlayerVirtualSoundManager(RemoteServerPlayer serverPlayer)
 		{
 			this.serverPlayer = serverPlayer;
 			playersSoundManagers.add(this);

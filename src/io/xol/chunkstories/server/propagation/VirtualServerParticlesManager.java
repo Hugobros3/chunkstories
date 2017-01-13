@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.net.packets.PacketParticle;
 import io.xol.chunkstories.server.Server;
-import io.xol.chunkstories.server.ServerPlayer;
+import io.xol.chunkstories.server.RemoteServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
@@ -25,9 +25,9 @@ public class VirtualServerParticlesManager implements ParticlesManager
 	
 	public class ServerPlayerVirtualParticlesManager implements ParticlesManager
 	{
-		ServerPlayer serverPlayer;
+		RemoteServerPlayer serverPlayer;
 
-		public ServerPlayerVirtualParticlesManager(ServerPlayer serverPlayer)
+		public ServerPlayerVirtualParticlesManager(RemoteServerPlayer serverPlayer)
 		{
 			this.serverPlayer = serverPlayer;
 		}

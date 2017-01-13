@@ -171,4 +171,10 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	{
 		throw new UnsupportedOperationException("getPlayers");
 	}
+
+	@Override
+	public Player getPlayerByName(String playerName)
+	{
+		throw new UnsupportedOperationException("getPlayers");
+	}
 }

@@ -14,7 +14,7 @@ import io.xol.chunkstories.net.packets.PacketText;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.server.Server;
-import io.xol.chunkstories.server.ServerPlayer;
+import io.xol.chunkstories.server.RemoteServerPlayer;
 import io.xol.chunkstories.server.UsersPrivileges;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.net.HttpRequestThread;
@@ -32,7 +32,7 @@ import java.net.Socket;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerClient extends Thread implements HttpRequester, PacketDestinator, PacketSender
+public class ServerToClientConnection extends Thread implements HttpRequester, PacketDestinator, PacketSender
 {
 	private final ServerConnectionsManager connectionsManager;
 
@@ -57,11 +57,11 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 	public String version = "undefined";
 
 	//Assertion : if the player is authentificated it has a profile
-	private ServerPlayer profile;
+	private RemoteServerPlayer profile;
 
 	private PacketSender sender = this;
 
-	ServerClient(ServerConnectionsManager connectionsManager, Socket socket)
+	ServerToClientConnection(ServerConnectionsManager connectionsManager, Socket socket)
 	{
 		this.connectionsManager = connectionsManager;
 
@@ -277,7 +277,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			//connectionsManager.getServer().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
 			assert getProfile() != null;
 			getProfile().save();
-			getProfile().destroy();
+			getProfile().removePlayerFromWorld();
 		}
 
 		try
@@ -329,7 +329,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 	private void afterLoginValidation()
 	{
 		//Prevent user from logging in from two places
-		ServerClient contender = this.connectionsManager.getAuthentificatedClientByName(name);
+		ServerToClientConnection contender = this.connectionsManager.getAuthentificatedClientByName(name);
 		if (contender != null)
 		{
 			//SECURITY: this allows someone with one username's credentials to obtain his ip.
@@ -338,7 +338,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 			return;
 		}
 
-		setProfile(new ServerPlayer(this));
+		setProfile(new RemoteServerPlayer(this));
 
 		//This changes the destinator from a ServerClient to a ServerPlayer, letting know outgoing packets and especially entity components about all the
 		//specifics of the player : name, entity he subscribed to, etc
@@ -380,9 +380,9 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 	@Override
 	public boolean equals(Object o)
 	{
-		if (o != null && o instanceof ServerClient)
+		if (o != null && o instanceof ServerToClientConnection)
 		{
-			ServerClient c = (ServerClient) o;
+			ServerToClientConnection c = (ServerToClientConnection) o;
 			if (c.name.equals(name) && socketPort == c.socketPort)
 				return true;
 		}
@@ -394,7 +394,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 		return getProfile() != null;
 	}
 
-	public ServerPlayer getProfile()
+	public RemoteServerPlayer getProfile()
 	{
 		return profile;
 	}
@@ -407,7 +407,7 @@ public class ServerClient extends Thread implements HttpRequester, PacketDestina
 	/**
 	 * Called once the user has providen valid authentification
 	 */
-	private final void setProfile(ServerPlayer profile)
+	private final void setProfile(RemoteServerPlayer profile)
 	{
 		this.profile = profile;
 	}

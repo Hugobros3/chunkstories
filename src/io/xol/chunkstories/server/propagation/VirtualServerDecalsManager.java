@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.net.packets.PacketDecal;
 import io.xol.chunkstories.server.Server;
-import io.xol.chunkstories.server.ServerPlayer;
+import io.xol.chunkstories.server.RemoteServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
@@ -25,9 +25,9 @@ public class VirtualServerDecalsManager implements DecalsManager
 	
 	public class ServerPlayerVirtualDecalsManager implements DecalsManager
 	{
-		ServerPlayer serverPlayer;
+		RemoteServerPlayer serverPlayer;
 
-		public ServerPlayerVirtualDecalsManager(ServerPlayer serverPlayer)
+		public ServerPlayerVirtualDecalsManager(RemoteServerPlayer serverPlayer)
 		{
 			this.serverPlayer = serverPlayer;
 		}

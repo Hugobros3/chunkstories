@@ -11,7 +11,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import io.xol.chunkstories.net.packets.PacketWorldInfo;
-import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.server.net.ServerToClientConnection;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -125,7 +125,7 @@ public class WorldInfo
 	 * Will send a packet containing this object information to the user
 	 * @param sender
 	 */
-	public void sendInfo(ServerClient user)
+	public void sendInfo(ServerToClientConnection user)
 	{
 		PacketWorldInfo packet = new PacketWorldInfo();
 		packet.info = this;

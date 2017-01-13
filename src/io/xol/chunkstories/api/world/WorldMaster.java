@@ -16,6 +16,8 @@ public interface WorldMaster extends World
 	
 	public IterableIterator<Player> getPlayers();
 	
+	public Player getPlayerByName(String playerName);
+	
 	/**
 	 * Plays a soundEffect to all clients except once, typical use if sounds played locally by a player that can't suffer any lag for him
 	 * but still need others to hear it as well

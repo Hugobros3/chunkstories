@@ -20,9 +20,9 @@ public class ServerInputsManager implements InputsManager
 	Set<Input> inputs = new HashSet<Input>();
 	Map<Long, Input> inputsMap = new HashMap<Long, Input>();
 
-	private final ServerPlayer player;
+	private final RemoteServerPlayer player;
 	
-	public ServerInputsManager(ServerPlayer serverPlayer)
+	public ServerInputsManager(RemoteServerPlayer serverPlayer)
 	{
 		this.player = serverPlayer;
 		

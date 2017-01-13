@@ -17,7 +17,7 @@ import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.entity.SerializedEntityFile;
-import io.xol.chunkstories.server.net.ServerClient;
+import io.xol.chunkstories.server.net.ServerToClientConnection;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager;
 import io.xol.chunkstories.server.propagation.VirtualServerSoundManager.ServerPlayerVirtualSoundManager;
@@ -36,10 +36,10 @@ import java.util.concurrent.ConcurrentHashMap;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerPlayer implements Player
+public class RemoteServerPlayer implements Player
 {
 	private ConfigFile playerDataFile;
-	private ServerClient playerConnection;
+	private ServerToClientConnection playerConnection;
 
 	//Entity controlled
 	private EntityControllable controlledEntity;
@@ -55,28 +55,28 @@ public class ServerPlayer implements Player
 	private ServerPlayerVirtualParticlesManager virtualParticlesManager;
 	private ServerPlayerVirtualDecalsManager virtualDecalsManager;
 
-	public ServerPlayer(ServerClient serverClient)
+	public RemoteServerPlayer(ServerToClientConnection playerConnection)
 	{
-		playerConnection = serverClient;
+		this.playerConnection = playerConnection;
 
-		playerDataFile = new ConfigFile("./players/" + getPlayerConnection().name.toLowerCase() + ".cfg");
+		this.playerDataFile = new ConfigFile("./players/" + getPlayerConnection().name.toLowerCase() + ".cfg");
 
-		serverInputsManager = new ServerInputsManager(this);
+		this.serverInputsManager = new ServerInputsManager(this);
 
 		//TODO this should be reset when the user changes world
-		virtualSoundManager = serverClient.getServer().getWorld().getSoundManager().new ServerPlayerVirtualSoundManager(this);
-		virtualParticlesManager = playerConnection.getServer().getWorld().getParticlesManager().new ServerPlayerVirtualParticlesManager(this);
-		virtualDecalsManager = playerConnection.getServer().getWorld().getDecalsManager().new ServerPlayerVirtualDecalsManager(this);
+		this.virtualSoundManager = playerConnection.getServer().getWorld().getSoundManager().new ServerPlayerVirtualSoundManager(this);
+		this.virtualParticlesManager = playerConnection.getServer().getWorld().getParticlesManager().new ServerPlayerVirtualParticlesManager(this);
+		this.virtualDecalsManager = playerConnection.getServer().getWorld().getDecalsManager().new ServerPlayerVirtualDecalsManager(this);
 
 		// Sets dates
-		playerDataFile.setString("lastlogin", "" + System.currentTimeMillis());
-		if (playerDataFile.getProp("firstlogin", "nope").equals("nope"))
-			playerDataFile.setString("firstlogin", "" + System.currentTimeMillis());
+		this.playerDataFile.setString("lastlogin", "" + System.currentTimeMillis());
+		if (this.playerDataFile.getProp("firstlogin", "nope").equals("nope"))
+			this.playerDataFile.setString("firstlogin", "" + System.currentTimeMillis());
 
 		//Does not create a player entity here, this is taken care of by the player (re)spawn req
 	}
 
-	public ServerClient getPlayerConnection()
+	public ServerToClientConnection getPlayerConnection()
 	{
 		return playerConnection;
 	}
@@ -109,22 +109,15 @@ public class ServerPlayer implements Player
 			if (shouldTrack && !contains)
 			{
 				this.subscribe(e);
-				//trackEntity(e, true, false);
 			}
 			//Too far but still tracked
 			if (!shouldTrack && contains)
 			{
-				//Despawn the entity
-				//System.out.println("Unsubscribed "+this+" from "+e+" because of distance");
-
 				this.unsubscribe(e);
-				//trackEntity(e, false, true);
-
+				
 				subscribedEntities.remove(e); // Reminder, we are iterating the world, not trackedEntities
 			}
 		}
-
-		//System.out.println(subscribedEntities.size());
 
 		Iterator<Entity> iter2 = subscribedEntities.iterator();
 		while (iter2.hasNext())
@@ -141,19 +134,13 @@ public class ServerPlayer implements Player
 			//Reasons other than distance to stop tracking this entity
 			if (!e.shouldBeTrackedBy(this) || !shouldTrack)
 			{
-				//Despawn the entity
-				//trackEntity(e, false, true);
-
-				//System.out.println("Unsubscribed "+this+" from "+e+" because of IM A MORON");
 				this.unsubscribe(e);
-				//iter2.remove();
 			}
 			else
 			{
 				// Just send new positions
-
-				//trackEntity(e, false, false);
-				//No need to do anything as the component system handles the updates
+				// ...
+				// No need to do anything as the component system handles the updates
 			}
 		}
 	}
@@ -183,12 +170,11 @@ public class ServerPlayer implements Player
 		System.out.println("Player profile " + getPlayerConnection().name + " saved.");
 	}
 
-	public void destroy()
+	public void removePlayerFromWorld()
 	{
 		if (controlledEntity != null)
 		{
 			playerConnection.getServer().getWorld().removeEntity(controlledEntity);
-			System.out.println("removed player entity");
 		}
 		unsubscribeAll();
 	}
