@@ -2,7 +2,7 @@ package io.xol.chunkstories.world.generator.structures;
 
 import io.xol.chunkstories.api.world.chunk.Chunk;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 

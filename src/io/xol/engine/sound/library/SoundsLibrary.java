@@ -9,7 +9,7 @@ import io.xol.engine.sound.SoundDataBuffered;
 import io.xol.engine.sound.ogg.SoundDataOggSample;
 import io.xol.engine.sound.ogg.SoundDataOggStream;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

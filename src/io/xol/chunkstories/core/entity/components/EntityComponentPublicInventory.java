@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.net.packets.PacketWorldInfo;
 import io.xol.chunkstories.server.net.ServerToClientConnection;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 

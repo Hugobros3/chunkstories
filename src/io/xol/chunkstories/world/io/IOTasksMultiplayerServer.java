@@ -12,7 +12,7 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import io.xol.engine.math.LoopingMathHelper;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.input.InputVirtual;
 import io.xol.chunkstories.input.KeyBindsLoader;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

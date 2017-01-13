@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.exceptions.rendering.NotEnoughtTextureUnitsExcept
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.engine.graphics.textures.Texture2D;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

@@ -2,7 +2,7 @@ package io.xol.chunkstories.api.entity.interfaces;
 
 import io.xol.chunkstories.api.Location;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

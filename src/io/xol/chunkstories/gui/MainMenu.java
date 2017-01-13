@@ -26,6 +26,10 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.base.GameWindowOpenGL;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class MainMenu extends OverlayableScene
 {
 	// Stuff for rendering the background

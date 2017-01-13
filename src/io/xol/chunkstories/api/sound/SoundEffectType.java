@@ -1,5 +1,9 @@
 package io.xol.chunkstories.api.sound;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public enum SoundEffectType
 {
 	NullEffect(0x0000),

@@ -11,7 +11,7 @@ import io.xol.chunkstories.entity.EntityTypesStore;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 

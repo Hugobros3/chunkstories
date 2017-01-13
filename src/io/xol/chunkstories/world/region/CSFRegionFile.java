@@ -15,7 +15,7 @@ import io.xol.chunkstories.api.serialization.OfflineSerializedData;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

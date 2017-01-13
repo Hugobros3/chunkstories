@@ -1,7 +1,11 @@
-package io.xol.engine.graphics.util;
+package io.xol.chunkstories.api.rendering;
 
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
+
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 public interface GuiRenderer
 {

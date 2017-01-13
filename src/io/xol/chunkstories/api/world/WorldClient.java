@@ -3,7 +3,7 @@ package io.xol.chunkstories.api.world;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.renderer.WorldRenderer;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

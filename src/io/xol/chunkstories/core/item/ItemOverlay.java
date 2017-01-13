@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.item;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

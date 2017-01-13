@@ -14,6 +14,10 @@ import io.xol.engine.graphics.shaders.ShaderProgram;
 
 import static org.lwjgl.opengl.GL20.*;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class AttributesConfigurationImplementation implements AttributesConfiguration
 {
 	Map<String, AttributeSource> attributes;

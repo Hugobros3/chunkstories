@@ -7,6 +7,10 @@ import io.xol.chunkstories.api.world.World;
 
 import io.xol.chunkstories.renderer.WorldRenderer;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class WorldPostRenderingEvent extends Event
 {
 	// Every event class has to have this

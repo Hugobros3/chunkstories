@@ -1,5 +1,9 @@
 package io.xol.chunkstories.tools;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 /**
  * Testing my 1-2 byte packets Ids thing
  * @author gobrosse

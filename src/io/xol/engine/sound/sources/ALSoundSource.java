@@ -17,7 +17,7 @@ import io.xol.engine.sound.SoundData;
 import io.xol.engine.sound.SoundDataBuffered;
 import io.xol.engine.sound.library.SoundsLibrary;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 

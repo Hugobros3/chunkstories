@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

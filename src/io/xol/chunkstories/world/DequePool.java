@@ -4,6 +4,10 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class DequePool
 {
 	Deque<Deque<Integer>> avaibleDeques = new ConcurrentLinkedDeque<Deque<Integer>>();

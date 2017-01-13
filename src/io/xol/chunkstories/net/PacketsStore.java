@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.Content.PacketTypes;
 import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.AssetHierarchy;
@@ -20,6 +19,10 @@ import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.math.HexTools;
+
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 public class PacketsStore implements Content.PacketTypes
 {

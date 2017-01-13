@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.world.WorldImplementation;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 

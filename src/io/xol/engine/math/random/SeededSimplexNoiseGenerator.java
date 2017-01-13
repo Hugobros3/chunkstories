@@ -3,9 +3,10 @@ package io.xol.engine.math.random;
 import java.util.ArrayList;
 import java.util.List;
 
-// 
-// (c) 2015 - XolioWare Interactive
-//
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 // This class takes care of providing the simplex noise functions for the world
 // generator. It is based on other people's work as the comments below show.
 

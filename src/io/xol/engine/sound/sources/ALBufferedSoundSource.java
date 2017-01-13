@@ -3,7 +3,7 @@ package io.xol.engine.sound.sources;
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
 import io.xol.engine.sound.library.SoundsLibrary;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityAnimated;
 import io.xol.chunkstories.api.entity.interfaces.EntityRotateable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

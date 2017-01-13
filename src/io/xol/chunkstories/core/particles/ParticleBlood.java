@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.world.WorldImplementation;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 

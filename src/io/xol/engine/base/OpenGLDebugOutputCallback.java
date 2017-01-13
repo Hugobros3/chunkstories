@@ -4,6 +4,10 @@ import org.lwjgl.opengl.ARBDebugOutputCallback.Handler;
 
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class OpenGLDebugOutputCallback implements Handler
 {
 	/** Severity levels. */

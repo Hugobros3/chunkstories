@@ -1,10 +1,15 @@
 package io.xol.engine.graphics.util;
 
+import io.xol.chunkstories.api.rendering.GuiRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
+
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 public class CorneredBoxDrawer
 {

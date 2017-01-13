@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.mods.ModInfo;
 import io.xol.chunkstories.content.mods.exceptions.MalformedModTxtException;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

@@ -15,7 +15,7 @@ import io.xol.chunkstories.client.Client;
 import static io.xol.chunkstories.tools.ChunkStoriesLogger.LogType.*;
 import static io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel.*;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 

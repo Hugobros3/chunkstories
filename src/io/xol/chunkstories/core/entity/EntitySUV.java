@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.entity;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.world.WorldImplementation;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 

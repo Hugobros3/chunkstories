@@ -26,7 +26,7 @@ import io.xol.engine.sound.ogg.SoundDataOggSample;
 import io.xol.engine.sound.sources.ALBufferedSoundSource;
 import io.xol.engine.sound.sources.ALSoundSource;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 

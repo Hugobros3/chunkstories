@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 

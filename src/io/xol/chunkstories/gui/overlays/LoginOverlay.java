@@ -15,6 +15,10 @@ import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class LoginOverlay extends Overlay implements HttpRequester
 {
 	public LoginOverlay(OverlayableScene scene, Overlay parent)

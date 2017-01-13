@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.math.lalgb.Matrix4f;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

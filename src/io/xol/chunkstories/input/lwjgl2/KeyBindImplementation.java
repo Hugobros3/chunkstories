@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.input.KeyBindsLoader;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

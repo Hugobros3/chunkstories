@@ -16,7 +16,7 @@ import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.world.WorldImplementation;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

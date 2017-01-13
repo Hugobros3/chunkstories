@@ -33,7 +33,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.engine.concurrency.UniqueList;
 import io.xol.engine.misc.FoldersUtils;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

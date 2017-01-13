@@ -16,7 +16,7 @@ import io.xol.chunkstories.server.net.ServerToClientConnection;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.misc.ColorsTools;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 

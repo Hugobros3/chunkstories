@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

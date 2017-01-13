@@ -13,6 +13,10 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.math.random.SeededSimplexNoiseGenerator;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class NoiseWorldGenerator extends WorldGenerator
 {
 	Random rnd = new Random();

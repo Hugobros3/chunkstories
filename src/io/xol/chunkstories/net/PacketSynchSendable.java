@@ -6,7 +6,7 @@ import java.io.IOException;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.net.packets.PacketDummy;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

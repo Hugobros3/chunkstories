@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 import io.xol.engine.model.ModelLibrary;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

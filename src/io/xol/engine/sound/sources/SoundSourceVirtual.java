@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.server.propagation.VirtualServerSoundManager;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 

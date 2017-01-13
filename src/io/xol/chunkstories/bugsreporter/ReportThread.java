@@ -16,7 +16,7 @@ import java.nio.file.Files;
 import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 
-//(c) 2015-2016 XolioWare Interactive
+//(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
