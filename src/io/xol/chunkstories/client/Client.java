@@ -360,7 +360,7 @@ public class Client implements ClientInterface
 	}
 
 	@Override
-	public Content getContent()
+	public ClientGameContent getContent()
 	{
 		return gameContent;
 	}

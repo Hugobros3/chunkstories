@@ -82,41 +82,40 @@ public class GameContentStore implements Content
 	}
 
 	@Override
-	public Materials materials()
+	public MaterialsStore materials()
 	{
 		return materials;
 	}
 
 	@Override
-	public Voxels voxels()
+	public VoxelsStore voxels()
 	{
 		return voxels;
 	}
 
 	@Override
-	public ItemsTypes items()
+	public ItemTypesStore items()
 	{
 		return items;
 	}
 
 	@Override
-	public EntityTypes entities()
+	public EntityTypesStore entities()
 	{
 		return entities;
 	}
 
 	@Override
-	public ParticlesTypes particles()
+	public ParticlesTypesStore particles()
 	{
 		return particles;
 	}
 
 	@Override
-	public PacketTypes packets()
+	public PacketsStore packets()
 	{
 		return packets;
 	}
-
 
 	@Override
 	public GameContext getContext()
@@ -137,7 +136,7 @@ public class GameContentStore implements Content
 	}
 
 	@Override
-	public WorldGenerators generators()
+	public WorldGeneratorsStore generators()
 	{
 		return generators;
 	}

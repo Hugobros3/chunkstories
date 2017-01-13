@@ -23,6 +23,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.entity.interfaces.EntityRotateable;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.EntityPlayer;
@@ -58,7 +59,7 @@ public class Chat
 	{
 		public ChatLine(String text)
 		{
-			if(text == null)
+			if (text == null)
 				text = "";
 			this.text = text;
 			time = System.currentTimeMillis();
@@ -122,10 +123,10 @@ public class Chat
 			}
 			else if (k == 28)
 			{
-				if(inputBox.text.startsWith("/"))
+				if (inputBox.text.startsWith("/"))
 				{
 					String chatMsg = inputBox.text;
-					
+
 					chatMsg = chatMsg.substring(1, chatMsg.length());
 
 					String cmdName = chatMsg.toLowerCase();
@@ -143,15 +144,40 @@ public class Chat
 							sent.add(0, inputBox.text);
 							sentMessages++;
 						}
-						
+
 						inputBox.text = "";
 						chatting = false;
 						sentHistory = 0;
 						mainScene.changeOverlay(parent);
 						return true;
 					}
+					else if (cmdName.equals("plugins"))
+					{
+
+						String list = "";
+						int i = 0;
+						for (ChunkStoriesPlugin csp : Client.getInstance().getPluginManager().activePlugins)
+						{
+							i++;
+							list += csp.getName() + (i == Client.getInstance().getPluginManager().activePlugins.size() ? "" : ", ");
+						}
+						insert("#00FFD0" + i + " active plugins : " + list);
+						
+						if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
+						{
+							sent.add(0, inputBox.text);
+							sentMessages++;
+						}
+
+						inputBox.text = "";
+						chatting = false;
+						sentHistory = 0;
+						mainScene.changeOverlay(parent);
+						return true;
+
+					}
 				}
-				
+
 				if (inputBox.text.equals("/locclear"))
 				{
 					//java.util.Arrays.fill(chatHistory, "");
@@ -180,7 +206,7 @@ public class Chat
 						float foodLevel = Float.parseFloat(inputBox.text.split(" ")[1]);
 						EntityPlayer player = (EntityPlayer) Client.getInstance().getClientSideController().getControlledEntity();
 						player.setFoodLevel(foodLevel);
-						insert("Food set to "+foodLevel);
+						insert("Food set to " + foodLevel);
 					}
 					catch (Exception e)
 					{
@@ -193,7 +219,7 @@ public class Chat
 					{
 						float flySpeed = Float.parseFloat(inputBox.text.split(" ")[1]);
 						EntityPlayer.flySpeed = flySpeed;
-						insert("Flying speed set to "+flySpeed);
+						insert("Flying speed set to " + flySpeed);
 					}
 					catch (Exception e)
 					{
@@ -224,7 +250,7 @@ public class Chat
 						for (int ii = 0; ii < count; ii++)
 							for (int jj = 0; jj < count; jj++)
 							{
-								Entity test =  Client.world.getGameContext().getContent().entities().getEntityTypeById((short)id).create(Client.world);// Entities.newEntity(Client.world, (short) id);
+								Entity test = Client.world.getGameContext().getContent().entities().getEntityTypeById((short) id).create(Client.world);// Entities.newEntity(Client.world, (short) id);
 								Entity player = Client.getInstance().getClientSideController().getControlledEntity();
 								test.setLocation(new Location(Client.world, player.getLocation().clone().add(ii * 3.0, 0.0, jj * 3.0)));
 								Client.world.addEntity(test);
@@ -252,14 +278,14 @@ public class Chat
 					{
 						Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
 						String itemName = inputBox.text.split(" ")[1];
-						
+
 						int c = 1;
 						if (inputBox.text.split(" ").length >= 3)
 							c = Integer.parseInt(inputBox.text.split(" ")[2]);
-						
+
 						ItemPile it = new ItemPile(Client.getInstance().getContent().items().getItemTypeByName(itemName).newItem());
 						it.setAmount(c);
-						
+
 						((EntityPlayer) controlledEntity).getInventory().addItemPile(it);
 					}
 					catch (Throwable npe)
@@ -382,10 +408,10 @@ public class Chat
 				scrollLinesSkip--;
 				continue;
 			}
-			
+
 			int chatWidth = Math.max(750, Client.getInstance().windows.windowWidth / 2 - 10);
-			
-			int actualLines = TrueTypeFont.arial11px.getLinesHeight(line.text, chatWidth/2);
+
+			int actualLines = TrueTypeFont.arial11px.getLinesHeight(line.text, chatWidth / 2);
 			linesDrew += actualLines;
 			float alpha = (line.time + 10000L - System.currentTimeMillis()) / 1000f;
 			if (alpha < 0)

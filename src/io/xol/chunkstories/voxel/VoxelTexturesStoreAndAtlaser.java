@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,11 +19,15 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
+import org.lwjgl.BufferUtils;
 
 import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
+import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.Voxels;
+import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.content.DefaultModsManager.ModsAssetHierarchy;
@@ -42,12 +47,16 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 
 	private final Content content;
 	private final VoxelsStore voxels;
+
+	BufferedImage diffuseTexture = null;
+	BufferedImage normalTexture = null;
+	BufferedImage materialTexture = null;
 	
 	public VoxelTexturesStoreAndAtlaser(VoxelsStore voxels)
 	{
 		this.content = voxels.parent();
 		this.voxels = voxels;
-		
+
 		this.buildTextureAtlas();
 	}
 
@@ -58,7 +67,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 			// Clear previous values
 			texMap.clear();
 			//colors.clear();
-			
+
 			// Compute all sizes first.
 			int totalSurfacedNeeded = 0;
 			//File folder = new File("./res/voxels/textures/");
@@ -66,7 +75,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 			List<VoxelTexture> voxelTexturesSortedBySize = new ArrayList<VoxelTexture>();
 
 			//for (File f : folder.listFiles())
-			
+
 			Iterator<ModsAssetHierarchy> allFiles = content.modsManager().getAllUniqueEntries();
 			//Iterator<Entry<String, Deque<File>>> allFiles = GameContent.getAllUniqueEntries();
 			AssetHierarchy entry;
@@ -77,7 +86,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 				if (entry.getName().startsWith("./voxels/textures/"))
 				{
 					String name = entry.getName().replace("./voxels/textures/", "");
-					if(name.contains("/"))
+					if (name.contains("/"))
 						continue;
 					f = entry.topInstance();
 					if (f.getName().endsWith(".png"))
@@ -88,7 +97,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						{
 							VoxelTexture voxelTexture = new VoxelTexture(textureName, uniquesIds);
 							uniquesIds++;
-							
+
 							voxelTexture.imageFileDimensions = getImageSize(f);
 
 							voxelTexturesSortedBySize.add(voxelTexture);
@@ -111,7 +120,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 				// System.out.println(vt.imageFileDimensions);
 				texMap.put(voxelTexture.name, voxelTexture);
 			}
-			
+
 			// Estimates the required texture atlas size by surface
 			int sizeRequired = 16;
 			for (int i = 4; i < 14; i++)
@@ -123,9 +132,9 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 					break;
 				}
 			}
-			
+
 			//ChunkStoriesLogger.getInstance().info("At least " + sizeRequired + " by " + sizeRequired + " for TextureAtlas (surfacedNeeded : " + totalSurfacedNeeded + ")");
-			
+
 			// Delete previous atlases
 			File diffuseTextureFile = new File("./res/textures/tiles_merged_albedo.png");
 			if (diffuseTextureFile.exists())
@@ -140,7 +149,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 				materialTextureFile.delete();
 			// Build the new one
 			boolean loadedOK = false;
-			
+
 			while (!loadedOK && sizeRequired <= 8192) // Security to prevend
 														// HUGE-ASS textures
 			{
@@ -151,9 +160,18 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 				// Create boolean bitfield
 				boolean[][] used = new boolean[sizeRequired / 16][sizeRequired / 16];
 
-				BufferedImage diffuseTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
-				BufferedImage normalTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
-				BufferedImage materialTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
+				diffuseTexture = null;
+				normalTexture = null;
+				materialTexture = null;
+
+				if (content.getContext() instanceof ClientInterface)
+				{
+					diffuseTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
+					normalTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
+					materialTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
+					
+					System.out.println("This is a client so we'll make the texture atlas");
+				}
 
 				BufferedImage imageBuffer;
 
@@ -172,7 +190,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 								for (int i = 0; (i < vt.imageFileDimensions / 16 && a + i < sizeRequired / 16); i++)
 									for (int j = 0; (j < vt.imageFileDimensions / 16 && b + j < sizeRequired / 16); j++)
 										if (used[a + i][b + j] == true) // Well
-																		// fuck
+																			// fuck
 																		// it
 											usedAlready = true;
 								if (!usedAlready)
@@ -207,7 +225,10 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						for (int y = 0; y < vt.imageFileDimensions; y++)
 						{
 							int rgb = imageBuffer.getRGB(x, y);
-							diffuseTexture.setRGB(spotX + x, spotY + y, rgb);
+							
+							if(diffuseTexture != null)
+								diffuseTexture.setRGB(spotX + x, spotY + y, rgb);
+							
 							float alpha = ((rgb & 0xFF000000) >>> 24) / 255f;
 							// System.out.println("a:"+alpha);
 							alphaTotal += alpha;
@@ -216,7 +237,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 							float red = ((rgb & 0xFF0000) >> 16) / 255f * alpha;
 							float green = ((rgb & 0x00FF00) >> 8) / 255f * alpha;
 							float blue = (rgb & 0x0000FF) / 255f * alpha;
-							
+
 							color.add(new Vector3fm(red, green, blue));
 							//Vector3fm.add(color, new Vector3fm(red, green, blue), color);
 						}
@@ -227,8 +248,11 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						alphaTotal /= nonNullPixels;
 
 					vt.color = new Vector4fm(color.getX(), color.getY(), color.getZ(), alphaTotal);
+
+					//Don't bother if it's not a Client context
+					if(diffuseTexture == null)
+						continue;
 					
-					//colors.put(vt.name, new Vector4fm(color.x, color.y, color.z, alphaTotal));
 					// Do also the normal maps !
 					Asset normalMap = content.modsManager().getAsset("./voxels/textures/normal/" + vt.name + ".png");
 					if (normalMap == null)
@@ -369,13 +393,13 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 	public VoxelTexture getVoxelTextureByName(String textureName)
 	{
 		//textureName = "kek";
-		
+
 		if (texMap.containsKey(textureName))
 			return texMap.get(textureName);
 		return texMap.get("notex");
 		// return new VoxelTexture(null, "notex");
 	}
-	
+
 	public Iterator<VoxelTexture> all()
 	{
 		return texMap.values().iterator();
@@ -387,16 +411,44 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 		return voxels;
 	}
 
-	/*public static Vector3fm getTextureColorAVG(String name)
+	private Texture2D getTextureFromBufferedImage(BufferedImage image)
 	{
-		Vector4fm colorAlpha = getTextureColorAlphaAVG(name);
-		return new Vector3fm(colorAlpha.x, colorAlpha.y, colorAlpha.z);
-	}*/
-
-	/*public static Vector4fm getTextureColorAlphaAVG(String name)
+		Texture2D texture = new Texture2D(TextureFormat.RGBA_8BPP);
+		
+		int[] data = new int[image.getWidth() * image.getHeight()];
+		image.getRGB(0, 0, image.getWidth(), image.getHeight(), data, 0, image.getWidth());
+		
+		ByteBuffer buffer = BufferUtils.createByteBuffer(4 * image.getWidth() * image.getHeight());
+		
+		for(int y = 0; y < image.getHeight(); y++){
+            for(int x = 0; x < image.getWidth(); x++){
+                int pixel = data[y * image.getWidth() + x];
+                buffer.put((byte) ((pixel >> 16) & 0xFF));
+                buffer.put((byte) ((pixel >> 8) & 0xFF));
+                buffer.put((byte) (pixel & 0xFF));
+                buffer.put((byte) ((pixel >> 24) & 0xFF));
+            }
+        }
+		
+		buffer.flip();
+		
+		texture.uploadTextureData(image.getWidth(), image.getHeight(), buffer);
+		
+		return texture;
+	}
+	
+	public Texture2D getDiffuseAtlasTexture()
 	{
-		if (colors.containsKey(name))
-			return colors.get(name);
-		return colors.get("notex");
-	}*/
+		return getTextureFromBufferedImage(diffuseTexture);
+	}
+	
+	public Texture2D getNormalAtlasTexture()
+	{
+		return getTextureFromBufferedImage(normalTexture);
+	}
+	
+	public Texture2D getMaterialAtlasTexture()
+	{
+		return getTextureFromBufferedImage(materialTexture);
+	}
 }

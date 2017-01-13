@@ -102,7 +102,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	public EntityPlayer(WorldImplementation w, double x, double y, double z, String name)
 	{
-		super(w, x, y, z);
+		this(w, x, y, z);
 		this.name.setName(name);
 
 		variant = ColorsTools.getUniqueColorCode(name) % 6;

@@ -53,13 +53,13 @@ public class VoxelsStore implements Content.Voxels
 	public int lastAllocatedId;
 
 	@Override
-	public VoxelTextures textures()
+	public VoxelTexturesStoreAndAtlaser textures()
 	{
 		return textures;
 	}
 
 	@Override
-	public VoxelModels models()
+	public VoxelModelsStore models()
 	{
 		return models;
 	}

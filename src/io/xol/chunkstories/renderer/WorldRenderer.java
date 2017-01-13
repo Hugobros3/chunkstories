@@ -216,9 +216,9 @@ public class WorldRenderer
 
 	//Blocks atlases
 	//TODO load these directly from memory
-	Texture2D blocksAlbedoTexture = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
-	Texture2D blocksNormalTexture = TexturesHandler.getTexture("./textures/tiles_merged_normal.png");
-	Texture2D blocksMaterialTexture = TexturesHandler.getTexture("./textures/tiles_merged_material.png");
+	Texture2D blocksAlbedoTexture;// = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
+	Texture2D blocksNormalTexture;// = TexturesHandler.getTexture("./textures/tiles_merged_normal.png");
+	Texture2D blocksMaterialTexture;// = TexturesHandler.getTexture("./textures/tiles_merged_material.png");
 
 	//SSAO (disabled)
 	Vector3fm ssao_kernel[];
@@ -236,6 +236,12 @@ public class WorldRenderer
 	{
 		// Link world
 		world = w;
+		
+		//Loads texture atlases
+		blocksAlbedoTexture = Client.getInstance().getContent().voxels().textures().getDiffuseAtlasTexture();
+		blocksNormalTexture = Client.getInstance().getContent().voxels().textures().getNormalAtlasTexture();
+		blocksMaterialTexture = Client.getInstance().getContent().voxels().textures().getMaterialAtlasTexture();
+		
 		entitiesRenderer = new EntitiesRenderer(world);
 		particlesRenderer = new ParticlesRenderer(world);
 		farTerrainRenderer = new FarTerrainRenderer(world);
@@ -1759,6 +1765,10 @@ public class WorldRenderer
 	{
 		farTerrainRenderer.markVoxelTexturesSummaryDirty();
 		entitiesRenderer.clearLoadedEntitiesRenderers();
+
+		blocksAlbedoTexture = Client.getInstance().getContent().voxels().textures().getDiffuseAtlasTexture();
+		blocksNormalTexture = Client.getInstance().getContent().voxels().textures().getNormalAtlasTexture();
+		blocksMaterialTexture = Client.getInstance().getContent().voxels().textures().getMaterialAtlasTexture();
 	}
 
 	public WorldEffectsRenderer getWorldEffectsRenderer()
