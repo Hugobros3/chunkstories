@@ -106,7 +106,7 @@ public class GameLogicThread extends Thread implements GameLogic
 				if(world instanceof WorldClientRemote)
 					((WorldClientRemote) world).getConnection().flush();
 				if(world instanceof WorldServer)
-					((WorldServer) world).getGameContext().getHandler().flushAll();
+					((WorldServer) world).getServer().getHandler().flushAll();
 			}
 			
 			//nanoCheckStep(2, "Incomming packets");
@@ -228,11 +228,6 @@ public class GameLogicThread extends Thread implements GameLogic
 	public PluginManager getPluginsManager()
 	{
 		return context.getPluginManager();
-		/*if(world instanceof WorldClient)
-			return Client.getInstance().getPluginManager();
-		else if(world instanceof WorldServer)
-			return Server.getInstance().getPluginManager();
-		return null;*/
 	}
 	
 	public void stopLogicThread()

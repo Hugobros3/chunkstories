@@ -19,6 +19,8 @@ import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
+import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
@@ -27,9 +29,8 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.engine.misc.FoldersUtils;
-import io.xol.chunkstories.world.WorldInfo;
+import io.xol.chunkstories.world.WorldInfoImplementation;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -73,7 +74,7 @@ public class MinecraftMapConverter implements GameContext, WorldUser
 			System.out.println("Usage : anvil-export anvilWorldDir csWorldDir <size> <x-start> <z-start> [void-fill] [-vr]");
 			System.out.println("anvilWorldDir is the directory containing the Minecraft level ( the one with level.dat inside )");
 			System.out.println("csWorldDir is the export destination.");
-			System.out.println("Target size for chunk stories world, avaible sizes : " + WorldSize.getAllSizes());
+			System.out.println("Target size for chunk stories world, avaible sizes : " + WorldInfo.WorldSize.getAllSizes());
 			System.out.println("<x-start> and <z-start> are the two coordinates (in mc world) from where we will take the data, " + "going up in the coordinates to fill the world size.\n Exemple : anvil-export mc cs TINY -512 -512 will take the"
 					+ "minecraft portion between X:-512 and Z:-512 to fill a 1024x1024 cs level.");
 			System.out.println("void-fill designates how you want the void chunks ( : not generated in minecraft) to be filled. default : air");
@@ -97,10 +98,10 @@ public class MinecraftMapConverter implements GameContext, WorldUser
 			String csWorldName = arguments[1];
 			File csWorldDir = new File("worlds/" + csWorldName + "/");
 
-			WorldSize size = WorldSize.getWorldSize(arguments[2]);
+			WorldInfo.WorldSize size = WorldInfo.WorldSize.getWorldSize(arguments[2]);
 			if (size == null)
 			{
-				System.out.println("Invalid world size. Valid world sizes : " + WorldSize.getAllSizes());
+				System.out.println("Invalid world size. Valid world sizes : " + WorldInfo.WorldSize.getAllSizes());
 				return;
 			}
 
@@ -144,7 +145,7 @@ public class MinecraftMapConverter implements GameContext, WorldUser
 			}
 			verbose("Initializing Chunk Stories World");
 
-			WorldInfo info = new WorldInfo("name: Converted_" + mcWorldName + "\n" + "seed: null\n" + "worldgen: blank\n" + "size: " + size.name(), csWorldName);
+			WorldInfoImplementation info = new WorldInfoImplementation("name: Converted_" + mcWorldName + "\n" + "seed: null\n" + "worldgen: blank\n" + "size: " + size.name(), csWorldName);
 			info.save(new File(csWorldDir + "/info.txt"));
 			WorldImplementation exported = new WorldTool(user, csWorldDir);
 

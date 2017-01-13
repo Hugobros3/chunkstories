@@ -20,13 +20,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class SendQueue extends Thread
 {
-	BlockingQueue<Packet> sendQueue = new LinkedBlockingQueue<Packet>();
+	private final BlockingQueue<Packet> sendQueue = new LinkedBlockingQueue<Packet>();
 
-	PacketsProcessor processor;
-	DataOutputStream out;
+	private final PacketsProcessor processor;
+	private final DataOutputStream out;
 
 	//Reference to what we are sending stuff to, used in packet creation logic to look for implemented interfaces ( remote server, unlogged in client, logged in client etc )
-	PacketDestinator destinator;
+	private PacketDestinator destinator;
 
 	public SendQueue(PacketDestinator destinator, DataOutputStream out, PacketsProcessor processor)
 	{

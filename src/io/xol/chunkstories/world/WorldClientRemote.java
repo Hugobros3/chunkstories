@@ -17,7 +17,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldNetwork
 	private ClientToServerConnection connection;
 	private PacketsProcessor packetsProcessor;
 
-	public WorldClientRemote(Client client, WorldInfo info, ClientToServerConnection connection)
+	public WorldClientRemote(Client client, WorldInfoImplementation info, ClientToServerConnection connection)
 	{
 		super(client, info);
 

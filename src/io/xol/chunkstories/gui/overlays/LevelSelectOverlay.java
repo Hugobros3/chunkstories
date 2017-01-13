@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.chunkstories.world.WorldInfo;
+import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
@@ -26,7 +26,7 @@ public class LevelSelectOverlay extends Overlay
 	//GuiElementsHandler guiHandler = new GuiElementsHandler();
 	Button backOption = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
 	Button newWorldOption = new Button(0, 0, 300, 32, ("New..."), BitmapFont.SMALLFONTS, 1);
-	List<WorldInfo> localWorlds = new ArrayList<WorldInfo>();
+	List<WorldInfoImplementation> localWorlds = new ArrayList<WorldInfoImplementation>();
 	List<LocalWorldButton> worldsButtons = new ArrayList<LocalWorldButton>();
 
 	public LevelSelectOverlay(OverlayableScene scene, Overlay parent)
@@ -43,10 +43,10 @@ public class LevelSelectOverlay extends Overlay
 			File infoTxt = new File(f.getAbsolutePath() + "/info.txt");
 			if (infoTxt.exists())
 			{
-				localWorlds.add(new WorldInfo(infoTxt, f.getName()));
+				localWorlds.add(new WorldInfoImplementation(infoTxt, f.getName()));
 			}
 		}
-		for (WorldInfo wi : localWorlds)
+		for (WorldInfoImplementation wi : localWorlds)
 		{
 			LocalWorldButton worldButton = new LocalWorldButton(0, 0, wi);
 			// System.out.println(worldButton.toString());

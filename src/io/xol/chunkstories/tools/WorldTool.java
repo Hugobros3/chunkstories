@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.WorldInfo;
+import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
@@ -28,7 +28,7 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	
 	public WorldTool(GameContext toolContext, String worldDir)
 	{
-		super(toolContext, new WorldInfo(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
+		super(toolContext, new WorldInfoImplementation(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
 
 		this.toolContext = toolContext;
 		

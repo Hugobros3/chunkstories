@@ -1,10 +1,11 @@
 package io.xol.chunkstories.gui.overlays;
 
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.chunkstories.world.WorldInfo;
-import io.xol.chunkstories.world.WorldInfo.WorldSize;
+import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
@@ -61,7 +62,7 @@ public class LevelCreateOverlay extends Overlay
 		if (createOption.clicked())
 		{
 			String generator = "flat";
-			WorldInfo info = new WorldInfo(levelName.text, ""+System.currentTimeMillis(), "", WorldSize.MEDIUM, generator);
+			WorldInfoImplementation info = new WorldInfoImplementation(levelName.text, ""+System.currentTimeMillis(), "", WorldInfo.WorldSize.MEDIUM, generator);
 			
 			//Client.world = 
 			//Client.world.startLogic();

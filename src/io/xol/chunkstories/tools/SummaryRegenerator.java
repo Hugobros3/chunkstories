@@ -3,9 +3,10 @@ package io.xol.chunkstories.tools;
 import java.io.File;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.WorldInfo.WorldSize;
 
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
@@ -28,10 +29,10 @@ public class SummaryRegenerator
 			String csWorldName = arguments[0];
 			File csWorldDir = new File("worlds/" + csWorldName + "/");
 
-			WorldSize size = WorldSize.getWorldSize(arguments[1]);
+			WorldInfo.WorldSize size = WorldInfo.WorldSize.getWorldSize(arguments[1]);
 			if (size == null)
 			{
-				System.out.println("Invalid world size. Valid world sizes : " + WorldSize.getAllSizes());
+				System.out.println("Invalid world size. Valid world sizes : " + WorldInfo.WorldSize.getAllSizes());
 				return;
 			}
 			if (!csWorldDir.exists())

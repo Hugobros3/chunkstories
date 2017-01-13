@@ -90,8 +90,12 @@ public class Server implements Runnable, ServerInterface
 			//ModsManager.reload();
 
 			modsProvider = new ServerModsProvider(this);
+			
+			// load users privs
+			UsersPrivileges.load();
+			pluginsManager = new ServerPluginManager(this);
 
-			// Load the world
+			// Load the world(s)
 			String worldName = serverConfig.getProp("world", "world");
 			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
 			if (new File(worldDir).exists())
@@ -103,15 +107,14 @@ public class Server implements Runnable, ServerInterface
 				System.out.println("Can't find the world \"" + worldName + "\" in " + worldDir + ". Exiting !");
 				Runtime.getRuntime().exit(0);
 			}
+			
+			// init network
+			connectionsManager.start();
 			// init multiverse
 			announcer = new ServerAnnouncerThread(this);
 			announcer.start();
-			// load users privs
-			UsersPrivileges.load();
-			// init network
-			connectionsManager.start();
+			
 			// Load plugins
-			pluginsManager = new ServerPluginManager(this);
 			pluginsManager.reloadPlugins();
 
 			//Finally start logic

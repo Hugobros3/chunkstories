@@ -1,7 +1,7 @@
 package io.xol.engine.gui;
 
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.world.WorldInfo;
+import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
@@ -19,11 +19,11 @@ public class LocalWorldButton extends Button
 	int posx;
 	int posy;
 
-	public WorldInfo info;
+	public WorldInfoImplementation info;
 
 	public int width, height;
 
-	public LocalWorldButton(int x, int y, WorldInfo info)
+	public LocalWorldButton(int x, int y, WorldInfoImplementation info)
 	{
 		super(x, y, 0, 0, "", null, 333);
 		posx = x;

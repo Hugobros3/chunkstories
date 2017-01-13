@@ -12,11 +12,11 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
+import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.world.WorldClientCommon;
-import io.xol.chunkstories.world.WorldInfo;
-import io.xol.chunkstories.world.WorldInfo.WorldSize;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.Math2;
 
@@ -80,7 +80,7 @@ public class ClientWorldController implements ClientSideController
 				for (int chunkY = cameraChunkY - 3; chunkY < cameraChunkY + 3; chunkY++)
 				{
 					WorldInfo worldInfo = world.getWorldInfo();
-					WorldSize size = worldInfo.getSize();
+					WorldInfo.WorldSize size = worldInfo.getSize();
 					
 					int filteredChunkX = chunkX & (size.maskForChunksCoordinates);
 					int filteredChunkY = Math2.clampi(chunkY, 0, 31);
@@ -136,7 +136,7 @@ public class ClientWorldController implements ClientSideController
 				*/
 	
 				WorldInfo worldInfo = world.getWorldInfo();
-				WorldSize size = worldInfo.getSize();
+				WorldInfo.WorldSize size = worldInfo.getSize();
 				
 				int filteredChunkX = holder.getChunkCoordinateX() & (size.maskForChunksCoordinates);
 				int filteredChunkY = Math2.clampi(holder.getChunkCoordinateY(), 0, 31);

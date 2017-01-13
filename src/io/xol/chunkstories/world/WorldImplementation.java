@@ -19,6 +19,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.WorldGenerator;
+import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -54,7 +55,7 @@ import io.xol.engine.misc.ConfigFile;
 
 public abstract class WorldImplementation implements World
 {
-	protected WorldInfo worldInfo;
+	protected WorldInfoImplementation worldInfo;
 	private final File folder;
 
 	//protected final boolean client;
@@ -99,7 +100,7 @@ public abstract class WorldImplementation implements World
 
 	protected final GameContext gameContext;
 	
-	public WorldImplementation(GameContext gameContext, WorldInfo info)
+	public WorldImplementation(GameContext gameContext, WorldInfoImplementation info)
 	{
 		this.gameContext = gameContext;
 		
@@ -1047,6 +1048,12 @@ public abstract class WorldImplementation implements World
 	{
 		return worldThread;
 	}
+	
+	@Override
+	public GameContext getGameContext()
+	{
+		return gameContext;
+	}
 
 	@Override
 	public void destroy()
@@ -1073,4 +1080,5 @@ public abstract class WorldImplementation implements World
 		this.getRegionsSummariesHolder().unloadsUselessData();
 	}
 
+	
 }

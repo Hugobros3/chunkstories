@@ -3,6 +3,7 @@ package io.xol.chunkstories.server;
 import java.util.Iterator;
 
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
@@ -129,6 +130,26 @@ public class ServerConsole implements CommandEmitter
 			{
 				emitter.sendMessage("#00FFD0Saving the world");
 				server.getWorld().saveEverything();
+				return true;
+			}
+			else if (cmd.equals("spawn") && emitter.hasPermission("server.spawn"))
+			{
+				Player player = (Player) emitter;
+				
+				Location loc = player.getWorld().getDefaultSpawnLocation();
+				player.setLocation(loc);
+				
+				emitter.sendMessage("#00FFD0Teleported to spawn");
+				return true;
+			}
+			else if (cmd.equals("setspawn") && emitter.hasPermission("server.admin"))
+			{
+				Player player = (Player) emitter;
+				
+				Location loc = player.getLocation();
+				server.getWorld().setDefaultSpawnLocation(loc);
+				
+				emitter.sendMessage("#00FFD0Set default spawn to : "+loc);
 				return true;
 			}
 			else if (cmd.equals("region"))

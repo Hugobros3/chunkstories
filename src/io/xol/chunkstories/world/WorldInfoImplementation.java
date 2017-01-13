@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
+import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.net.packets.PacketWorldInfo;
 import io.xol.chunkstories.server.net.ServerToClientConnection;
 
@@ -17,7 +18,7 @@ import io.xol.chunkstories.server.net.ServerToClientConnection;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class WorldInfo
+public class WorldInfoImplementation implements WorldInfo
 {
 	private File folder = null;
 
@@ -25,10 +26,10 @@ public class WorldInfo
 	private String name;
 	private String seed;
 	private String description = "";
-	private WorldSize size;
+	private WorldInfo.WorldSize size;
 	private String generatorName;
 	
-	public WorldInfo(String name, String seed, String description, WorldSize size, String generator)
+	public WorldInfoImplementation(String name, String seed, String description, WorldInfo.WorldSize size, String generator)
 	{
 		this.internalName = name;
 		this.name = name;
@@ -38,14 +39,14 @@ public class WorldInfo
 		this.setGeneratorName(generator);
 	}
 
-	public WorldInfo(String fileContents, String internalName)
+	public WorldInfoImplementation(String fileContents, String internalName)
 	{
 		this.internalName = internalName;
 		for (String line : fileContents.split("\n"))
 			readLine(line);
 	}
 
-	public WorldInfo(File file, String internalName)
+	public WorldInfoImplementation(File file, String internalName)
 	{
 		try
 		{
@@ -88,7 +89,7 @@ public class WorldInfo
 				setGeneratorName(parameterValue);
 				break;
 			case "size":
-				setSize(WorldSize.getWorldSize(parameterValue));
+				setSize(WorldInfo.WorldSize.getWorldSize(parameterValue));
 				break;
 			case "description":
 				setDescription(parameterValue);
@@ -132,11 +133,19 @@ public class WorldInfo
 		user.pushPacket(packet);
 	}
 	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInfo#getInternalName()
+	 */
+	@Override
 	public String getInternalName()
 	{
 		return internalName;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInfo#getName()
+	 */
+	@Override
 	public String getName()
 	{
 		return name;
@@ -148,6 +157,10 @@ public class WorldInfo
 		//this.internalName = name.replaceAll("[^\\w\\s]","_");
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInfo#getSeed()
+	 */
+	@Override
 	public String getSeed()
 	{
 		return seed;
@@ -158,6 +171,10 @@ public class WorldInfo
 		this.seed = seed;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInfo#getDescription()
+	 */
+	@Override
 	public String getDescription()
 	{
 		return description;
@@ -168,16 +185,24 @@ public class WorldInfo
 		this.description = description;
 	}
 
-	public WorldSize getSize()
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInfo#getSize()
+	 */
+	@Override
+	public WorldInfo.WorldSize getSize()
 	{
 		return size;
 	}
 
-	public void setSize(WorldSize size)
+	public void setSize(WorldInfo.WorldSize size)
 	{
 		this.size = size;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.world.WorldInfo#getGeneratorName()
+	 */
+	@Override
 	public String getGeneratorName()
 	{
 		return generatorName;
@@ -186,51 +211,5 @@ public class WorldInfo
 	public void setGeneratorName(String generatorName)
 	{
 		this.generatorName = generatorName;
-	}
-
-	public enum WorldSize
-	{
-		TINY(32, "1x1km"), SMALL(64, "2x2km"), MEDIUM(128, "4x4km"), LARGE(512, "16x16km"), HUGE(2048, "64x64km");
-
-		// Warning : this can be VERY ressource intensive as it will make a
-		// 4294km2 map,
-		// leading to enormous map sizes ( in the order of 10Gbs to 100Gbs )
-		// when fully explored.
-
-		WorldSize(int sizeInChunks, String n)
-		{
-			this.sizeInChunks = sizeInChunks;
-			this.maskForChunksCoordinates = sizeInChunks - 1;
-			this.bitlengthOfHorizontalChunksCoordinates = (int) (Math.log(sizeInChunks) / Math.log(2));
-			name = n;
-		}
-
-		public final int sizeInChunks;
-		public final int maskForChunksCoordinates;
-		public final int bitlengthOfHorizontalChunksCoordinates;
-		public final int heightInChunks = 32;
-		public final int bitlengthOfVerticalChunksCoordinates = 5;
-		public final String name;
-
-		public static String getAllSizes()
-		{
-			String sizes = "";
-			for (WorldSize s : WorldSize.values())
-			{
-				sizes = sizes + s.name() + ", " + s.name + " ";
-			}
-			return sizes;
-		}
-
-		public static WorldSize getWorldSize(String name)
-		{
-			name.toUpperCase();
-			for (WorldSize s : WorldSize.values())
-			{
-				if (s.name().equals(name))
-					return s;
-			}
-			return null;
-		}
 	}
 }

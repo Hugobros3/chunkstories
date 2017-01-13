@@ -13,7 +13,7 @@ import io.xol.chunkstories.world.io.IOTasks;
 
 public class WorldClientLocal extends WorldClientCommon implements WorldMaster
 {
-	public WorldClientLocal(Client client, WorldInfo info)
+	public WorldClientLocal(Client client, WorldInfoImplementation info)
 	{
 		super(client, info);
 		

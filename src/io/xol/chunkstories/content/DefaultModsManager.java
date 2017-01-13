@@ -28,15 +28,8 @@ import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
 import io.xol.chunkstories.content.mods.exceptions.ModNotFoundException;
 import io.xol.chunkstories.content.mods.exceptions.NotAllModsLoadedException;
-import io.xol.chunkstories.entity.EntityTypesStore;
-import io.xol.chunkstories.entity.EntityComponentsStore;
-import io.xol.chunkstories.item.ItemTypesStore;
-import io.xol.chunkstories.materials.MaterialsStore;
-import io.xol.chunkstories.net.packets.PacketsProcessor;
-import io.xol.chunkstories.particles.ParticlesTypesStore;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.world.generator.WorldGeneratorsStore;
 import io.xol.engine.concurrency.UniqueList;
 import io.xol.engine.misc.FoldersUtils;
 
@@ -46,8 +39,6 @@ import io.xol.engine.misc.FoldersUtils;
 
 public class DefaultModsManager implements ModsManager
 {
-	//TODO : un-Staticize this
-	
 	private Mod baseAssets;
 	private String[] modsEnabled = new String[0];
 	private UniqueList<Mod> enabledMods = new UniqueList<Mod>();
@@ -379,9 +370,6 @@ public class DefaultModsManager implements ModsManager
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.content.ModsManager#getAllUniqueEntries()
-	 */
 	@Override
 	public Iterator<ModsAssetHierarchy> getAllUniqueEntries()
 	{
@@ -574,72 +562,6 @@ public class DefaultModsManager implements ModsManager
 				return ((ModsAssetHierarchy) o).assetName.equals(assetName);
 			return false;
 		}
-	}
-
-	public void reload_()
-	{
-		long total = System.nanoTime();
-		long part = System.nanoTime();
-		
-		try
-		{
-			loadEnabledMods();
-		}
-		catch (NotAllModsLoadedException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		System.out.println("fs reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();
-		
-		/*VoxelTexturesAtlaser.buildTextureAtlas();
-		System.out.println("texture atlas reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();*/
-		
-		/*MaterialsStore.reload();
-		System.out.println("materials reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();*/
-		
-		/*VoxelModelsStore.resetAndLoadModels();
-		System.out.println("voxel models reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();*/
-		
-		/*ItemTypesStore.reload();
-		System.out.println("items reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();*/
-		
-		/*VoxelsStore.reloadVoxelTypes();
-		System.out.println("voxels reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();*/
-		
-		/*
-		EntityTypesStore.reload();
-		System.out.println("entities reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();
-		
-		EntityComponentsStore.reload();
-		System.out.println("components reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();
-		*/
-		
-		/*PacketsProcessor.loadPacketsTypes();
-		System.out.println("packets reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();*/
-		
-		/*WorldGenerators.loadWorldGenerators();
-		System.out.println("generators reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();*/
-		
-		/*ParticleTypes.reload();
-		System.out.println("particles reload took "+Math.floor(((System.nanoTime() - part) / 1000L) / 100f) / 10f + "ms ");
-		part = System.nanoTime();*/
-		
-		//Total
-		System.out.println("Assets reload took "+Math.floor(((System.nanoTime() - total) / 1000L) / 100f) / 10f + "ms ");
-		
-		//Inputs.loadKeyBindsClient();
 	}
 
 	/* (non-Javadoc)

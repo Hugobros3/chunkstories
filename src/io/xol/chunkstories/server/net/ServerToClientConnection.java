@@ -246,8 +246,6 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 		this.sendInternalTextMessage("info/mods:" + getServer().getModsProvider().getModsString());
 		this.sendInternalTextMessage("info/done");
 		this.flush();
-
-		this.disconnect("MOTD ONLY");
 	}
 
 	// Just socket bullshit !
