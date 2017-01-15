@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -21,7 +22,6 @@ import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.core.events.EntityDamageEvent;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.animation.SkeletonAnimator;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
@@ -47,10 +47,10 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 
 	protected SkeletonAnimator animatedSkeleton;
 
-	public EntityLivingImplentation(WorldImplementation w, double x, double y, double z)
+	public EntityLivingImplentation(World world, double x, double y, double z)
 	{
-		super(w, x, y, z);
-		
+		super(world, x, y, z);
+
 		entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
 		entityHealthComponent = new EntityComponentHealth(this, getStartHealth());
 	}
@@ -106,14 +106,15 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			if (cause instanceof Entity)
 			{
 				Entity attacker = (Entity) cause;
-				Vector3dm attackerToVictim = this.getLocation().sub(attacker.getLocation().add(0d, 0d, 0d));
-				attackerToVictim.setY(0d);
-				attackerToVictim.normalize();
-				attackerToVictim.setY(0.35);
-				attackerToVictim.scale(damageDealt / 120d);
+				Vector3dm attackKnockback = this.getLocation().sub(attacker.getLocation().add(0d, 0d, 0d));
+				attackKnockback.setY(0d);
+				attackKnockback.normalize();
+				attackKnockback.setY(0.35);
+				attackKnockback.scale(damageDealt / 500d);
+				attackKnockback.scale(1.0 / (1.0 + 5 * this.getVelocityComponent().getVelocity().length()));
 
 				//.scale(1/60d).scale(damageDealt / 10f);
-				this.getVelocityComponent().addVelocity(attackerToVictim);
+				this.getVelocityComponent().addVelocity(attackKnockback);
 			}
 
 			return damageDealt;
@@ -129,26 +130,30 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		if (getWorld() instanceof WorldMaster)
 		{
 			if (isDead())
+			{
 				deathDespawnTimer--;
-			if (deathDespawnTimer < 0)
-				this.removeFromWorld();
-
+				if (deathDespawnTimer < 0)
+					world.removeEntity(this);
+				
+				//Don't tick it if it's ded
+				return;
+			}
 		}
-		
+
 		boolean tick = false;
-		if(this instanceof EntityControllable)
+		if (this instanceof EntityControllable)
 		{
 			Controller controller = ((EntityControllable) this).getControllerComponent().getController();
-			if(controller == null)
+			if (controller == null)
 				tick = (getWorld() instanceof WorldMaster);
-			else if(getWorld() instanceof WorldClient && Client.getInstance().getClientSideController().equals(controller))
+			else if (getWorld() instanceof WorldClient && Client.getInstance().getClientSideController().equals(controller))
 				tick = true;
-				
+
 		}
 		else
 			tick = (getWorld() instanceof WorldMaster);
-		
-		if(tick)
+
+		if (tick)
 		{
 			Vector3dm velocity = getVelocityComponent().getVelocity();
 
@@ -194,7 +199,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			velocity.setZ(velocity.getZ() + acceleration.getZ());
 
 			//TODO ugly
-			if (!world.isChunkLoaded((int)(double) positionComponent.getLocation().getX() / 32, (int)(double) positionComponent.getLocation().getY() / 32, (int)(double) positionComponent.getLocation().getZ() / 32))
+			if (!world.isChunkLoaded((int) (double) positionComponent.getLocation().getX() / 32, (int) (double) positionComponent.getLocation().getY() / 32, (int) (double) positionComponent.getLocation().getZ() / 32))
 			{
 				velocity.set(0d, 0d, 0d);
 			}

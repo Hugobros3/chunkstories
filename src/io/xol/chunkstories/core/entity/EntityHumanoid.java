@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -22,7 +23,7 @@ import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.item.ItemFirearm;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.world.WorldImplementation;
+
 import io.xol.engine.animation.AnimatedSkeleton;
 import io.xol.engine.animation.BVHAnimation;
 import io.xol.engine.animation.BVHLibrary;
@@ -57,9 +58,9 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 
 	CachedLodSkeletonAnimator cachedSkeleton;
 
-	public EntityHumanoid(WorldImplementation w, double x, double y, double z)
+	public EntityHumanoid(World world, double x, double y, double z)
 	{
-		super(w, x, y, z);
+		super(world, x, y, z);
 
 		cachedSkeleton = new CachedLodSkeletonAnimator(new EntityHumanoidAnimatedSkeleton(), 25f, 75f);
 		animatedSkeleton = cachedSkeleton;
@@ -111,6 +112,8 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			Vector3dm vel = getVelocityComponent().getVelocity();
 
 			double horizSpd = Math.sqrt(vel.getX() * vel.getX() + vel.getZ() * vel.getZ());
+			
+			animationTime *= 0.75;
 
 			// animationTime += metersWalked * 50;
 			//	return BVHLibrary.getAnimation("res/animations/human/running.bvh");

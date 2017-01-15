@@ -200,7 +200,23 @@ public abstract class WorldImplementation implements World
 	public boolean removeEntity(Entity entity)
 	{
 		if (entity != null)
-			return entity.removeFromWorld();
+		{
+			//Only once
+			if (entity.getComponentExistence().exists())
+			{
+				//Destroys it
+				entity.getComponentExistence().destroyEntity();
+
+				//Removes it's reference within the region
+				if (entity.getEntityComponentPosition().getRegionWithin() != null)
+					entity.getEntityComponentPosition().getRegionWithin().removeEntityFromRegion(entity);
+
+				//Actually removes it from the world list
+				removeEntityFromList(entity);
+
+				return true;
+			}
+		}
 
 		return false;
 	}
@@ -211,7 +227,7 @@ public abstract class WorldImplementation implements World
 		Entity entityFound = this.getEntityByUUID(uuid);
 
 		if (entityFound != null)
-			return entityFound.removeFromWorld();
+			return removeEntity(entityFound);
 
 		return false;
 	}

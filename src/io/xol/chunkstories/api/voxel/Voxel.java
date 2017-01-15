@@ -8,7 +8,6 @@ import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
-import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -118,7 +117,7 @@ public interface Voxel
 	/**
 	 * Overload of getTranslatedCollisionBoxes with a vector3d
 	 */
-	public default CollisionBox[] getTranslatedCollisionBoxes(WorldImplementation world, Vector3dm position)
+	public default CollisionBox[] getTranslatedCollisionBoxes(World world, Vector3dm position)
 	{
 		return getTranslatedCollisionBoxes(world, (int)(double)position.getX(), (int)(double)position.getY(), (int)(double)position.getZ());
 	}

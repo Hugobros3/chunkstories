@@ -8,9 +8,9 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.core.entity.ai.AggressiveHumanoidAI;
-import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
@@ -29,9 +29,9 @@ public class EntityZombie extends EntityHumanoid
 		zombieTargets.add(EntityPlayer.class);
 	}
 	
-	public EntityZombie(WorldImplementation w, double x, double y, double z)
+	public EntityZombie(World world, double x, double y, double z)
 	{
-		super(w, x, y, z);
+		super(world, x, y, z);
 		zombieAi = new AggressiveHumanoidAI(this, 10, zombieTargets);
 	}
 

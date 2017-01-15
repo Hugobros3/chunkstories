@@ -174,7 +174,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					{
 						ItemPile left = this.inventoryComponent.addItemPile(pile);
 						if (left == null)
-							eg.removeFromWorld();
+							world.removeEntity(eg);
 						else
 							eg.setItemPile(left);
 					}

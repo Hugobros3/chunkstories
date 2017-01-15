@@ -3,7 +3,7 @@ package io.xol.chunkstories.api.server;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.utils.IterableIterator;
-import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldMaster;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -21,5 +21,5 @@ public interface ServerInterface extends GameContext
 
 	public void broadcastMessage(String message);
 
-	public World getWorld();
+	public WorldMaster getWorld();
 }

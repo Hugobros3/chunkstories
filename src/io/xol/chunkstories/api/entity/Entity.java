@@ -107,7 +107,7 @@ public interface Entity extends Collidable
 	 * Remove the entity from it's world and mark it for deletion (since Java requires to manually remove all references)
 	 * @return false if already removed
 	 */
-	public boolean removeFromWorld();
+	//public boolean removeFromWorld();
 
 	/**
 	 * Returns true unless it should be invisible to some players or all

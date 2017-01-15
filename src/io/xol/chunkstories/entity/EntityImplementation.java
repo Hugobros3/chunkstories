@@ -25,7 +25,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.world.WorldImplementation;
+
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -37,7 +37,7 @@ public abstract class EntityImplementation implements Entity
 	//Crucial stuff
 	private long entityUUID = -1;
 	private boolean hasSpawned = false;
-	protected WorldImplementation world;
+	protected World world;
 
 	//Multiplayer-related
 	protected Set<Subscriber> subscribers = new HashSet<Subscriber>();
@@ -63,7 +63,7 @@ public abstract class EntityImplementation implements Entity
 
 	private final short eID;
 	
-	public EntityImplementation(WorldImplementation world, double x, double y, double z)
+	public EntityImplementation(World world, double x, double y, double z)
 	{
 		this.world = world;
 
@@ -513,7 +513,7 @@ public abstract class EntityImplementation implements Entity
 		return ((Entity) o).getUUID() == entityUUID;
 	}
 
-	@Override
+	/*@Override
 	public boolean removeFromWorld()
 	{
 		//Only once
@@ -528,12 +528,12 @@ public abstract class EntityImplementation implements Entity
 
 			//Actually removes it from the world list
 			if (this.world != null)
-				this.world.removeEntityFromList(this);
+				((WorldImplementation) this.world).removeEntityFromList(this);
 
 			return true;
 		}
 		return false;
-	}
+	}*/
 
 	@Override
 	public boolean shouldBeTrackedBy(Player player)

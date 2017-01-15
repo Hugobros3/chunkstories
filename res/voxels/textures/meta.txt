@@ -15,7 +15,3 @@ end
 texture bricks2
 	textureScale: 4
 end
-
-texture redbricks
-	textureScale: 4
-end
