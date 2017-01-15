@@ -16,12 +16,11 @@ import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.plugin.ServerPluginManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.DefaultPluginManager;
+import io.xol.chunkstories.plugin.DefaultPluginManager;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.ServerToClientConnection;
@@ -93,7 +92,7 @@ public class Server implements Runnable, ServerInterface
 			
 			// load users privs
 			UsersPrivileges.load();
-			pluginsManager = new ServerPluginManager(this);
+			pluginsManager = new DefaultServerPluginManager(this);
 
 			// Load the world(s)
 			String worldName = serverConfig.getProp("world", "world");
@@ -145,7 +144,7 @@ public class Server implements Runnable, ServerInterface
 	private ServerConnectionsManager connectionsManager;
 	private ServerConsole console = new ServerConsole(this);
 
-	private ServerPluginManager pluginsManager;
+	private DefaultPluginManager pluginsManager;
 
 	// Sleeper thread to keep servers list updated
 	private ServerAnnouncerThread announcer;

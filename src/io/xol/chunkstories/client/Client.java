@@ -25,7 +25,6 @@ import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.ClientGameContent;
-import io.xol.chunkstories.content.DefaultPluginManager;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -133,7 +132,7 @@ public class Client implements ClientInterface
 		windows.changeScene(new MainMenu(windows, true));
 		
 		//Creates plugin manager
-		pluginsManager = new ClientPluginManager(client);
+		pluginsManager = new DefaultClientPluginManager(client);
 		
 		//Pass control to the windows for main game loop
 		windows.run();
@@ -187,7 +186,7 @@ public class Client implements ClientInterface
 	}
 
 	@Override
-	public DefaultPluginManager getPluginManager()
+	public ClientPluginManager getPluginManager()
 	{
 		return pluginsManager;
 	}

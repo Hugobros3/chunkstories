@@ -1,4 +1,4 @@
-package io.xol.chunkstories.content;
+package io.xol.chunkstories.plugin;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,13 +23,13 @@ import io.xol.chunkstories.api.exceptions.plugins.PluginCreationException;
 import io.xol.chunkstories.api.exceptions.plugins.PluginLoadException;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
-import io.xol.chunkstories.api.plugin.PluginInformation;
-import io.xol.chunkstories.api.plugin.PluginInformation.PluginType;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.ServerPluginManager;
+import io.xol.chunkstories.api.plugin.PluginInformation.PluginType;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.plugin.commands.CommandHandler;
+import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -57,24 +57,6 @@ public abstract class DefaultPluginManager implements PluginManager
 		return activePlugins;
 	}
 
-	//public Map<Command, CommandHandler<?>> commandsHandlers = new HashMap<Command, CommandHandler<?>>();
-
-	/*public DefaultPluginManager(ClientInterface client)
-	{
-		this.client = client;
-		reloadClientPlugins();
-	}
-	
-	public DefaultPluginManager(ServerInterface server)
-	{
-		this.server = server;
-		File pluginsFolder = new File(GameDirectory.getGameFolderPath() + "/plugins/");
-		pluginsFolder.mkdirs();
-	
-		// reloadServerPlugins();
-		//store.loadPlugins(pluginsFolder);
-	}*/
-
 	@Override
 	/** Implementation : Checks %gamedir%/plugins/ folder, loads what it can within, checks enabled mods and their plugins/ folder, enables what it can */
 	public void reloadPlugins()
@@ -83,7 +65,7 @@ public abstract class DefaultPluginManager implements PluginManager
 		disablePlugins();
 
 		//We make a list
-		LinkedList<PluginInformation> pluginsToLoad = new LinkedList<PluginInformation>();
+		LinkedList<PluginInformationImplementation> pluginsToLoad = new LinkedList<PluginInformationImplementation>();
 
 		//Creates plugins folder if it isn't present.
 		File pluginsFolder = new File(GameDirectory.getGameFolderPath() + "/plugins/");
@@ -96,7 +78,7 @@ public abstract class DefaultPluginManager implements PluginManager
 			{
 				try
 				{
-					PluginInformation pluginInformation = new PluginInformation(file, this.getClass().getClassLoader());
+					PluginInformationImplementation pluginInformation = new PluginInformationImplementation(file, this.getClass().getClassLoader());
 					//Checks type is appropriate
 
 					//Client only plugins require actually being a client
@@ -117,7 +99,7 @@ public abstract class DefaultPluginManager implements PluginManager
 		}
 
 		//Mods too can bundle plugins
-		for (PluginInformation pluginInformation : this.pluginExecutionContext.getContent().modsManager().getAllModsPlugins())
+		for (PluginInformationImplementation pluginInformation : this.pluginExecutionContext.getContent().modsManager().getAllModsPlugins())
 		{
 			//Client only plugins require actually being a client
 			if (pluginInformation.getPluginType() == PluginType.CLIENT_ONLY && !(this instanceof ClientPluginManager))
@@ -133,20 +115,20 @@ public abstract class DefaultPluginManager implements PluginManager
 		enablePlugins(pluginsToLoad);
 	}
 
-	private void enablePlugins(LinkedList<PluginInformation> pluginsToInitialize)
+	private void enablePlugins(LinkedList<PluginInformationImplementation> pluginsToInitialize)
 	{
 		ChunkStoriesLogger.getInstance().info(pluginsToInitialize.size() + " plugins to initialize");
 
-		Deque<PluginInformation> order = new LinkedBlockingDeque<PluginInformation>();
+		Deque<PluginInformationImplementation> order = new LinkedBlockingDeque<PluginInformationImplementation>();
 
 		//TODO sort plugins requirements (requires/before)
-		for (PluginInformation pluginInformation : pluginsToInitialize)
+		for (PluginInformationImplementation pluginInformation : pluginsToInitialize)
 		{
 			order.add(pluginInformation);
 		}
 
 		//Loads each provided plugin
-		for (PluginInformation pluginInformation : order)
+		for (PluginInformationImplementation pluginInformation : order)
 		{
 			try
 			{

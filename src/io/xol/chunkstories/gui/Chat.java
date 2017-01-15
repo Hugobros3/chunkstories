@@ -155,10 +155,10 @@ public class Chat
 
 						String list = "";
 						int i = 0;
-						for (ChunkStoriesPlugin csp : Client.getInstance().getPluginManager().activePlugins)
+						for (ChunkStoriesPlugin csp : Client.getInstance().getPluginManager().loadedPlugins())
 						{
 							i++;
-							list += csp.getName() + (i == Client.getInstance().getPluginManager().activePlugins.size() ? "" : ", ");
+							list += csp.getName() + (i == Client.getInstance().getPluginManager().loadedPlugins().size() ? "" : ", ");
 						}
 						insert("#00FFD0" + i + " active plugins : " + list);
 						

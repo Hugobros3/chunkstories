@@ -19,7 +19,6 @@ import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.mods.ModsManager;
-import io.xol.chunkstories.api.plugin.PluginInformation;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.content.mods.ForeignCodeClassLoader;
 import io.xol.chunkstories.content.mods.ModImplementation;
@@ -28,6 +27,7 @@ import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
 import io.xol.chunkstories.content.mods.exceptions.ModNotFoundException;
 import io.xol.chunkstories.content.mods.exceptions.NotAllModsLoadedException;
+import io.xol.chunkstories.plugin.PluginInformationImplementation;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.engine.concurrency.UniqueList;
@@ -46,7 +46,7 @@ public class DefaultModsManager implements ModsManager
 	private Map<String, ForeignCodeClassLoader> avaibleForeignClasses = new HashMap<String, ForeignCodeClassLoader>();
 
 	private File cacheFolder = null;
-	private List<PluginInformation> pluginsWithinEnabledMods = new ArrayList<PluginInformation>();
+	private List<PluginInformationImplementation> pluginsWithinEnabledMods = new ArrayList<PluginInformationImplementation>();
 
 	public DefaultModsManager()
 	{
@@ -354,7 +354,7 @@ public class DefaultModsManager implements ModsManager
 			//Checks if it may load as a plugin
 			try
 			{
-				PluginInformation pluginInformation = new PluginInformation(cachedJarLocation, PluginInformation.class.getClassLoader());
+				PluginInformationImplementation pluginInformation = new PluginInformationImplementation(cachedJarLocation, PluginInformationImplementation.class.getClassLoader());
 				System.out.println("Found plugin "+pluginInformation+" from within "+asset.getSource());
 				pluginsWithinEnabledMods.add(pluginInformation);
 			}
@@ -586,11 +586,11 @@ public class DefaultModsManager implements ModsManager
 	 * @see io.xol.chunkstories.content.ModsManager#getModsPlugins()
 	 */
 	@Override
-	public IterableIterator<PluginInformation> getAllModsPlugins()
+	public IterableIterator<PluginInformationImplementation> getAllModsPlugins()
 	{
-		return new IterableIterator<PluginInformation>(){
+		return new IterableIterator<PluginInformationImplementation>(){
 
-			Iterator<PluginInformation> i = pluginsWithinEnabledMods.iterator();
+			Iterator<PluginInformationImplementation> i = pluginsWithinEnabledMods.iterator();
 			
 			@Override
 			public boolean hasNext()
@@ -599,13 +599,13 @@ public class DefaultModsManager implements ModsManager
 			}
 
 			@Override
-			public PluginInformation next()
+			public PluginInformationImplementation next()
 			{
 				return i.next();
 			}
 
 			@Override
-			public Iterator<PluginInformation> iterator()
+			public Iterator<PluginInformationImplementation> iterator()
 			{
 				return i;
 			}
