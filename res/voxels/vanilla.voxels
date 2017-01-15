@@ -99,7 +99,7 @@ voxel whool 20 io.xol.chunkstories.core.voxel.VoxelMeta16
 end
 
 voxel redBricks 23
-	texture: redbricks16
+	texture: redbricks
 end
 
 voxel colored 24 io.xol.chunkstories.core.voxel.VoxelMeta16

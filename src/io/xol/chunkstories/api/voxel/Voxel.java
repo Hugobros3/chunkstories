@@ -139,7 +139,7 @@ public interface Voxel
 	 * 
 	 * @return
 	 */
-	public boolean isAffectedByWind();
+	//public boolean isAffectedByWind();
 
 	/**
 	 * @return Returns an array of ItemPiles to use in creative inventory

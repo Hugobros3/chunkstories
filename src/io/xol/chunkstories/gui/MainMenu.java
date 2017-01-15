@@ -12,7 +12,6 @@ import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.chunkstories.gui.overlays.LoginOverlay;
 import io.xol.chunkstories.gui.overlays.MainMenuOverlay;
 import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;

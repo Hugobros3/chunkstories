@@ -34,10 +34,11 @@ public class VoxelDefault implements Voxel
 	boolean self_opaque = false;
 
 	short lightLevel = 0;
+	
 	// How much light is lost when it goes throught ?
 	short shading = 0;
 
-	public boolean affectedByWind = false;
+	//public boolean affectedByWind = false;
 	public boolean billboard = false;
 
 	CollisionBox box;
@@ -118,12 +119,6 @@ public class VoxelDefault implements Voxel
 	public boolean isVoxelOpaqueWithItself()
 	{
 		return self_opaque;
-	}
-
-	@Override
-	public boolean isAffectedByWind()
-	{
-		return affectedByWind;
 	}
 
 	/**

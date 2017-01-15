@@ -23,5 +23,5 @@ public interface VoxelBaker
 
 	void addColorsSpecial(float f0, float f1, float f2, int extended);
 
-	void addNormalsInt(int i0, int i1, int i2, boolean wavy);
+	void addNormalsInt(int i0, int i1, int i2, byte extra);
 }

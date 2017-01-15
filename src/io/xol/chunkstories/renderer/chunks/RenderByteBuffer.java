@@ -111,7 +111,7 @@ public class RenderByteBuffer implements VoxelBaker
 	 * @see io.xol.chunkstories.renderer.chunks.VoxelBaker#addNormalsInt(int, int, int, boolean)
 	 */
 	@Override
-	public void addNormalsInt(int i0, int i1, int i2, boolean wavy)
+	public void addNormalsInt(int i0, int i1, int i2, byte extra)
 	{
 		if(byteBuffer.position() == byteBuffer.capacity())
 			return;
@@ -119,7 +119,7 @@ public class RenderByteBuffer implements VoxelBaker
 		int b = ((i1) & 0x3FF) << 10;
 		int c = ((i2) & 0x3FF) << 20;
 		
-		int d = (wavy ? 1 : 0) << 30;
+		int d = (extra & 0x3) << 30;
 		int kek = a | b | c | d;
 		byteBuffer.putInt(kek);
 	}

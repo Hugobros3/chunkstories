@@ -69,7 +69,7 @@ public class DecalsVoxelBaker implements VoxelBaker
 	}
 
 	@Override
-	public void addNormalsInt(int i0, int i1, int i2, boolean wavy)
+	public void addNormalsInt(int i0, int i1, int i2, byte extra)
 	{
 		this.addVerticeFloat((i0 + 1) / 512 - 1, (i1 + 1) / 512 - 1, (i2 + 1) / 512 - 1);
 	}

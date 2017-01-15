@@ -27,7 +27,6 @@ import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.EntityPlayer;
-import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2017 XolioWare Interactive

@@ -19,19 +19,8 @@ public class VoxelWaterRenderer extends VoxelModel
 {
 	public VoxelWaterRenderer(VoxelModel model)
 	{
-		super(model.store(), model.name);
-		
-		//Copy attributes
-		this.culling = model.culling;
-		this.jitterX = model.jitterX;
-		this.jitterY = model.jitterY;
-		this.jitterZ = model.jitterZ;
-		
-		this.normals = model.normals;
-		this.texCoords = model.texCoords;
-		this.vertices = model.vertices;
-		this.texturesNames = model.texturesNames;
-		this.texturesOffsets = model.texturesOffsets;
+		//Copy-paste attributes
+		super(model.store(), model.getName(), model.getVertices(), model.getTexCoords(), model.getTexturesNames(), model.getTexturesOffsets(), model.getNormals(), model.getExtra(), model.getCulling(), model.getJitterX(), model.getJitterY(), model.getJitterZ());	
 	}
 
 	@Override
@@ -160,19 +149,13 @@ public class VoxelWaterRenderer extends VoxelModel
 			if (drawFace)
 			{
 				//If rendering top face
-				if(this.normals[i*3+1] > 0)
 				
-				
+				//if(this.normals[i*3+1] > 0)
 				renderByteBuffer.addVerticeFloat(this.vertices[i*3+0] + x + dx, this.vertices[i*3+1] + y + dy, this.vertices[i*3+2] + z + dz);
-				//vertices.add(new float[] { vert[0] + sx + dx, vert[1] + sy + dy, vert[2] + sz + dz });
 				renderByteBuffer.addTexCoordInt((int) (textureS + this.texCoords[i*2+0] * texture.atlasOffset), (int) (textureT + this.texCoords[i*2+1] * texture.atlasOffset));
-				//texcoords.add(new int[] { (int) (textureS + tex[0] * texture.atlasOffset), (int) (textureT + tex[1] * texture.atlasOffset) });
 				renderByteBuffer.addColorsSpecial(lightColors, depth * 16);
-				//colors.add(lightColors);
-				renderByteBuffer.addNormalsInt(ChunksRenderer.intifyNormal(this.normals[i*3+0]), ChunksRenderer.intifyNormal(this.normals[i*3+1]), ChunksRenderer.intifyNormal(this.normals[i*3+2]), info.isAffectedByWind());
-				//normals.add(normal);
-				//if (isWavy != null)
-				//	isWavy.add(info.isWavy());
+				renderByteBuffer.addNormalsInt(ChunksRenderer.intifyNormal(this.normals[i*3+0]), ChunksRenderer.intifyNormal(this.normals[i*3+1]), ChunksRenderer.intifyNormal(this.normals[i*3+2]), (byte)0);
+				
 			}
 			else
 			{

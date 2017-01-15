@@ -59,13 +59,6 @@ public class VoxelContext
 		return VoxelFormat.id(neightborhood[side]);
 	}
 
-	public boolean isAffectedByWind()
-	{
-		if (voxelType != null)
-			return voxelType.isAffectedByWind();
-		return false;
-	}
-
 	public VoxelRenderer getVoxelRenderer()
 	{
 		if (voxelType != null)

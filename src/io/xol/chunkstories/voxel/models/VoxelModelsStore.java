@@ -23,13 +23,13 @@ import java.util.Map;
 public class VoxelModelsStore implements Content.Voxels.VoxelModels
 {
 	private final VoxelsStore voxels;
-	
+
 	private Map<String, VoxelModel> models = new HashMap<String, VoxelModel>();
 
 	public VoxelModelsStore(VoxelsStore voxelsLoader)
 	{
 		this.voxels = voxelsLoader;
-		
+
 		resetAndLoadModels();
 	}
 
@@ -48,31 +48,39 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 
 	}
 
-	private void readBlockModel(File f)
+	private void readBlockModel(File voxelModelFile)
 	{
-		if (!f.exists())
+		if (!voxelModelFile.exists())
 			return;
 		try
 		{
-			FileReader fileReader = new FileReader(f);
+			FileReader fileReader = new FileReader(voxelModelFile);
 			BufferedReader reader = new BufferedReader(fileReader);
 
 			String line = "";
 
-			VoxelModel model = null;
 			int ln = 0;
-			//int loadedBM = 0;
-			List<float[]> vertices = new ArrayList<float[]>();
-			List<float[]> texcoord = new ArrayList<float[]>();
-			List<float[]> normal = new ArrayList<float[]>();
-			List<boolean[]> culling = new ArrayList<boolean[]>();
-			
+
+			String voxelModelName = null;
+
+			List<float[]> verticesTemp = new ArrayList<float[]>();
+			List<float[]> texcoordsTemp = new ArrayList<float[]>();
+			List<float[]> normalsTemp = new ArrayList<float[]>();
+
+			List<Byte> extrasTemps = new ArrayList<Byte>();
+
+			List<boolean[]> cullingTemp = new ArrayList<boolean[]>();
+
+			List<String> texturesNamesTemp = new ArrayList<String>();
+			List<Integer> texturesOffsetsTemp = new ArrayList<Integer>();
+
 			String currentTexture = "_top";
-			List<String> texturesNames = new ArrayList<String>();
-			List<Integer> texturesOffsets = new ArrayList<Integer>();
-			
 			boolean[] currentCull = new boolean[6];
-			int c = 0;
+			float jitterX = 0;
+			float jitterY = 0;
+			float jitterZ = 0;
+
+			int verticesCounter = 0;
 			while ((line = reader.readLine()) != null)
 			{
 				line = line.replace("\t", "");
@@ -82,114 +90,156 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 				}
 				else
 				{
-					if (model == null && !line.equals(""))
+					if (voxelModelName == null && !line.equals(""))
 					{
-						String bmName = f.getName().replace(".model", "");
+						voxelModelName = voxelModelFile.getName().replace(".model", "");
 						if (!line.equals("default"))
-							bmName += "." + line;
-						model = new VoxelModel(this, bmName);
+							voxelModelName += "." + line;
+
 						//Textures calculator
 						currentTexture = "_top";
 					}
 					else if (line.startsWith("end"))
 					{
-						if (model != null)
+						if (voxelModelName != null)
 						{
+							//Security:
+							if (verticesTemp.size() % 3 != 0)
+							{
+								System.out.println(voxelModelName+" -> "+verticesTemp.size());
+								System.exit(-1);
+							}
+
 							//Add last used texture
-							texturesNames.add(currentTexture);
-							texturesOffsets.add(vertices.size());
-							
+							texturesNamesTemp.add(currentTexture);
+							texturesOffsetsTemp.add(verticesTemp.size());
+
 							//Build list of them with offsets
-							model.texturesNames = new String[texturesNames.size()];
-							model.texturesOffsets = new int[texturesNames.size()];
-							int ti = 0;
-							for(String textureName : texturesNames)
+							String[] texturesNames = new String[texturesNamesTemp.size()];
+							int[] texturesOffsets = new int[texturesNamesTemp.size()];
+
+							int indexInTextures = 0;
+							for (String textureName : texturesNamesTemp)
 							{
-								model.texturesNames[ti] = textureName;
-								model.texturesOffsets[ti] = texturesOffsets.get(ti);
-								
-								ti++;
+								texturesNames[indexInTextures] = textureName;
+								texturesOffsets[indexInTextures] = texturesOffsetsTemp.get(indexInTextures);
+
+								indexInTextures++;
 							}
-							
-							model.vertices = new float[vertices.size() * 3];
-							model.texCoords = new float[vertices.size() * 2];
-							model.normals = new float[vertices.size() * 3];
-							model.culling = new boolean[vertices.size()][6];
-							for (int i = 0; i < vertices.size(); i++)
+
+							float[] vertices = new float[verticesTemp.size() * 3];
+							float[] texCoords = new float[verticesTemp.size() * 2];
+							float[] normals = new float[verticesTemp.size() * 3];
+							byte[] extras = new byte[extrasTemps.size()];
+
+							if (verticesTemp.size() != extrasTemps.size())
 							{
-								model.vertices[i * 3 + 0] = vertices.get(i)[0];
-								model.vertices[i * 3 + 1] = vertices.get(i)[1];
-								model.vertices[i * 3 + 2] = vertices.get(i)[2];
-								model.texCoords[i * 2 + 0] = texcoord.get(i)[0];
-								model.texCoords[i * 2 + 1] = texcoord.get(i)[1];
-								model.normals[i * 3 + 0] = normal.get(i)[0];
-								model.normals[i * 3 + 1] = normal.get(i)[1];
-								model.normals[i * 3 + 2] = normal.get(i)[2];
+								System.out.println("FUCK OFF" + verticesTemp.size() + "+" + extrasTemps.size());
+								System.exit(-111);
 							}
-							for (int i = 0; i < vertices.size() / 3; i++)
+
+							boolean[][] culling = new boolean[verticesTemp.size()][6];
+							for (int i = 0; i < verticesTemp.size(); i++)
 							{
-								model.culling[i] = culling.get(i);
+								vertices[i * 3 + 0] = verticesTemp.get(i)[0];
+								vertices[i * 3 + 1] = verticesTemp.get(i)[1];
+								vertices[i * 3 + 2] = verticesTemp.get(i)[2];
+								texCoords[i * 2 + 0] = texcoordsTemp.get(i)[0];
+								texCoords[i * 2 + 1] = texcoordsTemp.get(i)[1];
+								normals[i * 3 + 0] = normalsTemp.get(i)[0];
+								normals[i * 3 + 1] = normalsTemp.get(i)[1];
+								normals[i * 3 + 2] = normalsTemp.get(i)[2];
+
+								extras[i] = extrasTemps.get(i);
 							}
-							models.put(model.name, model);
-							// System.out.println(vertices.size()+" in "+model.name);
-							vertices.clear();
-							texcoord.clear();
-							normal.clear();
-							culling.clear();
-							texturesNames.clear();
-							texturesOffsets.clear();
+							for (int i = 0; i < verticesTemp.size() / 3; i++)
+							{
+								culling[i] = cullingTemp.get(i);
+							}
+
+							VoxelModel voxelModel = new VoxelModel(this, voxelModelName, vertices, texCoords, texturesNames, texturesOffsets, normals, extras, culling, jitterX, jitterY, jitterZ);
+							models.put(voxelModelName, voxelModel);
+
+							//Resets data accumulators
+							verticesTemp.clear();
+							texcoordsTemp.clear();
+							normalsTemp.clear();
+							cullingTemp.clear();
+							extrasTemps.clear();
+
+							//Resets textures
+							texturesNamesTemp.clear();
+							texturesOffsetsTemp.clear();
+
+							//Resets culling engine
 							currentCull = new boolean[6];
-							//loadedBM++;
-							model = null;
+
+							//Reset fields
+							jitterX = 0;
+							jitterY = 0;
+							jitterZ = 0;
 						}
 						else
-							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
+							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + voxelModelFile + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
+
+						voxelModelName = null;
 					}
 					else if (line.startsWith("texture"))
 					{
-						if(model == null)
+						if (voxelModelName == null)
 							continue;
 
 						String[] splitted = line.split(" ");
 						String newTextureName = splitted[1].replace("\'", "");
 						//It can't crash from here so we can safely add the textures
-						texturesNames.add(currentTexture);
-						texturesOffsets.add(vertices.size());
-						
+						texturesNamesTemp.add(currentTexture);
+						texturesOffsetsTemp.add(verticesTemp.size());
+
 						currentTexture = newTextureName;
 					}
 					else if (line.startsWith("jitter"))
 					{
-						String[] splitted = line.split(" ");
-						if (model == null)
+						if (voxelModelName == null)
 							continue;
-						model.jitterX = Float.parseFloat(splitted[1]);
-						model.jitterY = Float.parseFloat(splitted[2]);
-						model.jitterZ = Float.parseFloat(splitted[3]);
+						String[] splitted = line.split(" ");
+
+						jitterX = Float.parseFloat(splitted[1]);
+						jitterY = Float.parseFloat(splitted[2]);
+						jitterZ = Float.parseFloat(splitted[3]);
 					}
 					else if (line.startsWith("v"))
 					{
-						if (model != null)
+						if (voxelModelName != null)
 						{
 							// System.out.println("vv"+vertices.size());
 							String[] splitted = line.split(" ");
 							String[] vert = splitted[1].split(",");
 							String[] tex = splitted[2].split(",");
 							String[] nor = splitted[3].split(",");
-							vertices.add(new float[] { Float.parseFloat(vert[0]), Float.parseFloat(vert[1]), Float.parseFloat(vert[2]) });
-							texcoord.add(new float[] { Float.parseFloat(tex[0]), Float.parseFloat(tex[1]) });
+							verticesTemp.add(new float[] { Float.parseFloat(vert[0]), Float.parseFloat(vert[1]), Float.parseFloat(vert[2]) });
+							texcoordsTemp.add(new float[] { Float.parseFloat(tex[0]), Float.parseFloat(tex[1]) });
+
+							//Normalizes normal at loading time
 							Vector3fm normalizeMe = new Vector3fm(Float.parseFloat(nor[0]), Float.parseFloat(nor[1]), Float.parseFloat(nor[2]));
 							normalizeMe.normalize();
-							normal.add(new float[] { normalizeMe.getX(), normalizeMe.getY(), normalizeMe.getZ() });
-							c++;
-							if (c >= 3)
+
+							normalsTemp.add(new float[] { normalizeMe.getX(), normalizeMe.getY(), normalizeMe.getZ() });
+
+							byte extra = 0;
+							if (splitted.length >= 5)
+								extra = Byte.parseByte(splitted[4]);
+
+							extrasTemps.add(extra);
+
+							verticesCounter++;
+							if (verticesCounter >= 3)
 							{
-								culling.add(currentCull);
-								c = 0;
+								cullingTemp.add(currentCull);
+								verticesCounter = 0;
 							}
 						}
 						else
-							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected parameter.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
+							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + voxelModelFile + ", line " + ln + ", unexpected parameter.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 					}
 					else if (line.startsWith("cull"))
 					{
@@ -221,41 +271,36 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 					}
 					else if (line.startsWith("require"))
 					{
-						if (model != null)
+						if (voxelModelName != null)
 						{
 							String[] splitted = line.split(" ");
 							if (splitted.length == 2)
 							{
 								String toInclude = splitted[1];
-								toInclude = toInclude.replace("~", model.name.contains(".") ? model.name.split("\\.")[0] : model.name);
+								toInclude = toInclude.replace("~", voxelModelName.contains(".") ? voxelModelName.split("\\.")[0] : voxelModelName);
 								VoxelModel includeMeh = getVoxelModelByName(toInclude);
 								if (includeMeh != null)
 								{
-									for (int i = 0; i < includeMeh.vertices.length / 3; i++)
+									//Iterates over included model
+									for (int i = 0; i < includeMeh.getSizeInVertices(); i++)
 									{
-										vertices.add(new float[] { includeMeh.vertices[i * 3 + 0], includeMeh.vertices[i * 3 + 1], includeMeh.vertices[i * 3 + 2] });
-										texcoord.add(new float[] { includeMeh.texCoords[i * 2 + 0], includeMeh.texCoords[i * 2 + 1] });
-										normal.add(new float[] { includeMeh.normals[i * 3 + 0], includeMeh.normals[i * 3 + 1], includeMeh.normals[i * 3 + 2] });
+										verticesTemp.add(new float[] { includeMeh.getVertices()[i * 3 + 0], includeMeh.getVertices()[i * 3 + 1], includeMeh.getVertices()[i * 3 + 2] });
+										texcoordsTemp.add(new float[] { includeMeh.getTexCoords()[i * 2 + 0], includeMeh.getTexCoords()[i * 2 + 1] });
+										normalsTemp.add(new float[] { includeMeh.getNormals()[i * 3 + 0], includeMeh.getNormals()[i * 3 + 1], includeMeh.getNormals()[i * 3 + 2] });
+										extrasTemps.add(includeMeh.getExtra()[i]);
 									}
-									/*for(float v[] : includeMeh.vertices)
-										vertices.add(includeMeh.vertices);
-									//for(float t[] : includeMeh.texCoords)
-										texcoord.add(includeMeh.texCoords);
-									//for(float n[] : includeMeh.normals)
-										normal.add(includeMeh.normals);*/
-									for (boolean cul[] : includeMeh.culling)
-										culling.add(cul);
+
+									//TODO it doesn't import their textures settings !
+									for (boolean cul[] : includeMeh.getCulling())
+										cullingTemp.add(cul);
 								}
 								else
 									ChunkStoriesLogger.getInstance().log("Warning ! Can't require '" + toInclude + "'", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 
 							}
-							else
-							{
-							}
 						}
 						else
-							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected parameter.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
+							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + voxelModelFile + ", line " + ln + ", unexpected parameter.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 					}
 				}
 				ln++;

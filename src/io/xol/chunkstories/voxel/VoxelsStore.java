@@ -240,9 +240,9 @@ public class VoxelsStore implements Content.Voxels
 									box.translate(Float.parseFloat(sizes[0]), Float.parseFloat(sizes[1]), Float.parseFloat(sizes[2]));
 									voxDefault.box = box;
 									break;
-								case "affectedByWind":
-									voxDefault.affectedByWind = Boolean.parseBoolean(parameterValue);
-									break;
+								//case "affectedByWind":
+								//	voxDefault.affectedByWind = Boolean.parseBoolean(parameterValue);
+								//	break;
 								case "billboard":
 									voxDefault.billboard = Boolean.parseBoolean(parameterValue);
 									break;

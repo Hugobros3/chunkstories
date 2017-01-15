@@ -389,7 +389,7 @@ public class ChunksRenderer extends Thread
 		return new float[] { blocklightFactor / 15f, sunlightFactor / 15f, aoFactor / 4f };
 	}
 
-	private void addQuadTop(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadTop(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx, sy + 1, sz);
 		int llMb = getBlocklight(c, sx, sy + 1, sz);
@@ -480,7 +480,7 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadBottom(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadBottom(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx, sy - 1, sz);
 		int llMb = getBlocklight(c, sx, sy - 1, sz);
@@ -553,7 +553,7 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadRight(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadRight(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		// ++x for dekal
 
@@ -636,7 +636,7 @@ public class ChunksRenderer extends Thread
 		return c += b;
 	}
 
-	private void addQuadLeft(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadLeft(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx - 1, sy, sz);
 		int llMb = getBlocklight(c, sx - 1, sy, sz);
@@ -711,7 +711,7 @@ public class ChunksRenderer extends Thread
 
 	}
 
-	private void addQuadFront(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadFront(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
@@ -786,7 +786,7 @@ public class ChunksRenderer extends Thread
 
 	}
 
-	private void addQuadBack(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, boolean wavy)
+	private void addQuadBack(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 
 		int llMs = getSunlight(c, sx, sy, sz - 1);
@@ -900,7 +900,7 @@ public class ChunksRenderer extends Thread
 	{
 		//TODO only requests a ByteBuffer when it is sure it will actually need one
 		ByteBuffer byteBuffer = buffer.accessByteBuffer();
-
+		
 		// Update lightning as well if needed
 		if (work == null)
 		{
@@ -968,6 +968,7 @@ public class ChunksRenderer extends Thread
 		//Don't waste time rendering void chunks m8
 		if (work.isAirChunk())
 			i = 32;
+		
 		for (i = 0; i < 32; i++)
 		{
 			for (j = 0; j < 32; j++)
@@ -1003,54 +1004,53 @@ public class ChunksRenderer extends Thread
 					}
 					else if (blockID != 0)
 					{
+						byte extraByte = 0;
 						if (shallBuildWallArround(renderInfo, 5))
 						{
 							if (!(k == 0 && !chunkBotLoaded))
 							{
-								addQuadBottom(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BOTTOM, renderInfo), renderInfo.isAffectedByWind());
+								addQuadBottom(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BOTTOM, renderInfo), extraByte);
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 4))
 						{
 							if (!(k == 31 && !chunkTopLoaded))
 							{
-								addQuadTop(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.TOP, renderInfo), renderInfo.isAffectedByWind());
+								addQuadTop(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.TOP, renderInfo), extraByte);
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 2))
 						{
 							if (!(i == 31 && !chunkRightLoaded))
 							{
-								addQuadRight(work, rawRBBF, i + 1, k, j, vox.getVoxelTexture(src, VoxelSides.RIGHT, renderInfo), renderInfo.isAffectedByWind());
+								addQuadRight(work, rawRBBF, i + 1, k, j, vox.getVoxelTexture(src, VoxelSides.RIGHT, renderInfo), extraByte);
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 0))
 						{
 							if (!(i == 0 && !chunkLeftLoaded))
 							{
-								addQuadLeft(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.LEFT, renderInfo), renderInfo.isAffectedByWind());
+								addQuadLeft(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.LEFT, renderInfo), extraByte);
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 1))
 						{
 							if (!(j == 31 && !chunkFrontLoaded))
 							{
-								addQuadFront(work, rawRBBF, i, k, j + 1, vox.getVoxelTexture(src, VoxelSides.FRONT, renderInfo), renderInfo.isAffectedByWind());
+								addQuadFront(work, rawRBBF, i, k, j + 1, vox.getVoxelTexture(src, VoxelSides.FRONT, renderInfo), extraByte);
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 3))
 						{
 							if (!(j == 0 && !chunkBackLoaded))
 							{
-								addQuadBack(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, renderInfo), renderInfo.isAffectedByWind());
+								addQuadBack(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, renderInfo), extraByte);
 							}
 						}
 					}
 				}
 			}
 		}
-
-		long cr_convert = System.nanoTime();
 
 		// Prepare output
 		ChunkRenderData chunkRenderData = new ChunkRenderData(work);
