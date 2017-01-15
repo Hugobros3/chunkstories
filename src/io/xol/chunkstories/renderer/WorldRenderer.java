@@ -1538,7 +1538,7 @@ public class WorldRenderer
 			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			// Scene rendering
-			if (onlyTerrain)
+			if (useFastBuffer)
 			{
 				camera.justSetup(scrW, scrH);
 				camera.translate();
@@ -1576,25 +1576,29 @@ public class WorldRenderer
 			{
 				// GL access
 				//glBindTexture(GL_TEXTURE_2D, shadedBuffer.getId());
-				shadedBuffer.bind();
+				glBindTexture(GL_TEXTURE_2D, environmentMapBufferHDR.getId());
+				//shadedBuffer.bind();
 
 				// File access
 				File image = new File(GameDirectory.getGameFolderPath() + "/skyboxscreens/" + time + "/" + names[z] + ".png");
 				image.mkdirs();
 
-				ByteBuffer bbuf = ByteBuffer.allocateDirect(resolution * resolution * 4 * 4).order(ByteOrder.nativeOrder());
-
+				ByteBuffer bbuf = ByteBuffer.allocateDirect(scrW * scrH * 4 * 4).order(ByteOrder.nativeOrder());
+				System.out.println(bbuf);
 				glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, bbuf);
+				System.out.println(bbuf);
 
-				BufferedImage pixels = new BufferedImage(resolution, resolution, BufferedImage.TYPE_INT_RGB);
-				for (int x = 0; x < resolution; x++)
-					for (int y = 0; y < resolution; y++)
+				BufferedImage pixels = new BufferedImage(scrW, scrH, BufferedImage.TYPE_INT_RGB);
+				for (int x = 0; x < scrW; x++)
+					for (int y = 0; y < scrH; y++)
 					{
-						int i = 4 * (x + resolution * y);
+						int i = 4 * (x + scrW * y);
 						int r = (int) Math2.clamp(Math.pow((bbuf.getFloat(i * 4)) / 1d, 1d / 2.2d) * 255d, 0.0, 255.0);
 						int g = (int) Math2.clamp(Math.pow((bbuf.getFloat(i * 4 + 4)) / 1d, 1d / 2.2d) * 255d, 0.0, 255.0);
 						int b = (int) Math2.clamp(Math.pow((bbuf.getFloat(i * 4 + 8)) / 1d, 1d / 2.2d) * 255d, 0.0, 255.0);
-						pixels.setRGB(x, resolution - 1 - y, (0xFF << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | b & 0xFF);
+						pixels.setRGB(x, scrH - 1 - y, (0xFF << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | b & 0xFF);
+						
+						//System.out.println(bbuf.getFloat(i * 4));
 					}
 				try
 				{
