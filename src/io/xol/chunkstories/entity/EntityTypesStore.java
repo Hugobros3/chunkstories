@@ -8,7 +8,6 @@ import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.world.WorldImplementation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -102,7 +101,7 @@ public class EntityTypesStore implements EntityTypes
 							else
 							{
 								@SuppressWarnings("rawtypes")
-								Class[] types = { WorldImplementation.class, Double.TYPE, Double.TYPE , Double.TYPE  };
+								Class[] types = { World.class, Double.TYPE, Double.TYPE , Double.TYPE  };
 								@SuppressWarnings("unchecked")
 								Constructor<? extends Entity> constructor = (Constructor<? extends Entity>) entityClass.getConstructor(types);
 								

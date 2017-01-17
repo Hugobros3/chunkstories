@@ -20,9 +20,6 @@ uniform vec3 sunPos;
 //World
 uniform float time;
 
-//Common camera matrices & uniforms
-uniform vec3 camPos;
-
 //Gamma constants
 <include ../lib/gamma.glsl>
 

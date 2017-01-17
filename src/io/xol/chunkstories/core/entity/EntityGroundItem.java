@@ -5,12 +5,11 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
-
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -21,13 +20,13 @@ public class EntityGroundItem extends EntityImplementation implements EntityRend
 	private long spawnTime;
 	private final EntityGroundItemPileComponent itemPileWithin;
 	
-	public EntityGroundItem(WorldImplementation world, double x, double y, double z)
+	public EntityGroundItem(World world, double x, double y, double z)
 	{
 		super(world, x, y, z);
 		itemPileWithin = new EntityGroundItemPileComponent(this);
 	}
 	
-	public EntityGroundItem(WorldImplementation world, double x, double y, double z, ItemPile itemPile)
+	public EntityGroundItem(World world, double x, double y, double z, ItemPile itemPile)
 	{
 		super(world, x, y, z);
 		itemPileWithin = new EntityGroundItemPileComponent(this, itemPile);

@@ -1,7 +1,7 @@
 package io.xol.chunkstories.core.entity;
 
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -11,7 +11,7 @@ public class EntitySUV extends EntityImplementation// implements EntityRenderabl
 {
 	int i = 0;
 
-	public EntitySUV(WorldImplementation w, double x, double y, double z)
+	public EntitySUV(World w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 		//anim = new BVHAnimation(new File("res/models/human.bvh"));

@@ -7,7 +7,6 @@ import java.util.Set;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
 

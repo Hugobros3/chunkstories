@@ -26,7 +26,6 @@ import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
 import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.VoxelTexturesStoreAndAtlaser;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
@@ -142,14 +141,12 @@ public class FarTerrainRenderer
 		int elements = 0;
 		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
-		//glEnable(GL_CULL_FACE); // culling for our glorious terrain
 
 		//Sort to draw near first
 		List<RegionMesh> regionsMeshesToRenderSorted = new ArrayList<RegionMesh>(regionsToRender);
-		//renderingContext.getCamera().getLocation;
 		Camera camera = renderingContext.getCamera();
-		int camRX = (int) (-camera.pos.getX() / 256);
-		int camRZ = (int) (-camera.pos.getZ() / 256);
+		int camRX = (int) (camera.getCameraPosition().getX() / 256);
+		int camRZ = (int) (camera.getCameraPosition().getZ() / 256);
 
 		regionsMeshesToRenderSorted.sort(new Comparator<RegionMesh>()
 		{
@@ -204,8 +201,8 @@ public class FarTerrainRenderer
 
 	private void startAsynchSummaryRegeneration(Camera camera)
 	{
-		cameraChunkX = (int) (-camera.pos.getX() / 32);
-		cameraChunkZ = (int) (-camera.pos.getZ() / 32);
+		cameraChunkX = (int) (camera.getCameraPosition().getX() / 32);
+		cameraChunkZ = (int) (camera.getCameraPosition().getZ() / 32);
 		
 		Thread asynchGenerateThread = new Thread()
 		{

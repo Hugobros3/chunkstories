@@ -57,15 +57,11 @@ public class SkyRenderer
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 		
 		renderingContext.getRenderTargetManager().setDepthMask(false);
-		//glDepthMask(false);
 
 		Vector3fm sunPosVector = getSunPosition();
-		double[] sunpos = { sunPosVector.getX(), sunPosVector.getY(), sunPosVector.getZ() };
 
 		ShaderInterface skyShader = renderingContext.useShader("sky");
 		
-		
-		//skyShader.use(true);
 		renderingContext.bindTexture2D("cloudsNoise", TexturesHandler.getTexture("./textures/environement/cloudsStatic.png"));
 		
 		Texture2D glowTexture = TexturesHandler.getTexture("./textures/environement/glow.png");
@@ -91,9 +87,7 @@ public class SkyRenderer
 		skyTextureRaining.setMipMapping(false);
 		skyTextureRaining.setTextureWrapping(false);
 
-		//skyShader.setUniformSamplerCube(2, "skybox", TexturesHandler.idCubemap("res/textures/skybox"));
-		skyShader.setUniform3f("camPos", renderingContext.getCamera().pos.castToSinglePrecision());
-		skyShader.setUniform3f("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
+		skyShader.setUniform3f("sunPos", sunPosVector.getX(), sunPosVector.getY(), sunPosVector.getZ());
 		skyShader.setUniform1f("time", time);
 		renderingContext.getCamera().setupShader(skyShader);
 
@@ -103,8 +97,7 @@ public class SkyRenderer
 		
 		ShaderInterface starsShader = renderingContext.useShader("stars");
 		
-		//starsShader.use(true);
-		starsShader.setUniform3f("sunPos", (float) sunpos[0], (float) sunpos[1], (float) sunpos[2]);
+		starsShader.setUniform3f("sunPos", sunPosVector.getX(), sunPosVector.getY(), sunPosVector.getZ());
 		starsShader.setUniform3f("color", 1f, 1f, 1f);
 		renderingContext.getCamera().setupShader(starsShader);
 		int NB_STARS = 500;
@@ -127,7 +120,6 @@ public class SkyRenderer
 		
 		renderingContext.getRenderTargetManager().setDepthMask(true);
 		renderingContext.flush();
-		//glDepthMask(true);
 		
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);

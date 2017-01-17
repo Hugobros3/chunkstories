@@ -20,8 +20,6 @@ import io.xol.chunkstories.server.net.ServerToClientConnection;
 
 public class WorldInfoImplementation implements WorldInfo
 {
-	private File folder = null;
-
 	private String internalName = "";
 	private String name;
 	private String seed;
@@ -60,7 +58,8 @@ public class WorldInfoImplementation implements WorldInfo
 				readLine(line);
 			}
 			reader.close();
-			folder = file.getParentFile();
+			
+			//folder = file.getParentFile();
 		}
 		catch (Exception e)
 		{

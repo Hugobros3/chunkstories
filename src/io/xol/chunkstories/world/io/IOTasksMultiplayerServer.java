@@ -3,14 +3,12 @@ package io.xol.chunkstories.world.io;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.server.net.ServerToClientConnection;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-import io.xol.engine.math.LoopingMathHelper;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -127,15 +125,15 @@ public class IOTasksMultiplayerServer extends IOTasks
 				if(!client.isAlive())
 					return true;
 				
-				Player player = client.getProfile();
-				int x = rx * 256;
-				int z = rz * 256;
+				//Player player = client.getProfile();
+				//int x = rx * 256;
+				//int z = rz * 256;
 				
-				int px = (int)(double)player.getLocation().getX();
-				int pz = (int)(double)player.getLocation().getY();
+				//int px = (int)(double)player.getLocation().getX();
+				//int pz = (int)(double)player.getLocation().getY();
 				
-				double dx = LoopingMathHelper.moduloDistance(x, px, player.getWorld().getWorldSize());
-				double dz = LoopingMathHelper.moduloDistance(z, pz, player.getWorld().getWorldSize());
+				//double dx = LoopingMathHelper.moduloDistance(x, px, player.getWorld().getWorldSize());
+				//double dz = LoopingMathHelper.moduloDistance(z, pz, player.getWorld().getWorldSize());
 				
 				//System.out.println("dx"+dx+"dz"+dz);
 				//if(dx > 1024 || dz > 1024)

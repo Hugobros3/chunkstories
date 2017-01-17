@@ -3,10 +3,10 @@ package io.xol.chunkstories.core.entity.voxel;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.components.EntityComponentPublicInventory;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -16,7 +16,7 @@ public class EntityChest extends EntityImplementation implements EntityWithInven
 {
 	EntityComponentPublicInventory inventoryComponent;
 	
-	public EntityChest(WorldImplementation w, double x, double y, double z)
+	public EntityChest(World w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 		inventoryComponent = new EntityComponentPublicInventory(this, 10, 6);

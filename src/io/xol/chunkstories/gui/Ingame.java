@@ -537,9 +537,9 @@ public class Ingame extends OverlayableScene
 
 		long total = Runtime.getRuntime().totalMemory();
 		long used = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		int bx = ((int)(double) camera.pos.getX());
-		int by = ((int)(double) camera.pos.getY());
-		int bz = ((int)(double) camera.pos.getZ());
+		int bx = ((int)(double) camera.getCameraPosition().getX());
+		int by = ((int)(double) camera.getCameraPosition().getY());
+		int bz = ((int)(double) camera.getCameraPosition().getZ());
 		int data = world.getVoxelData(bx, by, bz);
 		int bl = (data & 0x0F000000) >> 0x18;
 		int sl = (data & 0x00F00000) >> 0x14;

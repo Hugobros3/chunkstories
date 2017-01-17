@@ -30,6 +30,10 @@ import io.xol.chunkstories.api.plugin.ServerPlugin;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.server.ServerInterface;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 /** Loads the plugin definition from it's Jar file and allows to instanciate it */
 public class PluginInformationImplementation extends URLClassLoader implements PluginInformation
 {
@@ -37,9 +41,6 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 	private String authors;
 	private String pluginVersion;
 	private String entryPointClassName;
-
-	//Keeps a reference to where the jarFile is
-	private final File jarFile;
 
 	// Commands handled by this plugin
 	public final Set<Command> commands = new HashSet<Command>();
@@ -53,8 +54,6 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 	public PluginInformationImplementation(File file, ClassLoader parentLoader) throws PluginLoadException, IOException
 	{
 		super(new URL[] { file.toURI().toURL() }, parentLoader);
-
-		jarFile = file;
 
 		//Opens the jar and grabs plugin.info
 		JarFile jar = new JarFile(file);

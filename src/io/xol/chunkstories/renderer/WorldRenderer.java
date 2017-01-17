@@ -215,10 +215,9 @@ public class WorldRenderer
 	Texture2D waterNormalTexture = TexturesHandler.getTexture("./textures/water/shallow.png");
 
 	//Blocks atlases
-	//TODO load these directly from memory
-	Texture2D blocksAlbedoTexture;// = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
-	Texture2D blocksNormalTexture;// = TexturesHandler.getTexture("./textures/tiles_merged_normal.png");
-	Texture2D blocksMaterialTexture;// = TexturesHandler.getTexture("./textures/tiles_merged_material.png");
+	Texture2D blocksAlbedoTexture;
+	Texture2D blocksNormalTexture;
+	Texture2D blocksMaterialTexture;
 
 	//SSAO (disabled)
 	Vector3fm ssao_kernel[];
@@ -231,11 +230,10 @@ public class WorldRenderer
 	long lastEnvmapRender = 0L;
 
 	//Constructor and modificators
-
-	public WorldRenderer(WorldClientCommon w)
+	public WorldRenderer(WorldClientCommon world)
 	{
 		// Link world
-		world = w;
+		this.world = world;
 		
 		//Loads texture atlases
 		blocksAlbedoTexture = Client.getInstance().getContent().voxels().textures().getDiffuseAtlasTexture();
@@ -281,7 +279,6 @@ public class WorldRenderer
 		scrH = height;
 		this.fboGBuffers.resizeFBO(width, height);
 		this.fboShadedBuffer.resizeFBO(width, height);
-		// this.composite_pass_gbuffers_waterfp.resizeFBO(width, height);
 		// Resize bloom components
 		fboBlur.resizeFBO(width / 2, height / 2);
 		fboBloom.resizeFBO(width / 2, height / 2);
@@ -308,12 +305,11 @@ public class WorldRenderer
 	}
 
 	//Rendering main calls
-
 	public void renderWorldAtCamera(Camera camera)
 	{
 		Client.profiler.startSection("kekupdates");
 		this.camera = camera;
-		if (RenderingConfig.doDynamicCubemaps)// && (System.currentTimeMillis() - lastEnvmapRender) > 2000L)// * Math.pow(30.0f / XolioWindow.getFPS(), 1.0f))
+		if (RenderingConfig.doDynamicCubemaps)
 			renderWorldCubemap(environmentMap, ENVMAP_SIZE, true);
 		renderWorldAtCameraInternal(camera, -1);
 	}
@@ -342,24 +338,15 @@ public class WorldRenderer
 
 		// Clear G-Buffers and bind shaded HDR rendertarget
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboGBuffers);
-		//fboGBuffers.bind();
 		renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
-		//fboShadedBuffer.bind();
 
 		skyRenderer.time = (world.getTime() % 10000) / 10000f;
-		//sky.skyShader.use(true);
-		//sky.skyShader.setUniformSamplerCubemap(7, "environmentCubemap", environmentMap);
-		//glViewport(0, 0, scrW, scrH);
 		skyRenderer.render(renderingContext);
 
 
 		// Move camera to relevant position
-		// fboGBuffers.setEnabledRenderTargets(true, false, false);
-
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboGBuffers);
-		//fboGBuffers.bind();
 		fboGBuffers.setEnabledRenderTargets();
 		
 		// Render world
@@ -398,7 +385,7 @@ public class WorldRenderer
 	 */
 	public void updateRender(Camera camera)
 	{
-		Vector3dm pos = new Vector3dm(camera.pos).negate();
+		Vector3dm pos = new Vector3dm(camera.getCameraPosition());
 		// Called every frame, this method takes care of updating the world :
 		// It will keep up to date the camera position, as well as a list of
 		// to-render chunks in order to fill empty VBO space
@@ -681,7 +668,7 @@ public class WorldRenderer
 
 		//System.out.println(depthViewMatrix);
 		
-		shadowMVP.translate(new Vector3fm((float)(double) camera.pos.getX(), (float)(double) camera.pos.getY(), (float)(double) camera.pos.getZ()));
+		shadowMVP.translate(new Vector3fm(camera.getCameraPosition()).negate());
 
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
 		
@@ -701,7 +688,7 @@ public class WorldRenderer
 
 		terrainShader.setUniform3f("sunPos", skyRenderer.getSunPosition());
 		terrainShader.setUniform1f("time", animationTimer);
-		terrainShader.setUniform1f("terrainHeight", world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int)(double) camera.pos.getX(), (int)(double) camera.pos.getZ()));
+		terrainShader.setUniform1f("terrainHeight", world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int)(double) camera.getCameraPosition().getX(), (int)(double) camera.getCameraPosition().getZ()));
 		terrainShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
 		terrainShader.setUniform1f("shadowVisiblity", getShadowVisibility());
 		waterNormalTexture.setLinearFiltering(true);
@@ -875,7 +862,7 @@ public class WorldRenderer
 					int correctedCY = chunk.getChunkY();
 					int correctedCZ = vboDekalZ / 32;
 					//Always show the chunk we're standing in no matter what
-					boolean shouldShowChunk = ((int) (camera.pos.getX() / 32) == chunk.getChunkX()) && ((int) (camera.pos.getY() / 32) == correctedCY) && ((int) (camera.pos.getZ() / 32) == correctedCZ);
+					boolean shouldShowChunk = ((int) (camera.getCameraPosition().getX() / 32) == chunk.getChunkX()) && ((int) (camera.getCameraPosition().getY() / 32) == correctedCY) && ((int) (camera.getCameraPosition().getZ() / 32) == correctedCZ);
 					if (!shouldShowChunk)
 						shouldShowChunk = checkChunkOcclusion(chunk, correctedCX, correctedCY, correctedCZ);
 					if (!shouldShowChunk)
@@ -999,7 +986,7 @@ public class WorldRenderer
 			camera.setupShader(liquidBlocksShader);
 
 			//Underwater flag
-			Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int) -camera.pos.getX(), (int) (-camera.pos.getY() + 0), (int) -camera.pos.getZ()));
+			Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int) (double)camera.getCameraPosition().getX(), (int) (double)camera.getCameraPosition().getY(), (int) (double)camera.getCameraPosition().getZ()));
 			liquidBlocksShader.setUniform1f("underwater", vox.isVoxelLiquid() ? 1 : 0);
 
 			if (pass == 1)
@@ -1048,7 +1035,7 @@ public class WorldRenderer
 				int correctedCY = chunk.getChunkY();
 				int correctedCZ = vboDekalZ / 32;
 
-				boolean shouldShowChunk = ((int) (camera.pos.getX() / 32) == chunk.getChunkX()) && ((int) (camera.pos.getY() / 32) == correctedCY) && ((int) (camera.pos.getZ() / 32) == correctedCZ);
+				boolean shouldShowChunk = ((int) (camera.getCameraPosition().getX() / 32) == chunk.getChunkX()) && ((int) (camera.getCameraPosition().getY() / 32) == correctedCY) && ((int) (camera.getCameraPosition().getZ() / 32) == correctedCZ);
 				if (!shouldShowChunk)
 					shouldShowChunk = checkChunkOcclusion(chunk, correctedCX, correctedCY, correctedCZ);
 				if (!shouldShowChunk)
@@ -1206,7 +1193,7 @@ public class WorldRenderer
 		renderingContext.bindTexture2D("debugBuffer", this.materialBuffer);
 
 
-		Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData(camera.pos.negate()));
+		Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData(camera.getCameraPosition()));
 		postProcess.setUniform1f("underwater", vox.isVoxelLiquid() ? 1 : 0);
 		postProcess.setUniform1f("time", animationTimer);
 		postProcess.setUniform1f("pauseOverlayFade", pauseFade);

@@ -755,7 +755,7 @@ public abstract class WorldImplementation implements World
 		direction.normalize();
 		//direction.scale(0.02);
 
-		float distance = 0f;
+		//float distance = 0f;
 		Voxel vox;
 		int x, y, z;
 		x = (int) Math.floor(initialPosition.getX());
@@ -854,10 +854,8 @@ public abstract class WorldImplementation implements World
 			voxelCoords[side] += step[side];
 			voxelDelta[side] += step[side];
 
-			//System.out.println(deltaDist[side]);
-			distance += deltaDist[side];
+			//distance += deltaDist[side];
 
-			//System.out.println(Math.sqrt(voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2])+ " < "+Math.sqrt(limit * limit));
 		}
 		while (voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2] < limit * limit);
 		return null;

@@ -24,6 +24,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldMaster;
 
@@ -84,7 +85,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	int variant;
 
-	public EntityPlayer(WorldImplementation w, double x, double y, double z)
+	public EntityPlayer(World w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 		
@@ -428,8 +429,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		{
 			lastCameraLocation = getLocation();
 
-			camera.pos = lastCameraLocation.clone().negate();
-			camera.pos.add(0d, -eyePosition, 0d);
+			camera.setCameraPosition(new Vector3dm(positionComponent.getLocation().add(0.0, eyePosition, 0.0)));
+			//camera.pos = lastCameraLocation.clone().negate();
+			//camera.pos.add(0d, -eyePosition, 0d);
 
 			camera.rotationX = this.getEntityRotationComponent().getVerticalRotation();
 			camera.rotationY = this.getEntityRotationComponent().getHorizontalRotation();
@@ -484,7 +486,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		Vector3dm pos = getLocation();
 
 		//don't render tags too far out
-		if (pos.distanceTo(renderingContext.getCamera().getCameraPosition().negate()) > 32f)
+		if (pos.distanceTo(renderingContext.getCamera().getCameraPosition()) > 32f)
 			return;
 
 		//Don't render a dead player tag

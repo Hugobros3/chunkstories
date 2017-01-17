@@ -7,11 +7,13 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.World;
+
 import io.xol.chunkstories.core.entity.components.EntityComponentSignText;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.world.WorldImplementation;
+
 import io.xol.engine.graphics.geometry.TextMeshObject;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -30,7 +32,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 	String cachedText = null;
 	TextMeshObject renderData = null;
 
-	public EntitySign(WorldImplementation w, double x, double y, double z)
+	public EntitySign(World w, double x, double y, double z)
 	{
 		super(w, x, y, z);
 	}

@@ -31,7 +31,7 @@ public class Camera implements CameraInterface
 	public float rotationY = 0.0f;
 	public float rotationZ = 0.0f;
 	//Camera positions
-	public Vector3dm pos = new Vector3dm();
+	private Vector3dm pos = new Vector3dm();
 	
 	//Mouse pointer tracking
 	float lastPX = -1f;
@@ -458,7 +458,7 @@ public class Camera implements CameraInterface
 		
 		shaderInterface.setUniform2f("screenViewportSize", this.viewportWidth, this.viewportHeight);
 
-		shaderInterface.setUniform3f("camPos", pos.clone().negate());
+		shaderInterface.setUniform3f("camPos", getCameraPosition());
 	}
 	
 	public Vector3fm transform3DCoordinate(Vector3fm in)
@@ -518,5 +518,11 @@ public class Camera implements CameraInterface
 	public Vector3dm getCameraPosition()
 	{
 		return this.pos.clone().negate();
+	}
+
+	@Override
+	public void setCameraPosition(Vector3<?> pos)
+	{
+		this.pos = new Vector3dm(pos).negate();
 	}
 }

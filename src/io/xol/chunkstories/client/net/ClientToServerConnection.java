@@ -121,7 +121,7 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 					latestErrorMessage = "Fatal error while handling connection to " + ip + ":" + port + ". (" + e.getClass().getName() + ")";
 					System.out.println(latestErrorMessage);
 					close();
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 			}
 		}

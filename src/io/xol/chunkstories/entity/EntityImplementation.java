@@ -483,8 +483,9 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void setupCamera(Camera camera)
 	{
-		camera.pos = new Vector3dm(positionComponent.getLocation()).negate();
-
+		//camera.pos = new Vector3dm(positionComponent.getLocation()).negate();
+		camera.setCameraPosition(new Vector3dm(positionComponent.getLocation()));
+		
 		//Default FOV
 		camera.fov = RenderingConfig.fov;
 
