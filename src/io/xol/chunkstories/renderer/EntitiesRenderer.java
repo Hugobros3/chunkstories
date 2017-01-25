@@ -150,13 +150,16 @@ public class EntitiesRenderer
 			if(currentEntity == null)
 				return false;
 			
-			for (CollisionBox box : currentEntity.getTranslatedCollisionBoxes())
+			//for (CollisionBox box : currentEntity.getTranslatedCollisionBoxes())
+			//{
+			
+			CollisionBox box = currentEntity.getTranslatedBoundingBox();
+			
+			if (renderingContext.isThisAShadowPass() || renderingContext.getCamera().isBoxInFrustrum(new Vector3fm(box.xpos - box.xw, box.ypos - box.h, box.zpos - box.zw), new Vector3fm(box.xw, box.h, box.zw)))
 			{
-				if (renderingContext.isThisAShadowPass() || renderingContext.getCamera().isBoxInFrustrum(new Vector3fm(box.xpos, box.ypos + box.h / 2, box.zpos), new Vector3fm(box.xw, box.h, box.zw)))
-				{
-					return true;
-				}
+				return true;
 			}
+			//}
 			return false;
 		}
 

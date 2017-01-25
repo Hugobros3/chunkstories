@@ -9,6 +9,8 @@ import java.nio.FloatBuffer;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.physics.CollisionPlane;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 import org.lwjgl.BufferUtils;
@@ -58,7 +60,7 @@ public class Camera implements CameraInterface
 		// Init frustrum planes
 		for(int i = 0; i < 6; i++)
 		{
-			cameraPlanes[i] = new FrustrumPlane();
+			//cameraPlanes[i] = new CollisionPlane();
 		}
 	}
 	
@@ -189,9 +191,9 @@ public class Camera implements CameraInterface
 		updateMatricesForShaderUniforms();
 	}
 
-	FrustrumPlane[] cameraPlanes = new FrustrumPlane[6];
+	CollisionPlane[] cameraPlanes = new CollisionPlane[6];
 	
-	public class FrustrumPlane {
+	/*public class FrustrumPlane {
 		float A, B, C, D;
 		Vector3fm n;
 		
@@ -218,7 +220,7 @@ public class Camera implements CameraInterface
 		{
 			return A * point.getX() + B * point.getY() + C * point.getZ() + D;
 		}
-	}
+	}*/
 	
 	private void computeFrustrumPlanes()
 	{
@@ -289,12 +291,12 @@ public class Camera implements CameraInterface
 		Vector3fm farBottomLeft = vsub(farCenterPoint, vadd(smult(Y, fh), smult(X, fw)));
 		Vector3fm farBottomRight = vsub(farCenterPoint, vsub(smult(Y, fh), smult(X, fw)));
 		
-		cameraPlanes[0].setup(nearTopRight, nearTopLeft, farTopLeft);
-		cameraPlanes[1].setup(nearBottomLeft, nearBottomRight, farBottomRight);
-		cameraPlanes[2].setup(nearTopLeft, nearBottomLeft, farBottomLeft);
-		cameraPlanes[3].setup(nearBottomRight, nearTopRight, farBottomRight);
-		cameraPlanes[4].setup(nearTopLeft, nearTopRight, nearBottomRight);
-		cameraPlanes[5].setup(farTopRight, farTopLeft, farBottomLeft);
+		cameraPlanes[0] = new CollisionPlane(nearTopRight, nearTopLeft, farTopLeft);
+		cameraPlanes[1] = new CollisionPlane(nearBottomLeft, nearBottomRight, farBottomRight);
+		cameraPlanes[2] = new CollisionPlane(nearTopLeft, nearBottomLeft, farBottomLeft);
+		cameraPlanes[3] = new CollisionPlane(nearBottomRight, nearTopRight, farBottomRight);
+		cameraPlanes[4] = new CollisionPlane(nearTopLeft, nearTopRight, nearBottomRight);
+		cameraPlanes[5] = new CollisionPlane(farTopRight, farTopLeft, farBottomLeft);
 		
 		//cache that
 		for(int i = 0; i < 2; i++)
@@ -524,5 +526,12 @@ public class Camera implements CameraInterface
 	public void setCameraPosition(Vector3<?> pos)
 	{
 		this.pos = new Vector3dm(pos).negate();
+	}
+
+	@Override
+	public boolean isBoxInFrustrum(CollisionBox box)
+	{
+		// TODO Auto-generated method stub
+		return this.isBoxInFrustrum(new Vector3fm(box.xpos - box.xw, box.ypos, box.zpos - box.zw), new Vector3fm(box.xw, box.h, box.zw));
 	}
 }

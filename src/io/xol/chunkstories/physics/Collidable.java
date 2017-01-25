@@ -1,6 +1,5 @@
 package io.xol.chunkstories.physics;
 
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -9,9 +8,7 @@ import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 public interface Collidable
 {
-	public boolean collidesWith(CollisionBox box);
+	public boolean collidesWith(Collidable box);
 	
-	public boolean collidesWith(Entity entity);
-	
-	public Vector3dm collidesWith(Vector3dm lineStart, Vector3dm lineDirection);
+	public Vector3dm lineIntersection(Vector3dm lineStart, Vector3dm lineDirection);
 }

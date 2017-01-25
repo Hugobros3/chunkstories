@@ -1,17 +1,16 @@
 package io.xol.chunkstories.physics;
 
-import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
-
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
+
+import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class CollisionBox implements Collidable
+public final class CollisionBox implements Collidable
 {
 	public double xpos, ypos, zpos;
 	public double xw, h, zw;
@@ -33,6 +32,16 @@ public class CollisionBox implements Collidable
 		zw = zwidth;
 	}
 
+	public CollisionBox(double xpos, double ypos, double zpos, double xw, double h, double zw)
+	{
+		this.xpos = xpos;
+		this.ypos = ypos;
+		this.zpos = zpos;
+		this.xw = xw;
+		this.h = h;
+		this.zw = zw;
+	}
+
 	public CollisionBox translate(double x, double y, double z)
 	{
 		xpos += x;
@@ -51,52 +60,23 @@ public class CollisionBox implements Collidable
 
 	public boolean collidesWith(World world)
 	{
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos + h), (int) (zpos + zw))).isVoxelSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos), (int) (zpos + zw))).isVoxelSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos + h), (int) (zpos + zw))).isVoxelSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos), (int) (zpos + zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos), (int) (zpos + zw))).isVoxelSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos + h), (int) (zpos))).isVoxelSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos), (int) (zpos))).isVoxelSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos + h), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos + h), (int) (zpos))).isVoxelSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos - xw / 2), (int) (ypos), (int) (zpos - zw / 2))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos), (int) (zpos))).isVoxelSolid())
 			return true;
 		return false;
-	}
-
-	boolean getLineIntersection(double fDst1, double fDst2, Vector3dm P1, Vector3dm P2, Vector3dm hit)
-	{
-		if ((fDst1 * fDst2) >= 0.0f)
-			return false;
-		if (fDst1 == fDst2)
-			return false;
-
-		Vector3dm TP1 = new Vector3dm();
-		Vector3dm TP2 = new Vector3dm();
-		TP1.set(P1);
-		TP2.set(P2);
-
-		Vector3dm tempHit = new Vector3dm(TP2);
-		
-		tempHit.sub(TP1);
-		//Vector3dm.sub(TP2, TP1, tempHit);
-		
-		tempHit.scale(-fDst1 / (fDst2 - fDst1));
-		TP1.set(P1);
-		
-		tempHit.add(TP1);
-		//tempHit = Vector3dm.add(TP1, tempHit, null);
-		
-		//System.out.println("tmp2: "+tempHit);
-		//Vector3dm temphit = TP1.add( ( TP2.sub(TP1) ).scale(-fDst1 / (fDst2 - fDst1)) );
-		hit.set(tempHit);
-		return true;
 	}
 
 	boolean inBox(Vector3dm hit, Vector3dm B1, Vector3dm B2, int axis)
@@ -111,17 +91,17 @@ public class CollisionBox implements Collidable
 	}
 
 	/**
-	 * Box / Line collision check Returns null if no colision, a Vector3dm if collision, containing the collision point.
+	 * Box / Line collision check Returns null if no collision, a Vector3dm if collision, containing the collision point.
 	 * 
 	 * @return The collision point, or NULL.
 	 */
-	public Vector3dm collidesWith(Vector3dm lineStart, Vector3dm lineDirection)
+	public Vector3dm lineIntersection(Vector3dm lineStart, Vector3dm lineDirection)
 	{
 		double minDist = 0.0;
 		double maxDist = 256d;
 		
-		Vector3dm min = new Vector3dm(xpos - xw / 2, ypos, zpos - zw / 2);
-		Vector3dm max = new Vector3dm(xpos + xw / 2, ypos + h, zpos + zw / 2);
+		Vector3dm min = new Vector3dm(xpos, ypos, zpos);
+		Vector3dm max = new Vector3dm(xpos + xw, ypos + h, zpos + zw);
 		
 		lineDirection.normalize();
 		
@@ -199,33 +179,65 @@ public class CollisionBox implements Collidable
 		glDisable(GL_CULL_FACE);
 		
 		glBegin(GL_LINES);
-		glVertex3d(xpos - xw / 2, ypos, zpos - zw / 2);
-		glVertex3d(xpos + xw / 2, ypos, zpos - zw / 2);
-		glVertex3d(xpos - xw / 2, ypos, zpos + zw / 2);
-		glVertex3d(xpos + xw / 2, ypos, zpos + zw / 2);
-		glVertex3d(xpos + xw / 2, ypos, zpos + zw / 2);
-		glVertex3d(xpos + xw / 2, ypos, zpos - zw / 2);
-		glVertex3d(xpos - xw / 2, ypos, zpos - zw / 2);
-		glVertex3d(xpos - xw / 2, ypos, zpos + zw / 2);
+		glVertex3d(xpos , ypos, zpos);
+		glVertex3d(xpos + xw, ypos, zpos);
+		glVertex3d(xpos , ypos, zpos + zw);
+		glVertex3d(xpos + xw, ypos, zpos + zw);
+		glVertex3d(xpos + xw, ypos, zpos + zw);
+		glVertex3d(xpos + xw, ypos, zpos);
+		glVertex3d(xpos , ypos, zpos);
+		glVertex3d(xpos , ypos, zpos + zw);
 
-		glVertex3d(xpos - xw / 2, ypos + h, zpos - zw / 2);
-		glVertex3d(xpos + xw / 2, ypos + h, zpos - zw / 2);
-		glVertex3d(xpos - xw / 2, ypos + h, zpos + zw / 2);
-		glVertex3d(xpos + xw / 2, ypos + h, zpos + zw / 2);
-		glVertex3d(xpos + xw / 2, ypos + h, zpos + zw / 2);
-		glVertex3d(xpos + xw / 2, ypos + h, zpos - zw / 2);
-		glVertex3d(xpos - xw / 2, ypos + h, zpos - zw / 2);
-		glVertex3d(xpos - xw / 2, ypos + h, zpos + zw / 2);
+		glVertex3d(xpos , ypos + h, zpos);
+		glVertex3d(xpos + xw, ypos + h, zpos);
+		glVertex3d(xpos , ypos + h, zpos + zw);
+		glVertex3d(xpos + xw, ypos + h, zpos + zw);
+		glVertex3d(xpos + xw, ypos + h, zpos + zw);
+		glVertex3d(xpos + xw, ypos + h, zpos);
+		glVertex3d(xpos , ypos + h, zpos);
+		glVertex3d(xpos , ypos + h, zpos + zw);
 
-		glVertex3d(xpos - xw / 2, ypos, zpos - zw / 2);
-		glVertex3d(xpos - xw / 2, ypos + h, zpos - zw / 2);
-		glVertex3d(xpos - xw / 2, ypos, zpos + zw / 2);
-		glVertex3d(xpos - xw / 2, ypos + h, zpos + zw / 2);
-		glVertex3d(xpos + xw / 2, ypos, zpos - zw / 2);
-		glVertex3d(xpos + xw / 2, ypos + h, zpos - zw / 2);
-		glVertex3d(xpos + xw / 2, ypos, zpos + zw / 2);
-		glVertex3d(xpos + xw / 2, ypos + h, zpos + zw / 2);
+		glVertex3d(xpos , ypos, zpos);
+		glVertex3d(xpos , ypos + h, zpos);
+		glVertex3d(xpos , ypos, zpos + zw);
+		glVertex3d(xpos , ypos + h, zpos + zw);
+		glVertex3d(xpos + xw, ypos, zpos);
+		glVertex3d(xpos + xw, ypos + h, zpos);
+		glVertex3d(xpos + xw, ypos, zpos + zw);
+		glVertex3d(xpos + xw, ypos + h, zpos + zw);
 		glEnd();
+		
+		/*glColor4f(r, g, b, a);
+		glDisable(GL_CULL_FACE);
+		
+		glBegin(GL_LINES);
+		glVertex3d(xpos , ypos, zpos);
+		glVertex3d(xpos + xw, ypos, zpos);
+		glVertex3d(xpos , ypos, zpos + zw);
+		glVertex3d(xpos + xw, ypos, zpos + zw);
+		glVertex3d(xpos + xw, ypos, zpos + zw);
+		glVertex3d(xpos + xw, ypos, zpos);
+		glVertex3d(xpos , ypos, zpos);
+		glVertex3d(xpos , ypos, zpos + zw);
+
+		glVertex3d(xpos , ypos + h, zpos);
+		glVertex3d(xpos + xw, ypos + h, zpos);
+		glVertex3d(xpos , ypos + h, zpos + zw);
+		glVertex3d(xpos + xw, ypos + h, zpos + zw);
+		glVertex3d(xpos + xw, ypos + h, zpos + zw);
+		glVertex3d(xpos + xw, ypos + h, zpos);
+		glVertex3d(xpos , ypos + h, zpos);
+		glVertex3d(xpos , ypos + h, zpos + zw);
+
+		glVertex3d(xpos , ypos, zpos);
+		glVertex3d(xpos , ypos + h, zpos);
+		glVertex3d(xpos , ypos, zpos + zw);
+		glVertex3d(xpos , ypos + h, zpos + zw);
+		glVertex3d(xpos + xw, ypos, zpos);
+		glVertex3d(xpos + xw, ypos + h, zpos);
+		glVertex3d(xpos + xw, ypos, zpos + zw);
+		glVertex3d(xpos + xw, ypos + h, zpos + zw);
+		glEnd();*/
 	}
 
 	@Override
@@ -235,19 +247,26 @@ public class CollisionBox implements Collidable
 	}
 
 	@Override
+	public boolean collidesWith(Collidable c)
+	{
+		if(c instanceof CollisionBox)
+			return collidesWith(c);
+		
+		throw new UnsupportedOperationException("Unupported Collidable: "+c.getClass().getSimpleName());
+	}
+	
 	public boolean collidesWith(CollisionBox b)
 	{
-		if (ypos + h <= b.ypos || ypos >= b.ypos + b.h || xpos + xw / 2.0 <= b.xpos - b.xw / 2.0 || xpos - xw / 2.0 >= b.xpos + b.xw / 2.0 || zpos + zw / 2.0 <= b.zpos - b.zw / 2.0 || zpos - zw / 2.0 >= b.zpos + b.zw / 2.0)
+		if (ypos + h <= b.ypos || ypos >= b.ypos + b.h || xpos + xw<= b.xpos || xpos >= b.xpos + b.xw || zpos + zw <= b.zpos || zpos >= b.zpos + b.zw)
 		{
 			return false;
 		}
-		// System.out.println(this.toString()+":"+b.toString());
 		return true;
 	}
 
 	public boolean isPointInside(double posX, double posY, double posZ)
 	{
-		if (ypos + h < posY || ypos > posY || xpos + xw / 2.0 < posX || xpos - xw / 2.0 > posX || zpos + zw / 2.0 < posZ || zpos - zw / 2.0 > posZ)
+		if (ypos + h < posY || ypos > posY || xpos + xw < posX || xpos > posX || zpos + zw < posZ || zpos > posZ)
 		{
 			return false;
 		}
@@ -255,7 +274,7 @@ public class CollisionBox implements Collidable
 		return false;
 	}
 
-	public boolean collidesWith(Entity entity)
+	/*public boolean collidesWith(Entity entity)
 	{
 		CollisionBox[] entityBoxes = entity.getTranslatedCollisionBoxes();
 		if (entityBoxes != null)
@@ -263,5 +282,5 @@ public class CollisionBox implements Collidable
 				if (entityBox.collidesWith(entityBox))
 					return true;
 		return false;
-	}
+	}*/
 }

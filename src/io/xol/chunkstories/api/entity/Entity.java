@@ -11,7 +11,6 @@ import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
 import io.xol.chunkstories.core.entity.components.EntityComponentPosition;
 import io.xol.chunkstories.core.entity.components.EntityComponentVelocity;
-import io.xol.chunkstories.physics.Collidable;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
@@ -20,7 +19,7 @@ import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface Entity extends Collidable
+public interface Entity
 {
 	public EntityComponentExistence getComponentExistence();
 	
@@ -74,13 +73,13 @@ public interface Entity extends Collidable
 	 * Returns the entitie's AABBs to their position
 	 * @return
 	 */
-	public CollisionBox[] getTranslatedCollisionBoxes();
+	public CollisionBox getTranslatedBoundingBox();
 	
 	/**
 	 * Returns the entitie's AABBs
 	 * @return
 	 */
-	public CollisionBox[] getCollisionBoxes();
+	public CollisionBox getBoundingBox();
 	
 	/**
 	 * Called when controlling/viewing an entity

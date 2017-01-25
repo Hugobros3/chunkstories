@@ -1,6 +1,7 @@
 package io.xol.chunkstories.api.rendering;
 
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.physics.CollisionBox;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -16,6 +17,8 @@ import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 public interface CameraInterface
 {
 	public boolean isBoxInFrustrum(Vector3<Float> center, Vector3<Float> dimensions);
+	
+	public boolean isBoxInFrustrum(CollisionBox box);
 
 	public void setupShader(ShaderInterface shaderProgram);
 

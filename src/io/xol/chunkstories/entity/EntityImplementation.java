@@ -210,16 +210,6 @@ public abstract class EntityImplementation implements Entity
 
 		boolean collision = false;
 		
-		/*if (writeCollisions)
-		{
-			collision_top = false;
-			collision_bot = false;
-			collision_left = false;
-			collision_right = false;
-			collision_north = false;
-			collision_south = false;
-		}*/
-		
 		//Extract the current position
 		Vector3dm pos = new Vector3dm(from);
 
@@ -227,7 +217,6 @@ public abstract class EntityImplementation implements Entity
 		Vector3dm maxDistanceToTravel = new Vector3dm(0.0);
 
 		//Iterate over every box
-		//CollisionBox[] translatedBoxes = getCollisionBoxes();
 		for (int r = 0; r < getCollisionBoxes().length; r++)
 		{
 			// Make a normalized double vector and keep the original length
@@ -442,15 +431,10 @@ public abstract class EntityImplementation implements Entity
 		//System.out.println(canMoveWithCollisionRestrain(onGroundTest_));
 		return canMoveWithCollisionRestrain(onGroundTest_).length() != 0.0d;
 	}
-	
-	public boolean collidesWith(CollisionBox box)
-	{
-		return box.collidesWith(this);
-	}
 
-	public boolean collidesWith(Entity entity)
+	/*public boolean collidesWith(Entity entity)
 	{
-		for (CollisionBox box : this.getTranslatedCollisionBoxes())
+		//for (CollisionBox box : this.getTranslatedCollisionBoxes())
 		{
 			if (box.collidesWith(entity))
 				return true;
@@ -467,21 +451,25 @@ public abstract class EntityImplementation implements Entity
 				return collides;
 		}
 		return null;
+	}*/
+
+	@Override
+	public CollisionBox getTranslatedBoundingBox()
+	{
+		CollisionBox box = getBoundingBox();
+		box.translate(getLocation());
+		return box;
 	}
 
 	@Override
-	public CollisionBox[] getTranslatedCollisionBoxes()
+	public CollisionBox getBoundingBox()
 	{
-		CollisionBox[] boxes = getCollisionBoxes();
-		for (CollisionBox box : boxes)
-			box.translate(getLocation());
-		return boxes;
+		return new CollisionBox(1.0, 1.0, 1.0).translate(-0.5, 0, -0.5);
 	}
 
-	@Override
-	public CollisionBox[] getCollisionBoxes()
+	private CollisionBox[] getCollisionBoxes()
 	{
-		return new CollisionBox[] { new CollisionBox(1.0, 1.0, 1.0) };
+		return new CollisionBox[]{ getBoundingBox() };
 	}
 
 	@Override

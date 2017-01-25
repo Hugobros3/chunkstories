@@ -157,15 +157,12 @@ public class Ingame extends OverlayableScene
 		//Main render call
 		world.getWorldRenderer().renderWorldAtCamera(camera);
 
-		if (selectedBlock != null && player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().get())
-			selectionRenderer.drawSelectionBox(selectedBlock);
-
 		//Debug draws
 		if (RenderingConfig.physicsVisualization && player != null)
 		{
 			int id, data;
 			int drawDebugDist = 6;
-			cameraPosition.negate();
+			//cameraPosition.negate();
 
 			for (int i = ((int)(double) cameraPosition.getX()) - drawDebugDist; i <= ((int)(double) cameraPosition.getX()) + drawDebugDist; i++)
 				for (int j = ((int)(double) cameraPosition.getY()) - drawDebugDist; j <= ((int)(double) cameraPosition.getY()) + drawDebugDist; j++)
@@ -176,16 +173,18 @@ public class Ingame extends OverlayableScene
 						VoxelsStore.get().getVoxelById(id).debugRenderCollision(world, i, j, k);
 					}
 
-			for (CollisionBox b : player.getTranslatedCollisionBoxes())
-				b.debugDraw(0, 1, 1, 1);
+			//player.getTranslatedBoundingBox().debugDraw(0, 1, 1, 1);
 
 			Iterator<Entity> ie = world.getAllLoadedEntities();
 			while (ie.hasNext())
 			{
-				for (CollisionBox b : ie.next().getTranslatedCollisionBoxes())
-					b.debugDraw(0, 1, 1, 1);
+				ie.next().getTranslatedBoundingBox().debugDraw(0, 1, 1, 1);
 			}
 		}
+		
+		if (selectedBlock != null && player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().get())
+			selectionRenderer.drawSelectionBox(selectedBlock);
+		
 		//Cubemap rendering trigger (can't run it while main render is occuring)
 		if (shouldTakeACubemap)
 		{

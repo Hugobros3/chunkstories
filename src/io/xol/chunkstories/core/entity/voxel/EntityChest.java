@@ -23,9 +23,9 @@ public class EntityChest extends EntityImplementation implements EntityWithInven
 	}
 	
 	@Override
-	public CollisionBox[] getCollisionBoxes()
+	public CollisionBox getBoundingBox()
 	{
-		return new CollisionBox[] { new CollisionBox(1.0, 1.0, 1.0).translate(0.5, 0, 0.5) };
+		return new CollisionBox(1.0, 1.0, 1.0);
 	}
 
 	@Override

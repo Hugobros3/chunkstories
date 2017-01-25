@@ -811,7 +811,7 @@ public abstract class WorldImplementation implements World
 				for (CollisionBox box : vox.getTranslatedCollisionBoxes(this, x, y, z))
 				{
 					//System.out.println(box);
-					Vector3dm collisionPoint = box.collidesWith(initialPosition, direction);
+					Vector3dm collisionPoint = box.lineIntersection(initialPosition, direction);
 					if (collisionPoint != null)
 					{
 						collides = true;

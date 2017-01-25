@@ -159,7 +159,7 @@ public class VoxelsStore implements Content.Voxels
 								((VoxelDefault) voxel).texture[i] = textures.getVoxelTextureByName(name);
 							// Default collision box
 							CollisionBox box = new CollisionBox(1, 1, 1);
-							box.translate(0.5, 0, 0.5);
+							//box.translate(0.5, 0, 0.5);
 							((VoxelDefault) voxel).box = box;
 						}
 					}
@@ -236,7 +236,7 @@ public class VoxelsStore implements Content.Voxels
 									String sizes[] = (parameterValue.replace("[", "").replace("]", "")).split(",");
 
 									CollisionBox box = new CollisionBox(Float.parseFloat(sizes[3]), Float.parseFloat(sizes[4]), Float.parseFloat(sizes[5]));
-									box.translate(0.5, 0, 0.5);
+									//box.translate(0.5, 0, 0.5);
 									box.translate(Float.parseFloat(sizes[0]), Float.parseFloat(sizes[1]), Float.parseFloat(sizes[2]));
 									voxDefault.box = box;
 									break;

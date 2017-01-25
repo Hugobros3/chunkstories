@@ -12,18 +12,25 @@ public class Vector3dm extends Vector3am<Double>
 		this(0, 0, 0);
 	}
 
-	public Vector3dm(double x, double y, double z)
+	public <N extends Number> Vector3dm(Vector3<N> vec)
 	{
-		this.setX(x);
-		this.setY(y);
-		this.setZ(z);
+		this(vec.getX(), vec.getY(), vec.getZ());
 	}
-
-	public Vector3dm(Vector3<?> vec)
+	
+	public <N extends Number> Vector3dm(N x, N y, N z)
 	{
-		this.setX((double)vec.getX());
-		this.setY((double)vec.getY());
-		this.setZ((double)vec.getZ());
+		if(x instanceof Float)
+		{
+			this.x = (double)(float)x;
+			this.y = (double)(float)y;
+			this.z = (double)(float)z;
+		}
+		else
+		{
+			this.x = (double)x;
+			this.y = (double)y;
+			this.z = (double)z;
+		}
 	}
 
 	public Vector3dm(double d)

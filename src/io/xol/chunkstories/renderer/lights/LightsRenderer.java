@@ -49,7 +49,7 @@ public class LightsRenderer
 
 	public static boolean lightInFrustrum(RenderingContext renderingContext, Light light)
 	{
-		return renderingContext.getCamera().isBoxInFrustrum(light.getPosition(), new Vector3fm(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
+		return renderingContext.getCamera().isBoxInFrustrum(new Vector3fm(light.getPosition().getX() - light.getDecay(), light.getPosition().getY() - light.getDecay(), light.getPosition().getZ() - light.getDecay()), new Vector3fm(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
 	}
 
 	static ShaderProgram lightShader;

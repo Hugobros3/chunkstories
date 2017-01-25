@@ -23,6 +23,7 @@ import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
 import io.xol.chunkstories.voxel.VoxelTexture;
@@ -167,7 +168,7 @@ public class FarTerrainRenderer
 			for (RegionMesh regionMesh : regionsMeshesToRenderSorted)
 			{
 				float height = 1024f;
-				if (!renderingContext.getCamera().isBoxInFrustrum(new Vector3fm(regionMesh.regionDisplayedX * 256 + 128, height / 2, regionMesh.regionDisplayedZ * 256 + 128), new Vector3fm(256, height, 256)))
+				if (!renderingContext.getCamera().isBoxInFrustrum(new CollisionBox(regionMesh.regionDisplayedX * 256, 0, regionMesh.regionDisplayedZ * 256, 256, height, 256)))
 					continue;
 				
 				renderingContext.bindTexture2D("groundTexture", regionMesh.regionSummary.voxelTypesTexture);

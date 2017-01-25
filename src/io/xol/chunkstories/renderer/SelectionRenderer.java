@@ -43,31 +43,31 @@ public class SelectionRenderer
 
 	public static void cubeVertices(float x, float y, float z, float xw, float h, float zw)
 	{
-		glVertex3f(-xw / 2f + x, 0 + y, -zw / 2f + z);
-		glVertex3f(xw / 2f + x, 0 + y, -zw / 2f + z);
-		glVertex3f(-xw / 2f + x, 0 + y, zw / 2f + z);
-		glVertex3f(xw / 2f + x, 0 + y, zw / 2f + z);
-		glVertex3f(xw / 2f + x, 0 + y, zw / 2f + z);
-		glVertex3f(xw / 2f + x, 0 + y, -zw / 2f + z);
-		glVertex3f(-xw / 2f + x, 0 + y, -zw / 2f + z);
-		glVertex3f(-xw / 2f + x, 0 + y, zw / 2f + z);
+		glVertex3f( + x, 0 + y, + z);
+		glVertex3f(xw + x, 0 + y, + z);
+		glVertex3f( + x, 0 + y, zw + z);
+		glVertex3f(xw + x, 0 + y, zw + z);
+		glVertex3f(xw + x, 0 + y, zw + z);
+		glVertex3f(xw + x, 0 + y, + z);
+		glVertex3f( + x, 0 + y, + z);
+		glVertex3f( + x, 0 + y, zw + z);
 
-		glVertex3f(-xw / 2f + x, +h + y, -zw / 2f + z);
-		glVertex3f(xw / 2f + x, +h + y, -zw / 2f + z);
-		glVertex3f(-xw / 2f + x, +h + y, zw / 2f + z);
-		glVertex3f(xw / 2f + x, +h + y, zw / 2f + z);
-		glVertex3f(xw / 2f + x, +h + y, zw / 2f + z);
-		glVertex3f(xw / 2f + x, +h + y, -zw / 2f + z);
-		glVertex3f(-xw / 2f + x, +h + y, -zw / 2f + z);
-		glVertex3f(-xw / 2f + x, +h + y, zw / 2f + z);
+		glVertex3f( + x, +h + y, + z);
+		glVertex3f(xw + x, +h + y, + z);
+		glVertex3f( + x, +h + y, zw + z);
+		glVertex3f(xw + x, +h + y, zw + z);
+		glVertex3f(xw + x, +h + y, zw + z);
+		glVertex3f(xw + x, +h + y, + z);
+		glVertex3f( + x, +h + y, + z);
+		glVertex3f( + x, +h + y, zw + z);
 
-		glVertex3f(-xw / 2f + x, 0 + y, -zw / 2f + z);
-		glVertex3f(-xw / 2f + x, +h + y, -zw / 2f + z);
-		glVertex3f(-xw / 2f + x, 0 + y, zw / 2f + z);
-		glVertex3f(-xw / 2f + x, +h + y, zw / 2f + z);
-		glVertex3f(xw / 2f + x, 0 + y, -zw / 2f + z);
-		glVertex3f(xw / 2f + x, +h + y, -zw / 2f + z);
-		glVertex3f(xw / 2f + x, 0 + y, zw / 2f + z);
-		glVertex3f(xw / 2f + x, +h + y, zw / 2f + z);
+		glVertex3f( + x, 0 + y, + z);
+		glVertex3f( + x, +h + y, + z);
+		glVertex3f( + x, 0 + y, zw + z);
+		glVertex3f( + x, +h + y, zw + z);
+		glVertex3f(xw + x, 0 + y, + z);
+		glVertex3f(xw + x, +h + y, + z);
+		glVertex3f(xw + x, 0 + y, zw + z);
+		glVertex3f(xw + x, +h + y, zw + z);
 	}
 }

@@ -270,7 +270,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			if (boxes != null)
 				for (CollisionBox box : boxes)
 				{
-					if (box.collidesWith(this))
+					if (box.collidesWith(this.getTranslatedBoundingBox()))
 						onLadder = true;
 				}
 		}

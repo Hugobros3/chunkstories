@@ -61,15 +61,16 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.5, -0.5, 0.25);
 			break;
 		}
+		
 		if (meta / 4 == 0)
 		{
-			boxes[0].translate(0.5, -0, 0.5);
-			boxes[1].translate(0.0, +1.0, 0.0);
+			boxes[0].translate(0.0, -0, 0.0);
+			boxes[1].translate(-0.5, +1.0, -0.5);
 		}
 		else
 		{
-			boxes[0].translate(0.5, +0.5, 0.5);
-			boxes[1].translate(0.0, +0.5, 0.0);
+			boxes[0].translate(0.0, +0.5, 0.0);
+			boxes[1].translate(-0.5, +0.5, -0.5);
 		}
 
 		return boxes;

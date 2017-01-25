@@ -205,6 +205,8 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 				break;
 			}
 		}
+		
+		boxes[0].translate(-boxes[0].xw / 2, 0, -boxes[0].zw / 2);
 
 		return boxes;
 	}

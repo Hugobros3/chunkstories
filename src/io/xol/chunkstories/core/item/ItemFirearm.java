@@ -274,7 +274,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 
 							for (CollisionBox box : voxel.getTranslatedCollisionBoxes(user.getWorld(), (int)(double) shotBlock.getX(), (int)(double) shotBlock.getY(), (int)(double) shotBlock.getZ()))
 							{
-								Vector3dm thisLocation = box.collidesWith(eyeLocation, direction);
+								Vector3dm thisLocation = box.lineIntersection(eyeLocation, direction);
 								if (thisLocation != null)
 								{
 									if (nearestLocation == null || nearestLocation.distanceTo(eyeLocation) > thisLocation.distanceTo(eyeLocation))
@@ -324,7 +324,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 							if (!shotEntity.equals(shooter) && shotEntity instanceof EntityLiving)
 							{
 								//Get hit location
-								Vector3dm hitPoint = shotEntity.collidesWith(eyeLocation, direction);
+								Vector3dm hitPoint = shotEntity.getTranslatedBoundingBox().lineIntersection(eyeLocation, direction);
 
 								//Deal damage
 								((EntityLiving) shotEntity).damage(shooter, (float) damage);
