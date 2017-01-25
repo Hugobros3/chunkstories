@@ -119,7 +119,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 			{
 				//player.sendMessage("Notice : dragging stuff from /dev/null to your inventory should be limited by permission.");
 				if(player.hasPermission("items.spawn") || (player.getControlledEntity() != null 
-						&& player.getControlledEntity() instanceof EntityCreative && ((EntityCreative) player.getControlledEntity()).getCreativeModeComponent().isCreativeMode()))
+						&& player.getControlledEntity() instanceof EntityCreative && ((EntityCreative) player.getControlledEntity()).getCreativeModeComponent().get()))
 				{
 					
 				}

@@ -106,13 +106,13 @@ public class WorldRegionsHolder
 	public void saveAll()
 	{
 		Iterator<RegionImplementation> i = regions.values().iterator();
-		Region holder;
+		Region region;
 		while (i.hasNext())
 		{
-			holder = i.next();
-			if (holder != null)
+			region = i.next();
+			if (region != null)
 			{
-				holder.save();
+				region.save();
 			}
 		}
 	}

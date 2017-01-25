@@ -243,7 +243,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		// Null-out acceleration, until modified by controls
 		synchronized (this)
 		{
-			if (this.getFlyingComponent().isFlying())
+			if (this.getFlyingComponent().get())
 				tickFlyMove(controller);
 			else
 				tickNormalMove(controller);
@@ -275,7 +275,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 				}
 		}
 
-		if (focus && !inWater && controller.getInputsManager().getInputByName("jump").isPressed() && collision_bot)
+		if (focus && !inWater && controller.getInputsManager().getInputByName("jump").isPressed() && isOnGround())
 		{
 			// System.out.println("jumpin");
 			jumpForce = 0.15;
@@ -318,7 +318,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			modif += -90 * (controller.getInputsManager().getInputByName("forward").isPressed() ? 0.5 : 1);
 
 		//Auto-step logic
-		if (collision_bot && (Math.abs(this.blockedMomentum.getX()) > 0.0005d || Math.abs(this.blockedMomentum.getZ()) > 0.0005d))
+		
+		//TODO finish moving it
+		/*if (isOnGround() && (Math.abs(this.blockedMomentum.getX()) > 0.0005d || Math.abs(this.blockedMomentum.getZ()) > 0.0005d))
 		{
 			blockedMomentum.setY(0d);
 			if (blockedMomentum.length() > 0.20d)
@@ -356,7 +358,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					}
 				}
 			}
-		}
+		}*/
+		
 		if (onLadder)
 		{
 			//moveWithCollisionRestrain(0, (float)(Math.sin(((rotV) / 180f * Math.PI)) * hSpeed), 0, false);
@@ -605,7 +608,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if (getWorld() instanceof WorldMaster)
 		{
 			//Creative mode features building and picking.
-			if (this.getCreativeModeComponent().isCreativeMode())
+			if (this.getCreativeModeComponent().get())
 			{
 				if (input.getName().equals("mouse.left"))
 				{

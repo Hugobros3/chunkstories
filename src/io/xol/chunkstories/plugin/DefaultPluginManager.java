@@ -133,7 +133,7 @@ public abstract class DefaultPluginManager implements PluginManager
 			try
 			{
 				// Add commands support
-				for (Command command : pluginInformation.commands)
+				for (Command command : pluginInformation.getCommands())
 				{
 					//Checks the command isn't already defined
 					if (commands.contains(command))

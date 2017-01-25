@@ -90,6 +90,7 @@ public class MinecraftRegion {
 					
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					
+					//Unzip the ordeal
 					Inflater inflater = new Inflater();
 					inflater.setInput(compressedData);
 					

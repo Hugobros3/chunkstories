@@ -1,7 +1,7 @@
 package io.xol.chunkstories.anvil.nbt;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -12,7 +12,7 @@ public class NBTFloat extends NBTNamed{
 	public float data = 0;
 	
 	@Override
-	public void feed(ByteArrayInputStream is) {
+	public void feed(InputStream is) throws IOException {
 		super.feed(is);
 		byte[] bytes = new byte[4];
 		try {

@@ -1,6 +1,7 @@
 package io.xol.chunkstories.anvil.nbt;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -8,33 +9,56 @@ import java.io.ByteArrayInputStream;
 
 /**
  * Clean code is for suckers anyway
- * 
- * @author Gobrosse
  */
 public abstract class NBTag
 {
+	public abstract void feed(InputStream is) throws IOException;
 
-	public abstract void feed(ByteArrayInputStream is);
-
-	public void list(int i)
+	public void list_(int i)
 	{
 
 	}
 
-	public static NBTag parse(ByteArrayInputStream bais)
+	public static NBTag parseInputStream(InputStream bais)
 	{
-		int type = bais.read();
-		NBTag tag = NBTag.create(type);
-		tag.feed(bais);
+		try
+		{
+			int type = bais.read();
+			if(type == -1)
+				return null;
+			NBTag tag = NBTag.create(type);
+			tag.feed(bais);
+			return tag;
+		}
+		catch (IOException e)
+		{
+			return null;
+		}
+	}
+	
+	public static NBTag createNamedFromList(int t, int listIndex)
+	{
+		NBTag tag = create(Type.values()[t]);
+		
+		if(tag instanceof NBTNamed)
+		{
+			NBTNamed named = (NBTNamed)tag;
+			named.setNamedFromListIndex(listIndex);
+			
+			return named;
+		}
+		
+		System.out.println("Error: Type "+t+" ("+Type.values()[t].name()+") can't be named.");
+		
 		return tag;
 	}
-
+	
 	public static NBTag create(int t)
 	{
 		return create(Type.values()[t]);
 	}
 
-	public static NBTag create(Type t)
+	private static NBTag create(Type t)
 	{
 		switch (t)
 		{

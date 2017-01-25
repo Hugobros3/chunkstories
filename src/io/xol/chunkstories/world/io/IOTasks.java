@@ -214,7 +214,10 @@ public class IOTasks extends Thread
 							| (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
 				}
 				result = new CubicChunk(region, cx, cy, cz, data);
-				result.bakeVoxelLightning(false);
+				
+				//We never want to mess with that when we are the world
+				//if(!(world instanceof WorldTool))
+				//	result.bakeVoxelLightning(false);
 			}
 
 			chunkSlot.setChunk(result);
@@ -305,12 +308,12 @@ public class IOTasks extends Thread
 			//Else if no file exists
 			else
 			{
-				RegionSummaryImplementation regionSummary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(region.regionX * 256, region.regionZ * 256);
+				/*RegionSummaryImplementation regionSummary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(region.regionX * 256, region.regionZ * 256);
 				//Require a chunk summary to be generated first !
 				if (regionSummary == null || !regionSummary.isLoaded())
 				{
 					return false;
-				}
+				}*/
 				//Generate this crap !
 				region.generateAll();
 				//Pre bake phase 1 lightning

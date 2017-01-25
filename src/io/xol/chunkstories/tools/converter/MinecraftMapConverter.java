@@ -14,13 +14,13 @@ import java.util.Set;
 
 import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
+import io.xol.chunkstories.anvil.MinecraftWorld;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.WorldInfo;
-import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
@@ -57,17 +57,6 @@ public class MinecraftMapConverter implements GameContext, WorldUser
 		ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File("./logs/" + time + ".log")));
 
 		content = new GameContentStore(user, null);
-		
-		/*
-		 * U N S T A T I C
-		 * N
-		 * S
-		 * T
-		 * A
-		 * T
-		 * I
-		 * C			plz
-		 */
 
 		if (arguments.length < 5)
 		{
@@ -84,7 +73,6 @@ public class MinecraftMapConverter implements GameContext, WorldUser
 		}
 		else
 		{
-
 			long timestampStart = System.currentTimeMillis();
 
 			String mcWorldName = arguments[0];
@@ -149,11 +137,11 @@ public class MinecraftMapConverter implements GameContext, WorldUser
 			info.save(new File(csWorldDir + "/info.txt"));
 			WorldImplementation exported = new WorldTool(user, csWorldDir);
 
-			int mcRegionStartX = c2r(minecraftOffsetX);
-			int mcRegionStartZ = c2r(minecraftOffsetZ);
+			int mcRegionStartX = MinecraftWorld.blockToRegionCoordinates(minecraftOffsetX);
+			int mcRegionStartZ = MinecraftWorld.blockToRegionCoordinates(minecraftOffsetZ);
 
-			int mcRegionEndX = c2r(minecraftOffsetX + size.sizeInChunks * 32);
-			int mcRegionEndZ = c2r(minecraftOffsetZ + size.sizeInChunks * 32);
+			int mcRegionEndX = MinecraftWorld.blockToRegionCoordinates(minecraftOffsetX + size.sizeInChunks * 32);
+			int mcRegionEndZ = MinecraftWorld.blockToRegionCoordinates(minecraftOffsetZ + size.sizeInChunks * 32);
 
 			int minecraftChunksImported = 0;
 			int minecraftChunksToImport = ((size.sizeInChunks * 32) * (size.sizeInChunks * 32)) / (16 * 16);
@@ -161,7 +149,6 @@ public class MinecraftMapConverter implements GameContext, WorldUser
 			double completion = 0.0;
 			long lastPercentageShow = System.currentTimeMillis();
 
-			//Set<Region> registeredCS_Regions = new HashSet<Region>();
 			Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
 			Set<RegionSummary> registeredCS_Summaries = new HashSet<RegionSummary>();
 
@@ -348,16 +335,6 @@ public class MinecraftMapConverter implements GameContext, WorldUser
 		{
 			e.printStackTrace();
 		}
-	}
-
-	static int c2r(int c)
-	{
-		if (c >= 0)
-		{
-			return (int) Math.floor(c / 512f);
-		}
-		c = -c;
-		return -(int) Math.floor(c / 512f) - 1;
 	}
 
 	static void verbose(String s)

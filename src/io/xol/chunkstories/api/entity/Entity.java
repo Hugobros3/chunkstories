@@ -64,6 +64,10 @@ public interface Entity extends Collidable
 	
 	public Vector3dm moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions);
 	
+	public Vector3dm canMoveWithCollisionRestrain(Vector3dm delta);
+	
+	public boolean isOnGround();
+	
 	public EntityComponentVelocity getVelocityComponent();
 	
 	/**

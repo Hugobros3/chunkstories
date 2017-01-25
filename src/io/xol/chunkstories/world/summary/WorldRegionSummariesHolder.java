@@ -193,8 +193,10 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
-		cs.updateOnBlockModification(x % 256, y, z % 256, id);
+		RegionSummary summary = getRegionSummaryWorldCoordinates(x, z);
+		
+		if(summary != null)
+			summary.updateOnBlockModification(x % 256, y, z % 256, id);
 	}
 
 	public int countSummaries()

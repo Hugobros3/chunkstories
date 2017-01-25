@@ -3,10 +3,7 @@ package io.xol.chunkstories.server;
 import java.util.Iterator;
 
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
-import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
@@ -132,7 +129,7 @@ public class ServerConsole implements CommandEmitter
 				server.getWorld().saveEverything();
 				return true;
 			}
-			else if (cmd.equals("spawn") && emitter.hasPermission("server.spawn"))
+			/*else if (cmd.equals("spawn") && emitter.hasPermission("server.spawn"))
 			{
 				Player player = (Player) emitter;
 				
@@ -151,7 +148,7 @@ public class ServerConsole implements CommandEmitter
 				
 				emitter.sendMessage("#00FFD0Set default spawn to : "+loc);
 				return true;
-			}
+			}*/
 			else if (cmd.equals("region"))
 			{
 				Player player = (Player) emitter;
@@ -159,7 +156,7 @@ public class ServerConsole implements CommandEmitter
 				emitter.sendMessage("#00FFD0" + player.getControlledEntity().getRegion());
 				return true;
 			}
-			else if (cmd.equals("spawnEntity") && emitter.hasPermission("server.admin"))
+			/*else if (cmd.equals("spawnEntity") && emitter.hasPermission("server.admin"))
 			{
 				int id = Integer.parseInt(arguments[0]);
 				Entity test = server.getContent().entities().getEntityTypeById((short)id).create(server.getWorld());
@@ -169,7 +166,7 @@ public class ServerConsole implements CommandEmitter
 
 				emitter.sendMessage("#00FFD0" + "Spawned " + test.getClass().getSimpleName() + " at player");
 				return true;
-			}
+			}*/
 			else if (cmd.equals("say") && emitter.hasPermission("server.admin"))
 			{
 				String message = "";
@@ -179,19 +176,19 @@ public class ServerConsole implements CommandEmitter
 				}
 				server.broadcastMessage("#FFFF00SERVER: "+message);
 			}
-			else if (cmd.equals("fly") && emitter.hasPermission("server.admin"))
+			/*else if (cmd.equals("fly") && emitter.hasPermission("server.admin"))
 			{
 				if (emitter instanceof Player)
 				{
-					Player client = ((Player) emitter);
+					Player player = ((Player) emitter);
 
-					Entity controlledEntity = client.getControlledEntity();
+					Entity controlledEntity = player.getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityFlying)
 					{
-						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().isFlying();
+						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().get();
 						state = !state;
-						client.sendMessage("Flying mode set to: " + state);
-						((EntityFlying) controlledEntity).getFlyingComponent().setFlying(state);
+						player.sendMessage("Flying mode set to: " + state);
+						((EntityFlying) controlledEntity).getFlyingComponent().set(state);
 						return true;
 					}
 				}
@@ -200,19 +197,19 @@ public class ServerConsole implements CommandEmitter
 			{
 				if (emitter instanceof Player)
 				{
-					Player client = ((Player) emitter);
+					Player player = ((Player) emitter);
 
-					Entity controlledEntity = client.getControlledEntity();
+					Entity controlledEntity = player.getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityCreative)
 					{
-						boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().isCreativeMode();
+						boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().get();
 						state = !state;
-						client.sendMessage("Creative mode set to: " + state);
-						((EntityCreative) controlledEntity).getCreativeModeComponent().setCreativeMode(state);
+						player.sendMessage("Creative mode set to: " + state);
+						((EntityCreative) controlledEntity).getCreativeModeComponent().set(state);
 						return true;
 					}
 				}
-			}
+			}*/
 			else if (cmd.equals("food") && emitter.hasPermission("server.admin"))
 			{
 				if (emitter instanceof Player)
@@ -224,13 +221,13 @@ public class ServerConsole implements CommandEmitter
 					}
 					float foodLevel = Float.parseFloat(arguments[0]);
 					
-					Player client = ((Player) emitter);
+					Player player = ((Player) emitter);
 
-					Entity controlledEntity = client.getControlledEntity();
+					Entity controlledEntity = player.getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityPlayer)
 					{
 						((EntityPlayer) controlledEntity).setFoodLevel(foodLevel);
-						client.sendMessage("Food level set to: " + foodLevel);
+						player.sendMessage("Food level set to: " + foodLevel);
 						return true;
 					}
 				}

@@ -27,6 +27,7 @@ import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.content.mods.exceptions.ModLoadFailureException;
 import io.xol.chunkstories.content.mods.exceptions.ModNotFoundException;
 import io.xol.chunkstories.content.mods.exceptions.NotAllModsLoadedException;
+import io.xol.chunkstories.plugin.NotAPluginException;
 import io.xol.chunkstories.plugin.PluginInformationImplementation;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
@@ -358,9 +359,13 @@ public class DefaultModsManager implements ModsManager
 				System.out.println("Found plugin "+pluginInformation+" from within "+asset.getSource());
 				pluginsWithinEnabledMods.add(pluginInformation);
 			}
+			catch (NotAPluginException nap)
+			{
+				//Discard silently
+			}
 			catch (PluginLoadException e)
 			{
-				System.out.println("Not really fit for a plugin");
+				System.out.println("Something went wrong loading the plugin @ "+asset);
 				e.printStackTrace();
 			}
 		}

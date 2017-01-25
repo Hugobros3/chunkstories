@@ -219,14 +219,15 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			//entity.getVelocityComponent().setVelocityX(delta.getX());
 			//entity.getVelocityComponent().setVelocityZ(delta.getZ());
 			
-			if(((EntityHumanoid)entity).collision_bot)
+			//TODO fix autojump
+			/*if(((EntityHumanoid)entity).isOnGround())
 			{
 				if(		((EntityHumanoid)entity).collision_left || 
 						((EntityHumanoid)entity).collision_right || 
 						((EntityHumanoid)entity).collision_north || 
 						((EntityHumanoid)entity).collision_south)
 				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
-			}
+			}*/
 		}
 		
 	}
@@ -283,14 +284,15 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			//entity.getVelocityComponent().setVelocityX(delta.getX());
 			//entity.getVelocityComponent().setVelocityZ(delta.getZ());
 			
-			if(((EntityHumanoid)entity).collision_bot)
+			//TODO fix autojump
+			/*if(((EntityHumanoid)entity).isOnGround())
 			{
 				if(		((EntityHumanoid)entity).collision_left || 
 						((EntityHumanoid)entity).collision_right || 
 						((EntityHumanoid)entity).collision_north || 
 						((EntityHumanoid)entity).collision_south)
 				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
-			}
+			}*/
 		}
 		
 	}

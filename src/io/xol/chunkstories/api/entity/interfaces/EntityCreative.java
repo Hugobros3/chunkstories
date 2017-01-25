@@ -13,12 +13,12 @@ public interface EntityCreative extends Entity
 	
 	public default boolean isCreativeMode()
 	{
-		return getCreativeModeComponent().isCreativeMode();
+		return getCreativeModeComponent().get();
 	}
 
 	public default void setCreativeMode(boolean creativeMode)
 	{
-		getCreativeModeComponent().setCreativeMode(creativeMode);
+		getCreativeModeComponent().set(creativeMode);
 	}
 
 }

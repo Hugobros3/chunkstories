@@ -561,7 +561,7 @@ public abstract class WorldImplementation implements World
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
 
-		getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, i);
+		//getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, i);
 
 		Chunk c = regions.getChunk(x / 32, y / 32, z / 32);
 		if (c != null)

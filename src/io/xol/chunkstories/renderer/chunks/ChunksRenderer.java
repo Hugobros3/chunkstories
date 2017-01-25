@@ -909,8 +909,8 @@ public class ChunksRenderer extends Thread
 			return;
 		}
 
-		if (work.needRelightning.getAndSet(false))
-			work.bakeVoxelLightning(true);
+		//if (work.needRelightning.getAndSet(false))
+		//	work.bakeVoxelLightning(true);
 
 		//System.out.println("k");
 

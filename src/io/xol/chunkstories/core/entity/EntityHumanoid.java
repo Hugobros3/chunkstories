@@ -317,7 +317,7 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 			acceleration = new Vector3dm(targetVelocity.getX() - getVelocityComponent().getVelocity().getX(), 0, targetVelocity.getZ() - getVelocityComponent().getVelocity().getZ());
 
 			//Limit maximal acceleration depending if we're on the groud or not, we accelerate 2x faster on ground
-			double maxAcceleration = collision_bot ? 0.010 : 0.005;
+			double maxAcceleration = isOnGround() ? 0.010 : 0.005;
 			if (inWater)
 				maxAcceleration = 0.005;
 			if (acceleration.length() > maxAcceleration)

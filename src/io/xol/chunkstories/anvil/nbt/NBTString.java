@@ -1,6 +1,7 @@
 package io.xol.chunkstories.anvil.nbt;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -10,7 +11,7 @@ public class NBTString extends NBTNamed{
 	public String data;
 	
 	@Override
-	public void feed(ByteArrayInputStream is) {
+	public void feed(InputStream is) throws IOException {
 		super.feed(is);
 		
 		int size = is.read() << 8;

@@ -39,6 +39,11 @@ public class ModZip extends ModImplementation
 			e.printStackTrace();
 		}
 	}
+	
+	public String toString()
+	{
+		return "[ModZip: "+fileLocation.getAbsolutePath()+"]";
+	}
 
 	public ModZip(File zippedMod) throws ModLoadFailureException
 	{

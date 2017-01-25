@@ -13,6 +13,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -43,7 +44,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 	private String entryPointClassName;
 
 	// Commands handled by this plugin
-	public final Set<Command> commands = new HashSet<Command>();
+	private final Set<Command> commands = new HashSet<Command>();
 
 	private final PluginType pluginType;
 
@@ -57,7 +58,13 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 
 		//Opens the jar and grabs plugin.info
 		JarFile jar = new JarFile(file);
-		loadInformation(getRessourceFromJar(jar, "plugin.info"));
+		
+		InputStream pluginInfo = getRessourceFromJar(jar, "plugin.info");
+		
+		if(pluginInfo == null)
+			throw new NotAPluginException(file);
+		
+		loadInformation(pluginInfo);
 		jar.close();
 
 		try
@@ -82,14 +89,14 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			{
 				pluginType = PluginType.CLIENT_ONLY;
 
-				Class<?>[] types = new Class[] { PluginInformationImplementation.class, ClientInterface.class };
+				Class<?>[] types = new Class[] { PluginInformation.class, ClientInterface.class };
 				entryPointConstructor = entryPointClass.getConstructor(types);
 			}
 			else if (ServerPlugin.class.isAssignableFrom(entryPointClassUnchecked))
 			{
 				pluginType = PluginType.SERVER_ONLY;
 
-				Class<?>[] types = new Class[] { PluginInformationImplementation.class, ServerInterface.class };
+				Class<?>[] types = new Class[] { PluginInformation.class, ServerInterface.class };
 				entryPointConstructor = entryPointClass.getConstructor(types);
 			}
 			//If it's not a derivative of either ClientPlugin or ServerPlugin, it's then a UniversalPlugin
@@ -97,7 +104,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			{
 				pluginType = PluginType.UNIVERSAL;
 
-				Class<?>[] types = new Class[] { PluginInformationImplementation.class, GameContext.class };
+				Class<?>[] types = new Class[] { PluginInformation.class, GameContext.class };
 				entryPointConstructor = entryPointClass.getConstructor(types);
 			}
 
@@ -279,8 +286,8 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 		}
 		catch (Exception e)
 		{
-			System.out.println("Unable to get ressource '" + ressource + "' from jar '" + jar + "'");
-			e.printStackTrace();
+			//System.out.println("Unable to get ressource '" + ressource + "' from jar '" + jar + "'");
+			//e.printStackTrace();
 		}
 		return null;
 	}
@@ -290,5 +297,11 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 	{
 		//System.out.println("Looking for class "+name + " in plugin "+jar);
 		return super.findClass(name);
+	}
+
+	@Override
+	public Collection<Command> getCommands()
+	{
+		return commands;
 	}
 }

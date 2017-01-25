@@ -49,14 +49,14 @@ public abstract class EntityImplementation implements Entity
 
 	//Physics system info
 	//TODO: refactor this out
-	public boolean collision_top = false;
-	public boolean collision_bot = false;
-	public boolean collision_left = false;
-	public boolean collision_right = false;
-	public boolean collision_north = false;
-	public boolean collision_south = false;
+	private boolean collision_top = false;
+	private boolean collision_bot = false;
+	private boolean collision_left = false;
+	private boolean collision_right = false;
+	private boolean collision_north = false;
+	private boolean collision_south = false;
 
-	public Vector3dm blockedMomentum = new Vector3dm();
+	private Vector3dm blockedMomentum = new Vector3dm();
 
 	//Hacky bullshit
 	protected Voxel voxelIn;
@@ -240,10 +240,6 @@ public abstract class EntityImplementation implements Entity
 			CollisionBox checkerX = getCollisionBoxes()[r].translate(pos.getX(), pos.getY(), pos.getZ());
 			CollisionBox checkerY = getCollisionBoxes()[r].translate(pos.getX(), pos.getY(), pos.getZ());
 			CollisionBox checkerZ = getCollisionBoxes()[r].translate(pos.getX(), pos.getY(), pos.getZ());
-
-			//translateAll(checkerX, pos);
-			//translateAll(checkerY, pos);
-			//translateAll(checkerZ, pos);
 
 			double pmx, pmy, pmz;
 
@@ -439,6 +435,14 @@ public abstract class EntityImplementation implements Entity
 		return maxDistanceToTravel;
 	}
 
+	private static final Vector3dm onGroundTest_ = new Vector3dm(0.0, -0.01, 0.0);
+	
+	public boolean isOnGround()
+	{
+		//System.out.println(canMoveWithCollisionRestrain(onGroundTest_));
+		return canMoveWithCollisionRestrain(onGroundTest_).length() != 0.0d;
+	}
+	
 	public boolean collidesWith(CollisionBox box)
 	{
 		return box.collidesWith(this);

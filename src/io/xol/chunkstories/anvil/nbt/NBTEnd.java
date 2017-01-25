@@ -1,6 +1,7 @@
 package io.xol.chunkstories.anvil.nbt;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -9,7 +10,7 @@ import java.io.ByteArrayInputStream;
 public class NBTEnd extends NBTag {
 
 	@Override
-	public void feed(ByteArrayInputStream is) {
+	public void feed(InputStream is) throws IOException {
 		//Read nothing
 	}
 

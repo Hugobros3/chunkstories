@@ -45,7 +45,7 @@ public class MinecraftChunk
 	{
 		this(x, z);
 		ByteArrayInputStream bais = new ByteArrayInputStream(byteArray);
-		root = (NBTCompound) NBTag.parse(bais);
+		root = (NBTCompound) NBTag.parseInputStream(bais);
 
 		for (int i = 0; i < 16; i++)
 			sectionsMap[i] = -1;

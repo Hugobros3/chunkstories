@@ -307,10 +307,10 @@ public class Chat
 					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityFlying)
 					{
-						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().isFlying();
+						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().get();
 						state = !state;
 						Client.getInstance().printChat("flying : " + state);
-						((EntityFlying) controlledEntity).getFlyingComponent().setFlying(state);
+						((EntityFlying) controlledEntity).getFlyingComponent().set(state);
 						//return;
 					}
 				}
@@ -319,10 +319,10 @@ public class Chat
 					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityCreative)
 					{
-						boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().isCreativeMode();
+						boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().get();
 						state = !state;
 						Client.getInstance().printChat("creative : " + state);
-						((EntityCreative) controlledEntity).getCreativeModeComponent().setCreativeMode(true);
+						((EntityCreative) controlledEntity).getCreativeModeComponent().set(true);
 						//return;
 					}
 				}

@@ -1,6 +1,7 @@
 package io.xol.chunkstories.anvil.nbt;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class NBTList extends NBTNamed {
 	public List<NBTNamed> elements = new ArrayList<NBTNamed>();
 	
 	@Override
-	public void feed(ByteArrayInputStream is) {
+	public void feed(InputStream is) throws IOException {
 		super.feed(is);
 		type = is.read();
 		number = is.read() << 24;
@@ -28,8 +29,8 @@ public class NBTList extends NBTNamed {
 		{
 			for(int i = 0; i < number; i++)
 			{
-				NBTag tag = NBTag.create(type);
-				tag.list(i);
+				NBTag tag = NBTag.createNamedFromList(type, i);
+				
 				tag.feed(is);
 				elements.add((NBTNamed) tag);
 			}
@@ -40,7 +41,7 @@ public class NBTList extends NBTNamed {
 		}
 	}
 	
-	@Override
+	//@Override
 	public NBTNamed getTag(String path)
 	{
 		if(path.startsWith("."))
@@ -49,16 +50,30 @@ public class NBTList extends NBTNamed {
 			return this;
 		
 		String[] s = path.split("\\.");
-		String parent = s[0];
+		String looking = s[0];
 		
-		int index = Integer.parseInt(parent);
+		int index = Integer.parseInt(looking);
 		
-		//System.out.println(name+" is asked for "+path);
-		
+		//If this is within the list
 		if(index < elements.size())
 		{
-			//System.out.println(path+"giving element"+index+" rmp:"+path.replace(parent, ""));
-			return elements.get(index).getTag(path.replace(parent, ""));
+			NBTNamed found = elements.get(index);
+			
+			//There is still hierarchy to traverse
+			if(s.length > 1)
+			{
+				String deeper = path.substring(looking.length() + 1);
+				
+				if(found instanceof NBTCompound)
+					return ((NBTCompound) found).getTag(deeper);
+				if(found instanceof NBTList)
+					return ((NBTList) found).getTag(deeper);
+				else
+					System.out.println("error: Can't traverse tag "+found+"; not a Compound, nor a List tag.");
+			}
+			//There isn't
+			else
+				return found;
 		}
 		
 		return null;

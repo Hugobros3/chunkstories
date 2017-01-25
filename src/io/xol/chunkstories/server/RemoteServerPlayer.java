@@ -230,7 +230,7 @@ public class RemoteServerPlayer implements Player
 	public void setFlying(boolean flying)
 	{
 		if (this.controlledEntity != null && this instanceof EntityFlying)
-			((EntityFlying) this.controlledEntity).getFlyingComponent().setFlying(flying);
+			((EntityFlying) this.controlledEntity).getFlyingComponent().set(flying);
 	}
 
 	@Override

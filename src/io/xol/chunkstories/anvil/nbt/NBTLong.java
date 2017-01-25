@@ -1,6 +1,7 @@
 package io.xol.chunkstories.anvil.nbt;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -10,18 +11,9 @@ public class NBTLong extends NBTNamed{
 	public long data = 0;
 	
 	@Override
-	public void feed(ByteArrayInputStream is) {
+	public void feed(InputStream is) throws IOException {
 		super.feed(is);
-		/*
-		System.out.println(is.read());
-		System.out.println(is.read());
-		System.out.println(is.read());
-		System.out.println(is.read());
-		System.out.println(is.read());
-		System.out.println(is.read());
-		System.out.println(is.read());
-		System.out.println(is.read());
-		*/
+		
 		data = is.read() << 56;
 		data += is.read() << 48;
 		data += is.read() << 40;

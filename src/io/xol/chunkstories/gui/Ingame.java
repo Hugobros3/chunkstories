@@ -157,7 +157,7 @@ public class Ingame extends OverlayableScene
 		//Main render call
 		world.getWorldRenderer().renderWorldAtCamera(camera);
 
-		if (selectedBlock != null && player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().isCreativeMode())
+		if (selectedBlock != null && player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().get())
 			selectionRenderer.drawSelectionBox(selectedBlock);
 
 		//Debug draws
@@ -396,7 +396,7 @@ public class Ingame extends OverlayableScene
 			if (player != null)
 			{
 				focus(false);
-				if (player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().isCreativeMode())
+				if (player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().get())
 					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) player).getInventory(), new InventoryAllVoxels() }));
 				else
 					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) player).getInventory() }));

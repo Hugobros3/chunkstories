@@ -282,7 +282,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						}
 					}
 				}
-				if (loadedOK)
+				if (loadedOK && diffuseTexture != null)
 				{
 					// save it son
 					ImageIO.write(diffuseTexture, "PNG", diffuseTextureFile);

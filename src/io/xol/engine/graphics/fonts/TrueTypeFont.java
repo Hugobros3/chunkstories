@@ -2,7 +2,6 @@ package io.xol.engine.graphics.fonts;
 
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.graphics.textures.Texture2D;
-import io.xol.engine.graphics.textures.Texture2DAsset;
 import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.math.HexTools;
 import java.awt.Color;

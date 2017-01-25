@@ -239,6 +239,9 @@ public class RegionSummaryImplementation implements RegionSummary
 	@Override
 	public void updateOnBlockModification(int worldX, int height, int worldZ, int voxelData)
 	{
+		worldX &= 0xFF;
+		worldZ &= 0xFF;
+		
 		Voxel voxel = VoxelsStore.get().getVoxelById(voxelData);
 		int h = getHeight(worldX, worldZ);
 		//If we place something solid over the last solid thing
@@ -278,6 +281,8 @@ public class RegionSummaryImplementation implements RegionSummary
 	@Override
 	public void setHeightAndId(int worldX, int height, int worldZ, int voxelData)
 	{
+		worldX &= 0xFF;
+		worldZ &= 0xFF;
 		heights[index(worldX, worldZ)] = height;
 		ids[index(worldX, worldZ)] = voxelData;
 	}
@@ -285,12 +290,16 @@ public class RegionSummaryImplementation implements RegionSummary
 	@Override
 	public int getHeight(int x, int z)
 	{
+		x &= 0xFF;
+		z &= 0xFF;
 		return heights[index(x, z)];
 	}
 
 	@Override
 	public int getVoxelData(int x, int z)
 	{
+		x &= 0xFF;
+		z &= 0xFF;
 		return ids[index(x, z)];
 	}
 

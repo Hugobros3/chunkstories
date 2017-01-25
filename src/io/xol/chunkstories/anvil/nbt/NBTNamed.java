@@ -1,6 +1,7 @@
 package io.xol.chunkstories.anvil.nbt;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -8,11 +9,11 @@ import java.io.ByteArrayInputStream;
 
 public class NBTNamed extends NBTag{
 
-	String name;
+	private String tagName;
 	boolean list = false;
 	
 	@Override
-	public void feed(ByteArrayInputStream is) {
+	public void feed(InputStream is) throws IOException {
 		if(!list)
 		{
 			int nameSize = 0;
@@ -21,7 +22,7 @@ public class NBTNamed extends NBTag{
 			byte[] n = new byte[nameSize];
 			try{
 				is.read(n);
-				name = new String(n, "UTF-8");
+				tagName = new String(n, "UTF-8");
 				//System.out.println("read tag named :"+name);
 			}
 			catch(Exception e)
@@ -31,19 +32,14 @@ public class NBTNamed extends NBTag{
 		}
 	}
 	
-	public NBTNamed getTag(String path)
+	public String getName()
 	{
-		/*if(path.equals("name"))
-		{
-			return this;
-		}*/
-		return this;
+		return tagName;
 	}
 
-	@Override
-	public void list(int i)
+	public void setNamedFromListIndex(int i)
 	{
-		name = i+"";
+		tagName = i+"";
 		list = true;
 	}
 

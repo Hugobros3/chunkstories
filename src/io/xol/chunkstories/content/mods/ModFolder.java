@@ -37,6 +37,11 @@ public class ModFolder extends ModImplementation
 		}
 	}
 	
+	public String toString()
+	{
+		return "[ModFolder: "+folder.getAbsolutePath()+"]";
+	}
+	
 	public ModFolder(File folder) throws ModLoadFailureException
 	{
 		this.folder = folder;
