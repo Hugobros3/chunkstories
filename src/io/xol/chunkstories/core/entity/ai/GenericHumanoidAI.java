@@ -18,6 +18,8 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 {
 	static Random rng = new Random();
 	
+	long counter = 0;
+	
 	public GenericHumanoidAI(EntityHumanoid entity)
 	{
 		super(entity);
@@ -25,17 +27,17 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 	}
 	
 	public void tick()
-	{
+	{	
 		if(entity.isDead())
 		{
 			//Dead entities shouldn't be moving
 			
-			//entity.getVelocityComponent().setVelocityX(0);
-			//entity.getVelocityComponent().setVelocityZ(0);
 			entity.getTargetVelocity().setX(0d);
 			entity.getTargetVelocity().setZ(0d);
 			return;
 		}
+		
+		counter++;
 		
 		if(currentTask != null)
 			currentTask.execute();
@@ -189,7 +191,6 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 		@Override
 		public void execute()
 		{
-			
 			if(entityFollowed == null || entityFollowed.isDead())
 			{
 				GenericHumanoidAI.this.setAiTask(previousTask);
@@ -219,15 +220,14 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			//entity.getVelocityComponent().setVelocityX(delta.getX());
 			//entity.getVelocityComponent().setVelocityZ(delta.getZ());
 			
-			//TODO fix autojump
-			/*if(((EntityHumanoid)entity).isOnGround())
+			if(((EntityHumanoid)entity).isOnGround())
 			{
-				if(		((EntityHumanoid)entity).collision_left || 
-						((EntityHumanoid)entity).collision_right || 
-						((EntityHumanoid)entity).collision_north || 
-						((EntityHumanoid)entity).collision_south)
-				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
-			}*/
+				Vector3dm rem = entity.canMoveWithCollisionRestrain(entity.getTargetVelocity());
+				rem.setY(0.0D);
+				
+				if(rem.length() > 0.001)
+					entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
+			}
 		}
 		
 	}
@@ -284,15 +284,14 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			//entity.getVelocityComponent().setVelocityX(delta.getX());
 			//entity.getVelocityComponent().setVelocityZ(delta.getZ());
 			
-			//TODO fix autojump
-			/*if(((EntityHumanoid)entity).isOnGround())
+			if(((EntityHumanoid)entity).isOnGround())
 			{
-				if(		((EntityHumanoid)entity).collision_left || 
-						((EntityHumanoid)entity).collision_right || 
-						((EntityHumanoid)entity).collision_north || 
-						((EntityHumanoid)entity).collision_south)
-				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
-			}*/
+				Vector3dm rem = entity.canMoveWithCollisionRestrain(entity.getTargetVelocity());
+				rem.setY(0.0D);
+				
+				if(rem.length() > 0.001)
+					entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
+			}
 		}
 		
 	}

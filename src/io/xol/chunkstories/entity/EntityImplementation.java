@@ -49,14 +49,14 @@ public abstract class EntityImplementation implements Entity
 
 	//Physics system info
 	//TODO: refactor this out
-	private boolean collision_top = false;
+	/*private boolean collision_top = false;
 	private boolean collision_bot = false;
 	private boolean collision_left = false;
 	private boolean collision_right = false;
 	private boolean collision_north = false;
 	private boolean collision_south = false;
 
-	private Vector3dm blockedMomentum = new Vector3dm();
+	private Vector3dm blockedMomentum = new Vector3dm();*/
 
 	//Hacky bullshit
 	protected Voxel voxelIn;
@@ -209,7 +209,8 @@ public abstract class EntityImplementation implements Entity
 		int id, data;
 
 		boolean collision = false;
-		if (writeCollisions)
+		
+		/*if (writeCollisions)
 		{
 			collision_top = false;
 			collision_bot = false;
@@ -217,7 +218,8 @@ public abstract class EntityImplementation implements Entity
 			collision_right = false;
 			collision_north = false;
 			collision_south = false;
-		}
+		}*/
+		
 		//Extract the current position
 		Vector3dm pos = new Vector3dm(from);
 
@@ -294,16 +296,16 @@ public abstract class EntityImplementation implements Entity
 													double south = Math.min((b.zpos + b.zw / 2.0 + checkerZ.zw / 2.0) - (pos.getZ()), 0.0d);
 													// System.out.println(left+" : "+(b.xpos+b.xw/2.0+checkerX.xw/2.0)+" : "+((b.xpos+b.xw/2.0+checkerX.xw/2.0)-(checkerX.xpos)));
 													pmz = south;
-													if (writeCollisions)
-														collision_south = true;
+													/*if (writeCollisions)
+														collision_south = true;*/
 												}
 												else
 												{
 													double north = Math.max((b.zpos - b.zw / 2.0 - checkerZ.zw / 2.0) - (pos.getZ()), 0.0d);
 													// System.out.println(right);
 													pmz = north;
-													if (writeCollisions)
-														collision_north = true;
+													/*if (writeCollisions)
+														collision_north = true;*/
 												}
 												vec.setZ(0d);
 												checkerZ = getCollisionBoxes()[r].translate(pos.getX(), pos.getY(), pos.getZ() + pmz);
@@ -344,16 +346,16 @@ public abstract class EntityImplementation implements Entity
 													double left = Math.min((b.xpos + b.xw / 2.0 + checkerX.xw / 2.0) - (pos.getX()), 0.0d);
 													// System.out.println(left+" : "+(b.xpos+b.xw/2.0+checkerX.xw/2.0)+" : "+((b.xpos+b.xw/2.0+checkerX.xw/2.0)-(checkerX.xpos)));
 													pmx = left;
-													if (writeCollisions)
-														collision_left = true;
+													/*if (writeCollisions)
+														collision_left = true;*/
 												}
 												else
 												{
 													double right = Math.max((b.xpos - b.xw / 2.0 - checkerX.xw / 2.0) - (pos.getX()), 0.0d);
 													// System.out.println(right);
 													pmx = right;
-													if (writeCollisions)
-														collision_right = true;
+													/*if (writeCollisions)
+														collision_right = true;*/
 												}
 												vec.setX(0d);
 												checkerX = getCollisionBoxes()[r].translate(pos.getX() + pmx, pos.getY(), pos.getZ());
@@ -391,16 +393,16 @@ public abstract class EntityImplementation implements Entity
 													double top = Math.min((b.ypos + b.h) - pos.getY(), 0.0d);
 													// System.out.println(top);
 													pmy = top;
-													if (writeCollisions)
-														collision_bot = true;
+													/*if (writeCollisions)
+														collision_bot = true;*/
 												}
 												else
 												{
 													double bot = Math.max((b.ypos) - (pos.getY() + checkerY.h), 0.0d);
 													// System.out.println(bot);
 													pmy = bot;
-													if (writeCollisions)
-														collision_top = true;
+													/*if (writeCollisions)
+														collision_top = true;*/
 												}
 												vec.setY(0d);
 												checkerY = getCollisionBoxes()[r].translate(pos.getX(), pos.getY() + pmy, pos.getZ());
@@ -422,8 +424,6 @@ public abstract class EntityImplementation implements Entity
 
 			if (Math.abs(distanceToTravel.getZ()) > Math.abs(maxDistanceToTravel.getZ()))
 				maxDistanceToTravel.setZ(distanceToTravel.getZ());
-
-			//System.out.println("cuck'd"+distanceToTravel);
 		}
 		//Set the new position after computations have been done
 

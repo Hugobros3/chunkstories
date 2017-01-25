@@ -211,11 +211,12 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			Vector2dm remaining2d = new Vector2dm(remainingToMove.getX(), remainingToMove.getZ());
 			
 			//Auto-step logic
-			if(remaining2d.length() > 0.0 && isOnGround())
+			if(remaining2d.length() > 0.001 && isOnGround())
 			{
 				//Cap max speed we can get through the bump ?
 				if (remaining2d.length() > 0.20d)
 				{
+					System.out.println("Too fast, capping");
 					remaining2d.normalize();
 					remaining2d.scale(0.20);
 				}
@@ -227,7 +228,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 				//Do it if possible
 				
 				//TODO remake proper
-				Vector3dm blockedMomentum = new Vector3dm(remainingToMove.getX(), 0, remainingToMove.getZ());
+				Vector3dm blockedMomentum = new Vector3dm(remaining2d.getX(), 0, remaining2d.getY());
 				for (double d = 0.25; d < 0.5; d += 0.05)
 				{
 					//I don't want any of this to reflect on the object, because it causes ugly jumps in the animation
@@ -253,6 +254,8 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 							afterJump.sub(landDistance);
 
 							this.setLocation(new Location(world, afterJump));
+							
+							remaining2d = new Vector2dm(blockedMomentumRemaining.getX(), blockedMomentumRemaining.getZ());
 							break;
 						}
 					}
@@ -262,7 +265,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			//Collisions, snap to axises
 			if (Math.abs(remaining2d.getX()) >= 0.001d)
 				velocity.setX(0d);
-			if (Math.abs(remaining2d.getX()) >= 0.001d)
+			if (Math.abs(remaining2d.getY()) >= 0.001d)
 				velocity.setZ(0d);
 			// Stap it
 			if (isOnGround() && velocity.getY() < 0)

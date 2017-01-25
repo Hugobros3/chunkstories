@@ -71,7 +71,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		{
 			RegionImplementation region = world.getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
 			
-			CubicChunk c = null;// new CubicChunk(region, chunkX, chunkY, chunkZ);
+			CubicChunk chunk = null;
 			
 			//In any client scenario we don't need to check for a chunk holder to be already present neither do we need
 			//to let it load.
@@ -79,6 +79,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			if(region == null)
 			{
 				System.out.println("Notice: received chunk data for a chunk within an unloaded region. Ignoring.");
+				return true;
 			}
 			
 			if (data != null)
@@ -91,32 +92,25 @@ public class IOTasksMultiplayerClient extends IOTasks
 					{
 						data[i] = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
 					}
-					c = new CubicChunk(region, chunkX, chunkY, chunkZ, data);
+					chunk = new CubicChunk(region, chunkX, chunkY, chunkZ, data);
 				}
 				catch (LZ4Exception exception)
 				{
-					c = new CubicChunk(region, chunkX, chunkY, chunkZ);
-					ChunkStoriesLogger.getInstance().warning("Invalid chunk data received for : " + c);
+					chunk = new CubicChunk(region, chunkX, chunkY, chunkZ);
+					ChunkStoriesLogger.getInstance().warning("Invalid chunk data received for : " + chunk);
 				}
 			}
 			else
-				c = new CubicChunk(region, chunkX, chunkY, chunkZ);
+				chunk = new CubicChunk(region, chunkX, chunkY, chunkZ);
 
-			c.bakeVoxelLightning(true);
+			chunk.bakeVoxelLightning(true);
 
 			//Remove any object preventing us from asking it again
 			//ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
 
-			world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ).getChunkHolder(chunkX, chunkY, chunkZ).setChunk(c);
+			world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ).getChunkHolder(chunkX, chunkY, chunkZ).setChunk(chunk);
 			return true;
 		}
-
-		/*@Override
-		public boolean equals(Object o)
-		{
-			//All packets are unique
-			return false;
-		}*/
 
 		@Override
 		public int hashCode()
