@@ -5,6 +5,7 @@ import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.Vector4;
 import io.xol.engine.math.lalgb.vector.Vector4m;
 import io.xol.engine.math.lalgb.vector.abs.Vector4am;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 public class Vector4dm extends Vector4am<Double>
 {
@@ -229,6 +230,12 @@ public class Vector4dm extends Vector4am<Double>
 			return (double)vec.getX() == (double)x && (double)vec.getY() == (double)y && (double)vec.getZ() == (double)z && (double)vec.getW() == (double)w;
 		}
 		return false;
+	}
+
+	@Override
+	public Vector4fm castToSinglePrecision()
+	{
+		return new Vector4fm(x, y, z, w);
 	}
 
 }

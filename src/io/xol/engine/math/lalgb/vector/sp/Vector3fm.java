@@ -3,6 +3,7 @@ package io.xol.engine.math.lalgb.vector.sp;
 import io.xol.engine.math.lalgb.vector.Vector2;
 import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.abs.Vector3am;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 public class Vector3fm extends Vector3am<Float>
 {
@@ -202,6 +203,12 @@ public class Vector3fm extends Vector3am<Float>
 			return (float)vec.getX() == (float)x && (float)vec.getY() == (float)y && (float)vec.getZ() == (float)z;
 		}
 		return false;
+	}
+
+	@Override
+	public Vector3dm castToDoublePrecision()
+	{
+		return new Vector3dm(x, y, z);
 	}
 
 }

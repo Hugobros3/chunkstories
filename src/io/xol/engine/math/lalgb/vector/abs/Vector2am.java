@@ -50,7 +50,7 @@ public abstract class Vector2am<T extends Number> implements Vector2m<T>
 		return this;
 	}
 
-	@Override
+	/*@Override
 	public Vector2m<Float> castToSinglePrecision()
 	{
 		return new Vector2fm(this);
@@ -60,7 +60,7 @@ public abstract class Vector2am<T extends Number> implements Vector2m<T>
 	public Vector2m<Double> castToDoublePrecision()
 	{
 		return new Vector2dm(this);
-	}
+	}*/
 
 	public String toString()
 	{

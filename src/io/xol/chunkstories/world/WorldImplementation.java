@@ -801,6 +801,20 @@ public abstract class WorldImplementation implements World
 
 		do
 		{
+			
+			//DDA steps
+			side = 0;
+			for (int i = 1; i < 3; ++i)
+			{
+				if (next[side] > next[i])
+				{
+					side = i;
+				}
+			}
+			next[side] += deltaDist[side];
+			voxelCoords[side] += step[side];
+			voxelDelta[side] += step[side];
+
 			x = voxelCoords[0];
 			y = voxelCoords[1];
 			z = voxelCoords[2];
@@ -841,19 +855,7 @@ public abstract class WorldImplementation implements World
 					}
 				}
 			}
-			//DDA steps
-			side = 0;
-			for (int i = 1; i < 3; ++i)
-			{
-				if (next[side] > next[i])
-				{
-					side = i;
-				}
-			}
-			next[side] += deltaDist[side];
-			voxelCoords[side] += step[side];
-			voxelDelta[side] += step[side];
-
+			
 			//distance += deltaDist[side];
 
 		}

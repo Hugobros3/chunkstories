@@ -155,10 +155,11 @@ public class EntitiesRenderer
 			
 			CollisionBox box = currentEntity.getTranslatedBoundingBox();
 			
-			if (renderingContext.isThisAShadowPass() || renderingContext.getCamera().isBoxInFrustrum(new Vector3fm(box.xpos - box.xw, box.ypos - box.h, box.zpos - box.zw), new Vector3fm(box.xw, box.h, box.zw)))
+			if (renderingContext.isThisAShadowPass() || renderingContext.getCamera().isBoxInFrustrum(box))//new Vector3fm(box.xpos - box.xw, box.ypos - box.h, box.zpos - box.zw), new Vector3fm(box.xw, box.h, box.zw)))
 			{
 				return true;
 			}
+			
 			//}
 			return false;
 		}

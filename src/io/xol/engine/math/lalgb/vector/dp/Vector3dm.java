@@ -4,6 +4,7 @@ import io.xol.engine.math.lalgb.vector.Vector2;
 import io.xol.engine.math.lalgb.vector.Vector2m;
 import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.abs.Vector3am;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 public class Vector3dm extends Vector3am<Double>
 {
@@ -11,8 +12,20 @@ public class Vector3dm extends Vector3am<Double>
 	{
 		this(0, 0, 0);
 	}
+	
+	public Vector3dm(Vector3dm vec)
+	{
+		this(vec.x, vec.y, vec.z);
+	}
 
-	public <N extends Number> Vector3dm(Vector3<N> vec)
+	public Vector3dm(double x, double y, double z)
+	{
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+	
+	/*public <N extends Number> Vector3dm(Vector3<N> vec)
 	{
 		this(vec.getX(), vec.getY(), vec.getZ());
 	}
@@ -31,7 +44,7 @@ public class Vector3dm extends Vector3am<Double>
 			this.y = (double)y;
 			this.z = (double)z;
 		}
-	}
+	}*/
 
 	public Vector3dm(double d)
 	{
@@ -196,5 +209,11 @@ public class Vector3dm extends Vector3am<Double>
 	public int hashCode()
 	{
 		return (int) (x * 10000 + y * 100 + z);
+	}
+
+	@Override
+	public Vector3fm castToSinglePrecision()
+	{
+		return new Vector3fm(x, y, z);
 	}
 }

@@ -5,6 +5,7 @@ import io.xol.engine.math.lalgb.vector.Vector3;
 import io.xol.engine.math.lalgb.vector.Vector4;
 import io.xol.engine.math.lalgb.vector.Vector4m;
 import io.xol.engine.math.lalgb.vector.abs.Vector4am;
+import io.xol.engine.math.lalgb.vector.dp.Vector4dm;
 
 public class Vector4fm extends Vector4am<Float>
 {
@@ -224,6 +225,11 @@ public class Vector4fm extends Vector4am<Float>
 	{
 		//No need to build objects
 		return this;
+	}
+	
+	public Vector4dm castToDoublePrecision()
+	{
+		return new Vector4dm(x, y, z, w);
 	}
 
 	public boolean equals(Object object)

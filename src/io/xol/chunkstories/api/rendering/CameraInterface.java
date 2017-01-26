@@ -8,6 +8,7 @@ import io.xol.chunkstories.physics.CollisionBox;
 //http://xol.io
 
 import io.xol.engine.math.lalgb.vector.Vector3;
+import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -26,7 +27,7 @@ public interface CameraInterface
 
 	public Vector3<Double> getCameraPosition();
 	
-	public void setCameraPosition(Vector3<?> pos);
+	public void setCameraPosition(Vector3dm pos);
 
 	public Vector3fm transform3DCoordinate(Vector3fm vector3f);
 }

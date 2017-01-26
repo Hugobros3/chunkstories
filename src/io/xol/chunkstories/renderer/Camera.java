@@ -237,6 +237,9 @@ public class Camera implements CameraInterface
 
 		Vector3m<Float> position = pos.castToSinglePrecision();
 		position = position.negate();
+		
+		//System.out.println(position);
+		
 		//Vector3fm position = new Vector3fm((float)-camPosX, (float)-camPosY, (float)-camPosZ);
 		
 		float rotH = rotationY;
@@ -523,7 +526,7 @@ public class Camera implements CameraInterface
 	}
 
 	@Override
-	public void setCameraPosition(Vector3<?> pos)
+	public void setCameraPosition(Vector3dm pos)
 	{
 		this.pos = new Vector3dm(pos).negate();
 	}
@@ -532,6 +535,6 @@ public class Camera implements CameraInterface
 	public boolean isBoxInFrustrum(CollisionBox box)
 	{
 		// TODO Auto-generated method stub
-		return this.isBoxInFrustrum(new Vector3fm(box.xpos - box.xw, box.ypos, box.zpos - box.zw), new Vector3fm(box.xw, box.h, box.zw));
+		return this.isBoxInFrustrum(new Vector3fm(box.xpos + box.xw / 2, box.ypos, box.zpos + box.zw / 2), new Vector3fm(box.xw, box.h, box.zw));
 	}
 }

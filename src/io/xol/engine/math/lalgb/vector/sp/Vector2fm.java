@@ -3,6 +3,7 @@ package io.xol.engine.math.lalgb.vector.sp;
 import io.xol.engine.math.lalgb.vector.Vector2;
 import io.xol.engine.math.lalgb.vector.Vector2m;
 import io.xol.engine.math.lalgb.vector.abs.Vector2am;
+import io.xol.engine.math.lalgb.vector.dp.Vector2dm;
 
 public class Vector2fm extends Vector2am<Float>
 {
@@ -22,7 +23,7 @@ public class Vector2fm extends Vector2am<Float>
 		this.y = value;
 	}
 	
-	public Vector2fm(Vector2<?> vec)
+	public Vector2fm(Vector2fm vec)
 	{
 		this((float)vec.getX(), (float)vec.getY());
 	}
@@ -120,6 +121,11 @@ public class Vector2fm extends Vector2am<Float>
 	{
 		//No need to build objects
 		return this;
+	}
+	
+	public Vector2dm castToDoublePrecision()
+	{
+		return new Vector2dm(this.getX(), this.getY());
 	}
 
 	public boolean equals(Object object)
