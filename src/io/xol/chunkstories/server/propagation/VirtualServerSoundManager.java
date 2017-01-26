@@ -15,6 +15,7 @@ import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.RemoteServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.sound.sources.SoundSourceVirtual;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -170,7 +171,7 @@ public class VirtualServerSoundManager implements SoundManager
 		}
 
 		@Override
-		public void setListenerPosition(float x, float y, float z, FloatBuffer rot)
+		public void setListenerPosition(float x, float y, float z, Vector3fm lookAt, Vector3fm up)
 		{
 			throw new UnsupportedOperationException("Irrelevant");
 		}
@@ -322,7 +323,7 @@ public class VirtualServerSoundManager implements SoundManager
 	}
 
 	@Override
-	public void setListenerPosition(float x, float y, float z, FloatBuffer rot)
+	public void setListenerPosition(float x, float y, float z, Vector3fm lookAt, Vector3fm up)
 	{
 	}
 

@@ -22,6 +22,7 @@ import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.sound.ogg.SoundDataOggSample;
 import io.xol.engine.sound.sources.ALBufferedSoundSource;
 import io.xol.engine.sound.sources.ALSoundSource;
@@ -121,7 +122,7 @@ public class ALSoundManager implements SoundManager
 	public float x, y, z;
 
 	@Override
-	public void setListenerPosition(float x, float y, float z, FloatBuffer rot)
+	public void setListenerPosition(float x, float y, float z, Vector3fm lookAt, Vector3fm up)
 	{
 		this.x = x;
 		this.y = y;
@@ -130,7 +131,11 @@ public class ALSoundManager implements SoundManager
 		posScratch.flip();
 		alListener(AL_POSITION, posScratch);
 		//AL10.alListener(AL10.AL_VELOCITY, xxx);
-		alListener(AL_ORIENTATION, rot);
+		
+
+		FloatBuffer rotScratch = BufferUtils.createFloatBuffer(3).put(new float[] { lookAt.getX(), lookAt.getY(), lookAt.getZ(), up.getX(), up.getY(), up.getZ() });
+		rotScratch.flip();
+		alListener(AL_ORIENTATION, rotScratch);
 		//FloatBuffer listenerOri = BufferUtils.createFloatBuffer(6).put(new float[] { 0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f });
 	}
 

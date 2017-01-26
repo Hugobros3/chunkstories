@@ -137,10 +137,5 @@ public interface SoundManager
 	 */
 	public abstract boolean setEffectForSlot(int slot, SoundEffect effect);
 
-	public abstract void setListenerPosition(float x, float y, float z, FloatBuffer rot);
-	
-	public default void setListenerPosition(double d, double e, double f, FloatBuffer listenerOrientation)
-	{
-		setListenerPosition((float)d, (float)e, (float)f, listenerOrientation);
-	}
+	public abstract void setListenerPosition(float x, float y, float z, Vector3fm lookAt, Vector3fm up);
 }

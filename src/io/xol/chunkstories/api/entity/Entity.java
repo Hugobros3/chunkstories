@@ -61,7 +61,7 @@ public interface Entity
 	
 	public Vector3dm moveWithCollisionRestrain(Vector3dm vec);
 	
-	public Vector3dm moveWithCollisionRestrain(double mx, double my, double mz, boolean writeCollisions);
+	public Vector3dm moveWithCollisionRestrain(double mx, double my, double mz);
 	
 	public Vector3dm canMoveWithCollisionRestrain(Vector3dm delta);
 	

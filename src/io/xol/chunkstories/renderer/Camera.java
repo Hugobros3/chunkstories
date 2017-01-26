@@ -86,11 +86,11 @@ public class Camera implements CameraInterface
 		VectorCrossProduct.cross33(lookAt, up, up);
 		VectorCrossProduct.cross33(up, lookAt, up);
 		
-		FloatBuffer listenerOrientation = getFloatBuffer(new float[]{
+		/*FloatBuffer listenerOrientation = getFloatBuffer(new float[]{
 				lookAt.getX(), lookAt.getY(), lookAt.getZ(), up.getX(), up.getY(), up.getZ()
-		});
+		});*/
 		//FloatBuffer listenerOrientation = getFloatBuffer(new float[] { (float) Math.sin(a) * 1 * (float) Math.cos(b), (float) Math.sin(b) * 1, (float) Math.cos(a) * 1 * (float) Math.cos(b), 0.0f, 1.0f, 0.0f });
-		Client.getInstance().getSoundManager().setListenerPosition(-pos.getX(), -pos.getY(), -pos.getZ(), listenerOrientation);
+		Client.getInstance().getSoundManager().setListenerPosition((float)-pos.getX(), (float)-pos.getY(), (float)-pos.getZ(), lookAt, up);
 	}
 
 	public float fov = 45;
@@ -192,35 +192,6 @@ public class Camera implements CameraInterface
 	}
 
 	CollisionPlane[] cameraPlanes = new CollisionPlane[6];
-	
-	/*public class FrustrumPlane {
-		float A, B, C, D;
-		Vector3fm n;
-		
-		public void setup(Vector3fm p1, Vector3fm p2, Vector3fm p3)
-		{
-			Vector3fm v = new Vector3fm(p2);
-			Vector3fm u = new Vector3fm(p3);
-			
-			v.sub(p1);
-			//Vector3fm.sub(p2, p1, v);
-			u.sub(p1);
-			//Vector3fm.sub(p3, p1, u);
-			n = new Vector3fm();
-			VectorCrossProduct.cross33(v, u, n);
-			n.normalize();
-			A = n.getX();
-			B = n.getY();
-			C = n.getZ();
-			//n.negate();
-			D = -p1.dot(n);
-		}
-		
-		public float distance(Vector3fm point)
-		{
-			return A * point.getX() + B * point.getY() + C * point.getZ() + D;
-		}
-	}*/
 	
 	private void computeFrustrumPlanes()
 	{

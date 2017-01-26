@@ -207,7 +207,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			}
 
 			//Eventually moves
-			Vector3dm remainingToMove = moveWithCollisionRestrain(velocity.getX(), velocity.getY(), velocity.getZ(), true);
+			Vector3dm remainingToMove = moveWithCollisionRestrain(velocity.getX(), velocity.getY(), velocity.getZ());
 			Vector2dm remaining2d = new Vector2dm(remainingToMove.getX(), remainingToMove.getZ());
 			
 			//Auto-step logic

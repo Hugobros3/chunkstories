@@ -17,6 +17,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -108,7 +109,7 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 		}
 
 		@Override
-		public void setListenerPosition(float x, float y, float z, FloatBuffer rot)
+		public void setListenerPosition(float x, float y, float z, Vector3fm lookAt, Vector3fm up)
 		{
 		}
 

@@ -52,7 +52,7 @@ public class EntityGroundItem extends EntityImplementation implements EntityRend
 	@Override
 	public void tick(WorldAuthority authority)
 	{
-		this.moveWithCollisionRestrain(0, -0.05, 0, true);
+		this.moveWithCollisionRestrain(0, -0.05, 0);
 		super.tick(authority);
 	}
 	

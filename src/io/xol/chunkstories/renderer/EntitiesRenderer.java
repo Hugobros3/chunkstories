@@ -14,7 +14,6 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

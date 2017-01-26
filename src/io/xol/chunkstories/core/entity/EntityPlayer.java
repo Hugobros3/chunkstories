@@ -396,7 +396,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			if (noclip)
 				moveWithoutCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b));
 			else
-				moveWithCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b), true);
+				moveWithCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b));
 		}
 		if (controller.getInputsManager().getInputByName("forward").isPressed())
 		{
@@ -405,7 +405,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			if (noclip)
 				moveWithoutCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b));
 			else
-				moveWithCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b), true);
+				moveWithCollisionRestrain(Math.sin(a) * camspeed * Math.cos(b), Math.sin(b) * camspeed, Math.cos(a) * camspeed * Math.cos(b));
 		}
 		if (controller.getInputsManager().getInputByName("right").isPressed())
 		{
@@ -413,7 +413,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			if (noclip)
 				moveWithoutCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed);
 			else
-				moveWithCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed, true);
+				moveWithCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed);
 		}
 		if (controller.getInputsManager().getInputByName("left").isPressed())
 		{
@@ -421,7 +421,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			if (noclip)
 				moveWithoutCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed);
 			else
-				moveWithCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed, true);
+				moveWithCollisionRestrain(-Math.sin(a) * camspeed, 0, -Math.cos(a) * camspeed);
 		}
 	}
 
