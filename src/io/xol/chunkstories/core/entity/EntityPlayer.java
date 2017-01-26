@@ -150,7 +150,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	public void tick(WorldAuthority authority)
 	{
 		//This is a controllable entity, take care of controlling
-		if (authority.isClient())
+		if (authority.isClient() && Client.getInstance().getClientSideController().getControlledEntity() == this)
 			tickClientController(Client.getInstance().getClientSideController());
 
 		//Tick item in hand if one such exists
