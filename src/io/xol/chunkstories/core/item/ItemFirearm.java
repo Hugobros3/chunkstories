@@ -326,8 +326,10 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 								//Get hit location
 								Vector3dm hitPoint = shotEntity.getTranslatedBoundingBox().lineIntersection(eyeLocation, direction);
 
+								System.out.println("c"+eyeLocation);
+								
 								//Deal damage
-								((EntityLiving) shotEntity).damage(shooter, (float) damage);
+								//((EntityLiving) shotEntity).damage(shooter, (float) damage);
 
 								//Spawn blood particles
 								Vector3dm bloodDir = direction.normalize().scale(0.25);

@@ -187,11 +187,14 @@ public class Ingame extends OverlayableScene
 					EntityLivingImplentation eli = (EntityLivingImplentation)e;
 					for(HitBox hitbox: eli.getHitboxes())
 					{
-						hitbox.draw(renderingContext);
+						//hitbox.draw(renderingContext);
 					}
 				}
 				
-				e.getTranslatedBoundingBox().debugDraw(0, 1, 1, 1);
+				if(e.getBoundingBox().lineIntersection(cameraPosition, camera.getViewDirection().castToDoublePrecision()) != null)
+					e.getTranslatedBoundingBox().debugDraw(0, 0, 0.5f, 1);
+				else
+					e.getTranslatedBoundingBox().debugDraw(0, 1, 1, 1);
 			}
 		}
 		
