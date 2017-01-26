@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTes
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
+import io.xol.engine.graphics.geometry.VerticesObject;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -101,5 +102,48 @@ public class OverlayRenderer
 		renderingContext.flush();
 		data.clear();
 		size = 0;
+	}
+	
+	static VerticesObject cube = null;
+	public static VerticesObject getCube()
+	{
+		if(cube == null)
+		{
+			cube = new VerticesObject();
+			float[] cubeData = new float[]{
+					//Base face
+					0.0f, 0.0f, 0.0f,
+					0.0f, 1.0f, 0.0f,
+					0.0f, 0.0f, 0.0f,
+					0.0f, 0.0f, 1.0f,
+					0.0f, 1.0f, 0.0f,
+					0.0f, 1.0f, 1.0f,
+					0.0f, 0.0f, 1.0f,
+					0.0f, 1.0f, 1.0f,
+					//Top face
+					1.0f, 0.0f, 0.0f,
+					1.0f, 1.0f, 0.0f,
+					1.0f, 0.0f, 0.0f,
+					1.0f, 0.0f, 1.0f,
+					1.0f, 1.0f, 0.0f,
+					1.0f, 1.0f, 1.0f,
+					1.0f, 0.0f, 1.0f,
+					1.0f, 1.0f, 1.0f,
+					//Vertical segments
+					0.0f, 0.0f, 0.0f,
+					1.0f, 0.0f, 0.0f,
+					0.0f, 0.0f, 1.0f,
+					1.0f, 0.0f, 1.0f,
+					0.0f, 1.0f, 0.0f,
+					1.0f, 1.0f, 0.0f,
+					0.0f, 1.0f, 1.0f,
+					1.0f, 1.0f, 1.0f,
+			};
+			FloatBuffer dataToUpload = BufferUtils.createFloatBuffer(cubeData.length);
+			dataToUpload.put(cubeData);
+			dataToUpload.flip();
+			cube.uploadData(dataToUpload);
+		}
+		return cube;
 	}
 }

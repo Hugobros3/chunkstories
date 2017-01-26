@@ -10,7 +10,11 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
+import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
@@ -22,12 +26,16 @@ import io.xol.chunkstories.core.entity.components.EntityComponentHealth;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.core.events.EntityDamageEvent;
 import io.xol.chunkstories.entity.EntityImplementation;
+import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.animation.SkeletonAnimator;
+import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.vector.dp.Vector2dm;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
+import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -55,6 +63,77 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 
 		entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
 		entityHealthComponent = new EntityComponentHealth(this, getStartHealth());
+	}
+	
+	public class HitBox {
+		
+		CollisionBox box;
+		String skeletonPart;
+		
+		public HitBox(CollisionBox box, String skeletonPart)
+		{
+			this.box = box;
+			this.skeletonPart = skeletonPart;
+		}
+		
+		public void draw(RenderingInterface context)
+		{
+			if(!context.currentShader().getShaderName().equals("overlay"))
+			{
+				context.useShader("overlay");
+				context.getCamera().setupShader(context.currentShader());
+			}
+			
+			context.currentShader().setUniform1i("doTransform", 1);
+			
+			Matrix4f boneTransormation = EntityLivingImplentation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000);
+			
+			if(boneTransormation == null)
+				return;
+
+			Matrix4f worldPositionTransformation = new Matrix4f();
+			Vector3fm pos = EntityLivingImplentation.this.getLocation().castToSinglePrecision();
+			worldPositionTransformation.translate(pos);
+			
+			boneTransormation.multiply(worldPositionTransformation);
+			boneTransormation.translate(new Vector3fm(box.xpos, box.ypos, box.zpos));
+			boneTransormation.scale(new Vector3fm(box.xw, box.h, box.zw));
+
+			context.currentShader().setUniformMatrix4f("transform", boneTransormation);
+			context.unbindAttributes();
+			context.bindAttribute("vertexIn", OverlayRenderer.getCube().asAttributeSource(VertexFormat.FLOAT, 3));
+
+			context.currentShader().setUniform4f("colorIn", 0.0, 1.0, 0.0, 1.0);
+
+			//context.setCullingMode(CullingMode.DISABLED);
+			//context.setBlendMode(BlendMode.MIX);
+			//context.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+			
+			context.draw(Primitive.LINE, 0, 24);
+			context.currentShader().setUniform1i("doTransform", 0);
+		}
+	}
+	
+	HitBox[] hitboxes = {new HitBox(new CollisionBox(1.0, 1.0, 1.0), "prout")};
+	
+	public HitBox[] getHitboxes()
+	{
+		return new HitBox[]{
+				new HitBox(new CollisionBox(-0.15, 0.0, -0.25, 0.30, 0.675, 0.5), "boneTorso"),
+				new HitBox(new CollisionBox(-0.25, 0.0, -0.25, 0.5, 0.5, 0.5), "boneHead"),
+				new HitBox(new CollisionBox(-0.1, -0.375, -0.1, 0.2, 0.375, 0.2), "boneArmRU"),
+				new HitBox(new CollisionBox(-0.1, -0.375, -0.1, 0.2, 0.375, 0.2), "boneArmLU"),
+				new HitBox(new CollisionBox(-0.1, -0.3, -0.1, 0.2, 0.3, 0.2), "boneArmRD"),
+				new HitBox(new CollisionBox(-0.1, -0.3, -0.1, 0.2, 0.3, 0.2), "boneArmLD"),
+				new HitBox(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegRU"),
+				new HitBox(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegLU"),
+				new HitBox(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegRD"),
+				new HitBox(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegLD"),
+				new HitBox(new CollisionBox(-0.15, -0.075, -0.125, 0.35, 0.075, 0.25), "boneFootL"),
+				new HitBox(new CollisionBox(-0.15, -0.075, -0.125, 0.35, 0.075, 0.25), "boneFootR"),
+				
+		};
+		//return hitboxes;
 	}
 
 	@Override
