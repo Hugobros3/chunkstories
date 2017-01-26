@@ -12,9 +12,6 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
@@ -36,6 +33,7 @@ import io.xol.engine.math.lalgb.vector.dp.Vector2dm;
 import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -104,13 +102,65 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			context.bindAttribute("vertexIn", OverlayRenderer.getCube().asAttributeSource(VertexFormat.FLOAT, 3));
 
 			context.currentShader().setUniform4f("colorIn", 0.0, 1.0, 0.0, 1.0);
-
-			//context.setCullingMode(CullingMode.DISABLED);
-			//context.setBlendMode(BlendMode.MIX);
-			//context.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+			//Check for intersection with player
+			EntityControllable ec = Client.getInstance().getClientSideController().getControlledEntity();
+			if(lineIntersection((Vector3dm) context.getCamera().getCameraPosition(), ((EntityPlayer)ec).getDirectionLookingAt()) != null)
+				context.currentShader().setUniform4f("colorIn", 1.0, 0.0, 0.0, 1.0);
 			
 			context.draw(Primitive.LINE, 0, 24);
 			context.currentShader().setUniform1i("doTransform", 0);
+		}
+
+		public Vector3dm lineIntersection(Vector3dm lineStart, Vector3dm lineDirection)
+		{
+			Matrix4f fromAABBToWorld = EntityLivingImplentation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000);
+		
+			//Fuck off if this has issues
+			if(fromAABBToWorld == null)
+				return null;
+
+			Matrix4f worldPositionTransformation = new Matrix4f();
+			Vector3fm pos = EntityLivingImplentation.this.getLocation().castToSinglePrecision();
+			worldPositionTransformation.translate(pos);
+			
+			//Creates from AABB space to worldspace
+			fromAABBToWorld.multiply(worldPositionTransformation);
+			fromAABBToWorld.translate(new Vector3fm(box.xpos, box.ypos, box.zpos));
+			fromAABBToWorld.scale(new Vector3fm(box.xw, box.h, box.zw));
+			
+			//Invert it.
+			Matrix4f fromWorldToAABB = new Matrix4f();
+			Matrix4f.invert(fromAABBToWorld, fromWorldToAABB);
+			
+			//Transform line start into AABB space
+			Vector4fm lineStart4 = new Vector4fm(lineStart.getX(), lineStart.getY(), lineStart.getZ(), 1.0f);
+			Vector4fm lineDirection4 = new Vector4fm(lineDirection.getX(), lineDirection.getY(), lineDirection.getZ(), 0.0f);
+			
+			//System.out.println(skeletonPart);
+			
+			//System.out.println(lineStart4+":"+lineDirection4);
+			
+			Matrix4f.transform(fromWorldToAABB, lineStart4, lineStart4);
+			Matrix4f.transform(fromWorldToAABB, lineDirection4, lineDirection4);
+
+			//System.out.println(lineStart4+":"+lineDirection4);
+			
+			Vector3dm lineStartTransformed = new Vector3dm(lineStart4.getX(), lineStart4.getY(), lineStart4.getZ());
+			Vector3dm lineDirectionTransformed = new Vector3dm(lineDirection4.getX(), lineDirection4.getY(), lineDirection4.getZ());
+			
+			Vector3dm hitPoint = box.lineIntersection(lineStartTransformed, lineDirectionTransformed);
+			
+			//System.out.println(hitPoint);
+			
+			if(hitPoint == null)
+				return null;
+			
+			//Transform hitPoint back into world
+			Vector4fm hitPoint4 = new Vector4fm(hitPoint.getX(), hitPoint.getY(), hitPoint.getZ(), 0.0f);
+			Matrix4f.transform(fromAABBToWorld, hitPoint4, hitPoint4);
+			
+			hitPoint.set((double)(float)hitPoint4.getX(), (double)(float)hitPoint4.getY(), (double)(float)hitPoint4.getZ());
+			return hitPoint;
 		}
 	}
 	
