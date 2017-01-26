@@ -534,7 +534,8 @@ public class Camera implements CameraInterface
 	@Override
 	public boolean isBoxInFrustrum(CollisionBox box)
 	{
-		// TODO Auto-generated method stub
-		return this.isBoxInFrustrum(new Vector3fm(box.xpos + box.xw / 2, box.ypos, box.zpos + box.zw / 2), new Vector3fm(box.xw, box.h, box.zw));
+		//if(box.xw < 128)
+		//System.out.println(box);
+		return this.isBoxInFrustrum(new Vector3fm(box.xpos + box.xw / 2, box.ypos + box.h / 2, box.zpos + box.zw / 2), new Vector3fm(box.xw, box.h, box.zw));
 	}
 }

@@ -133,11 +133,7 @@ public class EntitiesRenderer
 				//TODO instancing friendly
 				//renderingContext.currentShader().setUniform3f("objectPosition", currentEntity.getLocation());
 				renderingContext.currentShader().setUniform2f("worldLightIn", world.getBlocklightLevelLocation(currentEntity.getLocation()), world.getSunlightLevelLocation(currentEntity.getLocation()));
-			
-				//Reset animations transformations ( defunc )
 				
-				//renderingContext.currentShader().setUniformMatrix4f("localTansform", new Matrix4f());
-				//renderingContext.currentShader().setUniformMatrix3f("localTransformNormal", new Matrix3f());
 			}
 
 			currentEntity = null;
