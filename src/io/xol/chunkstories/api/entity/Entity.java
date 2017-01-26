@@ -141,5 +141,7 @@ public interface Entity
 	public boolean unsubscribe(Subscriber subscriber);
 	
 	public EntityComponent getComponents();
+
+	public CollisionBox[] getCollisionBoxes();
 	
 }

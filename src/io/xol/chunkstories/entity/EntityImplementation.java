@@ -418,7 +418,7 @@ public abstract class EntityImplementation implements Entity
 		return new CollisionBox(1.0, 1.0, 1.0).translate(-0.5, 0, -0.5);
 	}
 
-	private CollisionBox[] getCollisionBoxes()
+	public CollisionBox[] getCollisionBoxes()
 	{
 		return new CollisionBox[]{ getBoundingBox() };
 	}

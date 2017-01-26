@@ -418,8 +418,15 @@ public abstract class EntityHumanoid extends EntityLivingImplentation implements
 	@Override
 	public CollisionBox getBoundingBox()
 	{
+		if(isDead())
+			return new CollisionBox(1.6, 1.0, 1.6).translate(-0.8, 0.0, -0.8);
 		//Have it centered
-		return new CollisionBox(0.5, 1.90, 0.5).translate(-0.25, 0.0, -0.25);
+		return new CollisionBox(1.0, 2.0, 1.0).translate(-0.5, 0.0, -0.5);
+	}
+
+	public CollisionBox[] getCollisionBoxes()
+	{
+		return new CollisionBox[]{ new CollisionBox(0.8, 1.9, 0.8).translate(-0.4, 0.0, -0.4) };
 	}
 
 	@Override

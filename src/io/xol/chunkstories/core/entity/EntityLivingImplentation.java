@@ -125,8 +125,8 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			
 			//Creates from AABB space to worldspace
 			fromAABBToWorld.multiply(worldPositionTransformation);
-			fromAABBToWorld.translate(new Vector3fm(box.xpos, box.ypos, box.zpos));
-			fromAABBToWorld.scale(new Vector3fm(box.xw, box.h, box.zw));
+			//fromAABBToWorld.translate(new Vector3fm(box.xpos, box.ypos, box.zpos));
+			//fromAABBToWorld.scale(new Vector3fm(box.xw, box.h, box.zw));
 			
 			//Invert it.
 			Matrix4f fromWorldToAABB = new Matrix4f();
