@@ -33,7 +33,9 @@ public class Camera implements CameraInterface
 	public float rotationY = 0.0f;
 	public float rotationZ = 0.0f;
 	//Camera positions
-	private Vector3dm pos = new Vector3dm();
+	
+	private Vector3dm position = new Vector3dm();
+	//private Vector3dm pos = new Vector3dm();
 	
 	//Mouse pointer tracking
 	float lastPX = -1f;
@@ -86,11 +88,7 @@ public class Camera implements CameraInterface
 		VectorCrossProduct.cross33(lookAt, up, up);
 		VectorCrossProduct.cross33(up, lookAt, up);
 		
-		/*FloatBuffer listenerOrientation = getFloatBuffer(new float[]{
-				lookAt.getX(), lookAt.getY(), lookAt.getZ(), up.getX(), up.getY(), up.getZ()
-		});*/
-		//FloatBuffer listenerOrientation = getFloatBuffer(new float[] { (float) Math.sin(a) * 1 * (float) Math.cos(b), (float) Math.sin(b) * 1, (float) Math.cos(a) * 1 * (float) Math.cos(b), 0.0f, 1.0f, 0.0f });
-		Client.getInstance().getSoundManager().setListenerPosition((float)-pos.getX(), (float)-pos.getY(), (float)-pos.getZ(), lookAt, up);
+		Client.getInstance().getSoundManager().setListenerPosition((float)(double)position.getX(), (float)(double)position.getY(), (float)(double)position.getZ(), lookAt, up);
 	}
 
 	public float fov = 45;
@@ -165,8 +163,7 @@ public class Camera implements CameraInterface
 		modelViewMatrix4f.rotate((float) (rotationX / 180 * Math.PI), new Vector3fm( 1.0f, 0.0f, 0.0f));
 		modelViewMatrix4f.rotate((float) (rotationY / 180 * Math.PI), new Vector3fm( 0.0f, 1.0f, 0.0f));
 		
-		Vector3m<Float> position = pos.castToSinglePrecision();
-		position = position.negate();
+		Vector3m<Float> position = this.position.castToSinglePrecision();
 		
 		float rotH = rotationY;
 		float rotV = rotationX;
@@ -206,8 +203,8 @@ public class Camera implements CameraInterface
 		
 		// Recreate the 3 vectors for the algorithm
 
-		Vector3m<Float> position = pos.castToSinglePrecision();
-		position = position.negate();
+		//Vector3m<Float> position = pos.castToSinglePrecision();
+		//position = position.negate();
 		
 		//System.out.println(position);
 		
@@ -223,7 +220,7 @@ public class Camera implements CameraInterface
 		VectorCrossProduct.cross33(lookAt, up, up);
 		VectorCrossProduct.cross33(up, lookAt, up);
 		
-		lookAt.add(position);
+		lookAt.add(position.castToSinglePrecision());
 		//Vector3fm.add(position, lookAt, lookAt);
 		
 		// Create the 6 frustrum planes
@@ -405,7 +402,7 @@ public class Camera implements CameraInterface
 		untranslatedMVP4f.load(modelViewMatrix4f);
 		Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
 
-		modelViewMatrix4f.translate(pos.castToSinglePrecision());
+		modelViewMatrix4f.translate(position.clone().negate().castToSinglePrecision());
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
 	}
@@ -493,13 +490,15 @@ public class Camera implements CameraInterface
 	@Override
 	public Vector3dm getCameraPosition()
 	{
-		return this.pos.clone().negate();
+		return this.position.clone();
+		//return this.pos.clone().negate();
 	}
 
 	@Override
 	public void setCameraPosition(Vector3dm pos)
 	{
-		this.pos = new Vector3dm(pos).negate();
+		this.position = pos;
+		//this.pos = new Vector3dm(pos).negate();
 	}
 
 	@Override

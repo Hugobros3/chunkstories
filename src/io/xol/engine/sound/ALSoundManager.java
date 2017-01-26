@@ -133,7 +133,7 @@ public class ALSoundManager implements SoundManager
 		//AL10.alListener(AL10.AL_VELOCITY, xxx);
 		
 
-		FloatBuffer rotScratch = BufferUtils.createFloatBuffer(3).put(new float[] { lookAt.getX(), lookAt.getY(), lookAt.getZ(), up.getX(), up.getY(), up.getZ() });
+		FloatBuffer rotScratch = BufferUtils.createFloatBuffer(6).put(new float[] { lookAt.getX(), lookAt.getY(), lookAt.getZ(), up.getX(), up.getY(), up.getZ() });
 		rotScratch.flip();
 		alListener(AL_ORIENTATION, rotScratch);
 		//FloatBuffer listenerOri = BufferUtils.createFloatBuffer(6).put(new float[] { 0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f });
