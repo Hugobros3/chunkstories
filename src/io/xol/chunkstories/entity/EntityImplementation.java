@@ -337,7 +337,7 @@ public abstract class EntityImplementation implements Entity
 				//Y-part
 				checkerY = getCollisionBoxes()[r].translate(pos.getX(), pos.getY() + stepDistanceY, pos.getZ());
 				for(int i = (int)Math.floor(pos.getX()) - 1; i < (int)Math.ceil(pos.getX() + checkerZ.xw); i++)
-					for(int j = (int)Math.floor(pos.getY()) - 1; j < (int)Math.ceil(pos.getY() + checkerZ.h); j++)
+					for(int j = (int)Math.floor(pos.getY()) - 1; j < (int)Math.ceil(pos.getY() + checkerZ.h) + 1; j++)
 						for(int k = (int)Math.floor(pos.getZ()) - 1; k < (int)Math.ceil(pos.getZ() + checkerZ.zw); k++)
 						{
 							data = this.world.getVoxelData(i, j, k);

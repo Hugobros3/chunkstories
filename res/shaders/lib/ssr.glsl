@@ -117,6 +117,16 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 		vec4 pixelMeta = texture(metaBuffer, finalSamplePos);
 		
 		color = computeLight(color, decodeNormal(pixelNormal), cameraSpacePosition, pixelMeta, pixelNormal.z);
+		
+		// Apply fog
+		vec3 sum = (cameraSpacePosition.xyz);
+		float dist = length(sum)-fogStartDistance;
+		float fogFactor = (dist) / (fogEndDistance-fogStartDistance);
+		float fogIntensity = clamp(fogFactor, 0.0, 1.0);
+		
+		vec3 fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz - camPos).xyz));
+		
+		color = mix(color, vec4(fogColor,color.a), fogIntensity);
 	}
 	return color;
 }
