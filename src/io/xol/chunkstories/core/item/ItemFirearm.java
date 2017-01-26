@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.entity.EntityLiving.HitBox;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
@@ -161,7 +162,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 					{
 						//Play sounds
 						if (controller != null)
-							controller.getSoundManager().playSoundEffect("sounds/dogez/weapon/default/dry.ogg", owner.getLocation(), 1.0f, 1.0f, 1f, (float)soundRange);
+							controller.getSoundManager().playSoundEffect("sounds/dogez/weapon/default/dry.ogg", owner.getLocation(), 1.0f, 1.0f, 1f, (float) soundRange);
 						//Dry.ogg
 						//return;
 					}
@@ -170,13 +171,13 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 						//Fire virtual input
 						//ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
 						//Client.getInstance().getPluginManager().fireEvent(event);
-						
+
 						Client.getInstance().getInputsManager().onInputPressed(controller.getInputsManager().getInputByName("shootGun"));
-						
+
 						lastShot = System.currentTimeMillis();
 					}
 				}
-				
+
 				isScoped = this.isScopedWeapon() && controller.getInputsManager().getInputByName("mouse.right").isPressed();
 
 				wasTriggerPressedLastTick = controller.getInputsManager().getInputByName("mouse.left").isPressed();
@@ -212,7 +213,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 						//Dry.ogg
 						return true;
 					}
-					else if(!(user instanceof EntityCreative && ((EntityCreative) user).isCreativeMode()))
+					else if (!(user instanceof EntityCreative && ((EntityCreative) user).isCreativeMode()))
 					{
 						consumeBullet(pile);
 					}
@@ -229,13 +230,16 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 				if (controller != null)
 				{
 					//controller.getSoundManager().playSoundEffect(this.soundName, user.getLocation(), 1.0f, 1.0f).setAttenuationEnd((float) soundRange);
-					
-					controller.getSoundManager().playSoundEffect(this.soundName, (float)(double)user.getLocation().getX(), (float)(double)user.getLocation().getY(), (float)(double)user.getLocation().getZ(), 1.0f, 1.0f, 1.0f, (float) soundRange);
+
+					controller.getSoundManager().playSoundEffect(this.soundName, (float) (double) user.getLocation().getX(), (float) (double) user.getLocation().getY(), (float) (double) user.getLocation().getZ(), 1.0f, 1.0f, 1.0f,
+							(float) soundRange);
 
 				}
-				
+
 				//Raytrace shot
 				Vector3dm eyeLocation = new Vector3dm(shooter.getLocation());
+				//eyeLocation.add(0.25, 0.0, 0.25);
+
 				if (shooter instanceof EntityPlayer)
 					eyeLocation.add(new Vector3dm(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
 
@@ -272,7 +276,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 
 							//This seems fine
 
-							for (CollisionBox box : voxel.getTranslatedCollisionBoxes(user.getWorld(), (int)(double) shotBlock.getX(), (int)(double) shotBlock.getY(), (int)(double) shotBlock.getZ()))
+							for (CollisionBox box : voxel.getTranslatedCollisionBoxes(user.getWorld(), (int) (double) shotBlock.getX(), (int) (double) shotBlock.getY(), (int) (double) shotBlock.getZ()))
 							{
 								Vector3dm thisLocation = box.lineIntersection(eyeLocation, direction);
 								if (thisLocation != null)
@@ -302,16 +306,16 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 								untouchedReflection.scale(0.25);
 
 								Vector3dm ppos = new Vector3dm(nearestLocation);
-								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);	
-								
+								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
+
 								controller.getSoundManager().playSoundEffect(VoxelsStore.get().getVoxelById(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.05f);
-								
+
 							}
 
 							controller.getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3dm(0.5), "bullethole");
 						}
 					}
-
+					
 					//Hitreg takes place on server bois
 					if (shooter.getWorld() instanceof WorldMaster)
 					{
@@ -323,28 +327,35 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 							//Don't shoot itself & only living things get shot
 							if (!shotEntity.equals(shooter) && shotEntity instanceof EntityLiving)
 							{
-								//Get hit location
-								Vector3dm hitPoint = shotEntity.getTranslatedBoundingBox().lineIntersection(eyeLocation, direction);
-
-								System.out.println("c"+eyeLocation);
 								
-								//Deal damage
-								//((EntityLiving) shotEntity).damage(shooter, (float) damage);
-
-								//Spawn blood particles
-								Vector3dm bloodDir = direction.normalize().scale(0.25);
-								for (int i = 0; i < 250; i++)
+								//Get hit location
+								for (HitBox hitBox : ((EntityLiving) shotEntity).getHitBoxes())
 								{
-									Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
-									random.scale(0.25);
-									random.add(bloodDir);
+									Vector3dm hitPoint = hitBox.lineIntersection(eyeLocation, direction);
+									
+									if(hitPoint == null)
+										continue;
 
-									shooter.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("blood", hitPoint, random);
+									//System.out.println("shot" + hitBox.getName());
+
+									//Deal damage
+									((EntityLiving) shotEntity).damage(shooter, hitBox, (float) damage);
+
+									//Spawn blood particles
+									Vector3dm bloodDir = direction.normalize().scale(0.25);
+									for (int i = 0; i < 250; i++)
+									{
+										Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+										random.scale(0.25);
+										random.add(bloodDir);
+
+										shooter.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("blood", hitPoint, random);
+									}
+
+									//Spawn blood on walls
+									if (nearestLocation != null)
+										shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3dm(3.0), "blood");
 								}
-
-								//Spawn blood on walls
-								if (nearestLocation != null)
-									shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3dm(3.0), "blood");
 							}
 						}
 					}

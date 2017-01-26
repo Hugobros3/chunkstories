@@ -43,13 +43,13 @@ public class EntityRayIterator implements Iterator<Entity>
 				if(direction.dot(toEntity) > 0)
 				{
 					//Line collision checks
-					
+					//System.out.println(initialPosition);
 					//If it collides with the ray at some point
 					if(entity.getTranslatedBoundingBox().lineIntersection(initialPosition, direction) != null)
 					{
-						System.out.println(entity+""+initialPosition);
+						//System.out.println(entity+""+initialPosition);
 						sortedEntities.add(entity);
-						break;
+						//break;
 					}
 					
 				}

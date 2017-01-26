@@ -22,6 +22,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.entity.EntityLiving.HitBox;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
@@ -39,8 +40,8 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.core.entity.EntityLivingImplentation;
-import io.xol.chunkstories.core.entity.EntityLivingImplentation.HitBox;
+import io.xol.chunkstories.core.entity.EntityLivingImplementation;
+import io.xol.chunkstories.core.entity.EntityLivingImplementation.HitBoxImpl;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.CameraSetupEvent;
 import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
@@ -182,19 +183,22 @@ public class Ingame extends OverlayableScene
 			{
 				Entity e = ie.next();
 				
-				if(e instanceof EntityLivingImplentation)
+				if(e instanceof EntityLiving)
 				{
-					EntityLivingImplentation eli = (EntityLivingImplentation)e;
-					for(HitBox hitbox: eli.getHitboxes())
+					EntityLiving eli = (EntityLiving)e;
+					for(HitBox hitbox: eli.getHitBoxes())
 					{
 						hitbox.draw(renderingContext);
 					}
 				}
 				
-				//if(e.getTranslatedBoundingBox().lineIntersection(cameraPosition, camera.getViewDirection().castToDoublePrecision()) != null)
-				//	e.getTranslatedBoundingBox().debugDraw(0, 0, 0.5f, 1);
-				//else
-				e.getTranslatedBoundingBox().debugDraw(0, 1, 1, 1);
+				if(e.getTranslatedBoundingBox().lineIntersection(cameraPosition, camera.getViewDirection().castToDoublePrecision()) != null)
+					e.getTranslatedBoundingBox().debugDraw(0, 0, 0.5f, 1);
+				else
+					e.getTranslatedBoundingBox().debugDraw(0, 1, 1, 1);
+				
+				//[Vector3dm x:67.29906576230833 y:23.65 z:28.805621056886654]
+				//System.out.println(cameraPosition);
 				
 				for(CollisionBox box : e.getCollisionBoxes())
 				{

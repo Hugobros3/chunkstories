@@ -39,7 +39,7 @@ import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 //http://chunkstories.xyz
 //http://xol.io
 
-public abstract class EntityLivingImplentation extends EntityImplementation implements EntityLiving
+public abstract class EntityLivingImplementation extends EntityImplementation implements EntityLiving
 {
 	//Head/body rotation
 	EntityComponentRotation entityRotationComponent;
@@ -51,11 +51,11 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 	private EntityComponentHealth entityHealthComponent;
 	private long damageCooldown = 0;
 	private DamageCause lastDamageCause;
-	long deathDespawnTimer = 600;
+	long deathDespawnTimer = 6000;
 
 	protected SkeletonAnimator animatedSkeleton;
 
-	public EntityLivingImplentation(World world, double x, double y, double z)
+	public EntityLivingImplementation(World world, double x, double y, double z)
 	{
 		super(world, x, y, z);
 
@@ -63,12 +63,12 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 		entityHealthComponent = new EntityComponentHealth(this, getStartHealth());
 	}
 	
-	public class HitBox {
+	public class HitBoxImpl implements HitBox {
 		
 		CollisionBox box;
 		String skeletonPart;
 		
-		public HitBox(CollisionBox box, String skeletonPart)
+		public HitBoxImpl(CollisionBox box, String skeletonPart)
 		{
 			this.box = box;
 			this.skeletonPart = skeletonPart;
@@ -84,16 +84,18 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			
 			context.currentShader().setUniform1i("doTransform", 1);
 			
-			Matrix4f boneTransormation = EntityLivingImplentation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000);
+			Matrix4f boneTransormation = EntityLivingImplementation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000);
 			
 			if(boneTransormation == null)
 				return;
 
 			Matrix4f worldPositionTransformation = new Matrix4f();
-			Vector3fm pos = EntityLivingImplentation.this.getLocation().castToSinglePrecision();
+			Vector3fm pos = EntityLivingImplementation.this.getLocation().castToSinglePrecision();
 			worldPositionTransformation.translate(pos);
 			
 			boneTransormation.multiply(worldPositionTransformation);
+			
+			//Scales/moves the identity box to reflect collisionBox shape
 			boneTransormation.translate(new Vector3fm(box.xpos, box.ypos, box.zpos));
 			boneTransormation.scale(new Vector3fm(box.xw, box.h, box.zw));
 
@@ -113,20 +115,18 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 
 		public Vector3dm lineIntersection(Vector3dm lineStart, Vector3dm lineDirection)
 		{
-			Matrix4f fromAABBToWorld = EntityLivingImplentation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000);
+			Matrix4f fromAABBToWorld = EntityLivingImplementation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000);
 		
 			//Fuck off if this has issues
 			if(fromAABBToWorld == null)
 				return null;
 
 			Matrix4f worldPositionTransformation = new Matrix4f();
-			Vector3fm pos = EntityLivingImplentation.this.getLocation().castToSinglePrecision();
+			Vector3fm pos = EntityLivingImplementation.this.getLocation().castToSinglePrecision();
 			worldPositionTransformation.translate(pos);
 			
 			//Creates from AABB space to worldspace
 			fromAABBToWorld.multiply(worldPositionTransformation);
-			//fromAABBToWorld.translate(new Vector3fm(box.xpos, box.ypos, box.zpos));
-			//fromAABBToWorld.scale(new Vector3fm(box.xw, box.h, box.zw));
 			
 			//Invert it.
 			Matrix4f fromWorldToAABB = new Matrix4f();
@@ -162,28 +162,12 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			hitPoint.set((double)(float)hitPoint4.getX(), (double)(float)hitPoint4.getY(), (double)(float)hitPoint4.getZ());
 			return hitPoint;
 		}
-	}
-	
-	HitBox[] hitboxes = {new HitBox(new CollisionBox(1.0, 1.0, 1.0), "prout")};
-	
-	public HitBox[] getHitboxes()
-	{
-		return new HitBox[]{
-				new HitBox(new CollisionBox(-0.15, 0.0, -0.25, 0.30, 0.675, 0.5), "boneTorso"),
-				new HitBox(new CollisionBox(-0.25, 0.0, -0.25, 0.5, 0.5, 0.5), "boneHead"),
-				new HitBox(new CollisionBox(-0.1, -0.375, -0.1, 0.2, 0.375, 0.2), "boneArmRU"),
-				new HitBox(new CollisionBox(-0.1, -0.375, -0.1, 0.2, 0.375, 0.2), "boneArmLU"),
-				new HitBox(new CollisionBox(-0.1, -0.3, -0.1, 0.2, 0.3, 0.2), "boneArmRD"),
-				new HitBox(new CollisionBox(-0.1, -0.3, -0.1, 0.2, 0.3, 0.2), "boneArmLD"),
-				new HitBox(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegRU"),
-				new HitBox(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegLU"),
-				new HitBox(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegRD"),
-				new HitBox(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegLD"),
-				new HitBox(new CollisionBox(-0.15, -0.075, -0.125, 0.35, 0.075, 0.25), "boneFootL"),
-				new HitBox(new CollisionBox(-0.15, -0.075, -0.125, 0.35, 0.075, 0.25), "boneFootR"),
-				
-		};
-		//return hitboxes;
+
+		@Override
+		public String getName()
+		{
+			return skeletonPart;
+		}
 	}
 
 	@Override
@@ -217,6 +201,12 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 
 	@Override
 	public float damage(DamageCause cause, float damage)
+	{
+		return damage(cause, null, damage);
+	}
+	
+	@Override
+	public float damage(DamageCause cause, HitBox osef, float damage)
 	{
 		if (damageCooldown > System.currentTimeMillis())
 			return 0f;
@@ -507,7 +497,7 @@ public abstract class EntityLivingImplentation extends EntityImplementation impl
 			//	dataSource.getBoneHierarchyTransformationMatrixWithOffset(nameOfEndBone, animationTime);
 
 			//Don't mess with the client
-			if (Client.getInstance() != null && Client.getInstance().getClientSideController().getControlledEntity() == EntityLivingImplentation.this)
+			if (Client.getInstance() != null && Client.getInstance().getClientSideController().getControlledEntity() == EntityLivingImplementation.this)
 				return dataSource.getBoneHierarchyTransformationMatrixWithOffset(nameOfEndBone, animationTime);
 
 			CachedData cachedData = cachedBones.get(nameOfEndBone);

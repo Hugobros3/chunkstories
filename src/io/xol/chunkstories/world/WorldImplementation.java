@@ -1095,6 +1095,4 @@ public abstract class WorldImplementation implements World
 		this.getRegionsHolder().unloadsUselessData();
 		this.getRegionsSummariesHolder().unloadsUselessData();
 	}
-
-	
 }
