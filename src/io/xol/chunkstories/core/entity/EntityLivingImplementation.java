@@ -62,39 +62,40 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 		entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
 		entityHealthComponent = new EntityComponentHealth(this, getStartHealth());
 	}
-	
-	public class HitBoxImpl implements HitBox {
-		
+
+	public class HitBoxImpl implements HitBox
+	{
+
 		CollisionBox box;
 		String skeletonPart;
-		
+
 		public HitBoxImpl(CollisionBox box, String skeletonPart)
 		{
 			this.box = box;
 			this.skeletonPart = skeletonPart;
 		}
-		
+
 		public void draw(RenderingInterface context)
 		{
-			if(!context.currentShader().getShaderName().equals("overlay"))
+			if (!context.currentShader().getShaderName().equals("overlay"))
 			{
 				context.useShader("overlay");
 				context.getCamera().setupShader(context.currentShader());
 			}
-			
+
 			context.currentShader().setUniform1i("doTransform", 1);
-			
+
 			Matrix4f boneTransormation = EntityLivingImplementation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000);
-			
-			if(boneTransormation == null)
+
+			if (boneTransormation == null)
 				return;
 
 			Matrix4f worldPositionTransformation = new Matrix4f();
 			Vector3fm pos = EntityLivingImplementation.this.getLocation().castToSinglePrecision();
 			worldPositionTransformation.translate(pos);
-			
+
 			boneTransormation.multiply(worldPositionTransformation);
-			
+
 			//Scales/moves the identity box to reflect collisionBox shape
 			boneTransormation.translate(new Vector3fm(box.xpos, box.ypos, box.zpos));
 			boneTransormation.scale(new Vector3fm(box.xw, box.h, box.zw));
@@ -106,9 +107,13 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 			context.currentShader().setUniform4f("colorIn", 0.0, 1.0, 0.0, 1.0);
 			//Check for intersection with player
 			EntityControllable ec = Client.getInstance().getClientSideController().getControlledEntity();
-			if(lineIntersection((Vector3dm) context.getCamera().getCameraPosition(), ((EntityPlayer)ec).getDirectionLookingAt()) != null)
-				context.currentShader().setUniform4f("colorIn", 1.0, 0.0, 0.0, 1.0);
-			
+
+			if (ec != null)
+			{
+				if (lineIntersection((Vector3dm) context.getCamera().getCameraPosition(), ((EntityPlayer) ec).getDirectionLookingAt()) != null)
+					context.currentShader().setUniform4f("colorIn", 1.0, 0.0, 0.0, 1.0);
+			}
+
 			context.draw(Primitive.LINE, 0, 24);
 			context.currentShader().setUniform1i("doTransform", 0);
 		}
@@ -116,50 +121,50 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 		public Vector3dm lineIntersection(Vector3dm lineStart, Vector3dm lineDirection)
 		{
 			Matrix4f fromAABBToWorld = EntityLivingImplementation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000);
-		
+
 			//Fuck off if this has issues
-			if(fromAABBToWorld == null)
+			if (fromAABBToWorld == null)
 				return null;
 
 			Matrix4f worldPositionTransformation = new Matrix4f();
 			Vector3fm pos = EntityLivingImplementation.this.getLocation().castToSinglePrecision();
 			worldPositionTransformation.translate(pos);
-			
+
 			//Creates from AABB space to worldspace
 			fromAABBToWorld.multiply(worldPositionTransformation);
-			
+
 			//Invert it.
 			Matrix4f fromWorldToAABB = new Matrix4f();
 			Matrix4f.invert(fromAABBToWorld, fromWorldToAABB);
-			
+
 			//Transform line start into AABB space
 			Vector4fm lineStart4 = new Vector4fm(lineStart.getX(), lineStart.getY(), lineStart.getZ(), 1.0f);
 			Vector4fm lineDirection4 = new Vector4fm(lineDirection.getX(), lineDirection.getY(), lineDirection.getZ(), 0.0f);
-			
+
 			//System.out.println(skeletonPart);
-			
+
 			//System.out.println(lineStart4+":"+lineDirection4);
-			
+
 			Matrix4f.transform(fromWorldToAABB, lineStart4, lineStart4);
 			Matrix4f.transform(fromWorldToAABB, lineDirection4, lineDirection4);
 
 			//System.out.println(lineStart4+":"+lineDirection4);
-			
+
 			Vector3dm lineStartTransformed = new Vector3dm(lineStart4.getX(), lineStart4.getY(), lineStart4.getZ());
 			Vector3dm lineDirectionTransformed = new Vector3dm(lineDirection4.getX(), lineDirection4.getY(), lineDirection4.getZ());
-			
+
 			Vector3dm hitPoint = box.lineIntersection(lineStartTransformed, lineDirectionTransformed);
-			
+
 			//System.out.println(hitPoint);
-			
-			if(hitPoint == null)
+
+			if (hitPoint == null)
 				return null;
-			
+
 			//Transform hitPoint back into world
-			Vector4fm hitPoint4 = new Vector4fm(hitPoint.getX(), hitPoint.getY(), hitPoint.getZ(), 0.0f);
+			Vector4fm hitPoint4 = new Vector4fm(hitPoint.getX(), hitPoint.getY(), hitPoint.getZ(), 1.0f);
 			Matrix4f.transform(fromAABBToWorld, hitPoint4, hitPoint4);
-			
-			hitPoint.set((double)(float)hitPoint4.getX(), (double)(float)hitPoint4.getY(), (double)(float)hitPoint4.getZ());
+
+			hitPoint.set((double) (float) hitPoint4.getX(), (double) (float) hitPoint4.getY(), (double) (float) hitPoint4.getZ());
 			return hitPoint;
 		}
 
@@ -204,7 +209,7 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 	{
 		return damage(cause, null, damage);
 	}
-	
+
 	@Override
 	public float damage(DamageCause cause, HitBox osef, float damage)
 	{
@@ -247,6 +252,8 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 	@Override
 	public void tick(WorldAuthority authority)
 	{
+		if (getWorld() == null)
+			return;
 		//Despawn counter is strictly a client matter
 		if (getWorld() instanceof WorldMaster)
 		{
@@ -254,10 +261,10 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 			{
 				deathDespawnTimer--;
 				if (deathDespawnTimer < 0)
+				{
 					world.removeEntity(this);
-				
-				//Don't tick it if it's ded
-				return;
+					return;
+				}
 			}
 		}
 
@@ -328,9 +335,9 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 			//Eventually moves
 			Vector3dm remainingToMove = moveWithCollisionRestrain(velocity.getX(), velocity.getY(), velocity.getZ());
 			Vector2dm remaining2d = new Vector2dm(remainingToMove.getX(), remainingToMove.getZ());
-			
+
 			//Auto-step logic
-			if(remaining2d.length() > 0.001 && isOnGround())
+			if (remaining2d.length() > 0.001 && isOnGround())
 			{
 				//Cap max speed we can get through the bump ?
 				if (remaining2d.length() > 0.20d)
@@ -341,11 +348,11 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 				}
 
 				//Get whatever we are colliding with
-				
+
 				//Test if setting yourself on top would be ok
-				
+
 				//Do it if possible
-				
+
 				//TODO remake proper
 				Vector3dm blockedMomentum = new Vector3dm(remaining2d.getX(), 0, remaining2d.getY());
 				for (double d = 0.25; d < 0.5; d += 0.05)
@@ -373,7 +380,7 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 							afterJump.sub(landDistance);
 
 							this.setLocation(new Location(world, afterJump));
-							
+
 							remaining2d = new Vector2dm(blockedMomentumRemaining.getX(), blockedMomentumRemaining.getZ());
 							break;
 						}

@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.entity.EntityLiving.HitBox;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.item.Item;
@@ -88,7 +89,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 					{
 						if (!((ClientSideController) controller).hasFocus())
 							return;
-						
+
 						//ClientInputPressedEvent event = new ClientInputPressedEvent(controller.getInputsManager().getInputByName("shootGun"));
 						//Client.getInstance().getPluginManager().fireEvent(event);
 
@@ -96,7 +97,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 						hasHitYet = true;
 					}
 				}
-				
+
 			}
 		}
 	}
@@ -151,7 +152,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 
 					//This seems fine
 
-					for (CollisionBox box : voxel.getTranslatedCollisionBoxes(owner.getWorld(), (int)(double) shotBlock.getX(), (int)(double) shotBlock.getY(), (int)(double) shotBlock.getZ()))
+					for (CollisionBox box : voxel.getTranslatedCollisionBoxes(owner.getWorld(), (int) (double) shotBlock.getX(), (int) (double) shotBlock.getY(), (int) (double) shotBlock.getZ()))
 					{
 						Vector3dm thisLocation = box.lineIntersection(eyeLocation, direction);
 						if (thisLocation != null)
@@ -202,25 +203,31 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 					if (!shotEntity.equals(shooter) && shotEntity instanceof EntityLiving)
 					{
 						//Get hit location
-						Vector3dm hitPoint = shotEntity.getTranslatedBoundingBox().lineIntersection(eyeLocation, direction);
-
-						//Deal damage
-						((EntityLiving) shotEntity).damage(shooter, (float) damage);
-
-						//Spawn blood particles
-						Vector3dm bloodDir = direction.normalize().scale(0.25);
-						for (int i = 0; i < 250; i++)
+						for (HitBox hitBox : ((EntityLiving) shotEntity).getHitBoxes())
 						{
-							Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
-							random.scale(0.25);
-							random.add(bloodDir);
+							Vector3dm hitPoint = hitBox.lineIntersection(eyeLocation, direction);
 
-							shooter.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("blood", hitPoint, random);
+							if (hitPoint == null)
+								continue;
+
+							//Deal damage
+							((EntityLiving) shotEntity).damage(shooter, hitBox, (float) damage);
+
+							//Spawn blood particles
+							Vector3dm bloodDir = direction.normalize().scale(0.25);
+							for (int i = 0; i < 250; i++)
+							{
+								Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+								random.scale(0.25);
+								random.add(bloodDir);
+
+								shooter.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("blood", hitPoint, random);
+							}
+
+							//Spawn blood on walls
+							if (nearestLocation != null)
+								shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3dm(3.0), "blood");
 						}
-
-						//Spawn blood on walls
-						if (nearestLocation != null)
-							shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3dm(3.0), "blood");
 					}
 				}
 			}

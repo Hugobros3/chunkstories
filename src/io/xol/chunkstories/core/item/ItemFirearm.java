@@ -342,8 +342,8 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 									((EntityLiving) shotEntity).damage(shooter, hitBox, (float) damage);
 
 									//Spawn blood particles
-									Vector3dm bloodDir = direction.normalize().scale(0.25);
-									for (int i = 0; i < 250; i++)
+									Vector3dm bloodDir = direction.normalize().scale(0.75);
+									for (int i = 0; i < 120; i++)
 									{
 										Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
 										random.scale(0.25);
@@ -354,7 +354,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 
 									//Spawn blood on walls
 									if (nearestLocation != null)
-										shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3dm(3.0), "blood");
+										shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3dm(Math.min(3, shots) * damage / 20f), "blood");
 								}
 							}
 						}
@@ -437,11 +437,11 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 			direction.add(new Vector3dm(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
 			direction.normalize();
 
-			Location shotBlock = clientControlledEntity.getWorld().raytraceSolid(eyeLocation, direction, 5000);
+			//Location shotBlock = clientControlledEntity.getWorld().raytraceSolid(eyeLocation, direction, 5000);
 
-			String dist = "-1m";
-			if (shotBlock != null)
-				dist = Math.floor(shotBlock.distanceTo(clientControlledEntity.getLocation())) + "m";
+			//String dist = "-1m";
+			//if (shotBlock != null)
+			//	dist = Math.floor(shotBlock.distanceTo(clientControlledEntity.getLocation())) + "m";
 
 			//renderingInterface.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, dist, 1);
 

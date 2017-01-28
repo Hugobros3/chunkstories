@@ -3,7 +3,9 @@ package io.xol.engine.animation;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.content.GameContentStore;
 import io.xol.engine.animation.BVHAnimation;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -14,19 +16,27 @@ public class BVHLibrary
 {
 	// This class holds static model info
 
-	static Map<String, BVHAnimation> animations = new HashMap<String, BVHAnimation>();
-
-	// static Map<String,Integer> displayLists = new HashMap<String,Integer>();
-
-	public static BVHAnimation loadAnimation(String name)
+	private final GameContentStore store;
+	private final ModsManager modsManager;
+	
+	public BVHLibrary(GameContentStore store)
 	{
-		System.out.println(name);
-		BVHAnimation anim = new BVHAnimation(Client.getInstance().getContent().getAsset(name));
+		this.store = store;
+		this.modsManager = store.modsManager();
+		
+		reload();
+	}
+	
+	Map<String, BVHAnimation> animations = new HashMap<String, BVHAnimation>();
+	
+	public BVHAnimation loadAnimation(String name)
+	{
+		BVHAnimation anim = new BVHAnimation(store.getAsset(name));
 		animations.put(name, anim);
 		return anim;
 	}
 
-	public static BVHAnimation getAnimation(String name)
+	public BVHAnimation getAnimation(String name)
 	{
 		if (animations.containsKey(name))
 			return animations.get(name);
@@ -36,7 +46,7 @@ public class BVHLibrary
 		}
 	}
 
-	public static void reloadAllAnimations()
+	public void reload()
 	{
 		//for (BVHAnimation a : animations.values())
 		//	a.destroy();

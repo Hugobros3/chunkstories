@@ -9,14 +9,11 @@ import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
-import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemPile;
-import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.serialization.OfflineSerializedData;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 
@@ -46,7 +43,7 @@ public class EntityComponentSelectedItem extends EntityComponent
 		while (newSlot < 0)
 			newSlot += inventory.width;
 		selectedSlot = newSlot % inventory.width;
-
+		
 		//TODO permissions check
 		this.pushComponentEveryone();
 
@@ -94,7 +91,6 @@ public class EntityComponentSelectedItem extends EntityComponent
 			dos.writeBoolean(false);
 		else
 		{
-			//System.out.println("Sending item");
 			dos.writeBoolean(true);
 			//dos.writeInt(pile.getItem().getID());
 			pile.saveItemIntoStream(dos);

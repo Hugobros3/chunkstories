@@ -107,9 +107,6 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		this.name.setName(name);
 
 		variant = ColorsTools.getUniqueColorCode(name) % 6;
-
-		inventoryComponent = new EntityComponentInventory(this, 10, 4);
-		selectedItemComponent = new EntityComponentSelectedItem(this, inventoryComponent);
 	}
 
 	//TODO Don't use fucking Mouse class

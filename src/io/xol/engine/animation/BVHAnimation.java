@@ -28,9 +28,6 @@ public class BVHAnimation implements SkeletonAnimator
 
 	BVHTreeBone root;
 	public List<BVHTreeBone> bones = new ArrayList<BVHTreeBone>();
-	
-	//Matrix4f[] cachedAnimations;
-	//int totalCachedFrames;
 
 	public static void main(String a[]) throws FileNotFoundException
 	{

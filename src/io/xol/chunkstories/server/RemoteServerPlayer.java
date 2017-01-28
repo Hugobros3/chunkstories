@@ -517,7 +517,9 @@ public class RemoteServerPlayer implements Player
 	@Override
 	public WorldServer getWorld()
 	{
-		return (WorldServer) getLocation().getWorld();
+		if (controlledEntity != null)
+			return (WorldServer) getLocation().getWorld();
+		return null;
 	}
 
 	@Override

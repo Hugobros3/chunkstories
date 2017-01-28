@@ -5,7 +5,6 @@ import java.util.Arrays;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.DamageCause;
-import io.xol.chunkstories.api.entity.EntityLiving.HitBox;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithClientPrediction;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
@@ -22,7 +21,6 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemVoxel;
-import io.xol.chunkstories.core.entity.EntityLivingImplementation.HitBoxImpl;
 import io.xol.chunkstories.core.item.ItemFirearm;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -75,7 +73,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		public BVHAnimation getAnimationPlayingForBone(String boneName, double animationTime)
 		{
 			if (EntityHumanoid.this.isDead())
-				return BVHLibrary.getAnimation("./animations/human/ded.bvh");
+				return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/ded.bvh");
 
 			if (Arrays.asList(new String[] { "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD", "boneItemInHand" }).contains(boneName))
 			{
@@ -87,9 +85,9 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 					if (selectedItemPile != null)
 					{
 						if (selectedItemPile.getItem() instanceof ItemFirearm)
-							return BVHLibrary.getAnimation("./animations/human/holding-rifle.bvh");
+							return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/holding-rifle.bvh");
 						else
-							return BVHLibrary.getAnimation("./animations/human/holding-item.bvh");
+							return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/holding-item.bvh");
 					}
 				}
 			}
@@ -101,13 +99,13 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 			if (horizSpd > 0.065)
 			{
 				//System.out.println("running");
-				return BVHLibrary.getAnimation("./animations/human/running.bvh");
+				return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/running.bvh");
 			}
 
 			if (horizSpd > 0.0)
-				return BVHLibrary.getAnimation("./animations/human/walking.bvh");
+				return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/walking.bvh");
 
-			return BVHLibrary.getAnimation("./animations/human/standstill.bvh");
+			return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/standstill.bvh");
 		}
 
 		public Matrix4f getBoneTransformationMatrix(String boneName, double animationTime)
@@ -115,7 +113,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 			Vector3dm vel = getVelocityComponent().getVelocity();
 
 			double horizSpd = Math.sqrt(vel.getX() * vel.getX() + vel.getZ() * vel.getZ());
-			
+
 			animationTime *= 0.75;
 
 			// animationTime += metersWalked * 50;
@@ -289,21 +287,21 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 	public void tick(WorldAuthority authority)
 	{
 		//Only 
-		
+
 		boolean tick = false;
-		if(this instanceof EntityControllable)
+		if (this instanceof EntityControllable)
 		{
 			Controller controller = ((EntityControllable) this).getControllerComponent().getController();
-			if(controller == null)
+			if (controller == null)
 				tick = (getWorld() instanceof WorldMaster);
-			else if(getWorld() instanceof WorldClient && Client.getInstance().getClientSideController().equals(controller))
+			else if (getWorld() instanceof WorldClient && Client.getInstance().getClientSideController().equals(controller))
 				tick = true;
-				
+
 		}
 		else
 			tick = (getWorld() instanceof WorldMaster);
-		
-		if(tick)
+
+		if (tick)
 		{
 			//The actual moment the jump takes effect
 			boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
@@ -329,10 +327,10 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 				acceleration.scale(maxAcceleration);
 			}
 		}
-		
+
 		//Plays the walking sounds
 		handleWalkingEtcSounds();
-		
+
 		//Tick : will move the entity, solve velocity/acceleration and so on
 		super.tick(authority);
 	}
@@ -417,11 +415,11 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 		}
 	}
-	
+
 	@Override
 	public CollisionBox getBoundingBox()
 	{
-		if(isDead())
+		if (isDead())
 			return new CollisionBox(1.6, 1.0, 1.6).translate(-0.8, 0.0, -0.8);
 		//Have it centered
 		return new CollisionBox(1.0, 2.0, 1.0).translate(-0.5, 0.0, -0.5);
@@ -429,38 +427,41 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 	public CollisionBox[] getCollisionBoxes()
 	{
-		return new CollisionBox[]{ new CollisionBox(0.8, 1.9, 0.8).translate(-0.4, 0.0, -0.4) };
+		return new CollisionBox[] { new CollisionBox(0.8, 1.9, 0.8).translate(-0.4, 0.0, -0.4) };
 	}
-	
-	HitBoxImpl[] hitboxes = {
-			new HitBoxImpl(new CollisionBox(-0.15, 0.0, -0.25, 0.30, 0.675, 0.5), "boneTorso"),
-			new HitBoxImpl(new CollisionBox(-0.25, 0.0, -0.25, 0.5, 0.5, 0.5), "boneHead"),
-			new HitBoxImpl(new CollisionBox(-0.1, -0.375, -0.1, 0.2, 0.375, 0.2), "boneArmRU"),
-			new HitBoxImpl(new CollisionBox(-0.1, -0.375, -0.1, 0.2, 0.375, 0.2), "boneArmLU"),
-			new HitBoxImpl(new CollisionBox(-0.1, -0.3, -0.1, 0.2, 0.3, 0.2), "boneArmRD"),
-			new HitBoxImpl(new CollisionBox(-0.1, -0.3, -0.1, 0.2, 0.3, 0.2), "boneArmLD"),
-			new HitBoxImpl(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegRU"),
-			new HitBoxImpl(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegLU"),
-			new HitBoxImpl(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegRD"),
-			new HitBoxImpl(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegLD"),
-			new HitBoxImpl(new CollisionBox(-0.15, -0.075, -0.125, 0.35, 0.075, 0.25), "boneFootL"),
-			new HitBoxImpl(new CollisionBox(-0.15, -0.075, -0.125, 0.35, 0.075, 0.25), "boneFootR"),
-	};
-	
+
+	HitBoxImpl[] hitboxes = { new HitBoxImpl(new CollisionBox(-0.15, 0.0, -0.25, 0.30, 0.675, 0.5), "boneTorso"), new HitBoxImpl(new CollisionBox(-0.25, 0.0, -0.25, 0.5, 0.5, 0.5), "boneHead"),
+			new HitBoxImpl(new CollisionBox(-0.1, -0.375, -0.1, 0.2, 0.375, 0.2), "boneArmRU"), new HitBoxImpl(new CollisionBox(-0.1, -0.375, -0.1, 0.2, 0.375, 0.2), "boneArmLU"),
+			new HitBoxImpl(new CollisionBox(-0.1, -0.3, -0.1, 0.2, 0.3, 0.2), "boneArmRD"), new HitBoxImpl(new CollisionBox(-0.1, -0.3, -0.1, 0.2, 0.3, 0.2), "boneArmLD"),
+			new HitBoxImpl(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegRU"), new HitBoxImpl(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegLU"),
+			new HitBoxImpl(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegRD"), new HitBoxImpl(new CollisionBox(-0.15, -0.375, -0.125, 0.3, 0.375, 0.25), "boneLegLD"),
+			new HitBoxImpl(new CollisionBox(-0.15, -0.075, -0.125, 0.35, 0.075, 0.25), "boneFootL"), new HitBoxImpl(new CollisionBox(-0.15, -0.075, -0.125, 0.35, 0.075, 0.25), "boneFootR"), };
+
 	@Override
 	public HitBoxImpl[] getHitBoxes()
 	{
 		return hitboxes;
 	}
-	
+
 	@Override
 	public float damage(DamageCause cause, HitBox osef, float damage)
 	{
-		if(osef != null && osef.getName().equals("boneHead"))
-			damage *= 2.0f;
+		if (osef != null)
+		{
+			if (osef.getName().equals("boneHead"))
+				damage *= 2.8f;
+			else if(osef.getName().contains("Arm"))
+				damage *= 0.75;
+			else if(osef.getName().contains("Leg"))
+				damage *= 0.5;
+			else if(osef.getName().contains("Foot"))
+				damage *= 0.25;
+		}
 		
+		damage *= 0.5;
+
 		System.out.println("Hit:"+osef == null ? "" : osef.getName() + " dmg: "+damage);
-		
+
 		return super.damage(cause, null, damage);
 	}
 

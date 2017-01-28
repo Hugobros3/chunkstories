@@ -12,6 +12,7 @@ import io.xol.chunkstories.net.PacketsStore;
 import io.xol.chunkstories.particles.ParticlesTypesStore;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.generator.WorldGeneratorsStore;
+import io.xol.engine.animation.BVHLibrary;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -29,6 +30,8 @@ public class GameContentStore implements Content
 	private final PacketsStore packets;
 	private final ParticlesTypesStore particles;
 	private final WorldGeneratorsStore generators;
+	
+	private final BVHLibrary bvhLibrary;
 
 	public GameContentStore(GameContext context, String enabledModsLaunchArguments)
 	{
@@ -56,6 +59,8 @@ public class GameContentStore implements Content
 		packets = new PacketsStore(this);
 		particles = new ParticlesTypesStore(this);
 		generators = new WorldGeneratorsStore(this);
+		
+		bvhLibrary = new BVHLibrary(this);
 	}
 
 	public void reload()
@@ -79,6 +84,8 @@ public class GameContentStore implements Content
 		packets.reload();
 		particles.reload();
 		generators.reload();
+		
+		bvhLibrary.reload();
 	}
 
 	@Override
@@ -139,5 +146,11 @@ public class GameContentStore implements Content
 	public WorldGeneratorsStore generators()
 	{
 		return generators;
+	}
+
+	@Override
+	public BVHLibrary getAnimationsLibrary()
+	{
+		return bvhLibrary;
 	}
 }

@@ -46,31 +46,31 @@ public class VoxelStairs extends VoxelDefault implements VoxelLogic
 		switch (meta % 4)
 		{
 		case 0:
-			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.75, -0.5, 0.5);
+			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.5, -0.0, 0.0);
 			break;
 		case 1:
-			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.25, -0.5, 0.5);
+			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.0, -0.0, 0.0);
 			break;
 		case 2:
-			boxes[1] = new CollisionBox(1.0, 0.5, 0.5).translate(0.5, -0.5, 0.75);
+			boxes[1] = new CollisionBox(1.0, 0.5, 0.5).translate(0.0, -0.0, 0.5);
 			break;
 		case 3:
-			boxes[1] = new CollisionBox(1.0, 0.5, 0.5).translate(0.5, -0.5, 0.25);
+			boxes[1] = new CollisionBox(1.0, 0.5, 0.5).translate(0.0, -0.0, 0.0);
 			break;
 		default:
-			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.5, -0.5, 0.25);
+			boxes[1] = new CollisionBox(0.5, 0.5, 1.0).translate(0.5, -0.0, 0.25);
 			break;
 		}
 		
 		if (meta / 4 == 0)
 		{
-			boxes[0].translate(0.0, -0, 0.0);
-			boxes[1].translate(-0.5, +1.0, -0.5);
+			boxes[0].translate(0.0, 0.0, 0.0);
+			boxes[1].translate(0.0, 0.5, 0.0);
 		}
 		else
 		{
-			boxes[0].translate(0.0, +0.5, 0.0);
-			boxes[1].translate(-0.5, +0.5, -0.5);
+			boxes[0].translate(0.0, 0.5, 0.0);
+			boxes[1].translate(0.0, 0.0, 0.0);
 		}
 
 		return boxes;

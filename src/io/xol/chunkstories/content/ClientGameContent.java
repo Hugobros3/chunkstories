@@ -1,7 +1,6 @@
 package io.xol.chunkstories.content;
 
 import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.engine.animation.BVHLibrary;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.model.ModelLibrary;
@@ -27,7 +26,6 @@ public class ClientGameContent extends GameContentStore
 		TexturesHandler.reloadAll();
 		SoundsLibrary.clean();
 		ModelLibrary.reloadAllModels();
-		BVHLibrary.reloadAllAnimations();
 		ShadersLibrary.reloadAllShaders();
 	}
 

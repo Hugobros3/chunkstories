@@ -15,7 +15,6 @@ import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.events.EntityDeathEvent;
 import io.xol.chunkstories.core.events.PlayerDeathEvent;
-import io.xol.chunkstories.server.Server;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

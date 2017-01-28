@@ -15,6 +15,7 @@ import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.engine.animation.BVHLibrary;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -151,4 +152,6 @@ public interface Content
 		
 		
 	}
+	
+	public BVHLibrary getAnimationsLibrary();
 }
