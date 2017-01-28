@@ -153,5 +153,19 @@ public interface Content
 		
 	}
 	
+	public LocalizationManager localization();
+	public interface LocalizationManager extends Translation {
+
+		//public Translation getTranslation(String abrigedName);
+		
+		public Content parent();
+	}
+	public interface Translation {
+
+		public String getLocalizedString(String stringName);
+		
+		public String localize(String text);
+	}
+	
 	public BVHLibrary getAnimationsLibrary();
 }
