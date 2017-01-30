@@ -28,7 +28,7 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 /**
  * Sandboxed thread that runs all the game logic for one world, thus including foreign code
  */
-public class GameLogicThread extends Thread implements GameLogic
+public class WorldLogicThread extends Thread implements GameLogic
 {
 	private final GameContext context;
 	
@@ -37,12 +37,12 @@ public class GameLogicThread extends Thread implements GameLogic
 	private GameLogicScheduler gameLogicScheduler;
 	private boolean die = false;
 
-	public GameLogicThread(WorldImplementation world, SecurityManager securityManager)
+	public WorldLogicThread(WorldImplementation world, SecurityManager securityManager)
 	{
 		this.world = world;
 		this.context = world.getGameContext();
 		
-		this.setName("World " + world.getWorldInfo().getInternalName()+" logic thread");
+		this.setName("World '"+world.getWorldInfo().getInternalName()+"' logic thread");
 		this.setPriority(Constants.MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY);
 		
 		gameLogicScheduler = new GameLogicScheduler();
@@ -85,7 +85,7 @@ public class GameLogicThread extends Thread implements GameLogic
 			
 			//Updates controller/s views
 			if(world instanceof WorldClient)
-				Client.getInstance().getClientSideController().updateUsedWorldBits();
+				Client.getInstance().getPlayer().updateUsedWorldBits();
 			if(world instanceof WorldServer)
 			{
 				Iterator<Player> i = ((WorldServer)world).getPlayers();

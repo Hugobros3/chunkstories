@@ -27,7 +27,7 @@ import io.xol.engine.animation.BVHLibrary;
 public interface Content
 {
 	/** Returns which context is this content relevant to */
-	public GameContext getContext();
+	//public GameContext getContext();
 	
 	public ModsManager modsManager();
 

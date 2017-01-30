@@ -52,7 +52,7 @@ public class DeathOverlay extends Overlay
 		exitButton.draw();
 		
 		//When the new entity arrives
-		if(Client.getInstance().getClientSideController().getControlledEntity() != null)
+		if(Client.getInstance().getPlayer().getControlledEntity() != null)
 		{
 			mainScene.changeOverlay(parent);
 		}

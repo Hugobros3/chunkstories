@@ -58,9 +58,22 @@ public class ClientWorldController implements ClientSideController
 	}
 
 	@Override
-	public boolean setControlledEntity(EntityControllable entityControllable)
+	public boolean setControlledEntity(EntityControllable entity)
 	{
-		controlledEntity = entityControllable;
+		if (entity instanceof EntityControllable)
+		{
+			this.subscribe(entity);
+
+			EntityControllable controllableEntity = (EntityControllable) entity;
+			controllableEntity.getControllerComponent().setController(this);
+			controlledEntity = controllableEntity;
+		}
+		else if (entity == null && getControlledEntity() != null)
+		{
+			getControlledEntity().getControllerComponent().setController(null);
+			controlledEntity = null;
+		}
+		
 		return true;
 	}
 	
@@ -290,7 +303,6 @@ public class ClientWorldController implements ClientSideController
 	@Override
 	public String getName()
 	{
-		// TODO Auto-generated method stub
 		return Client.username;
 	}
 
@@ -332,8 +344,7 @@ public class ClientWorldController implements ClientSideController
 	@Override
 	public boolean hasSpawned()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return controlledEntity != null;
 	}
 
 	@Override
@@ -353,15 +364,16 @@ public class ClientWorldController implements ClientSideController
 	@Override
 	public World getWorld()
 	{
-		// TODO Auto-generated method stub
+		Entity controlledEntity = this.controlledEntity;
+		if(controlledEntity != null)
+			return controlledEntity.getWorld();
 		return null;
 	}
 
 	@Override
 	public boolean hasPermission(String permissionNode)
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override

@@ -127,7 +127,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 			{
 				if (pile.getInventory().getHolder() != null)
 				{
-					Entity clientEntity = Client.getInstance().getClientSideController().getControlledEntity();
+					Entity clientEntity = Client.getInstance().getPlayer().getControlledEntity();
 					if (isScoped() && clientEntity.equals(pile.getInventory().getHolder()))
 						return;
 				}
@@ -423,7 +423,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 	@Override
 	public void drawItemOverlay(RenderingInterface renderingInterface, ItemPile pile)
 	{
-		EntityLiving clientControlledEntity = (EntityLiving) Client.getInstance().getClientSideController().getControlledEntity();
+		EntityLiving clientControlledEntity = (EntityLiving) Client.getInstance().getPlayer().getControlledEntity();
 		if (clientControlledEntity != null && pile.getInventory() != null && pile.getInventory().getHolder() != null && pile.getInventory().getHolder().equals(clientControlledEntity))
 		{
 			if (isScoped())

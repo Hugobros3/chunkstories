@@ -31,6 +31,7 @@ import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.content.DefaultModsManager.ModsAssetHierarchy;
+import io.xol.chunkstories.content.GameContentStore;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -45,7 +46,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 	public static int BLOCK_ATLAS_SIZE;
 	public static int BLOCK_ATLAS_FACTOR;
 
-	private final Content content;
+	private final GameContentStore content;
 	private final VoxelsStore voxels;
 
 	BufferedImage diffuseTextureImage = null;

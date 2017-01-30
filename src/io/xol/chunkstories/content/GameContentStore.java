@@ -124,7 +124,6 @@ public class GameContentStore implements Content
 		return packets;
 	}
 
-	@Override
 	public GameContext getContext()
 	{
 		return context;

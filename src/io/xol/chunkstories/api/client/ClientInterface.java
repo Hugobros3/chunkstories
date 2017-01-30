@@ -17,7 +17,7 @@ import io.xol.chunkstories.world.WorldClientCommon;
 
 public interface ClientInterface extends GameContext
 {
-	public ClientSideController getClientSideController();
+	public ClientSideController getPlayer();
 	
 	public PluginManager getPluginManager();
 

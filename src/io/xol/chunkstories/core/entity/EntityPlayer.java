@@ -9,6 +9,7 @@ import io.xol.engine.model.ModelLibrary;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Controller;
+import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
@@ -147,8 +148,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	public void tick(WorldAuthority authority)
 	{
 		//This is a controllable entity, take care of controlling
-		if (authority.isClient() && Client.getInstance().getClientSideController().getControlledEntity() == this)
-			tickClientController(Client.getInstance().getClientSideController());
+		if (authority.isClient() && Client.getInstance().getPlayer().getControlledEntity() == this)
+			tickClientController(Client.getInstance().getPlayer());
 
 		//Tick item in hand if one such exists
 		ItemPile pileSelected = getSelectedItemComponent().getSelectedItem();
@@ -468,7 +469,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	@Override
 	public void drawEntityOverlay(RenderingInterface renderingContext)
 	{
-		if (this.equals(Client.getInstance().getClientSideController().getControlledEntity()))
+		if (this.equals(Client.getInstance().getPlayer().getControlledEntity()))
 		{
 			//If we're using an item that can render an overlay
 			if (this.getSelectedItemComponent().getSelectedItem() != null)
@@ -705,5 +706,17 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	public void setFoodLevel(float level)
 	{
 		foodLevel.setValue(level);
+	}
+	
+	@Override
+	public float damage(DamageCause cause, HitBox osef, float damage)
+	{
+		if(!isDead())
+		{
+			int i = 1 + (int) Math.random() * 3;
+			world.getSoundManager().playSoundEffect("sounds/sfx/entities/human/hurt"+i+".ogg", this.getLocation(), (float)Math.random() * 0.4f + 0.8f, 5.0f);
+		}
+		
+		return super.damage(cause, osef, damage);
 	}
 }

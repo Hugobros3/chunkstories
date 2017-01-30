@@ -69,7 +69,7 @@ public class EntityComponentController extends EntityComponent
 			//If we are a client.
 			if (entity.getWorld() instanceof WorldClient)
 			{
-				long clientUUID = Client.getInstance().getClientSideController().getUUID();
+				long clientUUID = Client.getInstance().getPlayer().getUUID();
 				System.out.println("Entity " + entity + " is now in control of " + controllerUUID + " me=" + clientUUID);
 				
 				//This update tells us we are now in control of this entity
@@ -82,17 +82,17 @@ public class EntityComponentController extends EntityComponent
 					if(entity.getWorld() instanceof WorldClientRemote)
 						((WorldClientRemote) controlledEntity.getWorld()).getConnection().subscribe(entity);
 					//Client.getInstance().getServerConnection().subscribe(entity);
-					controller = Client.getInstance().getClientSideController();
+					controller = Client.getInstance().getPlayer();
 
-					Client.getInstance().getClientSideController().setControlledEntity(controlledEntity);
+					Client.getInstance().getPlayer().setControlledEntity(controlledEntity);
 					System.out.println("The client is now in control of entity "+controlledEntity);
 				}
 				else
 				{
 					//If we receive a different UUID than ours in a EntityComponent change, it means that we don't control it anymore and someone else does.
-					if (Client.getInstance().getClientSideController().getControlledEntity() != null && Client.getInstance().getClientSideController().getControlledEntity().equals(entity))
+					if (Client.getInstance().getPlayer().getControlledEntity() != null && Client.getInstance().getPlayer().getControlledEntity().equals(entity))
 					{
-						Client.getInstance().getClientSideController().setControlledEntity(null);
+						Client.getInstance().getPlayer().setControlledEntity(null);
 
 						//Client.getInstance().getServerConnection().unsubscribe(entity);
 						controller = null;
@@ -108,9 +108,9 @@ public class EntityComponentController extends EntityComponent
 			if (entity.getWorld() instanceof WorldClient)
 			{
 				//If we receive a different UUID than ours in a EntityComponent change, it means that we don't control it anymore and someone else does.
-				if (Client.getInstance().getClientSideController().getControlledEntity() != null && Client.getInstance().getClientSideController().getControlledEntity().equals(entity))
+				if (Client.getInstance().getPlayer().getControlledEntity() != null && Client.getInstance().getPlayer().getControlledEntity().equals(entity))
 				{
-					Client.getInstance().getClientSideController().setControlledEntity(null);
+					Client.getInstance().getPlayer().setControlledEntity(null);
 
 					//Client.getInstance().getServerConnection().unsubscribe(entity);
 					controller = null;

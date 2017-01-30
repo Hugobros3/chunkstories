@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.server.ServerInterface;
 //http://chunkstories.xyz
 //http://xol.io
 
-/** A type of plugin that exclusivly runs on the client */
+/** A type of plugin that exclusivly runs on the server/master */
 public abstract class ServerPlugin extends ChunkStoriesPlugin
 {
 	private final ServerInterface serverInterface;

@@ -165,7 +165,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 		public boolean shouldHideBone(RenderingInterface renderingContext, String boneName)
 		{
-			if (EntityHumanoid.this.equals(Client.getInstance().getClientSideController().getControlledEntity()))
+			if (EntityHumanoid.this.equals(Client.getInstance().getPlayer().getControlledEntity()))
 			{
 				if (renderingContext.isThisAShadowPass())
 					return false;
@@ -293,7 +293,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 			Controller controller = ((EntityControllable) this).getControllerComponent().getController();
 			if (controller == null)
 				tick = (getWorld() instanceof WorldMaster);
-			else if (getWorld() instanceof WorldClient && Client.getInstance().getClientSideController().equals(controller))
+			else if (getWorld() instanceof WorldClient && Client.getInstance().getPlayer().equals(controller))
 				tick = true;
 
 		}
@@ -349,8 +349,8 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 			return;
 
 		//When the entities are too far from the player, don't play any sounds
-		if (Client.getInstance().getClientSideController().getControlledEntity() != null)
-			if (Client.getInstance().getClientSideController().getControlledEntity().getLocation().distanceTo(this.getLocation()) > 25f)
+		if (Client.getInstance().getPlayer().getControlledEntity() != null)
+			if (Client.getInstance().getPlayer().getControlledEntity().getLocation().distanceTo(this.getLocation()) > 25f)
 				return;
 
 		// Sound stuff
@@ -459,6 +459,8 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		
 		damage *= 0.5;
 
+		world.getSoundManager().playSoundEffect("sounds/sfx/entities/flesh.ogg", this.getLocation(), (float)Math.random() * 0.4f + 0.4f, 1);
+		
 		//System.out.println("Hit:"+(osef == null ? "" : osef.getName()) + " dmg: "+damage);
 
 		return super.damage(cause, null, damage);

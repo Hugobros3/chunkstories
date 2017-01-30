@@ -46,7 +46,7 @@ public class PacketVelocityDelta extends PacketSynchPrepared
 	{
 		delta = new Vector3dm(in.readDouble(), in.readDouble(), in.readDouble());
 		
-		EntityControllable entity = Client.getInstance().getClientSideController().getControlledEntity();
+		EntityControllable entity = Client.getInstance().getPlayer().getControlledEntity();
 		if(entity != null)
 		{
 			System.out.println("Debug: received velocity delta "+delta);

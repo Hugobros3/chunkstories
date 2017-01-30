@@ -31,6 +31,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -42,6 +43,8 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.CameraSetupEvent;
+import io.xol.chunkstories.core.events.PlayerLogoutEvent;
+import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
@@ -75,7 +78,7 @@ public class Ingame extends OverlayableScene
 	Camera camera = new Camera();
 	public Chat chat;
 	protected boolean focus = true;
-	Entity player;
+	Entity playerEntity;
 
 	private boolean guiHidden = false;
 	boolean shouldTakeACubemap = false;
@@ -94,10 +97,12 @@ public class Ingame extends OverlayableScene
 		if (world instanceof WorldMaster)
 		{
 			//TODO remember a proper spawn location
-			Client.getInstance().getClientSideController().setControlledEntity(new EntityPlayer(world, 0, 100, 0, Client.username));
+			world.spawnPlayer(Client.getInstance().getPlayer());
+			
+			//Client.getInstance().getClientSideController().setControlledEntity(new EntityPlayer(world, 0, 100, 0, Client.username));
 
-			((EntityControllable) Client.getInstance().getClientSideController().getControlledEntity()).getControllerComponent().setController(Client.getInstance().getClientSideController());
-			world.addEntity(Client.getInstance().getClientSideController().getControlledEntity());
+			//((EntityControllable) Client.getInstance().getClientSideController().getControlledEntity()).getControllerComponent().setController(Client.getInstance().getClientSideController());
+			//world.addEntity(Client.getInstance().getClientSideController().getControlledEntity());
 		}
 
 		//Creates the rendering stuff
@@ -126,32 +131,32 @@ public class Ingame extends OverlayableScene
 	public void update(RenderingContext renderingContext)
 	{
 		// Update client entity
-		if ((player == null || player != Client.getInstance().getClientSideController().getControlledEntity()) && Client.getInstance().getClientSideController().getControlledEntity() != null)
+		if ((playerEntity == null || playerEntity != Client.getInstance().getPlayer().getControlledEntity()) && Client.getInstance().getPlayer().getControlledEntity() != null)
 		{
-			player = Client.getInstance().getClientSideController().getControlledEntity();
-			if (player instanceof EntityWithSelectedItem)
-				inventoryDrawer = ((EntityWithSelectedItem) player).getInventory() == null ? null : new InventoryDrawer((EntityWithSelectedItem) player);
+			playerEntity = Client.getInstance().getPlayer().getControlledEntity();
+			if (playerEntity instanceof EntityWithSelectedItem)
+				inventoryDrawer = ((EntityWithSelectedItem) playerEntity).getInventory() == null ? null : new InventoryDrawer((EntityWithSelectedItem) playerEntity);
 			else
 				inventoryDrawer = null;
 		}
 
-		if (player != null && ((EntityLiving) player).isDead() && !(this.currentOverlay instanceof DeathOverlay))
+		if (playerEntity != null && ((EntityLiving) playerEntity).isDead() && !(this.currentOverlay instanceof DeathOverlay))
 			this.changeOverlay(new DeathOverlay(this, null));
 
 		//Get the player location
 		Vector3dm cameraPosition = renderingContext.getCamera().getCameraPosition();
 
 		// Update the player
-		if (player instanceof EntityControllable)
-			((EntityControllable) player).setupCamera(Client.getInstance().getClientSideController());
+		if (playerEntity instanceof EntityControllable)
+			((EntityControllable) playerEntity).setupCamera(Client.getInstance().getPlayer());
 		
 
 		Location selectedBlock = null;
-		if (player instanceof EntityPlayer)
-			selectedBlock = ((EntityPlayer) player).getBlockLookingAt(true);
+		if (playerEntity instanceof EntityPlayer)
+			selectedBlock = ((EntityPlayer) playerEntity).getBlockLookingAt(true);
 
-		if (player != null)
-			player.setupCamera(camera);
+		if (playerEntity != null)
+			playerEntity.setupCamera(camera);
 		
 		Client.getInstance().getPluginManager().fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
 
@@ -159,7 +164,7 @@ public class Ingame extends OverlayableScene
 		world.getWorldRenderer().renderWorldAtCamera(camera);
 
 		//Debug draws
-		if (RenderingConfig.physicsVisualization && player != null)
+		if (RenderingConfig.physicsVisualization && playerEntity != null)
 		{
 			int id, data;
 			int drawDebugDist = 6;
@@ -206,7 +211,7 @@ public class Ingame extends OverlayableScene
 			}
 		}
 		
-		if (selectedBlock != null && player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().get())
+		if (selectedBlock != null && playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
 			selectionRenderer.drawSelectionBox(selectedBlock);
 		
 		//Cubemap rendering trigger (can't run it while main render is occuring)
@@ -241,14 +246,14 @@ public class Ingame extends OverlayableScene
 			chat.draw();
 
 			//Draw inventory
-			if (player != null && inventoryDrawer != null)
+			if (playerEntity != null && inventoryDrawer != null)
 				inventoryDrawer.drawPlayerInventorySummary(gameWindow.renderingContext, GameWindowOpenGL.windowWidth / 2 - 7, 64 + 64);
 
 			//TODO : move this crap into the EntityOverlays shit
 			//Draw health
-			if (player != null && player instanceof EntityLiving)
+			if (playerEntity != null && playerEntity instanceof EntityLiving)
 			{
-				EntityLiving livingPlayer = (EntityLiving) player;
+				EntityLiving livingPlayer = (EntityLiving) playerEntity;
 
 				float scale = 2.0f;
 
@@ -400,29 +405,29 @@ public class Ingame extends OverlayableScene
 			//Map to zero-indexed inventory
 			requestedInventorySlot--;
 
-			if (player != null && player instanceof EntityWithSelectedItem)
+			if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem)
 			{
 				//Do not accept request to select non-existent inventories slots
-				if (requestedInventorySlot > ((EntityWithInventory) player).getInventory().getWidth())
+				if (requestedInventorySlot > ((EntityWithInventory) playerEntity).getInventory().getWidth())
 					return false;
 
-				ItemPile p = ((EntityWithInventory) player).getInventory().getItemPileAt(requestedInventorySlot, 0);
+				ItemPile p = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(requestedInventorySlot, 0);
 				if (p != null)
 					requestedInventorySlot = p.getX();
-				((EntityWithSelectedItem) player).getSelectedItemComponent().setSelectedSlot(requestedInventorySlot);
+				((EntityWithSelectedItem) playerEntity).getSelectedItemComponent().setSelectedSlot(requestedInventorySlot);
 
 				return true;
 			}
 		}
 		else if (!guiHidden && Client.getInstance().getInputsManager().getInputByName("inventory").equals(keyBind))
 		{
-			if (player != null)
+			if (playerEntity != null)
 			{
 				focus(false);
-				if (player instanceof EntityCreative && ((EntityCreative) player).getCreativeModeComponent().get())
-					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) player).getInventory(), new InventoryAllVoxels() }));
+				if (playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
+					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory(), new InventoryAllVoxels() }));
 				else
-					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) player).getInventory() }));
+					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory() }));
 			}
 		}
 		//Exit brings up the pause menu
@@ -454,7 +459,7 @@ public class Ingame extends OverlayableScene
 		if (currentOverlay != null)
 			return currentOverlay.onClick(x, y, button);
 
-		if (player == null)
+		if (playerEntity == null)
 			return false;
 
 		Input mButton = null;
@@ -506,15 +511,15 @@ public class Ingame extends OverlayableScene
 		if (currentOverlay != null && currentOverlay.onScroll(a))
 			return true;
 		//Scroll trought the items
-		if (player != null && player instanceof EntityWithSelectedItem)
+		if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem)
 		{
 			ItemPile selected = null;
-			int selectedInventorySlot = ((EntityWithSelectedItem) player).getSelectedItemComponent().getSelectedSlot();
+			int selectedInventorySlot = ((EntityWithSelectedItem) playerEntity).getSelectedItemComponent().getSelectedSlot();
 			int originalSlot = selectedInventorySlot;
 			if (a < 0)
 			{
-				selectedInventorySlot %= ((EntityWithInventory) player).getInventory().getWidth();
-				selected = ((EntityWithInventory) player).getInventory().getItemPileAt(selectedInventorySlot, 0);
+				selectedInventorySlot %= ((EntityWithInventory) playerEntity).getInventory().getWidth();
+				selected = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(selectedInventorySlot, 0);
 				if (selected != null)
 					selectedInventorySlot += selected.getItem().getSlotsWidth();
 				else
@@ -524,14 +529,14 @@ public class Ingame extends OverlayableScene
 			{
 				selectedInventorySlot--;
 				if (selectedInventorySlot < 0)
-					selectedInventorySlot += ((EntityWithInventory) player).getInventory().getWidth();
-				selected = ((EntityWithInventory) player).getInventory().getItemPileAt(selectedInventorySlot, 0);
+					selectedInventorySlot += ((EntityWithInventory) playerEntity).getInventory().getWidth();
+				selected = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(selectedInventorySlot, 0);
 				if (selected != null)
 					selectedInventorySlot = selected.getX();
 			}
 			//Switch slot
 			if (originalSlot != selectedInventorySlot)
-				((EntityWithSelectedItem) player).getSelectedItemComponent().setSelectedSlot(selectedInventorySlot);
+				((EntityWithSelectedItem) playerEntity).getSelectedItemComponent().setSelectedSlot(selectedInventorySlot);
 		}
 		return true;
 	}
@@ -548,6 +553,20 @@ public class Ingame extends OverlayableScene
 	@Override
 	public void destroy()
 	{
+		Player player = Client.getInstance().getPlayer();
+		
+		PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(player);
+		Client.getInstance().getPluginManager().fireEvent(playerDisconnectionEvent);
+
+		if(this.playerEntity != null)
+		{
+			SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + Client.getInstance().getPlayer().getName().toLowerCase() + ".csf");
+			playerEntityFile.write(this.playerEntity);
+		}
+		
+		//player.save();
+		//player.removePlayerFromWorld();
+		
 		Client.getInstance().getPluginManager().disablePlugins();
 		
 		this.world.getWorldRenderer().destroy();
@@ -574,8 +593,8 @@ public class Ingame extends OverlayableScene
 		int csh = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(bx, bz);
 
 		float angleX = -1;
-		if (player != null && player instanceof EntityLiving)
-			angleX = Math.round(((EntityLiving) player).getEntityRotationComponent().getHorizontalRotation());
+		if (playerEntity != null && playerEntity instanceof EntityLiving)
+			angleX = Math.round(((EntityLiving) playerEntity).getEntityRotationComponent().getHorizontalRotation());
 		//float angleY = Math.round(((EntityLiving) player).getEntityRotationComponent().getVerticalRotation());
 		double dx = Math.sin(angleX / 360 * 2.0 * Math.PI);
 		double dz = Math.cos(angleX / 360 * 2.0 * Math.PI);
@@ -645,10 +664,10 @@ public class Ingame extends OverlayableScene
 				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk : " + current + " - No rendering data", BitmapFont.SMALLFONTS);
 		}
 
-		if (player != null && player instanceof EntityLiving)
+		if (playerEntity != null && playerEntity instanceof EntityLiving)
 		{
-			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Current Region : " + this.player.getWorld().getRegionChunkCoordinates(cx, cy, cz), BitmapFont.SMALLFONTS);
-			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 9 * 16, 0, 16, "Controlled Entity : " + this.player, BitmapFont.SMALLFONTS);
+			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Current Region : " + this.playerEntity.getWorld().getRegionChunkCoordinates(cx, cy, cz), BitmapFont.SMALLFONTS);
+			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 9 * 16, 0, 16, "Controlled Entity : " + this.playerEntity, BitmapFont.SMALLFONTS);
 		}
 	}
 

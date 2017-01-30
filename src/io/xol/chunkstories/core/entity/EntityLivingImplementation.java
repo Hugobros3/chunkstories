@@ -106,7 +106,7 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 
 			context.currentShader().setUniform4f("colorIn", 0.0, 1.0, 0.0, 1.0);
 			//Check for intersection with player
-			EntityControllable ec = Client.getInstance().getClientSideController().getControlledEntity();
+			EntityControllable ec = Client.getInstance().getPlayer().getControlledEntity();
 
 			if (ec != null)
 			{
@@ -274,7 +274,7 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 			Controller controller = ((EntityControllable) this).getControllerComponent().getController();
 			if (controller == null)
 				tick = (getWorld() instanceof WorldMaster);
-			else if (getWorld() instanceof WorldClient && Client.getInstance().getClientSideController().equals(controller))
+			else if (getWorld() instanceof WorldClient && Client.getInstance().getPlayer().equals(controller))
 				tick = true;
 
 		}
@@ -504,7 +504,7 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 			//	dataSource.getBoneHierarchyTransformationMatrixWithOffset(nameOfEndBone, animationTime);
 
 			//Don't mess with the client
-			if (Client.getInstance() != null && Client.getInstance().getClientSideController().getControlledEntity() == EntityLivingImplementation.this)
+			if (Client.getInstance() != null && Client.getInstance().getPlayer().getControlledEntity() == EntityLivingImplementation.this)
 				return dataSource.getBoneHierarchyTransformationMatrixWithOffset(nameOfEndBone, animationTime);
 
 			CachedData cachedData = cachedBones.get(nameOfEndBone);

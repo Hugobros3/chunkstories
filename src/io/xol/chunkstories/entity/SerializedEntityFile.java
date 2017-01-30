@@ -57,6 +57,8 @@ public class SerializedEntityFile implements OfflineSerializedData
 	{
 		try
 		{
+			file.getParentFile().mkdirs();
+			
 			DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
 			
 			EntitySerializer.writeEntityToStream(out, this, entity);

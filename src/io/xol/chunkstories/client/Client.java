@@ -235,14 +235,14 @@ public class Client implements ClientInterface
 
 			gmp.focus(false);
 			if (otherInventory != null)
-				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getClientSideController().getControlledEntity()).getInventory(), otherInventory }));
+				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getPlayer().getControlledEntity()).getInventory(), otherInventory }));
 			else
-				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getClientSideController().getControlledEntity()).getInventory() }));
+				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getPlayer().getControlledEntity()).getInventory() }));
 		}
 	}
 
 	@Override
-	public ClientSideController getClientSideController()
+	public ClientSideController getPlayer()
 	{
 		return clientSideController;
 	}
@@ -293,14 +293,14 @@ public class Client implements ClientInterface
 			@Override
 			public void run()
 			{
+				Client.windows.changeScene(new MainMenu(windows, false));
+				
 				if (world != null)
 				{
 					Client.world.destroy();
 					Client.world = null;
 				}
 				clientSideController = null;
-
-				Client.windows.changeScene(new MainMenu(windows, false));
 			}
 		});
 	}
@@ -312,14 +312,14 @@ public class Client implements ClientInterface
 			@Override
 			public void run()
 			{
+				Client.windows.changeScene(new MainMenu(windows, errorMessage));
+				
 				if (world != null)
 				{
 					Client.world.destroy();
 					Client.world = null;
 				}
 				clientSideController = null;
-
-				Client.windows.changeScene(new MainMenu(windows, errorMessage));
 			}
 		});
 	}
