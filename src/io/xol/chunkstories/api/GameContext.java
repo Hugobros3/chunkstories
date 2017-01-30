@@ -10,7 +10,7 @@ public interface GameContext
 {
 	public Content getContent();
 
-	/** Prints some text, usefull for debug purposes */
+	/** Accesses the pluginManager */
 	public PluginManager getPluginManager();
 	
 	/** Prints some text, usefull for debug purposes */

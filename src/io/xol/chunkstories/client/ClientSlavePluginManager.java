@@ -8,11 +8,11 @@ import io.xol.chunkstories.plugin.DefaultPluginManager;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class DefaultClientPluginManager extends DefaultPluginManager implements ClientPluginManager
+public class ClientSlavePluginManager extends DefaultPluginManager implements ClientPluginManager
 {
 	ClientInterface client;
 	
-	public DefaultClientPluginManager(ClientInterface client)
+	public ClientSlavePluginManager(ClientInterface client)
 	{
 		super(client);
 		this.client = client;

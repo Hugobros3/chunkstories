@@ -1,7 +1,7 @@
 package io.xol.chunkstories.api.entity.interfaces;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.ClientSideController;
+import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
@@ -27,9 +27,9 @@ public interface EntityControllable extends Entity, EntityUnsaveable
 	/**
 	 * Clientside controller tick, called before the main tick() call on clients, supposed to handle the bulk of interactions
 	 */
-	public void tickClientController(ClientSideController controller);
+	public void tickClientController(PlayerClient controller);
 
-	public void setupCamera(ClientSideController controller);
+	public void setupCamera(PlayerClient controller);
 	
 	/**
 	 * If this entity has the ability to select blocks, this method should return said block

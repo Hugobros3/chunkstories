@@ -1,10 +1,9 @@
 package io.xol.chunkstories.api.client;
 
 import io.xol.chunkstories.api.GameContext;
-import io.xol.chunkstories.api.entity.ClientSideController;
+import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
-import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -17,9 +16,7 @@ import io.xol.chunkstories.world.WorldClientCommon;
 
 public interface ClientInterface extends GameContext
 {
-	public ClientSideController getPlayer();
-	
-	public PluginManager getPluginManager();
+	public PlayerClient getPlayer();
 
 	/** Prints some text into the client chat */
 	public void printChat(String textToPrint);

@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.server.Player;
 //http://chunkstories.xyz
 //http://xol.io
 
-public interface ClientSideController extends Controller, Player
+public interface PlayerClient extends Controller, Player
 {
 	/**
 	 * @return Is the game GUI in focus or obstructed by other things ?

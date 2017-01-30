@@ -14,8 +14,9 @@ import io.xol.engine.misc.ConfigFile;
 import io.xol.engine.misc.NativesLoader;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.chunkstories.api.entity.ClientSideController;
+import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
@@ -30,7 +31,6 @@ import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
-import io.xol.chunkstories.input.lwjgl2.Lwjgl2ClientInputsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -39,7 +39,7 @@ public class Client implements ClientInterface
 {
 	public static ConfigFile clientConfig = new ConfigFile("./config/client.cfg");
 
-	public static Lwjgl2ClientInputsManager inputsManager;
+	//public static Lwjgl2ClientInputsManager inputsManager;
 
 	public static boolean offline = false;
 
@@ -54,8 +54,8 @@ public class Client implements ClientInterface
 	public static DebugProfiler profiler = new DebugProfiler();
 
 	private ClientGameContent gameContent;
-	private ClientSideController clientSideController;
-	public ClientPluginManager pluginsManager;
+	private PlayerClient clientSideController;
+	//public ClientPluginManager pluginsManager;
 
 	//public EntityControllable controlledEntity;
 	public static Client client;
@@ -120,17 +120,12 @@ public class Client implements ClientInterface
 		//Create game content manager
 		gameContent = new ClientGameContent(this, modsStringArgument);
 		
-		inputsManager = new Lwjgl2ClientInputsManager(this);
-		
 		//
 		windows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);
 		windows.createOpenGLContext();
 
 		//Initlializes windows screen to main menu ( and ask for login )
 		windows.changeScene(new MainMenu(windows, true));
-		
-		//Creates plugin manager
-		pluginsManager = new DefaultClientPluginManager(client);
 		
 		//Pass control to the windows for main game loop
 		windows.run();
@@ -145,12 +140,6 @@ public class Client implements ClientInterface
 	public SoundManager getSoundManager()
 	{
 		return windows.getSoundEngine();
-	}
-
-	@Override
-	public Lwjgl2ClientInputsManager getInputsManager()
-	{
-		return inputsManager;
 	}
 
 	@Override
@@ -184,12 +173,6 @@ public class Client implements ClientInterface
 	}
 
 	@Override
-	public ClientPluginManager getPluginManager()
-	{
-		return pluginsManager;
-	}
-
-	@Override
 	public void reloadAssets()
 	{
 		SimpleFence waitForReload = new SimpleFence();
@@ -197,8 +180,6 @@ public class Client implements ClientInterface
 		if (GameWindowOpenGL.isMainGLWindow())
 		{
 			gameContent.reload();
-			//ModsManager.reload();
-			inputsManager.reload();
 
 			return;
 		}
@@ -210,8 +191,6 @@ public class Client implements ClientInterface
 			{
 				//ModsManager.reload();
 				gameContent.reload();
-				
-				inputsManager.reload();
 				
 				waitForReload.signal();
 			}
@@ -242,7 +221,7 @@ public class Client implements ClientInterface
 	}
 
 	@Override
-	public ClientSideController getPlayer()
+	public PlayerClient getPlayer()
 	{
 		return clientSideController;
 	}
@@ -264,7 +243,6 @@ public class Client implements ClientInterface
 				//Setup the new world and make a controller for it
 				Client.world = world;
 				clientSideController = new ClientWorldController(Client.this, world);
-				world.startLogic();
 
 				//Change the scene
 				Ingame ingameScene = new Ingame(windows, world);
@@ -278,9 +256,13 @@ public class Client implements ClientInterface
 					overlay.mainScene = ingameScene;
 					overlay.parent = null;
 				}
-
+				
+				//Switch scene but keep the overlay
 				ingameScene.changeOverlay(overlay);
 				Client.windows.changeScene(ingameScene);
+				
+				//Start only the logic after all that
+				world.startLogic();
 			}
 		});
 	}
@@ -353,5 +335,28 @@ public class Client implements ClientInterface
 	public ClientGameContent getContent()
 	{
 		return gameContent;
+	}
+
+	private ClientPluginManager pluginManager = null;
+	
+	public void setClientPluginManager(ClientPluginManager pl)
+	{
+		this.pluginManager = pl;
+	}
+	
+	@Override
+	public ClientPluginManager getPluginManager()
+	{
+		//if (windows.getCurrentScene() instanceof Ingame)
+		//	return ((Ingame) windows.getCurrentScene()).getPluginManager();
+		return pluginManager;
+	}
+	
+	@Override
+	public ClientInputsManager getInputsManager()
+	{
+		if (windows.getCurrentScene() instanceof Ingame)
+			return ((Ingame) windows.getCurrentScene()).getInputsManager();
+		return null;
 	}
 }

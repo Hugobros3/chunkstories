@@ -26,6 +26,6 @@ public interface PluginInformation
 	
 	public enum PluginType
 	{
-		UNIVERSAL, CLIENT_ONLY, SERVER_ONLY;
+		UNIVERSAL, CLIENT_ONLY, MASTER;
 	}
 }

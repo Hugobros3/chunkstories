@@ -18,8 +18,10 @@ import javax.swing.JOptionPane;
 
 import org.lwjgl.LWJGLException;
 
+import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
@@ -239,7 +241,8 @@ public class GameWindowOpenGL
 				if (currentScene != null)
 				{
 					// update inputs first
-					client.getInputsManager().pollLWJGLInputs();
+					if(currentScene instanceof Ingame)
+						((Ingame) currentScene).getInputsManager().pollLWJGLInputs();
 					InputAbstractor.update(this, currentScene);
 
 					// then do the game logic

@@ -85,7 +85,7 @@ public abstract class DefaultPluginManager implements PluginManager
 					if (pluginInformation.getPluginType() == PluginType.CLIENT_ONLY && !(this instanceof ClientPluginManager))
 						continue;
 					//Server only plugins require the same
-					else if (pluginInformation.getPluginType() == PluginType.SERVER_ONLY && !(this instanceof ServerPluginManager))
+					else if (pluginInformation.getPluginType() == PluginType.MASTER && !(this instanceof ServerPluginManager))
 						continue;
 
 					pluginsToLoad.add(pluginInformation);
@@ -105,7 +105,7 @@ public abstract class DefaultPluginManager implements PluginManager
 			if (pluginInformation.getPluginType() == PluginType.CLIENT_ONLY && !(this instanceof ClientPluginManager))
 				continue;
 			//Server only plugins require the same
-			else if (pluginInformation.getPluginType() == PluginType.SERVER_ONLY && !(this instanceof ServerPluginManager))
+			else if (pluginInformation.getPluginType() == PluginType.MASTER && !(this instanceof ServerPluginManager))
 				continue;
 
 			pluginsToLoad.add(pluginInformation);

@@ -94,7 +94,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			}
 			else if (ServerPlugin.class.isAssignableFrom(entryPointClassUnchecked))
 			{
-				pluginType = PluginType.SERVER_ONLY;
+				pluginType = PluginType.MASTER;
 
 				Class<?>[] types = new Class[] { PluginInformation.class, ServerInterface.class };
 				entryPointConstructor = entryPointClass.getConstructor(types);
@@ -248,7 +248,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 
 				ClientInterface clientInterface = (ClientInterface) pluginExecutionContext;
 				return (ClientPlugin)entryPointConstructor.newInstance(new Object[] { this, clientInterface });
-			case SERVER_ONLY:
+			case MASTER:
 				if (!(pluginExecutionContext instanceof ServerInterface))
 					throw new IllegalArgumentException()
 					{
@@ -267,6 +267,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 		//Catch-all for plugin creation failure
 		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 		{
+			e.printStackTrace();
 			throw new PluginCreationException()
 			{
 				public String getMessage()

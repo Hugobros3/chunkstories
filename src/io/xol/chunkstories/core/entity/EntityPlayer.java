@@ -7,7 +7,7 @@ import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.model.ModelLibrary;
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.ClientSideController;
+import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
@@ -239,7 +239,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	// client-side method for updating the player movement
 	@Override
-	public void tickClientController(ClientSideController controller)
+	public void tickClientController(PlayerClient controller)
 	{
 		// Null-out acceleration, until modified by controls
 		synchronized (this)
@@ -256,7 +256,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		//In that case that means pushing to the server.
 	}
 
-	public void tickNormalMove(ClientSideController controller)
+	public void tickNormalMove(PlayerClient controller)
 	{
 		if (isDead())
 			return;
@@ -383,7 +383,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	public static float flySpeed = 0.125f;
 
-	public void tickFlyMove(ClientSideController controller)
+	public void tickFlyMove(PlayerClient controller)
 	{
 		if (!controller.hasFocus())
 			return;
@@ -592,7 +592,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	}
 
 	@Override
-	public void setupCamera(ClientSideController controller)
+	public void setupCamera(PlayerClient controller)
 	{
 		if (controller.hasFocus())
 		{

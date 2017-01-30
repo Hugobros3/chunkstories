@@ -285,6 +285,7 @@ public class RemoteServerPlayer implements Player
 	@Override
 	public long getUUID()
 	{
+		//TODO make them proper
 		return this.getName().hashCode();
 	}
 

@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.ClientSideController;
+import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.InputsManager;
@@ -26,7 +26,7 @@ import io.xol.engine.math.Math2;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ClientWorldController implements ClientSideController
+public class ClientWorldController implements PlayerClient
 {
 	Client client;
 	WorldClientCommon world;
@@ -48,7 +48,7 @@ public class ClientWorldController implements ClientSideController
 	@Override
 	public InputsManager getInputsManager()
 	{
-		return Client.inputsManager;
+		return Client.getInstance().getInputsManager();
 	}
 
 	@Override

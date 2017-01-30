@@ -1,5 +1,9 @@
 package io.xol.chunkstories.world;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.utils.IterableIterator;
@@ -37,12 +41,38 @@ public class WorldClientLocal extends WorldClientCommon implements WorldMaster
 	@Override
 	public IterableIterator<Player> getPlayers()
 	{
-		throw new UnsupportedOperationException("getPlayers");
+		Set<Player> players = new HashSet<Player>();
+		if(Client.getInstance().getPlayer().hasSpawned())
+			players.add(Client.getInstance().getPlayer());
+			
+		return new IterableIterator<Player>()
+				{
+					Iterator<Player> i = players.iterator();
+					@Override
+					public boolean hasNext()
+					{
+						return i.hasNext();
+					}
+					@Override
+					public Player next()
+					{
+						return i.next();
+					}
+					@Override
+					public Iterator<Player> iterator()
+					{
+						return this;
+					}
+			
+				};
+		//throw new UnsupportedOperationException("getPlayers");
 	}
 
 	@Override
 	public Player getPlayerByName(String playerName)
 	{
-		throw new UnsupportedOperationException("getPlayers");
+		if(playerName.equals(Client.username))
+			return Client.getInstance().getPlayer();
+		return null;
 	}
 }

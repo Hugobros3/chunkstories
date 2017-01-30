@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.item;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.ClientSideController;
+import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
@@ -150,9 +150,9 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 			Controller controller = owner2.getController();
 
 			//For now only client-side players can trigger shooting actions
-			if (controller instanceof ClientSideController)
+			if (controller instanceof PlayerClient)
 			{
-				if (!((ClientSideController) controller).hasFocus())
+				if (!((PlayerClient) controller).hasFocus())
 					return;
 				if (controller.getInputsManager().getInputByName("mouse.left").isPressed())
 				{

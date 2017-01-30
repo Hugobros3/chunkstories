@@ -14,6 +14,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
+import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.input.KeyBindsLoader;
 import io.xol.chunkstories.net.packets.PacketInput;
 import io.xol.chunkstories.world.WorldClientRemote;
@@ -28,11 +29,11 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 	Set<KeyBindImplementation> keyboardInputs = new HashSet<KeyBindImplementation>();
 	Map<Long, Input> inputsMap = new HashMap<Long, Input>();
 	
-	private final Client client;
+	private final Ingame scene;
 
-	public Lwjgl2ClientInputsManager(Client client)
+	public Lwjgl2ClientInputsManager(Ingame scene)
 	{
-		this.client = client;
+		this.scene = scene;
 		
 		reload();
 	}
@@ -111,7 +112,7 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 		inputs.clear();
 		inputsMap.clear();
 		keyboardInputs.clear();
-		Iterator<Input> i = KeyBindsLoader.loadKeyBindsIntoManager(this, client.getContent().modsManager());
+		Iterator<Input> i = KeyBindsLoader.loadKeyBindsIntoManager(this, scene.getWorld().getGameContext().getContent().modsManager());
 		while(i.hasNext())
 		{
 			Input input = i.next();
@@ -146,7 +147,7 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 	{
 		ClientInputPressedEvent event = new ClientInputPressedEvent(input);
 
-		Client.getInstance().getPluginManager().fireEvent(event);
+		scene.getPluginManager().fireEvent(event);
 		if (event.isCancelled())
 			return false;
 		
@@ -174,7 +175,7 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 	{
 		ClientInputReleasedEvent event = new ClientInputReleasedEvent(input);
 
-		Client.getInstance().getPluginManager().fireEvent(event);
+		scene.getPluginManager().fireEvent(event);
 		//if (event.isCancelled())
 		//	return false;
 		

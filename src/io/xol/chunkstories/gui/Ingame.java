@@ -30,6 +30,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyBind;
 import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.utils.IterableIterator;
@@ -40,6 +41,9 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientMasterPluginManager;
+import io.xol.chunkstories.client.ClientSlavePluginManager;
+import io.xol.chunkstories.client.LocalServerContext;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.CameraSetupEvent;
@@ -70,6 +74,13 @@ import io.xol.chunkstories.world.WorldClientRemote;
 public class Ingame extends OverlayableScene
 {
 	final private WorldClientCommon world;
+	
+	//Moved from client to IG, as these make sense per world/play
+	private final ClientPluginManager pluginManager;
+	private final Lwjgl2ClientInputsManager inputsManager;
+	
+	//Only in SP
+	private final LocalServerContext localServer;
 
 	// Renderer
 	SelectionRenderer selectionRenderer;
@@ -88,22 +99,29 @@ public class Ingame extends OverlayableScene
 		super(window);
 		this.world = world;
 		window.renderingContext.setCamera(camera);
+		
+		inputsManager = new Lwjgl2ClientInputsManager(this);
+		
 		chat = new Chat(this);
-
-		Client.getInstance().getPluginManager().reloadPlugins();
+		
+		if(world instanceof WorldMaster)
+		{
+			localServer = new LocalServerContext(Client.getInstance());
+			pluginManager = new ClientMasterPluginManager(localServer);
+		}
+		else
+		{
+			localServer = null;
+			pluginManager = new ClientSlavePluginManager(Client.getInstance());
+		}
+		
+		//Hacky job because the client is a global state and the ingame scene is per-world
+		Client.getInstance().setClientPluginManager(pluginManager);
+		pluginManager.reloadPlugins();
 		
 		//Spawn manually the player if we're in Singleplayer
-		//TODO this should be managed by a proper localhost server rather than this appalling hack
 		if (world instanceof WorldMaster)
-		{
-			//TODO remember a proper spawn location
 			world.spawnPlayer(Client.getInstance().getPlayer());
-			
-			//Client.getInstance().getClientSideController().setControlledEntity(new EntityPlayer(world, 0, 100, 0, Client.username));
-
-			//((EntityControllable) Client.getInstance().getClientSideController().getControlledEntity()).getControllerComponent().setController(Client.getInstance().getClientSideController());
-			//world.addEntity(Client.getInstance().getClientSideController().getControlledEntity());
-		}
 
 		//Creates the rendering stuff
 		world.getWorldRenderer().setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
@@ -158,7 +176,7 @@ public class Ingame extends OverlayableScene
 		if (playerEntity != null)
 			playerEntity.setupCamera(camera);
 		
-		Client.getInstance().getPluginManager().fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
+		pluginManager.fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
 
 		//Main render call
 		world.getWorldRenderer().renderWorldAtCamera(camera);
@@ -340,7 +358,7 @@ public class Ingame extends OverlayableScene
 		if (currentOverlay != null && currentOverlay.handleKeypress(keyCode))
 			return true;
 
-		KeyBind keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
+		KeyBind keyBind = getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
 
 		if (!guiHidden && keyBind != null)
 		{
@@ -382,7 +400,13 @@ public class Ingame extends OverlayableScene
 		//CTRL-F12 reloads
 		else if ((Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == Keyboard.KEY_F12)
 		{
+			//Rebuild the mod FS
 			Client.getInstance().reloadAssets();
+			
+			//Reload plugins
+			this.inputsManager.reload();
+			
+			//Mark some caches dirty
 			world.getWorldRenderer().reloadContentSpecificStuff();
 		}
 		//CTRL-R redraws chunks
@@ -442,7 +466,7 @@ public class Ingame extends OverlayableScene
 
 	public boolean onKeyUp(int keyCode)
 	{
-		KeyBind keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
+		KeyBind keyBind = getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
 
 		if (keyBind != null)
 		{
@@ -553,21 +577,25 @@ public class Ingame extends OverlayableScene
 	@Override
 	public void destroy()
 	{
-		Player player = Client.getInstance().getPlayer();
-		
-		PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(player);
-		Client.getInstance().getPluginManager().fireEvent(playerDisconnectionEvent);
-
-		if(this.playerEntity != null)
+		//Logout sequence
+		if(world instanceof WorldMaster)
 		{
-			SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + Client.getInstance().getPlayer().getName().toLowerCase() + ".csf");
-			playerEntityFile.write(this.playerEntity);
+			Player player = Client.getInstance().getPlayer();
+			
+			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(player);
+			pluginManager.fireEvent(playerDisconnectionEvent);
+	
+			if(this.playerEntity != null)
+			{
+				SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + Client.getInstance().getPlayer().getName().toLowerCase() + ".csf");
+				playerEntityFile.write(this.playerEntity);
+			}
 		}
-		
 		//player.save();
 		//player.removePlayerFromWorld();
 		
-		Client.getInstance().getPluginManager().disablePlugins();
+		//Disables plugins
+		pluginManager.disablePlugins();
 		
 		this.world.getWorldRenderer().destroy();
 	}
@@ -716,5 +744,15 @@ public class Ingame extends OverlayableScene
 			formatted = in.charAt(in.length() - i - 1) + formatted;
 		}
 		return formatted;
+	}
+
+	public Lwjgl2ClientInputsManager getInputsManager()
+	{
+		return this.inputsManager;
+	}
+	
+	public ClientPluginManager getPluginManager()
+	{
+		return pluginManager;
 	}
 }
