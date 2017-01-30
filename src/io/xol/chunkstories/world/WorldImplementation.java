@@ -10,9 +10,12 @@ import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.particles.ParticlesManager;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -29,9 +32,12 @@ import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.sandbox.GameLogicThread;
+import io.xol.chunkstories.content.sandbox.WorldLogicThread;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
+import io.xol.chunkstories.core.entity.EntityPlayer;
+import io.xol.chunkstories.core.events.PlayerSpawnEvent;
 import io.xol.chunkstories.entity.EntityWorldIterator;
+import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.WorldRenderer;
@@ -74,7 +80,7 @@ public abstract class WorldImplementation implements World
 
 	//Who does the actual work
 	public IOTasks ioHandler;
-	private GameLogicThread worldThread;
+	private WorldLogicThread worldThread;
 
 	// RAM-eating depreacated monster
 	// public ChunksData chunksData;
@@ -134,7 +140,7 @@ public abstract class WorldImplementation implements World
 		}
 
 		//Start the world logic thread
-		worldThread = new GameLogicThread(this, new UnthrustedUserContentSecurityManager());
+		worldThread = new WorldLogicThread(this, new UnthrustedUserContentSecurityManager());
 	}
 
 	public void startLogic()
@@ -165,6 +171,49 @@ public abstract class WorldImplementation implements World
 		return null;
 	}
 
+	public void spawnPlayer(Player player)
+	{
+		if(!(this instanceof WorldMaster))
+			throw new UnsupportedOperationException("Only Master Worlds can do this");
+		
+		Entity savedEntity = null;
+		
+		SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + player.getName().toLowerCase() + ".csf");
+		if(playerEntityFile.exists())
+			savedEntity = playerEntityFile.read(this);
+		
+		Location previousLocation = null;
+		if(savedEntity != null)
+			previousLocation = savedEntity.getLocation();
+		
+		PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(player, (WorldMaster) this, savedEntity, previousLocation);
+		getGameContext().getPluginManager().fireEvent(playerSpawnEvent);
+		
+		if(!playerSpawnEvent.isCancelled())
+		{
+			Entity entity = playerSpawnEvent.getEntity();
+			
+			Location actualSpawnLocation = playerSpawnEvent.getSpawnLocation();
+			if(actualSpawnLocation == null)
+				actualSpawnLocation = this.getDefaultSpawnLocation();
+			
+			if(entity == null || ((entity instanceof EntityLiving) && (((EntityLiving) entity).isDead())))
+			{
+				entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName());
+			}
+			else
+				entity.setUUID(-1);
+			
+			entity.setLocation(actualSpawnLocation);
+			
+			addEntity(entity);
+			if(entity instanceof EntityControllable)
+				player.setControlledEntity((EntityControllable) entity);
+			else
+				System.out.println("Error : entity is not controllable");
+		}
+	}
+	
 	@Override
 	public void addEntity(final Entity entity)
 	{
@@ -346,6 +395,7 @@ public abstract class WorldImplementation implements World
 		catch (Exception e)
 		{
 			ChunkStoriesLogger.getInstance().log("Exception occured while ticking the world : "+e.getMessage(), LogLevel.CRITICAL);
+			e.printStackTrace();
 			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 		}
 	}

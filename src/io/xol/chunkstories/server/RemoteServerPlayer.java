@@ -4,7 +4,6 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
@@ -226,12 +225,12 @@ public class RemoteServerPlayer implements Player
 			this.controlledEntity.setLocation(l);
 	}
 
-	@Override
+	/*@Override
 	public void setFlying(boolean flying)
 	{
 		if (this.controlledEntity != null && this instanceof EntityFlying)
 			((EntityFlying) this.controlledEntity).getFlyingComponent().set(flying);
-	}
+	}*/
 
 	@Override
 	public boolean isConnected()
@@ -243,12 +242,6 @@ public class RemoteServerPlayer implements Player
 	public void sendMessage(String msg)
 	{
 		getPlayerConnection().sendChat(msg);
-	}
-
-	@Override
-	public void kickPlayer(String reason)
-	{
-		getPlayerConnection().disconnect("Kicked : " + reason);
 	}
 
 	@Override

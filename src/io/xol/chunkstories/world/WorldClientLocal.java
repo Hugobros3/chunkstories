@@ -35,12 +35,6 @@ public class WorldClientLocal extends WorldClientCommon implements WorldMaster
 	}
 
 	@Override
-	public void spawnPlayer(Player player)
-	{
-		throw new UnsupportedOperationException("spawnPlayer");
-	}
-
-	@Override
 	public IterableIterator<Player> getPlayers()
 	{
 		throw new UnsupportedOperationException("getPlayers");

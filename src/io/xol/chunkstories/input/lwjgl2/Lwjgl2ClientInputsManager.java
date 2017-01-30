@@ -150,7 +150,7 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 		if (event.isCancelled())
 			return false;
 		
-		final EntityControllable entityControlled = Client.getInstance().getClientSideController().getControlledEntity();
+		final EntityControllable entityControlled = Client.getInstance().getPlayer().getControlledEntity();
 
 		//There has to be a controlled entity for sending inputs to make sense.
 		if(entityControlled == null)
@@ -166,7 +166,7 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 		}
 
 		//Handle interaction locally
-		return entityControlled.handleInteraction(input, Client.getInstance().getClientSideController());
+		return entityControlled.handleInteraction(input, Client.getInstance().getPlayer());
 	}
 
 	@Override
@@ -178,7 +178,7 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 		//if (event.isCancelled())
 		//	return false;
 		
-		final EntityControllable entityControlled = Client.getInstance().getClientSideController().getControlledEntity();
+		final EntityControllable entityControlled = Client.getInstance().getPlayer().getControlledEntity();
 
 		//There has to be a controlled entity for sending inputs to make sense.
 		if(entityControlled == null)

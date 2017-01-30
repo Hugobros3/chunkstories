@@ -146,9 +146,9 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 
 			float rainIntensity = rainPresence * 2.0f - 1.0f;
 
-			if (Client.getInstance().getClientSideController().getControlledEntity() != null)
+			if (Client.getInstance().getPlayer().getControlledEntity() != null)
 			{
-				int interiour = world.getSunlightLevelLocation(Client.getInstance().getClientSideController().getControlledEntity().getLocation());
+				int interiour = world.getSunlightLevelLocation(Client.getInstance().getPlayer().getControlledEntity().getLocation());
 				rainIntensity *= 0.2f + 0.8f * (interiour / 15f);
 
 				rainIntensity *= 0.5;
@@ -175,7 +175,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 
 	private float getSnowPresence()
 	{
-		Entity e = Client.getInstance().getClientSideController().getControlledEntity();
+		Entity e = Client.getInstance().getPlayer().getControlledEntity();
 		if(e != null)
 		{
 			return world.getWeather()*Math2.clamp((e.getLocation().getY() - 120) / 20, 0, 1);
@@ -241,7 +241,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 		//Spawn some snow arround
 		float snowPresence = getSnowPresence();
 		
-		Entity e = Client.getInstance().getClientSideController().getControlledEntity();
+		Entity e = Client.getInstance().getPlayer().getControlledEntity();
 		if (e != null && world.getWorldRenderer() != null)
 		{
 			Location loc = e.getLocation();

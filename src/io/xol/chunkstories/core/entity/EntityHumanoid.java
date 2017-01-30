@@ -27,7 +27,6 @@ import io.xol.chunkstories.voxel.VoxelsStore;
 
 import io.xol.engine.animation.AnimatedSkeleton;
 import io.xol.engine.animation.BVHAnimation;
-import io.xol.engine.animation.BVHLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -166,7 +165,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 		public boolean shouldHideBone(RenderingInterface renderingContext, String boneName)
 		{
-			if (EntityHumanoid.this.equals(Client.getInstance().getClientSideController().getControlledEntity()))
+			if (EntityHumanoid.this.equals(Client.getInstance().getPlayer().getControlledEntity()))
 			{
 				if (renderingContext.isThisAShadowPass())
 					return false;
@@ -294,7 +293,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 			Controller controller = ((EntityControllable) this).getControllerComponent().getController();
 			if (controller == null)
 				tick = (getWorld() instanceof WorldMaster);
-			else if (getWorld() instanceof WorldClient && Client.getInstance().getClientSideController().equals(controller))
+			else if (getWorld() instanceof WorldClient && Client.getInstance().getPlayer().equals(controller))
 				tick = true;
 
 		}
@@ -315,6 +314,8 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 			}
 
 			//Set acceleration vector to wanted speed - actual speed
+			if(isDead())
+				targetVelocity = new Vector3dm(0.0);
 			acceleration = new Vector3dm(targetVelocity.getX() - getVelocityComponent().getVelocity().getX(), 0, targetVelocity.getZ() - getVelocityComponent().getVelocity().getZ());
 
 			//Limit maximal acceleration depending if we're on the groud or not, we accelerate 2x faster on ground
@@ -350,25 +351,25 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 			return;
 
 		//When the entities are too far from the player, don't play any sounds
-		if (Client.getInstance().getClientSideController().getControlledEntity() != null)
-			if (Client.getInstance().getClientSideController().getControlledEntity().getLocation().distanceTo(this.getLocation()) > 25f)
+		if (Client.getInstance().getPlayer().getControlledEntity() != null)
+			if (Client.getInstance().getPlayer().getControlledEntity().getLocation().distanceTo(this.getLocation()) > 25f)
 				return;
 
 		// Sound stuff
-		if (isEntityOnGround() && !lastTickOnGround)
+		if (isOnGround() && !lastTickOnGround)
 		{
 			justLanded = true;
 			metersWalked = 0.0;
 		}
 
 		//Used to trigger landing sound
-		lastTickOnGround = this.isEntityOnGround();
+		lastTickOnGround = this.isOnGround();
 
 		//Bobbing
 		Vector3dm horizontalSpeed = this.getVelocityComponent().getVelocity().clone();
 		horizontalSpeed.setY(0d);
 
-		if (isEntityOnGround())
+		if (isOnGround())
 			metersWalked += Math.abs(horizontalSpeed.length());
 
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
@@ -460,7 +461,9 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		
 		damage *= 0.5;
 
-		System.out.println("Hit:"+osef == null ? "" : osef.getName() + " dmg: "+damage);
+		world.getSoundManager().playSoundEffect("sounds/sfx/entities/flesh.ogg", this.getLocation(), (float)Math.random() * 0.4f + 0.4f, 1);
+		
+		//System.out.println("Hit:"+(osef == null ? "" : osef.getName()) + " dmg: "+damage);
 
 		return super.damage(cause, null, damage);
 	}

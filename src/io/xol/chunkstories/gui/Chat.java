@@ -136,7 +136,7 @@ public class Chat
 						args = chatMsg.substring(chatMsg.indexOf(" ") + 1, chatMsg.length()).split(" ");
 					}
 
-					if (Client.getInstance().getPluginManager().dispatchCommand(Client.getInstance(), cmdName, args))
+					if (Client.getInstance().getPluginManager().dispatchCommand(Client.getInstance().getPlayer(), cmdName, args))
 					{
 						if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
 						{
@@ -203,7 +203,7 @@ public class Chat
 					try
 					{
 						float foodLevel = Float.parseFloat(inputBox.text.split(" ")[1]);
-						EntityPlayer player = (EntityPlayer) Client.getInstance().getClientSideController().getControlledEntity();
+						EntityPlayer player = (EntityPlayer) Client.getInstance().getPlayer().getControlledEntity();
 						player.setFoodLevel(foodLevel);
 						insert("Food set to " + foodLevel);
 					}
@@ -250,7 +250,7 @@ public class Chat
 							for (int jj = 0; jj < count; jj++)
 							{
 								Entity test = Client.world.getGameContext().getContent().entities().getEntityTypeById((short) id).create(Client.world);// Entities.newEntity(Client.world, (short) id);
-								Entity player = Client.getInstance().getClientSideController().getControlledEntity();
+								Entity player = Client.getInstance().getPlayer().getControlledEntity();
 								test.setLocation(new Location(Client.world, player.getLocation().clone().add(ii * 3.0, 0.0, jj * 3.0)));
 								Client.world.addEntity(test);
 							}
@@ -263,7 +263,7 @@ public class Chat
 					{
 						Entity e = ie.next();
 						System.out.println("checking " + e);
-						if (!e.equals(Client.getInstance().getClientSideController().getControlledEntity()))
+						if (!e.equals(Client.getInstance().getPlayer().getControlledEntity()))
 						{
 							System.out.println("removing");
 							ie.remove();
@@ -275,7 +275,7 @@ public class Chat
 
 					try
 					{
-						Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
+						Entity controlledEntity = Client.getInstance().getPlayer().getControlledEntity();
 						String itemName = inputBox.text.split(" ")[1];
 
 						int c = 1;
@@ -294,7 +294,7 @@ public class Chat
 				}
 				else if (inputBox.text.startsWith("/locclearinv"))
 				{
-					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
+					Entity controlledEntity = Client.getInstance().getPlayer().getControlledEntity();
 					((EntityPlayer) controlledEntity).getInventory().clear();
 					System.out.println("CLEARED");
 				}
@@ -304,7 +304,7 @@ public class Chat
 				}
 				else if (inputBox.text.startsWith("/locfly"))
 				{
-					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
+					Entity controlledEntity = Client.getInstance().getPlayer().getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityFlying)
 					{
 						boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().get();
@@ -316,7 +316,7 @@ public class Chat
 				}
 				else if (inputBox.text.startsWith("/loccrea"))
 				{
-					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
+					Entity controlledEntity = Client.getInstance().getPlayer().getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityCreative)
 					{
 						boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().get();
@@ -328,7 +328,7 @@ public class Chat
 				}
 				else if (inputBox.text.startsWith("/kkk"))
 				{
-					Entity controlledEntity = Client.getInstance().getClientSideController().getControlledEntity();
+					Entity controlledEntity = Client.getInstance().getPlayer().getControlledEntity();
 					if (controlledEntity != null && controlledEntity instanceof EntityRotateable)
 					{
 						((EntityRotateable) controlledEntity).getEntityRotationComponent().setRotation(180, 0);

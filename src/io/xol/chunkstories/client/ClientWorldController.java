@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.ClientSideController;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
@@ -11,7 +12,9 @@ import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
+import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.sound.SoundManager;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
@@ -55,9 +58,22 @@ public class ClientWorldController implements ClientSideController
 	}
 
 	@Override
-	public boolean setControlledEntity(EntityControllable entityControllable)
+	public boolean setControlledEntity(EntityControllable entity)
 	{
-		controlledEntity = entityControllable;
+		if (entity instanceof EntityControllable)
+		{
+			this.subscribe(entity);
+
+			EntityControllable controllableEntity = (EntityControllable) entity;
+			controllableEntity.getControllerComponent().setController(this);
+			controlledEntity = controllableEntity;
+		}
+		else if (entity == null && getControlledEntity() != null)
+		{
+			getControlledEntity().getControllerComponent().setController(null);
+			controlledEntity = null;
+		}
+		
 		return true;
 	}
 	
@@ -282,5 +298,100 @@ public class ClientWorldController implements ClientSideController
 	public boolean hasFocus()
 	{
 		return client.hasFocus();
+	}
+
+	@Override
+	public String getName()
+	{
+		return Client.username;
+	}
+
+	@Override
+	public String getDisplayName()
+	{
+		return getName();
+	}
+
+	@Override
+	public void sendMessage(String msg)
+	{
+		client.printChat(msg);
+	}
+
+	@Override
+	public Location getLocation()
+	{
+		Entity controlledEntity = this.controlledEntity;
+		if(controlledEntity != null)
+			return controlledEntity.getLocation();
+		return null;
+	}
+
+	@Override
+	public void setLocation(Location l)
+	{
+		Entity controlledEntity = this.controlledEntity;
+		if(controlledEntity != null)
+			controlledEntity.setLocation(l);
+	}
+
+	@Override
+	public boolean isConnected()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean hasSpawned()
+	{
+		return controlledEntity != null;
+	}
+
+	@Override
+	public void updateTrackedEntities()
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public ServerInterface getServer()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public World getWorld()
+	{
+		Entity controlledEntity = this.controlledEntity;
+		if(controlledEntity != null)
+			return controlledEntity.getWorld();
+		return null;
+	}
+
+	@Override
+	public boolean hasPermission(String permissionNode)
+	{
+		return true;
+	}
+
+	@Override
+	public void flush()
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void disconnect()
+	{
+		
+	}
+
+	@Override
+	public void disconnect(String disconnectionReason)
+	{
+		
 	}
 }

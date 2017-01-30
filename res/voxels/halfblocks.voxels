@@ -12,7 +12,7 @@ end
 
 voxel brickSlab 45 io.xol.chunkstories.core.voxel.VoxelHalfTile
 	opaque: false
-	texture: redbricks16
+	texture: redbricks
 	#textures: '~', '~', '~Side', '~Side', '~Side', '~Side'
 	model: 'halftile.bottom'
 	material: stone

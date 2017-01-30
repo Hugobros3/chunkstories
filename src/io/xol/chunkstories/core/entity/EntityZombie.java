@@ -4,7 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import io.xol.chunkstories.api.ai.AI;
+import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityLiving.HitBox;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
@@ -83,5 +85,13 @@ public class EntityZombie extends EntityHumanoid
 	public EntityRenderer<? extends EntityRenderable> getEntityRenderer()
 	{
 		return new EntityZombieRenderer<EntityZombie>();
+	}
+	
+	@Override
+	public float damage(DamageCause cause, HitBox osef, float damage)
+	{
+		if(!isDead())
+			world.getSoundManager().playSoundEffect("sounds/sfx/entities/zombie/hurt.ogg", this.getLocation(), (float)Math.random() * 0.4f + 0.8f, 1.5f + Math.min(0.5f, damage / 15.0f));
+		return super.damage(cause, osef, damage);
 	}
 }

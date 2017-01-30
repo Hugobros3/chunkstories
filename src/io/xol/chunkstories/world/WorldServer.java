@@ -130,46 +130,6 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		}
 	}
 	
-	public void spawnPlayer(Player player)
-	{
-		Entity savedEntity = null;
-		
-		SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + player.getName().toLowerCase() + ".csf");
-		if(playerEntityFile.exists())
-			savedEntity = playerEntityFile.read(this);
-		
-		Location previousLocation = null;
-		if(savedEntity != null)
-			previousLocation = savedEntity.getLocation();
-		
-		PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(player, this, savedEntity, previousLocation);
-		server.getPluginManager().fireEvent(playerSpawnEvent);
-		
-		if(!playerSpawnEvent.isCancelled())
-		{
-			Entity entity = playerSpawnEvent.getEntity();
-			
-			Location actualSpawnLocation = playerSpawnEvent.getSpawnLocation();
-			if(actualSpawnLocation == null)
-				actualSpawnLocation = this.getDefaultSpawnLocation();
-			
-			if(entity == null || ((entity instanceof EntityLiving) && (((EntityLiving) entity).isDead())))
-			{
-				entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName());
-			}
-			else
-				entity.setUUID(-1);
-			
-			entity.setLocation(actualSpawnLocation);
-			
-			server.getWorld().addEntity(entity);
-			if(entity instanceof EntityControllable)
-				player.setControlledEntity((EntityControllable) entity);
-			else
-				System.out.println("Error : entity is not controllable");
-		}
-	}
-	
 	//TODO move into implem
 	@Override
 	protected int actuallySetsDataAt(int x, int y, int z, int newData, Entity entity)

@@ -24,6 +24,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 import io.xol.chunkstories.renderer.VoxelContext;
@@ -95,15 +96,15 @@ public class VoxelItemRenderer implements ItemRenderer
 			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, TexturesHandler.getTexture("./items/icons/notex.png"), true, true, null);
 			return;
 		}
-		Texture2D texture = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
+		Texture2D texture = Client.getInstance().getContent().voxels().textures().getDiffuseAtlasTexture();
 		texture.setLinearFiltering(false);
 		renderingContext.bindAlbedoTexture(texture);
 		
-		Texture2D normalTexture = TexturesHandler.getTexture("./textures/tiles_merged_normal.png");
+		Texture2D normalTexture = Client.getInstance().getContent().voxels().textures().getNormalAtlasTexture();
 		normalTexture.setLinearFiltering(false);
 		renderingContext.bindNormalTexture(normalTexture);
 		
-		Texture2D materialTexture = TexturesHandler.getTexture("./textures/tiles_merged_material.png");
+		Texture2D materialTexture = Client.getInstance().getContent().voxels().textures().getMaterialAtlasTexture();
 		materialTexture.setLinearFiltering(false);
 		renderingContext.bindMaterialTexture(materialTexture);
 
@@ -211,20 +212,19 @@ public class VoxelItemRenderer implements ItemRenderer
 			
 			//If we hold a light source, prepare the shader accordingly
 			context.currentShader().setUniform2f("worldLightIn", ((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevelLocation(location));
-			
 		}
 		
-		Texture2D texture = TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
+		Texture2D texture = Client.getInstance().getContent().voxels().textures().getDiffuseAtlasTexture();
 		texture.setLinearFiltering(false);
 		context.bindAlbedoTexture(texture);
 		
-		Texture2D textureNormal = TexturesHandler.getTexture("./textures/tiles_merged_normal.png");
-		textureNormal.setLinearFiltering(false);
-		context.bindAlbedoTexture(textureNormal);
+		Texture2D normalTexture = Client.getInstance().getContent().voxels().textures().getNormalAtlasTexture();
+		normalTexture.setLinearFiltering(false);
+		context.bindNormalTexture(normalTexture);
 		
-		Texture2D textureMaterial = TexturesHandler.getTexture("./textures/tiles_merged_material.png");
-		textureMaterial.setLinearFiltering(false);
-		context.bindAlbedoTexture(textureMaterial);
+		Texture2D materialTexture = Client.getInstance().getContent().voxels().textures().getMaterialAtlasTexture();
+		materialTexture.setLinearFiltering(false);
+		context.bindMaterialTexture(materialTexture);
 
 		VoxelContext bri = new VoxelContext(VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0)));
 		

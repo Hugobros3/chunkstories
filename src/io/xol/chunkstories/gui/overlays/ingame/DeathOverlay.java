@@ -5,6 +5,7 @@ import org.lwjgl.input.Mouse;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
@@ -52,7 +53,7 @@ public class DeathOverlay extends Overlay
 		exitButton.draw();
 		
 		//When the new entity arrives
-		if(Client.getInstance().getClientSideController().getControlledEntity() != null)
+		if(Client.getInstance().getPlayer().getControlledEntity() != null)
 		{
 			mainScene.changeOverlay(parent);
 		}
@@ -62,6 +63,9 @@ public class DeathOverlay extends Overlay
 			//TODO this has no functionality whatsoever for local worlds yet
 			if(Client.getInstance().getWorld() instanceof WorldClientRemote)
 				((WorldClientRemote) Client.getInstance().getWorld()).getConnection().sendTextMessage("world/respawn");
+			else
+				((WorldClientLocal) Client.getInstance().getWorld()).spawnPlayer(Client.getInstance().getPlayer());
+			
 			mainScene.changeOverlay(parent);
 		}
 		

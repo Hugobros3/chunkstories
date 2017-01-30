@@ -6,7 +6,7 @@ voxel stonebrickStairs 21 io.xol.chunkstories.core.voxel.VoxelStairs
 end
 
 voxel brickStairs 22 io.xol.chunkstories.core.voxel.VoxelStairs
-	texture: redbricks16
+	texture: redbricks
 	opaque: false
 	model: 'stairs.m0'
 	material: stone

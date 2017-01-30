@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.mods.Asset;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;
@@ -33,7 +34,7 @@ public class VoxelsStore implements Content.Voxels
 		return self;
 	}
 	
-	public VoxelsStore(Content content)
+	public VoxelsStore(GameContentStore content)
 	{
 		this.content = content;
 		this.textures = new VoxelTexturesStoreAndAtlaser(this);
@@ -42,7 +43,7 @@ public class VoxelsStore implements Content.Voxels
 		this.reloadVoxelTypes();
 	}
 	
-	private final Content content;
+	private final GameContentStore content;
 	private final VoxelTexturesStoreAndAtlaser textures;
 	private final VoxelModelsStore models;
 	
@@ -315,7 +316,7 @@ public class VoxelsStore implements Content.Voxels
 	}
 
 	@Override
-	public Content parent()
+	public GameContentStore parent()
 	{
 		return content;
 	}

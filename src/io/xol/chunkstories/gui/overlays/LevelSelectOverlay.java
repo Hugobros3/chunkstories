@@ -67,13 +67,14 @@ public class LevelSelectOverlay extends Overlay
 		int posY = GameWindowOpenGL.windowHeight - 128;
 		FontRenderer2.drawTextUsingSpecificFont(64, posY + 64, 0, 48, "Select a level ...", BitmapFont.SMALLFONTS);
 		int remainingSpace = (int)Math.floor(GameWindowOpenGL.windowHeight/96 - 2);
-		while(scroll + remainingSpace >= worldsButtons.size())
+		
+		while(scroll + remainingSpace > worldsButtons.size())
 			scroll--;
 		
 		int skip = scroll;
 		for (LocalWorldButton worldButton : worldsButtons)
 		{
-			if(skip-- >= 0)
+			if(skip-- > 0)
 				continue;
 			if(remainingSpace-- <= 0)
 				break;

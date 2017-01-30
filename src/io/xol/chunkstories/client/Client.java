@@ -37,8 +37,6 @@ import io.xol.chunkstories.world.WorldClientCommon;
 
 public class Client implements ClientInterface
 {
-	private ClientGameContent gameContent;
-	
 	public static ConfigFile clientConfig = new ConfigFile("./config/client.cfg");
 
 	public static Lwjgl2ClientInputsManager inputsManager;
@@ -55,12 +53,12 @@ public class Client implements ClientInterface
 
 	public static DebugProfiler profiler = new DebugProfiler();
 
+	private ClientGameContent gameContent;
 	private ClientSideController clientSideController;
+	public ClientPluginManager pluginsManager;
 
 	//public EntityControllable controlledEntity;
 	public static Client client;
-
-	public ClientPluginManager pluginsManager;
 
 	public static void main(String[] args)
 	{
@@ -201,9 +199,6 @@ public class Client implements ClientInterface
 			gameContent.reload();
 			//ModsManager.reload();
 			inputsManager.reload();
-			//ModsManager.reloadClientContent();
-
-			getPluginManager().reloadPlugins();
 
 			return;
 		}
@@ -217,9 +212,6 @@ public class Client implements ClientInterface
 				gameContent.reload();
 				
 				inputsManager.reload();
-				//ModsManager.reloadClientContent();
-
-				getPluginManager().reloadPlugins();
 				
 				waitForReload.signal();
 			}
@@ -243,14 +235,14 @@ public class Client implements ClientInterface
 
 			gmp.focus(false);
 			if (otherInventory != null)
-				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getClientSideController().getControlledEntity()).getInventory(), otherInventory }));
+				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getPlayer().getControlledEntity()).getInventory(), otherInventory }));
 			else
-				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getClientSideController().getControlledEntity()).getInventory() }));
+				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getPlayer().getControlledEntity()).getInventory() }));
 		}
 	}
 
 	@Override
-	public ClientSideController getClientSideController()
+	public ClientSideController getPlayer()
 	{
 		return clientSideController;
 	}
@@ -301,14 +293,14 @@ public class Client implements ClientInterface
 			@Override
 			public void run()
 			{
+				Client.windows.changeScene(new MainMenu(windows, false));
+				
 				if (world != null)
 				{
 					Client.world.destroy();
 					Client.world = null;
 				}
 				clientSideController = null;
-
-				Client.windows.changeScene(new MainMenu(windows, false));
 			}
 		});
 	}
@@ -320,14 +312,14 @@ public class Client implements ClientInterface
 			@Override
 			public void run()
 			{
+				Client.windows.changeScene(new MainMenu(windows, errorMessage));
+				
 				if (world != null)
 				{
 					Client.world.destroy();
 					Client.world = null;
 				}
 				clientSideController = null;
-
-				Client.windows.changeScene(new MainMenu(windows, errorMessage));
 			}
 		});
 	}
@@ -339,7 +331,7 @@ public class Client implements ClientInterface
 		printChat(message);
 	}
 
-	@Override
+	/*@Override
 	public String getName()
 	{
 		return username;
@@ -355,7 +347,7 @@ public class Client implements ClientInterface
 	public boolean hasPermission(String permissionNode)
 	{
 		return true;
-	}
+	}*/
 
 	@Override
 	public ClientGameContent getContent()

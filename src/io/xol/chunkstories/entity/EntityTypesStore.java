@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.BufferedReader;
@@ -31,7 +32,7 @@ public class EntityTypesStore implements EntityTypes
 	private Map<String, EntityType> entityTypesByName = new HashMap<String, EntityType>();
 	private Map<String, EntityType> entityTypesByClassname = new HashMap<String, EntityType>();
 
-	public EntityTypesStore(Content content)
+	public EntityTypesStore(GameContentStore content)
 	{
 		this.content = content;
 		this.context = content.getContext();
