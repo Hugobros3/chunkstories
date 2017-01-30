@@ -31,6 +31,8 @@ public interface ModsManager
 
 	public Iterator<Asset> getAllAssetsByExtension(String extension);
 
+	public Iterator<Asset> getAllAssetsByPrefix(String prefix);
+
 	public Class<?> getClassByName(String className);
 
 	public String[] getEnabledModsString();

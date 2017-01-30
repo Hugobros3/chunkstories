@@ -474,6 +474,49 @@ public class DefaultModsManager implements ModsManager
 		};
 	}
 	
+	@Override
+	public Iterator<Asset> getAllAssetsByPrefix(String prefix)
+	{
+		return new Iterator<Asset>() {
+
+			Iterator<ModsAssetHierarchy> base = getAllUniqueEntries();
+			
+			Asset next = null;
+			
+			@Override
+			public boolean hasNext()
+			{
+				if(next != null)
+					return true;
+				//If next == null, try to set it
+				while(base.hasNext())
+				{
+					AssetHierarchy entry = base.next();
+					if(entry.getName().startsWith(prefix))
+					{
+						next = entry.topInstance();
+						break;
+					}
+				}
+				//Did we suceed etc
+				return next != null;
+			}
+
+			@Override
+			public Asset next()
+			{
+				//Try loading
+				if(next == null)
+					hasNext();
+				//Null out reference and return it
+				Asset ret = next;
+				next = null;
+				return ret;
+			}
+			
+		};
+	}
+	
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.content.ModsManager#getClassByName(java.lang.String)
 	 */

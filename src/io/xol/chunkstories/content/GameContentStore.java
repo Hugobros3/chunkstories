@@ -32,6 +32,8 @@ public class GameContentStore implements Content
 	private final WorldGeneratorsStore generators;
 	
 	private final BVHLibrary bvhLibrary;
+	
+	private final LocalizationManagerActual localizationManager;
 
 	public GameContentStore(GameContext context, String enabledModsLaunchArguments)
 	{
@@ -61,6 +63,10 @@ public class GameContentStore implements Content
 		generators = new WorldGeneratorsStore(this);
 		
 		bvhLibrary = new BVHLibrary(this);
+		
+		localizationManager = new LocalizationManagerActual(this, "en");
+		//System.out.println("mdr "+localizationManager.localize("omg #{get.rekt}ezezez#{ez}"));
+		//System.exit(-1);
 	}
 
 	public void reload()
@@ -151,5 +157,11 @@ public class GameContentStore implements Content
 	public BVHLibrary getAnimationsLibrary()
 	{
 		return bvhLibrary;
+	}
+
+	@Override
+	public LocalizationManager localization()
+	{
+		return localizationManager;
 	}
 }
