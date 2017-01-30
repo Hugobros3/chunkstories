@@ -332,11 +332,11 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 						double fallDistance = lastStandingHeight - this.getEntityComponentPosition().getLocation().getY();
 						if(fallDistance > 0)
 						{
-							System.out.println("Fell "+fallDistance+" meters");
+							//System.out.println("Fell "+fallDistance+" meters");
 							if(fallDistance > 5)
 							{
 								float fallDamage = (float) (fallDistance * fallDistance / 2);
-								System.out.println("Took "+fallDamage+" hp of fall damage");
+								System.out.println(this + "Took "+fallDamage+" hp of fall damage");
 								this.damage(DAMAGE_CAUSE_FALL, fallDamage);
 							}
 						}

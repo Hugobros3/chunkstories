@@ -314,6 +314,8 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 			}
 
 			//Set acceleration vector to wanted speed - actual speed
+			if(isDead())
+				targetVelocity = new Vector3dm(0.0);
 			acceleration = new Vector3dm(targetVelocity.getX() - getVelocityComponent().getVelocity().getX(), 0, targetVelocity.getZ() - getVelocityComponent().getVelocity().getZ());
 
 			//Limit maximal acceleration depending if we're on the groud or not, we accelerate 2x faster on ground

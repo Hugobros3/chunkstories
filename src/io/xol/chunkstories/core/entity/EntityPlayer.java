@@ -264,6 +264,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		boolean focus = controller.hasFocus();
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
+		
+		onLadder = false;
 		if (voxelIn instanceof VoxelClimbable)
 		{
 			CollisionBox[] boxes = voxelIn.getTranslatedCollisionBoxes(world, getLocation());

@@ -97,7 +97,7 @@ public class EntityComponentHealth extends EntityComponent
 					entity.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
 
 					//When a player dies, delete his save as well
-					File playerSavefile = new File("/players/" + player.getName().toLowerCase() + ".csf");
+					File playerSavefile = new File("./players/" + player.getName().toLowerCase() + ".csf");
 					if (playerSavefile.exists())
 					{
 						//Player save file is deleted upon death
