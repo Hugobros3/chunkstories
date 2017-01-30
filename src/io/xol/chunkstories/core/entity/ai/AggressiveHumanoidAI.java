@@ -29,6 +29,9 @@ public class AggressiveHumanoidAI extends GenericHumanoidAI
 	{
 		super.tick();
 
+		if(entity.isDead())
+			return;
+		
 		if (attackEntityCooldown > 0)
 			attackEntityCooldown--;
 
