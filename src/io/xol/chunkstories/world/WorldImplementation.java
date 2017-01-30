@@ -346,6 +346,7 @@ public abstract class WorldImplementation implements World
 		catch (Exception e)
 		{
 			ChunkStoriesLogger.getInstance().log("Exception occured while ticking the world : "+e.getMessage(), LogLevel.CRITICAL);
+			e.printStackTrace();
 			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 		}
 	}

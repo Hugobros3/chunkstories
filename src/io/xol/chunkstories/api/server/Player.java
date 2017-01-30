@@ -7,7 +7,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.world.WorldServer;
+import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -61,14 +61,6 @@ public interface Player extends CommandEmitter, Controller, Subscriber, PacketDe
 	 */
 	public void setLocation(Location l);
 	
-	public void setFlying(boolean flying);
-	
-	/**
-	 * Kicks the player
-	 * @param reason
-	 */
-	public void kickPlayer(String reason);
-	
 	public boolean isConnected();
 
 	public boolean hasSpawned();
@@ -77,5 +69,5 @@ public interface Player extends CommandEmitter, Controller, Subscriber, PacketDe
 
 	public ServerInterface getServer();
 	
-	public WorldServer getWorld();
+	public World getWorld();
 }

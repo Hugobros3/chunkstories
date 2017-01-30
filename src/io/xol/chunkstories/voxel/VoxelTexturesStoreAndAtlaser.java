@@ -48,9 +48,9 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 	private final Content content;
 	private final VoxelsStore voxels;
 
-	BufferedImage diffuseTexture = null;
-	BufferedImage normalTexture = null;
-	BufferedImage materialTexture = null;
+	BufferedImage diffuseTextureImage = null;
+	BufferedImage normalTextureImage = null;
+	BufferedImage materialTextureImage = null;
 	
 	public VoxelTexturesStoreAndAtlaser(VoxelsStore voxels)
 	{
@@ -160,15 +160,15 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 				// Create boolean bitfield
 				boolean[][] used = new boolean[sizeRequired / 16][sizeRequired / 16];
 
-				diffuseTexture = null;
-				normalTexture = null;
-				materialTexture = null;
+				diffuseTextureImage = null;
+				normalTextureImage = null;
+				materialTextureImage = null;
 
 				if (content.getContext() instanceof ClientInterface)
 				{
-					diffuseTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
-					normalTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
-					materialTexture = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
+					diffuseTextureImage = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
+					normalTextureImage = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
+					materialTextureImage = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
 					
 					System.out.println("This is a client so we'll make the texture atlas");
 				}
@@ -226,8 +226,8 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						{
 							int rgb = imageBuffer.getRGB(x, y);
 							
-							if(diffuseTexture != null)
-								diffuseTexture.setRGB(spotX + x, spotY + y, rgb);
+							if(diffuseTextureImage != null)
+								diffuseTextureImage.setRGB(spotX + x, spotY + y, rgb);
 							
 							float alpha = ((rgb & 0xFF000000) >>> 24) / 255f;
 							// System.out.println("a:"+alpha);
@@ -250,7 +250,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 					vt.color = new Vector4fm(color.getX(), color.getY(), color.getZ(), alphaTotal);
 
 					//Don't bother if it's not a Client context
-					if(diffuseTexture == null)
+					if(diffuseTextureImage == null)
 						continue;
 					
 					// Do also the normal maps !
@@ -264,7 +264,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						for (int y = 0; y < vt.imageFileDimensions; y++)
 						{
 							int rgb = imageBuffer.getRGB(x % imageBuffer.getWidth(), y % imageBuffer.getHeight());
-							normalTexture.setRGB(spotX + x, spotY + y, rgb);
+							normalTextureImage.setRGB(spotX + x, spotY + y, rgb);
 						}
 					}
 					// And the materials !
@@ -278,16 +278,20 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						for (int y = 0; y < vt.imageFileDimensions; y++)
 						{
 							int rgb = imageBuffer.getRGB(x % imageBuffer.getWidth(), y % imageBuffer.getHeight());
-							materialTexture.setRGB(spotX + x, spotY + y, rgb);
+							materialTextureImage.setRGB(spotX + x, spotY + y, rgb);
 						}
 					}
 				}
-				if (loadedOK && diffuseTexture != null)
+				if (loadedOK && diffuseTextureImage != null)
 				{
 					// save it son
-					ImageIO.write(diffuseTexture, "PNG", diffuseTextureFile);
-					ImageIO.write(normalTexture, "PNG", normalTextureFile);
-					ImageIO.write(materialTexture, "PNG", materialTextureFile);
+					ImageIO.write(diffuseTextureImage, "PNG", diffuseTextureFile);
+					ImageIO.write(normalTextureImage, "PNG", normalTextureFile);
+					ImageIO.write(materialTextureImage, "PNG", materialTextureFile);
+
+					diffuseTexture = null;
+					normalTexture = null;
+					materialTexture = null;
 				}
 				else
 					// It's too small, initial estimation was wrong !
@@ -437,18 +441,40 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 		return texture;
 	}
 	
+	private Texture2D diffuseTexture = null;
+	private Texture2D normalTexture = null;
+	private Texture2D materialTexture = null;
+	
 	public Texture2D getDiffuseAtlasTexture()
 	{
-		return getTextureFromBufferedImage(diffuseTexture);
+		Texture2D diffuseTexture = this.diffuseTexture;
+		if(diffuseTexture == null)
+		{
+			diffuseTexture = getTextureFromBufferedImage(diffuseTextureImage);
+			this.diffuseTexture = diffuseTexture;
+		}
+		return diffuseTexture;
 	}
 	
 	public Texture2D getNormalAtlasTexture()
 	{
-		return getTextureFromBufferedImage(normalTexture);
+		Texture2D normalTexture = this.normalTexture;
+		if(normalTexture == null)
+		{
+			normalTexture = getTextureFromBufferedImage(normalTextureImage);
+			this.normalTexture = normalTexture;
+		}
+		return normalTexture;
 	}
 	
 	public Texture2D getMaterialAtlasTexture()
 	{
-		return getTextureFromBufferedImage(materialTexture);
+		Texture2D materialTexture = this.materialTexture;
+		if(materialTexture == null)
+		{
+			materialTexture = getTextureFromBufferedImage(materialTextureImage);
+			this.materialTexture = materialTexture;
+		}
+		return materialTexture;
 	}
 }

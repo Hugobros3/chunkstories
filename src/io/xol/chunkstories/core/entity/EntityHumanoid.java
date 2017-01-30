@@ -27,7 +27,6 @@ import io.xol.chunkstories.voxel.VoxelsStore;
 
 import io.xol.engine.animation.AnimatedSkeleton;
 import io.xol.engine.animation.BVHAnimation;
-import io.xol.engine.animation.BVHLibrary;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -460,7 +459,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		
 		damage *= 0.5;
 
-		System.out.println("Hit:"+osef == null ? "" : osef.getName() + " dmg: "+damage);
+		//System.out.println("Hit:"+(osef == null ? "" : osef.getName()) + " dmg: "+damage);
 
 		return super.damage(cause, null, damage);
 	}

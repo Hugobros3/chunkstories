@@ -40,8 +40,6 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.core.entity.EntityLivingImplementation;
-import io.xol.chunkstories.core.entity.EntityLivingImplementation.HitBoxImpl;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.CameraSetupEvent;
 import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
@@ -55,7 +53,6 @@ import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.SelectionRenderer;
-import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
@@ -88,7 +85,10 @@ public class Ingame extends OverlayableScene
 		super(window);
 		this.world = world;
 		window.renderingContext.setCamera(camera);
+		chat = new Chat(this);
 
+		Client.getInstance().getPluginManager().reloadPlugins();
+		
 		//Spawn manually the player if we're in Singleplayer
 		//TODO this should be managed by a proper localhost server rather than this appalling hack
 		if (world instanceof WorldMaster)
@@ -103,8 +103,6 @@ public class Ingame extends OverlayableScene
 		//Creates the rendering stuff
 		world.getWorldRenderer().setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
 		selectionRenderer = new SelectionRenderer(world);
-
-		chat = new Chat(this);
 
 		//Give focus
 		focus(true);
@@ -550,6 +548,8 @@ public class Ingame extends OverlayableScene
 	@Override
 	public void destroy()
 	{
+		Client.getInstance().getPluginManager().disablePlugins();
+		
 		this.world.getWorldRenderer().destroy();
 	}
 

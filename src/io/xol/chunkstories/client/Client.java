@@ -37,8 +37,6 @@ import io.xol.chunkstories.world.WorldClientCommon;
 
 public class Client implements ClientInterface
 {
-	private ClientGameContent gameContent;
-	
 	public static ConfigFile clientConfig = new ConfigFile("./config/client.cfg");
 
 	public static Lwjgl2ClientInputsManager inputsManager;
@@ -55,12 +53,12 @@ public class Client implements ClientInterface
 
 	public static DebugProfiler profiler = new DebugProfiler();
 
+	private ClientGameContent gameContent;
 	private ClientSideController clientSideController;
+	public ClientPluginManager pluginsManager;
 
 	//public EntityControllable controlledEntity;
 	public static Client client;
-
-	public ClientPluginManager pluginsManager;
 
 	public static void main(String[] args)
 	{
@@ -201,9 +199,6 @@ public class Client implements ClientInterface
 			gameContent.reload();
 			//ModsManager.reload();
 			inputsManager.reload();
-			//ModsManager.reloadClientContent();
-
-			getPluginManager().reloadPlugins();
 
 			return;
 		}
@@ -217,9 +212,6 @@ public class Client implements ClientInterface
 				gameContent.reload();
 				
 				inputsManager.reload();
-				//ModsManager.reloadClientContent();
-
-				getPluginManager().reloadPlugins();
 				
 				waitForReload.signal();
 			}
@@ -339,7 +331,7 @@ public class Client implements ClientInterface
 		printChat(message);
 	}
 
-	@Override
+	/*@Override
 	public String getName()
 	{
 		return username;
@@ -355,7 +347,7 @@ public class Client implements ClientInterface
 	public boolean hasPermission(String permissionNode)
 	{
 		return true;
-	}
+	}*/
 
 	@Override
 	public ClientGameContent getContent()

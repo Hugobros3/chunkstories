@@ -136,7 +136,7 @@ public class Chat
 						args = chatMsg.substring(chatMsg.indexOf(" ") + 1, chatMsg.length()).split(" ");
 					}
 
-					if (Client.getInstance().getPluginManager().dispatchCommand(Client.getInstance(), cmdName, args))
+					if (Client.getInstance().getPluginManager().dispatchCommand(Client.getInstance().getClientSideController(), cmdName, args))
 					{
 						if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
 						{
