@@ -75,9 +75,11 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	//FOOD
 	EntityComponentFoodLevel foodLevel;
-
+	
+	protected boolean onLadder = false;
+	
 	protected boolean noclip = true;
-
+	
 	//Nasty bullshit
 	float lastPX = -1f;
 	float lastPY = -1f;
@@ -181,9 +183,10 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			}
 		}
 
-		//Food/health decrease over time
 		if (authority.isMaster())
 		{
+			//Food/health subsystem hanled here decrease over time
+			
 			//Take damage when starving
 			if ((world.getTicksElapsed() % 100L) == 0L)
 			{
@@ -261,7 +264,6 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		boolean focus = controller.hasFocus();
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
-		boolean onLadder = false;
 		if (voxelIn instanceof VoxelClimbable)
 		{
 			CollisionBox[] boxes = voxelIn.getTranslatedCollisionBoxes(world, getLocation());
@@ -272,6 +274,10 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 						onLadder = true;
 				}
 		}
+		
+		//Being on a ladder resets your jump height
+		if(onLadder)
+			lastStandingHeight = this.getEntityComponentPosition().getLocation().getY();
 
 		if (focus && !inWater && controller.getInputsManager().getInputByName("jump").isPressed() && isOnGround())
 		{

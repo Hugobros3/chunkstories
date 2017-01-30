@@ -398,7 +398,8 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	private static final Vector3dm onGroundTest_ = new Vector3dm(0.0, -0.01, 0.0);
-	
+
+	@Override
 	public boolean isOnGround()
 	{
 		return canMoveWithCollisionRestrain(onGroundTest_).length() != 0.0d;
@@ -571,11 +572,5 @@ public abstract class EntityImplementation implements Entity
 	public EntityComponent getComponents()
 	{
 		return existenceComponent;
-	}
-
-	@Override
-	public boolean isEntityOnGround()
-	{
-		return this.canMoveWithCollisionRestrain(new Vector3dm(0.0, -0.01, 0.0)).length() == 0.01;
 	}
 }

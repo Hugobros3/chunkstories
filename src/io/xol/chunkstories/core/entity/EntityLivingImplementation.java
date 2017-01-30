@@ -55,6 +55,9 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 
 	protected SkeletonAnimator animatedSkeleton;
 
+	protected double lastStandingHeight = Double.NaN;
+	protected boolean wasStandingLastTick = true;
+
 	public EntityLivingImplementation(World world, double x, double y, double z)
 	{
 		super(world, x, y, z);
@@ -254,6 +257,7 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 	{
 		if (getWorld() == null)
 			return;
+		
 		//Despawn counter is strictly a client matter
 		if (getWorld() instanceof WorldMaster)
 		{
@@ -268,20 +272,20 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 			}
 		}
 
-		boolean tick = false;
+		boolean shouldDoTick = false;
 		if (this instanceof EntityControllable)
 		{
 			Controller controller = ((EntityControllable) this).getControllerComponent().getController();
 			if (controller == null)
-				tick = (getWorld() instanceof WorldMaster);
+				shouldDoTick = (getWorld() instanceof WorldMaster);
 			else if (getWorld() instanceof WorldClient && Client.getInstance().getPlayer().equals(controller))
-				tick = true;
+				shouldDoTick = true;
 
 		}
 		else
-			tick = (getWorld() instanceof WorldMaster);
+			shouldDoTick = (getWorld() instanceof WorldMaster);
 
-		if (tick)
+		if (shouldDoTick)
 		{
 			Vector3dm velocity = getVelocityComponent().getVelocity();
 
@@ -319,6 +323,27 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 						//acceleration.add(0.0, decelerationThen * (velocity.getY() > 0.0 ? 1.0 : -1.0), 0.0);
 					}
 				}
+				
+				//Fall damage
+				if(isOnGround())
+				{
+					if(!wasStandingLastTick && !Double.isNaN(lastStandingHeight))
+					{
+						double fallDistance = lastStandingHeight - this.getEntityComponentPosition().getLocation().getY();
+						if(fallDistance > 0)
+						{
+							System.out.println("Fell "+fallDistance+" meters");
+							if(fallDistance > 5)
+							{
+								float fallDamage = (float) (fallDistance * fallDistance / 2);
+								System.out.println("Took "+fallDamage+" hp of fall damage");
+								this.damage(DAMAGE_CAUSE_FALL, fallDamage);
+							}
+						}
+					}
+					lastStandingHeight = this.getEntityComponentPosition().getLocation().getY();
+				}
+				this.wasStandingLastTick = isOnGround();
 			}
 
 			// Acceleration

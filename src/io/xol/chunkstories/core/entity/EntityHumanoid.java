@@ -354,20 +354,20 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 				return;
 
 		// Sound stuff
-		if (isEntityOnGround() && !lastTickOnGround)
+		if (isOnGround() && !lastTickOnGround)
 		{
 			justLanded = true;
 			metersWalked = 0.0;
 		}
 
 		//Used to trigger landing sound
-		lastTickOnGround = this.isEntityOnGround();
+		lastTickOnGround = this.isOnGround();
 
 		//Bobbing
 		Vector3dm horizontalSpeed = this.getVelocityComponent().getVelocity().clone();
 		horizontalSpeed.setY(0d);
 
-		if (isEntityOnGround())
+		if (isOnGround())
 			metersWalked += Math.abs(horizontalSpeed.length());
 
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();

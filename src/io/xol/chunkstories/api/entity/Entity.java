@@ -132,8 +132,6 @@ public interface Entity
 	public boolean hasSpawned();
 	
 	public void markHasSpawned();
-	
-	public boolean isEntityOnGround();
 		
 	public IterableIterator<Subscriber> getAllSubscribers();
 	

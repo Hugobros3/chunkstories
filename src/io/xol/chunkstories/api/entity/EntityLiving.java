@@ -46,6 +46,16 @@ public interface EntityLiving extends Entity, EntityRenderable, EntityRotateable
 	 */
 	public DamageCause getLastDamageCause();
 	
+	public static DamageCause DAMAGE_CAUSE_FALL = new DamageCause() {
+
+		@Override
+		public String getName()
+		{
+			return "damage.fall";
+		}
+		
+	};
+	
 	/**
 	 * Returns true if the entity is dead
 	 * If an entity is dead it can't be interacted with anymore
