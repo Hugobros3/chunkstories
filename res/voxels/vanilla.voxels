@@ -71,6 +71,7 @@ end
 voxel glass 15
 	opaque: false
 	selfOpaque: true
+	material: glass
 end
 
 voxel glowing 16
@@ -147,6 +148,7 @@ voxel glassPane 32 io.xol.chunkstories.core.voxel.VoxelPane
 	usesCustomModel: true
 	texture: glass
 	selfOpaque: true
+	material: glass
 end
 
 voxel ladder 33 io.xol.chunkstories.core.voxel.VoxelLadder

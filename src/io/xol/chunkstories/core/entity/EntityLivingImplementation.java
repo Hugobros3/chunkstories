@@ -65,7 +65,14 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 		entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
 		entityHealthComponent = new EntityComponentHealth(this, getStartHealth());
 	}
-
+	
+	@Override
+	public void setLocation(Location loc)
+	{
+		super.setLocation(loc);
+		lastStandingHeight = Double.NaN;
+	}
+	
 	public class HitBoxImpl implements HitBox
 	{
 

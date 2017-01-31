@@ -39,7 +39,7 @@ material water
 end
 
 material glass
-	bulletBreable: true
+	bulletBreakable: true
 end
 
 material sand

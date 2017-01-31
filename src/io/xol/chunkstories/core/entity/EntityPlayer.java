@@ -230,6 +230,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			//Being on a ladder resets your jump height
 			if(onLadder)
 				lastStandingHeight = this.getEntityComponentPosition().getLocation().getY();
+			if(this.getFlyingComponent().get())
+				lastStandingHeight = Double.NaN;
 			
 			//else
 			//	System.out.println("prout"+(world.getTicksElapsed() % 10L));

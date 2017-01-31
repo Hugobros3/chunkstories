@@ -186,7 +186,7 @@ public class Chat
 				{
 					RenderingConfig.isDebugAllowed = true;
 				}
-				else if (inputBox.text.startsWith("/loctime"))
+				/*else if (inputBox.text.startsWith("/loctime"))
 				{
 					try
 					{
@@ -333,7 +333,7 @@ public class Chat
 					{
 						((EntityRotateable) controlledEntity).getEntityRotationComponent().setRotation(180, 0);
 					}
-				}
+				}*/
 				else if (ingame.getWorld() instanceof WorldClientRemote)
 					((WorldClientRemote) ingame.getWorld()).getConnection().sendTextMessage("chat/" + inputBox.text);
 				else
@@ -410,14 +410,16 @@ public class Chat
 
 			int chatWidth = Math.max(750, Client.getInstance().windows.windowWidth / 2 - 10);
 
-			int actualLines = TrueTypeFont.arial11px.getLinesHeight(line.text, chatWidth / 2);
+			String localizedLine = Client.getInstance().getContent().localization().localize(line.text);
+			
+			int actualLines = TrueTypeFont.arial11px.getLinesHeight(localizedLine, chatWidth / 2);
 			linesDrew += actualLines;
 			float alpha = (line.time + 10000L - System.currentTimeMillis()) / 1000f;
 			if (alpha < 0)
 				alpha = 0;
 			if (alpha > 1 || chatting)
 				alpha = 1;
-			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, 9, (linesDrew - 1) * 26 + 180 + (chatting ? 50 : 0), line.text, 2, 2, chatWidth, new Vector4fm(1, 1, 1, alpha));
+			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, 9, (linesDrew - 1) * 26 + 180 + (chatting ? 50 : 0), localizedLine, 2, 2, chatWidth, new Vector4fm(1, 1, 1, alpha));
 		}
 		inputBox.setPosition(12, 192);
 		if (chatting)

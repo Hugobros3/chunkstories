@@ -1,6 +1,9 @@
 package io.xol.chunkstories.api.plugin;
 
+import java.io.File;
+
 import io.xol.chunkstories.api.GameContext;
+import io.xol.chunkstories.content.GameDirectory;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -40,4 +43,9 @@ public abstract class ChunkStoriesPlugin
 	{
 		return pluginInformation.getName();
 	}
+	
+	/*public File getPluginFolder()
+	{
+		return new File(GameDirectory.getGameFolderPath()+"/plugins/"+pluginInformation.g);
+	}*/
 }
