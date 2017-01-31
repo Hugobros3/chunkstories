@@ -2,7 +2,7 @@ package io.xol.chunkstories.input.lwjgl2;
 
 import org.lwjgl.input.Keyboard;
 
-import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.input.KeyBindsLoader;
 
@@ -15,7 +15,7 @@ import io.xol.chunkstories.input.KeyBindsLoader;
  * @author Hugo
  *
  */
-public class KeyBindImplementation implements KeyBind, LWJGLPollable
+public class KeyBindImplementation implements KeyboardKeyInput, LWJGLPollable
 {
 	String name;
 	
@@ -98,9 +98,9 @@ public class KeyBindImplementation implements KeyBind, LWJGLPollable
 	@Override
 	public boolean equals(Object o)
 	{
-		if(o != null && o instanceof KeyBind)
+		if(o != null && o instanceof KeyboardKeyInput)
 		{
-			return ((KeyBind)o).getName().equals(getName());
+			return ((KeyboardKeyInput)o).getName().equals(getName());
 		}
 		return false;
 	}

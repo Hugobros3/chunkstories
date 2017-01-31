@@ -270,6 +270,27 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 					return;
 				}
 			}
+			
+			//Fall damage
+			if(isOnGround())
+			{
+				if(!wasStandingLastTick && !Double.isNaN(lastStandingHeight))
+				{
+					double fallDistance = lastStandingHeight - this.getEntityComponentPosition().getLocation().getY();
+					if(fallDistance > 0)
+					{
+						//System.out.println("Fell "+fallDistance+" meters");
+						if(fallDistance > 5)
+						{
+							float fallDamage = (float) (fallDistance * fallDistance / 2);
+							System.out.println(this + "Took "+fallDamage+" hp of fall damage");
+							this.damage(DAMAGE_CAUSE_FALL, fallDamage);
+						}
+					}
+				}
+				lastStandingHeight = this.getEntityComponentPosition().getLocation().getY();
+			}
+			this.wasStandingLastTick = isOnGround();
 		}
 
 		boolean shouldDoTick = false;
@@ -323,27 +344,6 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 						//acceleration.add(0.0, decelerationThen * (velocity.getY() > 0.0 ? 1.0 : -1.0), 0.0);
 					}
 				}
-				
-				//Fall damage
-				if(isOnGround())
-				{
-					if(!wasStandingLastTick && !Double.isNaN(lastStandingHeight))
-					{
-						double fallDistance = lastStandingHeight - this.getEntityComponentPosition().getLocation().getY();
-						if(fallDistance > 0)
-						{
-							//System.out.println("Fell "+fallDistance+" meters");
-							if(fallDistance > 5)
-							{
-								float fallDamage = (float) (fallDistance * fallDistance / 2);
-								System.out.println(this + "Took "+fallDamage+" hp of fall damage");
-								this.damage(DAMAGE_CAUSE_FALL, fallDamage);
-							}
-						}
-					}
-					lastStandingHeight = this.getEntityComponentPosition().getLocation().getY();
-				}
-				this.wasStandingLastTick = isOnGround();
 			}
 
 			// Acceleration

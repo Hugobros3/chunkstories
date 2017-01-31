@@ -16,6 +16,7 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -65,12 +66,14 @@ public class ClientWorldController implements PlayerClient
 			this.subscribe(entity);
 
 			EntityControllable controllableEntity = (EntityControllable) entity;
-			controllableEntity.getControllerComponent().setController(this);
+			if(world instanceof WorldMaster)
+				controllableEntity.getControllerComponent().setController(this);
 			controlledEntity = controllableEntity;
 		}
 		else if (entity == null && getControlledEntity() != null)
 		{
-			getControlledEntity().getControllerComponent().setController(null);
+			if(world instanceof WorldMaster)
+				getControlledEntity().getControllerComponent().setController(null);
 			controlledEntity = null;
 		}
 		

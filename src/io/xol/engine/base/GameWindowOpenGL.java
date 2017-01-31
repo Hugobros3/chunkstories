@@ -241,8 +241,8 @@ public class GameWindowOpenGL
 				if (currentScene != null)
 				{
 					// update inputs first
-					if(currentScene instanceof Ingame)
-						((Ingame) currentScene).getInputsManager().pollLWJGLInputs();
+					//if(currentScene instanceof Ingame)
+						Client.getInstance().getInputsManager().pollLWJGLInputs();
 					InputAbstractor.update(this, currentScene);
 
 					// then do the game logic

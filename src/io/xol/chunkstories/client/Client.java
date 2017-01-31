@@ -31,6 +31,7 @@ import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
+import io.xol.chunkstories.input.lwjgl2.Lwjgl2ClientInputsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -40,6 +41,7 @@ public class Client implements ClientInterface
 	public static ConfigFile clientConfig = new ConfigFile("./config/client.cfg");
 
 	//public static Lwjgl2ClientInputsManager inputsManager;
+	private final Lwjgl2ClientInputsManager inputsManager;
 
 	public static boolean offline = false;
 
@@ -120,6 +122,8 @@ public class Client implements ClientInterface
 		//Create game content manager
 		gameContent = new ClientGameContent(this, modsStringArgument);
 		
+		inputsManager = new Lwjgl2ClientInputsManager();
+		
 		//
 		windows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);
 		windows.createOpenGLContext();
@@ -180,6 +184,7 @@ public class Client implements ClientInterface
 		if (GameWindowOpenGL.isMainGLWindow())
 		{
 			gameContent.reload();
+			inputsManager.reload();
 
 			return;
 		}
@@ -191,6 +196,7 @@ public class Client implements ClientInterface
 			{
 				//ModsManager.reload();
 				gameContent.reload();
+				inputsManager.reload();
 				
 				waitForReload.signal();
 			}
@@ -339,6 +345,8 @@ public class Client implements ClientInterface
 
 	private ClientPluginManager pluginManager = null;
 	
+	//We have to set a reference from Ingame via a callback since stuff called from within it's very constructor rely on this global reference.
+	//TODO it shouldn't I guess ?
 	public void setClientPluginManager(ClientPluginManager pl)
 	{
 		this.pluginManager = pl;
@@ -353,10 +361,10 @@ public class Client implements ClientInterface
 	}
 	
 	@Override
-	public ClientInputsManager getInputsManager()
+	public Lwjgl2ClientInputsManager getInputsManager()
 	{
-		if (windows.getCurrentScene() instanceof Ingame)
-			return ((Ingame) windows.getCurrentScene()).getInputsManager();
-		return null;
+		//if (windows.getCurrentScene() instanceof Ingame)
+		//	return ((Ingame) windows.getCurrentScene()).getInputsManager();
+		return this.inputsManager;
 	}
 }

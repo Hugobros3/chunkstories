@@ -25,10 +25,10 @@ public class LogPolicyAsk extends Overlay
 	}
 
 	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	Button acceptButton = new Button(0, 0, 300, 32, ("I'm ok with this"), BitmapFont.SMALLFONTS, 1);
-	Button denyButton = new Button(0, 0, 300, 32, ("No thanks."), BitmapFont.SMALLFONTS, 1);
+	Button acceptButton = new Button(0, 0, 300, 32, ("#{logpolicy.accept}"), BitmapFont.SMALLFONTS, 1);
+	Button denyButton = new Button(0, 0, 300, 32, ("#{logpolicy.deny}"), BitmapFont.SMALLFONTS, 1);
 	
-	String message = "English: \n"
+	String message = Client.getInstance().getContent().localization().getLocalizedString("logpolicy.asktext");/*"English: \n"
 			+ "Welcome to the indev version of Chunk Stories !\n"
 			+ "The whole point of having an early access title is finding and fixing bugs and crashes, and this "
 			+ "often requires you sending us informations about your computer and how the game runs on it.\n"
@@ -47,7 +47,7 @@ public class LogPolicyAsk extends Overlay
 			+ "configuration matérielle, votre addresse IP ( on l'a déjà ) et quelquonque erreur/crash lié aux drivers que le jeu peut "
 			+ "recontrer pendant son exécution.\n"
 			+ "Evidement la seule utilisation que nous auront pour ces fichiers sera le débbugage et vous pouvez choisir de désactiver cette fonctionalité."
-			;
+			;*/
 	
 	@Override
 	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
@@ -55,7 +55,7 @@ public class LogPolicyAsk extends Overlay
 		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
 		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
 		
-		FontRenderer2.drawTextUsingSpecificFont(30, GameWindowOpenGL.windowHeight-64, 0, 64, "Chunk Stories indev log policy", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(30, GameWindowOpenGL.windowHeight-64, 0, 64, Client.getInstance().getContent().localization().getLocalizedString("logpolicy.title"), BitmapFont.SMALLFONTS);
 		
 		int linesTaken = TrueTypeFont.arial11px.getLinesHeight(message, (width-128) / 2 );
 		float scaling = 2;

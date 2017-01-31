@@ -1,0 +1,43 @@
+Rendering Rendering
+
+viewDistance View distance
+doRealtimeReflections Local reflections
+doDynamicCubemaps Global reflections
+doShadows Enable shadows
+shadowMapResolutions Shadows Quality
+dynamicGrass Animated grass
+hqTerrain Distant terrain quality
+quality.low Low
+quality.high High
+doBloom Bloom effect
+framerate Frame limiter
+
+Video Video
+
+fov Field of view
+fullScreen Fullscreen
+fullScreenResolution Fullscreen resolution
+language Language
+
+Controls Controls
+
+mouseSensitivity Mouse sensitivity
+bind.use Use
+bind.back Back
+bind.run Run
+bind.inventory Inventory
+bind.enter Enter
+bind.jump Jump
+bind.forward Forward
+bind.right Right
+bind.left Left
+bind.exit Pause
+bind.chat Open chat
+
+Sound Sound
+
+Debug Debug
+
+log-policy Send log reports
+frametimeGraph FPS graph
+showDebugInfo Show debug info

@@ -6,10 +6,8 @@ package io.xol.chunkstories.api.input;
 
 /**
  * Describes a key assignated to some action
- * @author Hugo
- *
  */
-public interface KeyBind extends Input
+public interface KeyboardKeyInput extends Input
 {
 	/**
 	 * Returns the name of the bind

@@ -1,0 +1,19 @@
+menu.resume Resume
+menu.options Options
+menu.mods Mods
+menu.back Back
+menu.backto Back to menu
+
+ingame.pause Ingame menu
+
+menu.singleplayer Singleplayer
+menu.serverbrowser Multiplayer
+menu.quit Quit
+
+login.username Username
+login.password Password
+login.login Connection
+login.register Register at http://chunkstories.xyz
+
+login.auto1 Autologin in 
+login.auto2  seconds...

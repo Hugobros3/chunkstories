@@ -5,6 +5,7 @@ import io.xol.chunkstories.bugsreporter.JavaCrashesUploader;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.gui.overlays.config.LanguageSelectionScreen;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
@@ -30,7 +31,7 @@ public class LoginOverlay extends Overlay implements HttpRequester
 		// pass
 		guiHandler.add(new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS));
 		// ok
-		guiHandler.add(new Button(0, 0, 128, 32, ("Login"), BitmapFont.SMALLFONTS, 1));
+		guiHandler.add(new Button(0, 0, 128, 32, ("#{login.login}"), BitmapFont.SMALLFONTS, 1));
 		// check for auto-login dataaa
 		if (Client.getConfig().getProp("autologin", "ko").equals("ok"))
 		{
@@ -56,6 +57,11 @@ public class LoginOverlay extends Overlay implements HttpRequester
 	@Override
 	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
 	{
+		if(Client.clientConfig.getProp("language", "undefined").equals("undefined"))
+		{
+			this.mainScene.changeOverlay(new LanguageSelectionScreen(mainScene, this, false));
+		}
+		
 		if (can_next)
 			mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));
 		ObjectRenderer.renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2 + 180, 512, 512, "./textures/logo.png");
@@ -67,18 +73,18 @@ public class LoginOverlay extends Overlay implements HttpRequester
 		guiHandler.getInputText(1).setPosition(GameWindowOpenGL.windowWidth / 2 - 250, GameWindowOpenGL.windowHeight / 2 - 40);
 		guiHandler.getInputText(1).drawWithBackGroundPassworded();
 
-		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 250, GameWindowOpenGL.windowHeight / 2 + 80, 0, 32, "Username", BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 250, GameWindowOpenGL.windowHeight / 2 + 0, 0, 32, "Password", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 250, GameWindowOpenGL.windowHeight / 2 + 80, 0, 32, Client.getInstance().getContent().localization().localize("#{login.username}"), BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 250, GameWindowOpenGL.windowHeight / 2 + 0, 0, 32, Client.getInstance().getContent().localization().localize("#{login.password}"), BitmapFont.SMALLFONTS);
 
 		if (logging_in)
 		{
-			FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 230, GameWindowOpenGL.windowHeight / 2 - 90, 0, 32, "Logging in...", BitmapFont.SMALLFONTS);
+			FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 230, GameWindowOpenGL.windowHeight / 2 - 90, 0, 32, Client.getInstance().getContent().localization().localize("#{login.loggingIn}"), BitmapFont.SMALLFONTS);
 		}
 		else
 		{
 			int decal_lb = guiHandler.getButton(2).draw();
 
-			FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 245 - 58 + decal_lb, GameWindowOpenGL.windowHeight / 2 - 95, 0, 32, "Register at http://chunkstories.xyz", BitmapFont.SMALLFONTS);
+			FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - 245 - 58 + decal_lb, GameWindowOpenGL.windowHeight / 2 - 95, 0, 32, Client.getInstance().getContent().localization().localize("#{login.register}"), BitmapFont.SMALLFONTS);
 			// FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 -
 			// 250, XolioWindow.frameH / 2 - 150 + 18, 0, 32,
 			// "You currently need hugobros3 to provide you an account.",
@@ -90,7 +96,7 @@ public class LoginOverlay extends Overlay implements HttpRequester
 		if (autologin)
 		{
 			int seconds = 10;
-			String autologin2 = "Autologin in "+(seconds-(System.currentTimeMillis()-startCounter)/1000)+" seconds...";
+			String autologin2 = Client.getInstance().getContent().localization().localize("#{login.auto1} "+(seconds-(System.currentTimeMillis()-startCounter)/1000)+" #{login.auto2}");
 			FontRenderer2.drawTextUsingSpecificFontRVBA(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(32, autologin2, BitmapFont.SMALLFONTS) / 2, GameWindowOpenGL.windowHeight / 2 - 170, 0, 32, autologin2, BitmapFont.SMALLFONTS, 1, 0, 1, 0);
 			if ((System.currentTimeMillis()-startCounter)/1000 > seconds)
 			{

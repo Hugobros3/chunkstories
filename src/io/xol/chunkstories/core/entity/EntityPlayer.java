@@ -226,7 +226,11 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					this.setFoodLevel(newfoodLevel);
 				}
 			}
-
+			
+			//Being on a ladder resets your jump height
+			if(onLadder)
+				lastStandingHeight = this.getEntityComponentPosition().getLocation().getY();
+			
 			//else
 			//	System.out.println("prout"+(world.getTicksElapsed() % 10L));
 
@@ -276,10 +280,6 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 						onLadder = true;
 				}
 		}
-		
-		//Being on a ladder resets your jump height
-		if(onLadder)
-			lastStandingHeight = this.getEntityComponentPosition().getLocation().getY();
 
 		if (focus && !inWater && controller.getInputsManager().getInputByName("jump").isPressed() && isOnGround())
 		{

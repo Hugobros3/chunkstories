@@ -3,6 +3,7 @@ package io.xol.chunkstories.content;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -12,9 +13,7 @@ import io.xol.chunkstories.api.Content.LocalizationManager;
 import io.xol.chunkstories.api.Content.Translation;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.ModsManager;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.engine.animation.BVHAnimation;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -30,17 +29,17 @@ public class LocalizationManagerActual implements LocalizationManager
 	private Map<String, Asset> translations = new HashMap<String, Asset>();
 	private Translation activeTranslation;
 	
-	public LocalizationManagerActual(GameContentStore store, String translation)
+	public LocalizationManagerActual(GameContentStore store, String activeTranslation)
 	{
 		this.store = store;
 		this.modsManager = store.modsManager();
 		
 		reload();
 		
-		loadTranslation(translation);
+		loadTranslation(activeTranslation);
 	}
 
-	private void loadTranslation(String translation)
+	public void loadTranslation(String translation)
 	{
 		activeTranslation = new ActualTranslation(translations.get(translation));
 	}
@@ -63,18 +62,19 @@ public class LocalizationManagerActual implements LocalizationManager
 			}
 		}
 		
-		
+		if(activeTranslation != null)
+			activeTranslation = new ActualTranslation(((ActualTranslation)activeTranslation).a);
 	}
 	
 	public class ActualTranslation implements Translation {
 
-		private Asset a;
+		public Asset a;
 		private Map<String, String> strings = new HashMap<String, String>();
 		
 		public ActualTranslation(Asset a)
 		{
 			this.a = a;
-			//System.out.println("Loading translation from asset asset: "+a);
+			System.out.println("Loading translation from asset asset: "+a);
 			
 			String prefix = a.getName().substring(0, a.getName().length() - 9);
 			Iterator<Asset> i = modsManager.getAllAssetsByPrefix(prefix);
@@ -83,10 +83,10 @@ public class LocalizationManagerActual implements LocalizationManager
 				Asset a2 = i.next();
 				if(a2.getName().endsWith(".lang"))
 				{
-					BufferedReader reader = new BufferedReader(new InputStreamReader(a2.read()));
+					try {
+					BufferedReader reader = new BufferedReader(new InputStreamReader(a2.read(), "UTF8"));
 					String line = "";
 
-					try {
 						while ((line = reader.readLine()) != null)
 						{
 							String name = line.split(" ")[0];
@@ -95,6 +95,7 @@ public class LocalizationManagerActual implements LocalizationManager
 							if(indexOf == -1)
 								continue;
 							String text = line.substring(indexOf + 1);
+							text = text.replace("\\n", "\n");
 							
 							//System.out.println("name: "+name+" text: "+text);
 							strings.put(name, text);
@@ -113,7 +114,8 @@ public class LocalizationManagerActual implements LocalizationManager
 		@Override
 		public String getLocalizedString(String stringName)
 		{
-			return strings.get(stringName);
+			String locStr = strings.get(stringName);
+			return locStr != null ? locStr : "#{"+stringName+"}";
 		}
 
 		@Override
@@ -134,7 +136,7 @@ public class LocalizationManagerActual implements LocalizationManager
 						
 						String translated = getLocalizedString(word);
 						sb.append(translated != null ? translated : word);
-						i+=(translated != null ? translated : word).length() + 2;
+						i+=word.length() + 2;
 					}
 					else
 						sb.append(c);
@@ -163,5 +165,11 @@ public class LocalizationManagerActual implements LocalizationManager
 	public Content parent()
 	{
 		return this.store;
+	}
+
+	@Override
+	public Collection<String> listTranslations()
+	{
+		return translations.keySet();
 	}
 }

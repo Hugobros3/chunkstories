@@ -2,6 +2,7 @@ package io.xol.chunkstories.gui.ng;
 
 import org.lwjgl.input.Mouse;
 
+import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
@@ -34,7 +35,8 @@ public class NgButton extends GuiElement
 
 	public int getWidth()
 	{
-		int width = TrueTypeFont.arial12px9pt.getWidth(text);
+		String localizedText = Client.getInstance().getContent().localization().localize(text);
+		int width = TrueTypeFont.arial12px9pt.getWidth(localizedText);
 		return (width + 8) * scale;
 	}
 
@@ -47,6 +49,7 @@ public class NgButton extends GuiElement
 	public void draw()
 	{
 		int width = getWidth();
+		String localizedText = Client.getInstance().getContent().localization().localize(text);
 		
 		Texture2D buttonTexture = TexturesHandler.getTexture("./textures/gui/scalableButton2.png");
 		if (hasFocus() || isMouseOver())
@@ -56,7 +59,7 @@ public class NgButton extends GuiElement
 		CorneredBoxDrawer.drawCorneredBoxTiled(posx + (width) / 2, posy + 9 * scale, width, 18 * scale, 4 * scale, buttonTexture, 32, scale);
 		
 		//if(scale == 1)
-			TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial12px9pt, posx + 4 * scale, posy, text, scale, new Vector4fm(76/255f, 76/255f, 76/255f, 1));
+			TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial12px9pt, posx + 4 * scale, posy, localizedText, scale, new Vector4fm(76/255f, 76/255f, 76/255f, 1));
 		//else
 		//	TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial24px18pt, posx + 4 * scale, posy + 2, text, scale / 2, new Vector4fm(76/255f, 76/255f, 76/255f, 1));
 	}

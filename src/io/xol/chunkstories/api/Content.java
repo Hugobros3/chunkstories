@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.entity.EntityType;
@@ -158,7 +159,13 @@ public interface Content
 
 		//public Translation getTranslation(String abrigedName);
 		
+		public Collection<String> listTranslations();
+		
 		public Content parent();
+
+		public void reload();
+
+		public void loadTranslation(String translationCode);
 	}
 	public interface Translation {
 

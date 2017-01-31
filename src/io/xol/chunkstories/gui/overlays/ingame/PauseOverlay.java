@@ -17,10 +17,10 @@ import io.xol.engine.gui.elements.Button;
 
 public class PauseOverlay extends Overlay
 {
-	Button resumeButton = new Button(0, 0, 320, 32, "Resume", BitmapFont.SMALLFONTS, 1);
-	Button optionsButton = new Button(0, 0, 320, 32, "Options", BitmapFont.SMALLFONTS, 1);
-	Button modsButton = new Button(-100, 0, 320, 32, "Mods   <Debug>", BitmapFont.SMALLFONTS, 1);
-	Button exitButton = new Button(0, 0, 320, 32, "Quit to menu", BitmapFont.SMALLFONTS, 1);
+	Button resumeButton = new Button(0, 0, 320, 32, "#{menu.resume}", BitmapFont.SMALLFONTS, 1);
+	Button optionsButton = new Button(0, 0, 320, 32, "#{menu.options}", BitmapFont.SMALLFONTS, 1);
+	Button modsButton = new Button(-100, 0, 320, 32, "#{menu.mods}", BitmapFont.SMALLFONTS, 1);
+	Button exitButton = new Button(0, 0, 320, 32, "#{menu.backto}", BitmapFont.SMALLFONTS, 1);
 	
 	public PauseOverlay(OverlayableScene scene, Overlay parent)
 	{
@@ -34,7 +34,7 @@ public class PauseOverlay extends Overlay
 	@Override
 	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
 	{
-		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(48, "In-game menu", BitmapFont.SMALLFONTS) / 2, GameWindowOpenGL.windowHeight / 2 + 48 * 3, 0, 48, "In-game menu", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(48, "#{ingame.pause}", BitmapFont.SMALLFONTS) / 2, GameWindowOpenGL.windowHeight / 2 + 48 * 3, 0, 48, "In-game menu", BitmapFont.SMALLFONTS);
 
 		resumeButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight/2 + 48 * 2);
 		optionsButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight/2 + 48 * 1);

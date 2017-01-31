@@ -1,12 +1,12 @@
 package io.xol.chunkstories.input;
 
-import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.api.input.KeyboardKeyInput;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class InputVirtual implements KeyBind
+public class InputVirtual implements KeyboardKeyInput
 {
 	private String name;
 	private long hash;

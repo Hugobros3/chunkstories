@@ -1,0 +1,43 @@
+Rendering Rendu
+
+viewDistance Distance d'affichage
+doRealtimeReflections Reflets locaux
+doDynamicCubemaps Reflets globaux
+doShadows Activer ombres
+shadowMapResolutions Qualité ombres
+dynamicGrass Herbe animée
+hqTerrain Qualité du terrain distant
+quality.low Basse
+quality.high Haute
+doBloom Effet d'éblouissment
+framerate Limiter ips
+
+Video Vidéo
+
+fov Angle de vision
+fullScreen Plein écran
+fullScreenResolution Résolution plein écran
+language Langue
+
+Controls Contrôles
+
+mouseSensitivity Sensibilité souris
+bind.use Utiliser
+bind.back Marche arrière
+bind.run Courrir
+bind.inventory Inventaire
+bind.enter Entrer (?)
+bind.jump Sauter
+bind.forward Avancer
+bind.right Droite
+bind.left Gauche
+bind.exit Pause
+bind.chat Ouvrir le chat
+
+Sound Son
+
+Debug Debbogage
+
+log-policy Envoyer les rapports
+frametimeGraph Graphique des FPS
+showDebugInfo Afficher infos de debug

@@ -28,7 +28,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -77,7 +77,7 @@ public class Ingame extends OverlayableScene
 	
 	//Moved from client to IG, as these make sense per world/play
 	private final ClientPluginManager pluginManager;
-	private final Lwjgl2ClientInputsManager inputsManager;
+	//private final Lwjgl2ClientInputsManager inputsManager;
 	
 	//Only in SP
 	private final LocalServerContext localServer;
@@ -99,8 +99,6 @@ public class Ingame extends OverlayableScene
 		super(window);
 		this.world = world;
 		window.renderingContext.setCamera(camera);
-		
-		inputsManager = new Lwjgl2ClientInputsManager(this);
 		
 		chat = new Chat(this);
 		
@@ -358,7 +356,7 @@ public class Ingame extends OverlayableScene
 		if (currentOverlay != null && currentOverlay.handleKeypress(keyCode))
 			return true;
 
-		KeyBind keyBind = getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
+		KeyboardKeyInput keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
 
 		if (!guiHidden && keyBind != null)
 		{
@@ -404,7 +402,7 @@ public class Ingame extends OverlayableScene
 			Client.getInstance().reloadAssets();
 			
 			//Reload plugins
-			this.inputsManager.reload();
+			this.pluginManager.reloadPlugins();
 			
 			//Mark some caches dirty
 			world.getWorldRenderer().reloadContentSpecificStuff();
@@ -466,7 +464,7 @@ public class Ingame extends OverlayableScene
 
 	public boolean onKeyUp(int keyCode)
 	{
-		KeyBind keyBind = getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
+		KeyboardKeyInput keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
 
 		if (keyBind != null)
 		{
@@ -744,11 +742,6 @@ public class Ingame extends OverlayableScene
 			formatted = in.charAt(in.length() - i - 1) + formatted;
 		}
 		return formatted;
-	}
-
-	public Lwjgl2ClientInputsManager getInputsManager()
-	{
-		return this.inputsManager;
 	}
 	
 	public ClientPluginManager getPluginManager()

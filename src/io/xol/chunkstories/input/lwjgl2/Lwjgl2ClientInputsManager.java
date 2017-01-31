@@ -9,7 +9,7 @@ import java.util.Set;
 import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.KeyBind;
+import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
@@ -18,6 +18,7 @@ import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.input.KeyBindsLoader;
 import io.xol.chunkstories.net.packets.PacketInput;
 import io.xol.chunkstories.world.WorldClientRemote;
+import io.xol.engine.gui.Scene;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -29,12 +30,10 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 	Set<KeyBindImplementation> keyboardInputs = new HashSet<KeyBindImplementation>();
 	Map<Long, Input> inputsMap = new HashMap<Long, Input>();
 	
-	private final Ingame scene;
+	//private final Ingame scene;
 
-	public Lwjgl2ClientInputsManager(Ingame scene)
+	public Lwjgl2ClientInputsManager()
 	{
-		this.scene = scene;
-		
 		reload();
 	}
 	
@@ -71,12 +70,12 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 	 * @param keyCode
 	 * @return
 	 */
-	public KeyBind getKeyBoundForLWJGL2xKey(int keyCode)
+	public KeyboardKeyInput getKeyBoundForLWJGL2xKey(int keyCode)
 	{
 		for (Input keyBind : inputs)
 		{
 			if (keyBind instanceof KeyBindImplementation && ((KeyBindImplementation) keyBind).getLWJGL2xKey() == keyCode)
-				return (KeyBind) keyBind;
+				return (KeyboardKeyInput) keyBind;
 		}
 		return null;
 	}
@@ -112,7 +111,7 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 		inputs.clear();
 		inputsMap.clear();
 		keyboardInputs.clear();
-		Iterator<Input> i = KeyBindsLoader.loadKeyBindsIntoManager(this, scene.getWorld().getGameContext().getContent().modsManager());
+		Iterator<Input> i = KeyBindsLoader.loadKeyBindsIntoManager(this, Client.getInstance().getContent().modsManager());
 		while(i.hasNext())
 		{
 			Input input = i.next();
@@ -145,6 +144,12 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 
 	public boolean onInputPressed(Input input)
 	{
+		//Check we have a relevant scene
+		Scene currentScene = Client.windows.getCurrentScene();
+		if(!(currentScene instanceof Ingame))
+			return false;
+		Ingame scene = (Ingame)currentScene;
+		
 		ClientInputPressedEvent event = new ClientInputPressedEvent(input);
 
 		scene.getPluginManager().fireEvent(event);
@@ -173,6 +178,12 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 	@Override
 	public boolean onInputReleased(Input input)
 	{
+		//Check we have a relevant scene
+		Scene currentScene = Client.windows.getCurrentScene();
+		if(!(currentScene instanceof Ingame))
+			return false;
+		Ingame scene = (Ingame)currentScene;
+		
 		ClientInputReleasedEvent event = new ClientInputReleasedEvent(input);
 
 		scene.getPluginManager().fireEvent(event);

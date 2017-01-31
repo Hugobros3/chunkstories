@@ -1,12 +1,14 @@
 package io.xol.chunkstories.gui.overlays.config;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import io.xol.chunkstories.api.Content.LocalizationManager;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.client.Client;
@@ -33,8 +35,8 @@ import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 public class OptionsOverlay extends Overlay
 {
 	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	Button exitButton = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
-
+	Button exitButton = new Button(0, 0, 300, 32, ("#{menu.back}"), BitmapFont.SMALLFONTS, 1);
+	
 	List<ConfigTab> configTabs = new ArrayList<ConfigTab>();
 
 	abstract class ConfigButton extends Button
@@ -67,7 +69,7 @@ public class OptionsOverlay extends Overlay
 
 		public void updateText()
 		{
-			this.text = parameter + " : " + value;
+			this.text = locMgr.getLocalizedString(parameter) + " : " + value;
 		}
 
 		public abstract void onClick(int posx, int posy, int button);
@@ -142,7 +144,7 @@ public class OptionsOverlay extends Overlay
 		@Override
 		public void updateText()
 		{
-			this.text = parameter + " : " + Keyboard.getKeyName(Integer.parseInt(value));
+			this.text = locMgr.getLocalizedString(parameter) + " : " + Keyboard.getKeyName(Integer.parseInt(value));
 		}
 
 		@Override
@@ -176,7 +178,7 @@ public class OptionsOverlay extends Overlay
 		@Override
 		public void updateText()
 		{
-			this.text = parameter + " : " + value;
+			this.text = locMgr.getLocalizedString(parameter) + " : " + value;
 		}
 
 		@Override
@@ -225,13 +227,17 @@ public class OptionsOverlay extends Overlay
 
 	List<Button> tabsButtons = new ArrayList<Button>();
 	int selectedConfigTab = 0;
+	private final LocalizationManager locMgr;
 
 	public OptionsOverlay(OverlayableScene scene, Overlay parent)
 	{
 		super(scene, parent);
+		
+		locMgr = Client.getInstance().getContent().localization();
+		
 		guiHandler.add(exitButton);
 
-		configTabs.add(new ConfigTab("Rendering", new ConfigButton[] { 
+		configTabs.add(new ConfigTab("#{Rendering}", new ConfigButton[] { 
 				new ConfigButtonMultiChoice("viewDistance",new String[] { "64", "96", "128", "144", "160", "192", "224", "256" }),
 				new ConfigButtonToggle("doRealtimeReflections").setApplyAction(new Runnable(){
 					@Override
@@ -288,7 +294,7 @@ public class OptionsOverlay extends Overlay
 							Client.world.setWeather(Client.getConfig().getBooleanProp("rainyMode", false));
 					}
 				}),*/
-				new ConfigButtonToggle("perPixelFresnel").setApplyAction(new Runnable(){
+				/*new ConfigButtonToggle("perPixelFresnel").setApplyAction(new Runnable(){
 					@Override
 					public void run()
 					{
@@ -304,7 +310,7 @@ public class OptionsOverlay extends Overlay
 					{
 						ShadersLibrary.reloadAllShaders();
 					}
-				}),
+				}),*/
 				/*new ConfigButtonMultiChoice("ssaoQuality", new String[] { "0", "1", "2"}).setApplyAction(new Runnable(){
 					@Override
 					public void run()
@@ -330,15 +336,35 @@ public class OptionsOverlay extends Overlay
 				}),
 				}));
 
-		configTabs.add(new ConfigTab("Video", new ConfigButton[] {
+		//for (String loc : Client.getInstance().getContent().localization().listTranslations())
+		Collection<String> translationsCollection = Client.getInstance().getContent().localization().listTranslations();
+		String[] translations = new String[translationsCollection.size()];
+		int z = 0;
+		for(String loc : translationsCollection)
+		{
+			translations[z] = loc;
+			z++;
+		}
+		
+		configTabs.add(new ConfigTab("#{Video}", new ConfigButton[] {
 				new ConfigButtonScale("fov", 25f, 85f, 1f),
 				new ConfigButtonToggle("fullScreen"),
 				new ConfigButtonMultiChoice("fullScreenResolution", GameWindowOpenGL.getDisplayModes()),
+				new ConfigButtonMultiChoice("language", translations).setApplyAction(new Runnable(){
+					@Override
+					public void run()
+					{
+						String code = Client.getConfig().getProp("language", "en");
+						Client.clientConfig.setString("language", code);
+						Client.getInstance().getContent().localization().loadTranslation(code);
+					}
+				}),
 				}));
 
 		
 		List<ConfigButton> controlsButtons = new ArrayList<ConfigButton>();
 		controlsButtons.add(new ConfigButtonScale("mouseSensitivity", 0.5f, 2f, 0.05f));
+		
 		Iterator<Input> inputsIterator = Client.getInstance().getInputsManager().getAllInputs();
 		while(inputsIterator.hasNext())
 		{
@@ -359,29 +385,14 @@ public class OptionsOverlay extends Overlay
 			i++;
 		}
 		
-		configTabs.add(new ConfigTab("Controls", controlsButtonsArray
-				
-				/*new ConfigButton[] {
-				new ConfigButtonScale("mouseSensitivity", 0.5f, 2f, 0.05f),
-				
-				new ConfigButtonKey("FORWARD_KEY", this),
-				new ConfigButtonKey("BACK_KEY", this),
-				new ConfigButtonKey("LEFT_KEY", this),
-				new ConfigButtonKey("RIGHT_KEY", this),
-				new ConfigButtonKey("JUMP_KEY", this),
-				new ConfigButtonKey("RUN_KEY", this),
-				new ConfigButtonKey("ENTER_KEY", this),
-				new ConfigButtonKey("EXIT_KEY", this),
-				new ConfigButtonKey("INVENTORY_KEY", this),
-				new ConfigButtonKey("GRABUSE_KEY", this),
-				new ConfigButtonKey("CHAT_KEY", this),
-				}*/));
+		configTabs.add(new ConfigTab("#{Controls}", controlsButtonsArray));
 		
-		configTabs.add(new ConfigTab("Sound", new ConfigButton[] {}));
+		//TODO sound config ?
+		configTabs.add(new ConfigTab("#{Sound}", new ConfigButton[] {}));
 		
 		if(RenderingConfig.isDebugAllowed)
 		{
-			configTabs.add(new ConfigTab("Debug", new ConfigButton[] { 
+			configTabs.add(new ConfigTab("#{Debug}", new ConfigButton[] { 
 					new ConfigButtonToggle("debugGBuffers").setApplyAction(new Runnable(){
 						@Override
 						public void run()
@@ -397,7 +408,7 @@ public class OptionsOverlay extends Overlay
 		}
 		else
 		{
-			configTabs.add(new ConfigTab("Debug", new ConfigButton[] { 
+			configTabs.add(new ConfigTab("#{Debug}", new ConfigButton[] { 
 					
 					//No cheat-allowing debug functions
 					new ConfigButtonToggle("showDebugInfo"),

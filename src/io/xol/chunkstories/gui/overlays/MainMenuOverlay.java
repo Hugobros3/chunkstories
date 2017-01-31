@@ -8,6 +8,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.ng.NgButton;
+import io.xol.chunkstories.gui.overlays.config.LanguageSelectionScreen;
 import io.xol.chunkstories.gui.overlays.config.LogPolicyAsk;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
@@ -27,11 +28,11 @@ import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 public class MainMenuOverlay extends Overlay
 {
 	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	NgButton singlePlayer = new NgButton(0, 0,("Singleplayer"));
-	NgButton multiPlayer = new NgButton(0, 0, ("Server Browser"));
-	NgButton modsOption = new NgButton(0, 0,("Mods"));
-	NgButton optionsMenu = new NgButton(0, 0,("Settings"));
-	NgButton exitGame = new NgButton(0, 0, ("Quit"));
+	NgButton singlePlayer = new NgButton(0, 0,("#{menu.singleplayer}"));
+	NgButton multiPlayer = new NgButton(0, 0, ("#{menu.serverbrowser}"));
+	NgButton modsOption = new NgButton(0, 0,("#{menu.mods}"));
+	NgButton optionsMenu = new NgButton(0, 0,("#{menu.options}"));
+	NgButton exitGame = new NgButton(0, 0, ("#{menu.quit}"));
 	
 	NgButton k = new NgButton(0, 0, "Singleplayer");
 

@@ -2,6 +2,7 @@ package io.xol.engine.gui.elements;
 
 import org.lwjgl.input.Mouse;
 
+import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -45,7 +46,8 @@ public class Button extends GuiElement
 
 	public int draw()
 	{
-		int textWidth = FontRenderer2.getTextLengthUsingFont(size * 16, text, font);
+		String localizedText = Client.getInstance().getContent().localization().localize(text);
+		int textWidth = FontRenderer2.getTextLengthUsingFont(size * 16, localizedText, font);
 		if (width < 0)
 		{
 			width = textWidth;
@@ -61,7 +63,7 @@ public class Button extends GuiElement
 			TexturesHandler.getTexture("./textures/gui/scalableButton.png").setLinearFiltering(false);
 			CorneredBoxDrawer.drawCorneredBoxTiled(posx - 4, posy, width + 8, height + 16, 4, "./textures/gui/scalableButton.png", 32, 2);
 		}
-		FontRenderer2.drawTextUsingSpecificFont(textDekal + posx, posy - height / 2, 0, size * 32, text, font);
+		FontRenderer2.drawTextUsingSpecificFont(textDekal + posx, posy - height / 2, 0, size * 32, localizedText, font);
 		return width * 2 * size - 12;
 	}
 
