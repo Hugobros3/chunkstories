@@ -187,6 +187,13 @@ public class GameWindowOpenGL
 		{
 			ChunkStoriesLogger.getInstance().log("OpenGL debug output extension supported, installing handler");
 			ARBDebugOutput.glDebugMessageCallbackARB(new ARBDebugOutputCallback( new OpenGLDebugOutputCallback()));
+			
+			//Don't need nvidia spam
+			if(glGetString(GL_VENDOR).toLowerCase().startsWith("nvidia"))
+			{
+				System.out.println("Disabling Nvidia gimpworks(tm) log-spamming feature");
+				ARBDebugOutput.glDebugMessageControlARB(ARBDebugOutput.GL_DEBUG_SOURCE_API_ARB, ARBDebugOutput.GL_DEBUG_TYPE_OTHER_ARB, 0x826B, null, false);
+			}
 		}
 	}
 
