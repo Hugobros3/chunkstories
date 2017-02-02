@@ -92,6 +92,8 @@ public class GameContentStore implements Content
 		generators.reload();
 		
 		bvhLibrary.reload();
+		
+		localizationManager.reload();
 	}
 
 	@Override

@@ -9,8 +9,10 @@ import java.util.Set;
 import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.anvil.MinecraftWorld;
+import io.xol.chunkstories.anvil.nbt.NBTInt;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.GameContext;
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
@@ -133,12 +135,13 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		WorldImplementation csWorld = new WorldTool(this, csFolder);
 
 		//Step one: copy the entire world data
-		//stepOneCopyWorldData(mcWorld, csWorld, minecraftOffsetX, minecraftOffsetZ);
+		stepOneCopyWorldData(mcWorld, csWorld, minecraftOffsetX, minecraftOffsetZ);
 		//Step two: make the summary data for chunk stories
-		//stepTwoCreateSummaryData(csWorld);
+		stepTwoCreateSummaryData(csWorld);
 		//Step three: redo the lightning of the entire map
 		stepThreeSpreadLightning(csWorld);
 		//Step four: fluff
+		stetFourTidbits(mcWorld, csWorld);
 	}
 
 	private void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX, int minecraftOffsetZ)
@@ -472,6 +475,18 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		csWorld.unloadUselessData();
 	}
 
+	private void stetFourTidbits(MinecraftWorld mcWorld, WorldImplementation csWorld)
+	{
+		verbose("Entering step four: tidbits");
+		
+		int spawnX = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnX")).getData();
+		int spawnY = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnY")).getData();
+		int spawnZ = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnZ")).getData();
+		
+		csWorld.setDefaultSpawnLocation(new Location(csWorld, spawnX, spawnY, spawnZ));
+		csWorld.saveEverything();
+	}
+	
 	private void verbose(String s)
 	{
 		if (verboseMode)
