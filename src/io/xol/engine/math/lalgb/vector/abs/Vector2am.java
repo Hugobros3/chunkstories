@@ -2,8 +2,6 @@ package io.xol.engine.math.lalgb.vector.abs;
 
 import io.xol.engine.math.lalgb.vector.Vector2;
 import io.xol.engine.math.lalgb.vector.Vector2m;
-import io.xol.engine.math.lalgb.vector.dp.Vector2dm;
-import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 
 public abstract class Vector2am<T extends Number> implements Vector2m<T>
 {

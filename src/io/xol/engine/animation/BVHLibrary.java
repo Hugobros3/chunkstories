@@ -3,8 +3,6 @@ package io.xol.engine.animation;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.api.mods.ModsManager;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.engine.animation.BVHAnimation;
 
@@ -17,12 +15,12 @@ public class BVHLibrary
 	// This class holds static model info
 
 	private final GameContentStore store;
-	private final ModsManager modsManager;
+	//private final ModsManager modsManager;
 	
 	public BVHLibrary(GameContentStore store)
 	{
 		this.store = store;
-		this.modsManager = store.modsManager();
+		//this.modsManager = store.modsManager();
 		
 		reload();
 	}
