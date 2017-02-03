@@ -23,7 +23,7 @@ public class CPUModelDetection
 		}
 		else if (OSHelper.isWindows())
 		{
-			command = "cmd /C WMIC CPU Get /Format:List";
+			command = "cmd /C WMIC CPU Get /Format:List <NUL";
 		}
 		else
 			return "Mac, not implemented, workarround";
@@ -45,6 +45,8 @@ public class CPUModelDetection
 		{
 			while ((line = reader.readLine()) != null)
 			{
+				//line = reader.readLine();
+				
 				if(line.startsWith("Name="))
 					cpuName = line.split("=")[1];
 				if(line.startsWith("model name"))
