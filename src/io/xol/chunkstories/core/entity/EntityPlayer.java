@@ -31,6 +31,7 @@ import io.xol.chunkstories.api.world.WorldMaster;
 
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.core.entity.EntityHumanoid.EntityHumanoidStance;
 import io.xol.chunkstories.core.entity.components.EntityComponentController;
 import io.xol.chunkstories.core.entity.components.EntityComponentCreativeMode;
 import io.xol.chunkstories.core.entity.components.EntityComponentFlying;
@@ -268,6 +269,15 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			return;
 
 		boolean focus = controller.hasFocus();
+		
+		if (focus && isOnGround())
+		{
+			if(controller.getInputsManager().getInputByName("crouch").isPressed())
+				this.stance.set(EntityHumanoidStance.CROUCHING);
+			else
+				this.stance.set(EntityHumanoidStance.STANDING);
+		}
+		
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
 		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
 		
@@ -307,11 +317,14 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if (focus)
 		{
 			if (controller.getInputsManager().getInputByName("forward").isPressed() || controller.getInputsManager().getInputByName("left").isPressed() || controller.getInputsManager().getInputByName("right").isPressed())
-				horizontalSpeed = (running ? 0.09 : 0.06);
+				horizontalSpeed = ((running && this.stance.get() == EntityHumanoidStance.STANDING) ? 0.09 : 0.06);
 			else if (controller.getInputsManager().getInputByName("back").isPressed())
 				horizontalSpeed = -0.05;
 			else
 				horizontalSpeed = 0.0;
+			
+			if(this.stance.get() == EntityHumanoidStance.CROUCHING)
+				horizontalSpeed *= 0.85f;
 		}
 		else
 			horizontalSpeed = 0.0;
@@ -379,8 +392,6 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 		//targetVelocityX = Math.sin((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed;
 		//targetVelocityZ = Math.cos((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed;
-
-		eyePosition = 1.65;// + Math.sin(metersWalked * 5d) * 0.035d;
 	}
 
 	public static float flySpeed = 0.125f;
@@ -389,8 +400,12 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	{
 		if (!controller.hasFocus())
 			return;
+		
+		//Flying means we're standing
+		this.stance.set(EntityHumanoidStance.STANDING);
+		
 		getVelocityComponent().setVelocity(0, 0, 0);
-		eyePosition = 1.65;
+		
 		float camspeed = flySpeed;
 		if (controller.getInputsManager().getInputByName("flyReallyFast").isPressed())
 			camspeed *= 8 * 5f;

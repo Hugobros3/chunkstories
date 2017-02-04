@@ -21,6 +21,7 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemVoxel;
+import io.xol.chunkstories.core.entity.components.EntityComponentStance;
 import io.xol.chunkstories.core.item.ItemFirearm;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -54,14 +55,18 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 	public double horizontalSpeed = 0;
 	public double metersWalked = 0d;
 
-	public double eyePosition = 1.6;
+	public double eyePosition = 1.65;
 
 	CachedLodSkeletonAnimator cachedSkeleton;
+	
+	protected EntityComponentStance stance;
 
 	public EntityHumanoid(World world, double x, double y, double z)
 	{
 		super(world, x, y, z);
 
+		stance = new EntityComponentStance(this);
+		
 		cachedSkeleton = new CachedLodSkeletonAnimator(new EntityHumanoidAnimatedSkeleton(), 25f, 75f);
 		animatedSkeleton = cachedSkeleton;
 	}
@@ -95,16 +100,30 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 			double horizSpd = Math.sqrt(vel.getX() * vel.getX() + vel.getZ() * vel.getZ());
 
-			if (horizSpd > 0.065)
+			if(stance.get() == EntityHumanoidStance.STANDING)
 			{
-				//System.out.println("running");
-				return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/running.bvh");
+				if (horizSpd > 0.065)
+				{
+					//System.out.println("running");
+					return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/running.bvh");
+				}
+				if (horizSpd > 0.0)
+					return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/walking.bvh");
+			
+				return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/standstill.bvh");
 			}
-
-			if (horizSpd > 0.0)
-				return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/walking.bvh");
-
-			return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/standstill.bvh");
+			else if(stance.get() == EntityHumanoidStance.CROUCHING)
+			{
+				if (horizSpd > 0.0)
+					return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/crouched-walking.bvh");
+				
+				return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/crouched.bvh");
+			}
+			else
+			{
+				return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/ded.bvh");
+			}
+			
 		}
 
 		public Matrix4f getBoneTransformationMatrix(String boneName, double animationTime)
@@ -155,7 +174,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 				if (selectedItem != null)
 				{
 					characterRotationMatrix.translate(new Vector3fm(0f, 0f, (float) k));
-					characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation()) / 180f * 3.14159f, new Vector3fm(0, 1, 0));
+					characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation() + ((stance.get() == EntityHumanoidStance.CROUCHING) ? -50f : 0f)) / 180f * 3.14159f, new Vector3fm(0, 1, 0));
 					characterRotationMatrix.translate(new Vector3fm(0f, 0f, -(float) k));
 				}
 			}
@@ -271,6 +290,11 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 	}
 
+	public enum EntityHumanoidStance {
+		STANDING,
+		CROUCHING,
+	}
+	
 	@Override
 	public EntityRenderer<? extends EntityRenderable> getEntityRenderer()
 	{
@@ -285,8 +309,9 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 	@Override
 	public void tick(WorldAuthority authority)
 	{
-		//Only 
-
+		eyePosition = stance.get() == EntityHumanoidStance.CROUCHING ? 1.15 : 1.65;
+		
+		//Only  if we are allowed to
 		boolean tick = false;
 		if (this instanceof EntityControllable)
 		{
@@ -423,12 +448,12 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		if (isDead())
 			return new CollisionBox(1.6, 1.0, 1.6).translate(-0.8, 0.0, -0.8);
 		//Have it centered
-		return new CollisionBox(1.0, 2.0, 1.0).translate(-0.5, 0.0, -0.5);
+		return new CollisionBox(1.0, stance.get() == EntityHumanoidStance.CROUCHING ? 1.5 : 2.0, 1.0).translate(-0.5, 0.0, -0.5);
 	}
 
 	public CollisionBox[] getCollisionBoxes()
 	{
-		return new CollisionBox[] { new CollisionBox(0.8, 1.9, 0.8).translate(-0.4, 0.0, -0.4) };
+		return new CollisionBox[] { new CollisionBox(0.8, stance.get() == EntityHumanoidStance.CROUCHING ? 1.45 : 1.9, 0.8).translate(-0.4, 0.0, -0.4) };
 	}
 
 	HitBoxImpl[] hitboxes = { new HitBoxImpl(new CollisionBox(-0.15, 0.0, -0.25, 0.30, 0.675, 0.5), "boneTorso"), new HitBoxImpl(new CollisionBox(-0.25, 0.0, -0.25, 0.5, 0.5, 0.5), "boneHead"),

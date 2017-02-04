@@ -8,44 +8,42 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
+import io.xol.chunkstories.core.entity.EntityHumanoid.EntityHumanoidStance;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public abstract class EntityComponentBoolean extends EntityComponent
+public class EntityComponentStance extends EntityComponent
 {
-	private boolean value = false;
-
-	public boolean get()
+	private EntityHumanoidStance value = EntityHumanoidStance.STANDING;
+	
+	public EntityHumanoidStance get()
 	{
 		return value;
 	}
 
-	public void set(boolean newValue)
+	public void set(EntityHumanoidStance flying)
 	{
-		if (this.value != newValue)
-		{
-			this.value = newValue;
-			this.pushComponentEveryoneButController();
-		}
+		this.value = flying;
+		this.pushComponentController();
 	}
 
-	public EntityComponentBoolean(Entity entity, EntityComponent previous)
+	public EntityComponentStance(Entity entity)
 	{
-		super(entity, previous);
+		super(entity);
 	}
 
 	@Override
 	protected void push(StreamTarget destinator, DataOutputStream dos) throws IOException
 	{
-		dos.writeBoolean(value);
+		dos.writeByte(this.value.ordinal());
 	}
 
 	@Override
 	protected void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
-		value = dis.readBoolean();
+		value = EntityHumanoidStance.values()[dis.readByte()];
 	}
 
 }
