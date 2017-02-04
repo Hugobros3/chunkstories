@@ -4,10 +4,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
+import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
@@ -79,7 +79,7 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 			ChunkStoriesLogger.getInstance().log(e.getMessage(), LogLevel.WARN);
 			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
 		}
-
+		
 		if (inventory != null)
 			inventory.setItemPileAt(slotx, sloty, itemPile);
 	}

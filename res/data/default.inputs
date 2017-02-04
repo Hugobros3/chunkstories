@@ -5,6 +5,7 @@ keyBind left Q
 keyBind right D
 keyBind jump SPACE
 keyBind run LCONTROL
+keyBind crouch C
 keyBind use F
 keyBind inventory E
 keyBind exit ESCAPE

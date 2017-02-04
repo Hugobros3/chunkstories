@@ -41,8 +41,8 @@ public class EntityComponentSelectedItem extends EntityComponent
 	public void setSelectedSlot(int newSlot)
 	{
 		while (newSlot < 0)
-			newSlot += inventory.width;
-		selectedSlot = newSlot % inventory.width;
+			newSlot += inventory.getWidth();
+		selectedSlot = newSlot % inventory.getWidth();
 		
 		//TODO permissions check
 		this.pushComponentEveryone();
@@ -76,7 +76,7 @@ public class EntityComponentSelectedItem extends EntityComponent
 	 */
 	public ItemPile getSelectedItem()
 	{
-		return inventory.contents[selectedSlot][0];
+		return inventory.getItemPileAt(selectedSlot, 0);
 	}
 
 	@Override

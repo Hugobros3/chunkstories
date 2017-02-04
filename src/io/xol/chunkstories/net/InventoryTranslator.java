@@ -5,8 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
+import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 
 //(c) 2015-2017 XolioWare Interactive

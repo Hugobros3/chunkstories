@@ -7,10 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
-import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -215,7 +213,7 @@ public class ItemPile
 		return inventory;
 	}
 
-	public void setInventory(EntityComponentInventory inventory)
+	public void setInventory(Inventory inventory)
 	{
 		this.inventory = inventory;
 	}

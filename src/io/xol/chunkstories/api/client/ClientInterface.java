@@ -2,7 +2,7 @@ package io.xol.chunkstories.api.client;
 
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.entity.PlayerClient;
-import io.xol.chunkstories.api.entity.Inventory;
+import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;

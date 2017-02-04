@@ -42,7 +42,7 @@ public class EntityComponentPublicInventory extends EntityComponentInventory
 	}
 	
 	@Override
-	public String getHolderName()
+	public String getInventoryName()
 	{
 		return "Chest";
 	}

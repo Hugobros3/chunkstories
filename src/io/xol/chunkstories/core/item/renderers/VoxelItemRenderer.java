@@ -29,9 +29,7 @@ import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.RenderByteBuffer;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModel;
-import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.chunk.DummyChunk;
 import io.xol.engine.base.GameWindowOpenGL;
@@ -71,8 +69,6 @@ public class VoxelItemRenderer implements ItemRenderer
 
 		int slotSize = 24 * scaling;
 		ShaderInterface program = renderingContext.useShader("inventory_blockmodel");
-		//ShaderProgram program = ShadersLibrary.getShaderProgram("inventory_blockmodel");
-		//renderingContext.setCurrentShader(program);
 		
 		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
@@ -85,8 +81,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		transformation.rotate(toRad(-22.5f), new Vector3fm(1.0f, 0.0f, 0.0f));
 		transformation.rotate(toRad(45f), new Vector3fm(0.0f, 1.0f, 0.0f));
 		transformation.translate(new Vector3fm(-0.5f, -0.5f, -0.5f));
-		//transformation.rotate(45f, new Vector3fm(0.0f, 1.0f, 1.0f));
-		//transformation.m02 = -0.5f;
+		
 		program.setUniformMatrix4f("transformation", transformation);
 		Voxel voxel = ((ItemVoxel) pile.getItem()).getVoxel();
 		if (voxel == null)

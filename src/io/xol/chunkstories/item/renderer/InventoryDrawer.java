@@ -2,8 +2,8 @@ package io.xol.chunkstories.item.renderer;
 
 import org.lwjgl.input.Mouse;
 import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
-import io.xol.chunkstories.api.entity.Inventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
+import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.engine.graphics.RenderingContext;
@@ -169,7 +169,7 @@ public class InventoryDrawer
 
 			context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().getWidth() - 1) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 224f / 256f, 32f / 256f, 248f / 256f, 8f / 256f,
 					inventoryTexture, true, true, color);
-			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.haettenschweiler, x + cornerSize + 6, y + cornerSize + internalHeight - slotSize + 2 * scale, getInventory().getHolderName(), scale, scale, new Vector4fm(1, 1, 1, 1));
+			TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.haettenschweiler, x + cornerSize + 6, y + cornerSize + internalHeight - slotSize + 2 * scale, getInventory().getInventoryName(), scale, scale, new Vector4fm(1, 1, 1, 1));
 		}
 
 		//Get rid of any remaining GUI elements or else they will draw on top of the items

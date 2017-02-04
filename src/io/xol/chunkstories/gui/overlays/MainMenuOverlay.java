@@ -4,17 +4,17 @@ import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.ng.NgButton;
-import io.xol.chunkstories.gui.overlays.config.LanguageSelectionScreen;
 import io.xol.chunkstories.gui.overlays.config.LogPolicyAsk;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
 import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
+import io.xol.chunkstories.item.inventory.BasicInventory;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
@@ -123,7 +123,7 @@ public class MainMenuOverlay extends Overlay
 	public boolean handleKeypress(int k)
 	{
 		if (k == Keyboard.KEY_E)
-			mainScene.changeOverlay(new InventoryOverlay(mainScene, this, new EntityComponentInventory[]{new EntityComponentInventory(null, 10, 4)
+			mainScene.changeOverlay(new InventoryOverlay(mainScene, this, new Inventory[]{new BasicInventory(10, 4)
 			, new InventoryAllVoxels()})); // new Inventory(null, 10, 4, "La chatte à ta mère")
 		if (k == Keyboard.KEY_D)
 			mainScene.changeOverlay(new DeathOverlay(mainScene, this));

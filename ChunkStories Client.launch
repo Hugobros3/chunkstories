@@ -10,5 +10,4 @@
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="io.xol.chunkstories.client.Client"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--dir=&quot;.&quot;"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Chunk Stories"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-verbose:gc"/>
 </launchConfiguration>
