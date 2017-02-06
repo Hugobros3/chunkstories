@@ -8,11 +8,11 @@ import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
+import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.math.LoopingMathHelper;
 
@@ -34,20 +34,20 @@ import org.lwjgl.BufferUtils;
 
 public class ChunksRenderer extends Thread
 {
-	AtomicBoolean die = new AtomicBoolean();
+	private AtomicBoolean die = new AtomicBoolean();
 
-	World world;
+	private final WorldClientCommon world;
 
 	public Deque<int[]> todoQueue = new ConcurrentLinkedDeque<int[]>();
-	public Queue<ChunkRenderData> doneQueue = new ConcurrentLinkedQueue<ChunkRenderData>();
+	//public Queue<MeshedChunkData> doneQueue = new ConcurrentLinkedQueue<MeshedChunkData>();
 
 	public ByteBufferPool buffersPool;
 
 	int worldSizeInChunks;
 
-	public ChunksRenderer(World w)
+	public ChunksRenderer(WorldClientCommon world)
 	{
-		world = w;
+		this.world = world;
 		// 8 buffers of 8Mb each (64Mb) for temp/scratch buffer memory
 		buffersPool = new ByteBufferPool(8, 0x800000);
 	}
@@ -120,10 +120,10 @@ public class ChunksRenderer extends Thread
 		}
 	}
 
-	public ChunkRenderData getNextRenderedChunkData()
+	/*public MeshedChunkData getNextRenderedChunkData()
 	{
 		return doneQueue.poll();
-	}
+	}*/
 
 	@Override
 	public void run()
@@ -896,26 +896,26 @@ public class ChunksRenderer extends Thread
 	ByteBuffer complexBlocksBuffer = BufferUtils.createByteBuffer(0x600000);
 
 	@SuppressWarnings("unused")
-	private void renderChunk(CubicChunk work, RecyclableByteBuffer buffer)
+	private void renderChunk(CubicChunk workChunk, RecyclableByteBuffer buffer)
 	{
 		//TODO only requests a ByteBuffer when it is sure it will actually need one
 		ByteBuffer byteBuffer = buffer.accessByteBuffer();
 		
 		// Update lightning as well if needed
-		if (work == null)
+		if (workChunk == null)
 		{
 			buffer.recycle();
 			//buffersPool.releaseByteBuffer(buffer);
 			return;
 		}
 
-		if (work.needRelightning.getAndSet(false))
-			work.bakeVoxelLightning(true);
+		if (workChunk.needRelightning.getAndSet(false))
+			workChunk.bakeVoxelLightning(true);
 
 		//System.out.println("k");
 
 		// Don't bother
-		if (!work.need_render.get())
+		if (!workChunk.need_render.get())
 		{
 			buffer.recycle();
 			//buffersPool.releaseByteBuffer(buffer);
@@ -924,25 +924,25 @@ public class ChunksRenderer extends Thread
 
 		long cr_start = System.nanoTime();
 
-		int cx = work.getChunkX();
-		int cy = work.getChunkY();
-		int cz = work.getChunkZ();
+		int cx = workChunk.getChunkX();
+		int cy = workChunk.getChunkY();
+		int cz = workChunk.getChunkZ();
 
 		// For map borders
-		boolean chunkTopLoaded = work.world.isChunkLoaded(cx, cy + 1, cz);
-		boolean chunkBotLoaded = work.world.isChunkLoaded(cx, cy - 1, cz);
+		boolean chunkTopLoaded = world.isChunkLoaded(cx, cy + 1, cz);
+		boolean chunkBotLoaded = world.isChunkLoaded(cx, cy - 1, cz);
 		// Useless ? ( no borders except ceiling in current worlds )
-		boolean chunkRightLoaded = work.world.isChunkLoaded(cx + 1, cy, cz);
-		boolean chunkLeftLoaded = work.world.isChunkLoaded(cx - 1, cy, cz);
-		boolean chunkFrontLoaded = work.world.isChunkLoaded(cx, cy, cz + 1);
-		boolean chunkBackLoaded = work.world.isChunkLoaded(cx, cy, cz - 1);
+		boolean chunkRightLoaded = world.isChunkLoaded(cx + 1, cy, cz);
+		boolean chunkLeftLoaded = world.isChunkLoaded(cx - 1, cy, cz);
+		boolean chunkFrontLoaded = world.isChunkLoaded(cx, cy, cz + 1);
+		boolean chunkBackLoaded = world.isChunkLoaded(cx, cy, cz - 1);
 
 		// Fill chunk caches ( saves much time avoiding slow-ass world->regions hashmap->chunk holder access for each vert )
 		for (int relx = -1; relx <= 1; relx++)
 			for (int rely = -1; rely <= 1; rely++)
 				for (int relz = -1; relz <= 1; relz++)
 				{
-					CubicChunk chunk2 = work.world.getChunk(cx + relx, cy + rely, cz + relz);
+					CubicChunk chunk2 = world.getChunk(cx + relx, cy + rely, cz + relz);
 					if(chunk2 != null)
 						cache[((relx + 1) * 3 + (rely + 1)) * 3 + (relz + 1)] = chunk2.chunkVoxelData;
 					else
@@ -966,7 +966,7 @@ public class ChunksRenderer extends Thread
 
 		int i, j, k;
 		//Don't waste time rendering void chunks m8
-		if (work.isAirChunk())
+		if (workChunk.isAirChunk())
 			i = 32;
 		
 		for (i = 0; i < 32; i++)
@@ -975,7 +975,7 @@ public class ChunksRenderer extends Thread
 			{
 				for (k = 0; k < 32; k++)
 				{
-					int src = work.getVoxelData(i, k, j);
+					int src = workChunk.getVoxelData(i, k, j);
 					int blockID = VoxelFormat.id(src);
 
 					if (blockID == 0)
@@ -985,22 +985,22 @@ public class ChunksRenderer extends Thread
 					renderInfo.data = src;
 					renderInfo.voxelType = vox;
 
-					renderInfo.neightborhood[0] = getBlockData(work, i - 1, k, j);
-					renderInfo.neightborhood[1] = getBlockData(work, i, k, j + 1);
-					renderInfo.neightborhood[2] = getBlockData(work, i + 1, k, j);
-					renderInfo.neightborhood[3] = getBlockData(work, i, k, j - 1);
-					renderInfo.neightborhood[4] = getBlockData(work, i, k + 1, j);
-					renderInfo.neightborhood[5] = getBlockData(work, i, k - 1, j);
+					renderInfo.neightborhood[0] = getBlockData(workChunk, i - 1, k, j);
+					renderInfo.neightborhood[1] = getBlockData(workChunk, i, k, j + 1);
+					renderInfo.neightborhood[2] = getBlockData(workChunk, i + 1, k, j);
+					renderInfo.neightborhood[3] = getBlockData(workChunk, i, k, j - 1);
+					renderInfo.neightborhood[4] = getBlockData(workChunk, i, k + 1, j);
+					renderInfo.neightborhood[5] = getBlockData(workChunk, i, k - 1, j);
 
 					// System.out.println(blockID);
 					if (vox.isVoxelLiquid())
 					{
-						addVoxelUsingCustomModel(work, waterRBBF, i, k, j, renderInfo);
+						addVoxelUsingCustomModel(workChunk, waterRBBF, i, k, j, renderInfo);
 					}
 					else if (vox.isVoxelUsingCustomRenderer())
 					{
 						// Prop rendering
-						addVoxelUsingCustomModel(work, complexRBBF, i, k, j, renderInfo);
+						addVoxelUsingCustomModel(workChunk, complexRBBF, i, k, j, renderInfo);
 					}
 					else if (blockID != 0)
 					{
@@ -1009,42 +1009,42 @@ public class ChunksRenderer extends Thread
 						{
 							if (!(k == 0 && !chunkBotLoaded))
 							{
-								addQuadBottom(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BOTTOM, renderInfo), extraByte);
+								addQuadBottom(workChunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BOTTOM, renderInfo), extraByte);
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 4))
 						{
 							if (!(k == 31 && !chunkTopLoaded))
 							{
-								addQuadTop(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.TOP, renderInfo), extraByte);
+								addQuadTop(workChunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.TOP, renderInfo), extraByte);
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 2))
 						{
 							if (!(i == 31 && !chunkRightLoaded))
 							{
-								addQuadRight(work, rawRBBF, i + 1, k, j, vox.getVoxelTexture(src, VoxelSides.RIGHT, renderInfo), extraByte);
+								addQuadRight(workChunk, rawRBBF, i + 1, k, j, vox.getVoxelTexture(src, VoxelSides.RIGHT, renderInfo), extraByte);
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 0))
 						{
 							if (!(i == 0 && !chunkLeftLoaded))
 							{
-								addQuadLeft(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.LEFT, renderInfo), extraByte);
+								addQuadLeft(workChunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.LEFT, renderInfo), extraByte);
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 1))
 						{
 							if (!(j == 31 && !chunkFrontLoaded))
 							{
-								addQuadFront(work, rawRBBF, i, k, j + 1, vox.getVoxelTexture(src, VoxelSides.FRONT, renderInfo), extraByte);
+								addQuadFront(workChunk, rawRBBF, i, k, j + 1, vox.getVoxelTexture(src, VoxelSides.FRONT, renderInfo), extraByte);
 							}
 						}
 						if (shallBuildWallArround(renderInfo, 3))
 						{
 							if (!(j == 0 && !chunkBackLoaded))
 							{
-								addQuadBack(work, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, renderInfo), extraByte);
+								addQuadBack(workChunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, renderInfo), extraByte);
 							}
 						}
 					}
@@ -1053,7 +1053,7 @@ public class ChunksRenderer extends Thread
 		}
 
 		// Prepare output
-		ChunkRenderData chunkRenderData = new ChunkRenderData(work);
+		//MeshedChunkData chunkRenderData = new MeshedChunkData();
 
 		byteBuffer.clear();
 		//chunkRenderData.byteBufferPoolId = buffer;// = byteBuffer;//BufferUtils.createByteBuffer(bufferTotalSize);
@@ -1061,9 +1061,10 @@ public class ChunksRenderer extends Thread
 		//long cr_buffer = System.nanoTime();
 
 		//Set sizes
-		chunkRenderData.vboSizeFullBlocks = rawBlocksBuffer.position() / (16);
-		chunkRenderData.vboSizeCustomBlocks = complexBlocksBuffer.position() / (24);
-		chunkRenderData.vboSizeWaterBlocks = waterBlocksBuffer.position() / (24);
+		
+		//chunkRenderData.vboSizeFullBlocks = rawBlocksBuffer.position() / (16);
+		//chunkRenderData.vboSizeCustomBlocks = complexBlocksBuffer.position() / (24);
+		//chunkRenderData.vboSizeWaterBlocks = waterBlocksBuffer.position() / (24);
 
 		//Move data in final buffer in correct orders
 		rawBlocksBuffer.limit(rawBlocksBuffer.position());
@@ -1080,14 +1081,15 @@ public class ChunksRenderer extends Thread
 
 		byteBuffer.flip();
 		
-		chunkRenderData.setChunkMeshes(buffer);
+		//chunkRenderData.setChunkMeshes(buffer);
 
-		doneQueue.add(chunkRenderData);
+		workChunk.getChunkRenderData().setChunkMeshes(new MeshedChunkData(workChunk, buffer, rawBlocksBuffer.position() / (16), complexBlocksBuffer.position() / (24), waterBlocksBuffer.position() / (24)));
+		//doneQueue.add(new MeshedChunkData(work, buffer, rawBlocksBuffer.position() / (16), complexBlocksBuffer.position() / (24), waterBlocksBuffer.position() / (24)));
 
 		totalChunksRendered.incrementAndGet();
 
-		work.need_render.set(false);
-		work.requestable.set(true);
+		workChunk.need_render.set(false);
+		workChunk.requestable.set(true);
 	}
 
 	public static int intifyNormal(float n)
@@ -1104,5 +1106,25 @@ public class ChunksRenderer extends Thread
 		{
 			notifyAll();
 		}
+	}
+
+	public class MeshedChunkData {
+
+		public CubicChunk chunk;
+		RecyclableByteBuffer buffer;
+		int solidVoxelsSize;
+		int solidModelsSize;
+		int waterModelsSize;
+		
+		public MeshedChunkData(CubicChunk chunk, RecyclableByteBuffer buffer, int solidVoxelsSize, int solidModelsSize, int waterModelsSize)
+		{
+			this.chunk = chunk;
+			this.buffer = buffer;
+			
+			this.solidVoxelsSize = solidVoxelsSize;
+			this.solidModelsSize = solidModelsSize;
+			this.waterModelsSize = waterModelsSize;
+		}
+		
 	}
 }

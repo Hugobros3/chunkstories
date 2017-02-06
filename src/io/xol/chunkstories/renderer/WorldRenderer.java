@@ -54,6 +54,7 @@ import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
+import io.xol.chunkstories.renderer.chunks.ChunksRenderer.MeshedChunkData;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRenderer;
 import io.xol.chunkstories.renderer.lights.LightsRenderer;
@@ -391,8 +392,15 @@ public class WorldRenderer
 		// to-render chunks in order to fill empty VBO space
 		
 		// Upload generated chunks data to GPU
-		//updateProfiler.reset("vbo upload");
-		ChunkRenderData chunkRenderData = chunksRenderer.getNextRenderedChunkData();
+		/*MeshedChunkData mcd = chunksRenderer.getNextRenderedChunkData();
+		while(mcd != null)
+		{
+			mcd.chunk.getChunkRenderData().setChunkMeshes(mcd);
+			chunksChanged = true;
+			mcd = chunksRenderer.getNextRenderedChunkData();
+		}*/
+		
+		/*ChunkRenderData chunkRenderData = chunksRenderer.getNextRenderedChunkData();
 		while (chunkRenderData != null)
 		{
 			//CubicChunk c = world.getChunk(toload.x, toload.y, toload.z, false);
@@ -410,7 +418,7 @@ public class WorldRenderer
 				chunkRenderData.free();
 			}
 			chunkRenderData = chunksRenderer.getNextRenderedChunkData();
-		}
+		}*/
 		// Update view
 		int newCX = Math2.floor((pos.getX()) / 32);
 		int newCY = Math2.floor((pos.getY()) / 32);

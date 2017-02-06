@@ -42,7 +42,6 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 	private SimpleFence authFence = new SimpleFence();
 	boolean failed = false;
 	private String latestErrorMessage = "";
-	private String connectionStatus = "Establishing connection...";
 
 	private ClientSideConnectionSequence connectionSequence;
 	

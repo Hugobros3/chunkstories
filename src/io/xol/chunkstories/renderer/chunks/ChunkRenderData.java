@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.renderer.SelectionRenderer;
-import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
+import io.xol.chunkstories.renderer.chunks.ChunksRenderer.MeshedChunkData;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.graphics.RenderingContext;
@@ -25,15 +25,11 @@ public class ChunkRenderData
 {
 	public CubicChunk chunk;
 	
-	VerticesObject verticesObject = new VerticesObject();
-	//public int vboId = -1;
+	private VerticesObject verticesObject = new VerticesObject();
 	
 	public int vboSizeFullBlocks;
 	public int vboSizeWaterBlocks;
 	public int vboSizeCustomBlocks;
-	
-	//public int byteBufferPoolId = -1;
-	//public boolean isUploaded = false;
 	
 	public ChunkRenderData(CubicChunk chunk)
 	{
@@ -151,8 +147,12 @@ public class ChunkRenderData
 		SelectionRenderer.cubeVertices(chunk.getChunkX() * 32 + 16, chunk.getChunkY() * 32, chunk.getChunkZ() * 32 + 16, 32, 32, 32);
 	}
 
-	public void setChunkMeshes(RecyclableByteBuffer buffer)
+	public void setChunkMeshes(MeshedChunkData mcd)
 	{
-		verticesObject.uploadData(buffer);
+		verticesObject.uploadData(mcd.buffer);
+		
+		this.vboSizeFullBlocks = mcd.solidVoxelsSize;
+		this.vboSizeCustomBlocks = mcd.solidModelsSize;
+		this.vboSizeWaterBlocks = mcd.waterModelsSize;
 	}
 }

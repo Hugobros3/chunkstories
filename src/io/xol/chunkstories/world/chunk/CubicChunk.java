@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
@@ -27,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CubicChunk implements Chunk, ChunkRenderable
 {
-	public WorldImplementation world;
+	private final WorldImplementation world;
 	public RegionImplementation holder;
 	private int chunkX;
 	private int chunkY;
@@ -37,9 +38,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	public int[] chunkVoxelData = null;
 
 	// Used in client rendering
-	private ChunkRenderData chunkRenderData;
-	//public AtomicLong lastModification = new AtomicLong();
-	//public AtomicLong lastModificationSaved = new AtomicLong();
+	private final ChunkRenderData chunkRenderData;
 	public AtomicInteger unsavedBlockModifications = new AtomicInteger();
 
 	public AtomicBoolean need_render = new AtomicBoolean(true);
@@ -53,15 +52,6 @@ public class CubicChunk implements Chunk, ChunkRenderable
 
 	// Occlusion lookup, there are 6 sides you can enter a chunk by and 5 sides you can exit it by. we use 6 coz it's easier and who the fuck cares about a six-heights of a byte
 	public boolean occlusionSides[][] = new boolean[6][6];
-
-	/*boolean occludedTop = false;
-	boolean occludedBot = false;
-	
-	boolean occludedNorth = false;
-	boolean occludedSouth = false;
-	
-	boolean occludedLeft = false;
-	boolean occludedRight = false;*/
 
 	//These wonderfull things does magic for us, they are unique per-thread so they won't ever clog memory neither will they have contigency issues
 	//Seriously awesome
@@ -106,7 +96,9 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		this.chunkY = chunkY;
 		this.chunkZ = chunkZ;
 		
-		uuid = ((chunkX << world.getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | chunkY ) << world.getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | chunkZ;
+		this.uuid = ((chunkX << world.getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | chunkY ) << world.getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | chunkZ;
+	
+		this.chunkRenderData = holder.getWorld() instanceof WorldClient ? new ChunkRenderData(this) : null;
 	}
 
 	public CubicChunk(RegionImplementation holder, int chunkX, int chunkY, int chunkZ, int[] data)
@@ -264,10 +256,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 			return chunkVoxelData[x * 32 * 32 + y * 32 + z];
 		}
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.chunk.Chunk#setDataAt(int, int, int, int)
-	 */
+	
 	@Override
 	public void setVoxelDataWithUpdates(int x, int y, int z, int data)
 	{
@@ -301,7 +290,6 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		chunkVoxelData[x * 32 * 32 + y * 32 + z] = data;
 		
 		unsavedBlockModifications.incrementAndGet();
-		//lastModification.set(System.currentTimeMillis());
 	}
 
 	@Override
@@ -1959,11 +1947,15 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	@Override
 	public void destroyRenderData()
 	{
+		/*
 		//Add it to the deletion queue for ressources
 		if (chunkRenderData != null)
 			chunkRenderData.markForDeletion();
-		//Delete the reference
-		chunkRenderData = null;
+		//Delete the reference*/
+		
+		//We don't need none of that fancy crap
+		if(chunkRenderData != null)
+			chunkRenderData.free();
 
 		markForReRender();
 	}
@@ -1973,7 +1965,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		destroyRenderData();
 	}
 
-	@Override
+	/*@Override
 	public void setChunkRenderData(ChunkRenderData chunkRenderData)
 	{
 		//Delete old one
@@ -1981,7 +1973,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 			this.chunkRenderData.markForDeletion();
 		//Replaces it
 		this.chunkRenderData = chunkRenderData;
-	}
+	}*/
 
 	@Override
 	public ChunkRenderData getChunkRenderData()

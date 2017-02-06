@@ -20,7 +20,7 @@ public interface ChunkRenderable extends Chunk
 	
 	//Implementation details, you don't need to worry about those
 	
-	public void setChunkRenderData(ChunkRenderData chunkRenderData);
+	//public void setChunkRenderData(ChunkRenderData chunkRenderData);
 	
 	public ChunkRenderData getChunkRenderData();
 }

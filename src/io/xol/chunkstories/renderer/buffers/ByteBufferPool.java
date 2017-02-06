@@ -55,6 +55,7 @@ public class ByteBufferPool
 			if(id < 0)
 				throw new RuntimeException("Mishandling of a RecyclableByteBuffer, see documentation !");
 			
+			Thread.currentThread().dumpStack();
 			trashCollector[id] = null;
 			//avaible[id] = true;
 			id = -1;
