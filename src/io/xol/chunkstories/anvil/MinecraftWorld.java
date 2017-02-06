@@ -13,6 +13,7 @@ public class MinecraftWorld
 {
 	public static void main(String[] a)
 	{
+		@SuppressWarnings("unused")
 		MinecraftWorld testWorld = new MinecraftWorld(new File("namalsk-map/"));
 	}
 	

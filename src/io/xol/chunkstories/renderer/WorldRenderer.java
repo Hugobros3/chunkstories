@@ -1672,14 +1672,21 @@ public class WorldRenderer
 		return vegetationTexture;
 	}
 
-	private void setupShadowColors(ShaderInterface terrainShader2)
+	private void setupShadowColors(ShaderInterface shader)
 	{
 		float sunLightFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.0f) / 1.0f, 1.0f);
 
-		terrainShader2.setUniform1f("shadowStrength", 1.0f);
-		float x = 1.2f;
-		terrainShader2.setUniform3f("sunColor", Math2.mix(new Vector3fm(x * 255 / 255f, x * 255 / 255f, x * 255 / 255f), new Vector3fm(0.5f), sunLightFactor));
-		terrainShader2.setUniform3f("shadowColor", new Vector3fm(0.50f, 0.50f, 0.50f));
+		shader.setUniform1f("shadowStrength", 1.0f);
+		
+		//shader.setUniform3f("sunColor", Math2.mix(new Vector3fm(0.80f, 0.80f, 0.69f), new Vector3fm(0.5f), sunLightFactor));
+		shader.setUniform3f("sunColor", Math2.mix(new Vector3fm(1.0f), new Vector3fm(0.5f), sunLightFactor));
+
+		float shadowBrightness = 0.5f / 255f;
+		Vector3fm shadowColorSunny = new Vector3fm(0.0f, 88f*shadowBrightness, 150f*shadowBrightness);
+		shadowColorSunny = Math2.mix(shadowColorSunny, new Vector3fm(shadowBrightness * 255f), 0.5f);
+		
+		Vector3fm shadowColor = Math2.mix(shadowColorSunny, new Vector3fm(0.5f), sunLightFactor);
+		shader.setUniform3f("shadowColor", shadowColor);
 	}
 
 	private float getShadowVisibility()

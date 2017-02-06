@@ -7,6 +7,7 @@ import java.util.Set;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.engine.misc.ConnectionStep;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
 
@@ -19,11 +20,13 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 	ClientToServerConnection connection;
 	boolean isDone = false;
 	
-	String status = "Establishing connection";
+	ConnectionStep status;
 	
 	public ClientSideConnectionSequence(String ip, int port)
 	{
 		this.connection = new ClientToServerConnection(this, ip, port);
+		
+		this.status = new ConnectionStep("Establishing connection to "+ip+":"+port);
 		this.start();
 	}
 	
@@ -35,7 +38,7 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 		connection.getAuthentificationFence().traverse();
 		//Obtain the mods list, check if we have them enabled
 		
-		status = "Asking server required mods...";
+		this.status = new ConnectionStep("Asking server required mods...");
 		String modsString = connection.obtainModsString();
 		Set<String> requiredMd5s = new HashSet<String>();
 		Set<String> toDownload = new HashSet<String>();
@@ -61,8 +64,9 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 		//if not check we have them downloaded
 		for(String md5Required : toDownload)
 		{
-			status = "Downloading mod "+md5Required;
-			connection.obtainModFile(md5Required, new File(GameDirectory.getGameFolderPath()+"/servermods/"+md5Required+".zip"));
+			//status = "Downloading mod "+md5Required;
+			status = connection.obtainModFile(md5Required, new File(GameDirectory.getGameFolderPath()+"/servermods/"+md5Required+".zip"));
+			status.waitForEnd();
 		}
 		//Now enable all this
 		String[] requiredMods = new String[requiredMd5s.size()];
@@ -72,8 +76,7 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 			requiredMods[i++] = "md5:"+m;
 		}
 		Client.getInstance().getContent().modsManager().setEnabledMods(requiredMods);
-		status = "Reloading mods...";
-		try
+		/*try
 		{
 			Thread.sleep(150);
 		}
@@ -81,17 +84,22 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
+		
+		status = new ConnectionStep("Reloading mods...");
 		Client.getInstance().reloadAssets();
+		//status = Client.getInstance().reloadAssets();
+		//status.waitForEnd();
 		
 		//Ask the server world info and if allowed where to spawn and preload chunks
 		connection.sendTextMessage("world/info");
 		connection.flush();
-		status = "Loading world...";
+		
+		//status = "Loading world...";
+		status = new ConnectionStep("Loading world...");
 		
 		//Ask the server to eventually spawn the player entity
 		//TODO
-		
 		synchronized(this)
 		{
 			try
@@ -123,14 +131,16 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 			connection.sendTextMessage("login/confirm");
 			connection.flush();
 			
-			status = "Offline-mode enabled, skipping login token phase";
+			//status = "Offline-mode enabled, skipping login token phase";
+			status = new ConnectionStep("Offline-mode enabled, skipping login token phase");
 		}
 		else
 		{
 			// Before sending the server the info it needs for authentification
 			// we need a valid login token so
 			// we fire up a http request to grab one
-			status = "Requesting a login token...";
+			//status = "Requesting a login token...";
+			status = new ConnectionStep("Requesting a login token...");
 			HttpRequestThread httpRequest = new HttpRequestThread(this, "token", "http://chunkstories.xyz/api/serverTokenObtainer.php", "username=" + Client.username + "&sessid=" + Client.session_key);
 			httpRequest.waitUntilTermination();
 		}
@@ -153,11 +163,13 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 				connection.sendTextMessage("login/version:"+VersionInfo.networkProtocolVersion);
 				connection.sendTextMessage("login/confirm");
 				
-				status = "Token obtained, logging in...";
+				//status = "Token obtained, logging in...";
+				status = new ConnectionStep("Token obtained, logging in...");
 			}
 			else
 			{
-				status = "Could not obtain token from XolioWare Interactive servers ( " + result + " ).";
+				//status = "Could not obtain token from XolioWare Interactive servers ( " + result + " ).";
+				status = new ConnectionStep("Could not obtain token from XolioWare Interactive servers ( " + result + " ).");
 				connection.close();
 			}
 		}
@@ -175,7 +187,7 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 		return null;
 	}
 
-	public String getStatus()
+	public ConnectionStep getStatus()
 	{
 		return status;
 	}

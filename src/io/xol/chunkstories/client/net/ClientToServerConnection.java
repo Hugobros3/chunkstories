@@ -10,6 +10,8 @@ import io.xol.chunkstories.net.packets.PacketsProcessor;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.concurrency.Fence;
 import io.xol.engine.concurrency.SimpleFence;
+import io.xol.engine.misc.ConnectionStep;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -313,19 +315,25 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 
 	private String expectedFileTag = null;
 	private File saveReceivedFileAt = null;
+	private ConnectionStep currentlyReceivedFile;
 	private SimpleFence fileFence;
 	
-	public void obtainModFile(String md5Required, File file)
+	public ConnectionStep obtainModFile(String md5Required, File file)
 	{
 		saveReceivedFileAt = file;
 		expectedFileTag = "md5:"+md5Required;
 		fileFence = new SimpleFence();
+		currentlyReceivedFile = new ConnectionStep("Waiting on server for mod hash "+md5Required) {
+			public void waitForEnd() {
+				fileFence.traverse();
+			}
+		};
 		
 		System.out.println("Asking for "+md5Required);
 		this.sendTextMessage("send-mod/md5:"+md5Required);
 		this.flush();
 		
-		fileFence.traverse();
+		return currentlyReceivedFile;
 	}
 
 	public String getExpectedFileTag()
@@ -336,6 +344,11 @@ public class ClientToServerConnection extends Thread implements RemoteServer
 	public File getExpectedFileLocationToSaveAt()
 	{
 		return saveReceivedFileAt;
+	}
+	
+	public ConnectionStep getCurrentlyDownloadedFileProgress()
+	{
+		return currentlyReceivedFile;
 	}
 	
 	public void fileReceived(String tag)

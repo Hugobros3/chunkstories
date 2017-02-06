@@ -70,6 +70,7 @@ public class PacketFile extends Packet
 			{
 				long toRead = Math.min(4096, remaining);
 				System.out.println("Working ! ...");
+				processor.getClientToServerConnection().getCurrentlyDownloadedFileProgress().setStepText("Downloading "+fileTag+", "+(fileLength - remaining)/1024+"/"+fileLength/1024+"kb");
 				int actuallyRead = in.read(buffer, 0, (int) toRead);
 				fos.write(buffer, 0, (int) actuallyRead);
 				remaining -= actuallyRead;

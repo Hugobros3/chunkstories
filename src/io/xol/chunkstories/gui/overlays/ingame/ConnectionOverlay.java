@@ -32,15 +32,18 @@ public class ConnectionOverlay extends Overlay
 	@Override
 	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
 	{
-		String color = "";
-		color += HexTools.intToHex((int) (Math.random() * 255));
-		color += HexTools.intToHex((int) (Math.random() * 255));
-		color += HexTools.intToHex((int) (Math.random() * 255));
+		String color = "606060";
+		//color += HexTools.intToHex((int) (Math.random() * 255));
+		//color += HexTools.intToHex((int) (Math.random() * 255));
+		//color += HexTools.intToHex((int) (Math.random() * 255));
 		
 		String connection = "Connecting, please wait";
 		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(96, connection, BitmapFont.SMALLFONTS) / 2, 
 				GameWindowOpenGL.windowHeight / 2 + 48 * 3, 0, 96, connection, BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(48, connectionSequence.getStatus(), BitmapFont.SMALLFONTS) / 2, GameWindowOpenGL.windowHeight / 2 + 36 * 3, 0, 48, "#"+color+connectionSequence.getStatus(), BitmapFont.SMALLFONTS);
+		
+		String currentConnectionStep = connectionSequence.getStatus().getStepText();
+		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - FontRenderer2.getTextLengthUsingFont(48, currentConnectionStep, BitmapFont.SMALLFONTS) / 2, GameWindowOpenGL.windowHeight / 2 + 36 * 3, 0, 48,
+				"#"+color+currentConnectionStep, BitmapFont.SMALLFONTS);
 
 		exitButton.setPosition(GameWindowOpenGL.windowWidth/2, GameWindowOpenGL.windowHeight/2 - 24);
 		

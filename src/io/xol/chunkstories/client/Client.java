@@ -14,7 +14,6 @@ import io.xol.engine.misc.ConfigFile;
 import io.xol.engine.misc.NativesLoader;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;

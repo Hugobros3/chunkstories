@@ -52,7 +52,6 @@ uniform float fogEndDistance;
 
 uniform vec3 shadowColor;
 uniform vec3 sunColor;
-uniform float shadowStrength;
 
 out vec4 fragColor;
 
@@ -73,40 +72,47 @@ vec4 computeLight(vec4 inputColor2, vec3 normal, vec4 worldSpacePosition, vec4 m
 	vec4 coordinatesInShadowmap = accuratizeShadow(shadowMatrix * (untranslatedMVInv * worldSpacePosition));
 
 	//Declaration here
-	vec3 finalLight = vec3(1.0, 1.0, 0.0);
+	vec3 finalLight = vec3(0.0);
 	
-	//Block light input, modified linearly according to time of day
-	vec3 baseLight = textureGammaIn(blockLightmap, vec2(0.0, meta.y)).rgb;
-	baseLight *= textureGammaIn(lightColors, vec2(time, 1.0)).rgb;
+	//Voxel light input, modified linearly according to time of day
+	vec3 voxelSunlight = textureGammaIn(blockLightmap, vec2(0.0, meta.y)).rgb;
+	voxelSunlight *= textureGammaIn(lightColors, vec2(time, 1.0)).rgb;
 	
 	<ifdef shadows>
-	float clamped = 10 * clamp(NdotL, 0.0, 0.1);
-	
-	//How much in shadows's brightness the object is
-	float shadowIllumination = 0.0;
-	
-	//How much in shadow influence's zone the object is
-	float edgeSmoother = 0.0;
-	
-	//How much does the pixel is lit by directional light
-	float directionalLightning = clamp((NdotL) + (1 - meta.a), 0.0, 1.0);
-	
-	if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
-	{
-		//Bias to avoid shadow acne
-		float bias = (1.0 - meta.a) * 0.0010 + clamp(0.0035*pow(tan(acos(NdotL)), 2.0) - 0.01075, 0.0005,0.0025 ) * clamp(16.0 * pow(length(coordinatesInShadowmap.xy - vec2(0.5)), 2.0), 1.0, 16.0); // * (0.0 + 1.0 * clamp(2.0 * coordinatesInShadowmap.w - 1.0, 1.0, 100.0));
-		//Are we inside the shadowmap zone edge ?
-		edgeSmoother = 1.0-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5) - 0.45)*20.0+max(0,abs(coordinatesInShadowmap.y-0.5) - 0.45)*20.0, 1.0), 0.0, 1.0);
-		//
-		shadowIllumination += clamp((texture(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0) * 1.5 - 0.25), 0.0, 1.0);
-	}
-	
-	float sunlightAmount = ( directionalLightning * ( mix( shadowIllumination, meta.y, 1-edgeSmoother) ) ) * shadowVisiblity;
-	
-	finalLight = mix(pow(sunColor, vec3(gamma)), baseLight * pow(shadowColor, vec3(gamma)), (1.0 - sunlightAmount) * shadowStrength);
-	
-	finalLight += inputColor2.rgb * 5.0 * meta.b;
-	
+		float clamped = 10 * clamp(NdotL, 0.0, 0.1);
+		
+		//How much in shadows's brightness the object is
+		float shadowIllumination = 0.0;
+		
+		//How much in shadow influence's zone the object is
+		float edgeSmoother = 0.0;
+		
+		//How much does the pixel is lit by directional light
+		float directionalLightning = clamp((NdotL) + (1 - meta.a), 0.0, 1.0);
+		
+		if(!(coordinatesInShadowmap.x <= 0.0 || coordinatesInShadowmap.x >= 1.0 || coordinatesInShadowmap.y <= 0.0 || coordinatesInShadowmap.y >= 1.0  || coordinatesInShadowmap.z >= 1.0 || coordinatesInShadowmap.z <= -1.0))
+		{
+			//Bias to avoid shadow acne
+			float bias = (1.0 - meta.a) * 0.0010 + clamp(0.0035*pow(tan(acos(NdotL)), 2.0) - 0.01075, 0.0005,0.0025 ) * clamp(16.0 * pow(length(coordinatesInShadowmap.xy - vec2(0.5)), 2.0), 1.0, 16.0); // * (0.0 + 1.0 * clamp(2.0 * coordinatesInShadowmap.w - 1.0, 1.0, 100.0));
+			//Are we inside the shadowmap zone edge ?
+			edgeSmoother = 1.0-clamp(pow(max(0,abs(coordinatesInShadowmap.x-0.5) - 0.45)*20.0+max(0,abs(coordinatesInShadowmap.y-0.5) - 0.45)*20.0, 1.0), 0.0, 1.0);
+			
+			//
+			shadowIllumination += clamp((texture(shadowMap, vec3(coordinatesInShadowmap.xy, coordinatesInShadowmap.z-bias), 0.0) * 1.5 - 0.25), 0.0, 1.0);
+		}
+		
+		float sunlightAmount = ( directionalLightning * ( mix( shadowIllumination, meta.y, 1-edgeSmoother) ) ) * shadowVisiblity;
+		
+		vec3 sunLight_g = pow(sunColor, vec3(gamma));
+		vec3 shadowLight_g = pow(shadowColor, vec3(gamma));
+		
+		finalLight += sunLight_g * sunlightAmount;
+		finalLight += voxelSunlight * shadowLight_g;
+		
+		//finalLight = mix(sunLight_g, voxelSunlight * shadowLight_g, (1.0 - sunlightAmount));
+		
+		finalLight += inputColor2.rgb * 5.0 * meta.b;
+		
 	<endif shadows>
 	<ifdef !shadows>
 		// Simple lightning for lower end machines
@@ -117,10 +123,10 @@ vec4 computeLight(vec4 inputColor2, vec3 normal, vec4 worldSpacePosition, vec4 m
 		opacityModified += 0.6 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
 		
 		opacity = mix(opacity, opacityModified, meta.a);
-		finalLight = mix(baseLight, vec3(0.0), opacity);
-		//finalLight = pow(finalLight, vec3(gamma));
+		finalLight = mix(voxelSunlight, vec3(0.0), opacity);
 	<endif !shadows>
 	
+	//Adds block light
 	finalLight += textureGammaIn(blockLightmap, vec2(meta.x, 0.0)).rgb;
 	
 	inputColor.rgb *= finalLight;
