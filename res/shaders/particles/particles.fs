@@ -7,6 +7,7 @@ varying vec3 eye; // eye-position
 
 //Diffuse colors
 uniform sampler2D diffuseTexture; // diffuse texture
+uniform sampler2D normalTexture; // diffuse texture
 uniform vec3 blockColor;
 
 uniform sampler2D normalMap; // Blocks normal texture atlas
@@ -62,7 +63,12 @@ void main(){
 	//Diffuse G-Buffer
 	gl_FragData[0] = vec4(baseColor,alpha);
 	//Normal G-Buffer + reflections
-	gl_FragData[1] = vec4(encodeNormal(vec3(0.0, 0.0, 1.0)).xy, 0.0, 1.0);
+	
+	vec3 normalMapped = texture(normalTexture, texcoord.st).xyz;
+    normalMapped = normalMapped * 2.0 - 1.0;
+	normalMapped.x = normalMapped.x;
+	
+	gl_FragData[1] = vec4(encodeNormal(normalMapped).xy, 0.0, 1.0);
 	//Light color G-buffer
 	gl_FragData[2] = vec4(lightMapCoords, 0.0,1.0);
 }
