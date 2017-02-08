@@ -122,7 +122,7 @@ public class Ingame extends OverlayableScene
 			world.spawnPlayer(Client.getInstance().getPlayer());
 
 		//Creates the rendering stuff
-		world.getWorldRenderer().setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		world.getWorldRenderer().setupRenderSize(window.getWidth(), window.getHeight());
 		selectionRenderer = new SelectionRenderer(world);
 
 		//Give focus
@@ -263,7 +263,7 @@ public class Ingame extends OverlayableScene
 
 			//Draw inventory
 			if (playerEntity != null && inventoryDrawer != null)
-				inventoryDrawer.drawPlayerInventorySummary(gameWindow.renderingContext, GameWindowOpenGL.windowWidth / 2 - 7, 64 + 64);
+				inventoryDrawer.drawPlayerInventorySummary(gameWindow.renderingContext, renderingContext.getWindow().getWidth() / 2 - 7, 64 + 64);
 
 			//TODO : move this crap into the EntityOverlays shit
 			//Draw health
@@ -274,12 +274,12 @@ public class Ingame extends OverlayableScene
 				float scale = 2.0f;
 
 				TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png").setLinearFiltering(false);
-				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale, 256 * scale, 32 * scale, 0, 32f / 256f, 1, 0,
+				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(renderingContext.getWindow().getWidth() / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale, 256 * scale, 32 * scale, 0, 32f / 256f, 1, 0,
 						TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, null);
 
 				//Health
 				int horizontalBitsToDraw = (int) (8 + 118 * Math2.clamp(livingPlayer.getHealth() / livingPlayer.getMaxHealth(), 0.0, 1.0));
-				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(GameWindowOpenGL.windowWidth / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f,
+				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(renderingContext.getWindow().getWidth() / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f,
 						32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4fm(1.0f, 1.0f, 1.0f, 0.75f));
 
 				//Food
@@ -289,17 +289,17 @@ public class Ingame extends OverlayableScene
 					
 					horizontalBitsToDraw = (int) (0 + 126 * Math2.clamp(playerPlayer.getFoodLevel() / 100f, 0.0, 1.0));
 					renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(
-							GameWindowOpenGL.windowWidth / 2 + 0 * 128 * scale + 0, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0.5f , 64f / 256f, 0.5f + horizontalBitsToDraw / 256f,
+							renderingContext.getWindow().getWidth() / 2 + 0 * 128 * scale + 0, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0.5f , 64f / 256f, 0.5f + horizontalBitsToDraw / 256f,
 							32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4fm(1.0f, 1.0f, 1.0f, 0.75f));
 				}
 			}
 
 			// Draw current overlay
 			if (currentOverlay != null)
-				currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+				currentOverlay.drawToScreen(renderingContext, 0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
 			//Or draw cursor
 			else
-				renderingContext.getGuiRenderer().renderTexturedRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, 16, 16, 0, 0, 16, 16, 16, "gui/cursor");
+				renderingContext.getGuiRenderer().renderTexturedRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, 16, 16, 0, 0, 16, 16, 16, "gui/cursor");
 
 			//Draw debug info
 			if (RenderingConfig.showDebugInfo)
@@ -333,7 +333,7 @@ public class Ingame extends OverlayableScene
 		Mouse.setGrabbed(f);
 		if (f && !focus)
 		{
-			Mouse.setCursorPosition(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
+			Mouse.setCursorPosition(gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
 			this.changeOverlay(null);
 		}
 		focus = f;
@@ -566,7 +566,7 @@ public class Ingame extends OverlayableScene
 	@Override
 	public void onResize()
 	{
-		world.getWorldRenderer().setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		world.getWorldRenderer().setupRenderSize(gameWindow.getWidth(), gameWindow.getHeight());
 	}
 
 	/**
@@ -655,10 +655,10 @@ public class Ingame extends OverlayableScene
 		}
 
 		Chunk current = world.getChunk(cx, cy, cz);
-		int x_top = GameWindowOpenGL.windowHeight - 16;
+		int x_top = renderingInterface.getWindow().getHeight() - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20,
 				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + world.getWorldRenderer().renderedChunks) + " Entities " + ec + " Particles :" + ((ParticlesRenderer) world.getParticlesManager()).count()
-						+ " #FF0000Render FPS: " + GameWindowOpenGL.getFPS() + " avg: " + Math.floor(10000.0 / GameWindowOpenGL.getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + world.getWorldRenderer().getWorld().getGameLogic().getSimulationFps(),
+						+ " #FF0000Render FPS: " + Client.getInstance().getWindows().getFPS() + " avg: " + Math.floor(10000.0 / Client.getInstance().getWindows().getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + world.getWorldRenderer().getWorld().getGameLogic().getSimulationFps(),
 				BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Frame timings : " + debugInfo, BitmapFont.SMALLFONTS);
@@ -716,11 +716,11 @@ public class Ingame extends OverlayableScene
 				if (chunkRenderData != null)
 				{
 					nbChunks++;
-					octelsTotal += chunkRenderData.getVramUsage();
+					//octelsTotal += chunkRenderData.getVramUsage();
 				}
 			}
 		}
-		return nbChunks + " chunks, storing " + octelsTotal / 1024 / 1024 + "Mb of vertex data.";
+		return nbChunks + " chunks";//, storing " + octelsTotal / 1024 / 1024 + "Mb of vertex data.";
 	}
 
 	@SuppressWarnings("unused")

@@ -10,6 +10,7 @@ import static org.lwjgl.opengl.GL11.*;
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.base.GameWindowOpenGL;
 
@@ -47,7 +48,7 @@ public class Texture2DAsset extends Texture2D
 	
 	public int loadTextureFromAsset()
 	{
-		if (!GameWindowOpenGL.isMainGLWindow())
+		if (!Client.getInstance().getWindows().isMainGLWindow())
 		{
 			System.out.println("isn't main thread, scheduling load");
 			scheduledForLoad = true;

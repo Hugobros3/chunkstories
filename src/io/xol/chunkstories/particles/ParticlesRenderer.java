@@ -146,7 +146,7 @@ public class ParticlesRenderer implements ParticlesManager
 
 		ShaderInterface particlesShader = renderingContext.useShader("particles");
 
-		particlesShader.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		particlesShader.setUniform2f("screenSize", renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
 		renderingContext.getCamera().setupShader(particlesShader);
 		
 		renderingContext.bindTexture2D("lightColors", TexturesHandler.getTexture("./textures/environement/light.png"));

@@ -48,7 +48,7 @@ public class FrametimeRenderer
 		ShaderInterface overlayProgram = renderingContext.currentShader();
 		//overlayProgram.use(true);
 		overlayProgram.setUniform1f("currentTiming", lel);
-		overlayProgram.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		overlayProgram.setUniform2f("screenSize", renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
 		//System.out.println(XolioWindow.frameW);
 		
 		//int vertexIn = overlayProgram.getVertexAttributeLocation("vertexIn");

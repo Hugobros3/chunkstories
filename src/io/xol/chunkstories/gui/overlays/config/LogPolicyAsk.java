@@ -52,22 +52,22 @@ public class LogPolicyAsk extends Overlay
 	@Override
 	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
 	{
-		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
+		//ObjectRenderer.renderColoredRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, "000000", 0.5f);
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
 		
-		FontRenderer2.drawTextUsingSpecificFont(30, GameWindowOpenGL.windowHeight-64, 0, 64, Client.getInstance().getContent().localization().getLocalizedString("logpolicy.title"), BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(30, renderingContext.getWindow().getHeight()-64, 0, 64, Client.getInstance().getContent().localization().getLocalizedString("logpolicy.title"), BitmapFont.SMALLFONTS);
 		
 		int linesTaken = TrueTypeFont.arial11px.getLinesHeight(message, (width-128) / 2 );
 		float scaling = 2;
 		if(linesTaken*32 > height)
 			scaling  = 1f;
 		
-		renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, 30, GameWindowOpenGL.windowHeight-128, message, scaling, width-128);
+		renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, 30, renderingContext.getWindow().getHeight()-128, message, scaling, width-128);
 		
 		//FontRenderer2.drawTextUsingSpecificFont(30, 100, 0, 32, message, BitmapFont.SMALLFONTS);
 		//FontRenderer2.setLengthCutoff(false, width - 128);
 		
-		acceptButton.setPosition(GameWindowOpenGL.windowWidth/2 - 256, GameWindowOpenGL.windowHeight / 4 - 32);
+		acceptButton.setPosition(renderingContext.getWindow().getWidth()/2 - 256, renderingContext.getWindow().getHeight() / 4 - 32);
 		acceptButton.draw();
 
 		if (acceptButton.clicked())
@@ -77,7 +77,7 @@ public class LogPolicyAsk extends Overlay
 			Client.clientConfig.save();
 		}
 		
-		denyButton.setPosition(GameWindowOpenGL.windowWidth/2 + 256, GameWindowOpenGL.windowHeight / 4 - 32);
+		denyButton.setPosition(renderingContext.getWindow().getWidth()/2 + 256, renderingContext.getWindow().getHeight() / 4 - 32);
 		denyButton.draw();
 
 		if (denyButton.clicked())

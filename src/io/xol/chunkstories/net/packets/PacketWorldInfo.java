@@ -68,7 +68,7 @@ public class PacketWorldInfo extends Packet
 		{
 			//Asks
 			Client client = Client.getInstance();
-			client.windows.queueTask(new Runnable()
+			client.getWindows().queueTask(new Runnable()
 			{
 				@Override
 				public void run()

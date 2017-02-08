@@ -474,14 +474,14 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 			//if (shotBlock != null)
 			//	dist = Math.floor(shotBlock.distanceTo(clientControlledEntity.getLocation())) + "m";
 
-			//renderingInterface.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, dist, 1);
+			//renderingInterface.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, dist, 1);
 
 			//display reload cooldownt text
 			if (cooldownEnd > System.currentTimeMillis())
 			{
 				String reloadText = "Reloading weapon, please wait";
 				int cooldownLength = TrueTypeFont.arial11px.getWidth(reloadText);
-				renderingInterface.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, -cooldownLength + GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, reloadText, 2);
+				renderingInterface.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, -cooldownLength + renderingInterface.getWindow().getWidth() / 2, renderingInterface.getWindow().getHeight() / 2, reloadText, 2);
 			}
 		}
 	}
@@ -489,15 +489,15 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 	private void drawScope(RenderingInterface renderingInterface)
 	{
 		//Temp, rendering interface should provide us
-		int min = Math.min(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		int max = Math.max(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		int min = Math.min(renderingInterface.getWindow().getWidth(), renderingInterface.getWindow().getHeight());
+		int max = Math.max(renderingInterface.getWindow().getWidth(), renderingInterface.getWindow().getHeight());
 
 		int bandwidth = (max - min) / 2;
 		int x = 0;
 
-		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4fm(0.0, 0.0, 0.0, 1.0));
-		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += min, GameWindowOpenGL.windowHeight, 0, 1, 1, 0, TexturesHandler.getTexture(scopeTexture), false, false, null);
-		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, false, new Vector4fm(0.0, 0.0, 0.0, 1.0));
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, renderingInterface.getWindow().getHeight(), 0, 0, 0, 0, null, false, false, new Vector4fm(0.0, 0.0, 0.0, 1.0));
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += min, renderingInterface.getWindow().getHeight(), 0, 1, 1, 0, TexturesHandler.getTexture(scopeTexture), false, false, null);
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, renderingInterface.getWindow().getHeight(), 0, 0, 0, 0, null, false, false, new Vector4fm(0.0, 0.0, 0.0, 1.0));
 	}
 
 	public boolean isScoped()

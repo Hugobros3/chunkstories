@@ -16,7 +16,7 @@ public interface ChunkRenderable extends Chunk
 	
 	public boolean isRenderAleadyInProgress();
 	
-	public void destroyRenderData();
+	public void redrawChunk();
 	
 	//Implementation details, you don't need to worry about those
 	

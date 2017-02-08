@@ -28,13 +28,13 @@ public class KeyBindSelectionOverlay extends Overlay
 	{
 		parent.drawToScreen(renderingContext, x, y, w, h);
 		
-		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
-		//renderingContext.getGuiRenderer().renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
+		//ObjectRenderer.renderColoredRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, "000000", 0.5f);
+		//renderingContext.getGuiRenderer().renderColoredRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, "000000", 0.5f);
 		
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
 		
 		int dekal = FontRenderer2.getTextLengthUsingFont(48, "Please press a key", BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - dekal/2, GameWindowOpenGL.windowHeight /2, 0, 48, "Please press a key", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - dekal/2, renderingContext.getWindow().getHeight() /2, 0, 48, "Please press a key", BitmapFont.SMALLFONTS);
 	}
 	
 	@Override

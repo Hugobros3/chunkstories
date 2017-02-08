@@ -5,12 +5,13 @@ import java.util.Iterator;
 import java.util.Set;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
+import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.sound.SoundManager;
@@ -47,7 +48,7 @@ public class ClientWorldController implements PlayerClient
 	}
 
 	@Override
-	public InputsManager getInputsManager()
+	public ClientInputsManager getInputsManager()
 	{
 		return Client.getInstance().getInputsManager();
 	}
@@ -396,5 +397,12 @@ public class ClientWorldController implements PlayerClient
 	public void disconnect(String disconnectionReason)
 	{
 		
+	}
+
+	
+	@Override
+	public GameWindow getWindow()
+	{
+		return this.client.getWindows();
 	}
 }

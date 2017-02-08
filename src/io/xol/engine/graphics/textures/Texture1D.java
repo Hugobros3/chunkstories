@@ -6,6 +6,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 
 import io.xol.chunkstories.api.exceptions.rendering.IllegalRenderingThreadException;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.engine.base.GameWindowOpenGL;
@@ -44,7 +45,7 @@ public class Texture1D extends Texture
 	
 	public void bind()
 	{
-		if (!GameWindowOpenGL.isMainGLWindow())
+		if (!Client.getInstance().getWindows().isMainGLWindow())
 			throw new IllegalRenderingThreadException();
 		
 		//Don't bother

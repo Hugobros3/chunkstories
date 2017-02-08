@@ -1,7 +1,5 @@
 package io.xol.chunkstories.core.entity;
 
-import org.lwjgl.input.Mouse;
-
 import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.misc.ColorsTools;
@@ -31,7 +29,6 @@ import io.xol.chunkstories.api.world.WorldMaster;
 
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.core.entity.EntityHumanoid.EntityHumanoidStance;
 import io.xol.chunkstories.core.entity.components.EntityComponentController;
 import io.xol.chunkstories.core.entity.components.EntityComponentCreativeMode;
 import io.xol.chunkstories.core.entity.components.EntityComponentFlying;
@@ -48,7 +45,6 @@ import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -113,15 +109,22 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		variant = ColorsTools.getUniqueColorCode(name) % 6;
 	}
 
-	//TODO Don't use fucking Mouse class
-	public void moveCamera()
+	protected void moveCamera(PlayerClient controller)
 	{
 		if (isDead())
 			return;
-
-		float cPX = Mouse.getX();
-		float cPY = Mouse.getY();
-
+		float cPX = controller.getInputsManager().getMouseCursorX();
+		float cPY = controller.getInputsManager().getMouseCursorY();
+		
+		float dx = 0, dy = 0;
+		if (lastPX != -1f)
+		{
+			dx = cPX - controller.getWindow().getWidth() / 2;
+			dy = cPY - controller.getWindow().getHeight() / 2;
+		}
+		lastPX = cPX;
+		lastPY = cPY;
+		
 		float rotH = this.getEntityRotationComponent().getHorizontalRotation();
 		float rotV = this.getEntityRotationComponent().getVerticalRotation();
 
@@ -132,18 +135,12 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			if (item.isScoped())
 				modifier = 1.0f / item.getScopeSlow();
 		}
-
-		if (lastPX != -1f)
-		{
-			rotH += modifier * (cPX - GameWindowOpenGL.windowWidth / 2) / 3f * RenderingConfig.mouseSensitivity;
-			rotV -= modifier * (cPY - GameWindowOpenGL.windowHeight / 2) / 3f * RenderingConfig.mouseSensitivity;
-		}
-
-		lastPX = cPX;
-		lastPY = cPY;
-
+		
+		rotH += dx * modifier / 3f * RenderingConfig.mouseSensitivity;
+		rotV -= dy * modifier / 3f * RenderingConfig.mouseSensitivity;
 		this.getEntityRotationComponent().setRotation(rotH, rotV);
-		Mouse.setCursorPosition(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
+		
+		controller.getInputsManager().setMouseCursorLocation(controller.getWindow().getWidth() / 2, controller.getWindow().getHeight() / 2);
 	}
 
 	// Server-side updating
@@ -613,7 +610,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	{
 		if (controller.hasFocus())
 		{
-			moveCamera();
+			moveCamera(controller);
 		}
 	}
 

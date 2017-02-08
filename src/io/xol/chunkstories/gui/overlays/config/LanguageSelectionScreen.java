@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -18,7 +17,6 @@ import org.lwjgl.input.Mouse;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
@@ -61,9 +59,9 @@ public class LanguageSelectionScreen extends Overlay
 		if (scroll < 0)
 			scroll = 0;
 
-		int posY = GameWindowOpenGL.windowHeight - 128;
+		int posY = renderingContext.getWindow().getHeight() - 128;
 		FontRenderer2.drawTextUsingSpecificFont(64, posY + 64, 0, 48, "Welcome - Bienvenue - Wilkomen - Etc", BitmapFont.SMALLFONTS);
-		int remainingSpace = (int) Math.floor(GameWindowOpenGL.windowHeight / 96 - 2);
+		int remainingSpace = (int) Math.floor(renderingContext.getWindow().getHeight() / 96 - 2);
 
 		while (scroll + remainingSpace > languages.size())
 			scroll--;
@@ -82,7 +80,7 @@ public class LanguageSelectionScreen extends Overlay
 				Client.getInstance().getContent().localization().loadTranslation(langButton.translationCode);
 				this.mainScene.changeOverlay(this.parent);
 			}
-			int maxWidth = GameWindowOpenGL.windowWidth - 64 * 2;
+			int maxWidth = renderingContext.getWindow().getWidth() - 64 * 2;
 			langButton.width = maxWidth;
 			langButton.setPosition(64 + langButton.width / 2, posY);
 			langButton.draw();

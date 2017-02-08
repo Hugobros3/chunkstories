@@ -74,7 +74,7 @@ public class MainMenuOverlay extends Overlay
 		
 		totalLengthOfButtons += exitGame.getWidth();
 		
-		float buttonDisplayX = GameWindowOpenGL.windowWidth / 2 - totalLengthOfButtons / 2;
+		float buttonDisplayX = renderingContext.getWindow().getWidth() / 2 - totalLengthOfButtons / 2;
 		float buttonDisplayY = 32;
 		
 		singlePlayer.setPosition(buttonDisplayX, buttonDisplayY);
@@ -115,7 +115,7 @@ public class MainMenuOverlay extends Overlay
 	
 		String copyrightNotice = "Copyright (c) 2016-2017 XolioWare Interactive";
 		float noticeDekal = TrueTypeFont.arial11px8pt.getWidth(copyrightNotice);
-		renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px8pt, GameWindowOpenGL.windowWidth - noticeDekal - 4, 0, copyrightNotice, 1, noticeColor);
+		renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px8pt, renderingContext.getWindow().getWidth() - noticeDekal - 4, 0, copyrightNotice, 1, noticeColor);
 	
 	}
 

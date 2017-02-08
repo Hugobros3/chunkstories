@@ -52,7 +52,7 @@ public class LevelCreateOverlay extends Overlay
 		createOption.setPosition(width - 192, 96);
 		createOption.draw();
 
-		levelName.setPosition(x + 48, GameWindowOpenGL.windowHeight - 256);
+		levelName.setPosition(x + 48, renderingContext.getWindow().getHeight() - 256);
 		levelName.drawWithBackGround();
 		
 		if (cancelOption.clicked())

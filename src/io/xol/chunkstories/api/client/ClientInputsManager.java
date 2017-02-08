@@ -12,4 +12,10 @@ public interface ClientInputsManager extends InputsManager
 	public boolean onInputPressed(Input input);
 
 	public boolean onInputReleased(Input input);
+	
+	public int getMouseCursorX();
+	
+	public int getMouseCursorY();
+	
+	public void setMouseCursorLocation(int x, int y);
 }

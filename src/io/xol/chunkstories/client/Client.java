@@ -44,8 +44,7 @@ public class Client implements ClientInterface
 
 	public static boolean offline = false;
 
-	//public static ClientToServerConnection connection;
-	public static GameWindowOpenGL windows;
+	private GameWindowOpenGL gameWindows;
 	public static WorldClientCommon world;
 	//public static GameLogicThread worldThread;
 
@@ -59,7 +58,7 @@ public class Client implements ClientInterface
 	//public ClientPluginManager pluginsManager;
 
 	//public EntityControllable controlledEntity;
-	public static Client client;
+	public static Client staticClientReference;
 
 	public static void main(String[] args)
 	{
@@ -102,7 +101,7 @@ public class Client implements ClientInterface
 
 	public Client(String modsStringArgument)
 	{
-		client = this;
+		staticClientReference = this;
 		
 		//Name the thread
 		Thread.currentThread().setName("Main OpenGL Rendering thread");
@@ -114,35 +113,36 @@ public class Client implements ClientInterface
 		String time = sdf.format(cal.getTime());
 		ChunkStoriesLogger.init(new ChunkStoriesLogger(ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/logs/" + time + ".log")));
 		
-		// Load natives
-		RenderingConfig.define();
+		// Load natives for LWJGL
 		NativesLoader.load();
 		
-		//Create game content manager
+		// Create game content manager
 		gameContent = new ClientGameContent(this, modsStringArgument);
 		
+		// Creates Input manager
 		inputsManager = new Lwjgl2ClientInputsManager();
 		
-		//
-		windows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);
-		windows.createOpenGLContext();
+		// Creates game window
+		gameWindows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);
+		gameWindows.createOpenGLContext();
+		RenderingConfig.define();
 
 		//Initlializes windows screen to main menu ( and ask for login )
-		windows.changeScene(new MainMenu(windows, true));
+		gameWindows.changeScene(new MainMenu(gameWindows, true));
 		
 		//Pass control to the windows for main game loop
-		windows.run();
+		gameWindows.run();
 	}
 
 	public static Client getInstance()
 	{
-		return client;
+		return staticClientReference;
 	}
 
 	@Override
 	public SoundManager getSoundManager()
 	{
-		return windows.getSoundEngine();
+		return gameWindows.getSoundEngine();
 	}
 
 	@Override
@@ -170,8 +170,8 @@ public class Client implements ClientInterface
 	@Override
 	public boolean hasFocus()
 	{
-		if (windows.getCurrentScene() instanceof Ingame)
-			return ((Ingame) windows.getCurrentScene()).hasFocus();
+		if (gameWindows.getCurrentScene() instanceof Ingame)
+			return ((Ingame) gameWindows.getCurrentScene()).hasFocus();
 		return false;
 	}
 
@@ -180,7 +180,7 @@ public class Client implements ClientInterface
 	{
 		SimpleFence waitForReload = new SimpleFence();
 
-		if (GameWindowOpenGL.isMainGLWindow())
+		if (gameWindows.isMainGLWindow())
 		{
 			gameContent.reload();
 			inputsManager.reload();
@@ -188,7 +188,7 @@ public class Client implements ClientInterface
 			return;
 		}
 
-		windows.queueTask(new Runnable()
+		gameWindows.queueTask(new Runnable()
 		{
 			@Override
 			public void run()
@@ -207,15 +207,15 @@ public class Client implements ClientInterface
 	@Override
 	public void printChat(String textToPrint)
 	{
-		if (windows.getCurrentScene() instanceof Ingame)
-			((Ingame) windows.getCurrentScene()).chat.insert(textToPrint);
+		if (gameWindows.getCurrentScene() instanceof Ingame)
+			((Ingame) gameWindows.getCurrentScene()).chat.insert(textToPrint);
 	}
 
 	public void openInventory(Inventory otherInventory)
 	{
-		if (windows.getCurrentScene() instanceof Ingame)
+		if (gameWindows.getCurrentScene() instanceof Ingame)
 		{
-			Ingame gmp = (Ingame) windows.getCurrentScene();
+			Ingame gmp = (Ingame) gameWindows.getCurrentScene();
 
 			gmp.focus(false);
 			if (otherInventory != null)
@@ -240,7 +240,7 @@ public class Client implements ClientInterface
 	@Override
 	public void changeWorld(WorldClientCommon world)
 	{
-		windows.queueTask(new Runnable()
+		gameWindows.queueTask(new Runnable()
 		{
 			@Override
 			public void run()
@@ -250,13 +250,13 @@ public class Client implements ClientInterface
 				clientSideController = new ClientWorldController(Client.this, world);
 
 				//Change the scene
-				Ingame ingameScene = new Ingame(windows, world);
+				Ingame ingameScene = new Ingame(gameWindows, world);
 
 				//We want to keep the connection overlay when getting into a server
 				ConnectionOverlay overlay = null;
-				if (Client.windows.getCurrentScene() instanceof OverlayableScene && ((OverlayableScene) Client.windows.getCurrentScene()).currentOverlay instanceof ConnectionOverlay)
+				if (gameWindows.getCurrentScene() instanceof OverlayableScene && ((OverlayableScene) gameWindows.getCurrentScene()).currentOverlay instanceof ConnectionOverlay)
 				{
-					overlay = (ConnectionOverlay) ((OverlayableScene) Client.windows.getCurrentScene()).currentOverlay;
+					overlay = (ConnectionOverlay) ((OverlayableScene) gameWindows.getCurrentScene()).currentOverlay;
 					//If that happen, we want this connection overlay to forget he was originated from a server browser or whatever
 					overlay.mainScene = ingameScene;
 					overlay.parent = null;
@@ -264,7 +264,7 @@ public class Client implements ClientInterface
 				
 				//Switch scene but keep the overlay
 				ingameScene.changeOverlay(overlay);
-				Client.windows.changeScene(ingameScene);
+				gameWindows.changeScene(ingameScene);
 				
 				//Start only the logic after all that
 				world.startLogic();
@@ -275,12 +275,12 @@ public class Client implements ClientInterface
 	@Override
 	public void exitToMainMenu()
 	{
-		windows.queueTask(new Runnable()
+		gameWindows.queueTask(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				Client.windows.changeScene(new MainMenu(windows, false));
+				gameWindows.changeScene(new MainMenu(gameWindows, false));
 				
 				if (world != null)
 				{
@@ -294,12 +294,12 @@ public class Client implements ClientInterface
 
 	public void exitToMainMenu(String errorMessage)
 	{
-		windows.queueTask(new Runnable()
+		gameWindows.queueTask(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				Client.windows.changeScene(new MainMenu(windows, errorMessage));
+				gameWindows.changeScene(new MainMenu(gameWindows, errorMessage));
 				
 				if (world != null)
 				{
@@ -365,5 +365,10 @@ public class Client implements ClientInterface
 		//if (windows.getCurrentScene() instanceof Ingame)
 		//	return ((Ingame) windows.getCurrentScene()).getInputsManager();
 		return this.inputsManager;
+	}
+
+	public GameWindowOpenGL getWindows()
+	{
+		return gameWindows;
 	}
 }

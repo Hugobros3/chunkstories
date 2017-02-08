@@ -1945,7 +1945,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	}
 
 	@Override
-	public void destroyRenderData()
+	public void redrawChunk()
 	{
 		/*
 		//Add it to the deletion queue for ressources
@@ -1954,15 +1954,17 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		//Delete the reference*/
 		
 		//We don't need none of that fancy crap
-		if(chunkRenderData != null)
-			chunkRenderData.free();
+		//if(chunkRenderData != null)
+		//	chunkRenderData.free();
 
 		markForReRender();
 	}
 
 	public void destroy()
 	{
-		destroyRenderData();
+		if(chunkRenderData != null)
+			chunkRenderData.free();
+		//destroyRenderData();
 	}
 
 	/*@Override

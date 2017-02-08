@@ -9,8 +9,8 @@ import io.xol.engine.graphics.RenderingContext;
 
 public abstract class Scene
 {
-	public GuiElementsHandler guiHandler = new GuiElementsHandler();
-	public GameWindowOpenGL gameWindow;
+	public final GuiElementsHandler guiHandler = new GuiElementsHandler();
+	public final GameWindowOpenGL gameWindow;
 
 	public Scene(GameWindowOpenGL gameWindow)
 	{

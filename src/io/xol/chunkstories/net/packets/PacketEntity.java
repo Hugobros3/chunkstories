@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.net.PacketPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.entity.EntityTypesStore;
 
 import java.io.DataInputStream;
 import java.io.IOException;

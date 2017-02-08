@@ -73,7 +73,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 
-		program.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		program.setUniform2f("screenSize", renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
 		program.setUniform2f("dekal", screenPositionX + pile.getItem().getSlotsWidth() * slotSize / 2, screenPositionY + pile.getItem().getSlotsHeight() * slotSize / 2);
 		program.setUniform1f("scaling", slotSize / 1.65f);
 		transformation.setIdentity();

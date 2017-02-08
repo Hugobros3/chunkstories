@@ -18,6 +18,7 @@ import javax.swing.JOptionPane;
 
 import org.lwjgl.LWJGLException;
 
+import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -44,7 +45,7 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.opengl.PixelFormat;
 
-public class GameWindowOpenGL
+public class GameWindowOpenGL implements GameWindow
 {
 	private final long mainGLThreadId;
 
@@ -55,31 +56,28 @@ public class GameWindowOpenGL
 	private Scene currentScene = null;
 
 	public String windowName;
-	public static int windowWidth = 1024;
-	public static int windowHeight = 640;
-	//public static boolean resized = false;
-	public static boolean forceResize = false;
+	private int windowWidth = 1024;
+	private int windowHeight = 640;
+	
+	private boolean forceResizeFlag = false;
+	private int targetFPS = 60;
 
-	public static int targetFPS = 60;
+	public final static String engineVersion = "2.3";
 
-	public static String engineVersion = "2.3";
+	private static GameWindowOpenGL instance;
 
-	public static GameWindowOpenGL instance;
+	private boolean closeRequest = false;
 
-	static boolean closeRequest = false;
+	private String[] modes;
 
-	static String[] modes;
-
-	private static long lastTimeMS = 0;
-	private static int framesSinceLS = 0;
-	private static int lastFPS = 0;
-	static long lastTime = 0;
+	private long lastTimeMS = 0;
+	private int framesSinceLS = 0;
+	private int lastFPS = 0;
+	private long lastTime = 0;
 
 	public long vramUsageVerticesObjects = 0;
 
-	long timeTookLastTime = 0;
-
-	Queue<Runnable> mainThreadQueue = new ConcurrentLinkedQueue<Runnable>();
+	private Queue<Runnable> mainThreadQueue = new ConcurrentLinkedQueue<Runnable>();
 
 	public GameWindowOpenGL(Client client, String name, int width, int height)
 	{
@@ -201,6 +199,7 @@ public class GameWindowOpenGL
 		{
 			IconLoader.load();
 
+			//Oops.. Didn't use any VAOs anywhere so we put this there to be GL 3.2 core compliant
 			int vao = glGenVertexArrays();
 			glBindVertexArray(vao);
 
@@ -212,15 +211,15 @@ public class GameWindowOpenGL
 
 				//Clear windows
 				renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
-				//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 				//Resize window logic
-				if (Display.wasResized() || forceResize)
+				if (Display.wasResized() || forceResizeFlag)
 				{
-					if (forceResize)
-						forceResize = false;
-					GameWindowOpenGL.windowWidth = Display.getWidth();
-					GameWindowOpenGL.windowHeight = Display.getHeight();
+					if (forceResizeFlag)
+						forceResizeFlag = false;
+					
+					windowWidth = Display.getWidth();
+					windowHeight = Display.getHeight();
 
 					glViewport(0, 0, Display.getWidth(), Display.getHeight());
 
@@ -269,20 +268,12 @@ public class GameWindowOpenGL
 					}
 
 					renderingContext.getGuiRenderer().drawBuffer();
-					GameWindowOpenGL.tick();
+					tick();
 				}
 
 				//Clamp fps
 				if (targetFPS != -1)
-				{
-					long time = System.currentTimeMillis();
-
 					sync(targetFPS);
-
-					//glFinish();
-					long timeTook = System.currentTimeMillis() - time;
-					timeTookLastTime = timeTook;
-				}
 
 				//Draw graph
 				if (Client.getConfig().getBoolean("frametimeGraph", false))
@@ -312,12 +303,12 @@ public class GameWindowOpenGL
 		}
 	}
 
-	public static int getScalingFactor()
+	public int getScalingFactor()
 	{
 		return windowWidth > 1024 ? 2 : 1;
 	}
 
-	public static void sync(int fps)
+	public void sync(int fps)
 	{
 		if (fps <= 0)
 			return;
@@ -361,7 +352,7 @@ public class GameWindowOpenGL
 		lastTime = ((Sys.getTime() * 1000000000) / Sys.getTimerResolution()) - overSleep;
 	}
 
-	public static void computeDisplayModes()
+	public void computeDisplayModes()
 	{
 		try
 		{
@@ -395,12 +386,12 @@ public class GameWindowOpenGL
 		}
 	}
 
-	public static String[] getDisplayModes()
+	public String[] getDisplayModes()
 	{
 		return modes;
 	}
 
-	public static void switchResolution()
+	public void switchResolution()
 	{
 		try
 		{
@@ -444,14 +435,14 @@ public class GameWindowOpenGL
 						Client.getConfig().save();
 						Display.setFullscreen(false);
 						Display.setDisplayMode(current);
-						if (Client.windows.currentScene != null && Client.windows.currentScene instanceof OverlayableScene)
+						if (currentScene != null && currentScene instanceof OverlayableScene)
 						{
-							OverlayableScene scene = ((OverlayableScene) Client.windows.currentScene);
+							OverlayableScene scene = ((OverlayableScene) currentScene);
 							scene.changeOverlay(new MessageBoxOverlay(scene, scene.currentOverlay, "This resolution failed to be set, try another one !"));
 						}
 					}
 				}
-				GameWindowOpenGL.forceResize = true;
+				forceResizeFlag = true;
 			}
 			else
 			{
@@ -460,7 +451,7 @@ public class GameWindowOpenGL
 					Display.setFullscreen(false);
 					Display.setLocation(0, 0);
 					Display.setDisplayMode(Display.getDesktopDisplayMode());
-					GameWindowOpenGL.forceResize = true;
+					forceResizeFlag = true;
 				}
 			}
 		}
@@ -470,7 +461,7 @@ public class GameWindowOpenGL
 		}
 	}
 
-	public static void tick()
+	public void tick()
 	{
 		framesSinceLS++;
 		if (lastTimeMS + 1000 < System.currentTimeMillis())
@@ -481,12 +472,12 @@ public class GameWindowOpenGL
 		}
 	}
 
-	public static void setTargetFPS(int target)
+	public void setTargetFPS(int targetFPS)
 	{
-		targetFPS = target;
+		this.targetFPS = targetFPS;
 	}
 
-	public static int getFPS()
+	public int getFPS()
 	{
 		return lastFPS;
 	}
@@ -535,7 +526,7 @@ public class GameWindowOpenGL
 		return renderingContext;
 	}
 
-	public static boolean isMainGLWindow()
+	public boolean isMainGLWindow()
 	{
 		return getInstance().isInstanceMainGLWindow();
 	}
@@ -545,6 +536,16 @@ public class GameWindowOpenGL
 		return Thread.currentThread().getId() == mainGLThreadId;
 	}
 
+	public int getWidth()
+	{
+		return windowWidth;
+	}
+	
+	public int getHeight()
+	{
+		return windowHeight;
+	}
+	
 	public void queueTask(Runnable runnable)
 	{
 		synchronized (mainThreadQueue)

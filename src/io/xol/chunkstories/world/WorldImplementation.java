@@ -669,7 +669,7 @@ public abstract class WorldImplementation implements World
 				ChunkRenderable c2 = (ChunkRenderable) c;
 
 				c2.markRenderInProgress(false);
-				c2.destroyRenderData();
+				c2.redrawChunk();
 			}
 		}
 	}

@@ -14,6 +14,7 @@ import java.net.Socket;
 import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -73,14 +74,14 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 			login();
 
 		// title
-		FontRenderer2.drawTextUsingSpecificFontRVBA(32, GameWindowOpenGL.windowHeight - 32 * (1 + 1), 0, 32 + 1 * 16, "Select a server", BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
+		FontRenderer2.drawTextUsingSpecificFontRVBA(32, renderingContext.getWindow().getHeight() - 32 * (1 + 1), 0, 32 + 1 * 16, "Select a server", BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
 		// gui
-		int txtbox = GameWindowOpenGL.windowWidth - 50 - guiHandler.getButton(1).getWidth() * 2 - 75;
-		ipForm.setPosition(25, GameWindowOpenGL.windowHeight - 50 * (1 + 1));
+		int txtbox = renderingContext.getWindow().getWidth() - 50 - guiHandler.getButton(1).getWidth() * 2 - 75;
+		ipForm.setPosition(25, renderingContext.getWindow().getHeight() - 50 * (1 + 1));
 		ipForm.setMaxLength(txtbox);
 		ipForm.drawWithBackGround();
 		
-		guiHandler.getButton(1).setPosition(txtbox + 96 + 12, GameWindowOpenGL.windowHeight - 50 - 16 - 18);
+		guiHandler.getButton(1).setPosition(txtbox + 96 + 12, renderingContext.getWindow().getHeight() - 50 - 16 - 18);
 		
 		guiHandler.getButton(1).draw();
 		if (guiHandler.getButton(1).clicked)
@@ -97,7 +98,7 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 
 
 		updateServers();
-		int s = GameWindowOpenGL.getScalingFactor();
+		int s = Client.getInstance().getWindows().getScalingFactor();
 		
 		serverSelectionZone.setPosition((w - 480 * s) / 2, 32);
 		serverSelectionZone.setDimensions(480 * s, h - 32 - 128);
@@ -187,9 +188,9 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 		return true;
 	}
 
-	void drawRightedText(String t, float decx, float height, int basesize, float r, float v, float b, float a)
+	void drawRightedText(RenderingInterface renderingContext, String t, float decx, float height, int basesize, float r, float v, float b, float a)
 	{
-		FontRenderer2.drawTextUsingSpecificFontRVBA(GameWindowOpenGL.windowWidth - decx - FontRenderer2.getTextLengthUsingFont(basesize, t, BitmapFont.SMALLFONTS), height, 0, basesize, t, BitmapFont.SMALLFONTS, a, r, v, b);
+		FontRenderer2.drawTextUsingSpecificFontRVBA(renderingContext.getWindow().getWidth() - decx - FontRenderer2.getTextLengthUsingFont(basesize, t, BitmapFont.SMALLFONTS), height, 0, basesize, t, BitmapFont.SMALLFONTS, a, r, v, b);
 	}
 
 	int currentServer = 0;

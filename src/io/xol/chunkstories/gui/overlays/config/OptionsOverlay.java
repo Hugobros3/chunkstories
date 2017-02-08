@@ -323,7 +323,7 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{if (mainScene instanceof Ingame && shouldReload){
-						Client.getInstance().getWorld().getWorldRenderer().setupRenderSize(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+						Client.getInstance().getWorld().getWorldRenderer().setupRenderSize(scene.gameWindow.getWidth(), scene.gameWindow.getHeight());
 					}
 					ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig()); }
 				}),
@@ -331,7 +331,7 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{
-						GameWindowOpenGL.setTargetFPS(Client.getConfig().getInteger("framerate", -1));
+						Client.getInstance().getWindows().setTargetFPS(Client.getConfig().getInteger("framerate", -1));
 					}
 				}),
 				}));
@@ -349,7 +349,7 @@ public class OptionsOverlay extends Overlay
 		configTabs.add(new ConfigTab("#{Video}", new ConfigButton[] {
 				new ConfigButtonScale("fov", 25f, 85f, 1f),
 				new ConfigButtonToggle("fullScreen"),
-				new ConfigButtonMultiChoice("fullScreenResolution", GameWindowOpenGL.getDisplayModes()),
+				new ConfigButtonMultiChoice("fullScreenResolution", Client.getInstance().getWindows().getDisplayModes()),
 				new ConfigButtonMultiChoice("language", translations).setApplyAction(new Runnable(){
 					@Override
 					public void run()
@@ -434,18 +434,18 @@ public class OptionsOverlay extends Overlay
 	{
 		int optionsPanelSize = 320 * 2 + 32 + 64;
 		
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(GameWindowOpenGL.windowWidth / 2.0f - optionsPanelSize / 2, 0, GameWindowOpenGL.windowWidth  / 2 + optionsPanelSize / 2, GameWindowOpenGL.windowHeight, 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(renderingContext.getWindow().getWidth() / 2.0f - optionsPanelSize / 2, 0, renderingContext.getWindow().getWidth()  / 2 + optionsPanelSize / 2, renderingContext.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
 		
-		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight, 0, "000000", 0.5f);
-		//ObjectRenderer.renderColoredRect(GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2, optionsPanelSize, GameWindowOpenGL.windowHeight, 0, "000000", 0.25f);
+		//ObjectRenderer.renderColoredRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, "000000", 0.5f);
+		//ObjectRenderer.renderColoredRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, optionsPanelSize, renderingContext.getWindow().getHeight(), 0, "000000", 0.25f);
 
 		int dekal = 0;
 		int i = 0;
 		for (Button b : tabsButtons)
 		{
 			dekal += b.getWidth() + 32 + 16;
-			b.setPosition(GameWindowOpenGL.windowWidth / 2 - optionsPanelSize / 2 + dekal, GameWindowOpenGL.windowHeight - 128);
+			b.setPosition(renderingContext.getWindow().getWidth() / 2 - optionsPanelSize / 2 + dekal, renderingContext.getWindow().getHeight() - 128);
 			b.draw();
 			dekal += b.getWidth();
 			if (b.clicked())
@@ -455,8 +455,8 @@ public class OptionsOverlay extends Overlay
 
 		ConfigTab currentConfigTab = configTabs.get(selectedConfigTab);
 		int a = 0, b = 0;
-		int startPosX = GameWindowOpenGL.windowWidth / 2 - optionsPanelSize / 2 + 160 + 32;
-		int startPosY = GameWindowOpenGL.windowHeight - 128 - 64;
+		int startPosX = renderingContext.getWindow().getWidth() / 2 - optionsPanelSize / 2 + 160 + 32;
+		int startPosY = renderingContext.getWindow().getHeight() - 128 - 64;
 		for (ConfigButton c : currentConfigTab.configButtons)
 		{
 			c.setPosition(startPosX + b * (320 + 32), startPosY - (float) Math.floor(a / 2) * 64);
@@ -474,12 +474,12 @@ public class OptionsOverlay extends Overlay
 			b = a % 2;
 		}
 
-		FontRenderer2.drawTextUsingSpecificFont(GameWindowOpenGL.windowWidth / 2 - optionsPanelSize / 2 + 32, GameWindowOpenGL.windowHeight - 48 * 2, 0, 48, "Options menu", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - optionsPanelSize / 2 + 32, renderingContext.getWindow().getHeight() - 48 * 2, 0, 48, "Options menu", BitmapFont.SMALLFONTS);
 
-		exitButton.setPosition(GameWindowOpenGL.windowWidth / 2, 48);
+		exitButton.setPosition(renderingContext.getWindow().getWidth() / 2, 48);
 		exitButton.draw();
 
-		if(currentConfigTab.name.equals("Rendering") || currentConfigTab.name.equals("") || currentConfigTab.name.equals("Debug"))
+		if(currentConfigTab.name.contains("Rendering") || currentConfigTab.name.equals("") || currentConfigTab.name.contains("Debug"))
 			shouldReload = true;
 		
 		if (exitButton.clicked())

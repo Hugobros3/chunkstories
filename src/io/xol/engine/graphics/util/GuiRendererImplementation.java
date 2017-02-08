@@ -54,7 +54,7 @@ public class GuiRendererImplementation implements GuiRenderer
 	@Override
 	public void drawBoxWindowsSpace(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4fm color)
 	{
-		drawBox((startX / GameWindowOpenGL.windowWidth) * 2 - 1, (startY / GameWindowOpenGL.windowHeight) * 2 - 1, (endX / GameWindowOpenGL.windowWidth) * 2 - 1, (endY / GameWindowOpenGL.windowHeight) * 2 - 1, textureStartX, textureStartY, textureEndX, textureEndY, texture, alpha, textured, color);
+		drawBox((startX / renderingContext.getWindow().getWidth()) * 2 - 1, (startY / renderingContext.getWindow().getHeight()) * 2 - 1, (endX / renderingContext.getWindow().getWidth()) * 2 - 1, (endY / renderingContext.getWindow().getHeight()) * 2 - 1, textureStartX, textureStartY, textureEndX, textureEndY, texture, alpha, textured, color);
 	}
 	
 	/* (non-Javadoc)
@@ -65,7 +65,7 @@ public class GuiRendererImplementation implements GuiRenderer
 	{
 		float endX = startX + width;
 		float endY = startY + height;
-		drawBox((startX / GameWindowOpenGL.windowWidth) * 2 - 1, (startY / GameWindowOpenGL.windowHeight) * 2 - 1, (endX / GameWindowOpenGL.windowWidth) * 2 - 1, (endY / GameWindowOpenGL.windowHeight) * 2 - 1, textureStartX, textureStartY, textureEndX, textureEndY, texture, alpha, textured, color);
+		drawBox((startX / renderingContext.getWindow().getWidth()) * 2 - 1, (startY / renderingContext.getWindow().getHeight()) * 2 - 1, (endX / renderingContext.getWindow().getWidth()) * 2 - 1, (endY / renderingContext.getWindow().getHeight()) * 2 - 1, textureStartX, textureStartY, textureEndX, textureEndY, texture, alpha, textured, color);
 	}
 
 	/* (non-Javadoc)

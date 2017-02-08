@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.base.GameWindowOpenGL;
 
@@ -49,7 +50,7 @@ public class Texture2DFile extends Texture2D
 
 	public int loadTextureFromFile()
 	{
-		if (!GameWindowOpenGL.isMainGLWindow())
+		if (!Client.getInstance().getWindows().isMainGLWindow())
 		{
 			System.out.println("isn't main thread, scheduling load");
 			scheduledForLoad = true;

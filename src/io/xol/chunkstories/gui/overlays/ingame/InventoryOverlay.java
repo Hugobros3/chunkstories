@@ -48,7 +48,7 @@ public class InventoryOverlay extends Overlay
 		for (int i = 0; i < drawers.length; i++)
 		{
 			int thisWidth = inventories[i].getWidth();
-			drawers[i].drawInventoryCentered(mainScene.gameWindow.renderingContext, GameWindowOpenGL.windowWidth / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, GameWindowOpenGL.windowHeight / 2, 2, false, 4 - i * 4);
+			drawers[i].drawInventoryCentered(renderingContext, renderingContext.getWindow().getWidth() / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, renderingContext.getWindow().getHeight() / 2, 2, false, 4 - i * 4);
 			widthAccumulation += 1 + thisWidth;
 
 			int[] highlight = drawers[i].getSelectedSlot();
@@ -77,7 +77,7 @@ public class InventoryOverlay extends Overlay
 			//GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX() - width / 2, Mouse.getY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
 
 			//
-			selectedItem.getItem().getItemRenderer().renderItemInInventory(mainScene.gameWindow.renderingContext, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
+			selectedItem.getItem().getItemRenderer().renderItemInInventory(renderingContext, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
 
 			if (selectedItemAmount != 1)
 				renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, Mouse.getX() - width / 2 + (selectedItem.getItem().getSlotsWidth() - 1.0f) * slotSize, Mouse.getY() - height / 2, selectedItemAmount + "", 2, 2,

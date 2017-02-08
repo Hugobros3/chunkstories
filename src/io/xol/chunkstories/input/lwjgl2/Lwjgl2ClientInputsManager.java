@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.lwjgl.input.Mouse;
+
 import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
@@ -145,7 +147,7 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 	public boolean onInputPressed(Input input)
 	{
 		//Check we have a relevant scene
-		Scene currentScene = Client.windows.getCurrentScene();
+		Scene currentScene = Client.getInstance().getWindows().getCurrentScene();
 		if(!(currentScene instanceof Ingame))
 			return false;
 		Ingame scene = (Ingame)currentScene;
@@ -179,7 +181,7 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 	public boolean onInputReleased(Input input)
 	{
 		//Check we have a relevant scene
-		Scene currentScene = Client.windows.getCurrentScene();
+		Scene currentScene = Client.getInstance().getWindows().getCurrentScene();
 		if(!(currentScene instanceof Ingame))
 			return false;
 		Ingame scene = (Ingame)currentScene;
@@ -206,5 +208,20 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 		}
 		
 		return true;
+	}
+	
+	public int getMouseCursorX()
+	{
+		return Mouse.getX();
+	}
+	
+	public int getMouseCursorY()
+	{
+		return Mouse.getY();
+	}
+	
+	public void setMouseCursorLocation(int x, int y)
+	{
+		Mouse.setCursorPosition(x, y);
 	}
 }

@@ -64,9 +64,9 @@ public class LevelSelectOverlay extends Overlay
 		if (scroll < 0)
 			scroll = 0;
 
-		int posY = GameWindowOpenGL.windowHeight - 128;
+		int posY = renderingContext.getWindow().getHeight() - 128;
 		FontRenderer2.drawTextUsingSpecificFont(64, posY + 64, 0, 48, "Select a level ...", BitmapFont.SMALLFONTS);
-		int remainingSpace = (int)Math.floor(GameWindowOpenGL.windowHeight/96 - 2);
+		int remainingSpace = (int)Math.floor(renderingContext.getWindow().getHeight()/96 - 2);
 		
 		while(scroll + remainingSpace > worldsButtons.size())
 			scroll--;
@@ -84,7 +84,7 @@ public class LevelSelectOverlay extends Overlay
 				//Client.world.startLogic();
 				//this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
 			}
-			int maxWidth = GameWindowOpenGL.windowWidth - 64 * 2;
+			int maxWidth = renderingContext.getWindow().getWidth() - 64 * 2;
 			worldButton.width = maxWidth;
 			worldButton.setPosition(64 + worldButton.width / 2, posY);
 			worldButton.draw();
@@ -94,7 +94,7 @@ public class LevelSelectOverlay extends Overlay
 		backOption.setPosition(x + 192, 48);
 		backOption.draw();
 		
-		newWorldOption.setPosition(GameWindowOpenGL.windowWidth - 192, 48);
+		newWorldOption.setPosition(renderingContext.getWindow().getWidth() - 192, 48);
 		newWorldOption.draw();
 
 		if (backOption.clicked())

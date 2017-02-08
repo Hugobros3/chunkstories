@@ -10,6 +10,7 @@ import org.lwjgl.opengl.ARBFramebufferObject;
 import org.lwjgl.opengl.GL30;
 
 import io.xol.chunkstories.api.exceptions.rendering.IllegalRenderingThreadException;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
@@ -98,7 +99,7 @@ public class Texture2D extends Texture
 
 	public void bind()
 	{
-		if (!GameWindowOpenGL.isMainGLWindow())
+		if (!Client.getInstance().getWindows().isMainGLWindow())
 			throw new IllegalRenderingThreadException();
 		
 		//Don't bother

@@ -1,9 +1,5 @@
 package io.xol.chunkstories.renderer.chunks;
 
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.renderer.SelectionRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer.MeshedChunkData;
@@ -53,16 +49,16 @@ public class ChunkRenderData
 	/**
 	 * Thread-safe way to free the ressources
 	 */
-	public void markForDeletion()
+	/*public void markForDeletion()
 	{
 		addToDeletionQueue(this);
-	}
+	}*/
 
 	/**
 	 * Get the VRAM usage of this chunk in bytes
 	 * @return
 	 */
-	public long getVramUsage()
+	/*public long getVramUsage()
 	{
 		return vboSizeFullBlocks * 16 + vboSizeWaterBlocks * 24 + vboSizeCustomBlocks * 24;
 	}
@@ -83,7 +79,7 @@ public class ChunkRenderData
 	public static void addToDeletionQueue(ChunkRenderData crd)
 	{
 		uselessChunkRenderDatas.add(crd);
-	}
+	}*/
 
 	public int renderCubeSolidBlocks(RenderingContext renderingContext)
 	{

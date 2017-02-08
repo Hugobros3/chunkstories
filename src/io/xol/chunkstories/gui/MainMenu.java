@@ -36,9 +36,9 @@ public class MainMenu extends OverlayableScene
 	String skyBox;
 	Camera cam = new Camera();
 
-	private Texture2DRenderTarget unblurred = new Texture2DRenderTarget(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private Texture2DRenderTarget blurredH = new Texture2DRenderTarget(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-	private Texture2DRenderTarget blurredV = new Texture2DRenderTarget(TextureFormat.RGBA_8BPP, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+	private Texture2DRenderTarget unblurred = new Texture2DRenderTarget(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
+	private Texture2DRenderTarget blurredH = new Texture2DRenderTarget(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
+	private Texture2DRenderTarget blurredV = new Texture2DRenderTarget(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
 
 	private FrameBufferObject unblurredFBO = new FrameBufferObject(null, unblurred);
 	private FrameBufferObject blurredHFBO = new FrameBufferObject(null, blurredH);
@@ -111,9 +111,9 @@ public class MainMenu extends OverlayableScene
 	@Override
 	public void onResize()
 	{
-		unblurredFBO.resizeFBO(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		blurredHFBO.resizeFBO(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
-		blurredVFBO.resizeFBO(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		unblurredFBO.resizeFBO(gameWindow.getWidth(), gameWindow.getHeight());
+		blurredHFBO.resizeFBO(gameWindow.getWidth(), gameWindow.getHeight());
+		blurredVFBO.resizeFBO(gameWindow.getWidth(), gameWindow.getHeight());
 	}
 
 	@Override
@@ -140,7 +140,7 @@ public class MainMenu extends OverlayableScene
 		
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(unblurredFBO);
 		//unblurredFBO.bind();
-		cam.justSetup(GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		cam.justSetup(gameWindow.getWidth(), gameWindow.getHeight());
 		ShaderInterface menuSkyBox = renderingContext.useShader("mainMenuSkyBox");
 		//menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);
@@ -156,7 +156,7 @@ public class MainMenu extends OverlayableScene
 		//blurredHFBO.bind();
 		ShaderInterface blurH = renderingContext.useShader("blurH");
 		//blurH.use(true);
-		blurH.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		blurH.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
 		
 		renderingContext.bindTexture2D("inputTexture", unblurred);
 		//blurH.setUniformSampler(0, "inputTexture", unblurred.getId());
@@ -169,7 +169,7 @@ public class MainMenu extends OverlayableScene
 			ShaderInterface blurV = renderingContext.useShader("blurV");
 			//blurV.use(true);
 			blurV.setUniform1f("lookupScale", 1);
-			blurV.setUniform2f("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
+			blurV.setUniform2f("screenSize", gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
 			
 			//blurV.setUniformSampler(0, "inputTexture", blurredH.getId());
 			renderingContext.bindTexture2D("inputTexture", blurredH);
@@ -179,7 +179,7 @@ public class MainMenu extends OverlayableScene
 			//blurredHFBO.bind();
 			blurH = renderingContext.useShader("blurH");
 			//blurH.use(true);
-			blurH.setUniform2f("screenSize", GameWindowOpenGL.windowWidth / 2, GameWindowOpenGL.windowHeight / 2);
+			blurH.setUniform2f("screenSize", gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
 			//blurH.setUniformSampler(0, "inputTexture", blurredV.getId());
 			renderingContext.bindTexture2D("inputTexture", blurredV);
 			renderingContext.drawFSQuad();
@@ -189,7 +189,7 @@ public class MainMenu extends OverlayableScene
 		//blurredVFBO.bind();
 		ShaderInterface blurV = renderingContext.useShader("blurV");
 		//blurV.use(true);
-		blurV.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		blurV.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
 		//blurV.setUniformSampler(0, "inputTexture", blurredH.getId());
 		renderingContext.bindTexture2D("inputTexture", blurredH);
 		renderingContext.drawFSQuad();
@@ -199,7 +199,7 @@ public class MainMenu extends OverlayableScene
 		//FrameBufferObject.unbind();
 		ShaderInterface blit = renderingContext.useShader("background");
 		//blit.use(true);
-		blit.setUniform2f("screenSize", GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		blit.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
 		//blit.setUniformSampler(0, "diffuseTexture", blurredV.getId());
 		//renderingContext.bindTexture2D("inputTexture", blurredV);
 		Texture2D backgroundTexture = TexturesHandler.getTexture("./textures/gui/darker.png");
@@ -213,12 +213,12 @@ public class MainMenu extends OverlayableScene
 		//System.out.println(logoTexture.getId());
 		float alphaIcon = (float) (0.25 + Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 3000f)) * 0.25f);
 		renderingContext.setBlendMode(BlendMode.MIX);
-		float diagonal = (float) Math.sqrt(GameWindowOpenGL.windowWidth * GameWindowOpenGL.windowWidth + GameWindowOpenGL.windowHeight * GameWindowOpenGL.windowHeight);
+		float diagonal = (float) Math.sqrt(gameWindow.getWidth() * gameWindow.getWidth() + gameWindow.getHeight() * gameWindow.getHeight());
 		float iconSize = (float) (diagonal / 3 + 50 * Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 30000f)));
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(GameWindowOpenGL.windowWidth / 2 - iconSize / 2, GameWindowOpenGL.windowHeight / 2 - iconSize / 2, GameWindowOpenGL.windowWidth / 2 + iconSize / 2, GameWindowOpenGL.windowHeight / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true, new Vector4fm(1.0, 1.0, 1.0, alphaIcon));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(gameWindow.getWidth() / 2 - iconSize / 2, gameWindow.getHeight() / 2 - iconSize / 2, gameWindow.getWidth() / 2 + iconSize / 2, gameWindow.getHeight() / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true, new Vector4fm(1.0, 1.0, 1.0, alphaIcon));
 		//renderingContext.getGuiRenderer().drawBuffer();
 		
-		currentOverlay.drawToScreen(renderingContext, 0, 0, GameWindowOpenGL.windowWidth, GameWindowOpenGL.windowHeight);
+		currentOverlay.drawToScreen(renderingContext, 0, 0, gameWindow.getWidth(), gameWindow.getHeight());
 	}
 
 	@Override

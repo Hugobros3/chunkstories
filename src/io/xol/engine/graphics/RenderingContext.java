@@ -46,7 +46,7 @@ import io.xol.engine.math.lalgb.Matrix4f;
 
 public class RenderingContext implements RenderingInterface
 {
-	private GameWindowOpenGL mainWindows;
+	private GameWindowOpenGL gameWindow;
 	private ShaderProgram currentlyBoundShader = null;
 
 	private Camera camera;
@@ -73,7 +73,7 @@ public class RenderingContext implements RenderingInterface
 
 	public RenderingContext(GameWindowOpenGL windows)
 	{
-		mainWindows = windows;
+		gameWindow = windows;
 		
 		renderTargetManager = new OpenGLRenderTargetManager(this);
 		
@@ -104,6 +104,11 @@ public class RenderingContext implements RenderingInterface
 		return camera;
 	}
 
+	public GameWindowOpenGL getWindow()
+	{
+		return gameWindow;
+	}
+	
 	public ShaderInterface useShader(String shaderName)
 	{
 		return setCurrentShader(ShadersLibrary.getShaderProgram(shaderName));
@@ -349,7 +354,7 @@ public class RenderingContext implements RenderingInterface
 	@Override
 	public long getVertexDataVramUsage()
 	{
-		return this.mainWindows.vramUsageVerticesObjects;
+		return this.gameWindow.vramUsageVerticesObjects;
 	}
 
 	@Override

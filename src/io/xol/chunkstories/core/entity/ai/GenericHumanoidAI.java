@@ -111,6 +111,8 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 						return;
 					}
 				}
+				
+				lookAtEntityCoolDown = (int) (Math.random() * 60);
 			}
 			
 			if(Math.random() > 0.9990)

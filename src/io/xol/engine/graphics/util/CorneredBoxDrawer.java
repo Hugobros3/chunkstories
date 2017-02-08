@@ -16,7 +16,7 @@ public class CorneredBoxDrawer
 
 	public static void drawCorneredBoxTiled(float posx, float posy, int width, int height, int cornerSize, Texture2D texture, int textureSize, int scale)
 	{
-		RenderingContext renderingContext = GameWindowOpenGL.instance.renderingContext;
+		RenderingContext renderingContext = GameWindowOpenGL.getInstance().renderingContext;
 		GuiRenderer guiRenderer = renderingContext.getGuiRenderer();
 		
 		float topLeftCornerX = posx - width / 2;

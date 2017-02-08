@@ -15,7 +15,6 @@ import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
-import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.ServerToClientConnection;
 
 //(c) 2015-2017 XolioWare Interactive

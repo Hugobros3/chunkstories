@@ -29,6 +29,8 @@ public interface RenderingInterface
 {
 	public CameraInterface getCamera();
 
+	public GameWindow getWindow();
+	
 	//TODO improve
 	public boolean isThisAShadowPass();
 

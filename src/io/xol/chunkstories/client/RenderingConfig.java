@@ -1,7 +1,5 @@
 package io.xol.chunkstories.client;
 
-import io.xol.engine.base.GameWindowOpenGL;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,7 +72,7 @@ public class RenderingConfig
 		mouseSensitivity = Client.getConfig().getFloat("mouseSensitivity", 1f);
 		fov = Client.getConfig().getFloat("fov", 45f);
 
-		GameWindowOpenGL.setTargetFPS(Client.getConfig().getInteger("framerate", -1));
+		Client.getInstance().getWindows().setTargetFPS(Client.getConfig().getInteger("framerate", -1));
 	}
 
 	public static String[] getShaderConfig()

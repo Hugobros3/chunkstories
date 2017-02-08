@@ -1,6 +1,7 @@
 package io.xol.engine.graphics.geometry;
 
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
@@ -69,7 +70,7 @@ public class VerticesObject
 		allVerticesObjects.add(selfReference);
 
 		//Assign a buffer ID if we're in the right thread
-		if (GameWindowOpenGL.isMainGLWindow())
+		if (Client.getInstance().getWindows().isMainGLWindow())
 			aquireID();
 	}
 
@@ -145,7 +146,7 @@ public class VerticesObject
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
 		//Queue for immediate upload
-		if (GameWindowOpenGL.isMainGLWindow())
+		if (Client.getInstance().getWindows().isMainGLWindow())
 		{
 			waitingToUploadMainThread = dataToUpload;
 			dataSize = dataToUpload.limit();
@@ -176,7 +177,7 @@ public class VerticesObject
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
 		//Queue for immediate upload
-		if (GameWindowOpenGL.isMainGLWindow())
+		if (Client.getInstance().getWindows().isMainGLWindow())
 		{
 			waitingToUploadMainThread = dataToUpload;
 			dataSize = dataToUpload.limit() * 4;
@@ -194,7 +195,7 @@ public class VerticesObject
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
 		//Queue for immediate upload
-		if (GameWindowOpenGL.isMainGLWindow())
+		if (Client.getInstance().getWindows().isMainGLWindow())
 		{
 			Object replacing = waitingToUploadMainThread;
 			waitingToUploadMainThread = dataToUpload;
@@ -216,7 +217,7 @@ public class VerticesObject
 	private boolean uploadDataActual(Object dataToUpload)
 	{
 		//Are we clear to execute openGL calls ?
-		assert GameWindowOpenGL.isMainGLWindow();
+		assert Client.getInstance().getWindows().isMainGLWindow();
 
 		bind();
 
@@ -340,7 +341,7 @@ public class VerticesObject
 			//Ensure it's up-to-date
 			checkForPendingMainThreadData();
 			if(!isDataPresent())
-				throw new RuntimeException("No VBO data uploaded | "+GameWindowOpenGL.instance.renderingContext);
+				throw new RuntimeException("No VBO data uploaded | "+GameWindowOpenGL.getInstance().renderingContext);
 			//Set pointer
 			glVertexAttribPointer(gl_AttributeLocation, dimensions, format.glId, format.normalized, stride, offset);
 		}
@@ -388,7 +389,7 @@ public class VerticesObject
 			return true;
 		}
 
-		if (GameWindowOpenGL.isMainGLWindow())
+		if (Client.getInstance().getWindows().isMainGLWindow())
 		{
 			isDataPresent = false;
 

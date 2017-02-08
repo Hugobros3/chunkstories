@@ -408,7 +408,7 @@ public class Chat
 				continue;
 			}
 
-			int chatWidth = Math.max(750, Client.getInstance().windows.windowWidth / 2 - 10);
+			int chatWidth = Math.max(750, Client.getInstance().getWindows().getWidth() / 2 - 10);
 
 			String localizedLine = Client.getInstance().getContent().localization().localize(line.text);
 			
