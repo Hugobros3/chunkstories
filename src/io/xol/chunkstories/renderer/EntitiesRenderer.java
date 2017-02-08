@@ -79,7 +79,13 @@ public class EntitiesRenderer
 			
 			entityRenderer.setupRender(renderingContext);
 
+			try {
 			entitiesRendered += entityRenderer.forEach(renderingContext, new EntitiesRendererIterator<>(renderingContext, entities));
+			}
+			catch(Throwable e)
+			{
+				
+			}
 		}
 		
 		//l.unlock();
