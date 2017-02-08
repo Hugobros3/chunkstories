@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
@@ -76,6 +77,14 @@ public class LanguageSelectionScreen extends Overlay
 
 			if (langButton.clicked())
 			{
+				//Convinience hack to set keys to wasd when first lauching and selecting English as a language
+				if(!allowBackButton && langButton.translationCode.endsWith("en"))
+				{
+					//Englishfag detected, thanks /u/MrSmith33 for feedback
+					Client.clientConfig.setInteger("bind.forward", Keyboard.KEY_W);
+					Client.clientConfig.setInteger("bind.left", Keyboard.KEY_A);
+				}
+				
 				Client.clientConfig.setString("language", langButton.translationCode);
 				Client.getInstance().getContent().localization().loadTranslation(langButton.translationCode);
 				this.mainScene.changeOverlay(this.parent);
