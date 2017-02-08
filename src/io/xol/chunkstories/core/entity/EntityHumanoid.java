@@ -453,7 +453,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 	public CollisionBox[] getCollisionBoxes()
 	{
-		return new CollisionBox[] { new CollisionBox(0.8, stance.get() == EntityHumanoidStance.CROUCHING ? 1.45 : 1.9, 0.8).translate(-0.4, 0.0, -0.4) };
+		return new CollisionBox[] { new CollisionBox(0.6, stance.get() == EntityHumanoidStance.CROUCHING ? 1.45 : 1.9, 0.6).translate(-0.3, 0.0, -0.3) };
 	}
 
 	HitBoxImpl[] hitboxes = { new HitBoxImpl(new CollisionBox(-0.15, 0.0, -0.25, 0.30, 0.675, 0.5), "boneTorso"), new HitBoxImpl(new CollisionBox(-0.25, 0.0, -0.25, 0.5, 0.5, 0.5), "boneHead"),

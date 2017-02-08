@@ -44,7 +44,7 @@ public class ParticleBlood extends ParticleType
 	}
 
 	@Override
-	public Texture2D getTexture()
+	public Texture2D getAlbedoTexture()
 	{
 		return TexturesHandler.getTexture("./textures/particles/blood.png");
 	}

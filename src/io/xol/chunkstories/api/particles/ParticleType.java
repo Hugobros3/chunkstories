@@ -3,6 +3,7 @@ package io.xol.chunkstories.api.particles;
 import io.xol.chunkstories.api.world.World;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TexturesHandler;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -36,15 +37,17 @@ public abstract class ParticleType
 	
 	public void beginRenderingForType(RenderingContext renderingContext)
 	{
-		renderingContext.bindAlbedoTexture(getTexture());
+		renderingContext.bindAlbedoTexture(getAlbedoTexture());
 		renderingContext.currentShader().setUniform1f("billboardSize", getBillboardSize());
+		//TODO refactor this crappy class
+		renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
 	}
 	
 	public abstract void forEach_Rendering(RenderingContext renderingContext, ParticleData data);
 	
 	public abstract void forEach_Physics(World world, ParticleData data);
 	
-	public abstract Texture2D getTexture();
+	public abstract Texture2D getAlbedoTexture();
 	
 	public abstract float getBillboardSize();
 }

@@ -135,7 +135,7 @@ public class ParticleVoxelFragment extends ParticleType
 	}
 
 	@Override
-	public Texture2D getTexture()
+	public Texture2D getAlbedoTexture()
 	{
 		return TexturesHandler.getTexture("./textures/tiles_merged_albedo.png");
 	}

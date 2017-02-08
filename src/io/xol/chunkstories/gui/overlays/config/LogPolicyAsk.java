@@ -7,7 +7,6 @@ import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
@@ -28,26 +27,7 @@ public class LogPolicyAsk extends Overlay
 	Button acceptButton = new Button(0, 0, 300, 32, ("#{logpolicy.accept}"), BitmapFont.SMALLFONTS, 1);
 	Button denyButton = new Button(0, 0, 300, 32, ("#{logpolicy.deny}"), BitmapFont.SMALLFONTS, 1);
 	
-	String message = Client.getInstance().getContent().localization().getLocalizedString("logpolicy.asktext");/*"English: \n"
-			+ "Welcome to the indev version of Chunk Stories !\n"
-			+ "The whole point of having an early access title is finding and fixing bugs and crashes, and this "
-			+ "often requires you sending us informations about your computer and how the game runs on it.\n"
-			+ "We have an "
-			+ "automatic log uploading system that uploads your .log file after you're done playing. This file can contain "
-			+ "information about your game path ( reflecting likely your username ), your operation system, your CPU/RAM/GPU combo,"
-			+ "your IP address (we have that one already think about it) and whatever driver/crashes related stuff it may encounter during runtime."
-			+ "\nObviously the only thing we'll ever use these files for is debuging purposes and you can chose wether you are ok with that or not."
-			+ "\n\n"
-			+ "Français:  \n"
-			+ "Bienvenue sur l'alpha de Chunk Stories !\n"
-			+ "Tout l'intérêt d'une version early access est de trouver et résoudre les bugs et crashs, et ceci requiert souvent "
-			+ "de nous envoyer des informations sur votre ordinateur et sur comment le jeu fonctionne dessus.\n"
-			+ "Nous avons un système d'envoi de logs automatique qui s'active une fois le jeu fermé. Ces fichiers contiennent des "
-			+ "informations sur le répertoire d'installation du jeu ( reflétant votre username ), votre système d'exploitation, votre "
-			+ "configuration matérielle, votre addresse IP ( on l'a déjà ) et quelquonque erreur/crash lié aux drivers que le jeu peut "
-			+ "recontrer pendant son exécution.\n"
-			+ "Evidement la seule utilisation que nous auront pour ces fichiers sera le débbugage et vous pouvez choisir de désactiver cette fonctionalité."
-			;*/
+	String message = Client.getInstance().getContent().localization().getLocalizedString("logpolicy.asktext");
 	
 	@Override
 	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)

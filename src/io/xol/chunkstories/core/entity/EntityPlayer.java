@@ -159,7 +159,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		//Auto-pickups items on the ground
 		if (authority.isMaster() && (world.getTicksElapsed() % 60L) == 0L)
 		{
-			//TODO localize
+			//TODO Use more precise, regional functions to not iterate over the entire world like a retard
 			for (Entity e : world.getAllLoadedEntities())
 			{
 				if (e instanceof EntityGroundItem && e.getLocation().distanceTo(this.getLocation()) < 3.0f)
@@ -349,49 +349,6 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			if (controller.getInputsManager().getInputByName("right").isPressed())
 				modif -= 90;
 		}
-
-		//Auto-step logic
-		
-		//TODO finish moving it
-		/*if (isOnGround() && (Math.abs(this.blockedMomentum.getX()) > 0.0005d || Math.abs(this.blockedMomentum.getZ()) > 0.0005d))
-		{
-			blockedMomentum.setY(0d);
-			if (blockedMomentum.length() > 0.20d)
-			{
-				blockedMomentum.normalize();
-				blockedMomentum.scale(0.20);
-			}
-
-			for (double d = 0.25; d < 0.5; d += 0.05)
-			{
-				//I don't want any of this to reflect on the object, because it causes ugly jumps in the animation
-				Vector3dm canMoveUp = this.canMoveWithCollisionRestrain(new Vector3dm(0.0, d, 0.0));
-				//It can go up that bit
-				if (canMoveUp.length() == 0.0f)
-				{
-					//Would it help with being stuck ?
-					Vector3dm tryFromHigher = new Vector3dm(this.getLocation());
-					tryFromHigher.add(new Vector3dm(0.0, d, 0.0));
-					Vector3dm blockedMomentumRemaining = this.canMoveWithCollisionRestrain(tryFromHigher, blockedMomentum);
-					//If length of remaining momentum < of what we requested it to do, that means it *did* go a bit further away
-					if (blockedMomentumRemaining.length() < blockedMomentum.length())
-					{
-						//Where would this land ?
-						Vector3dm afterJump = new Vector3dm(tryFromHigher);
-						afterJump.add(blockedMomentum);
-						afterJump.sub(blockedMomentumRemaining);
-
-						//land distance = whatever is left of our -0.55 delta when it hits the ground
-						Vector3dm landDistance = this.canMoveWithCollisionRestrain(afterJump, new Vector3dm(0.0, -d, 0.0));
-						afterJump.add(new Vector3dm(0.0, -d, 0.0));
-						afterJump.sub(landDistance);
-
-						this.setLocation(new Location(world, afterJump));
-						break;
-					}
-				}
-			}
-		}*/
 		
 		if (onLadder)
 		{
@@ -724,7 +681,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	@Override
 	public boolean shouldSaveIntoRegion()
 	{
-		// TODO Auto-generated method stub
+		//Player entities are handled their own way.
 		return false;
 	}
 

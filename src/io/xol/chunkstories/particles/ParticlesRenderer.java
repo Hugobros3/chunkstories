@@ -164,7 +164,7 @@ public class ParticlesRenderer implements ParticlesManager
 
 				particleType.beginRenderingForType(renderingContext);
 
-				particleType.getTexture().setLinearFiltering(false);
+				//particleType.getAlbedoTexture().setLinearFiltering(false);
 
 				textureCoordinatesBuffer.clear();
 				particlesPositionsBuffer.clear();
