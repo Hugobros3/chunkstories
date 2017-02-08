@@ -327,13 +327,28 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			horizontalSpeed = 0.0;
 		// Water slows you down
 
-		//if (inWater)
-		//	horizontalSpeed *= 0.45;
-
-		if (controller.getInputsManager().getInputByName("left").isPressed())
-			modif += 90 * (controller.getInputsManager().getInputByName("forward").isPressed() ? 0.5 : 1);
-		if (controller.getInputsManager().getInputByName("right").isPressed())
-			modif += -90 * (controller.getInputsManager().getInputByName("forward").isPressed() ? 0.5 : 1);
+		//Strafing
+		if(controller.getInputsManager().getInputByName("forward").isPressed())
+		{
+			if (controller.getInputsManager().getInputByName("left").isPressed())
+				modif += 45;
+			if (controller.getInputsManager().getInputByName("right").isPressed())
+				modif -= 45;
+		}
+		else if(controller.getInputsManager().getInputByName("back").isPressed())
+		{
+			if (controller.getInputsManager().getInputByName("left").isPressed())
+				modif += 180 - 45;
+			if (controller.getInputsManager().getInputByName("right").isPressed())
+				modif -= 180 - 45;
+		}
+		else
+		{
+			if (controller.getInputsManager().getInputByName("left").isPressed())
+				modif += 90;
+			if (controller.getInputsManager().getInputByName("right").isPressed())
+				modif -= 90;
+		}
 
 		//Auto-step logic
 		

@@ -4,7 +4,7 @@ keyBind back S
 keyBind left Q
 keyBind right D
 keyBind jump SPACE
-keyBind run LCONTROL
+keyBind run LSHIFT
 keyBind crouch C
 keyBind use F
 keyBind inventory E
