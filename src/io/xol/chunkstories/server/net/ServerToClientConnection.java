@@ -52,7 +52,6 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 
 	//Did the connection died at some point ?
 	private AtomicBoolean calledCloseSockedOnce = new AtomicBoolean(false);
-
 	public String name = "undefined";
 	//Version of the client he uses
 	public String version = "undefined";
@@ -79,7 +78,7 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 		}
 		catch (IOException e)
 		{
-			System.out.println("Failed to open connection to "+this.getIp()+" - "+e.getMessage());
+			System.out.println("Failed to open connection to " + this.getIp() + " - " + e.getMessage());
 			throw new FailedToConnectionException();
 		}
 	}
@@ -98,11 +97,12 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 		sendQueue = new SendQueue(this, new DataOutputStream(new BufferedOutputStream(socketOutputStream)), packetsProcessor);
 		sendQueue.start();
 	}
-	
-	class FailedToConnectionException extends Exception {
-		
+
+	class FailedToConnectionException extends Exception
+	{
+
 		private static final long serialVersionUID = 3423402904369758447L;
-		
+
 	}
 
 	// Here's the usefull things !
@@ -289,8 +289,8 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 	public String getIp()
 	{
 		InetAddress inet = socket.getInetAddress();
-		
-		if(inet == null)
+
+		if (inet == null)
 			return "[IP:Unconnected socket]";
 		return inet.getHostAddress();
 	}
@@ -298,8 +298,8 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 	public String getHostname()
 	{
 		InetAddress inet = socket.getInetAddress();
-		
-		if(inet == null)
+
+		if (inet == null)
 			return "[HN:Unconnected socket]";
 		return inet.getHostName();
 	}
@@ -325,10 +325,11 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 			{
 				if (inputDataStream != null)
 					inputDataStream.close();
+				
 				if (sendQueue != null)
 					sendQueue.kill();
 
-				//Null-out for server gc ?
+				//Null-out to help server gc faster ?
 				sendQueue = null;
 				inputDataStream = null;
 			}
@@ -336,6 +337,9 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 			{
 
 			}
+
+			//Remove the connection from the set in the manager
+			this.connectionsManager.removeDeadConnection(this);
 		}
 	}
 
@@ -460,13 +464,9 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 
 	public void disconnect(String disconnectionReason)
 	{
-		//Thread.dumpStack();
-
 		ChunkStoriesLogger.getInstance().info("Disconnecting client " + this + " for reason " + disconnectionReason);
 		sendInternalTextMessage("disconnect/" + disconnectionReason);
 		closeSocket();
-		//Remove the connection from the set in the manager
-		this.connectionsManager.removeDeadConnection(this);
 	}
 
 	public String toString()

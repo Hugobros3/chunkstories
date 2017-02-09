@@ -118,6 +118,7 @@ public class SendQueue extends Thread
 					//We don't care about that, it's the motd thing mostly
 					//ChunkStoriesLogger.getInstance().error("Error : unable to send Packet");
 					destinator.disconnect("Broken pipe: Unable to send packet: "+e.getMessage());
+					break;
 				}
 				catch (UnknowPacketException e)
 				{
