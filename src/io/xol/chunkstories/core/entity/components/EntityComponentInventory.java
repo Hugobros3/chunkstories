@@ -15,7 +15,6 @@ import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
-import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.item.inventory.BasicInventory;
 import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
 
@@ -23,108 +22,80 @@ import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityComponentInventory extends EntityComponent implements Inventory
+public class EntityComponentInventory extends EntityComponent
 {
-	private BasicInventory actualInventory;
-	
+	protected BasicInventory actualInventory;
+
 	//What does this inventory belong to ?
 	public EntityWithInventory holder;
 
+	//Retarded and unsafe because Java constructors are kind of dumb, for use with subtypes
+	EntityComponentInventory(EntityWithInventory holder)
+	{
+		super(holder, holder == null ? null : holder.getComponents().getLastComponent());
+		this.holder = holder;
+		//this.actualInventory = ...
+	}
+	
 	public EntityComponentInventory(EntityWithInventory holder, int width, int height)
 	{
 		super(holder, holder == null ? null : holder.getComponents().getLastComponent());
 		this.holder = holder;
-		
-		this.actualInventory = new BasicInventory(width, height) {
-			@Override
-			public InventoryHolder getHolder()
+		this.actualInventory = new EntityInventory(width, height);
+	}
+
+	public class EntityInventory extends BasicInventory
+	{
+
+		public EntityInventory(int width, int height)
+		{
+			super(width, height);
+		}
+
+		@Override
+		public InventoryHolder getHolder()
+		{
+			return holder;
+		}
+
+		@Override
+		public String getInventoryName()
+		{
+			if (holder != null)
 			{
-				return holder;
+				if (holder instanceof EntityNameable)
+					return ((EntityNameable) holder).getName();
+				return holder.getClass().getSimpleName();
 			}
-		};
+			return "/dev/null";
+		}
+
+		@Override
+		public void refreshItemSlot(int x, int y)
+		{
+			System.out.println("refresh item slot");
+			super.refreshItemSlot(x, y);
+		}
+
+		public void refreshItemSlot(int x, int y, ItemPile pileChanged)
+		{
+			System.out.println("Updating slot: " + x + ", " + y + " to " + pileChanged);
+
+			Packet packetItemUpdate = new PacketInventoryPartialUpdate(this, x, y, pileChanged);
+			Controller controller = null;
+			if (entity instanceof EntityControllable)
+				controller = ((EntityControllable) entity).getControllerComponent().getController();
+
+			if (controller != null)
+				controller.pushPacket(packetItemUpdate);
+		}
 	}
 
-	@Override
-	public ItemPile getItemPileAt(int x, int y)
-	{
-		return actualInventory.getItemPileAt(x, y);
-	}
-	
-	@Override
-	public boolean canPlaceItemAt(int x, int y, ItemPile itemPile)
-	{
-		return actualInventory.canPlaceItemAt(x, y, itemPile);
-	}
-
-	@Override
-	public ItemPile placeItemPileAt(int x, int y, ItemPile itemPile)
-	{
-		return actualInventory.placeItemPileAt(x, y, itemPile);
-	}
-
-	@Override
-	public boolean setItemPileAt(int x, int y, ItemPile pile)
-	{
-		return actualInventory.setItemPileAt(x, y, pile);
-	}
-
-	@Override
-	public ItemPile addItemPile(ItemPile pile)
-	{
-		return actualInventory.addItemPile(pile);
-	}
-
-	@Override
-	public IterableIterator<ItemPile> iterator()
-	{
-		return actualInventory.iterator();
-	}
-
-	/**
-	 * Copy the contents of another Inventory.
-	 * 
-	 * @param inventory
-	 */
-	/*public void load(EntityComponentInventory inventory)
-	{
-		this.width = inventory.width;
-		this.height = inventory.height;
-		contents = inventory.contents;
-		//Update inventory references
-		for (int i = 0; i < width; i++)
-			for (int j = 0; j < height; j++)
-				if (contents[i][j] != null)
-					contents[i][j].setInventory(this);
-	}*/
-
-	public void refreshCompleteInventory()
-	{
-		pushComponentController();
-	}
-	
 	public enum UpdateMode
 	{
 		//MOVE_ITEM, 
 		//CHANGE_ITEM, 
 		REFRESH;
-	}
-	
-	public void refreshItemSlot(int x, int y, ItemPile pileChanged)
-	{
-		//System.out.println("Updating slot: "+x+", "+y+" to "+pileChanged);
-
-		Packet packetItemUpdate = new PacketInventoryPartialUpdate(this, x, y, pileChanged);
-		Controller controller = null;
-		if (entity instanceof EntityControllable)
-			controller = ((EntityControllable) entity).getControllerComponent().getController();
-
-		if (controller != null)
-			controller.pushPacket(packetItemUpdate);
-	}
-
-	public void pushItemMove(int xFrom, int yFrom, int xTo, int yTo)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -132,7 +103,7 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 	{
 		//Unused but keep
 		stream.writeByte(UpdateMode.REFRESH.ordinal());
-		
+
 		actualInventory.pushInventory(destinator, stream);
 	}
 
@@ -145,52 +116,8 @@ public class EntityComponentInventory extends EntityComponent implements Invento
 		actualInventory.pullInventory(from, stream, entity.getWorld().getGameContext().getContent());
 	}
 
-	@Override
-	public void clear()
+	public Inventory getInventory()
 	{
-		actualInventory.clear();
+		return actualInventory;
 	}
-
-	@Override
-	public int size()
-	{
-		return actualInventory.size();
-	}
-
-	@Override
-	public String getInventoryName()
-	{
-		if (holder != null)
-		{
-			if (holder instanceof EntityNameable)
-				return ((EntityNameable) holder).getName();
-			return holder.getClass().getSimpleName();
-		}
-		return "/dev/null";
-	}
-
-	@Override
-	public int getWidth()
-	{
-		return actualInventory.getWidth();
-	}
-
-	@Override
-	public int getHeight()
-	{
-		return actualInventory.getHeight();
-	}
-
-	@Override
-	public void refreshItemSlot(int x, int y)
-	{
-		actualInventory.refreshItemSlot(x, y);
-	}
-
-	@Override
-	public InventoryHolder getHolder()
-	{
-		return holder;
-	}
-
 }

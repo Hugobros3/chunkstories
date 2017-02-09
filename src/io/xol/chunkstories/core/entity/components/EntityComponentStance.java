@@ -26,7 +26,7 @@ public class EntityComponentStance extends EntityComponent
 	public void set(EntityHumanoidStance flying)
 	{
 		this.value = flying;
-		this.pushComponentController();
+		this.pushComponentEveryone();
 	}
 
 	public EntityComponentStance(Entity entity)
@@ -44,6 +44,7 @@ public class EntityComponentStance extends EntityComponent
 	protected void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
 		value = EntityHumanoidStance.values()[dis.readByte()];
+		this.pushComponentEveryoneButController();
 	}
 
 }

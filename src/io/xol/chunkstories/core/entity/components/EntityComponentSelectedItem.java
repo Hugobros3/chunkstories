@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
+import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.serialization.OfflineSerializedData;
 import io.xol.chunkstories.api.serialization.StreamSource;
@@ -23,12 +24,12 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 
 public class EntityComponentSelectedItem extends EntityComponent
 {
-	EntityComponentInventory inventory;
+	Inventory inventory;
 	
 	public EntityComponentSelectedItem(Entity entity, EntityComponentInventory inventory)
 	{
 		super(entity, inventory.getLastComponent());
-		this.inventory = inventory;
+		this.inventory = inventory.getInventory();
 	}
 
 	int selectedSlot = 0;

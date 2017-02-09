@@ -17,33 +17,43 @@ public class EntityComponentPublicInventory extends EntityComponentInventory
 {
 	public EntityComponentPublicInventory(EntityWithInventory holder, int width, int height)
 	{
-		super(holder, width, height);
+		super(holder);
+		this.actualInventory = new EntityPublicInventory(width, height);
 	}
 
-	@Override
-	public void refreshCompleteInventory()
+	public class EntityPublicInventory extends EntityInventory
 	{
-		if(this.entity.getWorld() instanceof WorldMaster)
-			this.pushComponentEveryone();
-	}
-	
-	public void refreshItemSlot(int x, int y, ItemPile pileChanged)
-	{
-		Packet packetItemUpdate = new PacketInventoryPartialUpdate(this, x, y, pileChanged);
-		Controller controller = null;
-		if(entity instanceof EntityControllable)
-			controller = ((EntityControllable) entity).getControllerComponent().getController();
-		
-		if(controller != null)
-			controller.pushPacket(packetItemUpdate);
-		
-		for(Subscriber sub : entity.getAllSubscribers())
-			sub.pushPacket(packetItemUpdate);
-	}
-	
-	@Override
-	public String getInventoryName()
-	{
-		return "Chest";
+		public EntityPublicInventory(int width, int height)
+		{
+			super(width, height);
+		}
+
+		@Override
+		public void refreshCompleteInventory()
+		{
+			if (entity.getWorld() instanceof WorldMaster)
+				pushComponentEveryone();
+		}
+
+		public void refreshItemSlot(int x, int y, ItemPile pileChanged)
+		{
+			Packet packetItemUpdate = new PacketInventoryPartialUpdate(this, x, y, pileChanged);
+			Controller controller = null;
+			if (entity instanceof EntityControllable)
+				controller = ((EntityControllable) entity).getControllerComponent().getController();
+
+			if (controller != null)
+				controller.pushPacket(packetItemUpdate);
+
+			for (Subscriber sub : entity.getAllSubscribers())
+				sub.pushPacket(packetItemUpdate);
+		}
+
+		@Override
+		public String getInventoryName()
+		{
+			return "Chest";
+		}
+
 	}
 }

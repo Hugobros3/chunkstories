@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
@@ -171,7 +172,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					ItemPile pile = eg.getItemPile();
 					if (pile != null)
 					{
-						ItemPile left = this.inventoryComponent.addItemPile(pile);
+						ItemPile left = this.inventoryComponent.getInventory().addItemPile(pile);
 						if (left == null)
 							world.removeEntity(eg);
 						else
@@ -627,7 +628,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 							item.voxelMeta = voxelMeta;
 
 							ItemPile itemVoxel = new ItemPile(item);
-							this.inventoryComponent.setItemPileAt(getSelectedItemComponent().getSelectedSlot(), 0, itemVoxel);
+							this.getInventory().setItemPileAt(getSelectedItemComponent().getSelectedSlot(), 0, itemVoxel);
 							return true;
 						}
 					}
@@ -649,9 +650,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	}
 
 	@Override
-	public EntityComponentInventory getInventory()
+	public Inventory getInventory()
 	{
-		return inventoryComponent;
+		return inventoryComponent.getInventory();
 	}
 
 	@Override

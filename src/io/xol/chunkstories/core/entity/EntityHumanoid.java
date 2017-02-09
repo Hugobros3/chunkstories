@@ -164,7 +164,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 			if (Arrays.asList("boneArmLU", "boneArmRU").contains(boneName))
 			{
-				double k = 0.75;
+				double k = (stance.get() == EntityHumanoidStance.CROUCHING) ? 0.65 : 0.75;
 
 				ItemPile selectedItem = null;
 
@@ -176,6 +176,12 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 					characterRotationMatrix.translate(new Vector3fm(0f, 0f, (float) k));
 					characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation() + ((stance.get() == EntityHumanoidStance.CROUCHING) ? -50f : 0f)) / 180f * 3.14159f, new Vector3fm(0, 1, 0));
 					characterRotationMatrix.translate(new Vector3fm(0f, 0f, -(float) k));
+					
+					if(stance.get() == EntityHumanoidStance.CROUCHING && EntityHumanoid.this.equals(Client.getInstance().getPlayer().getControlledEntity()))
+						characterRotationMatrix.translate(new Vector3fm(-0.25f, 0f, -0.2f));
+					
+					//characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation() + ((stance.get() == EntityHumanoidStance.CROUCHING) ? -50f : 0f)) / 180f * 3.14159f, new Vector3fm(0, 1, 0));
+					
 				}
 			}
 

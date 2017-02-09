@@ -27,7 +27,7 @@ public abstract class EntityComponentBoolean extends EntityComponent
 		if (this.value != newValue)
 		{
 			this.value = newValue;
-			this.pushComponentEveryoneButController();
+			this.pushComponentEveryone();
 		}
 	}
 

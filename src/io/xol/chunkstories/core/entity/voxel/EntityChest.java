@@ -31,7 +31,7 @@ public class EntityChest extends EntityImplementation implements EntityWithInven
 	@Override
 	public Inventory getInventory()
 	{
-		return inventoryComponent;
+		return inventoryComponent.getInventory();
 	}
 
 }
