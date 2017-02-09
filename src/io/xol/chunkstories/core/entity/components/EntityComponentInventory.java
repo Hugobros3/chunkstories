@@ -73,14 +73,11 @@ public class EntityComponentInventory extends EntityComponent
 		@Override
 		public void refreshItemSlot(int x, int y)
 		{
-			System.out.println("refresh item slot");
 			super.refreshItemSlot(x, y);
 		}
 
 		public void refreshItemSlot(int x, int y, ItemPile pileChanged)
 		{
-			System.out.println("Updating slot: " + x + ", " + y + " to " + pileChanged);
-
 			Packet packetItemUpdate = new PacketInventoryPartialUpdate(this, x, y, pileChanged);
 			Controller controller = null;
 			if (entity instanceof EntityControllable)
@@ -88,6 +85,11 @@ public class EntityComponentInventory extends EntityComponent
 
 			if (controller != null)
 				controller.pushPacket(packetItemUpdate);
+		}
+		
+		public void refreshCompleteInventory()
+		{
+			pushComponentController();
 		}
 	}
 
