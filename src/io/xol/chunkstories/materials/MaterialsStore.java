@@ -58,15 +58,14 @@ public class MaterialsStore implements Content.Materials
 				{
 					// It's a comment, ignore.
 				}
+				//We shouldn't come accross end tags by ourselves, this is dealt with in the constructors
 				else if (line.startsWith("end"))
 				{
-					if (material == null)
+					//if (material == null)
 					{
 						ChunkStoriesLogger.getInstance().warning("Syntax error in file : " + f + " : ");
 						continue;
 					}
-					//Eventually add the material
-					materials.put(material.getName(), material);
 				}
 				else if (line.startsWith("material"))
 				{
@@ -75,10 +74,13 @@ public class MaterialsStore implements Content.Materials
 						String[] split = line.split(" ");
 						String materialName = split[1];
 
-						material = new MaterialImplementation(materialName);
+						material = new MaterialImplementation(materialName, reader);
+
+						//Eventually add the material
+						materials.put(material.getName(), material);
 					}
 				}
-				else if(line.contains(":"))
+				/*else if(line.contains(":"))
 				{
 					if (material == null)
 					{
@@ -87,7 +89,7 @@ public class MaterialsStore implements Content.Materials
 					}
 					String[] s = line.split(": ");
 					material.setProperty(s[0], s[1]);
-				}
+				}*/
 			}
 			reader.close();
 		}

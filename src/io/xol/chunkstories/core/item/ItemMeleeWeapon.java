@@ -52,18 +52,18 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 	{
 		super(type);
 
-		swingDuration = Integer.parseInt(type.getProperty("swingDuration", "100"));
-		hitTime = Integer.parseInt(type.getProperty("hitTime", "100"));
+		swingDuration = Integer.parseInt(type.resolveProperty("swingDuration", "100"));
+		hitTime = Integer.parseInt(type.resolveProperty("hitTime", "100"));
 
-		range = Double.parseDouble(type.getProperty("range", "3"));
-		damage = Float.parseFloat(type.getProperty("damage", "100"));
+		range = Double.parseDouble(type.resolveProperty("range", "3"));
+		damage = Float.parseFloat(type.resolveProperty("damage", "100"));
 
-		itemRenderScale = Float.parseFloat(type.getProperty("itemRenderScale", "2"));
+		itemRenderScale = Float.parseFloat(type.resolveProperty("itemRenderScale", "2"));
 
-		String modelName = type.getProperty("modelObj", "none");
+		String modelName = type.resolveProperty("modelObj", "none");
 		if (!modelName.equals("none"))
 		{
-			itemRenderer = new ObjViewModelRenderer(this, modelName, type.getProperty("modelDiffuse", "none"));
+			itemRenderer = new ObjViewModelRenderer(this, modelName, type.resolveProperty("modelDiffuse", "none"));
 		}
 		else
 			itemRenderer = new LegacyDogeZItemRenderer(this);

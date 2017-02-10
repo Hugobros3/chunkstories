@@ -18,7 +18,7 @@ public class ItemFirearmMagazine extends Item
 	{
 		super(type);
 		
-		for(String s : type.getProperty("forWeapon", "").split(","))
+		for(String s : type.resolveProperty("forWeapon", "").split(","))
 			supportedWeaponsSet.add(s);
 	}
 	

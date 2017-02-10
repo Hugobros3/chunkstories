@@ -1,5 +1,7 @@
 package io.xol.chunkstories.materials;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -12,6 +14,32 @@ public class GenericNamedConfigurable
 	public GenericNamedConfigurable(String name)
 	{
 		this.name = name;
+	}
+	
+	/** Alternative version that automatically reads what it needs to */
+	public GenericNamedConfigurable(String name, BufferedReader reader) throws IOException
+	{
+		this.name = name;
+		
+		String line;
+		while ((line = reader.readLine()) != null)
+		{
+			line = line.replace("\t", "");
+			if (line.startsWith("#"))
+			{
+				// It's a comment, ignore.
+			}
+			else if (line.startsWith("end"))
+			{
+				break;
+			}
+			else if(line.contains(":"))
+			{
+				String[] s = line.split(": ");
+				this.setProperty(s[0], s[1]);
+			}
+		}
+		
 	}
 	
 	public String getName()

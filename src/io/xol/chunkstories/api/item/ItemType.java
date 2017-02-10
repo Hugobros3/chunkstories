@@ -30,12 +30,14 @@ public interface ItemType
 
 	public int getMaxStackSize();
 	
+	public String resolveProperty(String propertyName);
+	
 	/**
 	 * @param propertyName Name of the property to look for
 	 * @param defaultValue The value to return if the above isn't present
 	 * @return Arbitrary properties defined in .items files
 	 */
-	public String getProperty(String propertyName, String defaultValue);
+	public String resolveProperty(String propertyName, String defaultValue);
 
 	public Item newItem();
 }

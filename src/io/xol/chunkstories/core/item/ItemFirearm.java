@@ -72,30 +72,30 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 	{
 		super(type);
 
-		automatic = type.getProperty("fireMode", "semiauto").equals("fullauto");
-		rpm = Double.parseDouble(type.getProperty("roundsPerMinute", "60.0"));
-		soundName = type.getProperty("fireSound", "sounds/sfx/shoot.ogg");
+		automatic = type.resolveProperty("fireMode", "semiauto").equals("fullauto");
+		rpm = Double.parseDouble(type.resolveProperty("roundsPerMinute", "60.0"));
+		soundName = type.resolveProperty("fireSound", "sounds/sfx/shoot.ogg");
 
-		damage = Double.parseDouble(type.getProperty("damage", "1.0"));
-		accuracy = Double.parseDouble(type.getProperty("accuracy", "0.0"));
-		range = Double.parseDouble(type.getProperty("range", "1000.0"));
-		soundRange = Double.parseDouble(type.getProperty("soundRange", "1000.0"));
+		damage = Double.parseDouble(type.resolveProperty("damage", "1.0"));
+		accuracy = Double.parseDouble(type.resolveProperty("accuracy", "0.0"));
+		range = Double.parseDouble(type.resolveProperty("range", "1000.0"));
+		soundRange = Double.parseDouble(type.resolveProperty("soundRange", "1000.0"));
 
-		reloadCooldown = Long.parseLong(type.getProperty("reloadCooldown", "150"));
+		reloadCooldown = Long.parseLong(type.resolveProperty("reloadCooldown", "150"));
 
-		shots = Integer.parseInt(type.getProperty("shots", "1"));
-		shake = Double.parseDouble(type.getProperty("shake", accuracy / 4.0 + ""));
+		shots = Integer.parseInt(type.resolveProperty("shots", "1"));
+		shake = Double.parseDouble(type.resolveProperty("shake", accuracy / 4.0 + ""));
 
-		scopedWeapon = type.getProperty("scoped", "false").equals("true");
-		scopeZoom = Float.parseFloat(type.getProperty("scopeZoom", "2.0"));
-		scopeSlow = Float.parseFloat(type.getProperty("scopeSlow", "2.0"));
+		scopedWeapon = type.resolveProperty("scoped", "false").equals("true");
+		scopeZoom = Float.parseFloat(type.resolveProperty("scopeZoom", "2.0"));
+		scopeSlow = Float.parseFloat(type.resolveProperty("scopeSlow", "2.0"));
 
-		scopeTexture = type.getProperty("scopeTexture", "./textures/gui/scope.png");
+		scopeTexture = type.resolveProperty("scopeTexture", "./textures/gui/scope.png");
 
-		String modelName = type.getProperty("modelObj", "none");
+		String modelName = type.resolveProperty("modelObj", "none");
 		if (!modelName.equals("none"))
 		{
-			itemRenderer = new ObjViewModelRenderer(this, modelName, type.getProperty("modelDiffuse", "none"));
+			itemRenderer = new ObjViewModelRenderer(this, modelName, type.resolveProperty("modelDiffuse", "none"));
 		}
 		else
 			itemRenderer = new LegacyDogeZItemRenderer(this);
