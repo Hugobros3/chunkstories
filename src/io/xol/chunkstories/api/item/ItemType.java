@@ -12,44 +12,34 @@ import io.xol.chunkstories.api.Content;
  */
 public interface ItemType
 {
-	/**
-	 * @return Returns the associated ID in the .items files
-	 */
+	/** @return Returns the associated ID in the .items files */
 	public int getID();
 	
-	/**
-	 * @return The name this item is declared by
-	 */
+	/** @return The name this item is declared by */
 	public String getInternalName();
 	
 	public Content.ItemsTypes store();
 
-	/**
-	 * Items in chunk stories can take up more than one slot.
-	 * @return How many slots this items use, horizontally
-	 */
+	/** Items in chunk stories can take up more than one slot.
+	 * @return How many slots this items use, horizontally */
 	public int getSlotsWidth();
 
-	/**
-	 * Items in chunk stories can take up more than one slot.
-	 * @return How many slots this items use, vertically
-	 */
+	/** Items in chunk stories can take up more than one slot.
+	 * @return How many slots this items use, vertically */
 	public int getSlotsHeight();
 
-	/**
-	 * Defines the maximal 'amount' an ItemPile can have of this item.
-	 * @return
-	 */
+	/** Defines the maximal 'amount' an ItemPile can have of this item. */
 	public int getMaxStackSize();
 	
+	/** Resolves a property from the arguments defined in the .items file */
 	public String resolveProperty(String propertyName);
 	
-	/**
-	 * @param propertyName Name of the property to look for
-	 * @param defaultValue The value to return if the above isn't present
-	 * @return Arbitrary properties defined in .items files
-	 */
+	/** Do the same as above but provides a default fallback value instead of null, in case said property isn't defined. */
 	public String resolveProperty(String propertyName, String defaultValue);
 
+	/** Instanciates a new item */
 	public Item newItem();
+
+	/** Returns a suitable ItemRenderer for this ItemType. Will return null if called on anything else than a Client. */
+	public ItemRenderer getRenderer();
 }

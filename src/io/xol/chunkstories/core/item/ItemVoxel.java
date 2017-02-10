@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -33,7 +34,11 @@ public class ItemVoxel extends Item
 	public ItemVoxel(ItemType type)
 	{
 		super(type);
-		itemRenderer = new VoxelItemRenderer(this);
+	}
+	
+	public ItemRenderer getCustomItemRenderer(ItemRenderer fallbackRenderer)
+	{
+		return new VoxelItemRenderer(fallbackRenderer);
 	}
 
 	/*@Override

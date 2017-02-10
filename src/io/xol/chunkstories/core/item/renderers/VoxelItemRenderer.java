@@ -26,13 +26,11 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemVoxel;
-import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.RenderByteBuffer;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.chunk.DummyChunk;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -42,18 +40,14 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class VoxelItemRenderer implements ItemRenderer
+public class VoxelItemRenderer extends ItemRenderer
 {
-	DefaultItemRenderer defaultItemRenderer;
-
-	ItemVoxel itemVoxel;
 	Matrix4f transformation = new Matrix4f();
 	Map<Integer, VerticesObject> voxelItemsModelBuffer = new HashMap<Integer, VerticesObject>();
 
-	public VoxelItemRenderer(ItemVoxel itemVoxel)
+	public VoxelItemRenderer(ItemRenderer fallbackRenderer)
 	{
-		this.itemVoxel = itemVoxel;
-		this.defaultItemRenderer = new DefaultItemRenderer(itemVoxel);
+		super(fallbackRenderer);
 	}
 
 	@Override
@@ -63,7 +57,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		
 		if (((ItemVoxel) pile.getItem()).getVoxel() instanceof VoxelCustomIcon)
 		{
-			defaultItemRenderer.renderItemInInventory(renderingContext, pile, screenPositionX, screenPositionY, scaling);
+			fallbackRenderer.renderItemInInventory(renderingContext, pile, screenPositionX, screenPositionY, scaling);
 			return;
 		}
 

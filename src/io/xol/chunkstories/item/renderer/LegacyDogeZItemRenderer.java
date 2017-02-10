@@ -1,8 +1,9 @@
 package io.xol.chunkstories.item.renderer;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.ItemRenderer;
+import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -10,16 +11,15 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
 import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
-
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
 public class LegacyDogeZItemRenderer extends DefaultItemRenderer
 {
-	public LegacyDogeZItemRenderer(Item item)
+	public LegacyDogeZItemRenderer(ItemRenderer fallbackRenderer, ItemType itemType)
 	{
-		super(item);
+		super(itemType);
 	}
 	
 	@Override
@@ -30,8 +30,8 @@ public class LegacyDogeZItemRenderer extends DefaultItemRenderer
 		handTransformation.translate(new Vector3fm(-0.05, -0.05, 0.05));
 		
 		int max = pile.getItem().getType().getSlotsWidth() - 1;
-		
 		handTransformation.scale(new Vector3fm(0.25 + 0.20 * max));
+		
 		renderingInterface.setObjectMatrix(handTransformation);
 
 		TexturesHandler.getTexture(pile.getTextureName()).setLinearFiltering(false);

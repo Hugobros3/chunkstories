@@ -1,5 +1,6 @@
 package io.xol.chunkstories.content;
 
+import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
@@ -11,7 +12,7 @@ import io.xol.engine.sound.library.SoundsLibrary;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ClientGameContent extends GameContentStore
+public class ClientGameContent extends GameContentStore implements ClientContent
 {
 
 	public ClientGameContent(ClientInterface client, String modsStringArgument)

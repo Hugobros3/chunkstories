@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemRenderer;
+import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
@@ -22,13 +23,14 @@ import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class DefaultItemRenderer implements ItemRenderer
+public class DefaultItemRenderer extends ItemRenderer
 {
-	Item item;
+	ItemType itemType;
 	
-	public DefaultItemRenderer(Item item)
+	public DefaultItemRenderer(ItemType itemType)
 	{
-		this.item = item;
+		super(null);
+		this.itemType = itemType;
 	}
 
 	static VerticesObject defaultPlane = null;
@@ -42,7 +44,6 @@ public class DefaultItemRenderer implements ItemRenderer
 		if(texture == null)
 			texture = TexturesHandler.getTexture("res/items/icons/notex.png");
 		
-		//System.out.println(textureId + pile.getTextureName());
 		int width = slotSize * pile.getItem().getType().getSlotsWidth();
 		int height = slotSize * pile.getItem().getType().getSlotsHeight();
 		renderingInterface.getGuiRenderer().drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, texture, true, true, null);
@@ -64,11 +65,8 @@ public class DefaultItemRenderer implements ItemRenderer
 		if(texture == null)
 			texture = TexturesHandler.getTexture("res/items/icons/notex.png");
 		
-		//texture = TexturesHandler.getTexture("res/textures/notex.png");
 		texture.setLinearFiltering(false);
 		renderingInterface.bindAlbedoTexture(texture);
-		//renderingInterface.bindNormalTexture(TexturesHandler.getTexture("res/textures/normalnormal.png"));
-		//renderingInterface.bindMaterialTexture(TexturesHandler.getTexture("res/textures/defaultmaterial.png"));
 		
 		draw3DPlane(renderingInterface);
 	}

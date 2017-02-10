@@ -183,7 +183,7 @@ public class InventoryDrawer
 			if (pile != null && (!summary || j == 0))
 			{
 				int center = summary ? slotSize * (pile.getItem().getType().getSlotsHeight() - 1) / 2 : 0;
-				pile.getItem().getItemRenderer().renderItemInInventory(context, pile, x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, scale);
+				pile.getItem().getType().getRenderer().renderItemInInventory(context, pile, x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, scale);
 			}
 		}
 

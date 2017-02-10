@@ -30,7 +30,6 @@ import io.xol.chunkstories.core.item.renderers.ObjViewModelRenderer;
 import io.xol.chunkstories.item.renderer.LegacyDogeZItemRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.lalgb.Matrix4f;
@@ -91,33 +90,38 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		scopeSlow = Float.parseFloat(type.resolveProperty("scopeSlow", "2.0"));
 
 		scopeTexture = type.resolveProperty("scopeTexture", "./textures/gui/scope.png");
-
-		String modelName = type.resolveProperty("modelObj", "none");
+	}
+	
+	/** Some weapons have fancy renderers */
+	public ItemRenderer getCustomItemRenderer(ItemRenderer fallbackRenderer)
+	{
+		ItemRenderer itemRenderer;
+		
+		String modelName = getType().resolveProperty("modelObj", "none");
 		if (!modelName.equals("none"))
-		{
-			itemRenderer = new ObjViewModelRenderer(this, modelName, type.resolveProperty("modelDiffuse", "none"));
-		}
+			itemRenderer = new ObjViewModelRenderer(fallbackRenderer, modelName, getType().resolveProperty("modelDiffuse", "none"));
 		else
-			itemRenderer = new LegacyDogeZItemRenderer(this);
+			itemRenderer = new LegacyDogeZItemRenderer(fallbackRenderer, getType());
 
 		if (scopedWeapon)
 			itemRenderer = new ScopedWeaponItemRenderer(itemRenderer);
+		
+		return itemRenderer;
 	}
-
-	class ScopedWeaponItemRenderer implements ItemRenderer
+	
+	/** Displays a scope sometimes */
+	class ScopedWeaponItemRenderer extends ItemRenderer
 	{
-
-		ItemRenderer itemRenderer;
-
+		ItemRenderer actualRenderer;
 		public ScopedWeaponItemRenderer(ItemRenderer itemRenderer)
 		{
-			this.itemRenderer = itemRenderer;
+			super(null);
 		}
 
 		@Override
 		public void renderItemInInventory(RenderingInterface renderingInterface, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
 		{
-			itemRenderer.renderItemInInventory(renderingInterface, pile, screenPositionX, screenPositionY, scaling);
+			actualRenderer.renderItemInInventory(renderingInterface, pile, screenPositionX, screenPositionY, scaling);
 		}
 
 		@Override
@@ -132,7 +136,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 						return;
 				}
 			}
-			itemRenderer.renderItemInWorld(renderingInterface, pile, world, location, handTransformation);
+			actualRenderer.renderItemInWorld(renderingInterface, pile, world, location, handTransformation);
 		}
 	}
 

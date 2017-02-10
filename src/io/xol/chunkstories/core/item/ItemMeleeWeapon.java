@@ -59,18 +59,25 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 		damage = Float.parseFloat(type.resolveProperty("damage", "100"));
 
 		itemRenderScale = Float.parseFloat(type.resolveProperty("itemRenderScale", "2"));
-
-		String modelName = type.resolveProperty("modelObj", "none");
-		if (!modelName.equals("none"))
-		{
-			itemRenderer = new ObjViewModelRenderer(this, modelName, type.resolveProperty("modelDiffuse", "none"));
-		}
-		else
-			itemRenderer = new LegacyDogeZItemRenderer(this);
-
-		itemRenderer = new MeleeWeaponRenderer(itemRenderer);
 	}
 
+	public ItemRenderer getCustomItemRenderer(ItemRenderer fallbackRenderer)
+	{
+		ItemRenderer itemRenderer;
+		
+		String modelName = getType().resolveProperty("modelObj", "none");
+		if (!modelName.equals("none"))
+		{
+			itemRenderer = new ObjViewModelRenderer(fallbackRenderer, modelName, getType().resolveProperty("modelDiffuse", "none"));
+		}
+		else
+			itemRenderer = new LegacyDogeZItemRenderer(fallbackRenderer, getType());
+
+		itemRenderer = new MeleeWeaponRenderer(fallbackRenderer);
+		
+		return itemRenderer;
+	}
+	
 	@Override
 	public void tickInHand(WorldAuthority authority, Entity owner, ItemPile itemPile)
 	{
@@ -236,19 +243,11 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 		return false;
 	}
 
-	class MeleeWeaponRenderer implements ItemRenderer
+	class MeleeWeaponRenderer extends ItemRenderer
 	{
-		private final ItemRenderer itemRenderer;
-
-		MeleeWeaponRenderer(ItemRenderer itemRenderer)
+		MeleeWeaponRenderer(ItemRenderer fallbackRenderer)
 		{
-			this.itemRenderer = itemRenderer;
-		}
-
-		@Override
-		public void renderItemInInventory(RenderingInterface renderingInterface, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
-		{
-			itemRenderer.renderItemInInventory(renderingInterface, pile, screenPositionX, screenPositionY, scaling);
+			super(fallbackRenderer);
 		}
 
 		@Override
@@ -284,7 +283,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 
 			matrixed.scale(new Vector3fm(itemRenderScale));
 
-			itemRenderer.renderItemInWorld(renderingInterface, pile, world, location, matrixed);
+			super.renderItemInWorld(renderingInterface, pile, world, location, matrixed);
 		}
 	}
 }

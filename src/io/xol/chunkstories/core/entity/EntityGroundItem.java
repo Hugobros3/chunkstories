@@ -83,7 +83,7 @@ public class EntityGroundItem extends EntityImplementation implements EntityRend
 					matrix.translate(e.getLocation().add(0.0, 0.25, 0.0).castToSinglePrecision());
 					matrix.rotate((float)Math.PI/2, new Vector3fm(1,0 ,0));
 					//System.out.println("Rendering ItemPileOnGround "+e+"IS:"+within);
-					within.getItem().getItemRenderer().renderItemInWorld(renderingInterface, within, e.getWorld(), e.getLocation(), matrix);
+					within.getItem().getType().getRenderer().renderItemInWorld(renderingInterface, within, e.getWorld(), e.getLocation(), matrix);
 					renderingInterface.flush();
 				}
 				else

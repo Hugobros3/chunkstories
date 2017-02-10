@@ -1,6 +1,6 @@
 # Here you get/have to assign items their ID and class.
 
-item 1 item_voxel 
+item 1 item_voxel
 	customClass: io.xol.chunkstories.core.item.ItemVoxel
 	maxStackSize: 100
 end

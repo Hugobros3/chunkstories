@@ -11,7 +11,6 @@ import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldClientLocal;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
@@ -75,7 +74,7 @@ public class InventoryOverlay extends Overlay
 			//GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX() - width / 2, Mouse.getY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
 
 			//
-			selectedItem.getItem().getItemRenderer().renderItemInInventory(renderingContext, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
+			selectedItem.getItem().getType().getRenderer().renderItemInInventory(renderingContext, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
 
 			if (selectedItemAmount != 1)
 				renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, Mouse.getX() - width / 2 + (selectedItem.getItem().getType().getSlotsWidth() - 1.0f) * slotSize, Mouse.getY() - height / 2, selectedItemAmount + "", 2, 2,
