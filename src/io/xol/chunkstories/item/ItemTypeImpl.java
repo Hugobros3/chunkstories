@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 
 import io.xol.chunkstories.api.Content.ItemsTypes;
 import io.xol.chunkstories.api.client.ClientContent;
@@ -183,13 +181,6 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemType
 	public boolean equals(ItemType type)
 	{
 		return type.getID() == this.getID();
-	}
-
-	@Override
-	public String resolveProperty(String propertyName, String defaultValue)
-	{
-		String r = resolveProperty(propertyName);
-		return r != null ? r : defaultValue;
 	}
 
 	/*public void setup(String propertyName, String value)

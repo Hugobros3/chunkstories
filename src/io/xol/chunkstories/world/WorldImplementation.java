@@ -715,7 +715,7 @@ public abstract class WorldImplementation implements World
 					if (box.isPointInside(posX, posY, posZ))
 						return true;
 
-			if (v.isVoxelSolid())
+			if (v.getType().isSolid())
 				return true;
 
 		}
@@ -869,7 +869,7 @@ public abstract class WorldImplementation implements World
 			y = voxelCoords[1];
 			z = voxelCoords[2];
 			vox = VoxelsStore.get().getVoxelById(this.getVoxelData(x, y, z));
-			if (vox.isVoxelSolid() || (selectable && vox.isVoxelSelectable()))
+			if (vox.getType().isSolid() || (selectable && vox.isVoxelSelectable()))
 			{
 				boolean collides = false;
 				for (CollisionBox box : vox.getTranslatedCollisionBoxes(this, x, y, z))

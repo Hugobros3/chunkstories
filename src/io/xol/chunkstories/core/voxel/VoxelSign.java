@@ -1,6 +1,5 @@
 package io.xol.chunkstories.core.voxel;
 
-import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
@@ -8,6 +7,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelEntity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.voxel.EntitySign;
 import io.xol.chunkstories.renderer.VoxelContext;
@@ -22,9 +22,9 @@ import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 
 public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 {
-	public VoxelSign(Content.Voxels store, int id, String name)
+	public VoxelSign(VoxelType type)
 	{
-		super(store, id, name);
+		super(type);
 	}
 
 	@Override

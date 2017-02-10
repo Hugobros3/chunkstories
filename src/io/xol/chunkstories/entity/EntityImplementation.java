@@ -249,7 +249,7 @@ public abstract class EntityImplementation implements Entity
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
 							vox = VoxelsStore.get().getVoxelById(id);
-							if (vox.isVoxelSolid())
+							if (vox.getType().isSolid())
 							{
 								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
 								if (boxes != null)
@@ -296,7 +296,7 @@ public abstract class EntityImplementation implements Entity
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
 							vox = VoxelsStore.get().getVoxelById(id);
-							if (vox.isVoxelSolid())
+							if (vox.getType().isSolid())
 							{
 								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
 								if (boxes != null)
@@ -343,7 +343,7 @@ public abstract class EntityImplementation implements Entity
 							data = this.world.getVoxelData(i, j, k);
 							id = VoxelFormat.id(data);
 							vox = VoxelsStore.get().getVoxelById(id);
-							if (vox.isVoxelSolid())
+							if (vox.getType().isSolid())
 							{
 								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
 								if (boxes != null)

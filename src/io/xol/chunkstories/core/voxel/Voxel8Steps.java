@@ -1,26 +1,25 @@
 package io.xol.chunkstories.core.voxel;
 
-import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
-import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Voxel8Steps extends VoxelDefault
+public class Voxel8Steps extends Voxel
 {
 	VoxelModel[] steps = new VoxelModel[8];
 
-	public Voxel8Steps(Content.Voxels store, int id, String name)
+	public Voxel8Steps(VoxelType type)
 	{
-		super(store, id, name);
+		super(type);
 		for(int i = 0; i < 8; i++)
-			steps[i] = store.models().getVoxelModelByName("steps.m"+i);
-		// System.out.println("kekzer");
+			steps[i] = getType().store().models().getVoxelModelByName("steps.m"+i);
 	}
 
 	@Override

@@ -334,7 +334,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		if (tick)
 		{
 			//The actual moment the jump takes effect
-			boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
+			boolean inWater = voxelIn != null && voxelIn.getType().isLiquid();
 			if (jumpForce > 0.0 && (!justJumped || inWater))
 			{
 				//Set the velocity
@@ -403,11 +403,11 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		if (isOnGround())
 			metersWalked += Math.abs(horizontalSpeed.length());
 
-		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
+		boolean inWater = voxelIn != null && voxelIn.getType().isLiquid();
 
 		Voxel voxelStandingOn = VoxelsStore.get().getVoxelById(world.getVoxelData(this.getLocation().clone().add(0.0, -0.01, 0.0)));
 
-		if (voxelStandingOn == null || !voxelStandingOn.isVoxelSolid() && !voxelStandingOn.isVoxelLiquid())
+		if (voxelStandingOn == null || !voxelStandingOn.getType().isSolid() && !voxelStandingOn.getType().isLiquid())
 			return;
 
 		Material material = voxelStandingOn.getMaterial();

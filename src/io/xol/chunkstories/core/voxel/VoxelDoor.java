@@ -6,18 +6,19 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModel;
@@ -29,7 +30,7 @@ import io.xol.chunkstories.voxel.models.VoxelModel;
 /**
  * 2-blocks tall door Requires two consecutive voxel ids, x being lower, x+1 top, the top part should be suffixed of _top
  */
-public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteractive, VoxelCustomIcon
+public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, VoxelCustomIcon
 {
 	VoxelTexture doorTexture;
 
@@ -37,16 +38,16 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 
 	boolean top;
 
-	public VoxelDoor(Content.Voxels store, int id, String name)
+	public VoxelDoor(VoxelType type)
 	{
-		super(store, id, name);
+		super(type);
 
-		top = name.endsWith("_top");
+		top = getName().endsWith("_top");
 
 		if (top)
-			doorTexture = store.textures().getVoxelTextureByName(name.replace("_top", "") + "_upper");
+			doorTexture = store.textures().getVoxelTextureByName(getName().replace("_top", "") + "_upper");
 		else
-			doorTexture = store.textures().getVoxelTextureByName(name + "_lower");
+			doorTexture = store.textures().getVoxelTextureByName(getName() + "_lower");
 
 		for (int i = 0; i < 8; i++)
 			models[i] = store.models().getVoxelModelByName("door.m" + i);
@@ -335,7 +336,7 @@ public class VoxelDoor extends VoxelDefault implements VoxelLogic, VoxelInteract
 			return new ItemPile[] {};
 
 
-		ItemVoxel itemVoxel = (ItemVoxel)this.store().parent().items().getItemTypeByName("item_voxel_1x2").newItem();
+		ItemVoxel itemVoxel = (ItemVoxel)store.parent().items().getItemTypeByName("item_voxel_1x2").newItem();
 		itemVoxel.voxel = this;		
 		
 		return new ItemPile[] { new ItemPile(itemVoxel) };

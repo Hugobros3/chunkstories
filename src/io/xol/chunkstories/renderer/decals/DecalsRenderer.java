@@ -108,7 +108,7 @@ public class DecalsRenderer implements DecalsManager
 						int idThere = VoxelFormat.id(world.getVoxelData(location));
 
 						Voxel voxel = VoxelsStore.get().getVoxelById(idThere);
-						if (voxel != null && idThere > 0 && !voxel.isVoxelLiquid() && voxel.isVoxelSolid())
+						if (voxel != null && idThere > 0 && !voxel.getType().isLiquid() && voxel.getType().isSolid())
 						{
 							VoxelContext bri = new VoxelContext(location);
 							VoxelRenderer model = voxel.getVoxelRenderer(bri);

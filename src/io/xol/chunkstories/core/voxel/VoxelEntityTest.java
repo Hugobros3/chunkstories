@@ -1,11 +1,11 @@
 package io.xol.chunkstories.core.voxel;
 
-import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.VoxelEntity;
+import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.voxel.EntityVoxelTest;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -17,9 +17,9 @@ import io.xol.chunkstories.world.WorldImplementation;
 public class VoxelEntityTest extends VoxelEntity
 {
 
-	public VoxelEntityTest(Content.Voxels store, int id, String name)
+	public VoxelEntityTest(VoxelType type)
 	{
-		super(store, id, name);
+		super(type);
 	}
 
 	@Override

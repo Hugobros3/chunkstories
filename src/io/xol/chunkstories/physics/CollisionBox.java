@@ -60,21 +60,21 @@ public final class CollisionBox implements Collidable
 
 	public boolean collidesWith(World world)
 	{
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos + h), (int) (zpos + zw))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos + h), (int) (zpos + zw))).getType().isSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos), (int) (zpos + zw))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos), (int) (zpos + zw))).getType().isSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos + h), (int) (zpos + zw))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos + h), (int) (zpos + zw))).getType().isSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos), (int) (zpos + zw))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos), (int) (zpos + zw))).getType().isSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos + h), (int) (zpos))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos + h), (int) (zpos))).getType().isSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos), (int) (zpos))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos + xw), (int) (ypos), (int) (zpos))).getType().isSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos + h), (int) (zpos))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos + h), (int) (zpos))).getType().isSolid())
 			return true;
-		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos), (int) (zpos))).isVoxelSolid())
+		if (VoxelsStore.get().getVoxelById(world.getVoxelData((int) (xpos), (int) (ypos), (int) (zpos))).getType().isSolid())
 			return true;
 		return false;
 	}

@@ -92,7 +92,7 @@ public class ItemVoxel extends Item
 			{
 				//int selectedBlockPreviousData = user.getWorld().getDataAt(selectedBlock);
 				//Adding blocks should not erase light if the block's not opaque
-				if (VoxelsStore.get().getVoxelById(data2write).isVoxelOpaque())
+				if (VoxelsStore.get().getVoxelById(data2write).getType().isOpaque())
 				{
 					data2write = VoxelFormat.changeSunlight(data2write, 0);
 					data2write = VoxelFormat.changeBlocklight(data2write, 0);

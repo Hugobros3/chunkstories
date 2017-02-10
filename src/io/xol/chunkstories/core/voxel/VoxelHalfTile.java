@@ -1,11 +1,11 @@
 package io.xol.chunkstories.core.voxel;
 
-import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
-import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 
@@ -13,15 +13,15 @@ import io.xol.chunkstories.voxel.models.VoxelModel;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class VoxelHalfTile extends VoxelDefault
+public class VoxelHalfTile extends Voxel
 {
 
 	VoxelModel bot;
 	VoxelModel top;
 
-	public VoxelHalfTile(Content.Voxels store, int id, String name)
+	public VoxelHalfTile(VoxelType type)
 	{
-		super(store, id, name);
+		super(type);
 		bot = store.models().getVoxelModelByName("halftile.bottom");
 		top = store.models().getVoxelModelByName("halftile.top");
 		// System.out.println("kekzer");

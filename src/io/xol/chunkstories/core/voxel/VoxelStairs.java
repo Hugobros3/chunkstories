@@ -1,30 +1,30 @@
 package io.xol.chunkstories.core.voxel;
 
-import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
+import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
-import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class VoxelStairs extends VoxelDefault implements VoxelLogic
+public class VoxelStairs extends Voxel implements VoxelLogic
 {
 	VoxelModel[] models = new VoxelModel[8];
 
-	public VoxelStairs(Content.Voxels store, int id, String name)
+	public VoxelStairs(VoxelType type)
 	{
-		super(store, id, name);
+		super(type);
 		for (int i = 0; i < 8; i++)
 			models[i] = store.models().getVoxelModelByName("stairs.m" + i);
 	}

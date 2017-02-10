@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class GenericNamedConfigurable
 {
-	protected String name;
+	protected final String name;
 	protected Map<String, String> properties = new HashMap<String, String>();
 	
 	public GenericNamedConfigurable(String name)
@@ -66,6 +66,9 @@ public class GenericNamedConfigurable
 		//Replace material name
 		resolved = resolved.replace("<name>", name);
 		
+		//Alternative syntax
+		resolved = resolved.replace("~", name);
+		
 		//Resolves inclusions
 		while(resolved.indexOf("<") != -1)
 		{
@@ -107,6 +110,12 @@ public class GenericNamedConfigurable
 		}
 		
 		return resolved;
+	}
+
+	public String resolveProperty(String propertyName, String defaultValue)
+	{
+		String r = resolveProperty(propertyName);
+		return r != null ? r : defaultValue;
 	}
 	
 	public static void main(String a[])

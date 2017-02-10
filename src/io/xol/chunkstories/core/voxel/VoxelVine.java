@@ -1,22 +1,23 @@
 package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelType;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
 import io.xol.chunkstories.renderer.VoxelContext;
-import io.xol.chunkstories.voxel.VoxelDefault;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 
-public class VoxelVine extends VoxelDefault implements VoxelClimbable
+public class VoxelVine extends Voxel implements VoxelClimbable
 {
 	VoxelModel[] models = new VoxelModel[4];
 
-	public VoxelVine(Content.Voxels store, int id, String name)
+	public VoxelVine(VoxelType type)
 	{
-		super(store, id, name);
+		super(type);
 		for (int i = 0; i < 4; i++)
 			models[i] = store.models().getVoxelModelByName("dekal.m" + i);
 	}

@@ -1,6 +1,7 @@
 package io.xol.chunkstories.core.voxel;
 
-import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelType;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -8,13 +9,12 @@ import io.xol.chunkstories.api.Content;
 
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
-import io.xol.chunkstories.voxel.VoxelDefault;
 
-public class VoxelAir extends VoxelDefault
-{
-	public VoxelAir(Content.Voxels store, int id, String name)
+public class VoxelAir extends Voxel {
+
+	public VoxelAir(VoxelType type)
 	{
-		super(store, id, name);
+		super(type);
 	}
 
 	@Override

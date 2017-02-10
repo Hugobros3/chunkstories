@@ -245,7 +245,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		Voxel voxel = VoxelsStore.get().getVoxelById(voxelData);
 		int h = getHeight(worldX, worldZ);
 		//If we place something solid over the last solid thing
-		if ((voxel.isVoxelSolid() || voxel.isVoxelLiquid()) && height >= h)
+		if ((voxel.getType().isSolid() || voxel.getType().isLiquid()) && height >= h)
 		{
 			if (height >= h)
 			{
@@ -267,8 +267,8 @@ public class RegionSummaryImplementation implements RegionSummary
 					loaded = world.isChunkLoaded(worldX / 32, height / 32, worldZ / 32);
 					
 					voxelData = world.getVoxelData(worldX, height, worldZ);
-					solid = VoxelsStore.get().getVoxelById(voxelData).isVoxelSolid();
-					liquid = VoxelsStore.get().getVoxelById(voxelData).isVoxelLiquid();
+					solid = VoxelsStore.get().getVoxelById(voxelData).getType().isSolid();
+					liquid = VoxelsStore.get().getVoxelById(voxelData).getType().isLiquid();
 				}
 				while (height >= 0 && loaded && !solid && !liquid);
 
@@ -387,7 +387,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		{
 			int id = ids[i];
 			Voxel v = VoxelsStore.get().getVoxelById(id);
-			if(v.isVoxelLiquid())
+			if(v.getType().isLiquid())
 				bb.putFloat(512f);
 			else
 				bb.putFloat(v.getVoxelTexture(id, VoxelSides.TOP, null).positionInColorIndex);

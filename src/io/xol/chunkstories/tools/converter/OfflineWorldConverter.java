@@ -357,7 +357,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 							if (data != 0)
 							{
 								Voxel vox = this.getContent().voxels().getVoxelById(data);
-								if (vox.isVoxelSolid() || vox.isVoxelLiquid())
+								if (vox.getType().isSolid() || vox.getType().isLiquid())
 								{
 									summary.setHeightAndId(regionX * 256 + i, h, regionZ * 256 + j, data & 0x0000FFFF);
 									break;

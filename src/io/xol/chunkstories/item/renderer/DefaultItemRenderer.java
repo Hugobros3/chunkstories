@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.item.ItemType;

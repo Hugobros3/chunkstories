@@ -282,7 +282,7 @@ public class ChunksRenderer extends Thread
 				z &= 0x1F;
 				data = target[x * 1024 + y * 32 + z];
 				int blockID = VoxelFormat.id(data);
-				return VoxelsStore.get().getVoxelById(blockID).isVoxelOpaque() ? -1 : VoxelFormat.sunlight(data);
+				return VoxelsStore.get().getVoxelById(blockID).getType().isOpaque() ? -1 : VoxelFormat.sunlight(data);
 			}
 		}
 		else
@@ -303,7 +303,7 @@ public class ChunksRenderer extends Thread
 			data = cached.getVoxelData(x, y, z);
 
 			int blockID = VoxelFormat.id(data);
-			return VoxelsStore.get().getVoxelById(blockID).isVoxelOpaque() ? -1 : VoxelFormat.sunlight(data);
+			return VoxelsStore.get().getVoxelById(blockID).getType().isOpaque() ? -1 : VoxelFormat.sunlight(data);
 		}
 
 		// If all else fails, just use the heightmap information
@@ -346,7 +346,7 @@ public class ChunksRenderer extends Thread
 			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
 		*/
 		int blockID = VoxelFormat.id(data);
-		return VoxelsStore.get().getVoxelById(blockID).isVoxelOpaque() ? 0 : VoxelFormat.blocklight(data);
+		return VoxelsStore.get().getVoxelById(blockID).getType().isOpaque() ? 0 : VoxelFormat.blocklight(data);
 	}
 
 	public static float[] bakeLightColors(int bl1, int bl2, int bl3, int bl4, int sl1, int sl2, int sl3, int sl4)
@@ -874,11 +874,11 @@ public class ChunksRenderer extends Thread
 		Voxel facing = VoxelsStore.get().getVoxelById(renderInfo.getSideId(face));
 		Voxel voxel = VoxelsStore.get().getVoxelById(renderInfo.data);
 
-		if (voxel.isVoxelLiquid() && !facing.isVoxelLiquid())
+		if (voxel.getType().isLiquid() && !facing.getType().isLiquid())
 			return true;
-		//if (voxel.isVoxelLiquid() && facing.isVoxelLiquid())
+		//if (voxel.getType().isLiquid() && facing.getType().isLiquid())
 		//	return false;
-		if (!facing.isVoxelOpaque() && (!voxel.sameKind(facing) || !voxel.isVoxelOpaqueWithItself()))
+		if (!facing.getType().isOpaque() && (!voxel.sameKind(facing) || !voxel.getType().isSelfOpaque()))
 			return true;
 		return false;
 	}
@@ -993,11 +993,12 @@ public class ChunksRenderer extends Thread
 					renderInfo.neightborhood[5] = getBlockData(workChunk, i, k - 1, j);
 
 					// System.out.println(blockID);
-					if (vox.isVoxelLiquid())
+					if (vox.getType().isLiquid())
 					{
 						addVoxelUsingCustomModel(workChunk, waterRBBF, i, k, j, renderInfo);
 					}
-					else if (vox.isVoxelUsingCustomRenderer())
+					//TODO this seems ugly af
+					else if (vox.getVoxelRenderer(renderInfo) != null)
 					{
 						// Prop rendering
 						addVoxelUsingCustomModel(workChunk, complexRBBF, i, k, j, renderInfo);

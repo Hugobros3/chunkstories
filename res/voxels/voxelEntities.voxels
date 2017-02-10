@@ -1,24 +1,28 @@
 
-voxel wood_sign 95 io.xol.chunkstories.core.voxel.VoxelSign
+voxel wood_sign 95
+	customClass: io.xol.chunkstories.core.voxel.VoxelSign
 	solid: false
 	opaque: false
-	model: 'none'
+	model: none
 end
 
-voxel wood_sign_post 96 io.xol.chunkstories.core.voxel.VoxelSign
+voxel wood_sign_post 96
+	customClass: io.xol.chunkstories.core.voxel.VoxelSign
 	solid: false
 	opaque: false
-	model: 'none'
+	model: none
 end
 
-voxel chest 97 io.xol.chunkstories.core.voxel.VoxelChest
+voxel chest 97
+	customClass: io.xol.chunkstories.core.voxel.VoxelChest
 	opaque: false
 	selfOpaque: true
-	textures: 'chesttop', 'chesttop', 'chestside', 'chestside', 'chestfront', 'chestside'
+	textures: chesttop, chesttop, chestside, chestside, chestfront, chestside
 end
 
-voxel voxelEntityTest 98 io.xol.chunkstories.core.voxel.VoxelEntityTest
+voxel voxelEntityTest 98
+	customClass: io.xol.chunkstories.core.voxel.VoxelEntityTest
 	opaque: false
 	selfOpaque: true
-	textures: 'sand2', 'sand2', 'sand2', 'sand2', 'sand2', 'sand2'
+	textures: sand2, sand2, sand2, sand2, sand2, sand2
 end

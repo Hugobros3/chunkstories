@@ -192,7 +192,15 @@ public class Ingame extends OverlayableScene
 					{
 						data = world.getVoxelData(i, j, k);
 						id = VoxelFormat.id(data);
-						VoxelsStore.get().getVoxelById(id).debugRenderCollision(world, i, j, k);
+						
+						CollisionBox[] tboxes = VoxelsStore.get().getVoxelById(id).getTranslatedCollisionBoxes(world, i, j, k);
+						if (tboxes != null)
+							for (CollisionBox box : tboxes)
+								if (VoxelsStore.get().getVoxelById(id).getType().isSolid())
+									box.debugDraw(1, 0, 0, 1.0f);
+								else
+									box.debugDraw(1, 1, 0, 0.25f);
+						//VoxelsStore.get().getVoxelById(id).debugRenderCollision(world, i, j, k);
 					}
 
 			//player.getTranslatedBoundingBox().debugDraw(0, 1, 1, 1);

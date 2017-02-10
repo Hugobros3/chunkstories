@@ -321,7 +321,7 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 			getEntityRotationComponent().addRotation(headRotationVelocity.getX(), headRotationVelocity.getY());
 
 			voxelIn = VoxelsStore.get().getVoxelById(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
-			boolean inWater = voxelIn.isVoxelLiquid();
+			boolean inWater = voxelIn.getType().isLiquid();
 
 			// Gravity
 			if (!(this instanceof EntityFlying && ((EntityFlying) this).getFlyingComponent().get()))

@@ -1,27 +1,31 @@
-voxel stonebrickStairs 21 io.xol.chunkstories.core.voxel.VoxelStairs
+voxel stonebrickStairs 21
+	customClass: io.xol.chunkstories.core.voxel.VoxelStairs
 	texture: stonebrick
 	opaque: false
-	model: 'stairs.m0'
+	model: stairs.m0
 	material: stone
 end
 
-voxel brickStairs 22 io.xol.chunkstories.core.voxel.VoxelStairs
+voxel brickStairs 22
+	customClass: io.xol.chunkstories.core.voxel.VoxelStairs
 	texture: redbricks
 	opaque: false
-	model: 'stairs.m0'
+	model: stairs.m0
 	material: stone
 end
 
-voxel cobbleStairs 49 io.xol.chunkstories.core.voxel.VoxelStairs
+voxel cobbleStairs 49
+	customClass: io.xol.chunkstories.core.voxel.VoxelStairs
 	texture: stonebrick
 	opaque: false
-	model: 'stairs.m0'
+	model: stairs.m0
 	material: stone
 end
 
-voxel woodStairs 50 io.xol.chunkstories.core.voxel.VoxelStairs
+voxel woodStairs 50
+	customClass: io.xol.chunkstories.core.voxel.VoxelStairs
 	texture: planks
 	opaque: false
-	model: 'stairs.m0'
+	model: stairs.m0
 	material: bluntwood
 end

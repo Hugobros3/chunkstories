@@ -1035,7 +1035,7 @@ public class WorldRenderer
 
 			//Underwater flag
 			Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int) (double)camera.getCameraPosition().getX(), (int) (double)camera.getCameraPosition().getY(), (int) (double)camera.getCameraPosition().getZ()));
-			liquidBlocksShader.setUniform1f("underwater", vox.isVoxelLiquid() ? 1 : 0);
+			liquidBlocksShader.setUniform1f("underwater", vox.getType().isLiquid() ? 1 : 0);
 
 			if (pass == 1)
 			{
@@ -1242,7 +1242,7 @@ public class WorldRenderer
 
 
 		Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData(camera.getCameraPosition()));
-		postProcess.setUniform1f("underwater", vox.isVoxelLiquid() ? 1 : 0);
+		postProcess.setUniform1f("underwater", vox.getType().isLiquid() ? 1 : 0);
 		postProcess.setUniform1f("time", animationTimer);
 		postProcess.setUniform1f("pauseOverlayFade", pauseFade);
 

@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.VoxelEntity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
@@ -26,13 +27,13 @@ public class VoxelChest extends VoxelEntity
 	VoxelTexture sideTexture;
 	VoxelTexture topTexture;
 	
-	public VoxelChest(Content.Voxels store, int id, String name)
+	public VoxelChest(VoxelType type)
 	{
-		super(store, id, name);
+		super(type);
 		
-		frontTexture = store.textures().getVoxelTextureByName(name + "front");
-		sideTexture = store.textures().getVoxelTextureByName(name + "side");
-		topTexture = store.textures().getVoxelTextureByName(name + "top");
+		frontTexture = store.textures().getVoxelTextureByName(getName() + "front");
+		sideTexture = store.textures().getVoxelTextureByName(getName() + "side");
+		topTexture = store.textures().getVoxelTextureByName(getName() + "top");
 	}
 
 	@Override

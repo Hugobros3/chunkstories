@@ -99,7 +99,7 @@ public class VoxelItemRenderer extends ItemRenderer
 
 		VoxelContext bri = new VoxelContext(VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0)));
 		VoxelRenderer model = voxel.getVoxelRenderer(bri);
-		if (model == null || !voxel.isVoxelUsingCustomRenderer())
+		if (model == null)
 		{
 			model = voxel.store().models().getVoxelModelByName("default");
 		}
@@ -219,7 +219,7 @@ public class VoxelItemRenderer extends ItemRenderer
 		
 		//bri.voxelType = VoxelsStore.get().getVoxelById(bri.data);
 		VoxelRenderer model = voxel.getVoxelRenderer(bri);
-		if (model == null || !voxel.isVoxelUsingCustomRenderer())
+		if (model == null)
 		{
 			model = voxel.store().models().getVoxelModelByName("default");
 		}

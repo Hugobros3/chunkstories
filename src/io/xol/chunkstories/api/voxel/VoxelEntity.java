@@ -1,6 +1,5 @@
 package io.xol.chunkstories.api.voxel;
 
-import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
@@ -8,7 +7,6 @@ import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.voxel.VoxelDefault;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -17,11 +15,11 @@ import io.xol.chunkstories.voxel.VoxelDefault;
 /**
  * A VoxelEntity is linked to an EntityVoxel, the latter is spawned and destroyed by the voxel, it never moves nor interact and only serves the voxel's interests
  */
-public abstract class VoxelEntity extends VoxelDefault implements VoxelLogic, VoxelInteractive
+public abstract class VoxelEntity extends Voxel implements VoxelLogic, VoxelInteractive
 {
-	public VoxelEntity(Content.Voxels store, int id, String name)
+	public VoxelEntity(VoxelType type)
 	{
-		super(store, id, name);
+		super(type);
 	}
 	
 	public Entity getVoxelEntity(Location location)

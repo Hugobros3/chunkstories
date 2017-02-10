@@ -277,7 +277,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		}
 		
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
-		boolean inWater = voxelIn != null && voxelIn.isVoxelLiquid();
+		boolean inWater = voxelIn != null && voxelIn.getType().isLiquid();
 		
 		onLadder = false;
 		if (voxelIn instanceof VoxelClimbable)

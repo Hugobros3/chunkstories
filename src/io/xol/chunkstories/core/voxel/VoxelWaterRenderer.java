@@ -38,7 +38,7 @@ public class VoxelWaterRenderer extends VoxelModel
 				return 0;
 			
 			int id = chunk.getWorld().getVoxelData(chunk.getChunkX() * 32 + x, chunk.getChunkY() * 32 + y - i, chunk.getChunkZ() * 32 + z);
-			if(VoxelsStore.get().getVoxelById(id) != null && VoxelsStore.get().getVoxelById(id).isVoxelLiquid())
+			if(VoxelsStore.get().getVoxelById(id) != null && VoxelsStore.get().getVoxelById(id).getType().isLiquid())
 				depth++;
 			else
 				break;
@@ -78,8 +78,8 @@ public class VoxelWaterRenderer extends VoxelModel
 			int meta = VoxelFormat.meta(info.neightborhood[j]);
 			occTest = VoxelsStore.get().getVoxelById(id);
 			// If it is, don't draw it.
-			cullingCache[j] = (occTest.isVoxelOpaque() || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])) || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])
-					|| (info.getVoxel().isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
+			cullingCache[j] = (occTest.getType().isOpaque() || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])) || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])
+					|| (info.getVoxel().getType().isSelfOpaque() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
 			//System.out.println("generating culling cache for voxel "+VoxelFormat.id(info.data)+"y:"+sy+"model"+this.name+" cull:"+j+":"+cullingCache[j]);
 		}
 
@@ -138,7 +138,7 @@ public class VoxelWaterRenderer extends VoxelModel
 					int meta = VoxelFormat.meta(info.neightborhood[j]);
 					occTest = VoxelTypes.get(id);
 					// If it is, don't draw it.
-					if(occTest.isVoxelOpaque() || (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData()))
+					if(occTest.getType().isOpaque() || (info.voxelType.isVoxelOpaqueWithItself() && id == VoxelFormat.id(info.data) && meta == info.getMetaData()))
 						drawFace = false;*/
 
 					if (cullingCache[j])
