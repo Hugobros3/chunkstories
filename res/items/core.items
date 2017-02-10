@@ -1,6 +1,7 @@
 # Here you get/have to assign items their ID and class.
 
-item 1 item_voxel io.xol.chunkstories.core.item.ItemVoxel
+item 1 item_voxel 
+	customClass: io.xol.chunkstories.core.item.ItemVoxel
 	maxStackSize: 100
 end
 
@@ -10,7 +11,8 @@ item 2 item_voxel_1x2 io.xol.chunkstories.core.item.ItemVoxel
 	height: 2
 end
 
-item 128 weapon_ak47 io.xol.chunkstories.core.item.ItemFirearm
+item 128 weapon_ak47
+	customClass: io.xol.chunkstories.core.item.ItemFirearm
 	width: 3
 	height: 3
 	maxStackSize: 1
@@ -26,7 +28,8 @@ item 128 weapon_ak47 io.xol.chunkstories.core.item.ItemFirearm
 	modelDiffuse: ./models/ak47.hq.png
 end
 
-item 129 mag_ak47 io.xol.chunkstories.core.item.ItemFirearmMagazine
+item 129 mag_ak47
+	customClass: io.xol.chunkstories.core.item.ItemFirearmMagazine
 	width: 2
 	height: 2
 	maxStackSize: 30
