@@ -99,8 +99,8 @@ public class ItemPile
 		{
 			ItemPile alreadyHere = null;
 			int i = 0;
-			int w = this.getItem().getSlotsWidth();
-			int h = this.getItem().getSlotsHeight();
+			int w = this.getItem().getType().getSlotsWidth();
+			int h = this.getItem().getType().getSlotsHeight();
 			//Tryhard to find out if it touches itself
 			do
 			{

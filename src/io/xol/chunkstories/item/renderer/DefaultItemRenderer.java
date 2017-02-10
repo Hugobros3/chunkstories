@@ -43,8 +43,8 @@ public class DefaultItemRenderer implements ItemRenderer
 			texture = TexturesHandler.getTexture("res/items/icons/notex.png");
 		
 		//System.out.println(textureId + pile.getTextureName());
-		int width = slotSize * pile.getItem().getSlotsWidth();
-		int height = slotSize * pile.getItem().getSlotsHeight();
+		int width = slotSize * pile.getItem().getType().getSlotsWidth();
+		int height = slotSize * pile.getItem().getType().getSlotsHeight();
 		renderingInterface.getGuiRenderer().drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, texture, true, true, null);
 	}
 

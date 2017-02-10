@@ -24,10 +24,22 @@ public interface ItemType
 	
 	public Content.ItemsTypes store();
 
+	/**
+	 * Items in chunk stories can take up more than one slot.
+	 * @return How many slots this items use, horizontally
+	 */
 	public int getSlotsWidth();
 
+	/**
+	 * Items in chunk stories can take up more than one slot.
+	 * @return How many slots this items use, vertically
+	 */
 	public int getSlotsHeight();
 
+	/**
+	 * Defines the maximal 'amount' an ItemPile can have of this item.
+	 * @return
+	 */
 	public int getMaxStackSize();
 	
 	public String resolveProperty(String propertyName);

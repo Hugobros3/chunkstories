@@ -28,8 +28,6 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemType
 	private final int maxStackSize;
 	
 	private final Constructor<? extends Item> itemConstructor;
-	
-	//private Map<String, String> customProperties = new HashMap<String, String>();
 
 	public ItemTypeImpl(ItemTypesStore store, String name, int id, BufferedReader reader) throws IllegalItemDeclarationException, IOException
 	{

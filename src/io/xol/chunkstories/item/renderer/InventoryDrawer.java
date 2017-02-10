@@ -108,7 +108,7 @@ public class InventoryDrawer
 					ItemPile summaryBarSelected = getInventory().getItemPileAt(highlightSlot, 0);
 					if (summaryBarSelected != null && i == summaryBarSelected.getX())
 					{
-						sumSlots2HL = summaryBarSelected.getItem().getSlotsWidth();
+						sumSlots2HL = summaryBarSelected.getItem().getType().getSlotsWidth();
 					}
 					if (sumSlots2HL > 0 || (summaryBarSelected == null && highlightSlot == i))
 					{
@@ -182,7 +182,7 @@ public class InventoryDrawer
 			int j = pile.getY();
 			if (pile != null && (!summary || j == 0))
 			{
-				int center = summary ? slotSize * (pile.getItem().getSlotsHeight() - 1) / 2 : 0;
+				int center = summary ? slotSize * (pile.getItem().getType().getSlotsHeight() - 1) / 2 : 0;
 				pile.getItem().getItemRenderer().renderItemInInventory(context, pile, x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, scale);
 			}
 		}
@@ -204,7 +204,7 @@ public class InventoryDrawer
 				}
 
 				if (amountToDisplay > 1)
-					TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, x + cornerSize + ((pile.getItem().getSlotsWidth() - 1.0f) + i) * slotSize, y + cornerSize + j * slotSize, amountToDisplay + "", scale, scale,
+					TrueTypeFontRenderer.get().drawStringWithShadow(TrueTypeFont.arial11px, x + cornerSize + ((pile.getItem().getType().getSlotsWidth() - 1.0f) + i) * slotSize, y + cornerSize + j * slotSize, amountToDisplay + "", scale, scale,
 							new Vector4fm(1, 1, 1, 1));
 			}
 		}

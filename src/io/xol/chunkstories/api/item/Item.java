@@ -17,7 +17,6 @@ import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
 public class Item
 {
 	private final ItemType type;
-	
 	protected ItemRenderer itemRenderer;
 	
 	public Item(ItemType type)
@@ -91,36 +90,9 @@ public class Item
 	
 	// ----- Begin get/set hell -----
 	
-	/**
-	 * Items in chunk stories can take up more than one slot.
-	 * @return How many slots this items use, horizontally
-	 */
-	public int getSlotsWidth()
-	{
-		return type.getSlotsWidth();
-	}
-
-	/**
-	 * Items in chunk stories can take up more than one slot.
-	 * @return How many slots this items use, vertically
-	 */
-	public int getSlotsHeight()
-	{
-		return type.getSlotsHeight();
-	}
-	
 	public String getInternalName()
 	{
 		return type.getInternalName();
-	}
-
-	/**
-	 * Defines the maximal 'amount' an ItemPile can have of this item.
-	 * @return
-	 */
-	public int getMaxStackSize()
-	{
-		return type.getMaxStackSize();
 	}
 
 	/**

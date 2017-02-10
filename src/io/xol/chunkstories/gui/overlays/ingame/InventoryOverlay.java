@@ -69,18 +69,16 @@ public class InventoryOverlay extends Overlay
 		if (selectedItem != null)
 		{
 			int slotSize = 24 * 2;
-			/*int textureId = TexturesHandler.getTextureID(selectedItem.getTextureName());
-			if(textureId == -1)
-				textureId = TexturesHandler.getTexture("res/items/icons/notex.png").getID();*/
-			int width = slotSize * selectedItem.getItem().getSlotsWidth();
-			int height = slotSize * selectedItem.getItem().getSlotsHeight();
+			
+			int width = slotSize * selectedItem.getItem().getType().getSlotsWidth();
+			int height = slotSize * selectedItem.getItem().getType().getSlotsHeight();
 			//GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX() - width / 2, Mouse.getY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
 
 			//
 			selectedItem.getItem().getItemRenderer().renderItemInInventory(renderingContext, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
 
 			if (selectedItemAmount != 1)
-				renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, Mouse.getX() - width / 2 + (selectedItem.getItem().getSlotsWidth() - 1.0f) * slotSize, Mouse.getY() - height / 2, selectedItemAmount + "", 2, 2,
+				renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial11px, Mouse.getX() - width / 2 + (selectedItem.getItem().getType().getSlotsWidth() - 1.0f) * slotSize, Mouse.getY() - height / 2, selectedItemAmount + "", 2, 2,
 						new Vector4fm(1, 1, 1, 1));
 
 		}

@@ -34,7 +34,7 @@ public class InventoryAllVoxels extends BasicInventory
 		
 		for(ItemPile pile : allItems)
 		{
-			pile.setAmount(pile.getItem().getMaxStackSize());
+			pile.setAmount(pile.getItem().getType().getMaxStackSize());
 			this.addItemPile(pile);
 		}
 	}

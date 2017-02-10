@@ -11,8 +11,6 @@ import io.xol.chunkstories.api.world.World;
 
 /**
  * Provides an interface to render itemPiles
- * @author gobrosse
- *
  */
 public interface ItemRenderer
 {

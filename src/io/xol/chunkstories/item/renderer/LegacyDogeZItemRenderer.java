@@ -29,7 +29,7 @@ public class LegacyDogeZItemRenderer extends DefaultItemRenderer
 		handTransformation.rotate((float) (Math.PI / 2f), new Vector3fm(0.0, 1.0, 0.0));
 		handTransformation.translate(new Vector3fm(-0.05, -0.05, 0.05));
 		
-		int max = pile.getItem().getSlotsWidth() - 1;
+		int max = pile.getItem().getType().getSlotsWidth() - 1;
 		
 		handTransformation.scale(new Vector3fm(0.25 + 0.20 * max));
 		renderingInterface.setObjectMatrix(handTransformation);
@@ -45,6 +45,4 @@ public class LegacyDogeZItemRenderer extends DefaultItemRenderer
 		
 		draw3DPlane(renderingInterface);
 	}
-	
-
 }

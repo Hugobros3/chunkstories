@@ -74,7 +74,7 @@ public class VoxelItemRenderer implements ItemRenderer
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 
 		program.setUniform2f("screenSize", renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
-		program.setUniform2f("dekal", screenPositionX + pile.getItem().getSlotsWidth() * slotSize / 2, screenPositionY + pile.getItem().getSlotsHeight() * slotSize / 2);
+		program.setUniform2f("dekal", screenPositionX + pile.getItem().getType().getSlotsWidth() * slotSize / 2, screenPositionY + pile.getItem().getType().getSlotsHeight() * slotSize / 2);
 		program.setUniform1f("scaling", slotSize / 1.65f);
 		transformation.setIdentity();
 		transformation.scale(new Vector3fm(-1f, 1f, 1f));
@@ -86,8 +86,8 @@ public class VoxelItemRenderer implements ItemRenderer
 		Voxel voxel = ((ItemVoxel) pile.getItem()).getVoxel();
 		if (voxel == null)
 		{
-			int width = slotSize * pile.getItem().getSlotsWidth();
-			int height = slotSize * pile.getItem().getSlotsHeight();
+			int width = slotSize * pile.getItem().getType().getSlotsWidth();
+			int height = slotSize * pile.getItem().getType().getSlotsHeight();
 			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(screenPositionX, screenPositionY, width, height, 0, 1, 1, 0, TexturesHandler.getTexture("./items/icons/notex.png"), true, true, null);
 			return;
 		}
