@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.item.ItemVoxel;
+import io.xol.chunkstories.materials.GenericNamedConfigurable;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.models.VoxelModel;
@@ -17,12 +18,11 @@ import io.xol.chunkstories.voxel.models.VoxelRenderer;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class VoxelDefault implements Voxel
+public class VoxelDefault extends GenericNamedConfigurable implements Voxel
 {
 	final protected Content.Voxels store;
 	
 	final protected int voxelID;
-	final protected String voxelName;
 
 	VoxelTexture[] texture = new VoxelTexture[6];
 
@@ -54,11 +54,11 @@ public class VoxelDefault implements Voxel
 	 */
 	public VoxelDefault(Content.Voxels store, int id, String name)
 	{
+		super(name);
 		this.store = store;
 		
 		this.voxelID = id;
-		this.voxelName = name;
-
+		
 		this.material = store().parent().materials().getMaterialByName(name);
 	}
 	
@@ -230,7 +230,7 @@ public class VoxelDefault implements Voxel
 	 */
 	public String getName()
 	{
-		return voxelName;
+		return name;
 	}
 
 	public boolean sameKind(Voxel facing)
