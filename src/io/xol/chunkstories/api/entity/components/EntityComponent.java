@@ -186,15 +186,5 @@ public abstract class EntityComponent
 	public final int getEntityComponentId()
 	{
 		return ecID;
-		//System.out.println("debug : "+this.getClass().getName()+" id = "+EntityComponents.getIdForClass(this.getClass().getName()));
-		/*try
-		{
-			return EntityComponentsStore.getIdForClass(this.getClass().getName());
-		}
-		catch (NullPointerException npe)
-		{
-			System.out.println("Debug: " + this.getClass().getName());
-			throw npe;
-		}*/
 	}
 }

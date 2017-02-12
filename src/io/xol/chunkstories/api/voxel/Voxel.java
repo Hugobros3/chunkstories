@@ -95,18 +95,6 @@ public class Voxel
 		return type.getShadingLightLevel(); //Etc
 	}
 
-	//TODO move to renderland and never talk about it again
-	/*public default void debugRenderCollision(World world, int x, int y, int z)
-	{
-		CollisionBox[] tboxes = getTranslatedCollisionBoxes(world, x, y, z);
-		if (tboxes != null)
-			for (CollisionBox box : tboxes)
-				if (getType().isSolid())
-					box.debugDraw(1, 0, 0, 1.0f);
-				else
-					box.debugDraw(1, 1, 0, 0.25f);
-	}*/
-
 	/**
 	 * Used to fine-tune the culling system, allows for a precise, per-face approach to culling.
 	 * @param face The side of the block BEING DREW ( not the one we are asking ), so in fact we have to answer for the opposite face, that is the one that this voxel connects with. To get a reference on the sides conventions, see {@link VoxelSides VoxelSides.class}

@@ -323,9 +323,11 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{if (mainScene instanceof Ingame && shouldReload){
+						
 						Client.getInstance().getWorld().getWorldRenderer().setupRenderSize(scene.gameWindow.getWidth(), scene.gameWindow.getHeight());
 					}
-					ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig()); }
+					ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
+					}
 				}),
 				new ConfigButtonMultiChoice("framerate",new String[] { "30", "60", "120", "-1" }).setApplyAction(new Runnable(){
 					@Override

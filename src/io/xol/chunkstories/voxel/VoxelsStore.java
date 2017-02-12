@@ -11,14 +11,11 @@ import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -90,7 +87,6 @@ public class VoxelsStore implements Content.Voxels
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
 	private void readVoxelsDefinitions(Asset f)
 	{
 		self = this;
@@ -117,42 +113,20 @@ public class VoxelsStore implements Content.Voxels
 				{
 					if (line.startsWith("voxel"))
 					{
-						//if (voxel != null)
-						//	ChunkStoriesLogger.getInstance().log("Parse error in file " + f + ", line " + ln + ", unexpected 'voxel' token.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
-						
 						String splitted[] = line.split(" ");
+						
+						if(splitted.length < 3)
+						{
+							ChunkStoriesLogger.getInstance().log("Parse error in file " + f + ", line " + ln + ", malformed voxel tag. Aborting read.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
+							break;
+						}
+						
 						int id = Integer.parseInt(splitted[2]);
 						String name = splitted[1];
 						
 						if (voxels[id] != null)
 							ChunkStoriesLogger.getInstance().log("Voxel redefinition in file " + f + ", line " + ln + ", overriding id " + id + " with " + name, ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 
-						
-						/*try
-						{
-							Class<?> customVoxelClass = content.modsManager().getClassByName(splitted[3]); // Class.forName(splitted[3]);
-							if (customVoxelClass == null)
-							{
-								ChunkStoriesLogger.getInstance().warning("Voxel class " + splitted[3] + " does not exist in codebase.");
-							}
-							else if (!(Voxel.class.isAssignableFrom(customVoxelClass)))
-							{
-								ChunkStoriesLogger.getInstance().warning("Voxel class " + splitted[3] + " is not extending the Voxel base class.");
-							}
-							else
-							{
-								Class[] types = { Content.Voxels.class, Integer.TYPE, String.class };
-								Constructor constructor = customVoxelClass.getConstructor(types);
-
-								Object[] parameters = { this, id, name };
-								voxel = (Voxel) constructor.newInstance(parameters);
-							}
-						}
-						catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-						{
-							e.printStackTrace();
-						}*/
-						
 						try
 						{
 							VoxelTypeImplementation voxelType = new VoxelTypeImplementation(this, name, id, reader);
@@ -167,116 +141,11 @@ public class VoxelsStore implements Content.Voxels
 						{
 							e.printStackTrace();
 						}
-						
-						
-						/*// Default textures
-						if (voxel instanceof VoxelDefault)
-						{
-							for (int i = 0; i < 6; i++)
-								((VoxelDefault) voxel).texture[i] = textures.getVoxelTextureByName(name);
-							// Default collision box
-							CollisionBox box = new CollisionBox(1, 1, 1);
-							//box.translate(0.5, 0, 0.5);
-							((VoxelDefault) voxel).box = box;
-						}*/
 					}
 					else if (line.startsWith("end"))
 					{
-						/*if (voxel != null)
-						{
-							voxels[voxel.getId()] = voxel;
-							attributedIds.add(voxel.getId());
-							voxelsByName.put(voxel.getName(), voxel);
-							voxel = null;
-							loadedVoxels++;
-						}
-						else*/
-							ChunkStoriesLogger.getInstance().log("Parse error in file " + f + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
+						ChunkStoriesLogger.getInstance().log("Parse error in file " + f + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
 					}
-					/*else if (!line.equals(""))
-					{
-						if (voxel != null)
-						{
-							if (voxel instanceof VoxelDefault)
-							{
-								VoxelDefault voxDefault = (VoxelDefault) voxel;
-								// System.out.println("Debug : loading voxel parameter : "+line);
-								String splitted[] = (line.replace(" ", "").replace("\t", "")).split(":");
-								String parameterName = splitted[0];
-								String parameterValue = splitted[1];
-
-								switch (parameterName)
-								{
-								case "solid":
-									voxDefault.solid = Boolean.parseBoolean(parameterValue);
-									break;
-								case "opaque":
-									voxDefault.opaque = Boolean.parseBoolean(parameterValue);
-									break;
-								case "selfOpaque":
-									voxDefault.self_opaque = Boolean.parseBoolean(parameterValue);
-									break;
-								case "liquid":
-									voxDefault.liquid = Boolean.parseBoolean(parameterValue);
-									break;
-								case "emitting":
-									voxDefault.lightLevel = Short.parseShort(parameterValue);
-									break;
-								case "shading":
-									voxDefault.shading = Short.parseShort(parameterValue);
-									break;
-								case "usesCustomModel":
-									voxDefault.custom_model = Boolean.parseBoolean(parameterValue);
-									break;
-								case "model":
-									voxDefault.custom_model = true;
-									voxDefault.model = models.getVoxelModelByName(parameterValue.replace("'", "").replace("~", voxel.getName()));
-									break;
-								case "texture":
-									for (int i = 0; i < 6; i++)
-									{
-										voxDefault.texture[i] = textures.getVoxelTextureByName(parameterValue);
-										// System.out.println(textureName);
-									}
-									break;
-								case "textures":
-									String sides[] = parameterValue.split(",");
-									for (int i = 0; i < sides.length; i++)
-									{
-										String textureName = sides[i].replace("[", "").replace("]", "").replace("'", "").replace("~", voxel.getName());
-										voxDefault.texture[i] = textures.getVoxelTextureByName(textureName);
-										// System.out.println(textureName);
-									}
-									break;
-								case "collisionBox":
-									// Default collision box
-									String sizes[] = (parameterValue.replace("[", "").replace("]", "")).split(",");
-
-									CollisionBox box = new CollisionBox(Float.parseFloat(sizes[3]), Float.parseFloat(sizes[4]), Float.parseFloat(sizes[5]));
-									box.translate(Float.parseFloat(sizes[0]), Float.parseFloat(sizes[1]), Float.parseFloat(sizes[2]));
-									voxDefault.box = box;
-									break;
-								//case "affectedByWind":
-								//	voxDefault.affectedByWind = Boolean.parseBoolean(parameterValue);
-								//	break;
-								case "billboard":
-									voxDefault.billboard = Boolean.parseBoolean(parameterValue);
-									break;
-								case "material":
-									voxDefault.material = parent().materials().getMaterialByName(parameterValue);
-									break;
-								default:
-									ChunkStoriesLogger.getInstance().log("Parse error in file " + f + ", line " + ln + ", unknown parameter '" + parameterName + "'", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
-									break;
-								}
-							}
-							else
-								ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", unexpected parameter.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.WARN);
-						}
-						else
-							ChunkStoriesLogger.getInstance().log("Warning ! Parse error in file " + f + ", line " + ln + ", voxel parameters are reserved to classes extending VoxelDefault !", ChunkStoriesLogger.LogType.GAMEMODE,
-									ChunkStoriesLogger.LogLevel.WARN);
-					}*/
 				}
 				ln++;
 			}
@@ -292,9 +161,7 @@ public class VoxelsStore implements Content.Voxels
 
 	/**
 	 * Get a voxel by it's id
-	 * 
-	 * @param voxelId
-	 *            The id of the voxel
+	 * @param voxelId The id of the voxel
 	 * @return
 	 */
 	public Voxel getVoxelById(int voxelId)

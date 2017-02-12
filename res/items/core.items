@@ -5,7 +5,8 @@ item 1 item_voxel
 	maxStackSize: 100
 end
 
-item 2 item_voxel_1x2 io.xol.chunkstories.core.item.ItemVoxel
+item 2 item_voxel_1x2
+	customClass: io.xol.chunkstories.core.item.ItemVoxel
 	maxStackSize: 100
 	width: 1
 	height: 2

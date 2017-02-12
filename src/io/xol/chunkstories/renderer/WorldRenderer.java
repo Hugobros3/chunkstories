@@ -125,10 +125,10 @@ public class WorldRenderer
 
 	// Main Rendertarget (HDR)
 	private Texture2DRenderTarget shadedBuffer;
-	private int illDownIndex = 0;
+	/*private int illDownIndex = 0;
 	private int illDownBuffers = 1;
 	private long lastIllCalc = 8;
-	private PBOPacker illuminationDownloader[] = new PBOPacker[illDownBuffers];
+	private PBOPacker illuminationDownloader[] = new PBOPacker[illDownBuffers];*/
 
 	// G-Buffers
 	public Texture2DRenderTarget zBuffer;
@@ -191,8 +191,10 @@ public class WorldRenderer
 	public int renderedChunks = 0;
 
 	//Bloom avg color buffer
-	ByteBuffer shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(4 * 3);
+	// ByteBuffer shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(4 * 3);
 	//Bloom aperture
+	private PBOPacker illuminationDownloader;
+	private PBOPacker.PBOPackerResult illuminationDownloadInProgress = null;
 	float apertureModifier = 1f;
 
 	//Sky stuff
@@ -266,8 +268,9 @@ public class WorldRenderer
 		resizeShadowMaps();
 		
 		//PBOs
-		for (int i = 0; i < illDownBuffers; i++)
-			illuminationDownloader[i] = new PBOPacker();
+		illuminationDownloader = new PBOPacker();
+		//for (int i = 0; i < illDownBuffers; i++)
+		//	illuminationDownloader[i] = new PBOPacker();
 
 		chunksRenderer = new ChunksRenderer(world);
 		chunksRenderer.start();
@@ -276,11 +279,11 @@ public class WorldRenderer
 	private void initializeGBuffers()
 	{
 		// Main Rendertarget (HDR)
-		shadedBuffer = new Texture2DRenderTarget(RGB_HDR, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
-		zBuffer = new Texture2DRenderTarget(DEPTH_RENDERBUFFER, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
-		albedoBuffer = new Texture2DRenderTarget(RGBA_8BPP, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
-		normalBuffer = new Texture2DRenderTarget(RGBA_3x10_2, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
-		materialBuffer = new Texture2DRenderTarget(RGBA_8BPP, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
+		shadedBuffer =   new Texture2DRenderTarget(RGB_HDR,            renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
+		zBuffer =        new Texture2DRenderTarget(DEPTH_RENDERBUFFER, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
+		albedoBuffer =   new Texture2DRenderTarget(RGBA_8BPP,          renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
+		normalBuffer =   new Texture2DRenderTarget(RGBA_3x10_2,        renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
+		materialBuffer = new Texture2DRenderTarget(RGBA_8BPP,          renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
 
 		// Bloom texture
 		bloomBuffer = new Texture2DRenderTarget(RGB_HDR, renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2);
@@ -1257,93 +1260,58 @@ public class WorldRenderer
 		if (RenderingConfig.doBloom)
 		{			
 			shadedBuffer.setMipMapping(true);
-			int max_mipmap = (int) (Math.ceil(Math.log(Math.max(scrH, scrW)) / Math.log(2))) - 1;
-			shadedBuffer.setMipmapLevelsRange(0, max_mipmap);
-			try
+			
+			int maxMipLevel = shadedBuffer.getMaxMipmapLevel();
+			shadedBuffer.setMipmapLevelsRange(0, maxMipLevel);
+			shadedBuffer.computeMipmaps();
+			
+			int divisor = 1 << maxMipLevel;
+			int mipWidth = shadedBuffer.getWidth() / divisor;
+			int mipHeight = shadedBuffer.getHeight() / divisor;
+			
+			if(illuminationDownloadInProgress == null)
+				this.illuminationDownloadInProgress = this.illuminationDownloader.copyTexure(shadedBuffer, maxMipLevel);
+			
+			if(illuminationDownloadInProgress.isTraversable())
 			{
-				//int max_mipmap = (int) (Math.floor(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
-				//System.out.println(fBuffer + " " + max_mipmap);
-				//shadedMipmapZeroLevelColor.rewind();
-
-				illDownIndex++;
-				//if (illDownIndex % 50 == 0)
-				if (System.currentTimeMillis() - lastIllCalc > 1000)
-				{
-					
-					lastIllCalc = System.currentTimeMillis();
-					//shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(12);
-					//if(!shadedMipmapZeroLevelColor.hasRemaining())
-					//	shadedMipmapZeroLevelColor.rewind();
-					//glGetTexImage(GL_TEXTURE_2D, max_mipmap, GL_RGB, GL_FLOAT, shadedMipmapZeroLevelColor);
-					//System.out.println("ill");
-					illDownBuffers = 1;
-					//long nanoC = System.nanoTime();
-					illuminationDownloader[(illDownIndex / 50 + illDownBuffers - 1) % illDownBuffers].copyTexure(shadedBuffer, max_mipmap);
-					//long nanoR = System.nanoTime();
-					//System.out.println("copy took "+Math.floor((nanoR-nanoC)/10f)/100f+"µs ");
-					if (illDownIndex / 10 >= illDownBuffers)
-					{
-						//ByteBuffer tmpBuffer = illuminationDownloader[illDownIndex/10 % illDownBuffers].readPBO();
-						//shadedMipmapZeroLevelColor = BufferUtils.createByteBuffer(tmpBuffer.capacity());
-						//shadedMipmapZeroLevelColor.put(tmpBuffer);
-						shadedMipmapZeroLevelColor = illuminationDownloader[illDownIndex / 50 % illDownBuffers].readPBO();
-						
-						//System.out.println(shadedMipmapZeroLevelColor);
-						//System.out.println("read took "+Math.floor((System.nanoTime()-nanoR)/10f)/100f+"µs ");
-						//System.out.println("Read "+shadedMipmapZeroLevelColor.capacity() + "bytes.");
-						//System.out.println("glError : "+glGetError());
-						illuminationDownloader[illDownIndex / 10 % illDownBuffers].doneWithReading();
-						//shadedMipmapZeroLevelColor.rewind();
-
-						//float luma = shadedMipmapZeroLevelColor.getFloat() * 0.2125f + shadedMipmapZeroLevelColor.getFloat() * 0.7154f + shadedMipmapZeroLevelColor.getFloat() * 0.0721f;
-						//System.out.println("read luma : "+luma);
-					}
-				}
-				else if (shadedMipmapZeroLevelColor != null)
-					shadedMipmapZeroLevelColor.rewind();
-
-				this.shadedBuffer.computeMipmaps();
+				ByteBuffer minMipmapBuffer = illuminationDownloadInProgress.readPBO();
+				minMipmapBuffer.flip();
 				
-				if (shadedMipmapZeroLevelColor != null)
+				int size = mipWidth * mipHeight;
+				
+				//System.out.println("Obtained: "+minMipmapBuffer);
+				Vector3fm averageColorForAllFrame = new Vector3fm(0.0);
+				for(int i = 0; i < size; i++)
+					averageColorForAllFrame.add(minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat());
+				
+				averageColorForAllFrame.scale(1.0f / size);
+				
+				float luma = averageColorForAllFrame.getX() * 0.2125f + averageColorForAllFrame.getY() * 0.7154f + averageColorForAllFrame.getZ() * 0.0721f;
+	
+				luma *= apertureModifier;
+				luma = (float) Math.pow(luma, 1d / 2.2);
+	
+				float targetLuma = 0.65f;
+				float lumaMargin = 0.15f;
+	
+				if (luma < targetLuma - lumaMargin)
 				{
-					//System.out.println(":c");
-					
-					if (!shadedMipmapZeroLevelColor.hasRemaining())
-						shadedMipmapZeroLevelColor.rewind();
-					//System.out.println(shadedMipmapZeroLevelColor);
-					float luma = 0.0f;
-					for (int i = 0; i < 1; i++)
-						luma += shadedMipmapZeroLevelColor.getFloat() * 0.2125f + shadedMipmapZeroLevelColor.getFloat() * 0.7154f + shadedMipmapZeroLevelColor.getFloat() * 0.0721f;
-
-					//System.out.println(luma);
-					//luma /= 4;
-					luma *= apertureModifier;
-					luma = (float) Math.pow(luma, 1d / 2.2);
-					//System.out.println("luma:"+luma + " aperture:"+ this.apertureModifier);
-
-					float targetLuma = 0.65f;
-					float lumaMargin = 0.15f;
-
-					if (luma < targetLuma - lumaMargin)
-					{
-						if (apertureModifier < 2.0)
-							apertureModifier *= 1.001;
-					}
-					else if (luma > targetLuma + lumaMargin)
-					{
-						if (apertureModifier > 0.99)
-							apertureModifier *= 0.999;
-					}
-					else
-					{
-						float clamped = (float) Math.min(Math.max(1 / apertureModifier, 0.998), 1.002);
-						apertureModifier *= clamped;
-					}
+					if (apertureModifier < 2.0)
+						apertureModifier *= 1.001;
 				}
-			}
-			catch (Throwable th)
-			{
-				th.printStackTrace();
+				else if (luma > targetLuma + lumaMargin)
+				{
+					if (apertureModifier > 0.99)
+						apertureModifier *= 0.999;
+				}
+				else
+				{
+					float clamped = (float) Math.min(Math.max(1 / apertureModifier, 0.998), 1.002);
+					apertureModifier *= clamped;
+				}
+				
+				//Throw that out
+				illuminationDownloadInProgress = null;
 			}
 		}
 		else
@@ -1439,8 +1407,8 @@ public class WorldRenderer
 		bloomShader.setUniform1f("apertureModifier", apertureModifier);
 		bloomShader.setUniform2f("screenSize", scrW / 2f, scrH / 2f);
 
-		int max_mipmap = (int) (Math.ceil(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
-		bloomShader.setUniform1f("max_mipmap", max_mipmap);
+		//int max_mipmap = (int) (Math.ceil(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
+		//bloomShader.setUniform1f("max_mipmap", max_mipmap);
 
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboBloom);
 		//this.fboBloom.bind();

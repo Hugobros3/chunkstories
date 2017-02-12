@@ -77,8 +77,8 @@ public class IDsConverter
 		//Iron pane
 		else if (minecraftBlockId == 102)
 			return VoxelFormat.format(32, 0, 0, 0);
-		//Fence
-		else if (minecraftBlockId == 85)
+		//Fences
+		else if (minecraftBlockId == 85 || minecraftBlockId == 188 || minecraftBlockId == 189 || minecraftBlockId == 190 || minecraftBlockId == 191  || minecraftBlockId == 192)
 			return VoxelFormat.format(26, 0, 0, 0);
 		//Clay and whool
 		else if (minecraftBlockId == 35)
@@ -177,11 +177,15 @@ public class IDsConverter
 				minecraftMetaData = 12;
 			return VoxelFormat.format(96, minecraftMetaData, 0, 0);
 		}
+		//Grass path
+		if(minecraftBlockId == 208)
+			return 85;
+		//Stone walls
+		if(minecraftBlockId == 139)
+			return 86;
 		//Doors
 		if (minecraftBlockId == 64 || minecraftBlockId == 71 || minecraftBlockId == 193 || minecraftBlockId == 194 || minecraftBlockId == 195 || minecraftBlockId == 196 || minecraftBlockId == 197)
-		{
 			return -2;
-		}
 		//Wood log
 		else if (minecraftBlockId == 17 || minecraftBlockId == 162)
 			return 8;

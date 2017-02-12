@@ -14,7 +14,7 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
-import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogType;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -243,6 +243,14 @@ public class Texture2D extends Texture
 			return;
 		boolean applyParameters = false;
 	
+		int actualMaxMipLevelPossible = getMaxMipmapLevel();
+		if(maxLevel > actualMaxMipLevelPossible)
+		{
+			ChunkStoriesLogger.getInstance().log("Warning, tried setting mipLevel > max permitted by texture size. Correcting.", LogType.RENDERING, LogLevel.WARN);
+			Thread.dumpStack();
+			maxLevel = actualMaxMipLevelPossible;
+		}
+		
 		if (this.baseMipmapLevel != baseLevel || this.maxMipmapLevel != maxLevel) // We changed something so we redo them
 			applyParameters = true;
 	
@@ -269,6 +277,43 @@ public class Texture2D extends Texture
 	{
 		int surface = getWidth() * getHeight();
 		return surface * type.getBytesPerTexel();
+	}
+	
+	/** Computes actual maximal mipmap level this texture will hold */
+	public int getMaxMipmapLevel()
+	{
+		int width = this.width;
+		int height = this.height;
+		
+		int level = 0;
+		while(width != 1 && height != 1)
+		{
+			width /= 2;
+			height /=2;
+			
+			level++;
+		}
+		
+		return level;
+	}
+	
+	public static void main(String a[])
+	{
+		int width = 1024;
+		int height = 640;
+		
+		int level = 0;
+		while(width != 1 && height != 1)
+		{
+			System.out.println(width+":"+height);
+			
+			width /= 2;
+			height /=2;
+			
+			level++;
+		}
+		
+		System.out.println("MaxLevel="+level);
 	}
 
 	//public abstract String getName();

@@ -24,7 +24,6 @@ end
 voxel leaves 5
 	opaque: false
 	selfOpaque: false
-	affectedByWind: true
 	shading: 2
 end
 
@@ -43,7 +42,6 @@ end
 voxel pineleaves 9
 	opaque: false
 	selfOpaque: false
-	affectedByWind: true
 	shading: 1
 end
 
@@ -93,7 +91,6 @@ end
 voxel birchleaves 19
 	opaque: false
 	selfOpaque: false
-	affectedByWind: true
 	shading: 1
 end
 
@@ -113,7 +110,6 @@ end
 voxel ironGrill 25
 	customClass: io.xol.chunkstories.core.voxel.VoxelPane
 	opaque: false
-	usesCustomModel: true
 	selfOpaque: true
 	material: metalbar
 	#texture: debug
@@ -122,7 +118,6 @@ end
 voxel woodFence 26
 	customClass: io.xol.chunkstories.core.voxel.VoxelFence
 	opaque: false
-	usesCustomModel: true
 	selfOpaque: true
 	texture: planks
 	material: bluntwood
@@ -320,6 +315,22 @@ voxel ardoiseStairs 84
 	texture: ardoise
 	opaque: false
 	model: stairs.m0
+	material: stone
+end
+
+voxel path 85
+	opaque: false
+	selfOpaque: true
+	model: steps.m6
+	material: dirt
+	collisionBox: (0.0, 0.0, 0.0, 1.0, 0.875, 1.0)
+	textures: pathside, pathside, pathside, pathside, path, dirt
+end
+
+voxel stoneWall 86
+	customClass: io.xol.chunkstories.core.voxel.VoxelStoneWall
+	opaque: false
+	texture: cobble
 	material: stone
 end
 

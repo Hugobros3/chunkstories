@@ -442,8 +442,6 @@ public abstract class EntityImplementation implements Entity
 		return eID;
 	}
 
-	public static short allocatedID = 0;
-
 	@Override
 	public long getUUID()
 	{
@@ -457,28 +455,6 @@ public abstract class EntityImplementation implements Entity
 			return false;
 		return ((Entity) o).getUUID() == entityUUID;
 	}
-
-	/*@Override
-	public boolean removeFromWorld()
-	{
-		//Only once
-		if (existenceComponent.exists())
-		{
-			//Destroys it
-			existenceComponent.destroyEntity();
-
-			//Removes it's reference within the region
-			if (this.positionComponent.getRegionWithin() != null)
-				this.positionComponent.getRegionWithin().removeEntityFromRegion(this);
-
-			//Actually removes it from the world list
-			if (this.world != null)
-				((WorldImplementation) this.world).removeEntityFromList(this);
-
-			return true;
-		}
-		return false;
-	}*/
 
 	@Override
 	public boolean shouldBeTrackedBy(Player player)
