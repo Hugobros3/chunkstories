@@ -250,7 +250,8 @@ public class WorldLogicThread extends Thread implements GameLogic
 			Iterator<ScheduledTask> i = scheduledTasks.iterator();
 			while(i.hasNext())
 			{
-				if(i.next().etc())
+				ScheduledTask task = i.next();
+				if(task.etc())
 					i.remove();
 			}
 			}
