@@ -121,7 +121,8 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 		return true;
 	}
 
-	private static Map<Integer, Texture> boundTextures = new HashMap<Integer, Texture>(16);
+	private static Texture[] boundTextures = new Texture[RenderingConfig.gl_MaxTextureUnits];
+	//private static Map<Integer, Texture> boundTextures = new HashMap<Integer, Texture>(16);
 
 	/**
 	 * Setups the required texturing units and links the shaders uniforms to them
@@ -145,7 +146,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 			if (textureLocation == -1)
 				continue;
 
-			if (!(boundTextures.get(textureUnitId) == texture))
+			if (!(boundTextures[textureUnitId] == texture))
 			{
 				//Select a valid, free texturing unit
 				selectTextureUnit(textureUnitId);
@@ -157,7 +158,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
 			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
 
-			boundTextures.put(textureUnitId, texture);
+			boundTextures[textureUnitId] = texture;
 
 			//Increase the counter
 			textureUnitId++;
@@ -175,7 +176,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 			if (textureLocation == -1)
 				continue;
 
-			if (!(boundTextures.get(textureUnitId) == texture))
+			if (!(boundTextures[textureUnitId] == texture))
 			{
 				//Select a valid, free texturing unit
 				selectTextureUnit(textureUnitId);
@@ -187,7 +188,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
 			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
 			
-			boundTextures.put(textureUnitId, texture);
+			boundTextures[textureUnitId] = texture;
 
 			//Increase the counter
 			textureUnitId++;
@@ -205,7 +206,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 			if (textureLocation == -1)
 				continue;
 
-			if (!(boundTextures.get(textureUnitId) == texture))
+			if (!(boundTextures[textureUnitId] == texture))
 			{
 				//Select a valid, free texturing unit
 				selectTextureUnit(textureUnitId);
@@ -217,7 +218,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
 			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
 
-			boundTextures.put(textureUnitId, texture);
+			boundTextures[textureUnitId] = texture;
 
 			//Increase the counter
 			textureUnitId++;
@@ -233,7 +234,8 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 
 	public static void resetBoundTextures()
 	{
-		boundTextures.clear();
+		for(int i = 0; i < boundTextures.length; i++)
+			boundTextures[i] = null;
 	}
 	
 	@Override
