@@ -113,6 +113,8 @@ public class IDsConverter
 		else if(minecraftBlockId == 47)
 			return 83;
 		//Netherbrick normal
+		else if (minecraftBlockId == 112)
+			return 82;
 		//Full halfblock
 		else if (minecraftBlockId == 43)
 			return 43;

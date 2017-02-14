@@ -9,7 +9,7 @@
     <target name="create_run_jar">
         <jar destfile="${dir.jarfile}/converter.jar" filesetmanifest="mergewithoutmain">
             <manifest>
-                <attribute name="Main-Class" value="io.xol.chunkstories.tools.converter.MinecraftMapConverter"/>
+                <attribute name="Main-Class" value="io.xol.chunkstories.tools.converter.OfflineWorldConverter"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="${dir.jarfile}/bin"/>
