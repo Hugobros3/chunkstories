@@ -9,7 +9,7 @@ package io.xol.engine.graphics.fbo;
  */
 public interface RenderTarget
 {
-	public void attacAshDepth();
+	public void attacAsDepth();
 	
 	public void attachAsColor(int colorAttachement);
 

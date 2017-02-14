@@ -7,6 +7,7 @@ package io.xol.engine.graphics.util;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL21.*;
+import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.ARBSync.*;
 import org.lwjgl.opengl.GLSync;
 
@@ -14,11 +15,17 @@ import java.nio.ByteBuffer;
 
 import org.lwjgl.BufferUtils;
 
+import io.xol.chunkstories.api.rendering.RenderTargetManager;
+import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.concurrency.Fence;
+import io.xol.engine.graphics.fbo.FrameBufferObject;
 import io.xol.engine.graphics.textures.Texture2D;
+import io.xol.engine.graphics.textures.TextureFormat;
 
 public class PBOPacker
 {
+	FrameBufferObject fbo = new FrameBufferObject(null);
+	
 	int bufferId;
 	boolean alreadyReading = false;
 	
@@ -39,8 +46,10 @@ public class PBOPacker
 		
 		alreadyReading = true;
 		
+		long startT = System.nanoTime();
+		
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, bufferId);
-		glBindTexture(GL_TEXTURE_2D, texture.getId());
+		//glBindTexture(GL_TEXTURE_2D, texture.getId());
 		
 		int width = texture.getWidth();
 		int height = texture.getHeight();
@@ -48,16 +57,38 @@ public class PBOPacker
 		double pow = Math.pow(2, level);
 		width =  (int)Math.ceil(width / pow);
 		height = (int)Math.ceil(height / pow);
+		
+		//Allocates space for the read
 		glBufferData(GL_PIXEL_PACK_BUFFER, width * height * 4 * 3 , GL_STREAM_COPY);
+
+		//Obtains ref to RTM
+		RenderTargetManager rtm = GameWindowOpenGL.getInstance().renderingContext.getRenderTargetManager();
 		
-		//glReadPixels(0,0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		FrameBufferObject previousFB = rtm.getFramebufferWritingTo();
+		rtm.setCurrentRenderTarget(fbo);
+		fbo.setColorAttachements(texture.getMipLevelAsRenderTarget(level));
+		fbo.setEnabledRenderTargets(true);
 		
-		//Reads the pixels of the texture to the fence.
-		glGetTexImage(GL_TEXTURE_2D, level, GL_RGB, GL_FLOAT, 0);
+		//rtm.clearBoundRenderTargetAll();
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		
+		//Reads the pixels of the texture to the PBO.
+		glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, 0);
+		
+		//slower method: 
+		/*TextureFormat format = texture.getType();
+		System.out.println(format.getBytesPerTexel());
+		glGetTexImage(GL_TEXTURE_2D, level, format.getFormat(), format.getType(), 0);*/
 
 		GLSync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0x00);
 		
+		//Puts everything back into place
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+		rtm.setCurrentRenderTarget(previousFB);
+		
+		long endT = System.nanoTime();
+		
+		//System.out.println((endT-startT)/1000+"µs");
 		
 		return new PBOPackerResult(fence);
 	}
@@ -78,7 +109,7 @@ public class PBOPacker
 			while(!isTraversable)
 			{
 				//Asks for wether the sync completed and timeouts in 1000ns or 1µs
-				int waitReturnValue = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, 1000);
+				int waitReturnValue = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, 1);
 				
 				//System.out.println("Waiting on GL fence");
 				
@@ -111,13 +142,15 @@ public class PBOPacker
 			glBindBuffer(GL_PIXEL_PACK_BUFFER, bufferId);
 			
 			//Map the buffer and read it
+			long startT = System.nanoTime();
 			ByteBuffer gpuBuffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY, null);
+			long endT = System.nanoTime();
 			
 			ByteBuffer freeBuffer = BufferUtils.createByteBuffer(gpuBuffer.capacity());
 			int free = freeBuffer.remaining();
 			freeBuffer.put(gpuBuffer);
 			int freeNow = freeBuffer.remaining();
-			//System.out.println("Read "+(free - freeNow)+" bytes from the PBO");
+			//System.out.println("Read "+(free - freeNow)+" bytes from the PBO in "+(endT-startT)/1000+" µs");
 			
 			//Unmpapps the buffer 
 		    glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
