@@ -15,10 +15,10 @@ public class MaterialImplementation extends GenericNamedConfigurable implements 
 	{
 		super(name, reader);
 		
-		this.setProperty("sounds", "sounds/materials/<name>/");
-		this.setProperty("walkingSounds", "sounds/footsteps/generic[1-3].ogg");
-		this.setProperty("runningSounds", "<walkingSounds>");
-		this.setProperty("jumpingSounds", "sounds/footsteps/jump.ogg");
-		this.setProperty("landingSounds", "sounds/footsteps/land.ogg");
+		//this.setProperty("sounds", "sounds/materials/<name>/");
+		//this.setProperty("walkingSounds", "sounds/footsteps/generic[1-3].ogg");
+		//this.setProperty("runningSounds", "<walkingSounds>");
+		//this.setProperty("jumpingSounds", "sounds/footsteps/jump.ogg");
+		//this.setProperty("landingSounds", "sounds/footsteps/land.ogg");
 	}
 }

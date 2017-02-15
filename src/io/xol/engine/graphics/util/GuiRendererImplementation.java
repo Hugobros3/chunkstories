@@ -5,7 +5,6 @@ import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;

@@ -9,7 +9,6 @@ import io.xol.chunkstories.api.exceptions.rendering.IllegalRenderingThreadExcept
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
-import io.xol.engine.base.GameWindowOpenGL;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

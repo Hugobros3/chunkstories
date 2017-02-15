@@ -1,6 +1,7 @@
 package io.xol.chunkstories.api.item;
 
 import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.content.NamedWithProperties;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -10,7 +11,7 @@ import io.xol.chunkstories.api.Content;
  * Immutable, describes an item type and is a common reference in all items of that type
  * It gets loaded from the .items file
  */
-public interface ItemType
+public interface ItemType extends NamedWithProperties
 {
 	/** @return Returns the associated ID in the .items files */
 	public int getID();
@@ -30,12 +31,6 @@ public interface ItemType
 
 	/** Defines the maximal 'amount' an ItemPile can have of this item. */
 	public int getMaxStackSize();
-	
-	/** Resolves a property from the arguments defined in the .items file */
-	public String resolveProperty(String propertyName);
-	
-	/** Do the same as above but provides a default fallback value instead of null, in case said property isn't defined. */
-	public String resolveProperty(String propertyName, String defaultValue);
 
 	/** Instanciates a new item */
 	public Item newItem();

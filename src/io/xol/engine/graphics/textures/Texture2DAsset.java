@@ -12,7 +12,6 @@ import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.engine.base.GameWindowOpenGL;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
