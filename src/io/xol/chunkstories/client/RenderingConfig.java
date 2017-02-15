@@ -16,6 +16,8 @@ public class RenderingConfig
 	public static boolean gl_fbExtCapable = false;
 	public static boolean gl_InstancedArrays;
 
+	public static boolean DEBUG_OPENGL = true;
+
 	// RENDERING
 	public static float viewDistance = 150;
 	public static float fogDistance = 100;

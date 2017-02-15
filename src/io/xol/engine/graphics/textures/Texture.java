@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.base.GameWindowOpenGL;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -46,6 +45,8 @@ public abstract class Texture
 			return;
 
 		glId = glGenTextures();
+		//System.out.println("Allocated glId "+glId+" for "+this);
+		
 		//Keep the reference for this allocated id
 		allocatedIds.put(glId, selfReference);
 	}
@@ -61,14 +62,15 @@ public abstract class Texture
 			if (glId >= 0)
 			{
 				glDeleteTextures(glId);
+				//System.out.println("Disallocated glId "+glId+" for "+this);
 				allocatedIds.remove(glId);
 
 				totalTextureObjects--;
+
+				//Set id to -2 to prevent texture being used again
+				glId = -2;
 				return true;
 			}
-
-			//Set id to -2 to prevent texture being used again
-			glId = -2;
 			return false;
 		}
 		else
@@ -84,8 +86,28 @@ public abstract class Texture
 	public abstract long getVramUsage();
 
 	protected static BlockingQueue<Texture> objectsToDestroy = new LinkedBlockingQueue<Texture>();
+	protected static BlockingQueue<TextureRunnable> scheduled = new LinkedBlockingQueue<TextureRunnable>();
+	
+	protected interface TextureRunnable extends Runnable {
+		public Texture getTexture();
+	}
+	
+	public static void updateTextureObjects() {
+		destroyPendingTextureObjects();
+		
+		Iterator<TextureRunnable> i = scheduled.iterator();
+		while (i.hasNext())
+		{
+			TextureRunnable todo = i.next();
+			
+			if(todo.getTexture().glId != -2)
+				todo.run();
 
-	public static int destroyPendingTextureObjects()
+			i.remove();
+		}
+	}
+	
+	private static int destroyPendingTextureObjects()
 	{
 		int destroyedVerticesObjects = 0;
 
@@ -112,7 +134,7 @@ public abstract class Texture
 			Texture texture = weakReference.get();
 			if(texture == null)
 			{
-				System.out.println("Destroyed orphan texture id #"+id);
+				System.out.println("Disallocated orphan openGL texture ID "+id);
 				glDeleteTextures(id);
 				destroyedVerticesObjects++;
 				

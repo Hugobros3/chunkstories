@@ -28,6 +28,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VerticesObject;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.Texture2DAsset;
 import io.xol.engine.gui.Scene;
 import io.xol.engine.misc.CPUModelDetection;
@@ -48,6 +49,7 @@ import org.lwjgl.opengl.PixelFormat;
 public class GameWindowOpenGL implements GameWindow
 {
 	private final long mainGLThreadId;
+	private final Thread mainGLThread;
 
 	private Client client;
 	public RenderingContext renderingContext;
@@ -94,6 +96,7 @@ public class GameWindowOpenGL implements GameWindow
 		soundManager = new ALSoundManager();
 
 		mainGLThreadId = Thread.currentThread().getId();
+		mainGLThread = Thread.currentThread();
 	}
 
 	public void createOpenGLContext()
@@ -179,10 +182,13 @@ public class GameWindowOpenGL implements GameWindow
 		RenderingConfig.gl_IsInstancingSupported = GLContext.getCapabilities().GL_ARB_draw_instanced;
 		RenderingConfig.gl_InstancedArrays = GLContext.getCapabilities().GL_ARB_instanced_arrays;
 
-		if(GLContext.getCapabilities().GL_ARB_debug_output)
+		if(GLContext.getCapabilities().GL_ARB_debug_output && RenderingConfig.DEBUG_OPENGL)
 		{
 			ChunkStoriesLogger.getInstance().log("OpenGL debug output extension supported, installing handler");
-			ARBDebugOutput.glDebugMessageCallbackARB(new ARBDebugOutputCallback( new OpenGLDebugOutputCallback()));
+			
+			glEnable(ARBDebugOutput.GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+			
+			ARBDebugOutput.glDebugMessageCallbackARB(new ARBDebugOutputCallback( new OpenGLDebugOutputCallback(mainGLThread)));
 			
 			//Don't need nvidia spam
 			if(glGetString(GL_VENDOR).toLowerCase().startsWith("nvidia"))
@@ -207,7 +213,7 @@ public class GameWindowOpenGL implements GameWindow
 			{
 				//Update pending actions
 				vramUsageVerticesObjects = VerticesObject.updateVerticesObjects();
-				Texture2DAsset.destroyPendingTextureObjects();
+				Texture2D.updateTextureObjects();
 
 				//Clear windows
 				renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();

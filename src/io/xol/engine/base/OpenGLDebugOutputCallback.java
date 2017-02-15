@@ -34,6 +34,15 @@ public class OpenGLDebugOutputCallback implements Handler
 		GL_DEBUG_TYPE_PERFORMANCE_ARB = 0x8250,
 		GL_DEBUG_TYPE_OTHER_ARB = 0x8251;
 	
+	private final Thread mainGLThread;
+	
+	private static boolean errorHappened = false;
+	
+	public OpenGLDebugOutputCallback(Thread mainGLThread)
+	{
+		this.mainGLThread = mainGLThread;
+	}
+
 	@Override
 	public void handleMessage(int source, int type, int id, int severity, String message)
 	{
@@ -112,7 +121,24 @@ public class OpenGLDebugOutputCallback implements Handler
 		debugString += ":"+message;
 
 		ChunkStoriesLogger.getInstance().info(debugString);
+		
+		if(type == GL_DEBUG_TYPE_ERROR_ARB)
+		{
+			mainGLThread.dumpStack();
+		}
+		
+		errorHappened = true;
 
+	}
+	
+	public static boolean didErrorHappen()
+	{
+		if(errorHappened)
+		{
+			errorHappened = false;
+			return true;
+		}
+		return false;
 	}
 
 	private String printUnknownToken(final int token)

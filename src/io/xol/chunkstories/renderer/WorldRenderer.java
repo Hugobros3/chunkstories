@@ -355,7 +355,6 @@ public class WorldRenderer
 	//Rendering main calls
 	public void renderWorldAtCamera(Camera camera)
 	{
-		Client.profiler.startSection("kekupdates");
 		this.camera = camera;
 		if (RenderingConfig.doDynamicCubemaps)
 			renderWorldCubemap(environmentMap, ENVMAP_SIZE, true);
@@ -376,7 +375,6 @@ public class WorldRenderer
 		// Load/Unload required parts of the world, update the display list etc
 		updateRender(camera);
 
-		Client.profiler.startSection("next");
 		// Shadows pre-pass
 		if (RenderingConfig.doShadows && chunksToRenderLimit == -1)
 			shadowPass();
@@ -675,7 +673,7 @@ public class WorldRenderer
 
 			// Now delete from the worker threads what we won't need anymore
 			chunksRenderer.purgeUselessWork(cameraChunkX, cameraChunkY, cameraChunkZ, sizeInChunks, chunksViewDistance);
-			farTerrainRenderer.uploadGeneratedMeshes();
+			//farTerrainRenderer.uploadGeneratedMeshes();
 			
 			chunksChanged = false;
 		}
@@ -730,7 +728,6 @@ public class WorldRenderer
 	public void renderTerrain(boolean ignoreWorldCulling)
 	{
 		// Terrain
-		Client.profiler.startSection("terrain");
 		
 		terrainShader = renderingContext.useShader("terrain");
 		renderingContext.setBlendMode(BlendMode.DISABLED);
@@ -769,7 +766,7 @@ public class WorldRenderer
 			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
 		if (!(InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9) && RenderingConfig.isDebugAllowed))
-			renderedVertices += farTerrainRenderer.draw(renderingContext, terrainShader);
+			renderedVertices += farTerrainRenderer.drawTerrainBits(renderingContext, terrainShader);
 
 		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);
 		
@@ -962,6 +959,7 @@ public class WorldRenderer
 			}
 		
 		renderingContext.flush();
+		Client.profiler.startSection("entities");
 		
 		// Done looping chunks, now entities
 		if (!isShadowPass)
@@ -1117,6 +1115,8 @@ public class WorldRenderer
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
 		//fboShadedBuffer.bind();
 		fboShadedBuffer.setEnabledRenderTargets(true);
+		
+		Client.profiler.startSection("terrain");
 		renderTerrain(chunksToRenderLimit != -1);
 	}
 
@@ -1293,6 +1293,7 @@ public class WorldRenderer
 				float clamped = (float) Math.min(Math.max(1 / apertureModifier, 0.998), 1.002);
 				apertureModifier *= clamped;
 			}
+			shadedBuffer.setMipmapLevelsRange(0, 0);
 		}
 		else
 			apertureModifier = 1.0f;
@@ -1477,6 +1478,7 @@ public class WorldRenderer
 	public void renderWorldCubemap(Cubemap cubemap, int resolution, boolean onlyTerrain)
 	{
 		lastEnvmapRender = System.currentTimeMillis();
+		Client.profiler.startSection("cubemap");
 
 		boolean useFastBuffer = true;
 

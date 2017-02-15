@@ -59,7 +59,7 @@ public class EntitiesHolder implements Iterable<Entity>
 		if(backing.remove(entity.getUUID()) != null)
 			backingIterative.remove(entity);
 		else
-			System.out.println("Warning, (rmv) entity " + entity + " not found in entities list.");
+			System.out.println("Warning, EntitiesHolders was asked to remove entity " + entity + " not found in entities list.");
 		return false;
 	}
 

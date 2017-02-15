@@ -11,9 +11,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
+import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.TextureFormat;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 import org.lwjgl.BufferUtils;
 
@@ -48,7 +48,7 @@ public class FarTerrainRenderer
 
 	private WorldImplementation world;
 
-	private List<RegionMesh> regionsToRender = new ArrayList<RegionMesh>();
+	private List<RegionMesh> renderedRegions = new ArrayList<RegionMesh>();
 
 	//TODO use a texture
 	private boolean blocksTexturesSummaryDone = false;
@@ -131,73 +131,87 @@ public class FarTerrainRenderer
 		return blockTexturesSummary;
 	}
 
-	public int draw(RenderingContext renderingContext, ShaderInterface terrainShader)
+	public int drawTerrainBits(RenderingContext renderingContext, ShaderInterface terrainShader)
 	{
-		if (!this.isTerrainUpdateRunning.get() && farTerrainUpdatesToTakeIntoAccount.get() > 0 && (System.currentTimeMillis() - this.lastTerrainUpdateTiming) > this.timeToWaitBetweenTerrainUpdates)
+		//Starts asynch regeneration
+		if (farTerrainUpdatesToTakeIntoAccount.get() > 0 && (System.currentTimeMillis() - this.lastTerrainUpdateTiming) > this.timeToWaitBetweenTerrainUpdates)
 		{
-			this.isTerrainUpdateRunning.set(true);
-			this.startAsynchSummaryRegeneration(renderingContext.getCamera());
+			if(this.isTerrainUpdateRunning.compareAndSet(false, true))
+				this.startAsynchSummaryRegeneration(renderingContext.getCamera());
 		}
 
-		int elements = 0;
+		//Setups stuff
 		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
-
-		//Sort to draw near first
-		List<RegionMesh> regionsMeshesToRenderSorted = new ArrayList<RegionMesh>(regionsToRender);
+		
+		//Camera is of position
 		Camera camera = renderingContext.getCamera();
 		int camRX = (int) (camera.getCameraPosition().getX() / 256);
 		int camRZ = (int) (camera.getCameraPosition().getZ() / 256);
 
+		//Sort to draw near first
+		List<RegionMesh> regionsMeshesToRenderSorted = new ArrayList<RegionMesh>(renderedRegions);
 		regionsMeshesToRenderSorted.sort(new Comparator<RegionMesh>()
 		{
-
 			@Override
 			public int compare(RegionMesh a, RegionMesh b)
 			{
 				int distanceA = Math.abs(a.regionDisplayedX - camRX) + Math.abs(a.regionDisplayedZ - camRZ);
-				//System.out.println(camRX + " : " + distanceA);
 				int distanceB = Math.abs(b.regionDisplayedX - camRX) + Math.abs(b.regionDisplayedZ - camRZ);
 				return distanceA - distanceB;
 			}
 
 		});
 
-		try
+		int bitsDrew = 0;
+		for (RegionMesh regionMesh : regionsMeshesToRenderSorted)
 		{
-			for (RegionMesh regionMesh : regionsMeshesToRenderSorted)
-			{
-				float height = 1024f;
-				if (!renderingContext.getCamera().isBoxInFrustrum(new CollisionBox(regionMesh.regionDisplayedX * 256, 0, regionMesh.regionDisplayedZ * 256, 256, height, 256)))
-					continue;
-				
-				renderingContext.bindTexture2D("groundTexture", regionMesh.regionSummary.voxelTypesTexture);
-				renderingContext.bindTexture2D("heightMap", regionMesh.regionSummary.heightsTexture);
-				renderingContext.bindTexture1D("blocksTexturesSummary", getBlocksTexturesSummary());
-				terrainShader.setUniform2f("regionPosition", regionMesh.regionSummary.getRegionX(), regionMesh.regionSummary.getRegionZ());
-				terrainShader.setUniform2f("chunkPosition", regionMesh.regionDisplayedX * 256, regionMesh.regionDisplayedZ * 256);
-
-				if (regionMesh.regionSummary.verticesObject.isDataPresent())
-				{
-					int stride = 4 * 2 + 4 + 0 * 4;
-
-					int vertices2draw = (int) (regionMesh.regionSummary.verticesObject.getVramUsage() / stride);
-
-					renderingContext.bindAttribute("vertexIn", regionMesh.regionSummary.verticesObject.asAttributeSource(VertexFormat.SHORT, 3, stride, 0L));
-					renderingContext.bindAttribute("normalIn", regionMesh.regionSummary.verticesObject.asAttributeSource(VertexFormat.UBYTE, 4, stride, 8L));
-
-					elements += vertices2draw;
-					
-					renderingContext.draw(Primitive.TRIANGLE, 0, vertices2draw);
-				}
-			}
-		}
-		catch (NullPointerException npe)
-		{
+			//Frustrum checks (assuming maxHeight of 1024 blocks)
+			//TODO do a simple max() and improve accuracy
+			float height = 1024f;
+			if (!renderingContext.getCamera().isBoxInFrustrum(new CollisionBox(regionMesh.regionDisplayedX * 256, 0, regionMesh.regionDisplayedZ * 256, 256, height, 256)))
+				continue;
 			
+			RegionSummaryImplementation regionSummaryData = regionMesh.regionSummary;
+			
+			//Skip unloaded regions immediately
+			if(regionSummaryData.isUnloaded())
+				continue;
+			
+			renderingContext.bindTexture2D("groundTexture", regionSummaryData.voxelTypesTexture);
+			regionSummaryData.voxelTypesTexture.setTextureWrapping(false);
+			regionSummaryData.voxelTypesTexture.setLinearFiltering(false);
+			
+			renderingContext.bindTexture2D("heightMap", regionSummaryData.heightsTexture);
+			regionSummaryData.heightsTexture.setTextureWrapping(false);
+			regionSummaryData.heightsTexture.setLinearFiltering(false);
+			
+			renderingContext.bindTexture1D("blocksTexturesSummary", getBlocksTexturesSummary());
+			
+			//Actual region position
+			terrainShader.setUniform2f("regionPosition", regionSummaryData.getRegionX(), regionSummaryData.getRegionZ());
+			//Displayed position
+			terrainShader.setUniform2f("chunkPosition", regionMesh.regionDisplayedX * 256, regionMesh.regionDisplayedZ * 256);
+
+			//Checks this regionMesh instance has it's stuff uploaded already
+			if (!regionMesh.verticesObject.isDataPresent())
+				continue;
+			//else
+			//	System.out.println("warning");
+			
+			int stride = 4 * 2 + 4 + 0 * 4;
+
+			int vertices2draw = (int) (regionMesh.verticesObject.getVramUsage() / stride);
+
+			renderingContext.bindAttribute("vertexIn", regionMesh.verticesObject.asAttributeSource(VertexFormat.SHORT, 3, stride, 0L));
+			renderingContext.bindAttribute("normalIn", regionMesh.verticesObject.asAttributeSource(VertexFormat.UBYTE, 4, stride, 8L));
+
+			bitsDrew += vertices2draw;
+			
+			renderingContext.draw(Primitive.TRIANGLE, 0, vertices2draw);
 		}
 
-		return elements;
+		return bitsDrew;
 	}
 
 	private void startAsynchSummaryRegeneration(Camera camera)
@@ -273,13 +287,11 @@ public class FarTerrainRenderer
 
 					RegionSummaryImplementation summary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(currentChunkX * 32, currentChunkZ * 32);
 
-					if (summary == null)
+					if (summary == null || !summary.isLoaded())
 					{
 						currentChunkZ = nextChunkZ;
 						continue;
 					}
-
-					RegionMesh regionMesh = new RegionMesh(rx, rz, summary);
 
 					int rcx = currentChunkX % world.getSizeInChunks();
 					if (rcx < 0)
@@ -288,8 +300,8 @@ public class FarTerrainRenderer
 					if (rcz < 0)
 						rcz += world.getSizeInChunks();
 
-					int[] heightMap = regionMesh.regionSummary.heights;
-					int[] ids = regionMesh.regionSummary.ids;
+					int[] heightMap = summary.getHeightData();
+					int[] ids = summary.getVoxelData();
 
 					@SuppressWarnings("unused")
 					int vertexCount = 0;
@@ -479,44 +491,14 @@ public class FarTerrainRenderer
 
 						}
 
-					//System.out.println("vc:" + vertexCount);
 
-					if(rx == 10 && rz == 2)
-					{
-						//System.out.println("wait");
-						//regionMesh.regionSummary.sendNewModel(vboContent);
-						//System.out.println(regionMeshBuffer);
-					}
 					byte[] vboContent = new byte[regionMeshBuffer.position()];
 					regionMeshBuffer.flip();
 					regionMeshBuffer.get(vboContent);
-					/*if(rx == 10 && rz == 2)
-					{
-						System.out.println("2");
-						//regionMesh.regionSummary.sendNewModel(vboContent);
-						System.out.println(regionMeshBuffer);
-						regionMeshBuffer.flip();
-						
-						int stride = 4 * 2 + 4 + 0 * 4;
-						int vertices2draw = (int) (regionMeshBuffer.limit() / stride);
-						
-						for(int i = 0; i < vertices2draw; i++)
-						{
-							float k = regionMeshBuffer.getShort();
-							regionMeshBuffer.getShort();
-							System.out.println(k);
-						}
-						
-						System.out.println(regionMeshBuffer);
-					}*/
-					//regionMesh.regionSummary.sendNewModel(new byte[0]);
-					regionMesh.regionSummary.sendNewModel(vboContent);
-					//else
-					//	regionMesh.regionSummary.sendNewModel(vboContent);
+					
 
-					/*glBindBuffer(GL_ARRAY_BUFFER, regionMesh.regionSummary.vboId);
-					glBufferData(GL_ARRAY_BUFFER, regionMeshBuffer, GL_DYNAMIC_DRAW);
-					regionMesh.regionSummary.vboSize = vertexCount;*/
+					RegionMesh regionMesh = new RegionMesh(rx, rz, summary, vboContent);
+					//regionMesh.regionSummary.sendNewModel(vboContent);
 
 					lastRegionX = rcx / 8;
 					lastRegionZ = rcz / 8;
@@ -533,11 +515,11 @@ public class FarTerrainRenderer
 			lastRegionX = -1;
 			lastRegionZ = -1;
 
-			for (RegionMesh rs : regionsToRender)
+			for (RegionMesh rs : renderedRegions)
 			{
 				rs.delete();
 			}
-			regionsToRender = regionsToRender_NewList;
+			renderedRegions = regionsToRender_NewList;
 			//regionsToRender.clear();
 		}
 
@@ -573,9 +555,9 @@ public class FarTerrainRenderer
 		return summaryData[offset + resolution * x + z];
 	}
 
-	public void uploadGeneratedMeshes()
+	/*public void uploadGeneratedMeshes()
 	{
-		for (RegionMesh rs : regionsToRender)
+		for (RegionMesh rs : renderedRegions)
 		{
 			if (rs == null)
 				continue;
@@ -585,29 +567,39 @@ public class FarTerrainRenderer
 			boolean generated = rs.regionSummary.uploadNeededData();
 			if (generated)
 			{
-				//System.out.println("generated RS texture "+ rs.dataSource.hId);
+				
 			}
-			//System.out.println(rs.dataSource.loaded.get());
 			if (!rs.regionSummary.summaryLoaded.get())
 				rs.regionSummary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(rs.regionSummary.getRegionX() * 256, rs.regionSummary.getRegionZ() * 256);
 		}
-	}
+	}*/
 
 	class RegionMesh
 	{
 		int regionDisplayedX, regionDisplayedZ;
 		RegionSummaryImplementation regionSummary;
 
-		public RegionMesh(int rxDisplay, int rzDisplay, RegionSummaryImplementation dataSource)
+		//Mesh (client renderer)
+		VerticesObject verticesObject;
+
+		public RegionMesh(int rxDisplay, int rzDisplay, RegionSummaryImplementation dataSource, byte[] vboContent)
 		{
 			this.regionDisplayedX = rxDisplay;
 			this.regionDisplayedZ = rzDisplay;
 			this.regionSummary = dataSource;
+			
+			this.verticesObject = new VerticesObject();
+			
+			ByteBuffer byteBuffer = BufferUtils.createByteBuffer(vboContent.length);
+			byteBuffer.put(vboContent);
+			byteBuffer.flip();
+			verticesObject.uploadData(byteBuffer);
 		}
 
 		public void delete()
 		{
 			//glDeleteBuffers(regionSummary.vboId);
+			verticesObject.destroy();
 		}
 	}
 

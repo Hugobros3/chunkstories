@@ -22,6 +22,7 @@ import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogType;
+import io.xol.engine.base.OpenGLDebugOutputCallback;
 import io.xol.engine.graphics.fbo.RenderTarget;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -32,13 +33,18 @@ public class Texture2D extends Texture implements RenderTarget
 {
 	protected int width;
 	protected int height;
+	
+	//Filtering parameters
 	boolean wrapping = true;
 	boolean mipmapping = false;
-	protected boolean mipmapsUpToDate = false;
 	boolean linearFiltering = true;
 	int baseMipmapLevel = 0;
 	int maxMipmapLevel = 1000;
+	
+	protected boolean mipmapsUpToDate = false;
+	//TODO redo
 	protected boolean scheduledForLoad = false;
+	
 	static int currentlyBoundId = 0;
 
 	public Texture2D(TextureFormat type)
@@ -68,7 +74,7 @@ public class Texture2D extends Texture implements RenderTarget
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
-		setFiltering();
+		applyFiltering();
 	}
 
 	public boolean uploadTextureData(int width, int height, ByteBuffer data)
@@ -77,6 +83,29 @@ public class Texture2D extends Texture implements RenderTarget
 	}
 
 	public boolean uploadTextureData(int width, int height, int level, ByteBuffer data)
+	{
+		if (Client.getInstance().getWindows().isMainGLWindow())
+			return uploadTextureDataActual(width, height, level, data);
+		else
+		{
+			return Texture.scheduled.add(new TextureRunnable() {
+				@Override
+				public void run()
+				{
+					uploadTextureData(width, height, level, data);
+				}
+
+				@Override
+				public Texture getTexture()
+				{
+					return Texture2D.this;
+				}
+				
+			});
+		}
+	}
+	
+	private boolean uploadTextureDataActual(int width, int height, int level, ByteBuffer data)
 	{
 		int k = currentlyBoundId;
 	
@@ -122,14 +151,27 @@ public class Texture2D extends Texture implements RenderTarget
 		
 		//Allow creation only in intial state
 		if (glId == -1)
-		{
 			aquireID();
-		}
 	
 		glBindTexture(GL_TEXTURE_2D, glId);
+		
+		if(RenderingConfig.DEBUG_OPENGL)
+			checkForErrors();
 		currentlyBoundId = glId;
 	}
 
+	private void checkForErrors()
+	{
+		if(OpenGLDebugOutputCallback.didErrorHappen())
+			System.out.println("Something went wrong with "+this);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "["+getClass().getSimpleName()+" id: "+glId+" size:"+width+"x"+height+" format:"+type.name()+"]";
+	}
+	
 	/**
 	 * Determines if a texture will loop arround itself or clamp to it's edges
 	 */
@@ -173,11 +215,9 @@ public class Texture2D extends Texture implements RenderTarget
 		if (!applyParameters)
 			return;
 		bind();
-		setFiltering();
+		applyFiltering();
 		if (mipmapping && !mipmapsUpToDate)
-		{
 			computeMipmaps();
-		}
 	}
 
 	public void computeMipmaps()
@@ -208,10 +248,10 @@ public class Texture2D extends Texture implements RenderTarget
 		if (!applyParameters)
 			return;
 		bind();
-		setFiltering();
+		applyFiltering();
 	}
 
-	private void setFiltering()
+	private void applyFiltering()
 	{
 		//System.out.println("Set filtering called for "+name+" "+linearFiltering);
 		if (mipmapping)
@@ -268,7 +308,7 @@ public class Texture2D extends Texture implements RenderTarget
 		if (!applyParameters)
 			return;
 		bind();
-		setFiltering();
+		applyFiltering();
 	}
 
 	public int getWidth()

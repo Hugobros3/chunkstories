@@ -30,11 +30,15 @@ public class PacketRegionSummary extends Packet
 	{
 		out.writeInt(summary.getRegionX());
 		out.writeInt(summary.getRegionZ());
+		
+		int[] heights = summary.getHeightData();
+		int[] ids = summary.getVoxelData();
+		
 		ByteBuffer compressMe = ByteBuffer.allocateDirect(256 * 256 * 4 * 2);
 			for(int i = 0; i < 256 * 256; i++)
-				compressMe.putInt(summary.heights[i]);
+				compressMe.putInt(heights[i]);
 			for(int i = 0; i < 256 * 256; i++)
-				compressMe.putInt(summary.ids[i]);
+				compressMe.putInt(ids[i]);
 			
 		compressMe.flip();
 		byte[] unCompressed = new byte[compressMe.remaining()];

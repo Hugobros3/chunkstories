@@ -194,16 +194,16 @@ public class IOTasksMultiplayerClient extends IOTasks
 					return true;
 				}
 				
+				int[] heights = new int[256*256];
+				int[] ids = new int[256*256];
+				
 				byte[] unCompressedSummaries = unCompressedSummariesData.get();
 				unCompressedSummaries = RegionSummaryImplementation.decompressor.decompress(packet.compressedData, 256 * 256 * 4 * 2);
 				IntBuffer ib = ByteBuffer.wrap(unCompressedSummaries).asIntBuffer();
-				ib.get(summary.heights, 0, 256 * 256);
-				ib.get(summary.ids, 0, 256 * 256);
+				ib.get(heights, 0, 256 * 256);
+				ib.get(ids, 0, 256 * 256);
 				
-				summary.texturesUpToDate.set(false);
-				summary.summaryLoaded.set(true);
-
-				summary.computeHeightMetadata();
+				summary.setData(heights, ids);
 			
 			return true;
 		}

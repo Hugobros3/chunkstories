@@ -476,6 +476,9 @@ public class IOTasks extends Thread
 
 					byte[] size = new byte[4];
 
+					int[] heights = new int[256*256];
+					int[] ids = new int[256*256];
+
 					try
 					{
 						in.read(size);
@@ -486,7 +489,7 @@ public class IOTasks extends Thread
 						byte[] decompressed = decompressor.decompress(compressed, 256 * 256 * 4);
 						IntBuffer ib = ByteBuffer.wrap(decompressed).asIntBuffer();
 						for (int i = 0; i < 256 * 256; i++)
-							summary.heights[i] = ib.get();
+							heights[i] = ib.get();
 
 						in.read(size);
 						s = ByteBuffer.wrap(size).asIntBuffer().get(0);
@@ -496,7 +499,7 @@ public class IOTasks extends Thread
 						decompressed = decompressor.decompress(compressed, 256 * 256 * 4);
 						ib = ByteBuffer.wrap(decompressed).asIntBuffer();
 						for (int i = 0; i < 256 * 256; i++)
-							summary.ids[i] = ib.get();
+							ids[i] = ib.get();
 
 						in.close();
 					}
@@ -505,10 +508,7 @@ public class IOTasks extends Thread
 						ChunkStoriesLogger.getInstance().error("Could not load load chunk summary at " + summary + " cause: " + e.getMessage());
 					}
 
-					summary.texturesUpToDate.set(false);
-					summary.summaryLoaded.set(true);
-
-					summary.computeHeightMetadata();
+					summary.setData(heights, ids);
 				}
 				catch (FileNotFoundException e)
 				{
@@ -520,17 +520,20 @@ public class IOTasks extends Thread
 				// System.out.println("Couldn't find file : " + summary.handler.getAbsolutePath());
 				// Generate summary according to generator heightmap
 				int h, t;
+				
+				int[] heights = new int[256*256];
+				int[] ids = new int[256*256];
+				
 				for (int x = 0; x < 256; x++)
 					for (int z = 0; z < 256; z++)
 					{
 						h = world.getGenerator().getHeightAt(x + summary.getRegionX() * 256, z + summary.getRegionZ() * 256);
 						t = world.getGenerator().getTopDataAt(x + summary.getRegionX() * 256, z + summary.getRegionZ() * 256);
-						summary.heights[x * 256 + z] = h;
-						summary.ids[x * 256 + z] = t;
+						heights[x * 256 + z] = h;
+						ids[x * 256 + z] = t;
 					}
 
-				summary.texturesUpToDate.set(false);
-				summary.summaryLoaded.set(true);
+				summary.setData(heights, ids);
 				// then save
 
 				//summary.save(summary.handler);
@@ -567,7 +570,6 @@ public class IOTasks extends Thread
 
 	public class IOTaskSaveSummary extends IOTask
 	{
-
 		RegionSummaryImplementation summary;
 
 		public IOTaskSaveSummary(RegionSummaryImplementation summary)
@@ -580,15 +582,21 @@ public class IOTasks extends Thread
 		{
 			try
 			{
+				if(!summary.isLoaded())
+					return true;
+				
 				summary.handler.getParentFile().mkdirs();
 				if (!summary.handler.exists())
 					summary.handler.createNewFile();
 				FileOutputStream out = new FileOutputStream(summary.handler);
 
+				int[] heights = summary.getHeightData();
+				int[] ids = summary.getVoxelData();
+				
 				ByteBuffer writeMe = ByteBuffer.allocate(256 * 256 * 4);
 
 				for (int i = 0; i < 256 * 256; i++)
-					writeMe.putInt(summary.heights[i]);
+					writeMe.putInt(heights[i]);
 
 				byte[] compressed = RegionSummaryImplementation.compressor.compress(writeMe.array());
 
@@ -600,7 +608,7 @@ public class IOTasks extends Thread
 
 				writeMe.clear();
 				for (int i = 0; i < 256 * 256; i++)
-					writeMe.putInt(summary.ids[i]);
+					writeMe.putInt(ids[i]);
 
 				compressed = RegionSummaryImplementation.compressor.compress(writeMe.array());
 				compressedSize = compressed.length;
