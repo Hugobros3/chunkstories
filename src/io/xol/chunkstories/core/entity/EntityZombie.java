@@ -21,7 +21,6 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 
 public class EntityZombie extends EntityHumanoid
 {
-	int i = 0;
 	AI<?> zombieAi;
 
 	static Set<Class<? extends Entity>> zombieTargets = new HashSet<Class<? extends Entity>>();
@@ -40,11 +39,6 @@ public class EntityZombie extends EntityHumanoid
 	public float getStartHealth()
 	{
 		return 50f;
-	}
-
-	public boolean renderable()
-	{
-		return true;
 	}
 	
 	@Override

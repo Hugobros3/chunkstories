@@ -122,7 +122,7 @@ public class GenericNamedConfigurable
 	{
 		GenericNamedConfigurable nextGen = new GenericNamedConfigurable("nextGen");
 		nextGen.setProperty("memes", "4chan.org [0.0-2016.0]");
-		nextGen.setProperty("cuck", "<matname>/Alexix200 giving [1-5] keks looking at <memes>");
+		nextGen.setProperty("cuck", "<name>/Alexix200 giving [1-5] keks looking at <memes>");
 		
 		System.out.println(nextGen.resolveProperty("cuck"));
 	}
