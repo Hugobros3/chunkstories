@@ -1,12 +1,13 @@
 package io.xol.chunkstories.api.voxel;
 
 import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.content.NamedWithProperties;
 import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.models.VoxelModel;
 
-public interface VoxelType
+public interface VoxelType extends NamedWithProperties
 {
 	/** Get the assignated ID for this voxel */
 	public Content.Voxels store();
