@@ -3,6 +3,13 @@ package io.xol.engine.graphics.textures;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL14.GL_COMPARE_R_TO_TEXTURE;
+import static org.lwjgl.opengl.GL14.GL_TEXTURE_COMPARE_FUNC;
+import static org.lwjgl.opengl.GL14.GL_TEXTURE_COMPARE_MODE;
+import static org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT0;
+import static org.lwjgl.opengl.GL30.GL_DEPTH_ATTACHMENT;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30.glFramebufferTexture2D;
 
 import java.nio.ByteBuffer;
 
@@ -15,12 +22,13 @@ import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogType;
+import io.xol.engine.graphics.fbo.RenderTarget;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class Texture2D extends Texture
+public class Texture2D extends Texture implements RenderTarget
 {
 	protected int width;
 	protected int height;
@@ -315,7 +323,97 @@ public class Texture2D extends Texture
 		
 		System.out.println("MaxLevel="+level);
 	}
+	
+	@Override
+	public void resize(int w, int h)
+	{
+		bind();
 
+		if (this.width == w && this.height == h && !(type == TextureFormat.RGB_HDR))
+			return;
+
+		this.width = w;
+		this.height = h;
+		
+		glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), w, h, 0, type.getFormat(), type.getType(), (ByteBuffer) null);
+		
+		if (type != TextureFormat.DEPTH_SHADOWMAP)
+		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		}
+		else
+		{
+			// For proper hardware linear filtering of textures :o
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		}
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+
+	@Override
+	public void attacAsDepth()
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this.getId(), 0);
+	}
+
+	@Override
+	public void attachAsColor(int colorAttachement)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachement, GL_TEXTURE_2D, this.getId(), 0);
+	}
+
+	public RenderTarget getMipLevelAsRenderTarget(int mipLevel)
+	{
+		assert mipLevel <= this.getMaxMipmapLevel();
+		
+		return new RenderTarget() {
+
+			int divisor = 1 << mipLevel;
+			int mipWidth = getWidth() / divisor;
+			int mipHeight = getHeight() / divisor;
+			
+			@Override
+			public void attacAsDepth()
+			{
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, getId(), mipLevel);
+			}
+
+			@Override
+			public void attachAsColor(int colorAttachement)
+			{
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachement, GL_TEXTURE_2D, getId(), mipLevel);
+			}
+
+			@Override
+			public void resize(int width, int height)
+			{
+				throw new UnsupportedOperationException("No.");
+			}
+
+			@Override
+			public int getWidth()
+			{
+				return mipWidth;
+			}
+
+			@Override
+			public int getHeight()
+			{
+				return mipHeight;
+			}
+
+			@Override
+			public boolean destroy()
+			{
+				throw new UnsupportedOperationException("Neither.");
+			}
+			
+		};
+	}
 	//public abstract String getName();
 
 }

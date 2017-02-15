@@ -149,7 +149,7 @@ public class Cubemap extends Texture
 		}
 		
 		@Override
-		public void attacAshDepth()
+		public void attacAsDepth()
 		{
 			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureType, getID(), 0);
 		}

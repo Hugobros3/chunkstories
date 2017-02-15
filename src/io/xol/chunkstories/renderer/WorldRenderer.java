@@ -1217,14 +1217,88 @@ public class WorldRenderer
 
 	//Post-process effects
 
+	private int frameLumaDownloadDelay = 0;
+	private final static int FRAME_DELAY_FOR_LUMA_MIP_GRAB = 2;
+	private Vector3fm averageColorForAllFrame = new Vector3fm(1.0);
+	
 	/**
 	 * Renders the final image to the screen
 	 */
 	public void blitScreen(float pauseFade)
 	{
+		if (RenderingConfig.doBloom)
+		{			
+			shadedBuffer.setMipMapping(true);
+			
+			int maxMipLevel = shadedBuffer.getMaxMipmapLevel();
+			shadedBuffer.setMipmapLevelsRange(0, maxMipLevel);
+			
+			int divisor = 1 << maxMipLevel;
+			int mipWidth = shadedBuffer.getWidth() / divisor;
+			int mipHeight = shadedBuffer.getHeight() / divisor;
+			
+			if(illuminationDownloadInProgress == null)
+			{
+				//Wait for a few frames before starting the download
+				if(frameLumaDownloadDelay > 0)
+					frameLumaDownloadDelay--;
+				else
+					this.illuminationDownloadInProgress = this.illuminationDownloader.copyTexure(shadedBuffer, maxMipLevel);
+			}
+			
+			if(illuminationDownloadInProgress != null && illuminationDownloadInProgress.isTraversable())
+			{
+				ByteBuffer minMipmapBuffer = illuminationDownloadInProgress.readPBO();
+				minMipmapBuffer.flip();
+				
+				int size = mipWidth * mipHeight;
+				
+				//System.out.println("Obtained: "+minMipmapBuffer);
+				averageColorForAllFrame = new Vector3fm(0.0);
+				for(int i = 0; i < size; i++)
+					averageColorForAllFrame.add(minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat());
+				
+				averageColorForAllFrame.scale(1.0f / size);
+				//System.out.println(averageColorForAllFrame);
+				
+				//Throw that out
+				illuminationDownloadInProgress = null;
+				
+				//Start mipmap calculation for next frame
+				shadedBuffer.computeMipmaps();
+				frameLumaDownloadDelay = FRAME_DELAY_FOR_LUMA_MIP_GRAB + 6;
+			}
+			
+			//Do continous luma adapation
+			float luma = averageColorForAllFrame.getX() * 0.2125f + averageColorForAllFrame.getY() * 0.7154f + averageColorForAllFrame.getZ() * 0.0721f;
+
+			luma *= apertureModifier;
+			luma = (float) Math.pow(luma, 1d / 2.2);
+
+			float targetLuma = 0.65f;
+			float lumaMargin = 0.15f;
+
+			if (luma < targetLuma - lumaMargin)
+			{
+				if (apertureModifier < 2.0)
+					apertureModifier *= 1.001;
+			}
+			else if (luma > targetLuma + lumaMargin)
+			{
+				if (apertureModifier > 0.99)
+					apertureModifier *= 0.999;
+			}
+			else
+			{
+				float clamped = (float) Math.min(Math.max(1 / apertureModifier, 0.998), 1.002);
+				apertureModifier *= clamped;
+			}
+		}
+		else
+			apertureModifier = 1.0f;
+		
 		// We render to the screen.
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(null);
-		//FrameBufferObject.unbind();
 		
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.DISABLED);
@@ -1254,68 +1328,6 @@ public class WorldRenderer
 		postProcess.setUniform1f("apertureModifier", apertureModifier);
 
 		renderingContext.drawFSQuad();
-		//drawFSQuad();
-
-
-		if (RenderingConfig.doBloom)
-		{			
-			shadedBuffer.setMipMapping(true);
-			
-			int maxMipLevel = shadedBuffer.getMaxMipmapLevel();
-			shadedBuffer.setMipmapLevelsRange(0, maxMipLevel);
-			shadedBuffer.computeMipmaps();
-			
-			int divisor = 1 << maxMipLevel;
-			int mipWidth = shadedBuffer.getWidth() / divisor;
-			int mipHeight = shadedBuffer.getHeight() / divisor;
-			
-			if(illuminationDownloadInProgress == null)
-				this.illuminationDownloadInProgress = this.illuminationDownloader.copyTexure(shadedBuffer, maxMipLevel);
-			
-			if(illuminationDownloadInProgress.isTraversable())
-			{
-				ByteBuffer minMipmapBuffer = illuminationDownloadInProgress.readPBO();
-				minMipmapBuffer.flip();
-				
-				int size = mipWidth * mipHeight;
-				
-				//System.out.println("Obtained: "+minMipmapBuffer);
-				Vector3fm averageColorForAllFrame = new Vector3fm(0.0);
-				for(int i = 0; i < size; i++)
-					averageColorForAllFrame.add(minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat());
-				
-				averageColorForAllFrame.scale(1.0f / size);
-				
-				float luma = averageColorForAllFrame.getX() * 0.2125f + averageColorForAllFrame.getY() * 0.7154f + averageColorForAllFrame.getZ() * 0.0721f;
-	
-				luma *= apertureModifier;
-				luma = (float) Math.pow(luma, 1d / 2.2);
-	
-				float targetLuma = 0.65f;
-				float lumaMargin = 0.15f;
-	
-				if (luma < targetLuma - lumaMargin)
-				{
-					if (apertureModifier < 2.0)
-						apertureModifier *= 1.001;
-				}
-				else if (luma > targetLuma + lumaMargin)
-				{
-					if (apertureModifier > 0.99)
-						apertureModifier *= 0.999;
-				}
-				else
-				{
-					float clamped = (float) Math.min(Math.max(1 / apertureModifier, 0.998), 1.002);
-					apertureModifier *= clamped;
-				}
-				
-				//Throw that out
-				illuminationDownloadInProgress = null;
-			}
-		}
-		else
-			apertureModifier = 1.0f;
 
 		//Draw entities Huds
 		//TODO entitiesRenderer

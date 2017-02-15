@@ -53,7 +53,7 @@ public class FrameBufferObject
 		}
 		// Initialize depth output buffer
 		if (depthAttachement != null)
-			depthAttachement.attacAshDepth();
+			depthAttachement.attacAsDepth();
 			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthAttachement.getID(), 0);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -67,7 +67,7 @@ public class FrameBufferObject
 		bind();
 		// ???
 		if (depthAttachement != null)
-			depthAttachement.attacAshDepth();
+			depthAttachement.attacAsDepth();
 		if (targets.length == 0)
 		{
 			// If no arguments set ALL to renderable
@@ -112,7 +112,7 @@ public class FrameBufferObject
 	{
 		this.depthAttachement = depthAttachement;
 		if(depthAttachement != null)
-			depthAttachement.attacAshDepth();
+			depthAttachement.attacAsDepth();
 	}
 	
 	public void setColorAttachement(int index, RenderTarget colorAttachement)
@@ -122,8 +122,9 @@ public class FrameBufferObject
 			colorAttachement.attachAsColor(index);
 	}
 	
-	public void setColorAttachements(RenderTarget[] colorAttachements)
+	public void setColorAttachements(RenderTarget... colorAttachements)
 	{
+		scratchBuffer = BufferUtils.createIntBuffer(colorAttachements.length);
 		this.colorAttachements = colorAttachements;
 		
 		int i = 0;
@@ -158,8 +159,11 @@ public class FrameBufferObject
 			return;
 		GameWindowOpenGL.getInstance().renderingContext.flush();
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
-		RenderTarget ok = this.depthAttachement != null ? depthAttachement : this.colorAttachements[0];
-		glViewport(0, 0, ok.getWidth(), ok.getHeight());
+		RenderTarget ok = this.depthAttachement != null ? depthAttachement : (this.colorAttachements != null && this.colorAttachements.length > 0 ? this.colorAttachements[0] : null);
+		if(ok != null)
+			glViewport(0, 0, ok.getWidth(), ok.getHeight());
+		else
+			System.out.println("fck off");
 		bound = fbo_id;
 	}
 
