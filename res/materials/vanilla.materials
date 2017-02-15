@@ -10,29 +10,29 @@ material undefined
 end
 
 material dirt
-	walkingSounds: <sounds><name>_walk[1-11].ogg
-	runningSounds: <sounds><name>_run[1-9].ogg
-	landingSounds: <sounds><name>_land[1-4].ogg
+	walkingSounds: sounds/materials/<name>/<name>_walk[1-11].ogg
+	runningSounds: sounds/materials/<name>/<name>_run[1-9].ogg
+	landingSounds: sounds/materials/<name>/<name>_land[1-4].ogg
 	jumpingSounds: <walkingSounds>
 end
 
 material stone
-	walkingSounds: <sounds><name>_walk[1-11].ogg
-	runningSounds: <sounds><name>_run[1-11].ogg
+	walkingSounds: sounds/materials/<name>/<name>_walk[1-11].ogg
+	runningSounds: sounds/materials/<name>/<name>_run[1-11].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
 end
 
 material grass
 	#sounds: sounds/materials/<name>/
-	walkingSounds: <sounds><name>_walk[1-10].ogg
-	runningSounds: <sounds><name>_run[1-4].ogg
+	walkingSounds: sounds/materials/<name>/<name>_walk[1-10].ogg
+	runningSounds: sounds/materials/<name>/<name>_run[1-4].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
 end
 
 material water
-	walkingSounds: <sounds><name>_through[1-11].ogg
+	walkingSounds: sounds/materials/<name>/<name>_through[1-11].ogg
 	runningSounds: <walkingSounds>
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
@@ -43,31 +43,31 @@ material glass
 end
 
 material sand
-	walkingSounds: <sounds><name>_walk[1-11].ogg
-	runningSounds: <sounds><name>_run[1-11].ogg
+	walkingSounds: sounds/materials/<name>/<name>_walk[1-11].ogg
+	runningSounds: sounds/materials/<name>/<name>_run[1-11].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
 end
 
 material concrete
-	walkingSounds: <sounds><name>_walk[1-11].ogg
-	runningSounds: <sounds><name>_run[1-11].ogg
+	walkingSounds: sounds/materials/<name>/<name>_walk[1-11].ogg
+	runningSounds: sounds/materials/<name>/<name>_run[1-11].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
 end
 
 material snow
 	sounds: sounds/materials/snow/
-	walkingSounds: <sounds>snow_walk[1-9].ogg
-	runningSounds: <sounds>snow_run[1-10].ogg
+	walkingSounds: sounds/materials/<name>/snow_walk[1-9].ogg
+	runningSounds: sounds/materials/<name>/snow_run[1-10].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
 end
 
 material metal
 	sounds: sounds/materials/metalbox/
-	walkingSounds: <sounds>metalbox_walk[1-9].ogg
-	runningSounds: <sounds>metalbox_run[1-10].ogg
+	walkingSounds: sounds/materials/<name>/metalbox_walk[1-9].ogg
+	runningSounds: sounds/materials/<name>/metalbox_run[1-10].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
 end
@@ -76,21 +76,21 @@ material wet
 end
 
 material metalbar
-	walkingSounds: <sounds><name>_walk[1-11].ogg
-	runningSounds: <sounds><name>_run[1-11].ogg
-	landingSounds: <sounds><name>_land1.ogg
+	walkingSounds: sounds/materials/<name>/<name>_walk[1-11].ogg
+	runningSounds: sounds/materials/<name>/<name>_run[1-11].ogg
+	landingSounds: sounds/materials/<name>/<name>_land1.ogg
 	jumpingSounds: <walkingSounds>
 end
 
 material gravel
-	walkingSounds: <sounds><name>_walk[1-11].ogg
-	runningSounds: <sounds><name>_run[1-11].ogg
-	landingSounds: <sounds><name>_land[1-2].ogg
+	walkingSounds: sounds/materials/<name>/<name>_walk[1-11].ogg
+	runningSounds: sounds/materials/<name>/<name>_run[1-11].ogg
+	landingSounds: sounds/materials/<name>/<name>_land[1-2].ogg
 	jumpingSounds: <walkingSounds>
 end
 
 material bluntwood
-	walkingSounds: <sounds><name>_walk[1-11].ogg
+	walkingSounds: sounds/materials/<name>/<name>_walk[1-11].ogg
 	runningSounds: <walkingSounds>
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
