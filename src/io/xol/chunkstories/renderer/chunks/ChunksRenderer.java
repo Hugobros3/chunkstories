@@ -9,8 +9,8 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
+import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -389,7 +389,7 @@ public class ChunksRenderer extends Thread
 		return new float[] { blocklightFactor / 15f, sunlightFactor / 15f, aoFactor / 4f };
 	}
 
-	private void addQuadTop(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
+	private void addQuadTop(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx, sy + 1, sz);
 		int llMb = getBlocklight(c, sx, sy + 1, sz);
@@ -445,9 +445,9 @@ public class ChunksRenderer extends Thread
 		// float s = (llMs)/15f;
 		// aoA = aoB = aoC = aoD = new float[]{s,s,s};
 
-		int offset = texture.atlasOffset / texture.textureScale;
-		int textureS = texture.atlasS + (sx % texture.textureScale) * offset;
-		int textureT = texture.atlasT + (sz % texture.textureScale) * offset;
+		int offset = texture.getAtlasOffset() / texture.getTextureScale();
+		int textureS = texture.getAtlasS() + (sx % texture.getTextureScale()) * offset;
+		int textureT = texture.getAtlasT() + (sz % texture.getTextureScale()) * offset;
 
 		rbbf.addVerticeInt(sx, sy + 1, sz);
 		rbbf.addTexCoordInt(textureS, textureT);
@@ -480,7 +480,7 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadBottom(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
+	private void addQuadBottom(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx, sy - 1, sz);
 		int llMb = getBlocklight(c, sx, sy - 1, sz);
@@ -518,9 +518,9 @@ public class ChunksRenderer extends Thread
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
 
-		int offset = texture.atlasOffset / texture.textureScale;
-		int textureS = texture.atlasS + (sx % texture.textureScale) * offset;
-		int textureT = texture.atlasT + (sz % texture.textureScale) * offset;
+		int offset = texture.getAtlasOffset() / texture.getTextureScale();
+		int textureS = texture.getAtlasS() + (sx % texture.getTextureScale()) * offset;
+		int textureT = texture.getAtlasT() + (sz % texture.getTextureScale()) * offset;
 
 		rbbf.addVerticeInt(sx + 1, sy, sz);
 		rbbf.addTexCoordInt(textureS, textureT);
@@ -553,7 +553,7 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadRight(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
+	private void addQuadRight(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		// ++x for dekal
 
@@ -593,9 +593,9 @@ public class ChunksRenderer extends Thread
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
 
-		int offset = texture.atlasOffset / texture.textureScale;
-		int textureS = texture.atlasS + mod(sz, texture.textureScale) * offset;
-		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
+		int offset = texture.getAtlasOffset() / texture.getTextureScale();
+		int textureS = texture.getAtlasS() + mod(sz, texture.getTextureScale()) * offset;
+		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
 
 		rbbf.addVerticeInt(sx, sy + 1, sz);
 		rbbf.addTexCoordInt(textureS + offset, textureT);
@@ -636,7 +636,7 @@ public class ChunksRenderer extends Thread
 		return c += b;
 	}
 
-	private void addQuadLeft(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
+	private void addQuadLeft(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx - 1, sy, sz);
 		int llMb = getBlocklight(c, sx - 1, sy, sz);
@@ -675,9 +675,9 @@ public class ChunksRenderer extends Thread
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
 
-		int offset = texture.atlasOffset / texture.textureScale;
-		int textureS = texture.atlasS + mod(sz, texture.textureScale) * offset;
-		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
+		int offset = texture.getAtlasOffset() / texture.getTextureScale();
+		int textureS = texture.getAtlasS() + mod(sz, texture.getTextureScale()) * offset;
+		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
 
 		rbbf.addVerticeInt(sx, sy - 0, sz);
 		rbbf.addTexCoordInt(textureS, textureT + offset);
@@ -711,7 +711,7 @@ public class ChunksRenderer extends Thread
 
 	}
 
-	private void addQuadFront(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
+	private void addQuadFront(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
@@ -750,9 +750,9 @@ public class ChunksRenderer extends Thread
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
 
-		int offset = texture.atlasOffset / texture.textureScale;
-		int textureS = texture.atlasS + mod(sx, texture.textureScale) * offset;
-		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
+		int offset = texture.getAtlasOffset() / texture.getTextureScale();
+		int textureS = texture.getAtlasS() + mod(sx, texture.getTextureScale()) * offset;
+		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
 
 		rbbf.addVerticeInt(sx, sy - 0, sz);
 		rbbf.addTexCoordInt(textureS, textureT + offset);
@@ -786,7 +786,7 @@ public class ChunksRenderer extends Thread
 
 	}
 
-	private void addQuadBack(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
+	private void addQuadBack(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 
 		int llMs = getSunlight(c, sx, sy, sz - 1);
@@ -826,9 +826,9 @@ public class ChunksRenderer extends Thread
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
 
-		int offset = texture.atlasOffset / texture.textureScale;
-		int textureS = texture.atlasS + mod(sx, texture.textureScale) * offset;
-		int textureT = texture.atlasT + mod(-sy, texture.textureScale) * offset;
+		int offset = texture.getAtlasOffset() / texture.getTextureScale();
+		int textureS = texture.getAtlasS() + mod(sx, texture.getTextureScale()) * offset;
+		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
 
 		rbbf.addVerticeInt(sx, sy + 1, sz);
 		rbbf.addTexCoordInt(textureS + offset, textureT);

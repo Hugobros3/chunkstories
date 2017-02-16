@@ -4,8 +4,8 @@ import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.content.NamedWithProperties;
 import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
+import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 
 public interface VoxelType extends NamedWithProperties
 {
@@ -29,7 +29,7 @@ public interface VoxelType extends NamedWithProperties
 	
 	/** Gets the texture for this voxel
 	 ** @param side The side of the block we want the texture of ( see {@link VoxelSides VoxelSides.class} ) */
-	public VoxelTextureAtlased getVoxelTexture(VoxelSides side);
+	public VoxelTexture getVoxelTexture(VoxelSides side);
 
 	boolean isSolid();
 

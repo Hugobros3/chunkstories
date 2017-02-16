@@ -7,11 +7,11 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
+import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
-import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -84,15 +84,15 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		
 		//We have an array of textures and we jump to the next based on baked offsets and vertice counting
 		int modelTextureIndex = 0;
-		VoxelTextureAtlased currentVoxelTexture = null;
+		VoxelTexture currentVoxelTexture = null;
 		
 		//Selects an appropriate texture
 		currentVoxelTexture = selectsTextureFromIndex(info, modelTextureIndex);
 		int maxVertexIndexToUseThisTextureFor = this.texturesOffsets[modelTextureIndex];
 		
 		//Actual coordinates in the Atlas
-		int textureS = currentVoxelTexture.atlasS;
-		int textureT = currentVoxelTexture.atlasT;
+		int textureS = currentVoxelTexture.getAtlasS();
+		int textureT = currentVoxelTexture.getAtlasT();
 
 		//We look the 6 adjacent faces to determine wether or not we should consider them culled
 		Voxel occlusionTestedVoxel;
@@ -129,8 +129,8 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 				currentVoxelTexture = selectsTextureFromIndex(info, modelTextureIndex);
 				
 				maxVertexIndexToUseThisTextureFor = this.texturesOffsets[modelTextureIndex];
-				textureS = currentVoxelTexture.atlasS;// +mod(sx,texture.textureScale)*offset;
-				textureT = currentVoxelTexture.atlasT;// +mod(sz,texture.textureScale)*offset;
+				textureS = currentVoxelTexture.getAtlasS();// +mod(sx,texture.textureScale)*offset;
+				textureT = currentVoxelTexture.getAtlasT();// +mod(sz,texture.textureScale)*offset;
 			}
 			
 			/*
@@ -157,7 +157,7 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 			}
 			
 			renderByteBuffer.addVerticeFloat(this.vertices[i_currentVertex*3+0] + x + dx, this.vertices[i_currentVertex*3+1] + y + dy, this.vertices[i_currentVertex*3+2] + z + dz);
-			renderByteBuffer.addTexCoordInt((int) (textureS + this.texCoords[i_currentVertex*2+0] * currentVoxelTexture.atlasOffset), (int) (textureT + this.texCoords[i_currentVertex*2+1] * currentVoxelTexture.atlasOffset));
+			renderByteBuffer.addTexCoordInt((int) (textureS + this.texCoords[i_currentVertex*2+0] * currentVoxelTexture.getAtlasOffset()), (int) (textureT + this.texCoords[i_currentVertex*2+1] * currentVoxelTexture.getAtlasOffset()));
 			renderByteBuffer.addColors(lightColors);
 			renderByteBuffer.addNormalsInt(ChunksRenderer.intifyNormal(this.normals[i_currentVertex*3+0]), ChunksRenderer.intifyNormal(this.normals[i_currentVertex*3+1]), ChunksRenderer.intifyNormal(this.normals[i_currentVertex*3+2]), this.extra[i_currentVertex]);
 		
@@ -167,7 +167,7 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		return this.vertices.length;
 	}
 
-	private VoxelTextureAtlased selectsTextureFromIndex(VoxelContext info, int modelTextureIndex)
+	private VoxelTexture selectsTextureFromIndex(VoxelContext info, int modelTextureIndex)
 	{
 		if(this.texturesNames[modelTextureIndex].equals("_top"))
 			return info.getTexture(VoxelSides.TOP);

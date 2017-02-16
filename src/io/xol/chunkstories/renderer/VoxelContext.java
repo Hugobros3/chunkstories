@@ -5,8 +5,8 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
+import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -66,7 +66,7 @@ public class VoxelContext
 		return null;
 	}
 	
-	public VoxelTextureAtlased getTexture(VoxelSides side)
+	public VoxelTexture getTexture(VoxelSides side)
 	{
 		if (voxelType != null)
 			return voxelType.getVoxelTexture(data, side, this);

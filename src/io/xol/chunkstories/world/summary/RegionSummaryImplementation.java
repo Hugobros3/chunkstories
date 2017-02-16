@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -339,7 +340,7 @@ public class RegionSummaryImplementation implements RegionSummary
 			if (v.getType().isLiquid())
 				bb.putFloat(512f);
 			else
-				bb.putFloat(v.getVoxelTexture(id, VoxelSides.TOP, null).positionInColorIndex);
+				bb.putFloat(((VoxelTextureAtlased)v.getVoxelTexture(id, VoxelSides.TOP, null)).positionInColorIndex);
 		}
 		bb.rewind();
 

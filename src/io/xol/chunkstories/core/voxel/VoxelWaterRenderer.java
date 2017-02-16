@@ -4,11 +4,11 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
+import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
-import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModelLoaded;
 
@@ -49,7 +49,7 @@ public class VoxelWaterRenderer extends VoxelModelLoaded
 		
 		int modelTextureIndex = 0;
 		
-		VoxelTextureAtlased texture = info.getTexture(VoxelSides.TOP);
+		VoxelTexture texture = info.getTexture(VoxelSides.TOP);
 		
 		if(this.texturesNames[modelTextureIndex].equals("_top"))
 			texture = info.getTexture(VoxelSides.TOP);
@@ -67,8 +67,8 @@ public class VoxelWaterRenderer extends VoxelModelLoaded
 			texture = info.getVoxel().store().textures().getVoxelTextureByName(this.texturesNames[modelTextureIndex].replace("~", voxelName));
 		
 		int useUntil = this.texturesOffsets[modelTextureIndex];
-		int textureS = texture.atlasS;// +mod(sx,texture.textureScale)*offset;
-		int textureT = texture.atlasT;// +mod(sz,texture.textureScale)*offset;
+		int textureS = texture.getAtlasS();// +mod(sx,texture.textureScale)*offset;
+		int textureT = texture.getAtlasT();// +mod(sz,texture.textureScale)*offset;
 
 		Voxel occTest;
 
@@ -118,8 +118,8 @@ public class VoxelWaterRenderer extends VoxelModelLoaded
 					texture = info.getVoxel().store().textures().getVoxelTextureByName(this.texturesNames[modelTextureIndex].replace("~", voxelName));
 				
 				useUntil = this.texturesOffsets[modelTextureIndex];
-				textureS = texture.atlasS;// +mod(sx,texture.textureScale)*offset;
-				textureT = texture.atlasT;// +mod(sz,texture.textureScale)*offset;
+				textureS = texture.getAtlasS();// +mod(sx,texture.textureScale)*offset;
+				textureT = texture.getAtlasT();// +mod(sz,texture.textureScale)*offset;
 			}
 			
 			/*
@@ -153,7 +153,7 @@ public class VoxelWaterRenderer extends VoxelModelLoaded
 				
 				//if(this.normals[i*3+1] > 0)
 				renderByteBuffer.addVerticeFloat(this.vertices[i*3+0] + x + dx, this.vertices[i*3+1] + y + dy, this.vertices[i*3+2] + z + dz);
-				renderByteBuffer.addTexCoordInt((int) (textureS + this.texCoords[i*2+0] * texture.atlasOffset), (int) (textureT + this.texCoords[i*2+1] * texture.atlasOffset));
+				renderByteBuffer.addTexCoordInt((int) (textureS + this.texCoords[i*2+0] * texture.getAtlasOffset()), (int) (textureT + this.texCoords[i*2+1] * texture.getAtlasOffset()));
 				renderByteBuffer.addColorsSpecial(lightColors, depth * 16);
 				renderByteBuffer.addNormalsInt(ChunksRenderer.intifyNormal(this.normals[i*3+0]), ChunksRenderer.intifyNormal(this.normals[i*3+1]), ChunksRenderer.intifyNormal(this.normals[i*3+2]), (byte)0);
 				

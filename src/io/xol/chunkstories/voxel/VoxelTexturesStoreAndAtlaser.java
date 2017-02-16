@@ -23,6 +23,7 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
+import io.xol.engine.misc.CasterIterator;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.client.ClientInterface;
@@ -30,6 +31,7 @@ import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.AssetHierarchy;
+import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.content.DefaultModsManager.ModsAssetHierarchy;
 import io.xol.chunkstories.content.GameContentStore;
 
@@ -119,7 +121,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 			for (VoxelTextureAtlased voxelTexture : voxelTexturesSortedBySize)
 			{
 				// System.out.println(vt.imageFileDimensions);
-				texMap.put(voxelTexture.name, voxelTexture);
+				texMap.put(voxelTexture.getName(), voxelTexture);
 			}
 
 			// Estimates the required texture atlas size by surface
@@ -198,9 +200,9 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 								{
 									spotX = a * 16;
 									spotY = b * 16;
-									vt.atlasS = spotX * BLOCK_ATLAS_FACTOR;
-									vt.atlasT = spotY * BLOCK_ATLAS_FACTOR;
-									vt.atlasOffset = vt.imageFileDimensions * BLOCK_ATLAS_FACTOR;
+									vt.setAtlasS(spotX * BLOCK_ATLAS_FACTOR);
+									vt.setAtlasT(spotY * BLOCK_ATLAS_FACTOR);
+									vt.setAtlasOffset(vt.imageFileDimensions * BLOCK_ATLAS_FACTOR);
 									foundSpot = true;
 									for (int i = 0; (i < vt.imageFileDimensions / 16 && a + i < sizeRequired / 16); i++)
 										for (int j = 0; (j < vt.imageFileDimensions / 16 && b + j < sizeRequired / 16); j++)
@@ -215,7 +217,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						break;
 					}
 
-					imageBuffer = ImageIO.read(content.modsManager().getAsset("./voxels/textures/" + vt.name + ".png").read());
+					imageBuffer = ImageIO.read(content.modsManager().getAsset("./voxels/textures/" + vt.getName() + ".png").read());
 					//imageBuffer = ImageIO.read(GameContent.getTextureFileLocation());
 
 					float alphaTotal = 0;
@@ -248,14 +250,14 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 					if (nonNullPixels > 0)
 						alphaTotal /= nonNullPixels;
 
-					vt.color = new Vector4fm(color.getX(), color.getY(), color.getZ(), alphaTotal);
+					vt.setColor(new Vector4fm(color.getX(), color.getY(), color.getZ(), alphaTotal));
 
 					//Don't bother if it's not a Client context
 					if(diffuseTextureImage == null)
 						continue;
 					
 					// Do also the normal maps !
-					Asset normalMap = content.modsManager().getAsset("./voxels/textures/normal/" + vt.name + ".png");
+					Asset normalMap = content.modsManager().getAsset("./voxels/textures/normal/" + vt.getName() + ".png");
 					if (normalMap == null)
 						normalMap = content.modsManager().getAsset("./voxels/textures/normal/notex.png");
 
@@ -269,7 +271,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						}
 					}
 					// And the materials !
-					Asset materialMap = content.modsManager().getAsset("./voxels/textures/material/" + vt.name + ".png");
+					Asset materialMap = content.modsManager().getAsset("./voxels/textures/material/" + vt.getName() + ".png");
 					if (materialMap == null)
 						materialMap = content.modsManager().getAsset("./voxels/textures/material/notex.png");
 
@@ -357,7 +359,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 							switch (parameterName)
 							{
 							case "textureScale":
-								vt.textureScale = Integer.parseInt(parameterValue);
+								vt.setTextureScale(Integer.parseInt(parameterValue));
 								break;
 							default:
 								System.out.println("Warning ! Parse error in file " + asset + ", line " + ln + ", unknown parameter '" + parameterName + "'");
@@ -395,7 +397,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 		}
 	}
 
-	public VoxelTextureAtlased getVoxelTextureByName(String textureName)
+	public VoxelTexture getVoxelTextureByName(String textureName)
 	{
 		//textureName = "kek";
 
@@ -405,9 +407,9 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 		// return new VoxelTextureAtlased(null, "notex");
 	}
 
-	public Iterator<VoxelTextureAtlased> all()
+	public Iterator<VoxelTexture> all()
 	{
-		return texMap.values().iterator();
+		return new CasterIterator<VoxelTexture, VoxelTextureAtlased>(texMap.values().iterator());
 	}
 
 	@Override

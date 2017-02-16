@@ -12,6 +12,7 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
+import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
@@ -60,9 +61,9 @@ public interface Content
 		public VoxelTextures textures();
 		public interface VoxelTextures {
 			
-			public VoxelTextureAtlased getVoxelTextureByName(String voxelTextureName);
+			public VoxelTexture getVoxelTextureByName(String voxelTextureName);
 			
-			public Iterator<VoxelTextureAtlased> all();
+			public Iterator<VoxelTexture> all();
 
 			public Voxels parent();
 		}

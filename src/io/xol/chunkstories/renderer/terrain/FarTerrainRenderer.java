@@ -20,6 +20,7 @@ import org.lwjgl.BufferUtils;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.client.RenderingConfig;
@@ -87,6 +88,7 @@ public class FarTerrainRenderer
 		blocksTexturesSummaryDone = false;
 	}
 
+	/** Dirty and stupid */
 	public Texture1D getBlocksTexturesSummary()
 	{
 		if (!blocksTexturesSummaryDone)
@@ -96,15 +98,15 @@ public class FarTerrainRenderer
 			bb.order(ByteOrder.LITTLE_ENDIAN);
 
 			int counter = 0;
-			Iterator<VoxelTextureAtlased> i = VoxelsStore.get().textures().all();
+			Iterator<VoxelTexture> i = VoxelsStore.get().textures().all();
 			while (i.hasNext() && counter < size)
 			{
-				VoxelTextureAtlased voxelTexture = i.next();
+				VoxelTextureAtlased voxelTexture = (VoxelTextureAtlased)i.next();
 
-				bb.put((byte) (voxelTexture.color.getX() * 255));
-				bb.put((byte) (voxelTexture.color.getY() * 255));
-				bb.put((byte) (voxelTexture.color.getZ() * 255));
-				bb.put((byte) (voxelTexture.color.getW() * 255));
+				bb.put((byte) (voxelTexture.getColor().getX() * 255));
+				bb.put((byte) (voxelTexture.getColor().getY() * 255));
+				bb.put((byte) (voxelTexture.getColor().getZ() * 255));
+				bb.put((byte) (voxelTexture.getColor().getW() * 255));
 
 				voxelTexture.positionInColorIndex = counter;
 				counter++;
