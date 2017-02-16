@@ -125,9 +125,9 @@ public class OpenGLDebugOutputCallback implements Handler
 		if(type == GL_DEBUG_TYPE_ERROR_ARB)
 		{
 			mainGLThread.dumpStack();
+			
+			errorHappened = true;
 		}
-		
-		errorHappened = true;
 
 	}
 	

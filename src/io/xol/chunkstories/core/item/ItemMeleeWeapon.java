@@ -256,22 +256,24 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 			Matrix4f matrixed = new Matrix4f(handTransformation);
 
 			float rot = 0;
+			
+			ItemMeleeWeapon instance = (ItemMeleeWeapon) pile.getItem();
 
-			if (System.currentTimeMillis() - currentSwingStart < swingDuration)
+			if (System.currentTimeMillis() - instance.currentSwingStart < instance.swingDuration)
 			{
-				if (hitTime == swingDuration)
+				if (instance.hitTime == instance.swingDuration)
 				{
 					//Whole thing over the same duration
-					rot = (float) (0 - Math.PI / 4f * (float) (System.currentTimeMillis() - currentSwingStart) / hitTime);
+					rot = (float) (0 - Math.PI / 4f * (float) (System.currentTimeMillis() - instance.currentSwingStart) / instance.hitTime);
 				}
 				else
 				{
 					//We didn't hit yet
-					if (System.currentTimeMillis() - currentSwingStart < hitTime)
-						rot = (float) (0 - Math.PI / 4f * (float) (System.currentTimeMillis() - currentSwingStart) / hitTime);
+					if (System.currentTimeMillis() - instance.currentSwingStart < instance.hitTime)
+						rot = (float) (0 - Math.PI / 4f * (float) (System.currentTimeMillis() - instance.currentSwingStart) / instance.hitTime);
 					//We did
 					else
-						rot = (float) (0 - Math.PI / 4f + Math.PI / 4f * (float) (System.currentTimeMillis() - currentSwingStart - hitTime) / (swingDuration - hitTime));
+						rot = (float) (0 - Math.PI / 4f + Math.PI / 4f * (float) (System.currentTimeMillis() - instance.currentSwingStart - instance.hitTime) / (instance.swingDuration - instance.hitTime));
 
 				}
 			}
@@ -281,7 +283,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 			matrixed.rotate(rot, new Vector3fm(0, 0, 1));
 			matrixed.translate(new Vector3fm(0, 0.25 - dekal, 0));
 
-			matrixed.scale(new Vector3fm(itemRenderScale));
+			matrixed.scale(new Vector3fm(instance.itemRenderScale));
 
 			super.renderItemInWorld(renderingInterface, pile, world, location, matrixed);
 		}

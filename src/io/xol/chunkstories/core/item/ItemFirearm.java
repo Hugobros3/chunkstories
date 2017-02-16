@@ -116,6 +116,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		public ScopedWeaponItemRenderer(ItemRenderer itemRenderer)
 		{
 			super(null);
+			this.actualRenderer = itemRenderer;
 		}
 
 		@Override
@@ -132,7 +133,9 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 				if (pile.getInventory().getHolder() != null)
 				{
 					Entity clientEntity = Client.getInstance().getPlayer().getControlledEntity();
-					if (isScoped() && clientEntity.equals(pile.getInventory().getHolder()))
+					ItemFirearm item = (ItemFirearm) pile.getItem();
+					
+					if (item.isScoped() && clientEntity.equals(pile.getInventory().getHolder()))
 						return;
 				}
 			}
