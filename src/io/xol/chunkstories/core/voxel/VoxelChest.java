@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.voxel.EntityChest;
 import io.xol.chunkstories.renderer.VoxelContext;
-import io.xol.chunkstories.voxel.VoxelTexture;
+import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -22,9 +22,9 @@ import io.xol.chunkstories.world.WorldImplementation;
 
 public class VoxelChest extends VoxelEntity
 {
-	VoxelTexture frontTexture;
-	VoxelTexture sideTexture;
-	VoxelTexture topTexture;
+	VoxelTextureAtlased frontTexture;
+	VoxelTextureAtlased sideTexture;
+	VoxelTextureAtlased topTexture;
 	
 	public VoxelChest(VoxelType type)
 	{
@@ -63,7 +63,7 @@ public class VoxelChest extends VoxelEntity
 	}
 	
 	@Override
-	public VoxelTexture getVoxelTexture(int data, VoxelSides side, VoxelContext info)
+	public VoxelTextureAtlased getVoxelTexture(int data, VoxelSides side, VoxelContext info)
 	{
 		VoxelSides actualSide = VoxelSides.getSideMcStairsChestFurnace(VoxelFormat.meta(data));
 		

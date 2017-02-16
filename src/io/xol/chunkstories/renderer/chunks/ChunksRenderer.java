@@ -8,10 +8,10 @@ import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.voxel.VoxelTexture;
+import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.math.LoopingMathHelper;
@@ -389,7 +389,7 @@ public class ChunksRenderer extends Thread
 		return new float[] { blocklightFactor / 15f, sunlightFactor / 15f, aoFactor / 4f };
 	}
 
-	private void addQuadTop(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	private void addQuadTop(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx, sy + 1, sz);
 		int llMb = getBlocklight(c, sx, sy + 1, sz);
@@ -480,7 +480,7 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadBottom(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	private void addQuadBottom(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx, sy - 1, sz);
 		int llMb = getBlocklight(c, sx, sy - 1, sz);
@@ -553,7 +553,7 @@ public class ChunksRenderer extends Thread
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadRight(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	private void addQuadRight(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
 	{
 		// ++x for dekal
 
@@ -636,7 +636,7 @@ public class ChunksRenderer extends Thread
 		return c += b;
 	}
 
-	private void addQuadLeft(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	private void addQuadLeft(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx - 1, sy, sz);
 		int llMb = getBlocklight(c, sx - 1, sy, sz);
@@ -711,7 +711,7 @@ public class ChunksRenderer extends Thread
 
 	}
 
-	private void addQuadFront(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	private void addQuadFront(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
 	{
 		int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
@@ -786,7 +786,7 @@ public class ChunksRenderer extends Thread
 
 	}
 
-	private void addQuadBack(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	private void addQuadBack(CubicChunk c, VoxelBaker rbbf, int sx, int sy, int sz, VoxelTextureAtlased texture, byte wavy)
 	{
 
 		int llMs = getSunlight(c, sx, sy, sz - 1);

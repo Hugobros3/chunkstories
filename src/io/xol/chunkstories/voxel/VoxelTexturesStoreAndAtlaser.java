@@ -39,7 +39,7 @@ import io.xol.chunkstories.content.GameContentStore;
 
 public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTextures
 {
-	Map<String, VoxelTexture> texMap = new HashMap<String, VoxelTexture>();
+	Map<String, VoxelTextureAtlased> texMap = new HashMap<String, VoxelTextureAtlased>();
 	int uniquesIds = 0;
 	//static Map<String, Vector4fm> colors = new HashMap<String, Vector4fm>();
 
@@ -73,7 +73,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 			int totalSurfacedNeeded = 0;
 			//File folder = new File("./res/voxels/textures/");
 			// Get all sizes :
-			List<VoxelTexture> voxelTexturesSortedBySize = new ArrayList<VoxelTexture>();
+			List<VoxelTextureAtlased> voxelTexturesSortedBySize = new ArrayList<VoxelTextureAtlased>();
 
 			//for (File f : folder.listFiles())
 
@@ -96,7 +96,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 						//System.out.println("texName:"+textureName+" "+entry.getKey());
 						if (!texMap.containsKey(textureName))
 						{
-							VoxelTexture voxelTexture = new VoxelTexture(textureName, uniquesIds);
+							VoxelTextureAtlased voxelTexture = new VoxelTextureAtlased(textureName, uniquesIds);
 							uniquesIds++;
 
 							voxelTexture.imageFileDimensions = getImageSize(f);
@@ -108,15 +108,15 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 				}
 			}
 			// Sort them by size
-			Collections.sort(voxelTexturesSortedBySize, new Comparator<VoxelTexture>()
+			Collections.sort(voxelTexturesSortedBySize, new Comparator<VoxelTextureAtlased>()
 			{
 				@Override
-				public int compare(VoxelTexture a, VoxelTexture b)
+				public int compare(VoxelTextureAtlased a, VoxelTextureAtlased b)
 				{
 					return Integer.compare(b.imageFileDimensions, a.imageFileDimensions);
 				}
 			});
-			for (VoxelTexture voxelTexture : voxelTexturesSortedBySize)
+			for (VoxelTextureAtlased voxelTexture : voxelTexturesSortedBySize)
 			{
 				// System.out.println(vt.imageFileDimensions);
 				texMap.put(voxelTexture.name, voxelTexture);
@@ -176,7 +176,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 
 				BufferedImage imageBuffer;
 
-				for (VoxelTexture vt : voxelTexturesSortedBySize)
+				for (VoxelTextureAtlased vt : voxelTexturesSortedBySize)
 				{
 					// Find a free spot on the atlas
 					boolean foundSpot = false;
@@ -318,7 +318,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 
 			String line = "";
 
-			VoxelTexture vt = null;
+			VoxelTextureAtlased vt = null;
 			int ln = 0;
 			while ((line = reader.readLine()) != null)
 			{
@@ -395,17 +395,17 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 		}
 	}
 
-	public VoxelTexture getVoxelTextureByName(String textureName)
+	public VoxelTextureAtlased getVoxelTextureByName(String textureName)
 	{
 		//textureName = "kek";
 
 		if (texMap.containsKey(textureName))
 			return texMap.get(textureName);
 		return texMap.get("notex");
-		// return new VoxelTexture(null, "notex");
+		// return new VoxelTextureAtlased(null, "notex");
 	}
 
-	public Iterator<VoxelTexture> all()
+	public Iterator<VoxelTextureAtlased> all()
 	{
 		return texMap.values().iterator();
 	}

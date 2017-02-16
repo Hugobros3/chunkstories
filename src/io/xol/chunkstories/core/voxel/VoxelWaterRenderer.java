@@ -3,19 +3,20 @@ package io.xol.chunkstories.core.voxel;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
-import io.xol.chunkstories.voxel.VoxelTexture;
+import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.chunkstories.voxel.models.VoxelModelLoaded;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class VoxelWaterRenderer extends VoxelModel
+public class VoxelWaterRenderer extends VoxelModelLoaded
 {
 	public VoxelWaterRenderer(VoxelModel model)
 	{
@@ -48,7 +49,7 @@ public class VoxelWaterRenderer extends VoxelModel
 		
 		int modelTextureIndex = 0;
 		
-		VoxelTexture texture = info.getTexture(VoxelSides.TOP);
+		VoxelTextureAtlased texture = info.getTexture(VoxelSides.TOP);
 		
 		if(this.texturesNames[modelTextureIndex].equals("_top"))
 			texture = info.getTexture(VoxelSides.TOP);

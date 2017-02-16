@@ -6,14 +6,14 @@ import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class VoxelTexture
+public class VoxelTextureAtlased
 {
-	public VoxelTexture(String name, int id) throws Exception
+	public VoxelTextureAtlased(String name, int id) throws Exception
 	{
 		this.name = name;
 		this.id = id;
 		if(name == null)
-			throw new Exception("fuck off m9");
+			throw new Exception("Unnamed VoxelTextureAtlased exception");
 	}
 
 	public String name;

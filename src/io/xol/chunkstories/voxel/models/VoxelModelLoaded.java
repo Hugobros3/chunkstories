@@ -5,18 +5,20 @@ import io.xol.chunkstories.api.Content.Voxels.VoxelModels;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.models.VoxelModel;
+import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
-import io.xol.chunkstories.voxel.VoxelTexture;
+import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class VoxelModel implements VoxelRenderer
+public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 {
 	private final Content.Voxels.VoxelModels store;
 	protected final String name;
@@ -34,12 +36,12 @@ public class VoxelModel implements VoxelRenderer
 	protected final float jitterY;
 	protected final float jitterZ;
 
-	public VoxelModel(VoxelModels store, String name, float[] vertices, float[] texCoords, String[] texturesNames, int[] texturesOffsets, float[] normals, byte[] extra, boolean[][] culling)
+	public VoxelModelLoaded(VoxelModels store, String name, float[] vertices, float[] texCoords, String[] texturesNames, int[] texturesOffsets, float[] normals, byte[] extra, boolean[][] culling)
 	{
 		this(store, name, vertices, texCoords, texturesNames, texturesOffsets, normals, extra, culling, 0, 0, 0);
 	}
 
-	public VoxelModel(VoxelModels store, String name, float[] vertices, float[] texCoords, String[] texturesNames, int[] texturesOffsets, float[] normals, byte[] extra, boolean[][] culling, float jitterX, float jitterY, float jitterZ)
+	public VoxelModelLoaded(VoxelModels store, String name, float[] vertices, float[] texCoords, String[] texturesNames, int[] texturesOffsets, float[] normals, byte[] extra, boolean[][] culling, float jitterX, float jitterY, float jitterZ)
 	{
 		this.store = store;
 		this.name = name;
@@ -55,6 +57,10 @@ public class VoxelModel implements VoxelRenderer
 		this.jitterZ = jitterZ;
 	}
 	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getName()
+	 */
+	@Override
 	public String getName()
 	{
 		return name;
@@ -62,6 +68,9 @@ public class VoxelModel implements VoxelRenderer
 	
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.voxel.models.VoxelRenderer#renderInto(io.xol.chunkstories.renderer.chunks.RenderByteBuffer, io.xol.chunkstories.renderer.BlockRenderInfo, io.xol.chunkstories.api.world.Chunk, int, int, int)
+	 */
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#renderInto(io.xol.chunkstories.renderer.chunks.VoxelBaker, io.xol.chunkstories.renderer.VoxelContext, io.xol.chunkstories.api.world.chunk.Chunk, int, int, int)
 	 */
 	@Override
 	public int renderInto(VoxelBaker renderByteBuffer, VoxelContext info, Chunk chunk, int x, int y, int z)
@@ -75,7 +84,7 @@ public class VoxelModel implements VoxelRenderer
 		
 		//We have an array of textures and we jump to the next based on baked offsets and vertice counting
 		int modelTextureIndex = 0;
-		VoxelTexture currentVoxelTexture = null;
+		VoxelTextureAtlased currentVoxelTexture = null;
 		
 		//Selects an appropriate texture
 		currentVoxelTexture = selectsTextureFromIndex(info, modelTextureIndex);
@@ -158,7 +167,7 @@ public class VoxelModel implements VoxelRenderer
 		return this.vertices.length;
 	}
 
-	private VoxelTexture selectsTextureFromIndex(VoxelContext info, int modelTextureIndex)
+	private VoxelTextureAtlased selectsTextureFromIndex(VoxelContext info, int modelTextureIndex)
 	{
 		if(this.texturesNames[modelTextureIndex].equals("_top"))
 			return info.getTexture(VoxelSides.TOP);
@@ -177,11 +186,19 @@ public class VoxelModel implements VoxelRenderer
 		return store.parent().textures().getVoxelTextureByName(this.texturesNames[modelTextureIndex].replace("~", info.getVoxel().getName()));
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getSizeInVertices()
+	 */
+	@Override
 	public int getSizeInVertices()
 	{
 		return vertices.length / 3;
 	}
 	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getCulling()
+	 */
+	@Override
 	public boolean[][] getCulling()
 	{
 		return culling;
@@ -197,51 +214,91 @@ public class VoxelModel implements VoxelRenderer
 		return store;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getTexturesNames()
+	 */
+	@Override
 	public String[] getTexturesNames()
 	{
 		return texturesNames;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getTexturesOffsets()
+	 */
+	@Override
 	public int[] getTexturesOffsets()
 	{
 		return texturesOffsets;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getVertices()
+	 */
+	@Override
 	public float[] getVertices()
 	{
 		return vertices;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getTexCoords()
+	 */
+	@Override
 	public float[] getTexCoords()
 	{
 		return texCoords;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getNormals()
+	 */
+	@Override
 	public float[] getNormals()
 	{
 		return normals;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getExtra()
+	 */
+	@Override
 	public byte[] getExtra()
 	{
 		return extra;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getJitterX()
+	 */
+	@Override
 	public float getJitterX()
 	{
 		return jitterX;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getJitterY()
+	 */
+	@Override
 	public float getJitterY()
 	{
 		return jitterY;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getJitterZ()
+	 */
+	@Override
 	public float getJitterZ()
 	{
 		return jitterZ;
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#store()
+	 */
+	@Override
 	public Content.Voxels.VoxelModels store()
 	{
 		return store;

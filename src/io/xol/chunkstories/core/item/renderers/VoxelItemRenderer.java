@@ -21,13 +21,13 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.RenderByteBuffer;
-import io.xol.chunkstories.voxel.models.VoxelModel;
-import io.xol.chunkstories.voxel.models.VoxelRenderer;
+import io.xol.chunkstories.voxel.models.VoxelModelLoaded;
 import io.xol.chunkstories.world.chunk.DummyChunk;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
@@ -131,9 +131,9 @@ public class VoxelItemRenderer extends ItemRenderer
 
 	private void renderVoxel(RenderingInterface renderingContext, Voxel voxel, VoxelRenderer voxelRenderer, VoxelContext bri)
 	{
-		VoxelModel model = null;
-		if (voxelRenderer instanceof VoxelModel)
-			model = (VoxelModel) voxelRenderer;
+		VoxelModelLoaded model = null;
+		if (voxelRenderer instanceof VoxelModelLoaded)
+			model = (VoxelModelLoaded) voxelRenderer;
 		else
 			return;
 

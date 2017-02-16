@@ -7,7 +7,7 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.renderer.VoxelContext;
-import io.xol.chunkstories.voxel.VoxelTexture;
+import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -15,7 +15,7 @@ import io.xol.chunkstories.voxel.VoxelTexture;
 
 public class VoxelMeta16 extends Voxel
 {
-	VoxelTexture colors[] = new VoxelTexture[16];
+	VoxelTextureAtlased colors[] = new VoxelTextureAtlased[16];
 
 	public VoxelMeta16(VoxelType type)
 	{
@@ -25,7 +25,7 @@ public class VoxelMeta16 extends Voxel
 	}
 
 	@Override
-	public VoxelTexture getVoxelTexture(int data, VoxelSides side, VoxelContext info) // 0 for top, 1 bot,
+	public VoxelTextureAtlased getVoxelTexture(int data, VoxelSides side, VoxelContext info) // 0 for top, 1 bot,
 	// 2,3,4,5
 	// north/south/east/west
 	{

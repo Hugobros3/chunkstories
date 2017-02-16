@@ -12,15 +12,15 @@ import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelType;
+import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.chunkstories.voxel.VoxelTexture;
+import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.voxel.models.VoxelModel;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -31,7 +31,7 @@ import io.xol.chunkstories.voxel.models.VoxelModel;
  */
 public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, VoxelCustomIcon
 {
-	VoxelTexture doorTexture;
+	VoxelTextureAtlased doorTexture;
 
 	VoxelModel[] models = new VoxelModel[8];
 
@@ -53,7 +53,7 @@ public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, Vo
 	}
 
 	@Override
-	public VoxelTexture getVoxelTexture(int data, VoxelSides side, VoxelContext info)
+	public VoxelTextureAtlased getVoxelTexture(int data, VoxelSides side, VoxelContext info)
 	{
 		return doorTexture;
 	}

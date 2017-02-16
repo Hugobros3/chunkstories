@@ -11,9 +11,9 @@ import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelType;
+import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.voxel.models.VoxelModel;
 
 public class VoxelTypeImplementation extends GenericNamedConfigurable implements VoxelType
 {
@@ -22,7 +22,7 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 	private final int id;
 	private final Material material;
 	private final VoxelModel model;
-	private final VoxelTexture[] textures = new VoxelTexture[6];
+	private final VoxelTextureAtlased[] textures = new VoxelTextureAtlased[6];
 	private final CollisionBox collisionBox;
 	
 	private final boolean solid;
@@ -67,7 +67,7 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 		}
 		//Try the 'texture' (no s) tag and if all else fail, use the voxel name as the texture name
 		String textureResolved = this.resolveProperty("texture");
-		VoxelTexture textureToFill = store.textures().getVoxelTextureByName(textureResolved != null ? textureResolved : name);
+		VoxelTextureAtlased textureToFill = store.textures().getVoxelTextureByName(textureResolved != null ? textureResolved : name);
 		//Fill the remaining slots with whatever we found
 		while(textureIndex < 6)
 		{
@@ -158,7 +158,7 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 	}
 
 	@Override
-	public VoxelTexture getVoxelTexture(VoxelSides side)
+	public VoxelTextureAtlased getVoxelTexture(VoxelSides side)
 	{
 		return textures[side.ordinal()];
 	}

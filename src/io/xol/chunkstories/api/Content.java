@@ -11,11 +11,11 @@ import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
-import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.models.VoxelModel;
+import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.engine.animation.BVHLibrary;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -60,9 +60,9 @@ public interface Content
 		public VoxelTextures textures();
 		public interface VoxelTextures {
 			
-			public VoxelTexture getVoxelTextureByName(String voxelTextureName);
+			public VoxelTextureAtlased getVoxelTextureByName(String voxelTextureName);
 			
-			public Iterator<VoxelTexture> all();
+			public Iterator<VoxelTextureAtlased> all();
 
 			public Voxels parent();
 		}

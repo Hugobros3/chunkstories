@@ -21,13 +21,13 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingM
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;
-import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;

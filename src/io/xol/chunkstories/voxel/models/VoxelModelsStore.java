@@ -3,6 +3,7 @@ package io.xol.chunkstories.voxel.models;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
@@ -157,7 +158,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 								culling[i] = cullingTemp.get(i);
 							}
 
-							VoxelModel voxelModel = new VoxelModel(this, voxelModelName, vertices, texCoords, texturesNames, texturesOffsets, normals, extras, culling, jitterX, jitterY, jitterZ);
+							VoxelModelLoaded voxelModel = new VoxelModelLoaded(this, voxelModelName, vertices, texCoords, texturesNames, texturesOffsets, normals, extras, culling, jitterX, jitterY, jitterZ);
 							models.put(voxelModelName, voxelModel);
 
 							//Resets data accumulators
@@ -315,12 +316,12 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 		}
 	}
 
-	public VoxelModel getVoxelModelByName(String name)
+	public VoxelModelLoaded getVoxelModelByName(String name)
 	{
 		if (name.endsWith(".default"))
 			name = name.substring(0, name.length() - 8);
 		if (models.containsKey(name))
-			return models.get(name);
+			return (VoxelModelLoaded)models.get(name);
 		ChunkStoriesLogger.getInstance().log("Couldn't serve voxel model : " + name, ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.ERROR);
 		return null;
 	}

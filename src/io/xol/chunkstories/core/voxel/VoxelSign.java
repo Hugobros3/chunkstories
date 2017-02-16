@@ -10,10 +10,10 @@ import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelEntity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelType;
+import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.voxel.EntitySign;
 import io.xol.chunkstories.renderer.VoxelContext;
-import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive

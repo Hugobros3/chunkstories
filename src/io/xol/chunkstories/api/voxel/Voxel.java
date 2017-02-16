@@ -4,12 +4,12 @@ import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
-import io.xol.chunkstories.voxel.VoxelTexture;
-import io.xol.chunkstories.voxel.models.VoxelRenderer;
+import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -73,7 +73,7 @@ public class Voxel
 	 * @param side The side of the block we want the texture of ( see {@link VoxelSides VoxelSides.class} )
 	 * @return
 	 */
-	public VoxelTexture getVoxelTexture(int data, VoxelSides side, VoxelContext info) {
+	public VoxelTextureAtlased getVoxelTexture(int data, VoxelSides side, VoxelContext info) {
 		//By default we don't care about context, we give the same texture to everyone
 		return type.getVoxelTexture(side);
 	}

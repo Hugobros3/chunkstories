@@ -26,7 +26,7 @@ import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
-import io.xol.chunkstories.voxel.VoxelTexture;
+import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
@@ -96,10 +96,10 @@ public class FarTerrainRenderer
 			bb.order(ByteOrder.LITTLE_ENDIAN);
 
 			int counter = 0;
-			Iterator<VoxelTexture> i = VoxelsStore.get().textures().all();
+			Iterator<VoxelTextureAtlased> i = VoxelsStore.get().textures().all();
 			while (i.hasNext() && counter < size)
 			{
-				VoxelTexture voxelTexture = i.next();
+				VoxelTextureAtlased voxelTexture = i.next();
 
 				bb.put((byte) (voxelTexture.color.getX() * 255));
 				bb.put((byte) (voxelTexture.color.getY() * 255));

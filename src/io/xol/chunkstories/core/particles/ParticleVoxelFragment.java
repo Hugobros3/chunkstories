@@ -8,7 +8,7 @@ import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.voxel.VoxelTexture;
+import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
@@ -28,7 +28,7 @@ public class ParticleVoxelFragment extends ParticleType
 
 	public class FragmentData extends ParticleData implements ParticleDataWithTextureCoordinates, ParticleDataWithVelocity {
 		
-		VoxelTexture tex;
+		VoxelTextureAtlased tex;
 		
 		int timer = 1450; // 30s
 		Vector3dm vel = new Vector3dm();
@@ -106,7 +106,7 @@ public class ParticleVoxelFragment extends ParticleType
 		void setData(int data)
 		{
 			int id = VoxelFormat.id(data);
-			VoxelTexture tex = VoxelsStore.get().getVoxelById(id).getVoxelTexture(data, VoxelSides.LEFT, null);
+			VoxelTextureAtlased tex = VoxelsStore.get().getVoxelById(id).getVoxelTexture(data, VoxelSides.LEFT, null);
 			
 			int qx = (int) Math.floor(Math.random() * 4.0);
 			int rx = qx + 1;
