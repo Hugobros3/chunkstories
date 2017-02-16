@@ -1,10 +1,10 @@
-package io.xol.engine.math.lalgb.vector.dp;
+package io.xol.chunkstories.api.math.vector.dp;
 
-import io.xol.engine.math.lalgb.vector.Vector2;
-import io.xol.engine.math.lalgb.vector.Vector2m;
-import io.xol.engine.math.lalgb.vector.Vector3;
-import io.xol.engine.math.lalgb.vector.abs.Vector3am;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.vector.Vector2;
+import io.xol.chunkstories.api.math.vector.Vector2m;
+import io.xol.chunkstories.api.math.vector.Vector3;
+import io.xol.chunkstories.api.math.vector.abs.Vector3am;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 
 public class Vector3dm extends Vector3am<Double>
 {
@@ -24,27 +24,6 @@ public class Vector3dm extends Vector3am<Double>
 		this.y = y;
 		this.z = z;
 	}
-	
-	/*public <N extends Number> Vector3dm(Vector3<N> vec)
-	{
-		this(vec.getX(), vec.getY(), vec.getZ());
-	}
-	
-	public <N extends Number> Vector3dm(N x, N y, N z)
-	{
-		if(x instanceof Float)
-		{
-			this.x = (double)(float)x;
-			this.y = (double)(float)y;
-			this.z = (double)(float)z;
-		}
-		else
-		{
-			this.x = (double)x;
-			this.y = (double)y;
-			this.z = (double)z;
-		}
-	}*/
 
 	public Vector3dm(double d)
 	{

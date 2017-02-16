@@ -1,8 +1,8 @@
 package io.xol.chunkstories.api;
 
+import io.xol.chunkstories.api.math.vector.Vector3;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.world.World;
-import io.xol.engine.math.lalgb.vector.Vector3;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

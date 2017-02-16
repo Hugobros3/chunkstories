@@ -18,11 +18,11 @@ import org.lwjgl.openal.AL;
 import org.lwjgl.openal.EFXUtil;
 
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.sound.ogg.SoundDataOggSample;
 import io.xol.engine.sound.sources.ALBufferedSoundSource;
 import io.xol.engine.sound.sources.ALSoundSource;

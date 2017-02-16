@@ -1,9 +1,9 @@
-package io.xol.engine.math.lalgb.vector.sp;
+package io.xol.chunkstories.api.math.vector.sp;
 
-import io.xol.engine.math.lalgb.vector.Vector2;
-import io.xol.engine.math.lalgb.vector.Vector2m;
-import io.xol.engine.math.lalgb.vector.abs.Vector2am;
-import io.xol.engine.math.lalgb.vector.dp.Vector2dm;
+import io.xol.chunkstories.api.math.vector.Vector2;
+import io.xol.chunkstories.api.math.vector.Vector2m;
+import io.xol.chunkstories.api.math.vector.abs.Vector2am;
+import io.xol.chunkstories.api.math.vector.dp.Vector2dm;
 
 public class Vector2fm extends Vector2am<Float>
 {

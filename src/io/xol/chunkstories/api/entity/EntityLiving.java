@@ -2,9 +2,9 @@ package io.xol.chunkstories.api.entity;
 
 import io.xol.chunkstories.api.entity.interfaces.EntityAnimated;
 import io.xol.chunkstories.api.entity.interfaces.EntityRotateable;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

@@ -1,4 +1,4 @@
-package io.xol.engine.math.lalgb.vector;
+package io.xol.chunkstories.api.math.vector;
 
 /**
  * Mutable vectors are modifiable

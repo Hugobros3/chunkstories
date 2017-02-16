@@ -4,12 +4,12 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

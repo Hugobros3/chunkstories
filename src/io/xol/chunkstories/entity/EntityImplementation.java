@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.exceptions.IllegalUUIDChangeException;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -25,8 +26,6 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.voxel.VoxelsStore;
-
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

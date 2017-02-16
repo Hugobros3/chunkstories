@@ -1,6 +1,8 @@
 package io.xol.chunkstories.core.entity;
 
 import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
@@ -8,8 +10,6 @@ import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

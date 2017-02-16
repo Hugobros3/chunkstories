@@ -3,6 +3,7 @@ package io.xol.chunkstories.api.rendering;
 import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
 import io.xol.chunkstories.api.exceptions.rendering.InvalidShaderException;
 import io.xol.chunkstories.api.exceptions.rendering.ShaderCompileException;
+import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
@@ -19,7 +20,6 @@ import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
 import io.xol.engine.graphics.textures.Cubemap;
 import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.Texture2D;
-import io.xol.engine.math.lalgb.Matrix4f;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

@@ -3,13 +3,13 @@ package io.xol.chunkstories.api.voxel;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.material.Material;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelTexture;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

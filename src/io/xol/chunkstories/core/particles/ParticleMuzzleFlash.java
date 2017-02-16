@@ -3,7 +3,7 @@ package io.xol.chunkstories.core.particles;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.rendering.lightning.Light;

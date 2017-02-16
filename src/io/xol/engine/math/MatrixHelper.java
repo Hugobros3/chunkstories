@@ -1,9 +1,9 @@
 package io.xol.engine.math;
 
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.vector.Vector3;
-import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.Vector3;
+import io.xol.chunkstories.api.math.vector.operations.VectorCrossProduct;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

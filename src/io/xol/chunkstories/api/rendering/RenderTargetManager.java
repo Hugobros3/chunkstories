@@ -1,7 +1,7 @@
 package io.xol.chunkstories.api.rendering;
 
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.engine.graphics.fbo.FrameBufferObject;
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

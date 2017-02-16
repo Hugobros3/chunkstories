@@ -2,6 +2,7 @@ package io.xol.engine.graphics;
 
 import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
+import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
@@ -37,8 +38,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.lwjgl.BufferUtils;
-
-import io.xol.engine.math.lalgb.Matrix4f;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

@@ -1,13 +1,14 @@
-package io.xol.engine.math.lalgb;
+package io.xol.chunkstories.api.math;
 
 import java.nio.FloatBuffer;
 
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
+/* This file is part of the ChunkStories WIP API.
+ * Licensing is yet to be decided, please check out the github page for
+ * up-to date information. */
 
+/** Hopefully hi-performance matrix class, replacing and using bits from LWJGL2 utility library */
 public class Matrix3f
 {
 	// Hopefully hi-performance matrix class

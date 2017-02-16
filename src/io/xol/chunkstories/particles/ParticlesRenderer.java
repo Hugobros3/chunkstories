@@ -1,6 +1,7 @@
 package io.xol.chunkstories.particles;
 
 import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
@@ -16,7 +17,6 @@ import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 import java.nio.FloatBuffer;
 import java.util.Iterator;

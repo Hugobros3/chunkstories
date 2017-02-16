@@ -1,6 +1,8 @@
 package io.xol.chunkstories.core.entity.voxel;
 
 import io.xol.chunkstories.api.entity.EntityVoxel;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
@@ -17,8 +19,6 @@ import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.graphics.geometry.TextMeshObject;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.model.ModelLibrary;
 
 //(c) 2015-2017 XolioWare Interactive

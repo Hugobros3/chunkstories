@@ -5,6 +5,7 @@ import org.lwjgl.input.Keyboard;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.item.Inventory;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.ng.NgButton;
@@ -19,7 +20,6 @@ import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

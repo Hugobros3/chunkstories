@@ -1,10 +1,10 @@
 package io.xol.chunkstories.api.rendering.pipeline;
 
-import io.xol.engine.math.lalgb.Matrix3f;
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.vector.Vector2;
-import io.xol.engine.math.lalgb.vector.Vector3;
-import io.xol.engine.math.lalgb.vector.Vector4;
+import io.xol.chunkstories.api.math.Matrix3f;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.Vector2;
+import io.xol.chunkstories.api.math.vector.Vector3;
+import io.xol.chunkstories.api.math.vector.Vector4;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

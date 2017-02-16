@@ -1,7 +1,7 @@
 package io.xol.chunkstories.gui.overlays.general;
 
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;

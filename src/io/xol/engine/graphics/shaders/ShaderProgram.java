@@ -1,5 +1,13 @@
 package io.xol.engine.graphics.shaders;
 
+import io.xol.chunkstories.api.math.Matrix3f;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.Vector2;
+import io.xol.chunkstories.api.math.vector.Vector3;
+import io.xol.chunkstories.api.math.vector.Vector4;
+import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;
@@ -13,18 +21,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import io.xol.engine.math.lalgb.Matrix3f;
-
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
-import io.xol.engine.math.lalgb.vector.Vector2;
-import io.xol.engine.math.lalgb.vector.Vector3;
-import io.xol.engine.math.lalgb.vector.Vector4;
-import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
-
 import org.lwjgl.BufferUtils;
 
-import io.xol.engine.math.lalgb.Matrix4f;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;

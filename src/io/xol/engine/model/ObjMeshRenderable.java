@@ -9,6 +9,7 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.Renderable;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.animation.SkeletonAnimator;
 import io.xol.engine.graphics.geometry.VertexFormat;
@@ -16,7 +17,6 @@ import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2DRenderTarget;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
-import io.xol.engine.math.lalgb.Matrix4f;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

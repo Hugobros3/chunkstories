@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.utils.IterableIterator;
@@ -52,7 +53,6 @@ import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.region.WorldRegionsHolder;
 import io.xol.chunkstories.world.summary.WorldRegionSummariesHolder;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 import io.xol.engine.misc.ConfigFile;
 
 //(c) 2015-2017 XolioWare Interactive

@@ -5,6 +5,7 @@ import org.lwjgl.input.Mouse;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
@@ -13,7 +14,6 @@ import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

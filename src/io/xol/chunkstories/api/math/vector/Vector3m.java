@@ -1,4 +1,4 @@
-package io.xol.engine.math.lalgb.vector;
+package io.xol.chunkstories.api.math.vector;
 
 public interface Vector3m<T extends Number> extends Vector3<T>, Vector2m<T>
 {

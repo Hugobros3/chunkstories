@@ -4,6 +4,8 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelEntity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -13,8 +15,6 @@ import io.xol.chunkstories.core.entity.voxel.EntitySign;
 import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

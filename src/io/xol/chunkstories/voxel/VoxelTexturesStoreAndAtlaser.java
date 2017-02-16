@@ -21,13 +21,13 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.content.DefaultModsManager.ModsAssetHierarchy;

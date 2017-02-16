@@ -1,6 +1,7 @@
 package io.xol.engine.graphics;
 
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
+import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingCommand;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -10,7 +11,6 @@ import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;
 import io.xol.engine.graphics.shaders.ShaderProgram;
-import io.xol.engine.math.lalgb.Matrix4f;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

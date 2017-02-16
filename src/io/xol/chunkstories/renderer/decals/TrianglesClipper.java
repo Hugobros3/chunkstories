@@ -6,12 +6,11 @@ package io.xol.chunkstories.renderer.decals;
 
 import java.nio.ByteBuffer;
 
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
-import io.xol.engine.math.lalgb.vector.Vector3;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.Vector3;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 
 /**
  * Straight from the 6th gate of hell, forged in the shattered skulls of fresh babies, this code should not be messed with. Proceed at your own risk.

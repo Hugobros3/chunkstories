@@ -15,7 +15,6 @@ import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
@@ -23,6 +22,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.entity.interfaces.EntityRotateable;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;

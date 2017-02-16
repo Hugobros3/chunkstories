@@ -8,6 +8,12 @@ import java.util.Map;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.Vector3;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.operations.VectorCrossProduct;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
@@ -28,13 +34,6 @@ import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.math.MatrixHelper;
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.vector.Vector3;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
-import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

@@ -1,8 +1,8 @@
-package io.xol.engine.math.lalgb;
+package io.xol.chunkstories.api.math;
 
 import java.nio.FloatBuffer;
 
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

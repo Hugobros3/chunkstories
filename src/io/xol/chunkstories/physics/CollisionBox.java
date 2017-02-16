@@ -1,8 +1,8 @@
 package io.xol.chunkstories.physics;
 
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
 

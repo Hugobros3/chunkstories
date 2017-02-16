@@ -6,22 +6,21 @@ package io.xol.chunkstories.renderer;
 
 import java.nio.FloatBuffer;
 
+import io.xol.chunkstories.api.math.Matrix3f;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.Vector3;
+import io.xol.chunkstories.api.math.vector.Vector3m;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.operations.VectorCrossProduct;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.physics.CollisionPlane;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 import org.lwjgl.BufferUtils;
-
-import io.xol.engine.math.lalgb.Matrix3f;
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
-import io.xol.engine.math.lalgb.vector.Vector3;
-import io.xol.engine.math.lalgb.vector.Vector3m;
-import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 public class Camera implements CameraInterface
 {
@@ -309,7 +308,7 @@ public class Camera implements CameraInterface
 	Vector3fm corners[] = new Vector3fm[8];
 	
 	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.CameraInterface#isBoxInFrustrum(io.xol.engine.math.lalgb.Vector3fm, io.xol.engine.math.lalgb.Vector3fm)
+	 * @see io.xol.chunkstories.renderer.CameraInterface#isBoxInFrustrum(io.xol.chunkstories.api.math.Vector3fm, io.xol.chunkstories.api.math.Vector3fm)
 	 */
 	@Override
 	public boolean isBoxInFrustrum(Vector3<Float> center, Vector3<Float> dimensions)

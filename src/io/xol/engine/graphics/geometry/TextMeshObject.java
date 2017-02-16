@@ -9,11 +9,11 @@ import org.lwjgl.BufferUtils;
 import io.xol.chunkstories.api.rendering.Renderable;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
 import io.xol.engine.graphics.textures.Texture2D;
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

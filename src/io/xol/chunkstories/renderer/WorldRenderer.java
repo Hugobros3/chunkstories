@@ -24,9 +24,6 @@ import javax.imageio.ImageIO;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
 
-import io.xol.engine.math.lalgb.Matrix4f;
-
-
 import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
@@ -43,8 +40,6 @@ import io.xol.engine.graphics.util.PBOPacker;
 import io.xol.engine.math.LoopingMathHelper;
 import io.xol.engine.math.Math2;
 import io.xol.engine.math.MatrixHelper;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameDirectory;
@@ -61,6 +56,9 @@ import io.xol.chunkstories.renderer.sky.SkyRenderer;
 import io.xol.chunkstories.renderer.terrain.FarTerrainRenderer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.WorldEffectsRenderer;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;

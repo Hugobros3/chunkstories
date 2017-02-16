@@ -2,9 +2,9 @@ package io.xol.chunkstories.voxel.models;
 
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.Voxels;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 import java.io.BufferedReader;
 import java.io.File;

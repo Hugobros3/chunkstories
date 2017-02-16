@@ -1,7 +1,7 @@
 package io.xol.engine.math;
 
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

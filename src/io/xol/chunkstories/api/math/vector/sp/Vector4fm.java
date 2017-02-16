@@ -1,11 +1,11 @@
-package io.xol.engine.math.lalgb.vector.sp;
+package io.xol.chunkstories.api.math.vector.sp;
 
-import io.xol.engine.math.lalgb.vector.Vector2;
-import io.xol.engine.math.lalgb.vector.Vector3;
-import io.xol.engine.math.lalgb.vector.Vector4;
-import io.xol.engine.math.lalgb.vector.Vector4m;
-import io.xol.engine.math.lalgb.vector.abs.Vector4am;
-import io.xol.engine.math.lalgb.vector.dp.Vector4dm;
+import io.xol.chunkstories.api.math.vector.Vector2;
+import io.xol.chunkstories.api.math.vector.Vector3;
+import io.xol.chunkstories.api.math.vector.Vector4;
+import io.xol.chunkstories.api.math.vector.Vector4m;
+import io.xol.chunkstories.api.math.vector.abs.Vector4am;
+import io.xol.chunkstories.api.math.vector.dp.Vector4dm;
 
 public class Vector4fm extends Vector4am<Float>
 {

@@ -1,12 +1,13 @@
-package io.xol.engine.math.lalgb;
+package io.xol.chunkstories.api.math;
 
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-import io.xol.engine.math.lalgb.vector.operations.VectorCrossProduct;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.operations.VectorCrossProduct;
 
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
+/* This file is part of the ChunkStories WIP API.
+ * Licensing is yet to be decided, please check out the github page for
+ * up-to date information. */
 
+/** Hopefully hi-performance matrix class, replacing and using bits from LWJGL2 utility library */
 public class Quaternion4d
 {
 	public double s;

@@ -1,11 +1,11 @@
 package io.xol.chunkstories.renderer.lights;
 
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.lightning.SpotLight;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 import java.util.Iterator;
 

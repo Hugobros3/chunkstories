@@ -3,11 +3,11 @@ package io.xol.engine.animation;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.Quaternion4d;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.engine.math.Math2;
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.Quaternion4d;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

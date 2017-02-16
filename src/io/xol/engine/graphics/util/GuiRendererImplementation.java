@@ -1,5 +1,6 @@
 package io.xol.engine.graphics.util;
 
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.GuiRenderer;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
@@ -16,7 +17,6 @@ import java.nio.ByteBuffer;
 
 import org.lwjgl.BufferUtils;
 
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.misc.ColorsTools;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -48,7 +48,7 @@ public class GuiRendererImplementation implements GuiRenderer
 	}
 
 	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBoxWindowsSpace(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.engine.math.lalgb.Vector4fm)
+	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBoxWindowsSpace(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.chunkstories.api.math.Vector4fm)
 	 */
 	@Override
 	public void drawBoxWindowsSpace(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4fm color)
@@ -57,7 +57,7 @@ public class GuiRendererImplementation implements GuiRenderer
 	}
 	
 	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBoxWindowsSpaceWithSize(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.engine.math.lalgb.Vector4fm)
+	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBoxWindowsSpaceWithSize(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.chunkstories.api.math.Vector4fm)
 	 */
 	@Override
 	public void drawBoxWindowsSpaceWithSize(float startX, float startY, float width, float height, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4fm color)
@@ -68,7 +68,7 @@ public class GuiRendererImplementation implements GuiRenderer
 	}
 
 	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBox(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.engine.math.lalgb.Vector4fm)
+	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBox(float, float, float, float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D, boolean, boolean, io.xol.chunkstories.api.math.Vector4fm)
 	 */
 	@Override
 	public void drawBox(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4fm color)

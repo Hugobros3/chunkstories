@@ -1,7 +1,7 @@
-package io.xol.engine.math.lalgb.vector.abs;
+package io.xol.chunkstories.api.math.vector.abs;
 
-import io.xol.engine.math.lalgb.vector.Vector4;
-import io.xol.engine.math.lalgb.vector.Vector4m;
+import io.xol.chunkstories.api.math.vector.Vector4;
+import io.xol.chunkstories.api.math.vector.Vector4m;
 
 public abstract class Vector4am<T extends Number> extends Vector3am<T> implements Vector4m<T>
 {
@@ -56,18 +56,6 @@ public abstract class Vector4am<T extends Number> extends Vector3am<T> implement
 	{
 		return this;
 	}
-
-	/*@Override
-	public Vector4m<Float> castToSinglePrecision()
-	{
-		return new Vector4fm(this);
-	}
-
-	@Override
-	public Vector4m<Double> castToDoublePrecision()
-	{
-		return new Vector4dm(this);
-	}*/
 
 	public String toString()
 	{

@@ -11,6 +11,7 @@ import org.lwjgl.input.Mouse;
 import io.xol.chunkstories.api.Content.LocalizationManager;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.Ingame;
@@ -26,7 +27,6 @@ import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.GuiElement;
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

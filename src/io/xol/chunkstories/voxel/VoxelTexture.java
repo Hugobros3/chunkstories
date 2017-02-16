@@ -1,6 +1,6 @@
 package io.xol.chunkstories.voxel;
 
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

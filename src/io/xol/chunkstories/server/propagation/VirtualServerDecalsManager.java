@@ -2,13 +2,13 @@ package io.xol.chunkstories.server.propagation;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.net.packets.PacketDecal;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.RemoteServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

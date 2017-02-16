@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
@@ -22,7 +23,6 @@ import io.xol.engine.graphics.textures.Texture2DRenderTarget;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 import io.xol.engine.base.GameWindowOpenGL;
 
 //(c) 2015-2017 XolioWare Interactive

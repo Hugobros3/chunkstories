@@ -2,6 +2,7 @@ package io.xol.chunkstories.core.generator;
 
 import java.util.Random;
 
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldGenerator;
@@ -10,7 +11,6 @@ import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.math.random.SeededSimplexNoiseGenerator;
 
 //(c) 2015-2017 XolioWare Interactive

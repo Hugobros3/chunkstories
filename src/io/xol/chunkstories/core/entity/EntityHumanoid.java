@@ -10,6 +10,9 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithClientPrediction;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.material.Material;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
@@ -30,9 +33,6 @@ import io.xol.engine.animation.AnimatedSkeleton;
 import io.xol.engine.animation.BVHAnimation;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.math.lalgb.Matrix4f;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 import io.xol.engine.model.ModelLibrary;
 
 //(c) 2015-2017 XolioWare Interactive

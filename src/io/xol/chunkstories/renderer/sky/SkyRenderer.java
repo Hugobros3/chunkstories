@@ -4,6 +4,7 @@ import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
@@ -18,7 +19,6 @@ import java.nio.FloatBuffer;
 import org.lwjgl.BufferUtils;
 
 import io.xol.engine.math.Math2;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 
 //(c) 2015-2017 XolioWare Interactive

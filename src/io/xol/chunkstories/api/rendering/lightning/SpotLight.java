@@ -1,6 +1,6 @@
 package io.xol.chunkstories.api.rendering.lightning;
 
-import io.xol.engine.math.lalgb.vector.Vector3;
+import io.xol.chunkstories.api.math.vector.Vector3;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

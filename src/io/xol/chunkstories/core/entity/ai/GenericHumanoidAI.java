@@ -5,10 +5,10 @@ import java.util.Random;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
 import io.xol.chunkstories.core.entity.EntityHumanoid;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

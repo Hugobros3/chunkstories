@@ -6,10 +6,10 @@ import java.util.Random;
 import org.lwjgl.BufferUtils;
 
 import io.xol.engine.math.Math2;
-import io.xol.engine.math.lalgb.vector.sp.Vector2fm;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldEffectsRenderer;

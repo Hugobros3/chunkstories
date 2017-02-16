@@ -1,8 +1,6 @@
 package io.xol.chunkstories.gui;
 
 import io.xol.engine.math.Math2;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
 
 import java.util.Iterator;
 
@@ -30,6 +28,8 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.server.Player;

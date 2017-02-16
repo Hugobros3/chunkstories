@@ -1,10 +1,5 @@
 package io.xol.chunkstories.core.item.renderers;
 
-import io.xol.engine.math.lalgb.Matrix4f;
-
-import io.xol.engine.math.lalgb.vector.sp.Vector4fm;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
-
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +9,9 @@ import org.lwjgl.BufferUtils;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemRenderer;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;

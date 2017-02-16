@@ -5,6 +5,8 @@ import java.nio.FloatBuffer;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.GameContext;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.server.Player;
@@ -16,8 +18,6 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
-import io.xol.engine.math.lalgb.vector.dp.Vector3dm;
-import io.xol.engine.math.lalgb.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
