@@ -6,10 +6,10 @@ import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.VoxelContext;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -113,7 +113,7 @@ public class Voxel
 	 * @return An array of CollisionBox or null.
 	 */
 	public CollisionBox[] getTranslatedCollisionBoxes(World world, int x, int y, int z) {
-		CollisionBox[] boxes = getCollisionBoxes(new VoxelContext(world, x, y, z));
+		CollisionBox[] boxes = getCollisionBoxes(world.peek(x, y, z));
 		if (boxes != null)
 			for (CollisionBox b : boxes)
 				b.translate(x, y, z);

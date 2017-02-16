@@ -5,8 +5,8 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -47,7 +47,7 @@ public class VoxelHalfTile extends Voxel
 	{
 		// System.out.println("kek");
 		CollisionBox box2 = new CollisionBox(1, 0.5, 1);
-		if (bottomOrTop(VoxelFormat.meta(info.data)))
+		if (bottomOrTop(VoxelFormat.meta(info.getData())))
 			box2.translate(0.0, -0, 0.0);
 		else
 			box2.translate(0.0, +0.5, 0.0);

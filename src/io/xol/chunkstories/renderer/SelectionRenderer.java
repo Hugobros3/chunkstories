@@ -3,6 +3,7 @@ package io.xol.chunkstories.renderer;
 import static io.xol.chunkstories.renderer.debug.OverlayRenderer.*;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.physics.CollisionBox;
 
@@ -29,13 +30,13 @@ public class SelectionRenderer
 		//GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
 		//GL11.glBlendEquation(GL11.);
 		glBegin(GL_LINES);
-		VoxelContext bri = new VoxelContext(world, x, y, z);
-		if (bri.voxelType == null)
+		VoxelContext bri = new VoxelContextOlder(world, x, y, z);
+		if (bri.getVoxel() == null)
 		{
-			System.out.println(bri.data);
+			System.out.println(bri.getData());
 			return;
 		}
-		for (CollisionBox box : bri.voxelType.getTranslatedCollisionBoxes(world, x, y, z))
+		for (CollisionBox box : bri.getVoxel().getTranslatedCollisionBoxes(world, x, y, z))
 			cubeVertices((float) box.xpos, (float) box.ypos, (float) box.zpos, (float) box.xw, (float) box.h, (float) box.zw);
 		glEnd();
 		glColor4f(1, 1, 1, 1);

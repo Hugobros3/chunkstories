@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
@@ -13,33 +14,30 @@ import io.xol.chunkstories.voxel.VoxelsStore;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class VoxelContext
+public class VoxelContextOlder implements VoxelContext
 {
-	public int data;
-	public Voxel voxelType;
+	private int data;
+	private Voxel voxelType;
+	private int[] neightborhood = new int[6];
 
-	public int[] neightborhood = new int[6];
-
-	public VoxelContext(int data)
+	public VoxelContextOlder(int data)
 	{
 		this.data = data;
 		voxelType = VoxelsStore.get().getVoxelById(data);
 	}
 	
-	public VoxelContext(Location location)
+	public VoxelContextOlder(Location location)
 	{
 		this(location.getWorld(), (int)(double)location.getX(), (int)(double)location.getY(), (int)(double)location.getZ());
 	}
 
-	public VoxelContext(World world, int x, int y, int z)
+	public VoxelContextOlder(World world, int x, int y, int z)
 	{
 		this.data = world.getVoxelData(x, y, z);
 		voxelType = VoxelsStore.get().getVoxelById(data);
 		if (world != null)
 		{
-			/**
-			 * Conventions for space in Chunk Stories 1 FRONT z+ x- LEFT 0 X 2 RIGHT x+ 3 BACK z- 4 y+ top X 5 y- bottom
-			 */
+			/** @see VoxelSides */
 			neightborhood[0] = world.getVoxelData(x - 1, y, z);
 			neightborhood[1] = world.getVoxelData(x, y, z + 1);
 			neightborhood[2] = world.getVoxelData(x + 1, y, z);
@@ -48,17 +46,47 @@ public class VoxelContext
 			neightborhood[5] = world.getVoxelData(x, y - 1, z);
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.VoxelContext#getData()
+	 */
+	@Override
+	public int getData()
+	{
+		return data;
+	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.VoxelContext#getVoxel()
+	 */
+	@Override
 	public Voxel getVoxel()
 	{
 		return voxelType;
 	}
 	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.VoxelContext#getNeightborData(int)
+	 */
+	@Override
+	public int getNeightborData(int side)
+	{
+		return neightborhood[side];
+	}
+	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.VoxelContext#getSideId(int)
+	 */
+	@Override
 	public int getSideId(int side)
 	{
 		return VoxelFormat.id(neightborhood[side]);
 	}
 
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.VoxelContext#getVoxelRenderer()
+	 */
+	@Override
 	public VoxelRenderer getVoxelRenderer()
 	{
 		if (voxelType != null)
@@ -66,6 +94,10 @@ public class VoxelContext
 		return null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.VoxelContext#getTexture(io.xol.chunkstories.api.voxel.VoxelSides)
+	 */
+	@Override
 	public VoxelTexture getTexture(VoxelSides side)
 	{
 		if (voxelType != null)
@@ -73,12 +105,10 @@ public class VoxelContext
 		return null;
 	}
 
-	public static VoxelContext get(int voxelId, int meta)
-	{
-		VoxelContext info = new VoxelContext(VoxelFormat.format(voxelId, meta, 0, 0));
-		return info;
-	}
-
+	/* (non-Javadoc)
+	 * @see io.xol.chunkstories.renderer.VoxelContext#getMetaData()
+	 */
+	@Override
 	public int getMetaData()
 	{
 		return VoxelFormat.meta(data);

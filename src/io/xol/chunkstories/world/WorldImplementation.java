@@ -24,6 +24,7 @@ import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -41,6 +42,7 @@ import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.renderer.VoxelContextOlder;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -445,6 +447,18 @@ public abstract class WorldImplementation implements World
 		if (c != null)
 			return c.getVoxelData(x, y, z);
 		return 0;
+	}
+	
+	@Override
+	public VoxelContext peek(Vector3dm location)
+	{
+		return peek((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
+	}
+
+	@Override
+	public VoxelContext peek(int x, int y, int z)
+	{
+		return new VoxelContextOlder(this, x, y, z);
 	}
 
 	@Override

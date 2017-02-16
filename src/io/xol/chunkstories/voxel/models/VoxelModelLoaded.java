@@ -8,8 +8,8 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -70,7 +70,7 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 	 * @see io.xol.chunkstories.voxel.models.VoxelRenderer#renderInto(io.xol.chunkstories.renderer.chunks.RenderByteBuffer, io.xol.chunkstories.renderer.BlockRenderInfo, io.xol.chunkstories.api.world.Chunk, int, int, int)
 	 */
 	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#renderInto(io.xol.chunkstories.renderer.chunks.VoxelBaker, io.xol.chunkstories.renderer.VoxelContext, io.xol.chunkstories.api.world.chunk.Chunk, int, int, int)
+	 * @see io.xol.chunkstories.voxel.models.VoxelModel#renderInto(io.xol.chunkstories.renderer.chunks.VoxelBaker, io.xol.chunkstories.renderer.VoxelContextOlder, io.xol.chunkstories.api.world.chunk.Chunk, int, int, int)
 	 */
 	@Override
 	public int renderInto(VoxelBaker renderByteBuffer, VoxelContext info, Chunk chunk, int x, int y, int z)
@@ -99,12 +99,12 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		boolean[] cullingCache = new boolean[6];
 		for (int j = 0; j < 6; j++)
 		{
-			int id = VoxelFormat.id(info.neightborhood[j]);
-			int meta = VoxelFormat.meta(info.neightborhood[j]);
+			int id = VoxelFormat.id(info.getSideId(j));
+			int meta = VoxelFormat.meta(info.getNeightborData(j));
 			occlusionTestedVoxel = VoxelsStore.get().getVoxelById(id);
 			// If it is, don't draw it.
-			cullingCache[j] = (occlusionTestedVoxel.getType().isOpaque() || occlusionTestedVoxel.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])) || occlusionTestedVoxel.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])
-					|| (info.getVoxel().getType().isSelfOpaque() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
+			cullingCache[j] = (occlusionTestedVoxel.getType().isOpaque() || occlusionTestedVoxel.isFaceOpaque(VoxelSides.values()[j], info.getNeightborData(j))) || occlusionTestedVoxel.isFaceOpaque(VoxelSides.values()[j], info.getNeightborData(j))
+					|| (info.getVoxel().getType().isSelfOpaque() && id == VoxelFormat.id(info.getData()) && meta == info.getMetaData());
 		}
 
 		//Generate some jitter if it is enabled

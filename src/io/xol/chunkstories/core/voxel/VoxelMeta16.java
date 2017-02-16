@@ -6,8 +6,8 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.core.item.ItemVoxel;
-import io.xol.chunkstories.renderer.VoxelContext;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

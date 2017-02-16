@@ -9,10 +9,10 @@ import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.VoxelContext;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -39,7 +39,7 @@ public class VoxelStairs extends Voxel implements VoxelLogic
 	@Override
 	public CollisionBox[] getCollisionBoxes(VoxelContext info)
 	{
-		int meta = VoxelFormat.meta(info.data);
+		int meta = VoxelFormat.meta(info.getData());
 		// System.out.println("kek"+meta);
 		CollisionBox[] boxes = new CollisionBox[2];
 		boxes[0] = new CollisionBox(1, 0.5, 1);//.translate(0.5, -1, 0.5);

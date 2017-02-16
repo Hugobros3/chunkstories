@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
-import io.xol.chunkstories.renderer.VoxelContext;
+import io.xol.chunkstories.api.world.VoxelContext;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

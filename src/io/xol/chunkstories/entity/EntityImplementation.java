@@ -5,7 +5,7 @@ import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
 import io.xol.chunkstories.core.entity.components.EntityComponentPosition;
 import io.xol.chunkstories.core.entity.components.EntityComponentVelocity;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.VoxelContext;
+import io.xol.chunkstories.renderer.VoxelContextOlder;
 import io.xol.chunkstories.renderer.Camera;
 
 import java.util.HashSet;
@@ -250,7 +250,7 @@ public abstract class EntityImplementation implements Entity
 							vox = VoxelsStore.get().getVoxelById(id);
 							if (vox.getType().isSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
+								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContextOlder(world, i, j, k));
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{
@@ -297,7 +297,7 @@ public abstract class EntityImplementation implements Entity
 							vox = VoxelsStore.get().getVoxelById(id);
 							if (vox.getType().isSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
+								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContextOlder(world, i, j, k));
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{
@@ -344,7 +344,7 @@ public abstract class EntityImplementation implements Entity
 							vox = VoxelsStore.get().getVoxelById(id);
 							if (vox.getType().isSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContext(world, i, j, k));
+								CollisionBox[] boxes = vox.getCollisionBoxes(new VoxelContextOlder(world, i, j, k));
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{

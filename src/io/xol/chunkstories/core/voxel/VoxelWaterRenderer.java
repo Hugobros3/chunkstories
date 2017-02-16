@@ -5,8 +5,8 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -45,7 +45,7 @@ public class VoxelWaterRenderer extends VoxelModelLoaded
 				break;
 		}
 		
-		String voxelName = VoxelsStore.get().getVoxelById(info.data).getName();
+		String voxelName = info.getVoxel().getName();
 		
 		int modelTextureIndex = 0;
 		
@@ -75,12 +75,12 @@ public class VoxelWaterRenderer extends VoxelModelLoaded
 		boolean[] cullingCache = new boolean[6];
 		for (int j = 0; j < 6; j++)
 		{
-			int id = VoxelFormat.id(info.neightborhood[j]);
-			int meta = VoxelFormat.meta(info.neightborhood[j]);
+			int id = VoxelFormat.id(info.getNeightborData(j));
+			int meta = VoxelFormat.meta(info.getNeightborData(j));
 			occTest = VoxelsStore.get().getVoxelById(id);
 			// If it is, don't draw it.
-			cullingCache[j] = (occTest.getType().isOpaque() || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])) || occTest.isFaceOpaque(VoxelSides.values()[j], info.neightborhood[j])
-					|| (info.getVoxel().getType().isSelfOpaque() && id == VoxelFormat.id(info.data) && meta == info.getMetaData());
+			cullingCache[j] = (occTest.getType().isOpaque() || occTest.isFaceOpaque(VoxelSides.values()[j], info.getNeightborData(j))) || occTest.isFaceOpaque(VoxelSides.values()[j], info.getNeightborData(j))
+					|| (info.getVoxel().getType().isSelfOpaque() && id == VoxelFormat.id(info.getData()) && meta == info.getMetaData());
 			//System.out.println("generating culling cache for voxel "+VoxelFormat.id(info.data)+"y:"+sy+"model"+this.name+" cull:"+j+":"+cullingCache[j]);
 		}
 

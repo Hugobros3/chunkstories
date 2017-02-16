@@ -4,8 +4,8 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.VoxelContext;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -32,7 +32,7 @@ public class Voxel8Steps extends Voxel
 	public CollisionBox[] getCollisionBoxes(VoxelContext info)
 	{
 		//System.out.println("kek");
-		int meta = VoxelFormat.meta(info.data);
+		int meta = VoxelFormat.meta(info.getData());
 		CollisionBox box2 = new CollisionBox(1, (meta % 8 + 1) / 8f, 1);
 		//box2.translate(0.5, -0, 0.5);
 		return new CollisionBox[] { box2 };

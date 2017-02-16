@@ -2,14 +2,16 @@ package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.renderer.VoxelContext;
+import io.xol.chunkstories.renderer.VoxelContextOlder;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
+import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -872,7 +874,7 @@ public class ChunksRenderer extends Thread
 	{
 		//int baseID = renderInfo.data;
 		Voxel facing = VoxelsStore.get().getVoxelById(renderInfo.getSideId(face));
-		Voxel voxel = VoxelsStore.get().getVoxelById(renderInfo.data);
+		Voxel voxel = renderInfo.getVoxel();
 
 		if (voxel.getType().isLiquid() && !facing.getType().isLiquid())
 			return true;
@@ -895,6 +897,9 @@ public class ChunksRenderer extends Thread
 	ByteBuffer waterBlocksBuffer = BufferUtils.createByteBuffer(0x200000);
 	ByteBuffer complexBlocksBuffer = BufferUtils.createByteBuffer(0x600000);
 
+	//Nasty !
+	int i = 0, j = 0, k = 0;
+	
 	@SuppressWarnings("unused")
 	private void renderChunk(CubicChunk workChunk, RecyclableByteBuffer buffer)
 	{
@@ -918,7 +923,6 @@ public class ChunksRenderer extends Thread
 		if (!workChunk.need_render.get())
 		{
 			buffer.recycle();
-			//buffersPool.releaseByteBuffer(buffer);
 			return;
 		}
 
@@ -961,10 +965,44 @@ public class ChunksRenderer extends Thread
 		VoxelBaker complexRBBF = new RenderByteBuffer(complexBlocksBuffer);
 
 		long cr_iter = System.nanoTime();
+		
+		Voxels store = world.getGameContext().getContent().voxels();
+		VoxelContext renderInfo = new VoxelContext() {
 
-		VoxelContext renderInfo = new VoxelContext(0);
+			@Override
+			public Voxel getVoxel()
+			{
+				return store.getVoxelById(getData());
+			}
 
-		int i, j, k;
+			@Override
+			public int getData()
+			{
+				return getBlockData(workChunk, i, k, j);
+			}
+
+			@Override
+			public int getNeightborData(int side)
+			{
+				switch(side)
+				{
+				case(0):
+					return getBlockData(workChunk, i - 1, k, j);
+				case(1):
+					return getBlockData(workChunk, i, k, j + 1);
+				case(2):
+					return getBlockData(workChunk, i + 1, k, j);
+				case(3):
+					return getBlockData(workChunk, i, k, j - 1);
+				case(4):
+					return getBlockData(workChunk, i, k + 1, j);
+				case(5):
+					return getBlockData(workChunk, i, k - 1, j);
+				}
+				throw new RuntimeException("Fuck off");
+			}
+			
+		};
 		//Don't waste time rendering void chunks m8
 		if (workChunk.isAirChunk())
 			i = 32;
@@ -982,7 +1020,7 @@ public class ChunksRenderer extends Thread
 						continue;
 					Voxel vox = VoxelsStore.get().getVoxelById(blockID);
 					// Fill near-blocks info
-					renderInfo.data = src;
+					/*renderInfo.data = src;
 					renderInfo.voxelType = vox;
 
 					renderInfo.neightborhood[0] = getBlockData(workChunk, i - 1, k, j);
@@ -990,7 +1028,7 @@ public class ChunksRenderer extends Thread
 					renderInfo.neightborhood[2] = getBlockData(workChunk, i + 1, k, j);
 					renderInfo.neightborhood[3] = getBlockData(workChunk, i, k, j - 1);
 					renderInfo.neightborhood[4] = getBlockData(workChunk, i, k + 1, j);
-					renderInfo.neightborhood[5] = getBlockData(workChunk, i, k - 1, j);
+					renderInfo.neightborhood[5] = getBlockData(workChunk, i, k - 1, j);*/
 
 					// System.out.println(blockID);
 					if (vox.getType().isLiquid())

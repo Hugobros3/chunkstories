@@ -1,10 +1,10 @@
 package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.VoxelContext;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -22,13 +22,13 @@ public class VoxelPane extends Voxel
 	public VoxelModel getVoxelRenderer(VoxelContext info)
 	{
 		Voxel vox;
-		vox = VoxelsStore.get().getVoxelById(info.neightborhood[0]);
+		vox = VoxelsStore.get().getVoxelById(info.getNeightborData(0));
 		boolean connectLeft = vox.getType().isSolid() || vox.equals(this);
-		vox = VoxelsStore.get().getVoxelById(info.neightborhood[1]);
+		vox = VoxelsStore.get().getVoxelById(info.getNeightborData(1));
 		boolean connectFront = vox.getType().isSolid() || vox.equals(this);
-		vox = VoxelsStore.get().getVoxelById(info.neightborhood[2]);
+		vox = VoxelsStore.get().getVoxelById(info.getNeightborData(2));
 		boolean connectRight = vox.getType().isSolid() || vox.equals(this);
-		vox = VoxelsStore.get().getVoxelById(info.neightborhood[3]);
+		vox = VoxelsStore.get().getVoxelById(info.getNeightborData(3));
 		boolean connectBack = vox.getType().isSolid() || vox.equals(this);
 
 		String type = "default";
@@ -75,13 +75,13 @@ public class VoxelPane extends Voxel
 		CollisionBox[] boxes = null;
 
 		Voxel vox;
-		vox = VoxelsStore.get().getVoxelById(info.neightborhood[0]);
+		vox = VoxelsStore.get().getVoxelById(info.getNeightborData(0));
 		boolean connectLeft = vox.getType().isSolid() || vox.equals(this);
-		vox = VoxelsStore.get().getVoxelById(info.neightborhood[1]);
+		vox = VoxelsStore.get().getVoxelById(info.getNeightborData(1));
 		boolean connectFront = vox.getType().isSolid() || vox.equals(this);
-		vox = VoxelsStore.get().getVoxelById(info.neightborhood[2]);
+		vox = VoxelsStore.get().getVoxelById(info.getNeightborData(2));
 		boolean connectRight = vox.getType().isSolid() || vox.equals(this);
-		vox = VoxelsStore.get().getVoxelById(info.neightborhood[3]);
+		vox = VoxelsStore.get().getVoxelById(info.getNeightborData(3));
 		boolean connectBack = vox.getType().isSolid() || vox.equals(this);
 
 		if (connectLeft && connectFront && connectRight && connectBack)
