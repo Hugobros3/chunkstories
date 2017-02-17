@@ -60,7 +60,7 @@ import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.SelectionRenderer;
-import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -689,7 +689,7 @@ public class Ingame extends OverlayableScene
 			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk null", BitmapFont.SMALLFONTS);
 		else if (current instanceof ChunkRenderable)
 		{
-			ChunkRenderData chunkRenderData = ((ChunkRenderable) current).getChunkRenderData();
+			ChunkRenderDataHolder chunkRenderData = ((ChunkRenderable) current).getChunkRenderData();
 			if (chunkRenderData != null)
 			{
 				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk : " + current + " - " + chunkRenderData.toString(), BitmapFont.SMALLFONTS);
@@ -720,7 +720,7 @@ public class Ingame extends OverlayableScene
 				continue;
 			if (c instanceof ChunkRenderable)
 			{
-				ChunkRenderData chunkRenderData = ((ChunkRenderable) c).getChunkRenderData();
+				ChunkRenderDataHolder chunkRenderData = ((ChunkRenderable) c).getChunkRenderData();
 				if (chunkRenderData != null)
 				{
 					nbChunks++;

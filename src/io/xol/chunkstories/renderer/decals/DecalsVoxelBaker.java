@@ -2,13 +2,14 @@ package io.xol.chunkstories.renderer.decals;
 
 import java.nio.ByteBuffer;
 
-import io.xol.chunkstories.renderer.chunks.VoxelBaker;
+import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
+import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class DecalsVoxelBaker implements VoxelBaker
+public class DecalsVoxelBaker implements VoxelBakerHighPoly, VoxelBakerCubic
 {
 	ByteBuffer byteBuffer;
 	

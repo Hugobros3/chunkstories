@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -38,7 +38,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	public int[] chunkVoxelData = null;
 
 	// Used in client rendering
-	private final ChunkRenderData chunkRenderData;
+	private final ChunkRenderDataHolder chunkRenderData;
 	public AtomicInteger unsavedBlockModifications = new AtomicInteger();
 
 	public AtomicBoolean need_render = new AtomicBoolean(true);
@@ -98,7 +98,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 		
 		this.uuid = ((chunkX << world.getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | chunkY ) << world.getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | chunkZ;
 	
-		this.chunkRenderData = holder.getWorld() instanceof WorldClient ? new ChunkRenderData(this) : null;
+		this.chunkRenderData = holder.getWorld() instanceof WorldClient ? new ChunkRenderDataHolder(this) : null;
 	}
 
 	public CubicChunk(RegionImplementation holder, int chunkX, int chunkY, int chunkZ, int[] data)
@@ -1978,7 +1978,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	}*/
 
 	@Override
-	public ChunkRenderData getChunkRenderData()
+	public ChunkRenderDataHolder getChunkRenderData()
 	{
 		return chunkRenderData;
 	}

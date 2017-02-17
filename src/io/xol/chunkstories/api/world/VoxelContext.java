@@ -11,6 +11,12 @@ public interface VoxelContext
 	public Voxel getVoxel();
 	
 	public int getData();
+	
+	public int getX();
+	
+	public int getY();
+	
+	public int getZ();
 
 	public int getNeightborData(int side);
 

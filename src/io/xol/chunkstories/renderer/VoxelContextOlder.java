@@ -19,11 +19,17 @@ public class VoxelContextOlder implements VoxelContext
 	private int data;
 	private Voxel voxelType;
 	private int[] neightborhood = new int[6];
+	
+	private final int x,y,z;
 
-	public VoxelContextOlder(int data)
+	public VoxelContextOlder(int data, int x, int y, int z)
 	{
 		this.data = data;
 		voxelType = VoxelsStore.get().getVoxelById(data);
+		
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 	
 	public VoxelContextOlder(Location location)
@@ -45,6 +51,10 @@ public class VoxelContextOlder implements VoxelContext
 			neightborhood[4] = world.getVoxelData(x, y + 1, z);
 			neightborhood[5] = world.getVoxelData(x, y - 1, z);
 		}
+		
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 	
 	/* (non-Javadoc)
@@ -112,6 +122,24 @@ public class VoxelContextOlder implements VoxelContext
 	public int getMetaData()
 	{
 		return VoxelFormat.meta(data);
+	}
+
+	@Override
+	public int getX()
+	{
+		return x;
+	}
+
+	@Override
+	public int getY()
+	{
+		return y;
+	}
+
+	@Override
+	public int getZ()
+	{
+		return z;
 	}
 
 }

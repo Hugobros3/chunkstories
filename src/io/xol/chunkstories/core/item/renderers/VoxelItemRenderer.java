@@ -96,7 +96,7 @@ public class VoxelItemRenderer extends ItemRenderer
 		materialTexture.setLinearFiltering(false);
 		renderingContext.bindMaterialTexture(materialTexture);
 
-		VoxelContext bri = new VoxelContextOlder(VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0)));
+		VoxelContext bri = new VoxelContextOlder(VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0)), 0, 0, 0);
 		VoxelRenderer model = voxel.getVoxelRenderer(bri);
 		if (model == null)
 		{
@@ -214,7 +214,7 @@ public class VoxelItemRenderer extends ItemRenderer
 		materialTexture.setLinearFiltering(false);
 		context.bindMaterialTexture(materialTexture);
 
-		VoxelContext bri = new VoxelContextOlder(VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0)));
+		VoxelContext bri = new VoxelContextOlder(VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0)), 0, 0, 0);
 		
 		//bri.voxelType = VoxelsStore.get().getVoxelById(bri.data);
 		VoxelRenderer model = voxel.getVoxelRenderer(bri);

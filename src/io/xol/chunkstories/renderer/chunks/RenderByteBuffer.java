@@ -2,6 +2,9 @@ package io.xol.chunkstories.renderer.chunks;
 
 import java.nio.ByteBuffer;
 
+import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
+import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
+
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -9,7 +12,7 @@ import java.nio.ByteBuffer;
 /**
  * Helper class to format information inside the byteBuffers
  */
-public class RenderByteBuffer implements VoxelBaker
+public class RenderByteBuffer implements VoxelBakerHighPoly, VoxelBakerCubic
 {
 	protected ByteBuffer byteBuffer;
 	

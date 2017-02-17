@@ -21,12 +21,12 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingM
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.renderer.VoxelContextOlder;
 import io.xol.chunkstories.renderer.WorldRenderer;
-import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 import io.xol.engine.graphics.RenderingContext;
@@ -84,7 +84,7 @@ public class DecalsRenderer implements DecalsManager
 			
 			Matrix4f rotationMatrix = MatrixHelper.getLookAtMatrix(new Vector3fm(0.0f), lookAt, up);
 			
-			VoxelBaker virtualRenderBytebuffer = new DecalsVoxelBaker(bbuf);
+			VoxelBakerHighPoly virtualRenderBytebuffer = new DecalsVoxelBaker(bbuf);
 			Vector3dm size2 = new Vector3dm(size);
 			size2.scale(1.5);
 			size2.add(new Vector3dm(0.5));
@@ -116,7 +116,9 @@ public class DecalsRenderer implements DecalsManager
 							if (model == null)
 								model = voxel.store().models().getVoxelModelByName("default");
 
-							model.renderInto(virtualRenderBytebuffer, bri, world.getChunkWorldCoordinates(location), (int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
+							//TODO
+							System.out.println("FIXME LATER REEEE");
+							//model.renderInto(virtualRenderBytebuffer, bri, world.getChunkWorldCoordinates(location), (int)(double) location.getX(), (int)(double) location.getY(), (int)(double) location.getZ());
 						}
 
 					}

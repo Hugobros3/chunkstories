@@ -3,12 +3,16 @@ package io.xol.chunkstories.core.voxel;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
+import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.RenderPass;
+import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
-import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModelLoaded;
 
@@ -25,7 +29,14 @@ public class VoxelWaterRenderer extends VoxelModelLoaded
 	}
 
 	@Override
-	public int renderInto(VoxelBaker renderByteBuffer, VoxelContext info, Chunk chunk, int x, int y, int z)
+	public int renderInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, VoxelContext info)
+	{
+		VoxelBakerHighPoly renderByteBuffer = chunkRenderer.getHighpolyBakerFor(LodLevel.ANY, RenderPass.LIQUIDS);
+		return this.renderInto(renderByteBuffer, info, chunk, info.getX(), info.getY(), info.getZ());
+	}
+	
+	@Override
+	public int renderInto(VoxelBakerHighPoly renderByteBuffer, VoxelContext info, Chunk chunk, int x, int y, int z)
 	{
 		int llMs = chunk.getSunLight(x, y, z);//getSunlight(c, x, y, z);
 		int llMb = chunk.getBlockLight(x, y, z);//getBlocklight(c, x, y, z);

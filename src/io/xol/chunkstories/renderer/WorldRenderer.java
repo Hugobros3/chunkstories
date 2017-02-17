@@ -46,7 +46,9 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.core.events.WorldPostRenderingEvent;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.particles.ParticlesRenderer;
-import io.xol.chunkstories.renderer.chunks.ChunkRenderData;
+import io.xol.chunkstories.renderer.chunks.ChunkMeshDataSections;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
@@ -67,6 +69,8 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingM
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.RenderPass;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -388,7 +392,6 @@ public class WorldRenderer
 		skyRenderer.time = (world.getTime() % 10000) / 10000f;
 		skyRenderer.render(renderingContext);
 
-
 		// Move camera to relevant position
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboGBuffers);
 		fboGBuffers.setEnabledRenderTargets();
@@ -397,7 +400,6 @@ public class WorldRenderer
 		renderWorld(false, chunksToRenderLimit);
 
 		// Render weather
-
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(fboShadedBuffer);
 		//fboShadedBuffer.bind();
 		fboShadedBuffer.setEnabledRenderTargets();
@@ -430,34 +432,6 @@ public class WorldRenderer
 		// It will keep up to date the camera position, as well as a list of
 		// to-render chunks in order to fill empty VBO space
 		
-		// Upload generated chunks data to GPU
-		/*MeshedChunkData mcd = chunksRenderer.getNextRenderedChunkData();
-		while(mcd != null)
-		{
-			mcd.chunk.getChunkRenderData().setChunkMeshes(mcd);
-			chunksChanged = true;
-			mcd = chunksRenderer.getNextRenderedChunkData();
-		}*/
-		
-		/*ChunkRenderData chunkRenderData = chunksRenderer.getNextRenderedChunkData();
-		while (chunkRenderData != null)
-		{
-			//CubicChunk c = world.getChunk(toload.x, toload.y, toload.z, false);
-			CubicChunk c = chunkRenderData.chunk;
-			if (c != null && c instanceof ChunkRenderable)
-			{
-				((ChunkRenderable) c).setChunkRenderData(chunkRenderData);
-				//Upload data
-				chunksChanged = true;
-			}
-			else
-			{
-				if (RenderingConfig.debugPasses)
-					System.out.println("ChunkRenderer outputted a chunk render for a not loaded chunk : ");
-				chunkRenderData.free();
-			}
-			chunkRenderData = chunksRenderer.getNextRenderedChunkData();
-		}*/
 		// Update view
 		int newCX = Math2.floor((pos.getX()) / 32);
 		int newCY = Math2.floor((pos.getY()) / 32);
@@ -602,7 +576,6 @@ public class WorldRenderer
 			renderList.clear();
 			for (Chunk chunk : floodFillSet)
 			{
-				
 				if (chunk == null || !(chunk instanceof ChunkRenderable))
 					continue;
 				ChunkRenderable renderableChunk = (ChunkRenderable) chunk;
@@ -613,7 +586,8 @@ public class WorldRenderer
 						if (LoopingMathHelper.moduloDistance(chunk.getChunkX(), cameraChunkX, world.getSizeInChunks()) < chunksViewDistance - 1)
 							if (LoopingMathHelper.moduloDistance(chunk.getChunkZ(), cameraChunkZ, world.getSizeInChunks()) < chunksViewDistance - 1)
 							{
-								if ((renderableChunk.getChunkRenderData() != null && renderableChunk.getChunkRenderData().isUploaded()))
+								if(!renderableChunk.isAirChunk() && renderableChunk.getChunkRenderData().getData() != null)
+								//if ((renderableChunk.getChunkRenderData() != null && renderableChunk.getChunkRenderData().isUploaded()))
 								{
 
 									int ajustedChunkX = chunk.getChunkX();
@@ -856,7 +830,7 @@ public class WorldRenderer
 		for (int XXX = 0; XXX < 1; XXX++)
 			for (ChunkRenderable chunk : renderList)
 			{
-				ChunkRenderData chunkRenderData = chunk.getChunkRenderData();
+				ChunkRenderDataHolder chunkRenderData = chunk.getChunkRenderData();
 				chunksRendered++;
 				if (chunksToRenderLimit != -1 && chunksRendered > chunksToRenderLimit)
 					break;
@@ -877,12 +851,12 @@ public class WorldRenderer
 				if ((chunk.isMarkedForReRender() || chunk.needsLightningUpdates()) && !chunk.isAirChunk())
 					chunksRenderer.requestChunkRender(chunk);
 				
-				//TODO refactor chunk mesh pipeline to prevent this
-				//if (chunkRenderData != null && !chunkRenderData.isUploaded())
-				//	System.out.println("WOW");
+				ChunkMeshDataSections data = chunk.getChunkRenderData().getData();
+				if(data != null)
+					data.isReady();
 				
 				// Don't bother if it don't render anything
-				if (chunkRenderData == null || !chunkRenderData.isUploaded() || chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)
+				if (chunkRenderData == null)// || !chunkRenderData.isUploaded() || chunkRenderData.vboSizeFullBlocks + chunkRenderData.vboSizeCustomBlocks == 0)
 					continue;
 
 				// If we're doing shadows
@@ -932,14 +906,18 @@ public class WorldRenderer
 					
 				if (!Keyboard.isKeyDown(Keyboard.KEY_F4) || !RenderingConfig.isDebugAllowed)
 					if (isShadowPass)
-						renderedVerticesShadow += chunkRenderData.renderCubeSolidBlocks(renderingContext);
+					{
+						renderedVerticesShadow += chunkRenderData.renderPass(renderingContext, RenderLodLevel.HIGH, RenderPass.OPAQUE);
+						//renderedVerticesShadow += chunkRenderData.renderCubeSolidBlocks(renderingContext);
+					}
 					else
 					{
 						renderedChunks++;
-						renderedVertices += chunkRenderData.renderCubeSolidBlocks(renderingContext);
+						//renderedVertices += chunkRenderData.renderCubeSolidBlocks(renderingContext);
+						renderedVertices += chunkRenderData.renderPass(renderingContext, RenderLodLevel.HIGH, RenderPass.OPAQUE);
 					}
 
-				if (!Keyboard.isKeyDown(Keyboard.KEY_F5) || !RenderingConfig.isDebugAllowed)
+				/*if (!Keyboard.isKeyDown(Keyboard.KEY_F5) || !RenderingConfig.isDebugAllowed)
 					if (isShadowPass)
 						renderedVerticesShadow += chunkRenderData.renderCustomSolidBlocks(renderingContext);
 					else
@@ -947,7 +925,7 @@ public class WorldRenderer
 						renderedChunks++;
 						renderedVertices += chunkRenderData.renderCustomSolidBlocks(renderingContext);
 					}
-				
+				*/
 				if(Keyboard.isKeyDown(Keyboard.KEY_F4) && (Client.username.equals("Alexix200")))
 				{
 					Ingame ig = ((Ingame)Client.getInstance().getWindows().getCurrentScene());
@@ -1061,8 +1039,8 @@ public class WorldRenderer
 			}
 			for (ChunkRenderable chunk : renderList)
 			{
-				ChunkRenderData chunkRenderData = chunk.getChunkRenderData();
-				if (chunkRenderData == null || !chunkRenderData.isUploaded() || chunkRenderData.vboSizeWaterBlocks == 0)
+				ChunkRenderDataHolder chunkRenderData = chunk.getChunkRenderData();
+				if (chunkRenderData == null)// || !chunkRenderData.isUploaded() || chunkRenderData.vboSizeWaterBlocks == 0)
 					continue;
 
 				int vboDekalX = chunk.getChunkX() * 32;
@@ -1090,7 +1068,7 @@ public class WorldRenderer
 
 				liquidBlocksShader.setUniform3f("objectPosition", vboDekalX, chunk.getChunkY() * 32, vboDekalZ);
 
-				renderedVertices += chunkRenderData.renderWaterBlocks(renderingContext);
+				renderedVertices += chunkRenderData.renderPass(renderingContext, RenderLodLevel.HIGH, RenderPass.LIQUIDS);
 			}
 		}
 

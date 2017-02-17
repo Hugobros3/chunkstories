@@ -5,13 +5,17 @@ import io.xol.chunkstories.api.Content.Voxels.VoxelModels;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.RenderPass;
+import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
+import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
+import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
-import io.xol.chunkstories.renderer.chunks.VoxelBaker;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -57,23 +61,13 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		this.jitterZ = jitterZ;
 	}
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getName()
-	 */
 	@Override
 	public String getName()
 	{
 		return name;
 	}
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelRenderer#renderInto(io.xol.chunkstories.renderer.chunks.RenderByteBuffer, io.xol.chunkstories.renderer.BlockRenderInfo, io.xol.chunkstories.api.world.Chunk, int, int, int)
-	 */
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#renderInto(io.xol.chunkstories.renderer.chunks.VoxelBaker, io.xol.chunkstories.renderer.VoxelContextOlder, io.xol.chunkstories.api.world.chunk.Chunk, int, int, int)
-	 */
-	@Override
-	public int renderInto(VoxelBaker renderByteBuffer, VoxelContext info, Chunk chunk, int x, int y, int z)
+	public int renderInto(VoxelBakerHighPoly renderByteBuffer, VoxelContext info, Chunk chunk, int x, int y, int z)
 	{
 		int lightLevelSun = chunk.getSunLight(x, y, z);
 		int lightLevelVoxel = chunk.getBlockLight(x, y, z);
@@ -117,7 +111,6 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 			dz = (float) ((Math.random() * 2.0 - 1.0) * this.jitterZ);
 
 		int drewVertices = 0;
-		
 		drawVertex:
 		for (int i_currentVertex = 0; i_currentVertex < this.vertices.length / 3; i_currentVertex++)
 		{
@@ -185,19 +178,13 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		//If none of this bs is going on
 		return store.parent().textures().getVoxelTextureByName(this.texturesNames[modelTextureIndex].replace("~", info.getVoxel().getName()));
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getSizeInVertices()
-	 */
+	
 	@Override
 	public int getSizeInVertices()
 	{
 		return vertices.length / 3;
 	}
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getCulling()
-	 */
 	@Override
 	public boolean[][] getCulling()
 	{
@@ -213,94 +200,71 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 	{
 		return store;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getTexturesNames()
-	 */
+	
 	@Override
 	public String[] getTexturesNames()
 	{
 		return texturesNames;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getTexturesOffsets()
-	 */
+	
 	@Override
 	public int[] getTexturesOffsets()
 	{
 		return texturesOffsets;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getVertices()
-	 */
+	
 	@Override
 	public float[] getVertices()
 	{
 		return vertices;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getTexCoords()
-	 */
+	
 	@Override
 	public float[] getTexCoords()
 	{
 		return texCoords;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getNormals()
-	 */
+	
 	@Override
 	public float[] getNormals()
 	{
 		return normals;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getExtra()
-	 */
+	
 	@Override
 	public byte[] getExtra()
 	{
 		return extra;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getJitterX()
-	 */
+	
 	@Override
 	public float getJitterX()
 	{
 		return jitterX;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getJitterY()
-	 */
+	
 	@Override
 	public float getJitterY()
 	{
 		return jitterY;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#getJitterZ()
-	 */
+	
 	@Override
 	public float getJitterZ()
 	{
 		return jitterZ;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.voxel.models.VoxelModel#store()
-	 */
+	
 	@Override
 	public Content.Voxels.VoxelModels store()
 	{
 		return store;
+	}
+
+	@Override
+	public int renderInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, VoxelContext info)
+	{
+		VoxelBakerHighPoly renderByteBuffer = chunkRenderer.getHighpolyBakerFor(LodLevel.ANY, RenderPass.OPAQUE);
+		return this.renderInto(renderByteBuffer, info, chunk, info.getX(), info.getY(), info.getZ());
 	}
 }
