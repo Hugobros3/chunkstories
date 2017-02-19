@@ -2,7 +2,7 @@ package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.renderer.VoxelContextOlder;
+import io.xol.chunkstories.renderer.ChunkMeshesBaker;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
 import io.xol.chunkstories.api.Content.Voxels;
@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.RenderPass;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
@@ -20,6 +20,7 @@ import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.VoxelContext;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -31,9 +32,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -43,11 +42,11 @@ import org.lwjgl.BufferUtils;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ChunksRenderer extends Thread
+public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 {
 	private AtomicBoolean die = new AtomicBoolean();
 
-	private final WorldClientCommon world;
+	private final WorldClient world;
 
 	public Deque<int[]> todoQueue = new ConcurrentLinkedDeque<int[]>();
 	//public Queue<MeshedChunkData> doneQueue = new ConcurrentLinkedQueue<MeshedChunkData>();
@@ -55,8 +54,6 @@ public class ChunksRenderer extends Thread
 	public ByteBufferPool buffersPool;
 
 	int worldSizeInChunks;
-
-	public static long renderStart = 0;
 
 	public int[][] cache = new int[27][];
 
@@ -66,10 +63,6 @@ public class ChunksRenderer extends Thread
 	//Work buffers
 	ByteBuffer[][][] byteBuffers;
 	RenderByteBuffer[][][] byteBuffersWrappers;
-	/*ByteBuffer lowpoly_any_opaque = BufferUtils.createByteBuffer(0x800000); //8Mb buffer
-	ByteBuffer lowpoly_low_opaque = BufferUtils.createByteBuffer(0x200000); //2Mb buffer
-	ByteBuffer lowpoly_high_opaque = BufferUtils.createByteBuffer(0x200000); //2Mb buffer
-	ByteBuffer complexBlocksBuffer = BufferUtils.createByteBuffer(0x600000); //2Mb buffer*/
 	
 	//Nasty !
 	int i = 0, j = 0, k = 0;
@@ -78,7 +71,7 @@ public class ChunksRenderer extends Thread
 	
 	DefaultVoxelRenderer defaultVoxelRenderer;
 
-	public ChunksRenderer(WorldClientCommon world)
+	public ChunkMeshesBakerThread(WorldClient world)
 	{
 		this.world = world;
 		
@@ -86,24 +79,24 @@ public class ChunksRenderer extends Thread
 		//TODO as this isn't a quite realtime thread, consider not pooling those to improve memory usage efficiency.
 		buffersPool = new ByteBufferPool(8, 0x800000);
 		
-		byteBuffers = new ByteBuffer[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.RenderPass.values().length];;
-		byteBuffersWrappers = new RenderByteBuffer[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.RenderPass.values().length];;
+		byteBuffers = new ByteBuffer[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.ShadingType.values().length];;
+		byteBuffersWrappers = new RenderByteBuffer[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.ShadingType.values().length];;
 		
 		//Allocate dedicated sizes for relevant buffers
-		byteBuffers[VertexLayout.WHOLE_BLOCKS.ordinal()][LodLevel.ANY.ordinal()][RenderPass.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x800000);
-		byteBuffers[VertexLayout.WHOLE_BLOCKS.ordinal()][LodLevel.LOW.ordinal()][RenderPass.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x400000);
-		byteBuffers[VertexLayout.WHOLE_BLOCKS.ordinal()][LodLevel.HIGH.ordinal()][RenderPass.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x800000);
+		byteBuffers[VertexLayout.WHOLE_BLOCKS.ordinal()][LodLevel.ANY.ordinal()][ShadingType.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x800000);
+		byteBuffers[VertexLayout.WHOLE_BLOCKS.ordinal()][LodLevel.LOW.ordinal()][ShadingType.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x400000);
+		byteBuffers[VertexLayout.WHOLE_BLOCKS.ordinal()][LodLevel.HIGH.ordinal()][ShadingType.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x800000);
 
-		byteBuffers[VertexLayout.INTRICATE.ordinal()][LodLevel.ANY.ordinal()][RenderPass.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x800000);
-		byteBuffers[VertexLayout.INTRICATE.ordinal()][LodLevel.LOW.ordinal()][RenderPass.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x400000);
-		byteBuffers[VertexLayout.INTRICATE.ordinal()][LodLevel.HIGH.ordinal()][RenderPass.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x400000);
+		byteBuffers[VertexLayout.INTRICATE.ordinal()][LodLevel.ANY.ordinal()][ShadingType.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x800000);
+		byteBuffers[VertexLayout.INTRICATE.ordinal()][LodLevel.LOW.ordinal()][ShadingType.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x400000);
+		byteBuffers[VertexLayout.INTRICATE.ordinal()][LodLevel.HIGH.ordinal()][ShadingType.OPAQUE.ordinal()] = BufferUtils.createByteBuffer(0x400000);
 		
 		//Allocate more reasonnable size for other buffers and give them all a wrapper
 		for(int i = 0; i < ChunkMeshDataSubtypes.VertexLayout.values().length; i++)
 		{
 			for(int j = 0; j < ChunkMeshDataSubtypes.LodLevel.values().length; j++)
 			{
-				for(int k = 0; k < ChunkMeshDataSubtypes.RenderPass.values().length; k++)
+				for(int k = 0; k < ChunkMeshDataSubtypes.ShadingType.values().length; k++)
 				{
 					if(byteBuffers[i][j][k] == null)
 						byteBuffers[i][j][k] = BufferUtils.createByteBuffer(0x100000);
@@ -114,6 +107,8 @@ public class ChunksRenderer extends Thread
 		}
 		
 		defaultVoxelRenderer = new DefaultVoxelRenderer();
+		
+		this.start();
 	}
 
 	public void requestChunkRender(ChunkRenderable chunk)
@@ -978,7 +973,7 @@ public class ChunksRenderer extends Thread
 			for (int rely = -1; rely <= 1; rely++)
 				for (int relz = -1; relz <= 1; relz++)
 				{
-					CubicChunk chunk2 = world.getChunk(cx + relx, cy + rely, cz + relz);
+					CubicChunk chunk2 = (CubicChunk) world.getChunk(cx + relx, cy + rely, cz + relz);
 					if (chunk2 != null)
 						cache[((relx + 1) * 3 + (rely + 1)) * 3 + (relz + 1)] = chunk2.chunkVoxelData;
 					else
@@ -994,7 +989,7 @@ public class ChunksRenderer extends Thread
 		{
 			for(int j = 0; j < ChunkMeshDataSubtypes.LodLevel.values().length; j++)
 			{
-				for(int k = 0; k < ChunkMeshDataSubtypes.RenderPass.values().length; k++)
+				for(int k = 0; k < ChunkMeshDataSubtypes.ShadingType.values().length; k++)
 				{
 					byteBuffers[i][j][k].clear();
 				}
@@ -1005,13 +1000,13 @@ public class ChunksRenderer extends Thread
 		ChunkRenderer chunkRendererOutput = new ChunkRenderer() {
 
 			@Override
-			public VoxelBakerHighPoly getHighpolyBakerFor(LodLevel lodLevel, RenderPass renderPass)
+			public VoxelBakerHighPoly getHighpolyBakerFor(LodLevel lodLevel, ShadingType renderPass)
 			{
 				return byteBuffersWrappers[VertexLayout.INTRICATE.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
 			}
 
 			@Override
-			public VoxelBakerCubic getLowpolyBakerFor(LodLevel lodLevel, RenderPass renderPass)
+			public VoxelBakerCubic getLowpolyBakerFor(LodLevel lodLevel, ShadingType renderPass)
 			{
 				return byteBuffersWrappers[VertexLayout.WHOLE_BLOCKS.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
 			}
@@ -1204,15 +1199,15 @@ public class ChunksRenderer extends Thread
 		// Prepare output
 		recyclableByteBufferData.clear();
 
-		int[][][] sizes = new int[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.RenderPass.values().length];;
-		int[][][] offsets = new int[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.RenderPass.values().length];;
+		int[][][] sizes = new int[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.ShadingType.values().length];;
+		int[][][] offsets = new int[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.ShadingType.values().length];;
 		
 		int currentOffset = 0;
 
 		//For EACH section, make offset and shite
 		for(VertexLayout vertexLayout : VertexLayout.values())
 			for(LodLevel lodLevel : LodLevel.values())
-				for(RenderPass renderPass : RenderPass.values())
+				for(ShadingType renderPass : ShadingType.values())
 				{
 					int vertexLayoutIndex = vertexLayout.ordinal();
 					int lodLevelIndex = lodLevel.ordinal();
@@ -1274,7 +1269,7 @@ public class ChunksRenderer extends Thread
 			Voxel vox = voxelInformations.getVoxel();
 			int src = voxelInformations.getData();
 			
-			VoxelBakerCubic rawRBBF = chunkRenderer.getLowpolyBakerFor(LodLevel.ANY, RenderPass.OPAQUE);
+			VoxelBakerCubic rawRBBF = chunkRenderer.getLowpolyBakerFor(LodLevel.ANY, ShadingType.OPAQUE);
 			byte extraByte = 0;
 			if (shallBuildWallArround(voxelInformations, 5))
 			{
@@ -1319,7 +1314,8 @@ public class ChunksRenderer extends Thread
 
 	public AtomicInteger totalChunksRendered = new AtomicInteger();
 
-	public void killThread()
+	@Override
+	public void destroy()
 	{
 		die.set(true);
 		synchronized (this)
@@ -1327,25 +1323,9 @@ public class ChunksRenderer extends Thread
 			notifyAll();
 		}
 	}
-
-	public class MeshedChunkData
+	
+	public String toString()
 	{
-
-		public CubicChunk chunk;
-		RecyclableByteBuffer buffer;
-		int solidVoxelsSize;
-		int solidModelsSize;
-		int waterModelsSize;
-
-		public MeshedChunkData(CubicChunk chunk, RecyclableByteBuffer buffer, int solidVoxelsSize, int solidModelsSize, int waterModelsSize)
-		{
-			this.chunk = chunk;
-			this.buffer = buffer;
-
-			this.solidVoxelsSize = solidVoxelsSize;
-			this.solidModelsSize = solidModelsSize;
-			this.waterModelsSize = waterModelsSize;
-		}
-
+		return "[ChunkMeshesBaker todoList:"+this.todoQueue.size()+"]";
 	}
 }

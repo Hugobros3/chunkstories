@@ -403,6 +403,6 @@ public class ClientWorldController implements PlayerClient
 	@Override
 	public GameWindow getWindow()
 	{
-		return this.client.getWindows();
+		return this.client.getGameWindow();
 	}
 }

@@ -47,7 +47,7 @@ public class Texture2DAsset extends Texture2D
 	
 	public int loadTextureFromAsset()
 	{
-		if (!Client.getInstance().getWindows().isMainGLWindow())
+		if (!Client.getInstance().getGameWindow().isMainGLWindow())
 		{
 			System.out.println("isn't main thread, scheduling load");
 			scheduledForLoad = true;

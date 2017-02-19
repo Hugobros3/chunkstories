@@ -70,7 +70,7 @@ public class VerticesObject
 		allVerticesObjects.add(selfReference);
 
 		//Assign a buffer ID if we're in the right thread
-		if (Client.getInstance().getWindows().isMainGLWindow())
+		if (Client.getInstance().getGameWindow().isMainGLWindow())
 			aquireID();
 	}
 
@@ -146,7 +146,7 @@ public class VerticesObject
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
 		//Queue for immediate upload
-		if (Client.getInstance().getWindows().isMainGLWindow())
+		if (Client.getInstance().getGameWindow().isMainGLWindow())
 		{
 			waitingToUploadMainThread = dataToUpload;
 			dataSize = dataToUpload.limit();
@@ -177,7 +177,7 @@ public class VerticesObject
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
 		//Queue for immediate upload
-		if (Client.getInstance().getWindows().isMainGLWindow())
+		if (Client.getInstance().getGameWindow().isMainGLWindow())
 		{
 			waitingToUploadMainThread = dataToUpload;
 			dataSize = dataToUpload.limit() * 4;
@@ -195,7 +195,7 @@ public class VerticesObject
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
 		//Queue for immediate upload
-		if (Client.getInstance().getWindows().isMainGLWindow())
+		if (Client.getInstance().getGameWindow().isMainGLWindow())
 		{
 			Object replacing = waitingToUploadMainThread;
 			waitingToUploadMainThread = dataToUpload;
@@ -217,7 +217,7 @@ public class VerticesObject
 	private boolean uploadDataActual(Object dataToUpload)
 	{
 		//Are we clear to execute openGL calls ?
-		assert Client.getInstance().getWindows().isMainGLWindow();
+		assert Client.getInstance().getGameWindow().isMainGLWindow();
 
 		bind();
 
@@ -389,7 +389,7 @@ public class VerticesObject
 			return true;
 		}
 
-		if (Client.getInstance().getWindows().isMainGLWindow())
+		if (Client.getInstance().getGameWindow().isMainGLWindow())
 		{
 			isDataPresent = false;
 

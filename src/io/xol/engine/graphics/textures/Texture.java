@@ -55,7 +55,7 @@ public abstract class Texture
 
 	public boolean destroy()
 	{
-		if (Client.getInstance().getWindows().isMainGLWindow())
+		if (Client.getInstance().getGameWindow().isMainGLWindow())
 		{
 			allTextureObjects.remove(selfReference);
 

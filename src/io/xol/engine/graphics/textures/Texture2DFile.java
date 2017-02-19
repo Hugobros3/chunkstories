@@ -49,7 +49,7 @@ public class Texture2DFile extends Texture2D
 
 	public int loadTextureFromFile()
 	{
-		if (!Client.getInstance().getWindows().isMainGLWindow())
+		if (!Client.getInstance().getGameWindow().isMainGLWindow())
 		{
 			System.out.println("isn't main thread, scheduling load");
 			scheduledForLoad = true;

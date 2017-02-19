@@ -9,6 +9,7 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.Renderable;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.animation.SkeletonAnimator;
@@ -67,7 +68,6 @@ public class ObjMeshRenderable implements Renderable
 	public void render(RenderingInterface renderingContext)
 	{
 		internalRenderer(renderingContext, null, 0.0, false, (String[]) null);
-
 	}
 
 	public void render(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime)

@@ -1,23 +1,50 @@
 package io.xol.chunkstories.renderer.lights;
 
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.RenderingInterface.LightsAccumulator;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.lightning.SpotLight;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class LightsRenderer
+public class LightsRenderer implements LightsAccumulator
 {
-	static int lightsBuffer = 0;
+	//private final RenderingContext renderingContext;
+	
+	int lightsBuffer = 0;
+	ShaderProgram lightShader;
+	private List<Light> lights = new LinkedList<Light>();
 
-	public static void renderDefferedLight(RenderingContext renderingContext, Light light)
+	public LightsRenderer(RenderingContext renderingContext)
+	{
+		//this.renderingContext = renderingContext;
+	}
+
+	public void queueLight(Light light)
+	{
+		lights.add(light);
+	}
+
+	public Iterator<Light> getAllLights()
+	{
+		return lights.iterator();
+	}
+	
+	private void renderDefferedLight(RenderingInterface renderingContext, Light light)
 	{
 		// Light culling
 		if (!lightInFrustrum(renderingContext, light))
@@ -47,23 +74,21 @@ public class LightsRenderer
 		}
 	}
 
-	public static boolean lightInFrustrum(RenderingContext renderingContext, Light light)
+	private boolean lightInFrustrum(RenderingInterface renderingContext, Light light)
 	{
 		return renderingContext.getCamera().isBoxInFrustrum(new Vector3fm(light.getPosition().getX() - light.getDecay(), light.getPosition().getY() - light.getDecay(), light.getPosition().getZ() - light.getDecay()), new Vector3fm(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
 	}
-
-	static ShaderProgram lightShader;
 	
-	public static void renderPendingLights(RenderingContext renderingContext)
+	public void renderPendingLights(RenderingInterface renderingContext)
 	{
 		lightShader = ShadersLibrary.getShaderProgram("light");
 		lightsBuffer = 0;
 		//Render entities lights
-		Iterator<Light> lights = renderingContext.getAllLights();
-		while(lights.hasNext())
+		Iterator<Light> lightsIterator = lights.iterator();
+		while(lightsIterator.hasNext())
 		{
-			renderDefferedLight(renderingContext, lights.next());
-			lights.remove();
+			renderDefferedLight(renderingContext, lightsIterator.next());
+			lightsIterator.remove();
 		}
 		//Render particles's lights
 		//Client.world.particlesHolder.renderLights(this);

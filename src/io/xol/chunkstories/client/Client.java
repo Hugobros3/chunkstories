@@ -20,6 +20,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
+import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -367,7 +368,7 @@ public class Client implements ClientInterface
 		return this.inputsManager;
 	}
 
-	public GameWindowOpenGL getWindows()
+	public GameWindowOpenGL getGameWindow()
 	{
 		return gameWindows;
 	}

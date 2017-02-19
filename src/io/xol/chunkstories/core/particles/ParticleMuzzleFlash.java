@@ -6,6 +6,7 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleType;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.world.World;
 
@@ -49,9 +50,9 @@ public class ParticleMuzzleFlash extends ParticleType
 	}
 
 	@Override
-	public void forEach_Rendering(RenderingContext renderingContext, ParticleData data)
+	public void forEach_Rendering(RenderingInterface renderingContext, ParticleData data)
 	{
-		renderingContext.addLight(new Light(new Vector3fm(1.0f, 181f/255f, 79/255f),
+		renderingContext.getLightsRenderer().queueLight(new Light(new Vector3fm(1.0f, 181f/255f, 79/255f),
 				new Vector3fm((float) data.getX(), (float) data.getY(), (float) data.getZ()),
 				15f + (float) Math.random() * 5f));
 	}

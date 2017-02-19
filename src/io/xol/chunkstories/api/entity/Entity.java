@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.world.World;
@@ -13,7 +14,6 @@ import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
 import io.xol.chunkstories.core.entity.components.EntityComponentPosition;
 import io.xol.chunkstories.core.entity.components.EntityComponentVelocity;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.Camera;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -85,7 +85,7 @@ public interface Entity
 	 * Called when controlling/viewing an entity
 	 * @param camera
 	 */
-	public void setupCamera(Camera camera);
+	public void setupCamera(CameraInterface camera);
 	
 	/**
 	 * Get the EntityID of this entity

@@ -30,6 +30,7 @@ import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.core.events.EntityDamageEvent;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.animation.SkeletonAnimator;
@@ -490,7 +491,7 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 				if (distance > lodEnd)
 					lodDivisor *= 4;
 			}
-			if (renderingContext.isThisAShadowPass())
+			if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW)
 				lodDivisor *= 2;
 
 			targetFps /= lodDivisor;

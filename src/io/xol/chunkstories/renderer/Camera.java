@@ -64,13 +64,6 @@ public class Camera implements CameraInterface
 			//cameraPlanes[i] = new CollisionPlane();
 		}
 	}
-	
-	private FloatBuffer getFloatBuffer(float[] f)
-	{
-		FloatBuffer buf = BufferUtils.createFloatBuffer(f.length).put(f);
-		buf.flip();
-		return buf;
-	}
 
 	/**
 	 * Updates the sound engine position and listener orientation
@@ -124,7 +117,7 @@ public class Camera implements CameraInterface
 		Matrix4f.invert(modelViewProjectionMatrix4f, modelViewProjectionMatrix4fInverted);
 	}
 
-	public void justSetup(int width, int height)
+	public void setupUsingScreenSize(int width, int height)
 	{
 		this.viewportWidth = width;
 		this.viewportHeight = height;
@@ -185,6 +178,8 @@ public class Camera implements CameraInterface
 		
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
+		translateCamera();
+		alUpdate();
 	}
 
 	CollisionPlane[] cameraPlanes = new CollisionPlane[6];
@@ -396,7 +391,7 @@ public class Camera implements CameraInterface
 		return d / 360 * 2 * Math.PI;
 	}
 
-	public void translate()
+	private void translateCamera()
 	{
 		untranslatedMVP4f.load(modelViewMatrix4f);
 		Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
@@ -506,5 +501,54 @@ public class Camera implements CameraInterface
 		//if(box.xw < 128)
 		//System.out.println(box);
 		return this.isBoxInFrustrum(new Vector3fm(box.xpos + box.xw / 2, box.ypos + box.h / 2, box.zpos + box.zw / 2), new Vector3fm(box.xw, box.h, box.zw));
+	}
+
+	@Override
+	public float getFOV()
+	{
+		// TODO Auto-generated method stub
+		return fov;
+	}
+
+	@Override
+	public void setFOV(float fov)
+	{
+		this.fov = fov;
+	}
+
+	@Override
+	public float getRotationX()
+	{
+		return rotationX;
+	}
+
+	@Override
+	public void setRotationX(float rotationX)
+	{
+		this.rotationX = rotationX;
+	}
+
+	@Override
+	public float getRotationY()
+	{
+		return rotationY;
+	}
+
+	@Override
+	public void setRotationY(float rotationY)
+	{
+		this.rotationY = rotationY;
+	}
+
+	@Override
+	public float getRotationZ()
+	{
+		return rotationZ;
+	}
+
+	@Override
+	public void setRotationZ(float rotationZ)
+	{
+		this.rotationZ = rotationZ;
 	}
 }

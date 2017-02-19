@@ -324,7 +324,7 @@ public class OptionsOverlay extends Overlay
 					public void run()
 					{if (mainScene instanceof Ingame && shouldReload){
 						
-						Client.getInstance().getWorld().getWorldRenderer().setupRenderSize(scene.gameWindow.getWidth(), scene.gameWindow.getHeight());
+						Client.getInstance().getWorld().getWorldRenderer().setupRenderSize();
 					}
 					ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
 					}
@@ -333,7 +333,7 @@ public class OptionsOverlay extends Overlay
 					@Override
 					public void run()
 					{
-						Client.getInstance().getWindows().setTargetFPS(Client.getConfig().getInteger("framerate", -1));
+						Client.getInstance().getGameWindow().setTargetFPS(Client.getConfig().getInteger("framerate", -1));
 					}
 				}),
 				}));
@@ -351,7 +351,7 @@ public class OptionsOverlay extends Overlay
 		configTabs.add(new ConfigTab("#{Video}", new ConfigButton[] {
 				new ConfigButtonScale("fov", 25f, 85f, 1f),
 				new ConfigButtonToggle("fullScreen"),
-				new ConfigButtonMultiChoice("fullScreenResolution", Client.getInstance().getWindows().getDisplayModes()),
+				new ConfigButtonMultiChoice("fullScreenResolution", Client.getInstance().getGameWindow().getDisplayModes()),
 				new ConfigButtonMultiChoice("language", translations).setApplyAction(new Runnable(){
 					@Override
 					public void run()

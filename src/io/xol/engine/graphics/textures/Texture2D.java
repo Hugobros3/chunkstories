@@ -84,7 +84,7 @@ public class Texture2D extends Texture implements RenderTarget
 
 	public boolean uploadTextureData(int width, int height, int level, ByteBuffer data)
 	{
-		if (Client.getInstance().getWindows().isMainGLWindow())
+		if (Client.getInstance().getGameWindow().isMainGLWindow())
 			return uploadTextureDataActual(width, height, level, data);
 		else
 		{
@@ -136,7 +136,7 @@ public class Texture2D extends Texture implements RenderTarget
 
 	public void bind()
 	{
-		if (!Client.getInstance().getWindows().isMainGLWindow())
+		if (!Client.getInstance().getGameWindow().isMainGLWindow())
 			throw new IllegalRenderingThreadException();
 		
 		//Don't bother

@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.entity.EntityImplementation;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -60,15 +61,9 @@ public class EntityGroundItem extends EntityImplementation implements EntityRend
 	static EntityRenderer<EntityGroundItem> entityRenderer = new EntityGroundItemRenderer();
 	
 	static class EntityGroundItemRenderer implements EntityRenderer<EntityGroundItem> {
-
+		
 		@Override
-		public void setupRender(RenderingInterface renderingInterface)
-		{
-			//Not much.
-		}
-
-		@Override
-		public int forEach(RenderingInterface renderingInterface, RenderingIterator<EntityGroundItem> renderableEntitiesIterator)
+		public int renderEntities(RenderingInterface renderingInterface, RenderingIterator<EntityGroundItem> renderableEntitiesIterator)
 		{
 			int i = 0;
 			

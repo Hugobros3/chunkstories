@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
@@ -115,7 +116,7 @@ public class ParticlesRenderer implements ParticlesManager
 
 	}
 
-	public void renderLights(RenderingContext renderingContext)
+	public void renderLights(RenderingInterface renderingInterface)
 	{
 		for (ParticleType particleType : particles.keySet())
 		{
@@ -127,7 +128,7 @@ public class ParticlesRenderer implements ParticlesManager
 				p = iterator.next();
 				if (p != null)
 				{
-					particleType.forEach_Rendering(renderingContext, p);
+					particleType.forEach_Rendering(renderingInterface, p);
 					if (p.isDed())
 						iterator.remove();
 				}
@@ -137,19 +138,19 @@ public class ParticlesRenderer implements ParticlesManager
 		}
 	}
 
-	public int render(RenderingContext renderingContext)
+	public int render(RenderingInterface renderingInterface)
 	{
 		int totalDrawn = 0;
 		
-		renderingContext.setCullingMode(CullingMode.DISABLED);
-		renderingContext.setBlendMode(BlendMode.MIX);
+		renderingInterface.setCullingMode(CullingMode.DISABLED);
+		renderingInterface.setBlendMode(BlendMode.MIX);
 
-		ShaderInterface particlesShader = renderingContext.useShader("particles");
+		ShaderInterface particlesShader = renderingInterface.useShader("particles");
 
-		particlesShader.setUniform2f("screenSize", renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
-		renderingContext.getCamera().setupShader(particlesShader);
+		particlesShader.setUniform2f("screenSize", renderingInterface.getWindow().getWidth(), renderingInterface.getWindow().getHeight());
+		renderingInterface.getCamera().setupShader(particlesShader);
 		
-		renderingContext.bindTexture2D("lightColors", TexturesHandler.getTexture("./textures/environement/light.png"));
+		renderingInterface.bindTexture2D("lightColors", TexturesHandler.getTexture("./textures/environement/light.png"));
 
 		//Vertex attributes
 		
@@ -162,7 +163,7 @@ public class ParticlesRenderer implements ParticlesManager
 				Iterator<ParticleData> iterator = particles.get(particleType).iterator();
 				boolean haveTextureCoordinates = false;
 
-				particleType.beginRenderingForType(renderingContext);
+				particleType.beginRenderingForType(renderingInterface);
 
 				//particleType.getAlbedoTexture().setLinearFiltering(false);
 
@@ -178,7 +179,7 @@ public class ParticlesRenderer implements ParticlesManager
 					//If > 60k elements, buffer is full, draw it
 					if (elements >= 60000)
 					{
-						drawBuffers(renderingContext, elements, haveTextureCoordinates);
+						drawBuffers(renderingInterface, elements, haveTextureCoordinates);
 						totalDrawn += elements;
 						elements = 0;
 					}
@@ -237,7 +238,7 @@ public class ParticlesRenderer implements ParticlesManager
 				}
 				if (elements > 0)
 				{
-					drawBuffers(renderingContext, elements, haveTextureCoordinates);
+					drawBuffers(renderingInterface, elements, haveTextureCoordinates);
 					totalDrawn += elements;
 					elements = 0;
 					
@@ -246,41 +247,41 @@ public class ParticlesRenderer implements ParticlesManager
 		}
 		// We done here
 
-		renderingContext.getRenderTargetManager().setDepthMask(true);
+		renderingInterface.getRenderTargetManager().setDepthMask(true);
 		//glDepthMask(true);
 		
 		//ObjectRenderer.drawFSQuad(billCoordVAL);
 
-		renderingContext.getRenderTargetManager().setDepthMask(true);
+		renderingInterface.getRenderTargetManager().setDepthMask(true);
 		//glDepthMask(true);
 
-		renderingContext.setBlendMode(BlendMode.DISABLED);
-		renderLights(renderingContext);
+		renderingInterface.setBlendMode(BlendMode.DISABLED);
+		renderLights(renderingInterface);
 		return totalDrawn;
 	}
 
-	private int drawBuffers(RenderingContext renderingContext, int elements, boolean haveTextureCoordinates)
+	private int drawBuffers(RenderingInterface renderingInterface, int elements, boolean haveTextureCoordinates)
 	{
-		renderingContext.currentShader().setUniform1f("areTextureCoordinatesIninatesSupplied", haveTextureCoordinates ? 1f : 0f);
+		renderingInterface.currentShader().setUniform1f("areTextureCoordinatesIninatesSupplied", haveTextureCoordinates ? 1f : 0f);
 
 		// Render it now
 		particlesPositionsBuffer.flip();
 
 		particlesPositions.uploadData(particlesPositionsBuffer);
 		
-		renderingContext.bindAttribute("particlesPositionIn", particlesPositions.asAttributeSource(VertexFormat.FLOAT, 3, 12, 0));
+		renderingInterface.bindAttribute("particlesPositionIn", particlesPositions.asAttributeSource(VertexFormat.FLOAT, 3, 12, 0));
 		
 		if (haveTextureCoordinates)
 		{
 			textureCoordinatesBuffer.flip();
 			texCoords.uploadData(textureCoordinatesBuffer);
 
-			renderingContext.bindAttribute("textureCoordinatesIn", texCoords.asAttributeSource(VertexFormat.FLOAT, 2, 8, 0));
+			renderingInterface.bindAttribute("textureCoordinatesIn", texCoords.asAttributeSource(VertexFormat.FLOAT, 2, 8, 0));
 		}
 		
-		renderingContext.draw(Primitive.TRIANGLE, 0, elements);
-		renderingContext.flush();
-		renderingContext.unbindAttributes();
+		renderingInterface.draw(Primitive.TRIANGLE, 0, elements);
+		renderingInterface.flush();
+		renderingInterface.unbindAttributes();
 
 		// And then clear the buffer to start over
 		particlesPositionsBuffer.clear();

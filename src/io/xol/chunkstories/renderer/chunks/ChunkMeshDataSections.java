@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.RenderPass;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
@@ -51,7 +51,7 @@ public class ChunkMeshDataSections
 		return true;
 	}
 	
-	public int renderSections(RenderingInterface renderingContext, LodLevel lodLevel, RenderPass renderPass)
+	public int renderSections(RenderingInterface renderingContext, LodLevel lodLevel, ShadingType renderPass)
 	{
 		int total = 0;
 		for(VertexLayout vertexLayout : VertexLayout.values())
@@ -59,7 +59,7 @@ public class ChunkMeshDataSections
 		return total;
 	}
 	
-	public int renderSection(RenderingInterface renderingContext, VertexLayout vertexLayout, LodLevel lodLevel, RenderPass renderPass)
+	public int renderSection(RenderingInterface renderingContext, VertexLayout vertexLayout, LodLevel lodLevel, ShadingType renderPass)
 	{
 		//Check size isn't 0
 		int size = vertices_type_size[vertexLayout.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];

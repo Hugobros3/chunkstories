@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
 
-import io.xol.chunkstories.renderer.WorldRenderer;
+import io.xol.chunkstories.renderer.WorldRendererOld;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -31,10 +31,10 @@ public class WorldPostRenderingEvent extends Event
 	// Specific event code
 
 	private World world;
-	private WorldRenderer worldRenderer;
+	private WorldRendererOld worldRenderer;
 	private RenderingInterface renderingInterface;
 	
-	public WorldPostRenderingEvent(World world, WorldRenderer worldRenderer, RenderingInterface renderingInterface)
+	public WorldPostRenderingEvent(World world, WorldRendererOld worldRenderer, RenderingInterface renderingInterface)
 	{
 		super();
 		this.world = world;
@@ -47,7 +47,7 @@ public class WorldPostRenderingEvent extends Event
 		return world;
 	}
 
-	public WorldRenderer getWorldRenderer()
+	public WorldRendererOld getWorldRenderer()
 	{
 		return worldRenderer;
 	}

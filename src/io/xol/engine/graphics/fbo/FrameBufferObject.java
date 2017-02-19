@@ -171,7 +171,7 @@ public class FrameBufferObject
 	{
 		GameWindowOpenGL.getInstance().renderingContext.flush();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, Client.getInstance().getWindows().getWidth(), Client.getInstance().getWindows().getHeight());
+		glViewport(0, 0, Client.getInstance().getGameWindow().getWidth(), Client.getInstance().getGameWindow().getHeight());
 		bound = 0;
 	}
 	

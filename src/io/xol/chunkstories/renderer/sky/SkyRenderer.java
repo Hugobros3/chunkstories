@@ -6,13 +6,14 @@ import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.renderer.WorldRenderer;
+import io.xol.chunkstories.renderer.WorldRendererOld;
 
 import java.nio.FloatBuffer;
 
@@ -32,13 +33,11 @@ public class SkyRenderer
 	float height = -500;
 
 	World world;
-	WorldRenderer worldRenderer;
 	CloudsRenderer cloudsRenderer;
 	
-	public SkyRenderer(World world, WorldRenderer worldRenderer)
+	public SkyRenderer(World world)
 	{
 		this.world = world;
-		this.worldRenderer = worldRenderer;
 		this.cloudsRenderer = new CloudsRenderer(world, this);
 	}
 
@@ -50,7 +49,7 @@ public class SkyRenderer
 		return new Vector3fm((float) (400 + sundistance * Math.sin(rad(sunangle)) * Math.cos(sunloc)), (float) (height + sundistance * Math.sin(sunloc)), (float) (sundistance * Math.cos(rad(sunangle)) * Math.cos(sunloc))).normalize();
 	}
 	
-	public void render(RenderingContext renderingContext)
+	public void render(RenderingInterface renderingContext)
 	{
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.DISABLED);

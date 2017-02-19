@@ -15,9 +15,7 @@ uniform float time;
 
 uniform float vegetation;
 
-uniform vec3 objectPosition;
-
-uniform float entity;
+uniform float allowForWavyStuff;
 
 uniform mat4 objectMatrix;
 
@@ -31,7 +29,7 @@ void main(){
 	//gl_Position = ftransform();
 	vec4 v = objectMatrix * vec4(vertexIn.xyz, 1);
 	
-	float movingness = normalIn.w * (1-entity);
+	float movingness = normalIn.w * allowForWavyStuff;
 	<ifdef dynamicGrass>
 	if(movingness > 0)
 	{

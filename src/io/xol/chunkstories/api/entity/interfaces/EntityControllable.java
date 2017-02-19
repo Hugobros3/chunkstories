@@ -29,7 +29,8 @@ public interface EntityControllable extends Entity, EntityUnsaveable
 	 */
 	public void tickClientController(PlayerClient controller);
 
-	public void setupCamera(PlayerClient controller);
+	/** Called by the RENDERING thread, each frame. Usefull for stuff like camera control maybe ? */
+	public void onEachFrame(PlayerClient controller);
 	
 	/**
 	 * If this entity has the ability to select blocks, this method should return said block

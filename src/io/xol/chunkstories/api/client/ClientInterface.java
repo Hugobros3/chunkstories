@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
+import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -17,6 +18,8 @@ import io.xol.chunkstories.world.WorldClientCommon;
 public interface ClientInterface extends GameContext
 {
 	public PlayerClient getPlayer();
+	
+	public GameWindow getGameWindow();
 
 	/** Prints some text into the client chat */
 	public void printChat(String textToPrint);

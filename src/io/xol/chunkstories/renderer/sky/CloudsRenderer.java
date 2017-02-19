@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.world.World;
@@ -43,7 +44,7 @@ public class CloudsRenderer
 	
 	long lastBaked = 0;
 	
-	public void bake(RenderingContext renderingContext)
+	public void bake(RenderingInterface renderingContext)
 	{
 		int width = 128;
 
@@ -197,7 +198,7 @@ public class CloudsRenderer
 		cloudsMesh.uploadData(bbuf);
 	}
 
-	public void renderClouds(RenderingContext renderingContext)
+	public void renderClouds(RenderingInterface renderingContext)
 	{
 		bake(renderingContext);
 

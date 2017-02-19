@@ -2,7 +2,7 @@ package io.xol.chunkstories.core.events;
 
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.renderer.Camera;
+import io.xol.chunkstories.api.rendering.CameraInterface;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -27,14 +27,14 @@ public class CameraSetupEvent extends Event
 	
 	// Specific event code
 	
-	private Camera camera;
+	private CameraInterface camera;
 	
-	public CameraSetupEvent(Camera camera)
+	public CameraSetupEvent(CameraInterface camera)
 	{
 		this.camera = camera;
 	}
 	
-	public Camera getCamera()
+	public CameraInterface getCamera()
 	{
 		return camera;
 	}

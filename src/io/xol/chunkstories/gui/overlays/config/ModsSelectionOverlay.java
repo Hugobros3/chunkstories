@@ -181,7 +181,7 @@ public class ModsSelectionOverlay extends Overlay
 			buildModsList();
 		}
 		
-		int s = Client.getInstance().getWindows().getScalingFactor();
+		int s = Client.getInstance().getGameWindow().getScalingFactor();
 		
 		modsContainer.setPosition((width - 480 * s) / 2, 32);
 		modsContainer.setDimensions(480 * s, height - 32 - 32 * s);

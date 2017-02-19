@@ -147,7 +147,7 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 	public boolean onInputPressed(Input input)
 	{
 		//Check we have a relevant scene
-		Scene currentScene = Client.getInstance().getWindows().getCurrentScene();
+		Scene currentScene = Client.getInstance().getGameWindow().getCurrentScene();
 		if(!(currentScene instanceof Ingame))
 			return false;
 		Ingame scene = (Ingame)currentScene;
@@ -181,7 +181,7 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 	public boolean onInputReleased(Input input)
 	{
 		//Check we have a relevant scene
-		Scene currentScene = Client.getInstance().getWindows().getCurrentScene();
+		Scene currentScene = Client.getInstance().getGameWindow().getCurrentScene();
 		if(!(currentScene instanceof Ingame))
 			return false;
 		Ingame scene = (Ingame)currentScene;

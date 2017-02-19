@@ -9,15 +9,20 @@ import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
+import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.renderer.Camera;
+import io.xol.chunkstories.renderer.WorldRenderer;
+import io.xol.chunkstories.renderer.lights.LightsRenderer;
+import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderTargetManager;
 import io.xol.chunkstories.api.rendering.RenderingCommand;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.fbo.OpenGLRenderTargetManager;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
@@ -48,10 +53,10 @@ public class RenderingContext implements RenderingInterface
 	private GameWindowOpenGL gameWindow;
 	private ShaderProgram currentlyBoundShader = null;
 
-	private Camera camera;
-	private boolean isThisAShadowPass;
-
-	private List<Light> lights = new LinkedList<Light>();
+	private final Camera mainCamera = new Camera();
+	//private boolean isThisAShadowPass;
+	
+	private LightsRenderer lightsRenderers = new LightsRenderer(this);
 
 	private GuiRendererImplementation guiRenderer;
 	private TrueTypeFontRenderer trueTypeFontRenderer;
@@ -93,14 +98,9 @@ public class RenderingContext implements RenderingInterface
 		return "wip";
 	}
 
-	public void setCamera(Camera camera)
-	{
-		this.camera = camera;
-	}
-
 	public Camera getCamera()
 	{
-		return camera;
+		return mainCamera;
 	}
 
 	public GameWindowOpenGL getWindow()
@@ -176,26 +176,17 @@ public class RenderingContext implements RenderingInterface
 		return bindTexture2D("materialTexture", texture);
 	}
 
+	/*@Deprecated
 	public boolean isThisAShadowPass()
 	{
 		return isThisAShadowPass;
 	}
 
+	@Deprecated
 	public void setIsShadowPass(boolean isShadowPass)
 	{
 		isThisAShadowPass = isShadowPass;
-	}
-
-	public void addLight(Light light)
-	{
-		if (!this.isThisAShadowPass)
-			lights.add(light);
-	}
-
-	public Iterator<Light> getAllLights()
-	{
-		return lights.iterator();
-	}
+	}*/
 
 	public GuiRendererImplementation getGuiRenderer()
 	{
@@ -366,5 +357,20 @@ public class RenderingContext implements RenderingInterface
 	public RenderTargetManager getRenderTargetManager()
 	{
 		return renderTargetManager;
+	}
+
+	@Override
+	public LightsRenderer getLightsRenderer()
+	{
+		return lightsRenderers;
+	}
+
+	@Override
+	public WorldRenderer getWorldRenderer()
+	{
+		WorldClient world = Client.getInstance().getWorld();
+		if(world != null)
+			return world.getWorldRenderer();
+		return null;
 	}
 }

@@ -6,6 +6,7 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleType;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.world.World;
 
@@ -51,10 +52,10 @@ public class ParticleSetupLight extends ParticleType
 	}
 
 	@Override
-	public void forEach_Rendering(RenderingContext renderingContext, ParticleData data)
+	public void forEach_Rendering(RenderingInterface renderingContext, ParticleData data)
 	{
 		if(((ParticleSetupLightData)data).light != null)
-			renderingContext.addLight(((ParticleSetupLightData)data).light);
+			renderingContext.getLightsRenderer().queueLight(((ParticleSetupLightData)data).light);
 	}
 
 	@Override

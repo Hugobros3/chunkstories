@@ -16,6 +16,7 @@ import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

@@ -44,7 +44,7 @@ public class Texture1D extends Texture
 	
 	public void bind()
 	{
-		if (!Client.getInstance().getWindows().isMainGLWindow())
+		if (!Client.getInstance().getGameWindow().isMainGLWindow())
 			throw new IllegalRenderingThreadException();
 		
 		//Don't bother

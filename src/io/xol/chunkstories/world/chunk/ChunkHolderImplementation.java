@@ -330,7 +330,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		this.chunk = chunk;
 		
 		if(region.getWorld() instanceof WorldClient)
-			((WorldClient)region.getWorld()).getWorldRenderer().flagModified();
+			((WorldClient)region.getWorld()).getWorldRenderer().flagChunksModified();
 	}
 
 	@Override

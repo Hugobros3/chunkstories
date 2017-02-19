@@ -21,6 +21,7 @@ import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
@@ -44,7 +45,7 @@ import io.xol.chunkstories.core.item.ItemOverlay;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.Camera;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 
@@ -419,7 +420,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	}
 
 	@Override
-	public void setupCamera(Camera camera)
+	public void setupCamera(CameraInterface camera)
 	{
 		synchronized (this)
 		{
@@ -429,8 +430,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			//camera.pos = lastCameraLocation.clone().negate();
 			//camera.pos.add(0d, -eyePosition, 0d);
 
-			camera.rotationX = this.getEntityRotationComponent().getVerticalRotation();
-			camera.rotationY = this.getEntityRotationComponent().getHorizontalRotation();
+			camera.setRotationX(this.getEntityRotationComponent().getVerticalRotation());
+			camera.setRotationY(this.getEntityRotationComponent().getHorizontalRotation());
 
 			float modifier = 1.0f;
 			if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemFirearm)
@@ -440,10 +441,10 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					modifier = 1.0f / item.getScopeZoom();
 			}
 
-			camera.fov = modifier * (float) (RenderingConfig.fov
+			camera.setFOV(modifier * (float) (RenderingConfig.fov
 					+ ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) > 0.07 * 0.07
-							? ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) - 0.07 * 0.07) * 500 : 0));
-			camera.alUpdate();
+							? ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) - 0.07 * 0.07) * 500 : 0)));
+			
 		}
 	}
 
@@ -509,15 +510,17 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		}
 
 		@Override
-		public int forEach(RenderingInterface renderingContext, RenderingIterator<H> renderableEntitiesIterator)
+		public int renderEntities(RenderingInterface renderingContext, RenderingIterator<H> renderableEntitiesIterator)
 		{
+			setupRender(renderingContext);
+			
 			int e = 0;
 
 			for (EntityPlayer entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
 				Location location = entity.getPredictedLocation();
 
-				if (!(renderingContext.isThisAShadowPass() && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f))
+				if (!(renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f))
 				{
 					entity.cachedSkeleton.lodUpdate(renderingContext);
 
@@ -532,6 +535,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					playerTexture.setLinearFiltering(false);
 
 					renderingContext.bindAlbedoTexture(playerTexture);
+					renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
+					renderingContext.bindMaterialTexture(TexturesHandler.getTexture("./textures/defaultmaterial.png"));
 
 					ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
 					//animationsData.add(new AnimatableData(location.castToSinglePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
@@ -579,7 +584,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	}
 
 	@Override
-	public void setupCamera(PlayerClient controller)
+	public void onEachFrame(PlayerClient controller)
 	{
 		if (controller.hasFocus())
 		{

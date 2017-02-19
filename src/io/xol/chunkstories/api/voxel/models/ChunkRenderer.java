@@ -1,13 +1,13 @@
 package io.xol.chunkstories.api.voxel.models;
 
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.RenderPass;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 
 public interface ChunkRenderer
 {
-	public VoxelBakerHighPoly getHighpolyBakerFor(LodLevel lodLevel, RenderPass renderPass);
+	public VoxelBakerHighPoly getHighpolyBakerFor(LodLevel lodLevel, ShadingType renderPass);
 	
-	public VoxelBakerCubic getLowpolyBakerFor(LodLevel lodLevel, RenderPass renderPass);
+	public VoxelBakerCubic getLowpolyBakerFor(LodLevel lodLevel, ShadingType renderPass);
 	
 	public interface ChunkRenderContext {
 		public boolean isTopChunkLoaded();

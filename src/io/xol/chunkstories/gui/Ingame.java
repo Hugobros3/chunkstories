@@ -31,6 +31,7 @@ import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
+import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.utils.IterableIterator;
@@ -60,9 +61,11 @@ import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.SelectionRenderer;
+import io.xol.chunkstories.renderer.WorldRenderer;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
-import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
+import io.xol.chunkstories.renderer.chunks.ChunkMeshesBakerThread;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldClientRemote;
@@ -86,7 +89,7 @@ public class Ingame extends OverlayableScene
 	SelectionRenderer selectionRenderer;
 	InventoryDrawer inventoryDrawer;
 
-	Camera camera = new Camera();
+	//Camera camera = new Camera();
 	public Chat chat;
 	protected boolean focus = true;
 	Entity playerEntity;
@@ -98,7 +101,6 @@ public class Ingame extends OverlayableScene
 	{
 		super(window);
 		this.world = world;
-		window.renderingContext.setCamera(camera);
 		
 		chat = new Chat(this);
 		
@@ -122,7 +124,7 @@ public class Ingame extends OverlayableScene
 			world.spawnPlayer(Client.getInstance().getPlayer());
 
 		//Creates the rendering stuff
-		world.getWorldRenderer().setupRenderSize(window.getWidth(), window.getHeight());
+		//world.getWorldRenderer().setupRenderSize(window.getWidth(), window.getHeight());
 		selectionRenderer = new SelectionRenderer(world);
 
 		//Give focus
@@ -156,6 +158,8 @@ public class Ingame extends OverlayableScene
 				inventoryDrawer = null;
 		}
 
+		Camera camera = renderingContext.getCamera();
+		
 		if (playerEntity != null && ((EntityLiving) playerEntity).isDead() && !(this.currentOverlay instanceof DeathOverlay))
 			this.changeOverlay(new DeathOverlay(this, null));
 
@@ -164,20 +168,20 @@ public class Ingame extends OverlayableScene
 
 		// Update the player
 		if (playerEntity instanceof EntityControllable)
-			((EntityControllable) playerEntity).setupCamera(Client.getInstance().getPlayer());
+			((EntityControllable) playerEntity).onEachFrame(Client.getInstance().getPlayer());
 		
 
 		Location selectedBlock = null;
 		if (playerEntity instanceof EntityPlayer)
 			selectedBlock = ((EntityPlayer) playerEntity).getBlockLookingAt(true);
 
-		if (playerEntity != null)
-			playerEntity.setupCamera(camera);
+		/*if (playerEntity != null)
+			playerEntity.setupCamera(camera);*/
 		
 		pluginManager.fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
 
 		//Main render call
-		world.getWorldRenderer().renderWorldAtCamera(camera);
+		world.getWorldRenderer().renderWorld(renderingContext);
 
 		//Debug draws
 		if (RenderingConfig.physicsVisualization && playerEntity != null)
@@ -239,13 +243,14 @@ public class Ingame extends OverlayableScene
 			selectionRenderer.drawSelectionBox(selectedBlock);
 		
 		//Cubemap rendering trigger (can't run it while main render is occuring)
-		if (shouldTakeACubemap)
+		//TODO reimplement cubemaps screenshots
+		/*if (shouldTakeACubemap)
 		{
 			shouldTakeACubemap = false;
 			world.getWorldRenderer().renderWorldCubemap(null, 512, false);
-		}
+		}*/
 		//Blit the final 3d image
-		world.getWorldRenderer().blitScreen(pauseOverlayFade);
+		world.getWorldRenderer().blitFinalImage(renderingContext);
 
 		//Fades in & out the overlay
 		if (this.currentOverlay == null)
@@ -387,7 +392,7 @@ public class Ingame extends OverlayableScene
 		}
 		else if (keyCode == Keyboard.KEY_F2)
 		{
-			chat.insert(world.getWorldRenderer().screenShot());
+			chat.insert("Saved screenshot as "+world.getWorldRenderer().screenShot());
 		}
 		else if (keyCode == Keyboard.KEY_F3)
 		{
@@ -420,9 +425,7 @@ public class Ingame extends OverlayableScene
 		{
 			((ParticlesRenderer) world.getParticlesManager()).cleanAllParticles();
 			world.redrawEverything();
-			world.getWorldRenderer().chunksRenderer.clear();
-			ChunksRenderer.renderStart = System.currentTimeMillis();
-			world.getWorldRenderer().flagModified();
+			world.getWorldRenderer().flagChunksModified();
 		}
 		//Item slots selection
 		else if (keyBind != null && keyBind.getName().startsWith("inventorySlot"))
@@ -574,7 +577,7 @@ public class Ingame extends OverlayableScene
 	@Override
 	public void onResize()
 	{
-		world.getWorldRenderer().setupRenderSize(gameWindow.getWidth(), gameWindow.getHeight());
+		world.getWorldRenderer().setupRenderSize();
 	}
 
 	/**
@@ -608,6 +611,8 @@ public class Ingame extends OverlayableScene
 
 	private void drawF3debugMenu(RenderingInterface renderingInterface)
 	{
+		CameraInterface camera = renderingInterface.getCamera();
+		
 		int timeTook = Client.profiler.timeTook();
 		String debugInfo = Client.profiler.reset("gui").toString();
 		if (timeTook > 400)
@@ -665,8 +670,8 @@ public class Ingame extends OverlayableScene
 		Chunk current = world.getChunk(cx, cy, cz);
 		int x_top = renderingInterface.getWindow().getHeight() - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20,
-				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + world.getWorldRenderer().renderedChunks) + " Entities " + ec + " Particles :" + ((ParticlesRenderer) world.getParticlesManager()).count()
-						+ " #FF0000Render FPS: " + Client.getInstance().getWindows().getFPS() + " avg: " + Math.floor(10000.0 / Client.getInstance().getWindows().getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + world.getWorldRenderer().getWorld().getGameLogic().getSimulationFps(),
+				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + world.getWorldRenderer().getChunkMeshesRenderer().getChunksVisibleForPass(WorldRenderer.RenderingPass.NORMAL_OPAQUE)) + " Entities " + ec + " Particles :" + ((ParticlesRenderer) world.getParticlesManager()).count()
+						+ " #FF0000Render FPS: " + Client.getInstance().getGameWindow().getFPS() + " avg: " + Math.floor(10000.0 / Client.getInstance().getGameWindow().getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + world.getWorldRenderer().getWorld().getGameLogic().getSimulationFps(),
 				BitmapFont.SMALLFONTS);
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Frame timings : " + debugInfo, BitmapFont.SMALLFONTS);
@@ -681,7 +686,7 @@ public class Ingame extends OverlayableScene
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram + "Mb as " + Texture2D.getTotalNumberOfTextureObjects() + " textures using " + Texture2D.getTotalVramUsage() / 1024 / 1024 + "Mb + "
 				+ VerticesObject.getTotalNumberOfVerticesObjects() + " Vertices objects using " + renderingInterface.getVertexDataVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
 
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : " + world.getWorldRenderer().chunksRenderer.todoQueue.size() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : " + world.getWorldRenderer().getChunkMeshesRenderer().getBaker() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16,
 				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " Block looking at : bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
 

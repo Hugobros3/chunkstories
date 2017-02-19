@@ -98,7 +98,7 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 
 
 		updateServers();
-		int s = Client.getInstance().getWindows().getScalingFactor();
+		int s = Client.getInstance().getGameWindow().getScalingFactor();
 		
 		serverSelectionZone.setPosition((w - 480 * s) / 2, 32);
 		serverSelectionZone.setDimensions(480 * s, h - 32 - 128);

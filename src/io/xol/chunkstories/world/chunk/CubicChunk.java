@@ -1,15 +1,18 @@
 package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -1994,5 +1997,11 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	{
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public int renderPass(RenderingInterface renderingInterface, RenderLodLevel renderLodLevel, ShadingType renderPass)
+	{
+		return chunkRenderData.renderPass(renderingInterface, renderLodLevel, renderPass);
 	}
 }

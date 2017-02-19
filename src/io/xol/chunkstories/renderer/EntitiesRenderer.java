@@ -7,13 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.graphics.RenderingContext;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -33,17 +34,16 @@ public class EntitiesRenderer
 	public void clearLoadedEntitiesRenderers()
 	{
 		for (EntityRenderer<? extends EntityRenderable> entityRenderer : entityRenderers.values())
-			if(entityRenderer != null)
+			if (entityRenderer != null)
 				entityRenderer.freeRessources();
 
 		entityRenderers.clear();
 	}
 
-	public int renderEntities(RenderingContext renderingContext)
+	public int renderEntities(RenderingInterface renderingContext)
 	{
-		((WorldImplementation)world).entitiesLock.readLock().lock();
-		//l.lock();
-		
+		((WorldImplementation) world).entitiesLock.readLock().lock();
+
 		//Sort them by type
 		Map<Class<? extends EntityRenderable>, List<EntityRenderable>> renderableEntitiesTypes = new HashMap<Class<? extends EntityRenderable>, List<EntityRenderable>>();
 		for (Entity entity : world.getAllLoadedEntities())
@@ -62,50 +62,53 @@ public class EntitiesRenderer
 		}
 
 		int entitiesRendered = 0;
-		
+
 		for (Entry<Class<? extends EntityRenderable>, List<EntityRenderable>> entry : renderableEntitiesTypes.entrySet())
 		{
 			List<EntityRenderable> entities = entry.getValue();
-			
+
 			//Caches entity renderers until we f12
-			if(!entityRenderers.containsKey(entry.getKey()))
+			if (!entityRenderers.containsKey(entry.getKey()))
 				entityRenderers.put(entry.getKey(), entities.get(0).getEntityRenderer());
-			
+
 			EntityRenderer<? extends EntityRenderable> entityRenderer = entityRenderers.get(entry.getKey());
 			//EntityRenderer<? extends EntityRenderable> entityRenderer = entities.get(0).getEntityRenderer();
 
-			if(entityRenderer == null)
+			if (entityRenderer == null)
 				continue;
-			
-			entityRenderer.setupRender(renderingContext);
 
-			try {
-			entitiesRendered += entityRenderer.forEach(renderingContext, new EntitiesRendererIterator<>(renderingContext, entities));
-			}
-			catch(Throwable e)
+			//entityRenderer.setupRender(renderingContext);
+
+			try
 			{
+				int e = entityRenderer.renderEntities(renderingContext, new EntitiesRendererIterator<>(renderingContext, entities));
 				
+				entitiesRendered+=e;
+				
+				//renderingContext.flush();
+			}
+			catch (Throwable e)
+			{
+				System.out.println("Exception rendering entities "+entities.get(0).getClass().getSimpleName()+" using "+entityRenderer.getClass().getSimpleName());
+				e.printStackTrace();
 			}
 		}
-		
-		//l.unlock();
-		((WorldImplementation)world).entitiesLock.readLock().unlock();
-		
-		//System.out.println(entitiesRendered);
-		
+
+		((WorldImplementation) world).entitiesLock.readLock().unlock();
+
 		return entitiesRendered;
 	}
 
 	@SuppressWarnings("unchecked")
 	private class EntitiesRendererIterator<E extends EntityRenderable> implements RenderingIterator<E>
 	{
-		private RenderingContext renderingContext;
-		
+		private RenderingInterface renderingContext;
+
 		private List<EntityRenderable> entities;
 		protected Iterator<EntityRenderable> iterator;
 		protected EntityRenderable currentEntity;
 
-		public EntitiesRendererIterator(RenderingContext renderingContext, List<EntityRenderable> entities)
+		public EntitiesRendererIterator(RenderingInterface renderingContext, List<EntityRenderable> entities)
 		{
 			this.renderingContext = renderingContext;
 			this.entities = entities;
@@ -115,11 +118,11 @@ public class EntitiesRenderer
 		@Override
 		public boolean hasNext()
 		{
-			if(currentEntity != null)
+			if (currentEntity != null)
 				return true;
 			else if (iterator.hasNext())
 			{
-				if(currentEntity == null)
+				if (currentEntity == null)
 					currentEntity = iterator.next();
 				return true;
 			}
@@ -130,15 +133,15 @@ public class EntitiesRenderer
 		@Override
 		public E next()
 		{
-			E cache = (E)currentEntity;
-			
+			E cache = (E) currentEntity;
+
 			//Here fancy rendering tech
-			if(isCurrentElementInViewFrustrum())
+			if (isCurrentElementInViewFrustrum())
 			{
-				//TODO instancing friendly
+				//TODO instancing friendly way of providing those
+				
 				//renderingContext.currentShader().setUniform3f("objectPosition", currentEntity.getLocation());
 				renderingContext.currentShader().setUniform2f("worldLightIn", world.getBlocklightLevelLocation(currentEntity.getLocation()), world.getSunlightLevelLocation(currentEntity.getLocation()));
-				
 			}
 
 			currentEntity = null;
@@ -148,20 +151,16 @@ public class EntitiesRenderer
 		@Override
 		public boolean isCurrentElementInViewFrustrum()
 		{
-			if(currentEntity == null)
+			if (currentEntity == null)
 				return false;
-			
-			//for (CollisionBox box : currentEntity.getTranslatedCollisionBoxes())
-			//{
-			
+
 			CollisionBox box = currentEntity.getTranslatedBoundingBox();
-			
-			if (renderingContext.isThisAShadowPass() || renderingContext.getCamera().isBoxInFrustrum(box))//new Vector3fm(box.xpos - box.xw, box.ypos - box.h, box.zpos - box.zw), new Vector3fm(box.xw, box.h, box.zw)))
+
+			if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW || renderingContext.getCamera().isBoxInFrustrum(box))//new Vector3fm(box.xpos - box.xw, box.ypos - box.h, box.zpos - box.zw), new Vector3fm(box.xw, box.h, box.zw)))
 			{
 				return true;
 			}
 			
-			//}
 			return false;
 		}
 
@@ -170,7 +169,7 @@ public class EntitiesRenderer
 		{
 			return new FrustrumCulledRenderingIterator<E>(renderingContext, entities);
 		}
-		
+
 		public EntitiesRendererIterator<E> clone()
 		{
 			return new EntitiesRendererIterator<E>(renderingContext, entities);
@@ -179,8 +178,8 @@ public class EntitiesRenderer
 		private class FrustrumCulledRenderingIterator<S extends E> extends EntitiesRendererIterator<S>
 		{
 			EntityRenderable currentRenderableEntity = null;
-			
-			public FrustrumCulledRenderingIterator(RenderingContext renderingContext, List<EntityRenderable> entities)
+
+			public FrustrumCulledRenderingIterator(RenderingInterface renderingContext, List<EntityRenderable> entities)
 			{
 				super(renderingContext, entities);
 			}
@@ -190,40 +189,40 @@ public class EntitiesRenderer
 			{
 				return this;
 			}
-			
+
 			@Override
 			public boolean hasNext()
 			{
 				//If a cull-checked entity is already present just return null
-				if(currentRenderableEntity != null)
+				if (currentRenderableEntity != null)
 					return true;
-				
+
 				//Else loop until we find one
-				while(iterator.hasNext())
+				while (iterator.hasNext())
 				{
 					currentEntity = iterator.next();
-					if(isCurrentElementInViewFrustrum())
+					if (isCurrentElementInViewFrustrum())
 					{
 						currentRenderableEntity = currentEntity;
 						return true;
 					}
 				}
-				
+
 				//We failed.
 				return false;
 			}
-			
+
 			@Override
 			public S next()
 			{
 				currentEntity = currentRenderableEntity;
 				S s = super.next();
-				
+
 				//Null-out reference for future call
 				currentRenderableEntity = null;
 				return s;
 			}
-			
+
 			public FrustrumCulledRenderingIterator<S> clone()
 			{
 				return new FrustrumCulledRenderingIterator<S>(renderingContext, entities);

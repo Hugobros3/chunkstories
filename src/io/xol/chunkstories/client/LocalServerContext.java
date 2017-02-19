@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.PluginManager;
+import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
@@ -179,6 +180,12 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	public DecalsManager getDecalsManager()
 	{
 		return client.getDecalsManager();
+	}
+
+	@Override
+	public GameWindow getGameWindow()
+	{
+		return client.getGameWindow();
 	}
 
 }

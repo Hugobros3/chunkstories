@@ -1,10 +1,10 @@
 package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.RenderPass;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.renderer.SelectionRenderer;
-import io.xol.chunkstories.renderer.chunks.ChunksRenderer.MeshedChunkData;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.graphics.RenderingContext;
@@ -119,7 +119,7 @@ public class ChunkRenderDataHolder
 		this.data = data;
 	}
 
-	public int renderPass(RenderingContext renderingContext, RenderLodLevel renderLodLevel, RenderPass renderPass)
+	public int renderPass(RenderingInterface renderingInterface, RenderLodLevel renderLodLevel, ShadingType shadingType)
 	{
 		ChunkMeshDataSections data = this.data;
 		if(data == null)
@@ -127,9 +127,9 @@ public class ChunkRenderDataHolder
 		
 		switch(renderLodLevel) {
 		case HIGH:
-			return data.renderSections(renderingContext, LodLevel.ANY, renderPass) + data.renderSections(renderingContext, LodLevel.HIGH, renderPass);
+			return data.renderSections(renderingInterface, LodLevel.ANY, shadingType) + data.renderSections(renderingInterface, LodLevel.HIGH, shadingType);
 		case LOW:
-			return data.renderSections(renderingContext, LodLevel.ANY, renderPass) + data.renderSections(renderingContext, LodLevel.LOW, renderPass);
+			return data.renderSections(renderingInterface, LodLevel.ANY, shadingType) + data.renderSections(renderingInterface, LodLevel.LOW, shadingType);
 		}
 		
 		throw new RuntimeException("Undefined switch() case for RenderLodLevel "+renderLodLevel);

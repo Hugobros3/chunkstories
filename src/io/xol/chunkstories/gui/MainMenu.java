@@ -140,7 +140,7 @@ public class MainMenu extends OverlayableScene
 		
 		renderingContext.getRenderTargetManager().setCurrentRenderTarget(unblurredFBO);
 		//unblurredFBO.bind();
-		cam.justSetup(gameWindow.getWidth(), gameWindow.getHeight());
+		cam.setupUsingScreenSize(gameWindow.getWidth(), gameWindow.getHeight());
 		ShaderInterface menuSkyBox = renderingContext.useShader("mainMenuSkyBox");
 		//menuSkyBox.use(true);
 		cam.setupShader(menuSkyBox);

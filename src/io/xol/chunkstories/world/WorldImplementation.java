@@ -44,6 +44,8 @@ import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContextOlder;
 import io.xol.chunkstories.renderer.WorldRenderer;
+import io.xol.chunkstories.renderer.WorldRendererImplementation;
+import io.xol.chunkstories.renderer.WorldRendererOld;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
@@ -93,7 +95,7 @@ public abstract class WorldImplementation implements World
 	private WorldRegionSummariesHolder regionSummaries;
 
 	// World-renderer backcall
-	protected WorldRenderer renderer;
+	protected WorldRendererImplementation renderer;
 
 	// Temporary entity list
 	protected EntitiesHolder entities = new EntitiesHolder();

@@ -18,6 +18,7 @@ import io.xol.engine.graphics.textures.TextureFormat;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.Constants;
+import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
@@ -25,7 +26,7 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingM
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.Camera;
+import io.xol.chunkstories.renderer.WorldRenderer.FarTerrainMeshRenderer;
 import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -36,7 +37,7 @@ import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class FarTerrainRenderer
+public class FarTerrainRenderer implements FarTerrainMeshRenderer
 {
 	private static final int TRIANGLES_PER_FACE = 2; // 2 triangles per face
 	private static final int TRIANGLE_SIZE = 3; // 3 vertex per triangles
@@ -147,7 +148,7 @@ public class FarTerrainRenderer
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		
 		//Camera is of position
-		Camera camera = renderingContext.getCamera();
+		CameraInterface camera = renderingContext.getCamera();
 		int camRX = (int) (camera.getCameraPosition().getX() / 256);
 		int camRZ = (int) (camera.getCameraPosition().getZ() / 256);
 
@@ -216,7 +217,7 @@ public class FarTerrainRenderer
 		return bitsDrew;
 	}
 
-	private void startAsynchSummaryRegeneration(Camera camera)
+	private void startAsynchSummaryRegeneration(CameraInterface camera)
 	{
 		cameraChunkX = (int) (camera.getCameraPosition().getX() / 32);
 		cameraChunkZ = (int) (camera.getCameraPosition().getZ() / 32);

@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
@@ -147,7 +148,7 @@ public class ParticleVoxelFragment extends ParticleType
 	}
 
 	@Override
-	public void forEach_Rendering(RenderingContext renderingContext, ParticleData data)
+	public void forEach_Rendering(RenderingInterface renderingContext, ParticleData data)
 	{
 		// TODO Auto-generated method stub
 		

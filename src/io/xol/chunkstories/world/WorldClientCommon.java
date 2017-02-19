@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.particles.ParticlesRenderer;
-import io.xol.chunkstories.renderer.WorldRenderer;
+import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.renderer.decals.DecalsRenderer;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -20,7 +20,7 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 	{
 		super(client, info);
 		
-		this.renderer = new WorldRenderer(this);
+		this.renderer = new WorldRendererImplementation(this, client);
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 	}
 
 	@Override
-	public WorldRenderer getWorldRenderer()
+	public WorldRendererImplementation getWorldRenderer()
 	{
 		return renderer;
 	}

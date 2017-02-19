@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
+import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
@@ -30,11 +31,6 @@ public interface RenderingInterface
 	public CameraInterface getCamera();
 
 	public GameWindow getWindow();
-	
-	//TODO improve
-	public boolean isThisAShadowPass();
-
-	public void addLight(Light light);
 	
 	public RenderTargetManager getRenderTargetManager();
 	
@@ -117,6 +113,9 @@ public interface RenderingInterface
 	 * @return Returns a RenderingCommand object, containing a snapshot of the current state of the RenderingInterface and adds it to the rendering queue
 	 */
 	public RenderingCommand draw(Primitive primitive, int startAt, int count);
+
+	/** Renders a fullsize quad for whole-screen effects */
+	public void drawFSQuad();
 	
 	/**
 	 * Executes ALL commands in the queue up to this point before continuing
@@ -139,4 +138,14 @@ public interface RenderingInterface
 	public GuiRenderer getGuiRenderer();
 
 	public TrueTypeFontRenderer getTrueTypeFontRenderer();
+	
+	public WorldRenderer getWorldRenderer();
+	
+	public LightsAccumulator getLightsRenderer();
+	
+	interface LightsAccumulator {
+		public void queueLight(Light light);
+
+		public void renderPendingLights(RenderingInterface renderingContext);
+	}
 }

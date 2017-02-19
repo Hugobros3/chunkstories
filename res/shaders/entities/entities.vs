@@ -25,7 +25,6 @@ uniform sampler2D instancedDataSampler;
 
 //Lighthing
 uniform float sunIntensity;
-uniform vec3 sunPos; // Sun position
 
 uniform float time;
 uniform vec3 camPos;
@@ -45,8 +44,6 @@ uniform vec2 worldLightIn;
 
 uniform mat4 objectMatrix;
 uniform mat3 objectMatrixNormal;
-
-uniform mat4 offsetTransform;
 
 //Weather
 uniform float wetness;

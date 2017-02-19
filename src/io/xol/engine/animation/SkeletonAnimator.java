@@ -2,6 +2,7 @@ package io.xol.engine.animation;
 
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

@@ -7,12 +7,12 @@ import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.RenderPass;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.renderer.chunks.ChunksRenderer;
+import io.xol.chunkstories.renderer.chunks.ChunkMeshesBakerThread;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModelLoaded;
 
@@ -31,7 +31,7 @@ public class VoxelWaterRenderer extends VoxelModelLoaded
 	@Override
 	public int renderInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, VoxelContext info)
 	{
-		VoxelBakerHighPoly renderByteBuffer = chunkRenderer.getHighpolyBakerFor(LodLevel.ANY, RenderPass.LIQUIDS);
+		VoxelBakerHighPoly renderByteBuffer = chunkRenderer.getHighpolyBakerFor(LodLevel.ANY, ShadingType.LIQUIDS);
 		return this.renderInto(renderByteBuffer, info, chunk, info.getX(), info.getY(), info.getZ());
 	}
 	
@@ -41,7 +41,7 @@ public class VoxelWaterRenderer extends VoxelModelLoaded
 		int llMs = chunk.getSunLight(x, y, z);//getSunlight(c, x, y, z);
 		int llMb = chunk.getBlockLight(x, y, z);//getBlocklight(c, x, y, z);
 
-		float[] lightColors = ChunksRenderer.bakeLightColors(llMb, llMb, llMb, llMb, llMs, llMs, llMs, llMs);
+		float[] lightColors = ChunkMeshesBakerThread.bakeLightColors(llMb, llMb, llMb, llMb, llMs, llMs, llMs, llMs);
 		
 		int depth = 0;
 		for(int i = 1; i < 16; i++)
@@ -166,7 +166,7 @@ public class VoxelWaterRenderer extends VoxelModelLoaded
 				renderByteBuffer.addVerticeFloat(this.vertices[i*3+0] + x + dx, this.vertices[i*3+1] + y + dy, this.vertices[i*3+2] + z + dz);
 				renderByteBuffer.addTexCoordInt((int) (textureS + this.texCoords[i*2+0] * texture.getAtlasOffset()), (int) (textureT + this.texCoords[i*2+1] * texture.getAtlasOffset()));
 				renderByteBuffer.addColorsSpecial(lightColors, depth * 16);
-				renderByteBuffer.addNormalsInt(ChunksRenderer.intifyNormal(this.normals[i*3+0]), ChunksRenderer.intifyNormal(this.normals[i*3+1]), ChunksRenderer.intifyNormal(this.normals[i*3+2]), (byte)0);
+				renderByteBuffer.addNormalsInt(ChunkMeshesBakerThread.intifyNormal(this.normals[i*3+0]), ChunkMeshesBakerThread.intifyNormal(this.normals[i*3+1]), ChunkMeshesBakerThread.intifyNormal(this.normals[i*3+2]), (byte)0);
 				
 			}
 			else

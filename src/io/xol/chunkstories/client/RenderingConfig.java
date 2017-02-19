@@ -74,7 +74,7 @@ public class RenderingConfig
 		mouseSensitivity = Client.getConfig().getFloat("mouseSensitivity", 1f);
 		fov = Client.getConfig().getFloat("fov", 45f);
 
-		Client.getInstance().getWindows().setTargetFPS(Client.getConfig().getInteger("framerate", -1));
+		Client.getInstance().getGameWindow().setTargetFPS(Client.getConfig().getInteger("framerate", -1));
 	}
 
 	public static String[] getShaderConfig()

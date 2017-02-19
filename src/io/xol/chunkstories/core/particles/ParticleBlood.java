@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.world.WorldImplementation;
 
@@ -56,7 +57,7 @@ public class ParticleBlood extends ParticleType
 	}
 
 	@Override
-	public void forEach_Rendering(RenderingContext renderingContext, ParticleData data)
+	public void forEach_Rendering(RenderingInterface renderingContext, ParticleData data)
 	{
 		// TODO Auto-generated method stub
 		

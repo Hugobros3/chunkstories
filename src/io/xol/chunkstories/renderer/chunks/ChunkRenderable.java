@@ -1,6 +1,9 @@
 package io.xol.chunkstories.renderer.chunks;
 
+import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -20,7 +23,7 @@ public interface ChunkRenderable extends Chunk
 	
 	//Implementation details, you don't need to worry about those
 	
-	//public void setChunkRenderData(ChunkRenderData chunkRenderData);
-	
 	public ChunkRenderDataHolder getChunkRenderData();
+	
+	public int renderPass(RenderingInterface renderingInterface, RenderLodLevel renderLodLevel, ShadingType shadingType);
 }

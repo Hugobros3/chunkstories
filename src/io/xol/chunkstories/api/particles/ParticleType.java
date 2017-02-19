@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api.particles;
 
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -35,15 +36,15 @@ public abstract class ParticleType
 		return new ParticleData(x, y, z);
 	}
 	
-	public void beginRenderingForType(RenderingContext renderingContext)
+	public void beginRenderingForType(RenderingInterface renderingInterface)
 	{
-		renderingContext.bindAlbedoTexture(getAlbedoTexture());
-		renderingContext.currentShader().setUniform1f("billboardSize", getBillboardSize());
+		renderingInterface.bindAlbedoTexture(getAlbedoTexture());
+		renderingInterface.currentShader().setUniform1f("billboardSize", getBillboardSize());
 		//TODO refactor this crappy class
-		renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
+		renderingInterface.bindNormalTexture(TexturesHandler.getTexture("./textures/normalnormal.png"));
 	}
 	
-	public abstract void forEach_Rendering(RenderingContext renderingContext, ParticleData data);
+	public abstract void forEach_Rendering(RenderingInterface renderingInterface, ParticleData data);
 	
 	public abstract void forEach_Physics(World world, ParticleData data);
 	

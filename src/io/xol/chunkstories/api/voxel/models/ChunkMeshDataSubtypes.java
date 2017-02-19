@@ -21,7 +21,7 @@ public final class ChunkMeshDataSubtypes {
 		HIGH  //Rendered when LOW isn't
 	}
 	
-	public enum RenderPass {
+	public enum ShadingType {
 		OPAQUE,
 		LIQUIDS,
 		SEMI_TRANSPARENT,

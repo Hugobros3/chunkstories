@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.components.EntityComponentSignText;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 import io.xol.engine.graphics.geometry.TextMeshObject;
@@ -56,8 +57,7 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 	static class EntitySignRenderer implements EntityRenderer<EntitySign>
 	{
 
-		@Override
-		public void setupRender(RenderingInterface renderingContext)
+		void setupRender(RenderingInterface renderingContext)
 		{
 			renderingContext.setObjectMatrix(null);
 
@@ -69,8 +69,10 @@ public class EntitySign extends EntityImplementation implements EntityVoxel, Ent
 		}
 
 		@Override
-		public int forEach(RenderingInterface renderingContext, RenderingIterator<EntitySign> renderableEntitiesIterator)
+		public int renderEntities(RenderingInterface renderingContext, RenderingIterator<EntitySign> renderableEntitiesIterator)
 		{
+			setupRender(renderingContext);
+			
 			int e = 0;
 			
 			renderingContext.setObjectMatrix(null);

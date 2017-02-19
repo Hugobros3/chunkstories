@@ -27,6 +27,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.renderer.VoxelContextOlder;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.renderer.chunks.RenderByteBuffer;
 import io.xol.chunkstories.voxel.models.VoxelModelLoaded;
 import io.xol.chunkstories.world.chunk.DummyChunk;
@@ -190,13 +191,14 @@ public class VoxelItemRenderer extends ItemRenderer
 			return;
 		}
 
-		if (((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00) > 0)
+		//Add a light only on the opaque pass
+		if (((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00) > 0 && context.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.NORMAL_OPAQUE)
 		{
 			Vector4fm lightposition = new Vector4fm(0.0, 0.0, 0.0, 1.0);
 			Matrix4f.transform(handTransformation, lightposition, lightposition);
 			
 			Light heldBlockLight = new Light(new Vector3fm(0.5f, 0.45f, 0.4f).scale(2.0f), new Vector3fm(lightposition.getX(), lightposition.getY(), lightposition.getZ()), 15f);
-			context.addLight(heldBlockLight);	
+			context.getLightsRenderer().queueLight(heldBlockLight);	
 			
 			//If we hold a light source, prepare the shader accordingly
 			context.currentShader().setUniform2f("worldLightIn", ((ItemVoxel) pile.getItem()).getVoxel().getLightLevel(0x00), world.getSunlightLevelLocation(location));

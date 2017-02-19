@@ -18,6 +18,7 @@ import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.exceptions.IllegalUUIDChangeException;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -424,15 +425,13 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public void setupCamera(Camera camera)
+	public void setupCamera(CameraInterface camera)
 	{
 		//camera.pos = new Vector3dm(positionComponent.getLocation()).negate();
 		camera.setCameraPosition(new Vector3dm(positionComponent.getLocation()));
 		
 		//Default FOV
-		camera.fov = RenderingConfig.fov;
-
-		camera.alUpdate();
+		camera.setFOV(RenderingConfig.fov);
 	}
 
 	@Override

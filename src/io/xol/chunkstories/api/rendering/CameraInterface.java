@@ -18,11 +18,29 @@ public interface CameraInterface
 
 	public void setupShader(ShaderInterface shaderProgram);
 
-	public Vector3fm getViewDirection();
-
 	public Vector3<Double> getCameraPosition();
 	
 	public void setCameraPosition(Vector3dm pos);
 
+	public Vector3fm getViewDirection();
+	
+	public float getFOV();
+	
+	public void setFOV(float fov);
+
 	public Vector3fm transform3DCoordinate(Vector3fm vector3f);
+
+	void setRotationZ(float rotationZ);
+
+	float getRotationZ();
+
+	void setRotationY(float rotationY);
+
+	float getRotationY();
+
+	void setRotationX(float rotationX);
+
+	float getRotationX();
+
+	public void setupUsingScreenSize(int width, int height);
 }

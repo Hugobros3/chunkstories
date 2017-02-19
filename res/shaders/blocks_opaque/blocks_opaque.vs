@@ -23,7 +23,6 @@ uniform float sunIntensity;
 
 uniform float wetness;
 uniform float time;
-uniform vec3 objectPosition;
 
 //Common camera matrices & uniforms
 uniform mat4 projectionMatrix;
@@ -42,11 +41,15 @@ uniform mat4 modelViewProjectionMatrix;
 uniform mat4 modelViewProjectionMatrixInv;
 uniform vec3 camPos;
 
+uniform mat4 objectMatrix;
+uniform mat3 objectMatrixNormal;
+
 void main(){
 	//Usual variable passing
 	texCoordPassed = texCoordIn;
 	
-	vec4 v = vec4(vertexIn.xyz, 1.0);
+	//vec4 v = vec4(vertexIn.xyz, 1.0);
+	vec4 v = objectMatrix * vec4(vertexIn.xyz, 1.0);
 	//v.y += gl_VertexID / 6000.0;
 	
 	<ifdef dynamicGrass>
@@ -58,7 +61,7 @@ void main(){
 	}
 	<endif dynamicGrass>
 	
-	v+=vec4(objectPosition,0);
+	//v+=vec4(objectPosition,0);
 	
 	vertexPassed = v;
 	normalPassed =  (normalIn.xyz-0.5)*2.0;//normalIn;

@@ -27,6 +27,7 @@ import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.entity.components.EntityComponentStance;
 import io.xol.chunkstories.core.item.ItemFirearm;
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 import io.xol.engine.animation.AnimatedSkeleton;
@@ -192,7 +193,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		{
 			if (EntityHumanoid.this.equals(Client.getInstance().getPlayer().getControlledEntity()))
 			{
-				if (renderingContext.isThisAShadowPass())
+				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW)
 					return false;
 
 				ItemPile selectedItem = null;
@@ -216,8 +217,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 	protected class EntityHumanoidRenderer<H extends EntityHumanoid> implements EntityRenderer<H>
 	{
-		@Override
-		public void setupRender(RenderingInterface renderingContext)
+		void setupRender(RenderingInterface renderingContext)
 		{
 			//Player textures
 			Texture2D playerTexture = TexturesHandler.getTexture("./models/humanoid_test.png");
@@ -234,15 +234,17 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		}
 
 		@Override
-		public int forEach(RenderingInterface renderingContext, RenderingIterator<H> renderableEntitiesIterator)
+		public int renderEntities(RenderingInterface renderingContext, RenderingIterator<H> renderableEntitiesIterator)
 		{
+			setupRender(renderingContext);
+			
 			int e = 0;
 
 			for (EntityHumanoid entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
 				Location location = entity.getPredictedLocation();
 
-				if (renderingContext.isThisAShadowPass() && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
+				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
 					continue;
 
 				entity.cachedSkeleton.lodUpdate(renderingContext);
@@ -262,7 +264,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 			for (EntityHumanoid entity : renderableEntitiesIterator)
 			{
 
-				if (renderingContext.isThisAShadowPass() && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
+				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
 					continue;
 
 				ItemPile selectedItemPile = null;
@@ -284,7 +286,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 				e++;
 			}
-
+			
 			return e;
 		}
 

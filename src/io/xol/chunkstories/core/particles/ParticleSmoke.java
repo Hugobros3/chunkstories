@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.engine.graphics.RenderingContext;
@@ -56,7 +57,7 @@ public class ParticleSmoke extends ParticleType
 	}
 
 	@Override
-	public void forEach_Rendering(RenderingContext renderingContext, ParticleData data)
+	public void forEach_Rendering(RenderingInterface renderingContext, ParticleData data)
 	{
 		data.setY((float) (data.getY() + (Math.random() - 0.1) * 0.0015));
 		data.setX((float) (data.getX() + (Math.random() - 0.5) * 0.0015));
