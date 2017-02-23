@@ -273,13 +273,30 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 
 		});
 
+		List<Integer> temp = new ArrayList<Integer>();
+		List<Integer> temp2 = new ArrayList<Integer>();
+		
 		int bitsDrew = 0;
 		for (FarTerrainBaker.RegionMesh regionMesh : regionsMeshesToRenderSorted)
 		{
 			//Frustrum checks (assuming maxHeight of 1024 blocks)
 			//TODO do a simple max() and improve accuracy
 			float height = 1024f;
-			if (!renderingContext.getCamera().isBoxInFrustrum(new CollisionBox(regionMesh.regionDisplayedX * 256, 0, regionMesh.regionDisplayedZ * 256, 256, height, 256)))
+			
+			//if (!renderingContext.getCamera().isBoxInFrustrum(new CollisionBox(regionMesh.regionDisplayedX * 256, 0, regionMesh.regionDisplayedZ * 256, 256, height, 256)))
+			//	continue;
+			
+			for(int i = 0; i < 8; i++)
+				for(int j = 0; j < 8; j++)
+				{
+					if (renderingContext.getCamera().isBoxInFrustrum(new CollisionBox((regionMesh.regionDisplayedX * 8 + i) * 32, 0, (regionMesh.regionDisplayedZ * 8 + j) * 32, 256, height, 256)))
+					{
+						temp.add(regionMesh.vertexSectionsOffsets[i][j]);
+						temp2.add(regionMesh.vertexSectionsSizes[i][j]);
+					}
+				}
+			
+			if(temp.size() == 0)
 				continue;
 			
 			RegionSummaryImplementation regionSummaryData = regionMesh.regionSummary;
@@ -306,6 +323,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 			//Checks this regionMesh instance has it's stuff uploaded already
 			if (!regionMesh.verticesObject.isDataPresent())
 				continue;
+			
 			//else
 			//	System.out.println("warning");
 			
@@ -318,7 +336,21 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 
 			bitsDrew += vertices2draw;
 			
-			renderingContext.draw(Primitive.TRIANGLE, 0, vertices2draw);
+			//renderingContext.draw(Primitive.TRIANGLE, 0, vertices2draw);
+			//renderingContext.draw(Primitive.TRIANGLE, 0, regionMesh.vertexSectionsSizes[0][0]);
+			//int i = (int)(Math.random() * 10);
+			//int j = (int)(Math.random() * 10);
+			
+			int[] theStuff = new int[temp.size() * 2];
+			for(int i = 0; i < temp.size(); i++)
+			{
+				theStuff[i * 2] = temp.get(i);
+				theStuff[i * 2 + 1] = temp2.get(i);
+			}
+			temp.clear();
+			temp2.clear();
+			
+			renderingContext.drawMany(Primitive.TRIANGLE, theStuff);
 		}
 
 		return bitsDrew;

@@ -137,8 +137,12 @@ public class SkyRenderer
 	{
 		float fogFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.4f) / 0.1f, 1.0f);
 		
-		shaderInterface.setUniform1f("fogStartDistance", Math2.mix(RenderingConfig.viewDistance, 32, fogFactor));
+		shaderInterface.setUniform1f("fogStartDistance", Math2.mix(512, 32, fogFactor));
 		shaderInterface.setUniform1f("fogEndDistance", Math2.mix(1024, 384, fogFactor));
+		
+
+		//shaderInterface.setUniform1f("fogStartDistance", 200000);
+		//shaderInterface.setUniform1f("fogEndDistance", 200000);
 		shaderInterface.setUniform1f("overcastFactor", world.getWeather());
 	}
 	

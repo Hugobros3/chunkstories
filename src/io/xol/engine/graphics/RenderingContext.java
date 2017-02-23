@@ -38,6 +38,7 @@ import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
 import io.xol.engine.graphics.util.GuiRendererImplementation;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -304,6 +305,34 @@ public class RenderingContext implements RenderingInterface
 	{
 		RenderingCommandImplementation command = new RenderingCommandSingleInstance(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix,
 				startAt, count);
+
+		queue(command);
+
+		return command;
+	}
+	
+	@Override
+	public RenderingCommand drawMany(Primitive p, int... startAndCountPairs)
+	{
+		if(startAndCountPairs.length == 0)
+			return null;
+		if(startAndCountPairs.length % 2 == 1)
+			throw new IllegalArgumentException("Non-pair amount of integers provided");
+		
+		int nb_arguments = startAndCountPairs.length / 2;
+		IntBuffer starts = BufferUtils.createIntBuffer(nb_arguments);
+		IntBuffer counts = BufferUtils.createIntBuffer(nb_arguments);
+		
+		for(int i = 0; i < nb_arguments; i++)
+		{
+			starts.put(startAndCountPairs[i*2]);
+			counts.put(startAndCountPairs[i*2 + 1]);
+		}
+		
+		starts.flip();
+		counts.flip();
+		
+		RenderingCommandMultiDraw command = new RenderingCommandMultiDraw(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix, starts, counts);
 
 		queue(command);
 

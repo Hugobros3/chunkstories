@@ -20,12 +20,16 @@ public class RenderingCommandSingleInstance extends RenderingCommandImplementati
 {
 	Matrix4f objectMatrix;
 	int sunLight, blockLight;
+	int start, count;
 
 	public RenderingCommandSingleInstance(Primitive primitive, ShaderInterface shaderInterface, TexturingConfiguration texturingConfiguration, AttributesConfiguration attributesConfiguration, UniformsConfiguration uniformsConfiguration,
 			PipelineConfiguration pipelineConfiguration, Matrix4f objectMatrix, int start, int count)
 	{
-		super(primitive, shaderInterface, texturingConfiguration, attributesConfiguration, uniformsConfiguration, pipelineConfiguration, start, count);
+		super(primitive, shaderInterface, texturingConfiguration, attributesConfiguration, uniformsConfiguration, pipelineConfiguration);
 		this.objectMatrix = objectMatrix;
+		
+		this.start = start;
+		this.count = count;
 	}
 
 	public RenderingCommand merge(RenderingCommandSingleInstance mergeWith)
@@ -89,6 +93,6 @@ public class RenderingCommandSingleInstance extends RenderingCommandImplementati
 		setup(renderingInterface);
 
 		//Do the draw call
-		GLCalls.drawArrays_(modes[primitive.ordinal()], start, count);
+		GLCalls.DrawArrays(modes[primitive.ordinal()], start, count);
 	}
 }

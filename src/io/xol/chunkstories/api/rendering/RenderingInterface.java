@@ -113,6 +113,8 @@ public interface RenderingInterface
 	 * @return Returns a RenderingCommand object, containing a snapshot of the current state of the RenderingInterface and adds it to the rendering queue
 	 */
 	public RenderingCommand draw(Primitive primitive, int startAt, int count);
+	
+	public RenderingCommand drawMany(Primitive primitive, int... startAndCountPairs);
 
 	/** Renders a fullsize quad for whole-screen effects */
 	public void drawFSQuad();

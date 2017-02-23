@@ -107,9 +107,18 @@ public class FarTerrainBaker
 							lodsArray[(scx + 1) * 10 + (scz + 1)] = detail;
 						}
 
+					int[][] vertexSectionsOffsets = new int[10][10];
+					int[][] vertexSectionsSizes = new int[10][10];
+					int currentOffset = 0;
+					int currentSize = 0;
+					
 					for (int scx = 0; scx < 8; scx++)
 						for (int scz = 0; scz < 8; scz++)
 						{
+							currentOffset += currentSize;
+							vertexSectionsOffsets[scx][scz] = currentOffset;
+							currentSize = 0;
+							
 							int chunkLod = lodsArray[(scx + 1) * 10 + (scz + 1)];
 							int cellSize = (int) Math.pow(2, chunkLod);
 
@@ -130,6 +139,7 @@ public class FarTerrainBaker
 								addVertexBytes(regionMeshBuffer, scx * 32 + (surf.getX() + surf.getW()) * cellSize, surf.getLevel(), scz * 32 + (surf.getY() + surf.getH()) * cellSize, 0, 1, 0, surf.getId());
 
 								vertexCount += 6;
+								currentSize += 6;
 
 								//Left side
 								int vx = scx * 32 + (surf.getX()) * cellSize;
@@ -153,6 +163,7 @@ public class FarTerrainBaker
 											addVertexBytes(regionMeshBuffer, vx, heightCurrent, vz + (i) * cellSize, side, 0, 0, surf.getId());
 											addVertexBytes(regionMeshBuffer, vx, surf.getLevel(), vz + (i) * cellSize, side, 0, 0, surf.getId());
 											vertexCount += 6;
+											currentSize += 6;
 										}
 										heightCurrent = newHeight;
 										d = i;
@@ -178,6 +189,7 @@ public class FarTerrainBaker
 											addVertexBytes(regionMeshBuffer, vx + d * cellSize, surf.getLevel(), vz, 0, 0, side, surf.getId());
 											addVertexBytes(regionMeshBuffer, vx + (i) * cellSize, surf.getLevel(), vz, 0, 0, side, surf.getId());
 											vertexCount += 6;
+											currentSize += 6;
 										}
 										heightCurrent = newHeight;
 										d = i;
@@ -216,6 +228,7 @@ public class FarTerrainBaker
 										addVertexBytes(regionMeshBuffer, vx, height, vz + cellSize, 1, 0, 0, gapData);
 										addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, 1, 0, 0, gapData);
 										vertexCount += 6;
+										currentSize += 6;
 									}
 									else if (heightNext < height)
 									{
@@ -229,6 +242,7 @@ public class FarTerrainBaker
 										addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, -1, 0, 0, gapData);
 										addVertexBytes(regionMeshBuffer, vx, height, vz + cellSize, -1, 0, 0, gapData);
 										vertexCount += 6;
+										currentSize += 6;
 									}
 								}
 							}
@@ -254,6 +268,7 @@ public class FarTerrainBaker
 										addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, 1, gapData);
 										addVertexBytes(regionMeshBuffer, vx + cellSize, height, vz, 0, 0, 1, gapData);
 										vertexCount += 6;
+										currentSize += 6;
 									}
 									else if (heightNext < height)
 									{
@@ -267,10 +282,13 @@ public class FarTerrainBaker
 										addVertexBytes(regionMeshBuffer, vx + cellSize, height, vz, 0, 0, -1, gapData);
 										addVertexBytes(regionMeshBuffer, vx + cellSize, heightNext, vz, 0, 0, -1, gapData);
 										vertexCount += 6;
+										currentSize += 6;
 									}
 								}
 							}
 
+							//Computes those sizes
+							vertexSectionsSizes[scx][scz] = currentSize;
 						}
 
 
@@ -278,7 +296,7 @@ public class FarTerrainBaker
 					regionMeshBuffer.flip();
 					regionMeshBuffer.get(vboContent);
 					
-					FarTerrainBaker.RegionMesh regionMesh = new FarTerrainBaker.RegionMesh(rx, rz, summary, vboContent);
+					FarTerrainBaker.RegionMesh regionMesh = new FarTerrainBaker.RegionMesh(summary, vboContent, vertexSectionsOffsets, vertexSectionsSizes);
 
 					regionsToRender_NewList.add(regionMesh);
 
@@ -336,16 +354,19 @@ public class FarTerrainBaker
 	public static class RegionMesh
 	{
 		int regionDisplayedX, regionDisplayedZ;
+		
 		RegionSummaryImplementation regionSummary;
 	
 		//Mesh (client renderer)
+		int[][] vertexSectionsOffsets, vertexSectionsSizes;
 		VerticesObject verticesObject;
 	
-		public RegionMesh(int rxDisplay, int rzDisplay, RegionSummaryImplementation dataSource, byte[] vboContent)
+		public RegionMesh(RegionSummaryImplementation dataSource, byte[] vboContent, int[][] vertexSectionsOffsets, int[][] vertexSectionsSizes)
 		{
-			this.regionDisplayedX = rxDisplay;
-			this.regionDisplayedZ = rzDisplay;
 			this.regionSummary = dataSource;
+			
+			this.vertexSectionsOffsets = vertexSectionsOffsets;
+			this.vertexSectionsSizes = vertexSectionsSizes;
 			
 			this.verticesObject = new VerticesObject();
 			

@@ -20,7 +20,6 @@ public abstract class RenderingCommandImplementation implements RenderingCommand
 {
 	//Draw call paramters
 	protected Primitive primitive;
-	int start, count;
 	
 	//Pipeline state
 	protected ShaderInterface shaderInterface;
@@ -35,11 +34,9 @@ public abstract class RenderingCommandImplementation implements RenderingCommand
 	protected static Matrix3f normal = new Matrix3f();
 
 	public RenderingCommandImplementation(Primitive primitive, ShaderInterface shaderInterface, TexturingConfiguration texturingConfiguration, AttributesConfiguration attributesConfiguration, UniformsConfiguration uniformsConfiguration,
-			PipelineConfiguration pipelineConfiguration/*, Matrix4f objectMatrix*/, int start, int count)
+			PipelineConfiguration pipelineConfiguration/*, Matrix4f objectMatrix*/)
 	{
 		this.primitive = primitive;
-		this.start = start;
-		this.count = count;
 		
 		this.shaderInterface = shaderInterface;
 		this.texturingConfiguration = texturingConfiguration;

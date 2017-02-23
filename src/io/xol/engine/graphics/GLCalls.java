@@ -5,6 +5,9 @@ package io.xol.engine.graphics;
 //http://xol.io
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL14.*;
+
+import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.ARBDrawInstanced.*;
 
@@ -19,16 +22,31 @@ public class GLCalls
 		drawCalls = 0;
 	}
 	
-	public static String getStatistics()
-	{
-		return "Drawn "+formatBigAssNumber(verticesDrawn+"")+" verts, in "+drawCalls+" draw calls.";
-	}
-	
-	public static void drawArrays_(int mode, int first, int verticesCount)
+	public static void DrawArrays(int mode, int first, int verticesCount)
 	{
 		glDrawArrays(mode, first, verticesCount);
 		verticesDrawn += verticesCount;
 		drawCalls++;
+	}
+
+	public static void DrawArraysInstanced(int mode, int first, int verticesCount, int instancesCount)
+	{
+		glDrawArraysInstancedARB(mode, first, verticesCount, instancesCount);
+		verticesDrawn += instancesCount * verticesCount;
+		drawCalls++;
+	}
+
+	public static void MultiDrawArrays(int mode, IntBuffer starts, IntBuffer counts)
+	{
+		glMultiDrawArrays(mode, starts, counts);
+		while(counts.hasRemaining())
+			verticesDrawn += counts.get();
+		drawCalls++;
+	}
+	
+	public static String getStatistics()
+	{
+		return "Drawn "+formatBigAssNumber(verticesDrawn+"")+" verts, in "+drawCalls+" draw calls.";
 	}
 
 	public static String formatBigAssNumber(String in)
@@ -41,12 +59,5 @@ public class GLCalls
 			formatted = in.charAt(in.length() - i - 1) + formatted;
 		}
 		return formatted;
-	}
-
-	public static void drawArraysInstanced(int mode, int first, int verticesCount, int instancesCount)
-	{
-		glDrawArraysInstancedARB(mode, first, verticesCount, instancesCount);
-		verticesDrawn += instancesCount * verticesCount;
-		drawCalls++;
 	}
 }
