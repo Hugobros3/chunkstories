@@ -62,7 +62,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	{
 		return new PipelineConfigurationImplementation(depthTestMode, blendMode, cullingMode, polygonFillMode);
 	}
-	
+
 	public PipelineConfigurationImplementation setCullingMode(CullingMode cullingMode)
 	{
 		return new PipelineConfigurationImplementation(depthTestMode, blendMode, cullingMode, polygonFillMode);
@@ -145,9 +145,9 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 			blendFunc(blendMode);
 			break;
 		}
-		
+
 		//Culling mode
-		switch(cullingMode)
+		switch (cullingMode)
 		{
 		case DISABLED:
 			cull(false);
@@ -161,16 +161,34 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 			cullFF(GL_CCW);
 			break;
 		}
-		
-		//TODO polyFill
+
+		if (polygonFillMode != currentPolygonFillMode)
+		{
+			switch (polygonFillMode)
+			{
+			case FILL:
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				break;
+			case POINTS:
+				glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+				break;
+			case WIREFRAME:
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				break;
+			default:
+				break;
+
+			}
+			currentPolygonFillMode = polygonFillMode;
+		}
 	}
 
 	private void blendFunc(BlendMode blendMode)
 	{
-		if(blendMode.ordinal() == currentBlendFunc)
+		if (blendMode.ordinal() == currentBlendFunc)
 			return;
-		
-		switch(blendMode)
+
+		switch (blendMode)
 		{
 		case ADD:
 			glBlendFunc(GL_ONE, GL_ONE);
@@ -181,7 +199,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 		default:
 			break;
 		}
-		
+
 		currentBlendFunc = blendMode.ordinal();
 	}
 
@@ -223,7 +241,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 		}
 		isBlendingEnabled = on;
 	}
-	
+
 	private void cull(boolean on)
 	{
 		if (on)
@@ -238,7 +256,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 		}
 		isCullingEnabled = on;
 	}
-	
+
 	private void cullFF(int mode)
 	{
 		if (mode != currentCullFunc)
@@ -247,11 +265,12 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 			currentCullFunc = mode;
 		}
 	}
-	
+
 	private static boolean isBlendEnabled = false;
 	private static int currentDepthFunc = -1;
 	private static boolean isBlendingEnabled = false;
 	private static int currentBlendFunc = -1;
 	private static boolean isCullingEnabled = false;
 	private static int currentCullFunc = -1;
+	private static PolygonFillMode currentPolygonFillMode = PolygonFillMode.FILL;
 }
