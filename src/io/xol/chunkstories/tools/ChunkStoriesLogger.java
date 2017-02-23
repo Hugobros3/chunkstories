@@ -44,7 +44,6 @@ public class ChunkStoriesLogger
 		return instance;
 	}
 
-	Calendar cal = Calendar.getInstance();
 	SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
 	boolean logUploadPolicy = false;
@@ -181,6 +180,8 @@ public class ChunkStoriesLogger
 			line += "[" + type.name() + "]";
 		line += text;
 
+		Calendar cal = Calendar.getInstance();
+		
 		String time = sdf.format(cal.getTime());
 		line = "[" + time + "]" + line;
 
