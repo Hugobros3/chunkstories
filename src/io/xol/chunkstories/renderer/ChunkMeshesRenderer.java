@@ -55,9 +55,9 @@ public class ChunkMeshesRenderer
 	public void updatePVSSet(CameraInterface camera)
 	{
 		//Updates these once
-		cameraChunkX = Math2.floor((camera.getCameraPosition().getX()) / 32);
-		cameraChunkY = Math2.floor((camera.getCameraPosition().getY()) / 32);
-		cameraChunkZ = Math2.floor((camera.getCameraPosition().getZ()) / 32);
+		cameraChunkX = Math2.floor((camera.getCameraPosition().getX()) / 32f);
+		cameraChunkY = Math2.floor((camera.getCameraPosition().getY()) / 32f);
+		cameraChunkZ = Math2.floor((camera.getCameraPosition().getZ()) / 32f);
 
 		//Do a floodfill arround the entity
 		List<Chunk> floodFillResults = floodFillArround(camera.getCameraPosition(), (int) RenderingConfig.viewDistance / 32);
@@ -278,5 +278,69 @@ public class ChunkMeshesRenderer
 	public ChunkMeshesBaker getBaker()
 	{
 		return this.chunksBaker;
+	}
+	
+	public RenderedChunksMask getRenderedChunksMask(CameraInterface camera) {
+		return new RenderedChunksMask(camera, Math.max(2, (int)(RenderingConfig.viewDistance / 32f) - 1), 5);
+	}
+	
+	public class RenderedChunksMask {
+		
+		RenderedChunksMask(CameraInterface camera, int xz_dimension, int y_dimension) {
+			this.xz_dimension = xz_dimension;
+			this.y_dimension = y_dimension;
+			
+			mask = new boolean[xz_dimension * 2 + 1][y_dimension * 2 + 1][xz_dimension * 2 + 1];
+			
+			centerChunkX = Math2.floor((camera.getCameraPosition().getX()) / 32);
+			centerChunkY = Math2.floor((camera.getCameraPosition().getY()) / 32);
+			centerChunkZ = Math2.floor((camera.getCameraPosition().getZ()) / 32);
+			
+			for(int a = centerChunkX - xz_dimension; a <= centerChunkX + xz_dimension; a++)
+				for(int b = centerChunkY - y_dimension; b < centerChunkY + y_dimension; b++)
+					for(int c = centerChunkZ - xz_dimension; c <= centerChunkZ + xz_dimension; c++)
+					{
+						Chunk chunk = world.getChunk(a, b, c);
+						if(chunk != null && (chunk.isAirChunk() || ((ChunkRenderable)chunk).getChunkRenderData().getData() != null))
+						{
+							int dx = a - centerChunkX + xz_dimension;
+							int dy = b - centerChunkY + y_dimension;
+							int dz = c - centerChunkZ + xz_dimension;
+							mask[dx][dy][dz] = true;
+						}
+					}
+			
+		}
+		
+		int centerChunkX, centerChunkY, centerChunkZ;
+		
+		int xz_dimension;
+		int y_dimension;
+		boolean[][][] mask;
+		
+		public boolean shouldMaskSlab(int chunkX, int chunkZ, int min, int max) {
+			
+			int dx = chunkX - centerChunkX;
+			int dz = chunkZ - centerChunkZ;
+			
+			//Out of checkable bounds
+			if(Math.abs(dx) >= xz_dimension || Math.abs(dz) >= xz_dimension)
+				return false;
+			
+			for(int cy = (int)Math.floor(min / 32f); cy < (int)Math.ceil(max / 32f); cy++)
+			{
+				int dy = cy - centerChunkY;
+				
+				//Partially occluded or out of checkable bounds
+				if(Math.abs(dy) >= y_dimension)
+					return false;
+				
+				if(!mask[dx + xz_dimension][dy + y_dimension][dz + xz_dimension])
+					return false;
+				
+				//System.out.println("checking array" + chunkX + ":"+chunkZ+mask[dx + xz_dimension][dy + y_dimension][dz + xz_dimension]);
+			}
+			return true;
+		}
 	}
 }

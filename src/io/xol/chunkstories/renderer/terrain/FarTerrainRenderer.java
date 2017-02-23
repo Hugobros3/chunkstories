@@ -33,6 +33,7 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTes
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.physics.CollisionBox;
+import io.xol.chunkstories.renderer.ChunkMeshesRenderer.RenderedChunksMask;
 import io.xol.chunkstories.renderer.WorldRenderer.FarTerrainMeshRenderer;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.renderer.terrain.FarTerrainBaker.RegionMesh;
@@ -147,7 +148,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		return blockTexturesSummary;
 	}
 
-	public void renderTerrain(RenderingInterface renderingContext, boolean ignoreWorldCulling)
+	public void renderTerrain(RenderingInterface renderingContext, RenderedChunksMask mask)
 	{
 		//Check for world updates
 		Vector3<Double> cameraPosition = renderingContext.getCamera().getCameraPosition();
@@ -198,25 +199,19 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 
 		renderingContext.bindTexture2D("vegetationColorTexture", worldRenderer.getGrassTexture());
 		terrainShader.setUniform1f("mapSize", world.getSizeInChunks() * 32);
-		
-		//renderingContext.bindTexture2D("loadedChunksMapTop", loadedChunksMapTop);
-		//renderingContext.bindTexture2D("loadedChunksMapBot", loadedChunksMapBot);
-
-		//terrainShader.setUniform2f("playerCurrentChunk", this.cameraChunkX, this.cameraChunkY);
-		terrainShader.setUniform1f("ignoreWorldCulling", ignoreWorldCulling ? 1f : 0f);
 
 		if (Keyboard.isKeyDown(Keyboard.KEY_F10))
 			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
 		if (!(InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9) && RenderingConfig.isDebugAllowed))
-			drawTerrainBits(renderingContext, terrainShader);
+			drawTerrainBits(renderingContext, mask, terrainShader);
 
 		renderingContext.flush();
 
 		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);
 	}
 	
-	public int drawTerrainBits(RenderingInterface renderingContext, ShaderInterface terrainShader)
+	private int drawTerrainBits(RenderingInterface renderingContext, RenderedChunksMask mask, ShaderInterface terrainShader)
 	{
 		//Starts asynch regeneration
 		if (farTerrainUpdatesToTakeIntoAccount.get() > 0 && (System.currentTimeMillis() - this.lastTerrainUpdateTiming) > this.timeToWaitBetweenTerrainUpdates)
@@ -289,11 +284,16 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 			for(int i = 0; i < 8; i++)
 				for(int j = 0; j < 8; j++)
 				{
-					int delta = regionMesh.regionSummary.max[i][j] - 0*regionMesh.regionSummary.min[i][j];
+					int delta = regionMesh.regionSummary.max[i][j] - regionMesh.regionSummary.min[i][j];
 					//System.out.println(regionMesh.regionSummary.max[i][j]);
 					//if (renderingContext.getCamera().isBoxInFrustrum(new CollisionBox((regionMesh.regionDisplayedX * 8 + i) * 32, 0, (regionMesh.regionDisplayedZ * 8 + j) * 32, 32, height, 32)))
-					if (renderingContext.getCamera().isBoxInFrustrum(new CollisionBox((regionMesh.regionDisplayedX * 8 + i) * 32, 0*regionMesh.regionSummary.min[i][j], (regionMesh.regionDisplayedZ * 8 + j) * 32, 32, delta + 1, 32)))
+					if (renderingContext.getCamera().isBoxInFrustrum(new CollisionBox((regionMesh.regionDisplayedX * 8 + i) * 32, regionMesh.regionSummary.min[i][j], (regionMesh.regionDisplayedZ * 8 + j) * 32, 32, delta + 1, 32)))
 					{
+						if(mask != null)
+						{
+							if(mask.shouldMaskSlab(regionMesh.regionDisplayedX * 8 + i, regionMesh.regionDisplayedZ * 8 + j, regionMesh.regionSummary.min[i][j], regionMesh.regionSummary.max[i][j]))
+								continue;
+						}
 						temp.add(regionMesh.vertexSectionsOffsets[i][j]);
 						temp2.add(regionMesh.vertexSectionsSizes[i][j]);
 					}
