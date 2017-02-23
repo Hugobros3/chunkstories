@@ -54,6 +54,8 @@ public class RegionSummaryImplementation implements RegionSummary
 
 	private int[] heights = null;
 	private int[] ids = null;
+	
+	public int[][] min, max;
 
 	//Textures (client renderer)
 	public final AtomicBoolean texturesUpToDate = new AtomicBoolean(false);
@@ -381,7 +383,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		return summaryUnloaded.get();
 	}
 
-	public void computeHeightMetadata()
+	private void computeHeightMetadata()
 	{
 		if(heights == null)
 			return;
@@ -476,11 +478,41 @@ public class RegionSummaryImplementation implements RegionSummary
 		System.arraycopy(heightData, 0, heights, 0, 256 * 256);
 		System.arraycopy(voxelData, 0, ids, 0, 256 * 256);
 		
+		recomputeMetadata();
+		
+		summaryLoaded.set(true);
+	}
+	
+	private void recomputeMetadata() {
 		this.computeHeightMetadata();
+		this.computeMinMax();
 		
 		if(world instanceof WorldClient)
 			uploadTextures();
+	}
+
+	private void computeMinMax()
+	{
+		min = new int[8][8];
+		max = new int[8][8];
 		
-		summaryLoaded.set(true);
+		for(int i = 0; i < 8; i++)
+			for(int j = 0; j < 8; j++)
+			{
+				int minl = Integer.MAX_VALUE;
+				int maxl = 0;
+				for(int a = 0; a < 32; a++)
+					for(int b = 0; b < 32; b++)
+						{
+							int h = heights[index(i * 32 + a, j * 32 + b)];
+							if(h > maxl)
+								maxl = h;
+							if(h < minl)
+								minl = h;
+						}
+				min[i][j] = minl;
+				max[i][j] = maxl;
+			}
+		
 	}
 }

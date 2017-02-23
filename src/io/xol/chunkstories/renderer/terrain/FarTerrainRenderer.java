@@ -289,7 +289,10 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 			for(int i = 0; i < 8; i++)
 				for(int j = 0; j < 8; j++)
 				{
-					if (renderingContext.getCamera().isBoxInFrustrum(new CollisionBox((regionMesh.regionDisplayedX * 8 + i) * 32, 0, (regionMesh.regionDisplayedZ * 8 + j) * 32, 256, height, 256)))
+					int delta = regionMesh.regionSummary.max[i][j] - 0*regionMesh.regionSummary.min[i][j];
+					//System.out.println(regionMesh.regionSummary.max[i][j]);
+					//if (renderingContext.getCamera().isBoxInFrustrum(new CollisionBox((regionMesh.regionDisplayedX * 8 + i) * 32, 0, (regionMesh.regionDisplayedZ * 8 + j) * 32, 32, height, 32)))
+					if (renderingContext.getCamera().isBoxInFrustrum(new CollisionBox((regionMesh.regionDisplayedX * 8 + i) * 32, 0*regionMesh.regionSummary.min[i][j], (regionMesh.regionDisplayedZ * 8 + j) * 32, 32, delta + 1, 32)))
 					{
 						temp.add(regionMesh.vertexSectionsOffsets[i][j]);
 						temp2.add(regionMesh.vertexSectionsSizes[i][j]);
@@ -335,11 +338,6 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 			renderingContext.bindAttribute("normalIn", regionMesh.verticesObject.asAttributeSource(VertexFormat.UBYTE, 4, stride, 8L));
 
 			bitsDrew += vertices2draw;
-			
-			//renderingContext.draw(Primitive.TRIANGLE, 0, vertices2draw);
-			//renderingContext.draw(Primitive.TRIANGLE, 0, regionMesh.vertexSectionsSizes[0][0]);
-			//int i = (int)(Math.random() * 10);
-			//int j = (int)(Math.random() * 10);
 			
 			int[] theStuff = new int[temp.size() * 2];
 			for(int i = 0; i < temp.size(); i++)

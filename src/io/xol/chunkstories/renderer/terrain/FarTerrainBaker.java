@@ -35,7 +35,7 @@ public class FarTerrainBaker
 		List<FarTerrainBaker.RegionMesh> regionsToRender_NewList = new ArrayList<FarTerrainBaker.RegionMesh>();
 		int summaryDistance = 32;
 
-		System.out.println("----");
+		//System.out.println("----");
 			//Iterate over X chunks but skip whole regions
 			int currentChunkX = cameraChunkX - summaryDistance;
 			while (currentChunkX < cameraChunkX + summaryDistance)
@@ -44,7 +44,7 @@ public class FarTerrainBaker
 				int currentRegionX = (int) Math.floor(currentChunkX / 8f);
 				//if(currentChunkX < 0)
 				//	currentRegionX--;
-				System.out.println(currentChunkX + " : " + currentRegionX);
+				//System.out.println(currentChunkX + " : " + currentRegionX);
 				int nextRegionX = currentRegionX + 1;
 				int nextChunkX = nextRegionX * 8;
 
@@ -107,8 +107,9 @@ public class FarTerrainBaker
 							lodsArray[(scx + 1) * 10 + (scz + 1)] = detail;
 						}
 
-					int[][] vertexSectionsOffsets = new int[10][10];
-					int[][] vertexSectionsSizes = new int[10][10];
+					int[][] vertexSectionsOffsets = new int[8][8];
+					int[][] vertexSectionsSizes = new int[8][8];
+					
 					int currentOffset = 0;
 					int currentSize = 0;
 					
