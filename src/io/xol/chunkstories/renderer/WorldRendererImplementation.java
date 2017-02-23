@@ -23,11 +23,15 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingM
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRenderer;
 import io.xol.chunkstories.renderer.lights.ComputedShadowMap;
@@ -152,6 +156,8 @@ public class WorldRendererImplementation implements WorldRenderer
 		particlesRenderer.render(renderingInterface);
 		renderingInterface.flush();
 		
+		gbuffers_water_chunk_meshes(renderingInterface);
+		
 		currentPass = RenderingPass.INTERNAL;
 		renderingInterface.getRenderTargetManager().setCurrentRenderTarget(renderBuffers.fboShadedBuffer);
 		renderBuffers.fboShadedBuffer.setEnabledRenderTargets();
@@ -162,7 +168,6 @@ public class WorldRendererImplementation implements WorldRenderer
 		//Add forward rendered stuff
 		weatherEffectsRenderer.renderEffects(renderingInterface);
 		farTerrainRenderer.renderTerrain(renderingInterface, chunksRenderer.getRenderedChunksMask(mainCamera));
-		gbuffers_water_chunk_meshes(renderingInterface);
 	}
 
 	private void gbuffers_opaque_chunk_meshes(RenderingInterface renderingInterface)
@@ -214,8 +219,64 @@ public class WorldRendererImplementation implements WorldRenderer
 	
 	private void gbuffers_water_chunk_meshes(RenderingInterface renderingInterface)
 	{
+		renderingInterface.setBlendMode(BlendMode.MIX);
+		renderingInterface.setCullingMode(CullingMode.DISABLED);
+
+		// We do water in two passes : one for computing the refracted color and putting it in shaded buffer, and another one
+		// to read it back and blend it
+		for (int pass = 1; pass < 3; pass++)
+		{
+			ShaderInterface liquidBlocksShader = renderingInterface.useShader("blocks_liquid_pass" + (pass));
+
+			liquidBlocksShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
+
+			//liquidBlocksShader.setUniform1f("yAngle", (float) (renderingContext.getCamera().rotationY * Math.PI / 180f));
+			liquidBlocksShader.setUniform1f("shadowVisiblity", this.shadower.getShadowVisibility());
+
+			renderingInterface.bindTexture2D("normalTextureDeep", TexturesHandler.getTexture("./textures/water/deep.png"));
+			renderingInterface.bindTexture2D("normalTextureShallow", worldTextures.waterNormalTexture);
+
+			renderingInterface.bindTexture2D("lightColors", worldTextures.lightmapTexture);
+			renderingInterface.bindAlbedoTexture(worldTextures.blocksAlbedoTexture);
+			liquidBlocksShader.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
+			skyRenderer.setupShader(liquidBlocksShader);
+			liquidBlocksShader.setUniform1f("time", animationTimer);
+
+			renderingInterface.getCamera().setupShader(liquidBlocksShader);
+
+			//Underwater flag
+			Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int) (double) renderingInterface.getCamera().getCameraPosition().getX(), (int) (double) renderingInterface.getCamera().getCameraPosition().getY(), (int) (double) renderingInterface.getCamera().getCameraPosition().getZ()));
+			liquidBlocksShader.setUniform1f("underwater", vox.getType().isLiquid() ? 1 : 0);
+
+			if (pass == 1)
+			{
+				renderingInterface.getRenderTargetManager().setCurrentRenderTarget(this.renderBuffers.fboShadedBuffer);
+				//fboShadedBuffer.bind();
+				this.renderBuffers.fboShadedBuffer.setEnabledRenderTargets(true);
+				renderingInterface.bindTexture2D("readbackAlbedoBufferTemp", this.renderBuffers.albedoBuffer);
+				renderingInterface.bindTexture2D("readbackMetaBufferTemp", this.renderBuffers.materialBuffer);
+				renderingInterface.bindTexture2D("readbackDepthBufferTemp", this.renderBuffers.zBuffer);
+
+				renderingInterface.getRenderTargetManager().setDepthMask(false);
+				//glDepthMask(false);
+			}
+			else if (pass == 2)
+			{
+				renderingInterface.getRenderTargetManager().setCurrentRenderTarget(this.renderBuffers.fboGBuffers);
+				//fboGBuffers.bind();
+				this.renderBuffers.fboGBuffers.setEnabledRenderTargets();
+				renderingInterface.bindTexture2D("readbackShadedBufferTemp", this.renderBuffers.shadedBuffer);
+				renderingInterface.bindTexture2D("readbackDepthBufferTemp", this.renderBuffers.zBuffer);
+
+				renderingInterface.getRenderTargetManager().setDepthMask(true);
+				//glDepthMask(true);
+			}
+
+			renderingInterface.setObjectMatrix(new Matrix4f());
+			chunksRenderer.renderChunks(renderingInterface, WorldRenderer.RenderingPass.NORMAL_LIQUIDS_PASS_1);
+		}
 		// Set fixed-function parameters
-		renderingInterface.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		/*renderingInterface.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		renderingInterface.setBlendMode(BlendMode.MIX);
 		renderingInterface.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 		
@@ -241,7 +302,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingInterface.setObjectMatrix(new Matrix4f());
 		
 		chunksRenderer.renderChunks(renderingInterface, WorldRenderer.RenderingPass.NORMAL_LIQUIDS_PASS_1);
-		renderingInterface.setBlendMode(BlendMode.DISABLED);
+		renderingInterface.setBlendMode(BlendMode.DISABLED);*/
 	}
 
 	private void gbuffers_opaque_entities(RenderingInterface renderingContext) {

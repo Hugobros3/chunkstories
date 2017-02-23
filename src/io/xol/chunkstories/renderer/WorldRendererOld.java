@@ -717,8 +717,8 @@ public class WorldRendererOld
 		if (Keyboard.isKeyDown(Keyboard.KEY_F10))
 			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
-		if (!(InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9) && RenderingConfig.isDebugAllowed))
-			renderedVertices += farTerrainRenderer.drawTerrainBits(renderingContext, null, terrainShader);
+		//if (!(InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9) && RenderingConfig.isDebugAllowed))
+		//	renderedVertices += farTerrainRenderer.drawTerrainBits(renderingContext, null, terrainShader);
 
 		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);
 

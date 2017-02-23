@@ -238,7 +238,7 @@ public class OptionsOverlay extends Overlay
 		guiHandler.add(exitButton);
 
 		configTabs.add(new ConfigTab("#{Rendering}", new ConfigButton[] { 
-				new ConfigButtonMultiChoice("viewDistance",new String[] { "64", "96", "128", "144", "160", "192", "224", "256" }),
+				new ConfigButtonMultiChoice("viewDistance",new String[] { "64", "96", "128", "144", "160", "192", "224", "256", "512", "768" }),
 				new ConfigButtonToggle("doRealtimeReflections").setApplyAction(new Runnable(){
 					@Override
 					public void run()

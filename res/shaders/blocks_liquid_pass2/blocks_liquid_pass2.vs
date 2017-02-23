@@ -24,7 +24,8 @@ uniform vec3 sunPos;
 //Shadow shit
 uniform float time;
 
-uniform vec3 objectPosition;
+uniform mat4 objectMatrix;
+uniform mat3 objectMatrixNormal;
 
 //Common camera matrices & uniforms
 uniform mat4 projectionMatrix;
@@ -60,10 +61,8 @@ void main(){
 	texCoordPassed /= 32768.0;
 	normalPassed = (normalIn.xyz-0.5)*2.0;
 	
-	vec4 vertex = vec4(vertexIn.xyz, 1);
+	vec4 vertex = objectMatrix * vec4(vertexIn.xyz, 1);
 	//Move vertex if needed
-	
-	vertex+=vec4(objectPosition,0);
 	
 	vertexPassed = vertex;
 	
