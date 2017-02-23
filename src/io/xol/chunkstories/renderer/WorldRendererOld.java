@@ -243,7 +243,7 @@ public class WorldRendererOld
 		//Creates subsystems
 		entitiesRenderer = new EntitiesRenderer(world);
 		particlesRenderer = new ParticlesRenderer(world);
-		farTerrainRenderer = new FarTerrainRenderer(world);
+		farTerrainRenderer = new FarTerrainRenderer(world, null);
 		//weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
 		skyRenderer = new SkyRenderer(world);
 		//decalsRenderer = new DecalsRenderer(this);

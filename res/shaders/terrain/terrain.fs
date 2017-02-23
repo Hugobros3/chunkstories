@@ -63,8 +63,8 @@ uniform float overcastFactor;
 <include ../lib/gamma.glsl>
 
 //World mesh culling
-uniform sampler2D loadedChunksMapTop;
-uniform sampler2D loadedChunksMapBot;
+//uniform sampler2D loadedChunksMapTop;
+//uniform sampler2D loadedChunksMapBot;
 uniform float ignoreWorldCulling;
 
 <include ../sky/sky.glsl>
@@ -72,12 +72,12 @@ uniform float ignoreWorldCulling;
 void main()
 {
 	//Computes the zone covered by actual chunks
-	float heightCoveredStart = texture(loadedChunksMapBot,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 - 1.0;
+	/*float heightCoveredStart = texture(loadedChunksMapBot,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 - 1.0;
 	float heightCoveredEnd = texture(loadedChunksMapTop,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 + 33.0;
 	
 	//Discards the fragment if it is within
 	if(vertexPassed.y-1.5 > heightCoveredStart && vertexPassed.y-0.0-32.0 < heightCoveredEnd && ignoreWorldCulling < 1.0)
-		discard;
+		discard;*/
 
 	//int voxelDataActual = voxelData;
 	float voxelId = texture(groundTexture, textureCoord).r;

@@ -9,27 +9,37 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
-import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture1D;
+import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TextureFormat;
+import io.xol.engine.graphics.textures.TexturesHandler;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.Constants;
+import io.xol.chunkstories.api.math.vector.Vector3;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.WorldRenderer.FarTerrainMeshRenderer;
-import io.xol.chunkstories.renderer.terrain.HeightmapMeshSummarizer.Surface;
+import io.xol.chunkstories.renderer.WorldRendererImplementation;
+import io.xol.chunkstories.renderer.terrain.FarTerrainBaker.RegionMesh;
+import io.xol.chunkstories.renderer.terrain.HeightmapMesher.Surface;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
+import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
@@ -43,23 +53,25 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 	private static final int TRIANGLE_SIZE = 3; // 3 vertex per triangles
 	private static final int VERTEX_SIZE = 3; // A vertex is 3 coordinates : xyz
 
-	private static int[] offsets = { 0, 65536, 81920, 86016, 87040, 87296, 87360, 87376, 87380, 87381 };
+	private static final int[] offsets = { 0, 65536, 81920, 86016, 87040, 87296, 87360, 87376, 87380, 87381 };
 
 	//Single 6Mb Buffer
 	private ByteBuffer regionMeshBuffer = BufferUtils.createByteBuffer(256 * 256 * 5 * TRIANGLE_SIZE * VERTEX_SIZE * TRIANGLES_PER_FACE * (8 + 4));
 
-	private WorldImplementation world;
+	private final WorldClientCommon world;
+	private final WorldRendererImplementation worldRenderer;
 
-	private List<RegionMesh> renderedRegions = new ArrayList<RegionMesh>();
+	private List<FarTerrainBaker.RegionMesh> renderedRegions = new ArrayList<FarTerrainBaker.RegionMesh>();
 
 	//TODO use a texture
 	private boolean blocksTexturesSummaryDone = false;
 	private Texture1D blockTexturesSummary = new Texture1D(TextureFormat.RGBA_8BPP);
 	//private int blocksTexturesSummaryId = -1;
 
-	@SuppressWarnings("unused")
+	private int centerChunkX = -1;
+	private int centerChunkZ = -1;
+	
 	private int lastRegionX = -1;
-	@SuppressWarnings("unused")
 	private int lastRegionZ = -1;
 
 	@SuppressWarnings("unused")
@@ -72,9 +84,10 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 	private long lastTerrainUpdateTiming;
 	private long timeToWaitBetweenTerrainUpdates = 2500;
 
-	public FarTerrainRenderer(WorldImplementation world)
+	public FarTerrainRenderer(WorldClientCommon world, WorldRendererImplementation worldRenderer)
 	{
 		this.world = world;
+		this.worldRenderer = worldRenderer;
 		getBlocksTexturesSummary();
 	}
 
@@ -134,7 +147,76 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		return blockTexturesSummary;
 	}
 
-	public int drawTerrainBits(RenderingContext renderingContext, ShaderInterface terrainShader)
+	public void renderTerrain(RenderingInterface renderingContext, boolean ignoreWorldCulling)
+	{
+		//Check for world updates
+		Vector3<Double> cameraPosition = renderingContext.getCamera().getCameraPosition();
+		
+		int xCoordinates = ((int)(double)cameraPosition.getX());
+		int zCoordinates = ((int)(double)cameraPosition.getZ());
+		
+		xCoordinates %= world.getWorldSize();
+		zCoordinates %= world.getWorldSize();
+		if(xCoordinates < 0)
+			xCoordinates += world.getWorldSize();
+		if(zCoordinates < 0)
+			zCoordinates += world.getWorldSize();
+		
+		int chunkCoordinatesX = xCoordinates / 32;
+		int chunkCoordinatesZ = zCoordinates / 32;
+		
+		if(centerChunkX != chunkCoordinatesX || centerChunkZ != chunkCoordinatesZ)
+		{
+			centerChunkX = chunkCoordinatesX;
+			centerChunkZ = chunkCoordinatesZ;
+			this.markFarTerrainMeshDirty();
+		}
+		
+		//Setup shader etc
+		ShaderInterface terrainShader = renderingContext.useShader("terrain");
+		renderingContext.setBlendMode(BlendMode.DISABLED);
+		renderingContext.getCamera().setupShader(terrainShader);
+		worldRenderer.getSky().setupShader(terrainShader);
+
+		terrainShader.setUniform3f("sunPos", worldRenderer.getSky().getSunPosition());
+		terrainShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
+		terrainShader.setUniform1f("shadowVisiblity", worldRenderer.getShadowRenderer().getShadowVisibility());
+		worldRenderer.worldTextures.waterNormalTexture.setLinearFiltering(true);
+		worldRenderer.worldTextures.waterNormalTexture.setMipMapping(true);
+
+		renderingContext.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.environmentMap);
+		renderingContext.bindTexture2D("sunSetRiseTexture", worldRenderer.worldTextures.sunGlowTexture);
+		renderingContext.bindTexture2D("skyTextureSunny", worldRenderer.worldTextures.skyTextureSunny);
+		renderingContext.bindTexture2D("skyTextureRaining", worldRenderer.worldTextures.skyTextureRaining);
+		renderingContext.bindTexture2D("blockLightmap", worldRenderer.worldTextures.lightmapTexture);
+		Texture2D lightColors = TexturesHandler.getTexture("./textures/environement/lightcolors.png");
+
+		renderingContext.bindTexture2D("lightColors", lightColors);
+		renderingContext.bindTexture2D("normalTexture", worldRenderer.worldTextures.waterNormalTexture);
+		worldRenderer.setupShadowColors(terrainShader);
+		terrainShader.setUniform1f("time", worldRenderer.getSky().time);
+
+		renderingContext.bindTexture2D("vegetationColorTexture", worldRenderer.getGrassTexture());
+		terrainShader.setUniform1f("mapSize", world.getSizeInChunks() * 32);
+		
+		//renderingContext.bindTexture2D("loadedChunksMapTop", loadedChunksMapTop);
+		//renderingContext.bindTexture2D("loadedChunksMapBot", loadedChunksMapBot);
+
+		//terrainShader.setUniform2f("playerCurrentChunk", this.cameraChunkX, this.cameraChunkY);
+		terrainShader.setUniform1f("ignoreWorldCulling", ignoreWorldCulling ? 1f : 0f);
+
+		if (Keyboard.isKeyDown(Keyboard.KEY_F10))
+			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
+
+		if (!(InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9) && RenderingConfig.isDebugAllowed))
+			drawTerrainBits(renderingContext, terrainShader);
+
+		renderingContext.flush();
+
+		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);
+	}
+	
+	public int drawTerrainBits(RenderingInterface renderingContext, ShaderInterface terrainShader)
 	{
 		//Starts asynch regeneration
 		if (farTerrainUpdatesToTakeIntoAccount.get() > 0 && (System.currentTimeMillis() - this.lastTerrainUpdateTiming) > this.timeToWaitBetweenTerrainUpdates)
@@ -152,12 +234,37 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		int camRX = (int) (camera.getCameraPosition().getX() / 256);
 		int camRZ = (int) (camera.getCameraPosition().getZ() / 256);
 
+		int wrapRegionsDistance = world.getSizeInChunks() / 2;
+		int worldSizeInRegions = world.getSizeInChunks() / 8;
+
+		int cameraChunkX = (int) (camera.getCameraPosition().getX() / 32);
+		int cameraChunkZ = (int) (camera.getCameraPosition().getZ() / 32);
+		
+		//Update their displayed position to reflect where the camera is
+		for(RegionMesh mesh : renderedRegions)
+		{
+			mesh.regionDisplayedX = mesh.regionSummary.getRegionX();
+			mesh.regionDisplayedZ = mesh.regionSummary.getRegionZ();
+			
+			//We wrap the chunks if they are too far
+			if (mesh.regionSummary.getRegionX() * 8 - cameraChunkX > wrapRegionsDistance)
+				mesh.regionDisplayedX += -worldSizeInRegions;
+			if (mesh.regionSummary.getRegionX() * 8 - cameraChunkX < -wrapRegionsDistance)
+				mesh.regionDisplayedX += worldSizeInRegions;
+			
+			if (mesh.regionSummary.getRegionZ() * 8 - cameraChunkZ > wrapRegionsDistance)
+				mesh.regionDisplayedZ += -worldSizeInRegions;
+			if (mesh.regionSummary.getRegionZ() * 8 - cameraChunkZ < -wrapRegionsDistance)
+				mesh.regionDisplayedZ += worldSizeInRegions;
+			//System.out.println(mesh.regionDisplayedX + " : " + cameraChunkX);
+		}
+		
 		//Sort to draw near first
-		List<RegionMesh> regionsMeshesToRenderSorted = new ArrayList<RegionMesh>(renderedRegions);
-		regionsMeshesToRenderSorted.sort(new Comparator<RegionMesh>()
+		List<FarTerrainBaker.RegionMesh> regionsMeshesToRenderSorted = new ArrayList<FarTerrainBaker.RegionMesh>(renderedRegions);
+		regionsMeshesToRenderSorted.sort(new Comparator<FarTerrainBaker.RegionMesh>()
 		{
 			@Override
-			public int compare(RegionMesh a, RegionMesh b)
+			public int compare(FarTerrainBaker.RegionMesh a, FarTerrainBaker.RegionMesh b)
 			{
 				int distanceA = Math.abs(a.regionDisplayedX - camRX) + Math.abs(a.regionDisplayedZ - camRZ);
 				int distanceB = Math.abs(b.regionDisplayedX - camRX) + Math.abs(b.regionDisplayedZ - camRZ);
@@ -167,7 +274,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		});
 
 		int bitsDrew = 0;
-		for (RegionMesh regionMesh : regionsMeshesToRenderSorted)
+		for (FarTerrainBaker.RegionMesh regionMesh : regionsMeshesToRenderSorted)
 		{
 			//Frustrum checks (assuming maxHeight of 1024 blocks)
 			//TODO do a simple max() and improve accuracy
@@ -232,10 +339,12 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 				Thread.currentThread().setName("Far terrain rebuilder thread");
 				Thread.currentThread().setPriority(Constants.TERRAIN_RENDERER_THREAD_PRIORITY);
 
-				generateArround();
+				FarTerrainBaker baker = new FarTerrainBaker(regionMeshBuffer, world, cameraChunkX, cameraChunkZ);
+				renderedRegions = baker.generateArround();
 				
-				//System.out.println("Took into account "+ tookIntoAccount+" updates");
 				farTerrainUpdatesToTakeIntoAccount.addAndGet(-tookIntoAccount);
+				lastTerrainUpdateTiming = System.currentTimeMillis();
+				isTerrainUpdateRunning.set(false);
 			}
 		};
 		asynchGenerateThread.start();
@@ -244,9 +353,9 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 	/**
 	 * 
 	 */
-	private void generateArround()
+	/*private void generateArround()
 	{
-		List<RegionMesh> regionsToRender_NewList = new ArrayList<RegionMesh>();
+		List<FarTerrainBakerThread.RegionMesh> regionsToRender_NewList = new ArrayList<FarTerrainBakerThread.RegionMesh>();
 		int summaryDistance = 32;
 
 		//Double check we won't run this concurrently
@@ -263,8 +372,6 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 				int nextRegionX = currentRegionX + 1;
 				int nextChunkX = nextRegionX * 8;
 
-				//System.out.println("cx:" + currentChunkX + "crx: "+ currentRegionX + "nrx: " + nextRegionX + "ncx: " + nextChunkX);
-
 				//Iterate over Z chunks but skip whole regions
 				int currentChunkZ = cameraChunkZ - summaryDistance;
 				while (currentChunkZ < cameraChunkZ + summaryDistance)
@@ -272,11 +379,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 					//Computes where are we
 					int currentRegionZ = (int) Math.floor(currentChunkZ / 8);
 					int nextRegionZ = currentRegionZ + 1;
-					//if(currentChunkZ < 0)
-					//	currentRegionZ--;
 					int nextChunkZ = nextRegionZ * 8;
-
-					//System.out.println("cz:" + currentChunkZ + "crz: "+ currentRegionZ + "nrz: " + nextRegionZ + "ncz: " + nextChunkZ);
 
 					//Clear shit
 					regionMeshBuffer.clear();
@@ -310,7 +413,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 					int vertexCount = 0;
 
 					//Details cache array
-					int[] details2use = new int[100];
+					int[] lodsArray = new int[100];
 					for (int scx = -1; scx < 9; scx++)
 						for (int scz = -1; scz < 9; scz++)
 						{
@@ -325,18 +428,18 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 							if (!RenderingConfig.hqTerrain && detail < 2)
 								detail = 2;
 
-							details2use[(scx + 1) * 10 + (scz + 1)] = detail;
+							lodsArray[(scx + 1) * 10 + (scz + 1)] = detail;
 						}
 
 					for (int scx = 0; scx < 8; scx++)
 						for (int scz = 0; scz < 8; scz++)
 						{
-							int details = details2use[(scx + 1) * 10 + (scz + 1)];
-							int cellSize = (int) Math.pow(2, details);
+							int chunkLod = lodsArray[(scx + 1) * 10 + (scz + 1)];
+							int cellSize = (int) Math.pow(2, chunkLod);
 
 							int x0 = (scx * 32) / cellSize;
 							int y0 = (scz * 32) / cellSize;
-							HeightmapMeshSummarizer mesher = new HeightmapMeshSummarizer(heightMap, ids, offsets[details], 32 / cellSize, x0, y0, 256 / cellSize);
+							HeightmapMesher mesher = new HeightmapMesher(heightMap, ids, offsets[chunkLod], 32 / cellSize, x0, y0, 256 / cellSize);
 							int test = 0;
 							Surface surf = mesher.nextSurface();
 							while (surf != null)
@@ -355,12 +458,12 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 								//Left side
 								int vx = scx * 32 + (surf.getX()) * cellSize;
 								int vz = scz * 32 + (surf.getY()) * cellSize;
-								int heightCurrent = getHeight(heightMap, world, vx - cellSize, vz, currentRegionX, currentRegionZ, details2use[((int) Math.floor((vx - cellSize) / 32f) + 1) * 10 + (scz + 1)]);
+								int heightCurrent = getHeight(heightMap, world, vx - cellSize, vz, currentRegionX, currentRegionZ, lodsArray[((int) Math.floor((vx - cellSize) / 32f) + 1) * 10 + (scz + 1)]);
 								int d = 0;
 								for (int i = 1; i < surf.getH() + 1; i++)
 								{
 									int newHeight = (i < surf.getH()) ? getHeight(heightMap, world, vx - cellSize, vz + i * cellSize, currentRegionX, currentRegionZ,
-											details2use[((int) Math.floor((vx - cellSize) / 32f) + 1) * 10 + ((int) Math.floor((vz + (i) * cellSize) / 32f) + 1)]) : -1;
+											lodsArray[((int) Math.floor((vx - cellSize) / 32f) + 1) * 10 + ((int) Math.floor((vz + (i) * cellSize) / 32f) + 1)]) : -1;
 									if (newHeight != heightCurrent)
 									{
 										if (heightCurrent != surf.getLevel())
@@ -380,12 +483,12 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 									}
 								}
 								//Bot side
-								heightCurrent = getHeight(heightMap, world, vx, vz - cellSize, currentRegionX, currentRegionZ, details2use[((int) Math.floor((vx) / 32f) + 1) * 10 + ((int) Math.floor((vz - cellSize) / 32f) + 1)]);
+								heightCurrent = getHeight(heightMap, world, vx, vz - cellSize, currentRegionX, currentRegionZ, lodsArray[((int) Math.floor((vx) / 32f) + 1) * 10 + ((int) Math.floor((vz - cellSize) / 32f) + 1)]);
 								d = 0;
 								for (int i = 1; i < surf.getW() + 1; i++)
 								{
 									int newHeight = (i < surf.getW()) ? getHeight(heightMap, world, vx + i * cellSize, vz - cellSize, currentRegionX, currentRegionZ,
-											details2use[((int) Math.floor((vx + i * cellSize) / 32f) + 1) * 10 + ((int) Math.floor((vz - cellSize) / 32f) + 1)]) : -1;
+											lodsArray[((int) Math.floor((vx + i * cellSize) / 32f) + 1) * 10 + ((int) Math.floor((vz - cellSize) / 32f) + 1)]) : -1;
 									if (newHeight != heightCurrent)
 									{
 										if (heightCurrent != surf.getLevel())
@@ -415,19 +518,19 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 							}
 							//If the next side has a coarser resolution we want to fill in the gaps
 							//We go alongside the two other sides of the mesh and we add another skirt to match the coarser mesh on the side
-							int nextMeshDetailsX = details2use[(scx + 2) * 10 + (scz + 1)];
-							if (nextMeshDetailsX > details)
+							int nextMeshDetailsX = lodsArray[(scx + 2) * 10 + (scz + 1)];
+							if (nextMeshDetailsX > chunkLod)
 							{
 								int vx = scx * 32 + 32;
 								for (int vz = scz * 32; vz < scz * 32 + 32; vz += cellSize)
 								{
 
-									int height = getHeight(heightMap, world, vx - 1, vz, currentRegionX, currentRegionZ, details);
+									int height = getHeight(heightMap, world, vx - 1, vz, currentRegionX, currentRegionZ, chunkLod);
 									int heightNext = getHeight(heightMap, world, vx + 1, vz, currentRegionX, currentRegionZ, nextMeshDetailsX);
 
 									if (heightNext > height)
 									{
-										int gapData = getIds(ids, world, vx - 1, vz, currentRegionX, currentRegionZ, details);
+										int gapData = getIds(ids, world, vx - 1, vz, currentRegionX, currentRegionZ, chunkLod);
 
 										addVertexBytes(regionMeshBuffer, vx, height, vz, 1, 0, 0, gapData);
 										addVertexBytes(regionMeshBuffer, vx, heightNext, vz + cellSize, 1, 0, 0, gapData);
@@ -440,7 +543,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 									}
 									else if (heightNext < height)
 									{
-										int gapData = getIds(ids, world, vx + 1, vz, currentRegionX, currentRegionZ, details);
+										int gapData = getIds(ids, world, vx + 1, vz, currentRegionX, currentRegionZ, chunkLod);
 
 										addVertexBytes(regionMeshBuffer, vx, height, vz, -1, 0, 0, gapData);
 										addVertexBytes(regionMeshBuffer, vx, heightNext, vz, -1, 0, 0, gapData);
@@ -454,13 +557,13 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 								}
 							}
 
-							int nextMeshDetailsZ = details2use[(scx + 1) * 10 + (scz + 2)];
-							if (nextMeshDetailsZ > details)
+							int nextMeshDetailsZ = lodsArray[(scx + 1) * 10 + (scz + 2)];
+							if (nextMeshDetailsZ > chunkLod)
 							{
 								int vz = scz * 32 + 32;
 								for (int vx = scx * 32; vx < scx * 32 + 32; vx += cellSize)
 								{
-									int height = getHeight(heightMap, world, vx, vz - 1, currentRegionX, currentRegionZ, details);
+									int height = getHeight(heightMap, world, vx, vz - 1, currentRegionX, currentRegionZ, chunkLod);
 									int heightNext = getHeight(heightMap, world, vx, vz + 1, currentRegionX, currentRegionZ, nextMeshDetailsZ);
 
 									if (heightNext > height)
@@ -500,7 +603,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 					regionMeshBuffer.get(vboContent);
 					
 
-					RegionMesh regionMesh = new RegionMesh(rx, rz, summary, vboContent);
+					FarTerrainBakerThread.RegionMesh regionMesh = new FarTerrainBakerThread.RegionMesh(rx, rz, summary, vboContent);
 					//regionMesh.regionSummary.sendNewModel(vboContent);
 
 					lastRegionX = rcx / 8;
@@ -518,7 +621,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 			lastRegionX = -1;
 			lastRegionZ = -1;
 
-			for (RegionMesh rs : renderedRegions)
+			for (FarTerrainBakerThread.RegionMesh rs : renderedRegions)
 			{
 				rs.delete();
 			}
@@ -528,9 +631,9 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 
 		this.isTerrainUpdateRunning.set(false);
 		this.lastTerrainUpdateTiming = System.currentTimeMillis();
-	}
+	}*/
 
-	private int getHeight(int[] heightMap, WorldImplementation world, int x, int z, int rx, int rz, int level)
+	/*private int getHeight(int[] heightMap, WorldImplementation world, int x, int z, int rx, int rz, int level)
 	{
 		if (x < 0 || z < 0 || x >= 256 || z >= 256)
 			return world.getRegionsSummariesHolder().getHeightMipmapped(rx * 256 + x, rz * 256 + z, level);
@@ -556,7 +659,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		int offset = offsets[level];
 		//System.out.println(level+"l"+offset+"reso"+resolution+"x:"+x+"z:"+z);
 		return summaryData[offset + resolution * x + z];
-	}
+	}*/
 
 	/*public void uploadGeneratedMeshes()
 	{
@@ -577,50 +680,18 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		}
 	}*/
 
-	class RegionMesh
-	{
-		int regionDisplayedX, regionDisplayedZ;
-		RegionSummaryImplementation regionSummary;
-
-		//Mesh (client renderer)
-		VerticesObject verticesObject;
-
-		public RegionMesh(int rxDisplay, int rzDisplay, RegionSummaryImplementation dataSource, byte[] vboContent)
-		{
-			this.regionDisplayedX = rxDisplay;
-			this.regionDisplayedZ = rzDisplay;
-			this.regionSummary = dataSource;
-			
-			this.verticesObject = new VerticesObject();
-			
-			ByteBuffer byteBuffer = BufferUtils.createByteBuffer(vboContent.length);
-			byteBuffer.put(vboContent);
-			byteBuffer.flip();
-			verticesObject.uploadData(byteBuffer);
-		}
-
-		public void delete()
-		{
-			//glDeleteBuffers(regionSummary.vboId);
-			verticesObject.destroy();
-		}
-	}
-
-	private void addVertexBytes(ByteBuffer terrain, int x, int y, int z, int nx, int ny, int nz, int voxelData)
+	/*private void addVertexBytes(ByteBuffer terrain, int x, int y, int z, int nx, int ny, int nz, int voxelData)
 	{
 		terrain.putShort((short) x);
 		terrain.putShort((short) (y + 1));
 		terrain.putShort((short) z);
 		terrain.putShort((short) 0x00);
-		//terrain.putShort((short) VoxelFormat.id(voxelData));
 
 		terrain.put((byte) (nx + 1));
 		terrain.put((byte) (ny + 1));
 		terrain.put((byte) (nz + 1));
 		terrain.put((byte) (0x00));
-
-		//terrain.putInt(VoxelFormat.id(voxelData));
-	}
+	}*/
 
 	public void destroy()
 	{

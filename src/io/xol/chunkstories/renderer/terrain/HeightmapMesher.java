@@ -4,9 +4,9 @@ package io.xol.chunkstories.renderer.terrain;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class HeightmapMeshSummarizer
+public class HeightmapMesher
 {
-	public HeightmapMeshSummarizer(int[] heightmap, int[] ids, int offset, int dimension, int x0, int y0, int heightmapSize)
+	public HeightmapMesher(int[] heightmap, int[] ids, int offset, int dimension, int x0, int y0, int heightmapSize)
 	{
 		this.heightmap = heightmap;
 		this.ids = ids;

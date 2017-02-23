@@ -66,8 +66,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	float apertureModifier = 1.0f;
 	
 	public RenderBuffers renderBuffers;
-	
-	WorldTextures worldTextures;
+	public WorldTextures worldTextures;
 	
 	RenderingPass currentPass = null;
 
@@ -83,7 +82,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		
 		entitiesRenderer = new EntitiesRenderer(world);
 		particlesRenderer = new ParticlesRenderer(world);
-		farTerrainRenderer = new FarTerrainRenderer(world);
+		farTerrainRenderer = new FarTerrainRenderer(world, this);
 		weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
 		skyRenderer = new SkyRenderer(world);
 		decalsRenderer = new DecalsRenderer(this);
@@ -159,6 +158,10 @@ public class WorldRendererImplementation implements WorldRenderer
 		
 		renderShadedBlocks(renderingInterface, sun_shadowMap);
 		renderLightsDeffered(renderingInterface);
+		
+		//Add forward rendered stuff
+		weatherEffectsRenderer.renderEffects(renderingInterface);
+		farTerrainRenderer.renderTerrain(renderingInterface, true);
 	}
 
 	private void gbuffers_opaque_chunk_meshes(RenderingInterface renderingInterface)
@@ -405,38 +408,38 @@ public class WorldRendererImplementation implements WorldRenderer
 	public class RenderBuffers
 	{
 		// Main Rendertarget (HDR)
-		Texture2DRenderTarget shadedBuffer;
+		public Texture2DRenderTarget shadedBuffer;
 
 		// G-Buffers
 		public Texture2DRenderTarget zBuffer;
 
-		Texture2DRenderTarget albedoBuffer, normalBuffer, materialBuffer;
+		public Texture2DRenderTarget albedoBuffer, normalBuffer, materialBuffer;
 
 		// Bloom texture
-		Texture2DRenderTarget bloomBuffer, ssaoBuffer;
+		public Texture2DRenderTarget bloomBuffer, ssaoBuffer;
 
 		// FBOs
-		FrameBufferObject fboGBuffers, fboShadedBuffer, fboBloom, fboSSAO;
+		public FrameBufferObject fboGBuffers, fboShadedBuffer, fboBloom, fboSSAO;
 
-		Texture2DRenderTarget blurIntermediateBuffer;
-		FrameBufferObject fboBlur;
+		public Texture2DRenderTarget blurIntermediateBuffer;
+		public FrameBufferObject fboBlur;
 
 		// 64x64 texture used to cull distant mesh
-		Texture2DRenderTarget loadedChunksMapTop, loadedChunksMapBot;
-		FrameBufferObject fboLoadedChunksTop, fboLoadedChunksBot;
+		public Texture2DRenderTarget loadedChunksMapTop, loadedChunksMapBot;
+		public FrameBufferObject fboLoadedChunksTop, fboLoadedChunksBot;
 
 		// Shadow maps
-		int shadowMapResolution = 0;
-		Texture2DRenderTarget shadowMapBuffer;
-		FrameBufferObject shadowMapFBO;
+		public int shadowMapResolution = 0;
+		public Texture2DRenderTarget shadowMapBuffer;
+		public FrameBufferObject shadowMapFBO;
 
 		//Environment map
-		int ENVMAP_SIZE = 128;
-		Cubemap environmentMap;
+		public int ENVMAP_SIZE = 128;
+		public Cubemap environmentMap;
 
 		//Temp buffers
-		Texture2DRenderTarget environmentMapBufferHDR, environmentMapBufferZ;
-		FrameBufferObject environmentMapFastFbo, environmentMapFBO;
+		public Texture2DRenderTarget environmentMapBufferHDR, environmentMapBufferZ;
+		public FrameBufferObject environmentMapFastFbo, environmentMapFBO;
 
 		RenderBuffers()
 		{
@@ -505,20 +508,20 @@ public class WorldRendererImplementation implements WorldRenderer
 		}
 	}
 	
-	class WorldTextures {
+	public class WorldTextures {
 		
 		//Sky stuff
-		Texture2D sunGlowTexture;
-		Texture2D skyTextureSunny;
-		Texture2D skyTextureRaining;
+		public Texture2D sunGlowTexture;
+		public Texture2D skyTextureSunny;
+		public Texture2D skyTextureRaining;
 
-		Texture2D lightmapTexture;
-		Texture2D waterNormalTexture;
+		public Texture2D lightmapTexture;
+		public Texture2D waterNormalTexture;
 
 		//Blocks atlases
-		Texture2D blocksAlbedoTexture;
-		Texture2D blocksNormalTexture;
-		Texture2D blocksMaterialTexture;
+		public Texture2D blocksAlbedoTexture;
+		public Texture2D blocksNormalTexture;
+		public Texture2D blocksMaterialTexture;
 		
 		WorldTextures() {
 			reload();
@@ -570,7 +573,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	}
 	
 	//TODO make those configurables by the world generator
-	private void setupShadowColors(ShaderInterface shader)
+	public void setupShadowColors(ShaderInterface shader)
 	{
 		float sunLightFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.0f) / 1.0f, 1.0f);
 
@@ -653,5 +656,10 @@ public class WorldRendererImplementation implements WorldRenderer
 	public RenderingPass getCurrentRenderingPass()
 	{
 		return currentPass;
+	}
+
+	public ShadowMapRenderer getShadowRenderer()
+	{
+		return this.shadower;
 	}
 }
