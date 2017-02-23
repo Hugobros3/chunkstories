@@ -162,6 +162,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		//Add forward rendered stuff
 		weatherEffectsRenderer.renderEffects(renderingInterface);
 		farTerrainRenderer.renderTerrain(renderingInterface, chunksRenderer.getRenderedChunksMask(mainCamera));
+		gbuffers_water_chunk_meshes(renderingInterface);
 	}
 
 	private void gbuffers_opaque_chunk_meshes(RenderingInterface renderingInterface)
@@ -209,6 +210,38 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingInterface.setObjectMatrix(new Matrix4f());
 		
 		chunksRenderer.renderChunks(renderingInterface, WorldRenderer.RenderingPass.NORMAL_OPAQUE);
+	}
+	
+	private void gbuffers_water_chunk_meshes(RenderingInterface renderingInterface)
+	{
+		// Set fixed-function parameters
+		renderingInterface.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		renderingInterface.setBlendMode(BlendMode.MIX);
+		renderingInterface.setCullingMode(CullingMode.COUNTERCLOCKWISE);
+		
+		ShaderInterface waterShader = renderingInterface.useShader("water");
+		
+		renderingInterface.bindAlbedoTexture(worldTextures.blocksAlbedoTexture);
+		renderingInterface.bindNormalTexture(worldTextures.blocksNormalTexture);
+		renderingInterface.bindMaterialTexture(worldTextures.blocksMaterialTexture);
+
+		renderingInterface.bindTexture2D("lightColors", worldTextures.lightmapTexture);
+		renderingInterface.bindTexture2D("vegetationColorTexture", getGrassTexture());
+
+		//World stuff
+		waterShader.setUniform1f("mapSize", world.getSizeInChunks() * 32);
+		waterShader.setUniform1f("shadowVisiblity", shadower.getShadowVisibility());
+		waterShader.setUniform1f("overcastFactor", world.getWeather());
+		waterShader.setUniform1f("wetness", getWorldWetness());
+		waterShader.setUniform1f("time", animationTimer);
+
+		waterShader.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
+		renderingInterface.getCamera().setupShader(waterShader);
+
+		renderingInterface.setObjectMatrix(new Matrix4f());
+		
+		chunksRenderer.renderChunks(renderingInterface, WorldRenderer.RenderingPass.NORMAL_LIQUIDS_PASS_1);
+		renderingInterface.setBlendMode(BlendMode.DISABLED);
 	}
 
 	private void gbuffers_opaque_entities(RenderingInterface renderingContext) {

@@ -93,10 +93,10 @@ public class ClientWorldController implements PlayerClient
 		int cameraChunkZ = Math2.floor((controlledEntity.getLocation().getZ()) / 32);
 		int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
 		
-		for (int chunkX = (cameraChunkX - chunksViewDistance - 1); chunkX < cameraChunkX + chunksViewDistance + 1; chunkX++)
+		for (int chunkX = (cameraChunkX - chunksViewDistance - 1); chunkX <= cameraChunkX + chunksViewDistance + 1; chunkX++)
 		{
-			for (int chunkZ = (cameraChunkZ - chunksViewDistance - 1); chunkZ < cameraChunkZ + chunksViewDistance + 1; chunkZ++)
-				for (int chunkY = cameraChunkY - 3; chunkY < cameraChunkY + 3; chunkY++)
+			for (int chunkZ = (cameraChunkZ - chunksViewDistance - 1); chunkZ <= cameraChunkZ + chunksViewDistance + 1; chunkZ++)
+				for (int chunkY = cameraChunkY - 3; chunkY <= cameraChunkY + 3; chunkY++)
 				{
 					WorldInfo worldInfo = world.getWorldInfo();
 					WorldInfo.WorldSize size = worldInfo.getSize();

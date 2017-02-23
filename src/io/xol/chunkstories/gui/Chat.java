@@ -20,6 +20,7 @@ import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -178,6 +179,13 @@ public class Chat
 				else if (inputBox.text.equals("I am Mr Debug"))
 				{
 					RenderingConfig.isDebugAllowed = true;
+				}
+				else if(inputBox.text.equals("/reloadLocalContent"))
+				{
+					//Rebuild the mod FS
+					Client.getInstance().reloadAssets();
+					//Mark some caches dirty
+					((WorldRendererImplementation) Client.getInstance().getWorld().getWorldRenderer()).reloadContentSpecificStuff();
 				}
 				/*else if (inputBox.text.startsWith("/loctime"))
 				{
