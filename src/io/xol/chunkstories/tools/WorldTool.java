@@ -1,7 +1,6 @@
 package io.xol.chunkstories.tools;
 
 import java.io.File;
-import java.nio.FloatBuffer;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.GameContext;

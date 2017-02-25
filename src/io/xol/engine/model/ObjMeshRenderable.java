@@ -9,7 +9,6 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.Renderable;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.animation.SkeletonAnimator;

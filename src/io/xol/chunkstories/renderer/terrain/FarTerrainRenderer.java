@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.xol.engine.base.InputAbstractor;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.textures.Texture1D;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -37,11 +36,9 @@ import io.xol.chunkstories.renderer.ChunkMeshesRenderer.RenderedChunksMask;
 import io.xol.chunkstories.renderer.WorldRenderer.FarTerrainMeshRenderer;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.renderer.terrain.FarTerrainBaker.RegionMesh;
-import io.xol.chunkstories.renderer.terrain.HeightmapMesher.Surface;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
-import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
 //(c) 2015-2017 XolioWare Interactive

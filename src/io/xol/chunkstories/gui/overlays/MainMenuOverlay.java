@@ -19,7 +19,6 @@ import io.xol.chunkstories.item.inventory.BasicInventory;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.base.GameWindowOpenGL;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

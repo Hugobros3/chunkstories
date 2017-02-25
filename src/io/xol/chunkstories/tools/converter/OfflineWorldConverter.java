@@ -28,7 +28,6 @@ import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-import io.xol.engine.misc.FoldersUtils;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

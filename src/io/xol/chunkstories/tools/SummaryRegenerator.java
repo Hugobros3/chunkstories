@@ -4,7 +4,6 @@ import java.io.File;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldInfo;
-import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.world.WorldImplementation;
 

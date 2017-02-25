@@ -29,7 +29,6 @@ import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
-import io.xol.engine.graphics.textures.Texture2DAsset;
 import io.xol.engine.gui.Scene;
 import io.xol.engine.misc.CPUModelDetection;
 import io.xol.engine.misc.IconLoader;

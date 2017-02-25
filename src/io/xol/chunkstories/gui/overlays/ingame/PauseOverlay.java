@@ -8,7 +8,6 @@ import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.elements.Button;
 
 //(c) 2015-2017 XolioWare Interactive

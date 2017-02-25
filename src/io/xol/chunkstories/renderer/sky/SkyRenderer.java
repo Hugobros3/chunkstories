@@ -1,6 +1,5 @@
 package io.xol.chunkstories.renderer.sky;
 
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -12,9 +11,6 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMod
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.renderer.WorldRendererOld;
-
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;

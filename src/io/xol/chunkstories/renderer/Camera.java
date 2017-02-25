@@ -4,8 +4,6 @@ package io.xol.chunkstories.renderer;
 // http://chunkstories.xyz
 // http://xol.io
 
-import java.nio.FloatBuffer;
-
 import io.xol.chunkstories.api.math.Matrix3f;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.Vector3;
@@ -19,8 +17,6 @@ import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.physics.CollisionPlane;
-
-import org.lwjgl.BufferUtils;
 
 public class Camera implements CameraInterface
 {

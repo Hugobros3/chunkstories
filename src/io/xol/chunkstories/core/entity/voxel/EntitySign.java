@@ -14,7 +14,6 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.components.EntityComponentSignText;
 import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 import io.xol.engine.graphics.geometry.TextMeshObject;

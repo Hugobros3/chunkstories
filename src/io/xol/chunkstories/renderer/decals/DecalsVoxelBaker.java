@@ -3,6 +3,8 @@ package io.xol.chunkstories.renderer.decals;
 import java.nio.ByteBuffer;
 
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
+import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
+import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext.VoxelLighter;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -73,6 +75,20 @@ public class DecalsVoxelBaker implements VoxelBakerHighPoly, VoxelBakerCubic
 	public void addNormalsInt(int i0, int i1, int i2, byte extra)
 	{
 		this.addVerticeFloat((i0 + 1) / 512 - 1, (i1 + 1) / 512 - 1, (i2 + 1) / 512 - 1);
+	}
+
+	@Override
+	public void addColors(byte sunLight, byte blockLight, byte ao)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addColorsAuto(VoxelLighter voxelLighter, Corners corner)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 
 }

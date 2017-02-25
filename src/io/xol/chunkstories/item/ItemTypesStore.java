@@ -1,13 +1,11 @@
 package io.xol.chunkstories.item;
 
 import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.ModsManager;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 

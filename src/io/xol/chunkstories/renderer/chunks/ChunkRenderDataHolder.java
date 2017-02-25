@@ -1,6 +1,5 @@
 package io.xol.chunkstories.renderer.chunks;
 
-import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
@@ -8,8 +7,6 @@ import io.xol.chunkstories.renderer.SelectionRenderer;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.geometry.VertexFormat;
-import io.xol.engine.graphics.geometry.VerticesObject;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

@@ -224,7 +224,7 @@ public class ChunkMeshesRenderer
 			matrix.translate(new Vector3fm(command.displayWorldX, command.displayWorldY, command.displayWorldZ));
 			
 			renderingInterface.setObjectMatrix(matrix);
-			command.chunk.getChunkRenderData().renderPass(renderingInterface, RenderLodLevel.HIGH, shadingType);
+			command.chunk.getChunkRenderData().renderPass(renderingInterface, RenderLodLevel.LOW, shadingType);
 		}
 	}
 	

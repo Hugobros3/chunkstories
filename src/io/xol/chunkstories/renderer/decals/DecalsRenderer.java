@@ -31,12 +31,8 @@ import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.renderer.VoxelContextOlder;
-import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
-import io.xol.chunkstories.renderer.WorldRendererOld;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.voxel.models.VoxelModelsStore;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -176,6 +172,34 @@ public class DecalsRenderer implements DecalsManager
 								public boolean isBackChunkLoaded()
 								{
 									return false;
+								}
+
+								@Override
+								public int getRenderedVoxelPositionInChunkX()
+								{
+									// TODO Auto-generated method stub
+									return bri.getX() & 0x1f;
+								}
+
+								@Override
+								public int getRenderedVoxelPositionInChunkY()
+								{
+									// TODO Auto-generated method stub
+									return bri.getY() & 0x1f;
+								}
+
+								@Override
+								public int getRenderedVoxelPositionInChunkZ()
+								{
+									// TODO Auto-generated method stub
+									return bri.getZ() & 0x1f;
+								}
+
+								@Override
+								public VoxelLighter getCurrentVoxelLighter()
+								{
+									// TODO Auto-generated method stub
+									return null;
 								}
 							};
 							

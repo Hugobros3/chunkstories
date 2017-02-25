@@ -6,8 +6,6 @@ import io.xol.chunkstories.core.entity.components.EntityComponentPosition;
 import io.xol.chunkstories.core.entity.components.EntityComponentVelocity;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.VoxelContextOlder;
-import io.xol.chunkstories.renderer.Camera;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;

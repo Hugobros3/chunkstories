@@ -20,7 +20,6 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
-import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClient;

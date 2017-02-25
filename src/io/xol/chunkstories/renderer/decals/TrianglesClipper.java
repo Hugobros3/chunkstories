@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.Vector3;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 

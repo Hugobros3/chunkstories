@@ -2,7 +2,6 @@ package io.xol.chunkstories.api.particles;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 

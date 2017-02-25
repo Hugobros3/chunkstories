@@ -3,6 +3,8 @@ package io.xol.chunkstories.renderer.chunks;
 import java.nio.ByteBuffer;
 
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
+import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
+import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext.VoxelLighter;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -72,6 +74,21 @@ public class RenderByteBuffer implements VoxelBakerHighPoly, VoxelBakerCubic
 	{
 		addColors(t[0], t[1], t[2]);
 	}
+
+	@Override
+	public void addColors(byte sunLight, byte blockLight, byte ao)
+	{
+		byteBuffer.put(sunLight);
+		byteBuffer.put(blockLight);
+		byteBuffer.put(ao);
+		byteBuffer.put((byte) 0);
+	}
+
+	@Override
+	public void addColorsAuto(VoxelLighter voxelLighter, Corners corner)
+	{
+		addColors(voxelLighter.getBlocklightLevelForCorner(corner), voxelLighter.getSunlightLevelForCorner(corner), voxelLighter.getAoLevelForCorner(corner));
+	}
 	
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.renderer.chunks.VoxelBaker#addColorsSpecial(float[], int)
@@ -90,9 +107,9 @@ public class RenderByteBuffer implements VoxelBakerHighPoly, VoxelBakerCubic
 	{
 		if(byteBuffer.position() == byteBuffer.capacity())
 			return;
-		byteBuffer.put((byte) (f0 * 255));
-		byteBuffer.put((byte) (f1 * 255));
-		byteBuffer.put((byte) (f2 * 255));
+		byteBuffer.put((byte) (f0 * 15));
+		byteBuffer.put((byte) (f1 * 15));
+		byteBuffer.put((byte) (f2 * 15));
 		byteBuffer.put((byte) 0);
 	}
 	
@@ -104,9 +121,9 @@ public class RenderByteBuffer implements VoxelBakerHighPoly, VoxelBakerCubic
 	{
 		if(byteBuffer.position() == byteBuffer.capacity())
 			return;
-		byteBuffer.put((byte) (f0 * 255));
-		byteBuffer.put((byte) (f1 * 255));
-		byteBuffer.put((byte) (f2 * 255));
+		byteBuffer.put((byte) (f0 * 15));
+		byteBuffer.put((byte) (f1 * 15));
+		byteBuffer.put((byte) (f2 * 15));
 		byteBuffer.put((byte) extended);
 	}
 	

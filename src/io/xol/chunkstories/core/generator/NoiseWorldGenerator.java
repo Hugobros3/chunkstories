@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.region.RegionImplementation;

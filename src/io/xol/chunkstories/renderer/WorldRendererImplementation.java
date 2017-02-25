@@ -23,15 +23,10 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingM
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.particles.ParticlesRenderer;
-import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
-import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
-import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
-import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRenderer;
 import io.xol.chunkstories.renderer.lights.ComputedShadowMap;

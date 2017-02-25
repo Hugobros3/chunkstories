@@ -16,7 +16,6 @@ import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
-import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.engine.animation.BVHLibrary;
 
 //(c) 2015-2017 XolioWare Interactive

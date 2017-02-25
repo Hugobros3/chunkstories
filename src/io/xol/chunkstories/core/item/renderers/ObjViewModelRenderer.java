@@ -2,7 +2,6 @@ package io.xol.chunkstories.core.item.renderers;
 
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.math.Matrix4f;

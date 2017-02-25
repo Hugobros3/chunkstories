@@ -3,7 +3,6 @@ package io.xol.engine.graphics;
 import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
 import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.pipeline.AttributeSource;
 import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
@@ -18,7 +17,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.lights.LightsRenderer;
-import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderTargetManager;
 import io.xol.chunkstories.api.rendering.RenderingCommand;
@@ -39,10 +37,6 @@ import io.xol.engine.graphics.util.GuiRendererImplementation;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.lwjgl.BufferUtils;
 
 //(c) 2015-2017 XolioWare Interactive

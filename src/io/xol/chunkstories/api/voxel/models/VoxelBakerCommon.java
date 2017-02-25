@@ -9,6 +9,8 @@ public interface VoxelBakerCommon
 	public void addTexCoordInt(int i0, int i1);
 
 	public void addColors(float[] t);
+	
+	public void addColors(byte sunLight, byte blockLight, byte ao);
 
 	public void addColorsSpecial(float[] t, int extended);
 

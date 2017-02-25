@@ -1,7 +1,6 @@
 package io.xol.chunkstories.server.propagation;
 
 import java.lang.ref.WeakReference;
-import java.nio.FloatBuffer;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

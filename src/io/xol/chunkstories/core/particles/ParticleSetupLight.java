@@ -1,6 +1,5 @@
 package io.xol.chunkstories.core.particles;
 
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;

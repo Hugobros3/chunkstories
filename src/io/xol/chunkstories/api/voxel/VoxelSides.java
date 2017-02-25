@@ -68,4 +68,15 @@ public enum VoxelSides
 		
 		return FRONT;
 	}
+	
+	public enum Corners {
+		TOP_FRONT_RIGHT,
+		TOP_FRONT_LEFT,
+		TOP_BACK_RIGHT,
+		TOP_BACK_LEFT,
+		BOTTOM_FRONT_RIGHT,
+		BOTTOM_FRONT_LEFT,
+		BOTTOM_BACK_RIGHT,
+		BOTTOM_BACK_LEFT,
+	}
 }

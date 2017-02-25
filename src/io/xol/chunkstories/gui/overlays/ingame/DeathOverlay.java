@@ -8,7 +8,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;

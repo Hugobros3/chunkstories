@@ -10,7 +10,6 @@ import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.ObjectRenderer;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;

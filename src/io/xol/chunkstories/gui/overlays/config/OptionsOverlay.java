@@ -24,7 +24,6 @@ import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.GuiElement;
 

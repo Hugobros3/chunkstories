@@ -10,7 +10,6 @@ import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

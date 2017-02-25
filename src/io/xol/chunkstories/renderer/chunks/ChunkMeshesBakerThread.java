@@ -2,6 +2,7 @@ package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.core.voxel.DefaultVoxelRenderer;
 import io.xol.chunkstories.renderer.ChunkMeshesBaker;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer;
@@ -9,6 +10,7 @@ import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
@@ -23,7 +25,6 @@ import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.math.LoopingMathHelper;
@@ -1068,54 +1069,8 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 
 		};
 
-		ChunkRenderContext chunkRenderingContext = new ChunkRenderContext()
-		{
-			// For map borders
-			boolean chunkTopLoaded = world.isChunkLoaded(cx, cy + 1, cz);
-			boolean chunkBotLoaded = world.isChunkLoaded(cx, cy - 1, cz);
-			boolean chunkRightLoaded = world.isChunkLoaded(cx + 1, cy, cz);
-			boolean chunkLeftLoaded = world.isChunkLoaded(cx - 1, cy, cz);
-			boolean chunkFrontLoaded = world.isChunkLoaded(cx, cy, cz + 1);
-			boolean chunkBackLoaded = world.isChunkLoaded(cx, cy, cz - 1);
-
-			@Override
-			public boolean isTopChunkLoaded()
-			{
-				return chunkTopLoaded;
-			}
-
-			@Override
-			public boolean isBottomChunkLoaded()
-			{
-				return chunkBotLoaded;
-			}
-
-			@Override
-			public boolean isLeftChunkLoaded()
-			{
-				return chunkLeftLoaded;
-			}
-
-			@Override
-			public boolean isRightChunkLoaded()
-			{
-				return chunkRightLoaded;
-			}
-
-			@Override
-			public boolean isFrontChunkLoaded()
-			{
-				return chunkFrontLoaded;
-			}
-
-			@Override
-			public boolean isBackChunkLoaded()
-			{
-				return chunkBackLoaded;
-			}
-
-		};
-
+		ChunkBakerRenderContext chunkRenderingContext = new ChunkBakerRenderContext(chunk, cx, cy, cz);
+		
 		for (i = 0; i < 32; i++)
 		{
 			for (j = 0; j < 32; j++)
@@ -1127,71 +1082,17 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 
 					if (blockID == 0)
 						continue;
+					
+					
 					Voxel vox = VoxelsStore.get().getVoxelById(blockID);
 					// Fill near-blocks info
-
+					chunkRenderingContext.bakeVoxelLight();
+					
 					VoxelRenderer voxelRenderer = vox.getVoxelRenderer(voxelRenderingContext);
 					if(voxelRenderer == null)
 						voxelRenderer = defaultVoxelRenderer;
 					
 					voxelRenderer.renderInto(chunkRendererOutput, chunkRenderingContext, chunk, voxelRenderingContext);
-					// System.out.println(blockID);
-					/*if (vox.getType().isLiquid())
-					{
-						addVoxelUsingCustomModel(workChunk, waterRBBF, i, k, j, renderInfo);
-					}
-					//TODO this seems ugly af
-					else if (vox.getVoxelRenderer(renderInfo) != null)
-					{
-						// Prop rendering
-						addVoxelUsingCustomModel(workChunk, complexRBBF, i, k, j, renderInfo);
-					}
-					else if (blockID != 0)
-					{
-						byte extraByte = 0;
-						if (shallBuildWallArround(renderInfo, 5))
-						{
-							if (!(k == 0 && !chunkBotLoaded))
-							{
-								addQuadBottom(workChunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BOTTOM, renderInfo), extraByte);
-							}
-						}
-						if (shallBuildWallArround(renderInfo, 4))
-						{
-							if (!(k == 31 && !chunkTopLoaded))
-							{
-								addQuadTop(workChunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.TOP, renderInfo), extraByte);
-							}
-						}
-						if (shallBuildWallArround(renderInfo, 2))
-						{
-							if (!(i == 31 && !chunkRightLoaded))
-							{
-								addQuadRight(workChunk, rawRBBF, i + 1, k, j, vox.getVoxelTexture(src, VoxelSides.RIGHT, renderInfo), extraByte);
-							}
-						}
-						if (shallBuildWallArround(renderInfo, 0))
-						{
-							if (!(i == 0 && !chunkLeftLoaded))
-							{
-								addQuadLeft(workChunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.LEFT, renderInfo), extraByte);
-							}
-						}
-						if (shallBuildWallArround(renderInfo, 1))
-						{
-							if (!(j == 31 && !chunkFrontLoaded))
-							{
-								addQuadFront(workChunk, rawRBBF, i, k, j + 1, vox.getVoxelTexture(src, VoxelSides.FRONT, renderInfo), extraByte);
-							}
-						}
-						if (shallBuildWallArround(renderInfo, 3))
-						{
-							if (!(j == 0 && !chunkBackLoaded))
-							{
-								addQuadBack(workChunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, renderInfo), extraByte);
-							}
-						}
-					}*/
 				}
 			}
 		}
@@ -1261,52 +1162,286 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		chunk.requestable.set(true);
 	}
 
-	class DefaultVoxelRenderer implements VoxelRenderer
-	{
-		@Override
-		public int renderInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, VoxelContext voxelInformations)
-		{
-			Voxel vox = voxelInformations.getVoxel();
-			int src = voxelInformations.getData();
-			
-			VoxelBakerCubic rawRBBF = chunkRenderer.getLowpolyBakerFor(LodLevel.ANY, ShadingType.OPAQUE);
-			byte extraByte = 0;
-			if (shallBuildWallArround(voxelInformations, 5))
-			{
-				if (k != 0 || bakingContext.isBottomChunkLoaded())
-					addQuadBottom(chunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BOTTOM, voxelInformations), extraByte);
-			}
-			if (shallBuildWallArround(voxelInformations, 4))
-			{
-				if (k != 31 || bakingContext.isTopChunkLoaded())
-					addQuadTop(chunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.TOP, voxelInformations), extraByte);
-			}
-			if (shallBuildWallArround(voxelInformations, 2))
-			{
-				if (i != 31 || bakingContext.isRightChunkLoaded())
-					addQuadRight(chunk, rawRBBF, i + 1, k, j, vox.getVoxelTexture(src, VoxelSides.RIGHT, voxelInformations), extraByte);
-			}
-			if (shallBuildWallArround(voxelInformations, 0))
-			{
-				if (i != 0 || bakingContext.isLeftChunkLoaded())
-					addQuadLeft(chunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.LEFT, voxelInformations), extraByte);
-			}
-			if (shallBuildWallArround(voxelInformations, 1))
-			{
-				if (j != 31 || bakingContext.isFrontChunkLoaded())
-					addQuadFront(chunk, rawRBBF, i, k, j + 1, vox.getVoxelTexture(src, VoxelSides.FRONT, voxelInformations), extraByte);
-			}
-			if (shallBuildWallArround(voxelInformations, 3))
-			{
-				if (j != 0 || bakingContext.isBackChunkLoaded())
-					addQuadBack(chunk, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, voxelInformations), extraByte);
-			}
+	class ChunkBakerRenderContext implements ChunkRenderContext {
 
-			return 0;
+		// For map borders
+		boolean chunkTopLoaded;
+		boolean chunkBotLoaded;
+		boolean chunkRightLoaded;
+		boolean chunkLeftLoaded;
+		boolean chunkFrontLoaded;
+		boolean chunkBackLoaded;
+		VoxelLighter voxelLighter;
+		CubicChunk chunk;
+		
+		byte[] sunlightLevel = new byte[VoxelSides.Corners.values().length];
+		byte[] blocklightLevel = new byte[VoxelSides.Corners.values().length];
+		byte[] aoLevel = new byte[VoxelSides.Corners.values().length];
+		
+		public ChunkBakerRenderContext(CubicChunk chunk, int cx, int cy, int cz)
+		{
+			chunkTopLoaded = world.isChunkLoaded(cx, cy + 1, cz);
+			chunkBotLoaded = world.isChunkLoaded(cx, cy - 1, cz);
+			chunkRightLoaded = world.isChunkLoaded(cx + 1, cy, cz);
+			chunkLeftLoaded = world.isChunkLoaded(cx - 1, cy, cz);
+			chunkFrontLoaded = world.isChunkLoaded(cx, cy, cz + 1);
+			chunkBackLoaded = world.isChunkLoaded(cx, cy, cz - 1);
+			
+			this.chunk = chunk;
+			voxelLighter = new VoxelLighter() {
+
+				@Override
+				public byte getSunlightLevelForCorner(Corners corner)
+				{
+					return sunlightLevel[corner.ordinal()];
+				}
+
+				@Override
+				public byte getBlocklightLevelForCorner(Corners corner)
+				{
+					return blocklightLevel[corner.ordinal()];
+				}
+
+				@Override
+				public byte getAoLevelForCorner(Corners corner)
+				{
+					return aoLevel[corner.ordinal()];
+				}
+				
+			};
 		}
 
-	}
+		public void bakeVoxelLight()
+		{
+			int sl000 = getSunlight(chunk, i, k, j    );
+			int sl00p = getSunlight(chunk, i, k, j + 1);
+			int sl00m = getSunlight(chunk, i, k, j - 1);
 
+			int sl0p0 = getSunlight(chunk, i, k + 1, j    );
+			int sl0pp = getSunlight(chunk, i, k + 1, j + 1);
+			int sl0pm = getSunlight(chunk, i, k + 1, j - 1);
+
+			int sl0m0 = getSunlight(chunk, i, k - 1, j    );
+			int sl0mp = getSunlight(chunk, i, k - 1, j + 1);
+			int sl0mm = getSunlight(chunk, i, k - 1, j - 1);
+
+			int slp00 = getSunlight(chunk, i + 1, k, j    );
+			int slp0p = getSunlight(chunk, i + 1, k, j + 1);
+			int slp0m = getSunlight(chunk, i + 1, k, j - 1);
+
+			int slpp0 = getSunlight(chunk, i + 1, k + 1, j    );
+			int slppp = getSunlight(chunk, i + 1, k + 1, j + 1);
+			int slppm = getSunlight(chunk, i + 1, k + 1, j - 1);
+
+			int slpm0 = getSunlight(chunk, i + 1, k - 1, j    );
+			int slpmp = getSunlight(chunk, i + 1, k - 1, j + 1);
+			int slpmm = getSunlight(chunk, i + 1, k - 1, j - 1);
+
+			int slm00 = getSunlight(chunk, i - 1, k, j    );
+			int slm0p = getSunlight(chunk, i - 1, k, j + 1);
+			int slm0m = getSunlight(chunk, i - 1, k, j - 1);
+
+			int slmp0 = getSunlight(chunk, i - 1, k + 1, j    );
+			int slmpp = getSunlight(chunk, i - 1, k + 1, j + 1);
+			int slmpm = getSunlight(chunk, i - 1, k + 1, j - 1);
+
+			int slmm0 = getSunlight(chunk, i - 1, k - 1, j    );
+			int slmmp = getSunlight(chunk, i - 1, k - 1, j + 1);
+			int slmmm = getSunlight(chunk, i - 1, k - 1, j - 1);
+			
+			int bl000 = getBlocklight(chunk, i, k, j    );
+			int bl00p = getBlocklight(chunk, i, k, j + 1);
+			int bl00m = getBlocklight(chunk, i, k, j - 1);
+
+			int bl0p0 = getBlocklight(chunk, i, k + 1, j    );
+			int bl0pp = getBlocklight(chunk, i, k + 1, j + 1);
+			int bl0pm = getBlocklight(chunk, i, k + 1, j - 1);
+
+			int bl0m0 = getBlocklight(chunk, i, k - 1, j    );
+			int bl0mp = getBlocklight(chunk, i, k - 1, j + 1);
+			int bl0mm = getBlocklight(chunk, i, k - 1, j - 1);
+
+			int blp00 = getBlocklight(chunk, i + 1, k, j    );
+			int blp0p = getBlocklight(chunk, i + 1, k, j + 1);
+			int blp0m = getBlocklight(chunk, i + 1, k, j - 1);
+
+			int blpp0 = getBlocklight(chunk, i + 1, k + 1, j    );
+			int blppp = getBlocklight(chunk, i + 1, k + 1, j + 1);
+			int blppm = getBlocklight(chunk, i + 1, k + 1, j - 1);
+
+			int blpm0 = getBlocklight(chunk, i + 1, k - 1, j    );
+			int blpmp = getBlocklight(chunk, i + 1, k - 1, j + 1);
+			int blpmm = getBlocklight(chunk, i + 1, k - 1, j - 1);
+
+			int blm00 = getBlocklight(chunk, i - 1, k, j    );
+			int blm0p = getBlocklight(chunk, i - 1, k, j + 1);
+			int blm0m = getBlocklight(chunk, i - 1, k, j - 1);
+
+			int blmp0 = getBlocklight(chunk, i - 1, k + 1, j    );
+			int blmpp = getBlocklight(chunk, i - 1, k + 1, j + 1);
+			int blmpm = getBlocklight(chunk, i - 1, k + 1, j - 1);
+
+			int blmm0 = getBlocklight(chunk, i - 1, k - 1, j    );
+			int blmmp = getBlocklight(chunk, i - 1, k - 1, j + 1);
+			int blmmm = getBlocklight(chunk, i - 1, k - 1, j - 1);
+			
+			bake(VoxelSides.Corners.TOP_FRONT_RIGHT.ordinal()   , sl000, slp00, sl0p0, sl00p, slpp0, sl0pp, slp0p, slppp
+															    , bl000, blp00, bl0p0, bl00p, blpp0, bl0pp, blp0p, blppp);
+			
+			bake(VoxelSides.Corners.TOP_FRONT_LEFT.ordinal()    , sl000, slm00, sl0p0, sl00p, slmp0, sl0pp, slm0p, slmpp
+					 										    , bl000, blm00, bl0p0, bl00p, blmp0, bl0pp, blm0p, blmpp);
+			
+			bake(VoxelSides.Corners.TOP_BACK_RIGHT.ordinal()    , sl000, slp00, sl0p0, sl00m, slpp0, sl0pm, slp0m, slppm
+					 										    , bl000, blp00, bl0p0, bl00m, blpp0, bl0pm, blp0m, blppm);
+
+			bake(VoxelSides.Corners.TOP_BACK_LEFT.ordinal()     , sl000, slm00, sl0p0, sl00m, slmp0, sl0pm, slm0m, slmpm
+														        , bl000, blm00, bl0p0, bl00m, blmp0, bl0pm, blm0m, blmpm);
+			
+			bake(VoxelSides.Corners.BOTTOM_FRONT_RIGHT.ordinal(), sl000, slp00, sl0m0, sl00p, slpm0, sl0mp, slp0p, slpmp
+															    , bl000, blp00, bl0m0, bl00p, blpm0, bl0mp, blp0p, blpmp);
+
+			bake(VoxelSides.Corners.BOTTOM_FRONT_LEFT.ordinal() , sl000, slm00, sl0m0, sl00p, slmm0, sl0mp, slm0p, slmmp
+															    , bl000, blm00, bl0m0, bl00p, blmm0, bl0mp, blm0p, blmmp);
+
+			bake(VoxelSides.Corners.BOTTOM_BACK_RIGHT.ordinal() , sl000, slp00, sl0m0, sl00m, slpm0, sl0mm, slp0m, slpmm
+															    , bl000, blp00, bl0m0, bl00m, blpm0, bl0mm, blp0m, blpmm);
+
+			bake(VoxelSides.Corners.BOTTOM_BACK_LEFT.ordinal()  , sl000, slm00, sl0m0, sl00m, slmm0, sl0mm, slm0m, slmmm
+															    , bl000, blm00, bl0m0, bl00m, blmm0, bl0mm, blm0m, blmmm);
+		}
+		
+		private void bake(int side, int slCenter, int slX, int slY, int slZ, int slXY, int slYZ, int slXZ, int slXYZ
+								  , int blCenter, int blX, int blY, int blZ, int blXY, int blYZ, int blXZ, int blXYZ)
+		{
+			int slacc=0,blacc=0;
+			int nonOpaqueBlocks=0;
+			if(slCenter >= 0)
+			{
+				slacc += slCenter;
+				blacc += blCenter;
+				nonOpaqueBlocks++;
+			}
+			
+			if(slX >= 0)
+			{
+				slacc += slX;
+				blacc += blX;
+				nonOpaqueBlocks++;
+			}
+			if(slY >= 0)
+			{
+				slacc += slY;
+				blacc += blY;
+				nonOpaqueBlocks++;
+			}
+			if(slZ >= 0)
+			{
+				slacc += slZ;
+				blacc += blZ;
+				nonOpaqueBlocks++;
+			}
+
+			if(slXY >= 0)
+			{
+				slacc += slXY;
+				blacc += blXY;
+				nonOpaqueBlocks++;
+			}
+			if(slYZ >= 0)
+			{
+				slacc += slYZ;
+				blacc += blYZ;
+				nonOpaqueBlocks++;
+			}
+			if(slXZ >= 0)
+			{
+				slacc += slXZ;
+				blacc += blXZ;
+				nonOpaqueBlocks++;
+			}
+			
+			if(slXYZ >= 0)
+			{
+				slacc += slXYZ;
+				blacc += blXYZ;
+				nonOpaqueBlocks++;
+			}
+			
+			if(nonOpaqueBlocks > 0)
+			{
+				sunlightLevel[side] = (byte)(slacc / nonOpaqueBlocks);
+				blocklightLevel[side] = (byte)(blacc / nonOpaqueBlocks);
+				aoLevel[side] = (byte) Math.max(0, 4 - nonOpaqueBlocks);
+			}
+			else
+			{
+				sunlightLevel[side] = 15;
+				blocklightLevel[side] = 15;
+				aoLevel[side] = (byte) 4;
+			}
+		}
+		
+		@Override
+		public boolean isTopChunkLoaded()
+		{
+			return chunkTopLoaded;
+		}
+
+		@Override
+		public boolean isBottomChunkLoaded()
+		{
+			return chunkBotLoaded;
+		}
+
+		@Override
+		public boolean isLeftChunkLoaded()
+		{
+			return chunkLeftLoaded;
+		}
+
+		@Override
+		public boolean isRightChunkLoaded()
+		{
+			return chunkRightLoaded;
+		}
+
+		@Override
+		public boolean isFrontChunkLoaded()
+		{
+			return chunkFrontLoaded;
+		}
+
+		@Override
+		public boolean isBackChunkLoaded()
+		{
+			return chunkBackLoaded;
+		}
+
+		@Override
+		public int getRenderedVoxelPositionInChunkX()
+		{
+			return i;
+		}
+
+		@Override
+		public int getRenderedVoxelPositionInChunkY()
+		{
+			return k;
+		}
+
+		@Override
+		public int getRenderedVoxelPositionInChunkZ()
+		{
+			return j;
+		}
+
+		@Override
+		public VoxelLighter getCurrentVoxelLighter()
+		{
+			return voxelLighter;
+		}
+	}
+	
 	public static int intifyNormal(float n)
 	{
 		return (int) ((n + 1) * 511.5f);

@@ -3,7 +3,6 @@ package io.xol.chunkstories.net.packets;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 

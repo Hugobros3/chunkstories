@@ -8,7 +8,6 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingM
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.renderer.lights.ComputedShadowMap;
 import io.xol.chunkstories.renderer.sky.SkyRenderer;
 import io.xol.engine.graphics.textures.Texture2D;

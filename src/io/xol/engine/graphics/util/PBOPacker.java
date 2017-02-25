@@ -20,7 +20,6 @@ import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.concurrency.Fence;
 import io.xol.engine.graphics.fbo.FrameBufferObject;
 import io.xol.engine.graphics.textures.Texture2D;
-import io.xol.engine.graphics.textures.TextureFormat;
 
 public class PBOPacker
 {
