@@ -21,6 +21,8 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
+import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
@@ -44,10 +46,128 @@ public class VoxelItemRenderer extends ItemRenderer
 {
 	Matrix4f transformation = new Matrix4f();
 	Map<Integer, VerticesObject> voxelItemsModelBuffer = new HashMap<Integer, VerticesObject>();
+	private ChunkRenderContext bakingContext;
 
 	public VoxelItemRenderer(ItemRenderer fallbackRenderer)
 	{
 		super(fallbackRenderer);
+		
+		bakingContext = new ChunkRenderContext() {
+
+			private VoxelLighter lighter = new VoxelLighter() {
+
+				@Override
+				public byte getSunlightLevelForCorner(Corners corner)
+				{
+					// TODO Auto-generated method stub
+					return 15;
+				}
+
+				@Override
+				public byte getBlocklightLevelForCorner(Corners corner)
+				{
+					// TODO Auto-generated method stub
+					return 0;
+				}
+
+				@Override
+				public byte getAoLevelForCorner(Corners corner)
+				{
+					// TODO Auto-generated method stub
+					return 0;
+				}
+
+				@Override
+				public byte getSunlightLevelInterpolated(float vertX, float vertY, float vertZ)
+				{
+					// TODO Auto-generated method stub
+					return 15;
+				}
+
+				@Override
+				public byte getBlocklightLevelInterpolated(float vertX, float vertY, float vertZ)
+				{
+					// TODO Auto-generated method stub
+					return 0;
+				}
+
+				@Override
+				public byte getAoLevelInterpolated(float vertX, float vertY, float vertZ)
+				{
+					// TODO Auto-generated method stub
+					return 0;
+				}
+				
+			};
+
+			@Override
+			public boolean isTopChunkLoaded()
+			{
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean isBottomChunkLoaded()
+			{
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean isLeftChunkLoaded()
+			{
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean isRightChunkLoaded()
+			{
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean isFrontChunkLoaded()
+			{
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean isBackChunkLoaded()
+			{
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public int getRenderedVoxelPositionInChunkX()
+			{
+				return 0;
+			}
+
+			@Override
+			public int getRenderedVoxelPositionInChunkY()
+			{
+				return 0;
+			}
+
+			@Override
+			public int getRenderedVoxelPositionInChunkZ()
+			{
+				return 0;
+			}
+
+			@Override
+			public VoxelLighter getCurrentVoxelLighter()
+			{
+				// TODO Auto-generated method stub
+				return lighter ;
+			}
+			
+		};
 	}
 
 	@Override
@@ -119,7 +239,12 @@ public class VoxelItemRenderer extends ItemRenderer
 			byteBuffer.putFloat(i0 / 32768f);
 			byteBuffer.putFloat(i1 / 32768f);
 		}
-
+		
+		@Override
+		public void addColors(byte a, byte b, byte c)
+		{
+		}
+		
 		@Override
 		public void addColors(float f0, float f1, float f2)
 		{
@@ -144,7 +269,7 @@ public class VoxelItemRenderer extends ItemRenderer
 			//Wow calm down satan with your huge-ass models
 			ByteBuffer buffer = BufferUtils.createByteBuffer(16384);
 			RenderByteBuffer rbbuf = new EditedTexCoordsRenderByteBuffer(buffer);
-			model.renderInto(rbbuf, bri, new DummyChunk(), 0, 0, 0);
+			model.renderInto(rbbuf, bakingContext, bri, new DummyChunk(), 0, 0, 0);
 			
 			buffer.flip();
 			

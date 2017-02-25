@@ -33,6 +33,10 @@ public interface ChunkRenderer
 			public byte getBlocklightLevelForCorner(VoxelSides.Corners corner);
 			
 			public byte getAoLevelForCorner(VoxelSides.Corners corner);
+
+			public byte getSunlightLevelInterpolated(float vertX, float vertY, float vertZ);
+			public byte getBlocklightLevelInterpolated(float vertX, float vertY, float vertZ);
+			public byte getAoLevelInterpolated(float vertX, float vertY, float vertZ);
 		}
 	}
 }

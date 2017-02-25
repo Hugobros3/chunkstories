@@ -22,6 +22,7 @@ import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
@@ -138,6 +139,52 @@ public class DecalsRenderer implements DecalsManager
 							ChunkRenderer.ChunkRenderContext o2 = new ChunkRenderer.ChunkRenderContext()
 							{
 								
+								private VoxelLighter voxeLighter = new VoxelLighter() {
+
+									@Override
+									public byte getSunlightLevelForCorner(Corners corner)
+									{
+										// TODO Auto-generated method stub
+										return 0;
+									}
+
+									@Override
+									public byte getBlocklightLevelForCorner(Corners corner)
+									{
+										// TODO Auto-generated method stub
+										return 0;
+									}
+
+									@Override
+									public byte getAoLevelForCorner(Corners corner)
+									{
+										// TODO Auto-generated method stub
+										return 0;
+									}
+
+									@Override
+									public byte getSunlightLevelInterpolated(float vertX, float vertY, float vertZ)
+									{
+										// TODO Auto-generated method stub
+										return 0;
+									}
+
+									@Override
+									public byte getBlocklightLevelInterpolated(float vertX, float vertY, float vertZ)
+									{
+										// TODO Auto-generated method stub
+										return 0;
+									}
+
+									@Override
+									public byte getAoLevelInterpolated(float vertX, float vertY, float vertZ)
+									{
+										// TODO Auto-generated method stub
+										return 0;
+									}
+									
+								};
+
 								@Override
 								public boolean isTopChunkLoaded()
 								{
@@ -199,7 +246,7 @@ public class DecalsRenderer implements DecalsManager
 								public VoxelLighter getCurrentVoxelLighter()
 								{
 									// TODO Auto-generated method stub
-									return null;
+									return voxeLighter;
 								}
 							};
 							

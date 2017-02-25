@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.renderer.chunks.ChunkMeshesBakerThread;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
@@ -224,7 +225,17 @@ public class ChunkMeshesRenderer
 			matrix.translate(new Vector3fm(command.displayWorldX, command.displayWorldY, command.displayWorldZ));
 			
 			renderingInterface.setObjectMatrix(matrix);
-			command.chunk.getChunkRenderData().renderPass(renderingInterface, RenderLodLevel.LOW, shadingType);
+			
+			Vector3dm chunkPos = new Vector3dm(command.displayWorldX + 16, command.displayWorldY + 16, command.displayWorldZ + 16);
+			double distance = renderingInterface.getCamera().getCameraPosition().distanceTo(chunkPos);
+			
+			RenderLodLevel lodToUse;
+			/*if(chunkMeshesPass.equals(RenderingPass.SHADOW))
+				lodToUse = RenderLodLevel.LOW;
+			else*/
+				lodToUse = distance < Math.max(64, RenderingConfig.viewDistance / 4.0) ? RenderLodLevel.HIGH : RenderLodLevel.LOW;
+			
+			command.chunk.getChunkRenderData().renderPass(renderingInterface, lodToUse, shadingType);
 		}
 	}
 	

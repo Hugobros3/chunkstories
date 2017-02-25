@@ -20,7 +20,6 @@ import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
-import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -28,6 +27,7 @@ import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.graphics.geometry.VerticesObject;
 import io.xol.engine.math.LoopingMathHelper;
+import io.xol.engine.math.Math2;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
@@ -447,493 +447,6 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		return new float[] { blocklightFactor / 15f, sunlightFactor / 15f, aoFactor / 4f };
 	}
 
-	private void addQuadTop(Chunk c, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
-	{
-		int llMs = getSunlight(c, sx, sy + 1, sz);
-		int llMb = getBlocklight(c, sx, sy + 1, sz);
-
-		int llAs = getSunlight(c, sx + 1, sy + 1, sz);
-		int llBs = getSunlight(c, sx + 1, sy + 1, sz + 1);
-		int llCs = getSunlight(c, sx, sy + 1, sz + 1);
-		int llDs = getSunlight(c, sx - 1, sy + 1, sz + 1);
-
-		int llEs = getSunlight(c, sx - 1, sy + 1, sz);
-		int llFs = getSunlight(c, sx - 1, sy + 1, sz - 1);
-		int llGs = getSunlight(c, sx, sy + 1, sz - 1);
-		int llHs = getSunlight(c, sx + 1, sy + 1, sz - 1);
-
-		int llAb = getBlocklight(c, sx + 1, sy + 1, sz);
-		int llBb = getBlocklight(c, sx + 1, sy + 1, sz + 1);
-		int llCb = getBlocklight(c, sx, sy + 1, sz + 1);
-		int llDb = getBlocklight(c, sx - 1, sy + 1, sz + 1);
-
-		int llEb = getBlocklight(c, sx - 1, sy + 1, sz);
-		int llFb = getBlocklight(c, sx - 1, sy + 1, sz - 1);
-		int llGb = getBlocklight(c, sx, sy + 1, sz - 1);
-		int llHb = getBlocklight(c, sx + 1, sy + 1, sz - 1);
-
-		float[] aoA = new float[] { 1f, 1f, 1f };
-		float[] aoB = new float[] { 1f, 1f, 1f };
-		float[] aoC = new float[] { 1f, 1f, 1f };
-		float[] aoD = new float[] { 1f, 1f, 1f };
-
-		// float amB = (llCb+llBb+llAb+llMb)/15f/4f;
-		// float amS = (llCs+llBs+llAs+llMs)/15f/4f;
-		aoA = bakeLightColors(llCb, llBb, llAb, llMb, llCs, llBs, llAs, llMs);
-		// aoA = blendLights(amB,amS);
-
-		// amB = (llCb+llDb+llEb+llMb)/15f/4f;
-		// amS = (llCs+llDs+llEs+llMs)/15f/4f;
-		aoD = bakeLightColors(llCb, llDb, llEb, llMb, llCs, llDs, llEs, llMs);
-		// aoD = bakeLightColors(llCb, llDb, llEb, llMb, llCs, llDs, llEs,
-		// llMs);
-
-		// amB = (llGb+llHb+llAb+llMb)/15f/4f;
-		// amS = (llGs+llHs+llAs+llMs)/15f/4f;
-		aoB = bakeLightColors(llGb, llHb, llAb, llMb, llGs, llHs, llAs, llMs);
-		// aoB = bakeLightColors(llGb, llHb, llAb ,llMb, llGs, llHs, llAs,
-		// llMs);
-
-		// amB = (llEb+llFb+llGb+llMb)/15f/4f;
-		// amS = (llEs+llFs+llGs+llMs)/15f/4f;
-		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
-		// aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs,
-		// llMs);
-
-		// float s = (llMs)/15f;
-		// aoA = aoB = aoC = aoD = new float[]{s,s,s};
-
-		int offset = texture.getAtlasOffset() / texture.getTextureScale();
-		int textureS = texture.getAtlasS() + (sx % texture.getTextureScale()) * offset;
-		int textureT = texture.getAtlasT() + (sz % texture.getTextureScale()) * offset;
-
-		rbbf.addVerticeInt(sx, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColors(aoB);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColors(aoD);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
-	}
-
-	private void addQuadBottom(Chunk c, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
-	{
-		int llMs = getSunlight(c, sx, sy - 1, sz);
-		int llMb = getBlocklight(c, sx, sy - 1, sz);
-
-		int llAb = getBlocklight(c, sx + 1, sy - 1, sz);
-		int llBb = getBlocklight(c, sx + 1, sy - 1, sz + 1);
-		int llCb = getBlocklight(c, sx, sy - 1, sz + 1);
-		int llDb = getBlocklight(c, sx - 1, sy - 1, sz + 1);
-
-		int llEb = getBlocklight(c, sx - 1, sy - 1, sz);
-		int llFb = getBlocklight(c, sx - 1, sy - 1, sz - 1);
-		int llGb = getBlocklight(c, sx, sy - 1, sz - 1);
-		int llHb = getBlocklight(c, sx + 1, sy - 1, sz - 1);
-
-		int llAs = getSunlight(c, sx + 1, sy - 1, sz);
-		int llBs = getSunlight(c, sx + 1, sy - 1, sz + 1);
-		int llCs = getSunlight(c, sx, sy - 1, sz + 1);
-		int llDs = getSunlight(c, sx - 1, sy - 1, sz + 1);
-
-		int llEs = getSunlight(c, sx - 1, sy - 1, sz);
-		int llFs = getSunlight(c, sx - 1, sy - 1, sz - 1);
-		int llGs = getSunlight(c, sx, sy - 1, sz - 1);
-		int llHs = getSunlight(c, sx + 1, sy - 1, sz - 1);
-
-		float[] aoA = new float[] { 1f, 1f, 1f };
-		float[] aoB = new float[] { 1f, 1f, 1f };
-		float[] aoC = new float[] { 1f, 1f, 1f };
-		float[] aoD = new float[] { 1f, 1f, 1f };
-
-		aoA = bakeLightColors(llCb, llBb, llAb, llMb, llCs, llBs, llAs, llMs);
-
-		aoD = bakeLightColors(llCb, llDb, llEb, llMb, llCs, llDs, llEs, llMs);
-
-		aoB = bakeLightColors(llGb, llHb, llAb, llMb, llGs, llHs, llAs, llMs);
-
-		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
-
-		int offset = texture.getAtlasOffset() / texture.getTextureScale();
-		int textureS = texture.getAtlasS() + (sx % texture.getTextureScale()) * offset;
-		int textureT = texture.getAtlasT() + (sz % texture.getTextureScale()) * offset;
-
-		rbbf.addVerticeInt(sx + 1, sy, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColors(aoB);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx + 1, sy, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx + 1, sy, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColors(aoD);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
-	}
-
-	private void addQuadRight(Chunk c, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
-	{
-		// ++x for dekal
-
-		// +1 -1 0
-		int llMs = getSunlight(c, sx, sy, sz);
-		int llMb = getBlocklight(c, sx, sy, sz);
-
-		int llAs = getSunlight(c, sx, sy + 1, sz); // ok
-		int llBs = getSunlight(c, sx, sy + 1, sz + 1); // 1 1
-		int llCs = getSunlight(c, sx, sy, sz + 1); // . 1
-		int llDs = getSunlight(c, sx, sy - 1, sz + 1); // -1 1
-
-		int llEs = getSunlight(c, sx, sy - 1, sz); // -1 .
-		int llFs = getSunlight(c, sx, sy - 1, sz - 1); // -1 -1
-		int llGs = getSunlight(c, sx, sy, sz - 1); // ok
-		int llHs = getSunlight(c, sx, sy + 1, sz - 1); // 1 -1
-
-		int llAb = getBlocklight(c, sx, sy + 1, sz); // ok
-		int llBb = getBlocklight(c, sx, sy + 1, sz + 1); // 1 1
-		int llCb = getBlocklight(c, sx, sy, sz + 1); // . 1
-		int llDb = getBlocklight(c, sx, sy - 1, sz + 1); // -1 1
-
-		int llEb = getBlocklight(c, sx, sy - 1, sz); // -1 .
-		int llFb = getBlocklight(c, sx, sy - 1, sz - 1); // -1 -1
-		int llGb = getBlocklight(c, sx, sy, sz - 1); // ok
-		int llHb = getBlocklight(c, sx, sy + 1, sz - 1); // 1 -1
-		float[] aoA = new float[] { 1f, 1f, 1f };
-		float[] aoB = new float[] { 1f, 1f, 1f };
-		float[] aoC = new float[] { 1f, 1f, 1f };
-		float[] aoD = new float[] { 1f, 1f, 1f };
-
-		aoA = bakeLightColors(llCb, llBb, llAb, llMb, llCs, llBs, llAs, llMs);
-
-		aoD = bakeLightColors(llCb, llDb, llEb, llMb, llCs, llDs, llEs, llMs);
-
-		aoB = bakeLightColors(llGb, llHb, llAb, llMb, llGs, llHs, llAs, llMs);
-
-		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
-
-		int offset = texture.getAtlasOffset() / texture.getTextureScale();
-		int textureS = texture.getAtlasS() + mod(sz, texture.getTextureScale()) * offset;
-		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
-
-		rbbf.addVerticeInt(sx, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColors(aoB);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy - 0, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColors(aoD);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-	}
-
-	private int mod(int a, int b)
-	{
-		int c = a % b;
-		if (c >= 0)
-			return c;
-		return c += b;
-	}
-
-	private void addQuadLeft(Chunk c, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
-	{
-		int llMs = getSunlight(c, sx - 1, sy, sz);
-		int llMb = getBlocklight(c, sx - 1, sy, sz);
-
-		int llAs = getSunlight(c, sx - 1, sy + 1, sz); // 1 .
-		int llBs = getSunlight(c, sx - 1, sy + 1, sz + 1); // 1 1
-		int llCs = getSunlight(c, sx - 1, sy, sz + 1); // . 1
-		int llDs = getSunlight(c, sx - 1, sy - 1, sz + 1); // -1 1
-
-		int llEs = getSunlight(c, sx - 1, sy - 1, sz); // -1 .
-		int llFs = getSunlight(c, sx - 1, sy - 1, sz - 1); // -1 -1
-		int llGs = getSunlight(c, sx - 1, sy, sz - 1); // . -1
-		int llHs = getSunlight(c, sx - 1, sy + 1, sz - 1); // 1 -1
-
-		int llAb = getBlocklight(c, sx - 1, sy + 1, sz); // 1 .
-		int llBb = getBlocklight(c, sx - 1, sy + 1, sz + 1); // 1 1
-		int llCb = getBlocklight(c, sx - 1, sy, sz + 1); // . 1
-		int llDb = getBlocklight(c, sx - 1, sy - 1, sz + 1); // -1 1
-
-		int llEb = getBlocklight(c, sx - 1, sy - 1, sz); // -1 .
-		int llFb = getBlocklight(c, sx - 1, sy - 1, sz - 1); // -1 -1
-		int llGb = getBlocklight(c, sx - 1, sy, sz - 1); // . -1
-		int llHb = getBlocklight(c, sx - 1, sy + 1, sz - 1); // 1 -1
-
-		float[] aoA = new float[] { 1f, 1f, 1f };
-		float[] aoB = new float[] { 1f, 1f, 1f };
-		float[] aoC = new float[] { 1f, 1f, 1f };
-		float[] aoD = new float[] { 1f, 1f, 1f };
-
-		aoA = bakeLightColors(llCb, llBb, llAb, llMb, llCs, llBs, llAs, llMs);
-		// aoA = blendLights(amB,amS);
-
-		aoD = bakeLightColors(llCb, llDb, llEb, llMb, llCs, llDs, llEs, llMs);
-
-		aoB = bakeLightColors(llGb, llHb, llAb, llMb, llGs, llHs, llAs, llMs);
-
-		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
-
-		int offset = texture.getAtlasOffset() / texture.getTextureScale();
-		int textureS = texture.getAtlasS() + mod(sz, texture.getTextureScale()) * offset;
-		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
-
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColors(aoB);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy - 0, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColors(aoD);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
-
-	}
-
-	private void addQuadFront(Chunk c, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
-	{
-		int llMs = getSunlight(c, sx, sy, sz);
-		int llMb = getBlocklight(c, sx, sy, sz);
-
-		int llAs = getSunlight(c, sx, sy + 1, sz); // 1 .
-		int llBs = getSunlight(c, sx + 1, sy + 1, sz); // 1 1
-		int llCs = getSunlight(c, sx + 1, sy, sz); // . 1
-		int llDs = getSunlight(c, sx + 1, sy - 1, sz); // -1 1
-
-		int llEs = getSunlight(c, sx, sy - 1, sz); // -1 .
-		int llFs = getSunlight(c, sx - 1, sy - 1, sz); // -1 -1
-		int llGs = getSunlight(c, sx - 1, sy, sz); // . -1
-		int llHs = getSunlight(c, sx - 1, sy + 1, sz); // 1 -1
-
-		int llAb = getBlocklight(c, sx, sy + 1, sz); // 1 .
-		int llBb = getBlocklight(c, sx + 1, sy + 1, sz); // 1 1
-		int llCb = getBlocklight(c, sx + 1, sy, sz); // . 1
-		int llDb = getBlocklight(c, sx + 1, sy - 1, sz); // -1 1
-
-		int llEb = getBlocklight(c, sx, sy - 1, sz); // -1 .
-		int llFb = getBlocklight(c, sx - 1, sy - 1, sz); // -1 -1
-		int llGb = getBlocklight(c, sx - 1, sy, sz); // . -1
-		int llHb = getBlocklight(c, sx - 1, sy + 1, sz); // 1 -1
-
-		float[] aoA = new float[] { 1f, 1f, 1f };
-		float[] aoB = new float[] { 1f, 1f, 1f };
-		float[] aoC = new float[] { 1f, 1f, 1f };
-		float[] aoD = new float[] { 1f, 1f, 1f };
-
-		aoA = bakeLightColors(llCb, llBb, llAb, llMb, llCs, llBs, llAs, llMs);
-		// aoA = blendLights(amB,amS);
-
-		aoD = bakeLightColors(llCb, llDb, llEb, llMb, llCs, llDs, llEs, llMs);
-
-		aoB = bakeLightColors(llGb, llHb, llAb, llMb, llGs, llHs, llAs, llMs);
-
-		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
-
-		int offset = texture.getAtlasOffset() / texture.getTextureScale();
-		int textureS = texture.getAtlasS() + mod(sx, texture.getTextureScale()) * offset;
-		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
-
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
-
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColors(aoB);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
-
-		rbbf.addVerticeInt(sx + 1, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColors(aoD);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
-
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
-
-	}
-
-	private void addQuadBack(Chunk c, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
-	{
-
-		int llMs = getSunlight(c, sx, sy, sz - 1);
-		int llMb = getBlocklight(c, sx, sy, sz - 1);
-
-		int llAs = getSunlight(c, sx, sy + 1, sz - 1); // 1 .
-		int llBs = getSunlight(c, sx + 1, sy + 1, sz - 1); // 1 1
-		int llCs = getSunlight(c, sx + 1, sy, sz - 1); // . 1
-		int llDs = getSunlight(c, sx + 1, sy - 1, sz - 1); // -1 1
-
-		int llEs = getSunlight(c, sx, sy - 1, sz - 1); // -1 .
-		int llFs = getSunlight(c, sx - 1, sy - 1, sz - 1); // -1 -1
-		int llGs = getSunlight(c, sx - 1, sy, sz - 1); // . -1
-		int llHs = getSunlight(c, sx - 1, sy + 1, sz - 1); // 1 -1
-
-		int llAb = getBlocklight(c, sx, sy + 1, sz - 1); // 1 .
-		int llBb = getBlocklight(c, sx + 1, sy + 1, sz - 1); // 1 1
-		int llCb = getBlocklight(c, sx + 1, sy, sz - 1); // . 1
-		int llDb = getBlocklight(c, sx + 1, sy - 1, sz - 1); // -1 1
-
-		int llEb = getBlocklight(c, sx, sy - 1, sz - 1); // -1 .
-		int llFb = getBlocklight(c, sx - 1, sy - 1, sz - 1); // -1 -1
-		int llGb = getBlocklight(c, sx - 1, sy, sz - 1); // . -1
-		int llHb = getBlocklight(c, sx - 1, sy + 1, sz - 1); // 1 -1
-
-		float[] aoA = new float[] { 1f, 1f, 1f };
-		float[] aoB = new float[] { 1f, 1f, 1f };
-		float[] aoC = new float[] { 1f, 1f, 1f };
-		float[] aoD = new float[] { 1f, 1f, 1f };
-
-		aoA = bakeLightColors(llCb, llBb, llAb, llMb, llCs, llBs, llAs, llMs);
-		// aoA = blendLights(amB,amS);
-
-		aoD = bakeLightColors(llCb, llDb, llEb, llMb, llCs, llDs, llEs, llMs);
-
-		aoB = bakeLightColors(llGb, llHb, llAb, llMb, llGs, llHs, llAs, llMs);
-
-		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);
-
-		int offset = texture.getAtlasOffset() / texture.getTextureScale();
-		int textureS = texture.getAtlasS() + mod(sx, texture.getTextureScale()) * offset;
-		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
-
-		rbbf.addVerticeInt(sx, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColors(aoB);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
-
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
-
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColors(aoC);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
-
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColors(aoA);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
-
-		rbbf.addVerticeInt(sx + 1, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColors(aoD);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
-	}
-
-	private boolean shallBuildWallArround(VoxelContext renderInfo, int face)
-	{
-		//int baseID = renderInfo.data;
-		Voxel facing = VoxelsStore.get().getVoxelById(renderInfo.getSideId(face));
-		Voxel voxel = renderInfo.getVoxel();
-
-		if (voxel.getType().isLiquid() && !facing.getType().isLiquid())
-			return true;
-		//if (voxel.getType().isLiquid() && facing.getType().isLiquid())
-		//	return false;
-		if (!facing.getType().isOpaque() && (!voxel.sameKind(facing) || !voxel.getType().isSelfOpaque()))
-			return true;
-		return false;
-	}
-
 	private void renderChunk(CubicChunk chunk, RecyclableByteBuffer recyclableByteBuffer)
 	{
 		//TODO only requests a ByteBuffer when it is sure it will actually need one
@@ -1206,6 +719,39 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 				public byte getAoLevelForCorner(Corners corner)
 				{
 					return aoLevel[corner.ordinal()];
+				}
+
+				
+				private byte interp(byte[] array, float x, float y, float z)
+				{
+					float interpBotFront = Math2.mix(array[VoxelSides.Corners.BOTTOM_FRONT_LEFT.ordinal()], array[VoxelSides.Corners.BOTTOM_FRONT_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
+					float interpBotBack = Math2.mix(array[VoxelSides.Corners.BOTTOM_BACK_LEFT.ordinal()], array[VoxelSides.Corners.BOTTOM_BACK_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
+
+					float interpTopFront = Math2.mix(array[VoxelSides.Corners.TOP_FRONT_LEFT.ordinal()], array[VoxelSides.Corners.TOP_FRONT_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
+					float interpTopBack = Math2.mix(array[VoxelSides.Corners.TOP_BACK_LEFT.ordinal()], array[VoxelSides.Corners.TOP_BACK_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
+					
+					float interpBot = Math2.mix(interpBotBack, interpBotFront, Math2.clamp(z, 0.0, 1.0));
+					float interpTop = Math2.mix(interpTopBack, interpTopFront, Math2.clamp(z, 0.0, 1.0));
+					
+					return (byte)Math2.mix(interpBot, interpTop, Math2.clamp(y, 0.0, 1.0));
+				}
+				
+				@Override
+				public byte getSunlightLevelInterpolated(float vertX, float vertY, float vertZ)
+				{
+					return interp(sunlightLevel, vertX, vertY, vertZ);
+				}
+
+				@Override
+				public byte getBlocklightLevelInterpolated(float vertX, float vertY, float vertZ)
+				{
+					return interp(blocklightLevel, vertX, vertY, vertZ);
+				}
+
+				@Override
+				public byte getAoLevelInterpolated(float vertX, float vertY, float vertZ)
+				{
+					return interp(aoLevel, vertX, vertY, vertZ);
 				}
 				
 			};

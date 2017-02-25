@@ -78,8 +78,8 @@ public class RenderByteBuffer implements VoxelBakerHighPoly, VoxelBakerCubic
 	@Override
 	public void addColors(byte sunLight, byte blockLight, byte ao)
 	{
-		byteBuffer.put(sunLight);
 		byteBuffer.put(blockLight);
+		byteBuffer.put(sunLight);
 		byteBuffer.put(ao);
 		byteBuffer.put((byte) 0);
 	}
@@ -87,7 +87,7 @@ public class RenderByteBuffer implements VoxelBakerHighPoly, VoxelBakerCubic
 	@Override
 	public void addColorsAuto(VoxelLighter voxelLighter, Corners corner)
 	{
-		addColors(voxelLighter.getBlocklightLevelForCorner(corner), voxelLighter.getSunlightLevelForCorner(corner), voxelLighter.getAoLevelForCorner(corner));
+		addColors(voxelLighter.getSunlightLevelForCorner(corner), voxelLighter.getBlocklightLevelForCorner(corner), voxelLighter.getAoLevelForCorner(corner));
 	}
 	
 	/* (non-Javadoc)

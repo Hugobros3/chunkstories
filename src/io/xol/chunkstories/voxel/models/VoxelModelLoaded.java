@@ -67,14 +67,14 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		return name;
 	}
 	
-	public int renderInto(VoxelBakerHighPoly renderByteBuffer, VoxelContext info, Chunk chunk, int x, int y, int z)
+	public int renderInto(VoxelBakerHighPoly renderByteBuffer,  ChunkRenderContext bakingContext, VoxelContext info, Chunk chunk, int x, int y, int z)
 	{
 		int lightLevelSun = chunk.getSunLight(x, y, z);
 		int lightLevelVoxel = chunk.getBlockLight(x, y, z);
 
 		//Obtains the light amount (sun/voxel) for this model
 		//TODO interpolation w/ neighbors
-		float[] lightColors = ChunkMeshesBakerThread.bakeLightColors(lightLevelVoxel, lightLevelVoxel, lightLevelVoxel, lightLevelVoxel, lightLevelSun, lightLevelSun, lightLevelSun, lightLevelSun);
+		//float[] lightColors = ChunkMeshesBakerThread.bakeLightColors(lightLevelVoxel, lightLevelVoxel, lightLevelVoxel, lightLevelVoxel, lightLevelSun, lightLevelSun, lightLevelSun, lightLevelSun);
 		
 		//We have an array of textures and we jump to the next based on baked offsets and vertice counting
 		int modelTextureIndex = 0;
@@ -149,9 +149,18 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 				}
 			}
 			
-			renderByteBuffer.addVerticeFloat(this.vertices[i_currentVertex*3+0] + x + dx, this.vertices[i_currentVertex*3+1] + y + dy, this.vertices[i_currentVertex*3+2] + z + dz);
+			float vertX = this.vertices[i_currentVertex*3+0];
+			float vertY = this.vertices[i_currentVertex*3+1];
+			float vertZ = this.vertices[i_currentVertex*3+2];
+			renderByteBuffer.addVerticeFloat(vertX + x + dx, vertY + y + dy, vertZ + z + dz);
 			renderByteBuffer.addTexCoordInt((int) (textureS + this.texCoords[i_currentVertex*2+0] * currentVoxelTexture.getAtlasOffset()), (int) (textureT + this.texCoords[i_currentVertex*2+1] * currentVoxelTexture.getAtlasOffset()));
-			renderByteBuffer.addColors(lightColors);
+			
+			byte sunLight, blockLight, ao;
+			sunLight = bakingContext.getCurrentVoxelLighter().getSunlightLevelInterpolated(vertX, vertY, vertZ);
+			blockLight = bakingContext.getCurrentVoxelLighter().getBlocklightLevelInterpolated(vertX, vertY, vertZ);
+			ao = bakingContext.getCurrentVoxelLighter().getAoLevelInterpolated(vertX, vertY, vertZ);
+			
+			renderByteBuffer.addColors(sunLight, blockLight, ao);
 			renderByteBuffer.addNormalsInt(ChunkMeshesBakerThread.intifyNormal(this.normals[i_currentVertex*3+0]), ChunkMeshesBakerThread.intifyNormal(this.normals[i_currentVertex*3+1]), ChunkMeshesBakerThread.intifyNormal(this.normals[i_currentVertex*3+2]), this.extra[i_currentVertex]);
 		
 			drewVertices++;
@@ -265,6 +274,6 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 	public int renderInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, VoxelContext info)
 	{
 		VoxelBakerHighPoly renderByteBuffer = chunkRenderer.getHighpolyBakerFor(LodLevel.ANY, ShadingType.OPAQUE);
-		return this.renderInto(renderByteBuffer, info, chunk, info.getX(), info.getY(), info.getZ());
+		return this.renderInto(renderByteBuffer, bakingContext, info, chunk, info.getX(), info.getY(), info.getZ());
 	}
 }

@@ -62,7 +62,7 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 		return 0;
 	}
 
-	private void addQuadTop(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	protected void addQuadTop(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		/*int llMs = getSunlight(c, sx, sy + 1, sz);
 		int llMb = getBlocklight(c, sx, sy + 1, sz);
@@ -153,7 +153,7 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadBottom(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	protected void addQuadBottom(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		/*int llMs = getSunlight(c, sx, sy - 1, sz);
 		int llMb = getBlocklight(c, sx, sy - 1, sz);
@@ -226,7 +226,7 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
 	}
 
-	private void addQuadRight(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	protected void addQuadRight(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		// ++x for dekal
 
@@ -309,7 +309,7 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 		return c += b;
 	}
 
-	private void addQuadLeft(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	protected void addQuadLeft(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		/*int llMs = getSunlight(c, sx - 1, sy, sz);
 		int llMb = getBlocklight(c, sx - 1, sy, sz);
@@ -384,7 +384,7 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 
 	}
 
-	private void addQuadFront(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	protected void addQuadFront(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 		/*int llMs = getSunlight(c, sx, sy, sz);
 		int llMb = getBlocklight(c, sx, sy, sz);
@@ -459,7 +459,7 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 
 	}
 
-	private void addQuadBack(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
+	protected void addQuadBack(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 
 		/*int llMs = getSunlight(c, sx, sy, sz - 1);
@@ -534,7 +534,7 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
 	}
 
-	private boolean shallBuildWallArround(VoxelContext renderInfo, int face)
+	protected boolean shallBuildWallArround(VoxelContext renderInfo, int face)
 	{
 		//int baseID = renderInfo.data;
 		Voxel facing = VoxelsStore.get().getVoxelById(renderInfo.getSideId(face));
@@ -542,8 +542,6 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 
 		if (voxel.getType().isLiquid() && !facing.getType().isLiquid())
 			return true;
-		//if (voxel.getType().isLiquid() && facing.getType().isLiquid())
-		//	return false;
 		if (!facing.getType().isOpaque() && (!voxel.sameKind(facing) || !voxel.getType().isSelfOpaque()))
 			return true;
 		return false;
