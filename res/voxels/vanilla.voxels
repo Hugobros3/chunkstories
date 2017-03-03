@@ -22,6 +22,7 @@ voxel wood 4
 end
 
 voxel leaves 5
+	customClass: io.xol.chunkstories.core.voxel.VoxelLeavesLod
 	opaque: false
 	selfOpaque: false
 	shading: 2
@@ -40,6 +41,7 @@ voxel pinewood 8
 end
 
 voxel pineleaves 9
+	customClass: io.xol.chunkstories.core.voxel.VoxelLeavesLod
 	opaque: false
 	selfOpaque: false
 	shading: 1

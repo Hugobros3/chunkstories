@@ -69,7 +69,7 @@ void main(){
 	fresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(vertex.xyz - camPos), vec3(0, 1.0 , 0)), 0.0, 1.0);
 	
 	//Compute lightmap coords
-	lightMapCoords = vec4(colorIn.r, colorIn.g, colorIn.b, colorIn.a);
+	lightMapCoords = vec4(colorIn.r * 16.0, colorIn.g * 16.0, colorIn.b * 16.0, colorIn.a);
 	
 	gl_Position = modelViewProjectionMatrix * vertex;
 	
