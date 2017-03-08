@@ -15,8 +15,10 @@ import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.item.Inventory;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.interfaces.ItemOverlay;
+import io.xol.chunkstories.api.item.interfaces.ItemZoom;
+import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
@@ -40,8 +42,6 @@ import io.xol.chunkstories.core.entity.components.EntityComponentFoodLevel;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentName;
 import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
-import io.xol.chunkstories.core.item.ItemFirearm;
-import io.xol.chunkstories.core.item.ItemOverlay;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -131,11 +131,10 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		float rotV = this.getEntityRotationComponent().getVerticalRotation();
 
 		float modifier = 1.0f;
-		if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemFirearm)
+		if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemZoom)
 		{
-			ItemFirearm item = (ItemFirearm) this.getSelectedItemComponent().getSelectedItem().getItem();
-			if (item.isScoped())
-				modifier = 1.0f / item.getScopeSlow();
+			ItemZoom item = (ItemZoom) this.getSelectedItemComponent().getSelectedItem().getItem();
+			modifier = 1.0f / item.getZoomFactor();
 		}
 		
 		rotH += dx * modifier / 3f * RenderingConfig.mouseSensitivity;
@@ -434,11 +433,10 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			camera.setRotationY(this.getEntityRotationComponent().getHorizontalRotation());
 
 			float modifier = 1.0f;
-			if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemFirearm)
+			if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemZoom)
 			{
-				ItemFirearm item = (ItemFirearm) this.getSelectedItemComponent().getSelectedItem().getItem();
-				if (item.isScoped())
-					modifier = 1.0f / item.getScopeZoom();
+				ItemZoom item = (ItemZoom) this.getSelectedItemComponent().getSelectedItem().getItem();
+				modifier = 1.0f / item.getZoomFactor();
 			}
 
 			camera.setFOV(modifier * (float) (RenderingConfig.fov

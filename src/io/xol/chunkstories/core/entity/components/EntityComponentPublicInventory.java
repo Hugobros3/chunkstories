@@ -1,10 +1,11 @@
 package io.xol.chunkstories.core.entity.components;
 
 import io.xol.chunkstories.api.entity.Controller;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
@@ -15,6 +16,8 @@ import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
 
 public class EntityComponentPublicInventory extends EntityComponentInventory
 {
+	public static final float NEAR_DISTANCE = 8f;
+	
 	public EntityComponentPublicInventory(EntityWithInventory holder, int width, int height)
 	{
 		super(holder);
@@ -53,6 +56,18 @@ public class EntityComponentPublicInventory extends EntityComponentInventory
 		public String getInventoryName()
 		{
 			return "Chest";
+		}
+		
+		public boolean hasAccess(Entity entity) {
+			if(super.hasAccess(entity))
+				return true;
+			
+			//It's public if you're near enough.
+			if(entity != null && entity.getLocation().distanceTo(EntityComponentPublicInventory.this.entity.getLocation()) <= NEAR_DISTANCE) {
+				return true;
+			}
+			
+			return false;
 		}
 
 	}

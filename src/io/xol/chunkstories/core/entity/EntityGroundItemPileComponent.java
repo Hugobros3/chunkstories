@@ -8,7 +8,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.world.WorldMaster;

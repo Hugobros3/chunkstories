@@ -14,8 +14,11 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.api.input.InputsManager;
+import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.entity.SerializedEntityFile;
+import io.xol.chunkstories.net.packets.PacketOpenInventory;
 import io.xol.chunkstories.server.net.ServerToClientConnection;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager;
@@ -113,7 +116,7 @@ public class RemoteServerPlayer implements Player
 			if (!shouldTrack && contains)
 			{
 				this.unsubscribe(e);
-				
+
 				subscribedEntities.remove(e); // Reminder, we are iterating the world, not trackedEntities
 			}
 		}
@@ -480,7 +483,7 @@ public class RemoteServerPlayer implements Player
 						//System.out.println("kek me up inside "+s);
 						if (s != null && usedRegionSummaries.add(s))
 						{
-						//System.out.println("Added "+s + "to summaries used ("+usedRegionSummaries.size()+")");
+							//System.out.println("Added "+s + "to summaries used ("+usedRegionSummaries.size()+")");
 						}
 				}
 			}
@@ -498,7 +501,7 @@ public class RemoteServerPlayer implements Player
 
 			int dx = LoopingMathHelper.moduloDistance(rx, lx, s);
 			int dz = LoopingMathHelper.moduloDistance(rz, lz, s);
-			
+
 			if (dx > distInRegions || dz > distInRegions)
 			{
 				entry.unregisterUser(this);
@@ -544,5 +547,26 @@ public class RemoteServerPlayer implements Player
 	public ServerInterface getServer()
 	{
 		return playerConnection.getServer();
+	}
+
+	@Override
+	public void openInventory(Inventory inventory)
+	{
+		Entity entity = this.getControlledEntity();
+		if (inventory.hasAccess(entity))
+		{
+			if (inventory instanceof EntityComponentInventory.EntityInventory)
+			{
+				//this.sendMessage("Notice: Pushing this inventory to you so you can see the contents");
+				EntityComponentInventory.EntityInventory i = (EntityComponentInventory.EntityInventory)inventory;
+				i.asComponent().pushComponent(this);
+			}
+
+			//this.sendMessage("Sending you the open inventory request.");
+			PacketOpenInventory open = new PacketOpenInventory(inventory);
+			this.pushPacket(open);
+		}
+		//else
+		//	this.sendMessage("Notice: You don't have access to this inventory.");
 	}
 }

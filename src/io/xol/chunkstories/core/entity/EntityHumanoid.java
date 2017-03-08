@@ -8,7 +8,9 @@ import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithClientPrediction;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.interfaces.ItemCustomHoldingAnimation;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
@@ -25,7 +27,6 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.entity.components.EntityComponentStance;
-import io.xol.chunkstories.core.item.ItemFirearm;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -50,8 +51,8 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 	boolean running = false;
 
-	public double maxSpeedRunning = 0.25;
-	public double maxSpeed = 0.15;
+	//public double maxSpeedRunning = 0.25;
+	//public double maxSpeed = 0.15;
 
 	public double horizontalSpeed = 0;
 	public double metersWalked = 0d;
@@ -60,7 +61,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 	CachedLodSkeletonAnimator cachedSkeleton;
 	
-	protected EntityComponentStance stance;
+	public final EntityComponentStance stance;
 
 	public EntityHumanoid(World world, double x, double y, double z)
 	{
@@ -89,10 +90,18 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 					//BVHAnimation animation = BVHLibrary.getAnimation("res/animations/human/standstill.bvh");
 					if (selectedItemPile != null)
 					{
-						if (selectedItemPile.getItem() instanceof ItemFirearm)
-							return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/holding-rifle.bvh");
+						//TODO refactor BVH subsystem to enable SkeletonAnimator to also take care of additional transforms
+						Item item = selectedItemPile.getItem();
+						
+						if (item instanceof ItemCustomHoldingAnimation)
+							return world.getGameContext().getContent().getAnimationsLibrary().getAnimation(((ItemCustomHoldingAnimation)item).getCustomAnimationName());
 						else
 							return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/holding-item.bvh");
+						
+						/*if (selectedItemPile.getItem() instanceof ItemFirearm)
+							return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/holding-rifle.bvh");
+						else
+							return world.getGameContext().getContent().getAnimationsLibrary().getAnimation("./animations/human/holding-item.bvh");*/
 					}
 				}
 			}

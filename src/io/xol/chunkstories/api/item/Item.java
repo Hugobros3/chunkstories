@@ -7,6 +7,7 @@ import java.io.IOException;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.world.WorldAuthority;
 
 //(c) 2015-2017 XolioWare Interactive

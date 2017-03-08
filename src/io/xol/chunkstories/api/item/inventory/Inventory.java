@@ -1,5 +1,6 @@
-package io.xol.chunkstories.api.item;
+package io.xol.chunkstories.api.item.inventory;
 
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.utils.IterableIterator;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -61,5 +62,8 @@ public interface Inventory extends Iterable<ItemPile>
 
 	/** Marks said slot as updated */
 	public void refreshItemSlot(int x, int y);
+	
+	/** Used to secure access */
+	public boolean hasAccess(Entity entity);
 
 }

@@ -5,8 +5,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
-import io.xol.chunkstories.api.item.Inventory;
+import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -22,10 +23,13 @@ public class InventoryTranslator
 	{
 		if(inventory == null || inventory.getHolder() == null)
 			out.writeByte(0x00);
-		else if(inventory.getHolder() instanceof Entity)
+		else if(inventory instanceof EntityComponentInventory.EntityInventory)
 		{
+			EntityComponentInventory.EntityInventory entityInventory = (EntityComponentInventory.EntityInventory)inventory;
+			
 			out.writeByte(0x01);
 			out.writeLong(((Entity)inventory.getHolder()).getUUID());
+			out.writeShort(entityInventory.asComponent().getEntityComponentId());
 		}
 		else
 			throw new RuntimeException("Untranslatable and Unknown Inventory : "+inventory+", can't describe it in outgoing packets");
@@ -36,11 +40,14 @@ public class InventoryTranslator
 		byte holderType = in.readByte();
 		if(holderType == 0x01)
 		{
-			long eIdTo = in.readLong();
+			long uuid = in.readLong();
+			short componentId = in.readShort();
 			
-			EntityWithInventory entity = (EntityWithInventory) context.getWorld().getEntityByUUID(eIdTo);
-			if(entity != null)
-				return entity.getInventory();
+			Entity entity = context.getWorld().getEntityByUUID(uuid);
+			EntityComponent cpn = entity.getComponents().getComponentById(componentId);
+			if(cpn != null && cpn instanceof EntityComponentInventory) {
+				return ((EntityComponentInventory) cpn).getInventory();
+			}
 		}
 		
 		return null;

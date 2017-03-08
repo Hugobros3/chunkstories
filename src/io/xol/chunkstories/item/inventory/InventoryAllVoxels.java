@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.voxel.VoxelsStore;
 

@@ -31,4 +31,9 @@ public abstract class AI<T extends Entity>
 	{
 		this.currentTask = nextTask;
 	}
+	
+	public AiTask currentTask()
+	{
+		return currentTask;
+	}
 }

@@ -1,6 +1,6 @@
 package io.xol.chunkstories.core.entity;
 
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;

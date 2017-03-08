@@ -1,6 +1,6 @@
 package io.xol.chunkstories.core.voxel;
 
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;

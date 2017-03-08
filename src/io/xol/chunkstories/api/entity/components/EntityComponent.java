@@ -162,6 +162,7 @@ public abstract class EntityComponent
 		}
 		catch (IOException e)
 		{
+			
 		}
 	}
 
@@ -186,5 +187,16 @@ public abstract class EntityComponent
 	public final int getEntityComponentId()
 	{
 		return ecID;
+	}
+
+	public EntityComponent getComponentById(short componentId)
+	{
+		if(ecID == componentId)
+			return this;
+		
+		if(next != null)
+			return next.getComponentById(componentId);
+		
+		return null;
 	}
 }

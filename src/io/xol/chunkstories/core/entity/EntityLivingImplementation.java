@@ -246,9 +246,14 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 				Vector3dm attackKnockback = this.getLocation().sub(attacker.getLocation().add(0d, 0d, 0d));
 				attackKnockback.setY(0d);
 				attackKnockback.normalize();
-				attackKnockback.setY(0.35);
+				
+				float knockback = (float) Math.max(1f, Math.pow(damageDealt, 0.5f));
+				
+				attackKnockback.scale(knockback / 50d);
+				attackKnockback.setY(knockback / 50d);
+				/*
 				attackKnockback.scale(damageDealt / 500d);
-				attackKnockback.scale(1.0 / (1.0 + 5 * this.getVelocityComponent().getVelocity().length()));
+				attackKnockback.scale(1.0 / (1.0 + 5 * this.getVelocityComponent().getVelocity().length()));*/
 
 				//.scale(1/60d).scale(damageDealt / 10f);
 				this.getVelocityComponent().addVelocity(attackKnockback);

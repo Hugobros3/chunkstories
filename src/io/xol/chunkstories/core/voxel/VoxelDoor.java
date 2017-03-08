@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;

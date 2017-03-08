@@ -2,7 +2,7 @@ package io.xol.chunkstories.core.entity.voxel;
 
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
-import io.xol.chunkstories.api.item.Inventory;
+import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.core.entity.components.EntityComponentPublicInventory;
 import io.xol.chunkstories.entity.EntityImplementation;

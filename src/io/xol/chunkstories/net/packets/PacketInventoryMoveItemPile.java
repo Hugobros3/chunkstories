@@ -1,12 +1,12 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
-import io.xol.chunkstories.api.item.Inventory;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.server.Player;
@@ -46,7 +46,11 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		
 		//Describe the inventories
 		//A lone itemPile or a holderless inventory is described by 0x00
-		if(from == null || from.getHolder() == null)
+		
+		InventoryTranslator.writeInventoryHandle(out, from);
+		InventoryTranslator.writeInventoryHandle(out, to);
+		
+		/*if(from == null || from.getHolder() == null)
 			out.writeByte(0x00);
 		else if(from.getHolder() instanceof Entity)
 		{
@@ -60,7 +64,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 			out.writeByte(0x01);
 			out.writeLong(((Entity)to.getHolder()).getUUID());
 			//System.out.println("writing uuid"+((Entity)to.holder).getUUID());
-		}
+		}*/
 		
 		//Describe the itemPile if we are trying to spawn an item from nowhere
 		if(from == null || from.getHolder() == null)
@@ -73,6 +77,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
 		Player player = processor.getServerClient().getProfile();
+		EntityControllable playerEntity = player.getControlledEntity();
 		
 		oldX = in.readInt();
 		oldY = in.readInt();
@@ -82,7 +87,6 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		amount = in.readInt();
 		
 		from = InventoryTranslator.obtainInventoryHandle(in, processor);
-		
 		to = InventoryTranslator.obtainInventoryHandle(in, processor);
 		
 		//If this pile is spawned from the void
@@ -107,6 +111,16 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		else
 		{
 			itemPile = from.getItemPileAt(oldX, oldY);
+		}
+		
+		//Check access
+		if(to != null && playerEntity != null)
+		{
+			if(!to.hasAccess(playerEntity))
+			{
+				player.sendMessage("You don't have access to this.");
+				return;
+			}
 		}
 		
 		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(player, this);
@@ -136,7 +150,6 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 				//TODO this really needs some kind of permissions system
 				//TODO or not ? Maybe the cancellable event deal can prevent this
 				
-				Entity playerEntity = player.getControlledEntity();
 				if(playerEntity == null)
 				{
 					System.out.println("fuck off");

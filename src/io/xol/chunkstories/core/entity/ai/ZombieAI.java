@@ -4,24 +4,30 @@ import java.util.Collection;
 
 import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.core.entity.EntityHumanoid;
+import io.xol.chunkstories.core.entity.EntityHumanoid.EntityHumanoidStance;
+import io.xol.chunkstories.core.entity.EntityPlayer;
+import io.xol.chunkstories.core.entity.EntityZombie;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class AggressiveHumanoidAI extends GenericHumanoidAI
+public class ZombieAI extends GenericHumanoidAI
 {
 	Collection<Class<? extends Entity>> targetsTypes;
 
-	double aggroRadius;
+	EntityZombie entity;
+	
+	//double aggroRadius;
 	int attackEntityCooldown = 60 * 5;
 
-	public AggressiveHumanoidAI(EntityHumanoid entity, double aggroRadius, Collection<Class<? extends Entity>> targetsTypes)
+	public ZombieAI(EntityZombie entity, Collection<Class<? extends Entity>> targetsTypes)
 	{
 		super(entity);
+		this.entity = entity;
 		//this.currentTask = new AiTaskLookArroundAndSearchTarget(aggroRadius);
-		this.aggroRadius = aggroRadius;
 		this.targetsTypes = targetsTypes;
 	}
 
@@ -36,14 +42,27 @@ public class AggressiveHumanoidAI extends GenericHumanoidAI
 			attackEntityCooldown--;
 
 		//Find entities to attack
-		if (!(this.currentTask instanceof AiTaskAttackEntity) && aggroRadius > 0.0 && attackEntityCooldown == 0)
+		if (!(this.currentTask instanceof AiTaskAttackEntity) && entity.stage.aggroRadius > 0.0 && attackEntityCooldown == 0)
 		{
 			//Only look for them once in 2s
 			attackEntityCooldown = (int) (Math.random() * 60 * 2);
 
 			for (Entity entityToLook : entity.getWorld().getAllLoadedEntities())
 			{
-				if (!entityToLook.equals(entity) && entityToLook.getLocation().distanceTo(entity.getLocation()) <= aggroRadius && entityToLook instanceof EntityHumanoid && !((EntityHumanoid) entityToLook).isDead())
+				float visibilityModifier = 1f;
+				if(entityToLook instanceof EntityPlayer) {
+
+					EntityPlayer player = (EntityPlayer)entityToLook;
+					
+					//Crouched players are 70% less visible
+					if(player.stance.get().equals(EntityHumanoidStance.CROUCHING))
+						visibilityModifier -= 0.7f;
+				}
+				//If the entity is sprinting
+				if (entityToLook.getVelocityComponent().getVelocity().length() > 0.7)
+					visibilityModifier += 1.0f;
+				
+				if (!entityToLook.equals(entity) && entityToLook.getLocation().distanceTo(entity.getLocation()) * visibilityModifier <= entity.stage.aggroRadius && entityToLook instanceof EntityHumanoid && !((EntityHumanoid) entityToLook).isDead())
 				{
 					//Check target is in set
 					if (targetsTypes.contains(entityToLook.getClass()))
@@ -53,7 +72,7 @@ public class AggressiveHumanoidAI extends GenericHumanoidAI
 						entity.getWorld().getSoundManager().playSoundEffect("sounds/sfx/zombie.ogg", entity.getLocation(), (float) (1.5 + Math.random() * 0.2), 1.5f);//.setPitch();
 						
 						//Set new task
-						setAiTask(new AiTaskAttackEntity((EntityHumanoid) entityToLook, 10f, currentTask, 1200, 15));
+						setAiTask(new AiTaskAttackEntity((EntityHumanoid) entityToLook, 10f, currentTask, entity.stage.attackCooldown, entity.stage.attackDamage));
 						return;
 					}
 				}
@@ -62,21 +81,21 @@ public class AggressiveHumanoidAI extends GenericHumanoidAI
 		}
 	}
 
-	class AiTaskAttackEntity extends AiTaskGoAtEntity
+	public class AiTaskAttackEntity extends AiTaskGoAtEntity
 	{
 		final long attackCooldownMS;
 		final float damage;
 
 		long lastAttackMS = 0;
 
-		public AiTaskAttackEntity(EntityHumanoid entity, float maxDistance, AI<EntityHumanoid>.AiTask previousTask, long attackCooldownMS, float damage)
+		public AiTaskAttackEntity(EntityLiving entity, float maxDistance, AI<EntityHumanoid>.AiTask previousTask, long attackCooldownMS, float damage)
 		{
 			super(entity, maxDistance, previousTask);
 
 			this.attackCooldownMS = attackCooldownMS;
 			this.damage = damage;
 
-			this.entitySpeed = 0.05;
+			this.entitySpeed = ZombieAI.this.entity.stage.speed;
 		}
 
 		@Override
@@ -88,7 +107,7 @@ public class AggressiveHumanoidAI extends GenericHumanoidAI
 			{
 				if (System.currentTimeMillis() - lastAttackMS > attackCooldownMS)
 				{
-					System.out.println("Attacking");
+					//System.out.println("Attacking");
 					entityFollowed.damage(entity, damage);
 					lastAttackMS = System.currentTimeMillis();
 				}

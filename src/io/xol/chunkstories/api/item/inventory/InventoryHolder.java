@@ -1,4 +1,4 @@
-package io.xol.chunkstories.api.item;
+package io.xol.chunkstories.api.item.inventory;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

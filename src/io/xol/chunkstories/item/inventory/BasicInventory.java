@@ -6,12 +6,13 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
-import io.xol.chunkstories.api.item.Inventory;
-import io.xol.chunkstories.api.item.InventoryHolder;
 import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.item.inventory.InventoryHolder;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.utils.IterableIterator;
@@ -373,5 +374,11 @@ public class BasicInventory implements Inventory
 	public InventoryHolder getHolder()
 	{
 		return null;
+	}
+
+	@Override
+	public boolean hasAccess(Entity entity)
+	{
+		return true;
 	}
 }

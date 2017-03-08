@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.GameWindow;
@@ -398,11 +399,23 @@ public class ClientWorldController implements PlayerClient
 	{
 		
 	}
-
 	
 	@Override
 	public GameWindow getWindow()
 	{
 		return this.client.getGameWindow();
+	}
+
+	@Override
+	public void openInventory(Inventory inventory)
+	{
+		Entity entity = this.getControlledEntity();
+		if (inventory.hasAccess(entity))
+		{
+			//Directly open it without further concern
+			Client.getInstance().openInventory(inventory);
+		}
+		//else
+		//	this.sendMessage("Notice: You don't have access to this inventory.");
 	}
 }

@@ -5,6 +5,7 @@ import java.util.Random;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
 import io.xol.chunkstories.core.entity.EntityHumanoid;
@@ -177,13 +178,13 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 	
 	class AiTaskGoAtEntity extends AiTask {
 
-		EntityHumanoid entityFollowed;
+		EntityLiving entityFollowed;
 		float maxDistance;
 		AiTask previousTask;
 		
 		double entitySpeed = 0.02;
 		
-		public AiTaskGoAtEntity(EntityHumanoid entity, float maxDistance, AiTask previousTask)
+		public AiTaskGoAtEntity(EntityLiving entity, float maxDistance, AiTask previousTask)
 		{
 			this.entityFollowed = entity;
 			this.maxDistance = maxDistance;
