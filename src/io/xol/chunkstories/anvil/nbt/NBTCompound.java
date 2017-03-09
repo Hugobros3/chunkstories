@@ -1,5 +1,6 @@
 package io.xol.chunkstories.anvil.nbt;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -15,7 +16,7 @@ public class NBTCompound extends NBTNamed implements Iterable<NBTNamed> {
 	Map<String,NBTNamed> tags = new HashMap<String,NBTNamed>();
 	
 	@Override
-	public void feed(InputStream is) throws IOException {
+	public void feed(DataInputStream is) throws IOException {
 		super.feed(is);
 		NBTag tag = NBTag.parseInputStream(is);
 		while(tag instanceof NBTNamed)

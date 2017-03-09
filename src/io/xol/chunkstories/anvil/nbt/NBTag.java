@@ -1,5 +1,6 @@
 package io.xol.chunkstories.anvil.nbt;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -12,7 +13,7 @@ import java.io.InputStream;
  */
 public abstract class NBTag
 {
-	public abstract void feed(InputStream is) throws IOException;
+	public abstract void feed(DataInputStream is) throws IOException;
 
 	public void list_(int i)
 	{
@@ -27,7 +28,7 @@ public abstract class NBTag
 			if(type == -1)
 				return null;
 			NBTag tag = NBTag.create(type);
-			tag.feed(bais);
+			tag.feed(new DataInputStream(bais));
 			return tag;
 		}
 		catch (IOException e)
@@ -53,9 +54,20 @@ public abstract class NBTag
 		return tag;
 	}
 	
+	static Type lastType;
+	
 	public static NBTag create(int t)
 	{
-		return create(Type.values()[t]);
+		try {
+			NBTag tag = create(Type.values()[t]);
+			lastType = Type.values()[t];
+			//System.out.println("found"+lastType);
+			return tag;
+		}
+		catch(ArrayIndexOutOfBoundsException e) {
+			System.out.println("Last valid type was : "+lastType);
+			throw new RuntimeException("Well fuck");
+		}
 	}
 
 	private static NBTag create(Type t)

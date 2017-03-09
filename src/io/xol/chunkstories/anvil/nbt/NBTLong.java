@@ -1,7 +1,7 @@
 package io.xol.chunkstories.anvil.nbt;
 
+import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -11,7 +11,7 @@ public class NBTLong extends NBTNamed{
 	public long data = 0;
 	
 	@Override
-	public void feed(InputStream is) throws IOException {
+	public void feed(DataInputStream is) throws IOException {
 		super.feed(is);
 		
 		data = is.read() << 56;

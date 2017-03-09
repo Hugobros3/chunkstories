@@ -1,7 +1,7 @@
 package io.xol.chunkstories.anvil.nbt;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.DataInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +17,7 @@ public class NBTList extends NBTNamed {
 	public List<NBTNamed> elements = new ArrayList<NBTNamed>();
 	
 	@Override
-	public void feed(InputStream is) throws IOException {
+	public void feed(DataInputStream is) throws IOException {
 		super.feed(is);
 		type = is.read();
 		number = is.read() << 24;

@@ -1,5 +1,6 @@
 package io.xol.chunkstories.anvil.nbt;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -13,7 +14,7 @@ public class NBTNamed extends NBTag{
 	boolean list = false;
 	
 	@Override
-	public void feed(InputStream is) throws IOException {
+	public void feed(DataInputStream is) throws IOException {
 		if(!list)
 		{
 			int nameSize = 0;
@@ -21,9 +22,9 @@ public class NBTNamed extends NBTag{
 			nameSize += is.read();
 			byte[] n = new byte[nameSize];
 			try{
-				is.read(n);
+				is.readFully(n);
 				tagName = new String(n, "UTF-8");
-				//System.out.println("read tag named :"+name);
+				//System.out.println("read tag named :"+tagName);
 			}
 			catch(Exception e)
 			{
