@@ -39,7 +39,7 @@ public interface EntityControllable extends Entity, EntityUnsaveable
 	 */
 	public Location getBlockLookingAt(boolean inside);
 	
-	public boolean handleInteraction(Input input, Controller controller);
+	public boolean onControllerInput(Input input, Controller controller);
 	
 	public default boolean shouldSaveIntoRegion()
 	{

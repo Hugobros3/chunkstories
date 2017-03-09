@@ -34,8 +34,8 @@ public class EntityZombie extends EntityHumanoid
 	
 	public enum Stage {
 		INFECTION(0.045, 5, 1800, 10f, 40f),
-		TAKEOVER(0.060, 10, 1200, 15f, 50f),
-		WHOLESOME(0.075, 15, 800, 20f, 60f),
+		TAKEOVER(0.060, 10, 1200, 15f, 80f),
+		WHOLESOME(0.075, 15, 800, 20f, 160f),
 		;
 		
 		private Stage(double speed, double aggroDistance, int attackCooldown, float attackDamage, float hp)
@@ -183,7 +183,7 @@ public class EntityZombie extends EntityHumanoid
 
 			EntityLiving entity = (EntityLiving)cause;
 			
-			this.zombieAi.setAiTask(zombieAi.new AiTaskAttackEntity(entity, 20f, zombieAi.currentTask(), stage.attackCooldown, stage.attackDamage));
+			this.zombieAi.setAiTask(zombieAi.new AiTaskAttackEntity(entity, 15f, 20f, zombieAi.currentTask(), stage.attackCooldown, stage.attackDamage));
 		}
 		
 		return super.damage(cause, osef, damage);
@@ -191,6 +191,6 @@ public class EntityZombie extends EntityHumanoid
 
 	public void attack(EntityLiving target, float maxDistance)
 	{
-		this.zombieAi.setAiTask(zombieAi.new AiTaskAttackEntity(target, maxDistance, zombieAi.currentTask(), stage.attackCooldown, stage.attackDamage));
+		this.zombieAi.setAiTask(zombieAi.new AiTaskAttackEntity(target, 15f, maxDistance, zombieAi.currentTask(), stage.attackCooldown, stage.attackDamage));
 	}
 }

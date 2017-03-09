@@ -2,6 +2,9 @@ package io.xol.chunkstories.core.entity;
 
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.model.ModelLibrary;
+
+import java.util.Iterator;
+
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Controller;
@@ -28,6 +31,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
@@ -591,14 +595,35 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	}
 
 	@Override
-	public boolean handleInteraction(Input input, Controller controller)
+	public boolean onControllerInput(Input input, Controller controller)
 	{
 		Location blockLocation = this.getBlockLookingAt(true);
+		
+		double maxLen = 1024;
+		
+		if(blockLocation != null ) {
+			Vector3dm diff = blockLocation.clone().sub(this.getLocation());
+			//Vector3dm dir = diff.clone().normalize();
+			maxLen = diff.length();
+		}
+		
+		Vector3dm initialPosition = new Vector3dm(getLocation());
+		initialPosition.add(new Vector3dm(0, eyePosition, 0));
+		
+		Vector3dm direction = getDirectionLookingAt();
+		
+		Iterator<Entity> i = world.rayTraceEntities(initialPosition, direction, maxLen);
+		while(i.hasNext()) {
+			Entity e = i.next();
+			if(e.handleInteraction(this, input))
+				return true;
+		}
+		
 		ItemPile itemSelected = getSelectedItemComponent().getSelectedItem();
 		if (itemSelected != null)
 		{
 			//See if the item handles the interaction
-			if (itemSelected.getItem().handleInteraction(this, itemSelected, input, controller))
+			if (itemSelected.getItem().onControllerInput(this, itemSelected, input, controller))
 				return true;
 		}
 		if (getWorld() instanceof WorldMaster)
@@ -644,6 +669,23 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 		//Then we check if the world minds being interacted with
 		return world.handleInteraction(this, blockLocation, input);
+	}
+	
+	
+	public boolean handleInteraction(Entity entity, Input input) {
+		if(isDead() && input.getName().equals("mouse.right") && entity instanceof EntityControllable) {
+			EntityControllable ctrla = (EntityControllable)entity;
+			
+			Controller ctrlr = ctrla.getController();
+			if(ctrlr != null && ctrlr instanceof Player) {
+				Player p = (Player)ctrlr;
+				
+				p.openInventory(this.getInventory());
+				//p.sendMessage("HELLO THIS MY CADAVERER, PLZ FUCK OFF");
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

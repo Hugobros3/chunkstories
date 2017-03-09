@@ -198,7 +198,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 	}
 
 	@Override
-	public boolean handleInteraction(Entity user, ItemPile pile, Input input, Controller controller)
+	public boolean onControllerInput(Entity user, ItemPile pile, Input input, Controller controller)
 	{
 		//Don't do anything with the left mouse click
 		if (input.getName().startsWith("mouse."))

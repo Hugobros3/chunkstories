@@ -16,6 +16,8 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
 import io.xol.chunkstories.core.events.ClientInputPressedEvent;
 import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
+import io.xol.chunkstories.core.events.PlayerInputPressedEvent;
+import io.xol.chunkstories.core.events.PlayerInputReleasedEvent;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.input.KeyBindsLoader;
 import io.xol.chunkstories.net.packets.PacketInput;
@@ -171,10 +173,21 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 			PacketInput packet = new PacketInput();
 			packet.input = input;
 			connection.sendPacket(packet);
+			
+			return entityControlled.onControllerInput(input, Client.getInstance().getPlayer());
+		}
+		else
+		{
+			PlayerInputPressedEvent event2 = new PlayerInputPressedEvent(Client.getInstance().getPlayer(), input);
+			scene.getPluginManager().fireEvent(event2);
+			
+			if(event2.isCancelled())
+				return false;
+				//	entity.handleInteraction(input, entity.getControllerComponent().getController());
 		}
 
 		//Handle interaction locally
-		return entityControlled.handleInteraction(input, Client.getInstance().getPlayer());
+		return entityControlled.onControllerInput(input, Client.getInstance().getPlayer());
 	}
 
 	@Override
@@ -205,9 +218,15 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 			PacketInput packet = new PacketInput();
 			packet.input = input;
 			connection.sendPacket(packet);
+			return true;
+		}
+		else 
+		{
+			PlayerInputReleasedEvent event2 = new PlayerInputReleasedEvent(Client.getInstance().getPlayer(), input);
+			scene.getPluginManager().fireEvent(event2);
+			return true;
 		}
 		
-		return true;
 	}
 	
 	public int getMouseCursorX()

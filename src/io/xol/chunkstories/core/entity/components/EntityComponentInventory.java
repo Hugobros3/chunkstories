@@ -110,7 +110,7 @@ public class EntityComponentInventory extends EntityComponent
 				return true;
 			
 			//Dead entities ain't got no rights
-			if(EntityComponentInventory.this.entity instanceof EntityLiving && ((EntityLiving)entity).isDead())
+			if(EntityComponentInventory.this.entity instanceof EntityLiving && ((EntityLiving)EntityComponentInventory.this.entity).isDead())
 				return true;
 			
 			//Wassup with that freeloading shit ?

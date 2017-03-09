@@ -108,7 +108,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 	}
 
 	@Override
-	public boolean handleInteraction(Entity owner, ItemPile pile, Input input, Controller controller)
+	public boolean onControllerInput(Entity owner, ItemPile pile, Input input, Controller controller)
 	{
 		if (input.getName().startsWith("mouse.left"))
 		{
@@ -136,6 +136,36 @@ public class ItemMeleeWeapon extends ItemWeapon
 
 			Vector3dm nearestLocation = null;
 
+			//Loops to try and break blocks
+			while(owner.getWorld() instanceof WorldMaster && shotBlock != null)
+			{
+				int data = owner.getWorld().getVoxelData(shotBlock);
+				Voxel voxel = VoxelsStore.get().getVoxelById(data);
+				
+				if(voxel.getId() != 0 && voxel.getMaterial().resolveProperty("bulletBreakable") != null && voxel.getMaterial().resolveProperty("bulletBreakable").equals("true"))
+				{
+					//Spawn an event to check if it's okay
+					
+					//Destroy it
+					owner.getWorld().setVoxelData(shotBlock, 0);
+					for(int i = 0; i < 25; i++)
+					{
+						Vector3dm smashedVoxelParticleDirection = new Vector3dm(direction);
+						smashedVoxelParticleDirection.scale(2.0);
+						smashedVoxelParticleDirection.add(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+						smashedVoxelParticleDirection.normalize();
+						
+						owner.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", shotBlock, smashedVoxelParticleDirection);
+					}
+					owner.getWorld().getSoundManager().playSoundEffect("sounds/sfx/glass.ogg", shotBlock, (float)Math.random() * 0.2f + 0.9f, 1.0f);
+					
+					//Re-raytrace the ray
+					shotBlock = owner.getWorld().raytraceSolid(eyeLocation, direction, range);
+				}
+				else
+					break;
+			}
+			
 			if (shotBlock != null)
 			{
 				Location shotBlockOuter = owner.getWorld().raytraceSolidOuter(eyeLocation, direction, range);

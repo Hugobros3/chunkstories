@@ -73,7 +73,7 @@ public class ItemVoxel extends Item
 	}
 
 	@Override
-	public boolean handleInteraction(Entity user, ItemPile pile, Input input, Controller controller)
+	public boolean onControllerInput(Entity user, ItemPile pile, Input input, Controller controller)
 	{
 		if (user.getWorld() instanceof WorldMaster && input.getName().equals("mouse.right"))
 		{

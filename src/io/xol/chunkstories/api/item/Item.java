@@ -56,7 +56,7 @@ public class Item
 	 * @param input
 	 * @return false if the item doesn't handle the input, true if it does
 	 */
-	public boolean handleInteraction(Entity owner, ItemPile itemPile, Input input, Controller controller)
+	public boolean onControllerInput(Entity owner, ItemPile itemPile, Input input, Controller controller)
 	{
 		return false;
 	}

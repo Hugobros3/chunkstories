@@ -15,6 +15,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
 import io.xol.chunkstories.api.exceptions.IllegalUUIDChangeException;
+import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.server.Player;
@@ -544,5 +545,9 @@ public abstract class EntityImplementation implements Entity
 	public EntityComponent getComponents()
 	{
 		return existenceComponent;
+	}
+	
+	public boolean handleInteraction(Entity entity, Input input) {
+		return false;
 	}
 }

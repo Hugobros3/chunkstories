@@ -72,7 +72,7 @@ public class ZombieAI extends GenericHumanoidAI
 						entity.getWorld().getSoundManager().playSoundEffect("sounds/sfx/zombie.ogg", entity.getLocation(), (float) (1.5 + Math.random() * 0.2), 1.5f);//.setPitch();
 						
 						//Set new task
-						setAiTask(new AiTaskAttackEntity((EntityHumanoid) entityToLook, 10f, currentTask, entity.stage.attackCooldown, entity.stage.attackDamage));
+						setAiTask(new AiTaskAttackEntity((EntityHumanoid) entityToLook, 10f, 15f, currentTask, entity.stage.attackCooldown, entity.stage.attackDamage));
 						return;
 					}
 				}
@@ -85,13 +85,16 @@ public class ZombieAI extends GenericHumanoidAI
 	{
 		final long attackCooldownMS;
 		final float damage;
+		
+		final float giveupDistance;
 
 		long lastAttackMS = 0;
 
-		public AiTaskAttackEntity(EntityLiving entity, float maxDistance, AI<EntityHumanoid>.AiTask previousTask, long attackCooldownMS, float damage)
+		public AiTaskAttackEntity(EntityLiving entity, float giveupDistance, float initGiveupDistance, AI<EntityHumanoid>.AiTask previousTask, long attackCooldownMS, float damage)
 		{
-			super(entity, maxDistance, previousTask);
+			super(entity, initGiveupDistance, previousTask);
 
+			this.giveupDistance = giveupDistance;
 			this.attackCooldownMS = attackCooldownMS;
 			this.damage = damage;
 
@@ -103,7 +106,15 @@ public class ZombieAI extends GenericHumanoidAI
 		{
 			super.execute();
 
-			if (this.entityFollowed.getLocation().distanceTo(entity.getLocation()) < 1.5)
+			float distance = (float)(double) this.entityFollowed.getLocation().distanceTo(entity.getLocation());
+			
+			//Within the final give up distance ? Set the give up distance to be at that from then on
+			if(giveupDistance - distance > 1)
+			{
+				this.maxDistance = giveupDistance;
+			}
+			
+			if (distance < 1.5)
 			{
 				if (System.currentTimeMillis() - lastAttackMS > attackCooldownMS)
 				{
