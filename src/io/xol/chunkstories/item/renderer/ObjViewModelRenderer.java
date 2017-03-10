@@ -1,9 +1,9 @@
-package io.xol.chunkstories.core.item.renderers;
+package io.xol.chunkstories.item.renderer;
 
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemRenderer;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
@@ -18,7 +18,6 @@ public class ObjViewModelRenderer extends ItemRenderer
 	final String objName;
 	final String albedoTextureName;
 	final String normalTextureName;
-	//TODO
 	final String materialTextureName;
 
 	public ObjViewModelRenderer(ItemRenderer fallbackRenderer, String objName, String albedoTextureName)

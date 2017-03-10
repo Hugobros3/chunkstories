@@ -17,7 +17,7 @@ import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
-import io.xol.chunkstories.api.item.Inventory;
+import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;

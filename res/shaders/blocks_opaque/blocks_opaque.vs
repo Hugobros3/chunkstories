@@ -71,7 +71,7 @@ void main(){
 	texCoordPassed /= 32768.0;
 	
 	//Compute lightmap coords
-	rainWetness = wetness*clamp((colorIn.g * 16.0 - 15.0),0,1.0);
+	rainWetness = wetness*clamp((colorIn.g * 16.0 - 0.85)*16,0,1.0);
 	worldLight = vec2(colorIn.r * 16, colorIn.g * 16)*(1.0 - colorIn.b * 0.15);
 	
 	//worldLight = vec3(colorIn.rgb);

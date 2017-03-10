@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.serialization.StreamTarget;
 //http://chunkstories.xyz
 //http://xol.io
 
-public abstract class EntityComponentBoolean extends EntityComponent
+public abstract class EntityComponentGenericBoolean extends EntityComponent
 {
 	private boolean value = false;
 
@@ -31,7 +31,7 @@ public abstract class EntityComponentBoolean extends EntityComponent
 		}
 	}
 
-	public EntityComponentBoolean(Entity entity, EntityComponent previous)
+	public EntityComponentGenericBoolean(Entity entity, EntityComponent previous)
 	{
 		super(entity, previous);
 	}

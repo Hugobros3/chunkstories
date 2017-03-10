@@ -1,4 +1,4 @@
-package io.xol.chunkstories.api.item;
+package io.xol.chunkstories.api.item.inventory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -9,6 +9,8 @@ import java.io.IOException;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
+import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemType;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

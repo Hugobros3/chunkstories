@@ -1,9 +1,9 @@
 package io.xol.chunkstories.item.renderer;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -15,9 +15,9 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class LegacyDogeZItemRenderer extends DefaultItemRenderer
+public class FlatIconItemRenderer extends DefaultItemRenderer
 {
-	public LegacyDogeZItemRenderer(ItemRenderer fallbackRenderer, ItemType itemType)
+	public FlatIconItemRenderer(ItemRenderer fallbackRenderer, ItemType itemType)
 	{
 		super(itemType);
 	}

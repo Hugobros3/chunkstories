@@ -7,8 +7,8 @@ import java.util.Map;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemRenderer;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;

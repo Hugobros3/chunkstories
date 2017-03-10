@@ -3,6 +3,7 @@ package io.xol.chunkstories.api.entity;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.Subscriber;
+import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.server.Player;
@@ -141,5 +142,7 @@ public interface Entity
 	public EntityComponent getComponents();
 
 	public CollisionBox[] getCollisionBoxes();
+
+	public boolean handleInteraction(Entity entity, Input input);
 	
 }

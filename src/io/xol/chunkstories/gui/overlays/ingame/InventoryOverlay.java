@@ -3,8 +3,8 @@ package io.xol.chunkstories.gui.overlays.ingame;
 import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.gui.Overlay;
-import io.xol.chunkstories.api.item.Inventory;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;

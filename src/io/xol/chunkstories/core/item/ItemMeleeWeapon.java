@@ -5,16 +5,14 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Controller;
-import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.EntityLiving.HitBox;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
@@ -25,8 +23,8 @@ import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.EntityPlayer;
-import io.xol.chunkstories.core.item.renderers.ObjViewModelRenderer;
-import io.xol.chunkstories.item.renderer.LegacyDogeZItemRenderer;
+import io.xol.chunkstories.item.renderer.FlatIconItemRenderer;
+import io.xol.chunkstories.item.renderer.ObjViewModelRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
@@ -34,7 +32,7 @@ import io.xol.chunkstories.voxel.VoxelsStore;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ItemMeleeWeapon extends Item implements DamageCause
+public class ItemMeleeWeapon extends ItemWeapon
 {
 	final long swingDuration;
 	final long hitTime;
@@ -71,7 +69,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 			itemRenderer = new ObjViewModelRenderer(fallbackRenderer, modelName, getType().resolveProperty("modelDiffuse", "none"));
 		}
 		else
-			itemRenderer = new LegacyDogeZItemRenderer(fallbackRenderer, getType());
+			itemRenderer = new FlatIconItemRenderer(fallbackRenderer, getType());
 
 		itemRenderer = new MeleeWeaponRenderer(fallbackRenderer);
 		
@@ -110,7 +108,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 	}
 
 	@Override
-	public boolean handleInteraction(Entity owner, ItemPile pile, Input input, Controller controller)
+	public boolean onControllerInput(Entity owner, ItemPile pile, Input input, Controller controller)
 	{
 		if (input.getName().startsWith("mouse.left"))
 		{
@@ -138,6 +136,36 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 
 			Vector3dm nearestLocation = null;
 
+			//Loops to try and break blocks
+			while(owner.getWorld() instanceof WorldMaster && shotBlock != null)
+			{
+				int data = owner.getWorld().getVoxelData(shotBlock);
+				Voxel voxel = VoxelsStore.get().getVoxelById(data);
+				
+				if(voxel.getId() != 0 && voxel.getMaterial().resolveProperty("bulletBreakable") != null && voxel.getMaterial().resolveProperty("bulletBreakable").equals("true"))
+				{
+					//Spawn an event to check if it's okay
+					
+					//Destroy it
+					owner.getWorld().setVoxelData(shotBlock, 0);
+					for(int i = 0; i < 25; i++)
+					{
+						Vector3dm smashedVoxelParticleDirection = new Vector3dm(direction);
+						smashedVoxelParticleDirection.scale(2.0);
+						smashedVoxelParticleDirection.add(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+						smashedVoxelParticleDirection.normalize();
+						
+						owner.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", shotBlock, smashedVoxelParticleDirection);
+					}
+					owner.getWorld().getSoundManager().playSoundEffect("sounds/sfx/glass.ogg", shotBlock, (float)Math.random() * 0.2f + 0.9f, 1.0f);
+					
+					//Re-raytrace the ray
+					shotBlock = owner.getWorld().raytraceSolid(eyeLocation, direction, range);
+				}
+				else
+					break;
+			}
+			
 			if (shotBlock != null)
 			{
 				Location shotBlockOuter = owner.getWorld().raytraceSolidOuter(eyeLocation, direction, range);
@@ -218,7 +246,7 @@ public class ItemMeleeWeapon extends Item implements DamageCause
 								continue;
 
 							//Deal damage
-							((EntityLiving) shotEntity).damage(shooter, hitBox, (float) damage);
+							((EntityLiving) shotEntity).damage(pileAsDamageCause(pile), hitBox, (float) damage);
 
 							//Spawn blood particles
 							Vector3dm bloodDir = direction.normalize().scale(0.25);

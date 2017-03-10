@@ -9,9 +9,9 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -73,7 +73,7 @@ public class ItemVoxel extends Item
 	}
 
 	@Override
-	public boolean handleInteraction(Entity user, ItemPile pile, Input input, Controller controller)
+	public boolean onControllerInput(Entity user, ItemPile pile, Input input, Controller controller)
 	{
 		if (user.getWorld() instanceof WorldMaster && input.getName().equals("mouse.right"))
 		{

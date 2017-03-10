@@ -3,17 +3,25 @@ package io.xol.chunkstories.core.entity;
 import java.util.HashSet;
 import java.util.Set;
 
-import io.xol.chunkstories.api.ai.AI;
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
+import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
+import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
-import io.xol.chunkstories.core.entity.ai.AggressiveHumanoidAI;
+import io.xol.chunkstories.core.entity.ai.ZombieAI;
+import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.model.ModelLibrary;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -21,7 +29,30 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 
 public class EntityZombie extends EntityHumanoid
 {
-	AI<?> zombieAi;
+	ZombieAI zombieAi;
+	public final Stage stage;
+	
+	public enum Stage {
+		INFECTION(0.045, 5, 1800, 10f, 40f),
+		TAKEOVER(0.060, 10, 1200, 15f, 80f),
+		WHOLESOME(0.075, 15, 800, 20f, 160f),
+		;
+		
+		private Stage(double speed, double aggroDistance, int attackCooldown, float attackDamage, float hp)
+		{
+			this.speed = speed;
+			this.aggroRadius = aggroDistance;
+			this.attackCooldown = attackCooldown;
+			this.attackDamage = attackDamage;
+			this.hp = hp;
+		}
+
+		public final double speed;
+		public final double aggroRadius;
+		public final int attackCooldown;
+		public final float attackDamage;
+		public final float hp;
+	}
 
 	static Set<Class<? extends Entity>> zombieTargets = new HashSet<Class<? extends Entity>>();
 	
@@ -31,14 +62,22 @@ public class EntityZombie extends EntityHumanoid
 	
 	public EntityZombie(World world, double x, double y, double z)
 	{
+		this(world, x, y, z, Stage.values()[(int) Math.floor(Math.random() * Stage.values().length)]);
+	}
+	
+	public EntityZombie(World world, double x, double y, double z, Stage stage)
+	{
 		super(world, x, y, z);
-		zombieAi = new AggressiveHumanoidAI(this, 10, zombieTargets);
+		zombieAi = new ZombieAI(this, zombieTargets);
+		
+		this.stage = stage;
+		this.setHealth(stage.hp);
 	}
 
 	@Override
 	public float getStartHealth()
 	{
-		return 50f;
+		return 50;
 	}
 	
 	@Override
@@ -59,25 +98,79 @@ public class EntityZombie extends EntityHumanoid
 		}
 	}
 
-	class EntityZombieRenderer<H extends EntityHumanoid> extends EntityHumanoidRenderer<H> {
+	class EntityZombieRenderer extends EntityHumanoidRenderer<EntityZombie> {
 		
 		@Override
 		public void setupRender(RenderingInterface renderingContext)
 		{
 			super.setupRender(renderingContext);
+		}
+		
+		@Override
+		public int renderEntities(RenderingInterface renderingContext, RenderingIterator<EntityZombie> renderableEntitiesIterator)
+		{
+			setupRender(renderingContext);
 			
-			//Player textures
-			Texture2D playerTexture = TexturesHandler.getTexture("./models/zombie_s3.png");
-			playerTexture.setLinearFiltering(false);
+			int e = 0;
+
+			for (EntityZombie entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
+			{
+				Location location = entity.getPredictedLocation();
+
+				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
+					continue;
+
+				entity.cachedSkeleton.lodUpdate(renderingContext);
+
+				Matrix4f matrix = new Matrix4f();
+				matrix.translate(location.castToSinglePrecision());
+				renderingContext.setObjectMatrix(matrix);
+				
+				//Player textures
+				Texture2D playerTexture = TexturesHandler.getTexture("./models/zombie_s"+(entity.stage.ordinal() + 1)+".png");
+				playerTexture.setLinearFiltering(false);
+				
+				renderingContext.bindAlbedoTexture(playerTexture);
+				
+				ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
+				//animationsData.add(new AnimatableData(location.castToSinglePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
+			}
 			
-			renderingContext.bindAlbedoTexture(playerTexture);
+			//Render items in hands
+			for (EntityHumanoid entity : renderableEntitiesIterator)
+			{
+
+				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
+					continue;
+
+				ItemPile selectedItemPile = null;
+
+				if (entity instanceof EntityWithSelectedItem)
+					selectedItemPile = ((EntityWithSelectedItem) entity).getSelectedItemComponent().getSelectedItem();
+
+				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3fm(0));
+
+				if (selectedItemPile != null)
+				{
+					Matrix4f itemMatrix = new Matrix4f();
+					itemMatrix.translate(entity.getPredictedLocation().castToSinglePrecision());
+
+					Matrix4f.mul(itemMatrix, entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000), itemMatrix);
+
+					selectedItemPile.getItem().getType().getRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
+				}
+
+				e++;
+			}
+			
+			return e;
 		}
 	}
 	
 	@Override
 	public EntityRenderer<? extends EntityRenderable> getEntityRenderer()
 	{
-		return new EntityZombieRenderer<EntityZombie>();
+		return new EntityZombieRenderer();
 	}
 	
 	@Override
@@ -85,6 +178,19 @@ public class EntityZombie extends EntityHumanoid
 	{
 		if(!isDead())
 			world.getSoundManager().playSoundEffect("sounds/sfx/entities/zombie/hurt.ogg", this.getLocation(), (float)Math.random() * 0.4f + 0.8f, 1.5f + Math.min(0.5f, damage / 15.0f));
+		
+		if(cause instanceof EntityLiving) {
+
+			EntityLiving entity = (EntityLiving)cause;
+			
+			this.zombieAi.setAiTask(zombieAi.new AiTaskAttackEntity(entity, 15f, 20f, zombieAi.currentTask(), stage.attackCooldown, stage.attackDamage));
+		}
+		
 		return super.damage(cause, osef, damage);
+	}
+
+	public void attack(EntityLiving target, float maxDistance)
+	{
+		this.zombieAi.setAiTask(zombieAi.new AiTaskAttackEntity(target, 15f, maxDistance, zombieAi.currentTask(), stage.attackCooldown, stage.attackDamage));
 	}
 }

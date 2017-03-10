@@ -6,8 +6,8 @@ package io.xol.chunkstories;
 
 public class VersionInfo
 {
-	public static String version = "2017.02.17";
-	public static int networkProtocolVersion = 29;
+	public static String version = "2017.03.08";
+	public static int networkProtocolVersion = 30;
 	
 	public static short csfFormatVersion = 0x2a;
 }

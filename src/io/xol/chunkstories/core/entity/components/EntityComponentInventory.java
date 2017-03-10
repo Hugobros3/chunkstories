@@ -5,16 +5,19 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Controller;
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
-import io.xol.chunkstories.api.item.Inventory;
-import io.xol.chunkstories.api.item.InventoryHolder;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.item.inventory.InventoryHolder;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.item.inventory.BasicInventory;
 import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
 
@@ -91,20 +94,56 @@ public class EntityComponentInventory extends EntityComponent
 		{
 			pushComponentController();
 		}
+
+		public EntityComponentInventory asComponent()
+		{
+			return EntityComponentInventory.this;
+		}
+		
+		public boolean hasAccess(Entity entity) {
+			
+			if(entity == null)
+				return true;
+			
+			//You have access to yourself always
+			if(entity == EntityComponentInventory.this.entity)
+				return true;
+			
+			//Dead entities ain't got no rights
+			if(EntityComponentInventory.this.entity instanceof EntityLiving && ((EntityLiving)EntityComponentInventory.this.entity).isDead())
+				return true;
+			
+			//Wassup with that freeloading shit ?
+			return false;
+		}
 	}
 
 	public enum UpdateMode
 	{
 		//MOVE_ITEM, 
 		//CHANGE_ITEM, 
-		REFRESH;
+		TOTAL_REFRESH,
+		NEVERMIND,
 	}
 
 	@Override
 	protected void push(StreamTarget destinator, DataOutputStream stream) throws IOException
 	{
-		//Unused but keep
-		stream.writeByte(UpdateMode.REFRESH.ordinal());
+		//Check that person has permission
+		if(destinator instanceof Player) 
+		{
+			Player player = (Player)destinator;
+			Entity entity = player.getControlledEntity();
+			
+			//Abort if the entity don't have access
+			if(!this.actualInventory.hasAccess(entity))
+			{
+				//System.out.println(player + "'s " + entity + " don't have access to "+this);
+				stream.writeByte(UpdateMode.NEVERMIND.ordinal());
+				return;
+			}
+		}
+		stream.writeByte(UpdateMode.TOTAL_REFRESH.ordinal());
 
 		actualInventory.pushInventory(destinator, stream);
 	}
@@ -113,7 +152,11 @@ public class EntityComponentInventory extends EntityComponent
 	protected void pull(StreamSource from, DataInputStream stream) throws IOException
 	{
 		//Unused
-		stream.readByte();
+		byte b = stream.readByte();
+		
+		//Ignore NVM stuff
+		if(b == UpdateMode.NEVERMIND.ordinal())
+			return;
 
 		actualInventory.pullInventory(from, stream, entity.getWorld().getGameContext().getContent());
 	}

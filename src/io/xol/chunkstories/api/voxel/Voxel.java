@@ -1,7 +1,7 @@
 package io.xol.chunkstories.api.voxel;
 
 import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;

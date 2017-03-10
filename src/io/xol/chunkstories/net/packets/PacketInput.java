@@ -59,7 +59,7 @@ public class PacketInput extends PacketSynchPrepared
 				entity.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
 				
 				if(!event.isCancelled())
-					entity.handleInteraction(input, entity.getControllerComponent().getController());
+					entity.onControllerInput(input, entity.getControllerComponent().getController());
 			}
 			else
 			{

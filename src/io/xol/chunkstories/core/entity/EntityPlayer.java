@@ -2,6 +2,9 @@ package io.xol.chunkstories.core.entity;
 
 import io.xol.engine.misc.ColorsTools;
 import io.xol.engine.model.ModelLibrary;
+
+import java.util.Iterator;
+
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Controller;
@@ -15,8 +18,10 @@ import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.item.Inventory;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.interfaces.ItemOverlay;
+import io.xol.chunkstories.api.item.interfaces.ItemZoom;
+import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
@@ -26,6 +31,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
@@ -40,8 +46,6 @@ import io.xol.chunkstories.core.entity.components.EntityComponentFoodLevel;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentName;
 import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
-import io.xol.chunkstories.core.item.ItemFirearm;
-import io.xol.chunkstories.core.item.ItemOverlay;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -131,11 +135,10 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		float rotV = this.getEntityRotationComponent().getVerticalRotation();
 
 		float modifier = 1.0f;
-		if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemFirearm)
+		if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemZoom)
 		{
-			ItemFirearm item = (ItemFirearm) this.getSelectedItemComponent().getSelectedItem().getItem();
-			if (item.isScoped())
-				modifier = 1.0f / item.getScopeSlow();
+			ItemZoom item = (ItemZoom) this.getSelectedItemComponent().getSelectedItem().getItem();
+			modifier = 1.0f / item.getZoomFactor();
 		}
 		
 		rotH += dx * modifier / 3f * RenderingConfig.mouseSensitivity;
@@ -434,11 +437,10 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			camera.setRotationY(this.getEntityRotationComponent().getHorizontalRotation());
 
 			float modifier = 1.0f;
-			if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemFirearm)
+			if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemZoom)
 			{
-				ItemFirearm item = (ItemFirearm) this.getSelectedItemComponent().getSelectedItem().getItem();
-				if (item.isScoped())
-					modifier = 1.0f / item.getScopeZoom();
+				ItemZoom item = (ItemZoom) this.getSelectedItemComponent().getSelectedItem().getItem();
+				modifier = 1.0f / item.getZoomFactor();
 			}
 
 			camera.setFOV(modifier * (float) (RenderingConfig.fov
@@ -593,14 +595,35 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	}
 
 	@Override
-	public boolean handleInteraction(Input input, Controller controller)
+	public boolean onControllerInput(Input input, Controller controller)
 	{
 		Location blockLocation = this.getBlockLookingAt(true);
+		
+		double maxLen = 1024;
+		
+		if(blockLocation != null ) {
+			Vector3dm diff = blockLocation.clone().sub(this.getLocation());
+			//Vector3dm dir = diff.clone().normalize();
+			maxLen = diff.length();
+		}
+		
+		Vector3dm initialPosition = new Vector3dm(getLocation());
+		initialPosition.add(new Vector3dm(0, eyePosition, 0));
+		
+		Vector3dm direction = getDirectionLookingAt();
+		
+		Iterator<Entity> i = world.rayTraceEntities(initialPosition, direction, maxLen);
+		while(i.hasNext()) {
+			Entity e = i.next();
+			if(e.handleInteraction(this, input))
+				return true;
+		}
+		
 		ItemPile itemSelected = getSelectedItemComponent().getSelectedItem();
 		if (itemSelected != null)
 		{
 			//See if the item handles the interaction
-			if (itemSelected.getItem().handleInteraction(this, itemSelected, input, controller))
+			if (itemSelected.getItem().onControllerInput(this, itemSelected, input, controller))
 				return true;
 		}
 		if (getWorld() instanceof WorldMaster)
@@ -646,6 +669,23 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 		//Then we check if the world minds being interacted with
 		return world.handleInteraction(this, blockLocation, input);
+	}
+	
+	
+	public boolean handleInteraction(Entity entity, Input input) {
+		if(isDead() && input.getName().equals("mouse.right") && entity instanceof EntityControllable) {
+			EntityControllable ctrla = (EntityControllable)entity;
+			
+			Controller ctrlr = ctrla.getController();
+			if(ctrlr != null && ctrlr instanceof Player) {
+				Player p = (Player)ctrlr;
+				
+				p.openInventory(this.getInventory());
+				//p.sendMessage("HELLO THIS MY CADAVERER, PLZ FUCK OFF");
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

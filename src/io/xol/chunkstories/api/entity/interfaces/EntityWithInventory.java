@@ -1,8 +1,8 @@
 package io.xol.chunkstories.api.entity.interfaces;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.item.Inventory;
-import io.xol.chunkstories.api.item.InventoryHolder;
+import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.item.inventory.InventoryHolder;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

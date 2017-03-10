@@ -1,9 +1,12 @@
 package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.voxel.VoxelEntity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -12,6 +15,7 @@ import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.voxel.EntityChest;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -39,11 +43,24 @@ public class VoxelChest extends VoxelEntity
 	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input, int voxelData)
 	{
 		//Open GUI
-		if(input.getName().equals("mouse.right") && entity.getWorld() instanceof WorldClient)
+		if(input.getName().equals("mouse.right") && entity.getWorld() instanceof WorldMaster) {
+			//Only actual players can open that kind of stuff
+			if(entity instanceof EntityControllable) {
+				EntityControllable e = (EntityControllable)entity;
+				Controller c = e.getController();
+				
+				if(c instanceof Player) {
+					Player p = (Player)c;
+					p.openInventory(((EntityChest)this.getVoxelEntity(voxelLocation)).getInventory());
+				}
+				
+			}
+		}
+		/*if(input.getName().equals("mouse.right") && entity.getWorld() instanceof WorldClient)
 		{	
 			Client.getInstance().openInventory(((EntityChest)this.getVoxelEntity(voxelLocation)).getInventory());
 			return true;
-		}
+		}*/
 		return false;
 	}
 

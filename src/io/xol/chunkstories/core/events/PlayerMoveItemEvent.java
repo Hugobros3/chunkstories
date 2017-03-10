@@ -2,7 +2,7 @@ package io.xol.chunkstories.core.events;
 
 import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.api.item.ItemPile;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 

@@ -8,7 +8,7 @@ import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.PlayerClient;
-import io.xol.chunkstories.api.item.Inventory;
+import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.rendering.GameWindow;

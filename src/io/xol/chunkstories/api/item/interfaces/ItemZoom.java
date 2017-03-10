@@ -1,4 +1,4 @@
-package io.xol.chunkstories.core.item;
+package io.xol.chunkstories.api.item.interfaces;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -7,7 +7,7 @@ package io.xol.chunkstories.core.item;
 /**
  * An interface for items that modify the FOV
  */
-public interface ItemZoom //extends Item
+public interface ItemZoom
 {
 	public float getZoomFactor();
 }

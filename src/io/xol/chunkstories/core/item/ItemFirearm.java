@@ -5,18 +5,19 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Controller;
-import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.EntityLiving.HitBox;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.item.Inventory;
-import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.api.item.ItemPile;
 import io.xol.chunkstories.api.item.ItemRenderer;
 import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.item.interfaces.ItemCustomHoldingAnimation;
+import io.xol.chunkstories.api.item.interfaces.ItemOverlay;
+import io.xol.chunkstories.api.item.interfaces.ItemZoom;
+import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
@@ -29,8 +30,8 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
-import io.xol.chunkstories.core.item.renderers.ObjViewModelRenderer;
-import io.xol.chunkstories.item.renderer.LegacyDogeZItemRenderer;
+import io.xol.chunkstories.item.renderer.FlatIconItemRenderer;
+import io.xol.chunkstories.item.renderer.ObjViewModelRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
@@ -40,23 +41,25 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ItemFirearm extends Item implements DamageCause, ItemOverlay
+public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, ItemCustomHoldingAnimation
 {
-	final boolean automatic;
-	final double rpm;
-	final String soundName;
-	final double damage;
-	final double accuracy;
-	final double range;
-	final double soundRange;
-	final int shots;
-	final double shake;
-	final long reloadCooldown;
+	public final boolean automatic;
+	public final double rpm;
+	public final String soundName;
+	public final double damage;
+	public final double accuracy;
+	public final double range;
+	public final double soundRange;
+	public final int shots;
+	public final double shake;
+	public final long reloadCooldown;
 
-	final boolean scopedWeapon;
-	final float scopeZoom;
-	final float scopeSlow;
-	final String scopeTexture;
+	public final boolean scopedWeapon;
+	public final float scopeZoom;
+	public final float scopeSlow;
+	public final String scopeTexture;
+	
+	public final String holdingAnimationName;
 
 	private boolean wasTriggerPressedLastTick = false;
 	private long lastShot = 0L;
@@ -90,6 +93,8 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		scopeSlow = Float.parseFloat(type.resolveProperty("scopeSlow", "2.0"));
 
 		scopeTexture = type.resolveProperty("scopeTexture", "./textures/gui/scope.png");
+		
+		holdingAnimationName = type.resolveProperty("holdingAnimationName", "./animations/human/holding-rifle.bvh");
 	}
 	
 	/** Some weapons have fancy renderers */
@@ -101,7 +106,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		if (!modelName.equals("none"))
 			itemRenderer = new ObjViewModelRenderer(fallbackRenderer, modelName, getType().resolveProperty("modelDiffuse", "none"));
 		else
-			itemRenderer = new LegacyDogeZItemRenderer(fallbackRenderer, getType());
+			itemRenderer = new FlatIconItemRenderer(fallbackRenderer, getType());
 
 		if (scopedWeapon)
 			itemRenderer = new ScopedWeaponItemRenderer(itemRenderer);
@@ -193,7 +198,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 	}
 
 	@Override
-	public boolean handleInteraction(Entity user, ItemPile pile, Input input, Controller controller)
+	public boolean onControllerInput(Entity user, ItemPile pile, Input input, Controller controller)
 	{
 		//Don't do anything with the left mouse click
 		if (input.getName().startsWith("mouse."))
@@ -236,12 +241,10 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 				//Play sounds
 				if (controller != null)
 				{
-					//controller.getSoundManager().playSoundEffect(this.soundName, user.getLocation(), 1.0f, 1.0f).setAttenuationEnd((float) soundRange);
-
 					controller.getSoundManager().playSoundEffect(this.soundName, (float) (double) user.getLocation().getX(), (float) (double) user.getLocation().getY(), (float) (double) user.getLocation().getZ(), 1.0f, 1.0f, 1.0f,
 							(float) soundRange);
-
 				}
+				
 
 				//Raytrace shot
 				Vector3dm eyeLocation = new Vector3dm(shooter.getLocation());
@@ -377,7 +380,7 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 									//System.out.println("shot" + hitBox.getName());
 
 									//Deal damage
-									((EntityLiving) shotEntity).damage(shooter, hitBox, (float) damage);
+									((EntityLiving) shotEntity).damage(pileAsDamageCause(pile), hitBox, (float) damage);
 
 									//Spawn blood particles
 									Vector3dm bloodDir = direction.normalize().scale(0.75);
@@ -401,6 +404,10 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 				}
 
 				controller.getParticlesManager().spawnParticleAtPosition("muzzle", eyeLocation);
+				
+				FirearmShotEvent event = new FirearmShotEvent(this, shooter, controller);
+				shooter.getWorld().getGameContext().getPluginManager().fireEvent(event);
+				
 				return (shooter.getWorld() instanceof WorldMaster);
 			}
 		}
@@ -517,13 +524,19 @@ public class ItemFirearm extends Item implements DamageCause, ItemOverlay
 		return scopedWeapon;
 	}
 
-	public float getScopeZoom()
+	public float getZoomFactor()
 	{
-		return scopeZoom;
+		return isScoped ? scopeZoom : 1f;
 	}
 
 	public float getScopeSlow()
 	{
 		return scopeSlow;
+	}
+
+	@Override
+	public String getCustomAnimationName()
+	{
+		return holdingAnimationName;
 	}
 }
