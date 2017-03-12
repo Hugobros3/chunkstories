@@ -26,7 +26,7 @@ public class EntityTypesStore implements EntityTypes
 {
 	private final GameContext context;
 	private final Content content;
-	private final EntityComponentsStore entityComponents;
+	//private final EntityComponentsStore entityComponents;
 	
 	private Map<Short, EntityType> entityTypesById = new HashMap<Short, EntityType>();
 	private Map<String, EntityType> entityTypesByName = new HashMap<String, EntityType>();
@@ -37,15 +37,13 @@ public class EntityTypesStore implements EntityTypes
 		this.content = content;
 		this.context = content.getContext();
 		
-		this.entityComponents = new EntityComponentsStore(context, this);
+		//this.entityComponents = new EntityComponentsStore(context, this);
 		
 		this.reload();
 	}
 	
 	public void reload()
 	{
-		//entitiesIds.clear();
-		//entitiesTypes.clear();
 		entityTypesById.clear();
 		entityTypesByName.clear();
 		entityTypesByClassname.clear();
@@ -58,7 +56,7 @@ public class EntityTypesStore implements EntityTypes
 			readEntitiesDefinitions(f);
 		}
 		
-		this.entityComponents.reload();
+		//this.entityComponents.reload();
 	}
 
 	private void readEntitiesDefinitions(Asset f)
@@ -117,8 +115,6 @@ public class EntityTypesStore implements EntityTypes
 									entityTypesById.put(id, addMe);
 									entityTypesByName.put(entityTypeName, addMe);
 									entityTypesByClassname.put(className, addMe);
-									//entitiesTypes.put(id, constructor);
-									//entitiesIds.put(className, id);
 								}
 							}
 
@@ -136,19 +132,6 @@ public class EntityTypesStore implements EntityTypes
 		{
 			e.printStackTrace();
 		}
-	}
-	
-	public EntityType getEntityTypeById(short entityId)
-	{
-		return entityTypesById.get(entityId);
-	}
-	
-	public short getEntityIdByClassname(String className)
-	{
-		EntityType type = entityTypesByClassname.get(className);
-		if(type == null)
-			return -1;
-		return type.getId();
 	}
 
 	class EntityTypeLoaded implements EntityType {
@@ -206,6 +189,12 @@ public class EntityTypesStore implements EntityTypes
 	}
 
 	@Override
+	public EntityType getEntityTypeById(short entityId)
+	{
+		return entityTypesById.get(entityId);
+	}
+
+	@Override
 	public EntityType getEntityTypeByName(String entityName)
 	{
 		return entityTypesByName.get(entityName);
@@ -215,6 +204,15 @@ public class EntityTypesStore implements EntityTypes
 	public EntityType getEntityTypeByClassname(String className)
 	{
 		return entityTypesByClassname.get(className);
+	}
+
+	@Override
+	public short getEntityIdByClassname(String className)
+	{
+		EntityType type = entityTypesByClassname.get(className);
+		if(type == null)
+			return -1;
+		return type.getId();
 	}
 
 	@Override
@@ -229,9 +227,9 @@ public class EntityTypesStore implements EntityTypes
 		return content;
 	}
 
-	@Override
+	/*@Override
 	public EntityComponentsStore components()
 	{
 		return entityComponents;
-	}
+	}*/
 }

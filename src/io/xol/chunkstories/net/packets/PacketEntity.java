@@ -7,6 +7,9 @@ import io.xol.chunkstories.api.net.PacketPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.tools.ChunkStoriesLogger;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
+import io.xol.chunkstories.tools.ChunkStoriesLogger.LogType;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -86,8 +89,12 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 		//Loop throught all components
 		while(componentId != 0)
 		{
-			if(!entity.getComponents().tryPullComponentInStream(componentId, sender, in))
-				throw new UnknownComponentException(componentId, entity.getClass());
+			try {
+				entity.getComponents().tryPullComponentInStream(componentId, sender, in);
+			}
+			catch(UnknownComponentException e) {
+				ChunkStoriesLogger.getInstance().log(e.getMessage(), LogType.INTERNAL, LogLevel.WARN);
+			}
 			componentId = in.readInt();
 		}
 		

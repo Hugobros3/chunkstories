@@ -105,11 +105,11 @@ public interface Content
 
 		public Content parent();
 		
-		public EntityComponents components();
+		/*public EntityComponents components();
 		public interface EntityComponents {
 			
 			public int getIdForClass(String className);
-		}
+		}*/
 	}
 	
 	public ParticlesTypes particles();

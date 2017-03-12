@@ -15,7 +15,8 @@ import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
-public class EntityComponentsStore implements Content.EntityTypes.EntityComponents
+/** Useless ? Will be removed then */
+public class EntityComponentsStore// implements Content.EntityTypes.EntityComponents
 {
 	private final EntityTypesStore entities;
 	private final GameContext context;

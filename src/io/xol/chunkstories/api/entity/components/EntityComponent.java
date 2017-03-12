@@ -8,6 +8,8 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.exceptions.UnknownComponentException;
+import io.xol.chunkstories.api.serialization.OfflineSerializedData;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.net.packets.PacketEntity;
@@ -33,7 +35,8 @@ public abstract class EntityComponent
 
 	public EntityComponent(Entity entity, EntityComponent previous)
 	{
-		this.ecID = (entity == null || entity.getWorld() == null ) ? -1 : entity.getWorld().getGameContext().getContent().entities().components().getIdForClass(getClass().getName());
+		this.ecID = previous != null ? previous.getEntityComponentId() + 1 : 0;
+		//this.ecID = (entity == null || entity.getWorld() == null ) ? -1 : entity.getWorld().getGameContext().getContent().entities().components().getIdForClass(getClass().getName());
 		
 		this.entity = entity;
 		if (previous != null)
@@ -126,7 +129,7 @@ public abstract class EntityComponent
 	public void pushComponent(Subscriber subscriber)
 	{
 		//You may check that subscriber has subscribed to said entity ?
-		//Re : nope because we send the EntityExistence (hint: false) component to [just] unsubscribed guys so it wouldn't work
+		//A: nope because we send the EntityExistence (hint: false) component to [just] unsubscribed guys so it wouldn't work
 		try
 		{
 			PacketEntity packet = new PacketEntity(entity);
@@ -140,8 +143,17 @@ public abstract class EntityComponent
 
 	public void pushComponentInStream(StreamTarget to, DataOutputStream dos) throws IOException
 	{
-		//System.out.println("pushing component"+getEntityComponentId());
-		dos.writeInt(getEntityComponentId());
+		//Offline saves will have version discrepancies, so we use a symbolic name instead
+		if(to instanceof OfflineSerializedData)
+		{
+			dos.writeInt(-1);
+			dos.writeUTF(getSerializedComponentName());
+		}
+		else
+		{
+			dos.writeInt(getEntityComponentId());
+		}
+		//Push actual component data
 		push(to, dos);
 	}
 
@@ -166,18 +178,34 @@ public abstract class EntityComponent
 		}
 	}
 
-	public final boolean tryPullComponentInStream(int componentId, StreamSource from, DataInputStream dis) throws IOException
+	public final void tryPullComponentInStream(int componentId, StreamSource from, DataInputStream dis) throws IOException, UnknownComponentException
 	{
 		//Does the Id match ?
 		if (this.getEntityComponentId() == componentId)
 		{
 			pull(from, dis);
-			return true;
+			return;
 		}
 		//Chain next component
 		if (next != null)
-			return next.tryPullComponentInStream(componentId, from, dis);
-		return false;
+			next.tryPullComponentInStream(componentId, from, dis);
+		else
+			throw new UnknownComponentException(componentId, entity.getClass());
+	}
+	
+	public final void tryPullComponentInStream(String componentName, StreamSource from, DataInputStream dis) throws IOException, UnknownComponentException
+	{
+		//Does the Id match ?
+		if (this.getSerializedComponentName().equals(componentName))
+		{
+			pull(from, dis);
+			return;
+		}
+		//Chain next component
+		if (next != null)
+			next.tryPullComponentInStream(componentName, from, dis);
+		else
+			throw new UnknownComponentException(componentName, entity.getClass());
 	}
 
 	protected abstract void push(StreamTarget destinator, DataOutputStream dos) throws IOException;
@@ -187,6 +215,11 @@ public abstract class EntityComponent
 	public final int getEntityComponentId()
 	{
 		return ecID;
+	}
+	
+	public String getSerializedComponentName()
+	{
+		return this.getClass().getSimpleName();
 	}
 
 	public EntityComponent getComponentById(short componentId)
