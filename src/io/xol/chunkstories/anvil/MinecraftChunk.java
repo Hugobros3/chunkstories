@@ -78,6 +78,8 @@ public class MinecraftChunk
 
 	public void postProcess(WorldImplementation exported, int csBaseX, int csBaseY, int csBaseZ)
 	{
+		if(root == null)
+			return;
 		NBTList entitiesList = (NBTList) root.getTag("Level.TileEntities");
 		if (entitiesList != null)
 		{

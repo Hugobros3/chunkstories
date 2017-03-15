@@ -166,8 +166,10 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		int mcRegionEndZ = MinecraftWorld.blockToRegionCoordinates(minecraftOffsetZ + size.sizeInChunks * 32);
 
 		int minecraftChunksImported = 0;
-		int minecraftChunksToImport = ((size.sizeInChunks * 32) * (size.sizeInChunks * 32)) / (16 * 16);
+		long minecraftChunksToImport = ((long)(size.sizeInChunks * 32) * (long)(size.sizeInChunks * 32)) / (16 * 16);
 
+		//System.out.println(size + " " + size.sizeInChunks + " " + minecraftChunksToImport);
+		
 		double completion = 0.0;
 		long lastPercentageShow = System.currentTimeMillis();
 
@@ -382,6 +384,8 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 				for (ChunkHolder holder : registeredCS_Holders)
 					holder.unregisterUser(this);
 
+				summary.unregisterUser(this);
+				
 				registeredCS_Holders.clear();
 
 				csWorld.unloadUselessData();
