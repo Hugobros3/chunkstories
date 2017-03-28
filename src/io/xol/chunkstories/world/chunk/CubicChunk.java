@@ -1,6 +1,8 @@
 package io.xol.chunkstories.world.chunk;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -2003,5 +2005,104 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	public int renderPass(RenderingInterface renderingInterface, RenderLodLevel renderLodLevel, ShadingType renderPass)
 	{
 		return chunkRenderData.renderPass(renderingInterface, renderLodLevel, renderPass);
+	}
+
+	@Override
+	public ChunkVoxelContext peek(Vector3dm location)
+	{
+		return peek((int)(double)location.getX(), (int)(double)location.getY(), (int)(double)location.getZ());
+	}
+
+	@Override
+	public ChunkVoxelContext peek(int x, int y, int z)
+	{
+		x &= 0xf;
+		y &= 0xf;
+		z &= 0xf;
+		return new ActualChunkVoxelContext(x, y, z);
+	}
+	
+	class ActualChunkVoxelContext implements ChunkVoxelContext {
+		
+		final int x, y, z;
+		final int data;
+		
+		public ActualChunkVoxelContext(int x, int y, int z)
+		{
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			
+			this.data = CubicChunk.this.getVoxelData(x, y, z);
+		}
+
+		@Override
+		public World getWorld()
+		{
+			return world;
+		}
+
+		@Override
+		public Location getLocation()
+		{
+			return new Location(world, getX(), getY(), getZ());
+		}
+
+		@Override
+		public Voxel getVoxel()
+		{
+			return world.getGameContext().getContent().voxels().getVoxelById(data);
+		}
+
+		@Override
+		public int getData()
+		{
+			return data;
+		}
+
+		@Override
+		public int getX()
+		{
+			return CubicChunk.this.getChunkX() * 32 + x;
+		}
+
+		@Override
+		public int getY()
+		{
+			return CubicChunk.this.getChunkX() * 32 + y;
+		}
+
+		@Override
+		public int getZ()
+		{
+			return CubicChunk.this.getChunkX() * 32 + z;
+		}
+
+		@Override
+		public int getNeightborData(int side)
+		{
+			switch (side)
+			{
+			case (0):
+				return world.getVoxelData(getX() - 1, getY(), getZ());
+			case (1):
+				return world.getVoxelData(getX(), getY(), getZ() + 1);
+			case (2):
+				return world.getVoxelData(getX() + 1, getY(), getZ());
+			case (3):
+				return world.getVoxelData(getX(), getY(), getZ() - 1);
+			case (4):
+				return world.getVoxelData(getX(), getY() + 1, getZ());
+			case (5):
+				return world.getVoxelData(getX(), getY() - 1, getZ());
+			}
+			throw new RuntimeException("Fuck off");
+		}
+
+		@Override
+		public Chunk getChunk()
+		{
+			return CubicChunk.this;
+		}
 	}
 }

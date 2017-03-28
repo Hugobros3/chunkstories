@@ -1,12 +1,12 @@
 package io.xol.chunkstories.core.voxel;
 
-import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.voxel.VoxelEntity;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.World.WorldVoxelContext;
 import io.xol.chunkstories.core.entity.voxel.EntityVoxelTest;
 import io.xol.chunkstories.world.WorldImplementation;
 
@@ -23,7 +23,7 @@ public class VoxelEntityTest extends VoxelEntity
 	}
 
 	@Override
-	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input, int voxelData)
+	public boolean handleInteraction(Entity entity, WorldVoxelContext voxelContext, Input input)
 	{
 		// TODO Auto-generated method stub
 		// System.out.println("kekossorus");

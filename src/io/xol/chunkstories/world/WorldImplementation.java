@@ -24,7 +24,6 @@ import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInfo;
-import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -42,7 +41,6 @@ import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.particles.ParticlesRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.VoxelContextOlder;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -450,15 +448,83 @@ public abstract class WorldImplementation implements World
 	}
 	
 	@Override
-	public VoxelContext peek(Vector3dm location)
+	public WorldVoxelContext peek(Vector3dm location)
 	{
 		return peek((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
 	}
 
 	@Override
-	public VoxelContext peek(int x, int y, int z)
+	public WorldVoxelContext peek(int x, int y, int z)
 	{
-		return new VoxelContextOlder(this, x, y, z);
+		return new WorldVoxelContext() {
+			
+			int data = getVoxelData(x, y, z);
+			
+			@Override
+			public Voxel getVoxel()
+			{
+				return getGameContext().getContent().voxels().getVoxelById(data);
+			}
+
+			@Override
+			public int getData()
+			{
+				return data;
+			}
+
+			@Override
+			public int getX()
+			{
+				return x;
+			}
+
+			@Override
+			public int getY()
+			{
+				return y;
+			}
+
+			@Override
+			public int getZ()
+			{
+				return z;
+			}
+
+			@Override
+			public int getNeightborData(int side)
+			{
+				switch (side)
+				{
+				case (0):
+					return getVoxelData(x - 1, y, z);
+				case (1):
+					return getVoxelData(x, y, z + 1);
+				case (2):
+					return getVoxelData(x + 1, y, z);
+				case (3):
+					return getVoxelData(x, y, z - 1);
+				case (4):
+					return getVoxelData(x, y + 1, z);
+				case (5):
+					return getVoxelData(x, y - 1, z);
+				}
+				throw new RuntimeException("Fuck off");
+			}
+
+			@Override
+			public World getWorld()
+			{
+				return WorldImplementation.this;
+			}
+
+			@Override
+			public Location getLocation()
+			{
+				return new Location(WorldImplementation.this, x, y, z);
+			}
+			
+		};
+		//return new VoxelContextOlder(this, x, y, z);
 	}
 
 	@Override
@@ -792,7 +858,7 @@ public abstract class WorldImplementation implements World
 		int dataAtLocation = this.getVoxelData(voxelLocation);
 		Voxel voxel = VoxelsStore.get().getVoxelById(dataAtLocation);
 		if (voxel != null && voxel instanceof VoxelInteractive)
-			return ((VoxelInteractive) voxel).handleInteraction(entity, voxelLocation, input, dataAtLocation);
+			return ((VoxelInteractive) voxel).handleInteraction(entity, peek(voxelLocation), input);
 		return false;
 	}
 

@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.net.PacketPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynch;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogType;
@@ -60,12 +61,18 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 		entityUUID = in.readLong();
 		entityTypeID = in.readShort();
 		
+		//System.out.println("PacketEntity");
+		
 		if(entityTypeID == -1)
 			return;
+		
+		//System.out.println("entityTypeID"+entityTypeID);
 		
 		World world = processor.getWorld();
 		if(world == null)
 			return;
+		
+		//System.out.println("world"+world);
 		
 		Entity entity = world.getEntityByUUID(this.entityUUID);
 		
@@ -89,6 +96,9 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 		//Loop throught all components
 		while(componentId != 0)
 		{
+			//if(processor.getWorld() instanceof WorldClient)
+			//	System.out.println("OKKKKKKKKKKKKKK cId"+componentId);
+			
 			try {
 				entity.getComponents().tryPullComponentInStream(componentId, sender, in);
 			}

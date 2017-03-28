@@ -21,7 +21,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 public class CSFRegionFile implements OfflineSerializedData
 {
-	private RegionImplementation holder;
+	private RegionImplementation owner;
 	private File file;
 
 	//Locks modifications to the region untils it finishes saving.
@@ -29,7 +29,7 @@ public class CSFRegionFile implements OfflineSerializedData
 
 	public CSFRegionFile(RegionImplementation holder)
 	{
-		this.holder = holder;
+		this.owner = holder;
 
 		this.file = new File(holder.world.getFolderPath() + "/regions/" + holder.regionX + "." + holder.regionY + "." + holder.regionZ + ".csf");
 	}
@@ -41,9 +41,11 @@ public class CSFRegionFile implements OfflineSerializedData
 
 	public void load() throws IOException
 	{
-		FileInputStream in = new FileInputStream(file);
+		FileInputStream fis = new FileInputStream(file);
+		DataInputStream in = new DataInputStream(fis);
+		
+		// First load the compressed chunk data sizes
 		int[] chunksSizes = new int[8 * 8 * 8];
-		// First load the index
 		for (int a = 0; a < 8 * 8 * 8; a++)
 		{
 			int size = in.read() << 24;
@@ -53,50 +55,27 @@ public class CSFRegionFile implements OfflineSerializedData
 			chunksSizes[a] = size;
 		}
 
+		//Load in the compressed chunks
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
 				{
+					//Get size from before
 					int size = chunksSizes[a * 8 * 8 + b * 8 + c];
-					// if chunk present then create it's byte array
-					// and
-					// fill it
 					if (size > 0)
 					{
 						byte[] buffer = new byte[size];
-						in.read(buffer, 0, size);
-						holder.getChunkHolder(a, b, c).setCompressedData(buffer);
+						in.readFully(buffer, 0, size);
+						owner.getChunkHolder(a, b, c).setCompressedData(buffer);
 						// i++;
 					}
 				}
-
-		/*
-		//Lock the holder compressed chunks array !
-		holder.compressedChunksLock.beginWrite();
-		// Then load the chunks
-		for (int a = 0; a < 8; a++)
-			for (int b = 0; b < 8; b++)
-				for (int c = 0; c < 8; c++)
-				{
-					int size = chunksSizes[a * 8 * 8 + b * 8 + c];
-					// if chunk present then create it's byte array
-					// and
-					// fill it
-					if (size > 0)
-					{
-						holder.compressedChunks[a][b][c] = new byte[size];
-						in.read(holder.compressedChunks[a][b][c], 0, size);
-						// i++;
-					}
-				}
-		//Unlock it immediatly afterwards
-		holder.compressedChunksLock.endWrite();*/
 
 		//We pretend it's loaded sooner so we can add the entities and they will load their chunks data if needed
-		holder.setDiskDataLoaded(true);
+		owner.setDiskDataLoaded(true);
 
 		//don't tick the world entities until we get this straight
-		holder.world.entitiesLock.writeLock().lock();
+		owner.world.entitiesLock.writeLock().lock();
 
 		//Older version case
 		if (in.available() <= 0)
@@ -104,22 +83,20 @@ public class CSFRegionFile implements OfflineSerializedData
 			//System.out.println("Old version file, no entities to be found anyway");
 			in.close();
 
-			holder.world.entitiesLock.writeLock().unlock();
+			owner.world.entitiesLock.writeLock().unlock();
 			//holder.world.entitiesLock.unlock();
 			return;
 		}
 
 		try
 		{
-			DataInputStream dis = new DataInputStream(in);
-
 			//Read entities until we hit -1
 			Entity entity = null;
 			do
 			{
-				entity = EntitySerializer.readEntityFromStream(dis, this, holder.world);
+				entity = EntitySerializer.readEntityFromStream(in, this, owner.world);
 				if (entity != null)
-					holder.world.addEntity(entity);
+					owner.world.addEntity(entity);
 			}
 			while (entity != null);
 
@@ -128,9 +105,10 @@ public class CSFRegionFile implements OfflineSerializedData
 		{
 			ChunkStoriesLogger.getInstance().info("Error while loading "+file);
 			e.printStackTrace(ChunkStoriesLogger.getInstance().getPrintWriter());
+			e.printStackTrace();
 		}
 
-		holder.world.entitiesLock.writeLock().unlock();
+		owner.world.entitiesLock.writeLock().unlock();
 		
 		in.close();
 	}
@@ -141,24 +119,22 @@ public class CSFRegionFile implements OfflineSerializedData
 		if (!file.exists())
 			file.createNewFile();
 		FileOutputStream out = new FileOutputStream(file);
-		// int[] chunksSizes = new int[8*8*8];
-		// First write the index
-
+		
+		// We obtain a reference to each compressed chunk data and write it's size to form the index
 		byte[][][][] compressedVersions = new byte[8][8][8][];
-
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
 				for (int c = 0; c < 8; c++)
 				{
 					int chunkSize = 0;
-
-					byte[] chunkCompressedVersion = holder.getChunkHolder(a, b, c).getCompressedData();
+					byte[] chunkCompressedVersion = owner.getChunkHolder(a, b, c).getCompressedData();
 					if (chunkCompressedVersion != null)
 					{
 						//Save the reference to ensure coherence with later part
 						compressedVersions[a][b][c] = chunkCompressedVersion;
 						chunkSize = chunkCompressedVersion.length;
 					}
+					
 					out.write((chunkSize >>> 24) & 0xFF);
 					out.write((chunkSize >>> 16) & 0xFF);
 					out.write((chunkSize >>> 8) & 0xFF);
@@ -176,11 +152,11 @@ public class CSFRegionFile implements OfflineSerializedData
 				}
 
 		//don't tick the world entities until we get this straight
-		holder.world.entitiesLock.readLock().lock();
+		owner.world.entitiesLock.readLock().lock();
 
 		DataOutputStream dos = new DataOutputStream(out);
 
-		Iterator<Entity> holderEntities = holder.getEntitiesWithinRegion();
+		Iterator<Entity> holderEntities = owner.getEntitiesWithinRegion();
 		while (holderEntities.hasNext())
 		{
 			Entity entity = holderEntities.next();
@@ -188,13 +164,12 @@ public class CSFRegionFile implements OfflineSerializedData
 			if (entity.exists() && !(entity instanceof EntityUnsaveable && !((EntityUnsaveable) entity).shouldSaveIntoRegion()))
 			{
 				EntitySerializer.writeEntityToStream(dos, this, entity);
-				//System.out.println("wrote " + entity);
 			}
 		}
-		dos.writeLong(-1);
+		//dos.writeLong(-1);
+		EntitySerializer.writeEntityToStream(dos, this, null);
 		
-		holder.world.entitiesLock.readLock().unlock();
-		//holder.world.entitiesLock.unlock();
+		owner.world.entitiesLock.readLock().unlock();
 
 		out.close();
 	}

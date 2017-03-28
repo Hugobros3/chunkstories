@@ -106,9 +106,15 @@ public interface World
 	 */
 	public int getVoxelData(int x, int y, int z);
 
-	public VoxelContext peek(Vector3dm location);
+	public interface WorldVoxelContext extends VoxelContext {
+		public World getWorld();
+		
+		public Location getLocation();
+	}
 	
-	public VoxelContext peek(int x, int y, int z);
+	public WorldVoxelContext peek(Vector3dm location);
+	
+	public WorldVoxelContext peek(int x, int y, int z);
 	
 	/**
 	 * Sets the block data at the specified location

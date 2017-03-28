@@ -67,8 +67,6 @@ public abstract class VoxelEntity extends Voxel implements VoxelLogic, VoxelInte
 		
 		Entity voxelEntity = getVoxelEntity(world, x, y, z);
 		world.removeEntity(voxelEntity);
-		
-		//System.out.println("removed voxel entity");
 	}
 
 	@Override

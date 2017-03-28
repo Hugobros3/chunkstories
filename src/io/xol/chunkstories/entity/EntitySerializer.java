@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.UnknownComponentException;
 import io.xol.chunkstories.api.serialization.OfflineSerializedData;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.entity.LengthAwareBufferedIOHelper.LengthAwareOutputStream;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogType;
@@ -21,10 +22,19 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger.LogType;
  */
 public class EntitySerializer
 {
-	public static void writeEntityToStream(DataOutputStream out, OfflineSerializedData destination, Entity entity)
+	
+	
+	public static void writeEntityToStream(DataOutputStream dos, OfflineSerializedData destination, Entity entity)
 	{
 		try
 		{
+			if(entity == null) {
+				dos.writeInt(-1);
+				return;
+			}
+			
+			LengthAwareOutputStream out = LengthAwareBufferedIOHelper.getLengthAwareOutput();
+			
 			out.writeLong(entity.getUUID());
 			out.writeShort(entity.getEID());
 
@@ -34,7 +44,8 @@ public class EntitySerializer
 			//Then write 0 to mark end of components
 			out.writeInt((int) 0);
 
-			//System.out.println("Wrote serialized "+entity.getClass().getSimpleName()+" to : "+destination + " note: "+entity.exists());
+			//Flush the deal
+			out.writeTheStuff(dos);
 		}
 		catch (IOException e)
 		{
@@ -42,15 +53,23 @@ public class EntitySerializer
 		}
 	}
 
-	public static Entity readEntityFromStream(DataInputStream in, OfflineSerializedData source, World world)
+	public static Entity readEntityFromStream(DataInputStream dis, OfflineSerializedData source, World world)
 	{
 		try
 		{
+			int entityDataLength = dis.readInt();
+			
+			if(entityDataLength == -1)
+				return null;
+			
+			DataInputStream in = LengthAwareBufferedIOHelper.getLengthAwareInput(entityDataLength, dis);
+			
 			long entityUUID = in.readLong();
 			
+			//Obsolete ?
 			//When we reach id -1 in a stream of entities, it means we reached the end.
-			if(entityUUID == -1)
-				return null;
+			//if(entityUUID == -1)
+			//	return null;
 			
 			short entityTypeID = in.readShort();
 			

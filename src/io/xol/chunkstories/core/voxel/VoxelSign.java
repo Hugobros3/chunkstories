@@ -1,6 +1,5 @@
 package io.xol.chunkstories.core.voxel;
 
-import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.input.Input;
@@ -13,6 +12,7 @@ import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.World.WorldVoxelContext;
 import io.xol.chunkstories.core.entity.voxel.EntitySign;
 import io.xol.chunkstories.world.WorldImplementation;
 
@@ -28,7 +28,7 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 	}
 
 	@Override
-	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input, int voxelData)
+	public boolean handleInteraction(Entity entity, WorldVoxelContext voxelContext, Input input)
 	{
 		return false;
 	}

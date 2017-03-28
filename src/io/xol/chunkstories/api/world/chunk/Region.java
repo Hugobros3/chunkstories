@@ -21,7 +21,7 @@ public interface Region
 	
 	public int getRegionZ();
 
-	Iterator<WorldUser> getChunkUsers();
+	public Iterator<WorldUser> getChunkUsers();
 
 	boolean registerUser(WorldUser user);
 

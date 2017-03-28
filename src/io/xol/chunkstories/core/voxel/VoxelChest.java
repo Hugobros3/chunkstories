@@ -14,9 +14,8 @@ import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.api.world.World.WorldVoxelContext;
 import io.xol.chunkstories.core.entity.voxel.EntityChest;
 import io.xol.chunkstories.world.WorldImplementation;
 
@@ -40,10 +39,10 @@ public class VoxelChest extends VoxelEntity
 	}
 
 	@Override
-	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input, int voxelData)
+	public boolean handleInteraction(Entity entity, WorldVoxelContext voxelContext, Input input)
 	{
 		//Open GUI
-		if(input.getName().equals("mouse.right") && entity.getWorld() instanceof WorldMaster) {
+		if(input.getName().equals("mouse.right") && voxelContext.getWorld() instanceof WorldMaster) {
 			//Only actual players can open that kind of stuff
 			if(entity instanceof EntityControllable) {
 				EntityControllable e = (EntityControllable)entity;
@@ -51,7 +50,7 @@ public class VoxelChest extends VoxelEntity
 				
 				if(c instanceof Player) {
 					Player p = (Player)c;
-					p.openInventory(((EntityChest)this.getVoxelEntity(voxelLocation)).getInventory());
+					p.openInventory(((EntityChest)this.getVoxelEntity(voxelContext.getWorld(), voxelContext.getX(), voxelContext.getY(), voxelContext.getZ())).getInventory());
 				}
 				
 			}

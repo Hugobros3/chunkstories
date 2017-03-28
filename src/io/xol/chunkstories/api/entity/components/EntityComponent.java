@@ -35,7 +35,7 @@ public abstract class EntityComponent
 
 	public EntityComponent(Entity entity, EntityComponent previous)
 	{
-		this.ecID = previous != null ? previous.getEntityComponentId() + 1 : 0;
+		this.ecID = previous != null ? previous.getEntityComponentId() + 1 : 1;
 		//this.ecID = (entity == null || entity.getWorld() == null ) ? -1 : entity.getWorld().getGameContext().getContent().entities().components().getIdForClass(getClass().getName());
 		
 		this.entity = entity;
@@ -153,6 +153,9 @@ public abstract class EntityComponent
 		{
 			dos.writeInt(getEntityComponentId());
 		}
+		
+		//System.out.println("Pushing "+this.getSerializedComponentName()+" to "+to);
+		
 		//Push actual component data
 		push(to, dos);
 	}
@@ -183,6 +186,7 @@ public abstract class EntityComponent
 		//Does the Id match ?
 		if (this.getEntityComponentId() == componentId)
 		{
+			//System.out.println("Pulling "+this.getSerializedComponentName()+" from "+from);
 			pull(from, dis);
 			return;
 		}

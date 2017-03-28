@@ -1,6 +1,7 @@
 package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
@@ -130,5 +131,39 @@ public class DummyChunk implements Chunk
 
 		};
 	}
+
+	@Override
+	public ChunkVoxelContext peek(Vector3dm location)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ChunkVoxelContext peek(int x, int y, int z)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/*@Override
+	public ChunkStorage getChunkMeta()
+	{
+		return new ChunkStorage() {
+
+			@Override
+			public Chunk chunk()
+			{
+				return DummyChunk.this;
+			}
+
+			@Override
+			public VoxelStorage obtainVoxelStorage(int x, int y, int z, VoxelStorageInitializer vsi)
+			{
+				return vis == null ? null : vsi.initializeVoxelStorage(peek(x, y, z));
+			}
+			
+		};
+	}*/
 
 }

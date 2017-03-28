@@ -1,9 +1,11 @@
 package io.xol.chunkstories.api.world.chunk;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.World.WorldVoxelContext;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -28,6 +30,12 @@ public interface Chunk
 	 * @return the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
 	 */
 	public int getVoxelData(int x, int y, int z);
+	
+	public ChunkVoxelContext peek(Vector3dm location);
+	
+	public ChunkVoxelContext peek(int x, int y, int z);
+	
+	//public ChunkStorage getChunkMeta();
 
 	/**
 	 * Sets the data contained in this chunk as full 32-bit data format ( see {@link VoxelFormat})
@@ -69,5 +77,9 @@ public interface Chunk
 	public void destroy();
 
 	public IterableIterator<Entity> getEntitiesWithinChunk();
+	
+	public interface ChunkVoxelContext extends WorldVoxelContext {
+		public Chunk getChunk();
+	}
 
 }

@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.World.WorldVoxelContext;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
@@ -108,13 +109,14 @@ public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, Vo
 	//0x2-0x4 -> side ( VoxelSide << 2 )
 
 	@Override
-	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input, int voxelData)
+	public boolean handleInteraction(Entity entity, WorldVoxelContext voxelContext, Input input)
 	{
 		if (!input.getName().equals("mouse.right"))
 			return false;
 		if (!(entity.getWorld() instanceof WorldMaster))
 			return false;
 
+		int voxelData = voxelContext.getData();
 		boolean isOpen = ((VoxelFormat.meta(voxelData) >> 0) & 0x1) == 1;
 		boolean hingeSide = ((VoxelFormat.meta(voxelData) >> 1) & 0x1) == 1;
 		int facingPassed = (VoxelFormat.meta(voxelData) >> 2) & 0x3;
@@ -123,7 +125,7 @@ public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, Vo
 
 		int newData = computeMeta(newState, hingeSide, facingPassed);
 
-		Location otherPartLocation = new Location(voxelLocation);
+		Location otherPartLocation = voxelContext.getLocation();
 		if (top)
 			otherPartLocation.add(0.0, -1.0, 0.0);
 		else
@@ -133,9 +135,9 @@ public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, Vo
 		if (VoxelsStore.get().getVoxelById(otherLocationId) instanceof VoxelDoor)
 		{
 			System.out.println("new door status : " + newState);
-			voxelLocation.getWorld().getSoundManager().playSoundEffect("sounds/sfx/door.ogg", voxelLocation, 1.0f, 1.0f);
+			voxelContext.getWorld().getSoundManager().playSoundEffect("sounds/sfx/door.ogg", voxelContext.getLocation(), 1.0f, 1.0f);
 
-			voxelLocation.setVoxelDataAtLocation(VoxelFormat.changeMeta(voxelLocation.getVoxelDataAtLocation(), newData));
+			voxelContext.getLocation().setVoxelDataAtLocation(VoxelFormat.changeMeta(voxelContext.getData(), newData));
 			otherPartLocation.setVoxelDataAtLocation(VoxelFormat.changeMeta(otherPartLocation.getVoxelDataAtLocation(), newData));
 		}
 		else
