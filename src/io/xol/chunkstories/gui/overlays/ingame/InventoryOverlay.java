@@ -50,16 +50,16 @@ public class InventoryOverlay extends Overlay
 			drawers[i].drawInventoryCentered(renderingContext, renderingContext.getWindow().getWidth() / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48, renderingContext.getWindow().getHeight() / 2, 2, false, 4 - i * 4);
 			widthAccumulation += 1 + thisWidth;
 
-			int[] highlight = drawers[i].getSelectedSlot();
-			if (highlight != null)
+			int[] highlightedSlot = drawers[i].getSelectedSlot();
+			if (highlightedSlot != null)
 			{
-				ItemPile pileHighlighted = inventories[i].getItemPileAt(highlight[0], highlight[1]);
+				ItemPile pileHighlighted = inventories[i].getItemPileAt(highlightedSlot[0], highlightedSlot[1]);
 				if (pileHighlighted != null)
 				{
 					int mx = Mouse.getX();
 					int my = Mouse.getY();
 					
-					renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, mx, my, pileHighlighted.getItem().getInternalName(), 2);
+					renderingContext.getTrueTypeFontRenderer().drawString(TrueTypeFont.arial11px, mx, my, pileHighlighted.getItem().getName(), 2);
 					//System.out.println(pileHighlighted);
 				}
 			}
@@ -88,7 +88,11 @@ public class InventoryOverlay extends Overlay
 	public boolean handleKeypress(int k)
 	{
 		if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
+		{
+			//Exit
 			this.mainScene.changeOverlay(parent);
+			selectedItem = null;
+		}
 		return true;
 	}
 
@@ -98,7 +102,11 @@ public class InventoryOverlay extends Overlay
 		for (int i = 0; i < drawers.length; i++)
 		{
 			if (drawers[i].isOverCloseButton())
+			{
+				//Exit
 				this.mainScene.changeOverlay(parent);
+				selectedItem = null;
+			}
 			else
 			{
 

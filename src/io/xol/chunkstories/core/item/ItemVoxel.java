@@ -146,4 +146,14 @@ public class ItemVoxel extends Item
 		}
 		return false;
 	}
+	
+	@Override
+	public String getName()
+	{
+		if(voxel != null)
+		{
+			return voxel.getName();
+		}
+		return "novoxel!";
+	}
 }
