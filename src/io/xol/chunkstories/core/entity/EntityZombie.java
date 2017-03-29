@@ -1,5 +1,8 @@
 package io.xol.chunkstories.core.entity;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -7,6 +10,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Matrix4f;
@@ -15,6 +19,8 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
+import io.xol.chunkstories.api.serialization.StreamSource;
+import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.core.entity.ai.ZombieAI;
@@ -30,7 +36,8 @@ import io.xol.engine.model.ModelLibrary;
 public class EntityZombie extends EntityHumanoid
 {
 	ZombieAI zombieAi;
-	public final Stage stage;
+	//public final Stage stage;
+	final StageComponent stageComponent;
 	
 	public enum Stage {
 		INFECTION(0.045, 5, 1800, 10f, 40f),
@@ -53,6 +60,42 @@ public class EntityZombie extends EntityHumanoid
 		public final float attackDamage;
 		public final float hp;
 	}
+	
+	static class StageComponent extends EntityComponent {
+
+		Stage stage;
+		
+		public StageComponent(Entity entity)
+		{
+			super(entity);
+		}
+		
+		public String getSerializedComponentName() {
+			return "stage";
+		}
+
+		@Override
+		protected void push(StreamTarget destinator, DataOutputStream dos) throws IOException
+		{
+			dos.writeByte(stage.ordinal());
+		}
+
+		@Override
+		protected void pull(StreamSource from, DataInputStream dis) throws IOException
+		{
+			byte ok = dis.readByte();
+			int i = (int)ok;
+			
+			stage = Stage.values()[i];
+		}
+
+		public void setStage(Stage stage2)
+		{
+			this.stage = stage2;
+			this.pushComponentEveryone();
+		}
+		
+	}
 
 	static Set<Class<? extends Entity>> zombieTargets = new HashSet<Class<? extends Entity>>();
 	
@@ -70,7 +113,9 @@ public class EntityZombie extends EntityHumanoid
 		super(world, x, y, z);
 		zombieAi = new ZombieAI(this, zombieTargets);
 		
-		this.stage = stage;
+		this.stageComponent = new StageComponent(this);
+		this.stageComponent.setStage(stage);
+		//this.stage = stage;
 		this.setHealth(stage.hp);
 	}
 
@@ -127,7 +172,7 @@ public class EntityZombie extends EntityHumanoid
 				renderingContext.setObjectMatrix(matrix);
 				
 				//Player textures
-				Texture2D playerTexture = TexturesHandler.getTexture("./models/zombie_s"+(entity.stage.ordinal() + 1)+".png");
+				Texture2D playerTexture = TexturesHandler.getTexture("./models/zombie_s"+(entity.stage().ordinal() + 1)+".png");
 				playerTexture.setLinearFiltering(false);
 				
 				renderingContext.bindAlbedoTexture(playerTexture);
@@ -173,6 +218,11 @@ public class EntityZombie extends EntityHumanoid
 		return new EntityZombieRenderer();
 	}
 	
+	public Stage stage()
+	{
+		return stageComponent.stage;
+	}
+
 	@Override
 	public float damage(DamageCause cause, HitBox osef, float damage)
 	{
@@ -183,7 +233,7 @@ public class EntityZombie extends EntityHumanoid
 
 			EntityLiving entity = (EntityLiving)cause;
 			
-			this.zombieAi.setAiTask(zombieAi.new AiTaskAttackEntity(entity, 15f, 20f, zombieAi.currentTask(), stage.attackCooldown, stage.attackDamage));
+			this.zombieAi.setAiTask(zombieAi.new AiTaskAttackEntity(entity, 15f, 20f, zombieAi.currentTask(), stage().attackCooldown, stage().attackDamage));
 		}
 		
 		return super.damage(cause, osef, damage);
@@ -191,6 +241,6 @@ public class EntityZombie extends EntityHumanoid
 
 	public void attack(EntityLiving target, float maxDistance)
 	{
-		this.zombieAi.setAiTask(zombieAi.new AiTaskAttackEntity(target, 15f, maxDistance, zombieAi.currentTask(), stage.attackCooldown, stage.attackDamage));
+		this.zombieAi.setAiTask(zombieAi.new AiTaskAttackEntity(target, 15f, maxDistance, zombieAi.currentTask(), stage().attackCooldown, stage().attackDamage));
 	}
 }
