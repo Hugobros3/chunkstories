@@ -21,7 +21,6 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
@@ -324,7 +323,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 	}
 
 	@Override
-	public void tick(WorldAuthority authority)
+	public void tick()
 	{
 		eyePosition = stance.get() == EntityHumanoidStance.CROUCHING ? 1.15 : 1.65;
 		
@@ -375,7 +374,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		handleWalkingEtcSounds();
 
 		//Tick : will move the entity, solve velocity/acceleration and so on
-		super.tick(authority);
+		super.tick();
 	}
 
 	boolean lastTickOnGround = false;

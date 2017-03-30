@@ -9,7 +9,6 @@ import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
 import io.xol.chunkstories.core.entity.components.EntityComponentPosition;
@@ -53,7 +52,7 @@ public interface Entity
 	/**
 	 * Updates the entity, ran at 60Hz by default
 	 */
-	public void tick(WorldAuthority authorityType);
+	public void tick();
 
 	//TODO refactor these properly
 	public void moveWithoutCollisionRestrain(Vector3dm delta);

@@ -25,7 +25,6 @@ import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldCollisionsManager;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -49,7 +48,6 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
-import io.xol.chunkstories.world.iterators.EntityRayIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.region.WorldRegionsHolder;
@@ -298,17 +296,6 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void tick()
 	{
-		//First what kind of world are we
-		WorldAuthority authority;
-		if (this instanceof WorldMaster && this instanceof WorldClient)
-			authority = WorldAuthority.CLIENT_LOCALHOST;
-		else if (this instanceof WorldClient)
-			authority = WorldAuthority.CLIENT_ONLY;
-		else if (this instanceof WorldMaster)
-			authority = WorldAuthority.SERVER;
-		else
-			authority = WorldAuthority.NONE;
-
 		//Place the entire tick() method in a try/catch
 		try
 		{
@@ -326,49 +313,7 @@ public abstract class WorldImplementation implements World
 					//Location entityLocation = entity.getLocation();
 					if (entity.getRegion() != null && entity.getRegion().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
 					{
-						entity.tick(authority);
-
-						/*
-						//If we're the client world and this is our controlled entity we execute the tickClientController() and tick() methods
-						if (this instanceof WorldClient && entity instanceof EntityControllable && ((EntityControllable) entity).getControllerComponent().getController() != null && Client.getInstance().getClientSideController().getControlledEntity() != null && Client.getInstance().getClientSideController().getControlledEntity().equals(entity))
-						{
-							((EntityControllable) entity).tickClientController(Client.getInstance().getClientSideController());
-							entity.tick();
-						}
-						else if(this instanceof WorldClient)
-						{
-							//Some entities feature fancy clientside-prediction, for misc functions such as interpolation positions, spawning particles or playing walking sounds
-							if(entity instanceof EntityWithClientPrediction)
-							{
-								if(entity instanceof EntityControllable)
-								{
-									Controller controller = ((EntityControllable) entity).getControllerComponent().getController();
-									//If this is a remote world, any non-controlled entity could be client-predicted
-									if(this instanceof WorldClientRemote)
-									{
-										//Ok
-									}
-									//If this is a local world/server then only REMOTE clients should be predicted
-									else if(controller != null && !controller.equals(Client.getInstance().getClientSideController()))
-									{
-										//Ok too
-									}
-									//If neither is true, abort
-									else
-										continue;
-								}
-								//Non-controllable, locally simulated entities should not be predicted
-								else if(this instanceof WorldClientLocal)
-									continue;
-								
-								((EntityWithClientPrediction) entity).tickClientPrediction();
-							}
-						}
-						//Server should not tick client's entities, only ticks if their controller isn't present
-						else if (this instanceof WorldMaster && (!(entity instanceof EntityControllable) || ((EntityControllable) entity).getControllerComponent().getController() == null))
-							entity.tick();
-							
-							*/
+						entity.tick();
 					}
 					//Tries to snap the entity to the region if it ends up being loaded
 					else if (entity.getRegion() == null)

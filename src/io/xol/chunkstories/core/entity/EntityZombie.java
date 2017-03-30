@@ -22,7 +22,7 @@ import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldAuthority;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.ai.ZombieAI;
 import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.engine.graphics.textures.Texture2D;
@@ -126,14 +126,14 @@ public class EntityZombie extends EntityHumanoid
 	}
 	
 	@Override
-	public void tick(WorldAuthority authority)
+	public void tick()
 	{
 		//AI works on master
-		if(authority.isMaster())
+		if (world instanceof WorldMaster)
 			zombieAi.tick();
 		
 		//Ticks the entity
-		super.tick(authority);
+		super.tick();
 		
 		//Anti-glitch
 		if(Double.isNaN(this.getEntityRotationComponent().getHorizontalRotation()))

@@ -19,7 +19,6 @@ import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.EntityPlayer;
@@ -77,7 +76,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 	}
 	
 	@Override
-	public void tickInHand(WorldAuthority authority, Entity owner, ItemPile itemPile)
+	public void tickInHand(Entity owner, ItemPile itemPile)
 	{
 		//Only happening server-side
 		//if (owner.getWorld() instanceof WorldMaster)

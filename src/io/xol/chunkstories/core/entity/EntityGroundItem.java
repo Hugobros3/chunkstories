@@ -8,7 +8,6 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.entity.EntityImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -50,10 +49,10 @@ public class EntityGroundItem extends EntityImplementation implements EntityRend
 	}
 	
 	@Override
-	public void tick(WorldAuthority authority)
+	public void tick()
 	{
 		this.moveWithCollisionRestrain(0, -0.05, 0);
-		super.tick(authority);
+		super.tick();
 	}
 	
 	

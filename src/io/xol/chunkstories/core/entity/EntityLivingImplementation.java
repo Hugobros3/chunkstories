@@ -20,7 +20,6 @@ import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
@@ -266,7 +265,7 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 	}
 
 	@Override
-	public void tick(WorldAuthority authority)
+	public void tick()
 	{
 		if (getWorld() == null)
 			return;

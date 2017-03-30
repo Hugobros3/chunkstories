@@ -23,7 +23,6 @@ import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
@@ -33,21 +32,22 @@ import io.xol.chunkstories.voxel.VoxelsStore;
 
 public abstract class EntityImplementation implements Entity
 {
+	protected final World world;
+	
 	//The entity UUID is set to -1 so when added to a World the World assigns it a proper one
 	private long entityUUID = -1;
 	private boolean hasSpawned = false;
+	
 	//The eID is just a cache to speed up classname<->serialized id resolution
 	private final short eID;
-	
-	protected World world;
 
 	//Multiplayer players or other agents that chose to be notified when components of the entity are changed
-	protected Set<Subscriber> subscribers = new HashSet<Subscriber>();
+	private final Set<Subscriber> subscribers = new HashSet<Subscriber>();
 
 	//Basic components every entity should have
 	final protected EntityComponentExistence existenceComponent;
-	protected EntityComponentPosition positionComponent;
-	private EntityComponentVelocity velocityComponent;
+	final protected EntityComponentPosition positionComponent;
+	final protected EntityComponentVelocity velocityComponent;
 
 	//Hacky bullshit
 	protected Voxel voxelIn;
@@ -112,7 +112,7 @@ public abstract class EntityImplementation implements Entity
 
 	// Ran each tick
 	@Override
-	public void tick(WorldAuthority authority)
+	public void tick()
 	{
 		//Don't do much
 	}
@@ -182,7 +182,6 @@ public abstract class EntityImplementation implements Entity
 	public Vector3dm canMoveWithCollisionRestrain(Vector3dm from, Vector3dm delta)
 	{
 		return world.collisionsManager().runEntityAgainstWorldVoxels(this, from, delta);
-		//return moveWithCollisionRestrain(from, delta, true);
 	}
 	
 	private static final Vector3dm onGroundTest_ = new Vector3dm(0.0, -0.01, 0.0);
@@ -223,13 +222,13 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public short getEID()
+	public final short getEID()
 	{
 		return eID;
 	}
 
 	@Override
-	public long getUUID()
+	public final long getUUID()
 	{
 		return entityUUID;
 	}
@@ -249,23 +248,23 @@ public abstract class EntityImplementation implements Entity
 		return exists();
 	}
 
-	public boolean exists()
+	public final boolean exists()
 	{
 		return existenceComponent.exists();
 	}
 
-	public boolean hasSpawned()
+	public final boolean hasSpawned()
 	{
 		return hasSpawned;
 	}
 
-	public void markHasSpawned()
+	public final void markHasSpawned()
 	{
 		hasSpawned = true;
 	}
 
 	@Override
-	public void setUUID(long uuid)
+	public final void setUUID(long uuid)
 	{
 		//Don't allow UUID changes once spawned !
 		if (entityUUID != -1 && this.hasSpawned())
@@ -275,7 +274,7 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public IterableIterator<Subscriber> getAllSubscribers()
+	public final IterableIterator<Subscriber> getAllSubscribers()
 	{
 		return new IterableIterator<Subscriber>() {
 
@@ -302,7 +301,7 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public boolean subscribe(Subscriber subscriber)
+	public final boolean subscribe(Subscriber subscriber)
 	{
 		//If it didn't already contain the subscriber ...
 		if (subscribers.add(subscriber))
@@ -313,7 +312,7 @@ public abstract class EntityImplementation implements Entity
 	}
 
 	@Override
-	public boolean unsubscribe(Subscriber subscriber)
+	public final boolean unsubscribe(Subscriber subscriber)
 	{
 		//If it did contain the subscriber
 		if (subscribers.remove(subscriber))
@@ -331,7 +330,7 @@ public abstract class EntityImplementation implements Entity
 	/**
 	 * Returns first component : existence, all other components are linked to it via a chained list
 	 */
-	public EntityComponent getComponents()
+	public final EntityComponent getComponents()
 	{
 		return existenceComponent;
 	}

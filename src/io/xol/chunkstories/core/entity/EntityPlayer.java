@@ -34,7 +34,7 @@ import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldAuthority;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 
 import io.xol.chunkstories.client.Client;
@@ -150,19 +150,19 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	// Server-side updating
 	@Override
-	public void tick(WorldAuthority authority)
+	public void tick()
 	{
 		//This is a controllable entity, take care of controlling
-		if (authority.isClient() && Client.getInstance().getPlayer().getControlledEntity() == this)
+		if (world instanceof WorldClient && Client.getInstance().getPlayer().getControlledEntity() == this)
 			tickClientController(Client.getInstance().getPlayer());
 
 		//Tick item in hand if one such exists
 		ItemPile pileSelected = getSelectedItemComponent().getSelectedItem();
 		if (pileSelected != null)
-			pileSelected.getItem().tickInHand(authority, this, pileSelected);
+			pileSelected.getItem().tickInHand(this, pileSelected);
 
 		//Auto-pickups items on the ground
-		if (authority.isMaster() && (world.getTicksElapsed() % 60L) == 0L)
+		if (world instanceof WorldMaster && (world.getTicksElapsed() % 60L) == 0L)
 		{
 			//TODO Use more precise, regional functions to not iterate over the entire world like a retard
 			for (Entity e : world.getAllLoadedEntities())
@@ -186,7 +186,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			}
 		}
 
-		if (authority.isMaster())
+		if (world instanceof WorldMaster)
 		{
 			//Food/health subsystem hanled here decrease over time
 			
@@ -242,7 +242,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			//System.out.println(this.getVelocityComponent().getVelocity().length());
 		}
 
-		super.tick(authority);
+		super.tick();
 
 	}
 

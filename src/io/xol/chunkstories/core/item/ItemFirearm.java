@@ -24,7 +24,6 @@ import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
@@ -154,7 +153,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 	 * @param owner
 	 */
 	@Override
-	public void tickInHand(WorldAuthority authority, Entity owner, ItemPile itemPile)
+	public void tickInHand(Entity owner, ItemPile itemPile)
 	{
 		if (owner instanceof EntityControllable && ((EntityControllable) owner).getController() != null)
 		{
