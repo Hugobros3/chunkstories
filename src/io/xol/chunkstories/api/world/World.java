@@ -324,40 +324,7 @@ public interface World
 	
 	/* Raytracers and methods to grab entities */
 	
-	/**
-	 * Raytraces throught the world to find a solid block
-	 * @param limit Between 0 and a finite number
-	 * @return The exact location of the intersection or null if it didn't found one
-	 */
-	public Location raytraceSolid(Vector3dm initialPosition, Vector3dm direction, double limit);
-	
-	/**
-	 * Raytraces throught the world to find a solid block
-	 * @param limit Between 0 and a finite number
-	 * @return The exact location of the step just before the intersection ( as to get the adjacent block ) or null if it didn't found one
-	 */
-	public Location raytraceSolidOuter(Vector3dm initialPosition, Vector3dm direction, double limit);
-	
-	/**
-	 * Raytraces throught the world to find a solid or selectable block
-	 * @param limit Between 0 and a finite number
-	 * @return The exact location of the intersection or null if it didn't found one
-	 */
-	public Location raytraceSelectable(Location initialPosition, Vector3dm direction, double limit);
-	
-	/**
-	 * Takes into account the voxel terrain and will stop at a solid block, <b>warning</b> limit can't be == -1 !
-	 * @param limit Between 0 and a finite number
-	 * @return Returns all entities that intersects with the ray within the limit, ordered nearest to furthest
-	 */
-	public Iterator<Entity> rayTraceEntities(Vector3dm initialPosition, Vector3dm direction, double limit);
-
-	/**
-	 * Ignores any terrain
-	 * @param limit Either -1 or between 0 and a finite number
-	 * @return Returns all entities that intersects with the ray within the limit, ordered nearest to furthest
-	 */
-	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3dm initialPosition, Vector3dm direction, double limit);
+	public WorldCollisionsManager collisionsManager();
 	
 	/* Various managers */
 	

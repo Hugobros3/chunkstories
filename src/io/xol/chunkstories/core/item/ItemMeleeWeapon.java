@@ -132,7 +132,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 				eyeLocation.add(new Vector3dm(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
 
 			//Find wall collision
-			Location shotBlock = owner.getWorld().raytraceSolid(eyeLocation, direction, range);
+			Location shotBlock = owner.getWorld().collisionsManager().raytraceSolid(eyeLocation, direction, range);
 
 			Vector3dm nearestLocation = null;
 
@@ -160,7 +160,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 					owner.getWorld().getSoundManager().playSoundEffect("sounds/sfx/glass.ogg", shotBlock, (float)Math.random() * 0.2f + 0.9f, 1.0f);
 					
 					//Re-raytrace the ray
-					shotBlock = owner.getWorld().raytraceSolid(eyeLocation, direction, range);
+					shotBlock = owner.getWorld().collisionsManager().raytraceSolid(eyeLocation, direction, range);
 				}
 				else
 					break;
@@ -168,7 +168,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 			
 			if (shotBlock != null)
 			{
-				Location shotBlockOuter = owner.getWorld().raytraceSolidOuter(eyeLocation, direction, range);
+				Location shotBlockOuter = owner.getWorld().collisionsManager().raytraceSolidOuter(eyeLocation, direction, range);
 				if (shotBlockOuter != null)
 				{
 					Vector3dm normal = shotBlockOuter.sub(shotBlock);
@@ -230,7 +230,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 			if (shooter.getWorld() instanceof WorldMaster)
 			{
 				//Iterate over each found entities
-				Iterator<Entity> shotEntities = owner.getWorld().rayTraceEntities(eyeLocation, direction, range);
+				Iterator<Entity> shotEntities = owner.getWorld().collisionsManager().rayTraceEntities(eyeLocation, direction, range);
 				while (shotEntities.hasNext())
 				{
 					Entity shotEntity = shotEntities.next();

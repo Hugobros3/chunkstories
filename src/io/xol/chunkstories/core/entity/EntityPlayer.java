@@ -459,9 +459,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		Vector3dm direction = getDirectionLookingAt();
 
 		if (inside)
-			return world.raytraceSelectable(new Location(world, initialPosition), direction, 256.0);
+			return world.collisionsManager().raytraceSelectable(new Location(world, initialPosition), direction, 256.0);
 		else
-			return world.raytraceSolidOuter(new Location(world, initialPosition), direction, 256.0);
+			return world.collisionsManager().raytraceSolidOuter(new Location(world, initialPosition), direction, 256.0);
 	}
 
 	@Override
@@ -612,7 +612,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		
 		Vector3dm direction = getDirectionLookingAt();
 		
-		Iterator<Entity> i = world.rayTraceEntities(initialPosition, direction, maxLen);
+		Iterator<Entity> i = world.collisionsManager().rayTraceEntities(initialPosition, direction, maxLen);
 		while(i.hasNext()) {
 			Entity e = i.next();
 			if(e.handleInteraction(this, input))

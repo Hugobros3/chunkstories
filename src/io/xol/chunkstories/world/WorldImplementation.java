@@ -27,6 +27,7 @@ import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldAuthority;
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.WorldCollisionsManager;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -100,6 +101,7 @@ public abstract class WorldImplementation implements World
 
 	// Particles
 	private ParticlesRenderer particlesHolder;
+	private final WorldCollisionsManager collisionsManager;
 
 	//Entity IDS counter
 	AtomicLong entitiesUUIDGenerator = new AtomicLong();
@@ -139,6 +141,8 @@ public abstract class WorldImplementation implements World
 			this.internalData = null;
 		}
 
+		collisionsManager = new BuiltInWorldCollisionsManager(this);
+		
 		//Start the world logic thread
 		worldThread = new WorldLogicThread(this, new UnthrustedUserContentSecurityManager());
 	}
@@ -862,155 +866,6 @@ public abstract class WorldImplementation implements World
 		return false;
 	}
 
-	@Override
-	public Location raytraceSolid(Vector3dm initialPosition, Vector3dm direction, double limit)
-	{
-		return raytraceSolid(initialPosition, direction, limit, false, false);
-	}
-
-	@Override
-	public Location raytraceSolidOuter(Vector3dm initialPosition, Vector3dm direction, double limit)
-	{
-		return raytraceSolid(initialPosition, direction, limit, true, false);
-	}
-
-	@Override
-	public Location raytraceSelectable(Location initialPosition, Vector3dm direction, double limit)
-	{
-		return raytraceSolid(initialPosition, direction, limit, false, true);
-	}
-
-	private Location raytraceSolid(Vector3dm initialPosition, Vector3dm direction, double limit, boolean outer, boolean selectable)
-	{
-		direction.normalize();
-		//direction.scale(0.02);
-
-		//float distance = 0f;
-		Voxel vox;
-		int x, y, z;
-		x = (int) Math.floor(initialPosition.getX());
-		y = (int) Math.floor(initialPosition.getY());
-		z = (int) Math.floor(initialPosition.getZ());
-
-		//DDA algorithm
-
-		//It requires double arrays because it works using loops over each dimension
-		double[] rayOrigin = new double[3];
-		double[] rayDirection = new double[3];
-		rayOrigin[0] = initialPosition.getX();
-		rayOrigin[1] = initialPosition.getY();
-		rayOrigin[2] = initialPosition.getZ();
-		rayDirection[0] = direction.getX();
-		rayDirection[1] = direction.getY();
-		rayDirection[2] = direction.getZ();
-		int voxelCoords[] = new int[] { x, y, z };
-		int voxelDelta[] = new int[] { 0, 0, 0 };
-		double[] deltaDist = new double[3];
-		double[] next = new double[3];
-		int step[] = new int[3];
-
-		int side = 0;
-		//Prepare distances
-		for (int i = 0; i < 3; ++i)
-		{
-			double deltaX = rayDirection[0] / rayDirection[i];
-			double deltaY = rayDirection[1] / rayDirection[i];
-			double deltaZ = rayDirection[2] / rayDirection[i];
-			deltaDist[i] = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-			if (rayDirection[i] < 0.f)
-			{
-				step[i] = -1;
-				next[i] = (rayOrigin[i] - voxelCoords[i]) * deltaDist[i];
-			}
-			else
-			{
-				step[i] = 1;
-				next[i] = (voxelCoords[i] + 1.f - rayOrigin[i]) * deltaDist[i];
-			}
-		}
-
-		do
-		{
-			
-			//DDA steps
-			side = 0;
-			for (int i = 1; i < 3; ++i)
-			{
-				if (next[side] > next[i])
-				{
-					side = i;
-				}
-			}
-			next[side] += deltaDist[side];
-			voxelCoords[side] += step[side];
-			voxelDelta[side] += step[side];
-
-			x = voxelCoords[0];
-			y = voxelCoords[1];
-			z = voxelCoords[2];
-			vox = VoxelsStore.get().getVoxelById(this.getVoxelData(x, y, z));
-			if (vox.getType().isSolid() || (selectable && vox.isVoxelSelectable()))
-			{
-				boolean collides = false;
-				for (CollisionBox box : vox.getTranslatedCollisionBoxes(this, x, y, z))
-				{
-					//System.out.println(box);
-					Vector3dm collisionPoint = box.lineIntersection(initialPosition, direction);
-					if (collisionPoint != null)
-					{
-						collides = true;
-						//System.out.println("collides @ "+collisionPoint);
-					}
-				}
-				if (collides)
-				{
-					if (!outer)
-						return new Location(this, x, y, z);
-					else
-					{
-						//Back off a bit
-						switch (side)
-						{
-						case 0:
-							x -= step[side];
-							break;
-						case 1:
-							y -= step[side];
-							break;
-						case 2:
-							z -= step[side];
-							break;
-						}
-						return new Location(this, x, y, z);
-					}
-				}
-			}
-			
-			//distance += deltaDist[side];
-
-		}
-		while (voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2] < limit * limit);
-		return null;
-	}
-
-	@Override
-	public Iterator<Entity> rayTraceEntities(Vector3dm initialPosition, Vector3dm direction, double limit)
-	{
-		double blocksLimit = limit;
-
-		Vector3dm blocksCollision = this.raytraceSolid(initialPosition, direction, limit);
-		if (blocksCollision != null)
-			blocksLimit = blocksCollision.distanceTo(initialPosition);
-
-		return raytraceEntitiesIgnoringVoxels(initialPosition, direction, Math.min(blocksLimit, limit));
-	}
-
-	@Override
-	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3dm initialPosition, Vector3dm direction, double limit)
-	{
-		return new EntityRayIterator(this, initialPosition, direction, limit);
-	}
-
 	private int sanitizeHorizontalCoordinate(int coordinate)
 	{
 		coordinate = coordinate % (getSizeInChunks() * 32);
@@ -1026,6 +881,12 @@ public abstract class WorldImplementation implements World
 		if (coordinate > worldInfo.getSize().heightInChunks * 32)
 			coordinate = worldInfo.getSize().heightInChunks * 32;
 		return coordinate;
+	}
+	
+	@Override
+	public WorldCollisionsManager collisionsManager()
+	{
+		return collisionsManager;
 	}
 
 	@Override

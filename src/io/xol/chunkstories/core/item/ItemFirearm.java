@@ -261,7 +261,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 					direction.normalize();
 
 					//Find wall collision
-					Location shotBlock = user.getWorld().raytraceSolid(eyeLocation, direction, range);
+					Location shotBlock = user.getWorld().collisionsManager().raytraceSolid(eyeLocation, direction, range);
 
 					Vector3dm nearestLocation = null;
 
@@ -289,7 +289,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 							user.getWorld().getSoundManager().playSoundEffect("sounds/sfx/glass.ogg", shotBlock, (float)Math.random() * 0.2f + 0.9f, 1.0f);
 							
 							//Re-raytrace the ray
-							shotBlock = user.getWorld().raytraceSolid(eyeLocation, direction, range);
+							shotBlock = user.getWorld().collisionsManager().raytraceSolid(eyeLocation, direction, range);
 						}
 						else
 							break;
@@ -297,7 +297,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 					
 					if (shotBlock != null)
 					{
-						Location shotBlockOuter = user.getWorld().raytraceSolidOuter(eyeLocation, direction, range);
+						Location shotBlockOuter = user.getWorld().collisionsManager().raytraceSolidOuter(eyeLocation, direction, range);
 						
 						if (shotBlockOuter != null)
 						{
@@ -361,7 +361,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 					if (shooter.getWorld() instanceof WorldMaster)
 					{
 						//Iterate over each found entities
-						Iterator<Entity> shotEntities = user.getWorld().rayTraceEntities(eyeLocation, direction, 256f);
+						Iterator<Entity> shotEntities = user.getWorld().collisionsManager().rayTraceEntities(eyeLocation, direction, 256f);
 						while (shotEntities.hasNext())
 						{
 							Entity shotEntity = shotEntities.next();
