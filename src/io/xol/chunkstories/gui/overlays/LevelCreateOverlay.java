@@ -10,7 +10,6 @@ import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.gui.elements.Button;

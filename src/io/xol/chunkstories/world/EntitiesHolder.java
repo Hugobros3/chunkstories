@@ -136,8 +136,6 @@ public class EntitiesHolder implements Iterable<Entity>
 		return (int) (uuid & 0xFFFFFFFF);
 	}*/
 
-	private static final long serialVersionUID = -6957124575819483540L;
-
 	@Override
 	public Iterator<Entity> iterator()
 	{

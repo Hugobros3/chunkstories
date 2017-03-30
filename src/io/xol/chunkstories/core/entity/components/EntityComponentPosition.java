@@ -57,7 +57,7 @@ public class EntityComponentPosition extends EntityComponent
 		this.pushComponentEveryone();
 	}
 	
-	public void setPositionXYZ(double x, double y, double z)
+	public void setPosition(double x, double y, double z)
 	{
 		this.pos.setX(x);
 		this.pos.setY(y);
@@ -152,9 +152,6 @@ public class EntityComponentPosition extends EntityComponent
 		}
 		else
 		{
-			//Thread.currentThread().dumpStack();
-			//System.out.println(entity.getUUID() + "region changed "+pos + "wtf" + entity);
-			
 			if(regionWithin != null)
 				regionWithin.removeEntityFromRegion(entity);
 		

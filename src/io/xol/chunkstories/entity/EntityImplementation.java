@@ -5,7 +5,6 @@ import io.xol.chunkstories.core.entity.components.EntityComponentExistence;
 import io.xol.chunkstories.core.entity.components.EntityComponentPosition;
 import io.xol.chunkstories.core.entity.components.EntityComponentVelocity;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.VoxelContextOlder;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -50,6 +49,7 @@ public abstract class EntityImplementation implements Entity
 	final protected EntityComponentVelocity velocityComponent;
 
 	//Hacky bullshit
+	//TODO get rid of entirely
 	protected Voxel voxelIn;
 	
 	public EntityImplementation(World world, double x, double y, double z)
@@ -62,7 +62,7 @@ public abstract class EntityImplementation implements Entity
 		velocityComponent = new EntityComponentVelocity(this, positionComponent);
 		
 		positionComponent.setWorld(world);
-		positionComponent.setPositionXYZ(x, y, z);
+		positionComponent.setPosition(x, y, z);
 
 		//To avoid NPEs
 		voxelIn = VoxelsStore.get().getVoxelById(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
@@ -214,7 +214,6 @@ public abstract class EntityImplementation implements Entity
 	@Override
 	public void setupCamera(CameraInterface camera)
 	{
-		//camera.pos = new Vector3dm(positionComponent.getLocation()).negate();
 		camera.setCameraPosition(new Vector3dm(positionComponent.getLocation()));
 		
 		//Default FOV
@@ -319,6 +318,7 @@ public abstract class EntityImplementation implements Entity
 		{
 			//Push an update to the subscriber telling him to forget about the entity :
 			this.existenceComponent.pushComponent(subscriber);
+			
 			//The existence component checks for the subscriber being present in the subscribees of the entity and if it doesn't find it it will
 			//say the entity no longer exists
 			return true;

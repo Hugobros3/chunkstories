@@ -25,7 +25,6 @@ import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldCollisionsManager;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -310,11 +309,9 @@ public abstract class WorldImplementation implements World
 					entity = iter.next();
 
 					//Check entity's region is loaded
-					//Location entityLocation = entity.getLocation();
 					if (entity.getRegion() != null && entity.getRegion().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
-					{
 						entity.tick();
-					}
+					
 					//Tries to snap the entity to the region if it ends up being loaded
 					else if (entity.getRegion() == null)
 						entity.getEntityComponentPosition().trySnappingToRegion();
@@ -325,9 +322,6 @@ public abstract class WorldImplementation implements World
 			{
 				entitiesLock.writeLock().unlock();
 			}
-			//entitiesLock.writeLock().notifyAll();
-
-			//System.out.println("Unlocked !");
 
 			//Update particles subsystem if it exists
 			if (getParticlesManager() != null && getParticlesManager() instanceof ParticlesRenderer)

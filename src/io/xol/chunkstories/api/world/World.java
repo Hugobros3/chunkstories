@@ -1,7 +1,5 @@
 package io.xol.chunkstories.api.world;
 
-import java.util.Iterator;
-
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
