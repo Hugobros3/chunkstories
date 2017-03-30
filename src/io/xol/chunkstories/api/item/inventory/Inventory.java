@@ -64,6 +64,6 @@ public interface Inventory extends Iterable<ItemPile>
 	public void refreshItemSlot(int x, int y);
 	
 	/** Used to secure access */
-	public boolean hasAccess(Entity entity);
+	public boolean isAccessibleTo(Entity entity);
 
 }

@@ -100,7 +100,7 @@ public class EntityComponentInventory extends EntityComponent
 			return EntityComponentInventory.this;
 		}
 		
-		public boolean hasAccess(Entity entity) {
+		public boolean isAccessibleTo(Entity entity) {
 			
 			if(entity == null)
 				return true;
@@ -136,7 +136,7 @@ public class EntityComponentInventory extends EntityComponent
 			Entity entity = player.getControlledEntity();
 			
 			//Abort if the entity don't have access
-			if(!this.actualInventory.hasAccess(entity))
+			if(!this.actualInventory.isAccessibleTo(entity))
 			{
 				//System.out.println(player + "'s " + entity + " don't have access to "+this);
 				stream.writeByte(UpdateMode.NEVERMIND.ordinal());

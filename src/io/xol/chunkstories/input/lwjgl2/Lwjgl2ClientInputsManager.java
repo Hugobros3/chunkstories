@@ -152,8 +152,8 @@ public class Lwjgl2ClientInputsManager implements ClientInputsManager
 		Scene currentScene = Client.getInstance().getGameWindow().getCurrentScene();
 		if(!(currentScene instanceof Ingame))
 			return false;
-		Ingame scene = (Ingame)currentScene;
 		
+		Ingame scene = (Ingame)currentScene;
 		ClientInputPressedEvent event = new ClientInputPressedEvent(input);
 
 		scene.getPluginManager().fireEvent(event);

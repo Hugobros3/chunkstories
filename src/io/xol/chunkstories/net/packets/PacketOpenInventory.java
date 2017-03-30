@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.net.PacketDestinator;
@@ -38,7 +40,13 @@ public class PacketOpenInventory extends PacketSynchPrepared
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, PacketProcessingException
 	{
 		inventory = InventoryTranslator.obtainInventoryHandle(in, processor);
-		Client.getInstance().openInventory(inventory);
+		
+		Entity entity = Client.getInstance().getPlayer().getControlledEntity();
+		
+		if(entity != null && entity instanceof EntityWithInventory)
+			Client.getInstance().openInventories(((EntityWithInventory) entity).getInventory(), inventory);
+		else
+			Client.getInstance().openInventories(inventory);
 	}
 
 }

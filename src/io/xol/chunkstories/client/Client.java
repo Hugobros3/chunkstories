@@ -211,17 +211,21 @@ public class Client implements ClientInterface
 			((Ingame) gameWindows.getCurrentScene()).chat.insert(textToPrint);
 	}
 
-	public void openInventory(Inventory otherInventory)
+	public void openInventories(Inventory... inventories)
 	{
 		if (gameWindows.getCurrentScene() instanceof Ingame)
 		{
 			Ingame gmp = (Ingame) gameWindows.getCurrentScene();
 
 			gmp.focus(false);
-			if (otherInventory != null)
+			
+			gmp.changeOverlay(new InventoryOverlay(gmp, null, inventories));
+			
+			/*if (otherInventory != null)
 				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getPlayer().getControlledEntity()).getInventory(), otherInventory }));
 			else
 				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getPlayer().getControlledEntity()).getInventory() }));
+			*/
 		}
 	}
 

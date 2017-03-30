@@ -263,6 +263,10 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 				ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
 				//animationsData.add(new AnimatableData(location.castToSinglePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
+
+				renderingContext.bindAlbedoTexture(TexturesHandler.getTexture("./textures/armor/isis.png"));
+				TexturesHandler.getTexture("./textures/armor/isis.png").setLinearFiltering(false);
+				ModelLibrary.getRenderableMesh("./models/human_overlay.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
 			}
 
 			//Instanciate all players

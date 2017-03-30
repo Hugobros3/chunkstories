@@ -24,6 +24,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
+import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.api.item.inventory.Inventory;
@@ -469,6 +470,19 @@ public class Ingame extends OverlayableScene
 			this.changeOverlay(new PauseOverlay(this, null));
 		}
 		return false;
+	}
+	
+	@Override
+	public void changeOverlay(Overlay o) {
+		super.changeOverlay(o);
+		
+		if(o != null)
+		{
+			Mouse.setGrabbed(false);
+			guiHidden = false;
+		}
+		else
+			Mouse.setGrabbed(true);
 	}
 
 	public boolean onKeyUp(int keyCode)

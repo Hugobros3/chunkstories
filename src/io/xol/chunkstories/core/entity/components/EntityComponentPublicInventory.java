@@ -58,8 +58,8 @@ public class EntityComponentPublicInventory extends EntityComponentInventory
 			return "Chest";
 		}
 		
-		public boolean hasAccess(Entity entity) {
-			if(super.hasAccess(entity))
+		public boolean isAccessibleTo(Entity entity) {
+			if(super.isAccessibleTo(entity))
 				return true;
 			
 			//It's public if you're near enough.

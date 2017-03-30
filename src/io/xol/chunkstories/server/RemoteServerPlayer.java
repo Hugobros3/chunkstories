@@ -553,7 +553,7 @@ public class RemoteServerPlayer implements Player
 	public void openInventory(Inventory inventory)
 	{
 		Entity entity = this.getControlledEntity();
-		if (inventory.hasAccess(entity))
+		if (inventory.isAccessibleTo(entity))
 		{
 			if (inventory instanceof EntityComponentInventory.EntityInventory)
 			{

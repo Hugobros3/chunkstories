@@ -73,6 +73,11 @@ public class ObjMeshRenderable implements Renderable
 	{
 		internalRenderer(renderingContext, skeleton, animationTime, false, (String[]) null);
 	}
+	
+	public void render(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime, String... parts)
+	{
+		internalRenderer(renderingContext, skeleton, animationTime, false, parts);
+	}
 
 	private void internalRenderer(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime, boolean exclude, String... parts)
 	{

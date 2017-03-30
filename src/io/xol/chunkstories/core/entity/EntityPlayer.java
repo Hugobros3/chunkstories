@@ -32,6 +32,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -39,6 +40,7 @@ import io.xol.chunkstories.api.world.WorldMaster;
 
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.core.entity.EntityArmorInventory.EntityWithArmor;
 import io.xol.chunkstories.core.entity.components.EntityComponentController;
 import io.xol.chunkstories.core.entity.components.EntityComponentCreativeMode;
 import io.xol.chunkstories.core.entity.components.EntityComponentFlying;
@@ -47,7 +49,10 @@ import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentName;
 import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
 import io.xol.chunkstories.core.item.ItemVoxel;
+import io.xol.chunkstories.core.item.armor.ItemArmor;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
+import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
+import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -64,17 +69,19 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 /**
  * Core/Vanilla player, has all the functionality you'd want from it
  */
-public class EntityPlayer extends EntityHumanoid implements EntityControllable, EntityOverlay, EntityNameable, EntityWithInventory, EntityWithSelectedItem, EntityCreative, EntityFlying
+public class EntityPlayer extends EntityHumanoid implements EntityControllable, EntityOverlay, EntityNameable, EntityWithInventory, EntityWithSelectedItem, EntityCreative, EntityFlying, EntityWithArmor
 {
 	//Add the controller component to whatever else the superclass may have
-	EntityComponentController controllerComponent;
+	final EntityComponentController controllerComponent;
 
-	EntityComponentInventory inventoryComponent;
-	EntityComponentSelectedItem selectedItemComponent;
+	final EntityComponentInventory inventoryComponent;
+	final EntityComponentSelectedItem selectedItemComponent;
 
-	EntityComponentName name;
-	EntityComponentCreativeMode creativeMode;
-	EntityComponentFlying flying;
+	final EntityComponentName name;
+	final EntityComponentCreativeMode creativeMode;
+	final EntityComponentFlying flying;
+	
+	final EntityArmorInventory armor;
 
 	//FOOD
 	EntityComponentFoodLevel foodLevel;
@@ -90,7 +97,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	Location lastCameraLocation;
 
 	int variant;
-
+	
 	public EntityPlayer(World w, double x, double y, double z)
 	{
 		super(w, x, y, z);
@@ -105,6 +112,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		flying = new EntityComponentFlying(this, this.getComponents().getLastComponent());
 		
 		foodLevel = new EntityComponentFoodLevel(this, 100);
+		
+		armor = new EntityArmorInventory(this, 4, 1);
 	}
 
 	public EntityPlayer(WorldImplementation w, double x, double y, double z, String name)
@@ -504,7 +513,6 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	class EntityPlayerRenderer<H extends EntityPlayer> extends EntityHumanoidRenderer<H>
 	{
-
 		@Override
 		public void setupRender(RenderingInterface renderingContext)
 		{
@@ -543,6 +551,15 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					ModelLibrary.getRenderableMesh("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
 					//animationsData.add(new AnimatableData(location.castToSinglePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
 			
+					for(ItemPile aip : entity.armor.getInventory().iterator())
+					{
+						ItemArmor ia = (ItemArmor)aip.getItem();
+						
+						renderingContext.bindAlbedoTexture(TexturesHandler.getTexture(ia.getOverlayTextureName()));
+						TexturesHandler.getTexture(ia.getOverlayTextureName()).setLinearFiltering(false);
+						ModelLibrary.getRenderableMesh("./models/human_overlay.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, ia.bodyPartsAffected());
+					}
+					
 					ItemPile selectedItemPile = null;
 
 					if (entity instanceof EntityWithSelectedItem)
@@ -597,6 +614,20 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	@Override
 	public boolean onControllerInput(Input input, Controller controller)
 	{
+		//We are moving inventory bringup here !
+		if(input.getName().equals("inventory") && world instanceof WorldClient)
+		{
+			
+			if(creativeMode.get()) {
+				Client.getInstance().openInventories(this.inventoryComponent.getInventory(), new InventoryAllVoxels());
+			}
+			else {
+				Client.getInstance().openInventories(this.inventoryComponent.getInventory(), this.armor.getInventory());
+			}
+			
+			return true;
+		}
+		
 		Location blockLocation = this.getBlockLookingAt(true);
 		
 		double maxLen = 1024;
@@ -758,5 +789,11 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		}
 		
 		return super.damage(cause, osef, damage);
+	}
+
+	@Override
+	public EntityArmorInventory getArmor()
+	{
+		return armor;
 	}
 }

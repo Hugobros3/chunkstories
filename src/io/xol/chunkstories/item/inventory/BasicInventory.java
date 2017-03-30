@@ -377,7 +377,7 @@ public class BasicInventory implements Inventory
 	}
 
 	@Override
-	public boolean hasAccess(Entity entity)
+	public boolean isAccessibleTo(Entity entity)
 	{
 		return true;
 	}

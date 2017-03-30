@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.entity.PlayerClient;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
@@ -410,10 +411,15 @@ public class ClientWorldController implements PlayerClient
 	public void openInventory(Inventory inventory)
 	{
 		Entity entity = this.getControlledEntity();
-		if (inventory.hasAccess(entity))
+		if (inventory.isAccessibleTo(entity))
 		{
 			//Directly open it without further concern
-			Client.getInstance().openInventory(inventory);
+			//Client.getInstance().openInventories(inventory);
+			
+			if(entity != null && entity instanceof EntityWithInventory)
+				Client.getInstance().openInventories(((EntityWithInventory) entity).getInventory(), inventory);
+			else
+				Client.getInstance().openInventories(inventory);
 		}
 		//else
 		//	this.sendMessage("Notice: You don't have access to this inventory.");

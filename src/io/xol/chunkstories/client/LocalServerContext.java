@@ -141,9 +141,9 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	}
 
 	@Override
-	public void openInventory(Inventory otherInventory)
+	public void openInventories(Inventory... otherInventory)
 	{
-		client.openInventory(otherInventory);
+		client.openInventories(otherInventory);
 	}
 
 	@Override

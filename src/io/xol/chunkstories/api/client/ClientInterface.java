@@ -37,10 +37,9 @@ public interface ClientInterface extends GameContext
 	public void exitToMainMenu(String errorMessage);
 	
 	/**
-	 * Opens the inventory GUI with the controlled entity's inventory, if applicable
-	 * @param otherInventory If not null, opens this other inventory as well
+	 * Opens the inventory GUI with all the specified inventories opened
 	 */
-	public void openInventory(Inventory otherInventory);
+	public void openInventories(Inventory... inventories);
 	
 	/**
 	 * @return Is the game GUI in focus or obstructed by other things ?

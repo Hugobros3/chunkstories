@@ -116,7 +116,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		//Check access
 		if(to != null && playerEntity != null)
 		{
-			if(!to.hasAccess(playerEntity))
+			if(!to.isAccessibleTo(playerEntity))
 			{
 				player.sendMessage("You don't have access to this.");
 				return;
