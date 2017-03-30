@@ -103,7 +103,7 @@ public class NoiseWorldGenerator extends WorldGenerator
 
 					//Blocks writing
 					if (value > 0.0f)
-						chunk.setVoxelDataWithoutUpdates(x, y, z, VoxelFormat.format(99, 15-(int)(value * 15f), 0, 0));
+						chunk.setVoxelDataWithoutUpdates(x, y, z, VoxelFormat.format(1, 15-(int)(value * 15f), 0, 0));
 					//Water
 					else if (cy * 32 + y < 256)
 						chunk.setVoxelDataWithoutUpdates(x, y, z, 128);

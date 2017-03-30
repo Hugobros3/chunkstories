@@ -1,6 +1,8 @@
 package io.xol.chunkstories.gui.overlays;
 
+import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
 import io.xol.chunkstories.api.gui.Overlay;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.OverlayableScene;
@@ -8,6 +10,8 @@ import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
+import io.xol.engine.graphics.fonts.FontRenderer2;
+import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
@@ -23,6 +27,7 @@ public class LevelCreateOverlay extends Overlay
 	Button createOption = new Button(0, 0, 150, 32, ("Create"), BitmapFont.SMALLFONTS, 1);
 	
 	InputText levelName = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
+	InputText worldGenName = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
 	
 	public LevelCreateOverlay(OverlayableScene scene, Overlay parent)
 	{
@@ -32,6 +37,9 @@ public class LevelCreateOverlay extends Overlay
 		guiHandler.add(createOption);
 		
 		guiHandler.add(levelName);
+		guiHandler.add(worldGenName);
+		
+		worldGenName.text = "flat";
 	}
 
 	@Override
@@ -40,27 +48,66 @@ public class LevelCreateOverlay extends Overlay
 		if(parent != null)
 			this.parent.drawToScreen(renderingContext, positionStartX, positionStartY, width, height);
 		
-		int x = 48;
+		renderingContext.getGuiRenderer().renderColoredRect(width / 2, height / 2, width, height, 0, "000000", 0.75f);
+		
+		int frame_border_size = 64;
+		
+		positionStartX += frame_border_size;
+		positionStartY += frame_border_size;
+		
+		width -= frame_border_size * 2;
+		height -= frame_border_size * 2;
+		
+		int x = positionStartX + 20;
 		// int y = 48;
-		CorneredBoxDrawer.drawCorneredBoxTiled(width/2, height/2, width - 48 * 2, height - 48 * 2, 8, "gui/scalableButton", 32, 2);
+		CorneredBoxDrawer.drawCorneredBoxTiled(positionStartX + width/2, positionStartY + height/2, width, height, 8, "./textures/gui/scalableButton.png", 32, 2);
+		
+		renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial12px9pt, x, positionStartY + height - 64, "Create a new World", 3, 3, new Vector4fm(1));
+		renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial12px9pt, x, positionStartY + height - 64 - 32, "For use in singleplayer", 2, 2, width, new Vector4fm(1));
+		
+		
+		renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial12px9pt, x, positionStartY + height - 64 - 96 - 4, "Level name", 2, 2, width, new Vector4fm(1));
+		int lvlnm_l = TrueTypeFont.arial12px9pt.getWidth("Level name") * 2;
+		
+		levelName.setPosition(x + lvlnm_l + 20, positionStartY + height - 64 - 96);
+		levelName.setMaxLength(width - (x + lvlnm_l + 20) - 20);
+		levelName.drawWithBackGround();
+		
+		String wg_string = "World generator to use";
+		renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial12px9pt, x, positionStartY + height - 64 - 148 - 4, wg_string, 2, 2, width, new Vector4fm(1));
+		int wg_sl = TrueTypeFont.arial12px9pt.getWidth(wg_string) * 2;
+		
+		worldGenName.setPosition(x + wg_sl + 20, positionStartY + height - 64 - 148);
+		worldGenName.setMaxLength(width - (x + wg_sl + 20) - 20);
+		worldGenName.drawWithBackGround();
+		
+		WorldGeneratorType wg = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.text);
+		String wg_validity_string;
+		if(wg == null) {
+			wg_validity_string = "#FF0000'" + worldGenName.text + "' wasnt found in the list of loaded world generators.";
+		}
+		else {
+			wg_validity_string = "#00FF00'" + worldGenName.text + "' is a valid world generator !";
+		}
+		
+		renderingContext.getTrueTypeFontRenderer().drawStringWithShadow(TrueTypeFont.arial12px9pt, x, positionStartY + height - 64 - 196 - 4, wg_validity_string, 2, 2, width, new Vector4fm(1));
+		
+		//FontRenderer2.drawTextUsingSpecificFont(20, height - 64, 0, 48, "Create a new World", BitmapFont.SMALLFONTS);
 
-		cancelOption.setPosition(x + 128, 96);
+		cancelOption.setPosition(x + 75, positionStartY + 20 + 16);
 		cancelOption.draw();
 
-		createOption.setPosition(width - 192, 96);
+		createOption.setPosition(width - 75 - 20, positionStartY + 20 + 16);
 		createOption.draw();
-
-		levelName.setPosition(x + 48, renderingContext.getWindow().getHeight() - 256);
-		levelName.drawWithBackGround();
 		
 		if (cancelOption.clicked())
 		{
 			this.mainScene.changeOverlay(this.parent);
 		}
-		if (createOption.clicked())
+		if (createOption.clicked() && wg != null)
 		{
-			String generator = "flat";
-			WorldInfoImplementation info = new WorldInfoImplementation(levelName.text, ""+System.currentTimeMillis(), "", WorldInfo.WorldSize.MEDIUM, generator);
+			//String generator = "flat";
+			WorldInfoImplementation info = new WorldInfoImplementation(levelName.text, ""+System.currentTimeMillis(), "", WorldInfo.WorldSize.MEDIUM, worldGenName.text);
 			
 			//Client.world = 
 			//Client.world.startLogic();

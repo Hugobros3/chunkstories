@@ -165,22 +165,15 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 
 		ChunkStoriesLogger.getInstance().warning("Couldn't find generator \"" + name + "\"; Providing BlankWorldGenerator instead.");
 		return blank;
-		/*if (generators.containsKey(name))
-		{
-			try
-			{
-				WorldGenerator generator = generators.get(name).newInstance(new Object[] {});
-				return generator;
-			}
-			catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		ChunkStoriesLogger.getInstance().warning("Couldn't find generator \"" + name + "\"; Using BlankGenerator instead.");
+	}
+	
+	public WorldGeneratorType getWorldGeneratorUnsafe(String name)
+	{
+		WorldGeneratorType generator = generators.get(name);
+		if(generator != null)
+			return generator;
 		
-		
-		return new BlankWorldGenerator();*/
+		return null;
 	}
 	
 	public String getWorldGeneratorName(WorldGenerator generator)
