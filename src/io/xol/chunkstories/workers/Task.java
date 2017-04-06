@@ -2,12 +2,17 @@ package io.xol.chunkstories.workers;
 
 public abstract class Task
 {
-	boolean done = false;
-	boolean cancelled = false;
+	private boolean done = false;
+	private boolean cancelled = false;
 	
 	public boolean isDone()
 	{
 		return done;
+	}
+	
+	public boolean isCancelled()
+	{
+		return cancelled;
 	}
 	
 	public void cancel()
@@ -17,11 +22,11 @@ public abstract class Task
 
 	public final boolean run()
 	{
-		if (!done && (cancelled || runTask()))
+		if (!done && (cancelled || task()))
 			done = true;
 		
 		return done;
 	}
 
-	abstract boolean runTask();
+	abstract boolean task();
 }

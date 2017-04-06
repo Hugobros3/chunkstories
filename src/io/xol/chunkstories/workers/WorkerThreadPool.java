@@ -18,7 +18,7 @@ public class WorkerThreadPool extends TasksPool<Task>
 	Task DIE = new Task() {
 
 		@Override
-		boolean runTask()
+		boolean task()
 		{
 			return true;
 		}
@@ -37,7 +37,10 @@ public class WorkerThreadPool extends TasksPool<Task>
 		{
 			while(true)
 			{
+				//Aquire a work permit
 				tasksCounter.acquireUninterruptibly();
+				
+				//If one such permit was found to exist, assert a task is readily avaible
 				Task task = tasksQueue.poll();
 				
 				assert task != null;
@@ -46,9 +49,31 @@ public class WorkerThreadPool extends TasksPool<Task>
 				if(task == DIE)
 					break;
 				
-				task.run();
+				boolean result = task.run();
+				tasksRan++;
+				
+				//Depending on the result we either reschedule the task or decrement the counter
+				if(result == false)
+					rescheduleTask(task);
+				else
+					tasksQueueSize.decrementAndGet();
 			}
 		}
+	}
+	
+	long tasksRan = 0;
+	long tasksRescheduled = 0;
+	
+	void rescheduleTask(Task task)
+	{
+		tasksQueue.add(task);
+		tasksCounter.release();
+		
+		tasksRescheduled++;
+	}
+	
+	public String toString() {
+		return "[WorkerThreadPool threadCount="+this.threadsCount+", tasksRan="+tasksRan+", tasksRescheduled="+tasksRescheduled+"]";
 	}
 	
 	public void destroy()
