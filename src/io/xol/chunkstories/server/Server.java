@@ -103,6 +103,7 @@ public class Server implements Runnable, ServerInterface
 			}
 			else
 			{
+				serverConfig.save();
 				System.out.println("Can't find the world \"" + worldName + "\" in " + worldDir + ". Exiting !");
 				Runtime.getRuntime().exit(0);
 			}
