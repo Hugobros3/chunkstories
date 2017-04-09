@@ -58,7 +58,7 @@ public interface Chunk
 	 * Recomputes and propagates all lights within the chunk
 	 * @param considerAdjacentChunks If set to true, the adjacent faces of the 6 adjacents chunks's data will be took in charge
 	 */
-	public void bakeVoxelLightning(boolean considerAdjacentChunks);
+	public void computeVoxelLightning(boolean considerAdjacentChunks);
 	
 	public boolean needsLightningUpdates();
 	

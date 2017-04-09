@@ -32,7 +32,7 @@ public class RegionImplementation implements Region
 	public final WorldImplementation world;
 	public final int regionX, regionY, regionZ;
 	public final long uuid;
-	private final WorldRegionsHolder worldChunksHolder;
+	private final HashMapWorldRegionsHolder worldChunksHolder;
 	
 	protected Collection<CubicChunk> loadedChunks = ConcurrentHashMap.newKeySet();//new LinkedBlockingQueue<CubicChunk>();
 	private Set<WeakReference<WorldUser>> users = new HashSet<WeakReference<WorldUser>>();
@@ -55,7 +55,7 @@ public class RegionImplementation implements Region
 
 	private static Random random = new Random();
 
-	public RegionImplementation(WorldImplementation world, int regionX, int regionY, int regionZ, WorldRegionsHolder worldChunksHolder)
+	public RegionImplementation(WorldImplementation world, int regionX, int regionY, int regionZ, HashMapWorldRegionsHolder worldChunksHolder)
 	{
 		this.world = world;
 		this.regionX = regionX;

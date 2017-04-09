@@ -103,7 +103,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			else
 				chunk = new CubicChunk(region, chunkX, chunkY, chunkZ);
 
-			chunk.bakeVoxelLightning(true);
+			chunk.computeVoxelLightning(true);
 
 			//Remove any object preventing us from asking it again
 			//ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);

@@ -61,7 +61,7 @@ public class DummyChunk implements Chunk
 	}
 
 	@Override
-	public void bakeVoxelLightning(boolean considerAdjacentChunks)
+	public void computeVoxelLightning(boolean considerAdjacentChunks)
 	{
 	}
 

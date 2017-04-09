@@ -17,7 +17,7 @@ import java.util.concurrent.Semaphore;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class WorldRegionsHolder
+public class HashMapWorldRegionsHolder
 {
 	private WorldImplementation world;
 
@@ -26,7 +26,7 @@ public class WorldRegionsHolder
 
 	private final int sizeInRegions, heightInRegions;
 
-	public WorldRegionsHolder(WorldImplementation world)
+	public HashMapWorldRegionsHolder(WorldImplementation world)
 	{
 		this.world = world;
 		//this.chunksData = chunksData;

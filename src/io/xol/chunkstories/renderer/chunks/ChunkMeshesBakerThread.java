@@ -56,7 +56,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 
 	int worldSizeInChunks;
 
-	public int[][] cache = new int[27][];
+	public final int[][] cache = new int[27][];
 
 	Deque<Integer> blockSources = new ArrayDeque<Integer>();
 	Deque<Integer> sunSources = new ArrayDeque<Integer>();
@@ -324,7 +324,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		return data;
 	}
 
-	private int getSunlight(Chunk c, int x, int y, int z)
+	private final int getSunlight(Chunk c, int x, int y, int z)
 	{
 		int data = 0;
 		if (x >= -32 && z >= -32 && y >= -32 && y < 64 && x < 64 && z < 64)
@@ -368,7 +368,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		return Client.world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) <= y ? 15 : 0;
 	}
 
-	private int getBlocklight(Chunk c, int x, int y, int z)
+	private final int getBlocklight(Chunk c, int x, int y, int z)
 	{
 		int data = 0;
 
@@ -461,7 +461,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		}
 
 		if (chunk.needRelightning.getAndSet(false))
-			chunk.bakeVoxelLightning(true);
+			chunk.computeVoxelLightning(true);
 
 		//System.out.println("k");
 
@@ -599,7 +599,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 					
 					Voxel vox = VoxelsStore.get().getVoxelById(blockID);
 					// Fill near-blocks info
-					chunkRenderingContext.bakeVoxelLight();
+					chunkRenderingContext.prepareVoxelLight();
 					
 					VoxelRenderer voxelRenderer = vox.getVoxelRenderer(voxelRenderingContext);
 					if(voxelRenderer == null)
@@ -757,7 +757,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 			};
 		}
 
-		public void bakeVoxelLight()
+		public void prepareVoxelLight()
 		{
 			int sl000 = getSunlight(chunk, i, k, j    );
 			int sl00p = getSunlight(chunk, i, k, j + 1);

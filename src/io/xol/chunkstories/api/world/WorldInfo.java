@@ -20,7 +20,7 @@ public interface WorldInfo
 
 	public enum WorldSize
 	{
-		TINY(32, "1x1km"), SMALL(64, "2x2km"), MEDIUM(128, "4x4km"), LARGE(512, "16x16km"), HUGE(2048, "64x64km");
+		TINY(32, "1x1km"), SMALL(64, "2x2km"), MEDIUM(128, "4x4km"), BIG(256, "8x8km"), LARGE(512, "16x16km"), VERYLARGE(1024, "32x32km"), HUGE(2048, "64x64km");
 	
 		// Warning : this can be VERY ressource intensive as it will make a
 		// 4294km2 map,

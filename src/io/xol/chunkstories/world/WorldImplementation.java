@@ -49,7 +49,7 @@ import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.chunkstories.world.region.WorldRegionsHolder;
+import io.xol.chunkstories.world.region.HashMapWorldRegionsHolder;
 import io.xol.chunkstories.world.summary.WorldRegionSummariesHolder;
 import io.xol.engine.misc.ConfigFile;
 
@@ -83,7 +83,7 @@ public abstract class WorldImplementation implements World
 	// RAM-eating depreacated monster
 	// public ChunksData chunksData;
 
-	private WorldRegionsHolder regions;
+	private HashMapWorldRegionsHolder regions;
 
 	// Heightmap management
 	private WorldRegionSummariesHolder regionSummaries;
@@ -116,7 +116,7 @@ public abstract class WorldImplementation implements World
 		this.generator.initialize(this);
 
 		//this.chunksData = new ChunksData();
-		this.regions = new WorldRegionsHolder(this);
+		this.regions = new HashMapWorldRegionsHolder(this);
 		this.regionSummaries = new WorldRegionSummariesHolder(this);
 		//this.logic = Executors.newSingleThreadScheduledExecutor();
 
@@ -916,7 +916,7 @@ public abstract class WorldImplementation implements World
 		return new WorldChunksIterator(this);
 	}
 
-	public WorldRegionsHolder getRegionsHolder()
+	public HashMapWorldRegionsHolder getRegionsHolder()
 	{
 		return regions;
 	}

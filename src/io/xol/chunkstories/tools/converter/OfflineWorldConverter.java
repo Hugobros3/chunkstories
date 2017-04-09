@@ -433,7 +433,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 				//Spreads lightning, from top to botton
 				for (int chunkY = maxHeightPossible / 32; chunkY >= 0; chunkY--)
 				{
-					csWorld.getChunk(chunkX, chunkY, chunkZ).bakeVoxelLightning(true);
+					csWorld.getChunk(chunkX, chunkY, chunkZ).computeVoxelLightning(true);
 				}
 
 				done++;

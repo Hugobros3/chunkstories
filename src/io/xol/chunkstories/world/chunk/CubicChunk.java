@@ -304,7 +304,7 @@ public class CubicChunk implements Chunk, ChunkRenderable
 	}
 
 	@Override
-	public void bakeVoxelLightning(boolean adjacent)
+	public void computeVoxelLightning(boolean adjacent)
 	{
 		// Checks first if chunk contains blocks
 		if (chunkVoxelData == null)
