@@ -144,6 +144,9 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 			blend(true);
 			blendFunc(blendMode);
 			break;
+		case ADDITIVE_BLENDING:
+			blend(true);
+			blendFunc(blendMode);
 		}
 
 		//Culling mode
@@ -195,6 +198,9 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 			break;
 		case MIX:
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			break;
+		case ADDITIVE_BLENDING:
+			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 			break;
 		default:
 			break;

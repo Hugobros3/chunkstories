@@ -21,7 +21,7 @@ public interface PipelineConfiguration
 	}
 	
 	public static enum BlendMode {
-		DISABLED, ADD, MIX;
+		DISABLED, ADD, MIX, ADDITIVE_BLENDING;
 	}
 	
 	public static enum CullingMode {
