@@ -27,7 +27,7 @@ varying vec4 modelview;
 attribute vec4 particlesPositionIn;
 attribute vec2 textureCoordinatesIn;
 
-uniform float areTextureCoordinatesIninatesSupplied;
+uniform float areTextureCoordinatesSupplied;
 
 uniform mat4 projectionMatrix;
 uniform mat4 projectionMatrixInv;
