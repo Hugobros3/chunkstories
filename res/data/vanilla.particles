@@ -8,3 +8,6 @@
 5 light io.xol.chunkstories.core.particles.ParticleLight
 
 6 snow io.xol.chunkstories.core.particles.ParticleSnow
+7 fire io.xol.chunkstories.core.particles.ParticleFire
+
+8 fire_light io.xol.chunkstories.core.particles.ParticleFireLight

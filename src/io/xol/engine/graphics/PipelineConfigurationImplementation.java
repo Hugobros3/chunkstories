@@ -144,7 +144,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 			blend(true);
 			blendFunc(blendMode);
 			break;
-		case ADDITIVE_BLENDING:
+		case PREMULT_ALPHA:
 			blend(true);
 			blendFunc(blendMode);
 		}
@@ -199,7 +199,7 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 		case MIX:
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			break;
-		case ADDITIVE_BLENDING:
+		case PREMULT_ALPHA:
 			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 			break;
 		default:

@@ -3,7 +3,7 @@ package io.xol.chunkstories.world;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.particles.ParticlesRenderer;
+import io.xol.chunkstories.particles.ClientParticleManager;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.renderer.decals.DecalsRenderer;
 
@@ -47,7 +47,7 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 	}
 
 	@Override
-	public ParticlesRenderer getParticlesManager()
+	public ClientParticleManager getParticlesManager()
 	{
 		return renderer.getParticlesRenderer();
 	}

@@ -38,7 +38,7 @@ import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.events.PlayerSpawnEvent;
 import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.entity.SerializedEntityFile;
-import io.xol.chunkstories.particles.ParticlesRenderer;
+import io.xol.chunkstories.particles.ClientParticleManager;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderable;
@@ -97,7 +97,7 @@ public abstract class WorldImplementation implements World
 	public ReadWriteLock entitiesLock = new ReentrantReadWriteLock(true);
 
 	// Particles
-	private ParticlesRenderer particlesHolder;
+	private ClientParticleManager particlesHolder;
 	private final WorldCollisionsManager collisionsManager;
 
 	//Entity IDS counter
@@ -324,8 +324,8 @@ public abstract class WorldImplementation implements World
 			}
 
 			//Update particles subsystem if it exists
-			if (getParticlesManager() != null && getParticlesManager() instanceof ParticlesRenderer)
-				((ParticlesRenderer) getParticlesManager()).updatePhysics();
+			if (getParticlesManager() != null && getParticlesManager() instanceof ClientParticleManager)
+				((ClientParticleManager) getParticlesManager()).updatePhysics();
 
 			//Increase the ticks counter
 			worldTicksCounter++;

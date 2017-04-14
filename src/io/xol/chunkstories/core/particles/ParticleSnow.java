@@ -1,7 +1,6 @@
 package io.xol.chunkstories.core.particles;
 
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -74,6 +73,10 @@ public class ParticleSnow extends ParticleType
 		
 		if(b.hp < 0 || b.getY() < 0)
 			b.destroy();
+	}
+	
+	public RenderTime getRenderTime() {
+		return RenderTime.FORWARD;
 	}
 
 	@Override

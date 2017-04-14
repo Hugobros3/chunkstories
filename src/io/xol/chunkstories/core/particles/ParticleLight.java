@@ -3,7 +3,6 @@ package io.xol.chunkstories.core.particles;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
-import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.lightning.Light;
@@ -37,6 +36,10 @@ public class ParticleLight extends ParticleType
 	public ParticleData createNew(World world, float x, float y, float z)
 	{
 		return new ParticleLightData(x, y, z);
+	}
+	
+	public RenderTime getRenderTime() {
+		return RenderTime.NEVER;
 	}
 
 	@Override

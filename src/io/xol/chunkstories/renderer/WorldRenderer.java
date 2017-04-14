@@ -3,7 +3,7 @@ package io.xol.chunkstories.renderer;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldEffectsRenderer;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.particles.ParticlesRenderer;
+import io.xol.chunkstories.particles.ClientParticleManager;
 import io.xol.chunkstories.renderer.decals.DecalsRenderer;
 import io.xol.chunkstories.renderer.sky.SkyRenderer;
 
@@ -55,7 +55,7 @@ public interface WorldRenderer
 
 	public DecalsRenderer getDecalsRenderer();
 
-	public ParticlesRenderer getParticlesRenderer();
+	public ClientParticleManager getParticlesRenderer();
 
 	public WorldEffectsRenderer getWorldEffectsRenderer();
 

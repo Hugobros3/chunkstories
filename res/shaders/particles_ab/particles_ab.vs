@@ -40,8 +40,6 @@ uniform mat3 normalMatrixInv;
 
 uniform float billboardSize;
 
-varying float back;
-
 //Fog
 uniform float fogStartDistance;
 uniform float fogEndDistance;
@@ -64,20 +62,12 @@ void main(){
 	else
 		texcoord = vec4(textureCoordinatesIn, 0, 0);
 	
-	vec4 v = particlesPositionIn;//vec4(gl_Vertex);
-	
-	//TODO : Clean this shit up	
-	//v+=vec4(objectPosition, 0.0);
-	
-	//v += modelViewMatrixInv * vec4(billboardSquareCoordsIn,0,0);
+	vec4 v = particlesPositionIn;
 	
 	varyingVertex = v;
-	//varyingNormal = gl_Normal;
 	
 	//Compute lightmap coords
 	lightMapCoords = vec2(0.0, 1.0);
-	//baseLight *= textureGammaIn(lightColors, vec2(time, 1.0)).rgb;
-	
 	
 	modelview = modelViewMatrix * v;
 	
@@ -86,8 +76,4 @@ void main(){
 	vec4 clochard = projectionMatrix * modelview;
 	
 	gl_Position = clochard;
-	//gl_Position = vec4(billboardSquareCoordsIn, 0.0, 1.0);
-	
-	//Eye transform
-	//eye = v.xyz-camPos;
 }

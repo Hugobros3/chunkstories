@@ -3,7 +3,6 @@ package io.xol.chunkstories.core.particles;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -53,6 +52,10 @@ public class ParticleBlood extends ParticleType
 	public float getBillboardSize()
 	{
 		return 0.1f;
+	}
+	
+	public RenderTime getRenderTime() {
+		return RenderTime.GBUFFER;
 	}
 
 	@Override

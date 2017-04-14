@@ -26,7 +26,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.particles.ParticlesRenderer;
+import io.xol.chunkstories.particles.ClientParticleManager;
 import io.xol.chunkstories.renderer.debug.OverlayRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRenderer;
 import io.xol.chunkstories.renderer.lights.ComputedShadowMap;
@@ -55,7 +55,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	EntitiesRenderer entitiesRenderer;
 	SkyRenderer skyRenderer;
 	DecalsRenderer decalsRenderer;
-	ParticlesRenderer particlesRenderer;
+	ClientParticleManager particlesRenderer;
 	FarTerrainRenderer farTerrainRenderer;
 	WorldEffectsRenderer weatherEffectsRenderer;
 	ShadowMapRenderer shadower;
@@ -80,7 +80,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		this.chunksRenderer = new ChunkMeshesRenderer(this);
 		
 		entitiesRenderer = new EntitiesRenderer(world);
-		particlesRenderer = new ParticlesRenderer(world);
+		particlesRenderer = new ClientParticleManager(world);
 		farTerrainRenderer = new FarTerrainRenderer(world, this);
 		weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
 		skyRenderer = new SkyRenderer(world);
@@ -148,7 +148,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		decalsRenderer.renderDecals(renderingInterface);
 		
 		// Shade the stuff
-		particlesRenderer.render(renderingInterface);
+		particlesRenderer.render(renderingInterface, true);
 		renderingInterface.flush();
 		
 		gbuffers_water_chunk_meshes(renderingInterface);
@@ -161,8 +161,9 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderLightsDeffered(renderingInterface);
 		
 		//Add forward rendered stuff
-		weatherEffectsRenderer.renderEffects(renderingInterface);
 		farTerrainRenderer.renderTerrain(renderingInterface, chunksRenderer.getRenderedChunksMask(mainCamera));
+		weatherEffectsRenderer.renderEffects(renderingInterface);
+		particlesRenderer.render(renderingInterface, false);
 	}
 
 	private void gbuffers_opaque_chunk_meshes(RenderingInterface renderingInterface)
@@ -718,7 +719,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	}
 
 	@Override
-	public ParticlesRenderer getParticlesRenderer()
+	public ClientParticleManager getParticlesRenderer()
 	{
 		return this.particlesRenderer;
 	}

@@ -3,7 +3,6 @@ package io.xol.chunkstories.core.particles;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
-import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.lightning.Light;
@@ -39,11 +38,16 @@ public class ParticleSetupLight extends ParticleType
 		return new ParticleSetupLightData(x, y, z);
 	}
 	
+	public RenderTime getRenderTime() {
+		return RenderTime.GBUFFER;
+	}
+	
 	@Override
 	public Texture2D getAlbedoTexture()
 	{
 		return TexturesHandler.getTexture("./textures/light.png");
 	}
+	
 	@Override
 	public float getBillboardSize()
 	{

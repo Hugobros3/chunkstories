@@ -1,13 +1,12 @@
 package io.xol.chunkstories.core.particles;
 
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture2D;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
@@ -44,16 +43,35 @@ public class ParticleSmoke extends ParticleType
 		return new ParticleSmokeData(x, y, z);
 	}
 	
-	public void beginRenderingForType(RenderingContext renderingContext)
+	public RenderTime getRenderTime() {
+		return RenderTime.FORWARD;
+	}
+
+	@Override
+	public  Texture2D getAlbedoTexture()
+	{
+		return TexturesHandler.getTexture("./textures/particles/grey_smoke.png");
+	}
+	
+	@Override
+	public void beginRenderingForType(RenderingInterface renderingContext)
 	{
 		super.beginRenderingForType(renderingContext);
 		
-		TexturesHandler.getTexture("./textures/particles/smoke.png").setMipMapping(false);
-		TexturesHandler.getTexture("./textures/particles/smoke.png").setLinearFiltering(false);
+		renderingContext.setBlendMode(BlendMode.PREMULT_ALPHA);
 		
-		TexturesHandler.getTexture("./textures/particles/smoke_normal.png").setMipMapping(true);
-		TexturesHandler.getTexture("./textures/particles/smoke_normal.png").setLinearFiltering(false);
-		renderingContext.bindNormalTexture(TexturesHandler.getTexture("./textures/particles/smoke_normal.png"));
+		renderingContext.getRenderTargetManager().setDepthMask(false);
+		//renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
+		//System.out.println("k");
+		
+		getAlbedoTexture().setMipMapping(true);
+		getAlbedoTexture().setLinearFiltering(false);
+	}
+	
+	@Override
+	protected String getShaderName()
+	{
+		return "particles_ab";
 	}
 
 	@Override
@@ -93,14 +111,8 @@ public class ParticleSmoke extends ParticleType
 	}
 
 	@Override
-	public  Texture2D getAlbedoTexture()
-	{
-		return TexturesHandler.getTexture("./textures/particles/smoke.png");
-	}
-
-	@Override
 	public float getBillboardSize()
 	{
-		return 0.7f;
+		return 1.0f;
 	}
 }

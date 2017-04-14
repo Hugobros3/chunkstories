@@ -58,7 +58,7 @@ import io.xol.chunkstories.gui.overlays.ingame.PauseOverlay;
 import io.xol.chunkstories.input.lwjgl2.Lwjgl2ClientInputsManager;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
-import io.xol.chunkstories.particles.ParticlesRenderer;
+import io.xol.chunkstories.particles.ClientParticleManager;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.SelectionRenderer;
@@ -422,7 +422,7 @@ public class Ingame extends OverlayableScene
 		//CTRL-R redraws chunks
 		else if ((Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == 19)
 		{
-			((ParticlesRenderer) world.getParticlesManager()).cleanAllParticles();
+			((ClientParticleManager) world.getParticlesManager()).cleanAllParticles();
 			world.redrawEverything();
 			world.getWorldRenderer().flagChunksModified();
 		}
@@ -682,7 +682,7 @@ public class Ingame extends OverlayableScene
 		Chunk current = world.getChunk(cx, cy, cz);
 		int x_top = renderingInterface.getWindow().getHeight() - 16;
 		FontRenderer2.drawTextUsingSpecificFont(20,
-				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + world.getWorldRenderer().getChunkMeshesRenderer().getChunksVisibleForPass(WorldRenderer.RenderingPass.NORMAL_OPAQUE)) + " Entities " + ec + " Particles :" + ((ParticlesRenderer) world.getParticlesManager()).count()
+				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + world.getWorldRenderer().getChunkMeshesRenderer().getChunksVisibleForPass(WorldRenderer.RenderingPass.NORMAL_OPAQUE)) + " Entities " + ec + " Particles :" + ((ClientParticleManager) world.getParticlesManager()).count()
 						+ " #FF0000Render FPS: " + Client.getInstance().getGameWindow().getFPS() + " avg: " + Math.floor(10000.0 / Client.getInstance().getGameWindow().getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + world.getWorldRenderer().getWorld().getGameLogic().getSimulationFps(),
 				BitmapFont.SMALLFONTS);
 

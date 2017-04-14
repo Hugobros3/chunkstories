@@ -1,26 +1,13 @@
 #version 150
 
+varying vec4 proc_texcoord;
 varying vec4 texcoord;
 varying vec2 lightMapCoords;
 
-//Lighthing
-uniform float sunIntensity;
-
-// The normal we're going to pass to the fragment shader.
-varying vec3 varyingNormal;
 // The vertex we're going to pass to the fragment shader.
 varying vec4 varyingVertex;
 
-varying float fogI;
-
 uniform float time;
-varying vec3 eye;
-uniform vec3 camPos;
-uniform vec3 objectPosition;
-
-uniform float vegetation;
-varying float chunkFade;
-uniform float viewDistance;
 
 varying vec4 modelview;
 
@@ -40,8 +27,6 @@ uniform mat3 normalMatrixInv;
 
 uniform float billboardSize;
 
-varying float back;
-
 //Fog
 uniform float fogStartDistance;
 uniform float fogEndDistance;
@@ -59,35 +44,27 @@ void main(){
 	
 	vec2 proceduralVertex = vertices[gl_VertexID % 6];
 	
-	if(areTextureCoordinatesSupplied < 0.5)
-		texcoord = vec4(proceduralVertex*0.5+0.5, 0, 0);
-	else
-		texcoord = vec4(textureCoordinatesIn, 0, 0);
+	proc_texcoord = vec4(proceduralVertex*0.5+0.5, 0, 0);
+	texcoord = vec4(textureCoordinatesIn, 0, 0);
 	
-	vec4 v = particlesPositionIn;//vec4(gl_Vertex);
-	
-	//TODO : Clean this shit up	
-	//v+=vec4(objectPosition, 0.0);
-	
-	//v += modelViewMatrixInv * vec4(billboardSquareCoordsIn,0,0);
+	vec4 v = particlesPositionIn;
 	
 	varyingVertex = v;
-	//varyingNormal = gl_Normal;
 	
 	//Compute lightmap coords
 	lightMapCoords = vec2(0.0, 1.0);
-	//baseLight *= textureGammaIn(lightColors, vec2(time, 1.0)).rgb;
-	
 	
 	modelview = modelViewMatrix * v;
 	
-	modelview += vec4(proceduralVertex*billboardSize, 0.0, 0.0);
+	float angle = (particlesPositionIn.x + particlesPositionIn.y + particlesPositionIn.z) * 2.0;
+	
+	vec2 proceduralVertexRotated = vec2(proceduralVertex.x * cos(angle) - proceduralVertex.y * sin(angle), proceduralVertex.x * sin(angle) + proceduralVertex.y * cos(angle));
+	
+	modelview += vec4(proceduralVertexRotated*billboardSize, 0.0, 0.0);
+	
+	//modelview += vec4(proceduralVertex*billboardSize, 0.0, 0.0);
 	
 	vec4 clochard = projectionMatrix * modelview;
 	
 	gl_Position = clochard;
-	//gl_Position = vec4(billboardSquareCoordsIn, 0.0, 1.0);
-	
-	//Eye transform
-	//eye = v.xyz-camPos;
 }

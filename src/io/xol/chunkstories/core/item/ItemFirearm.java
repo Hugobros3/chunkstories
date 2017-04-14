@@ -29,6 +29,7 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.core.entity.components.EntityComponentRotation;
+import io.xol.chunkstories.core.util.WorldEffects;
 import io.xol.chunkstories.item.renderer.FlatIconItemRenderer;
 import io.xol.chunkstories.item.renderer.ObjViewModelRenderer;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -352,6 +353,14 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 
 							}
 
+							/*double bspeed = 5/60.0 * (1 + Math.random() * 3 * Math.random());
+							Vector3dm ppos = new Vector3dm(reflected);
+							ppos.normalize();
+							ppos.scale(0.5);
+							ppos.add(nearestLocation);
+							WorldEffects.createFireball(shooter.getWorld(), ppos, 1f, damage*0.15*bspeed, (float) (0.0 + 0.05*damage));
+							*/
+							
 							controller.getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3dm(0.5), "bullethole");
 						}
 					}

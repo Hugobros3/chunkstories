@@ -2,20 +2,18 @@ package io.xol.chunkstories.particles;
 
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
+import io.xol.chunkstories.api.particles.ParticleType.ParticleData;
+import io.xol.chunkstories.api.particles.ParticleType.RenderTime;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.world.World;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
-import io.xol.engine.graphics.textures.TexturesHandler;
 
 import java.nio.FloatBuffer;
 import java.util.Iterator;
@@ -29,7 +27,7 @@ import org.lwjgl.BufferUtils;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ParticlesRenderer implements ParticlesManager
+public class ClientParticleManager implements ParticlesManager
 {
 	final World world;
 	final Content.ParticlesTypes store;
@@ -39,7 +37,7 @@ public class ParticlesRenderer implements ParticlesManager
 	VerticesObject particlesPositions, texCoords;
 	FloatBuffer particlesPositionsBuffer, textureCoordinatesBuffer;
 
-	public ParticlesRenderer(World world)
+	public ClientParticleManager(World world)
 	{
 		this.world = world;
 		this.store = world.getGameContext().getContent().particles();
@@ -114,72 +112,66 @@ public class ParticlesRenderer implements ParticlesManager
 
 	}
 
-	public void renderLights(RenderingInterface renderingInterface)
-	{
-		for (ParticleType particleType : particles.keySet())
-		{
-			Iterator<ParticleData> iterator = particles.get(particleType).iterator();
-
-			ParticleData p;
-			while (iterator.hasNext())
-			{
-				p = iterator.next();
-				if (p != null)
-				{
-					particleType.forEach_Rendering(renderingInterface, p);
-					if (p.isDed())
-						iterator.remove();
-				}
-				else
-					iterator.remove();
-			}
-		}
-	}
-
-	public int render(RenderingInterface renderingInterface)
+	public int render(RenderingInterface renderingInterface, boolean isThisGBufferPass)
 	{
 		int totalDrawn = 0;
-		
-		renderingInterface.setCullingMode(CullingMode.DISABLED);
-		renderingInterface.setBlendMode(BlendMode.MIX);
-
-		ShaderInterface particlesShader = renderingInterface.useShader("particles");
-
-		particlesShader.setUniform2f("screenSize", renderingInterface.getWindow().getWidth(), renderingInterface.getWindow().getHeight());
-		renderingInterface.getCamera().setupShader(particlesShader);
-		
-		renderingInterface.bindTexture2D("lightColors", TexturesHandler.getTexture("./textures/environement/light.png"));
-
-		//Vertex attributes
 		
 		//For all present particles types
 		for (ParticleType particleType : particles.keySet())
 		{
+			RenderTime renderTime = particleType.getRenderTime();
+			
+			//Skip forward stuff when doing gbuf
+			if(isThisGBufferPass && renderTime == RenderTime.FORWARD)
+				continue;
+			
+			//Skip gbuf stuff when doing forward
+			else if(!isThisGBufferPass && renderTime == RenderTime.NEVER)
+				continue;
+			else if(!isThisGBufferPass && renderTime == RenderTime.GBUFFER)
+				continue;
+				
 			//Don't bother rendering empty sets
 			if (particles.get(particleType).size() > 0)
 			{
 				Iterator<ParticleData> iterator = particles.get(particleType).iterator();
 				boolean haveTextureCoordinates = false;
-
+				
 				particleType.beginRenderingForType(renderingInterface);
-
-				//particleType.getAlbedoTexture().setLinearFiltering(false);
-
 				textureCoordinatesBuffer.clear();
 				particlesPositionsBuffer.clear();
-				int elements = 0;
-
+				
+				//Some stuff don't wanna be rendered, so don't
+				boolean actuallyRenderThatStuff = renderTime != RenderTime.NEVER;
+				
+				int elementsInDrawBuffer = 0;
 				while (iterator.hasNext())
 				{
 					//Iterate over dem particles
 					ParticleData p = iterator.next();
 
-					//If > 60k elements, buffer is full, draw it
-					if (elements >= 60000)
+					//Check we don't have a null particle
+					if (p != null)
 					{
-						drawBuffers(renderingInterface, elements, haveTextureCoordinates);
-						totalDrawn += elements;
-						elements = 0;
+						particleType.forEach_Rendering(renderingInterface, p);
+						if (p.isDed())
+							iterator.remove();
+					}
+					else
+					{
+						iterator.remove();
+						continue;
+					}
+					
+					if(!actuallyRenderThatStuff)
+						continue;
+					
+					//If > 60k elements, buffer is full, draw it
+					if (elementsInDrawBuffer >= 60000)
+					{
+						drawBuffers(renderingInterface, elementsInDrawBuffer, haveTextureCoordinates);
+						totalDrawn += elementsInDrawBuffer;
+						elementsInDrawBuffer = 0;
 					}
 
 					particlesPositionsBuffer.put((float) p.getX());
@@ -232,29 +224,23 @@ public class ParticlesRenderer implements ParticlesManager
 						textureCoordinatesBuffer.put(texCoords.getTextureCoordinateYBottomLeft());
 					}
 
-					elements += 6;
+					elementsInDrawBuffer += 6;
 				}
-				if (elements > 0)
+				
+				//Draw the stuff
+				if (elementsInDrawBuffer > 0)
 				{
-					drawBuffers(renderingInterface, elements, haveTextureCoordinates);
-					totalDrawn += elements;
-					elements = 0;
-					
+					drawBuffers(renderingInterface, elementsInDrawBuffer, haveTextureCoordinates);
+					totalDrawn += elementsInDrawBuffer;
+					elementsInDrawBuffer = 0;
 				}
 			}
 		}
-		// We done here
-
-		renderingInterface.getRenderTargetManager().setDepthMask(true);
-		//glDepthMask(true);
 		
-		//ObjectRenderer.drawFSQuad(billCoordVAL);
-
+		// We done here
 		renderingInterface.getRenderTargetManager().setDepthMask(true);
-		//glDepthMask(true);
-
 		renderingInterface.setBlendMode(BlendMode.DISABLED);
-		renderLights(renderingInterface);
+		
 		return totalDrawn;
 	}
 

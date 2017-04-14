@@ -1,7 +1,6 @@
 package io.xol.chunkstories.core.particles;
 
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.particles.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
@@ -138,6 +137,10 @@ public class ParticleVoxelFragment extends ParticleType
 	public Texture2D getAlbedoTexture()
 	{
 		return Client.getInstance().getContent().voxels().textures().getDiffuseAtlasTexture();
+	}
+	
+	public RenderTime getRenderTime() {
+		return RenderTime.GBUFFER;
 	}
 
 	@Override

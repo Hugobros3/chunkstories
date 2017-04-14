@@ -50,6 +50,7 @@ import io.xol.chunkstories.core.entity.components.EntityComponentName;
 import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.item.armor.ItemArmor;
+import io.xol.chunkstories.core.util.WorldEffects;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
@@ -251,9 +252,60 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			//System.out.println(this.getVelocityComponent().getVelocity().length());
 		}
 
+		//Particles exp
+		
+		/*for(int z = 0; z < 1; z++)
+			world.getParticlesManager().spawnParticleAtPositionWithVelocity("fire", new Vector3dm(2285.5, 52, 1414),
+				new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 8.0 + 4, Math.random() * 2.0 - 1.0)
+				.normalize().scale(Math.random() * 0.5 + 0.5));*/
+		
+		/*if(Math.random() > 0.90)
+		//if(world.getTicksElapsed() % (60 * 5) == 0)
+		{
+			Vector3dm center = new Vector3dm(44.5, 22.75, 83.5);
+		
+			center = this.getLocation();
+			
+			double radius = 1d;
+			double speed = 25.0/60.0;
+			
+			int xplo_radius = 500;
+			int xplo_radius_h = 60;
+			
+			for(int i = 0; i < Math.random() * 5; i++)
+			{
+				Vector3dm bcenter = center.clone().add(Math.random() * xplo_radius - xplo_radius / 2, Math.random() * xplo_radius_h - xplo_radius_h / 4, Math.random() * xplo_radius - xplo_radius / 2);
+				
+				double bspeed = 5/60.0 * (1 + Math.random() * 3 * Math.random());
+				
+				WorldEffects.createFireball(world, bcenter, radius, bspeed, (float) (0.5 + 0.5*Math.random()));
+			}
+		}*/
+		
 		super.tick();
 
 	}
+
+	/*private void createFireball(Vector3dm center, double radius, double debrisSpeed, float f)
+	{
+		for(int z = 0; z < 500 * f; z++)
+		{
+			Vector3dm lol = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+			lol.normalize();
+			
+			Vector3dm spd = lol.clone();
+			spd.scale(debrisSpeed * (0.5 + Math.random()));
+			
+			lol.scale(radius);
+			lol.add(center);
+			
+			world.getParticlesManager().spawnParticleAtPositionWithVelocity("fire", lol, spd);
+		}
+		
+		world.getParticlesManager().spawnParticleAtPositionWithVelocity("fire_light", center, new Vector3dm(1, 0, 0).normalize().scale(debrisSpeed));
+		
+		world.getSoundManager().playSoundEffect("./sounds/sfx/kboom.ogg", center, (float)(0.9f + Math.random() * 0.2f), (float)(debrisSpeed * debrisSpeed * 10f), 1, 150);
+	}*/
 
 	// client-side method for updating the player movement
 	@Override
