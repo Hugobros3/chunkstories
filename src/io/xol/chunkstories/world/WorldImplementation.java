@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.math.vector.Vector3;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.server.Player;
@@ -27,6 +28,7 @@ import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldCollisionsManager;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.World.NearEntitiesIterator;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
@@ -92,7 +94,7 @@ public abstract class WorldImplementation implements World
 	protected WorldRendererImplementation renderer;
 
 	// Temporary entity list
-	protected EntitiesHolder entities = new EntitiesHolder();
+	protected final EntitiesHolder entities;
 
 	public ReadWriteLock entitiesLock = new ReentrantReadWriteLock(true);
 
@@ -118,6 +120,8 @@ public abstract class WorldImplementation implements World
 		//this.chunksData = new ChunksData();
 		this.regions = new HashMapWorldRegionsHolder(this);
 		this.regionSummaries = new WorldRegionSummariesHolder(this);
+		
+		this.entities = new EntitiesHolder(this);
 		//this.logic = Executors.newSingleThreadScheduledExecutor();
 
 		if (this instanceof WorldMaster)
@@ -347,6 +351,11 @@ public abstract class WorldImplementation implements World
 	public IterableIterator<Entity> getAllLoadedEntities()
 	{
 		return new EntityWorldIterator(entities.iterator());
+	}
+	
+	public NearEntitiesIterator getEntitiesInBox(Vector3<Double> center, Vector3<Double> boxSize)
+	{
+		return entities.getEntitiesInBox(center, boxSize);
 	}
 
 	@Override
@@ -817,8 +826,8 @@ public abstract class WorldImplementation implements World
 	{
 		if (coordinate < 0)
 			coordinate = 0;
-		if (coordinate > worldInfo.getSize().heightInChunks * 32)
-			coordinate = worldInfo.getSize().heightInChunks * 32;
+		if (coordinate >= worldInfo.getSize().heightInChunks * 32)
+			coordinate = worldInfo.getSize().heightInChunks * 32 - 1;
 		return coordinate;
 	}
 	

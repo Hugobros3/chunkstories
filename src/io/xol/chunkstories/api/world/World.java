@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.math.vector.Vector3;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
@@ -89,6 +90,15 @@ public interface World
 	 * Supposedly thread-safe
 	 */
 	public IterableIterator<Entity> getAllLoadedEntities();
+	
+	/** Returns an iterator containing all the entities from within the box defined by center and boxSize */
+	public NearEntitiesIterator getEntitiesInBox(Vector3<Double> center, Vector3<Double> boxSize);
+	
+	interface NearEntitiesIterator extends IterableIterator<Entity> {
+		
+		/** Returns the distance of the last entity returned by next() to the center of the box */
+		public double distance();
+	}
 
 	/* Direct voxel data accessors */
 	

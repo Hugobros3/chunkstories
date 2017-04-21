@@ -6,6 +6,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.math.vector.Vector3;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.World.NearEntitiesIterator;
+import io.xol.chunkstories.api.world.chunk.Region;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -15,126 +20,185 @@ public class EntitiesHolder implements Iterable<Entity>
 {
 	Map<Long, Entity> backing = new ConcurrentHashMap<Long, Entity>();
 	ConcurrentLinkedQueue<Entity> backingIterative = new ConcurrentLinkedQueue<Entity>();
-	//LinkedList<Entity> backing = new LinkedList<Entity>();
 
+	final World world;
+	
+	public EntitiesHolder(World world) {
+		this.world = world;
+	}
+	
 	//Elements are sorted in increasing hashcode order
 	public void insertEntity(Entity entity)
 	{
-		/*//For security reasons we don't use the hashCode() method
-		int hashCode = hashCode(entity.getUUID());
-		//System.out.println("adding entity " + entity + " with hascde" + hashCode);
-
-		int position = binarySearch(hashCode);
-		backing.add(position, entity);*/
-		
-		//If the add went smooth.
 		if(backing.put(entity.getUUID(), entity) == null)
 			backingIterative.add(entity);
 	}
 
 	public boolean removeEntity(Entity entity)
 	{
-		/*long uuid = entityToRemove.getUUID();
-		int hashCode = hashCode(uuid);
-
-		//Do a binary lookup to find the first point where hash is
-		int position = binarySearch(hashCode);
-		while (1 < 2)
-		{
-			Entity entity = backing.get(position);
-			if (entity.getUUID() == uuid)
-			{
-				System.out.println("Entity " + entityToRemove + " removed correctly.");
-				backing.remove(position);
-				return true;
-			}
-
-			//We went too far and didn't found it
-			if (hashCode(entity.getUUID()) != hashCode)
-				break;
-
-			position++;
-		}*/
-
 		if(backing.remove(entity.getUUID()) != null)
 			backingIterative.remove(entity);
 		else
 			System.out.println("Warning, EntitiesHolders was asked to remove entity " + entity + " not found in entities list.");
+		
 		return false;
 	}
 
 	public Entity getEntityByUUID(long uuid)
 	{
 		return backing.get(uuid);
+	}
+	
+	public NearEntitiesIterator getEntitiesInBox(Vector3<Double> center, Vector3<Double> boxSize) {
 		
-		/*int hashCode = hashCode(uuid);
+		return new NearEntitiesIterator() {
+		
+		int centerVoxel_x = (int)(double)center.getX();
+		int centerVoxel_y = (int)(double)center.getY();
+		int centerVoxel_z = (int)(double)center.getZ();
+		
+		int box_ceil_x = (int)Math.ceil((double) boxSize.getX());
+		int box_ceil_y = (int)Math.ceil((double) boxSize.getY());
+		int box_ceil_z = (int)Math.ceil((double) boxSize.getZ());
+		
+		int box_start_x = sanitizeHorizontalCoordinate(centerVoxel_x - box_ceil_x);
+		int box_start_y = sanitizeVerticalCoordinate(centerVoxel_y - box_ceil_y);
+		int box_start_z = sanitizeHorizontalCoordinate(centerVoxel_z - box_ceil_z);
+		
+		int box_end_x = sanitizeHorizontalCoordinate(centerVoxel_x + box_ceil_x);
+		int box_end_y = sanitizeVerticalCoordinate(centerVoxel_y + box_ceil_y);
+		int box_end_z = sanitizeHorizontalCoordinate(centerVoxel_z + box_ceil_z);
+		
+		//We currently sort this out by regions, chunks would be more appropriate ?
+		int region_start_x = box_start_x / 256;
+		int region_start_y = box_start_y / 256;
+		int region_start_z = box_start_z / 256;
 
-		//Do a binary lookup to find the first point where hash is
-		int position = binarySearch(hashCode);
-		while (position < backing.size())
-		{
-			Entity entity = backing.get(position);
-			if (entity.getUUID() == uuid)
-				return entity;
-
-			//We went too far and didn't found it
-			if (hashCode(entity.getUUID()) != hashCode)
-				break;
-
-			position++;
+		int region_end_x = box_end_x / 256;
+		int region_end_y = box_end_y / 256;
+		int region_end_z = box_end_z / 256;
+		
+		int region_x = region_start_x;
+		int region_y = region_start_y;
+		int region_z = region_start_z;
+		
+		Region currentRegion = world.getRegion(region_x, region_y, region_z);
+		Iterator<Entity> currentRegionIterator = currentRegion == null ? null : currentRegion.getEntitiesWithinRegion();
+		Entity next = null;
+		double distance = 0D;
+		
+		private void seekNextEntity() {
+			next = null;
+			while(true) {
+				//Break the loop if we find an entity in the region
+				if(seekNextEntityWithinRegion())
+					break;
+				else
+				{
+					//Seek a suitable region if we failed to find anything above
+					if(seekNextRegion())
+						continue;
+					//Break the loop if we are out of regions to check
+					else
+						break;
+				}
+			}
 		}
-
-		System.out.println("Warning, entity by uuid" + uuid + " not found in entities list.");
-		return null;*/
+		
+		private boolean seekNextEntityWithinRegion() {
+			
+			if(currentRegionIterator == null)
+				return false;
+			while(currentRegionIterator.hasNext())
+			{
+				Entity entity = currentRegionIterator.next();
+				//Check if it's inside the box for realz
+				Vector3dm check = new Vector3dm(entity.getLocation());
+				check.sub(center);
+				if(Math.abs(check.getX()) <= boxSize.getX() && Math.abs(check.getY()) <= boxSize.getY() && Math.abs(check.getZ()) <= boxSize.getZ())
+				{
+					//Found a good one
+					this.next = entity;
+					this.distance = check.length();
+					return true;
+				}
+			}
+			
+			//We found nothing :(
+			currentRegionIterator = null;
+			return false;
+		}
+		
+		private boolean seekNextRegion() {
+			currentRegion = null;
+			while(true) {
+				//Found one !
+				if(currentRegion != null)
+				{
+					currentRegionIterator = currentRegion.getEntitiesWithinRegion();
+					return true;
+				}
+				
+				region_x++;
+				//Wrap arround in X dimension to Y
+				if(region_x > region_end_x)
+				{
+					region_x = 0;
+					region_y++;
+				}
+				//Then Y to Z
+				if(region_y > region_end_y)
+				{
+					region_y = 0;
+					region_z++;
+				}
+				//We are done here
+				if(region_z > region_end_z)
+					return false;
+				
+				currentRegion = world.getRegion(region_x, region_y, region_z);
+			}
+		}
+		
+		@Override
+		public boolean hasNext()
+		{
+			if(next == null)
+				seekNextEntity();
+			return next != null;
+		}
+		@Override
+		public Entity next()
+		{
+			Entity entity = next;
+			seekNextEntity();
+			return entity;
+		}
+		@Override
+		public double distance()
+		{
+			return distance;
+		}
+		
+		};
+	}
+	
+	private int sanitizeHorizontalCoordinate(int coordinate)
+	{
+		coordinate = coordinate % (world.getSizeInChunks() * 32);
+		if (coordinate < 0)
+			coordinate += world.getSizeInChunks() * 32;
+		return coordinate;
 	}
 
-	/*private int binarySearch(int l)
+	private int sanitizeVerticalCoordinate(int coordinate)
 	{
-		int lo = 0;
-		int hi = backing.size() - 1;
-
-		if (hi < 0)
-			return 0;
-
-		int pos = hi / 2;
-
-		while (pos < backing.size() && hi >= lo)
-		{
-			int f = hashCode(backing.get(pos).getUUID());
-			if (f == l)
-				break;
-			else if (f > l)
-			{
-				//We went too far !
-				hi = pos - 1;
-			}
-			else
-			{
-				//We are too low
-				lo = pos + 1;
-			}
-
-			//System.out.println(lo+":"+pos+":"+hi);
-
-			pos = lo + (hi - lo) / 2;
-		}
-
-		//Backs up as much as it can
-		while (pos > 0)
-		{
-			if (hashCode(backing.get(pos - 1).getUUID()) == l)
-				pos--;
-			else
-				break;
-		}
-
-		return pos;
+		if (coordinate < 0)
+			coordinate = 0;
+		if (coordinate >= world.getWorldInfo().getSize().heightInChunks * 32)
+			coordinate = world.getWorldInfo().getSize().heightInChunks * 32 - 1;
+		return coordinate;
 	}
-
-	private int hashCode(long uuid)
-	{
-		return (int) (uuid & 0xFFFFFFFF);
-	}*/
 
 	@Override
 	public Iterator<Entity> iterator()
