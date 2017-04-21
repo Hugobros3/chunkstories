@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.math.vector.Vector3;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
@@ -113,12 +114,31 @@ public class EntitiesHolder implements Iterable<Entity>
 			{
 				Entity entity = currentRegionIterator.next();
 				//Check if it's inside the box for realz
-				Vector3dm check = new Vector3dm(entity.getLocation());
-				check.sub(center);
-				if(Math.abs(check.getX()) <= boxSize.getX() && Math.abs(check.getY()) <= boxSize.getY() && Math.abs(check.getZ()) <= boxSize.getZ())
+				
+				Location loc = entity.getLocation();
+				
+				int locx = (int)(double)loc.getX();
+				//Normal case, check if it's in the bounds, wrap-arround case, check if it's outside
+				if((box_start_x > box_end_x) == (locx >= box_start_x && locx <= box_end_x))
+					continue;
+				
+				int locy = (int)(double)loc.getY();
+				//Normal case, check if it's in the bounds, wrap-arround case, check if it's outside
+				if((box_start_y > box_end_y) == (locy >= box_start_y && locy <= box_end_y))
+					continue;
+					
+				int locz = (int)(double)loc.getZ();
+				//Normal case, check if it's in the bounds, wrap-arround case, check if it's outside
+				if((box_start_z > box_end_z) == (locz >= box_start_z && locz <= box_end_z))
+					continue;
+				
+				//if(Math.abs(check.getX()) <= boxSize.getX() && Math.abs(check.getY()) <= boxSize.getY() && Math.abs(check.getZ()) <= boxSize.getZ())
 				{
 					//Found a good one
 					this.next = entity;
+					
+					Vector3dm check = new Vector3dm(loc);
+					check.sub(center);
 					this.distance = check.length();
 					return true;
 				}
