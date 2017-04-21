@@ -16,6 +16,7 @@ import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
@@ -27,7 +28,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.entity.components.EntityComponentStance;
 import io.xol.chunkstories.physics.CollisionBox;
-import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 import io.xol.engine.animation.AnimatedSkeleton;

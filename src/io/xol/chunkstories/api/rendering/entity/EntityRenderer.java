@@ -1,7 +1,7 @@
 package io.xol.chunkstories.api.rendering.entity;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.renderer.WorldRenderer.RenderingPass;
+import io.xol.chunkstories.api.rendering.WorldRenderer.RenderingPass;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

@@ -24,6 +24,7 @@ import io.xol.chunkstories.api.math.vector.Vector3;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.WorldRenderer.FarTerrainMeshRenderer;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
@@ -33,7 +34,6 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonF
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.renderer.ChunkMeshesRenderer.RenderedChunksMask;
-import io.xol.chunkstories.renderer.WorldRenderer.FarTerrainMeshRenderer;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.renderer.terrain.FarTerrainBaker.RegionMesh;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;

@@ -15,12 +15,12 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTes
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.chunkstories.renderer.WorldRenderer;
 import io.xol.chunkstories.renderer.lights.LightsRenderer;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderTargetManager;
 import io.xol.chunkstories.api.rendering.RenderingCommand;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.WorldRenderer;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.fbo.OpenGLRenderTargetManager;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;

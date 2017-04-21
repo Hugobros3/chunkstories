@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldEffectsRenderer;
+import io.xol.chunkstories.api.rendering.WorldRenderer;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.client.Client;

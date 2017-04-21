@@ -1,7 +1,5 @@
-package io.xol.chunkstories.renderer;
+package io.xol.chunkstories.api.rendering;
 
-import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.WorldEffectsRenderer;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.particles.ClientParticleManager;
 import io.xol.chunkstories.renderer.decals.DecalsRenderer;
