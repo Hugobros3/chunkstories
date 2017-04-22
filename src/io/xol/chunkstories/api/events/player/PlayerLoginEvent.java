@@ -1,4 +1,4 @@
-package io.xol.chunkstories.core.events;
+package io.xol.chunkstories.api.events.player;
 
 import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;

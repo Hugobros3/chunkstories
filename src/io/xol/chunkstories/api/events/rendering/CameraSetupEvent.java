@@ -1,42 +1,41 @@
-package io.xol.chunkstories.core.events;
+package io.xol.chunkstories.api.events.rendering;
 
-import io.xol.chunkstories.api.events.CancellableEvent;
+import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.api.events.categories.ClientEvent;
-import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.rendering.CameraInterface;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ClientInputPressedEvent extends CancellableEvent implements ClientEvent
+public class CameraSetupEvent extends Event
 {
 	// Every event class has to have this
-
+	
 	static EventListeners listeners = new EventListeners();
-
+	
 	@Override
 	public EventListeners getListeners()
 	{
 		return listeners;
 	}
-
+	
 	public static EventListeners getListenersStatic()
 	{
 		return listeners;
 	}
-
+	
 	// Specific event code
-
-	public ClientInputPressedEvent(Input input)
+	
+	private CameraInterface camera;
+	
+	public CameraSetupEvent(CameraInterface camera)
 	{
-		this.input = input;
+		this.camera = camera;
 	}
-
-	Input input;
-
-	public Input getInput()
+	
+	public CameraInterface getCamera()
 	{
-		return input;
+		return camera;
 	}
 }

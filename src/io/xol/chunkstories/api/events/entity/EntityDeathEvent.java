@@ -1,14 +1,18 @@
-package io.xol.chunkstories.core.events;
+package io.xol.chunkstories.api.events.entity;
 
+import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.api.rendering.CameraInterface;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class CameraSetupEvent extends Event
+/**
+ * This event is called upon confirmed death of a living entity.
+ * You can't and shouldn't prevent it from dying here, instead use the EntityDamageEvent to cancel the damage.
+ */
+public class EntityDeathEvent extends Event
 {
 	// Every event class has to have this
 	
@@ -27,15 +31,15 @@ public class CameraSetupEvent extends Event
 	
 	// Specific event code
 	
-	private CameraInterface camera;
+	EntityLiving entity;
 	
-	public CameraSetupEvent(CameraInterface camera)
+	public EntityDeathEvent(EntityLiving entity)
 	{
-		this.camera = camera;
+		this.entity = entity;
 	}
 	
-	public CameraInterface getCamera()
+	public EntityLiving getEntity()
 	{
-		return camera;
+		return entity;
 	}
 }

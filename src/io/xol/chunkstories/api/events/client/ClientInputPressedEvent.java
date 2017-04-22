@@ -1,15 +1,15 @@
-package io.xol.chunkstories.core.events;
+package io.xol.chunkstories.api.events.client;
 
-import io.xol.chunkstories.api.events.Event;
+import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
+import io.xol.chunkstories.api.events.categories.ClientEvent;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.server.Player;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PlayerInputReleasedEvent extends Event
+public class ClientInputPressedEvent extends CancellableEvent implements ClientEvent
 {
 	// Every event class has to have this
 
@@ -27,21 +27,14 @@ public class PlayerInputReleasedEvent extends Event
 	}
 
 	// Specific event code
-	
-	Player player;
-	Input input;
-	
-	public PlayerInputReleasedEvent(Player player, Input input)
+
+	public ClientInputPressedEvent(Input input)
 	{
-		this.player = player;
 		this.input = input;
 	}
-	
-	public Player getPlayer()
-	{
-		return player;
-	}
-	
+
+	Input input;
+
 	public Input getInput()
 	{
 		return input;

@@ -10,14 +10,14 @@ import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.events.client.ClientInputPressedEvent;
+import io.xol.chunkstories.api.events.client.ClientInputReleasedEvent;
+import io.xol.chunkstories.api.events.player.PlayerInputPressedEvent;
+import io.xol.chunkstories.api.events.player.PlayerInputReleasedEvent;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientToServerConnection;
-import io.xol.chunkstories.core.events.ClientInputPressedEvent;
-import io.xol.chunkstories.core.events.ClientInputReleasedEvent;
-import io.xol.chunkstories.core.events.PlayerInputPressedEvent;
-import io.xol.chunkstories.core.events.PlayerInputReleasedEvent;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.input.KeyBindsLoader;
 import io.xol.chunkstories.net.packets.PacketInput;

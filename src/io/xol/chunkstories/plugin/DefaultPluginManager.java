@@ -287,7 +287,6 @@ public abstract class DefaultPluginManager implements PluginManager
 
 		//If we didn't surpress it's behaviour
 		//if(event.isAllowedToExecute())
-
 		//event.defaultBehaviour();
 	}
 

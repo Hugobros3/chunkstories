@@ -1,14 +1,15 @@
-package io.xol.chunkstories.core.events;
+package io.xol.chunkstories.api.events.player;
 
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.server.Player;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class WorldTickEvent extends Event
+public class PlayerInputReleasedEvent extends Event
 {
 	// Every event class has to have this
 
@@ -26,16 +27,23 @@ public class WorldTickEvent extends Event
 	}
 
 	// Specific event code
-
-	private World world;
-
-	public WorldTickEvent(World world)
+	
+	Player player;
+	Input input;
+	
+	public PlayerInputReleasedEvent(Player player, Input input)
 	{
-		this.world = world;
+		this.player = player;
+		this.input = input;
 	}
-
-	public World getWorld()
+	
+	public Player getPlayer()
 	{
-		return world;
+		return player;
+	}
+	
+	public Input getInput()
+	{
+		return input;
 	}
 }

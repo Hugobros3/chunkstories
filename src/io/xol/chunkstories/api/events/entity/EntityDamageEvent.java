@@ -1,4 +1,4 @@
-package io.xol.chunkstories.core.events;
+package io.xol.chunkstories.api.events.entity;
 
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;

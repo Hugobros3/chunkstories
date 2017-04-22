@@ -3,7 +3,6 @@ package io.xol.chunkstories.core.entity;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;

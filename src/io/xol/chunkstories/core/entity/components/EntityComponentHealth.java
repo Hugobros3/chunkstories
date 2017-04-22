@@ -9,12 +9,12 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.events.entity.EntityDeathEvent;
+import io.xol.chunkstories.api.events.player.PlayerDeathEvent;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.core.events.EntityDeathEvent;
-import io.xol.chunkstories.core.events.PlayerDeathEvent;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

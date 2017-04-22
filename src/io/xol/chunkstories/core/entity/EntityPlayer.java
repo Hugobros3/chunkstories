@@ -33,7 +33,6 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.server.Player;
-import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -51,9 +50,7 @@ import io.xol.chunkstories.core.entity.components.EntityComponentName;
 import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.item.armor.ItemArmor;
-import io.xol.chunkstories.core.util.WorldEffects;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
-import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -282,6 +279,39 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			}
 		}*/
 		
+		/*
+		long nano = System.nanoTime();
+		
+		int c;
+		double s = 20;
+		c = 0;
+		for(Entity e : world.getEntitiesInBox(this.getLocation(), new Vector3dm(s, s, s))) {
+			
+			c++;
+			if(e != this)
+			{
+				//world.getParticlesManager().spawnParticleAtPosition("muzzle", e.getLocation().add(0.0, 1.0, 0.0));
+			}
+		}
+		
+		long diff = System.nanoTime() - nano;
+		System.out.println(diff / 1024 + "µs for local iter (s="+s+")" + " c="+c);
+		
+		nano = System.nanoTime();
+		c = 0;
+		
+		double lul = 0.0;
+		for(Entity e : world.getAllLoadedEntities())
+		{
+
+			Vector3dm lel = e.getLocation().sub(this.getLocation());
+			lul += lel.length();
+			
+			c++;
+		}
+		diff = System.nanoTime() - nano;
+		System.out.println(diff / 1024 + "µs for global iter" + " c="+c);
+		*/
 		super.tick();
 
 	}

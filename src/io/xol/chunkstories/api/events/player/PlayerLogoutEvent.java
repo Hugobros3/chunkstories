@@ -1,16 +1,15 @@
-package io.xol.chunkstories.core.events;
+package io.xol.chunkstories.api.events.player;
 
-import io.xol.chunkstories.api.events.CancellableEvent;
+import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.api.item.inventory.ItemPile;
+import io.xol.chunkstories.api.events.categories.PlayerEvent;
 import io.xol.chunkstories.api.server.Player;
-import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PlayerMoveItemEvent extends CancellableEvent
+public class PlayerLogoutEvent extends Event implements PlayerEvent
 {
 	// Every event class has to have this
 	
@@ -29,21 +28,28 @@ public class PlayerMoveItemEvent extends CancellableEvent
 	
 	// Specific event code
 	
-	public Player player;
-	public PacketInventoryMoveItemPile packet;
-	public ItemPile pile;
+	private Player player;
+	private String logoutMessage;
 	
-	public PlayerMoveItemEvent(Player player, PacketInventoryMoveItemPile packet)
+	public PlayerLogoutEvent(Player player)
 	{
 		this.player = player;
-		this.packet = packet;
-
-		pile = packet.itemPile;
+		this.logoutMessage = "#FFFF00"+player+" left the server";
 	}
 
+	public String getLogoutMessage()
+	{
+		return logoutMessage;
+	}
+
+	public void setLogoutMessage(String logoutMessage)
+	{
+		this.logoutMessage = logoutMessage;
+	}
+
+	@Override
 	public Player getPlayer()
 	{
 		return player;
 	}
-	
 }

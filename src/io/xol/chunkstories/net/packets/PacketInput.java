@@ -1,12 +1,12 @@
 package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.events.player.PlayerInputPressedEvent;
+import io.xol.chunkstories.api.events.player.PlayerInputReleasedEvent;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.core.events.PlayerInputPressedEvent;
-import io.xol.chunkstories.core.events.PlayerInputReleasedEvent;
 import io.xol.chunkstories.input.InputVirtual;
 
 import java.io.DataInputStream;

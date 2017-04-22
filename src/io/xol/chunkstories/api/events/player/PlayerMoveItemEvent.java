@@ -1,49 +1,49 @@
-package io.xol.chunkstories.core.events;
+package io.xol.chunkstories.api.events.player;
 
 import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.server.Player;
+import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PlayerInputPressedEvent extends CancellableEvent
+public class PlayerMoveItemEvent extends CancellableEvent
 {
 	// Every event class has to have this
-
+	
 	static EventListeners listeners = new EventListeners();
-
+	
 	@Override
 	public EventListeners getListeners()
 	{
 		return listeners;
 	}
-
+	
 	public static EventListeners getListenersStatic()
 	{
 		return listeners;
 	}
-
+	
 	// Specific event code
 	
-	Player player;
-	Input input;
+	public Player player;
+	public PacketInventoryMoveItemPile packet;
+	public ItemPile pile;
 	
-	public PlayerInputPressedEvent(Player player, Input input)
+	public PlayerMoveItemEvent(Player player, PacketInventoryMoveItemPile packet)
 	{
 		this.player = player;
-		this.input = input;
+		this.packet = packet;
+
+		pile = packet.itemPile;
 	}
-	
-	public Input getInput()
-	{
-		return input;
-	}
-	
+
 	public Player getPlayer()
 	{
 		return player;
 	}
+	
 }

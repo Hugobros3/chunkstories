@@ -1,4 +1,4 @@
-package io.xol.chunkstories.core.events;
+package io.xol.chunkstories.api.events.rendering;
 
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;

@@ -1,5 +1,6 @@
-package io.xol.chunkstories.core.events;
+package io.xol.chunkstories.api.events.player;
 
+import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.server.Player;
@@ -8,7 +9,7 @@ import io.xol.chunkstories.api.server.Player;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PlayerDeathEvent extends Event
+public class PlayerSelectItemEvent extends Event
 {
 	// Every event class has to have this
 	
@@ -27,27 +28,20 @@ public class PlayerDeathEvent extends Event
 	
 	// Specific event code
 	
-	final Player player;
-	String deathMessage;
-
-	public PlayerDeathEvent(Player player)
+	public Player player;
+	public EntityWithInventory entity;
+	public int newSlot;
+	
+	public PlayerSelectItemEvent(Player player, EntityWithInventory playerEntity, int newSlot)
 	{
 		this.player = player;
-		this.deathMessage = player.getDisplayName()+" died.";
-	}
-	
-	public String getDeathMessage()
-	{
-		return deathMessage;
-	}
-
-	public void setDeathMessage(String deathMessage)
-	{
-		this.deathMessage = deathMessage;
+		this.entity = playerEntity;
+		this.newSlot = newSlot;
 	}
 
 	public Player getPlayer()
 	{
 		return player;
 	}
+	
 }
