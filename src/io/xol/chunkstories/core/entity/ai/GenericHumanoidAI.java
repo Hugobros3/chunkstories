@@ -103,7 +103,7 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			
 			if(lookAtNearbyEntities > 0.0 && lookAtEntityCoolDown == 0)
 			{
-				for(Entity entityToLook : entity.getWorld().getAllLoadedEntities())
+				for(Entity entityToLook : entity.getWorld().getEntitiesInBox(entity.getLocation(), new Vector3dm(lookAtNearbyEntities)))
 				{
 					if(!entityToLook.equals(entity) && entityToLook.getLocation().distanceTo(GenericHumanoidAI.this.entity.getLocation()) <= lookAtNearbyEntities && entityToLook instanceof EntityHumanoid && !((EntityHumanoid) entityToLook).isDead())
 					{

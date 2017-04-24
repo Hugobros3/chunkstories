@@ -16,8 +16,6 @@ import java.io.IOException;
 
 /**
  * Describes a voxel change
- * @author gobrosse
- *
  */
 public class PacketVoxelUpdate extends PacketSynchPrepared
 {

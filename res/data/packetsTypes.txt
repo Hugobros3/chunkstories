@@ -24,4 +24,6 @@ packet 0x0E PACKET_FILE io.xol.chunkstories.net.packets.PacketFile server
 packet 0x0F PACKET_VELOCITY_DELTA io.xol.chunkstories.net.packets.PacketVelocityDelta server
 packet 0x10 PACKET_OPEN_INVENTORY io.xol.chunkstories.net.packets.PacketOpenInventory server
 
+packet 0x11 PACKET_FX_EXPLOSION io.xol.chunkstories.net.packets.PacketExplosionEffect server
+
 #Be sensible and add your own ones after The game has an hardlimit of arround 32768 packet types possible

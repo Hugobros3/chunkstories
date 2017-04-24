@@ -5,6 +5,7 @@ import java.util.Collection;
 import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.core.entity.EntityHumanoid;
 import io.xol.chunkstories.core.entity.EntityHumanoid.EntityHumanoidStance;
 import io.xol.chunkstories.core.entity.EntityPlayer;
@@ -47,7 +48,7 @@ public class ZombieAI extends GenericHumanoidAI
 			//Only look for them once in 2s
 			attackEntityCooldown = (int) (Math.random() * 60 * 2);
 
-			for (Entity entityToLook : entity.getWorld().getAllLoadedEntities())
+			for (Entity entityToLook : entity.getWorld().getEntitiesInBox(entity.getLocation(), new Vector3dm(entity.stage().aggroRadius * 2f)))
 			{
 				float visibilityModifier = 1f;
 				if(entityToLook instanceof EntityPlayer) {

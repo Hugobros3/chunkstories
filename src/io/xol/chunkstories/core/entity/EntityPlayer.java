@@ -172,7 +172,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if (world instanceof WorldMaster && (world.getTicksElapsed() % 60L) == 0L)
 		{
 			//TODO Use more precise, regional functions to not iterate over the entire world like a retard
-			for (Entity e : world.getAllLoadedEntities())
+			for (Entity e : world.getEntitiesInBox(getLocation(), new Vector3dm(3.0)))
 			{
 				if (e instanceof EntityGroundItem && e.getLocation().distanceTo(this.getLocation()) < 3.0f)
 				{
