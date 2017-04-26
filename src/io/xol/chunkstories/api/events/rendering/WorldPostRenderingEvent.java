@@ -14,7 +14,7 @@ public class WorldPostRenderingEvent extends Event
 {
 	// Every event class has to have this
 	
-	static EventListeners listeners = new EventListeners();
+	static EventListeners listeners = new EventListeners(WorldPostRenderingEvent.class);
 	
 	@Override
 	public EventListeners getListeners()

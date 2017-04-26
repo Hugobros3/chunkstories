@@ -13,7 +13,7 @@ public class PlayerSelectItemEvent extends Event
 {
 	// Every event class has to have this
 	
-	static EventListeners listeners = new EventListeners();
+	static EventListeners listeners = new EventListeners(PlayerSelectItemEvent.class);
 	
 	@Override
 	public EventListeners getListeners()

@@ -8,7 +8,7 @@ public abstract class VoxelDestructionEvent extends CancellableEvent
 {
 	// Every event class has to have this
 	
-	static EventListeners listeners = new EventListeners();
+	static EventListeners listeners = new EventListeners(VoxelDestructionEvent.class);
 	
 	@Override
 	public EventListeners getListeners()

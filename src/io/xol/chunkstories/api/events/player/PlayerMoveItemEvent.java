@@ -14,7 +14,7 @@ public class PlayerMoveItemEvent extends CancellableEvent
 {
 	// Every event class has to have this
 	
-	static EventListeners listeners = new EventListeners();
+	static EventListeners listeners = new EventListeners(PlayerMoveItemEvent.class);
 	
 	@Override
 	public EventListeners getListeners()

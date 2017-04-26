@@ -13,7 +13,7 @@ public class PlayerLogoutEvent extends Event implements PlayerEvent
 {
 	// Every event class has to have this
 	
-	static EventListeners listeners = new EventListeners();
+	static EventListeners listeners = new EventListeners(PlayerLogoutEvent.class);
 	
 	@Override
 	public EventListeners getListeners()

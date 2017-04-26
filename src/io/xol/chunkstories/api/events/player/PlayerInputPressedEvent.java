@@ -13,7 +13,7 @@ public class PlayerInputPressedEvent extends CancellableEvent
 {
 	// Every event class has to have this
 
-	static EventListeners listeners = new EventListeners();
+	static EventListeners listeners = new EventListeners(PlayerInputPressedEvent.class);
 
 	@Override
 	public EventListeners getListeners()

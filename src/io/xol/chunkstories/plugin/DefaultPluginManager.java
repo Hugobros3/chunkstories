@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -42,6 +43,7 @@ public abstract class DefaultPluginManager implements PluginManager
 	private final GameContext pluginExecutionContext;
 
 	public Set<ChunkStoriesPlugin> activePlugins = new HashSet<ChunkStoriesPlugin>();
+	private HashMap<EventListeners, RegisteredListener> registeredEventListeners = new HashMap<EventListeners, RegisteredListener>();
 
 	public Map<String, Command> commandsAliases = new HashMap<String, Command>();
 	public Set<Command> commands = new HashSet<Command>();
@@ -168,13 +170,22 @@ public abstract class DefaultPluginManager implements PluginManager
 	@Override
 	public void disablePlugins()
 	{
+		// Call onDisable for plugins
 		for (ChunkStoriesPlugin plugin : activePlugins)
-		{
 			plugin.onDisable();
+		
+		// Remove one by one each listener
+		for(Entry<EventListeners, RegisteredListener> e : registeredEventListeners.entrySet())
+		{
+			e.getKey().unRegisterListener(e.getValue());
 		}
-		activePlugins.clear();
+		
+		// Remove registered commands
 		commandsAliases.clear();
 		commands.clear();
+		
+		// At last clear the plugins list
+		activePlugins.clear();
 	}
 
 	public void registerCommandHandler(String commandName, CommandHandler commandHandler)
@@ -236,12 +247,11 @@ public abstract class DefaultPluginManager implements PluginManager
 			// Filter it so only interested in @EventHandler annoted methods
 			for (final Method method : methods)
 			{
-				//System.out.println("Checking out "+method);
-
-				EventHandler eh = method.getAnnotation(EventHandler.class);
-				if (eh == null)
+				EventHandler eventHandlerAnnotation = method.getAnnotation(EventHandler.class);
+				
+				//We look for the annotation in the method
+				if (eventHandlerAnnotation == null)
 					continue;
-				//System.out.println("has correct annotation");
 
 				//TODO something about priority
 				if (method.getParameterTypes().length != 1 || !Event.class.isAssignableFrom(method.getParameterTypes()[0]))
@@ -259,19 +269,38 @@ public abstract class DefaultPluginManager implements PluginManager
 						method.invoke(listener, event);
 					}
 				};
-				RegisteredListener re = new RegisteredListener(listener, plugin, executor);
+				RegisteredListener registeredListener = new RegisteredListener(listener, plugin, executor, eventHandlerAnnotation.priority());
+				
 				// Get the listeners list for this event
 				Method getListeners = parameter.getMethod("getListenersStatic");
 				getListeners.setAccessible(true);
 				EventListeners thisEventKindOfListeners = (EventListeners) getListeners.invoke(null);
+				
 				// Add our own to it
-				thisEventKindOfListeners.registerListener(re);
-				ChunkStoriesLogger.getInstance().info("Successuflly added EventHandler in " + listener + " of plugin " + plugin);
+				thisEventKindOfListeners.registerListener(registeredListener);
+				registeredEventListeners.put(thisEventKindOfListeners, registeredListener);
+				
+				// Depending on the event configuration we may or may not care about the children events
+				if(eventHandlerAnnotation.listenToChildEvents() != EventHandler.ListenToChildEvents.NO)
+					addRegisteredListenerToEventChildren(thisEventKindOfListeners, registeredListener, eventHandlerAnnotation.listenToChildEvents() == EventHandler.ListenToChildEvents.RECURSIVE);
+				
+				
+				ChunkStoriesLogger.getInstance().info("Successuflly added EventHandler for " + parameter.getName() + "in " + listener + " of plugin " + plugin);
 			}
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
+		}
+	}
+	
+	private void addRegisteredListenerToEventChildren(EventListeners listeners, RegisteredListener registeredListener, boolean recursive) {
+		for(EventListeners el : listeners.getChildrens()) {
+			el.registerListener(registeredListener);
+			registeredEventListeners.put(el, registeredListener);
+			
+			if(recursive)
+				addRegisteredListenerToEventChildren(el, registeredListener, true);
 		}
 	}
 

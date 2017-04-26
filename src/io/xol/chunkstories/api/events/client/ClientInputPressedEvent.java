@@ -13,7 +13,7 @@ public class ClientInputPressedEvent extends CancellableEvent implements ClientE
 {
 	// Every event class has to have this
 
-	static EventListeners listeners = new EventListeners();
+	static EventListeners listeners = new EventListeners(ClientInputPressedEvent.class);
 
 	@Override
 	public EventListeners getListeners()

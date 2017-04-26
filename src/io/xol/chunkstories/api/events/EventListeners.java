@@ -1,7 +1,11 @@
 package io.xol.chunkstories.api.events;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
+
+import io.xol.chunkstories.api.events.voxel.VoxelDestructionEvent;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -10,12 +14,74 @@ import java.util.Set;
 public class EventListeners
 {
 	RegisteredListener[] listenersBaked;
-	
 	Set<RegisteredListener> unbaked = new HashSet<RegisteredListener>();
+	
+	Set<EventListeners> children = new HashSet<EventListeners>();
+	EventListeners[] childrenBaked;
+	
+	final String owningEventName;
 	
 	public EventListeners()
 	{
+		owningEventName = "Anonymous event";
 		bake();
+		bakeChildren();
+	}
+	
+	public EventListeners(Class<? extends Event> eventClass)
+	{
+		owningEventName = eventClass.getName();
+		System.out.println("Building EventListener for "+eventClass);
+		Class<? extends Event> son = eventClass;
+		//EventListeners sonListener = this;
+		
+		try {
+			while(true) {
+				Class<?> dad = son.getSuperclass();
+				if(Event.class.isAssignableFrom(dad))
+				{
+					System.out.println("Found superclass " + dad);
+					Method m = dad.getMethod("getListeners");
+					
+					if(m == null || Event.class == dad || CancellableEvent.class == dad)
+						break;
+					
+					Object o = m.invoke(null);
+					EventListeners daddyEars = (EventListeners)o;
+					
+					//Notice me daddy
+					daddyEars.declareChildren(this);
+					
+					//Oedipe time
+					son = (Class<? extends Event>) dad;
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+		catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Error while setting up events inheritance");
+		}
+		
+		bake();
+		bakeChildren();
+	}
+	
+	void declareChildren(EventListeners heyDad) {
+		children.add(heyDad);
+		
+		//Debug thingie
+		System.out.print("EventListener for "+ owningEventName + ", childrens = ");
+		for(EventListeners l : children)
+		{
+			System.out.print(l.owningEventName + ", ");
+		}
+		System.out.println();
+		
+		bakeChildren();
 	}
 
 	public void registerListener(RegisteredListener RegisteredListener)
@@ -28,6 +94,17 @@ public class EventListeners
 	{
 		unbaked.remove(RegisteredListener);
 		bake();
+	}
+	
+	private void bakeChildren()
+	{
+		childrenBaked = new EventListeners[children.size()];
+		int i = 0;
+		for(EventListeners l : children)
+		{
+			childrenBaked[i] = l;
+			i++;
+		}
 	}
 	
 	private void bake()
@@ -47,4 +124,8 @@ public class EventListeners
 		return listenersBaked;
 	}
 
+	public EventListeners[] getChildrens()
+	{
+		return childrenBaked;
+	}
 }

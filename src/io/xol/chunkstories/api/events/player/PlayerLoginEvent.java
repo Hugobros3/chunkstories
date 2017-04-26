@@ -13,7 +13,7 @@ public class PlayerLoginEvent extends CancellableEvent implements PlayerEvent
 {
 	// Every event class has to have this
 	
-	static EventListeners listeners = new EventListeners();
+	static EventListeners listeners = new EventListeners(PlayerLoginEvent.class);
 	
 	@Override
 	public EventListeners getListeners()

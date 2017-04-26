@@ -12,7 +12,7 @@ public class PlayerDeathEvent extends Event
 {
 	// Every event class has to have this
 	
-	static EventListeners listeners = new EventListeners();
+	static EventListeners listeners = new EventListeners(PlayerDeathEvent.class);
 	
 	@Override
 	public EventListeners getListeners()

@@ -9,17 +9,20 @@ import io.xol.chunkstories.tools.ChunkStoriesLogger;
 //http://chunkstories.xyz
 //http://xol.io
 
+/** Describes a successfully processed event handler annotation, called when a specific event happens */
 public class RegisteredListener
 {
 	Listener listener;
 	ChunkStoriesPlugin plugin;
 	EventExecutor executor;
+	EventHandler.EventPriority priority;
 
-	public RegisteredListener(Listener l, ChunkStoriesPlugin plugin, EventExecutor executor)
+	public RegisteredListener(Listener listener, ChunkStoriesPlugin plugin, EventExecutor executor, EventHandler.EventPriority priority)
 	{
-		this.listener = l;
+		this.listener = listener;
 		this.plugin = plugin;
 		this.executor = executor;
+		this.priority = priority;
 	}
 
 	public void invokeForEvent(Event event)

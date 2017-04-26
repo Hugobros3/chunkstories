@@ -16,7 +16,7 @@ public class EntityDeathEvent extends Event
 {
 	// Every event class has to have this
 	
-	static EventListeners listeners = new EventListeners();
+	static EventListeners listeners = new EventListeners(EntityDeathEvent.class);
 	
 	@Override
 	public EventListeners getListeners()

@@ -13,7 +13,7 @@ public class ClientInputReleasedEvent extends Event implements ClientEvent
 {
 	// Every event class has to have this
 
-	static EventListeners listeners = new EventListeners();
+	static EventListeners listeners = new EventListeners(ClientInputReleasedEvent.class);
 
 	@Override
 	public EventListeners getListeners()
