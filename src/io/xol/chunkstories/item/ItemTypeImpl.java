@@ -52,6 +52,11 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemType
 
 		//Loads up a custom class if one is defined
 		String className = this.resolveProperty("customClass", "io.xol.chunkstories.api.item.Item");
+		
+		//Two syntaxes are possible
+		if(className.equals("io.xol.chunkstories.api.item.Item"))
+			className = this.resolveProperty("class", "io.xol.chunkstories.api.item.Item");
+		
 		try
 		{
 			Class<?> rawClass = store.parent().modsManager().getClassByName(className);
