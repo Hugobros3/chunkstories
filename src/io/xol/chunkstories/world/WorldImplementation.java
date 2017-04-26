@@ -113,9 +113,9 @@ public abstract class WorldImplementation implements World
 		
 		worldInfo = info;
 		//Creates world generator
-		this.generator = gameContext.getContent().generators().getWorldGenerator(info.getGeneratorName()).instanciate();
+		this.generator = gameContext.getContent().generators().getWorldGenerator(info.getGeneratorName()).createForWorld(this);
 
-		this.generator.initialize(this);
+		//this.generator.initialize(this);
 
 		//this.chunksData = new ChunksData();
 		this.regions = new HashMapWorldRegionsHolder(this);

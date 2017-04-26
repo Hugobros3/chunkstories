@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api.world;
 
+import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
@@ -9,11 +10,18 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 
 public abstract class WorldGenerator
 {
-	protected World world;
+	protected final World world;
+	protected final WorldGeneratorType type;
 
-	public void initialize(World world)
+	public WorldGenerator(WorldGeneratorType type, World world)
 	{
 		this.world = world;
+		this.type = type;
+	}
+	
+	public WorldGeneratorType getType()
+	{
+		return type;
 	}
 
 	/**

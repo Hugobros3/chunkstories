@@ -2,12 +2,16 @@ package io.xol.chunkstories.world.generator;
 
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
+import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationException;
+import io.xol.chunkstories.api.exceptions.content.IllegalWorldGeneratorDeclarationException;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.api.mods.ModsManager;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.core.generator.BlankWorldGenerator;
+import io.xol.chunkstories.materials.GenericNamedConfigurable;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 
 import java.io.BufferedReader;
@@ -36,16 +40,38 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 	}
 	
 	public Map<String, WorldGeneratorType> generators = new HashMap<String, WorldGeneratorType>();
-	public Map<Class<? extends WorldGenerator>, WorldGeneratorType> generatorsClasses = new HashMap<Class<? extends WorldGenerator>, WorldGeneratorType>();
+	public Map<String, WorldGeneratorType> generatorsClasses = new HashMap<String, WorldGeneratorType>();
 	
-	public class ActualWorldGeneratorType implements WorldGeneratorType {
-		public ActualWorldGeneratorType(String name, Constructor<? extends WorldGenerator> constructor)
+	public class ActualWorldGeneratorType extends GenericNamedConfigurable implements WorldGeneratorType {
+		
+		public ActualWorldGeneratorType(String name, BufferedReader reader) throws IOException, IllegalWorldGeneratorDeclarationException
 		{
-			this.name = name;
-			this.constructor = constructor;
+			super(name, reader);
+			
+			try
+			{
+				className = this.resolveProperty("class", BlankWorldGenerator.class.getName());
+				
+				Class<?> untypedClass = Class.forName(className);
+				if (!WorldGenerator.class.isAssignableFrom(untypedClass))
+					throw new IllegalWorldGeneratorDeclarationException(className + " is not a subclass of WorldGenerator");
+				@SuppressWarnings("unchecked")
+				Class<? extends WorldGenerator> generatorClass = (Class<? extends WorldGenerator>) untypedClass;
+
+				Class<?>[] types = {WorldGeneratorType.class, World.class};
+				
+				constructor = generatorClass.getConstructor(types);
+			}
+			catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
+			{
+				e.printStackTrace();
+				throw new IllegalWorldGeneratorDeclarationException("WorldGenerator " + this.getName() + " has an issue with it's constructor: " + e.getMessage());
+			}
+			
+			System.out.println("GENERATOR TYPE INIT OK " + name);
 		}
 
-		private final String name;
+		private final String className;
 		private final Constructor<? extends WorldGenerator> constructor;
 		
 		@Override
@@ -55,11 +81,11 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		}
 
 		@Override
-		public WorldGenerator instanciate()
+		public WorldGenerator createForWorld(World world)
 		{
 			try
 			{
-				return constructor.newInstance(new Object[] {});
+				return constructor.newInstance(new Object[] {this, world});
 			}
 			catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 			{
@@ -67,13 +93,21 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 			}
 			
 			ChunkStoriesLogger.getInstance().warning("Couldn't instanciate generator \"" + name + "\"; Instanciating BlankWorldGenerator instead.");
-			return new BlankWorldGenerator();
+			
+			//Return blank WG as a failover
+			return new BlankWorldGenerator(this, world);
+		}
+
+		public String getGeneratorClassname()
+		{
+			return className;
 		}
 		
 	}
 	//public Map<String, Constructor<? extends WorldGenerator>> generators = new HashMap<String, Constructor<? extends WorldGenerator>>();
 	//public Map<Class<? extends WorldGenerator>, String> generatorsClasses = new HashMap<Class<? extends WorldGenerator>, String>();
 
+	/** Vanilla blank (void) world generator */
 	WorldGeneratorType blank = new WorldGeneratorType() {
 
 		@Override
@@ -83,11 +117,22 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		}
 
 		@Override
-		public WorldGenerator instanciate()
+		public WorldGenerator createForWorld(World world)
 		{
-			return new BlankWorldGenerator();
+			return new BlankWorldGenerator(this, world);
 		}
-		
+
+		@Override
+		public String resolveProperty(String propertyName)
+		{
+			return null;
+		}
+
+		@Override
+		public String resolveProperty(String propertyName, String defaultValue)
+		{
+			return defaultValue;
+		}
 	};
 	
 	public void reload()
@@ -95,13 +140,22 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		//Loads all generators
 		generators.clear();
 		generatorsClasses.clear();
-		AssetHierarchy packetsFiles = modsManager.getAssetInstances("./data/worldGenerators.txt");
+		
+		/*AssetHierarchy packetsFiles = modsManager.getAssetInstances("./data/worldGenerators.txt");
 		
 		Iterator<Asset> i = packetsFiles.iterator();
 		while(i.hasNext())
 		{
 			Asset a = i.next();
 			loadWorldGeneratorsFile(a);
+		}*/
+		
+		Iterator<Asset> i = modsManager.getAllAssetsByExtension("generators");
+		while (i.hasNext())
+		{
+			Asset f = i.next();
+			ChunkStoriesLogger.getInstance().log("Reading WorldGenerators declarations in : " + f);
+			loadWorldGeneratorsFile(f);
 		}
 	}
 
@@ -124,7 +178,23 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 					String splitted[] = line.split(" ");
 					if (splitted.length == 2)
 					{
-						String generatorName = splitted[0];
+						if(splitted[0].equals("generator"))
+						{
+							String name = splitted[1];
+							
+							try {
+								ActualWorldGeneratorType generator = new ActualWorldGeneratorType(name, reader);
+								
+								generators.put(name, generator);
+								
+								generatorsClasses.put(generator.getGeneratorClassname(), generator);
+							}
+							catch(IOException | IllegalWorldGeneratorDeclarationException e) {
+								e.printStackTrace();
+							}
+						}
+						
+						/*String generatorName = splitted[0];
 						try
 						{
 							Class<?> untypedClass = Class.forName(splitted[1]);
@@ -144,14 +214,14 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 						catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
 						{
 							e.printStackTrace();
-						}
+						}*/
 					}
 				}
 
 				ln++;
 			}
 		}
-		catch (IOException | SyntaxErrorException e)
+		catch (IOException e)
 		{
 			ChunkStoriesLogger.getInstance().warning(e.getMessage());
 		}

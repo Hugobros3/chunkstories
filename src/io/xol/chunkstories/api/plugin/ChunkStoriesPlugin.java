@@ -40,9 +40,4 @@ public abstract class ChunkStoriesPlugin
 	{
 		return pluginInformation.getName();
 	}
-	
-	/*public File getPluginFolder()
-	{
-		return new File(GameDirectory.getGameFolderPath()+"/plugins/"+pluginInformation.g);
-	}*/
 }

@@ -3,6 +3,7 @@ package io.xol.chunkstories.api;
 import java.util.Collection;
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.content.NamedWithProperties;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.material.Material;
@@ -13,6 +14,7 @@ import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.net.packets.IllegalPacketException;
 import io.xol.chunkstories.net.packets.UnknowPacketException;
@@ -143,10 +145,10 @@ public interface Content
 		
 		public Iterator<WorldGeneratorType> all();
 		
-		public interface WorldGeneratorType {
+		public interface WorldGeneratorType extends NamedWithProperties {
 			public String getName();
 			
-			public WorldGenerator instanciate();
+			public WorldGenerator createForWorld(World world);
 		}
 
 		public Content parent();

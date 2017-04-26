@@ -1,5 +1,7 @@
 package io.xol.chunkstories.core.generator;
 
+import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -11,6 +13,11 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 
 public class BlankWorldGenerator extends WorldGenerator
 {
+
+	public BlankWorldGenerator(WorldGeneratorType type, World world)
+	{
+		super(type, world);
+	}
 
 	@Override
 	public Chunk generateChunk(RegionImplementation region, int cx, int cy, int cz)

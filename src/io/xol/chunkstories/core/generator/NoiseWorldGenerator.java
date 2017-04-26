@@ -2,6 +2,7 @@ package io.xol.chunkstories.core.generator;
 
 import java.util.Random;
 
+import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
@@ -23,10 +24,9 @@ public class NoiseWorldGenerator extends WorldGenerator
 
 	int ws;
 
-	@Override
-	public void initialize(World w)
+	public NoiseWorldGenerator(WorldGeneratorType type, World w)
 	{
-		super.initialize(w);
+		super(type, w);
 		ssng = new SeededSimplexNoiseGenerator(((WorldImplementation) w).getWorldInfo().getSeed());
 		ws = world.getSizeInChunks() * 32;
 	}
