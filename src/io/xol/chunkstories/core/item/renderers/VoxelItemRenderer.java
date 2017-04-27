@@ -23,7 +23,13 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
+import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
+import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext.VoxelLighter;
+import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
+import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
@@ -31,7 +37,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.renderer.VoxelContextOlder;
 import io.xol.chunkstories.renderer.chunks.RenderByteBuffer;
-import io.xol.chunkstories.voxel.models.VoxelModelLoaded;
 import io.xol.chunkstories.world.chunk.DummyChunk;
 import io.xol.engine.graphics.geometry.VertexFormat;
 import io.xol.engine.graphics.geometry.VerticesObject;
@@ -103,43 +108,37 @@ public class VoxelItemRenderer extends ItemRenderer
 			@Override
 			public boolean isTopChunkLoaded()
 			{
-				// TODO Auto-generated method stub
-				return false;
+				return true;
 			}
 
 			@Override
 			public boolean isBottomChunkLoaded()
 			{
-				// TODO Auto-generated method stub
-				return false;
+				return true;
 			}
 
 			@Override
 			public boolean isLeftChunkLoaded()
 			{
-				// TODO Auto-generated method stub
-				return false;
+				return true;
 			}
 
 			@Override
 			public boolean isRightChunkLoaded()
 			{
-				// TODO Auto-generated method stub
-				return false;
+				return true;
 			}
 
 			@Override
 			public boolean isFrontChunkLoaded()
 			{
-				// TODO Auto-generated method stub
-				return false;
+				return true;
 			}
 
 			@Override
 			public boolean isBackChunkLoaded()
 			{
-				// TODO Auto-generated method stub
-				return false;
+				return true;
 			}
 
 			@Override
@@ -234,10 +233,22 @@ public class VoxelItemRenderer extends ItemRenderer
 		}
 		
 		@Override
+		public void addVerticeInt(int i0, int i1, int i2)
+		{
+			//System.out.println("addVerticeInt("+i0+","+i1+","+i2+")");
+			this.addVerticeFloat(i0, i1, i2);
+		}
+		
+		@Override
 		public void addTexCoordInt(int i0, int i1)
 		{
 			byteBuffer.putFloat(i0 / 32768f);
 			byteBuffer.putFloat(i1 / 32768f);
+		}
+		
+		@Override
+		public void addColors(float[] t)
+		{
 		}
 		
 		@Override
@@ -251,6 +262,16 @@ public class VoxelItemRenderer extends ItemRenderer
 		}
 		
 		@Override
+		public void addColorsAuto(VoxelLighter voxelLighter, Corners corner)
+		{
+		}
+		
+		@Override
+		public void addColorsSpecial(float[] t, int extended)
+		{
+		}
+		
+		@Override
 		public void addColorsSpecial(float f0, float f1, float f2, int extended)
 		{
 		}
@@ -258,20 +279,124 @@ public class VoxelItemRenderer extends ItemRenderer
 
 	private void renderVoxel(RenderingInterface renderingContext, Voxel voxel, VoxelRenderer voxelRenderer, VoxelContext bri)
 	{
-		VoxelModelLoaded model = null;
+		/*VoxelModelLoaded model = null;
 		if (voxelRenderer instanceof VoxelModelLoaded)
 			model = (VoxelModelLoaded) voxelRenderer;
 		else
-			return;
+			return;*/
 
 		if (!voxelItemsModelBuffer.containsKey(bri.getMetaData() + 16 * voxel.getId()))
 		{
 			//Wow calm down satan with your huge-ass models
 			ByteBuffer buffer = BufferUtils.createByteBuffer(16384);
 			RenderByteBuffer rbbuf = new EditedTexCoordsRenderByteBuffer(buffer);
-			model.renderInto(rbbuf, bakingContext, bri, new DummyChunk(), 0, 0, 0);
+			
+			ChunkRenderer chunkRenderer = new ChunkRenderer() {
+
+				@Override
+				public VoxelBakerHighPoly getHighpolyBakerFor(LodLevel lodLevel, ShadingType renderPass)
+				{
+					return rbbuf;
+				}
+
+				@Override
+				public VoxelBakerCubic getLowpolyBakerFor(LodLevel lodLevel, ShadingType renderPass)
+				{
+					return rbbuf;
+				}
+				
+			};
+			
+			//System.out.println("Rendering fake block into buffer for item voxel ");
+			
+			voxelRenderer.renderInto(chunkRenderer, bakingContext, new DummyChunk() {
+				
+				@Override
+				public int getVoxelData(int x, int y, int z)
+				{
+					if(x == 0 && y == 0 && z == 0)
+						return bri.getData();
+					return 0;
+				}
+				
+			}, bri);
+			//model.renderInto(rbbuf, bakingContext, bri, new DummyChunk(), 0, 0, 0);
 			
 			buffer.flip();
+			
+			/*if(voxel.getName().equals("pineleaves"))
+			{
+				byte[] ok = new byte[buffer.remaining()];
+				buffer.get(ok);
+				
+				buffer.flip();
+				System.out.println(ok.length);
+				
+				//System.out.println(Base64.getEncoder().encodeToString(ok));
+				
+				//864
+				for(int nn = 0; nn < 864; nn+=24)
+				{
+					int n = nn;
+					
+					float foo2 = Float.intBitsToFloat(ok[n + 3] ^ ok[n+2]<<8 ^ ok[n+1]<<16 ^ ok[n+0]<<24 );
+					n+=4;
+					float foo22 = Float.intBitsToFloat(ok[n + 3] ^ ok[n+2]<<8 ^ ok[n+1]<<16 ^ ok[n+0]<<24 );
+					n+=4;
+					float foo23 = Float.intBitsToFloat(ok[n + 3] ^ ok[n+2]<<8 ^ ok[n+1]<<16 ^ ok[n+0]<<24 );
+					
+					System.out.println(foo2+":"+foo22+":"+foo23);
+
+
+					byte[] bytes = new byte[] {ok[n + 0], ok[n + 1], ok[n + 2], ok[ n + 3]};
+					float f = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+					System.out.println(f);
+					
+					// 1.0 = 1065353216 = 0x3F800000
+					
+					int fuck = ok[n + 0] | ok[n+1]<<8 | ok[n+2]<<16 | ok[n+3]<<24;
+					int fock = ok[n + 0] ^ ok[n+1]<<8 ^ ok[n+2]<<16 ^ ok[n+3]<<24;
+					
+					int aa = ok[n + 3] << 24;
+					System.out.println(aa + " : "+(0xFF & ok[n + 0]) +" " + (0xFF & ok[n + 1]) + " " + (0xFF & ok[n + 2]) + " " + (0xFF & ok[ n + 3]));
+					
+					System.out.println("fuck: "+fuck + " fock: "+fock + " [0]:" + ok[n + 3]);
+					
+					float foo1 = Float.intBitsToFloat((0xFF & ok[n+0]) | (0xFF & ok[n+1])<<8 | (0xFF & ok[n+2])<<16 | (0xFF & ok[n+3])<<24 );
+					n+=4;
+					float foo12 = Float.intBitsToFloat((0xFF & ok[n+0]) | (0xFF & ok[n+1])<<8 | (0xFF & ok[n+2])<<16 | (0xFF & ok[n+3])<<24 );
+					n+=4;
+					float foo13 = Float.intBitsToFloat((0xFF & ok[n+0]) | (0xFF & ok[n+1])<<8 | (0xFF & ok[n+2])<<16 | (0xFF & ok[n+3])<<24 );
+					n+=4;
+					float foo14 = Float.intBitsToFloat((0xFF & ok[n+0]) | (0xFF & ok[n+1])<<8 | (0xFF & ok[n+2])<<16 | (0xFF & ok[n+3])<<24 );
+					n+=4;
+					float foo15 = Float.intBitsToFloat((0xFF & ok[n+0]) | (0xFF & ok[n+1])<<8 | (0xFF & ok[n+2])<<16 | (0xFF & ok[n+3])<<24 );
+					n+=4;
+					float foo16 = Float.intBitsToFloat((0xFF & ok[n+0]) | (0xFF & ok[n+1])<<8 | (0xFF & ok[n+2])<<16 | (0xFF & ok[n+3])<<24 );
+					
+					System.out.println(foo1+":"+foo12+":"+foo13+":"+foo14+":"+foo15+":"+foo16);
+					
+					float foo = Float.intBitsToFloat(ok[n] ^ ok[n+1]<<8 ^ ok[n+2]<<16 ^ ok[n+3]<<24 );
+					System.out.println(foo);
+					
+					n+=4;
+					foo = Float.intBitsToFloat(ok[n] ^ ok[n+1]<<8 ^ ok[n+2]<<16 ^ ok[n+3]<<24 );
+					System.out.println(foo);
+					
+					n+=4;
+					foo = Float.intBitsToFloat(ok[n] ^ ok[n+1]<<8 ^ ok[n+2]<<16 ^ ok[n+3]<<24 );
+					System.out.println(foo);
+					
+
+					n+=4;
+					foo = Float.intBitsToFloat(ok[n] ^ ok[n+1]<<8 ^ ok[n+2]<<16 ^ ok[n+3]<<24 );
+					System.out.println(foo);
+					
+					n+=4;
+					foo = Float.intBitsToFloat(ok[n] ^ ok[n+1]<<8 ^ ok[n+2]<<16 ^ ok[n+3]<<24 );
+					System.out.println(foo);
+				}
+			}*/
 			
 			VerticesObject mesh = new VerticesObject();
 			mesh.uploadData(buffer);
@@ -283,18 +408,12 @@ public class VoxelItemRenderer extends ItemRenderer
 		if (voxelItemsModelBuffer.containsKey(bri.getMetaData() + 16 * voxel.getId()))
 		{
 			VerticesObject mesh = voxelItemsModelBuffer.get(bri.getMetaData() + 16 * voxel.getId());
-
+			
 			renderingContext.bindAttribute("vertexIn", mesh.asAttributeSource(VertexFormat.FLOAT, 3, 24, 0));
-			renderingContext.bindAttribute("texCoordIn", mesh.asAttributeSource(VertexFormat.FLOAT, 3, 24, 12));
+			renderingContext.bindAttribute("texCoordIn", mesh.asAttributeSource(VertexFormat.FLOAT, 2, 24, 12));
 			renderingContext.bindAttribute("normalIn", mesh.asAttributeSource(VertexFormat.U1010102, 4, 24, 20));
 			
-			//renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 24, 0 + 0, mesh);
-			//renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 24, 0 + 12, mesh);
-			//renderingContext.setVertexAttributePointerLocation("normalIn", 4, GL_UNSIGNED_INT_2_10_10_10_REV, true, 24, 0 + 20, mesh);
-			
 			renderingContext.draw(Primitive.TRIANGLE, 0, (int) (mesh.getVramUsage() / 24));
-			
-			//mesh.drawElementsTriangles((int) (mesh.getVramUsage() / 24));
 		}
 	}
 

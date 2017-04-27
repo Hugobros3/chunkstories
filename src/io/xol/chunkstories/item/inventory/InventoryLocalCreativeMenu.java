@@ -35,7 +35,6 @@ public class InventoryLocalCreativeMenu extends BasicInventory
 		this.height = (int)Math.ceil(allItems.size() / 10.0);
 		this.width = 10;
 		this.contents = new ItemPile[width][height];
-		//this.addItemPile(new ItemPile("weapon_ak47"));
 		
 		for(ItemPile pile : allItems)
 		{
@@ -53,6 +52,10 @@ public class InventoryLocalCreativeMenu extends BasicInventory
 	{
 		return "All voxels";
 	}
+	
+	/*
+	 * Following: Hacky stuff to make this inventory immutable
+	 */
 	
 	@Override
 	public ItemPile placeItemPileAt(int x, int y, ItemPile itemPile)
