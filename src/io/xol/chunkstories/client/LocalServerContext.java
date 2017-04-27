@@ -13,10 +13,12 @@ import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
+import io.xol.chunkstories.api.server.PermissionsManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.utils.IterableIterator;
+import io.xol.chunkstories.server.UsersPrivileges;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldClientLocal;
 
@@ -27,13 +29,26 @@ import io.xol.chunkstories.world.WorldClientLocal;
 public class LocalServerContext implements ClientInterface, ServerInterface
 {
 	private final Client client;
-	
 	private final WorldClientLocal world;
+	
+	private PermissionsManager permissionsManager;
 	
 	public LocalServerContext(Client client)
 	{
 		this.client = client;
 		this.world = (WorldClientLocal) client.getWorld();
+		
+		this.permissionsManager = new PermissionsManager() {
+
+			@Override
+			public boolean hasPermission(Player player, String permissionNode)
+			{
+				if (UsersPrivileges.isUserAdmin(player.getName()))
+					return true;
+				return false;
+			}
+			
+		};
 	}
 	
 	@Override
@@ -186,6 +201,19 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	public GameWindow getGameWindow()
 	{
 		return client.getGameWindow();
+	}
+
+	@Override
+	public PermissionsManager getPermissionsManager()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void installPermissionsManager(PermissionsManager permissionsManager)
+	{
+		
 	}
 
 }

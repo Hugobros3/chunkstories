@@ -1,11 +1,8 @@
 package io.xol.chunkstories.world.generator;
 
 import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.exceptions.SyntaxErrorException;
-import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationException;
 import io.xol.chunkstories.api.exceptions.content.IllegalWorldGeneratorDeclarationException;
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldGenerator;
@@ -52,7 +49,8 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 			{
 				className = this.resolveProperty("class", BlankWorldGenerator.class.getName());
 				
-				Class<?> untypedClass = Class.forName(className);
+				Class<?> untypedClass = store.modsManager().getClassByName(className);
+				//Class<?> untypedClass = Class.forName(className);
 				if (!WorldGenerator.class.isAssignableFrom(untypedClass))
 					throw new IllegalWorldGeneratorDeclarationException(className + " is not a subclass of WorldGenerator");
 				@SuppressWarnings("unchecked")
@@ -62,7 +60,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 				
 				constructor = generatorClass.getConstructor(types);
 			}
-			catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalArgumentException e)
+			catch (NoSuchMethodException | SecurityException | IllegalArgumentException e)
 			{
 				e.printStackTrace();
 				throw new IllegalWorldGeneratorDeclarationException("WorldGenerator " + this.getName() + " has an issue with it's constructor: " + e.getMessage());

@@ -264,9 +264,7 @@ public class RemoteServerPlayer implements Player
 	@Override
 	public boolean hasPermission(String permissionNode)
 	{
-		if (UsersPrivileges.isUserAdmin(getName()))
-			return true;
-		return false;
+		return Server.server.getPermissionsManager().hasPermission(this, permissionNode);
 	}
 
 	public Location getLastPosition()

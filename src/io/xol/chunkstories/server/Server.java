@@ -16,6 +16,7 @@ import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.server.PermissionsManager;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.utils.IterableIterator;
@@ -114,6 +115,18 @@ public class Server implements Runnable, ServerInterface
 			announcer = new ServerAnnouncerThread(this);
 			announcer.start();
 			
+			permissionsManager = new PermissionsManager() {
+
+				@Override
+				public boolean hasPermission(Player player, String permissionNode)
+				{
+					if (UsersPrivileges.isUserAdmin(player.getName()))
+						return true;
+					return false;
+				}
+				
+			};
+			
 			// Load plugins
 			pluginsManager.reloadPlugins();
 
@@ -146,6 +159,7 @@ public class Server implements Runnable, ServerInterface
 	private ServerConsole console = new ServerConsole(this);
 
 	private DefaultPluginManager pluginsManager;
+	private PermissionsManager permissionsManager;
 
 	// Sleeper thread to keep servers list updated
 	private ServerAnnouncerThread announcer;
@@ -397,5 +411,17 @@ public class Server implements Runnable, ServerInterface
 	public Content getContent()
 	{
 		return gameContent;
+	}
+
+	@Override
+	public PermissionsManager getPermissionsManager()
+	{
+		return permissionsManager;
+	}
+
+	@Override
+	public void installPermissionsManager(PermissionsManager permissionsManager)
+	{
+		this.permissionsManager = permissionsManager;
 	}
 }

@@ -19,6 +19,10 @@ public interface ServerInterface extends GameContext
 
 	public PluginManager getPluginManager();
 
+	public PermissionsManager getPermissionsManager();
+	
+	public void installPermissionsManager(PermissionsManager permissionsManager);
+	
 	public void broadcastMessage(String message);
 
 	public WorldMaster getWorld();
