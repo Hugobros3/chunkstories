@@ -114,8 +114,8 @@ public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, Vo
 		if (!input.getName().equals("mouse.right"))
 			return false;
 		if (!(entity.getWorld() instanceof WorldMaster))
-			return false;
-
+			return true;
+		
 		int voxelData = voxelContext.getData();
 		boolean isOpen = ((VoxelFormat.meta(voxelData) >> 0) & 0x1) == 1;
 		boolean hingeSide = ((VoxelFormat.meta(voxelData) >> 1) & 0x1) == 1;

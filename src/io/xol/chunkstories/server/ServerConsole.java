@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
@@ -66,6 +67,7 @@ public class ServerConsole implements CommandEmitter
 			{
 				emitter.sendMessage("#00FFD0Avaible commands :");
 				emitter.sendMessage("#00FFD0" + " /plugins");
+				emitter.sendMessage("#00FFD0" + " /mods");
 				emitter.sendMessage("#00FFD0" + " /list");
 				emitter.sendMessage("#00FFD0" + " /info");
 				emitter.sendMessage("#00FFD0" + " /uptime");
@@ -85,7 +87,20 @@ public class ServerConsole implements CommandEmitter
 					i++;
 					list += csp.getName() + (i == server.getPluginManager().activePlugins.size() ? "" : ", ");
 				}
-				emitter.sendMessage("#00FFD0" + i + " active plugins : " + list);
+				emitter.sendMessage("#00FFD0" + i + " active server plugins : " + list);
+				return true;
+
+			}
+			else if (cmd.equals("mods"))
+			{
+				String list = "";
+				int i = 0;
+				for (Mod csp : server.getContent().modsManager().getCurrentlyLoadedMods())
+				{
+					i++;
+					list += csp.getModInfo().getName() + (i == server.getContent().modsManager().getCurrentlyLoadedMods().size() ? "" : ", ");
+				}
+				emitter.sendMessage("#FF0000" + i + " active server mods : " + list);
 				return true;
 
 			}

@@ -17,10 +17,12 @@ import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
+import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -146,7 +148,6 @@ public class Chat
 					}
 					else if (cmdName.equals("plugins"))
 					{
-
 						String list = "";
 						int i = 0;
 						for (ChunkStoriesPlugin csp : ingame.getPluginManager().loadedPlugins())
@@ -154,20 +155,38 @@ public class Chat
 							i++;
 							list += csp.getName() + (i == ingame.getPluginManager().loadedPlugins().size() ? "" : ", ");
 						}
-						insert("#00FFD0" + i + " active plugins : " + list);
+						
+						if(Client.getInstance().getWorld() instanceof WorldClientLocal)
+							insert("#00FFD0" + i + " active client [master] plugins : " + list);
+						else
+							insert("#74FFD0" + i + " active client [remote] plugins : " + list);
 						
 						if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
 						{
 							sent.add(0, inputBox.text);
 							sentMessages++;
 						}
-
-						inputBox.text = "";
-						chatting = false;
-						sentHistory = 0;
-						mainScene.changeOverlay(parent);
-						return true;
-
+					}
+					else if (cmdName.equals("mods"))
+					{
+						String list = "";
+						int i = 0;
+						for (Mod mod : Client.getInstance().getContent().modsManager().getCurrentlyLoadedMods())
+						{
+							i++;
+							list += mod.getModInfo().getName() + (i == Client.getInstance().getContent().modsManager().getCurrentlyLoadedMods().size() ? "" : ", ");
+						}
+						
+						if(Client.getInstance().getWorld() instanceof WorldClientLocal)
+							insert("#FF0000" + i + " active client [master] mods : " + list);
+						else
+							insert("#FF7070" + i + " active client [remote] mods : " + list);
+						
+						if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
+						{
+							sent.add(0, inputBox.text);
+							sentMessages++;
+						}
 					}
 				}
 
