@@ -123,7 +123,7 @@ public class ServerConsole implements CommandEmitter
 				}
 				return true;
 			}
-			else if (cmd.equals("save") && emitter.hasPermission("server.admin"))
+			else if (cmd.equals("save") && emitter.hasPermission("server.admin.forcesave"))
 			{
 				emitter.sendMessage("#00FFD0Saving the world");
 				server.getWorld().saveEverything();

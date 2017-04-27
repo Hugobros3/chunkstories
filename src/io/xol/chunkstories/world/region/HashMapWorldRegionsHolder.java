@@ -208,7 +208,7 @@ public class HashMapWorldRegionsHolder
 			//If no users have registered for any chunks
 			if(region.isUnused() && region.canBeUnloaded())
 			{
-				if(this instanceof WorldMaster)
+				if(world instanceof WorldMaster)
 					region.unloadAndSave();
 				else
 					region.unload();
