@@ -12,15 +12,20 @@ import io.xol.chunkstories.voxel.VoxelsStore;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class InventoryAllVoxels extends BasicInventory
+public class InventoryLocalCreativeMenu extends BasicInventory
 {
-	public InventoryAllVoxels()
+	boolean initialized = false;
+	
+	public InventoryLocalCreativeMenu()
 	{
 		super(0, 0);
 		List<ItemPile> allItems = new ArrayList<ItemPile>();
 		Set<Integer> allIds = VoxelsStore.get().getAllLoadedVoxelIds();
 		for(int id : allIds)
 		{
+			if(id == 0)
+				continue;
+			
 			Voxel vox = VoxelsStore.get().getVoxelById(id);
 			for(ItemPile item : vox.getItems())
 			{
@@ -34,14 +39,54 @@ public class InventoryAllVoxels extends BasicInventory
 		
 		for(ItemPile pile : allItems)
 		{
-			pile.setAmount(pile.getItem().getType().getMaxStackSize());
+			pile.setAmount(1);
+			//pile.setAmount(pile.getItem().getType().getMaxStackSize());
+			
 			this.addItemPile(pile);
 		}
+		
+		initialized = true;
 	}
 	
 	@Override
 	public String getInventoryName()
 	{
 		return "All voxels";
+	}
+	
+	@Override
+	public ItemPile placeItemPileAt(int x, int y, ItemPile itemPile)
+	{
+		if(initialized)
+			return null;
+		else
+			return super.placeItemPileAt(x, y, itemPile);
+	}
+	
+	@Override
+	public ItemPile addItemPile(ItemPile pile)
+	{
+		if(initialized)
+			return null;
+		else
+			return super.addItemPile(pile);
+	}
+	
+	@Override
+	public boolean canPlaceItemAt(int x, int y, ItemPile itemPile)
+	{
+		if(initialized)
+			return true;
+		else
+			return super.canPlaceItemAt(x, y, itemPile);
+	}
+	
+	@Override
+	public boolean setItemPileAt(int x, int y, ItemPile pile)
+	{
+		if(initialized)
+			return true;
+		else
+			return super.setItemPileAt(x, y, pile);
 	}
 }

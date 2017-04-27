@@ -2,15 +2,21 @@ package io.xol.chunkstories.gui.overlays.ingame;
 
 import org.lwjgl.input.Mouse;
 
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.events.player.PlayerMoveItemEvent;
 import io.xol.chunkstories.api.gui.Overlay;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.core.entity.EntityGroundItem;
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldClientRemote;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
@@ -99,20 +105,30 @@ public class InventoryOverlay extends Overlay
 	@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
+		//We assume a player has to be spawned in order to do items manipulation
+		Player player = Client.getInstance().getPlayer();
+		if(player == null)
+		{
+			this.mainScene.changeOverlay(parent);
+			selectedItem = null;
+			return false;
+		}
+		
 		for (int i = 0; i < drawers.length; i++)
 		{
+			//Close button
 			if (drawers[i].isOverCloseButton())
 			{
-				//Exit
 				this.mainScene.changeOverlay(parent);
 				selectedItem = null;
 			}
 			else
 			{
-
+				
 				int[] c = drawers[i].getSelectedSlot();
 				if (c == null)
 					continue;
+				
 				else
 				{
 					int x = c[0];
@@ -146,56 +162,79 @@ public class InventoryOverlay extends Overlay
 					}
 					else if (button == 0)
 					{
-						if (x == selectedItem.getX() && y == selectedItem.getY())
+						//Ignore null-sum games
+						if (selectedItem.getInventory() == inventories[i] && x == selectedItem.getX() && y == selectedItem.getY())
 						{
-							//System.out.println("item put back into place so meh");
 							selectedItem = null;
 							return true;
 						}
 
 						if (Client.world instanceof WorldClientLocal)
 						{
+							PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(player, selectedItem, selectedItem.getInventory(), inventories[i], selectedItem.getX(), selectedItem.getY(), x, y, selectedItemAmount);
+							player.getServer().getPluginManager().fireEvent(moveItemEvent);
+							
 							//If move was successfull
-							if (selectedItem.moveItemPileTo(inventories[i], x, y, selectedItemAmount))
-								selectedItem = null;
+							if(!moveItemEvent.isCancelled())
+								selectedItem.moveItemPileTo(inventories[i], x, y, selectedItemAmount);
+							
+							selectedItem = null;
 						}
 						else if (Client.world instanceof WorldClientRemote)
 						{
-							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile();
-							packetMove.from = selectedItem.getInventory();
-							packetMove.oldX = selectedItem.getX();
-							packetMove.oldY = selectedItem.getY();
-							packetMove.to = inventories[i];
-							packetMove.newX = x;
-							packetMove.newY = y;
-							packetMove.itemPile = selectedItem;
-							packetMove.amount = selectedItemAmount;
-
+							//When in a remote MP scenario, send a packet
+							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(selectedItem, selectedItem.getInventory(), inventories[i], selectedItem.getX(), selectedItem.getY(), x, y, selectedItemAmount);
 							((WorldClientRemote) Client.world).getConnection().pushPacket(packetMove);
-							//selectedItem = selectedItem.moveTo(inventories[i], x, y, selectedItemAmount);
-							//if(selectedItem.moveTo(inventories[i], x, y, selectedItemAmount))
+							
+							//And unsellect item
 							selectedItem = null;
 						}
-						else if (selectedItem.moveItemPileTo(inventories[i], x, y, selectedItemAmount))
-							selectedItem = null;
+						
+						/*else if (selectedItem.moveItemPileTo(inventories[i], x, y, selectedItemAmount))
+							selectedItem = null;*/
 					}
 					return true;
 				}
 			}
 		}
-		if (selectedItem != null && Client.world instanceof WorldClientRemote)
+		
+		//Clicked outside of any other inventory (drop!)
+		if(selectedItem != null)
 		{
-			PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile();
-			packetMove.from = selectedItem.getInventory();
-			packetMove.oldX = selectedItem.getX();
-			packetMove.oldY = selectedItem.getY();
-			packetMove.to = null;
-			packetMove.newX = 0;
-			packetMove.newY = 0;
-			packetMove.amount = selectedItemAmount;
-			packetMove.itemPile = selectedItem;
-			((WorldClientRemote) Client.world).getConnection().pushPacket(packetMove);
-			selectedItem = null;//selectedItem.moveTo(inventories[i], x, y);
+			//SP scenario, replicated logic in PacketInventoryMoveItemPile
+			if (Client.world instanceof WorldClientLocal)
+			{
+				//For local item drops, we need to make sure we have a sutiable entity
+				Entity playerEntity = player.getControlledEntity();
+				if(playerEntity != null)
+				{
+					PlayerMoveItemEvent dropItemEvent = new PlayerMoveItemEvent(player, selectedItem, selectedItem.getInventory(), null, selectedItem.getX(), selectedItem.getY(), 0, 0, selectedItemAmount);
+					player.getServer().getPluginManager().fireEvent(dropItemEvent);
+					
+					if(!dropItemEvent.isCancelled())
+					{
+						//If we're pulling this out of an inventory ( and not /dev/null ), we need to remove it from that
+						if(dropItemEvent.getSourceInventory() != null)
+							dropItemEvent.getSourceInventory().setItemPileAt(dropItemEvent.getFromX(), dropItemEvent.getFromY(), null);
+						
+						//Spawn a new ground item
+						Location loc = playerEntity.getLocation();
+						EntityGroundItem entity = new EntityGroundItem((WorldImplementation) loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), selectedItem);
+						loc.getWorld().addEntity(entity);
+						
+						player.sendMessage("Notice : throwing stuff on ground is still glitchy and experimental.");
+					}
+				}
+				selectedItem = null;
+			}
+			//In MP scenario, move into /dev/null
+			else if (Client.world instanceof WorldClientRemote)
+			{
+				PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(selectedItem, selectedItem.getInventory(), null, selectedItem.getX(), selectedItem.getY(), 0, 0, selectedItemAmount);
+				((WorldClientRemote) Client.world).getConnection().pushPacket(packetMove);
+				
+				selectedItem = null;
+			}
 		}
 		return true;
 

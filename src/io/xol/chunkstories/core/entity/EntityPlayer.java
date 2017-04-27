@@ -53,7 +53,7 @@ import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
 import io.xol.chunkstories.core.item.ItemVoxel;
 import io.xol.chunkstories.core.item.armor.ItemArmor;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
-import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
+import io.xol.chunkstories.item.inventory.InventoryLocalCreativeMenu;
 import io.xol.chunkstories.physics.CollisionBox;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -703,7 +703,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		{
 			
 			if(creativeMode.get()) {
-				Client.getInstance().openInventories(this.inventoryComponent.getInventory(), new InventoryAllVoxels());
+				Client.getInstance().openInventories(this.inventoryComponent.getInventory(), new InventoryLocalCreativeMenu());
 			}
 			else {
 				Client.getInstance().openInventories(this.inventoryComponent.getInventory(), this.armor.getInventory());

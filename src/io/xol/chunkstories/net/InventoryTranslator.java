@@ -7,7 +7,11 @@ import java.io.IOException;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.item.inventory.InventoryHolder;
+import io.xol.chunkstories.api.item.inventory.ItemPile;
+import io.xol.chunkstories.api.utils.IterableIterator;
 import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
+import io.xol.chunkstories.item.inventory.InventoryLocalCreativeMenu;
 import io.xol.chunkstories.net.packets.PacketsProcessor;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -21,7 +25,9 @@ public class InventoryTranslator
 {
 	public static void writeInventoryHandle(DataOutputStream out, Inventory inventory) throws IOException
 	{
-		if(inventory == null || inventory.getHolder() == null)
+		if(inventory instanceof InventoryLocalCreativeMenu)
+			out.writeByte(0x02);
+		else if(inventory == null || inventory.getHolder() == null)
 			out.writeByte(0x00);
 		else if(inventory instanceof EntityComponentInventory.EntityInventory)
 		{
@@ -49,7 +55,37 @@ public class InventoryTranslator
 				return ((EntityComponentInventory) cpn).getInventory();
 			}
 		}
+		else if(holderType == 0x02)
+			return INVENTORY_CREATIVE_TRASH;
 		
 		return null;
 	}
+	
+	public static final InventoryLocalCreativeMenu INVENTORY_CREATIVE_TRASH = new InventoryLocalCreativeMenu() {
+
+		@Override
+		public String getInventoryName()
+		{
+			return "CREATIVE_TRASH";
+		}
+
+		@Override
+		public ItemPile getItemPileAt(int x, int y)
+		{
+			return null;
+		}
+
+		@Override
+		public IterableIterator<ItemPile> iterator()
+		{
+			throw new UnsupportedOperationException("INVENTORY_CREATIVE_TRASH.iterator()");
+		}
+
+		@Override
+		public boolean isAccessibleTo(Entity entity)
+		{
+			return true;
+		}
+		
+	};
 }

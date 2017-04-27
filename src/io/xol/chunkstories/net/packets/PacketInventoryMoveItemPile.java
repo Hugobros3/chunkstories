@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.core.entity.EntityGroundItem;
+import io.xol.chunkstories.item.inventory.InventoryLocalCreativeMenu;
 import io.xol.chunkstories.net.InventoryTranslator;
 import io.xol.chunkstories.tools.ChunkStoriesLogger;
 import io.xol.chunkstories.tools.ChunkStoriesLogger.LogLevel;
@@ -33,6 +34,24 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 	public int oldX, oldY, newX, newY;
 	public int amount;
 	
+	public PacketInventoryMoveItemPile()
+	{
+		
+	}
+	
+	public PacketInventoryMoveItemPile(ItemPile itemPile, Inventory from, Inventory to, int oldX, int oldY, int newX, int newY, int amount)
+	{
+		super();
+		this.itemPile = itemPile;
+		this.from = from;
+		this.to = to;
+		this.oldX = oldX;
+		this.oldY = oldY;
+		this.newX = newX;
+		this.newY = newY;
+		this.amount = amount;
+	}
+
 	@Override
 	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
@@ -45,26 +64,8 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		out.writeInt(amount);
 		
 		//Describe the inventories
-		//A lone itemPile or a holderless inventory is described by 0x00
-		
 		InventoryTranslator.writeInventoryHandle(out, from);
 		InventoryTranslator.writeInventoryHandle(out, to);
-		
-		/*if(from == null || from.getHolder() == null)
-			out.writeByte(0x00);
-		else if(from.getHolder() instanceof Entity)
-		{
-			out.writeByte(0x01);
-			out.writeLong(((Entity)from.getHolder()).getUUID());
-		}
-		if(to == null || to.getHolder() == null)
-			out.writeByte(0x00);
-		else if(to.getHolder() instanceof Entity)
-		{
-			out.writeByte(0x01);
-			out.writeLong(((Entity)to.getHolder()).getUUID());
-			//System.out.println("writing uuid"+((Entity)to.holder).getUUID());
-		}*/
 		
 		//Describe the itemPile if we are trying to spawn an item from nowhere
 		if(from == null || from.getHolder() == null)
@@ -90,7 +91,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		to = InventoryTranslator.obtainInventoryHandle(in, processor);
 		
 		//If this pile is spawned from the void
-		if(from == null)
+		if(from == null || from == InventoryTranslator.INVENTORY_CREATIVE_TRASH)
 		{
 			try
 			{
@@ -123,19 +124,21 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 			}
 		}
 		
-		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(player, this);
+		//Check using event
+		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(player, itemPile, from, to, oldX, oldY, newX, newY, amount);
 		player.getServer().getPluginManager().fireEvent(moveItemEvent);
 		
 		if(!moveItemEvent.isCancelled())
 		{
-			//System.out.println("Asking to move "+pile+" to "+packet.newX+":"+packet.newY);
-			if(from == null)
+			//Restrict item spawning
+			if(from == null || from instanceof InventoryLocalCreativeMenu)
 			{
 				//player.sendMessage("Notice : dragging stuff from /dev/null to your inventory should be limited by permission.");
+				
 				if(player.hasPermission("items.spawn") || (player.getControlledEntity() != null 
 						&& player.getControlledEntity() instanceof EntityCreative && ((EntityCreative) player.getControlledEntity()).getCreativeModeComponent().get()))
 				{
-					
+					//Let it happen when in creative mode or owns items.spawn perm
 				}
 				else
 				{
@@ -152,7 +155,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 				
 				if(playerEntity == null)
 				{
-					System.out.println("fuck off");
+					System.out.println("Dropping items isn't possible if the player doesn't control any entity.");
 					return;
 				}
 				

@@ -2,14 +2,15 @@ package io.xol.chunkstories.api.events.player;
 
 import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
+import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.server.Player;
-import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
+/** Describe a player moving item action on Master */
 public class PlayerMoveItemEvent extends CancellableEvent
 {
 	// Every event class has to have this
@@ -29,16 +30,74 @@ public class PlayerMoveItemEvent extends CancellableEvent
 	
 	// Specific event code
 	
-	public Player player;
-	public PacketInventoryMoveItemPile packet;
-	public ItemPile pile;
+	private final Player player;
+	private final ItemPile pile;
 	
-	public PlayerMoveItemEvent(Player player, PacketInventoryMoveItemPile packet)
+	private final Inventory from;
+	private final Inventory to;
+	
+	private final int fromX;
+	private final int fromY;
+	private final int toX;
+	private final int toY;
+	
+	private final int amount;
+	
+	public PlayerMoveItemEvent(Player player, ItemPile pile, Inventory from, Inventory to, int fromX, int fromY, int toX, int toY, int amount)
 	{
 		this.player = player;
-		this.packet = packet;
+		this.pile = pile;
+		
+		this.from = from;
+		this.to = to;
+		
+		this.fromX = fromX;
+		this.fromY = fromY;
+		
+		this.toX = toX;
+		this.toY = toY;
+		
+		this.amount = amount;
+	}
 
-		pile = packet.itemPile;
+	public ItemPile getPile()
+	{
+		return pile;
+	}
+
+	public Inventory getSourceInventory()
+	{
+		return from;
+	}
+
+	public Inventory getTargetInventory()
+	{
+		return to;
+	}
+
+	public int getFromX()
+	{
+		return fromX;
+	}
+
+	public int getFromY()
+	{
+		return fromY;
+	}
+
+	public int getToX()
+	{
+		return toX;
+	}
+
+	public int getToY()
+	{
+		return toY;
+	}
+
+	public int getAmount()
+	{
+		return amount;
 	}
 
 	public Player getPlayer()

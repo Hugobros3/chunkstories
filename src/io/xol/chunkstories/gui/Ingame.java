@@ -57,7 +57,7 @@ import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.PauseOverlay;
 import io.xol.chunkstories.input.lwjgl2.Lwjgl2ClientInputsManager;
-import io.xol.chunkstories.item.inventory.InventoryAllVoxels;
+import io.xol.chunkstories.item.inventory.InventoryLocalCreativeMenu;
 import io.xol.chunkstories.item.renderer.InventoryDrawer;
 import io.xol.chunkstories.particles.ClientParticleManager;
 import io.xol.chunkstories.physics.CollisionBox;
@@ -457,7 +457,7 @@ public class Ingame extends OverlayableScene
 			{
 				focus(false);
 				if (playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
-					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory(), new InventoryAllVoxels() }));
+					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory(), new InventoryLocalCreativeMenu() }));
 				else
 					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory() }));
 			}
