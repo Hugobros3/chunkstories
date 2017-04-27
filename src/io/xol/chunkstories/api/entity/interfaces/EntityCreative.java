@@ -1,6 +1,7 @@
 package io.xol.chunkstories.api.entity.interfaces;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.events.voxel.VoxelModificationCause;
 import io.xol.chunkstories.core.entity.components.EntityComponentCreativeMode;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -21,4 +22,13 @@ public interface EntityCreative extends Entity
 		getCreativeModeComponent().set(creativeMode);
 	}
 
+	public static final VoxelModificationCause CREATIVE_MODE = new VoxelModificationCause() {
+
+		@Override
+		public String getName()
+		{
+			return "Creative Mode";
+		}
+		
+	};
 }

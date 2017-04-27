@@ -161,6 +161,7 @@ public class ItemPile
 	{
 		this.amount = amount;
 
+		//ItemPiles are smart enough to self-delete when they become == 0 !
 		if(amount == 0 && inventory != null)
 		{
 			inventory.setItemPileAt(x, y, null);

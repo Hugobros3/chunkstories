@@ -4,14 +4,19 @@ import io.xol.chunkstories.api.events.CancellableEvent;
 import io.xol.chunkstories.api.events.EventListeners;
 import io.xol.chunkstories.api.world.VoxelContext;
 
-public abstract class VoxelDestructionEvent extends CancellableEvent
+public abstract class VoxelEvent extends CancellableEvent
 {
 	// Every event class has to have this
 	
-	static EventListeners listeners = new EventListeners(VoxelDestructionEvent.class);
+	static EventListeners listeners = new EventListeners(VoxelEvent.class);
 	
 	@Override
 	public EventListeners getListeners()
+	{
+		return listeners;
+	}
+
+	public static EventListeners getListenersStatic()
 	{
 		return listeners;
 	}
@@ -20,14 +25,14 @@ public abstract class VoxelDestructionEvent extends CancellableEvent
 	
 	final VoxelContext context;
 
-	public VoxelDestructionEvent(VoxelContext context)
+	public VoxelEvent(VoxelContext context)
 	{
 		super();
 		this.context = context;
 	}
 
 	/** Returns the context before the voxel destruction */
-	public VoxelContext getContext()
+	public VoxelContext getVoxel()
 	{
 		return context;
 	}

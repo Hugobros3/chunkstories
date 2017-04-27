@@ -29,7 +29,6 @@ import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldCollisionsManager;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.world.World.NearEntitiesIterator;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
@@ -514,9 +513,8 @@ public abstract class WorldImplementation implements World
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
 
-		getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, newData);
-
 		Chunk chunk = regions.getChunk(x / 32, y / 32, z / 32);
+		
 		if (chunk != null)
 		{
 			int formerData = chunk.getVoxelData(x % 32, y % 32, z % 32);
@@ -551,6 +549,8 @@ public abstract class WorldImplementation implements World
 			}
 
 			chunk.setVoxelDataWithUpdates(x % 32, y % 32, z % 32, newData);
+			
+			getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, newData);
 
 			//Neighbour chunks updates
 			if (x % 32 == 0)

@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
+import io.xol.chunkstories.api.events.player.voxel.PlayerVoxelModificationEvent;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.item.interfaces.ItemOverlay;
 import io.xol.chunkstories.api.item.interfaces.ItemZoom;
@@ -34,6 +35,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.server.Player;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -748,6 +750,19 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 				{
 					if (blockLocation != null)
 					{
+						// Player events mod
+						if(controller instanceof Player) {
+							Player player = (Player)controller;
+							VoxelContext ctx = world.peek(blockLocation);
+							PlayerVoxelModificationEvent event = new PlayerVoxelModificationEvent(ctx, 0, EntityCreative.CREATIVE_MODE, player);
+							
+							//Anyone has objections ?
+							world.getGameContext().getPluginManager().fireEvent(event);
+							
+							if(event.isCancelled())
+								return true;
+						}
+						
 						world.setVoxelData(blockLocation, 0, this);
 						return true;
 					}

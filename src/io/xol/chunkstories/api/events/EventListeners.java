@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
-import io.xol.chunkstories.api.events.voxel.VoxelDestructionEvent;
+import io.xol.chunkstories.api.events.voxel.VoxelEvent;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -40,20 +40,34 @@ public class EventListeners
 				Class<?> dad = son.getSuperclass();
 				if(Event.class.isAssignableFrom(dad))
 				{
-					System.out.println("Found superclass " + dad);
-					Method m = dad.getMethod("getListeners");
-					
-					if(m == null || Event.class == dad || CancellableEvent.class == dad)
+					//Security
+					if(Event.class == dad || CancellableEvent.class == dad)
 						break;
 					
-					Object o = m.invoke(null);
-					EventListeners daddyEars = (EventListeners)o;
+					System.out.println("Found superclass " + dad);
 					
-					//Notice me daddy
-					daddyEars.declareChildren(this);
+					try {
+						Method m = dad.getMethod("getListenersStatic");
 					
-					//Oedipe time
-					son = (Class<? extends Event>) dad;
+						Object o = m.invoke(null);
+						EventListeners daddyEars = (EventListeners)o;
+						
+						//Notice me daddy
+						daddyEars.declareChildren(this);
+						
+						//Oedipe time
+						son = (Class<? extends Event>) dad;
+					}
+					catch(NullPointerException npe) {
+						System.out.println("Stopping inheritance lookup; stepped on NPE");
+						npe.printStackTrace();
+						break;
+					}
+					catch(NoSuchMethodException nsme) {
+						System.out.println("Stopping inheritance lookup; stepped on NSME");
+						nsme.printStackTrace();
+						break;
+					}
 				}
 				else
 				{
@@ -61,7 +75,7 @@ public class EventListeners
 				}
 			}
 		}
-		catch(NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+		catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Error while setting up events inheritance");
 		}
