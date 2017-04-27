@@ -1,6 +1,7 @@
 package io.xol.chunkstories.server.net;
 
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.events.player.PlayerChatEvent;
 import io.xol.chunkstories.api.events.player.PlayerLoginEvent;
 import io.xol.chunkstories.api.events.player.PlayerLogoutEvent;
 import io.xol.chunkstories.api.net.Packet;
@@ -182,7 +183,11 @@ public class ServerToClientConnection extends Thread implements HttpRequester, P
 			}
 			else if (chatMessage.length() > 0)
 			{
-				connectionsManager.broadcastChatMessage(this.getProfile().getDisplayName() + " > " + chatMessage);
+				PlayerChatEvent event = new PlayerChatEvent(this.getProfile(), chatMessage);
+				connectionsManager.getServer().getPluginManager().fireEvent(event);
+				
+				if(!event.isCancelled())
+					connectionsManager.broadcastChatMessage(event.getFormattedMessage());
 			}
 		}
 	}
