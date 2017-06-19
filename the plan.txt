@@ -1,0 +1,60 @@
+ChunkStories Gradle refactor, 16-06-17.
+Splits the monolithic hunk of that source tree into more sensible bits
+
+chunkstories/
+	+ api/ : Free software licensed, contains essentials bits to the game, conventions, mini math lib etc. Can be used against to write plugins.
+	+ common/ : Client/Server agnostic bits, most of the hard world/chunk logic is in there
+	+ core/ : Permissively licensed too, contains the building blocks of the bundled test gameplay elements
+		+ res/ : Bundled there too
+	+ client/ : Deals with graphics, sounds, input and GUI elements
+	+ server/ : Self-explanatory
+
+
+Various refactor elements:
+
+=Packets=	
+Here's why and how it doesn't make sense: 
+Packets are typically wrote against both client and server logic, but because of the cycle-free nature of Gradle, it's not doable cleanly now.
+There has to be a split, between the client and server(/master) logic for a given packet. The way I propose to do this, is to, as already felt needed,
+refactor the packets definitions file to allow defining both a client and a server version of a given packet handler, using the standard NamedWithProperties
+file specification. Also, this allows to refine further the Packet class, into both Packet, PacketClient and PacketServer flavours, each configurable using
+these properties
+
+	packet blah 42
+		commonClass: com.mycompany.ourgame.common.PacketFries
+		clientClass: ...
+		serverClass: ...
+	end
+	
+Moreover, the switch to a more verbose way of defining packets will likely help when moving to a fancier networking system that will be able to displatch
+packets differently based on their type, priority, tolerance to loss etc
+
+=GUI=
+
+=OpenGL/RenderingLayer=
+
+There is an obvious problem with directly exposing OpenGL to users, the API needs to abstract it all off as best as it possibly can.
+
+Texture1/2/CubemapGL -> Texture1/2/CubemapGL
+VerticesObjectGL -> VerticesObjectGL
+
+=> Need for a way to instanciate it all properly
+RenderingInterface ? No, already a clusterfuck ... split it ? No...
+	+ newVertexBuffer
+	+ newTexture etc 
+	
+And newTexture + getTexture(asset) in ClientContent.
+
+=Particles=
+
+Particles obviously lack a layer of abstraction, and their file format isn't standardized yet. They must be split into custom logic and pre-defined NWP classes,
+also to enable accessing GameContext and GameContent ( currently they make use of global static methods from TexturesHandler, etc )
+
+ParticleType -> ParticleType + ParticleTypeHandler !
+
+(Sidenote: VoxelType, ItemType etc ... -> VoxelDeclaration, ItemDeclaration etc ? )
+
+=Inputs=
+
+KeyBindsLoader was fucking retarded, a mess of nested iterators for no purpose. Also circular deps. 
+Divided size by 3 and just used a implementation-private interface 'InputsManagerLoader' that reads basic params from the file (type/name/value/args)

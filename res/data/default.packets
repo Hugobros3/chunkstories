@@ -1,0 +1,96 @@
+
+
+#Leave this one alone for proper login/serverlist protocol things
+packet text 0
+	allowedFrom: all
+	commonClass: io.xol.chunkstories.api.net.packets.PacketText
+	clientClass: io.xol.chunkstories.client.net.packets.PacketReceiveText
+	serverClass: io.xol.chunkstories.server.net.packets.PacketReceiveText
+end
+
+packet world_info 1
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.net.packets.PacketSendWorldInfo
+	clientClass: io.xol.chunkstories.client.net.packets.PacketInitializeRemoteWorld
+end
+
+packet chunk_data 2
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.net.packets.PacketChunkCompressedData
+end
+
+packet region_summary 3
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.net.packets.PacketRegionSummary
+end
+
+packet entity_tracking 4
+	allowedFrom: all
+	commonClass: io.xol.chunkstories.api.net.packets.PacketEntity
+end
+
+packet move_item 6
+	allowedFrom: client
+	clientClass: io.xol.chunkstories.client.net.packets.PacketOpenInventoryClient
+	serverClass: io.xol.chunkstories.net.packets.PacketOpenInventory
+end
+
+packet partial_inv_update 7
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate
+end
+
+packet time 8
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.api.net.packets.PacketTime
+end
+
+packet voxel_update 9
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.net.packets.PacketVoxelUpdate
+end
+
+packet sound 10
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.net.packets.PacketSoundSource
+end
+
+packet input 11
+	allowedFrom: client
+	commonClass: io.xol.chunkstories.net.packets.PacketInput
+end
+
+packet particle 12
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.api.net.packets.PacketParticle
+end
+
+packet decal 13
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.net.packets.PacketDecal
+end
+
+packet file 14
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.net.packets.PacketSendFile
+	clientClass: io.xol.chunkstories.client.net.packets.PacketReceiveFile
+end
+
+packet velocity_delta 15
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.net.packets.PacketVelocityDelta
+end
+
+packet open_inventory 16
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.net.packets.PacketOpenInventory
+	clientClass: io.xol.chunkstories.client.net.packets.PacketOpenInventoryClient
+end
+
+packet fx_explosion 17
+	allowedFrom: server
+	commonClass: io.xol.chunkstories.net.packets.PacketExplosionEffect
+end
+
+#Be sensible and add your own ones after The game has an hardlimit of arround 32768 packet types possible
+

@@ -1,6 +1,6 @@
 #Bundled world generators
 generator blank
-	class: io.xol.chunkstories.core.generator.BlankWorldGenerator
+	class: io.xol.chunkstories.world.generator.BlankWorldGenerator
 end
 
 generator horizon

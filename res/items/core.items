@@ -1,12 +1,12 @@
 # Here you get/have to assign items their ID and class.
 
 item 1 item_voxel
-	customClass: io.xol.chunkstories.core.item.ItemVoxel
+	customClass: io.xol.chunkstories.api.item.ItemVoxel
 	maxStackSize: 100
 end
 
 item 2 item_voxel_1x2
-	customClass: io.xol.chunkstories.core.item.ItemVoxel
+	customClass: io.xol.chunkstories.api.item.ItemVoxel
 	maxStackSize: 100
 	width: 1
 	height: 2
