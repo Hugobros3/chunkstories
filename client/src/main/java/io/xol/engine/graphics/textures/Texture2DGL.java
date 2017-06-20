@@ -39,8 +39,6 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 	int maxMipmapLevel = 1000;
 	
 	protected boolean mipmapsUpToDate = false;
-	//TODO redo
-	protected boolean scheduledForLoad = false;
 	
 	static int currentlyBoundId = 0;
 

@@ -7,7 +7,6 @@ import java.lang.reflect.InvocationTargetException;
 
 import io.xol.chunkstories.api.Content.ParticlesTypes;
 import io.xol.chunkstories.api.exceptions.content.IllegalParticleDeclarationException;
-import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
@@ -50,7 +49,7 @@ public class ParticleTypeImpl extends GenericNamedConfigurable implements Partic
 			{
 				throw new IllegalParticleDeclarationException("ParticleTypeHandler " + this.getName() + " does not exist in codebase.");
 			}
-			else if (!(Item.class.isAssignableFrom(rawClass)))
+			else if (!(ParticleTypeHandler.class.isAssignableFrom(rawClass)))
 			{
 				throw new IllegalParticleDeclarationException("Class " + this.getName() + " is not extending the ParticleTypeHandler class.");
 			}
@@ -63,7 +62,7 @@ public class ParticleTypeImpl extends GenericNamedConfigurable implements Partic
 
 				if (constructor == null)
 				{
-					throw new IllegalParticleDeclarationException("Item " + this.getName() + " does not provide a valid constructor.");
+					throw new IllegalParticleDeclarationException("ParticleTypeHandler " + this.getName() + " does not provide a valid constructor.");
 				}
 				
 				handler = constructor.newInstance(this);

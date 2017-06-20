@@ -1,7 +1,6 @@
 package io.xol.chunkstories.core.entity;
 
 import io.xol.engine.misc.ColorsTools;
-import io.xol.engine.model.ModelLibrary;
 
 import java.util.Iterator;
 

@@ -24,7 +24,7 @@ public class BVHLibrary implements AnimationsLibrary
 		this.store = store;
 		//this.modsManager = store.modsManager();
 		
-		reload();
+		//reload();
 	}
 	
 	Map<String, BVHAnimation> animations = new HashMap<String, BVHAnimation>();

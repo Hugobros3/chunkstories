@@ -11,6 +11,8 @@ import io.xol.chunkstories.api.rendering.mesh.RenderableMesh;
 import io.xol.chunkstories.api.rendering.mesh.RenderableMultiPartAnimatableMesh;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
+import io.xol.engine.model.MeshRenderableImpl;
+import io.xol.engine.model.MultiPartMeshRenderableImpl;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -41,14 +43,30 @@ public class ClientMeshStore implements ClientMeshLibrary {
 
 	@Override
 	public RenderableMesh getRenderableMeshByName(String meshName) {
-		// TODO Auto-generated method stub
-		return null;
+		RenderableMesh rm = renderableMeshes.get(meshName);
+		
+		if(rm == null) {
+			Mesh mesh = this.getMeshByName(meshName);
+			if(mesh == null) {
+				//Really not found!
+				return getRenderableMeshByName("./models/error.obj");
+			}
+			
+			if(mesh instanceof MultiPartMesh)
+				rm = new MultiPartMeshRenderableImpl((MultiPartMesh)mesh);
+			else
+				rm = new MeshRenderableImpl(mesh);
+			
+			renderableMeshes.put(meshName, rm);
+		}
+		return rm;
 	}
 
 	@Override
 	public RenderableMultiPartAnimatableMesh getRenderableMultiPartAnimatableMeshByName(String meshName) {
-		// TODO Auto-generated method stub
-		return null;
+		RenderableMesh rm = this.getRenderableMeshByName(meshName);
+		
+		return rm instanceof RenderableMultiPartAnimatableMesh ? (RenderableMultiPartAnimatableMesh)rm : null;
 	}
 
 	@Override

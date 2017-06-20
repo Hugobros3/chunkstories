@@ -17,13 +17,11 @@ import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.ClientRenderingConfig;
 import io.xol.chunkstories.api.client.ClientSoundManager;
-import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
-import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
@@ -126,6 +124,12 @@ public class Client implements ClientInterface
 		
 		// Create game content manager
 		gameContent = new ClientGameContent(this, modsStringArgument);
+		gameContent.reload();
+		
+		//Load the correct language
+		String lang = clientConfig.getProp("language", "undefined");
+		if(!lang.equals("undefined"))
+			gameContent.localization().loadTranslation(lang);
 		
 		// Creates Input manager
 		inputsManager = new Lwjgl2ClientInputsManager();

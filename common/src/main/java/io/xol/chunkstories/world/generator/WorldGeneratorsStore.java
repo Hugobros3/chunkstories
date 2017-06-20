@@ -32,7 +32,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		this.store = store;
 		this.modsManager = store.modsManager();
 		
-		reload();
+		//reload();
 	}
 	
 	public Map<String, WorldGeneratorType> generators = new HashMap<String, WorldGeneratorType>();

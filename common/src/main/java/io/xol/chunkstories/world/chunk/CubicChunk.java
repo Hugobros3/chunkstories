@@ -3,13 +3,13 @@ package io.xol.chunkstories.world.chunk;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.api.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class CubicChunk implements Chunk
+public abstract class CubicChunk implements Chunk
 {
 	final protected WorldImplementation world;
 	final protected ChunkHolderImplementation chunkHolder;

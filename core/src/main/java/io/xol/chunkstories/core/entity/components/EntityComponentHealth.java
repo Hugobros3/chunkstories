@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
@@ -14,6 +15,7 @@ import io.xol.chunkstories.api.events.player.PlayerDeathEvent;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
+import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.world.WorldMaster;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -105,7 +107,11 @@ public class EntityComponentHealth extends EntityComponent
 					}
 
 					if (event.getDeathMessage() != null)
-						player.getServer().broadcastMessage(event.getDeathMessage());
+					{
+						GameContext gc = player.getContext();
+						if(gc instanceof ServerInterface)
+							((ServerInterface)gc).broadcastMessage(event.getDeathMessage());
+					}
 				}
 				else
 				{

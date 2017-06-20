@@ -26,7 +26,7 @@ public class PacketsStore implements Content.PacketTypes {
 	public PacketsStore(GameContentStore store) {
 		this.store = store;
 
-		reload();
+		//reload();
 	}
 
 	public void reload() {

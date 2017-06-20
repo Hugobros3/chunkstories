@@ -541,10 +541,13 @@ public class ServerPlayer implements Player
 		this.playerConnection.disconnect(disconnectionReason);
 	}
 
-	@Override
 	public ServerInterface getServer()
 	{
 		return playerConnection.getServer();
+	}
+	
+	public ServerInterface getContext() {
+		return getServer();
 	}
 
 	@Override

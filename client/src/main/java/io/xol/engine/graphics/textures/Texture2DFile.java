@@ -27,6 +27,8 @@ public class Texture2DFile extends Texture2DGL
 {
 	private File file;
 
+	protected boolean scheduledForLoad = false;
+
 	public Texture2DFile(File file)
 	{
 		super(TextureFormat.RGBA_8BPP);

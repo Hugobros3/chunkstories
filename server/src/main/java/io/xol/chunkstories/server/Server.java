@@ -114,6 +114,7 @@ public class Server implements Runnable, ServerInterface
 
 			//Loads the mods/build filesystem
 			gameContent = new GameContentStore(this, modsString);
+			gameContent.reload();
 
 			modsProvider = new ServerModsProvider(this);
 			

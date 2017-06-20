@@ -16,14 +16,14 @@ import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer;
+import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.api.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.chunks.ChunkMeshesBakerThread;
-import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
 import io.xol.chunkstories.renderer.chunks.RenderableChunk;
+import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 public class ChunkMeshesRenderer

@@ -3,9 +3,9 @@ package io.xol.chunkstories.renderer.chunks;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.api.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;

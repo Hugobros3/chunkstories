@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.content.GameContentStore;
+import io.xol.engine.model.WavefrontLoader;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -32,8 +33,13 @@ public class MeshStore implements MeshLibrary {
 	{
 		this.content = gameContentStore;
 		this.modsManager = gameContentStore.modsManager();
+		
+		//Default .obj loader
+		//TODO add custom ones ?
+		MeshLoader waveFrontLoader = new WavefrontLoader();
+		loaders.put(waveFrontLoader.getExtension(), waveFrontLoader);
 
-		reload();
+		//reload();
 	}
 	
 	public void reload() {

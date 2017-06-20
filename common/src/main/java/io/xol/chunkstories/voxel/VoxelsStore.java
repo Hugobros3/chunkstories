@@ -43,7 +43,7 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 		this.textures = new VoxelTexturesStoreAndAtlaser(this);
 		this.models = new VoxelModelsStore(this);
 		
-		this.reloadVoxelTypes();
+		//this.reloadVoxelTypes();
 	}
 	
 	private final GameContentStore content;

@@ -1,6 +1,6 @@
 package io.xol.chunkstories.renderer;
 
-import io.xol.chunkstories.api.world.chunk.ChunkRenderable;
+import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 
 public interface ChunkMeshesBaker
 {

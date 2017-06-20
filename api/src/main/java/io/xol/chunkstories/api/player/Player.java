@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api.player;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.components.Subscriber;
@@ -8,7 +9,6 @@ import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -69,7 +69,7 @@ public interface Player extends CommandEmitter, Controller, Subscriber, PacketDe
 
 	public void updateTrackedEntities();
 
-	public ServerInterface getServer();
+	public GameContext getContext();
 	
 	public World getWorld();
 

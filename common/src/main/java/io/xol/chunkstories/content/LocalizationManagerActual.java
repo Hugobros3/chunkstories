@@ -29,14 +29,17 @@ public class LocalizationManagerActual implements LocalizationManager
 	private Map<String, Asset> translations = new HashMap<String, Asset>();
 	private Translation activeTranslation;
 	
-	public LocalizationManagerActual(GameContentStore store, String activeTranslation)
+	private String defaultTranslation;
+	
+	public LocalizationManagerActual(GameContentStore store, String defaultTranslation)
 	{
 		this.store = store;
 		this.modsManager = store.modsManager();
 		
-		reload();
+		this.defaultTranslation = defaultTranslation;
+		//reload();
 		
-		loadTranslation(activeTranslation);
+		//loadTranslation(activeTranslation);
 	}
 
 	public void loadTranslation(String translation)
@@ -64,6 +67,8 @@ public class LocalizationManagerActual implements LocalizationManager
 		
 		if(activeTranslation != null)
 			activeTranslation = new ActualTranslation(((ActualTranslation)activeTranslation).a);
+		else
+			activeTranslation = new ActualTranslation(translations.get(defaultTranslation));
 	}
 	
 	public class ActualTranslation implements Translation {

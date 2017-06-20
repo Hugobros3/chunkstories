@@ -39,7 +39,7 @@ public class EntityTypesStore implements EntityTypes
 		
 		//this.entityComponents = new EntityComponentsStore(context, this);
 		
-		this.reload();
+		//this.reload();
 	}
 	
 	public void reload()
@@ -82,10 +82,12 @@ public class EntityTypesStore implements EntityTypes
 						short id = Short.parseShort(split[0]);
 						String className = split[1];
 						
-						String entityTypeName = className.substring(className.lastIndexOf("."));
+						String entityTypeName = className.substring(className.lastIndexOf(".") + 1);
 						if(split.length >= 3)
 							entityTypeName = split[2];
 							
+						System.out.println(entityTypeName);
+						
 						try
 						{
 							Class<?> entityClass = content.modsManager().getClassByName(className);

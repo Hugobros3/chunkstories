@@ -28,7 +28,7 @@ public class ParticlesTypesStore implements Content.ParticlesTypes
 		this.store = store;
 		this.modsManager = store.modsManager();
 		
-		reload();
+		//reload();
 	}
 	
 	private Map<Integer, ParticleTypeHandler> particleTypesById = new HashMap<Integer, ParticleTypeHandler>();

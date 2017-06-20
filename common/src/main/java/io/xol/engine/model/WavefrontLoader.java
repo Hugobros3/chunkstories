@@ -1,14 +1,17 @@
-/*package io.xol.engine.model;
+package io.xol.engine.model;
 
 import java.io.BufferedReader;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.lwjgl.BufferUtils;
-
+import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
+import io.xol.chunkstories.api.mesh.Mesh;
+import io.xol.chunkstories.api.mesh.MeshLoader;
+import io.xol.chunkstories.api.mesh.MultiPartMesh;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
@@ -16,14 +19,14 @@ import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class WavefrontLoader
+public class WavefrontLoader implements MeshLoader
 {
 	//TODO per-thread
-	private static List<float[]> vertices = new ArrayList<float[]>();
-	private static List<float[]> texcoords = new ArrayList<float[]>();
-	private static List<float[]> normals = new ArrayList<float[]>();
+	//private static List<float[]> vertices = new ArrayList<float[]>();
+	//private static List<float[]> texcoords = new ArrayList<float[]>();
+	//private static List<float[]> normals = new ArrayList<float[]>();
 
-	public static ObjMeshComplete loadWavefrontFormatMesh(Asset asset)
+	/*public static ObjMeshComplete loadWavefrontFormatMesh(Asset asset)
 	{
 		return (ObjMeshComplete) loadWavefrontFormatMeshInternal(asset, LoadInto.OBJ_MESH);
 	}
@@ -31,24 +34,31 @@ public class WavefrontLoader
 	public static ObjMeshRenderable loadWavefrontFormatMeshRenderable(Asset asset)
 	{
 		return (ObjMeshRenderable) loadWavefrontFormatMeshInternal(asset, LoadInto.OBJ_MESH_ONLY_RENDERABLE);
-	}
+	}*/
 
 	//Various ways of calling the same function
-	private enum LoadInto
+	/*private enum LoadInto
 	{
 		OBJ_MESH, OBJ_MESH_ONLY_RENDERABLE, VOXEL_MODEL, FLOAT_BUFFER
-	}
+	}*/
 
-	private static Object loadWavefrontFormatMeshInternal(Asset asset, LoadInto mode)
+	public Mesh loadMeshFromAsset(Asset asset) throws MeshLoadException
 	{
+		List<float[]> vertices = new ArrayList<float[]>();
+		List<float[]> texcoords = new ArrayList<float[]>();
+		List<float[]> normals = new ArrayList<float[]>();
+		
+		/*
 		// Reset values
 		vertices.clear();
 		texcoords.clear();
-		normals.clear();
+		normals.clear();*/
 
 		Map<String, Integer> groupsSizesMap = new HashMap<String, Integer>();
 		Map<String, List<float[]>> tempGroups = new HashMap<String, List<float[]>>();
 
+		boolean hasGroups = false;
+		
 		int groupSize = 0;
 		String group = "root";
 
@@ -86,6 +96,8 @@ public class WavefrontLoader
 					//Vertices group manager
 					else if (l.startsWith("g"))
 					{
+						hasGroups = true;
+						
 						//If the current group contains vertices, note the size and put it in the hashmap
 						if (groupSize > 0)
 						{
@@ -145,7 +157,7 @@ public class WavefrontLoader
 			}
 			reader.close();
 
-			if(mode == LoadInto.OBJ_MESH)
+			/*if(mode == LoadInto.OBJ_MESH)
 			{
 				//Create 3 buffers for each type
 				FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(3 * totalVertices);
@@ -175,37 +187,42 @@ public class WavefrontLoader
 				return new ObjMeshComplete(totalVertices, verticesBuffer, textureCoordinatesBuffer, normalsBuffer, groupsSizesMap);
 			}
 			else if(mode == LoadInto.OBJ_MESH_ONLY_RENDERABLE)
-			{
+			{*/
 				//Create 3 buffers for each type
-				FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(3 * totalVertices);
-				FloatBuffer textureCoordinatesBuffer = BufferUtils.createFloatBuffer(2 * totalVertices);
-				FloatBuffer normalsBuffer = BufferUtils.createFloatBuffer(3 * totalVertices);
+				
+			FloatBuffer verticesBuffer = ByteBuffer.allocateDirect(3 * totalVertices * 4).asFloatBuffer();//BufferUtils.createFloatBuffer(3 * totalVertices);
+			FloatBuffer textureCoordinatesBuffer =  ByteBuffer.allocateDirect(2 * totalVertices * 4).asFloatBuffer();//BufferUtils.createFloatBuffer(2 * totalVertices);
+			FloatBuffer normalsBuffer =  ByteBuffer.allocateDirect(3 * totalVertices * 4).asFloatBuffer();//BufferUtils.createFloatBuffer(3 * totalVertices);
 
-				// Iterates over each group name in order of apparition
-				for (String gName : tempGroups.keySet())
+			// Iterates over each group name in order of apparition
+			for (String gName : tempGroups.keySet())
+			{
+				for (float[] gData : tempGroups.get(gName))
 				{
-					for (float[] gData : tempGroups.get(gName))
-					{
-						verticesBuffer.put(gData[0]);
-						verticesBuffer.put(gData[1]);
-						verticesBuffer.put(gData[2]);
-						textureCoordinatesBuffer.put(gData[3]);
-						textureCoordinatesBuffer.put(gData[4]);
-						normalsBuffer.put(gData[5]);
-						normalsBuffer.put(gData[6]);
-						normalsBuffer.put(gData[7]);
-						
-						//System.out.println(gData[0]);
-					}
+					verticesBuffer.put(gData[0]);
+					verticesBuffer.put(gData[1]);
+					verticesBuffer.put(gData[2]);
+					textureCoordinatesBuffer.put(gData[3]);
+					textureCoordinatesBuffer.put(gData[4]);
+					normalsBuffer.put(gData[5]);
+					normalsBuffer.put(gData[6]);
+					normalsBuffer.put(gData[7]);
+					
+					//System.out.println(gData[0]);
 				}
-
-				verticesBuffer.flip();
-				textureCoordinatesBuffer.flip();
-				normalsBuffer.flip();
-
-				return new ObjMeshRenderable(totalVertices, verticesBuffer, textureCoordinatesBuffer, normalsBuffer, groupsSizesMap);
-			
 			}
+
+			verticesBuffer.flip();
+			textureCoordinatesBuffer.flip();
+			normalsBuffer.flip();
+
+			if(hasGroups)
+				return new MultiPartMesh(verticesBuffer, textureCoordinatesBuffer, normalsBuffer, groupsSizesMap);
+			else
+				return new Mesh(verticesBuffer, textureCoordinatesBuffer, normalsBuffer);
+			//return new ObjMeshRenderable(totalVertices, verticesBuffer, textureCoordinatesBuffer, normalsBuffer, groupsSizesMap);
+		
+			/*}*/
 		}
 		catch (Exception e)
 		{
@@ -216,5 +233,9 @@ public class WavefrontLoader
 
 		return null;
 	}
+
+	@Override
+	public String getExtension() {
+		return "obj";
+	}
 }
-*/

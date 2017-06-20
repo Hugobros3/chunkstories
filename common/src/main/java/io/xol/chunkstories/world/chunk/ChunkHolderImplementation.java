@@ -15,6 +15,7 @@ import io.xol.engine.concurrency.SafeWriteLock;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
+import io.xol.chunkstories.renderer.chunks.RenderableChunk;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -330,7 +331,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 	
 	public CubicChunk createChunk(int data[])
 	{
-		CubicChunk chunk = data == null ? new CubicChunk(this, x, y, z) : new CubicChunk(this, x, y, z, data);
+		CubicChunk chunk = data == null ? new RenderableChunk(this, x, y, z) : new RenderableChunk(this, x, y, z, data);
 		
 		setChunk(chunk);
 		

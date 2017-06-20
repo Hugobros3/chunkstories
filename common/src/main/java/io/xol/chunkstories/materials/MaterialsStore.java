@@ -24,7 +24,7 @@ public class MaterialsStore implements Content.Materials
 	{
 		this.store = store;
 		
-		reload();
+		//reload();
 	}
 	
 	Map<String, Material> materials = new HashMap<String, Material>();

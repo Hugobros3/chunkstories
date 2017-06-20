@@ -21,6 +21,7 @@ import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.Player;
+import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -34,7 +35,6 @@ import io.xol.chunkstories.api.world.WorldCollisionsManager;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
-import io.xol.chunkstories.api.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.content.GameDirectory;
@@ -201,7 +201,7 @@ public abstract class WorldImplementation implements World
 			
 			//TODO EntitySimplePlayer ?
 			if(entity == null || ((entity instanceof EntityLiving) && (((EntityLiving) entity).isDead())))
-				entity = this.gameContext.getContent().entities().getEntityTypeByName("player").create(this);
+				entity = this.gameContext.getContent().entities().getEntityTypeByName("EntityPlayer").create(this);
 				//entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName()); //Default entity
 			else
 				entity.setUUID(-1);

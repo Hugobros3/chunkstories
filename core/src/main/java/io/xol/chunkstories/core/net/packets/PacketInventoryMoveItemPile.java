@@ -136,7 +136,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		
 		//Check using event
 		PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(player, itemPile, from, to, oldX, oldY, newX, newY, amount);
-		player.getServer().getPluginManager().fireEvent(moveItemEvent);
+		player.getContext().getPluginManager().fireEvent(moveItemEvent);
 		
 		if(!moveItemEvent.isCancelled())
 		{

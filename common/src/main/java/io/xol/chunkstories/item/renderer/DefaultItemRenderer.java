@@ -47,6 +47,9 @@ public class DefaultItemRenderer extends ItemRenderer
 	public void renderItemInInventory(RenderingInterface renderingInterface, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
 	{
 		int slotSize = 24 * 2;
+		//System.out.println(((ClientContent) this.itemType.store().parent()).textures());
+		if(textures == null)
+			return;
 		textures.getTexture(pile.getTextureName()).setLinearFiltering(false);
 		Texture2D texture = textures.getTexture(pile.getTextureName());
 		if(texture == null)

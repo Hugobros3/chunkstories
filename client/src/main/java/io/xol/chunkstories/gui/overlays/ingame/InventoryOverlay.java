@@ -171,7 +171,7 @@ public class InventoryOverlay extends Overlay
 						if (Client.world instanceof WorldClientLocal)
 						{
 							PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(player, selectedItem, selectedItem.getInventory(), inventories[i], selectedItem.getX(), selectedItem.getY(), x, y, selectedItemAmount);
-							player.getServer().getPluginManager().fireEvent(moveItemEvent);
+							player.getContext().getPluginManager().fireEvent(moveItemEvent);
 							
 							//If move was successfull
 							if(!moveItemEvent.isCancelled())
@@ -208,7 +208,7 @@ public class InventoryOverlay extends Overlay
 				if(playerEntity != null)
 				{
 					PlayerMoveItemEvent dropItemEvent = new PlayerMoveItemEvent(player, selectedItem, selectedItem.getInventory(), null, selectedItem.getX(), selectedItem.getY(), 0, 0, selectedItemAmount);
-					player.getServer().getPluginManager().fireEvent(dropItemEvent);
+					player.getContext().getPluginManager().fireEvent(dropItemEvent);
 					
 					if(!dropItemEvent.isCancelled())
 					{

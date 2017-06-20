@@ -23,6 +23,9 @@ public class Texture2DAsset extends Texture2DGL
 	//String name;
 	Asset asset;
 	String assetName;
+	
+	//TODO redo
+	protected boolean scheduledForLoad = false;
 
 	public Texture2DAsset(Asset asset)
 	{

@@ -37,7 +37,7 @@ public class ItemTypesStore implements Content.ItemsTypes
 		this.content = gameContentStore;
 		this.modsManager = gameContentStore.modsManager();
 
-		reload();
+		//reload();
 	}
 
 	public void reload()

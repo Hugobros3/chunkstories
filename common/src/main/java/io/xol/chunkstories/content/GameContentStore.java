@@ -46,16 +46,14 @@ public class GameContentStore implements Content
 		this.modsManager = new DefaultModsManager(enabledModsLaunchArguments);
 
 		// ! LOADS MODS
-
-		try
+		/*try
 		{
 			modsManager.loadEnabledMods();
 		}
 		catch (NotAllModsLoadedException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 
 		// ! TO REFACTOR
 
@@ -72,10 +70,8 @@ public class GameContentStore implements Content
 		meshes = new MeshStore(this);
 		
 		localizationManager = new LocalizationManagerActual(this, "en");
-		//System.out.println("mdr "+localizationManager.localize("omg #{get.rekt}ezezez#{ez}"));
-		//System.exit(-1);
 	}
-
+	
 	public void reload()
 	{
 		// ! LOADS MODS

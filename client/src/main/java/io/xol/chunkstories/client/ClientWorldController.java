@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.ClientInterface;
@@ -18,7 +19,6 @@ import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
-import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
@@ -384,10 +384,9 @@ public class ClientWorldController implements PlayerClient
 	}
 
 	@Override
-	public ServerInterface getServer()
+	public GameContext getContext()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return this.client;
 	}
 
 	@Override

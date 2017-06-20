@@ -1,15 +1,11 @@
 package io.xol.engine.model;
 
 import java.nio.FloatBuffer;
-import java.util.HashMap;
-import java.util.Map;
-
-import io.xol.chunkstories.api.rendering.Renderable;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.mesh.RenderableMesh;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.animation.SkeletonAnimator;
-import io.xol.chunkstories.api.math.Matrix4f;
+import io.xol.chunkstories.api.mesh.Mesh;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 
@@ -17,29 +13,42 @@ import io.xol.engine.graphics.geometry.VertexBufferGL;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ObjMeshRenderable implements Renderable
+public class MeshRenderableImpl implements RenderableMesh
 {
-	protected ObjMeshRenderable()
-	{
+	@SuppressWarnings("unused")
+	private final Mesh mesh;
+	
+	protected int verticesCount;
+	//protected Map<String, Integer> boneGroups = new HashMap<String, Integer>();
+	protected VertexBuffer verticesDataOnGpu;
+	protected VertexBuffer texCoordDataOnGpu;
+	protected VertexBuffer normalsDataOnGpu;
+	
+	public MeshRenderableImpl(Mesh mesh) {
+		this.mesh = mesh;
+		
+		this.verticesCount = mesh.getVerticesCount();
+		//this.boneGroups = boneGroups;
 
+		uploadFloatBuffers(mesh.getVertices(), mesh.getTextureCoordinates(), mesh.getNormals());
 	}
 
-	ObjMeshRenderable(int verticesCount, FloatBuffer vertices, FloatBuffer textureCoordinates, FloatBuffer normalMapCoordinates, Map<String, Integer> boneGroups)
+	/*private MeshRenderableImpl(int verticesCount, FloatBuffer vertices, FloatBuffer textureCoordinates, FloatBuffer normalMapCoordinates, Map<String, Integer> boneGroups)
 	{
 		this.verticesCount = verticesCount;
 		this.boneGroups = boneGroups;
 
 		uploadFloatBuffers(vertices, textureCoordinates, normalMapCoordinates);
-	}
+	}*/
 
-	ObjMeshRenderable(int verticesCount, VertexBuffer verticesDataOnGpu, VertexBuffer texCoordDataOnGpu, VertexBuffer normalsDataOnGpu, Map<String, Integer> boneGroups)
+	/*ObjMeshRenderable(int verticesCount, VertexBuffer verticesDataOnGpu, VertexBuffer texCoordDataOnGpu, VertexBuffer normalsDataOnGpu, Map<String, Integer> boneGroups)
 	{
 		this.verticesCount = verticesCount;
 		this.verticesDataOnGpu = verticesDataOnGpu;
 		this.texCoordDataOnGpu = texCoordDataOnGpu;
 		this.normalsDataOnGpu = normalsDataOnGpu;
 		this.boneGroups = boneGroups;
-	}
+	}*/
 
 	protected void uploadFloatBuffers(FloatBuffer vertices, FloatBuffer textureCoordinates, FloatBuffer normals)
 	{
@@ -52,88 +61,16 @@ public class ObjMeshRenderable implements Renderable
 		normalsDataOnGpu.uploadData(normals);
 	}
 
-	protected int verticesCount;
-	protected Map<String, Integer> boneGroups = new HashMap<String, Integer>();
-	protected VertexBuffer verticesDataOnGpu;
-	protected VertexBuffer texCoordDataOnGpu;
-	protected VertexBuffer normalsDataOnGpu;
-
 	@Override
 	public void render(RenderingInterface renderingContext)
 	{
-		internalRenderer(renderingContext, null, 0.0, false, (String[]) null);
+		internalRenderer(renderingContext);
 	}
 
-	public void render(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime)
-	{
-		internalRenderer(renderingContext, skeleton, animationTime, false, (String[]) null);
-	}
-	
-	public void render(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime, String... parts)
-	{
-		internalRenderer(renderingContext, skeleton, animationTime, false, parts);
-	}
-
-	private void internalRenderer(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime, boolean exclude, String... parts)
+	private void internalRenderer(RenderingInterface renderingContext)
 	{
 		prepareDraw(renderingContext);
-
-		Matrix4f currentObjectMatrix = renderingContext.getObjectMatrix();
-		Matrix4f matrix;
-
-		int totalSize = 0;
-		if (skeleton != null)
-		{
-			//Loop over groups
-			boneGroup: for (String currentVertexGroup : boneGroups.keySet())
-			{
-				int i = boneGroups.get(currentVertexGroup);
-				if (parts != null && parts.length > 0)
-				{
-					boolean found = false;
-					for (String part : parts)
-						if (part.equals(currentVertexGroup))
-						{
-							found = true;
-							break;
-						}
-
-					//If we found or didn't found what we were looking for we skip this group
-					if (exclude == found || skeleton.shouldHideBone(renderingContext, currentVertexGroup))
-					{
-						totalSize += i;
-						continue boneGroup;
-					}
-				}
-				
-				if(skeleton.shouldHideBone(renderingContext, currentVertexGroup))
-				{
-					totalSize += i;
-					continue boneGroup;
-				}
-
-				//Get transformer matrix
-				matrix = skeleton.getBoneHierarchyTransformationMatrixWithOffset(currentVertexGroup, animationTime < 0 ? 0 : animationTime);
-				
-				if(currentObjectMatrix == null)
-					currentObjectMatrix = new Matrix4f();
-				
-				//Send the transformation
-				Matrix4f.mul(currentObjectMatrix, matrix, matrix);
-				
-				renderingContext.setObjectMatrix(matrix);
-				
-				//Only what we can care about
-				renderingContext.draw(Primitive.TRIANGLE, totalSize * 3, i * 3);
-				totalSize += i;
-			}
-		}
-		else
-		{
-			renderingContext.draw(Primitive.TRIANGLE, 0, verticesCount);
-		}
-
-		renderingContext.setObjectMatrix(currentObjectMatrix);
+		renderingContext.draw(Primitive.TRIANGLE, 0, verticesCount);
 	}
 
 	private void prepareDraw(RenderingInterface renderingContext)

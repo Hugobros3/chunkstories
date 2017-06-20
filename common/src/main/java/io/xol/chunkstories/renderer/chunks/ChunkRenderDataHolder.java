@@ -3,10 +3,7 @@ package io.xol.chunkstories.renderer.chunks;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
-import io.xol.chunkstories.renderer.SelectionRenderer;
-import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.engine.graphics.RenderingContext;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -96,13 +93,13 @@ public class ChunkRenderDataHolder
 		return 0;
 	}*/
 	
-	public void renderChunkBounds(RenderingContext renderingContext)
+	/*public void renderChunkBounds(RenderingContext renderingContext)
 	{
 		//if(chunk.chunkZ != 5)
 		//	return;
 		FakeImmediateModeDebugRenderer.glColor4f(5, 0, (float) Math.random() * 0.01f, 1);
 		SelectionRenderer.cubeVertices(chunk.getChunkX() * 32 + 16, chunk.getChunkY() * 32, chunk.getChunkZ() * 32 + 16, 32, 32, 32);
-	}
+	}*/
 
 	public ChunkMeshDataSections getData()
 	{
