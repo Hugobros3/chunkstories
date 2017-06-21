@@ -81,7 +81,7 @@ public class Server implements Runnable, ServerInterface
 	private WorldServer world;
 
 	private ServerConnectionsManager connectionsManager;
-	private ServerConsole console = new ServerConsole(this);
+	private DedicatedServerConsole console = new DedicatedServerConsole(this);
 
 	private DefaultPluginManager pluginsManager;
 	private PermissionsManager permissionsManager;
@@ -367,7 +367,7 @@ public class Server implements Runnable, ServerInterface
 		return null;
 	}
 
-	public ServerConsole getConsole()
+	public DedicatedServerConsole getConsole()
 	{
 		return console;
 	}

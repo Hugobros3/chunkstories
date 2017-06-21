@@ -9,6 +9,8 @@ import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
+import io.xol.chunkstories.api.plugin.commands.ServerConsole;
+import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.server.net.UserConnection;
 import io.xol.engine.misc.ColorsTools;
@@ -19,11 +21,11 @@ import io.xol.engine.misc.ColorsTools;
 
 /** Handles basic commands and forwards not-so-basic commands to plugins
  *  Can send command itself */
-public class ServerConsole implements CommandEmitter
+public class DedicatedServerConsole implements ServerConsole
 {
 	private Server server;
 
-	public ServerConsole(Server server)
+	public DedicatedServerConsole(Server server)
 	{
 		this.server = server;
 	}
@@ -361,5 +363,10 @@ public class ServerConsole implements CommandEmitter
 	{
 		// Console has ALL permissions
 		return true;
+	}
+
+	@Override
+	public ServerInterface getServer() {
+		return server;
 	}
 }
