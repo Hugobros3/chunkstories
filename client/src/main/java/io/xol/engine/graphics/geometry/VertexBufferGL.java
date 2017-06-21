@@ -329,7 +329,7 @@ public class VertexBufferGL implements VertexBuffer
 			//Ensure it's up-to-date
 			checkForPendingMainThreadData();
 			if(!isDataPresent())
-				throw new RuntimeException("No VBO data uploaded | "+GameWindowOpenGL.getInstance().renderingContext);
+				throw new RuntimeException("No VBO data uploaded | "+Client.getInstance().getGameWindow().getRenderingContext());
 			//Set pointer
 			glVertexAttribPointer(gl_AttributeLocation, dimensions, format.glId, format.normalized, stride, offset);
 		}

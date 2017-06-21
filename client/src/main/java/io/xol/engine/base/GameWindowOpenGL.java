@@ -51,7 +51,7 @@ public class GameWindowOpenGL implements GameWindow
 	private final Thread mainGLThread;
 
 	private Client client;
-	public RenderingContext renderingContext;
+	private RenderingContext renderingContext;
 	private ALSoundManager soundManager;
 
 	private Scene currentScene = null;
@@ -520,7 +520,7 @@ public class GameWindowOpenGL implements GameWindow
 		}
 	}
 
-	public static GameWindowOpenGL getInstance()
+	private static GameWindowOpenGL getInstance()
 	{
 		return instance;
 	}

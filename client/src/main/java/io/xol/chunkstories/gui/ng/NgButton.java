@@ -3,6 +3,8 @@ package io.xol.chunkstories.gui.ng;
 import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.base.GameWindowOpenGL;
@@ -21,13 +23,21 @@ public class NgButton extends GuiElement
 {
 	public boolean clicked = false;
 	public String text;
-	protected BitmapFont font;
+	//protected BitmapFont font;
+	public final Font font;
 	public int size;
 
 	protected int height;
-
+	
 	public NgButton(int x, int y, String text)
 	{
+		this(Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer().getFont("arial", 12), x, y, text);
+	}
+	
+	public NgButton(Font font, int x, int y, String text)
+	{
+		this.font = font;
+		
 		this.posx = x;
 		this.posy = y;
 		this.text = text;
@@ -37,7 +47,8 @@ public class NgButton extends GuiElement
 	public int getWidth()
 	{
 		String localizedText = Client.getInstance().getContent().localization().localize(text);
-		int width = GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12).getWidth(localizedText);
+		//int width = renderer.getFontRenderer().getFont("arial", 12).getWidth(localizedText);
+		int width = font.getWidth(localizedText);
 		return (width + 8) * scale;
 	}
 
@@ -47,7 +58,7 @@ public class NgButton extends GuiElement
 		return (Mouse.getX() >= posx && Mouse.getX() < posx + width && Mouse.getY() >= posy && Mouse.getY() <= posy + height * scale);
 	}
 
-	public void draw()
+	public void draw(RenderingInterface renderer)
 	{
 		int width = getWidth();
 		String localizedText = Client.getInstance().getContent().localization().localize(text);
@@ -60,7 +71,7 @@ public class NgButton extends GuiElement
 		CorneredBoxDrawer.drawCorneredBoxTiled(posx + (width) / 2, posy + 9 * scale, width, 18 * scale, 4 * scale, buttonTexture, 32, scale);
 		
 		//if(scale == 1)
-		GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().drawString(GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12), posx + 4 * scale, posy, localizedText, scale, new Vector4fm(76/255f, 76/255f, 76/255f, 1));
+		renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), posx + 4 * scale, posy, localizedText, scale, new Vector4fm(76/255f, 76/255f, 76/255f, 1));
 		//else
 		//	TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial24px18pt, posx + 4 * scale, posy + 2, text, scale / 2, new Vector4fm(76/255f, 76/255f, 76/255f, 1));
 	}

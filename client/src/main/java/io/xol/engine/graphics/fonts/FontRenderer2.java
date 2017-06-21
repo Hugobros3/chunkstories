@@ -2,14 +2,13 @@ package io.xol.engine.graphics.fonts;
 
 import io.xol.chunkstories.api.math.HexTools;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
-import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.misc.ColorsTools;
 
 public class FontRenderer2
 {
-
 	public static int drawTextUsingSpecificFont(float xpos, float ypos, float rot, float size, String text, BitmapFont font)
 	{
 		return drawTextUsingSpecificFontRVBA(xpos, ypos, rot, size, text, font, 1, 1, 1, 1);
@@ -113,7 +112,7 @@ public class FontRenderer2
 				{
 
 					float border = size / 16;
-					GameWindowOpenGL.getInstance().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(baseX + (translateX), baseY + (translateY), baseX + (translateX + charW + border), baseY + (translateY + fontsize), tx, ty + cellSize, tx + (charW + border) / 16f / size, ty,
+					Client.getInstance().getGameWindow().getRenderingContext().getGuiRenderer().drawBoxWindowsSpace(baseX + (translateX), baseY + (translateY), baseX + (translateX + charW + border), baseY + (translateY + fontsize), tx, ty + cellSize, tx + (charW + border) / 16f / size, ty,
 							fontTexture, false, true, color);
 					
 					translateX += charW;

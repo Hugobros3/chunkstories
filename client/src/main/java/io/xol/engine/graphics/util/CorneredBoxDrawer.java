@@ -3,7 +3,7 @@ package io.xol.engine.graphics.util;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.GuiRenderer;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
@@ -13,10 +13,9 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 
 public class CorneredBoxDrawer
 {
-
 	public static void drawCorneredBoxTiled(float posx, float posy, int width, int height, int cornerSize, Texture2D texture, int textureSize, int scale)
 	{
-		RenderingContext renderingContext = GameWindowOpenGL.getInstance().renderingContext;
+		RenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingContext();
 		GuiRenderer guiRenderer = renderingContext.getGuiRenderer();
 		
 		float topLeftCornerX = posx - width / 2;

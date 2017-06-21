@@ -17,6 +17,7 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.target.RenderTargetAttachementsConfiguration;
 import io.xol.chunkstories.api.rendering.target.RenderTargetManager;
+import io.xol.chunkstories.client.Client;
 import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.concurrency.Fence;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
@@ -62,7 +63,7 @@ public class PBOPacker
 		glBufferData(GL_PIXEL_PACK_BUFFER, width * height * 4 * 3 , GL_STREAM_COPY);
 
 		//Obtains ref to RTM
-		RenderTargetManager rtm = GameWindowOpenGL.getInstance().renderingContext.getRenderTargetManager();
+		RenderTargetManager rtm = Client.getInstance().getGameWindow().getRenderingContext().getRenderTargetManager();
 		
 		RenderTargetAttachementsConfiguration previousFB = rtm.getCurrentConfiguration();
 		rtm.setConfiguration(fbo);

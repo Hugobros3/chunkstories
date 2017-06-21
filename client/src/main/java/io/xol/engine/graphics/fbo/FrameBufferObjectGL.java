@@ -17,7 +17,6 @@ import org.lwjgl.BufferUtils;
 import io.xol.chunkstories.api.rendering.target.RenderTarget;
 import io.xol.chunkstories.api.rendering.target.RenderTargetAttachementsConfiguration;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.base.GameWindowOpenGL;
 
 public class FrameBufferObjectGL implements RenderTargetAttachementsConfiguration
 {
@@ -175,7 +174,7 @@ public class FrameBufferObjectGL implements RenderTargetAttachementsConfiguratio
 		//Don't rebind twice
 		if(fbo_id == bound)
 			return;
-		GameWindowOpenGL.getInstance().renderingContext.flush();
+		Client.getInstance().getGameWindow().getRenderingContext().flush();
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
 		RenderTarget ok = this.depthAttachement != null ? depthAttachement : (this.colorAttachements != null && this.colorAttachements.length > 0 ? this.colorAttachements[0] : null);
 		if(ok != null)
@@ -187,7 +186,7 @@ public class FrameBufferObjectGL implements RenderTargetAttachementsConfiguratio
 
 	static void unbind()
 	{
-		GameWindowOpenGL.getInstance().renderingContext.flush();
+		Client.getInstance().getGameWindow().getRenderingContext().flush();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, Client.getInstance().getGameWindow().getWidth(), Client.getInstance().getGameWindow().getHeight());
 		bound = 0;

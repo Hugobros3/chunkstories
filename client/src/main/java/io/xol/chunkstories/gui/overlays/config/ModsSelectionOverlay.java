@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.Mod;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.mods.ModImplementation;
@@ -124,7 +125,7 @@ public class ModsSelectionOverlay extends Overlay
 	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
 	{
 		backOption.setPosition(positionStartX + 8, 8);
-		backOption.draw();
+		backOption.draw(renderingContext);
 
 		// Display buttons
 		
@@ -145,15 +146,15 @@ public class ModsSelectionOverlay extends Overlay
 
 		locateExtMod.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += locateExtMod.getWidth() + spacing;
-		locateExtMod.draw();
+		locateExtMod.draw(renderingContext);
 
 		openModsFolder.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += openModsFolder.getWidth() + spacing;
-		openModsFolder.draw();
+		openModsFolder.draw(renderingContext);
 		
 		applyMods.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += applyMods.getWidth() + spacing;
-		applyMods.draw();
+		applyMods.draw(renderingContext);
 		
 		
 		if (backOption.clicked())
@@ -185,7 +186,7 @@ public class ModsSelectionOverlay extends Overlay
 		
 		modsContainer.setPosition((width - 480 * s) / 2, 32);
 		modsContainer.setDimensions(480 * s, height - 32 - 32 * s);
-		modsContainer.render();
+		modsContainer.render(renderingContext);
 	}
 	
 	public boolean onScroll(int dy)
@@ -196,9 +197,9 @@ public class ModsSelectionOverlay extends Overlay
 	
 	class ModsScrollableContainer extends ScrollableContainer {
 		
-		public int render()
+		public int render(RenderingInterface renderer)
 		{
-			int r = super.render();
+			int r = super.render(renderer);
 			
 			String text = "Showing elements ";
 			
@@ -207,8 +208,8 @@ public class ModsSelectionOverlay extends Overlay
 			text += scroll + r;
 			
 			text+=" out of "+elements.size();
-			int dekal = GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12).getWidth(text) / 2;
-			GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().drawString(GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12), posx + width / 2 - dekal * scale, posy + 16 / scale, text, scale, new Vector4fm(0.0, 0.0, 0.0, 1.0));
+			int dekal = renderer.getFontRenderer().getFont("arial", 12).getWidth(text) / 2;
+			renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), posx + width / 2 - dekal * scale, posy + 16 / scale, text, scale, new Vector4fm(0.0, 0.0, 0.0, 1.0));
 			
 			return r;
 		}
@@ -304,7 +305,7 @@ public class ModsSelectionOverlay extends Overlay
 			}
 			
 			@Override
-			public void render()
+			public void render(RenderingInterface renderer)
 			{
 				int s = ModsScrollableContainer.this.scale;
 				//Setup textures
@@ -319,29 +320,29 @@ public class ModsSelectionOverlay extends Overlay
 				enableDisableTexture.setLinearFiltering(false);
 				
 				//Render graphical base
-				GameWindowOpenGL.getInstance().renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, bgTexture, true, false, enabled ? new Vector4fm(1.0, 1.0, 1.0, 1.0) : new Vector4fm(1.0, 0.5, 0.5, 1.0));
+				renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, bgTexture, true, false, enabled ? new Vector4fm(1.0, 1.0, 1.0, 1.0) : new Vector4fm(1.0, 0.5, 0.5, 1.0));
 				//Render subbuttons
 				if(isOverUpButton())
-					GameWindowOpenGL.getInstance().renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, upArrowTexture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, upArrowTexture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
 				if(isOverEnableDisableButton())
-					GameWindowOpenGL.getInstance().renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, enableDisableTexture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, enableDisableTexture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
 				if(isOverDownButton())
-					GameWindowOpenGL.getInstance().renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, downArrowTexture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, downArrowTexture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
 				
 				//Render icon
-				GameWindowOpenGL.getInstance().renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX + 4 * s, positionY + 4 * s, 64 * s, 64 * s, 0, 1, 1, 0, icon, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+				renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX + 4 * s, positionY + 4 * s, 64 * s, 64 * s, 0, 1, 1, 0, icon, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
 				//Text !
 				if(name != null)
-					GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().drawString(GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 54 * s, name, s, new Vector4fm(0.0, 0.0, 0.0, 1.0));
+					renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 54 * s, name, s, new Vector4fm(0.0, 0.0, 0.0, 1.0));
 				
 				if(topRightString != null)
 				{
-					int dekal = width - GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12).getWidth(topRightString) - 4;
-					GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().drawString(GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12), positionX + dekal* s, positionY + 54 * s, topRightString, s, new Vector4fm(0.25, 0.25, 0.25, 1.0));
+					int dekal = width - renderer.getFontRenderer().getFont("arial", 12).getWidth(topRightString) - 4;
+					renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + dekal* s, positionY + 54 * s, topRightString, s, new Vector4fm(0.25, 0.25, 0.25, 1.0));
 				}
 				
 				if(descriptionLines != null)
-					GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().drawString(GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 38 * s, descriptionLines, s, new Vector4fm(0.25, 0.25, 0.25, 1.0));
+					renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 38 * s, descriptionLines, s, new Vector4fm(0.25, 0.25, 0.25, 1.0));
 				
 			}
 			

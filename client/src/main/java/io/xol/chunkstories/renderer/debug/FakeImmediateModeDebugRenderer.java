@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMod
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
-import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
@@ -85,7 +85,7 @@ public class FakeImmediateModeDebugRenderer
 
 	public static void glEnd()
 	{
-		RenderingContext renderingContext = GameWindowOpenGL.getInstance().getRenderingContext();
+		RenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingContext();
 		
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.MIX);

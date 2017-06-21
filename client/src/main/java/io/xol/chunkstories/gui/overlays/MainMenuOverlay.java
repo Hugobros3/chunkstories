@@ -78,23 +78,23 @@ public class MainMenuOverlay extends Overlay
 		
 		singlePlayer.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += singlePlayer.getWidth() + spacing;
-		singlePlayer.draw();
+		singlePlayer.draw(renderingContext);
 
 		multiPlayer.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += multiPlayer.getWidth() + spacing;
-		multiPlayer.draw();
+		multiPlayer.draw(renderingContext);
 
 		modsOption.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += modsOption.getWidth() + spacing;
-		modsOption.draw();
+		modsOption.draw(renderingContext);
 
 		optionsMenu.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += optionsMenu.getWidth() + spacing;
-		optionsMenu.draw();
+		optionsMenu.draw(renderingContext);
 
 		exitGame.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += exitGame.getWidth() + spacing;
-		exitGame.draw();
+		exitGame.draw(renderingContext);
 
 		if (singlePlayer.clicked())
 			mainScene.changeOverlay(new LevelSelectOverlay(mainScene, this));

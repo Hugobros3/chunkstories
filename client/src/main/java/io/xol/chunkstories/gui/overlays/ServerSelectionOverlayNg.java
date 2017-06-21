@@ -101,7 +101,7 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 		
 		serverSelectionZone.setPosition((w - 480 * s) / 2, 32);
 		serverSelectionZone.setDimensions(480 * s, h - 32 - 128);
-		serverSelectionZone.render();
+		serverSelectionZone.render(renderingContext);
 	}
 
 	// Controls handling

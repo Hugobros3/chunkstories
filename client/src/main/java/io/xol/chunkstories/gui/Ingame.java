@@ -270,11 +270,11 @@ public class Ingame extends OverlayableScene
 		{
 			//Draw chat
 			chat.update();
-			chat.draw();
+			chat.draw(gameWindow.getRenderingContext());
 
 			//Draw inventory
 			if (playerEntity != null && inventoryDrawer != null)
-				inventoryDrawer.drawPlayerInventorySummary(gameWindow.renderingContext, renderingContext.getWindow().getWidth() / 2 - 7, 64 + 64);
+				inventoryDrawer.drawPlayerInventorySummary(gameWindow.getRenderingContext(), renderingContext.getWindow().getWidth() / 2 - 7, 64 + 64);
 
 			//TODO : move this crap into the EntityOverlays shit
 			//Draw health

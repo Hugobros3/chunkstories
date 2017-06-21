@@ -196,7 +196,7 @@ public class Client implements ClientInterface
 		{
 			gameContent.reload();
 			inputsManager.reload();
-			gameWindows.renderingContext.getFontRenderer().reloadFonts();
+			gameWindows.getRenderingContext().getFontRenderer().reloadFonts();
 
 			return;
 		}
@@ -209,7 +209,7 @@ public class Client implements ClientInterface
 				//ModsManager.reload();
 				gameContent.reload();
 				inputsManager.reload();
-				gameWindows.renderingContext.getFontRenderer().reloadFonts();
+				gameWindows.getRenderingContext().getFontRenderer().reloadFonts();
 				
 				waitForReload.signal();
 			}

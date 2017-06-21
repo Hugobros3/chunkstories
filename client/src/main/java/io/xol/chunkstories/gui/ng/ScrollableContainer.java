@@ -6,8 +6,7 @@ import java.util.List;
 import org.lwjgl.input.Mouse;
 
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
-import io.xol.engine.base.GameWindowOpenGL;
-import io.xol.engine.graphics.fonts.TrueTypeFont;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.gui.elements.GuiElement;
@@ -59,7 +58,7 @@ public class ScrollableContainer extends GuiElement
 		return mx >= posx && mx <= posx + width && my >= posy && my <= posy + height;
 	}
 	
-	public int render()
+	public int render(RenderingInterface renderer)
 	{
 		int r = 0;
 		
@@ -78,7 +77,7 @@ public class ScrollableContainer extends GuiElement
 			i++;
 			
 			element.setPosition(this.posx, startY);
-			element.render();
+			element.render(renderer);
 			r++;
 		}
 		
@@ -124,7 +123,7 @@ public class ScrollableContainer extends GuiElement
 			this.positionY = positionY;
 		}
 		
-		public void render()
+		public void render(RenderingInterface renderer)
 		{
 			int s = ScrollableContainer.this.scale;
 			//Setup textures
@@ -132,21 +131,21 @@ public class ScrollableContainer extends GuiElement
 			bgTexture.setLinearFiltering(false);
 			
 			//Render graphical base
-			GameWindowOpenGL.getInstance().renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, bgTexture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+			renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, bgTexture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
 			//Render icon
-			GameWindowOpenGL.getInstance().renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX + 4 * s, positionY + 4 * s, 64 * s, 64 * s, 0, 1, 1, 0, TexturesHandler.getTexture(iconTextureLocation), true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+			renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX + 4 * s, positionY + 4 * s, 64 * s, 64 * s, 0, 1, 1, 0, TexturesHandler.getTexture(iconTextureLocation), true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
 			//Text !
 			if(name != null)
-				GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().drawString(GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 54 * s, name, s, new Vector4fm(0.0, 0.0, 0.0, 1.0));
+				renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 54 * s, name, s, new Vector4fm(0.0, 0.0, 0.0, 1.0));
 			
 			if(topRightString != null)
 			{
-				int dekal = width - GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12).getWidth(topRightString) - 4;
-				GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().drawString(GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12), positionX + dekal* s, positionY + 54 * s, topRightString, s, new Vector4fm(0.25, 0.25, 0.25, 1.0));
+				int dekal = width - renderer.getFontRenderer().getFont("arial", 12).getWidth(topRightString) - 4;
+				renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + dekal* s, positionY + 54 * s, topRightString, s, new Vector4fm(0.25, 0.25, 0.25, 1.0));
 			}
 			
 			if(descriptionLines != null)
-				GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().drawString(GameWindowOpenGL.getInstance().renderingContext.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 38 * s, descriptionLines, s, new Vector4fm(0.25, 0.25, 0.25, 1.0));
+				renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 38 * s, descriptionLines, s, new Vector4fm(0.25, 0.25, 0.25, 1.0));
 			
 		}
 		
