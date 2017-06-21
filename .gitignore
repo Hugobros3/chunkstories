@@ -1,48 +1,57 @@
-/bin/
-config/*
-/worlds/
+_Game folders relevant to a specific installation_
+
+worlds/
+config/
+doc/
+plugins/
+players/
+serverlogs/
+servermods/
+logs/
+target/
+mods/
+screenshots/
+scripts/
+
+_Caches_
+res/textures/tiles_merged*
+cache/
+converter_ids_cache.csv
+converter.jar
+server-icon.png
+
+_Don't include build stuff_
+bin/
+*/build/
+*.class
+
+_Random utility/built jars no one cares about_
 counter.jar
 genbench.txt
 launcher.jar
 chunkstories.jar
 server.jar
-readme.txt
-spec.txt
-*.class
+logs-reporter.jar
+
+_Debug stuff is hidden too_
+
+apitrace/
+wrappers/
 hs_err_pid*
-res/textures/tiles_merged*
-*main.fs
-*main.vs
-players/*
-serverlogs/*
-logs/*
-/target/
-doc/*
-plugins*
+*.hprof
+*.trace
+injectee.dll
+
+_Hide eclipse projects_
 .classpath
 .project
 .*
-logs-reporter.jar
-./mods/*
-screenshots/*
-xolioz*
-namalsk*
-skybox*
-cache/*
-servermods*
-screenshots*
-serverlogs*
-dz4cs/
-apitrace*
-wrappers/
-scripts/
+
+_Fuck off Windows_
+*Thumbs.db
+
+_Content creation personal crap_
 *.exe
-*.hprof
-*.trace
-/converter.jar
-/converter_ids_cache.csv
-/dogez_content.zip
-/injectee.dll
-/mods/
-/server-icon - Copie.png
-/server-icon.png
+dz4cs/
+dogez_content.zip
+server-icon - Copie.png
