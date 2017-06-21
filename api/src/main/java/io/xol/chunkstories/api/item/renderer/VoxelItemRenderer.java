@@ -1,6 +1,7 @@
 package io.xol.chunkstories.api.item.renderer;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -307,7 +308,7 @@ public class VoxelItemRenderer extends ItemRenderer
 		if (!voxelItemsModelBuffer.containsKey(bri.getMetaData() + 16 * voxel.getId()))
 		{
 			//Wow calm down satan with your huge-ass models
-			ByteBuffer buffer = ByteBuffer.allocateDirect(16384); //BufferUtils.createByteBuffer(16384);
+			ByteBuffer buffer = ByteBuffer.allocateDirect(16384).order(ByteOrder.nativeOrder()); //BufferUtils.createByteBuffer(16384);
 			RenderByteBuffer rbbuf = new EditedTexCoordsRenderByteBuffer(buffer);
 			
 			ChunkRenderer chunkRenderer = new ChunkRenderer() {

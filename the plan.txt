@@ -30,6 +30,7 @@ Moreover, the switch to a more verbose way of defining packets will likely help 
 packets differently based on their type, priority, tolerance to loss etc
 
 =GUI=
+For later è.é
 
 =OpenGL/RenderingLayer=
 
@@ -45,6 +46,8 @@ RenderingInterface ? No, already a clusterfuck ... split it ? No...
 	
 And newTexture + getTexture(asset) in ClientContent.
 
+Warning: BufferUtils is a goner, and allocateDirect isn't ideal. Should make yet another abstractor for potential lwjgl3 jemalloc ?
+
 =Particles=
 
 Particles obviously lack a layer of abstraction, and their file format isn't standardized yet. They must be split into custom logic and pre-defined NWP classes,
@@ -58,3 +61,4 @@ ParticleType -> ParticleType + ParticleTypeHandler !
 
 KeyBindsLoader was fucking retarded, a mess of nested iterators for no purpose. Also circular deps. 
 Divided size by 3 and just used a implementation-private interface 'InputsManagerLoader' that reads basic params from the file (type/name/value/args)
+=> InputsLoaderHelper

@@ -1,6 +1,8 @@
 package io.xol.chunkstories.item.renderer;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientContent.TexturesLibrary;
@@ -89,7 +91,7 @@ public class DefaultItemRenderer extends ItemRenderer
 		{
 			defaultPlane = renderingInterface.newVertexBuffer();
 			
-			ByteBuffer buf = ByteBuffer.allocateDirect(2 * (4 * 3 * 6 + 4 * 2 * 6 + 4 * 3 * 6));
+			ByteBuffer buf = ByteBuffer.allocateDirect(2 * (4 * 3 * 6 + 4 * 2 * 6 + 4 * 3 * 6)).order(ByteOrder.nativeOrder());
 			//ByteBuffer buf = BufferUtils.createByteBuffer(2 * (4 * 3 * 6 + 4 * 2 * 6 + 4 * 3 * 6));
 			//Vertex pos data
 			buf.putFloat(0.0f);

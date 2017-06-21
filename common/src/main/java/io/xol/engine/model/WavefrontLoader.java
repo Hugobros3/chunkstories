@@ -2,6 +2,7 @@ package io.xol.engine.model;
 
 import java.io.BufferedReader;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -190,9 +191,9 @@ public class WavefrontLoader implements MeshLoader
 			{*/
 				//Create 3 buffers for each type
 				
-			FloatBuffer verticesBuffer = ByteBuffer.allocateDirect(3 * totalVertices * 4).asFloatBuffer();//BufferUtils.createFloatBuffer(3 * totalVertices);
-			FloatBuffer textureCoordinatesBuffer =  ByteBuffer.allocateDirect(2 * totalVertices * 4).asFloatBuffer();//BufferUtils.createFloatBuffer(2 * totalVertices);
-			FloatBuffer normalsBuffer =  ByteBuffer.allocateDirect(3 * totalVertices * 4).asFloatBuffer();//BufferUtils.createFloatBuffer(3 * totalVertices);
+			FloatBuffer verticesBuffer = ByteBuffer.allocateDirect(3 * totalVertices * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();//BufferUtils.createFloatBuffer(3 * totalVertices);
+			FloatBuffer textureCoordinatesBuffer =  ByteBuffer.allocateDirect(2 * totalVertices * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();//BufferUtils.createFloatBuffer(2 * totalVertices);
+			FloatBuffer normalsBuffer =  ByteBuffer.allocateDirect(3 * totalVertices * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();//BufferUtils.createFloatBuffer(3 * totalVertices);
 
 			// Iterates over each group name in order of apparition
 			for (String gName : tempGroups.keySet())
