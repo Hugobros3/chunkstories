@@ -1,14 +1,13 @@
 package io.xol.chunkstories.gui;
 
-import org.lwjgl.input.Mouse;
-
+import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.core.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -30,7 +29,7 @@ public class InventoryDrawer
 		this.entity = entity;
 	}
 
-	public void drawInventoryCentered(RenderingContext context, int x, int y, int scale, boolean summary, int blankLines)
+	public void drawInventoryCentered(RenderingInterface context, int x, int y, int scale, boolean summary, int blankLines)
 	{
 		drawInventory(context, x - slotsWidth(getInventory().getWidth(), scale) / 2, y - slotsHeight(getInventory().getHeight(), scale, summary, blankLines) / 2, scale, summary, blankLines, -1);
 	}
@@ -48,16 +47,17 @@ public class InventoryDrawer
 		return closedButton;
 	}
 
-	public void drawPlayerInventorySummary(RenderingContext context, int x, int y)
+	public void drawPlayerInventorySummary(RenderingInterface renderingContext, int x, int y)
 	{
 		//Don't draw inventory only
 		if (entity == null)
 			return;
-		drawInventory(context, x - slotsWidth(getInventory().getWidth(), 2) / 2, y - slotsHeight(getInventory().getHeight(), 2, true, 0) / 2, 2, true, 0, entity.getSelectedItemComponent().getSelectedSlot());
+		drawInventory(renderingContext, x - slotsWidth(getInventory().getWidth(), 2) / 2, y - slotsHeight(getInventory().getHeight(), 2, true, 0) / 2, 2, true, 0, entity.getSelectedItemComponent().getSelectedSlot());
 	}
 
-	public void drawInventory(RenderingContext context, int x, int y, int scale, boolean summary, int blankLines, int highlightSlot)
+	public void drawInventory(RenderingInterface context, int x, int y, int scale, boolean summary, int blankLines, int highlightSlot)
 	{
+		Mouse mouse = context.getClient().getInputsManager().getMouse();
 		if (getInventory() == null)
 			return;
 
@@ -89,7 +89,7 @@ public class InventoryDrawer
 		{
 			for (int j = 0; j < height; j++)
 			{
-				boolean mouseOver = Mouse.getX() > x + cornerSize + i * slotSize && Mouse.getX() <= x + cornerSize + i * slotSize + slotSize && Mouse.getY() > y + cornerSize + j * slotSize && Mouse.getY() <= y + cornerSize + j * slotSize + slotSize;
+				boolean mouseOver = mouse.getCursorX() > x + cornerSize + i * slotSize && mouse.getCursorX() <= x + cornerSize + i * slotSize + slotSize && mouse.getCursorY() > y + cornerSize + j * slotSize && mouse.getCursorY() <= y + cornerSize + j * slotSize + slotSize;
 				//Just a dirt hack to always keep selecte slot values where we want them
 				if (mouseOver)
 				{
@@ -163,12 +163,11 @@ public class InventoryDrawer
 			}
 			context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().getWidth() - 2) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 200f / 256f, 32f / 256f, 224 / 256f, 8f / 256f,
 					inventoryTexture, true, true, color);
-			closedButton = Mouse.getX() > x + cornerSize + (getInventory().getWidth() - 1) * slotSize && Mouse.getX() <= x + cornerSize + (getInventory().getWidth() - 1) * slotSize + slotSize
-					&& Mouse.getY() > y + cornerSize + internalHeight - slotSize && Mouse.getY() <= y + cornerSize + internalHeight;
+			closedButton = mouse.getCursorX() > x + cornerSize + (getInventory().getWidth() - 1) * slotSize && mouse.getCursorX() <= x + cornerSize + (getInventory().getWidth() - 1) * slotSize + slotSize
+					&& mouse.getCursorY() > y + cornerSize + internalHeight - slotSize && mouse.getCursorY() <= y + cornerSize + internalHeight;
 
 			context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().getWidth() - 1) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 224f / 256f, 32f / 256f, 248f / 256f, 8f / 256f,
 					inventoryTexture, true, true, color);
-			context.getFontRenderer().drawStringWithShadow(context.getFontRenderer().getFont("haettenschweiler", 16f), x + cornerSize + 6, y + cornerSize + internalHeight - slotSize + 2 * scale, getInventory().getInventoryName(), scale, scale, new Vector4fm(1, 1, 1, 1));
 		}
 
 		//Get rid of any remaining GUI elements or else they will draw on top of the items

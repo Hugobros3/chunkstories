@@ -4,10 +4,10 @@ package io.xol.engine.gui.elements;
 // http://chunkstories.xyz
 // http://xol.io
 
-public abstract class GuiElement
+public abstract class GuiElement_
 {
-	protected int posx;
-	protected int posy;
+	protected int xPosition;
+	protected int yPosition;
 	
 	protected int scale = 1;
 	private boolean focus = false;
@@ -19,17 +19,17 @@ public abstract class GuiElement
 
 	public void setFocus(boolean b)
 	{
-		focus = b;
+		this.focus = b;
 	}
 	
 	public void setScale(int s)
 	{
-		scale = s;
+		this.scale = s;
 	}
 
 	public void setPosition(float x, float y)
 	{
-		posx = (int) x;
-		posy = (int) y;
+		xPosition = (int) x;
+		yPosition = (int) y;
 	}
 }

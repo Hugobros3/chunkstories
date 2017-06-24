@@ -1,21 +1,49 @@
+#Default input files for GLFW !
+#Uses GLFW keys, with or without GLFW_KEY_ prefix (game finds out automagically)
+
 #Default inputs of the game
 keyBind forward Z
 keyBind back S
 keyBind left Q
 keyBind right D
 keyBind jump SPACE
-keyBind run LSHIFT
+keyBind run LEFT_SHIFT
 keyBind crouch C
 keyBind use F
 keyBind inventory E
-keyBind exit ESCAPE
-keyBind enter RETURN
 keyBind chat T
 
-#Some keys are hidden and not supposed to be modifiable !
-keyBind flyFast LSHIFT hidden
-keyBind flyReallyFast LMENU hidden
+#UI navigation
+keyBind exit ESCAPE hidden
+keyBind enter ENTER hidden
+keyBind tab TAB hidden
+keyBind uiUp UP hidden
+keyBind uiDown DOWN hidden
+keyBind backspace BACKSPACE hidden
 
+#Debug and utility
+keyBind flyFast LEFT_SHIFT hidden
+keyBind flyReallyFast LEFT_SUPER hidden
+keyBind hideGui F1 hidden
+keyBind screenshot F2 hidden
+keyBind toggleDebugInfo F3 hidden
+#keyBind hideFarTerrain F4 hidden
+keyBind refreshServers F5 hidden
+keyBind repingServers F6 hidden
+#keyBind hideFarTerrain F7 hidden
+keyBind takeCubemap F8 hidden
+keyBind hideFarTerrain F9 hidden
+keyBind wireframeFarTerrain F10 hidden
+keyBind fullscreen F11 hidden
+keyBind reloadContent F12 hidden
+#keyBindCompound reloadContent LCONTROL+F12 hidden
+#keyBindCompound redrawChunks LCONTROL+R hidden
+
+#keyBindShortcut copy LCONTRL+C hidden
+#keyBindShortcut paste LCONTROL+V hidden
+#keyBindShortcut deleteLine LCONTROL+DELETE hidden
+
+#Inventory slots accesses
 keyBind inventorySlot1 1 hidden
 keyBind inventorySlot2 2 hidden
 keyBind inventorySlot3 3 hidden

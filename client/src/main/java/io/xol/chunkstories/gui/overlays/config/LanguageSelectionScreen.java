@@ -12,42 +12,70 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
+import org.lwjgl.glfw.GLFW;
 
+import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.input.Mouse;
+import io.xol.chunkstories.api.input.Mouse.MouseScroll;
+import io.xol.chunkstories.api.rendering.GameWindow;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
-import io.xol.engine.gui.Overlay;
 import io.xol.engine.gui.elements.Button;
 
-public class LanguageSelectionScreen extends Overlay
+public class LanguageSelectionScreen extends Layer
 {
-	Button backOption = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
+	Button backOption = new Button(this, 0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
 	List<LanguageButton> languages = new ArrayList<LanguageButton>();
 
 	boolean allowBackButton;
 
-	public LanguageSelectionScreen(OverlayableScene scene, Overlay parent, boolean allowBackButton)
+	public LanguageSelectionScreen(GameWindow scene, Layer parent, boolean allowBackButton)
 	{
 		super(scene, parent);
 		// Gui buttons
 
 		this.allowBackButton = allowBackButton;
 
+		backOption.setAction(new Runnable() {
+			@Override
+			public void run() {
+				gameWindow.setLayer(parentLayer);
+			}
+		});
+		
 		if (allowBackButton)
-			guiHandler.add(backOption);
+			elements.add(backOption);
 
 		for (String loc : Client.getInstance().getContent().localization().listTranslations())
 		{
-			LanguageButton langButton = new LanguageButton(0, 0, loc);
+			LanguageButton langButton = new LanguageButton(this, 0, 0, loc);
+			langButton.setAction(new Runnable() {
+
+				@Override
+				public void run() {
+					//Convinience hack to set keys to wasd when first lauching and selecting English as a language
+					if(!allowBackButton && langButton.translationCode.endsWith("en"))
+					{
+						//Englishfag detected, thanks /u/MrSmith33 for feedback
+						Client.clientConfig.setInteger("bind.forward", GLFW.GLFW_KEY_W);
+						Client.clientConfig.setInteger("bind.left", GLFW.GLFW_KEY_A);
+					}
+					
+					Client.clientConfig.setString("language", langButton.translationCode);
+					Client.getInstance().getContent().localization().loadTranslation(langButton.translationCode);
+					gameWindow.setLayer(parentLayer);
+				}
+				
+			});
+			
 			// System.out.println(worldButton.toString());
 			langButton.height = 64 + 8;
-			guiHandler.add(langButton);
+			elements.add(langButton);
 			languages.add(langButton);
 		}
 	}
@@ -55,7 +83,7 @@ public class LanguageSelectionScreen extends Overlay
 	int scroll = 0;
 
 	@Override
-	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
+	public void render(RenderingInterface renderingContext)
 	{
 		if (scroll < 0)
 			scroll = 0;
@@ -75,36 +103,18 @@ public class LanguageSelectionScreen extends Overlay
 			if (remainingSpace-- <= 0)
 				break;
 
-			if (langButton.clicked())
-			{
-				//Convinience hack to set keys to wasd when first lauching and selecting English as a language
-				if(!allowBackButton && langButton.translationCode.endsWith("en"))
-				{
-					//Englishfag detected, thanks /u/MrSmith33 for feedback
-					Client.clientConfig.setInteger("bind.forward", Keyboard.KEY_W);
-					Client.clientConfig.setInteger("bind.left", Keyboard.KEY_A);
-				}
-				
-				Client.clientConfig.setString("language", langButton.translationCode);
-				Client.getInstance().getContent().localization().loadTranslation(langButton.translationCode);
-				this.mainScene.changeOverlay(this.parent);
-			}
+			
 			int maxWidth = renderingContext.getWindow().getWidth() - 64 * 2;
 			langButton.width = maxWidth;
 			langButton.setPosition(64 + langButton.width / 2, posY);
-			langButton.draw();
+			langButton.render(renderingContext);
 			posY -= 128;
 		}
 
 		if (allowBackButton)
 		{
-			backOption.setPosition(x + 192, 48);
-			backOption.draw();
-		}
-
-		if (backOption.clicked())
-		{
-			this.mainScene.changeOverlay(this.parent);
+			backOption.setPosition(xPosition + 192, 48);
+			backOption.render(renderingContext);
 		}
 	}
 
@@ -118,9 +128,9 @@ public class LanguageSelectionScreen extends Overlay
 
 		public int width, height;
 
-		public LanguageButton(int x, int y, String info)
+		public LanguageButton(Layer layer, int x, int y, String info)
 		{
-			super(x, y, 0, 0, "", null, 333);
+			super(layer, x, y, 0, 0, "", null, 333);
 			posx = x;
 			posy = y;
 			this.translationCode = info;
@@ -140,17 +150,17 @@ public class LanguageSelectionScreen extends Overlay
 		}
 
 		@Override
-		public boolean isMouseOver()
+		public boolean isMouseOver(Mouse mouse)
 		{
-			return (Mouse.getX() >= posx - width / 2 - 4 && Mouse.getX() < posx + width / 2 + 4 && Mouse.getY() >= posy - height / 2 - 4 && Mouse.getY() <= posy + height / 2 + 4);
+			return (mouse.getCursorX() >= posx - width / 2 - 4 && mouse.getCursorX() < posx + width / 2 + 4 && mouse.getCursorY() >= posy - height / 2 - 4 && mouse.getCursorY() <= posy + height / 2 + 4);
 		}
 
 		@Override
-		public int draw()
+		public void render(RenderingInterface renderer)
 		{
 			width = 512;
 
-			if (hasFocus() || isMouseOver())
+			if (isFocused() || isMouseOver())
 			{
 				CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, 128, 8, "./textures/gui/scalableButtonOver.png", 32, 2);
 			}
@@ -168,7 +178,8 @@ public class LanguageSelectionScreen extends Overlay
 			FontRenderer2.drawTextUsingSpecificFont(posx - width / 2 + 150, posy, 0, 2 * 32, translationName, BitmapFont.SMALLFONTS);
 			//FontRenderer2.drawTextUsingSpecificFontRVBA(posx - width / 2 + 72, posy - 32, 0, 1 * 32, info.getDescription(), BitmapFont.SMALLFONTS, 1.0f, 0.8f, 0.8f, 0.8f);
 			FontRenderer2.setLengthCutoff(false, -1);
-			return width * 2 - 12;
+			
+			//return width * 2 - 12;
 		}
 
 		@Override
@@ -177,26 +188,23 @@ public class LanguageSelectionScreen extends Overlay
 			posx = (int) f;
 			posy = (int) g;
 		}
+	}
 
-		@Override
-		public boolean clicked()
-		{
-			if (clicked)
-			{
-				clicked = false;
-				return true;
-			}
-			return false;
+	@Override
+	public boolean handleInput(Input input) {
+		if(input instanceof MouseScroll) {
+			MouseScroll ms = (MouseScroll)input;
+			if (ms.amount() < 0)
+				scroll++;
+			else
+				scroll--;
+			return true;
 		}
+		
+		return super.handleInput(input);
 	}
 
-	@Override
-	public boolean handleKeypress(int k)
-	{
-		return false;
-	}
-
-	@Override
+	/*@Override
 	public boolean onScroll(int dx)
 	{
 		if (dx < 0)
@@ -204,14 +212,15 @@ public class LanguageSelectionScreen extends Overlay
 		else
 			scroll--;
 		return true;
-	}
+	}*/
 
-	@Override
+	
+	
+	/*@Override
 	public boolean onClick(int posx, int posy, int button)
 	{
 		if (button == 0)
 			guiHandler.handleClick(posx, posy);
 		return true;
-	}
-
+	}*/
 }

@@ -21,4 +21,11 @@ public interface Input
 	
 	/** Returns an unique identifier so server and client can communicate their inputs */
 	public long getHash();
+	
+	/** Returns false if null
+	 *  Returns true if o is an input and o.getName().equals(getName())
+	 *  Returns true if o is a String and o.equals(getName())
+	 *  Returns false otherwise.
+	 */
+	public boolean equals(Object o);
 }

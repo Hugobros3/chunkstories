@@ -1,7 +1,5 @@
-package io.xol.engine.gui;
+/*package io.xol.engine.gui;
 
-import io.xol.chunkstories.gui.ng.NgButton;
-import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.GuiElement;
 import io.xol.engine.gui.elements.InputText;
@@ -46,7 +44,7 @@ public class GuiElementsHandler
 		else if (obj instanceof Button)
 		{
 			//TODO hard-coded enter key
-			if(k == /*FastConfig.ENTER_KEY*/ 28)
+			if(k ==  28)
 			{
 				Button but = (Button) obj;
 				but.clicked = true;
@@ -133,3 +131,4 @@ public class GuiElementsHandler
 		}
 	}
 }
+*/

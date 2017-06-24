@@ -1,6 +1,6 @@
-package io.xol.engine.gui;
+/*package io.xol.engine.gui;
 
-import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.engine.graphics.RenderingContext;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -10,9 +10,9 @@ import io.xol.engine.graphics.RenderingContext;
 public abstract class Scene
 {
 	public final GuiElementsHandler guiHandler = new GuiElementsHandler();
-	public final GameWindowOpenGL gameWindow;
+	public final GameWindowOpenGL_LWJGL3 gameWindow;
 
-	public Scene(GameWindowOpenGL gameWindow)
+	public Scene(GameWindowOpenGL_LWJGL3 gameWindow)
 	{
 		this.gameWindow = gameWindow;
 	}
@@ -60,3 +60,4 @@ public abstract class Scene
 	}
 
 }
+*/

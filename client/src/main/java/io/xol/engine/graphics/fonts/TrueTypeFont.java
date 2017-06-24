@@ -254,7 +254,7 @@ public class TrueTypeFont implements FontRenderer.Font
 		return getLinesHeight(whatchars, -1);
 	}
 
-	public int getLinesHeight(String whatchars, int clipX)
+	public int getLinesHeight(String whatchars, float clipX)
 	{
 		if(whatchars == null)
 			return 0;

@@ -2,9 +2,13 @@ package io.xol.engine.sound;
 
 import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.openal.AL11.*;
-import static org.lwjgl.openal.EFX10.*;
+import static org.lwjgl.openal.ALC10.*;
+import static org.lwjgl.openal.ALC11.*;
+import static org.lwjgl.openal.EXTEfx.*;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -12,10 +16,11 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.AL;
-import org.lwjgl.openal.EFXUtil;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALCCapabilities;
+import org.lwjgl.openal.ALUtil;
+import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
@@ -43,20 +48,54 @@ public class ALSoundManager implements ClientSoundManager
 
 	int[] auxEffectsSlotsId;
 	SoundEffect[] auxEffectsSlots;
+	
+	private long device;
+	private long context;
 
 	public ALSoundManager()
 	{
 		rng = new Random();
 		try
 		{
-			AL.create();
+			device = alcOpenDevice((ByteBuffer)null);
+	        if (device == MemoryUtil.NULL) {
+	            throw new IllegalStateException("Failed to open the default device.");
+	        }
+
+	        ALCCapabilities deviceCaps = ALC.createCapabilities(device);
+
+	        System.out.println("OpenALC10: " + deviceCaps.OpenALC10);
+	        System.out.println("OpenALC11: " + deviceCaps.OpenALC11);
+	        System.out.println("caps.ALC_EXT_EFX = " + deviceCaps.ALC_EXT_EFX);
+
+	        if (deviceCaps.OpenALC11) {
+	            List<String> devices = ALUtil.getStringList(MemoryUtil.NULL, ALC_ALL_DEVICES_SPECIFIER);
+	            if (devices == null) {
+	                //checkALCError(MemoryUtil.NULL);
+	            } else {
+	                for (int i = 0; i < devices.size(); i++) {
+	                    System.out.println(i + ": " + devices.get(i));
+	                }
+	            }
+	        }
+
+	        String defaultDeviceSpecifier = alcGetString(MemoryUtil.NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+	        System.out.println("Default device: " + defaultDeviceSpecifier);
+
+	        context = alcCreateContext(device, (IntBuffer)null);
+	        alcMakeContextCurrent(context);
+	        //alcSetThreadContext(context);
+	       
+	        AL.createCapabilities(deviceCaps);
+
+			
 			alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
 			String alVersion = alGetString(AL_VERSION);
 			String alExtensions = alGetString(AL_EXTENSIONS);
 			contextThread = Thread.currentThread();
 			ChunkStoriesLoggerImplementation.getInstance().info("OpenAL context successfully created, version = " + alVersion);
 			ChunkStoriesLoggerImplementation.getInstance().info("OpenAL Extensions avaible : " + alExtensions);
-			efxOn = EFXUtil.isEfxSupported();
+			efxOn = false;//EFXUtil.isEfxSupported();
 			ChunkStoriesLoggerImplementation.getInstance().info("EFX extension support : " + (efxOn ? "yes" : "no"));
 			if (efxOn)
 			{
@@ -87,12 +126,13 @@ public class ALSoundManager implements ClientSoundManager
 				@Override
 				public void run()
 				{
-					AL.destroy();
+		            alcDestroyContext(context);
+		            alcCloseDevice(device);
 					System.out.println("OpenAL context successfully destroyed.");
 				}
 			});
 		}
-		catch (LWJGLException e)
+		catch (Exception e)
 		{
 			System.out.println("Failed to start sound system !");
 			e.printStackTrace();
@@ -103,7 +143,9 @@ public class ALSoundManager implements ClientSoundManager
 	{
 		for (SoundSource ss : playingSoundSources)
 			ss.stop();
-		AL.destroy();
+
+        alcDestroyContext(context);
+        alcCloseDevice(device);
 	}
 
 	public void update()
@@ -128,15 +170,15 @@ public class ALSoundManager implements ClientSoundManager
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		FloatBuffer posScratch = BufferUtils.createFloatBuffer(3).put(new float[] { x, y, z });
+		FloatBuffer posScratch = MemoryUtil.memAllocFloat(3).put(new float[] { x, y, z });
 		posScratch.flip();
-		alListener(AL_POSITION, posScratch);
+		alListenerfv(AL_POSITION, posScratch);
 		//AL10.alListener(AL10.AL_VELOCITY, xxx);
 		
 
-		FloatBuffer rotScratch = BufferUtils.createFloatBuffer(6).put(new float[] { lookAt.getX(), lookAt.getY(), lookAt.getZ(), up.getX(), up.getY(), up.getZ() });
+		FloatBuffer rotScratch = MemoryUtil.memAllocFloat(6).put(new float[] { lookAt.getX(), lookAt.getY(), lookAt.getZ(), up.getX(), up.getY(), up.getZ() });
 		rotScratch.flip();
-		alListener(AL_ORIENTATION, rotScratch);
+		alListenerfv(AL_ORIENTATION, rotScratch);
 		//FloatBuffer listenerOri = BufferUtils.createFloatBuffer(6).put(new float[] { 0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f });
 	}
 

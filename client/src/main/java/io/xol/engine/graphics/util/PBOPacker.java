@@ -9,16 +9,16 @@ import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL21.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.ARBSync.*;
-import org.lwjgl.opengl.GLSync;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.system.MemoryStack;
 
 import io.xol.chunkstories.api.rendering.target.RenderTargetAttachementsConfiguration;
 import io.xol.chunkstories.api.rendering.target.RenderTargetManager;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.concurrency.Fence;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
@@ -81,7 +81,7 @@ public class PBOPacker
 		System.out.println(format.getBytesPerTexel());
 		glGetTexImage(GL_TEXTURE_2D, level, format.getFormat(), format.getType(), 0);*/
 
-		GLSync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0x00);
+		final long fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0x00);
 		
 		//Puts everything back into place
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -95,11 +95,11 @@ public class PBOPacker
 	}
 	
 	public class PBOPackerResult implements Fence {
-		GLSync fence;
+		final long fence;
 		boolean isTraversable = false;
 		boolean readAlready = false;
 		
-		PBOPackerResult(GLSync fence)
+		PBOPackerResult(long fence)
 		{
 			this.fence = fence;
 		}
@@ -126,8 +126,12 @@ public class PBOPacker
 			if(isTraversable)
 				return true;
 			
-			int syncStatus = glGetSynci(fence, GL_SYNC_STATUS);
-			isTraversable = syncStatus == GL_SIGNALED;
+			//int syncStatus = glGetSynci(fence, GL_SYNC_STATUS);
+			try(MemoryStack stack = MemoryStack.stackPush()) {
+				IntBuffer ib = stack.mallocInt(1);
+				glGetSynci(fence, GL_SYNC_STATUS, ib);
+				isTraversable = ib.get(0) == GL_SIGNALED;
+			}
 			
 			return isTraversable;
 		}

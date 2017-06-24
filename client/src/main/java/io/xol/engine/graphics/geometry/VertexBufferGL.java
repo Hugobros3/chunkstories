@@ -8,7 +8,6 @@ import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool.PooledByteBuffer;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
-import io.xol.engine.base.GameWindowOpenGL;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;

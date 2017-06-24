@@ -26,13 +26,13 @@ public class ItemRenderer
 	 * Renders the item for the 2D inventory overlay
 	 * @param context
 	 * @param pile
-	 * @param screenPositionX
-	 * @param screenPositionY
+	 * @param f
+	 * @param g
 	 * @param scaling
 	 */
-	public void renderItemInInventory(RenderingInterface renderingInterface, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
+	public void renderItemInInventory(RenderingInterface renderingInterface, ItemPile pile, float f, float g, int scaling)
 	{
-		fallbackRenderer.renderItemInInventory(renderingInterface, pile, screenPositionX, screenPositionY, scaling);
+		fallbackRenderer.renderItemInInventory(renderingInterface, pile, f, g, scaling);
 	}
 
 	/**

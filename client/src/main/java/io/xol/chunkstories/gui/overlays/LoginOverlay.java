@@ -1,15 +1,15 @@
 package io.xol.chunkstories.gui.overlays;
 
+import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.rendering.GameWindow;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.bugsreporter.JavaCrashesUploader;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.overlays.config.LanguageSelectionScreen;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.ObjectRenderer;
-import io.xol.engine.gui.Overlay;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;
@@ -19,25 +19,38 @@ import io.xol.engine.net.HttpRequester;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class LoginOverlay extends Overlay implements HttpRequester
+public class LoginOverlay extends Layer implements HttpRequester
 {
-	public LoginOverlay(OverlayableScene scene, Overlay parent)
+	InputText usernameForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
+	InputText passwordForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
+	
+	Button loginButton = new Button(this, 0, 0, 128, 32, ("#{login.login}"), BitmapFont.SMALLFONTS, 1);
+	
+	public LoginOverlay(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
 		
-		guiHandler.add(new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS));
-		guiHandler.getInputText(0).setFocus(true);
-		// pass
-		guiHandler.add(new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS));
-		// ok
-		guiHandler.add(new Button(0, 0, 128, 32, ("#{login.login}"), BitmapFont.SMALLFONTS, 1));
-		// check for auto-login dataaa
+		elements.add(usernameForm);
+		elements.add(passwordForm);
+		elements.add(loginButton);
+		
+		//Autologin fills in the forms automagically
+		//TODO Secure storage of password
 		if (Client.getConfig().getProp("autologin", "ko").equals("ok"))
 		{
-			guiHandler.getInputText(0).setText(Client.getConfig().getProp("user", ""));
-			guiHandler.getInputText(1).setText(Client.getConfig().getProp("pass", ""));
+			usernameForm.setText(Client.getConfig().getProp("user", ""));
+			passwordForm.setText(Client.getConfig().getProp("pass", ""));
 			autologin = true;
 		}
+		
+		loginButton.setAction(new Runnable() {
+			@Override
+			public void run() {
+				connect();
+			}
+		});
+		
+		this.setFocusedElement(usernameForm);
 		startCounter = System.currentTimeMillis();
 	}
 
@@ -54,23 +67,28 @@ public class LoginOverlay extends Overlay implements HttpRequester
 	private boolean failed_login;
 	
 	@Override
-	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
+	public void render(RenderingInterface renderingContext)
 	{
+		parentLayer.render(renderingContext);
+		
 		if(Client.clientConfig.getProp("language", "undefined").equals("undefined"))
 		{
-			this.mainScene.changeOverlay(new LanguageSelectionScreen(mainScene, this, false));
+			gameWindow.setLayer(new LanguageSelectionScreen(gameWindow, this, false));
+			//this.mainScene.changeOverlay(new LanguageSelectionScreen(mainScene, this, false));
 		}
 		
 		if (can_next)
-			mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));
+			gameWindow.setLayer(new MainMenuOverlay(gameWindow, parentLayer));
+		
+			//mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));
 		ObjectRenderer.renderTexturedRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2 + 180, 512, 512, "./textures/logo.png");
 
-		guiHandler.getButton(2).setPosition(renderingContext.getWindow().getWidth() / 2 - 245 + 58, renderingContext.getWindow().getHeight() / 2 - 80);
+		loginButton.setPosition(renderingContext.getWindow().getWidth() / 2 - 245 + 58, renderingContext.getWindow().getHeight() / 2 - 80);
 
-		guiHandler.getInputText(0).setPosition(renderingContext.getWindow().getWidth() / 2 - 250, renderingContext.getWindow().getHeight() / 2 + 40);
-		guiHandler.getInputText(0).drawWithBackGround();
-		guiHandler.getInputText(1).setPosition(renderingContext.getWindow().getWidth() / 2 - 250, renderingContext.getWindow().getHeight() / 2 - 40);
-		guiHandler.getInputText(1).drawWithBackGroundPassworded();
+		usernameForm.setPosition(renderingContext.getWindow().getWidth() / 2 - 250, renderingContext.getWindow().getHeight() / 2 + 40);
+		usernameForm.drawWithBackGround();
+		passwordForm.setPosition(renderingContext.getWindow().getWidth() / 2 - 250, renderingContext.getWindow().getHeight() / 2 - 40);
+		passwordForm.drawWithBackGroundPassworded();
 
 		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - 250, renderingContext.getWindow().getHeight() / 2 + 80, 0, 32, Client.getInstance().getContent().localization().localize("#{login.username}"), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - 250, renderingContext.getWindow().getHeight() / 2 + 0, 0, 32, Client.getInstance().getContent().localization().localize("#{login.password}"), BitmapFont.SMALLFONTS);
@@ -81,7 +99,8 @@ public class LoginOverlay extends Overlay implements HttpRequester
 		}
 		else
 		{
-			int decal_lb = guiHandler.getButton(2).draw();
+			float decal_lb = loginButton.getWidth();
+			loginButton.render(renderingContext);
 
 			FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - 245 - 58 + decal_lb, renderingContext.getWindow().getHeight() / 2 - 95, 0, 32, Client.getInstance().getContent().localization().localize("#{login.register}"), BitmapFont.SMALLFONTS);
 			// FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 -
@@ -103,13 +122,11 @@ public class LoginOverlay extends Overlay implements HttpRequester
 				autologin = false;
 			}
 		}
-		if(guiHandler.getButton(2).clicked())
-			connect();
+		
 		FontRenderer2.drawTextUsingSpecificFont(12, 12, 0, 32, "Copyright 2016 XolioWare Interactive", BitmapFont.SMALLFONTS);
 	}
 	
-	@Override
-	public boolean handleKeypress(int k)
+	/*public boolean handleKeypress(int k)
 	{
 		if (k == 15)
 			guiHandler.next();
@@ -120,28 +137,21 @@ public class LoginOverlay extends Overlay implements HttpRequester
 		else
 			guiHandler.handleInput(k);
 		return true;
-	}
-	
-	@Override
-	public boolean onClick(int posx, int posy, int button)
-	{
-		if (button == 0)
-			guiHandler.handleClick(posx, posy);
-		return true;
-	}
+	}*/
 	
 	void connect()
 	{
-		if (guiHandler.getInputText(0).text.equals("OFFLINE"))
+		if (usernameForm.text.equals("OFFLINE"))
 		{
 			Client.offline = true;
 			Client.username = "OfflineUser" + (int) (Math.random() * 1000);
-			this.mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));//eng.changeScene(new MainMenu(eng));
+			gameWindow.setLayer(new MainMenuOverlay(gameWindow, this));
+			//this.mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));//eng.changeScene(new MainMenu(eng));
 		}
 		else
 		{
 			logging_in = true;
-			new HttpRequestThread(this, "login", "http://chunkstories.xyz/api/login.php", "user=" + guiHandler.getInputText(0).text + "&pass=" + guiHandler.getInputText(1).text);
+			new HttpRequestThread(this, "login", "http://chunkstories.xyz/api/login.php", "user=" + usernameForm.text + "&pass=" + passwordForm.text);
 		}
 	}
 	
@@ -160,11 +170,11 @@ public class LoginOverlay extends Overlay implements HttpRequester
 			if (result.startsWith("ok"))
 			{
 				String session = result.split(":")[1];
-				Client.username = guiHandler.getInputText(0).text;
+				Client.username = usernameForm.text;
 				Client.session_key = session;
 				Client.getConfig().setString("autologin", "ok");
-				Client.getConfig().setString("user", guiHandler.getInputText(0).text);
-				Client.getConfig().setString("pass", guiHandler.getInputText(1).text);
+				Client.getConfig().setString("user", usernameForm.text);
+				Client.getConfig().setString("pass", passwordForm.text);
 				
 				if(Client.username.equals("Gobrosse") || Client.username.equals("kektest"))
 				{

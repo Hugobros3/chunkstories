@@ -49,7 +49,7 @@ public class ObjViewModelRenderer extends ItemRenderer
 	}
 
 	@Override
-	public void renderItemInInventory(RenderingInterface context, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
+	public void renderItemInInventory(RenderingInterface context, ItemPile pile, float screenPositionX, float screenPositionY, int scaling)
 	{
 		super.renderItemInInventory(context, pile, screenPositionX, screenPositionY, scaling);
 	}

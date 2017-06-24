@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.rendering.GameWindow;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.target.RenderTargetAttachementsConfiguration;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
@@ -18,19 +21,16 @@ import io.xol.chunkstories.gui.overlays.LoginOverlay;
 import io.xol.chunkstories.gui.overlays.MainMenuOverlay;
 import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
 import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.gui.Overlay;
-import io.xol.engine.base.GameWindowOpenGL;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class MainMenu extends OverlayableScene
+public class MainMenu extends Layer
 {
 	// Stuff for rendering the background
 
@@ -47,22 +47,25 @@ public class MainMenu extends OverlayableScene
 
 	// private String splashText = getRandomSplashScreen();
 
-	public MainMenu(GameWindowOpenGL XolioWindow, boolean askForLogin)
+	public MainMenu(GameWindow gameWindow)
 	{
-		super(XolioWindow);
+		super(gameWindow, null);
 		selectRandomSkybox();
 		
-		if(askForLogin)
-			currentOverlay = new LoginOverlay(this, null);
+		/*if(askForLogin)
+			gameWindow.setLayer(new LoginOverlay(gameWindow, this));
+			//currentOverlay = new LoginOverlay(this, null);
 		else
-			currentOverlay = new MainMenuOverlay(this, null);
+			gameWindow.setLayer(new MainMenuOverlay(gameWindow, this));
+			//currentOverlay = new MainMenuOverlay(this, null);*/
 	}
 
-	public MainMenu(GameWindowOpenGL eng, String string)
+	/*public MainMenu(GameWindow eng, String string)
 	{
 		this(eng, false);
-		this.changeOverlay(new MessageBoxOverlay(this, currentOverlay, string));
-	}
+		gameWindow.setLayer(new MessageBoxOverlay(gameWindow, this, string));
+		//this.changeOverlay(new MessageBoxOverlay(this, currentOverlay, string));
+	}*/
 
 	void selectRandomSkybox()
 	{
@@ -106,11 +109,11 @@ public class MainMenu extends OverlayableScene
 			Random rnd = new Random();
 			return splashes.get(rnd.nextInt(splashes.size()));
 		}
-		return "en vrai j'ai pas jouÃ© Ã  pokÃ©mon";
+		return "en vrai j'ai jamais trop joué à pokémon";
 	}
 
 	@Override
-	public void onResize()
+	public void onResize(int newWidth, int newHeight)
 	{
 		unblurredFBO.resizeFBO(gameWindow.getWidth(), gameWindow.getHeight());
 		blurredHFBO.resizeFBO(gameWindow.getWidth(), gameWindow.getHeight());
@@ -126,8 +129,10 @@ public class MainMenu extends OverlayableScene
 	}
 
 	@Override
-	public void update(RenderingContext renderingContext)
+	public void render(RenderingInterface renderingContext)
 	{
+		//System.out.println(gameWindow.getLayer());
+		
 		try // Ugly fps caps yay
 		{
 			Thread.sleep(33L);
@@ -219,38 +224,7 @@ public class MainMenu extends OverlayableScene
 		renderingContext.getGuiRenderer().drawBoxWindowsSpace(gameWindow.getWidth() / 2 - iconSize / 2, gameWindow.getHeight() / 2 - iconSize / 2, gameWindow.getWidth() / 2 + iconSize / 2, gameWindow.getHeight() / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true, new Vector4fm(1.0, 1.0, 1.0, alphaIcon));
 		//renderingContext.getGuiRenderer().drawBuffer();
 		
-		currentOverlay.drawToScreen(renderingContext, 0, 0, gameWindow.getWidth(), gameWindow.getHeight());
-	}
-
-	@Override
-	public boolean onMouseButtonDown(int posx, int posy, int button)
-	{
-		if (currentOverlay != null)
-			return currentOverlay.onClick(posx, posy, button);
-		return true;
-	}
-
-	@Override
-	public boolean onKeyDown(int k)
-	{
-		if (currentOverlay != null && currentOverlay.handleKeypress(k))
-		{
-			return true;
-		}
-		return false;
-	}
-	
-	@Override
-	public boolean onScroll(int dx)
-	{
-		if (currentOverlay != null && currentOverlay.onScroll(dx))
-			return true;
-		return false;
-	}
-
-	@Override
-	public void changeOverlay(Overlay overlay)
-	{
-		this.currentOverlay = overlay;
+		//TODO swap out
+		//currentOverlay.drawToScreen(renderingContext, 0, 0, gameWindow.getWidth(), gameWindow.getHeight());
 	}
 }

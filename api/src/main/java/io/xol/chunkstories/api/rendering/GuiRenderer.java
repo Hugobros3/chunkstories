@@ -14,4 +14,8 @@ public interface GuiRenderer
 	public void drawBoxWindowsSpaceWithSize(float startX, float startY, float width, float height, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4fm color);
 
 	public void drawBox(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha, boolean textured, Vector4fm color);
+
+	//TODO rename
+	/** Flushes what's remaining to draw */
+	public void drawBuffer();
 }

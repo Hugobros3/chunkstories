@@ -122,8 +122,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	{
 		if (isDead())
 			return;
-		float cPX = controller.getInputsManager().getMouseCursorX();
-		float cPY = controller.getInputsManager().getMouseCursorY();
+		float cPX = controller.getInputsManager().getMouse().getCursorX();
+		float cPY = controller.getInputsManager().getMouse().getCursorY();
 		
 		float dx = 0, dy = 0;
 		if (lastPX != -1f)
@@ -148,7 +148,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		rotV -= dy * modifier / 3f * controller.getClient().renderingConfig().getMouseSensitivity();
 		this.getEntityRotationComponent().setRotation(rotH, rotV);
 		
-		controller.getInputsManager().setMouseCursorLocation(controller.getWindow().getWidth() / 2, controller.getWindow().getHeight() / 2);
+		controller.getInputsManager().getMouse().setMouseCursorLocation(controller.getWindow().getWidth() / 2, controller.getWindow().getHeight() / 2);
 	}
 
 	// Server-side updating

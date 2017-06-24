@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.player.PlayerClient;
+import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
@@ -60,7 +61,7 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	}
 
 	@Override
-	public PluginManager getPluginManager()
+	public ClientPluginManager getPluginManager()
 	{
 		return client.getPluginManager();
 	}

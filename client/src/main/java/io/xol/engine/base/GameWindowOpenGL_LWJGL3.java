@@ -1,0 +1,717 @@
+package io.xol.engine.base;
+
+//(c) 2015-2016 XolioWare Interactive
+// http://chunkstories.xyz
+// http://xol.io
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
+
+import static org.lwjgl.glfw.GLFW.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import javax.swing.JOptionPane;
+
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.GLFWVidMode.Buffer;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.system.MemoryUtil;
+
+import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.rendering.GameWindow;
+import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.input.lwjgl2.Lwjgl3ClientInputsManager;
+import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
+import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
+import io.xol.engine.graphics.GLCalls;
+import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.geometry.VertexBufferGL;
+import io.xol.engine.graphics.textures.Texture2DGL;
+import io.xol.engine.misc.CPUModelDetection;
+import io.xol.engine.misc.IconLoader;
+import io.xol.engine.sound.ALSoundManager;
+
+public class GameWindowOpenGL_LWJGL3 implements GameWindow
+{
+	public static GameWindowOpenGL_LWJGL3 instance;
+	private Lwjgl3ClientInputsManager inputsManager;
+	
+	private final long mainGLThreadId;
+
+	private Client client;
+	public RenderingContext renderingContext;
+	private ALSoundManager soundManager;
+
+	//private Scene currentScene = null;
+	private Layer layer;
+
+	public String windowName;
+	
+	public final static int defaultWidth = 1024;
+	public final static int defaultHeight = 640;
+	
+	public static int windowWidth = defaultWidth;
+	public static int windowHeight = defaultHeight;
+	//public static boolean resized = false;
+	public static boolean forceResize = false;
+
+	public static int targetFPS = 60;
+
+	static boolean closeRequest = false;
+
+	private String[] modes;
+
+	private static long lastTimeMS = 0;
+	private static int framesSinceLS = 0;
+	private static int lastFPS = 0;
+	static long lastTime = 0;
+
+	public long vramUsageVerticesObjects = 0;
+
+	long timeTookLastTime = 0;
+
+	Queue<Runnable> mainThreadQueue = new ConcurrentLinkedQueue<Runnable>();
+	
+	//GLFW
+	public long glfwWindowHandle;
+	private GLFWFramebufferSizeCallback framebufferSizeCallback;
+
+	public GameWindowOpenGL_LWJGL3(Client client, String name, int width, int height)
+	{
+		// Creates Input manager
+		this.windowName = name;
+		this.client = client;
+		
+		instance = this;//TODO: no
+		
+		if (!glfwInit())
+			throw new IllegalStateException("Unable to initialize GLFW");
+		
+		createOpenGLContext();
+
+		this.soundManager = new ALSoundManager();
+		this.inputsManager = new Lwjgl3ClientInputsManager(this);
+
+		mainGLThreadId = Thread.currentThread().getId();
+	}
+
+	public void createOpenGLContext()
+	{
+		ChunkStoriesLoggerImplementation.getInstance().log("Creating an OpenGL Windows [title:" + windowName + ", width:" + windowWidth + ", height:" + windowHeight + "]");
+		try
+		{
+			computeDisplayModes();
+		
+			glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
+			
+			glfwWindowHandle = glfwCreateWindow(windowWidth, windowHeight, windowName, 0, 0);
+			
+			if(glfwWindowHandle == 0) 
+			    throw new RuntimeException("Failed to create window");
+			
+			glfwMakeContextCurrent(glfwWindowHandle);
+			GL.createCapabilities();
+
+			systemInfo();
+			glInfo();
+			
+			switchResolution();
+			glfwShowWindow(glfwWindowHandle);
+			
+			//Keyboard.enableRepeatEvents(true);
+
+			renderingContext = new RenderingContext(this);
+		}
+		catch (Exception e)
+		{
+			ChunkStoriesLoggerImplementation.getInstance().log("A fatal error occured ! If you see the dev, show him this message !");
+			e.printStackTrace();
+			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+		}
+	}
+
+	private void systemInfo()
+	{
+		// Will print some debug information on the general context
+		ChunkStoriesLoggerImplementation.getInstance().log("Running on " + System.getProperty("os.name"));
+		ChunkStoriesLoggerImplementation.getInstance().log(Runtime.getRuntime().availableProcessors() + " avaible CPU cores");
+		ChunkStoriesLoggerImplementation.getInstance().log("Trying cpu detection : " + CPUModelDetection.detectModel());
+		long allocatedRam = Runtime.getRuntime().maxMemory();
+		ChunkStoriesLoggerImplementation.getInstance().log("Allocated ram : " + allocatedRam);
+		if (allocatedRam < 1024*1024*1024L)
+		{
+			//Warn user if he gave the game too few ram
+			ChunkStoriesLoggerImplementation.getInstance().log("Less than 1Gib of ram detected");
+			JOptionPane.showMessageDialog(null, "Not enought ram, we will offer NO support for crashes and issues when launching the game with less than 1Gb of ram allocated to it."
+					+ "\n Use the official launcher to launch the game properly, or add -Xmx1G to the java command.");
+		}
+	}
+
+	private void glInfo()
+	{
+		// Will print some debug information on the openGL context
+		String glVersion = glGetString(GL_VERSION);
+		ChunkStoriesLoggerImplementation.getInstance().log("Render device : " + glGetString(GL_RENDERER) + " made by " + glGetString(GL_VENDOR) + " driver version " + glVersion);
+		// Check OpenGL 3.x capacity
+		glVersion = glVersion.split(" ")[0];
+		float glVersionf = Float.parseFloat(glVersion.split("\\.")[0] + "." + glVersion.split("\\.")[1]);
+		ChunkStoriesLoggerImplementation.getInstance().log("OpenGL VERSION STRING = " + glGetString(GL_VERSION) + " parsed: " + glVersionf);
+		ChunkStoriesLoggerImplementation.getInstance().log("OpenGL Extensions avaible : " + glGetString(GL_EXTENSIONS));
+		if (glVersionf < 3.2f)
+		{
+			RenderingConfig.gl_openGL3Capable = false;
+			if (GL.getCapabilities().GL_EXT_framebuffer_object && GL.getCapabilities().GL_ARB_texture_rg)
+			{
+				RenderingConfig.gl_fbExtCapable = true;
+				ChunkStoriesLoggerImplementation.getInstance().log("Pre-OpenGL 3.0 Hardware with needed extensions support detected.");
+			}
+			else
+			{
+				// bien le moyen-�ge ?
+				ChunkStoriesLoggerImplementation.getInstance().log("Pre-OpenGL 3.0 Hardware without needed extensions support detected.");
+				ChunkStoriesLoggerImplementation.getInstance().log("This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
+				JOptionPane.showMessageDialog(null, "Pre-OpenGL 3.0 Hardware without needed extensions support detected.\n" + "This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
+				// If you feel brave after all
+				if (!RenderingConfig.ignoreObsoleteHardware)
+					Runtime.getRuntime().exit(0);
+			}
+		}
+		else
+			System.out.println("OpenGL 3.2+ Hardware detected.");
+
+		//Check for various limitations
+		RenderingConfig.gl_MaxTextureUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS);
+		
+		RenderingConfig.gl_IsInstancingSupported = GL.getCapabilities().GL_ARB_draw_instanced;
+		RenderingConfig.gl_InstancedArrays = GL.getCapabilities().GL_ARB_instanced_arrays;
+
+	}
+
+	public void run()
+	{
+		try
+		{
+			//Client.onStart();
+			IconLoader.load(this);
+
+			//Oops.. Didn't use any VAOs anywhere so we put this there to be GL 3.2 core compliant
+			int vao = glGenVertexArrays();
+			glBindVertexArray(vao);
+			
+			while (glfwWindowShouldClose(glfwWindowHandle) == false && !closeRequest)
+			{
+				//Update pending actions
+				vramUsageVerticesObjects = VertexBufferGL.updateVerticesObjects();
+				Texture2DGL.updateTextureObjects();
+
+				//Clear windows
+				renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
+
+				//Resize window logic
+				glfwSetFramebufferSizeCallback(glfwWindowHandle, (framebufferSizeCallback = new GLFWFramebufferSizeCallback() {
+				    @Override
+				    public void invoke(long window, int width, int height) {
+				    	
+				    	GameWindowOpenGL_LWJGL3.windowWidth = width;
+						GameWindowOpenGL_LWJGL3.windowHeight = height;
+
+						glViewport(0, 0, width, height);
+
+						if (layer != null)
+							layer.onResize(width, height);
+				    }
+				}));
+				
+				/*if (Display.wasResized() || forceResize)
+				{
+					if (forceResize)
+						forceResize = false;
+					GameWindowOpenGL.windowWidth = Display.getWidth();
+					GameWindowOpenGL.windowHeight = Display.getHeight();
+
+					glViewport(0, 0, Display.getWidth(), Display.getHeight());
+
+					if (currentScene != null)
+						currentScene.onResize();
+				}*/
+
+				//Do scene changes etc
+				for (Runnable r : mainThreadQueue)
+					r.run();
+				mainThreadQueue.clear();
+
+				// Update audio
+				soundManager.update();
+
+				// update inputs first
+				client.getInputsManager().pollLWJGLInputs();
+				
+				// Run scene content
+				if (layer != null)
+				{
+					//InputAbstractor.update(this, currentScene);
+
+					// then do the game logic
+					try
+					{
+						layer.render(renderingContext);
+						//currentScene.guiHandler.rescaleGui(getScalingFactor());
+						/*if(currentScene instanceof OverlayableScene)
+						{
+							OverlayableScene o = (OverlayableScene)currentScene;
+							if(o.currentOverlay != null)
+								o.currentOverlay.guiHandler.rescaleGui(getScalingFactor());
+						}
+						currentScene.update(renderingContext);*/
+					}
+					//Fucking tired of handling npes everywhere
+					catch (NullPointerException npe)
+					{
+						npe.printStackTrace();
+					}
+				}
+
+				renderingContext.getGuiRenderer().drawBuffer();
+				tick();
+
+				//Clamp fps
+				if (targetFPS != -1)
+				{
+					long time = System.currentTimeMillis();
+
+					sync(targetFPS);
+
+					//glFinish();
+					long timeTook = System.currentTimeMillis() - time;
+					timeTookLastTime = timeTook;
+				}
+
+				//Draw graph
+				if (Client.getConfig().getBoolean("frametimeGraph", false))
+					FrametimeRenderer.draw(renderingContext);
+
+				//Draw last shit
+				GameWindowOpenGL_LWJGL3.instance.renderingContext.flush();
+
+				//Update the screen
+				//Display.update();
+				glfwSwapBuffers(glfwWindowHandle);
+
+				//Reset counters
+				GLCalls.nextFrame();
+			}
+			System.out.println("Copyright 2015-2016 XolioWare Interactive");
+			
+			soundManager.destroy();
+			Client.onClose();
+			
+			glfwDestroyWindow(glfwWindowHandle);
+			//Display.destroy();
+			System.exit(0);
+		}
+		catch (Exception e)
+		{
+			System.out.println("A fatal error occured ! If you see the dev, show him this message !");
+			e.printStackTrace();
+		}
+	}
+	
+	public int getScalingFactor()
+	{
+		return windowWidth > 1024 ? 2 : 1;
+	}
+
+	private void sync(int fps)
+	{
+		if (fps <= 0)
+			return;
+
+		long errorMargin = 1000 * 1000; // 1 millisecond error margin for
+										// Thread.sleep()
+		long sleepTime = 1000000000 / fps; // nanoseconds to sleep this frame
+
+		// if smaller than sleepTime burn for errorMargin + remainder micro &
+		// nano seconds
+		long burnTime = Math.min(sleepTime, errorMargin + sleepTime % (1000 * 1000));
+
+		long overSleep = 0; // time the sleep or burn goes over by
+
+		try
+		{
+			while (true)
+			{
+				long t = (long) ((glfwGetTime() * 1000) - lastTime);
+
+				if (t < sleepTime - burnTime)
+				{
+					Thread.sleep(1);
+				}
+				else if (t < sleepTime)
+				{
+					// burn the last few CPU cycles to ensure accuracy
+					Thread.yield();
+				}
+				else
+				{
+					overSleep = Math.min(t - sleepTime, errorMargin);
+					break; // exit while loop
+				}
+			}
+		}
+		catch (InterruptedException e)
+		{
+		}
+
+		lastTime = (long) (glfwGetTime() * 1000) - overSleep;
+	}
+
+	final List<VideoMode> enumeratedVideoModes = new ArrayList<VideoMode>();
+	
+	private void computeDisplayModes()
+	{
+		enumeratedVideoModes.clear();
+		ChunkStoriesLoggerImplementation.getInstance().log("Retriving monitors and available display modes...");
+		
+		long mainMonitor = glfwGetPrimaryMonitor();
+		PointerBuffer pb = glfwGetMonitors();
+		int monitorCount = 0;
+		while(pb.remaining() > 0) {
+			monitorCount++;
+			
+			long monitorHandle = pb.get();
+			String monitorName = "" + monitorCount + ": " + (mainMonitor==monitorHandle ? " (Main)" : "" ) + " " + glfwGetMonitorName(monitorHandle);
+			
+			ChunkStoriesLoggerImplementation.getInstance().log("Found monitor handle: "+monitorHandle + " " + monitorName);
+			GLFWVidMode.Buffer videoModes = glfwGetVideoModes(monitorHandle);
+			while(videoModes.remaining() > 0) {
+				GLFWVidMode videoMode = videoModes.get();
+				
+				String videoModeString = videoMode.width() + "x" + videoMode.height() + " @" + videoMode.refreshRate()+"Hz ";
+				
+				System.out.println(videoModeString+(videoMode.blueBits()+videoMode.redBits()+videoMode.greenBits()) + "bpp");
+				VideoMode vm = new VideoMode(monitorCount, videoMode);
+				System.out.println("vm: "+vm);
+				enumeratedVideoModes.add(vm);
+			}
+		}
+		
+		modes = new String[enumeratedVideoModes.size()];
+		for(int i = 0; i < enumeratedVideoModes.size(); i++) {
+			modes[i] = enumeratedVideoModes.get(i).toString();
+		}
+		
+		/*try
+		{
+			DisplayMode[] dms = Display.getAvailableDisplayModes();
+			Set<DisplayMode> validModes = new HashSet<DisplayMode>();
+			//modes = new String[dms.length];
+			for (int i = 0; i < dms.length; i++)
+			{
+				if (dms[i].isFullscreenCapable() && dms[i].getBitsPerPixel() >= 32 && dms[i].getWidth() >= 640)
+				{
+					validModes.add(dms[i]);
+				}
+				else
+				{
+					//ChunkStoriesLoggerImplementation.getInstance().info("Rejected displayMode : "+dms[i] + "fs:"+dms[i].isFullscreenCapable());
+				}
+				//modes[i] = dms[i].getWidth() + "x" + dms[i].getHeight();
+			}
+			modes = new String[validModes.size()];
+			int i = 0;
+			for (DisplayMode dm : validModes)
+			{
+				modes[i] = dm.getWidth() + "x" + dm.getHeight();
+				i++;
+			}
+			ChunkStoriesLoggerImplementation.getInstance().info(modes.length + " display modes avaible.");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}*/
+	}
+
+	public String[] getDisplayModes()
+	{
+		return modes;
+	}
+
+	private void switchResolution()
+	{
+		long mainMonitor = glfwGetPrimaryMonitor();
+		GLFWVidMode currentVideoMode = glfwGetVideoMode(mainMonitor);
+		
+		boolean isFullscreenEnabled = client.configDeprecated().getBoolean("fullscreen", false);
+		if(isFullscreenEnabled) {
+			//Enable fullscreen using desktop resolution, by default on the primary monitor and at it's nominal video mode
+			
+			String modeString = client.configDeprecated().getProp("fullScreenResolution", null);
+			if(modeString == null || modeString.contains("x") || !modeString.contains(":")) {
+				modeString = "1:"+currentVideoMode.width()+":"+currentVideoMode.height()+":"+currentVideoMode.refreshRate();
+				client.configDeprecated().setString("fullScreenResolution", modeString);
+			}
+			
+			VideoMode videoMode = findMatchForVideoMode(modeString);
+			glfwSetWindowMonitor(this.glfwWindowHandle, mainMonitor, 0, 0, videoMode.videoMode.width(), videoMode.videoMode.height(), videoMode.videoMode.refreshRate());
+		}
+		else {
+			glfwSetWindowMonitor(this.glfwWindowHandle, MemoryUtil.NULL, (currentVideoMode.width() - defaultWidth) / 2, (currentVideoMode.height() - defaultHeight) / 2,
+					defaultWidth, defaultHeight, GLFW_DONT_CARE);
+		}
+		
+		/*try
+		{
+			if (Client.getConfig().getBoolean("fullScreen", false))
+			{
+				String str[] = Client.getConfig().getProp("fullScreenResolution", "800x600").split("x");
+				int w = Integer.parseInt(str[0]);
+				int h = Integer.parseInt(str[1]);
+
+				//String newDM = Client.getConfig().getProp("fullScreenResolution", "800x600");
+				if (Display.isFullscreen() && windowWidth == w && windowHeight == h)
+					return;
+				//if (newDM.equals(currentDM))
+				//	return;
+
+				// Look for relevant display mode
+				DisplayMode displayMode = null;
+				DisplayMode[] modes = Display.getAvailableDisplayModes();
+				for (int i = 0; i < modes.length; i++)
+				{
+					if (modes[i].getWidth() == w && modes[i].getHeight() == h && modes[i].isFullscreenCapable() && modes[i].getBitsPerPixel() >= 32)
+					{
+						displayMode = modes[i];
+					}
+				}
+				if (displayMode != null)
+				{
+					DisplayMode current = Display.getDisplayMode();
+					try
+					{
+						Display.setDisplayMode(displayMode);
+						Display.setFullscreen(true);
+					}
+					catch (LWJGLException e)
+					{
+						windowWidth = 800;
+						windowHeight = 600;
+						current = new DisplayMode(windowWidth, windowHeight);
+						ChunkStoriesLoggerImplementation.getInstance().warning("Couldnt set display to " + displayMode + "reverting to default resolution");
+						Client.getConfig().setString("fullScreenResolution", current.getWidth() + "x" + current.getHeight());
+						Client.getConfig().save();
+						Display.setFullscreen(false);
+						Display.setDisplayMode(current);
+						if (Client.windows.currentScene != null && Client.windows.currentScene instanceof OverlayableScene)
+						{
+							OverlayableScene scene = ((OverlayableScene) Client.windows.currentScene);
+							scene.changeOverlay(new MessageBoxOverlay(scene, scene.currentOverlay, "This resolution failed to be set, try another one !"));
+						}
+					}
+				}
+				GameWindowOpenGL.forceResize = true;
+			}
+			else
+			{
+				if (Display.isFullscreen())
+				{
+					Display.setFullscreen(false);
+					Display.setLocation(0, 0);
+					Display.setDisplayMode(Display.getDesktopDisplayMode());
+					GameWindowOpenGL.forceResize = true;
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}*/
+	}
+
+	private void tick()
+	{
+		framesSinceLS++;
+		if (lastTimeMS + 1000 < System.currentTimeMillis())
+		{
+			lastFPS = framesSinceLS;
+			lastTimeMS = System.currentTimeMillis();
+			framesSinceLS = 0;
+		}
+	}
+
+	public static void setTargetFPS(int target)
+	{
+		targetFPS = target;
+	}
+
+	public static int getFPS()
+	{
+		return lastFPS;
+	}
+
+	/*public void changeScene(Scene scene)
+	{
+		InputAbstractor.setMouseGrabbed(false);
+		//Mouse.setGrabbed(false);
+		if (currentScene != null)
+			currentScene.destroy();
+		currentScene = scene;
+	}
+*/
+	public void close()
+	{
+		closeRequest = true;
+	}
+
+	/*public Scene getCurrentScene()
+	{
+		return currentScene;
+	}*/
+
+	/*public void handleSpecialKey(int k)
+	{
+		if (k == 87) //F11
+		{
+			Client.getConfig().setString("fullScreen", !Client.getConfig().getBoolean("fullScreen", false) + "");
+			String fsReso = Display.getDesktopDisplayMode().getWidth() + "x" + Display.getDesktopDisplayMode().getHeight();
+			Client.getConfig().setString("fullScreenResolution", fsReso);
+			switchResolution();
+		}
+	}*/
+	
+	public void toggleFullscreen() {
+		boolean isFullscreenEnabled = client.configDeprecated().getBoolean("fullscreen", false);
+		
+		isFullscreenEnabled = !isFullscreenEnabled;
+		
+		/*if(isFullscreenEnabled) {
+			//Enable fullscreen using desktop resolution, by default on the primary monitor and at it's nominal video mode
+			long mainMonitor = glfwGetPrimaryMonitor();
+			GLFWVidMode currentVideoMode = glfwGetVideoMode(mainMonitor);
+			
+			String modeString = client.configDeprecated().getProp("fullScreenResolution", null);
+			if(modeString == null || modeString.contains("x") || !modeString.contains(":")) {
+				modeString = "1:"+currentVideoMode.width()+":"+currentVideoMode.height()+":"+currentVideoMode.refreshRate();
+				client.configDeprecated().setString("fullScreenResolution", modeString);
+			}
+			
+			VideoMode videoMode = findMatchForVideoMode(modeString);
+			glfwSetWindowMonitor(this.glfwWindowHandle, mainMonitor, 0, 0, videoMode.videoMode.width(), videoMode.videoMode.height(), videoMode.videoMode.refreshRate());
+		}
+		else {
+			glfwSetWindowMonitor(this.glfwWindowHandle, MemoryUtil.NULL, 0, 0, defaultWidth, defaultHeight, GLFW_DONT_CARE);
+		}*/
+		
+		client.configDeprecated().setString("fullscreen", isFullscreenEnabled ? "true" : "false");
+		switchResolution();
+	}
+
+	private VideoMode findMatchForVideoMode(String modeString) {
+		
+		String[] s = modeString.split(":");
+		int id = Integer.parseInt(s[0]);
+		int w = Integer.parseInt(s[1]);
+		int h = Integer.parseInt(s[2]);
+		int freq = Integer.parseInt(s[3]);
+		for(VideoMode v : enumeratedVideoModes) {
+			if(v.monitorId == id && v.videoMode.width() == w && v.videoMode.height() == h && v.videoMode.refreshRate() == freq)
+				return v;
+		}
+		
+		System.out.println("Couldn't find a resolution/monitor combo matching :"+modeString);
+		long mainMonitor = glfwGetPrimaryMonitor();
+		GLFWVidMode currentVideoMode = glfwGetVideoMode(mainMonitor);
+		return new VideoMode(1, currentVideoMode);
+	}
+
+	public static GameWindowOpenGL_LWJGL3 getInstance()
+	{
+		return instance;
+	}
+
+	public ALSoundManager getSoundEngine()
+	{
+		return soundManager;
+	}
+
+	public RenderingContext getRenderingContext()
+	{
+		return renderingContext;
+	}
+
+	public static boolean isMainGLWindow()
+	{
+		return getInstance().isInstanceMainGLWindow();
+	}
+
+	public boolean isInstanceMainGLWindow()
+	{
+		return Thread.currentThread().getId() == mainGLThreadId;
+	}
+
+	public void queueTask(Runnable runnable)
+	{
+		synchronized (mainThreadQueue)
+		{
+			mainThreadQueue.add(runnable);
+		}
+	}
+
+	public static boolean isInFocus()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int getWidth() {
+		return windowWidth;
+	}
+
+	@Override
+	public int getHeight() {
+		return windowHeight;
+	}
+
+	public boolean hasFocus() {
+		return glfwGetWindowAttrib(glfwWindowHandle, GLFW_FOCUSED) == GLFW_TRUE;
+	}
+
+	@Override
+	public ClientInterface getClient() {
+		return client;
+	}
+
+	@Override
+	public Layer getLayer() {
+		return layer;
+	}
+
+	@Override
+	public void setLayer(Layer layer) {
+		
+		System.out.println(layer);
+		
+		if(this.layer != null && this.layer != layer && this.layer != layer.getParentLayer()) {
+			this.layer.destroy();
+		}
+		
+		this.layer = layer;
+		this.client.getInputsManager().getMouse().setGrabbed(false);
+	}
+
+	public Lwjgl3ClientInputsManager getInputsManager() {
+		return this.inputsManager;
+	}
+}

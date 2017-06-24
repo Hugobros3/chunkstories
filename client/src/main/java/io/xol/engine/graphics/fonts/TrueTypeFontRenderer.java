@@ -45,7 +45,7 @@ public class TrueTypeFontRenderer implements FontRenderer
 
 	public final static int ALIGN_LEFT = 0, ALIGN_RIGHT = 1, ALIGN_CENTER = 2;
 
-	public void drawString(Font trueTypeFont, float x, float y, String whatchars, float scale, int clipX)
+	public void drawString(Font trueTypeFont, float x, float y, String whatchars, float scale, float clipX)
 	{
 		drawString(trueTypeFont, x, y, whatchars, scale, scale, ALIGN_LEFT, clipX, new Vector4fm(1, 1, 1, 1));
 	}
@@ -66,7 +66,7 @@ public class TrueTypeFontRenderer implements FontRenderer
 		drawString(trueTypeFont, x, y, whatchars, scale, scale, ALIGN_LEFT, -1, color);
 	}
 
-	public void drawString(Font trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4fm color)
+	public void drawString(Font trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, float clipX, Vector4fm color)
 	{
 		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, color);
 	}
@@ -76,7 +76,7 @@ public class TrueTypeFontRenderer implements FontRenderer
 		drawStringWithShadow(trueTypeFont, x, y, whatchars, scaleX, scaleY, -1, color);
 	}
 
-	public void drawStringWithShadow(Font trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4fm color)
+	public void drawStringWithShadow(Font trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, float clipX, Vector4fm color)
 	{
 		Vector4fm colorDarkened = new Vector4fm(color);
 		colorDarkened.setX(colorDarkened.getX() * 0.2f);
@@ -91,12 +91,12 @@ public class TrueTypeFontRenderer implements FontRenderer
 		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleY, format, -1, new Vector4fm(1, 1, 1, 1));
 	}
 
-	private void drawString(Font trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int alignement, int clipX, Vector4fm color)
+	public void drawString(Font trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, int alignement, float clipX, Vector4fm color)
 	{
 		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleY, alignement, clipX, color, null);
 	}
 	
-	private void drawString(Font font, float x, float y, String whatchars, float scaleX, float scaleY, int alignement, int clipX, Vector4fm color, TextMeshObject target)
+	private void drawString(Font font, float x, float y, String whatchars, float scaleX, float scaleY, int alignement, float clipX, Vector4fm color, TextMeshObject target)
 	{
 		TrueTypeFont trueTypeFont = (TrueTypeFont)font;
 		

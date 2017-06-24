@@ -3,7 +3,7 @@ _Game folders relevant to a specific installation_
 worlds/
 config/
 doc/
-plugins/
+/plugins/
 players/
 serverlogs/
 servermods/

@@ -1,36 +1,58 @@
 package io.xol.chunkstories.gui.overlays.config;
 
+import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.rendering.GameWindow;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.OverlayableScene;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
-import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.gui.Overlay;
 import io.xol.engine.gui.elements.Button;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class LogPolicyAsk extends Overlay
+public class LogPolicyAsk extends Layer
 {
-	public LogPolicyAsk(OverlayableScene scene, Overlay parent)
-	{
-		super(scene, parent);
-		guiHandler.add(acceptButton);
-		guiHandler.add(denyButton);
-	}
-
 	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	Button acceptButton = new Button(0, 0, 300, 32, ("#{logpolicy.accept}"), BitmapFont.SMALLFONTS, 1);
-	Button denyButton = new Button(0, 0, 300, 32, ("#{logpolicy.deny}"), BitmapFont.SMALLFONTS, 1);
+	Button acceptButton = new Button(this, 0, 0, 300, 32, ("#{logpolicy.accept}"), BitmapFont.SMALLFONTS, 1);
+	Button refuseButton = new Button(this, 0, 0, 300, 32, ("#{logpolicy.deny}"), BitmapFont.SMALLFONTS, 1);
 	
 	String message = Client.getInstance().getContent().localization().getLocalizedString("logpolicy.asktext");
 	
+	public LogPolicyAsk(GameWindow gameWindow, Layer parent)
+	{
+		super(gameWindow, parent);
+		
+		this.acceptButton.setAction(new Runnable() {
+
+			@Override
+			public void run() {
+				gameWindow.setLayer(parentLayer);
+				Client.clientConfig.setString("log-policy", "send");
+				Client.clientConfig.save();
+			}
+			
+		});
+		
+		this.refuseButton.setAction(new Runnable() {
+
+			@Override
+			public void run() {
+				gameWindow.setLayer(parentLayer);
+				Client.clientConfig.setString("log-policy", "dont");
+				Client.clientConfig.save();
+			}
+			
+		});
+		
+		elements.add(acceptButton);
+		elements.add(refuseButton);
+	}
+	
 	@Override
-	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
+	public void render(RenderingInterface renderingContext)
 	{
 		//ObjectRenderer.renderColoredRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, "000000", 0.5f);
 		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
@@ -48,32 +70,9 @@ public class LogPolicyAsk extends Overlay
 		//FontRenderer2.setLengthCutoff(false, width - 128);
 		
 		acceptButton.setPosition(renderingContext.getWindow().getWidth()/2 - 256, renderingContext.getWindow().getHeight() / 4 - 32);
-		acceptButton.draw();
-
-		if (acceptButton.clicked())
-		{
-			mainScene.changeOverlay(this.parent);
-			Client.clientConfig.setString("log-policy", "send");
-			Client.clientConfig.save();
-		}
+		acceptButton.render(renderingContext);
 		
-		denyButton.setPosition(renderingContext.getWindow().getWidth()/2 + 256, renderingContext.getWindow().getHeight() / 4 - 32);
-		denyButton.draw();
-
-		if (denyButton.clicked())
-		{
-			mainScene.changeOverlay(this.parent);
-			Client.clientConfig.setString("log-policy", "dont");
-			Client.clientConfig.save();
-		}
+		refuseButton.setPosition(renderingContext.getWindow().getWidth()/2 + 256, renderingContext.getWindow().getHeight() / 4 - 32);
+		refuseButton.render(renderingContext);
 	}
-	
-	@Override
-	public boolean onClick(int posx, int posy, int button)
-	{
-		if (button == 0)
-			guiHandler.handleClick(posx, posy);
-		return true;
-	}
-
 }

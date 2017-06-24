@@ -32,7 +32,7 @@ import io.xol.chunkstories.api.rendering.RenderingCommand;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer;
 import io.xol.chunkstories.api.rendering.mesh.ClientMeshLibrary;
-import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.engine.graphics.fbo.OpenGLRenderTargetManager;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
@@ -53,7 +53,7 @@ import org.lwjgl.BufferUtils;
 
 public class RenderingContext implements RenderingInterface
 {
-	private GameWindowOpenGL gameWindow;
+	private GameWindowOpenGL_LWJGL3 gameWindow;
 	private ShaderProgram currentlyBoundShader = null;
 
 	private final Camera mainCamera = new Camera();
@@ -78,7 +78,7 @@ public class RenderingContext implements RenderingInterface
 	private final RenderTargetManager renderTargetManager;
 	//private Deque<RenderingCommandImplementation> commands = new ArrayDeque<RenderingCommandImplementation>();
 
-	public RenderingContext(GameWindowOpenGL windows)
+	public RenderingContext(GameWindowOpenGL_LWJGL3 windows)
 	{
 		gameWindow = windows;
 		
@@ -106,7 +106,7 @@ public class RenderingContext implements RenderingInterface
 		return mainCamera;
 	}
 
-	public GameWindowOpenGL getWindow()
+	public GameWindowOpenGL_LWJGL3 getWindow()
 	{
 		return gameWindow;
 	}

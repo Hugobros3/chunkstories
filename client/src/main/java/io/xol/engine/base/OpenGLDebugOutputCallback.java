@@ -1,6 +1,6 @@
 package io.xol.engine.base;
 
-import org.lwjgl.opengl.ARBDebugOutputCallback.Handler;
+import org.lwjgl.opengl.GLDebugMessageARBCallbackI;
 
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
@@ -8,7 +8,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class OpenGLDebugOutputCallback implements Handler
+public class OpenGLDebugOutputCallback implements GLDebugMessageARBCallbackI
 {
 	/** Severity levels. */
 	private static final int
@@ -44,7 +44,9 @@ public class OpenGLDebugOutputCallback implements Handler
 	}
 
 	@Override
-	public void handleMessage(int source, int type, int id, int severity, String message)
+
+	public void invoke(int source, int type, int id, int severity, int length, long message, long userParam)
+	//public void handleMessage(int source, int type, int id, int severity, String message)
 	{
 		//Don't need nvidia spam
 		//if(source == GL_DEBUG_SOURCE_API_ARB && type == GL_DEBUG_TYPE_OTHER_ARB)

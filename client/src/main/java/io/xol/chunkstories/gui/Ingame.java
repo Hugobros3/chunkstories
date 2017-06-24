@@ -2,19 +2,17 @@ package io.xol.chunkstories.gui;
 
 import java.util.Iterator;
 
-import org.lwjgl.input.Keyboard;
+/*import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.Display;*/
 
 import io.xol.engine.graphics.GLCalls;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.gui.Overlay;
-import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
@@ -24,8 +22,8 @@ import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.events.player.PlayerLogoutEvent;
 import io.xol.chunkstories.api.events.rendering.CameraSetupEvent;
+import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Math2;
@@ -57,9 +55,7 @@ import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.PauseOverlay;
-import io.xol.chunkstories.input.lwjgl2.Lwjgl2ClientInputsManager;
 import io.xol.chunkstories.item.inventory.InventoryLocalCreativeMenu;
-import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.SelectionRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
 import io.xol.chunkstories.renderer.chunks.RenderableChunk;
@@ -72,7 +68,7 @@ import io.xol.chunkstories.world.WorldClientRemote;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class Ingame extends OverlayableScene
+public class Ingame extends Layer
 {
 	final private WorldClientCommon world;
 	
@@ -95,9 +91,9 @@ public class Ingame extends OverlayableScene
 	private boolean guiHidden = false;
 	boolean shouldTakeACubemap = false;
 
-	public Ingame(GameWindowOpenGL window, WorldClientCommon world)
+	public Ingame(GameWindowOpenGL_LWJGL3 window, WorldClientCommon world)
 	{
-		super(window);
+		super(window, null);
 		this.world = world;
 		
 		chat = new Chat(this);
@@ -133,10 +129,16 @@ public class Ingame extends OverlayableScene
 	{
 		return world;
 	}
-
+	
+	public boolean isCovered() {
+		return !gameWindow.getLayer().equals(this);
+	}
+	
 	public boolean hasFocus()
 	{
-		if (this.currentOverlay != null)
+		if(isCovered())
+		//if(gameWindow.getLayer() != this)
+		//if (this.currentOverlay != null)
 			return false;
 		return focus;
 	}
@@ -144,7 +146,7 @@ public class Ingame extends OverlayableScene
 	float pauseOverlayFade = 0.0f;
 
 	@Override
-	public void update(RenderingContext renderingContext)
+	public void render(RenderingInterface renderingContext)
 	{
 		// Update client entity
 		if ((playerEntity == null || playerEntity != Client.getInstance().getPlayer().getControlledEntity()) && Client.getInstance().getPlayer().getControlledEntity() != null)
@@ -156,13 +158,13 @@ public class Ingame extends OverlayableScene
 				inventoryDrawer = null;
 		}
 
-		Camera camera = renderingContext.getCamera();
+		CameraInterface camera = renderingContext.getCamera();
 		
-		if (playerEntity != null && ((EntityLiving) playerEntity).isDead() && !(this.currentOverlay instanceof DeathOverlay))
-			this.changeOverlay(new DeathOverlay(this, null));
+		if (playerEntity != null && ((EntityLiving) playerEntity).isDead() && !(gameWindow.getLayer() instanceof DeathOverlay))
+			gameWindow.setLayer(new DeathOverlay(gameWindow, this));
 
 		//Get the player location
-		Vector3dm cameraPosition = renderingContext.getCamera().getCameraPosition();
+		Vector3dm cameraPosition = (Vector3dm) renderingContext.getCamera().getCameraPosition();
 
 		// Update the player
 		if (playerEntity instanceof EntityControllable)
@@ -251,15 +253,15 @@ public class Ingame extends OverlayableScene
 		world.getWorldRenderer().blitFinalImage(renderingContext);
 
 		//Fades in & out the overlay
-		if (this.currentOverlay == null)
+		if (!isCovered())
 		{
 			if (pauseOverlayFade > 0.0)
 				pauseOverlayFade -= 0.1;
 		}
-		else if (this.currentOverlay != null)
+		else
 		{
 			float maxFade = 1.0f;
-			if (this.currentOverlay instanceof ChatPanelOverlay)
+			if (gameWindow.getLayer() instanceof ChatPanelOverlay)
 				maxFade = 0.25f;
 			if (pauseOverlayFade < maxFade)
 				pauseOverlayFade += 0.1;
@@ -270,11 +272,11 @@ public class Ingame extends OverlayableScene
 		{
 			//Draw chat
 			chat.update();
-			chat.draw(gameWindow.getRenderingContext());
+			chat.draw(renderingContext);
 
 			//Draw inventory
 			if (playerEntity != null && inventoryDrawer != null)
-				inventoryDrawer.drawPlayerInventorySummary(gameWindow.getRenderingContext(), renderingContext.getWindow().getWidth() / 2 - 7, 64 + 64);
+				inventoryDrawer.drawPlayerInventorySummary(renderingContext, renderingContext.getWindow().getWidth() / 2 - 7, 64 + 64);
 
 			//TODO : move this crap into the EntityOverlays shit
 			//Draw health
@@ -306,20 +308,23 @@ public class Ingame extends OverlayableScene
 			}
 
 			// Draw current overlay
-			if (currentOverlay != null)
-				currentOverlay.drawToScreen(renderingContext, 0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
+			//if (currentOverlay != null)
+			//	currentOverlay.drawToScreen(renderingContext, 0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
+			
 			//Or draw cursor
-			else
-				renderingContext.getGuiRenderer().renderTexturedRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, 16, 16, 0, 0, 16, 16, 16, "gui/cursor");
+			//if(!isCovered())
+				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, 16, 16, 0, 1, 1, 0, renderingContext.textures().getTexture("./textures/gui/cursor.png"), false, true, null);
 
 			//Draw debug info
 			if (RenderingConfig.showDebugInfo)
 				drawF3debugMenu(renderingContext);
 		}
 		//Lack of overlay should infer autofocus
-		if (currentOverlay == null && !chat.chatting)
+		if (!isCovered())// && !chat.chatting)
+		{
 			focus(true);
-
+		}
+			
 		Client.profiler.reset("gui");
 
 		// Check connection didn't died and change scene if it has
@@ -332,25 +337,27 @@ public class Ingame extends OverlayableScene
 		}
 
 		//Auto-switch to pause if it detects the game isn't in focus anymore
-		if (!Display.isActive() && this.currentOverlay == null)
+		if (!gameWindow.hasFocus() && !isCovered())
 		{
 			focus(false);
-			this.changeOverlay(new PauseOverlay(this, currentOverlay));
+			gameWindow.setLayer(new PauseOverlay(gameWindow, gameWindow.getLayer()));
 		}
 	}
 
 	public void focus(boolean f)
 	{
-		Mouse.setGrabbed(f);
+		gameWindow.getInputsManager().getMouse().setGrabbed(f);
 		if (f && !focus)
 		{
-			Mouse.setCursorPosition(gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
-			this.changeOverlay(null);
+			gameWindow.getInputsManager().getMouse().setMouseCursorLocation(gameWindow.getWidth() / 2.0f, gameWindow.getHeight() / 2.0f);
+			//Mouse.setCursorPosition(gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
+			//this.changeOverlay(null);
+			//gameWindow.setLayer(this);
 		}
 		focus = f;
 	}
 
-	public boolean onKeyRepeatEvent(int keyCode)
+	/*public boolean onKeyRepeatEvent(int keyCode)
 	{
 		if (currentOverlay != null && currentOverlay instanceof ChatPanelOverlay)
 		{
@@ -359,55 +366,49 @@ public class Ingame extends OverlayableScene
 		}
 
 		return false;
-	}
+	}*/
 
 	@Override
-	public boolean onKeyDown(int keyCode)
+	public boolean handleInput(Input input)
 	{
-		if (currentOverlay != null && currentOverlay.handleKeypress(keyCode))
-			return true;
+		//if (currentOverlay != null && currentOverlay.handleKeypress(keyCode))
+		//	return true;
 
-		KeyboardKeyInput keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
+		//KeyboardKeyInput keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL3xKey(keyCode);
 
-		if (!guiHidden && keyBind != null)
+		if (!guiHidden)// && keyBind != null)
 		{
 			//Block inputs if chatting
-			if (Client.getInstance().getInputsManager().getInputByName("chat").equals(keyBind))
+			if (input.equals("chat"))
 			{
-				this.changeOverlay(chat.new ChatPanelOverlay(this, null));
+				gameWindow.setLayer(chat.new ChatPanelOverlay(gameWindow, this));
 				focus(false);
 				return true;
 			}
 
-			if(Client.getInstance().getInputsManager().onInputPressed(keyBind) == true)
-				return true;
+			//if(Client.getInstance().getInputsManager().onInputPressed(keyBind) == true)
+			//	return true;
 		}
 
 		//Function keys
-		if (keyCode == Keyboard.KEY_F1)
+		if (input.equals("hideGui"))
 		{
 			guiHidden = !guiHidden;
 		}
-		else if (keyCode == Keyboard.KEY_F2)
+		else if (input.equals("screenshot"))
 		{
 			chat.insert("Saved screenshot as "+world.getWorldRenderer().screenShot());
 		}
-		else if (keyCode == Keyboard.KEY_F3)
+		else if (input.equals("toggleDebugInfo"))
 		{
-			RenderingConfig.showDebugInfo = !RenderingConfig.showDebugInfo;
+			Client.getConfig().setString("showDebugInfo", Client.getConfig().getBoolean("showDebugInfo", false) ? "false" : "true");
+			RenderingConfig.define();
+			//RenderingConfig.showDebugInfo = !RenderingConfig.showDebugInfo;
 		}
-		else if (keyCode == Keyboard.KEY_F4)
-		{
-
-		}
-		else if (keyCode == Keyboard.KEY_F6)
-		{
-
-		}
-		else if (keyCode == Keyboard.KEY_F8)
+		else if (input.equals("takeCubemap"))
 			shouldTakeACubemap = true;
 		//CTRL-F12 reloads
-		else if ((Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == Keyboard.KEY_F12)
+		else if (input.equals("reloadContent"))//(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == Keyboard.KEY_F12)
 		{
 			//Rebuild the mod FS
 			Client.getInstance().reloadAssets();
@@ -419,16 +420,16 @@ public class Ingame extends OverlayableScene
 			world.getWorldRenderer().reloadContentSpecificStuff();
 		}
 		//CTRL-R redraws chunks
-		else if ((Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == 19)
+		else if (input.equals("redrawChunks"))//(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == 19)
 		{
 			((ClientParticlesRenderer) world.getParticlesManager()).cleanAllParticles();
 			world.redrawEverything();
 			world.getWorldRenderer().flagChunksModified();
 		}
 		//Item slots selection
-		else if (keyBind != null && keyBind.getName().startsWith("inventorySlot"))
+		else if (input.getName().startsWith("inventorySlot"))
 		{
-			int requestedInventorySlot = Integer.parseInt(keyBind.getName().replace("inventorySlot", ""));
+			int requestedInventorySlot = Integer.parseInt(input.getName().replace("inventorySlot", ""));
 			//Match zero onto last slot
 			if (requestedInventorySlot == 0)
 				requestedInventorySlot = 10;
@@ -450,43 +451,45 @@ public class Ingame extends OverlayableScene
 				return true;
 			}
 		}
-		else if (!guiHidden && Client.getInstance().getInputsManager().getInputByName("inventory").equals(keyBind))
+		else if (!guiHidden && input.equals("inventory"))
 		{
 			if (playerEntity != null)
 			{
 				focus(false);
 				if (playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
-					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory(), new InventoryLocalCreativeMenu() }));
+					gameWindow.setLayer(new InventoryOverlay(gameWindow, this, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory(), new InventoryLocalCreativeMenu() }));
 				else
-					this.changeOverlay(new InventoryOverlay(this, null, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory() }));
+					gameWindow.setLayer(new InventoryOverlay(gameWindow, this, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory() }));
 			}
 		}
 		//Exit brings up the pause menu
-		else if (Client.getInstance().getInputsManager().getInputByName("exit").equals(keyBind))
+		else if (input.equals("exit"))
 		{
 			focus(false);
 			guiHidden = false;
-			this.changeOverlay(new PauseOverlay(this, null));
+			gameWindow.setLayer(new PauseOverlay(gameWindow, this));
 		}
 		return false;
 	}
 	
-	@Override
+	/*@Override
 	public void changeOverlay(Overlay o) {
 		super.changeOverlay(o);
 		
 		if(o != null)
 		{
-			Mouse.setGrabbed(false);
+			InputAbstractor.setMouseGrabbed(false);
+			//Mouse.setGrabbed(false);
 			guiHidden = false;
 		}
 		else
-			Mouse.setGrabbed(true);
-	}
+			InputAbstractor.setMouseGrabbed(true);
+			//Mouse.setGrabbed(true);
+	}*/
 
-	public boolean onKeyUp(int keyCode)
+	/*public boolean onKeyUp(int keyCode)
 	{
-		KeyboardKeyInput keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL2xKey(keyCode);
+		KeyboardKeyInput keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL3xKey(keyCode);
 
 		if (keyBind != null)
 		{
@@ -495,9 +498,9 @@ public class Ingame extends OverlayableScene
 		}
 
 		return false;
-	}
+	}*/
 
-	@Override
+	/*@Override
 	public boolean onMouseButtonDown(int x, int y, int button)
 	{
 		if (currentOverlay != null)
@@ -510,13 +513,13 @@ public class Ingame extends OverlayableScene
 		switch (button)
 		{
 		case 0:
-			mButton = Lwjgl2ClientInputsManager.LEFT;
+			mButton = Lwjgl3ClientInputsManager.LEFT;
 			break;
 		case 1:
-			mButton = Lwjgl2ClientInputsManager.RIGHT;
+			mButton = Lwjgl3ClientInputsManager.RIGHT;
 			break;
 		case 2:
-			mButton = Lwjgl2ClientInputsManager.MIDDLE;
+			mButton = Lwjgl3ClientInputsManager.MIDDLE;
 			break;
 		}
 		
@@ -525,21 +528,21 @@ public class Ingame extends OverlayableScene
 		
 		//TODO it does not handle the special clicks yet, maybye do it somewhere else, like in binds ?
 		return false;
-	}
+	}*/
 
-	public boolean onMouseButtonUp(int x, int y, int button)
+	/*public boolean onMouseButtonUp(int x, int y, int button)
 	{
 		Input mButton = null;
 		switch (button)
 		{
 		case 0:
-			mButton = Lwjgl2ClientInputsManager.LEFT;
+			mButton = Lwjgl3ClientInputsManager.LEFT;
 			break;
 		case 1:
-			mButton = Lwjgl2ClientInputsManager.RIGHT;
+			mButton = Lwjgl3ClientInputsManager.RIGHT;
 			break;
 		case 2:
-			mButton = Lwjgl2ClientInputsManager.MIDDLE;
+			mButton = Lwjgl3ClientInputsManager.MIDDLE;
 			break;
 		}
 		
@@ -547,13 +550,10 @@ public class Ingame extends OverlayableScene
 			Client.getInstance().getInputsManager().onInputReleased(mButton);
 
 		return false;
-	}
+	}*/
 
-	@Override
-	public boolean onScroll(int a)
+	private boolean onScroll(int a)
 	{
-		if (currentOverlay != null && currentOverlay.onScroll(a))
-			return true;
 		//Scroll trought the items
 		if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem)
 		{
@@ -586,8 +586,8 @@ public class Ingame extends OverlayableScene
 	}
 
 	@Override
-	public void onResize()
-	{
+
+	public void onResize(int newWidth, int newHeight) {
 		world.getWorldRenderer().setupRenderSize();
 	}
 

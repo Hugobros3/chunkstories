@@ -1,8 +1,11 @@
 package io.xol.engine.gui.elements;
 
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
-
+import io.xol.chunkstories.api.gui.FocusableGuiElement;
+import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.gui.TextInputGuiElement;
+import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.input.Mouse;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
@@ -11,20 +14,44 @@ import io.xol.engine.graphics.util.CorneredBoxDrawer;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class InputText extends GuiElement
+public class InputText extends FocusableGuiElement implements TextInputGuiElement
 {
 	public String text = "";
+	public int fontSize = 32;
 
-	public InputText(int x, int y, int maxlen, int fontSize, BitmapFont f)
+	public BitmapFont font;
+	public float maxlen = 128;
+
+	public InputText(Layer layer, int x, int y, int maxlen, int fontSize, BitmapFont f)
 	{
-		posx = x;
-		posy = y;
+		super(layer);
+		xPosition = x;
+		yPosition = y;
 		font = f;
 		this.fontSize = fontSize;
 		this.maxlen = maxlen;
 	}
+	
+	public boolean handleInput(Input input) {
+		if(input.equals("backspace"))
+		{
+			if (text.length() > 0)
+				text = text.substring(0, text.length() - 1);
+			return true;
+		}
+		return false;
+	}
 
-	public void update()
+	@Override
+	public boolean handleTextInput(char c) {
+		
+		if (c != 0)
+			text += c;
+		
+		return true;
+	}
+
+	/*public void update()
 	{
 		if (hasFocus())
 		{
@@ -74,33 +101,33 @@ public class InputText extends GuiElement
 			if (c != 0)
 				text += c;
 		}
-	}
+	}*/
 
 	public void drawWithBackGround()
 	{
-		int len = maxlen;
+		float len = maxlen;
 		int txtlen = FontRenderer2.getTextLengthUsingFont(fontSize, text+" ", font);
 		if(txtlen > len)
 			len = txtlen;
-		if (hasFocus())
-			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "./textures/gui/textbox.png");
+		if (isFocused())
+			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textbox.png");
 		else
-			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "./textures/gui/textboxnofocus.png");
-		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text + ((hasFocus() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
+			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textboxnofocus.png");
+		FontRenderer2.drawTextUsingSpecificFont(xPosition, yPosition, 0, fontSize, text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 		// System.out.println(text);
 	}
 
 	public void drawWithBackGroundTransparent()
 	{
-		int len = maxlen;
+		float len = maxlen;
 		int txtlen = FontRenderer2.getTextLengthUsingFont(fontSize, text+" ", font);
 		if(txtlen > len)
 			len = txtlen;
-		if (hasFocus())
-			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "./textures/gui/textboxtransp.png");
+		if (isFocused())
+			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textboxtransp.png");
 		else
-			CorneredBoxDrawer.drawCorneredBox(posx + len / 2, posy + fontSize / 2, len, 32, 8, "./textures/gui/textboxnofocustransp.png");
-		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, text + ((hasFocus() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
+			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textboxnofocustransp.png");
+		FontRenderer2.drawTextUsingSpecificFont(xPosition, yPosition, 0, fontSize, text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 		// System.out.println(text);
 	}
 
@@ -110,11 +137,11 @@ public class InputText extends GuiElement
 		for (@SuppressWarnings("unused")
 		char c : text.toCharArray())
 			passworded += "*";
-		if (hasFocus())
-			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "./textures/gui/textbox.png");
+		if (isFocused())
+			CorneredBoxDrawer.drawCorneredBox(xPosition + maxlen / 2, yPosition + fontSize / 2, maxlen, 32, 8, "./textures/gui/textbox.png");
 		else
-			CorneredBoxDrawer.drawCorneredBox(posx + maxlen / 2, posy + fontSize / 2, maxlen, 32, 8, "./textures/gui/textboxnofocus.png");
-		FontRenderer2.drawTextUsingSpecificFont(posx, posy, 0, fontSize, passworded + ((hasFocus() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
+			CorneredBoxDrawer.drawCorneredBox(xPosition + maxlen / 2, yPosition + fontSize / 2, maxlen, 32, 8, "./textures/gui/textboxnofocus.png");
+		FontRenderer2.drawTextUsingSpecificFont(xPosition, yPosition, 0, fontSize, passworded + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 
 	}
 
@@ -123,18 +150,19 @@ public class InputText extends GuiElement
 		text = t;
 	}
 
-	public int fontSize = 32;
-
-	public BitmapFont font;
-	public int maxlen = 128;
-
-	public void setMaxLength(int maxLength)
+	public void setMaxLength(float f)
 	{
-		maxlen = maxLength;
+		maxlen = f;
 	}
 	
-	public boolean isMouseOver()
+	public boolean isMouseOver(Mouse mouse)
 	{
-		return (Mouse.getX() >= posx - 4 && Mouse.getX() < posx + maxlen + 4 && Mouse.getY() >= posy - 4 && Mouse.getY() <= posy + fontSize + 4);
+		return (mouse.getCursorX() >= xPosition - 4 && mouse.getCursorX() < xPosition + maxlen + 4 && mouse.getCursorY() >= yPosition - 4 && mouse.getCursorY() <= yPosition + fontSize + 4);
+	}
+
+	@Override
+	public void render(RenderingInterface renderer) {
+		// TODO Auto-generated method stub
+		
 	}
 }

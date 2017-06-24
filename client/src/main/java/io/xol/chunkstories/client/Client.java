@@ -8,7 +8,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import io.xol.engine.base.GameWindowOpenGL;
+import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.engine.misc.NativesLoader;
@@ -30,10 +30,12 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.ClientGameContent;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.MainMenu;
-import io.xol.chunkstories.gui.OverlayableScene;
+import io.xol.chunkstories.gui.overlays.LoginOverlay;
+import io.xol.chunkstories.gui.overlays.MainMenuOverlay;
+import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
-import io.xol.chunkstories.input.lwjgl2.Lwjgl2ClientInputsManager;
+import io.xol.chunkstories.input.lwjgl2.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -43,11 +45,11 @@ public class Client implements ClientInterface
 	public static ConfigDeprecated clientConfig = new ConfigFile("./config/client.cfg");
 
 	//public static Lwjgl2ClientInputsManager inputsManager;
-	private final Lwjgl2ClientInputsManager inputsManager;
+	//private final Lwjgl3ClientInputsManager inputsManager;
 
 	public static boolean offline = false;
 
-	private GameWindowOpenGL gameWindows;
+	private GameWindowOpenGL_LWJGL3 gameWindows;
 	private final static RenderingConfig renderingConfig = new RenderingConfig();
 	public static WorldClientCommon world;
 	//public static GameLogicThread worldThread;
@@ -131,16 +133,12 @@ public class Client implements ClientInterface
 		if(!lang.equals("undefined"))
 			gameContent.localization().loadTranslation(lang);
 		
-		// Creates Input manager
-		inputsManager = new Lwjgl2ClientInputsManager();
-		
 		// Creates game window
-		gameWindows = new GameWindowOpenGL(this, "Chunk Stories " + VersionInfo.version, -1, -1);
-		gameWindows.createOpenGLContext();
+		gameWindows = new GameWindowOpenGL_LWJGL3(this, "Chunk Stories " + VersionInfo.version, -1, -1);
 		RenderingConfig.define();
 
 		//Initlializes windows screen to main menu ( and ask for login )
-		gameWindows.changeScene(new MainMenu(gameWindows, true));
+		gameWindows.setLayer(new LoginOverlay(gameWindows, new MainMenu(gameWindows)));
 		
 		//Pass control to the windows for main game loop
 		gameWindows.run();
@@ -182,8 +180,8 @@ public class Client implements ClientInterface
 	@Override
 	public boolean hasFocus()
 	{
-		if (gameWindows.getCurrentScene() instanceof Ingame)
-			return ((Ingame) gameWindows.getCurrentScene()).hasFocus();
+		if (gameWindows.getLayer() instanceof Ingame)
+			return ((Ingame) gameWindows.getLayer()).hasFocus();
 		return false;
 	}
 
@@ -195,7 +193,7 @@ public class Client implements ClientInterface
 		if (gameWindows.isMainGLWindow())
 		{
 			gameContent.reload();
-			inputsManager.reload();
+			gameWindows.getInputsManager().reload();
 			gameWindows.getRenderingContext().getFontRenderer().reloadFonts();
 
 			return;
@@ -208,7 +206,7 @@ public class Client implements ClientInterface
 			{
 				//ModsManager.reload();
 				gameContent.reload();
-				inputsManager.reload();
+				gameWindows.getInputsManager().reload();
 				gameWindows.getRenderingContext().getFontRenderer().reloadFonts();
 				
 				waitForReload.signal();
@@ -221,19 +219,19 @@ public class Client implements ClientInterface
 	@Override
 	public void printChat(String textToPrint)
 	{
-		if (gameWindows.getCurrentScene() instanceof Ingame)
-			((Ingame) gameWindows.getCurrentScene()).chat.insert(textToPrint);
+		if (gameWindows.getLayer() instanceof Ingame)
+			((Ingame) gameWindows.getLayer()).chat.insert(textToPrint);
 	}
 
 	public void openInventories(Inventory... inventories)
 	{
-		if (gameWindows.getCurrentScene() instanceof Ingame)
+		if (gameWindows.getLayer().getRootLayer() instanceof Ingame)
 		{
-			Ingame gmp = (Ingame) gameWindows.getCurrentScene();
+			Ingame gmp = (Ingame) gameWindows.getLayer().getRootLayer();
 
 			gmp.focus(false);
 			
-			gmp.changeOverlay(new InventoryOverlay(gmp, null, inventories));
+			gameWindows.setLayer(new InventoryOverlay(gameWindows, gmp, inventories));
 			
 			/*if (otherInventory != null)
 				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getPlayer().getControlledEntity()).getInventory(), otherInventory }));
@@ -273,18 +271,17 @@ public class Client implements ClientInterface
 				Ingame ingameScene = new Ingame(gameWindows, world);
 
 				//We want to keep the connection overlay when getting into a server
-				ConnectionOverlay overlay = null;
-				if (gameWindows.getCurrentScene() instanceof OverlayableScene && ((OverlayableScene) gameWindows.getCurrentScene()).currentOverlay instanceof ConnectionOverlay)
+				if (gameWindows.getLayer() instanceof ConnectionOverlay)
 				{
-					overlay = (ConnectionOverlay) ((OverlayableScene) gameWindows.getCurrentScene()).currentOverlay;
+					ConnectionOverlay overlay = (ConnectionOverlay) gameWindows.getLayer();
 					//If that happen, we want this connection overlay to forget he was originated from a server browser or whatever
-					overlay.mainScene = ingameScene;
-					overlay.parent = null;
+					overlay.setParentScene(ingameScene);
 				}
+				else
+					gameWindows.setLayer(ingameScene);
 				
 				//Switch scene but keep the overlay
-				ingameScene.changeOverlay(overlay);
-				gameWindows.changeScene(ingameScene);
+				//ingameScene.changeOverlay(overlay);
 				
 				//Start only the logic after all that
 				world.startLogic();
@@ -300,7 +297,7 @@ public class Client implements ClientInterface
 			@Override
 			public void run()
 			{
-				gameWindows.changeScene(new MainMenu(gameWindows, false));
+				gameWindows.setLayer(new MainMenuOverlay(gameWindows, new MainMenu(gameWindows)));
 				
 				if (world != null)
 				{
@@ -319,7 +316,7 @@ public class Client implements ClientInterface
 			@Override
 			public void run()
 			{
-				gameWindows.changeScene(new MainMenu(gameWindows, errorMessage));
+				gameWindows.setLayer(new MessageBoxOverlay(gameWindows, new MainMenu(gameWindows), errorMessage));
 				
 				if (world != null)
 				{
@@ -380,14 +377,14 @@ public class Client implements ClientInterface
 	}
 	
 	@Override
-	public Lwjgl2ClientInputsManager getInputsManager()
+	public Lwjgl3ClientInputsManager getInputsManager()
 	{
 		//if (windows.getCurrentScene() instanceof Ingame)
 		//	return ((Ingame) windows.getCurrentScene()).getInputsManager();
-		return this.inputsManager;
+		return gameWindows.getInputsManager();
 	}
 
-	public GameWindowOpenGL getGameWindow()
+	public GameWindowOpenGL_LWJGL3 getGameWindow()
 	{
 		return gameWindows;
 	}

@@ -1,5 +1,6 @@
 package io.xol.chunkstories.input;
 
+import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.KeyboardKeyInput;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -8,7 +9,7 @@ import io.xol.chunkstories.api.input.KeyboardKeyInput;
 
 /** An input not linked to actual hardware directly, either representing a remote input or an input used for internal purposes ( like actions buttons, 'pressed' by the
  * client to tell the master what they did with fancy semantics, see shootGun in res/virtual.inputs */
-public class InputVirtual implements KeyboardKeyInput
+public class InputVirtual implements Input// implements KeyboardKeyInput
 {
 	private String name;
 	private long hash;
@@ -73,5 +74,25 @@ public class InputVirtual implements KeyboardKeyInput
 		hash = (hash & 0xFFFFFFFFFFFFF0FFL) | (((long) digested[13] & 0xF) << 8);
 		hash = (hash & 0xFFFFFFFFFFFFFF0FL) | (((long) digested[14] & 0xF) << 4);
 		hash = (hash & 0xFFFFFFFFFFFFFFF0L) | (((long) digested[15] & 0xF) << 0);
+	}
+
+	@Override
+	public boolean equals(Object o)
+	{
+		if(o == null)
+			return false;
+		else if(o instanceof Input) {
+			return ((Input)o).getName().equals(getName());
+		}
+		else if(o instanceof String) {
+			return ((String)o).equals(this.getName());
+		}
+		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return getName().hashCode();
 	}
 }

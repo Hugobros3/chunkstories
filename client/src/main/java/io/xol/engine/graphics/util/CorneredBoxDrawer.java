@@ -13,7 +13,7 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 
 public class CorneredBoxDrawer
 {
-	public static void drawCorneredBoxTiled(float posx, float posy, int width, int height, int cornerSize, Texture2D texture, int textureSize, int scale)
+	public static void drawCorneredBoxTiled(float posx, float posy, float width, float height, int cornerSize, Texture2D texture, int textureSize, int scale)
 	{
 		RenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingContext();
 		GuiRenderer guiRenderer = renderingContext.getGuiRenderer();
@@ -31,8 +31,8 @@ public class CorneredBoxDrawer
 		
 		float textureSizeInternal = textureSize - cornerSize * 2;
 		
-		int insideWidth = width - cornerSizeScaled * 2;
-		int insideHeight = height - cornerSizeScaled * 2;
+		float insideWidth = width - cornerSizeScaled * 2;
+		float insideHeight = height - cornerSizeScaled * 2;
 		
 		float texCoordInsideTopLeft = ((float)cornerSize)/textureSize;
 		float texCoordInsideBottomRight = ((float)(textureSize - cornerSize)) / textureSize;
@@ -97,13 +97,13 @@ public class CorneredBoxDrawer
 		
 	}
 
-	public static void drawCorneredBoxTiled(int posx, int posy, int width, int height, int cornerSize, String textureName, int textureSize, int scale)
+	public static void drawCorneredBoxTiled(float posx, float posy, float width, float height, int cornerSize, String textureName, int textureSize, int scale)
 	{
 		Texture2D texture = TexturesHandler.getTexture(textureName);
 		drawCorneredBoxTiled(posx, posy, width, height, cornerSize, texture, textureSize, scale);
 	}
 
-	public static void drawCorneredBox(float posx, float posy, int width, int height, int cornerSize, String texture)
+	public static void drawCorneredBox(float posx, float posy, float width, float height, float cornerSize, String texture)
 	{
 		// corner up-left
 		ObjectRenderer.renderTexturedRotatedRect(posx - width / 2, posy + height / 2, cornerSize * 2, cornerSize * 2, 0, 0, 0f, 1 / 4f, 1 / 4f, texture);

@@ -1,4 +1,4 @@
-package io.xol.engine.gui;
+/*package io.xol.engine.gui;
 
 import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.engine.graphics.RenderingContext;
@@ -37,4 +37,4 @@ public abstract class Overlay
 	{
 		return false;
 	}
-}
+}*/

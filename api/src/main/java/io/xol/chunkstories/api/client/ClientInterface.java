@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.PlayerClient;
+import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
@@ -58,6 +59,8 @@ public interface ClientInterface extends GameContext
 	public ClientSoundManager getSoundManager();
 
 	public ClientInputsManager getInputsManager();
+	
+	public ClientPluginManager getPluginManager();
 
 	public ParticlesManager getParticlesManager();
 

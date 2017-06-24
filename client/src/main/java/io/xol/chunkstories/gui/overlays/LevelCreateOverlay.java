@@ -1,17 +1,16 @@
 package io.xol.chunkstories.gui.overlays;
 
 import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
+import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.rendering.GameWindow;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
-import io.xol.engine.gui.Overlay;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
 
@@ -19,45 +18,66 @@ import io.xol.engine.gui.elements.InputText;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class LevelCreateOverlay extends Overlay
+public class LevelCreateOverlay extends Layer
 {
 	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	Button cancelOption = new Button(0, 0, 150, 32, ("Cancel"), BitmapFont.SMALLFONTS, 1);
-	Button createOption = new Button(0, 0, 150, 32, ("Create"), BitmapFont.SMALLFONTS, 1);
+	Button cancelOption = new Button(this, 0, 0, 150, 32, ("Cancel"), BitmapFont.SMALLFONTS, 1);
+	Button createOption = new Button(this, 0, 0, 150, 32, ("Create"), BitmapFont.SMALLFONTS, 1);
 	
-	InputText levelName = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
-	InputText worldGenName = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
+	InputText levelName = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
+	InputText worldGenName = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
 	
-	public LevelCreateOverlay(OverlayableScene scene, Overlay parent)
+	public LevelCreateOverlay(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
 		
-		guiHandler.add(cancelOption);
-		guiHandler.add(createOption);
+		this.cancelOption.setAction(new Runnable() {
+			@Override
+			public void run() {
+				gameWindow.setLayer(parentLayer);
+			}
+		});
 		
-		guiHandler.add(levelName);
-		guiHandler.add(worldGenName);
+		this.createOption.setAction(new Runnable() {
+			@Override
+			public void run() {
+				WorldGeneratorType worldGenerator = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.text);
+				if (worldGenerator != null)
+				{
+					//String generator = "flat";
+					WorldInfoImplementation info = new WorldInfoImplementation(levelName.text, ""+System.currentTimeMillis(), "", WorldInfo.WorldSize.MEDIUM, worldGenName.text);
+					
+					Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), info));
+				}
+			}
+		});
+		
+		elements.add(cancelOption);
+		elements.add(createOption);
+		
+		elements.add(levelName);
+		elements.add(worldGenName);
 		
 		worldGenName.text = "flat";
 	}
 
 	@Override
-	public void drawToScreen(RenderingContext renderingContext, int positionStartX, int positionStartY, int width, int height)
+	public void render(RenderingInterface renderingContext)
 	{
-		if(parent != null)
-			this.parent.drawToScreen(renderingContext, positionStartX, positionStartY, width, height);
+		if(parentLayer != null)
+			this.parentLayer.render(renderingContext);
 		
-		renderingContext.getGuiRenderer().renderColoredRect(width / 2, height / 2, width, height, 0, "000000", 0.75f);
+		renderingContext.getGuiRenderer().drawBox(0.0f, 0.0f, 1.0f, 1.0f, 0, 0, 0, 0, null, true, false, new Vector4fm(0.0f, 0.0f, 0.0f, 0.75f));
 		
 		int frame_border_size = 64;
 		
-		positionStartX += frame_border_size;
-		positionStartY += frame_border_size;
+		float positionStartX = xPosition + frame_border_size;
+		float positionStartY = yPosition + frame_border_size;
 		
 		width -= frame_border_size * 2;
 		height -= frame_border_size * 2;
 		
-		int x = positionStartX + 20;
+		float x = positionStartX + 20;
 		// int y = 48;
 		CorneredBoxDrawer.drawCorneredBoxTiled(positionStartX + width/2, positionStartY + height/2, width, height, 8, "./textures/gui/scalableButton.png", 32, 2);
 		
@@ -94,46 +114,9 @@ public class LevelCreateOverlay extends Overlay
 		//FontRenderer2.drawTextUsingSpecificFont(20, height - 64, 0, 48, "Create a new World", BitmapFont.SMALLFONTS);
 
 		cancelOption.setPosition(x + 75, positionStartY + 20 + 16);
-		cancelOption.draw();
+		cancelOption.render(renderingContext);
 
 		createOption.setPosition(width - 75 - 20, positionStartY + 20 + 16);
-		createOption.draw();
-		
-		if (cancelOption.clicked())
-		{
-			this.mainScene.changeOverlay(this.parent);
-		}
-		if (createOption.clicked() && wg != null)
-		{
-			//String generator = "flat";
-			WorldInfoImplementation info = new WorldInfoImplementation(levelName.text, ""+System.currentTimeMillis(), "", WorldInfo.WorldSize.MEDIUM, worldGenName.text);
-			
-			//Client.world = 
-			//Client.world.startLogic();
-			//this.mainScene.eng.changeScene(new GameplayScene(mainScene.eng, false));
-			
-			Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), info));
-		}
-	}
-
-	@Override
-	public boolean handleKeypress(int k)
-	{
-		guiHandler.handleInput(k);
-		return true;
-	}
-	
-	@Override
-	public boolean onScroll(int dx)
-	{
-		return true;
-	}
-
-	@Override
-	public boolean onClick(int posx, int posy, int button)
-	{
-		if (button == 0)
-			guiHandler.handleClick(posx, posy);
-		return true;
+		createOption.render(renderingContext);
 	}
 }

@@ -1,60 +1,87 @@
 package io.xol.chunkstories.gui.overlays;
 
-import org.lwjgl.input.Keyboard;
-
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.rendering.GameWindow;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.ng.NgButton;
 import io.xol.chunkstories.gui.overlays.config.LogPolicyAsk;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
-import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
-import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
-import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
-import io.xol.chunkstories.item.inventory.BasicInventory;
-import io.xol.chunkstories.item.inventory.InventoryLocalCreativeMenu;
-import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.fonts.TrueTypeFont;
-import io.xol.engine.gui.Overlay;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class MainMenuOverlay extends Overlay
+public class MainMenuOverlay extends Layer
 {
 	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	NgButton singlePlayer = new NgButton(0, 0,("#{menu.singleplayer}"));
-	NgButton multiPlayer = new NgButton(0, 0, ("#{menu.serverbrowser}"));
-	NgButton modsOption = new NgButton(0, 0,("#{menu.mods}"));
-	NgButton optionsMenu = new NgButton(0, 0,("#{menu.options}"));
-	NgButton exitGame = new NgButton(0, 0, ("#{menu.quit}"));
+	NgButton singlePlayer = new NgButton(this, 0, 0,("#{menu.singleplayer}"));
+	NgButton multiPlayer = new NgButton(this, 0, 0, ("#{menu.serverbrowser}"));
+	NgButton modsOption = new NgButton(this, 0, 0,("#{menu.mods}"));
+	NgButton optionsMenu = new NgButton(this, 0, 0,("#{menu.options}"));
+	NgButton exitGame = new NgButton(this, 0, 0, ("#{menu.quit}"));
 	
-	NgButton k = new NgButton(0, 0, "Singleplayer");
+	//NgButton k = new NgButton(this, 0, 0, "Singleplayer");
 
-	public MainMenuOverlay(OverlayableScene scene, Overlay parent)
+	public MainMenuOverlay(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
 		// Gui buttons
-		guiHandler.add(singlePlayer);
-		guiHandler.add(multiPlayer);
-		guiHandler.add(modsOption);
-		guiHandler.add(optionsMenu);
-		guiHandler.add(exitGame);
+		this.singlePlayer.setAction(new Runnable() {
+			@Override
+			public void run() {
+				gameWindow.setLayer(new LevelSelectOverlay(gameWindow, MainMenuOverlay.this));
+			}
+		});
 		
-		guiHandler.add(k);
+		this.multiPlayer.setAction(new Runnable() {
+			@Override
+			public void run() {
+				gameWindow.setLayer(new ServerSelectionOverlayNg(gameWindow, MainMenuOverlay.this, false));
+			}
+		});
+		
+		this.modsOption.setAction(new Runnable() {
+			@Override
+			public void run() {
+				gameWindow.setLayer(new ModsSelectionOverlay(gameWindow, MainMenuOverlay.this));
+			}
+		});
+		
+		this.optionsMenu.setAction(new Runnable() {
+			@Override
+			public void run() {
+				gameWindow.setLayer(new OptionsOverlay(gameWindow, MainMenuOverlay.this));
+			}
+		});
+		
+		this.exitGame.setAction(new Runnable() {
+			@Override
+			public void run() {
+				gameWindow.close();
+			}
+		});
+		
+		elements.add(singlePlayer);
+		elements.add(multiPlayer);
+		elements.add(modsOption);
+		elements.add(optionsMenu);
+		elements.add(exitGame);
+		
+		//elements.add(k);
 	}
 
 	@Override
-	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
+	public void render(RenderingInterface renderingContext)
 	{
+		parentLayer.render(renderingContext);
+		
 		if(Client.clientConfig.getProp("log-policy", "undefined").equals("undefined"))
-		{
-			this.mainScene.changeOverlay(new LogPolicyAsk(mainScene, this));
-		}
+			gameWindow.setLayer(new LogPolicyAsk(gameWindow, this));
+			//this.mainScene.changeOverlay(new LogPolicyAsk(mainScene, this));
 		
 		float totalLengthOfButtons = 0;
 		float spacing = -1;
@@ -78,34 +105,23 @@ public class MainMenuOverlay extends Overlay
 		
 		singlePlayer.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += singlePlayer.getWidth() + spacing;
-		singlePlayer.draw(renderingContext);
+		singlePlayer.render(renderingContext);
 
 		multiPlayer.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += multiPlayer.getWidth() + spacing;
-		multiPlayer.draw(renderingContext);
+		multiPlayer.render(renderingContext);
 
 		modsOption.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += modsOption.getWidth() + spacing;
-		modsOption.draw(renderingContext);
+		modsOption.render(renderingContext);
 
 		optionsMenu.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += optionsMenu.getWidth() + spacing;
-		optionsMenu.draw(renderingContext);
+		optionsMenu.render(renderingContext);
 
 		exitGame.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += exitGame.getWidth() + spacing;
-		exitGame.draw(renderingContext);
-
-		if (singlePlayer.clicked())
-			mainScene.changeOverlay(new LevelSelectOverlay(mainScene, this));
-		else if (multiPlayer.clicked())
-			mainScene.changeOverlay(new ServerSelectionOverlayNg(mainScene, this, false));
-		else if (modsOption.clicked())
-			mainScene.changeOverlay(new ModsSelectionOverlay(mainScene, this));
-		else if (optionsMenu.clicked())
-			mainScene.changeOverlay(new OptionsOverlay(mainScene, this));
-		else if (exitGame.clicked())
-			this.mainScene.gameWindow.close();
+		exitGame.render(renderingContext);
 
 		Vector4fm noticeColor = new Vector4fm(100/255f, 100/255f, 100/255f, 1);
 		String version = "Chunk Stories Client " + VersionInfo.version;
@@ -118,7 +134,7 @@ public class MainMenuOverlay extends Overlay
 	
 	}
 
-	@Override
+	/*@Override
 	public boolean handleKeypress(int k)
 	{
 		if (k == Keyboard.KEY_E)
@@ -144,5 +160,5 @@ public class MainMenuOverlay extends Overlay
 		if (button == 0)
 			guiHandler.handleClick(posx, posy);
 		return true;
-	}
+	}*/
 }

@@ -3,66 +3,54 @@ package io.xol.chunkstories.gui.ng;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.lwjgl.input.Mouse;
-
+import io.xol.chunkstories.api.gui.ClickableGuiElement;
+import io.xol.chunkstories.api.gui.FocusableGuiElement;
+import io.xol.chunkstories.api.gui.GuiElement;
+import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.input.Mouse;
+import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
-import io.xol.engine.gui.elements.GuiElement;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ScrollableContainer extends GuiElement
+public class ScrollableContainer extends FocusableGuiElement implements ClickableGuiElement
 {
+	protected ScrollableContainer(Layer layer) {
+		super(layer);
+		
+		this.width = 480;
+		this.height = 1024;
+	}
+
 	public List<ContainerElement> elements = new ArrayList<ContainerElement>();
 	
-	protected int width = 480, height = 1024;
+	//protected int width = 480, height = 1024;
 	
 	protected int scroll = 0;
+
+	public int scale = 1;
 	
-	public void setDimensions(int width, int height)
+	public void setDimensions(float width, float height)
 	{
 		this.width = width;
 		this.height = height;
 	}
 	
-	public void handleClick(int button, int x, int y)
-	{
-		int startY = this.posy + height;
-		int i = scroll;
-		
-		while(true)
-		{
-			if(i >= elements.size())
-				break;
-			ContainerElement element = elements.get(i);
-			if(startY - element.height * scale < this.posy)
-				break;
-			startY -= element.height * scale;
-			startY -= 4 * scale;
-			i++;
-			
-			if(element.isMouseOver())
-			{
-				element.clicked();
-				break;
-			}
-		}
-	}
-	
 	public boolean isMouseOver(int mx, int my)
 	{
-		return mx >= posx && mx <= posx + width && my >= posy && my <= posy + height;
+		return mx >= xPosition && mx <= xPosition + width && my >= yPosition && my <= yPosition + height;
 	}
 	
-	public int render(RenderingInterface renderer)
+	public void render(RenderingInterface renderer)
 	{
 		int r = 0;
 		
-		int startY = this.posy + height;
+		float startY = this.yPosition + height;
 		int i = scroll;
 		
 		while(true)
@@ -71,17 +59,17 @@ public class ScrollableContainer extends GuiElement
 				break;
 			ContainerElement element = elements.get(i);
 			startY -= element.height * scale;
-			if(startY - element.height * scale < this.posy)
+			if(startY - element.height * scale < this.yPosition)
 				break;
 			startY -= 4 * scale;
 			i++;
 			
-			element.setPosition(this.posx, startY);
+			element.setPosition(this.xPosition, startY);
 			element.render(renderer);
 			r++;
 		}
 		
-		return r;
+		//return r;
 	}
 	
 	public void scroll(boolean sign)
@@ -114,10 +102,10 @@ public class ScrollableContainer extends GuiElement
 		public String descriptionLines;
 		
 		public String iconTextureLocation = "./textures/gui/info.png";
-		protected int positionX, positionY;
-		protected int width = 480, height = 72;
+		protected float positionX, positionY;
+		protected float width = 480, height = 72;
 		
-		public void setPosition(int positionX, int positionY)
+		public void setPosition(float positionX, float positionY)
 		{
 			this.positionX = positionX;
 			this.positionY = positionY;
@@ -127,7 +115,7 @@ public class ScrollableContainer extends GuiElement
 		{
 			int s = ScrollableContainer.this.scale;
 			//Setup textures
-			Texture2DGL bgTexture = TexturesHandler.getTexture(isMouseOver() ? "./textures/gui/genericOver.png" : "./textures/gui/generic.png");
+			Texture2DGL bgTexture = TexturesHandler.getTexture(isMouseOver(renderer.getClient().getInputsManager().getMouse()) ? "./textures/gui/genericOver.png" : "./textures/gui/generic.png");
 			bgTexture.setLinearFiltering(false);
 			
 			//Render graphical base
@@ -140,7 +128,7 @@ public class ScrollableContainer extends GuiElement
 			
 			if(topRightString != null)
 			{
-				int dekal = width - renderer.getFontRenderer().getFont("arial", 12).getWidth(topRightString) - 4;
+				float dekal = width - renderer.getFontRenderer().getFont("arial", 12).getWidth(topRightString) - 4;
 				renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + dekal* s, positionY + 54 * s, topRightString, s, new Vector4fm(0.25, 0.25, 0.25, 1.0));
 			}
 			
@@ -149,14 +137,41 @@ public class ScrollableContainer extends GuiElement
 			
 		}
 		
-		public abstract void clicked();
+		public abstract boolean handleClick(MouseButton mouseButton);
 		
-		public boolean isMouseOver()
+		public boolean isMouseOver(Mouse mouse)
 		{
 			int s = ScrollableContainer.this.scale;
-			int mx = Mouse.getX();
-			int my = Mouse.getY();
+			float mx = mouse.getCursorX();//Mouse.getX();
+			float my = mouse.getCursorY();//Mouse.getY();
 			return mx >= positionX && mx <= positionX + width * s && my >= positionY && my <= positionY + height * s;
 		}
+	}
+
+	@Override
+	public boolean handleClick(MouseButton mouseButton) {
+		
+		float startY = this.yPosition + height;
+		int i = scroll;
+		
+		while(true)
+		{
+			if(i >= elements.size())
+				break;
+			ContainerElement element = elements.get(i);
+			if(startY - element.height * scale < this.yPosition)
+				break;
+			startY -= element.height * scale;
+			startY -= 4 * scale;
+			i++;
+			
+			if(element.isMouseOver(mouseButton.getMouse()))
+			{
+				element.handleClick(mouseButton);
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }

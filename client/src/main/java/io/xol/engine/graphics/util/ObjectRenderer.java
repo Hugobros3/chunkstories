@@ -2,7 +2,6 @@ package io.xol.engine.graphics.util;
 
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.base.GameWindowOpenGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.misc.ColorsTools;

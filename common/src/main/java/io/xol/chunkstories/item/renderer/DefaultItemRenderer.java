@@ -46,7 +46,7 @@ public class DefaultItemRenderer extends ItemRenderer
 	static VertexBuffer defaultPlane = null;
 	
 	@Override
-	public void renderItemInInventory(RenderingInterface renderingInterface, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
+	public void renderItemInInventory(RenderingInterface renderingInterface, ItemPile pile, float screenPositionX, float screenPositionY, int scaling)
 	{
 		int slotSize = 24 * 2;
 		//System.out.println(((ClientContent) this.itemType.store().parent()).textures());

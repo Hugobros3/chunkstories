@@ -9,7 +9,7 @@ public interface FontRenderer {
 	/** Returns Arial in 11px */
 	public Font defaultFont();
 	
-	public void drawString(Font font, float x, float y, String whatchars, float scale, int clipX);
+	public void drawString(Font font, float x, float y, String whatchars, float scale, float clipX);
 	
 	public void drawString(Font font, float x, float y, String whatchars, float scale);
 	
@@ -17,7 +17,7 @@ public interface FontRenderer {
 	
 	public void drawStringWithShadow(Font font, float x, float y, String whatchars, float scaleX, float scaleY, Vector4fm color);
 	
-	public void drawStringWithShadow(Font font, float x, float y, String whatchars, float scaleX, float scaleY, int clipX, Vector4fm color);
+	public void drawStringWithShadow(Font font, float x, float y, String whatchars, float scaleX, float scaleY, float clipX, Vector4fm color);
 	
 	//public void drawString(Font font, float x, float y, String whatchars, float scaleX, float scaleY, int format);
 	
@@ -30,6 +30,6 @@ public interface FontRenderer {
 		
 		public int getLineHeight();
 		
-		public int getLinesHeight(String whatchars, int clipX);
+		public int getLinesHeight(String whatchars, float clipWidth);
 	}
 }

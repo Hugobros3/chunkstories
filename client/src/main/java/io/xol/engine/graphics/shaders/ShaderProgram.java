@@ -404,14 +404,14 @@ public class ShaderProgram implements ShaderInterface
 		{
 			((Matrix4f)uniformData).store(matrix4fBuffer);
 			matrix4fBuffer.position(0);
-			glUniformMatrix4(uniformLocation, false, matrix4fBuffer);
+			glUniformMatrix4fv(uniformLocation, false, matrix4fBuffer);
 			matrix4fBuffer.clear();
 		}
 		else if(uniformData instanceof Matrix3f)
 		{
 			((Matrix3f)uniformData).store(matrix3fBuffer);
 			matrix3fBuffer.position(0);
-			glUniformMatrix3(uniformLocation, false, matrix3fBuffer);
+			glUniformMatrix3fv(uniformLocation, false, matrix3fBuffer);
 			matrix3fBuffer.clear();
 		}
 	}

@@ -122,7 +122,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 		}
 
 		@Override
-		public void renderItemInInventory(RenderingInterface renderingInterface, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
+		public void renderItemInInventory(RenderingInterface renderingInterface, ItemPile pile, float screenPositionX, float screenPositionY, int scaling)
 		{
 			actualRenderer.renderItemInInventory(renderingInterface, pile, screenPositionX, screenPositionY, scaling);
 		}

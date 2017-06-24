@@ -9,12 +9,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.xol.engine.base.InputAbstractor;
 import io.xol.engine.graphics.textures.Texture1DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.input.Keyboard;
 
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.math.vector.Vector3;
@@ -198,12 +196,18 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		renderingContext.bindTexture2D("vegetationColorTexture", worldRenderer.getGrassTexture());
 		terrainShader.setUniform1f("mapSize", world.getSizeInChunks() * 32);
 
-		if (Keyboard.isKeyDown(Keyboard.KEY_F10))
+		//TODO hidden inputs ?
+		if(renderingContext.getClient().getInputsManager().getInputByName("wireframeFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
+		//if(InputAbstractor.isKeyDown(GLFW.GLFW_KEY_F10))
+		//if (Keyboard.isKeyDown(Keyboard.KEY_F10))
 			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
-		if (!(InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9) && RenderingConfig.isDebugAllowed))
-			drawTerrainBits(renderingContext, mask, terrainShader);
 
+		if(!renderingContext.getClient().getInputsManager().getInputByName("hideFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
+		//if (!(InputAbstractor.isKeyDown(GLFW.GLFW_KEY_F9) && RenderingConfig.isDebugAllowed))
+		//if (!(InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9) && RenderingConfig.isDebugAllowed))
+			drawTerrainBits(renderingContext, mask, terrainShader);
+		
 		renderingContext.flush();
 
 		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);

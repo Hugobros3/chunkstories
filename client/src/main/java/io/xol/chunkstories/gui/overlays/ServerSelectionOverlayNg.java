@@ -1,31 +1,24 @@
 package io.xol.chunkstories.gui.overlays;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 
-import org.lwjgl.input.Keyboard;
-
+import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.input.Mouse.MouseButton;
+import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.gui.overlays.ServerSelectionOverlayNg.ServerSelectionZone.ServerGuiItem;
 import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
-import io.xol.engine.base.InputAbstractor;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
-import io.xol.engine.gui.Overlay;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;
@@ -35,25 +28,47 @@ import io.xol.engine.net.HttpRequester;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
+public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 {
-	InputText ipForm = new InputText(0, 0, 500, 32, BitmapFont.SMALLFONTS);
-	Button backOption = new Button(0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
-	Button connectButton = new Button(0, 0, 128, 32, "Connect", BitmapFont.SMALLFONTS, 1);
+	InputText ipForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
+	Button backOption = new Button(this, 0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
+	Button connectButton = new Button(this, 0, 0, 128, 32, "Connect", BitmapFont.SMALLFONTS, 1);
 	
-	ServerSelectionZone serverSelectionZone = new ServerSelectionZone();
+	ServerSelectionZone serverSelectionZone = new ServerSelectionZone(this);
 	
 	boolean autologin;
 	private boolean movedInList = false;
 
-	public ServerSelectionOverlayNg(OverlayableScene scene, Overlay parent, boolean a)
+	public ServerSelectionOverlayNg(GameWindow scene, Layer parent, boolean a)
 	{
 		super(scene, parent);
-		guiHandler.add(ipForm);
-		ipForm.setFocus(true);
-		guiHandler.add(connectButton);
-		guiHandler.add(serverSelectionZone);
-		guiHandler.add(backOption);
+		elements.add(ipForm);
+		
+		this.setFocusedElement(ipForm);
+		//ipForm.setFocus(true);
+		
+		this.connectButton.setAction(new Runnable() {
+
+			@Override
+			public void run() {
+				login();
+			}
+			
+		});
+		
+		this.backOption.setAction(new Runnable() {
+
+			@Override
+			public void run() {
+				gameWindow.setLayer(parentLayer);
+				//this.mainScene.changeOverlay(this.parent);
+			}
+			
+		});
+		
+		elements.add(connectButton);
+		elements.add(serverSelectionZone);
+		elements.add(backOption);
 		
 		autologin = a;
 		String lastServer = Client.clientConfig.getProp("last-server", "");
@@ -67,7 +82,7 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 	}
 
 	@Override
-	public void drawToScreen(RenderingContext renderingContext, int x, int y, int w, int h)
+	public void render(RenderingInterface renderingContext)
 	{
 		if (autologin && !ipForm.text.equals(""))
 			login();
@@ -75,43 +90,36 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 		// title
 		FontRenderer2.drawTextUsingSpecificFontRVBA(32, renderingContext.getWindow().getHeight() - 32 * (1 + 1), 0, 32 + 1 * 16, "Select a server", BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
 		// gui
-		int txtbox = renderingContext.getWindow().getWidth() - 50 - guiHandler.getButton(1).getWidth() * 2 - 75;
+		float txtbox = renderingContext.getWindow().getWidth() - 50 - connectButton.getWidth() * 2 - 75;
 		ipForm.setPosition(25, renderingContext.getWindow().getHeight() - 50 * (1 + 1));
 		ipForm.setMaxLength(txtbox);
 		ipForm.drawWithBackGround();
 		
-		guiHandler.getButton(1).setPosition(txtbox + 96 + 12, renderingContext.getWindow().getHeight() - 50 - 16 - 18);
+		connectButton.setPosition(txtbox + 96 + 12, renderingContext.getWindow().getHeight() - 50 - 16 - 18);
 		
-		guiHandler.getButton(1).draw();
-		if (guiHandler.getButton(1).clicked)
-			login();
+		connectButton.render(renderingContext);
 
-
-		backOption.setPosition(x + 192, 96);
-		backOption.draw();
-
-		if (backOption.clicked())
-		{
-			this.mainScene.changeOverlay(this.parent);
-		}
-
+		backOption.setPosition(xPosition + 192, 96);
+		backOption.render(renderingContext);
 
 		updateServers();
 		int s = Client.getInstance().getGameWindow().getScalingFactor();
 		
-		serverSelectionZone.setPosition((w - 480 * s) / 2, 32);
-		serverSelectionZone.setDimensions(480 * s, h - 32 - 128);
+		serverSelectionZone.setPosition((width - 480 * s) / 2, 32);
+		serverSelectionZone.setDimensions(480 * s, height - 32 - 128);
 		serverSelectionZone.render(renderingContext);
 	}
 
 	// Controls handling
 	@Override
-	public boolean handleKeypress(int k)
+	public boolean handleInput(Input input)
 	{
-		if (k == Keyboard.KEY_TAB)// FastConfig.keyTab)
-			guiHandler.next();
+		//if (k == Keyboard.KEY_TAB)// FastConfig.keyTab)
+		//	guiHandler.next();
+		
 		//TODO Move special text edition tools to inputText class
-		else if (k == 47 && (InputAbstractor.isKeyDown(29) || InputAbstractor.isKeyDown(157))) // Copy/paste
+		
+		/*else if (k == 47 && (InputAbstractor.isKeyDown(29) || InputAbstractor.isKeyDown(157))) // Copy/paste
 		{
 			Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
 			if (clip.isDataFlavorAvailable(DataFlavor.stringFlavor))
@@ -133,27 +141,32 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 		{
 			ipForm.text = "";
 		}
-		else if (Client.getInstance().getInputsManager().getInputByName("enter").isPressed())
+		else */
+		
+		if (input.equals("enter"))
 			login();
-		else if (k == 63) // F5
+		else if (input.equals("refreshServers")) // F5
 			new HttpRequestThread(this, "serversList", "http://chunkstories.xyz/api/listServers.php", "");
-		else if (k == 64) // F6 ?
+		else if (input.equals("repingServers")) // F6 ?
 			f6();
-		else if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
-			this.mainScene.changeOverlay(parent);
-		else if (serverSelectionZone.hasFocus() && Client.getInstance().getInputsManager().getInputByName("forward").isPressed())
+		else if (input.equals("exit"))
+			gameWindow.setLayer(parentLayer);
+		else if (serverSelectionZone.isFocused() && input.equals("uiUp"))
 		{
 			movedInList = true;
 			currentServer--;
 		}
-		else if (serverSelectionZone.hasFocus() && Client.getInstance().getInputsManager().getInputByName("back").isPressed())
+		else if (serverSelectionZone.isFocused() && input.equals("uiDown"))
 		{
 			movedInList = true;
 			currentServer++;
 		}
 		else
-			guiHandler.handleInput(k);
-		return false;
+		//else
+		//	guiHandler.handleInput(k);
+			return super.handleInput(input);
+		
+		return true;
 	}
 
 	// Takes care of connecting to a server
@@ -176,15 +189,9 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 		
 		Client.world = null;
 		
-		this.mainScene.changeOverlay(new ConnectionOverlay(mainScene, mainScene.currentOverlay, ip, port));
+		gameWindow.setLayer(new ConnectionOverlay(gameWindow, this, ip, port));
+		//this.mainScene.changeOverlay(new ConnectionOverlay(mainScene, mainScene.currentOverlay, ip, port));
 		//this.mainScene.gameWindow.changeScene(new ConnectScene(mainScene.gameWindow, ip, port));
-	}
-
-	@Override
-	public boolean onClick(int posx, int posy, int button)
-	{
-			guiHandler.handleClick(posx, posy);
-		return true;
 	}
 
 	void drawRightedText(RenderingInterface renderingContext, String t, float decx, float height, int basesize, float r, float v, float b, float a)
@@ -229,6 +236,10 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 	
 	public class ServerSelectionZone extends ScrollableContainer
 	{
+		protected ServerSelectionZone(Layer layer) {
+			super(layer);
+		}
+
 		class ServerGuiItem extends ContainerElement {
 
 			ServerDataLoader sd;
@@ -244,14 +255,16 @@ public class ServerSelectionOverlayNg extends Overlay implements HttpRequester
 				this.iconTextureLocation = GameDirectory.getGameFolderPath()+"/cache/server-icon-"+ip+"-"+port+".png";
 			}
 
+
 			@Override
-			public void clicked()
-			{
+			public boolean handleClick(MouseButton mouseButton) {
 				if(sd != null && sd.infoLoaded)
 				{
 					ipForm.text = sd.ip + (sd.port == 30410 ? "" : sd.port);
 					login();
 				}
+				
+				return true;
 			}
 			
 			public void reload()

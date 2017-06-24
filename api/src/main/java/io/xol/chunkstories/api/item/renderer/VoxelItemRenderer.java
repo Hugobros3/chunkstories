@@ -169,7 +169,7 @@ public class VoxelItemRenderer extends ItemRenderer
 	}
 
 	@Override
-	public void renderItemInInventory(RenderingInterface renderingContext, ItemPile pile, int screenPositionX, int screenPositionY, int scaling)
+	public void renderItemInInventory(RenderingInterface renderingContext, ItemPile pile, float screenPositionX, float screenPositionY, int scaling)
 	{
 		//voxelItemsModelBuffer.clear();
 		//ClientContent content = ((ClientContent)pile.getItem().getType().store().parent())

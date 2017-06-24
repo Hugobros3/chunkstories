@@ -15,7 +15,7 @@ apply plugin: 'application'
 
 /* LWJGL3 deps */
 
-/*
+
 import org.gradle.internal.os.OperatingSystem
 
 switch ( OperatingSystem.current() ) {
@@ -31,11 +31,11 @@ switch ( OperatingSystem.current() ) {
 }
 
 project.ext.lwjglVersion = "3.1.1"
-*/
+
 dependencies {
 
 	//LWJGL3 masterrace
-	/*compile "org.lwjgl:lwjgl:${lwjglVersion}"
+	compile "org.lwjgl:lwjgl:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-openal:${lwjglVersion}"
@@ -48,13 +48,11 @@ dependencies {
 	runtime "org.lwjgl:lwjgl-openal:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
-	runtime "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:${lwjglNatives}"*/
+	runtime "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:${lwjglNatives}"
 	
 	// https://mvnrepository.com/artifact/org.lwjgl.lwjgl/lwjgl
-	compile group: 'org.lwjgl.lwjgl', name: 'lwjgl', version: '2.9.2'
+	//compile group: 'org.lwjgl.lwjgl', name: 'lwjgl', version: '2.9.2'
 }
-
-//project.ext.lwjglVersion = "2.9.3"
 
 // Dépendances des autres sous-projets
 dependencies {
@@ -66,8 +64,8 @@ dependencies {
 // Define the main class for the application
 mainClassName = 'io.xol.chunkstories.client.Client'
 
-println project.projectDir
-println rootProject.projectDir
+//println project.projectDir
+//println rootProject.projectDir
 
 run { 
     /* Need to split the space-delimited value in the exec.args */
@@ -80,6 +78,6 @@ run {
 }
 
 // Iterate over the source sets
-sourceSets.all {
+/*sourceSets.all {
     println name
-}
+}*/

@@ -1,30 +1,31 @@
 package io.xol.chunkstories.gui.overlays.ingame;
 
-import org.lwjgl.input.Mouse;
-
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.player.PlayerMoveItemEvent;
+import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.input.Mouse;
+import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.player.Player;
+import io.xol.chunkstories.api.rendering.GameWindow;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.EntityGroundItem;
 import io.xol.chunkstories.core.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.gui.InventoryDrawer;
-import io.xol.chunkstories.gui.OverlayableScene;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
-import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.gui.Overlay;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class InventoryOverlay extends Overlay
+public class InventoryOverlay extends Layer
 {
 	Inventory[] inventories;
 	InventoryDrawer[] drawers;
@@ -32,7 +33,7 @@ public class InventoryOverlay extends Overlay
 	public static ItemPile selectedItem;
 	public static int selectedItemAmount;
 
-	public InventoryOverlay(OverlayableScene scene, Overlay parent, Inventory[] entityInventories)
+	public InventoryOverlay(GameWindow scene, Layer parent, Inventory[] entityInventories)
 	{
 		super(scene, parent);
 		this.inventories = entityInventories;
@@ -42,8 +43,10 @@ public class InventoryOverlay extends Overlay
 	}
 
 	@Override
-	public void drawToScreen(RenderingContext renderer, int x, int y, int w, int h)
+	public void render(RenderingInterface renderer)
 	{
+		Mouse mouse = renderer.getClient().getInputsManager().getMouse();
+		
 		int totalWidth = 0;
 		for (Inventory inv : inventories)
 			totalWidth += 2 + inv.getWidth();
@@ -61,8 +64,8 @@ public class InventoryOverlay extends Overlay
 				ItemPile pileHighlighted = inventories[i].getItemPileAt(highlightedSlot[0], highlightedSlot[1]);
 				if (pileHighlighted != null)
 				{
-					int mx = Mouse.getX();
-					int my = Mouse.getY();
+					float mx = mouse.getCursorX();
+					float my = mouse.getCursorY();
 					
 					renderer.getFontRenderer().drawString(renderer.getFontRenderer().defaultFont(), mx, my, pileHighlighted.getItem().getName(), 2);
 					//System.out.println(pileHighlighted);
@@ -76,20 +79,32 @@ public class InventoryOverlay extends Overlay
 			
 			int width = slotSize * selectedItem.getItem().getType().getSlotsWidth();
 			int height = slotSize * selectedItem.getItem().getType().getSlotsHeight();
-			//GuiDrawer.drawBoxWindowsSpaceWithSize(Mouse.getX() - width / 2, Mouse.getY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
+			//GuiDrawer.drawBoxWindowsSpaceWithSize(mouse.getCursorX() - width / 2, mouse.getCursorY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
 
 			//
-			selectedItem.getItem().getType().getRenderer().renderItemInInventory(renderer, selectedItem, Mouse.getX() - width / 2, Mouse.getY() - height / 2, 2);
+			selectedItem.getItem().getType().getRenderer().renderItemInInventory(renderer, selectedItem, mouse.getCursorX() - width / 2, mouse.getCursorY() - height / 2, 2);
 
 			if (selectedItemAmount != 1)
-				renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), Mouse.getX() - width / 2 + (selectedItem.getItem().getType().getSlotsWidth() - 1.0f) * slotSize, Mouse.getY() - height / 2, selectedItemAmount + "", 2, 2,
+				renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), mouse.getCursorX() - width / 2 + (selectedItem.getItem().getType().getSlotsWidth() - 1.0f) * slotSize, mouse.getCursorY() - height / 2, selectedItemAmount + "", 2, 2,
 						new Vector4fm(1, 1, 1, 1));
 
 		}
 		//System.out.println(inventories[0]);
 	}
+	
+	public boolean handleInput(Input input) {
+		if(input instanceof MouseButton)
+			return handleClick((MouseButton)input);
+		else if(input.equals("exit")) {
+			this.gameWindow.setLayer(parentLayer);
+			InventoryOverlay.selectedItem = null;
+			return true;
+		}
+		else
+			return super.handleInput(input);
+	}
 
-	@Override
+	/*@Override
 	public boolean handleKeypress(int k)
 	{
 		if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
@@ -99,16 +114,16 @@ public class InventoryOverlay extends Overlay
 			selectedItem = null;
 		}
 		return true;
-	}
+	}*/
 
-	@Override
-	public boolean onClick(int posx, int posy, int button)
+	private boolean handleClick(MouseButton mouseButton)
 	{
 		//We assume a player has to be spawned in order to do items manipulation
 		Player player = Client.getInstance().getPlayer();
 		if(player == null)
 		{
-			this.mainScene.changeOverlay(parent);
+			this.gameWindow.setLayer(parentLayer);
+			//this.mainScene.changeOverlay(parent);
 			selectedItem = null;
 			return false;
 		}
@@ -118,7 +133,7 @@ public class InventoryOverlay extends Overlay
 			//Close button
 			if (drawers[i].isOverCloseButton())
 			{
-				this.mainScene.changeOverlay(parent);
+				this.gameWindow.setLayer(parentLayer);
 				selectedItem = null;
 			}
 			else
@@ -134,24 +149,24 @@ public class InventoryOverlay extends Overlay
 					int y = c[1];
 					if (selectedItem == null)
 					{
-						if (button == 0)
+						if (mouseButton.equals("mouse.left"))
 						{
 							selectedItem = inventories[i].getItemPileAt(x, y);
 							selectedItemAmount = selectedItem == null ? 0 : selectedItem.getAmount();
 						}
-						else if (button == 1)
+						else if (mouseButton.equals("mouse.right"))
 						{
 							selectedItem = inventories[i].getItemPileAt(x, y);
 							selectedItemAmount = selectedItem == null ? 0 : 1;
 						}
-						else if (button == 2)
+						else if (mouseButton.equals("mouse.middle"))
 						{
 							selectedItem = inventories[i].getItemPileAt(x, y);
 							selectedItemAmount = selectedItem == null ? 0 : (selectedItem.getAmount() > 1 ? selectedItem.getAmount() / 2 : 1);
 						}
 						//selectedItemInv = inventory;
 					}
-					else if (button == 1)
+					else if (mouseButton.equals("mouse.right"))
 					{
 						if (selectedItem.equals(inventories[i].getItemPileAt(x, y)))
 						{
@@ -159,7 +174,7 @@ public class InventoryOverlay extends Overlay
 								selectedItemAmount++;
 						}
 					}
-					else if (button == 0)
+					else if (mouseButton.equals("mouse.left"))
 					{
 						//Ignore null-sum games
 						if (selectedItem.getInventory() == inventories[i] && x == selectedItem.getX() && y == selectedItem.getY())
@@ -235,6 +250,7 @@ public class InventoryOverlay extends Overlay
 				selectedItem = null;
 			}
 		}
+		
 		return true;
 
 	}
