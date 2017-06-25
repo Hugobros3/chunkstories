@@ -19,7 +19,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.Ingame;
-import io.xol.chunkstories.input.lwjgl2.Lwjgl3KeyBind;
+import io.xol.chunkstories.input.lwjgl3.Lwjgl3KeyBind;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.shaders.ShadersLibrary;

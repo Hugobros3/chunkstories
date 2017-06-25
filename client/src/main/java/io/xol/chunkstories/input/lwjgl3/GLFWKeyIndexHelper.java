@@ -1,4 +1,4 @@
-package io.xol.chunkstories.input.lwjgl2;
+package io.xol.chunkstories.input.lwjgl3;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

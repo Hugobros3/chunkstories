@@ -1,4 +1,4 @@
-package io.xol.chunkstories.input.lwjgl2;
+package io.xol.chunkstories.input.lwjgl3;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

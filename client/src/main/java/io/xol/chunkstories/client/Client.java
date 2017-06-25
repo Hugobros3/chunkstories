@@ -35,7 +35,7 @@ import io.xol.chunkstories.gui.overlays.MainMenuOverlay;
 import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
-import io.xol.chunkstories.input.lwjgl2.Lwjgl3ClientInputsManager;
+import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.WorldClientCommon;

@@ -20,7 +20,6 @@ import javax.swing.JOptionPane;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.glfw.GLFWVidMode.Buffer;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
 
@@ -29,7 +28,7 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.input.lwjgl2.Lwjgl3ClientInputsManager;
+import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.graphics.GLCalls;
@@ -54,26 +53,29 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	//private Scene currentScene = null;
 	private Layer layer;
 
-	public String windowName;
+	private String windowName;
 	
 	public final static int defaultWidth = 1024;
 	public final static int defaultHeight = 640;
 	
-	public static int windowWidth = defaultWidth;
-	public static int windowHeight = defaultHeight;
+	private int windowWidth = defaultWidth;
+	private int windowHeight = defaultHeight;
 	//public static boolean resized = false;
-	public static boolean forceResize = false;
+	//private boolean forceResize = false;
 
-	public static int targetFPS = 60;
+	private int targetFPS = 60;
 
-	static boolean closeRequest = false;
+	private boolean closeRequest = false;
 
+	//Monitors/resolutions probing
+	private long monitors[];
 	private String[] modes;
+	private final List<VideoMode> enumeratedVideoModes = new ArrayList<VideoMode>();
 
-	private static long lastTimeMS = 0;
-	private static int framesSinceLS = 0;
-	private static int lastFPS = 0;
-	static long lastTime = 0;
+	private long lastTimeMS = 0;
+	private int framesSinceLS = 0;
+	private int lastFPS = 0;
+	private long lastTime = 0;
 
 	public long vramUsageVerticesObjects = 0;
 
@@ -104,7 +106,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		mainGLThreadId = Thread.currentThread().getId();
 	}
 
-	public void createOpenGLContext()
+	private void createOpenGLContext()
 	{
 		ChunkStoriesLoggerImplementation.getInstance().log("Creating an OpenGL Windows [title:" + windowName + ", width:" + windowWidth + ", height:" + windowHeight + "]");
 		try
@@ -224,8 +226,8 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 				    @Override
 				    public void invoke(long window, int width, int height) {
 				    	
-				    	GameWindowOpenGL_LWJGL3.windowWidth = width;
-						GameWindowOpenGL_LWJGL3.windowHeight = height;
+				    	windowWidth = width;
+						windowHeight = height;
 
 						glViewport(0, 0, width, height);
 
@@ -376,13 +378,13 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 
 		lastTime = (long) (glfwGetTime() * 1000) - overSleep;
 	}
-
-	final List<VideoMode> enumeratedVideoModes = new ArrayList<VideoMode>();
 	
 	private void computeDisplayModes()
 	{
 		enumeratedVideoModes.clear();
 		ChunkStoriesLoggerImplementation.getInstance().log("Retriving monitors and available display modes...");
+		
+		List<Long> monitorsHandles = new ArrayList<Long>();
 		
 		long mainMonitor = glfwGetPrimaryMonitor();
 		PointerBuffer pb = glfwGetMonitors();
@@ -391,6 +393,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			monitorCount++;
 			
 			long monitorHandle = pb.get();
+			monitorsHandles.add(monitorHandle);
 			String monitorName = "" + monitorCount + ": " + (mainMonitor==monitorHandle ? " (Main)" : "" ) + " " + glfwGetMonitorName(monitorHandle);
 			
 			ChunkStoriesLoggerImplementation.getInstance().log("Found monitor handle: "+monitorHandle + " " + monitorName);
@@ -412,36 +415,10 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			modes[i] = enumeratedVideoModes.get(i).toString();
 		}
 		
-		/*try
-		{
-			DisplayMode[] dms = Display.getAvailableDisplayModes();
-			Set<DisplayMode> validModes = new HashSet<DisplayMode>();
-			//modes = new String[dms.length];
-			for (int i = 0; i < dms.length; i++)
-			{
-				if (dms[i].isFullscreenCapable() && dms[i].getBitsPerPixel() >= 32 && dms[i].getWidth() >= 640)
-				{
-					validModes.add(dms[i]);
-				}
-				else
-				{
-					//ChunkStoriesLoggerImplementation.getInstance().info("Rejected displayMode : "+dms[i] + "fs:"+dms[i].isFullscreenCapable());
-				}
-				//modes[i] = dms[i].getWidth() + "x" + dms[i].getHeight();
-			}
-			modes = new String[validModes.size()];
-			int i = 0;
-			for (DisplayMode dm : validModes)
-			{
-				modes[i] = dm.getWidth() + "x" + dm.getHeight();
-				i++;
-			}
-			ChunkStoriesLoggerImplementation.getInstance().info(modes.length + " display modes avaible.");
+		monitors = new long[monitorsHandles.size()];
+		for(int i = 0; i < monitorsHandles.size(); i++) {
+			monitors[i] = monitorsHandles.get(i);
 		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}*/
 	}
 
 	public String[] getDisplayModes()
@@ -465,79 +442,12 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			}
 			
 			VideoMode videoMode = findMatchForVideoMode(modeString);
-			glfwSetWindowMonitor(this.glfwWindowHandle, mainMonitor, 0, 0, videoMode.videoMode.width(), videoMode.videoMode.height(), videoMode.videoMode.refreshRate());
+			glfwSetWindowMonitor(this.glfwWindowHandle, monitors[videoMode.monitorId - 1], 0, 0, videoMode.videoMode.width(), videoMode.videoMode.height(), videoMode.videoMode.refreshRate());
 		}
 		else {
 			glfwSetWindowMonitor(this.glfwWindowHandle, MemoryUtil.NULL, (currentVideoMode.width() - defaultWidth) / 2, (currentVideoMode.height() - defaultHeight) / 2,
 					defaultWidth, defaultHeight, GLFW_DONT_CARE);
 		}
-		
-		/*try
-		{
-			if (Client.getConfig().getBoolean("fullScreen", false))
-			{
-				String str[] = Client.getConfig().getProp("fullScreenResolution", "800x600").split("x");
-				int w = Integer.parseInt(str[0]);
-				int h = Integer.parseInt(str[1]);
-
-				//String newDM = Client.getConfig().getProp("fullScreenResolution", "800x600");
-				if (Display.isFullscreen() && windowWidth == w && windowHeight == h)
-					return;
-				//if (newDM.equals(currentDM))
-				//	return;
-
-				// Look for relevant display mode
-				DisplayMode displayMode = null;
-				DisplayMode[] modes = Display.getAvailableDisplayModes();
-				for (int i = 0; i < modes.length; i++)
-				{
-					if (modes[i].getWidth() == w && modes[i].getHeight() == h && modes[i].isFullscreenCapable() && modes[i].getBitsPerPixel() >= 32)
-					{
-						displayMode = modes[i];
-					}
-				}
-				if (displayMode != null)
-				{
-					DisplayMode current = Display.getDisplayMode();
-					try
-					{
-						Display.setDisplayMode(displayMode);
-						Display.setFullscreen(true);
-					}
-					catch (LWJGLException e)
-					{
-						windowWidth = 800;
-						windowHeight = 600;
-						current = new DisplayMode(windowWidth, windowHeight);
-						ChunkStoriesLoggerImplementation.getInstance().warning("Couldnt set display to " + displayMode + "reverting to default resolution");
-						Client.getConfig().setString("fullScreenResolution", current.getWidth() + "x" + current.getHeight());
-						Client.getConfig().save();
-						Display.setFullscreen(false);
-						Display.setDisplayMode(current);
-						if (Client.windows.currentScene != null && Client.windows.currentScene instanceof OverlayableScene)
-						{
-							OverlayableScene scene = ((OverlayableScene) Client.windows.currentScene);
-							scene.changeOverlay(new MessageBoxOverlay(scene, scene.currentOverlay, "This resolution failed to be set, try another one !"));
-						}
-					}
-				}
-				GameWindowOpenGL.forceResize = true;
-			}
-			else
-			{
-				if (Display.isFullscreen())
-				{
-					Display.setFullscreen(false);
-					Display.setLocation(0, 0);
-					Display.setDisplayMode(Display.getDesktopDisplayMode());
-					GameWindowOpenGL.forceResize = true;
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}*/
 	}
 
 	private void tick()
@@ -551,69 +461,24 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		}
 	}
 
-	public static void setTargetFPS(int target)
+	public void setTargetFPS(int target)
 	{
 		targetFPS = target;
 	}
 
-	public static int getFPS()
+	public int getFPS()
 	{
 		return lastFPS;
 	}
 
-	/*public void changeScene(Scene scene)
-	{
-		InputAbstractor.setMouseGrabbed(false);
-		//Mouse.setGrabbed(false);
-		if (currentScene != null)
-			currentScene.destroy();
-		currentScene = scene;
-	}
-*/
 	public void close()
 	{
 		closeRequest = true;
 	}
-
-	/*public Scene getCurrentScene()
-	{
-		return currentScene;
-	}*/
-
-	/*public void handleSpecialKey(int k)
-	{
-		if (k == 87) //F11
-		{
-			Client.getConfig().setString("fullScreen", !Client.getConfig().getBoolean("fullScreen", false) + "");
-			String fsReso = Display.getDesktopDisplayMode().getWidth() + "x" + Display.getDesktopDisplayMode().getHeight();
-			Client.getConfig().setString("fullScreenResolution", fsReso);
-			switchResolution();
-		}
-	}*/
 	
 	public void toggleFullscreen() {
 		boolean isFullscreenEnabled = client.configDeprecated().getBoolean("fullscreen", false);
-		
 		isFullscreenEnabled = !isFullscreenEnabled;
-		
-		/*if(isFullscreenEnabled) {
-			//Enable fullscreen using desktop resolution, by default on the primary monitor and at it's nominal video mode
-			long mainMonitor = glfwGetPrimaryMonitor();
-			GLFWVidMode currentVideoMode = glfwGetVideoMode(mainMonitor);
-			
-			String modeString = client.configDeprecated().getProp("fullScreenResolution", null);
-			if(modeString == null || modeString.contains("x") || !modeString.contains(":")) {
-				modeString = "1:"+currentVideoMode.width()+":"+currentVideoMode.height()+":"+currentVideoMode.refreshRate();
-				client.configDeprecated().setString("fullScreenResolution", modeString);
-			}
-			
-			VideoMode videoMode = findMatchForVideoMode(modeString);
-			glfwSetWindowMonitor(this.glfwWindowHandle, mainMonitor, 0, 0, videoMode.videoMode.width(), videoMode.videoMode.height(), videoMode.videoMode.refreshRate());
-		}
-		else {
-			glfwSetWindowMonitor(this.glfwWindowHandle, MemoryUtil.NULL, 0, 0, defaultWidth, defaultHeight, GLFW_DONT_CARE);
-		}*/
-		
 		client.configDeprecated().setString("fullscreen", isFullscreenEnabled ? "true" : "false");
 		switchResolution();
 	}
@@ -651,7 +516,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		return renderingContext;
 	}
 
-	public static boolean isMainGLWindow()
+	public boolean isMainGLWindow()
 	{
 		return getInstance().isInstanceMainGLWindow();
 	}
@@ -667,11 +532,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		{
 			mainThreadQueue.add(runnable);
 		}
-	}
-
-	public static boolean isInFocus()
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
