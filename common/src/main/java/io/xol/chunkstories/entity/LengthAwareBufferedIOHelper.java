@@ -38,7 +38,7 @@ public class LengthAwareBufferedIOHelper
 			this.baos = baos;
 		}
 		
-		public void writeTheStuff(DataOutputStream actualOutput) throws IOException {
+		public void writeTheStuffPrecededByLength(DataOutputStream actualOutput) throws IOException {
 			
 			byte[] buffer = baos.toByteArray();
 			actualOutput.writeInt(buffer.length);

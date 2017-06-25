@@ -67,7 +67,7 @@ end
 
 packet decal 13
 	allowedFrom: server
-	commonClass: io.xol.chunkstories.net.packets.PacketDecal
+	commonClass: io.xol.chunkstories.api.net.packets.PacketDecal
 end
 
 packet file 14

@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
-import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketsProcessor;
@@ -78,10 +77,10 @@ public class PacketSoundSource extends PacketSynchPrepared
 		if (soundSource == null && stopped)
 			return;
 
-		if (soundSource == null)
+		if (soundSource == null) {
 			
-			cpe.getContext().getSoundManager().replicateServerSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain, attenuationStart, attenuationEnd, buffered, UUID);
-
+			soundSource = cpe.getContext().getSoundManager().replicateServerSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain, attenuationStart, attenuationEnd, buffered, UUID);
+			return;
 			
 			/*try
 			{
@@ -103,7 +102,7 @@ public class PacketSoundSource extends PacketSynchPrepared
 				cpe.getContext().logger().error("Can't play sound "+soundName + "from server. (UUID="+UUID+")");
 				return;
 			}*/
-		
+		}
 		if(stopped)
 		{
 			soundSource.stop();

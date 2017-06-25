@@ -322,7 +322,7 @@ public class ALSoundManager implements ClientSoundManager
 	}
 
 	@Override
-	public void replicateServerSoundSource(String soundName, float x, float y, float z, boolean loop, boolean isAmbient, float pitch, float gain, float attenuationStart, float attenuationEnd, boolean buffered, long UUID) {
+	public SoundSource replicateServerSoundSource(String soundName, float x, float y, float z, boolean loop, boolean isAmbient, float pitch, float gain, float attenuationStart, float attenuationEnd, boolean buffered, long UUID) {
 		try {
 			ALSoundSource soundSource = null;
 				
@@ -334,10 +334,13 @@ public class ALSoundManager implements ClientSoundManager
 			//Match the UUIDs
 			soundSource.setUUID(UUID);
 			addSoundSource(soundSource);
+			
+			return soundSource;
 		}
 		catch (SoundEffectNotFoundException e)
 		{
 			System.out.println("Sound not found "+soundName);
+			return null;
 		}
 	}
 }

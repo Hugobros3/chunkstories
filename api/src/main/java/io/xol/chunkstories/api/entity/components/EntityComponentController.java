@@ -63,6 +63,11 @@ public class EntityComponentController extends EntityComponent
 	@Override
 	public void pull(StreamSource from, DataInputStream dis) throws IOException
 	{
+		long controllerUUID = 0;
+		boolean isControllerNotNull = dis.readBoolean();
+		if(isControllerNotNull)
+			controllerUUID = dis.readLong();
+		
 		//This is strictly illegal, only remotely connected client worlds will accept such requests
 		if (!(entity.getWorld() instanceof WorldClientNetworkedRemote))
 		{
@@ -75,10 +80,9 @@ public class EntityComponentController extends EntityComponent
 		PlayerClient player = ((ClientInterface)entity.getWorld().getGameContext()).getPlayer();
 		assert player != null;
 		
-		boolean isControllerNotNull = dis.readBoolean();
 		if (isControllerNotNull)
 		{
-			long controllerUUID = dis.readLong();
+			//long controllerUUID = dis.readLong();
 				
 			long clientUUID = player.getUUID();
 			System.out.println("Entity " + entity + " is now in control of " + controllerUUID + " me=" + clientUUID);
