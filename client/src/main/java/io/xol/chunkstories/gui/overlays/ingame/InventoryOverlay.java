@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.EntityGroundItem;
 import io.xol.chunkstories.core.net.packets.PacketInventoryMoveItemPile;
@@ -128,6 +129,8 @@ public class InventoryOverlay extends Layer
 			return false;
 		}
 		
+		World world = player.getWorld();
+		
 		for (int i = 0; i < drawers.length; i++)
 		{
 			//Close button
@@ -183,7 +186,7 @@ public class InventoryOverlay extends Layer
 							return true;
 						}
 
-						if (Client.world instanceof WorldClientLocal)
+						if (world instanceof WorldClientLocal)
 						{
 							PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(player, selectedItem, selectedItem.getInventory(), inventories[i], selectedItem.getX(), selectedItem.getY(), x, y, selectedItemAmount);
 							player.getContext().getPluginManager().fireEvent(moveItemEvent);
@@ -194,11 +197,11 @@ public class InventoryOverlay extends Layer
 							
 							selectedItem = null;
 						}
-						else if (Client.world instanceof WorldClientRemote)
+						else if (world instanceof WorldClientRemote)
 						{
 							//When in a remote MP scenario, send a packet
 							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(selectedItem, selectedItem.getInventory(), inventories[i], selectedItem.getX(), selectedItem.getY(), x, y, selectedItemAmount);
-							((WorldClientRemote) Client.world).getConnection().pushPacket(packetMove);
+							((WorldClientRemote) world).getConnection().pushPacket(packetMove);
 							
 							//And unsellect item
 							selectedItem = null;
@@ -216,7 +219,7 @@ public class InventoryOverlay extends Layer
 		if(selectedItem != null)
 		{
 			//SP scenario, replicated logic in PacketInventoryMoveItemPile
-			if (Client.world instanceof WorldClientLocal)
+			if (world instanceof WorldClientLocal)
 			{
 				//For local item drops, we need to make sure we have a sutiable entity
 				Entity playerEntity = player.getControlledEntity();
@@ -242,10 +245,10 @@ public class InventoryOverlay extends Layer
 				selectedItem = null;
 			}
 			//In MP scenario, move into /dev/null
-			else if (Client.world instanceof WorldClientRemote)
+			else if (world instanceof WorldClientRemote)
 			{
 				PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(selectedItem, selectedItem.getInventory(), null, selectedItem.getX(), selectedItem.getY(), 0, 0, selectedItemAmount);
-				((WorldClientRemote) Client.world).getConnection().pushPacket(packetMove);
+				((WorldClientRemote) world).getConnection().pushPacket(packetMove);
 				
 				selectedItem = null;
 			}

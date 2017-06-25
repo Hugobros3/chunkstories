@@ -85,11 +85,11 @@ public class PacketTypeDeclared extends GenericNamedConfigurable implements Pack
 
 		Class<?> rawClass = store.modsManager().getClassByName(className);
 		if (rawClass == null) {
-			throw new IllegalPacketDeclarationException(
-					"Packet class " + this.getName() + " does not exist in codebase.");
+			return null;
+			//throw new IllegalPacketDeclarationException("Packet class " + this.getName() + " does not exist in codebase.");
 		} else if (!(Packet.class.isAssignableFrom(rawClass))) {
-			throw new IllegalPacketDeclarationException(
-					"Class " + this.getName() + " is not extending the Packet class.");
+			return null;
+			//throw new IllegalPacketDeclarationException("Class " + this.getName() + " is not extending the Packet class.");
 		}
 
 		@SuppressWarnings("unchecked")

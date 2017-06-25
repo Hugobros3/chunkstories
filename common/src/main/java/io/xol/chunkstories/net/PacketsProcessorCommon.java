@@ -21,10 +21,10 @@ import io.xol.chunkstories.api.net.PacketsProcessor;
 //http://chunkstories.xyz
 //http://xol.io
 
-public abstract class PacketsProcessorCommon implements PacketsProcessor
+public abstract class PacketsProcessorCommon implements PacketsProcessorActual
 {
 	private final GameContext gameContext;
-	private final Content.PacketTypes store;
+	protected final Content.PacketTypes store;
 	
 	Queue<PendingSynchPacket> pendingSynchPackets = new ConcurrentLinkedQueue<PendingSynchPacket>();
 

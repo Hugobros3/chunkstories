@@ -64,7 +64,7 @@ public class OptionsOverlay extends Layer
 		{
 			super(OptionsOverlay.this, 0, 0, 320, 32, n, BitmapFont.SMALLFONTS, 1);
 			this.parameter = n;
-			this.value = Client.getConfig().getProp(parameter, value);
+			this.value = Client.getInstance().getConfig().getProp(parameter, value);
 		}
 
 		public void updateText()
@@ -76,7 +76,7 @@ public class OptionsOverlay extends Layer
 
 		public void save()
 		{
-			Client.getConfig().setString(parameter, value);
+			Client.getInstance().getConfig().setString(parameter, value);
 		}
 	}
 
@@ -86,7 +86,7 @@ public class OptionsOverlay extends Layer
 		public ConfigButtonToggle(String n)
 		{
 			super(n);
-			value = Client.getConfig().getBoolean(n, false)+"";
+			value = Client.getInstance().getConfig().getBoolean(n, false)+"";
 		}
 
 		@Override
@@ -240,7 +240,7 @@ public class OptionsOverlay extends Layer
 			@Override
 			public void run() {
 				//applyAndSave();
-				Client.getConfig().save();
+				Client.getInstance().getConfig().save();
 				gameWindow.setLayer(parentLayer);
 			}
 			
@@ -303,7 +303,7 @@ public class OptionsOverlay extends Layer
 					public void run()
 					{
 						if(Client.world != null)
-							Client.world.setWeather(Client.getConfig().getBooleanProp("rainyMode", false));
+							Client.world.setWeather(Client.getInstance().getConfig().getBooleanProp("rainyMode", false));
 					}
 				}),*/
 				/*new ConfigButtonToggle("perPixelFresnel").setApplyAction(new Runnable(){
@@ -345,7 +345,7 @@ public class OptionsOverlay extends Layer
 					@Override
 					public void run()
 					{
-						Client.getInstance().getGameWindow().setTargetFPS(Client.getConfig().getInteger("framerate", -1));
+						Client.getInstance().getGameWindow().setTargetFPS(Client.getInstance().getConfig().getInteger("framerate", -1));
 					}
 				}),
 				}));
@@ -368,8 +368,8 @@ public class OptionsOverlay extends Layer
 					@Override
 					public void run()
 					{
-						String code = Client.getConfig().getProp("language", "en");
-						Client.clientConfig.setString("language", code);
+						String code = Client.getInstance().getConfig().getProp("language", "en");
+						Client.getInstance().configDeprecated().setString("language", code);
 						Client.getInstance().getContent().localization().loadTranslation(code);
 					}
 				}),
@@ -528,7 +528,7 @@ public class OptionsOverlay extends Layer
 		//if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
 		if (Client.getInstance().getInputsManager().getInputByName("exit").isPressed())
 		{
-			Client.getConfig().save();
+			Client.getInstance().getConfig().save();
 			mainScene.changeOverlay(parent);
 			return true;
 		}
@@ -561,7 +561,7 @@ public class OptionsOverlay extends Layer
 	public boolean handleInput(Input input) {
 		if(input.equals("exit"))
 		{
-			Client.getConfig().save();
+			Client.getInstance().getConfig().save();
 			gameWindow.setLayer(parentLayer);
 			return true;
 		} else if(input instanceof MouseButton) {

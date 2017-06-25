@@ -85,6 +85,9 @@ public class HashMapWorldRegionsHolder
 		int key = (region.getRegionX() * sizeInRegions + region.getRegionZ()) * heightInRegions + region.getRegionY();
 		//RegionLocation key = new RegionLocation(region.regionX, region.regionY, region.regionZ);
 
+		System.out.println("Built region: "+region);
+		System.out.println("Key: "+key);
+		
 		//If it's not still saving an older version
 		if (world.ioHandler.isDoneSavingRegion(region))
 			regions.putIfAbsent(key, region);

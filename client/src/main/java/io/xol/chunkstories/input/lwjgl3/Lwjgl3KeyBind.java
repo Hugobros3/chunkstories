@@ -26,7 +26,7 @@ public class Lwjgl3KeyBind implements KeyboardKeyInput, LWJGLPollable
 	{
 		this.im = im;
 		this.name = name;
-		this.LWJGL2_key = Client.getConfig().getInteger("bind."+name, GLFWKeyIndexHelper.getGlfwKeyByName(defaultKeyName));
+		this.LWJGL2_key = Client.getInstance().getConfig().getInteger("bind."+name, GLFWKeyIndexHelper.getGlfwKeyByName(defaultKeyName));
 		computeHash(name);
 	}
 	
@@ -92,7 +92,7 @@ public class Lwjgl3KeyBind implements KeyboardKeyInput, LWJGLPollable
 	 */
 	public void reload()
 	{
-		this.LWJGL2_key = Client.getConfig().getInteger("bind."+name, -1);
+		this.LWJGL2_key = Client.getInstance().getConfig().getInteger("bind."+name, -1);
 	}
 	
 	@Override

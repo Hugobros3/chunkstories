@@ -1,7 +1,6 @@
 package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.Constants;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.voxel.DefaultVoxelRenderer;
 import io.xol.chunkstories.renderer.ChunkMeshesBaker;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
@@ -321,7 +320,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		{
 			System.out.println("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
 			System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
-			data = Client.world.getVoxelData(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
+			data = world.getVoxelData(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 		}
 		/*if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
 		{
@@ -364,7 +363,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		z += c.getChunkZ() * 32;
 
 		// Look for a chunk with relevant lightning data
-		cached = Client.world.getChunk(x / 32, y / 32, z / 32);
+		cached = world.getChunk(x / 32, y / 32, z / 32);
 		if (cached != null && !cached.isAirChunk())
 		{
 			data = cached.getVoxelData(x, y, z);
@@ -374,7 +373,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		}
 
 		// If all else fails, just use the heightmap information
-		return Client.world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) <= y ? 15 : 0;
+		return world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) <= y ? 15 : 0;
 	}
 
 	private final int getBlocklight(Chunk c, int x, int y, int z)
@@ -398,7 +397,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		{
 			System.out.println("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
 			System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
-			data = Client.world.getVoxelData(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
+			data = world.getVoxelData(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 		}
 
 		/*if (y < 0 && c.chunkY == 0)

@@ -19,7 +19,7 @@ public class Texture2DRenderTargetGL extends Texture2DGL
 		
 		if (!Client.getInstance().getGameWindow().isMainGLWindow())
 		{
-			System.out.println("isn't main thread, scheduling texture creation");
+			//System.out.println("isn't main thread, scheduling texture creation");
 			scheduledForLoad = true;
 			scheduledW = w;
 			scheduledH = h;
@@ -38,9 +38,9 @@ public class Texture2DRenderTargetGL extends Texture2DGL
 			scheduledForLoad = false;
 			//TODO defer to asynch thread
 			long ms = System.currentTimeMillis();
-			System.out.print("main thread called, actually creating the texture ... ");
+			//System.out.print("main thread called, actually creating the texture ... ");
 			resize(scheduledW, scheduledH);
-			System.out.print(" took "+(System.currentTimeMillis()-ms) + "ms \n");
+			//System.out.print(" took "+(System.currentTimeMillis()-ms) + "ms \n");
 		}
 	}
 }

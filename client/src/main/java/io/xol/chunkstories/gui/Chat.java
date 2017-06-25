@@ -10,6 +10,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
@@ -23,6 +24,7 @@ import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
+import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -235,6 +237,9 @@ public class Chat
 	}
 	
 	private void processTextInput(String input) {
+		
+		String username = ingame.getGameWindow().getClient().username();
+		
 		if (inputBox.text.startsWith("/"))
 		{
 			String chatMsg = inputBox.text;
@@ -304,12 +309,20 @@ public class Chat
 
 		if (inputBox.text.equals("/locclear"))
 		{
-			//java.util.Arrays.fill(chatHistory, "");
 			chat.clear();
 		}
 		else if (inputBox.text.equals("I am Mr Debug"))
 		{
 			RenderingConfig.isDebugAllowed = true;
+		}
+		else if (inputBox.text.equals("_-"))
+		{
+			Entity e = Client.getInstance().getPlayer().getControlledEntity();
+			int cx = ((int)(double)e.getLocation().getX())/32;
+			int cy = ((int)(double)e.getLocation().getY())/32;
+			int cz = ((int)(double)e.getLocation().getZ())/32;
+			
+			insert("No fuck you"+((WorldImplementation)Client.getInstance().getWorld()).getRegionsHolder().getRegionChunkCoordinates(cx, cy, cz));
 		}
 		else if(inputBox.text.equals("/reloadLocalContent"))
 		{
@@ -318,160 +331,12 @@ public class Chat
 			//Mark some caches dirty
 			((WorldRendererImplementation) Client.getInstance().getWorld().getWorldRenderer()).reloadContentSpecificStuff();
 		}
-		/*else if (inputBox.text.startsWith("/loctime"))
-		{
-			try
-			{
-				int time = Integer.parseInt(inputBox.text.split(" ")[1]);
-				Client.world.setTime(time);
-			}
-			catch (Exception e)
-			{
-
-			}
-		}
-		else if (inputBox.text.startsWith("/locfood"))
-		{
-			try
-			{
-				float foodLevel = Float.parseFloat(inputBox.text.split(" ")[1]);
-				EntityPlayer player = (EntityPlayer) Client.getInstance().getPlayer().getControlledEntity();
-				player.setFoodLevel(foodLevel);
-				insert("Food set to " + foodLevel);
-			}
-			catch (Exception e)
-			{
-
-			}
-		}
-		else if (inputBox.text.startsWith("/locspeed"))
-		{
-			try
-			{
-				float flySpeed = Float.parseFloat(inputBox.text.split(" ")[1]);
-				EntityPlayer.flySpeed = flySpeed;
-				insert("Flying speed set to " + flySpeed);
-			}
-			catch (Exception e)
-			{
-
-			}
-		}
-		else if (inputBox.text.startsWith("/locw"))
-		{
-			try
-			{
-				float overcastFactor = Float.parseFloat(inputBox.text.split(" ")[1]);
-				Client.world.setWeather(overcastFactor);
-			}
-			catch (Exception e)
-			{
-
-			}
-		}
-		else if (inputBox.text.startsWith("/locspawn"))
-		{
-			if (inputBox.text.contains(" "))
-			{
-				int id = Integer.parseInt(inputBox.text.split(" ")[1]);
-				int count = 1;
-				if (inputBox.text.split(" ").length > 2)
-					count = Integer.parseInt(inputBox.text.split(" ")[2]);
-
-				for (int ii = 0; ii < count; ii++)
-					for (int jj = 0; jj < count; jj++)
-					{
-						Entity test = Client.world.getGameContext().getContent().entities().getEntityTypeById((short) id).create(Client.world);// Entities.newEntity(Client.world, (short) id);
-						Entity player = Client.getInstance().getPlayer().getControlledEntity();
-						test.setLocation(new Location(Client.world, player.getLocation().clone().add(ii * 3.0, 0.0, jj * 3.0)));
-						Client.world.addEntity(test);
-					}
-			}
-		}
-		else if (inputBox.text.startsWith("/locbutcher"))
-		{
-			Iterator<Entity> ie = Client.world.getAllLoadedEntities();
-			while (ie.hasNext())
-			{
-				Entity e = ie.next();
-				System.out.println("checking " + e);
-				if (!e.equals(Client.getInstance().getPlayer().getControlledEntity()))
-				{
-					System.out.println("removing");
-					ie.remove();
-				}
-			}
-		}
-		else if (inputBox.text.startsWith("/locgive"))
-		{
-
-			try
-			{
-				Entity controlledEntity = Client.getInstance().getPlayer().getControlledEntity();
-				String itemName = inputBox.text.split(" ")[1];
-
-				int c = 1;
-				if (inputBox.text.split(" ").length >= 3)
-					c = Integer.parseInt(inputBox.text.split(" ")[2]);
-
-				ItemPile it = new ItemPile(Client.getInstance().getContent().items().getItemTypeByName(itemName).newItem());
-				it.setAmount(c);
-
-				((EntityPlayer) controlledEntity).getInventory().addItemPile(it);
-			}
-			catch (Throwable npe)
-			{
-
-			}
-		}
-		else if (inputBox.text.startsWith("/locclearinv"))
-		{
-			Entity controlledEntity = Client.getInstance().getPlayer().getControlledEntity();
-			((EntityPlayer) controlledEntity).getInventory().clear();
-			System.out.println("CLEARED");
-		}
-		else if (inputBox.text.startsWith("/locsave"))
-		{
-			Client.world.saveEverything();
-		}
-		else if (inputBox.text.startsWith("/locfly"))
-		{
-			Entity controlledEntity = Client.getInstance().getPlayer().getControlledEntity();
-			if (controlledEntity != null && controlledEntity instanceof EntityFlying)
-			{
-				boolean state = ((EntityFlying) controlledEntity).getFlyingComponent().get();
-				state = !state;
-				Client.getInstance().printChat("flying : " + state);
-				((EntityFlying) controlledEntity).getFlyingComponent().set(state);
-				//return;
-			}
-		}
-		else if (inputBox.text.startsWith("/loccrea"))
-		{
-			Entity controlledEntity = Client.getInstance().getPlayer().getControlledEntity();
-			if (controlledEntity != null && controlledEntity instanceof EntityCreative)
-			{
-				boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().get();
-				state = !state;
-				Client.getInstance().printChat("creative : " + state);
-				((EntityCreative) controlledEntity).getCreativeModeComponent().set(true);
-				//return;
-			}
-		}
-		else if (inputBox.text.startsWith("/kkk"))
-		{
-			Entity controlledEntity = Client.getInstance().getPlayer().getControlledEntity();
-			if (controlledEntity != null && controlledEntity instanceof EntityRotateable)
-			{
-				((EntityRotateable) controlledEntity).getEntityRotationComponent().setRotation(180, 0);
-			}
-		}*/
 		else if (ingame.getWorld() instanceof WorldClientRemote)
 			((WorldClientRemote) ingame.getWorld()).getConnection().sendTextMessage("chat/" + inputBox.text);
 		else
-			insert(ColorsTools.getUniqueColorPrefix(Client.username) + Client.username + "#FFFFFF > " + inputBox.text);
+			insert(ColorsTools.getUniqueColorPrefix(username) + username + "#FFFFFF > " + inputBox.text);
 
-		System.out.println(Client.username + " > " + inputBox.text);
+		System.out.println(username + " > " + inputBox.text);
 
 		if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
 		{

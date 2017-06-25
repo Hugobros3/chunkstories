@@ -108,13 +108,13 @@ public class Server implements Runnable, ServerInterface
 					new File(GameDirectory.getGameFolderPath() + "/serverlogs/" + time + ".log"));
 
 			log.info("Starting Chunkstories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
-			
-			//TODO why isn't this below ?
-			connectionsManager = new ServerConnectionsManager(this);
 
 			//Loads the mods/build filesystem
 			gameContent = new GameContentStore(this, modsString);
 			gameContent.reload();
+			
+			//TODO why isn't this below ?
+			connectionsManager = new ServerConnectionsManager(this);
 
 			modsProvider = new ServerModsProvider(this);
 			

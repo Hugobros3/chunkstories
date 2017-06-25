@@ -28,7 +28,7 @@ public class SendQueue extends Thread
 	//Reference to what we are sending stuff to, used in packet creation logic to look for implemented interfaces ( remote server, unlogged in client, logged in client etc )
 	private PacketDestinator destinator;
 
-	public SendQueue(PacketDestinator destinator, DataOutputStream out, PacketsProcessor processor)
+	public SendQueue(PacketDestinator destinator, DataOutputStream out, PacketsProcessorActual processor)
 	{
 		this.destinator = destinator;
 		this.out = out;
@@ -123,7 +123,7 @@ public class SendQueue extends Thread
 				catch (UnknowPacketException e)
 				{
 					//We care about that
-					ChunkStoriesLoggerImplementation.getInstance().error("Error : Unknown packet exception");
+					ChunkStoriesLoggerImplementation.getInstance().error("Error : Unknown packet exception : "+packet.getClass().getName());
 					e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
 				}
 		}

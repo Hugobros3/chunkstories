@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.WorldNetworked;
-import io.xol.chunkstories.net.PacketsProcessorCommon;
+import io.xol.chunkstories.net.PacketsProcessorActual;
 import io.xol.chunkstories.net.PacketsProcessorCommon.PendingSynchPacket;
 import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.server.Server;
@@ -59,7 +59,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	public void tick()
 	{
 		//Update client tracking
-		Iterator<Player> pi = server.getConnectedPlayers();
+		Iterator<Player> pi = this.getPlayers();
 		while (pi.hasNext())
 		{
 			Player player = pi.next();
@@ -75,6 +75,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			PacketTime packetTime = new PacketTime();
 			packetTime.time = this.getTime();
 			packetTime.overcastFactor = this.getWeather();
+			
 			player.pushPacket(packetTime);
 		}
 		
@@ -198,11 +199,11 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			UserConnection playerConnection = ((ServerPlayer)clientsIterator.next()).getPlayerConnection();
 
 			//Get buffered packets from this player
-			PendingSynchPacket packet = ((PacketsProcessorCommon)playerConnection.getPacketsProcessor()).getPendingSynchPacket();
+			PendingSynchPacket packet = ((PacketsProcessorActual)playerConnection.getPacketsProcessor()).getPendingSynchPacket();
 			while (packet != null)
 			{
 				packet.process(playerConnection, playerConnection.getPacketsProcessor());
-				packet = ((PacketsProcessorCommon)playerConnection.getPacketsProcessor()).getPendingSynchPacket();
+				packet = ((PacketsProcessorActual)playerConnection.getPacketsProcessor()).getPendingSynchPacket();
 			}
 		}
 		
@@ -229,7 +230,35 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 	public IterableIterator<Player> getPlayers()
 	{
-		return server.getConnectedPlayers();
+		return new IterableIterator<Player>()
+		{
+			Iterator<Player> players = server.getConnectedPlayers();
+			Player next = null;
+			
+			@Override
+			public boolean hasNext()
+			{
+				while(next == null && players.hasNext()) {
+					next = players.next();
+					if(next.getWorld() != null && next.getWorld().equals(WorldServer.this)) //Require the player to be spawned within this world.
+						break;
+					else
+						next = null;
+				}
+				return next != null;
+			}
+
+			@Override
+			public Player next()
+			{
+				Player player = next;
+				next = null;
+				//System.out.println("Giving up player" +player+", the jew");
+				return player;
+			}
+
+		};
+		//return server.getConnectedPlayers();
 	}
 
 	@Override

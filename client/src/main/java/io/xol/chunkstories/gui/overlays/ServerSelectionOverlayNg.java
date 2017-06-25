@@ -71,7 +71,7 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 		elements.add(backOption);
 		
 		autologin = a;
-		String lastServer = Client.clientConfig.getProp("last-server", "");
+		String lastServer = Client.getInstance().configDeprecated().getProp("last-server", "");
 		if (!lastServer.equals(""))
 		{
 			ipForm.setText(lastServer);
@@ -178,8 +178,8 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 		if (ip.length() == 0)
 			return;
 		
-		Client.clientConfig.setString("last-server", ip);
-		Client.clientConfig.save();
+		Client.getInstance().configDeprecated().setString("last-server", ip);
+		Client.getInstance().configDeprecated().save();
 		
 		if (ip.contains(":"))
 		{
@@ -187,7 +187,7 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 			ip = ip.split(":")[0];
 		}
 		
-		Client.world = null;
+		//Client.world = null;
 		
 		gameWindow.setLayer(new ConnectionOverlay(gameWindow, this, ip, port));
 		//this.mainScene.changeOverlay(new ConnectionOverlay(mainScene, mainScene.currentOverlay, ip, port));

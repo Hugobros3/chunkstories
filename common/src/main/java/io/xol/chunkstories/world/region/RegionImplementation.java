@@ -65,6 +65,9 @@ public class RegionImplementation implements Region
 		this.regionZ = regionZ;
 		this.worldChunksHolder = worldChunksHolder;
 
+		if(regionX < 0 || regionY < 0 || regionZ < 0)
+			throw new RuntimeException("Regions aren't allowed negative coordinates.");
+		
 		//Initialize slots
 		chunkHolders = new ChunkHolderImplementation[512];
 		for (int i = 0; i < 8; i++)

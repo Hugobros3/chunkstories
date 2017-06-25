@@ -62,11 +62,11 @@ public class LanguageSelectionScreen extends Layer
 					if(!allowBackButton && langButton.translationCode.endsWith("en"))
 					{
 						//Englishfag detected, thanks /u/MrSmith33 for feedback
-						Client.clientConfig.setInteger("bind.forward", GLFW.GLFW_KEY_W);
-						Client.clientConfig.setInteger("bind.left", GLFW.GLFW_KEY_A);
+						Client.getInstance().configDeprecated().setInteger("bind.forward", GLFW.GLFW_KEY_W);
+						Client.getInstance().configDeprecated().setInteger("bind.left", GLFW.GLFW_KEY_A);
 					}
 					
-					Client.clientConfig.setString("language", langButton.translationCode);
+					Client.getInstance().configDeprecated().setString("language", langButton.translationCode);
 					Client.getInstance().getContent().localization().loadTranslation(langButton.translationCode);
 					gameWindow.setLayer(parentLayer);
 				}

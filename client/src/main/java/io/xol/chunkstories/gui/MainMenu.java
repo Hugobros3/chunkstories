@@ -131,6 +131,8 @@ public class MainMenu extends Layer
 	@Override
 	public void render(RenderingInterface renderingContext)
 	{
+		if(gameWindow.getLayer() == this)
+			gameWindow.setLayer( new MainMenuOverlay(gameWindow, this));
 		//System.out.println(gameWindow.getLayer());
 		
 		try // Ugly fps caps yay

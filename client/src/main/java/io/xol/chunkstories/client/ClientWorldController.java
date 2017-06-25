@@ -84,7 +84,7 @@ public class ClientWorldController implements PlayerClient
 					((WorldClientNetworkedRemote) controlledEntity.getWorld()).getRemoteServer().unsubscribe(controlledEntity);
 				
 				//Let know the server of new changes
-				((WorldClientNetworkedRemote) controlledEntity.getWorld()).getRemoteServer().subscribe(controllableEntity);
+				((WorldClientNetworkedRemote) controllableEntity.getWorld()).getRemoteServer().subscribe(controllableEntity);
 			}
 			
 			controlledEntity = controllableEntity;

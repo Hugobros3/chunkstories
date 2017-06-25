@@ -11,6 +11,7 @@ import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -31,6 +32,8 @@ import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
+import io.xol.engine.concurrency.Fence;
+import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
@@ -79,9 +82,9 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 
 	public long vramUsageVerticesObjects = 0;
 
-	long timeTookLastTime = 0;
+	//private long timeTookLastTime = 0;
 
-	Queue<Runnable> mainThreadQueue = new ConcurrentLinkedQueue<Runnable>();
+	Queue<SynchronousTask> mainThreadQueue = new ConcurrentLinkedQueue<SynchronousTask>();
 	
 	//GLFW
 	public long glfwWindowHandle;
@@ -94,6 +97,9 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		this.client = client;
 		
 		instance = this;//TODO: no
+		
+		// Load natives for LWJGL
+		// NativesLoader.load();
 		
 		if (!glfwInit())
 			throw new IllegalStateException("Unable to initialize GLFW");
@@ -191,7 +197,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			}
 		}
 		else
-			System.out.println("OpenGL 3.2+ Hardware detected.");
+			ChunkStoriesLoggerImplementation.getInstance().log("OpenGL 3.2+ Hardware detected.");
 
 		//Check for various limitations
 		RenderingConfig.gl_MaxTextureUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS);
@@ -235,24 +241,18 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 							layer.onResize(width, height);
 				    }
 				}));
-				
-				/*if (Display.wasResized() || forceResize)
-				{
-					if (forceResize)
-						forceResize = false;
-					GameWindowOpenGL.windowWidth = Display.getWidth();
-					GameWindowOpenGL.windowHeight = Display.getHeight();
-
-					glViewport(0, 0, Display.getWidth(), Display.getHeight());
-
-					if (currentScene != null)
-						currentScene.onResize();
-				}*/
 
 				//Do scene changes etc
-				for (Runnable r : mainThreadQueue)
+				Iterator<SynchronousTask> is = mainThreadQueue.iterator();
+				while(is.hasNext()) {
+					SynchronousTask st = is.next();
+					st.run.run();
+					st.signal();
+					is.remove();
+				}
+				/*for (Runnable r : mainThreadQueue)
 					r.run();
-				mainThreadQueue.clear();
+				mainThreadQueue.clear();*/
 
 				// Update audio
 				soundManager.update();
@@ -263,20 +263,10 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 				// Run scene content
 				if (layer != null)
 				{
-					//InputAbstractor.update(this, currentScene);
-
 					// then do the game logic
 					try
 					{
 						layer.render(renderingContext);
-						//currentScene.guiHandler.rescaleGui(getScalingFactor());
-						/*if(currentScene instanceof OverlayableScene)
-						{
-							OverlayableScene o = (OverlayableScene)currentScene;
-							if(o.currentOverlay != null)
-								o.currentOverlay.guiHandler.rescaleGui(getScalingFactor());
-						}
-						currentScene.update(renderingContext);*/
 					}
 					//Fucking tired of handling npes everywhere
 					catch (NullPointerException npe)
@@ -291,17 +281,17 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 				//Clamp fps
 				if (targetFPS != -1)
 				{
-					long time = System.currentTimeMillis();
+					//long time = System.currentTimeMillis();
 
 					sync(targetFPS);
 
 					//glFinish();
-					long timeTook = System.currentTimeMillis() - time;
-					timeTookLastTime = timeTook;
+					//long timeTook = System.currentTimeMillis() - time;
+					//timeTookLastTime = timeTook;
 				}
 
 				//Draw graph
-				if (Client.getConfig().getBoolean("frametimeGraph", false))
+				if (client.getConfig().getBoolean("frametimeGraph", false))
 					FrametimeRenderer.draw(renderingContext);
 
 				//Draw last shit
@@ -317,16 +307,16 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			System.out.println("Copyright 2015-2016 XolioWare Interactive");
 			
 			soundManager.destroy();
-			Client.onClose();
+			client.onClose();
 			
 			glfwDestroyWindow(glfwWindowHandle);
-			//Display.destroy();
 			System.exit(0);
 		}
-		catch (Exception e)
+		catch (Throwable e)
 		{
-			System.out.println("A fatal error occured ! If you see the dev, show him this message !");
+			ChunkStoriesLoggerImplementation.getInstance().log("A fatal error occured ! If you see the dev, show him this message !");
 			e.printStackTrace();
+			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
 		}
 	}
 	
@@ -526,11 +516,22 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		return Thread.currentThread().getId() == mainGLThreadId;
 	}
 
-	public void queueTask(Runnable runnable)
+	public Fence queueSynchronousTask(Runnable runnable)
 	{
-		synchronized (mainThreadQueue)
+		/*synchronized (mainThreadQueue)
 		{
 			mainThreadQueue.add(runnable);
+		}*/
+		SynchronousTask st = new SynchronousTask(runnable);
+		mainThreadQueue.add(st);
+		return st;
+	}
+	
+	class SynchronousTask extends SimpleFence {
+		final Runnable run;
+		
+		public SynchronousTask(Runnable run) {
+			this.run = run;
 		}
 	}
 

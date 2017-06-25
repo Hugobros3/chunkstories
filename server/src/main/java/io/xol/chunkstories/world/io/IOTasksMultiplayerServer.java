@@ -53,8 +53,11 @@ public class IOTasksMultiplayerServer extends IOTasks
 					return true;
 				
 				RegionImplementation holder = world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
-				if(holder == null)
+				if(holder == null) {
+				
+					//System.out.println("world.getRegionsHolder().getRegionChunkCoordinates("+chunkX+", "+chunkY+", "+chunkZ+")");
 					return false;
+				}
 				
 				if(holder.isDiskDataLoaded())
 				{
@@ -67,7 +70,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 				}
 				else
 				{
-					//System.out.println("holder not loaded yet "+holder);
+					System.out.println("holder not loaded yet "+holder);
 					
 					return false;
 				}

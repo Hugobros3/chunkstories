@@ -9,9 +9,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
+import io.xol.engine.concurrency.Fence;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.misc.ConfigFile;
-import io.xol.engine.misc.NativesLoader;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
@@ -42,31 +42,28 @@ import io.xol.chunkstories.world.WorldClientCommon;
 
 public class Client implements ClientInterface
 {
-	public static ConfigDeprecated clientConfig = new ConfigFile("./config/client.cfg");
+	private static Client staticClientReference; //Self-reference for static access
+	
+	//Base client data
+	private final ConfigDeprecated clientConfig = new ConfigFile("./config/client.cfg");
+	private final ChunkStoriesLoggerImplementation logger;
+	private final ClientGameContent gameContent;
 
-	//public static Lwjgl2ClientInputsManager inputsManager;
-	//private final Lwjgl3ClientInputsManager inputsManager;
-
-	public static boolean offline = false;
-
-	private GameWindowOpenGL_LWJGL3 gameWindows;
-	private final static RenderingConfig renderingConfig = new RenderingConfig();
-	public static WorldClientCommon world;
-	//public static GameLogicThread worldThread;
-
+	//Windowing/Rendering
+	private final GameWindowOpenGL_LWJGL3 gameWindow;
+	private final RenderingConfig renderingConfig = new RenderingConfig();
+	
+	//Login data
 	public static String username = "Unknow";
 	public static String session_key = "";
-
-	public static DebugProfiler profiler = new DebugProfiler();
-
-	private ClientGameContent gameContent;
+	public static boolean offline = false;
+	
+	//Gameplay data
+	private WorldClientCommon world;
 	private PlayerClient clientSideController;
 
-	private ChunkStoriesLoggerImplementation logger;
-	//public ClientPluginManager pluginsManager;
-
-	//public EntityControllable controlledEntity;
-	public static Client staticClientReference;
+	//Debug
+	public static DebugProfiler profiler = new DebugProfiler();
 
 	public static void main(String[] args)
 	{
@@ -121,9 +118,6 @@ public class Client implements ClientInterface
 		String time = sdf.format(cal.getTime());
 		logger = new ChunkStoriesLoggerImplementation(this, LogLevel.ALL, LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/logs/" + time + ".log"));
 		
-		// Load natives for LWJGL
-		NativesLoader.load();
-		
 		// Create game content manager
 		gameContent = new ClientGameContent(this, modsStringArgument);
 		gameContent.reload();
@@ -134,14 +128,14 @@ public class Client implements ClientInterface
 			gameContent.localization().loadTranslation(lang);
 		
 		// Creates game window
-		gameWindows = new GameWindowOpenGL_LWJGL3(this, "Chunk Stories " + VersionInfo.version, -1, -1);
+		gameWindow = new GameWindowOpenGL_LWJGL3(this, "Chunk Stories " + VersionInfo.version, -1, -1);
 		RenderingConfig.define();
 
 		//Initlializes windows screen to main menu ( and ask for login )
-		gameWindows.setLayer(new LoginOverlay(gameWindows, new MainMenu(gameWindows)));
+		gameWindow.setLayer(new LoginOverlay(gameWindow, new MainMenu(gameWindow)));
 		
 		//Pass control to the windows for main game loop
-		gameWindows.run();
+		gameWindow.run();
 	}
 
 	public static Client getInstance()
@@ -152,7 +146,7 @@ public class Client implements ClientInterface
 	@Override
 	public ClientSoundManager getSoundManager()
 	{
-		return gameWindows.getSoundEngine();
+		return gameWindow.getSoundEngine();
 	}
 
 	@Override
@@ -167,12 +161,12 @@ public class Client implements ClientInterface
 		return world.getDecalsManager();
 	}
 
-	public static void onClose()
+	public void onClose()
 	{
 		clientConfig.save();
 	}
 
-	public static ConfigDeprecated getConfig()
+	public ConfigDeprecated getConfig()
 	{
 		return clientConfig;
 	}
@@ -180,8 +174,8 @@ public class Client implements ClientInterface
 	@Override
 	public boolean hasFocus()
 	{
-		if (gameWindows.getLayer() instanceof Ingame)
-			return ((Ingame) gameWindows.getLayer()).hasFocus();
+		if (gameWindow.getLayer() instanceof Ingame)
+			return ((Ingame) gameWindow.getLayer()).hasFocus();
 		return false;
 	}
 
@@ -190,24 +184,24 @@ public class Client implements ClientInterface
 	{
 		SimpleFence waitForReload = new SimpleFence();
 
-		if (gameWindows.isMainGLWindow())
+		if (gameWindow.isMainGLWindow())
 		{
 			gameContent.reload();
-			gameWindows.getInputsManager().reload();
-			gameWindows.getRenderingContext().getFontRenderer().reloadFonts();
+			gameWindow.getInputsManager().reload();
+			gameWindow.getRenderingContext().getFontRenderer().reloadFonts();
 
 			return;
 		}
 
-		gameWindows.queueTask(new Runnable()
+		gameWindow.queueSynchronousTask(new Runnable()
 		{
 			@Override
 			public void run()
 			{
 				//ModsManager.reload();
 				gameContent.reload();
-				gameWindows.getInputsManager().reload();
-				gameWindows.getRenderingContext().getFontRenderer().reloadFonts();
+				gameWindow.getInputsManager().reload();
+				gameWindow.getRenderingContext().getFontRenderer().reloadFonts();
 				
 				waitForReload.signal();
 			}
@@ -219,25 +213,19 @@ public class Client implements ClientInterface
 	@Override
 	public void printChat(String textToPrint)
 	{
-		if (gameWindows.getLayer() instanceof Ingame)
-			((Ingame) gameWindows.getLayer()).chat.insert(textToPrint);
+		if (gameWindow.getLayer() instanceof Ingame)
+			((Ingame) gameWindow.getLayer()).chat.insert(textToPrint);
 	}
 
 	public void openInventories(Inventory... inventories)
 	{
-		if (gameWindows.getLayer().getRootLayer() instanceof Ingame)
+		if (gameWindow.getLayer().getRootLayer() instanceof Ingame)
 		{
-			Ingame gmp = (Ingame) gameWindows.getLayer().getRootLayer();
+			Ingame gmp = (Ingame) gameWindow.getLayer().getRootLayer();
 
 			gmp.focus(false);
 			
-			gameWindows.setLayer(new InventoryOverlay(gameWindows, gmp, inventories));
-			
-			/*if (otherInventory != null)
-				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getPlayer().getControlledEntity()).getInventory(), otherInventory }));
-			else
-				gmp.changeOverlay(new InventoryOverlay(gmp, null, new Inventory[] { ((EntityWithInventory) this.getPlayer().getControlledEntity()).getInventory() }));
-			*/
+			gameWindow.setLayer(new InventoryOverlay(gameWindow, gmp, inventories));
 		}
 	}
 
@@ -258,27 +246,26 @@ public class Client implements ClientInterface
 	{
 		WorldClientCommon world = (WorldClientCommon)world2;
 		
-		gameWindows.queueTask(new Runnable()
-		{
+		Runnable job = new Runnable() {
 			@Override
 			public void run()
 			{
 				//Setup the new world and make a controller for it
-				Client.world = world;
+				Client.this.world = world;
 				clientSideController = new ClientWorldController(Client.this, world);
 
 				//Change the scene
-				Ingame ingameScene = new Ingame(gameWindows, world);
+				Ingame ingameScene = new Ingame(gameWindow, world);
 
 				//We want to keep the connection overlay when getting into a server
-				if (gameWindows.getLayer() instanceof ConnectionOverlay)
+				if (gameWindow.getLayer() instanceof ConnectionOverlay)
 				{
-					ConnectionOverlay overlay = (ConnectionOverlay) gameWindows.getLayer();
+					ConnectionOverlay overlay = (ConnectionOverlay) gameWindow.getLayer();
 					//If that happen, we want this connection overlay to forget he was originated from a server browser or whatever
 					overlay.setParentScene(ingameScene);
 				}
 				else
-					gameWindows.setLayer(ingameScene);
+					gameWindow.setLayer(ingameScene);
 				
 				//Switch scene but keep the overlay
 				//ingameScene.changeOverlay(overlay);
@@ -286,23 +273,31 @@ public class Client implements ClientInterface
 				//Start only the logic after all that
 				world.startLogic();
 			}
-		});
+		};
+		
+		if(gameWindow.isInstanceMainGLWindow())
+			job.run();
+		else {
+			Fence fence = gameWindow.queueSynchronousTask(job);
+			fence.traverse();
+		}
+		
 	}
 
 	@Override
 	public void exitToMainMenu()
 	{
-		gameWindows.queueTask(new Runnable()
+		gameWindow.queueSynchronousTask(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				gameWindows.setLayer(new MainMenuOverlay(gameWindows, new MainMenu(gameWindows)));
+				gameWindow.setLayer(new MainMenuOverlay(gameWindow, new MainMenu(gameWindow)));
 				
 				if (world != null)
 				{
-					Client.world.destroy();
-					Client.world = null;
+					Client.this.world.destroy();
+					Client.this.world = null;
 				}
 				clientSideController = null;
 			}
@@ -311,17 +306,17 @@ public class Client implements ClientInterface
 
 	public void exitToMainMenu(String errorMessage)
 	{
-		gameWindows.queueTask(new Runnable()
+		gameWindow.queueSynchronousTask(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				gameWindows.setLayer(new MessageBoxOverlay(gameWindows, new MainMenu(gameWindows), errorMessage));
+				gameWindow.setLayer(new MessageBoxOverlay(gameWindow, new MainMenu(gameWindow), errorMessage));
 				
 				if (world != null)
 				{
-					Client.world.destroy();
-					Client.world = null;
+					Client.this.world.destroy();
+					Client.this.world = null;
 				}
 				clientSideController = null;
 			}
@@ -334,24 +329,6 @@ public class Client implements ClientInterface
 		ChunkStoriesLoggerImplementation.getInstance().info(message);
 		printChat(message);
 	}
-
-	/*@Override
-	public String getName()
-	{
-		return username;
-	}
-
-	@Override
-	public void sendMessage(String msg)
-	{
-		print(msg);
-	}
-
-	@Override
-	public boolean hasPermission(String permissionNode)
-	{
-		return true;
-	}*/
 
 	@Override
 	public ClientGameContent getContent()
@@ -381,12 +358,12 @@ public class Client implements ClientInterface
 	{
 		//if (windows.getCurrentScene() instanceof Ingame)
 		//	return ((Ingame) windows.getCurrentScene()).getInputsManager();
-		return gameWindows.getInputsManager();
+		return gameWindow.getInputsManager();
 	}
 
 	public GameWindowOpenGL_LWJGL3 getGameWindow()
 	{
-		return gameWindows;
+		return gameWindow;
 	}
 
 	@Override
@@ -396,7 +373,7 @@ public class Client implements ClientInterface
 
 	@Override
 	public String username() {
-		return this.username;
+		return Client.username;
 	}
 
 	@Override

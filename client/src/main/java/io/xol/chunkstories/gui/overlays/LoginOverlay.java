@@ -36,10 +36,10 @@ public class LoginOverlay extends Layer implements HttpRequester
 		
 		//Autologin fills in the forms automagically
 		//TODO Secure storage of password
-		if (Client.getConfig().getProp("autologin", "ko").equals("ok"))
+		if (Client.getInstance().getConfig().getProp("autologin", "ko").equals("ok"))
 		{
-			usernameForm.setText(Client.getConfig().getProp("user", ""));
-			passwordForm.setText(Client.getConfig().getProp("pass", ""));
+			usernameForm.setText(Client.getInstance().getConfig().getProp("user", ""));
+			passwordForm.setText(Client.getInstance().getConfig().getProp("pass", ""));
 			autologin = true;
 		}
 		
@@ -71,7 +71,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 	{
 		parentLayer.render(renderingContext);
 		
-		if(Client.clientConfig.getProp("language", "undefined").equals("undefined"))
+		if(Client.getInstance().configDeprecated().getProp("language", "undefined").equals("undefined"))
 		{
 			gameWindow.setLayer(new LanguageSelectionScreen(gameWindow, this, false));
 			//this.mainScene.changeOverlay(new LanguageSelectionScreen(mainScene, this, false));
@@ -172,9 +172,9 @@ public class LoginOverlay extends Layer implements HttpRequester
 				String session = result.split(":")[1];
 				Client.username = usernameForm.text;
 				Client.session_key = session;
-				Client.getConfig().setString("autologin", "ok");
-				Client.getConfig().setString("user", usernameForm.text);
-				Client.getConfig().setString("pass", passwordForm.text);
+				Client.getInstance().getConfig().setString("autologin", "ok");
+				Client.getInstance().getConfig().setString("user", usernameForm.text);
+				Client.getInstance().getConfig().setString("pass", passwordForm.text);
 				
 				if(Client.username.equals("Gobrosse") || Client.username.equals("kektest"))
 				{
@@ -182,7 +182,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 				}
 				
 				//If the user didn't opt-out, look for crash files and upload those
-				if(Client.clientConfig.getProp("log-policy", "undefined").equals("send"))
+				if(Client.getInstance().configDeprecated().getProp("log-policy", "undefined").equals("send"))
 				{
 					JavaCrashesUploader t = new JavaCrashesUploader(Client.getInstance());
 					t.start();

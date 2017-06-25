@@ -56,6 +56,10 @@ public class ClientPacketsProcessorImplementation extends PacketsProcessorCommon
 			{
 				PacketWorldStreaming pws = (PacketWorldStreaming)packet;
 				
+				//Pre-read it before doing anything with it
+				pws.process(getConnection(), in, this);
+				
+				
 				WorldClient world = getWorld();
 				if(world instanceof WorldClientRemote)
 				{
@@ -73,6 +77,8 @@ public class ClientPacketsProcessorImplementation extends PacketsProcessorCommon
 						return "Illegal packet received : This is a local server, not a remote client world and we shouldn't receive WorldStreamingPackets ( "+packet.getClass().getName()+" )";
 					}
 				};
+				
+				continue;
 			}
 			
 			return packet;

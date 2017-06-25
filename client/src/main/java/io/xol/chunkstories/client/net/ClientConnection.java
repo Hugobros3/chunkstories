@@ -110,6 +110,9 @@ public class ClientConnection extends Thread implements RemoteServer
 			try
 			{
 				Packet packet = packetsProcessor.getPacket(in);
+				String n = Client.getInstance().getContent().packets().getPacketType(packet).getName();
+				if(!n.equals("time"))
+					System.out.println(">>"+n);
 				packet.process(this, in, packetsProcessor);
 			}
 			catch (Exception e)
@@ -122,7 +125,7 @@ public class ClientConnection extends Thread implements RemoteServer
 					latestErrorMessage = "Fatal error while handling connection to " + ip + ":" + port + ". (" + e.getClass().getName() + ")";
 					System.out.println(latestErrorMessage);
 					close();
-					//e.printStackTrace();
+					e.printStackTrace();
 				}
 			}
 		}

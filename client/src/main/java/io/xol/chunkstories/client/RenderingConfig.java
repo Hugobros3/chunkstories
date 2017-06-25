@@ -54,29 +54,29 @@ public class RenderingConfig implements ClientRenderingConfig
 	
 	public static void define()
 	{
-		viewDistance = Client.getConfig().getInteger("viewDistance", 128);
+		viewDistance = Client.getInstance().getConfig().getInteger("viewDistance", 128);
 
-		shadowMapResolutions = Client.getConfig().getInteger("shadowMapResolutions", 1024);
+		shadowMapResolutions = Client.getInstance().getConfig().getInteger("shadowMapResolutions", 1024);
 
-		dynamicGrass = Client.getConfig().getBoolean("dynamicGrass", true);
-		debugGBuffers = Client.getConfig().getBoolean("debugGBuffers", false);
+		dynamicGrass = Client.getInstance().getConfig().getBoolean("dynamicGrass", true);
+		debugGBuffers = Client.getInstance().getConfig().getBoolean("debugGBuffers", false);
 		
-		hqTerrain = Client.getConfig().getBoolean("hqTerrain", true);
-		perPixelFresnel = Client.getConfig().getBoolean("perPixelFresnel", true);
-		doShadows = Client.getConfig().getBoolean("doShadows", true);
-		doBloom = Client.getConfig().getBoolean("doBloom", true);
-		ssaoQuality = Client.getConfig().getInteger("ssaoQuality", 0);
-		doClouds = Client.getConfig().getBoolean("doClouds", false);
-		doRealtimeReflections = Client.getConfig().getBoolean("doRealtimeReflections", true);
-		doDynamicCubemaps = Client.getConfig().getBoolean("doDynamicCubemaps", true);
+		hqTerrain = Client.getInstance().getConfig().getBoolean("hqTerrain", true);
+		perPixelFresnel = Client.getInstance().getConfig().getBoolean("perPixelFresnel", true);
+		doShadows = Client.getInstance().getConfig().getBoolean("doShadows", true);
+		doBloom = Client.getInstance().getConfig().getBoolean("doBloom", true);
+		ssaoQuality = Client.getInstance().getConfig().getInteger("ssaoQuality", 0);
+		doClouds = Client.getInstance().getConfig().getBoolean("doClouds", false);
+		doRealtimeReflections = Client.getInstance().getConfig().getBoolean("doRealtimeReflections", true);
+		doDynamicCubemaps = Client.getInstance().getConfig().getBoolean("doDynamicCubemaps", true);
 
-		physicsVisualization = Client.getConfig().getBoolean("physicsVisualization", false);
-		showDebugInfo = Client.getConfig().getBoolean("showDebugInfo", true);
+		physicsVisualization = Client.getInstance().getConfig().getBoolean("physicsVisualization", false);
+		showDebugInfo = Client.getInstance().getConfig().getBoolean("showDebugInfo", true);
 
-		mouseSensitivity = Client.getConfig().getFloat("mouseSensitivity", 1f);
-		fov = Client.getConfig().getFloat("fov", 45f);
+		mouseSensitivity = Client.getInstance().getConfig().getFloat("mouseSensitivity", 1f);
+		fov = Client.getInstance().getConfig().getFloat("fov", 45f);
 
-		Client.getInstance().getGameWindow().setTargetFPS(Client.getConfig().getInteger("framerate", -1));
+		Client.getInstance().getGameWindow().setTargetFPS(Client.getInstance().getConfig().getInteger("framerate", -1));
 	}
 
 	public static String[] getShaderConfig()

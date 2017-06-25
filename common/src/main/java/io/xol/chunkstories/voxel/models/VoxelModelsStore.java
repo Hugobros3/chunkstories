@@ -3,14 +3,15 @@ package io.xol.chunkstories.voxel.models;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,25 +38,42 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 	public void resetAndLoadModels()
 	{
 		models.clear();
-		File vanillaFolder = new File("./res/voxels/blockmodels/");
+		/*File vanillaFolder = new File("./res/voxels/blockmodels/");
 		for (File f : vanillaFolder.listFiles())
 		{
 			if (!f.isDirectory() && f.getName().endsWith(".model"))
 			{
-				ChunkStoriesLoggerImplementation.getInstance().log("Loading custom models file : " + f.getAbsolutePath(), ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.INFO);
+				readBlockModel(f);
+			}
+		}*/
+		Iterator<AssetHierarchy> allFiles = voxels.parent().modsManager().getAllUniqueEntries();
+		//Iterator<Entry<String, Deque<File>>> allFiles = GameContent.getAllUniqueEntries();
+		AssetHierarchy entry;
+		Asset f;
+		while (allFiles.hasNext())
+		{
+			entry = allFiles.next();
+			if (entry.getName().startsWith("./voxels/blockmodels/") && entry.getName().endsWith(".model"))
+			{
+				f = entry.topInstance();
 				readBlockModel(f);
 			}
 		}
 
 	}
 
-	private void readBlockModel(File voxelModelFile)
+	private void readBlockModel(Asset asset)
 	{
-		if (!voxelModelFile.exists())
-			return;
+		ChunkStoriesLoggerImplementation.getInstance().log("Loading custom models file : " + asset, ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.INFO);
+		
+		//ChunkStoriesLoggerImplementation.getInstance().log("Loading custom models file : " + f.getAbsolutePath(), ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.INFO);
+	
+		/*if (!voxelModelFile.exists())
+			return;*/
 		try
 		{
-			FileReader fileReader = new FileReader(voxelModelFile);
+			/*FileReader fileReader = new FileReader(voxelModelFile);*/
+			Reader fileReader = asset.reader();
 			BufferedReader reader = new BufferedReader(fileReader);
 
 			String line = "";
@@ -93,7 +111,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 				{
 					if (voxelModelName == null && !line.equals(""))
 					{
-						voxelModelName = voxelModelFile.getName().replace(".model", "");
+						voxelModelName = asset.getName().substring(asset.getName().lastIndexOf("/") + 1).replace(".model", "");
 						if (!line.equals("default"))
 							voxelModelName += "." + line;
 
@@ -181,7 +199,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 							jitterZ = 0;
 						}
 						else
-							ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Parse error in file " + voxelModelFile + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+							ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Parse error in asset " + asset + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
 
 						voxelModelName = null;
 					}
@@ -240,7 +258,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 							}
 						}
 						else
-							ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Parse error in file " + voxelModelFile + ", line " + ln + ", unexpected parameter.", ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+							ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Parse error in asset " + asset + ", line " + ln + ", unexpected parameter.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
 					}
 					else if (line.startsWith("cull"))
 					{
@@ -296,12 +314,12 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 										cullingTemp.add(cul);
 								}
 								else
-									ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Can't require '" + toInclude + "'", ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+									ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Can't require '" + toInclude + "'", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
 
 							}
 						}
 						else
-							ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Parse error in file " + voxelModelFile + ", line " + ln + ", unexpected parameter.", ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+							ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Parse error in asset " + asset + ", line " + ln + ", unexpected parameter.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
 					}
 				}
 				ln++;
@@ -322,7 +340,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 			name = name.substring(0, name.length() - 8);
 		if (models.containsKey(name))
 			return (VoxelModelLoaded)models.get(name);
-		ChunkStoriesLoggerImplementation.getInstance().log("Couldn't serve voxel model : " + name, ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+		ChunkStoriesLoggerImplementation.getInstance().log("Couldn't serve voxel model : " + name, ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
 		return null;
 	}
 

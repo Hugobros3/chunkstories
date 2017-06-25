@@ -7,13 +7,11 @@ import java.security.NoSuchAlgorithmException;
 
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
-import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.client.net.ClientConnection;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
@@ -62,6 +60,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 		public IOTaskProcessCompressedChunkArrival(int x, int y, int z, byte[] packetData)
 		{
+			System.out.println("x' :"+x);
 			this.chunkX = x;
 			this.chunkY = y;
 			this.chunkZ = z;
@@ -75,19 +74,25 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 			if(region == null)
 			{
-				System.out.println("Notice: received chunk data for a chunk within an unloaded region. Ignoring.");
+				System.out.println("Notice: received chunk data for a chunk within an unloaded region ("+chunkX+","+chunkY+","+chunkZ+"). Ignoring.");
 				return true;
 			}
 			
 			ChunkHolderImplementation holder = region.getChunkHolder(chunkX, chunkY, chunkZ);
-			CubicChunk chunk = holder.getChunk();
+			//CubicChunk chunk = holder.getChunk();
 			
+			
+			//Irrelevant because we made the IO handler create the chunks
+			
+			/*
 			//Should never happen but sanity check doesn't hurt
 			if(chunk == null)
 			{
-				System.out.println("Notice: received chunk data for an unloaded/unaquired chunk within a loaded region. Ignoring.");
+				System.out.println("Notice: received chunk data for an unloaded/unaquired chunk within a loaded region ("+chunkX+","+chunkY+","+chunkZ+"). Ignoring.");
 				return true;
-			}
+			}*/
+			
+			System.out.println("chunk data OK");
 			
 			if (data != null)
 			{
@@ -99,17 +104,20 @@ public class IOTasksMultiplayerClient extends IOTasks
 					{
 						data[i] = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
 					}
-					chunk.setChunkData(data);
+					
+					holder.createChunk(data);
+					//chunk.setChunkData(data);
 					//chunk = new CubicChunk(region, chunkX, chunkY, chunkZ, data);
 				}
 				catch (LZ4Exception exception)
 				{
 					//chunk = new CubicChunk(region, chunkX, chunkY, chunkZ);
-					ChunkStoriesLoggerImplementation.getInstance().warning("Invalid chunk data received for : " + chunk);
+					ChunkStoriesLoggerImplementation.getInstance().warning("Invalid chunk data received for Chunk ("+chunkX+","+chunkY+","+chunkZ+")");
 				}
 			}
 			else
-				chunk.setChunkData(null);
+				holder.createChunk();
+				//chunk.setChunkData(null);
 
 			//TODO make that a task ?
 			//chunk.computeVoxelLightning(true);
@@ -117,7 +125,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			//Remove any object preventing us from asking it again
 			//ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
 
-			world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ).getChunkHolder(chunkX, chunkY, chunkZ).setChunk(chunk);
+			//world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ).getChunkHolder(chunkX, chunkY, chunkZ).setChunk(chunk);
 			return true;
 		}
 
@@ -130,15 +138,16 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 	public void requestChunkCompressedDataProcess(PacketChunkCompressedData data)
 	{
+		System.out.println("x° :"+data.x);
 		IOTaskProcessCompressedChunkArrival task = new IOTaskProcessCompressedChunkArrival(data.x, data.y, data.z, data.data);
 		scheduleTask(task);
 	}
 
-	public void requestChunkCompressedDataProcess(int x, int y, int z, byte[] data)
+	/*public void requestChunkCompressedDataProcess(int x, int y, int z, byte[] data)
 	{
 		IOTaskProcessCompressedChunkArrival task = new IOTaskProcessCompressedChunkArrival(x, y, z, data);
 		scheduleTask(task);
-	}
+	}*/
 
 	class ChunkLocation
 	{

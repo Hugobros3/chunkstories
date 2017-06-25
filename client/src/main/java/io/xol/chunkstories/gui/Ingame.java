@@ -401,7 +401,7 @@ public class Ingame extends Layer
 		}
 		else if (input.equals("toggleDebugInfo"))
 		{
-			Client.getConfig().setString("showDebugInfo", Client.getConfig().getBoolean("showDebugInfo", false) ? "false" : "true");
+			gameWindow.getClient().configDeprecated().setString("showDebugInfo", gameWindow.getClient().configDeprecated().getBoolean("showDebugInfo", false) ? "false" : "true");
 			RenderingConfig.define();
 			//RenderingConfig.showDebugInfo = !RenderingConfig.showDebugInfo;
 		}

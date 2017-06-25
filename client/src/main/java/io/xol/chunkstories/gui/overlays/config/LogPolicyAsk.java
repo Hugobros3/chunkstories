@@ -30,8 +30,8 @@ public class LogPolicyAsk extends Layer
 			@Override
 			public void run() {
 				gameWindow.setLayer(parentLayer);
-				Client.clientConfig.setString("log-policy", "send");
-				Client.clientConfig.save();
+				Client.getInstance().configDeprecated().setString("log-policy", "send");
+				Client.getInstance().configDeprecated().save();
 			}
 			
 		});
@@ -41,8 +41,8 @@ public class LogPolicyAsk extends Layer
 			@Override
 			public void run() {
 				gameWindow.setLayer(parentLayer);
-				Client.clientConfig.setString("log-policy", "dont");
-				Client.clientConfig.save();
+				Client.getInstance().configDeprecated().setString("log-policy", "dont");
+				Client.getInstance().configDeprecated().save();
 			}
 			
 		});

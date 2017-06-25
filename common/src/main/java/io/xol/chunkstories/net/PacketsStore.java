@@ -86,6 +86,10 @@ public class PacketsStore implements Content.PacketTypes {
 							this.byClasses.put(packetType.serverClass, packetType);
 						if(packetType.commonClass != null)
 							this.byClasses.put(packetType.commonClass, packetType);
+						
+						System.out.println(packetType.clientClass);
+						System.out.println(packetType.serverClass);
+						System.out.println(packetType.commonClass);
 					}
 				}
 			}

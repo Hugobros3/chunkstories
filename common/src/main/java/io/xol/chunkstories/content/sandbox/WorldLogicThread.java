@@ -68,6 +68,7 @@ public class WorldLogicThread extends Thread implements GameLogic
 	
 	public void run()
 	{
+		//TODO
 		//Installs a custom SecurityManager
 		System.out.println("Security manager: "+System.getSecurityManager());
 
