@@ -60,11 +60,6 @@ public class FlatGenerator extends WorldGenerator
 		return c;
 	}
 
-	private int getHeightAtInternal(int x, int z)
-	{
-		return 30;
-	}
-
 	@Override
 	public int getHeightAt(int x, int z)
 	{

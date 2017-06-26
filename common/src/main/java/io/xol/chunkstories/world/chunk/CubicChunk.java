@@ -132,6 +132,7 @@ public abstract class CubicChunk implements Chunk
 		int completion = 0;
 		int p = 0;
 		
+		@SuppressWarnings("unused")
 		int bits = 0;
 		//Until all 32768 blocks have been processed
 		while (completion < 32768)

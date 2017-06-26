@@ -31,8 +31,7 @@ end
 
 packet move_item 6
 	allowedFrom: client
-	clientClass: io.xol.chunkstories.client.net.packets.PacketOpenInventoryClient
-	serverClass: io.xol.chunkstories.net.packets.PacketOpenInventory
+	serverClass: io.xol.chunkstories.core.net.packets.PacketInventoryMoveItemPile
 end
 
 packet partial_inv_update 7
@@ -47,7 +46,7 @@ end
 
 packet voxel_update 9
 	allowedFrom: server
-	commonClass: io.xol.chunkstories.net.packets.PacketVoxelUpdate
+	commonClass: io.xol.chunkstories.api.net.packets.PacketVoxelUpdate
 end
 
 packet sound 10

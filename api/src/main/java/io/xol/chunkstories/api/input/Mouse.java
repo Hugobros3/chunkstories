@@ -27,7 +27,7 @@ public interface Mouse {
 	
 	public float getCursorY();
 	
-	public void setMouseCursorLocation(float x, float y);
+	public void setMouseCursorLocation(double x, double y);
 	
 	public boolean isGrabbed();
 	

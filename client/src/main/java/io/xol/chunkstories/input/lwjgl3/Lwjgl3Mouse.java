@@ -62,21 +62,18 @@ public class Lwjgl3Mouse implements Mouse {
 	}
 
 	@Override
-	public void setMouseCursorLocation(float x, float y) {
+	public void setMouseCursorLocation(double x, double y) {
 		glfwSetCursorPos(im.gameWindow.glfwWindowHandle, x, y);
-		//throw new UnsupportedOperationException("Mouse.setMouseCursorLocation()");
 	}
 
 	@Override
 	public boolean isGrabbed() {
 		return glfwGetInputMode(im.gameWindow.glfwWindowHandle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
-		//throw new UnsupportedOperationException("Mouse.isGrabbed()");
 	}
 
 	@Override
 	public void setGrabbed(boolean grabbed) {
 		glfwSetInputMode(this.im.gameWindow.glfwWindowHandle, GLFW_CURSOR, grabbed ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-		//throw new UnsupportedOperationException("Mouse.setGrabbed()");
 	}
 
 	public MouseScroll scroll(double yoffset) {

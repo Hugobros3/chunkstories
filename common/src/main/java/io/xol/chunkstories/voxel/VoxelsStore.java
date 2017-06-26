@@ -1,6 +1,5 @@
 package io.xol.chunkstories.voxel;
 
-import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.exceptions.content.IllegalVoxelDeclarationException;
 import io.xol.chunkstories.api.mods.Asset;
@@ -122,7 +121,7 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 						
 						if(splitted.length < 3)
 						{
-							ChunkStoriesLoggerImplementation.getInstance().log("Parse error in file " + f + ", line " + ln + ", malformed voxel tag. Aborting read.", ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+							ChunkStoriesLoggerImplementation.getInstance().log("Parse error in file " + f + ", line " + ln + ", malformed voxel tag. Aborting read.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
 							break;
 						}
 						
@@ -130,7 +129,7 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 						String name = splitted[1];
 						
 						if (voxels[id] != null)
-							ChunkStoriesLoggerImplementation.getInstance().log("Voxel redefinition in file " + f + ", line " + ln + ", overriding id " + id + " with " + name, ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+							ChunkStoriesLoggerImplementation.getInstance().log("Voxel redefinition in file " + f + ", line " + ln + ", overriding id " + id + " with " + name, ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
 
 						try
 						{
@@ -149,12 +148,12 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 					}
 					else if (line.startsWith("end"))
 					{
-						ChunkStoriesLoggerImplementation.getInstance().log("Parse error in file " + f + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+						ChunkStoriesLoggerImplementation.getInstance().log("Parse error in file " + f + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
 					}
 				}
 				ln++;
 			}
-			ChunkStoriesLoggerImplementation.getInstance().log("Debug : Parsed file " + f + " correctly, loading " + loadedVoxels + " voxels.", ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.DEBUG);
+			ChunkStoriesLoggerImplementation.getInstance().log("Debug : Parsed file " + f + " correctly, loading " + loadedVoxels + " voxels.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.DEBUG);
 
 			reader.close();
 		}

@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
+import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
@@ -27,6 +28,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRendererImplementation;
 import io.xol.chunkstories.renderer.lights.ComputedShadowMap;
@@ -431,8 +433,8 @@ public class WorldRendererImplementation implements WorldRenderer
 	{
 		Texture2D bloomRendered = RenderingConfig.doBloom ? bloomRenderer.renderBloom(renderingContext) : null;
 		
-		//TODO read from scene
-		float pauseFade = 0.0f;
+		Layer layer = renderingContext.getWindow().getLayer().getRootLayer();
+		float pauseFade = (layer instanceof Ingame) ? ((Ingame)layer).getPauseOverlayFade() : 0;
 		
 		// We render to the screen.
 		renderingContext.getRenderTargetManager().setConfiguration(null);

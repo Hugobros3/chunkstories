@@ -166,6 +166,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		try (BufferedReader reader = new BufferedReader(a.reader());)
 		{
 			String line = "";
+			@SuppressWarnings("unused")
 			int ln = 0;
 			while ((line = reader.readLine()) != null)
 			{

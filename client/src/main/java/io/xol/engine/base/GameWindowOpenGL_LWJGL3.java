@@ -433,10 +433,26 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			
 			VideoMode videoMode = findMatchForVideoMode(modeString);
 			glfwSetWindowMonitor(this.glfwWindowHandle, monitors[videoMode.monitorId - 1], 0, 0, videoMode.videoMode.width(), videoMode.videoMode.height(), videoMode.videoMode.refreshRate());
+		
+			windowWidth = videoMode.videoMode.width();
+			windowHeight = videoMode.videoMode.height();
+
+			glViewport(0, 0, windowWidth, windowHeight);
+
+			if (layer != null)
+				layer.onResize(windowWidth, windowHeight);
 		}
 		else {
 			glfwSetWindowMonitor(this.glfwWindowHandle, MemoryUtil.NULL, (currentVideoMode.width() - defaultWidth) / 2, (currentVideoMode.height() - defaultHeight) / 2,
 					defaultWidth, defaultHeight, GLFW_DONT_CARE);
+			
+			windowWidth = defaultWidth;
+			windowHeight = defaultHeight;
+
+			glViewport(0, 0, windowWidth, windowHeight);
+
+			if (layer != null)
+				layer.onResize(windowWidth, windowHeight);
 		}
 	}
 

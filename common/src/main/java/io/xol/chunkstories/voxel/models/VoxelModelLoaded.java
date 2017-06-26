@@ -68,8 +68,8 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 	
 	public int renderInto(VoxelBakerHighPoly renderByteBuffer,  ChunkRenderContext bakingContext, VoxelContext info, Chunk chunk, int x, int y, int z)
 	{
-		int lightLevelSun = chunk.getSunLight(x, y, z);
-		int lightLevelVoxel = chunk.getBlockLight(x, y, z);
+		//int lightLevelSun = chunk.getSunLight(x, y, z);
+		//int lightLevelVoxel = chunk.getBlockLight(x, y, z);
 
 		//Obtains the light amount (sun/voxel) for this model
 		//TODO interpolation w/ neighbors
@@ -109,7 +109,7 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		if (this.jitterZ != 0.0f)
 			dz = (float) ((Math.random() * 2.0 - 1.0) * this.jitterZ);
 
-		int drewVertices = 0;
+		//int drewVertices = 0;
 		drawVertex:
 		for (int i_currentVertex = 0; i_currentVertex < this.vertices.length / 3; i_currentVertex++)
 		{
@@ -162,7 +162,7 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 			renderByteBuffer.addColors(sunLight, blockLight, ao);
 			renderByteBuffer.addNormalsInt(intifyNormal(this.normals[i_currentVertex*3+0]), intifyNormal(this.normals[i_currentVertex*3+1]), intifyNormal(this.normals[i_currentVertex*3+2]), this.extra[i_currentVertex]);
 		
-			drewVertices++;
+			//drewVertices++;
 		}
 		
 		return this.vertices.length;

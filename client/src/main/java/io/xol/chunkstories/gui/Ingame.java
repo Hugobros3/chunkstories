@@ -24,6 +24,7 @@ import io.xol.chunkstories.api.events.player.PlayerLogoutEvent;
 import io.xol.chunkstories.api.events.rendering.CameraSetupEvent;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Math2;
@@ -74,7 +75,6 @@ public class Ingame extends Layer
 	
 	//Moved from client to IG, as these make sense per world/play
 	private final ClientPluginManager pluginManager;
-	//private final Lwjgl2ClientInputsManager inputsManager;
 	
 	//Only in SP
 	private final LocalServerContext localServer;
@@ -306,14 +306,9 @@ public class Ingame extends Layer
 							32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4fm(1.0f, 1.0f, 1.0f, 0.75f));
 				}
 			}
-
-			// Draw current overlay
-			//if (currentOverlay != null)
-			//	currentOverlay.drawToScreen(renderingContext, 0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());
-			
 			//Or draw cursor
 			//if(!isCovered())
-				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, 16, 16, 0, 1, 1, 0, renderingContext.textures().getTexture("./textures/gui/cursor.png"), false, true, null);
+				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(renderingContext.getWindow().getWidth() / 2 - 8, renderingContext.getWindow().getHeight() / 2 - 8, 16, 16, 0, 1, 1, 0, renderingContext.textures().getTexture("./textures/gui/cursor.png"), false, true, null);
 
 			//Draw debug info
 			if (RenderingConfig.showDebugInfo)
@@ -348,34 +343,13 @@ public class Ingame extends Layer
 	{
 		gameWindow.getInputsManager().getMouse().setGrabbed(f);
 		if (f && !focus)
-		{
-			gameWindow.getInputsManager().getMouse().setMouseCursorLocation(gameWindow.getWidth() / 2.0f, gameWindow.getHeight() / 2.0f);
-			//Mouse.setCursorPosition(gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
-			//this.changeOverlay(null);
-			//gameWindow.setLayer(this);
-		}
+			gameWindow.getInputsManager().getMouse().setMouseCursorLocation(Math.floor(gameWindow.getWidth() / 2.0f), Math.floor(gameWindow.getHeight() / 2.0f));
 		focus = f;
 	}
-
-	/*public boolean onKeyRepeatEvent(int keyCode)
-	{
-		if (currentOverlay != null && currentOverlay instanceof ChatPanelOverlay)
-		{
-			ChatPanelOverlay chatPanel = (ChatPanelOverlay) currentOverlay;
-			return chatPanel.handleKeypress(keyCode);
-		}
-
-		return false;
-	}*/
 
 	@Override
 	public boolean handleInput(Input input)
 	{
-		//if (currentOverlay != null && currentOverlay.handleKeypress(keyCode))
-		//	return true;
-
-		//KeyboardKeyInput keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL3xKey(keyCode);
-
 		if (!guiHidden)// && keyBind != null)
 		{
 			//Block inputs if chatting
@@ -469,124 +443,41 @@ public class Ingame extends Layer
 			guiHidden = false;
 			gameWindow.setLayer(new PauseOverlay(gameWindow, this));
 		}
-		return false;
-	}
-	
-	/*@Override
-	public void changeOverlay(Overlay o) {
-		super.changeOverlay(o);
-		
-		if(o != null)
-		{
-			InputAbstractor.setMouseGrabbed(false);
-			//Mouse.setGrabbed(false);
-			guiHidden = false;
-		}
-		else
-			InputAbstractor.setMouseGrabbed(true);
-			//Mouse.setGrabbed(true);
-	}*/
-
-	/*public boolean onKeyUp(int keyCode)
-	{
-		KeyboardKeyInput keyBind = Client.getInstance().getInputsManager().getKeyBoundForLWJGL3xKey(keyCode);
-
-		if (keyBind != null)
-		{
-			if(Client.getInstance().getInputsManager().onInputReleased(keyBind) == true)
-				return true;
-		}
-
-		return false;
-	}*/
-
-	/*@Override
-	public boolean onMouseButtonDown(int x, int y, int button)
-	{
-		if (currentOverlay != null)
-			return currentOverlay.onClick(x, y, button);
-
-		if (playerEntity == null)
-			return false;
-
-		Input mButton = null;
-		switch (button)
-		{
-		case 0:
-			mButton = Lwjgl3ClientInputsManager.LEFT;
-			break;
-		case 1:
-			mButton = Lwjgl3ClientInputsManager.RIGHT;
-			break;
-		case 2:
-			mButton = Lwjgl3ClientInputsManager.MIDDLE;
-			break;
-		}
-		
-		if (mButton != null)
-			Client.getInstance().getInputsManager().onInputPressed(mButton);
-		
-		//TODO it does not handle the special clicks yet, maybye do it somewhere else, like in binds ?
-		return false;
-	}*/
-
-	/*public boolean onMouseButtonUp(int x, int y, int button)
-	{
-		Input mButton = null;
-		switch (button)
-		{
-		case 0:
-			mButton = Lwjgl3ClientInputsManager.LEFT;
-			break;
-		case 1:
-			mButton = Lwjgl3ClientInputsManager.RIGHT;
-			break;
-		case 2:
-			mButton = Lwjgl3ClientInputsManager.MIDDLE;
-			break;
-		}
-		
-		if (mButton != null)
-			Client.getInstance().getInputsManager().onInputReleased(mButton);
-
-		return false;
-	}*/
-
-	private boolean onScroll(int a)
-	{
-		//Scroll trought the items
-		if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem)
-		{
-			ItemPile selected = null;
-			int selectedInventorySlot = ((EntityWithSelectedItem) playerEntity).getSelectedItemComponent().getSelectedSlot();
-			int originalSlot = selectedInventorySlot;
-			if (a < 0)
+		else if(input instanceof MouseScroll) {
+			MouseScroll ms = (MouseScroll)input;
+			
+			if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem)
 			{
-				selectedInventorySlot %= ((EntityWithInventory) playerEntity).getInventory().getWidth();
-				selected = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(selectedInventorySlot, 0);
-				if (selected != null)
-					selectedInventorySlot += selected.getItem().getType().getSlotsWidth();
+				ItemPile selected = null;
+				int selectedInventorySlot = ((EntityWithSelectedItem) playerEntity).getSelectedItemComponent().getSelectedSlot();
+				int originalSlot = selectedInventorySlot;
+				if (ms.amount() < 0)
+				{
+					selectedInventorySlot %= ((EntityWithInventory) playerEntity).getInventory().getWidth();
+					selected = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(selectedInventorySlot, 0);
+					if (selected != null)
+						selectedInventorySlot += selected.getItem().getType().getSlotsWidth();
+					else
+						selectedInventorySlot++;
+				}
 				else
-					selectedInventorySlot++;
+				{
+					selectedInventorySlot--;
+					if (selectedInventorySlot < 0)
+						selectedInventorySlot += ((EntityWithInventory) playerEntity).getInventory().getWidth();
+					selected = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(selectedInventorySlot, 0);
+					if (selected != null)
+						selectedInventorySlot = selected.getX();
+				}
+				//Switch slot
+				if (originalSlot != selectedInventorySlot)
+					((EntityWithSelectedItem) playerEntity).getSelectedItemComponent().setSelectedSlot(selectedInventorySlot);
 			}
-			else
-			{
-				selectedInventorySlot--;
-				if (selectedInventorySlot < 0)
-					selectedInventorySlot += ((EntityWithInventory) playerEntity).getInventory().getWidth();
-				selected = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(selectedInventorySlot, 0);
-				if (selected != null)
-					selectedInventorySlot = selected.getX();
-			}
-			//Switch slot
-			if (originalSlot != selectedInventorySlot)
-				((EntityWithSelectedItem) playerEntity).getSelectedItemComponent().setSelectedSlot(selectedInventorySlot);
 		}
-		return true;
+		return false;
 	}
 
 	@Override
-
 	public void onResize(int newWidth, int newHeight) {
 		world.getWorldRenderer().setupRenderSize();
 	}
@@ -771,5 +662,9 @@ public class Ingame extends Layer
 	public ClientPluginManager getPluginManager()
 	{
 		return pluginManager;
+	}
+
+	public float getPauseOverlayFade() {
+		return pauseOverlayFade;
 	}
 }

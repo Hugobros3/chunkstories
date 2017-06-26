@@ -13,7 +13,6 @@ import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
-import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.api.world.WorldMaster;
 

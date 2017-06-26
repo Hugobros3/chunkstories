@@ -417,7 +417,7 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 		this.width = w;
 		this.height = h;
 		
-		if(w <= 0 || h <= 0)
+		if(w < 0 || h < 0)
 		{
 			System.out.println("Stop.");
 			Thread.dumpStack();

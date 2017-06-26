@@ -34,7 +34,7 @@ public class RegionImplementation implements Region
 	public final WorldImplementation world;
 	public final int regionX, regionY, regionZ;
 	public final long uuid;
-	private final HashMapWorldRegionsHolder worldChunksHolder;
+	//private final HashMapWorldRegionsHolder worldChunksHolder;
 	
 	protected Collection<CubicChunk> loadedChunks = ConcurrentHashMap.newKeySet();//new LinkedBlockingQueue<CubicChunk>();
 	private Set<WeakReference<WorldUser>> users = new HashSet<WeakReference<WorldUser>>();
@@ -63,7 +63,7 @@ public class RegionImplementation implements Region
 		this.regionX = regionX;
 		this.regionY = regionY;
 		this.regionZ = regionZ;
-		this.worldChunksHolder = worldChunksHolder;
+		//this.worldChunksHolder = worldChunksHolder;
 
 		if(regionX < 0 || regionY < 0 || regionZ < 0)
 			throw new RuntimeException("Regions aren't allowed negative coordinates.");
