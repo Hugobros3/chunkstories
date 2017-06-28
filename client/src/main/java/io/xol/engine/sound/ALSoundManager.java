@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
@@ -26,7 +27,6 @@ import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.sound.SoundEffect;
-import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.sound.ogg.SoundDataOggSample;
@@ -45,6 +45,8 @@ public class ALSoundManager implements ClientSoundManager
 	Thread contextThread;
 	// Are we allowed to use EFX effects
 	public static boolean efxOn = false;
+	
+	private AtomicBoolean shutdownState = new AtomicBoolean(false);
 
 	int[] auxEffectsSlotsId;
 	SoundEffect[] auxEffectsSlots;
@@ -126,9 +128,7 @@ public class ALSoundManager implements ClientSoundManager
 				@Override
 				public void run()
 				{
-		            alcDestroyContext(context);
-		            alcCloseDevice(device);
-					System.out.println("OpenAL context successfully destroyed.");
+		            shutdown();
 				}
 			});
 		}
@@ -144,8 +144,15 @@ public class ALSoundManager implements ClientSoundManager
 		for (SoundSource ss : playingSoundSources)
 			ss.stop();
 
-        alcDestroyContext(context);
-        alcCloseDevice(device);
+		shutdown();
+	}
+	
+	private void shutdown() {
+		if(shutdownState.compareAndSet(false, true)) {
+	        alcDestroyContext(context);
+	        alcCloseDevice(device);
+			System.out.println("OpenAL properly shut down.");
+		}
 	}
 
 	public void update()
