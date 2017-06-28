@@ -258,8 +258,6 @@ public class Ingame extends Layer
 			shouldTakeACubemap = false;
 			world.getWorldRenderer().renderWorldCubemap(null, 512, false);
 		}*/
-		//Blit the final 3d image
-		world.getWorldRenderer().blitFinalImage(renderingContext);
 
 		//Fades in & out the overlay
 		if (!isCovered())
@@ -275,6 +273,9 @@ public class Ingame extends Layer
 			if (pauseOverlayFade < maxFade)
 				pauseOverlayFade += 0.1;
 		}
+		
+		//Blit the final 3d image
+		world.getWorldRenderer().blitFinalImage(renderingContext);
 
 		//Draw the GUI
 		if (!guiHidden)

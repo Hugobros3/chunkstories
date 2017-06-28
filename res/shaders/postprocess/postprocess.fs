@@ -32,7 +32,7 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
-uniform float time;
+uniform float animationTimer;
 uniform float underwater;
 
 uniform float apertureModifier;
@@ -60,8 +60,8 @@ void main() {
 	vec2 finalCoords = texCoord;
 	
 	// Water coordinates distorsion
-	finalCoords.x += underwater*sin(finalCoords.x * 50.0 + finalCoords.y * 60.0 + time * 1.0) / screenViewportSize.x * 5.0;
-	finalCoords.y += underwater*cos(finalCoords.y * 60.0 + time * 1.0) / screenViewportSize.y * 2.0;
+	finalCoords.x += underwater*sin(finalCoords.x * 50.0 + finalCoords.y * 60.0 + animationTimer * 1.0) / screenViewportSize.x * 5.0;
+	finalCoords.y += underwater*cos(finalCoords.y * 60.0 + animationTimer * 1.0) / screenViewportSize.y * 2.0;
 	
 	// Sampling
 	vec4 compositeColor = texture(shadedBuffer, finalCoords);
@@ -94,7 +94,7 @@ void main() {
 	
 	( mod(gl_FragCoord.x + gl_FragCoord.y, 2.0) * 0.45 + 0.55 )
 	* 
-	( poltergeist(gl_FragCoord.xy, time) * 0.15 + 0.85 )
+	( poltergeist(gl_FragCoord.xy, animationTimer) * 0.15 + 0.85 )
 	
 	);
 	compositeColor.rgb *= mix(vec3(1.0), overlayColor, clamp(pauseOverlayFade, 0.0, 1.0));
@@ -134,7 +134,7 @@ vec4 getDebugShit(vec2 coords)
 		}
 		else
 		{
-			shit = texture2D(debugBuffer, sampleCoords).xyzw;
+			shit = texture2D(metaBuffer, sampleCoords).xyzw;
 			//shit = vec4(1.0, 0.5, 0.0, 1.0) * texture2D(normalBuffer, sampleCoords).w;
 			//shit.yz += texture2D(metaBuffer, sampleCoords).xy;
 			<ifdef dynamicGrass>

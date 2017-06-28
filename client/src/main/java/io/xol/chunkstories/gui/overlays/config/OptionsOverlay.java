@@ -276,8 +276,8 @@ public class OptionsOverlay extends Layer
 						@Override
 						public void run()
 						{
-							if (parentLayer instanceof Ingame && shouldReload){
-							Client.getInstance().getWorld().getWorldRenderer().resizeShadowMaps();
+							if (parentLayer.getRootLayer() instanceof Ingame && shouldReload){
+								Client.getInstance().getWorld().getWorldRenderer().resizeShadowMaps();
 							//gps.worldRenderer.resizeShadowMaps();
 						}
 					}
@@ -577,7 +577,9 @@ public class OptionsOverlay extends Layer
 			}
 		}
 		
-		return super.handleInput(input);
+		super.handleInput(input);
+		
+		return true;
 	}
 
 	boolean shouldReload = false;

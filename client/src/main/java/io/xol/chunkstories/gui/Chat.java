@@ -85,7 +85,7 @@ public class Chat
 			Chat.this.scroll = 0;
 			
 			//150ms of delay to avoid typing in by mistake
-			this.delay = System.currentTimeMillis() + 150;
+			this.delay = System.currentTimeMillis() + 30;
 		}
 
 		@Override

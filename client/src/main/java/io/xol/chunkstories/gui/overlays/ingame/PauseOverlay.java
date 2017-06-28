@@ -86,6 +86,8 @@ public class PauseOverlay extends Layer
 			return true;
 		}
 		
-		return super.handleInput(input);
+		super.handleInput(input);
+		
+		return true;
 	}
 }

@@ -116,6 +116,8 @@ public class WorldRendererImplementation implements WorldRenderer
 		if (entity != null)
 			entity.setupCamera(renderingInterface);
 		
+		animationTimer = ((float)(System.currentTimeMillis() & 0x7FFF)) / 100.0f;
+		
 		//TODO remove entirely
 		FakeImmediateModeDebugRenderer.setCamera(mainCamera);
 		
@@ -464,7 +466,7 @@ public class WorldRendererImplementation implements WorldRenderer
 				(int)(double)renderingContext.getCamera().getCameraPosition().getY(), (int)(double)renderingContext.getCamera().getCameraPosition().getZ()));
 		
 		postProcess.setUniform1f("underwater", vox.getType().isLiquid() ? 1 : 0);
-		postProcess.setUniform1f("time", animationTimer);
+		postProcess.setUniform1f("animationTimer", animationTimer);
 		postProcess.setUniform1f("pauseOverlayFade", pauseFade);
 
 		renderingContext.getCamera().setupShader(postProcess);
