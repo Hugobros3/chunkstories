@@ -14,6 +14,10 @@ public class AABBVoxelIterator implements IterableIterator<VoxelContext>, VoxelC
 	private final Voxels voxels;
 	
 	private int i, j , k;
+	private int i2, j2, k2;
+	
+	private int minx, miny, minz;
+	private int maxx, maxy, maxz;
 	
 	public AABBVoxelIterator(World world, CollisionBox collisionBox) {
 		this.world = world;
@@ -21,25 +25,46 @@ public class AABBVoxelIterator implements IterableIterator<VoxelContext>, VoxelC
 		
 		this.voxels = world.getGameContext().getContent().voxels();
 		
-		this.i = (int)Math.floor(collisionBox.xpos);
-		this.j = (int)Math.floor(collisionBox.ypos);
-		this.k = (int)Math.floor(collisionBox.zpos);
+		this.minx = (int)Math.floor(collisionBox.xpos);
+		this.miny = (int)Math.floor(collisionBox.ypos);
+		this.minz = (int)Math.floor(collisionBox.zpos);
+		
+		this.maxx = (int)Math.ceil(collisionBox.xpos + collisionBox.xw);
+		this.maxy = (int)Math.ceil(collisionBox.ypos + collisionBox.h);
+		this.maxz = (int)Math.ceil(collisionBox.zpos + collisionBox.zw);
+		
+		this.i = minx;
+		this.j = miny;
+		this.k = minz;
 	}
 	
 	@Override
 	public boolean hasNext() {
-		return k <= (int)Math.ceil(collisionBox.zpos + collisionBox.zw);
+		return k <= maxz;
+		/*if(i == maxx && j == maxy && k == maxz)
+			return false;
+		return true;*/
+		//return k <= (int)Math.ceil(collisionBox.zpos + collisionBox.zw);
 	}
 	@Override
 	public VoxelContext next() {
 		
+		i2 = i;
+		j2 = j;
+		k2 = k;
+		
 		i++;
-		if(i > (int)Math.ceil(collisionBox.xpos + collisionBox.xw))
+		if(i > maxx) {
 			j++;
-		if(j > (int)Math.ceil(collisionBox.ypos + collisionBox.h))
+			i = minx;
+		}
+		if(j > maxy) {
 			k++;
-		if(k > (int)Math.ceil(collisionBox.zpos + collisionBox.zw))
-			throw new UnsupportedOperationException("Out of bounds iterator. Called when hasNext() returned false.");
+			j = miny;
+		}
+		if(k > maxz) {
+			
+		}	//throw new UnsupportedOperationException("Out of bounds iterator. Called when hasNext() returned false.");
 		
 		return this;
 	}
@@ -51,38 +76,38 @@ public class AABBVoxelIterator implements IterableIterator<VoxelContext>, VoxelC
 
 	@Override
 	public int getData() {
-		return world.getVoxelData(i, j, k);
+		return world.getVoxelData(i2, j2, k2);
 	}
 
 	@Override
 	public int getX() {
-		return i;
+		return i2;
 	}
 
 	@Override
 	public int getY() {
-		return j;
+		return j2;
 	}
 
 	@Override
 	public int getZ() {
-		return k;
+		return k2;
 	}
 
 	public int getNeightborData(int side) {
 		switch(side) {
 		case 0:
-			return world.getVoxelData(i - 1, j, k);
+			return world.getVoxelData(i2 - 1, j2, k2);
 		case 1:
-			return world.getVoxelData(i, j, k + 1);
+			return world.getVoxelData(i2, j2, k2 + 1);
 		case 2:
-			return world.getVoxelData(i + 1, j, k);
+			return world.getVoxelData(i2 + 1, j2, k2);
 		case 3:
-			return world.getVoxelData(i, j, k - 1);
+			return world.getVoxelData(i2, j2, k2 - 1);
 		case 4:
-			return world.getVoxelData(i, j + 1, k);
+			return world.getVoxelData(i2, j2 + 1, k2);
 		case 5: 
-			return world.getVoxelData(i, j - 1, k);
+			return world.getVoxelData(i2, j2 - 1, k2);
 		}
 		
 		throw new UnsupportedOperationException("getNeighborData(side): Side must be comprised between [0:5]");

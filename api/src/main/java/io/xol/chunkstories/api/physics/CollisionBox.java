@@ -172,43 +172,6 @@ public final class CollisionBox implements Collidable
 		return h % 1;
 	}
 
-	public void debugDraw(float r, float g, float b, float a)
-	{
-		//TODO reimplement using a callback
-		
-		/*glColor4f(r, g, b, a);
-		glDisable(GL_CULL_FACE);
-		
-		glBegin(GL_LINES);
-		glVertex3d(xpos , ypos, zpos);
-		glVertex3d(xpos + xw, ypos, zpos);
-		glVertex3d(xpos , ypos, zpos + zw);
-		glVertex3d(xpos + xw, ypos, zpos + zw);
-		glVertex3d(xpos + xw, ypos, zpos + zw);
-		glVertex3d(xpos + xw, ypos, zpos);
-		glVertex3d(xpos , ypos, zpos);
-		glVertex3d(xpos , ypos, zpos + zw);
-
-		glVertex3d(xpos , ypos + h, zpos);
-		glVertex3d(xpos + xw, ypos + h, zpos);
-		glVertex3d(xpos , ypos + h, zpos + zw);
-		glVertex3d(xpos + xw, ypos + h, zpos + zw);
-		glVertex3d(xpos + xw, ypos + h, zpos + zw);
-		glVertex3d(xpos + xw, ypos + h, zpos);
-		glVertex3d(xpos , ypos + h, zpos);
-		glVertex3d(xpos , ypos + h, zpos + zw);
-
-		glVertex3d(xpos , ypos, zpos);
-		glVertex3d(xpos , ypos + h, zpos);
-		glVertex3d(xpos , ypos, zpos + zw);
-		glVertex3d(xpos , ypos + h, zpos + zw);
-		glVertex3d(xpos + xw, ypos, zpos);
-		glVertex3d(xpos + xw, ypos + h, zpos);
-		glVertex3d(xpos + xw, ypos, zpos + zw);
-		glVertex3d(xpos + xw, ypos + h, zpos + zw);
-		glEnd();*/
-	}
-
 	@Override
 	public String toString()
 	{

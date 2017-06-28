@@ -40,7 +40,6 @@ public class VoxelStairs extends Voxel implements VoxelLogic
 	public CollisionBox[] getCollisionBoxes(VoxelContext info)
 	{
 		int meta = VoxelFormat.meta(info.getData());
-		// System.out.println("kek"+meta);
 		CollisionBox[] boxes = new CollisionBox[2];
 		boxes[0] = new CollisionBox(1, 0.5, 1);//.translate(0.5, -1, 0.5);
 		switch (meta % 4)

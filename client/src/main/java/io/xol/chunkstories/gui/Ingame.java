@@ -60,6 +60,7 @@ import io.xol.chunkstories.item.inventory.InventoryLocalCreativeMenu;
 import io.xol.chunkstories.renderer.SelectionRenderer;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
 import io.xol.chunkstories.renderer.chunks.RenderableChunk;
+import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -201,9 +202,13 @@ public class Ingame extends Layer
 						if (tboxes != null)
 							for (CollisionBox box : tboxes)
 								if (VoxelsStore.get().getVoxelById(id).getType().isSolid())
-									box.debugDraw(1, 0, 0, 1.0f);
+									FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4fm(1, 0, 0, 1.0f));
+									//box.debugDraw(1, 0, 0, 1.0f);
 								else
-									box.debugDraw(1, 1, 0, 0.25f);
+									FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4fm(1, 1, 0, 0.25f));
+									//box.debugDraw(1, 1, 0, 0.25f);
+						
+						//((VoxelTypeImplementation) VoxelsStore.get().getVoxelById(id).getType()).debugRenderCollision(renderingContext, world, i, j, k);
 						//VoxelsStore.get().getVoxelById(id).debugRenderCollision(world, i, j, k);
 					}
 
@@ -224,9 +229,12 @@ public class Ingame extends Layer
 				}
 				
 				if(e.getTranslatedBoundingBox().lineIntersection(cameraPosition, camera.getViewDirection().castToDoublePrecision()) != null)
-					e.getTranslatedBoundingBox().debugDraw(0, 0, 0.5f, 1);
+
+					FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4fm(0, 0, 0.5f, 1.0f));
+					//e.getTranslatedBoundingBox().debugDraw(0, 0, 0.5f, 1);
 				else
-					e.getTranslatedBoundingBox().debugDraw(0, 1, 1, 1);
+					FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4fm(0, 1f, 1f, 1.0f));
+				//e.getTranslatedBoundingBox().debugDraw(0, 1, 1, 1);
 				
 				//[Vector3dm x:67.29906576230833 y:23.65 z:28.805621056886654]
 				//System.out.println(cameraPosition);
@@ -234,7 +242,8 @@ public class Ingame extends Layer
 				for(CollisionBox box : e.getCollisionBoxes())
 				{
 					box.translate(e.getLocation());
-					box.debugDraw(0, 1, 0.5f, 1);
+					FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4fm(0, 1, 0.5f, 1.0f));
+					//box.debugDraw(0, 1, 0.5f, 1);
 				}
 			}
 		}

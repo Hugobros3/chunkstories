@@ -1,5 +1,6 @@
 package io.xol.chunkstories.core.entity;
 
+import io.xol.chunkstories.api.entity.EntityBase;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
@@ -8,13 +9,12 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.entity.EntityImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class EntityGroundItem extends EntityImplementation implements EntityRenderable
+public class EntityGroundItem extends EntityBase implements EntityRenderable
 {
 	private long spawnTime;
 	private final EntityGroundItemPileComponent itemPileWithin;

@@ -6,6 +6,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
@@ -147,5 +148,44 @@ public class FakeImmediateModeDebugRenderer
 			cube.uploadData(dataToUpload);
 		}
 		return cube;
+	}
+
+	private static final Vector4fm defaultColor = new Vector4fm(1.0f, 1.0f, 1.0f, 1.0f);
+	
+	public static void renderCollisionBox(CollisionBox box, Vector4fm color) {
+		if(color == null)
+			color = defaultColor;
+		
+		glColor4f(color.getX(), color.getY(), color.getZ(), color.getW());
+		glDisable(GL_CULL_FACE);
+		
+		glBegin(GL_LINES);
+		glVertex3d(box.xpos , box.ypos, box.zpos);
+		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos);
+		glVertex3d(box.xpos , box.ypos, box.zpos + box.zw);
+		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos + box.zw);
+		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos + box.zw);
+		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos);
+		glVertex3d(box.xpos , box.ypos, box.zpos);
+		glVertex3d(box.xpos , box.ypos, box.zpos + box.zw);
+
+		glVertex3d(box.xpos , box.ypos + box.h, box.zpos);
+		glVertex3d(box.xpos + box.xw, box.ypos + box.h, box.zpos);
+		glVertex3d(box.xpos , box.ypos + box.h, box.zpos + box.zw);
+		glVertex3d(box.xpos + box.xw, box.ypos + box.h, box.zpos + box.zw);
+		glVertex3d(box.xpos + box.xw, box.ypos + box.h, box.zpos + box.zw);
+		glVertex3d(box.xpos + box.xw, box.ypos + box.h, box.zpos);
+		glVertex3d(box.xpos , box.ypos + box.h, box.zpos);
+		glVertex3d(box.xpos , box.ypos + box.h, box.zpos + box.zw);
+
+		glVertex3d(box.xpos , box.ypos, box.zpos);
+		glVertex3d(box.xpos , box.ypos + box.h, box.zpos);
+		glVertex3d(box.xpos , box.ypos, box.zpos + box.zw);
+		glVertex3d(box.xpos , box.ypos + box.h, box.zpos + box.zw);
+		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos);
+		glVertex3d(box.xpos + box.xw, box.ypos + box.h, box.zpos);
+		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos + box.zw);
+		glVertex3d(box.xpos + box.xw, box.ypos + box.h, box.zpos + box.zw);
+		glEnd();
 	}
 }

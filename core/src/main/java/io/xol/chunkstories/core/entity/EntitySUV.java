@@ -1,13 +1,13 @@
 package io.xol.chunkstories.core.entity;
 
+import io.xol.chunkstories.api.entity.EntityBase;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.entity.EntityImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntitySUV extends EntityImplementation// implements EntityRenderable
+public class EntitySUV extends EntityBase// implements EntityRenderable
 {
 	int i = 0;
 

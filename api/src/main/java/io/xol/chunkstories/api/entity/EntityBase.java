@@ -1,11 +1,10 @@
-package io.xol.chunkstories.entity;
+package io.xol.chunkstories.api.entity;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.entity.components.EntityComponentExistence;
 import io.xol.chunkstories.api.entity.components.EntityComponentPosition;
@@ -25,9 +24,9 @@ import io.xol.chunkstories.api.world.chunk.Region;
 // http://chunkstories.xyz
 // http://xol.io
 
-public abstract class EntityImplementation implements Entity
+public abstract class EntityBase implements Entity
 {
-	protected final World world;
+	final protected World world;
 	
 	//The entity UUID is set to -1 so when added to a World the World assigns it a proper one
 	private long entityUUID = -1;
@@ -44,7 +43,7 @@ public abstract class EntityImplementation implements Entity
 	final protected EntityComponentPosition positionComponent;
 	final protected EntityComponentVelocity velocityComponent;
 	
-	public EntityImplementation(World world, double x, double y, double z)
+	public EntityBase(World world, double x, double y, double z)
 	{
 		this.world = world;
 
@@ -207,7 +206,6 @@ public abstract class EntityImplementation implements Entity
 		
 		//Default FOV
 		renderingInterface.getCamera().setFOV(renderingInterface.renderingConfig().getFov());
-		//camera.setFOV(RenderingConfig.fov);
 	}
 
 	@Override

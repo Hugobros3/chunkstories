@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.animation.SkeletonAnimator;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityBase;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
@@ -29,13 +30,12 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.components.EntityComponentHealth;
-import io.xol.chunkstories.entity.EntityImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public abstract class EntityLivingImplementation extends EntityImplementation implements EntityLiving
+public abstract class EntityLivingImplementation extends EntityBase implements EntityLiving
 {
 	//Head/body rotation
 	EntityComponentRotation entityRotationComponent;
@@ -437,7 +437,7 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 	}
 
 	public boolean isInWater() {
-		for(VoxelContext vctx : world.getVoxelsWithin(this.getBoundingBox())) {
+		for(VoxelContext vctx : world.getVoxelsWithin(this.getTranslatedBoundingBox())) {
 			if(vctx.getVoxel().getType().isLiquid())
 				return true;
 		}

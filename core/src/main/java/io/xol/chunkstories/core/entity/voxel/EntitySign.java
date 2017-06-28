@@ -1,5 +1,6 @@
 package io.xol.chunkstories.core.entity.voxel;
 
+import io.xol.chunkstories.api.entity.EntityBase;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
@@ -15,14 +16,13 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 
 import io.xol.chunkstories.core.entity.components.EntityComponentSignText;
-import io.xol.chunkstories.entity.EntityImplementation;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class EntitySign extends EntityImplementation implements EntityVoxel, EntityRenderable
+public class EntitySign extends EntityBase implements EntityVoxel, EntityRenderable
 {
 	EntityComponentSignText signText = new EntityComponentSignText(this, this.getComponents().getLastComponent());
 
