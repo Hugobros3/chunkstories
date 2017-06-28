@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.math.vector.Vector3;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.particles.ParticlesManager;
+import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.util.IterableIterator;
@@ -152,6 +153,8 @@ public interface World
 	 * Only sets the data, don't trigger any logic
 	 */
 	public void setVoxelDataWithoutUpdates(int x, int y, int z, int data);
+
+	public IterableIterator<VoxelContext> getVoxelsWithin(CollisionBox boundingBox);
 	
 	/* Voxel lightning helper functions */
 	

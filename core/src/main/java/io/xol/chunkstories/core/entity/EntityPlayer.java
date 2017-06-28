@@ -367,10 +367,24 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		}
 		
 		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
-		boolean inWater = voxelIn != null && voxelIn.getType().isLiquid();
+		boolean inWater = isInWater(); //voxelIn != null && voxelIn.getType().isLiquid();
 		
 		onLadder = false;
-		if (voxelIn instanceof VoxelClimbable)
+		
+		all:
+		for(VoxelContext vctx : world.getVoxelsWithin(this.getBoundingBox())) {
+			if(vctx.getVoxel() instanceof VoxelClimbable)
+			{
+				for(CollisionBox box : vctx.getTranslatedCollisionBoxes()) {
+					if(box.collidesWith(this.getTranslatedBoundingBox())) {
+						onLadder = true;
+						break all;
+					}
+				}
+			}
+		}
+		
+		/*if (voxelIn instanceof VoxelClimbable)
 		{
 			CollisionBox[] boxes = voxelIn.getTranslatedCollisionBoxes(world, getLocation());
 			if (boxes != null)
@@ -379,7 +393,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					if (box.collidesWith(this.getTranslatedBoundingBox()))
 						onLadder = true;
 				}
-		}
+		}*/
 
 		if (focus && !inWater && controller.getInputsManager().getInputByName("jump").isPressed() && isOnGround())
 		{

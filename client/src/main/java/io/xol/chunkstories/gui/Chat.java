@@ -30,26 +30,21 @@ import io.xol.chunkstories.world.WorldImplementation;
 //http://chunkstories.xyz
 //http://xol.io
 
-/**
- * KILL ME
- */
 public class Chat
 {
 	private final Ingame ingame;
 
-	int chatHistorySize = 150;
-	InputText inputBox;// = new InputText(ingame, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
-
-	public boolean chatting = false;
-	Deque<ChatLine> chat = new ArrayDeque<ChatLine>();
-	List<String> sent = new ArrayList<String>();
-	int sentMessages = 0;
-	int sentHistory = 0;
+	private int chatHistorySize = 150;
+	
+	private Deque<ChatLine> chat = new ArrayDeque<ChatLine>();
+	private List<String> sent = new ArrayList<String>();
+	
+	private int sentMessages = 0;
+	private int sentHistory = 0;
 
 	public Chat(Ingame ingame)
 	{
 		this.ingame = ingame;
-		this.inputBox = new InputText(ingame, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
 	}
 
 	private class ChatLine
@@ -73,14 +68,21 @@ public class Chat
 
 	public class ChatPanelOverlay extends Layer
 	{
+		InputText inputBox;
+		
 		long delay;
 		
 		public ChatPanelOverlay(GameWindow scene, Layer parent)
 		{
 			super(scene, parent);
-			openChatbox();
+
+			//Add the inputBox
+			this.inputBox = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
 			this.elements.add(inputBox);
 			this.setFocusedElement(inputBox);
+			
+			//Reset the scroll
+			Chat.this.scroll = 0;
 			
 			//150ms of delay to avoid typing in by mistake
 			this.delay = System.currentTimeMillis() + 150;
@@ -89,6 +91,9 @@ public class Chat
 		@Override
 		public void render(RenderingInterface renderer) {
 			parentLayer.render(renderer);
+
+			inputBox.setPosition(12, 192);
+			inputBox.drawWithBackGroundTransparent();
 		}
 
 		@Override
@@ -101,7 +106,6 @@ public class Chat
 		{
 			if (input.equals("exit"))
 			{
-				chatting = false;
 				gameWindow.setLayer(parentLayer);
 				return true;
 			}
@@ -133,7 +137,6 @@ public class Chat
 			{
 				processTextInput(inputBox.text);
 				inputBox.text = "";
-				chatting = false;
 				sentHistory = 0;
 				gameWindow.setLayer(parentLayer);
 				return true;
@@ -164,20 +167,13 @@ public class Chat
 		}
 	}
 
-	private void openChatbox()
-	{
-		inputBox.text = "";
-		chatting = true;
-		scroll = 0;
-	}
-
 	int scroll = 0;
 
 	public void draw(RenderingInterface renderer)
 	{	
 		while (chat.size() > chatHistorySize)
 			chat.removeLast();
-		if (scroll < 0 || !chatting)
+		if (scroll < 0)// || !chatting)
 			scroll = 0;
 		if (scroll > chatHistorySize)
 			scroll = chatHistorySize;
@@ -204,14 +200,11 @@ public class Chat
 			float alpha = (line.time + 10000L - System.currentTimeMillis()) / 1000f;
 			if (alpha < 0)
 				alpha = 0;
-			if (alpha > 1 || chatting)
+			if (alpha > 1 || ingame.getGameWindow().getLayer() instanceof ChatPanelOverlay)
 				alpha = 1;
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 9, (linesDrew - 1) * 26 + 180 + (chatting ? 50 : 0), localizedLine, 2, 2, chatWidth, new Vector4fm(1, 1, 1, alpha));
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 9, (linesDrew - 1) * 26 + 180 + (50), localizedLine, 2, 2, chatWidth, new Vector4fm(1, 1, 1, alpha));
 		}
-		inputBox.setPosition(12, 192);
 		
-		if (chatting)
-			inputBox.drawWithBackGroundTransparent();
 	}
 
 	/**
@@ -225,8 +218,8 @@ public class Chat
 			while ((m = ((WorldClientRemote) ingame.getWorld()).getConnection().getLastChatMessage()) != null)
 				insert(m);
 		
-		if (!chatting)
-			inputBox.text = "<Press T to chat> lol no one can ever see dis!!!!��";
+		//if (!chatting)
+		//	inputBox.text = "<Press T to chat> lol no one can ever see dis!!!!��";
 		
 		//inputBox.setFocus(true);
 	}
@@ -240,9 +233,9 @@ public class Chat
 		
 		String username = ingame.getGameWindow().getClient().username();
 		
-		if (inputBox.text.startsWith("/"))
+		if (input.startsWith("/"))
 		{
-			String chatMsg = inputBox.text;
+			String chatMsg = input;
 
 			chatMsg = chatMsg.substring(1, chatMsg.length());
 
@@ -256,9 +249,9 @@ public class Chat
 
 			if (ingame.getPluginManager().dispatchCommand(Client.getInstance().getPlayer(), cmdName, args))
 			{
-				if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
+				if (sent.size() == 0 || !sent.get(0).equals(input))
 				{
-					sent.add(0, inputBox.text);
+					sent.add(0, input);
 					sentMessages++;
 				}
 				return;
@@ -278,9 +271,9 @@ public class Chat
 				else
 					insert("#74FFD0" + i + " active client [remote] plugins : " + list);
 				
-				if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
+				if (sent.size() == 0 || !sent.get(0).equals(input))
 				{
-					sent.add(0, inputBox.text);
+					sent.add(0, input);
 					sentMessages++;
 				}
 			}
@@ -299,23 +292,23 @@ public class Chat
 				else
 					insert("#FF7070" + i + " active client [remote] mods : " + list);
 				
-				if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
+				if (sent.size() == 0 || !sent.get(0).equals(input))
 				{
-					sent.add(0, inputBox.text);
+					sent.add(0, input);
 					sentMessages++;
 				}
 			}
 		}
 
-		if (inputBox.text.equals("/locclear"))
+		if (input.equals("/locclear"))
 		{
 			chat.clear();
 		}
-		else if (inputBox.text.equals("I am Mr Debug"))
+		else if (input.equals("I am Mr Debug"))
 		{
 			RenderingConfig.isDebugAllowed = true;
 		}
-		else if (inputBox.text.equals("_-"))
+		else if (input.equals("_-"))
 		{
 			Entity e = Client.getInstance().getPlayer().getControlledEntity();
 			int cx = ((int)(double)e.getLocation().getX())/32;
@@ -324,7 +317,7 @@ public class Chat
 			
 			insert("No fuck you"+((WorldImplementation)Client.getInstance().getWorld()).getRegionsHolder().getRegionChunkCoordinates(cx, cy, cz));
 		}
-		else if(inputBox.text.equals("/reloadLocalContent"))
+		else if(input.equals("/reloadLocalContent"))
 		{
 			//Rebuild the mod FS
 			Client.getInstance().reloadAssets();
@@ -332,15 +325,15 @@ public class Chat
 			((WorldRendererImplementation) Client.getInstance().getWorld().getWorldRenderer()).reloadContentSpecificStuff();
 		}
 		else if (ingame.getWorld() instanceof WorldClientRemote)
-			((WorldClientRemote) ingame.getWorld()).getConnection().sendTextMessage("chat/" + inputBox.text);
+			((WorldClientRemote) ingame.getWorld()).getConnection().sendTextMessage("chat/" + input);
 		else
-			insert(ColorsTools.getUniqueColorPrefix(username) + username + "#FFFFFF > " + inputBox.text);
+			insert(ColorsTools.getUniqueColorPrefix(username) + username + "#FFFFFF > " + input);
 
-		System.out.println(username + " > " + inputBox.text);
+		System.out.println(username + " > " + input);
 
-		if (sent.size() == 0 || !sent.get(0).equals(inputBox.text))
+		if (sent.size() == 0 || !sent.get(0).equals(input))
 		{
-			sent.add(0, inputBox.text);
+			sent.add(0, input);
 			sentMessages++;
 		}
 	}

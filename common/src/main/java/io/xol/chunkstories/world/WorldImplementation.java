@@ -30,6 +30,7 @@ import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldCollisionsManager;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -46,6 +47,7 @@ import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
+import io.xol.chunkstories.world.iterators.AABBVoxelIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.region.HashMapWorldRegionsHolder;
@@ -674,6 +676,11 @@ public abstract class WorldImplementation implements World
 	public int getBlocklightLevelLocation(Location location)
 	{
 		return getBlocklightLevelWorldCoordinates((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
+	}
+	
+	@Override
+	public IterableIterator<VoxelContext> getVoxelsWithin(CollisionBox boundingBox) {
+		return new AABBVoxelIterator(this, boundingBox);
 	}
 
 	@Override

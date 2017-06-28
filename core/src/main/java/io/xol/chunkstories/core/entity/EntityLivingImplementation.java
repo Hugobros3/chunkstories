@@ -24,13 +24,12 @@ import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.components.EntityComponentHealth;
 import io.xol.chunkstories.entity.EntityImplementation;
-import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -322,8 +321,8 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 			Vector2fm headRotationVelocity = this.getEntityRotationComponent().tickInpulse();
 			getEntityRotationComponent().addRotation(headRotationVelocity.getX(), headRotationVelocity.getY());
 
-			voxelIn = VoxelsStore.get().getVoxelById(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
-			boolean inWater = voxelIn.getType().isLiquid();
+			//voxelIn = VoxelsStore.get().getVoxelById(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
+			boolean inWater = isInWater(); //voxelIn.getType().isLiquid();
 
 			// Gravity
 			if (!(this instanceof EntityFlying && ((EntityFlying) this).getFlyingComponent().get()))
@@ -435,6 +434,14 @@ public abstract class EntityLivingImplementation extends EntityImplementation im
 
 			getVelocityComponent().setVelocity(velocity);
 		}
+	}
+
+	public boolean isInWater() {
+		for(VoxelContext vctx : world.getVoxelsWithin(this.getBoundingBox())) {
+			if(vctx.getVoxel().getType().isLiquid())
+				return true;
+		}
+		return false;
 	}
 
 	@Override

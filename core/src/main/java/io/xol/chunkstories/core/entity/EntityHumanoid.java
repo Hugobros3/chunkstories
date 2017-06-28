@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.animation.SkeletalAnimation;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.entity.interfaces.EntityWithClientPrediction;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemVoxel;
 import io.xol.chunkstories.api.item.interfaces.ItemCustomHoldingAnimation;
@@ -24,6 +23,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -37,7 +37,7 @@ import io.xol.engine.animation.CompoundAnimationHelper;
 //http://chunkstories.xyz
 //http://xol.io
 
-public abstract class EntityHumanoid extends EntityLivingImplementation implements EntityWithClientPrediction
+public abstract class EntityHumanoid extends EntityLivingImplementation
 {
 	double jumpForce = 0;
 	protected Vector3dm targetVelocity = new Vector3dm(0);
@@ -347,7 +347,8 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		if (tick)
 		{
 			//The actual moment the jump takes effect
-			boolean inWater = voxelIn != null && voxelIn.getType().isLiquid();
+			boolean inWater = isInWater(); //voxelIn != null && voxelIn.getType().isLiquid();
+			
 			if (jumpForce > 0.0 && (!justJumped || inWater))
 			{
 				//Set the velocity
@@ -382,7 +383,6 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 
 	boolean lastTickOnGround = false;
 
-	@Override
 	public void tickClientPrediction()
 	{
 		handleWalkingEtcSounds();
@@ -416,7 +416,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		if (isOnGround())
 			metersWalked += Math.abs(horizontalSpeed.length());
 
-		boolean inWater = voxelIn != null && voxelIn.getType().isLiquid();
+		boolean inWater = isInWater(); //voxelIn != null && voxelIn.getType().isLiquid();
 
 		Voxel voxelStandingOn = VoxelsStore.get().getVoxelById(world.getVoxelData(this.getLocation().clone().add(0.0, -0.01, 0.0)));
 
@@ -512,7 +512,6 @@ public abstract class EntityHumanoid extends EntityLivingImplementation implemen
 		return super.damage(cause, null, damage);
 	}
 
-	@Override
 	public Location getPredictedLocation()
 	{
 		return getLocation();

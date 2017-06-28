@@ -141,4 +141,9 @@ public class VoxelContextOlder implements VoxelContext
 		return z;
 	}
 
+	@Override
+	public World getWorld() {
+		return null;
+	}
+
 }

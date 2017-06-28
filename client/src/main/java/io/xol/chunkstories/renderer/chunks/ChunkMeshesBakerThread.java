@@ -27,6 +27,7 @@ import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.VoxelContext;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -586,6 +587,11 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 			public int getZ()
 			{
 				return j;
+			}
+
+			@Override
+			public World getWorld() {
+				return world;
 			}
 
 		};

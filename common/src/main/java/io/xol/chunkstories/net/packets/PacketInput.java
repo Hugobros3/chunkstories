@@ -24,11 +24,14 @@ import java.io.IOException;
  */
 public class PacketInput extends PacketSynchPrepared {
 	public Input input;
+	public boolean isPressed;
 
 	@Override
 	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException {
 		out.writeLong(input.getHash());
-		out.writeBoolean(input.isPressed() | input instanceof InputVirtual);
+		
+		out.writeBoolean(isPressed);
+		//out.writeBoolean(input.isPressed() | input instanceof InputVirtual);
 
 		// System.out.println(input.getName()+input.isPressed());
 	}

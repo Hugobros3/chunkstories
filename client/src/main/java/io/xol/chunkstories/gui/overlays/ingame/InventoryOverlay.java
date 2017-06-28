@@ -46,6 +46,8 @@ public class InventoryOverlay extends Layer
 	@Override
 	public void render(RenderingInterface renderer)
 	{
+		parentLayer.render(renderer);
+		
 		Mouse mouse = renderer.getClient().getInputsManager().getMouse();
 		
 		int totalWidth = 0;
@@ -102,7 +104,7 @@ public class InventoryOverlay extends Layer
 			return true;
 		}
 		else
-			return super.handleInput(input);
+			return true;//super.handleInput(input);
 	}
 
 	/*@Override
@@ -126,7 +128,7 @@ public class InventoryOverlay extends Layer
 			this.gameWindow.setLayer(parentLayer);
 			//this.mainScene.changeOverlay(parent);
 			selectedItem = null;
-			return false;
+			return true;
 		}
 		
 		World world = player.getWorld();

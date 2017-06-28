@@ -53,7 +53,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 	Set<Lwjgl3KeyBind> keyboardInputs = new HashSet<Lwjgl3KeyBind>();
 	Map<Long, Input> inputsMap = new HashMap<Long, Input>();
 	
-	public Lwjgl3Mouse MOUSE;// = new Lwjgl3Mouse(this);
+	public Lwjgl3Mouse mouse;// = new Lwjgl3Mouse(this);
 	public Lwjgl3MouseButton LEFT;// = new Lwjgl3MouseButton(MOUSE, "mouse.left", 0);
 	public Lwjgl3MouseButton RIGHT;// = new Lwjgl3MouseButton(MOUSE, "mouse.right", 1);
 	public Lwjgl3MouseButton MIDDLE;// = new Lwjgl3MouseButton(MOUSE, "mouse.middle", 2);
@@ -68,10 +68,10 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 	{
 		this.gameWindow = gameWindow;
 		
-		MOUSE = new Lwjgl3Mouse(this);
-		LEFT = new Lwjgl3MouseButton(MOUSE, "mouse.left", 0);
-		RIGHT = new Lwjgl3MouseButton(MOUSE, "mouse.right", 1);
-		MIDDLE = new Lwjgl3MouseButton(MOUSE, "mouse.middle", 2);
+		mouse = new Lwjgl3Mouse(this);
+		LEFT = new Lwjgl3MouseButton(mouse, "mouse.left", 0);
+		RIGHT = new Lwjgl3MouseButton(mouse, "mouse.right", 1);
+		MIDDLE = new Lwjgl3MouseButton(mouse, "mouse.middle", 2);
 		
 		glfwSetKeyCallback(gameWindow.glfwWindowHandle, (keyCallback = new GLFWKeyCallback()
 		{
@@ -130,7 +130,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		    @Override
 		    public void invoke(long window, double xoffset, double yoffset) {
 		    	
-		    	MouseScroll ms = MOUSE.scroll(yoffset);
+		    	MouseScroll ms = mouse.scroll(yoffset);
 		    	onInputPressed(ms);
 		    	
 		    	//gameWindow.getCurrentScene().onScroll((int)yoffset);
@@ -291,7 +291,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 			return true;
 		}
 		
-		System.out.println(input.getName());
+		System.out.println("Input pressed "+input.getName());
 		
 		//Try the client-side event press
 		ClientInputPressedEvent event = new ClientInputPressedEvent(input);
@@ -307,6 +307,8 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		Layer layer = gameWindow.getLayer();
 		if(layer.handleInput(input))
 			return true;
+		
+		System.out.println("wasn't handled");
 		
 		final PlayerClient player = Client.getInstance().getPlayer();
 		if(player == null)
@@ -327,6 +329,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 				ClientConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
 				PacketInput packet = new PacketInput();
 				packet.input = input;
+				packet.isPressed = true;
 				connection.sendPacket(packet);
 			}
 			
@@ -371,6 +374,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 			ClientConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
 			PacketInput packet = new PacketInput();
 			packet.input = input;
+			packet.isPressed = false;
 			connection.sendPacket(packet);
 			return true;
 		}
@@ -382,25 +386,10 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		}
 		
 	}
-	
-	/*public int getMouseCursorX()
-	{
-		return Mouse.getX();
-	}
-	
-	public int getMouseCursorY()
-	{
-		return Mouse.getY();
-	}
-	
-	public void setMouseCursorLocation(int x, int y)
-	{
-		Mouse.setCursorPosition(x, y);
-	}*/
 
 	@Override
 	public Mouse getMouse() {
-		return MOUSE;
+		return mouse;
 	}
 	
 	public void destroy() {

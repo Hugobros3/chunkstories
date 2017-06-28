@@ -234,6 +234,11 @@ public class VoxelItemRenderer extends ItemRenderer
 			public int getZ() {return 0;}
 			@Override
 			public int getNeightborData(int side) {return 0;}
+			@Override
+			public World getWorld() {
+				// TODO Auto-generated method stub
+				return null;
+			}
 			
 		};
 		//new VoxelContextOlder(VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0)), 0, 0, 0);
@@ -498,6 +503,10 @@ public class VoxelItemRenderer extends ItemRenderer
 			public int getZ() {return 0;}
 			@Override
 			public int getNeightborData(int side) {return 0;}
+			@Override
+			public World getWorld() {
+				return world;
+			}
 			
 		};
 		//VoxelContext bri = new VoxelContextOlder(VoxelFormat.format(voxel.getId(), ((ItemVoxel) pile.getItem()).getVoxelMeta(), 15, voxel.getLightLevel(0)), 0, 0, 0);

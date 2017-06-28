@@ -18,11 +18,8 @@ import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.util.IterableIterator;
-import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -46,10 +43,6 @@ public abstract class EntityImplementation implements Entity
 	final protected EntityComponentExistence existenceComponent;
 	final protected EntityComponentPosition positionComponent;
 	final protected EntityComponentVelocity velocityComponent;
-
-	//Hacky bullshit
-	//TODO get rid of entirely
-	protected Voxel voxelIn;
 	
 	public EntityImplementation(World world, double x, double y, double z)
 	{
@@ -62,9 +55,6 @@ public abstract class EntityImplementation implements Entity
 		
 		positionComponent.setWorld(world);
 		positionComponent.setPosition(x, y, z);
-
-		//To avoid NPEs
-		voxelIn = VoxelsStore.get().getVoxelById(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 		
 		//@see: eID field declaration
 		eID = world.getGameContext().getContent().entities().getEntityIdByClassname(this.getClass().getName());
