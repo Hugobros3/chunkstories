@@ -79,9 +79,9 @@ public class TrueTypeFontRenderer implements FontRenderer
 	public void drawStringWithShadow(Font trueTypeFont, float x, float y, String whatchars, float scaleX, float scaleY, float clipX, Vector4fm color)
 	{
 		Vector4fm colorDarkened = new Vector4fm(color);
-		colorDarkened.setX(colorDarkened.getX() * 0.2f);
-		colorDarkened.setY(colorDarkened.getY() * 0.2f);
-		colorDarkened.setZ(colorDarkened.getZ() * 0.2f);
+		colorDarkened.setX(colorDarkened.getX() * 0.1f);
+		colorDarkened.setY(colorDarkened.getY() * 0.1f);
+		colorDarkened.setZ(colorDarkened.getZ() * 0.1f);
 		drawString(trueTypeFont, x + 1 * scaleX, y - 1 * scaleY, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, colorDarkened);
 		drawString(trueTypeFont, x, y, whatchars, scaleX, scaleY, ALIGN_LEFT, clipX, color);
 	}

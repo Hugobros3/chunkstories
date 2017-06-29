@@ -2,6 +2,8 @@ package io.xol.chunkstories.content;
 
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.mesh.ClientMeshStore;
 import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -46,5 +48,9 @@ public class ClientGameContent extends GameContentStore implements ClientContent
 	@Override
 	public TexturesLibrary textures() {
 		return textures;
+	}
+
+	public FontRenderer fonts() {
+		return Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer();
 	}
 }

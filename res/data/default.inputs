@@ -23,7 +23,7 @@ keyBind backspace BACKSPACE hidden
 
 #Debug and utility
 keyBind flyFast LEFT_SHIFT hidden
-keyBind flyReallyFast LEFT_SUPER hidden
+keyBind flyReallyFast LEFT_ALT hidden
 keyBind hideGui F1 hidden
 keyBind screenshot F2 hidden
 keyBind toggleDebugInfo F3 hidden
@@ -36,12 +36,13 @@ keyBind hideFarTerrain F9 hidden
 keyBind wireframeFarTerrain F10 hidden
 keyBind fullscreen F11 hidden
 keyBind reloadContent F12 hidden
-#keyBindCompound reloadContent LCONTROL+F12 hidden
-#keyBindCompound redrawChunks LCONTROL+R hidden
 
-#keyBindShortcut copy LCONTRL+C hidden
-#keyBindShortcut paste LCONTROL+V hidden
-#keyBindShortcut deleteLine LCONTROL+DELETE hidden
+keyBindCompound reloadContent LEFT_CONTROL+F12 hidden
+keyBindCompound redrawChunks LEFT_CONTROL+R hidden
+
+keyBindCompound copy LEFT_CONTROL+C hidden
+keyBindCompound paste LEFT_CONTROL+V hidden
+keyBindCompound deleteLine LEFT_CONTROL+DELETE hidden
 
 #Inventory slots accesses
 keyBind inventorySlot1 1 hidden

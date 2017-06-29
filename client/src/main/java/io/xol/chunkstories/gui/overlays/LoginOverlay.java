@@ -1,6 +1,8 @@
 package io.xol.chunkstories.gui.overlays;
 
 import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.bugsreporter.JavaCrashesUploader;
@@ -8,7 +10,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.overlays.config.LanguageSelectionScreen;
 import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
@@ -67,9 +68,9 @@ public class LoginOverlay extends Layer implements HttpRequester
 	private boolean failed_login;
 	
 	@Override
-	public void render(RenderingInterface renderingContext)
+	public void render(RenderingInterface renderer)
 	{
-		parentLayer.render(renderingContext);
+		parentLayer.render(renderer);
 		
 		if(Client.getInstance().configDeprecated().getProp("language", "undefined").equals("undefined"))
 		{
@@ -81,41 +82,50 @@ public class LoginOverlay extends Layer implements HttpRequester
 			gameWindow.setLayer(new MainMenuOverlay(gameWindow, parentLayer));
 		
 			//mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));
-		ObjectRenderer.renderTexturedRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2 + 180, 512, 512, "./textures/logo.png");
+		ObjectRenderer.renderTexturedRect(renderer.getWindow().getWidth() / 2, renderer.getWindow().getHeight() / 2 + 180, 512, 512, "./textures/logo.png");
 
-		loginButton.setPosition(renderingContext.getWindow().getWidth() / 2 - 245 + 58, renderingContext.getWindow().getHeight() / 2 - 80);
+		loginButton.setPosition(usernameForm.getPositionX() + loginButton.getWidth() / 2f, renderer.getWindow().getHeight() / 2 - 80);
 
-		usernameForm.setPosition(renderingContext.getWindow().getWidth() / 2 - 250, renderingContext.getWindow().getHeight() / 2 + 40);
+		usernameForm.setPosition(renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 + 40);
 		usernameForm.drawWithBackGround();
-		passwordForm.setPosition(renderingContext.getWindow().getWidth() / 2 - 250, renderingContext.getWindow().getHeight() / 2 - 40);
+		passwordForm.setPosition(renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 - 40);
 		passwordForm.drawWithBackGroundPassworded();
 
-		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - 250, renderingContext.getWindow().getHeight() / 2 + 80, 0, 32, Client.getInstance().getContent().localization().localize("#{login.username}"), BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - 250, renderingContext.getWindow().getHeight() / 2 + 0, 0, 32, Client.getInstance().getContent().localization().localize("#{login.password}"), BitmapFont.SMALLFONTS);
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 + 74, Client.getInstance().getContent().localization().localize("#{login.username}"), 2, 2, new Vector4fm(1.0f));
+		//FontRenderer2.drawTextUsingSpecificFont(renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 + 80, 0, 32, Client.getInstance().getContent().localization().localize("#{login.username}"), BitmapFont.SMALLFONTS);
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 - 6, Client.getInstance().getContent().localization().localize("#{login.password}"), 2, 2, new Vector4fm(1.0f));
+		//FontRenderer2.drawTextUsingSpecificFont(renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 + 0, 0, 32, Client.getInstance().getContent().localization().localize("#{login.password}"), BitmapFont.SMALLFONTS);
 
 		if (logging_in)
 		{
-			FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - 230, renderingContext.getWindow().getHeight() / 2 - 90, 0, 32, Client.getInstance().getContent().localization().localize("#{login.loggingIn}"), BitmapFont.SMALLFONTS);
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 230, renderer.getWindow().getHeight() / 2 - 90, Client.getInstance().getContent().localization().localize("#{login.loggingIn}"), 2, 2, new Vector4fm(1.0f));
+			//FontRenderer2.drawTextUsingSpecificFont(renderer.getWindow().getWidth() / 2 - 230, renderer.getWindow().getHeight() / 2 - 90, 0, 32, Client.getInstance().getContent().localization().localize("#{login.loggingIn}"), BitmapFont.SMALLFONTS);
 		}
 		else
 		{
 			float decal_lb = loginButton.getWidth();
-			loginButton.render(renderingContext);
+			loginButton.render(renderer);
 
-			FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - 245 - 58 + decal_lb, renderingContext.getWindow().getHeight() / 2 - 95, 0, 32, Client.getInstance().getContent().localization().localize("#{login.register}"), BitmapFont.SMALLFONTS);
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), usernameForm.getPositionX() + 16 + decal_lb, renderer.getWindow().getHeight() / 2 - 95, Client.getInstance().getContent().localization().localize("#{login.register}"), 2, 2, new Vector4fm(1.0f));
+			//FontRenderer2.drawTextUsingSpecificFont(usernameForm.getPositionX() + 16 + decal_lb * 2, renderer.getWindow().getHeight() / 2 - 95, 0, 32, Client.getInstance().getContent().localization().localize("#{login.register}"), BitmapFont.SMALLFONTS);
 			// FontRenderer2.drawTextUsingSpecificFont(XolioWindow.frameW / 2 -
 			// 250, XolioWindow.frameH / 2 - 150 + 18, 0, 32,
 			// "You currently need hugobros3 to provide you an account.",
 			// BitmapFont.SMALLFONTS);
+			
 			if (failed_login)
-				FontRenderer2.drawTextUsingSpecificFontRVBA(renderingContext.getWindow().getWidth() / 2 - 250, renderingContext.getWindow().getHeight() / 2 - 160, 0, 32, message, BitmapFont.SMALLFONTS, 1, 1, 0, 0);
+				renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 - 160, message, 2, 2, new Vector4fm(1.0f, 0.0f, 0.0f, 1.0f));
+				//FontRenderer2.drawTextUsingSpecificFontRVBA(renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 - 160, 0, 32, message, BitmapFont.SMALLFONTS, 1, 1, 0, 0);
 		}
 
 		if (autologin)
 		{
 			int seconds = 10;
 			String autologin2 = Client.getInstance().getContent().localization().localize("#{login.auto1} "+(seconds-(System.currentTimeMillis()-startCounter)/1000)+" #{login.auto2}");
-			FontRenderer2.drawTextUsingSpecificFontRVBA(renderingContext.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(32, autologin2, BitmapFont.SMALLFONTS) / 2, renderingContext.getWindow().getHeight() / 2 - 170, 0, 32, autologin2, BitmapFont.SMALLFONTS, 1, 0, 1, 0);
+			
+			float autologinLength = renderer.getFontRenderer().defaultFont().getWidth(autologin2) * 2.0f;
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - autologinLength / 2, renderer.getWindow().getHeight() / 2 - 170, autologin2, 2, 2, new Vector4fm(0.0f, 1.0f, 0.0f, 1.0f));
+			//FontRenderer2.drawTextUsingSpecificFontRVBA(renderer.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(32, autologin2, BitmapFont.SMALLFONTS) / 2, renderer.getWindow().getHeight() / 2 - 170, 0, 32, autologin2, BitmapFont.SMALLFONTS, 1, 0, 1, 1);
 			if ((System.currentTimeMillis()-startCounter)/1000 > seconds)
 			{
 				connect();
@@ -123,7 +133,8 @@ public class LoginOverlay extends Layer implements HttpRequester
 			}
 		}
 		
-		FontRenderer2.drawTextUsingSpecificFont(12, 12, 0, 32, "Copyright 2016 XolioWare Interactive", BitmapFont.SMALLFONTS);
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 12, 12 , "Copyright 2016 XolioWare Interactive", 2, 2, new Vector4fm(1.0f, 1.0f, 1.0f, 1.0f));
+		//FontRenderer2.drawTextUsingSpecificFont(12, 12, 0, 32, "Copyright 2016 XolioWare Interactive", BitmapFont.SMALLFONTS);
 	}
 	
 	/*public boolean handleKeypress(int k)
@@ -155,6 +166,16 @@ public class LoginOverlay extends Layer implements HttpRequester
 		}
 	}
 	
+	@Override
+	public boolean handleInput(Input input) {
+		if(input.equals("exit"))
+			autologin = false;
+		else if(input.equals("enter"))
+			connect();
+		
+		return super.handleInput(input);
+	}
+
 	@Override
 	public void handleHttpRequest(String info, String result)
 	{

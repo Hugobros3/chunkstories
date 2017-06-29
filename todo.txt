@@ -1,0 +1,19 @@
+Bugs TBF:
+
++ No light prepass on loaded chunks
++ Some overlays lack bg draw
++ Shadows settings don't update them
++ No AO on blocks
++ Slow chunks rebuild time
++ Water looks wrong
++ Distant trees don't have opaque leaves
++ Screenshots and cubemap missing
++ Login button offset
++ Gui scale/Server window
++ Copy/Paste/Line-delete general
+
+Todo:
+
+Send g1840
+Send SSD RMA ok
+Buy fans ok

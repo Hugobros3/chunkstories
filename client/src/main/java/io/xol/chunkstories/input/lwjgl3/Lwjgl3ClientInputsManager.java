@@ -7,12 +7,11 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
@@ -22,7 +21,6 @@ import io.xol.chunkstories.api.events.player.PlayerInputPressedEvent;
 import io.xol.chunkstories.api.events.player.PlayerInputReleasedEvent;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
@@ -49,8 +47,8 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 {
 	protected final GameWindowOpenGL_LWJGL3 gameWindow;
 	
-	Set<Input> inputs = new HashSet<Input>();
-	Set<Lwjgl3KeyBind> keyboardInputs = new HashSet<Lwjgl3KeyBind>();
+	Collection<Input> inputs = new ArrayList<Input>();
+	//Set<Lwjgl3KeyBind> keyboardInputs = new HashSet<Lwjgl3KeyBind>();
 	Map<Long, Input> inputsMap = new HashMap<Long, Input>();
 	
 	public Lwjgl3Mouse mouse;// = new Lwjgl3Mouse(this);
@@ -84,15 +82,25 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 					kbs.setKeyTo(key);
 				}
 				
-				KeyboardKeyInput keyboardInput = getKeyBoundForLWJGL3xKey(key);
+				//Try first the compound shortcuts
+				Lwjgl3KeyBindCompound keyBindCompound = getKeyCompoundFulForLWJGL3xKey(key);
+				if(keyBindCompound != null) {
+					if (action == GLFW_PRESS)
+						if(onInputPressed(keyBindCompound))
+							return;
+				}
 				
-				if(keyboardInput == null)
-					return;
+				//If unsuccessfull pass to normal keyboard input
+				Lwjgl3KeyBind keyboardInput = getKeyBoundForLWJGL3xKey(key);
 				
-				if (action == GLFW_PRESS)
-					onInputPressed(keyboardInput);
-				else if (action == GLFW_RELEASE)
-					onInputReleased(keyboardInput);
+				if(keyboardInput != null) {
+					if (action == GLFW_PRESS)
+						onInputPressed(keyboardInput);
+					else if (action == GLFW_RELEASE)
+						onInputReleased(keyboardInput);
+				}
+				
+				//Unhandled character
 			}
 		}));
 
@@ -157,7 +165,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		
 		reload();
 	}
-	
+
 	public Iterator<Input> getAllInputs()
 	{
 		return inputs.iterator();
@@ -191,13 +199,34 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 	 * @param keyCode
 	 * @return
 	 */
-	public KeyboardKeyInput getKeyBoundForLWJGL3xKey(int keyCode)
+	protected Lwjgl3KeyBind getKeyBoundForLWJGL3xKey(int keyCode)
 	{
 		for (Input keyBind : inputs)
 		{
 			if (keyBind instanceof Lwjgl3KeyBind && ((Lwjgl3KeyBind) keyBind).getLWJGL2xKey() == keyCode)
-				return (KeyboardKeyInput) keyBind;
+				return (Lwjgl3KeyBind) keyBind;
 		}
+		return null;
+	}
+	
+	protected Lwjgl3KeyBindCompound getKeyCompoundFulForLWJGL3xKey(int key) {
+		inputs:
+		for (Input keyBind : inputs)
+		{
+			if (keyBind instanceof Lwjgl3KeyBindCompound) {
+				Lwjgl3KeyBindCompound keyCombinaison = (Lwjgl3KeyBindCompound)keyBind;
+				
+				//Check all other keys were pressed
+				for(int glfwKey : keyCombinaison.glfwKeys) {
+					if(glfwGetKey(gameWindow.glfwWindowHandle, glfwKey) != GLFW_PRESS)
+					continue inputs;
+				}
+				
+				return keyCombinaison;
+			}
+		}
+		
+		
 		return null;
 	}
 	
@@ -218,8 +247,8 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 	{
 		for (Input keyBind : inputs)
 		{
-			if (keyBind instanceof Lwjgl3KeyBind)
-				((Lwjgl3KeyBind) keyBind).reload();
+			if (keyBind instanceof Lwjgl3Input)
+				((Lwjgl3Input) keyBind).reload();
 		}
 	}
 
@@ -227,7 +256,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 	{
 		inputs.clear();
 		inputsMap.clear();
-		keyboardInputs.clear();
+		//keyboardInputs.clear();
 		
 		InputsLoaderHelper.loadKeyBindsIntoManager(this, Client.getInstance().getContent().modsManager());
 		/*Iterator<Input> i = KeyBindsLoader.loadKeyBindsIntoManager(this, Client.getInstance().getContent().modsManager());
@@ -254,17 +283,19 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 
 	public void insertInput(String type, String name, String value, Collection<String> arguments) {
 		Input input;
-		if (type.equals("keyBind"))
-		{
+		if (type.equals("keyBind")) {
 			Lwjgl3KeyBind key = new Lwjgl3KeyBind(this, name, value);
 			input = key;
 			if(arguments.contains("hidden"))
 				((Lwjgl3KeyBind) key).setEditable(false);
-			keyboardInputs.add(key);
+			//keyboardInputs.add(key);
 		}
-		else if(type.equals("virtual"))
-		{
+		else if(type.equals("virtual"))	{
 			input = new InputVirtual(name);
+		}
+		else if(type.equals("keyBindCompound")) {
+			Lwjgl3KeyBindCompound keyCompound = new Lwjgl3KeyBindCompound(this, name, value);
+			input = keyCompound;
 		}
 		else
 			return;

@@ -5,10 +5,10 @@ import io.xol.chunkstories.api.gui.FocusableGuiElement;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 
@@ -18,26 +18,29 @@ import io.xol.engine.graphics.util.CorneredBoxDrawer;
 
 public class Button extends FocusableGuiElement implements ClickableGuiElement
 {
-	//public boolean clicked = false;
 	public String text = "";
-	protected BitmapFont font;
+	//protected BitmapFont font;
 	public int size;
 
-	//protected int width, height;
 	private Runnable action;
 
 	public Button(Layer layer, int x, int y, int width, int height, String t, BitmapFont f, int s)
 	{
-		this(layer, x, y, width, height, t, f, s, null);
+		this(layer, x, y, width, height, t, s, null);
 	}
 	
-	public Button(Layer layer, int x, int y, int width, int height, String t, BitmapFont f, int s, Runnable r)
+	public Button(Layer layer, int x, int y, int width, int height, String t, int s)
+	{
+		this(layer, x, y, width, height, t, s, null);
+	}
+	
+	public Button(Layer layer, int x, int y, int width, int height, String t, int s, Runnable r)
 	{
 		super(layer);
 		xPosition = x;
 		yPosition = y;
 		text = t;
-		font = f;
+		//font = f;
 		size = s;
 		this.width = width;
 		this.height = height;
@@ -47,35 +50,42 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 
 	public float getWidth()
 	{
-		//System.out.println(size);
-		int width = FontRenderer2.getTextLengthUsingFont(size * 16, text, font);
-		return width + 0;
+		String localizedText = Client.getInstance().getContent().localization().localize(text);
+		int width = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * 2;
+				//FontRenderer2.getTextLengthUsingFont(size * 16, localizedText, font);
+		
+		if(this.width > width)
+			return this.width + 8;
+		
+		return width + 8;
 	}
 
 	public boolean isMouseOver(Mouse mouse)
 	{
-		return (mouse.getCursorX() >= xPosition - width / 2 - 4 && mouse.getCursorX() < xPosition + width / 2 + 4 && mouse.getCursorY() >= yPosition - height / 2 - 4 && mouse.getCursorY() <= yPosition + height / 2 + 4);
+		return (mouse.getCursorX() >= xPosition - getWidth() / 2 - 4 && mouse.getCursorX() < xPosition + getWidth() / 2 - 4 && mouse.getCursorY() >= yPosition - height / 2 - 4 && mouse.getCursorY() <= yPosition + height / 2 + 4);
 	}
 
 	public void render(RenderingInterface renderer) {
 		String localizedText = Client.getInstance().getContent().localization().localize(text);
-		int textWidth = FontRenderer2.getTextLengthUsingFont(size * 16, localizedText, font);
+		float textWidth = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * 2;//FontRenderer2.getTextLengthUsingFont(size * 16, localizedText, font);
 		if (width < 0)
 		{
 			width = textWidth;
 		}
-		int textDekal = -textWidth;
+		float textDekal = -textWidth / 2f;
 		if (isFocused() || isMouseOver())
 		{
 			TexturesHandler.getTexture("./textures/gui/scalableButtonOver.png").setLinearFiltering(false);
-			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition - 4, yPosition, width + 8, height + 16, 4, "./textures/gui/scalableButtonOver.png", 32, 2);
+			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width + 8, height + 16, 4, "./textures/gui/scalableButtonOver.png", 32, 2);
 		}
 		else
 		{
 			TexturesHandler.getTexture("./textures/gui/scalableButton.png").setLinearFiltering(false);
-			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition - 4, yPosition, width + 8, height + 16, 4, "./textures/gui/scalableButton.png", 32, 2);
+			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width + 8, height + 16, 4, "./textures/gui/scalableButton.png", 32, 2);
 		}
-		FontRenderer2.drawTextUsingSpecificFont(textDekal + xPosition, yPosition - height / 2, 0, size * 32, localizedText, font);
+		
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), xPosition + textDekal, yPosition - height / 2, localizedText, 2, 2, new Vector4fm(1.0f));
+		//FontRenderer2.drawTextUsingSpecificFont(xPosition + textDekal, yPosition - height / 2, 0, size * 32, localizedText, font);
 		//return width * 2 * size - 12;
 	}
 

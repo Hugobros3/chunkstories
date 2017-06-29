@@ -190,7 +190,9 @@ public class OptionsOverlay extends Layer
 			scaled += min;
 			scaled /= steps;
 			scaled = (float) (Math.floor(scaled)) * steps;
-					
+				
+			//scaled -= scaled % 0.01f;
+			
 			value = scaled+"";
 			//options.mainScene.changeOverlay(new KeyBindSelectionOverlay(options.mainScene, options, this));
 		}
@@ -198,16 +200,19 @@ public class OptionsOverlay extends Layer
 		@Override
 		public void render(RenderingInterface renderer)
 		{
-			int textWidth = FontRenderer2.getTextLengthUsingFont(size * 16, text, font);
+			String localizedText = Client.getInstance().getContent().localization().localize(text);
+			int textWidth = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * 2;//FontRenderer2.getTextLengthUsingFont(size * 16, text, font);
 			if (width < 0)
 			{
 				width = textWidth;
 			}
-			int textDekal = -textWidth;
+			int textDekal = -textWidth / 2;
 			TexturesHandler.getTexture("./textures/gui/scalableField.png").setLinearFiltering(false);
-			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition - 4, yPosition, width + 8, height + 16, 8, "./textures/gui/scalableField.png", 32, 2);
+			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width + 8, height + 16, 8, "./textures/gui/scalableField.png", 32, 2);
 			ObjectRenderer.renderTexturedRect(xPosition - 160 + 320 * (Float.parseFloat(value)-min)/(max-min), yPosition, 64, 64, 0, 0, 32, 32, 32, "./textures/gui/barCursor.png");
-			FontRenderer2.drawTextUsingSpecificFont(textDekal + xPosition, yPosition - height / 2, 0, size * 32, text, font);
+			
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), xPosition + textDekal, yPosition - height / 2, localizedText, 2, 2, new Vector4fm(1.0f));
+			//FontRenderer2.drawTextUsingSpecificFont(textDekal + xPosition, yPosition - height / 2, 0, size * 32, text, font);
 			//return width * 2 * size - 12;
 		}
 
@@ -472,20 +477,22 @@ public class OptionsOverlay extends Layer
 		//ObjectRenderer.renderColoredRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, "000000", 0.5f);
 		//ObjectRenderer.renderColoredRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, optionsPanelSize, renderingContext.getWindow().getHeight(), 0, "000000", 0.25f);
 
-		int dekal = 0;
+		float dekal = 26;
 		int i = 0;
 		for (Button b : tabsButtons)
 		{
-			dekal += b.getWidth() + 32 + 16;
+			dekal += b.getWidth() / 2f;
 			b.setPosition(renderer.getWindow().getWidth() / 2 - optionsPanelSize / 2 + dekal, renderer.getWindow().getHeight() - 128);
 			b.render(renderer);
-			dekal += b.getWidth();
+			dekal += b.getWidth() / 2f;
 			
 			//if (b.clicked())
 			//	selectedConfigTab = i;
 			
 			i++;
 		}
+		
+		//System.out.println(renderer.getWindow().getWidth() / 2 - optionsPanelSize / 2);
 
 		ConfigTab currentConfigTab = configTabs.get(selectedConfigTab);
 		int a = 0, b = 0;
