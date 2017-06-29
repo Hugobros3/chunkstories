@@ -11,19 +11,36 @@ apply plugin: 'java'
 
 apply plugin: 'java-library'
 
-dependencies {
+apply plugin: 'maven'
 
+//TODO Make version depend on Git ?
+version = '2017.06.29'
+description = 'Open API for the game \'Chunk Stories\''
+
+dependencies {
 }
 
 compileJava {
     //options.encoding = 'UTF-8'
+	
+	//Do we need this ?
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
-// Iterate over the source sets
-sourceSets.all {
-    println name
-	println java.srcDirs
-	println sourceCompatibility
-	println targetCompatibility
+def someFile = file('build/somefile.txt')
+
+artifacts {
+//	archives someFile
+}
+
+task artifacts {
+	group = "Help"
+		description = "Displays the artifacts associated with each configuration of " + project
+		doFirst {
+			configurations.findAll().each { config ->
+			println "${config}:"
+			config.artifacts.getFiles().each { file -> println "" + file}
+			println ' '
+		}
+	}
 }

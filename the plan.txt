@@ -3,11 +3,13 @@ Splits the monolithic hunk of that source tree into more sensible bits
 
 chunkstories/
 	+ api/ : Free software licensed, contains essentials bits to the game, conventions, mini math lib etc. Can be used against to write plugins.
+		> TODO: Find a way to publish this as a seperate, open-sourced project altogether. Dependencies are already sussed
 	+ common/ : Client/Server agnostic bits, most of the hard world/chunk logic is in there
 	+ core/ : Permissively licensed too, contains the building blocks of the bundled test gameplay elements
-		+ res/ : Bundled there too
 	+ client/ : Deals with graphics, sounds, input and GUI elements
 	+ server/ : Self-explanatory
+	
+	+ res/ : Not a gradle rep (yet?), stores all the vanilla content of the game.
 
 
 Various refactor elements:
@@ -30,8 +32,20 @@ Moreover, the switch to a more verbose way of defining packets will likely help 
 packets differently based on their type, priority, tolerance to loss etc
 
 =GUI=
-For later è.é
+Merge Scene and Overlay onto Layer, a more sensible approach that just defines GUI panels
+Get rid of onClick onKey onScroll etc and use Inputs for everything, except raw text entry
+ -> Make Mouse class in ClientInputsManager
+ -> Make key combos special inputs
+Change buttons so they use a Runnable instead of having the render function check clicked()
+Generalize and sanitize how GUI elements are laid out
+Switch entirely to TTF renderer and drop FR2
 
+=Entities=
+
+Have to keep both as an Interface but make EntityBase public too for implementing mods ... Needs to NWP'up the file format as well
+ -> Redo the EntityBase constructor
+ -> Generalize EntityBase a bit more
+ 
 =OpenGL/RenderingLayer=
 
 There is an obvious problem with directly exposing OpenGL to users, the API needs to abstract it all off as best as it possibly can.
@@ -47,6 +61,8 @@ RenderingInterface ? No, already a clusterfuck ... split it ? No...
 And newTexture + getTexture(asset) in ClientContent.
 
 Warning: BufferUtils is a goner, and allocateDirect isn't ideal. Should make yet another abstractor for potential lwjgl3 jemalloc ?
+
+!Still has to fix screenshot/f8
 
 =Particles=
 

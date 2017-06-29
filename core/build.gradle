@@ -15,3 +15,6 @@ dependencies {
     api project(':api')
     api project(':common')
 }
+
+version = rootProject.version
+description = 'Basic content the game runs by default'
