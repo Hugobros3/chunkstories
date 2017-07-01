@@ -2,7 +2,6 @@ package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.core.voxel.DefaultVoxelRenderer;
-import io.xol.chunkstories.renderer.ChunkMeshesBaker;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool.PooledByteBuffer;
 import io.xol.chunkstories.api.Content.Voxels;
@@ -72,6 +71,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 	
 	//Nasty !
 	int i = 0, j = 0, k = 0;
+	int bakedBlockId;
 	
 	Chunk cached;
 	
@@ -598,6 +598,8 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 
 		ChunkBakerRenderContext chunkRenderingContext = new ChunkBakerRenderContext(chunk, cx, cy, cz);
 		
+		bakedBlockId = 0;
+		//Render the fucking thing!
 		for (i = 0; i < 32; i++)
 		{
 			for (j = 0; j < 32; j++)
@@ -610,16 +612,17 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 					if (blockID == 0)
 						continue;
 					
-					
 					Voxel vox = VoxelsStore.get().getVoxelById(blockID);
 					// Fill near-blocks info
-					chunkRenderingContext.prepareVoxelLight();
+					// chunkRenderingContext.prepareVoxelLight();
 					
 					VoxelRenderer voxelRenderer = vox.getVoxelRenderer(voxelRenderingContext);
 					if(voxelRenderer == null)
 						voxelRenderer = defaultVoxelRenderer;
 					
 					voxelRenderer.renderInto(chunkRendererOutput, chunkRenderingContext, chunk, voxelRenderingContext);
+					
+					bakedBlockId++;
 				}
 			}
 		}
@@ -701,6 +704,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		VoxelLighter voxelLighter;
 		CubicChunk chunk;
 		
+		int lastBlockBaked = 0;
 		byte[] sunlightLevel = new byte[VoxelSides.Corners.values().length];
 		byte[] blocklightLevel = new byte[VoxelSides.Corners.values().length];
 		byte[] aoLevel = new byte[VoxelSides.Corners.values().length];
@@ -868,6 +872,9 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 
 			bake(VoxelSides.Corners.BOTTOM_BACK_LEFT.ordinal()  , sl000, slm00, sl0m0, sl00m, slmm0, sl0mm, slm0m, slmmm
 															    , bl000, blm00, bl0m0, bl00m, blmm0, bl0mm, blm0m, blmmm);
+			
+			//Update this
+			this.lastBlockBaked = bakedBlockId;
 		}
 		
 		private void bake(int side, int slCenter, int slX, int slY, int slZ, int slXY, int slYZ, int slXZ, int slXYZ
@@ -998,6 +1005,10 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		@Override
 		public VoxelLighter getCurrentVoxelLighter()
 		{
+			if(bakedBlockId != this.lastBlockBaked) {
+				this.prepareVoxelLight();
+			}
+			
 			return voxelLighter;
 		}
 	}

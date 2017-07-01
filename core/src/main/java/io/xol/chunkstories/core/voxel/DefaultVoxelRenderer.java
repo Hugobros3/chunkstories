@@ -26,37 +26,37 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 		int k = voxelInformations.getY() & 0x1F;
 		int j = voxelInformations.getZ() & 0x1F;
 		
-		VoxelBakerCubic rawRBBF = chunkRenderer.getLowpolyBakerFor(LodLevel.ANY, ShadingType.OPAQUE);
+		VoxelBakerCubic vbc = chunkRenderer.getLowpolyBakerFor(LodLevel.ANY, ShadingType.OPAQUE);
 		byte extraByte = 0;
 		if (shallBuildWallArround(voxelInformations, 5))
 		{
 			if (k != 0 || bakingContext.isBottomChunkLoaded())
-				addQuadBottom(chunk, bakingContext, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BOTTOM, voxelInformations), extraByte);
+				addQuadBottom(chunk, bakingContext, vbc, i, k, j, vox.getVoxelTexture(src, VoxelSides.BOTTOM, voxelInformations), extraByte);
 		}
 		if (shallBuildWallArround(voxelInformations, 4))
 		{
 			if (k != 31 || bakingContext.isTopChunkLoaded())
-				addQuadTop(chunk, bakingContext, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.TOP, voxelInformations), extraByte);
+				addQuadTop(chunk, bakingContext, vbc, i, k, j, vox.getVoxelTexture(src, VoxelSides.TOP, voxelInformations), extraByte);
 		}
 		if (shallBuildWallArround(voxelInformations, 2))
 		{
 			if (i != 31 || bakingContext.isRightChunkLoaded())
-				addQuadRight(chunk, bakingContext, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.RIGHT, voxelInformations), extraByte);
+				addQuadRight(chunk, bakingContext, vbc, i, k, j, vox.getVoxelTexture(src, VoxelSides.RIGHT, voxelInformations), extraByte);
 		}
 		if (shallBuildWallArround(voxelInformations, 0))
 		{
 			if (i != 0 || bakingContext.isLeftChunkLoaded())
-				addQuadLeft(chunk, bakingContext, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.LEFT, voxelInformations), extraByte);
+				addQuadLeft(chunk, bakingContext, vbc, i, k, j, vox.getVoxelTexture(src, VoxelSides.LEFT, voxelInformations), extraByte);
 		}
 		if (shallBuildWallArround(voxelInformations, 1))
 		{
 			if (j != 31 || bakingContext.isFrontChunkLoaded())
-				addQuadFront(chunk, bakingContext, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.FRONT, voxelInformations), extraByte);
+				addQuadFront(chunk, bakingContext, vbc, i, k, j, vox.getVoxelTexture(src, VoxelSides.FRONT, voxelInformations), extraByte);
 		}
 		if (shallBuildWallArround(voxelInformations, 3))
 		{
 			if (j != 0 || bakingContext.isBackChunkLoaded())
-				addQuadBack(chunk, bakingContext, rawRBBF, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, voxelInformations), extraByte);
+				addQuadBack(chunk, bakingContext, vbc, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, voxelInformations), extraByte);
 		}
 
 		return 0;

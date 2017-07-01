@@ -1,4 +1,4 @@
-package io.xol.chunkstories.renderer;
+package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 

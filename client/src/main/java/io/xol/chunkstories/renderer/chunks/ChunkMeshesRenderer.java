@@ -1,4 +1,4 @@
-package io.xol.chunkstories.renderer;
+package io.xol.chunkstories.renderer.chunks;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -21,7 +21,6 @@ import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.renderer.chunks.ChunkMeshesBakerThread;
 import io.xol.chunkstories.renderer.chunks.RenderableChunk;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
 import io.xol.chunkstories.world.chunk.CubicChunk;
