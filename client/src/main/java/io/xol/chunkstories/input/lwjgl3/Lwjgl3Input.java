@@ -53,5 +53,25 @@ public abstract class Lwjgl3Input implements Input {
 		return hash;
 	}
 	
+	@Override
+	public boolean equals(Object o)
+	{
+		if(o == null)
+			return false;
+		else if(o instanceof Lwjgl3Input) {
+			return ((Lwjgl3Input)o).getName().equals(getName());
+		}
+		else if(o instanceof String) {
+			return ((String)o).equals(this.getName());
+		}
+		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return getName().hashCode();
+	}
+	
 	public abstract void reload();
 }

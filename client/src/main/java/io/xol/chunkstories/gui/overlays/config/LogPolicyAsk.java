@@ -29,9 +29,9 @@ public class LogPolicyAsk extends Layer
 
 			@Override
 			public void run() {
-				gameWindow.setLayer(parentLayer);
 				Client.getInstance().configDeprecated().setString("log-policy", "send");
 				Client.getInstance().configDeprecated().save();
+				gameWindow.setLayer(parentLayer);
 			}
 			
 		});
@@ -40,9 +40,9 @@ public class LogPolicyAsk extends Layer
 
 			@Override
 			public void run() {
-				gameWindow.setLayer(parentLayer);
 				Client.getInstance().configDeprecated().setString("log-policy", "dont");
 				Client.getInstance().configDeprecated().save();
+				gameWindow.setLayer(parentLayer);
 			}
 			
 		});
@@ -54,6 +54,8 @@ public class LogPolicyAsk extends Layer
 	@Override
 	public void render(RenderingInterface renderingContext)
 	{
+		parentLayer.render(renderingContext);
+		
 		//ObjectRenderer.renderColoredRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, "000000", 0.5f);
 		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
 		

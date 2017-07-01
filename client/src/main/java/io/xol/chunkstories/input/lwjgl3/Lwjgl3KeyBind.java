@@ -22,7 +22,7 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, LWJG
 	public Lwjgl3KeyBind(Lwjgl3ClientInputsManager im, String name, String defaultKeyName)
 	{
 		super(im, name);
-		this.GLFW_key = Client.getInstance().getConfig().getInteger("bind.glfw."+name, GLFWKeyIndexHelper.getGlfwKeyByName(defaultKeyName));
+		this.GLFW_key = Client.getInstance().getConfig().getInteger("bind."+name, GLFWKeyIndexHelper.getGlfwKeyByName(defaultKeyName));
 	}
 	
 	/**
@@ -45,27 +45,7 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, LWJG
 	 */
 	public void reload()
 	{
-		this.GLFW_key = Client.getInstance().getConfig().getInteger("bind.glfw."+name, -1);
-	}
-	
-	@Override
-	public boolean equals(Object o)
-	{
-		if(o == null)
-			return false;
-		else if(o instanceof KeyboardKeyInput) {
-			return ((KeyboardKeyInput)o).getName().equals(getName());
-		}
-		else if(o instanceof String) {
-			return ((String)o).equals(this.getName());
-		}
-		return false;
-	}
-	
-	@Override
-	public int hashCode()
-	{
-		return getName().hashCode();
+		this.GLFW_key = Client.getInstance().getConfig().getInteger("bind."+name, -1);
 	}
 	
 	@Override

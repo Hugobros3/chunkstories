@@ -8,13 +8,11 @@
 
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
-
 apply plugin: 'java-library'
-
 apply plugin: 'maven'
 
 //TODO Make version depend on Git ?
-version = '2017.06.29'
+version = '100'
 description = 'Open API for the game \'Chunk Stories\''
 
 dependencies {
@@ -31,6 +29,26 @@ def someFile = file('build/somefile.txt')
 
 artifacts {
 //	archives someFile
+}
+
+jar {
+version = null
+//archiveName = 'api.jar'
+}
+
+task test555 {
+	println uploadArtifactUsername
+	println uploadArtifactPassword
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "http://xol.io:8080/repository/public/") {
+				authentication(userName: uploadArtifactUsername, password: uploadArtifactPassword)
+			}
+        }
+    }
 }
 
 task artifacts {

@@ -79,9 +79,8 @@ public class MainMenuOverlay extends Layer
 	{
 		parentLayer.render(renderingContext);
 		
-		if(Client.getInstance().configDeprecated().getProp("log-policy", "undefined").equals("undefined"))
+		if(gameWindow.getLayer() == this && Client.getInstance().configDeprecated().getProp("log-policy", "undefined").equals("undefined"))
 			gameWindow.setLayer(new LogPolicyAsk(gameWindow, this));
-			//this.mainScene.changeOverlay(new LogPolicyAsk(mainScene, this));
 		
 		float totalLengthOfButtons = 0;
 		float spacing = -1;

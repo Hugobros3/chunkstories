@@ -29,6 +29,7 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.Ingame;
+import io.xol.chunkstories.renderer.chunks.ChunkMeshesRenderer;
 import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRendererImplementation;
 import io.xol.chunkstories.renderer.lights.ComputedShadowMap;

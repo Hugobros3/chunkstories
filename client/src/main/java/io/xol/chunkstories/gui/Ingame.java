@@ -406,9 +406,11 @@ public class Ingame extends Layer
 		//CTRL-R redraws chunks
 		else if (input.equals("redrawChunks"))//(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == 19)
 		{
+			System.out.println("Wow");
 			((ClientParticlesRenderer) world.getParticlesManager()).cleanAllParticles();
 			world.redrawEverything();
 			world.getWorldRenderer().flagChunksModified();
+			return true;
 		}
 		//Item slots selection
 		else if (input.getName().startsWith("inventorySlot"))

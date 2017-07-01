@@ -11,8 +11,11 @@ allprojects {
 
 version = '2017.06.29'
 description = 'A voxel game and game engine designed for modders'
+group = 'io.xol.chunkstories'
 
 subprojects {
+
+	group = rootProject.group
 
 	//We add those dependencies to any Java subproject
 	plugins.withType(JavaPlugin) {
@@ -22,7 +25,7 @@ subprojects {
 		compileJava.options.compilerArgs << '-Xlint:-deprecation'
 		compileJava.options.compilerArgs << '-Xlint:none'
 		
-		//TODO: Split these even more, the server likely doesn't have an ue for jorbis.
+		//TODO: Split these even more, the server likely doesn't have an use for jorbis.
 		dependencies {
 			// https://mvnrepository.com/artifact/org.fusesource.jansi/jansi
 			compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.15'
