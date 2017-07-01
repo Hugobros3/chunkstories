@@ -34,7 +34,6 @@ import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -49,33 +48,30 @@ import org.lwjgl.BufferUtils;
 
 public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 {
+	private final WorldClient world;
 	private AtomicBoolean die = new AtomicBoolean();
 
-	private final WorldClient world;
+	private Deque<int[]> todoQueue = new ConcurrentLinkedDeque<int[]>();
+	private ByteBufferPool buffersPool;
+	
+	private final int[][] cache = new int[27][];
 
-	public Deque<int[]> todoQueue = new ConcurrentLinkedDeque<int[]>();
-	//public Queue<MeshedChunkData> doneQueue = new ConcurrentLinkedQueue<MeshedChunkData>();
-
-	public ByteBufferPool buffersPool;
-
-	int worldSizeInChunks;
-
-	public final int[][] cache = new int[27][];
-
-	Deque<Integer> blockSources = new ArrayDeque<Integer>();
-	Deque<Integer> sunSources = new ArrayDeque<Integer>();
+	//private Deque<Integer> blockSources = new ArrayDeque<Integer>();
+	//private Deque<Integer> sunSources = new ArrayDeque<Integer>();
 
 	//Work buffers
-	ByteBuffer[][][] byteBuffers;
-	RenderByteBuffer[][][] byteBuffersWrappers;
+	private ByteBuffer[][][] byteBuffers;
+	private RenderByteBuffer[][][] byteBuffersWrappers;
 	
 	//Nasty !
-	int i = 0, j = 0, k = 0;
-	int bakedBlockId;
+	private int i = 0, j = 0, k = 0;
+	private int bakedBlockId;
 	
-	Chunk cached;
+	private Chunk cached;
 	
-	DefaultVoxelRenderer defaultVoxelRenderer;
+	private DefaultVoxelRenderer defaultVoxelRenderer;
+
+	private AtomicInteger totalChunksRendered = new AtomicInteger();
 
 	public ChunkMeshesBakerThread(WorldClient world)
 	{
@@ -197,7 +193,6 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		Thread.currentThread().setName("Chunk Renderer");
 		Thread.currentThread().setPriority(Constants.CHUNKS_RENDERER_THREAD_PRIORITY);
 
-		worldSizeInChunks = world.getSizeInChunks();
 		while (!die.get())
 		{
 			int[] task = todoQueue.pollFirst();
@@ -222,8 +217,6 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 				// long t = System.nanoTime();
 				try
 				{
-					//System.out.println("cuck");
-
 					if (world.isChunkLoaded(task[0], task[1], task[2]))
 					{
 						ChunkRenderable work = (ChunkRenderable) world.getChunk(task[0], task[1], task[2]);
@@ -401,59 +394,8 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 			data = world.getVoxelData(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 		}
 
-		/*if (y < 0 && c.chunkY == 0)
-			y = 0;
-		if (y > 255)
-			y = 255;
-		if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
-		{
-			data = c.getDataAt(x, y, z);
-		}
-		else
-			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
-		*/
 		int blockID = VoxelFormat.id(data);
 		return VoxelsStore.get().getVoxelById(blockID).getType().isOpaque() ? 0 : VoxelFormat.blocklight(data);
-	}
-
-	public static float[] bakeLightColors(int bl1, int bl2, int bl3, int bl4, int sl1, int sl2, int sl3, int sl4)
-	{
-		float blocklightFactor = 0;
-
-		float sunlightFactor = 0;
-
-		float aoFactor = 4;
-
-		if (sl1 >= 0) // If sunlight = -1 then it's a case of occlusion
-		{
-			blocklightFactor += bl1;
-			sunlightFactor += sl1;
-			aoFactor--;
-		}
-		if (sl2 >= 0)
-		{
-			blocklightFactor += bl2;
-			sunlightFactor += sl2;
-			aoFactor--;
-		}
-		if (sl3 >= 0)
-		{
-			blocklightFactor += bl3;
-			sunlightFactor += sl3;
-			aoFactor--;
-		}
-		if (sl4 >= 0)
-		{
-			blocklightFactor += bl4;
-			sunlightFactor += sl4;
-			aoFactor--;
-		}
-		if (aoFactor < 4) // If we're not 100% occlusion
-		{
-			blocklightFactor /= (4 - aoFactor);
-			sunlightFactor /= (4 - aoFactor);
-		}
-		return new float[] { blocklightFactor / 15f, sunlightFactor / 15f, aoFactor / 4f };
 	}
 
 	private void renderChunk(RenderableChunk chunk, PooledByteBuffer recyclableByteBuffer)
@@ -598,7 +540,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 
 		ChunkBakerRenderContext chunkRenderingContext = new ChunkBakerRenderContext(chunk, cx, cy, cz);
 		
-		bakedBlockId = 0;
+		bakedBlockId = -1;
 		//Render the fucking thing!
 		for (i = 0; i < 32; i++)
 		{
@@ -1013,12 +955,10 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		}
 	}
 	
-	public static int intifyNormal(float n)
+	private static int intifyNormal(float n)
 	{
 		return (int) ((n + 1) * 511.5f);
 	}
-
-	public AtomicInteger totalChunksRendered = new AtomicInteger();
 
 	@Override
 	public void destroy()

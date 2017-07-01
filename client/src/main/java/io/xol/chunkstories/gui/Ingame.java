@@ -381,7 +381,7 @@ public class Ingame extends Layer
 		}
 		else if (input.equals("screenshot"))
 		{
-			chat.insert("Saved screenshot as "+world.getWorldRenderer().screenShot());
+			chat.insert(world.getWorldRenderer().screenShot());
 		}
 		else if (input.equals("toggleDebugInfo"))
 		{

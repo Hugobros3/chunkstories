@@ -1,5 +1,9 @@
 package io.xol.chunkstories.workers;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public abstract class Task
 {
 	private boolean done = false;
@@ -28,5 +32,5 @@ public abstract class Task
 		return done;
 	}
 
-	abstract boolean task();
+	protected abstract boolean task();
 }

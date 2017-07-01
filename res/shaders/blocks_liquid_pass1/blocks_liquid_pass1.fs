@@ -68,20 +68,20 @@ void main(){
 	//Pass 1
 	vec4 meta = texture(readbackMetaBufferTemp, coords);
 	
-	vec3 blockLight = textureGammaIn(lightColors,vec2(meta.x / 255.0, 0)).rgb;
-	vec3 sunLight = textureGammaIn(lightColors,vec2(0, meta.y / 255.0)).rgb;
+	vec3 blockLight = textureGammaIn(lightColors,vec2(meta.x, 0)).rgb;
+	vec3 sunLight = textureGammaIn(lightColors,vec2(0, meta.y)).rgb;
 	
 	sunLight = mix(sunLight, sunLight * shadowColor, shadowVisiblity * 0.75);
 	
 	vec3 finalLight = blockLight;// * (1-sunLight);
 	finalLight += sunLight;
-	finalLight *= (1-meta.z);
+	//finalLight *= (1-meta.z);
 
 	//coords += 15.0 * (1 - length(worldspaceFragment) / viewDistance) * vec2( normal.xz ) / screenSize;
 	vec4 refracted = texture(readbackAlbedoBufferTemp, coords);
 	
 	float waterFogI2 = length(worldspaceFragment) / viewDistance;
-	refracted.rgb *= pow(finalLight + vec3(1.0) * (1-refracted.a*lightMapCoords.g), vec3(gammaInv));
+	refracted.rgb *= pow(finalLight + 0 * vec3(1.0) * (1-refracted.a*lightMapCoords.g), vec3(gammaInv));
 	
 	baseColor.rgb = mix(refracted.rgb, baseColor.rgb, clamp(waterFogI2*(1.0-underwater), 0.0, 1.0));
 	

@@ -26,4 +26,6 @@ public interface GameWindow
 	public ClientInputsManager getInputsManager();
 
 	public boolean hasFocus();
+
+	public String takeScreenshot();
 }

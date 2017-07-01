@@ -737,8 +737,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	@Override
 	public String screenShot()
 	{
-		// TODO Auto-generated method stub
-		return "Not implemented";
+		return gameWindow.takeScreenshot();
 	}
 	
 	public ChunkMeshesRenderer getChunkMeshesRenderer()

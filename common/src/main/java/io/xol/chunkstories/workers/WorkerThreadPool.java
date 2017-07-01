@@ -18,7 +18,7 @@ public class WorkerThreadPool extends TasksPool<Task>
 	Task DIE = new Task() {
 
 		@Override
-		boolean task()
+		protected boolean task()
 		{
 			return true;
 		}

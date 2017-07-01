@@ -20,7 +20,6 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 {
 	public String text = "";
 	//protected BitmapFont font;
-	public int size;
 
 	private Runnable action;
 
@@ -40,8 +39,6 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 		xPosition = x;
 		yPosition = y;
 		text = t;
-		//font = f;
-		size = s;
 		this.width = width;
 		this.height = height;
 		

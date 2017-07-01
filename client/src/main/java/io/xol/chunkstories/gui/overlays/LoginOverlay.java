@@ -25,7 +25,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 	InputText usernameForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
 	InputText passwordForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
 	
-	Button loginButton = new Button(this, 0, 0, 128, 32, ("#{login.login}"), BitmapFont.SMALLFONTS, 1);
+	Button loginButton = new Button(this, 0, 0, 128, 32, ("#{login.login}"), 1);
 	
 	public LoginOverlay(GameWindow scene, Layer parent)
 	{
@@ -84,11 +84,11 @@ public class LoginOverlay extends Layer implements HttpRequester
 			//mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));
 		ObjectRenderer.renderTexturedRect(renderer.getWindow().getWidth() / 2, renderer.getWindow().getHeight() / 2 + 180, 512, 512, "./textures/logo.png");
 
-		loginButton.setPosition(usernameForm.getPositionX() + loginButton.getWidth() / 2f, renderer.getWindow().getHeight() / 2 - 80);
+		loginButton.setPosition(usernameForm.getPositionX() + loginButton.getWidth() / 2f - 8, renderer.getWindow().getHeight() / 2 - 80);
 
-		usernameForm.setPosition(renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 + 40);
+		usernameForm.setPosition(renderer.getWindow().getWidth() / 2 - 250f, renderer.getWindow().getHeight() / 2 + 40);
 		usernameForm.drawWithBackGround();
-		passwordForm.setPosition(renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 - 40);
+		passwordForm.setPosition(renderer.getWindow().getWidth() / 2 - 250f, renderer.getWindow().getHeight() / 2 - 40);
 		passwordForm.drawWithBackGroundPassworded();
 
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 + 74, Client.getInstance().getContent().localization().localize("#{login.username}"), 2, 2, new Vector4fm(1.0f));

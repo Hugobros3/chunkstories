@@ -2,8 +2,7 @@ Bugs TBF:
 
 + No light prepass on loaded chunks
 + Some overlays lack bg draw
-+ Shadows settings don't update them
-+ No AO on blocks
++ No AO on blocks (sorta fixed)
 + Slow chunks rebuild time
 + Water looks wrong
 + Distant trees don't have opaque leaves

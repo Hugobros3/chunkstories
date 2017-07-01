@@ -20,7 +20,6 @@ import io.xol.engine.graphics.util.CorneredBoxDrawer;
 public class NgButton extends FocusableGuiElement implements ClickableGuiElement
 {
 	public String text;
-	//protected BitmapFont font;
 	public final Font font;
 	public int size;
 

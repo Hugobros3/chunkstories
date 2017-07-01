@@ -10,12 +10,19 @@ import static org.lwjgl.opengl.GL30.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
 import org.lwjgl.PointerBuffer;
@@ -29,6 +36,7 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
@@ -590,5 +598,45 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 
 	public Lwjgl3ClientInputsManager getInputsManager() {
 		return this.inputsManager;
+	}
+
+	@Override
+	public String takeScreenshot() {
+		int scrW = getWidth();
+		int scrH = getHeight();
+		
+		ByteBuffer bbuf = MemoryUtil.memAlloc(4 * scrW * scrH);//ByteBuffer.allocateDirect(scrW * scrH * 4).order(ByteOrder.nativeOrder());
+
+		glReadBuffer(GL_FRONT);
+		glReadPixels(0, 0, scrW, scrH, GL_RGBA, GL_UNSIGNED_BYTE, bbuf);
+
+		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
+		String time = sdf.format(cal.getTime());
+
+		File image = new File(GameDirectory.getGameFolderPath() + "/screenshots/" + time + ".png");
+
+		image.mkdirs();
+
+		BufferedImage pixels = new BufferedImage(scrW, scrH, BufferedImage.TYPE_INT_RGB);
+		for (int x = 0; x < scrW; x++)
+			for (int y = 0; y < scrH; y++)
+			{
+				int i = 4 * (x + scrW * y);
+				int r = bbuf.get(i) & 0xFF;
+				int g = bbuf.get(i + 1) & 0xFF;
+				int b = bbuf.get(i + 2) & 0xFF;
+				pixels.setRGB(x, scrH - 1 - y, (0xFF << 24) | (r << 16) | (g << 8) | b);
+			}
+		try
+		{
+			ImageIO.write(pixels, "PNG", image);
+			return "#FFFF00Saved screenshot as " + time + ".png";
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			return "#FF0000Failed to take screenshot ! (" + e.toString() + ")";
+		}
 	}
 }
