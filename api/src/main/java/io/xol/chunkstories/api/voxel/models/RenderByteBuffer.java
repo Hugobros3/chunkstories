@@ -87,9 +87,9 @@ public class RenderByteBuffer implements VoxelBakerHighPoly, VoxelBakerCubic
 	{
 		if(byteBuffer.position() == byteBuffer.capacity())
 			return;
-		byteBuffer.put((byte) (f0 * 15));
-		byteBuffer.put((byte) (f1 * 15));
-		byteBuffer.put((byte) (f2 * 15));
+		byteBuffer.put((byte) (f0));
+		byteBuffer.put((byte) (f1));
+		byteBuffer.put((byte) (f2));
 		byteBuffer.put((byte) 0);
 	}
 	
@@ -98,9 +98,9 @@ public class RenderByteBuffer implements VoxelBakerHighPoly, VoxelBakerCubic
 	{
 		if(byteBuffer.position() == byteBuffer.capacity())
 			return;
-		byteBuffer.put((byte) (f0 * 15));
-		byteBuffer.put((byte) (f1 * 15));
-		byteBuffer.put((byte) (f2 * 15));
+		byteBuffer.put((byte) (f0));
+		byteBuffer.put((byte) (f1));
+		byteBuffer.put((byte) (f2));
 		byteBuffer.put((byte) extended);
 	}
 	

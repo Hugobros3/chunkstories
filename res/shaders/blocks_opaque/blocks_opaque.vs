@@ -72,7 +72,7 @@ void main(){
 	
 	//Compute lightmap coords
 	rainWetness = wetness*clamp((colorIn.g * 16.0 - 0.85)*16,0,1.0);
-	worldLight = vec2(colorIn.r * 16, colorIn.g * 16)*(1.0 - colorIn.b * 0.15);
+	worldLight = vec2(colorIn.r * 17, colorIn.g * 17)*(1.0 - colorIn.b * 65.75 * 0.25);
 	
 	//worldLight = vec3(colorIn.rgb);
 	//worldLight.y *= sunIntensity;

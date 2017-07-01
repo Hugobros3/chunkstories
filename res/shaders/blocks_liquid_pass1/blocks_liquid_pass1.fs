@@ -68,8 +68,8 @@ void main(){
 	//Pass 1
 	vec4 meta = texture(readbackMetaBufferTemp, coords);
 	
-	vec3 blockLight = textureGammaIn(lightColors,vec2(meta.x, 0)).rgb;
-	vec3 sunLight = textureGammaIn(lightColors,vec2(0, meta.y)).rgb;
+	vec3 blockLight = textureGammaIn(lightColors,vec2(meta.x / 255.0, 0)).rgb;
+	vec3 sunLight = textureGammaIn(lightColors,vec2(0, meta.y / 255.0)).rgb;
 	
 	sunLight = mix(sunLight, sunLight * shadowColor, shadowVisiblity * 0.75);
 	
