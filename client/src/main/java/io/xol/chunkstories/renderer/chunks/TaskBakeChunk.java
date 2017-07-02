@@ -29,9 +29,10 @@ import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.voxel.DefaultVoxelRenderer;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
-import io.xol.chunkstories.renderer.chunks.ChunkMeshesBakerPool.ClientWorkerThread.ChunkMeshingBuffers;
+import io.xol.chunkstories.renderer.chunks.ClientTasksPool.ClientWorkerThread.ChunkMeshingBuffers;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.workers.Task;
 import io.xol.chunkstories.workers.TaskExecutor;
@@ -45,7 +46,7 @@ import io.xol.engine.graphics.geometry.VertexBufferGL;
 
 public class TaskBakeChunk extends Task {
 
-	private final ChunkMeshesBakerPool baker;
+	private final ClientTasksPool baker;
 	protected final RenderableChunk chunk;
 	
 	private final WorldClient world;
@@ -56,7 +57,7 @@ public class TaskBakeChunk extends Task {
 	
 	protected ChunkMeshingBuffers cmd;
 	
-	public TaskBakeChunk(ChunkMeshesBakerPool baker, RenderableChunk chunk) {
+	public TaskBakeChunk(ClientTasksPool baker, RenderableChunk chunk) {
 		super();
 		this.baker = baker;
 		this.chunk = chunk;
@@ -372,7 +373,8 @@ public class TaskBakeChunk extends Task {
 		chunk.markRenderInProgress(false);
 		
 		//Wait until data is actually uploaded to not accidentally OOM while it struggles uploading it
-		fence.traverse();
+		if(Client.getInstance().configDeprecated().getBoolean("waitForChunkMeshDataUploadBeforeStartingTheNext", true))
+			fence.traverse();
 		
 		return true;
 	}

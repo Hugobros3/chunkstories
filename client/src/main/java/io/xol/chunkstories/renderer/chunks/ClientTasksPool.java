@@ -16,6 +16,7 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.core.voxel.DefaultVoxelRenderer;
 import io.xol.chunkstories.voxel.VoxelsStore;
+import io.xol.chunkstories.workers.Task;
 import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.workers.TasksPool;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -24,7 +25,7 @@ import io.xol.chunkstories.world.chunk.CubicChunk;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ChunkMeshesBakerPool extends TasksPool<TaskBakeChunk> implements ChunkMeshesBaker{
+public class ClientTasksPool extends TasksPool<Task> implements ChunkMeshesBaker{
 
 	protected AtomicInteger totalChunksRendered = new AtomicInteger();
 	
@@ -33,7 +34,7 @@ public class ChunkMeshesBakerPool extends TasksPool<TaskBakeChunk> implements Ch
 	private int threadsCount;
 	private ClientWorkerThread[] workers;
 	
-	public ChunkMeshesBakerPool(WorldClient world, int threadsCount)
+	public ClientTasksPool(WorldClient world, int threadsCount)
 	{
 		this.world = world;
 		this.threadsCount = threadsCount;
@@ -44,7 +45,7 @@ public class ChunkMeshesBakerPool extends TasksPool<TaskBakeChunk> implements Ch
 	}
 	
 	//Virtual task the reference is used to signal threads to end.
-	TaskBakeChunk DIE = new TaskBakeChunk(this, null) {
+	Task DIE = new Task() {
 
 		@Override
 		protected boolean task(TaskExecutor task)
@@ -76,7 +77,7 @@ public class ChunkMeshesBakerPool extends TasksPool<TaskBakeChunk> implements Ch
 				tasksCounter.acquireUninterruptibly();
 				
 				//If one such permit was found to exist, assert a task is readily avaible
-				TaskBakeChunk task = tasksQueue.poll();
+				Task task = tasksQueue.poll();
 				//RenderableChunk chunk = task.chunk;
 				
 				assert task != null;
@@ -298,7 +299,7 @@ public class ChunkMeshesBakerPool extends TasksPool<TaskBakeChunk> implements Ch
 	long tasksRan = 0;
 	long tasksRescheduled = 0;
 	
-	void rescheduleTask(TaskBakeChunk task)
+	void rescheduleTask(Task task)
 	{
 		tasksQueue.add(task);
 		tasksCounter.release();

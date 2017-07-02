@@ -3,13 +3,15 @@ Bugs TBF:
 + No light prepass on loaded chunks
 + Some overlays lack bg draw
 + No AO on blocks (sorta fixed)
-+ Slow chunks rebuild time
-+ Water looks wrong
-+ Distant trees don't have opaque leaves
-+ Screenshots and cubemap missing
++ Slow chunks rebuild time (Multithreaded now)
++ cubemap missing
 + Login button offset
 + Gui scale/Server window
 + Copy/Paste/Line-delete general
++ One side of panes is fucked
++ Rain is black
++ Kill all sounds when exiting to menu
++ CRAZY gc trashing
 
 Todo:
 

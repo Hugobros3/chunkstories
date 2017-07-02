@@ -20,6 +20,7 @@ import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.chunks.RenderableChunk;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
@@ -33,7 +34,25 @@ public class ChunkMeshesRenderer
 		this.world = worldRenderer.getWorld();
 
 		//this.chunksBaker = new ChunkMeshesBakerThread(world);
-		this.chunksBaker = new ChunkMeshesBakerPool(world, 8);
+		
+		int nbThreads = -1;
+		String configThreads = Client.getInstance().configDeprecated().getProp("workersThreads", "auto");
+		if(!configThreads.equals("auto")) {
+			try {
+				nbThreads = Integer.parseInt(configThreads);
+			}
+			catch(NumberFormatException e) {}
+		}
+		
+		if(nbThreads <= 0) {
+			nbThreads = Runtime.getRuntime().availableProcessors() / 2;
+			
+			//Fail-safe
+			if(nbThreads < 1)
+				nbThreads = 1;
+		}
+		
+		this.chunksBaker = new ClientTasksPool(world, nbThreads);
 
 		this.worldSizeInChunks = world.getWorldInfo().getSize().sizeInChunks;
 
