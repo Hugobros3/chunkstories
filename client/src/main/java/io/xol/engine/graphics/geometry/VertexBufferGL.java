@@ -5,10 +5,12 @@ import io.xol.chunkstories.api.rendering.vertex.RecyclableByteBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.renderer.buffers.ByteBufferPool.PooledByteBuffer;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
+import io.xol.engine.concurrency.SimpleFence;
+import io.xol.engine.concurrency.TrivialFence;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -25,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Semaphore;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -41,7 +44,9 @@ public class VertexBufferGL implements VertexBuffer
 	private long dataSize = 0L;
 
 	private Object waitingToUploadMainThread;
-	private Object waitingToUploadDeffered;
+	
+	private Semaphore asynchUploadLock = new Semaphore(1);
+	private PendingUpload pendingAsyncUpload;
 	
 	private final WeakReference<VertexBufferGL> selfReference;
 
@@ -130,11 +135,41 @@ public class VertexBufferGL implements VertexBuffer
 
 	static int currentlyBoundArrayBuffer = 0;
 
+	private Fence setAsyncDataPendingUpload(Object o) {
+		
+		PendingUpload pendingUpload = new PendingUpload(o);
+		asynchUploadLock.acquireUninterruptibly();
+		
+		//Check if there is already pending data not yet uploaded
+		PendingUpload alreadyPendingUpload = this.pendingAsyncUpload;
+		if(alreadyPendingUpload != null) {
+			Object trashedData = alreadyPendingUpload.data;
+			
+			//Recycle any pooled byte buffer that won't be uploaded ( nice guys always loose )
+			if(trashedData != null && trashedData instanceof RecyclableByteBuffer) {
+				((RecyclableByteBuffer)trashedData).recycle();
+			}
+		}
+		
+		this.pendingAsyncUpload = pendingUpload;
+		
+		asynchUploadLock.release();
+		return pendingUpload;
+	}
+	
+	class PendingUpload extends SimpleFence {
+		final Object data;
+		
+		PendingUpload(Object o) {
+			this.data = o;
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see io.xol.engine.graphics.geometry.VertexBuffer#uploadData(java.nio.ByteBuffer)
 	 */
 	@Override
-	public boolean uploadData(ByteBuffer dataToUpload)
+	public Fence uploadData(ByteBuffer dataToUpload)
 	{
 		if (openGLID == -2)
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
@@ -144,19 +179,21 @@ public class VertexBufferGL implements VertexBuffer
 		{
 			waitingToUploadMainThread = dataToUpload;
 			dataSize = dataToUpload.limit();
-			return true;
+			return new TrivialFence();
 		}
 
 		//This is a deffered call
-		waitingToUploadDeffered = dataToUpload;
-		return false;
+		
+		return setAsyncDataPendingUpload(dataToUpload);
+		//pendingAsyncUpload = dataToUpload;
+		//return false;
 	}
 
 	/* (non-Javadoc)
 	 * @see io.xol.engine.graphics.geometry.VertexBuffer#uploadData(java.nio.FloatBuffer)
 	 */
 	@Override
-	public boolean uploadData(FloatBuffer dataToUpload)
+	public Fence uploadData(FloatBuffer dataToUpload)
 	{
 		if (openGLID == -2)
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
@@ -166,19 +203,20 @@ public class VertexBufferGL implements VertexBuffer
 		{
 			waitingToUploadMainThread = dataToUpload;
 			dataSize = dataToUpload.limit() * 4;
-			return true;
+			return new TrivialFence();
 		}
 
 		//This is a deffered call
-		waitingToUploadDeffered = dataToUpload;
-		return false;
+		return setAsyncDataPendingUpload(dataToUpload);
+		//pendingAsyncUpload = dataToUpload;
+		//return false;
 	}
 
 	/* (non-Javadoc)
 	 * @see io.xol.engine.graphics.geometry.VertexBuffer#uploadData(io.xol.chunkstories.renderer.buffers.ByteBufferPool.RecyclableByteBuffer)
 	 */
 	@Override
-	public boolean uploadData(RecyclableByteBuffer dataToUpload)
+	public Fence uploadData(RecyclableByteBuffer dataToUpload)
 	{
 		if (openGLID == -2)
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
@@ -188,19 +226,20 @@ public class VertexBufferGL implements VertexBuffer
 		{
 			Object replacing = waitingToUploadMainThread;
 			waitingToUploadMainThread = dataToUpload;
-			if(replacing != null && replacing != dataToUpload && replacing instanceof PooledByteBuffer)
+			if(replacing != null && replacing != dataToUpload && replacing instanceof RecyclableByteBuffer)
 			{
 				System.out.println("Watch out, uploading two RecyclableByteBuffer in a row, the first one is getting recycled early to prevent locks");
 				RecyclableByteBuffer rcb = (RecyclableByteBuffer)replacing;
 				rcb.recycle();
 			}
 			dataSize = dataToUpload.accessByteBuffer().limit();
-			return true;
+			return new TrivialFence();
 		}
 
 		//This is a deffered call
-		waitingToUploadDeffered = dataToUpload;
-		return false;
+		return setAsyncDataPendingUpload(dataToUpload);
+		//pendingAsyncUpload = dataToUpload;
+		//return false;
 	}
 
 	private boolean uploadDataActual(Object dataToUpload)
@@ -212,11 +251,11 @@ public class VertexBufferGL implements VertexBuffer
 
 		if (openGLID == -2)
 		{
-			System.out.println("There we fucking go");
+			System.out.println("FATAL: Attempted to upload data to a destroy()ed VertexBuffer. Terminating immediately.");
 			Runtime.getRuntime().exit(-555);
 		}
 
-		if (dataToUpload instanceof PooledByteBuffer)
+		if (dataToUpload instanceof RecyclableByteBuffer)
 		{
 			boolean returnCode = uploadDataActual(((RecyclableByteBuffer) dataToUpload).accessByteBuffer());
 			((RecyclableByteBuffer) dataToUpload).recycle();
@@ -278,21 +317,41 @@ public class VertexBufferGL implements VertexBuffer
 		return isDataPresent || waitingToUploadMainThread != null;
 	}
 
-	private boolean uploadPendingDefferedData()
+	private void uploadPendingDefferedData()
 	{
-		//Upload pending stuff
-		Object atomicReference = waitingToUploadDeffered;
-		if (atomicReference != null)
+		//Quickly check if anything is worth noting
+		PendingUpload quickCheck = pendingAsyncUpload;
+		if (quickCheck != null)
 		{
-			//System.out.println("oh shit waddup");
+			//We do enter locked mode to retreive the data.
+			this.asynchUploadLock.acquireUninterruptibly();
+			
+			PendingUpload pendingUpload = this.pendingAsyncUpload;
+			
+			//this should NEVER be null, the only code path able to null this out is this very block, and it's only called from a single thread ever
+			//(the graphics thread). If this fails, we might as well crash and burn the entire world
+			assert pendingUpload != null;
+			
+			//Access the data
+			Object dataWithin = pendingUpload.data;
+			
+			assert dataWithin != null;
+			
+			//Null-out the original reference
+			pendingAsyncUpload = null;
+			
+			this.asynchUploadLock.release();
 
+			//We don't need mutex to bind GL objects and give back pooled ressources.
 			bind();
-			waitingToUploadDeffered = null;
-			return uploadDataActual(atomicReference);
+			uploadDataActual(dataWithin);
+			
+			//Signal the fence as done
+			pendingUpload.signal();
 		}
 
 		//Clear to draw stuff
-		return false;
+		//return false;
 	}
 
 	private boolean checkForPendingMainThreadData()

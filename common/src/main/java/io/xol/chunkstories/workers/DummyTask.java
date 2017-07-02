@@ -11,7 +11,7 @@ public class DummyTask extends Task
 	}
 	
 	@Override
-	protected boolean task()
+	protected boolean task(TaskExecutor task)
 	{
 		//int c = pgcd(a, b);
 		

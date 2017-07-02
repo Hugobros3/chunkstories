@@ -24,13 +24,13 @@ public abstract class Task
 		cancelled = true;
 	}
 
-	public final boolean run()
+	public final boolean run(TaskExecutor taskExecutor)
 	{
-		if (!done && (cancelled || task()))
+		if (!done && (cancelled || task(taskExecutor)))
 			done = true;
 		
 		return done;
 	}
 
-	protected abstract boolean task();
+	protected abstract boolean task(TaskExecutor taskExecutor);
 }

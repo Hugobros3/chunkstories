@@ -3,6 +3,8 @@ package io.xol.chunkstories.api.rendering.vertex;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
+import io.xol.chunkstories.api.util.concurrency.Fence;
+
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -20,9 +22,12 @@ public interface VertexBuffer {
 	 * * The data is queued for upload on the <b>NEXT</b> frame.<br/>
 	 * * Before each frame starts being drawed, the latest buffer content provided by a foreign thread, if such exists, is uploaded, replacing the VerticesObject content and updating it's size.
 	 * 
-	 * @return True if the data was uploaded ( or rather, queued for upload on use ), false if it was deffered to the next frame
+	 * @return <ul><li>A Fence only traversable once data is actually uploaded (if called from not the graphics thread)</li>
+	 * 		   <li>An instantly traversable fence, if called from the main graphics thread</li></ul>
+	 * 
+	 * //@return True if the data was uploaded ( or rather, queued for upload on use ), false if it was deffered to the next frame
 	 */
-	public boolean uploadData(ByteBuffer dataToUpload);
+	public Fence uploadData(ByteBuffer dataToUpload);
 
 	/**
 	 * Uploads new data to this buffer, replacing former content.<br/>
@@ -37,9 +42,9 @@ public interface VertexBuffer {
 	 * 
 	 * @return True if the data was uploaded ( or rather, queued for upload on use ), false if it was deffered to the next frame
 	 */
-	public boolean uploadData(FloatBuffer dataToUpload);
+	public Fence uploadData(FloatBuffer dataToUpload);
 
-	public boolean uploadData(RecyclableByteBuffer dataToUpload);
+	public Fence uploadData(RecyclableByteBuffer dataToUpload);
 
 	/**
 	 * Notice : there is no risk of synchronisation issues with an object suddently being destroyed during because actual destruction of the objects only occur at the end of the frame !

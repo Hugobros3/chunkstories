@@ -18,14 +18,14 @@ public class WorkerThreadPool extends TasksPool<Task>
 	Task DIE = new Task() {
 
 		@Override
-		protected boolean task()
+		protected boolean task(TaskExecutor whoCares)
 		{
 			return true;
 		}
 		
 	};
 	
-	class WorkerThread extends Thread {
+	class WorkerThread extends Thread implements TaskExecutor {
 		
 		WorkerThread(int id)
 		{
@@ -49,7 +49,7 @@ public class WorkerThreadPool extends TasksPool<Task>
 				if(task == DIE)
 					break;
 				
-				boolean result = task.run();
+				boolean result = task.run(this);
 				tasksRan++;
 				
 				//Depending on the result we either reschedule the task or decrement the counter

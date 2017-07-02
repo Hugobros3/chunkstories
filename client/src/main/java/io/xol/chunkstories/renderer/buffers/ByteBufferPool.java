@@ -44,9 +44,6 @@ public class ByteBufferPool
 			this.id = id;
 		}
 		
-		/* (non-Javadoc)
-		 * @see io.xol.chunkstories.renderer.buffers.RecyclableByteBuffer#accessByteBuffer()
-		 */
 		@Override
 		public ByteBuffer accessByteBuffer()
 		{
@@ -56,9 +53,6 @@ public class ByteBufferPool
 			return pool[id];
 		}
 		
-		/* (non-Javadoc)
-		 * @see io.xol.chunkstories.renderer.buffers.RecyclableByteBuffer#recycle()
-		 */
 		@Override
 		public void recycle()
 		{

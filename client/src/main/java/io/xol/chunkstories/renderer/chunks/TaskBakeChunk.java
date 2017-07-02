@@ -2,16 +2,22 @@ package io.xol.chunkstories.renderer.chunks;
 
 import java.nio.ByteBuffer;
 
+import org.lwjgl.BufferUtils;
+import org.lwjgl.system.MemoryUtil;
+
 import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.rendering.vertex.RecyclableByteBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
+import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
+import io.xol.chunkstories.api.voxel.models.RenderByteBuffer;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
@@ -22,10 +28,15 @@ import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.renderer.chunks.ChunkMeshesBakerPool.ChunkMeshingData;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.core.voxel.DefaultVoxelRenderer;
+import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
+import io.xol.chunkstories.renderer.chunks.ChunkMeshesBakerPool.ClientWorkerThread.ChunkMeshingBuffers;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.workers.Task;
+import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.engine.base.MemFreeByteBuffer;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -38,12 +49,12 @@ public class TaskBakeChunk extends Task {
 	protected final RenderableChunk chunk;
 	
 	private final WorldClient world;
-
+	
 	//Nasty !
 	protected int i = 0, j = 0, k = 0;
 	protected int bakedBlockId;
 	
-	protected ChunkMeshingData cmd;
+	protected ChunkMeshingBuffers cmd;
 	
 	public TaskBakeChunk(ChunkMeshesBakerPool baker, RenderableChunk chunk) {
 		super();
@@ -60,9 +71,46 @@ public class TaskBakeChunk extends Task {
 	}
 
 	@Override
-	protected boolean task() {
+	protected boolean task(TaskExecutor taskExecutor) {
 		
-		this.cmd = baker.localData.get();
+		if(!(taskExecutor instanceof BakeChunkTaskExecutor))
+			return false;
+		
+		this.cmd = ((BakeChunkTaskExecutor)taskExecutor).getBuffers();
+		
+		ChunkRenderable work = (ChunkRenderable) world.getChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ());
+		
+		//Second part is most likely redundant
+		if (work != null && (work.isMarkedForReRender() || work.needsLightningUpdates()))
+		{
+			int nearChunks = 0;
+			if (world.isChunkLoaded(chunk.getChunkX() + 1, chunk.getChunkY(), chunk.getChunkZ()))
+				nearChunks++;
+			if (world.isChunkLoaded(chunk.getChunkX() - 1, chunk.getChunkY(), chunk.getChunkZ()))
+				nearChunks++;
+			if (world.isChunkLoaded(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ() + 1))
+				nearChunks++;
+			if (world.isChunkLoaded(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ() - 1))
+				nearChunks++;
+
+			if (nearChunks == 4)
+			{
+				//Let task exec
+				//result = task.run(this);
+			}
+			else {
+				//Fast-fail
+
+				chunk.markRenderInProgress(false);
+				return true;
+			}
+		}
+		else {
+			//Fast-fail
+
+			chunk.markRenderInProgress(false);
+			return true;
+		}
 
 		// Update lightning as well if needed
 		if (chunk == null)
@@ -82,17 +130,19 @@ public class TaskBakeChunk extends Task {
 		if (!chunk.need_render.get())
 		{
 			//recyclableByteBuffer.recycle();
+
+			chunk.markRenderInProgress(false);
 			return true;
 		}
 
-		RecyclableByteBuffer recyclableByteBuffer = cmd.buffersPool.requestByteBuffer();
+		//RecyclableByteBuffer recyclableByteBuffer = cmd.buffersPool.requestByteBuffer();
 		
 		//TODO only requests a ByteBuffer when it is sure it will actually need one
-		ByteBuffer recyclableByteBufferData = recyclableByteBuffer.accessByteBuffer();
+		//ByteBuffer recyclableByteBufferData = recyclableByteBuffer.accessByteBuffer();
 		
 		//Wait until we get that
-		if(recyclableByteBufferData == null)
-			return false;
+		//if(recyclableByteBufferData == null)
+		//	return false;
 		
 		long cr_start = System.nanoTime();
 
@@ -241,13 +291,29 @@ public class TaskBakeChunk extends Task {
 		}
 
 		// Prepare output
-		recyclableByteBufferData.clear();
+		//recyclableByteBufferData.clear();
 
 		int[][][] sizes = new int[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.ShadingType.values().length];;
 		int[][][] offsets = new int[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.ShadingType.values().length];;
 		
 		int currentOffset = 0;
 
+		
+		//Compute total size
+		int sizeInBytes = 0;
+		for(VertexLayout vertexLayout : VertexLayout.values())
+			for(LodLevel lodLevel : LodLevel.values())
+				for(ShadingType renderPass : ShadingType.values())
+					{
+						int vertexLayoutIndex = vertexLayout.ordinal();
+						int lodLevelIndex = lodLevel.ordinal();
+						int renderPassIndex = renderPass.ordinal();
+					
+						final ByteBuffer relevantByteBuffer = cmd.byteBuffers[vertexLayoutIndex][lodLevelIndex][renderPassIndex];
+						sizeInBytes += relevantByteBuffer.position();// / vertexLayout.bytesPerVertex;
+					}
+		ByteBuffer finalData = MemoryUtil.memAlloc(sizeInBytes);
+		
 		//For EACH section, make offset and shite
 		for(VertexLayout vertexLayout : VertexLayout.values())
 			for(LodLevel lodLevel : LodLevel.values())
@@ -269,7 +335,7 @@ public class TaskBakeChunk extends Task {
 					//Limit the temporary byte buffer and put it's content inside
 					relevantByteBuffer.limit(relevantByteBuffer.position());
 					relevantByteBuffer.position(0);
-					recyclableByteBufferData.put(relevantByteBuffer);
+					finalData.put(relevantByteBuffer);
 					
 					//System.out.println("Doing chunk "+chunk+" -> "+vertexLayout+":"+lodLevel+":"+renderPass+" ; o="+offsets[vertexLayoutIndex][lodLevelIndex][renderPassIndex]+" s:"+sizes[vertexLayoutIndex][lodLevelIndex][renderPassIndex]);
 				}
@@ -287,10 +353,10 @@ public class TaskBakeChunk extends Task {
 		complexBlocksBuffer.position(0);
 		byteBuffer.put(complexBlocksBuffer);*/
 
-		recyclableByteBufferData.flip();
+		finalData.flip();
 		
 		VertexBuffer verticesObject = new VertexBufferGL();
-		verticesObject.uploadData(recyclableByteBuffer);
+		Fence fence = verticesObject.uploadData(new MemFreeByteBuffer(finalData));
 
 		ChunkMeshDataSections parent = chunk.getChunkRenderData().getData();
 		ChunkMeshDataSections newRenderData = new ChunkMeshDataSections(parent, verticesObject, sizes, offsets);
@@ -303,6 +369,10 @@ public class TaskBakeChunk extends Task {
 
 		chunk.need_render.set(false);
 		chunk.requestable.set(true);
+		chunk.markRenderInProgress(false);
+		
+		//Wait until data is actually uploaded to not accidentally OOM while it struggles uploading it
+		fence.traverse();
 		
 		return true;
 	}
@@ -627,4 +697,6 @@ public class TaskBakeChunk extends Task {
 			return voxelLighter;
 		}
 	}
+	
+
 }
