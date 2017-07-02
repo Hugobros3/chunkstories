@@ -103,7 +103,7 @@ public class VoxelPane extends Voxel
 		else if (connectLeft && connectBack)
 			boxes = new CollisionBox[] { new CollisionBox(0.55, 1, 0.1).translate(0.0, 0, 0.45), new CollisionBox(0.1, 1, 0.55).translate(0.45, 0, 0.0) };
 		else if (connectRight && connectBack)
-			boxes = new CollisionBox[] { new CollisionBox(0.55, 1, 0.1).translate(0.45, 0, 0.0), new CollisionBox(0.1, 1, 0.55).translate(0, 0, 0.45) };
+			boxes = new CollisionBox[] { new CollisionBox(0.55, 1, 0.1).translate(0.45, 0, 0.45), new CollisionBox(0.1, 1, 0.55).translate(0.45, 0, 0.0) };
 		else if (connectLeft && connectFront)
 			boxes = new CollisionBox[] { new CollisionBox(0.55, 1, 0.1).translate(0, 0, 0.45), new CollisionBox(0.1, 1, 0.55).translate(0.45, 0, 0.45) };
 		else if (connectRight && connectFront)
