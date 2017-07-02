@@ -335,8 +335,10 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 
 	private void sync(int fps)
 	{
-		if (fps <= 0)
+		if (fps <= 0) {
+			lastTime = (long)((glfwGetTime() * 1000));
 			return;
+		}
 
 		long errorMargin = 1000 * 1000; // 1 millisecond error margin for
 										// Thread.sleep()
@@ -352,7 +354,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		{
 			while (true)
 			{
-				long t = (long) ((glfwGetTime() * 1000) - lastTime);
+				long t = (long) ((glfwGetTime() * 1000000000) - lastTime);
 
 				if (t < sleepTime - burnTime)
 				{
@@ -374,7 +376,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		{
 		}
 
-		lastTime = (long) (glfwGetTime() * 1000) - overSleep;
+		lastTime = (long) (glfwGetTime() * 1000000000) - overSleep;
 	}
 	
 	private void computeDisplayModes()
@@ -586,11 +588,11 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	@Override
 	public void setLayer(Layer layer) {
 		
-		System.out.println(layer);
+		System.out.println("Switching to layer "+layer);
 		
-		if(this.layer != null && this.layer != layer && this.layer != layer.getParentLayer()) {
+		/*if(this.layer != null && this.layer != layer && this.layer != layer.getParentLayer()) {
 			this.layer.destroy();
-		}
+		}*/
 		
 		this.layer = layer;
 		this.client.getInputsManager().getMouse().setGrabbed(false);

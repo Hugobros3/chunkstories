@@ -56,18 +56,20 @@ public class Layer {
 			//System.out.println(mb.getMouse().getCursorX());
 			for(GuiElement ge : elements) {
 				if(ge.isMouseOver()) {
+
+					if(ge instanceof FocusableGuiElement)
+						this.setFocusedElement((FocusableGuiElement) ge);
+					
 					if(ge instanceof ClickableGuiElement && ((ClickableGuiElement) ge).handleClick(mb))
 						return true;
-					else if(ge instanceof FocusableGuiElement)
-						this.setFocusedElement((FocusableGuiElement) ge);
 				}
 			}
 		}
 		
 		//Forward to parent if not handled
-		Layer parent = this.parentLayer;
+		/*Layer parent = this.parentLayer;
 		if(parent != null)
-			return parent.handleInput(input);
+			return parent.handleInput(input);*/
 		
 		return false;
 	}
@@ -77,9 +79,9 @@ public class Layer {
 			return ((TextInputGuiElement) focusedElement).handleTextInput(c);
 
 		//Forward to parent if not handled
-		Layer parent = this.parentLayer;
+		/*Layer parent = this.parentLayer;
 		if(parent != null)
-			return parent.handleTextInput(c);
+			return parent.handleTextInput(c);*/
 		
 		return false;
 	}

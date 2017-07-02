@@ -322,7 +322,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 			return true;
 		}
 		
-		System.out.println("Input pressed "+input.getName());
+		//System.out.println("Input pressed "+input.getName());
 		
 		//Try the client-side event press
 		ClientInputPressedEvent event = new ClientInputPressedEvent(input);
@@ -339,7 +339,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		if(layer.handleInput(input))
 			return true;
 		
-		System.out.println("wasn't handled");
+		//System.out.println("wasn't handled");
 		
 		final PlayerClient player = Client.getInstance().getPlayer();
 		if(player == null)

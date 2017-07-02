@@ -16,6 +16,7 @@ import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.ClientRenderingConfig;
 import io.xol.chunkstories.api.client.ClientSoundManager;
+import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.PlayerClient;
@@ -292,6 +293,11 @@ public class Client implements ClientInterface
 			@Override
 			public void run()
 			{
+				Layer currentRootLayer = gameWindow.getLayer().getRootLayer();
+				if(currentRootLayer != null && currentRootLayer instanceof Ingame) {
+					currentRootLayer.destroy();
+				}
+				
 				gameWindow.setLayer(new MainMenuOverlay(gameWindow, new MainMenu(gameWindow)));
 				
 				if (world != null)
