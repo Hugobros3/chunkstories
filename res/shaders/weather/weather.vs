@@ -35,7 +35,7 @@ vec4 gammaOutput(vec4 inputValue)
 }
 
 void main(){
-	interpolatedColor = vec4(0.3, 0.3, 0.4, 0.0) * textureGammaIn(lightmap, vec2(sunTime, 1.0));
+	interpolatedColor = vec4(0.3, 0.3, 0.4, 0.0) * textureGammaIn(lightmap, vec2(sunTime / 10000.0, 1.0));
 	
 	float maxHeight = vertexIn.w;
 	vec3 vertexPosition = vertexIn.xyz;
@@ -48,6 +48,8 @@ void main(){
 		vertexPosition = vec3(0.0);
 		interpolatedColor = vec4(1.0, 0.0, 0.0, 1.0);
 	}
+	
+	//interpolatedColor = vec4(1.0, 0.0, 0.0, 1.0);
 	
 	vec4 projected = projectionMatrix * modelViewMatrix * vec4(vertexPosition, 1.0);
 	gl_PointSize = 200.0f;
