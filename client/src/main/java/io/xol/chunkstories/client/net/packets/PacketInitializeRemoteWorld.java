@@ -6,12 +6,12 @@ import java.io.IOException;
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientPacketsProcessorImplementation;
 import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldInfoImplementation;
-import io.xol.engine.concurrency.Fence;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

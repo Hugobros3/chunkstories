@@ -32,7 +32,8 @@ public class ChunkMeshesRenderer
 		this.worldRenderer = worldRenderer;
 		this.world = worldRenderer.getWorld();
 
-		this.chunksBaker = new ChunkMeshesBakerThread(world);
+		//this.chunksBaker = new ChunkMeshesBakerThread(world);
+		this.chunksBaker = new ChunkMeshesBakerPool(world, 14);
 
 		this.worldSizeInChunks = world.getWorldInfo().getSize().sizeInChunks;
 

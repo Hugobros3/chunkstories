@@ -18,8 +18,8 @@ import org.lwjgl.system.MemoryStack;
 
 import io.xol.chunkstories.api.rendering.target.RenderTargetAttachementsConfiguration;
 import io.xol.chunkstories.api.rendering.target.RenderTargetManager;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.concurrency.Fence;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
 

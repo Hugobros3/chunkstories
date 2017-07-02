@@ -1,4 +1,4 @@
-package io.xol.engine.concurrency;
+package io.xol.chunkstories.api.util.concurrency;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

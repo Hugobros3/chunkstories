@@ -4,11 +4,11 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.net.packets.PacketText;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.PacketsProcessorCommon;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
-import io.xol.engine.concurrency.Fence;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.misc.ConnectionStep;
 

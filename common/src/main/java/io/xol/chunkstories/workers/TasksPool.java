@@ -10,9 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class TasksPool<T extends Task>
 {
-	Queue<T> tasksQueue = new ConcurrentLinkedQueue<T>();
-	Semaphore tasksCounter = new Semaphore(0);
-	AtomicInteger tasksQueueSize = new AtomicInteger(0);
+	protected Queue<T> tasksQueue = new ConcurrentLinkedQueue<T>();
+	protected Semaphore tasksCounter = new Semaphore(0);
+	protected AtomicInteger tasksQueueSize = new AtomicInteger(0);
 	
 	public void scheduleTask(T task)
 	{

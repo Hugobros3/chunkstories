@@ -9,7 +9,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
-import io.xol.engine.concurrency.Fence;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.Constants;
@@ -24,6 +23,7 @@ import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.content.GameDirectory;
