@@ -306,6 +306,8 @@ public class Client implements ClientInterface
 					Client.this.world = null;
 				}
 				clientSideController = null;
+				
+				Client.this.getSoundManager().stopAnySound();
 			}
 		});
 	}
@@ -325,6 +327,8 @@ public class Client implements ClientInterface
 					Client.this.world = null;
 				}
 				clientSideController = null;
+				
+				Client.this.getSoundManager().stopAnySound();
 			}
 		});
 	}

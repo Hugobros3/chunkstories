@@ -92,7 +92,7 @@ public class ALSoundSource extends SoundSourceAbstract
 			{
 				//Get rid of them
 				int removeMeh = AL10.alSourceUnqueueBuffers(openAlSourceId);
-				AL10.alDeleteBuffers(removeMeh);
+				alDeleteBuffers(removeMeh);
 				//Queue a new one
 				alSourceQueueBuffers(openAlSourceId, sdb.uploadNextPage(openAlSourceId));
 				elapsed--;
