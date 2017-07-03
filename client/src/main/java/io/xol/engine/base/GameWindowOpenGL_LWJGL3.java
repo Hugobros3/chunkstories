@@ -40,6 +40,8 @@ import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
+import io.xol.chunkstories.renderer.debug.MemUsageRenderer;
+import io.xol.chunkstories.renderer.debug.WorldLogicTimeRenderer;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.graphics.GLCalls;
@@ -299,8 +301,11 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 				}
 
 				//Draw graph
-				if (client.getConfig().getBoolean("frametimeGraph", false))
+				if (client.getConfig().getBoolean("frametimeGraph", false)) {
 					FrametimeRenderer.draw(renderingContext);
+					MemUsageRenderer.draw(renderingContext);
+					WorldLogicTimeRenderer.draw(renderingContext);
+				}
 
 				//Draw last shit
 				GameWindowOpenGL_LWJGL3.instance.renderingContext.flush();

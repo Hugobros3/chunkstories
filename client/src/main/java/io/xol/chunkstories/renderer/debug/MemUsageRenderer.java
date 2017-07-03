@@ -16,7 +16,7 @@ import io.xol.engine.graphics.textures.Texture1DGL;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class FrametimeRenderer
+public class MemUsageRenderer
 {
 	//Draws a fps graph of frameTime
 	static ByteBuffer dataBB = MemoryUtil.memCalloc(4 * 1024);
@@ -32,7 +32,8 @@ public class FrametimeRenderer
 		long elapsedTime = (System.nanoTime() - lastTime);
 		lastTime = System.nanoTime();
 		
-		dataBB.putFloat(lel * 4, elapsedTime/1000000f);
+		dataBB.putFloat(lel * 4, (float)((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024) / (Runtime.getRuntime().totalMemory() / 1024 / 1024) * 256);
+		
 		
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.MIX);
@@ -47,11 +48,11 @@ public class FrametimeRenderer
 		overlayProgram.setUniform1f("heightInPixels", 192);
 		
 		overlayProgram.setUniform1f("xPosition", 0);
-		overlayProgram.setUniform1f("yPosition", 0);
+		overlayProgram.setUniform1f("yPosition", 192 + 192);
 		
-		overlayProgram.setUniform3f("graphColour", 0, 1, 0);
+		overlayProgram.setUniform3f("graphColour", 1, 1, 0);
 		
-		overlayProgram.setUniform1f("shade", 0.0f);
+		overlayProgram.setUniform1f("shade", 1.0f);
 		
 		dataBB.rewind();
 		
@@ -62,6 +63,6 @@ public class FrametimeRenderer
 		renderingContext.bindTexture1D("frametimeData", texture);
 		renderingContext.drawFSQuad();
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().defaultFont(), 4, 192 - 30, "Frametime (ms)", 2, 2, new Vector4fm(0.0, 1.0, 0.0, 1.0));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().defaultFont(), 4, 192 + 192 + 192 - 30, "Memory used (%"+Runtime.getRuntime().totalMemory()/1024/1024+"Mb)", 2, 2, new Vector4fm(1.0, 1.0, 0.0, 1.0));
 	}
 }

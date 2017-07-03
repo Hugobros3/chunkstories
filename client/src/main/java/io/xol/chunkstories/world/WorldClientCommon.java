@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
+import io.xol.chunkstories.renderer.debug.WorldLogicTimeRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRendererImplementation;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 
@@ -59,6 +60,8 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 	{
 		super.tick();
 
+		WorldLogicTimeRenderer.tickWorld();
+		
 		this.getWorldRenderer().getWorldEffectsRenderer().tick();
 
 		//Update particles subsystem if it exists

@@ -85,7 +85,8 @@ public class Texture1DGL extends TextureGL implements Texture1D
 	{
 		bind();
 		this.width = width;
-		glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		//glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexImage1D(GL_TEXTURE_1D, 0, type.getInternalFormat(), width, 0, type.getFormat(), type.getType(), (ByteBuffer) data);
 		
 		return true;
 	}

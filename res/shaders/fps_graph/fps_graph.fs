@@ -8,13 +8,36 @@ in float pos;
 
 out vec4 fragColor;
 
+uniform vec3 graphColour;
+
+uniform float sizeInPixels;
+uniform float heightInPixels;
+
+uniform sampler1D frametimeData;
+
+uniform float shade;
+
 void main()
 {
-	//Diffuse G-Buffer
-	float alpha = 1.0 - (mod(currentTiming - pos + 1000, 1000))/1000.0f;
+	float alpha = 1.0 - (mod(currentTiming - pos / sizeInPixels * 1024 + 1024, 1024))/1024.0 * 1.5;
 	
-	float r = max(height - 0.6f, 0.0) / 33.3f;
-	float g = 1-max(height - 16.6f, 0.0) / 33.3f;
+	fragColor = vec4(vec3(0.0), 0.2);
+	float min = texture1D(frametimeData, (pos - 2.0) / sizeInPixels).r;
+	float max = texture1D(frametimeData, pos / sizeInPixels).r;
 	
-	fragColor = vec4(r, g, 0.0, alpha );
+	float delta = (height) - max;
+	if(abs(delta) < 2)
+		fragColor += vec4(graphColour, alpha);
+	else if(shade >= 1.0 && height < max) {	
+		fragColor += vec4(graphColour, alpha) * 0.5;
+	}
+	
+	if(shade < 1.0) {
+		if(height >= min && height <= max)
+			fragColor += vec4(graphColour, alpha) * 0.5;
+		
+		if(height >= max && height <= min)
+			fragColor += vec4(graphColour, alpha) * 0.5;
+	}
+	
 }
