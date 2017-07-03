@@ -165,7 +165,7 @@ public class ShaderProgram implements ShaderInterface
 			String errorsSource = glGetShaderInfoLog(vertexShaderId, 5000);
 
 			String[] errorsLines = errorsSource.split("\n");
-			String[] sourceLines = fragSource.toString().split("\n");
+			String[] sourceLines = vertexSource.toString().split("\n");
 			for (String line : errorsLines)
 			{
 				ChunkStoriesLoggerImplementation.getInstance().log(line, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
