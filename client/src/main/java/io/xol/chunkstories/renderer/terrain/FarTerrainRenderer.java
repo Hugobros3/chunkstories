@@ -213,6 +213,10 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);
 	}
 	
+	List<FarTerrainBaker.RegionMesh> regionsMeshesToRenderSorted = new ArrayList<FarTerrainBaker.RegionMesh>();
+	List<Integer> temp = new ArrayList<Integer>();
+	List<Integer> temp2 = new ArrayList<Integer>();
+	
 	private int drawTerrainBits(RenderingInterface renderingContext, RenderedChunksMask mask, ShaderInterface terrainShader)
 	{
 		//Starts asynch regeneration
@@ -257,7 +261,12 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		}
 		
 		//Sort to draw near first
-		List<FarTerrainBaker.RegionMesh> regionsMeshesToRenderSorted = new ArrayList<FarTerrainBaker.RegionMesh>(renderedRegions);
+		
+		//µ-opt
+		//List<FarTerrainBaker.RegionMesh> regionsMeshesToRenderSorted = new ArrayList<FarTerrainBaker.RegionMesh>(renderedRegions);
+		regionsMeshesToRenderSorted.clear();
+		regionsMeshesToRenderSorted.addAll(renderedRegions);
+		
 		regionsMeshesToRenderSorted.sort(new Comparator<FarTerrainBaker.RegionMesh>()
 		{
 			@Override
@@ -270,8 +279,11 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 
 		});
 
-		List<Integer> temp = new ArrayList<Integer>();
-		List<Integer> temp2 = new ArrayList<Integer>();
+		//µ-opt
+		/*List<Integer> temp = new ArrayList<Integer>();
+		List<Integer> temp2 = new ArrayList<Integer>();*/
+		temp.clear();
+		temp2.clear();
 		
 		int bitsDrew = 0;
 		for (FarTerrainBaker.RegionMesh regionMesh : regionsMeshesToRenderSorted)

@@ -106,12 +106,21 @@ public class ChunkMeshesRenderer
 
 	private final int verticalDistance = 8;
 
+	private final List<Chunk> floodFillSet = new ArrayList<Chunk>();
+	private final Set<Vector3dm> floodFillMask = new HashSet<Vector3dm>();
+
+	private final Deque<Integer> floodFillDeque = new ArrayDeque<Integer>();
+	
 	private List<Chunk> floodFillArround(Vector3<Double> vector3, int maxDistance)
 	{
-		List<Chunk> floodFillSet = new ArrayList<Chunk>();
+		floodFillSet.clear();
+		floodFillMask.clear();
+		floodFillDeque.clear();
+		//Micro-optimization: Moved those to fields
+		/*List<Chunk> floodFillSet = new ArrayList<Chunk>();
 		Set<Vector3dm> floodFillMask = new HashSet<Vector3dm>();
 
-		Deque<Integer> floodFillDeque = new ArrayDeque<Integer>();
+		Deque<Integer> floodFillDeque = new ArrayDeque<Integer>();*/
 
 		floodFillDeque.push(cameraChunkX);
 		floodFillDeque.push(cameraChunkY);
@@ -191,9 +200,12 @@ public class ChunkMeshesRenderer
 		return floodFillSet;
 	}
 
+	private final List<ChunkRenderCommand> shadowChunks = new ArrayList<ChunkRenderCommand>();
 	private List<ChunkRenderCommand> updateShadowPVS(Vector3<Double> vector3)
 	{
-		List<ChunkRenderCommand> shadowChunks = new ArrayList<ChunkRenderCommand>();
+		//Micro-optimization: Moved to a field
+		//List<ChunkRenderCommand> shadowChunks = new ArrayList<ChunkRenderCommand>();
+		shadowChunks.clear();
 
 		int maxShadowDistance = 4;
 		if (RenderingConfig.shadowMapResolutions >= 2048)
@@ -316,6 +328,12 @@ public class ChunkMeshesRenderer
 	}
 	
 	public class RenderedChunksMask {
+
+		int centerChunkX, centerChunkY, centerChunkZ;
+		
+		int xz_dimension;
+		int y_dimension;
+		boolean[][][] mask;
 		
 		RenderedChunksMask(CameraInterface camera, int xz_dimension, int y_dimension) {
 			this.xz_dimension = xz_dimension;
@@ -342,12 +360,6 @@ public class ChunkMeshesRenderer
 					}
 			
 		}
-		
-		int centerChunkX, centerChunkY, centerChunkZ;
-		
-		int xz_dimension;
-		int y_dimension;
-		boolean[][][] mask;
 		
 		public boolean shouldMaskSlab(int chunkX, int chunkZ, int min, int max) {
 			
