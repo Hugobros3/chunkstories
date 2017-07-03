@@ -29,7 +29,6 @@ import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
-import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -375,25 +374,17 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		for(VoxelContext vctx : world.getVoxelsWithin(this.getBoundingBox())) {
 			if(vctx.getVoxel() instanceof VoxelClimbable)
 			{
-				for(CollisionBox box : vctx.getTranslatedCollisionBoxes()) {
+				/*for(CollisionBox box : vctx.getTranslatedCollisionBoxes()) {
 					if(box.collidesWith(this.getTranslatedBoundingBox())) {
 						onLadder = true;
 						break all;
 					}
-				}
+				}*/
+				//TODO proper ladder collisions
+				onLadder = true;
 			}
 		}
 		
-		/*if (voxelIn instanceof VoxelClimbable)
-		{
-			CollisionBox[] boxes = voxelIn.getTranslatedCollisionBoxes(world, getLocation());
-			if (boxes != null)
-				for (CollisionBox box : boxes)
-				{
-					if (box.collidesWith(this.getTranslatedBoundingBox()))
-						onLadder = true;
-				}
-		}*/
 
 		if (focus && !inWater && controller.getInputsManager().getInputByName("jump").isPressed() && isOnGround())
 		{
