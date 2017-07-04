@@ -17,7 +17,9 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, LWJG
 	int GLFW_key;
 	
 	boolean isDown;
+	
 	boolean editable = true;
+	boolean repeat = false;
 	
 	public Lwjgl3KeyBind(Lwjgl3ClientInputsManager im, String name, String defaultKeyName)
 	{

@@ -96,6 +96,8 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 				if(keyboardInput != null) {
 					if (action == GLFW_PRESS)
 						onInputPressed(keyboardInput);
+					else if(action == GLFW_REPEAT && keyboardInput.repeat)
+						onInputPressed(keyboardInput);
 					else if (action == GLFW_RELEASE)
 						onInputReleased(keyboardInput);
 				}
@@ -287,7 +289,9 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 			Lwjgl3KeyBind key = new Lwjgl3KeyBind(this, name, value);
 			input = key;
 			if(arguments.contains("hidden"))
-				((Lwjgl3KeyBind) key).setEditable(false);
+				key.editable = false;
+			if(arguments.contains("repeat"))
+				key.repeat = true;
 			//keyboardInputs.add(key);
 		}
 		else if(type.equals("virtual"))	{

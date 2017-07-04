@@ -19,7 +19,7 @@ keyBind enter ENTER hidden
 keyBind tab TAB hidden
 keyBind uiUp UP hidden
 keyBind uiDown DOWN hidden
-keyBind backspace BACKSPACE hidden
+keyBind backspace BACKSPACE hidden repeat
 
 #Debug and utility
 keyBind flyFast LEFT_SHIFT hidden
