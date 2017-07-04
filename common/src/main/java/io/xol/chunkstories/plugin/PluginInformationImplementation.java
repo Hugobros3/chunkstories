@@ -30,6 +30,7 @@ import io.xol.chunkstories.api.plugin.PluginInformation;
 import io.xol.chunkstories.api.plugin.ServerPlugin;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.content.GameDirectory;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -304,5 +305,14 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 	public Collection<Command> getCommands()
 	{
 		return commands;
+	}
+
+	@Override
+	public File getDirectory() {
+		
+		File file = new File(GameDirectory.getGameFolderPath()+"/"+this.getName()+"/");
+		file.mkdirs();
+		
+		return file;
 	}
 }

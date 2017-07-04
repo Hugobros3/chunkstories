@@ -1,5 +1,6 @@
 package io.xol.chunkstories.api.plugin;
 
+import java.io.File;
 import java.util.Collection;
 
 import io.xol.chunkstories.api.GameContext;
@@ -23,6 +24,8 @@ public interface PluginInformation
 	public ChunkStoriesPlugin createInstance(GameContext pluginExecutionContext) throws PluginCreationException;
 
 	public Collection<Command> getCommands();
+	
+	public File getDirectory();
 	
 	public enum PluginType
 	{

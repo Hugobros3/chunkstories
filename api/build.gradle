@@ -12,7 +12,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven'
 
 //TODO Make version depend on Git ?
-version = '103'
+version = '104'
 description = 'Open API for the game \'Chunk Stories\''
 
 dependencies {
@@ -42,7 +42,7 @@ if(hasProperty('uploadArtifactUsername')) {
 	uploadArchives {
 		repositories {
 				mavenDeployer {
-					repository(url: "http://xol.io:8080/repository/public/") {
+					repository(url: "http://maven.xol.io/repository/public/") {
 						authentication(userName: uploadArtifactUsername, password: uploadArtifactPassword)
 					}
 				}
@@ -50,14 +50,3 @@ if(hasProperty('uploadArtifactUsername')) {
 	}
 }
 		
-task artifacts {
-	group = "Help"
-		description = "Displays the artifacts associated with each configuration of " + project
-		doFirst {
-			configurations.findAll().each { config ->
-			println "${config}:"
-			config.artifacts.getFiles().each { file -> println "" + file}
-			println ' '
-		}
-	}
-}
