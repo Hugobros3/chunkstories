@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
+import io.xol.chunkstories.api.entity.interfaces.EntityFeedable;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
@@ -61,7 +62,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 /**
  * Core/Vanilla player, has all the functionality you'd want from it
  */
-public class EntityPlayer extends EntityHumanoid implements EntityControllable, EntityOverlay, EntityNameable, EntityWithInventory, EntityWithSelectedItem, EntityCreative, EntityFlying, EntityWithArmor
+public class EntityPlayer extends EntityHumanoid implements EntityControllable, EntityFeedable, EntityOverlay, EntityNameable, EntityWithInventory, EntityWithSelectedItem, EntityCreative, EntityFlying, EntityWithArmor
 {
 	//Add the controller component to whatever else the superclass may have
 	final EntityComponentController controllerComponent;
@@ -371,7 +372,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		onLadder = false;
 		
 		all:
-		for(VoxelContext vctx : world.getVoxelsWithin(this.getBoundingBox())) {
+		for(VoxelContext vctx : world.getVoxelsWithin(this.getTranslatedBoundingBox())) {
 			if(vctx.getVoxel() instanceof VoxelClimbable)
 			{
 				/*for(CollisionBox box : vctx.getTranslatedCollisionBoxes()) {
