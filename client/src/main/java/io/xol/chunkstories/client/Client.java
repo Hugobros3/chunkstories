@@ -220,14 +220,19 @@ public class Client implements ClientInterface
 
 	public void openInventories(Inventory... inventories)
 	{
-		if (gameWindow.getLayer().getRootLayer() instanceof Ingame)
+		gameWindow.queueSynchronousTask(new Runnable()
 		{
-			Ingame gmp = (Ingame) gameWindow.getLayer().getRootLayer();
-
-			gmp.focus(false);
-			
-			gameWindow.setLayer(new InventoryOverlay(gameWindow, gmp, inventories));
-		}
+			@Override
+			public void run()
+			{
+				if (gameWindow.getLayer().getRootLayer() instanceof Ingame)
+				{
+					Ingame gmp = (Ingame) gameWindow.getLayer().getRootLayer();
+					gameWindow.setLayer(new InventoryOverlay(gameWindow, gmp, inventories));
+					gmp.focus(false);
+				}
+			}
+		});
 	}
 
 	@Override

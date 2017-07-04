@@ -117,13 +117,13 @@ public class MainMenuOverlay extends Layer
 		largeOptions.render(renderingContext);
 		
 		//Notices
-		Vector4fm noticeColor = new Vector4fm(1.0f);
+		Vector4fm noticeColor = new Vector4fm(0.5f);
 		String version = "Chunk Stories Client " + VersionInfo.version;
 		renderingContext.getFontRenderer().defaultFont().getWidth(version);
 		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), 4, 0, version, this.getGuiScale(), noticeColor);
 	
 		String copyrightNotice = "Copyright (c) 2016-2017 XolioWare Interactive";
-		float noticeDekal = renderingContext.getFontRenderer().defaultFont().getWidth(copyrightNotice) * this.getGuiScale();
+		float noticeDekal = renderingContext.getFontRenderer().defaultFont().getWidth(copyrightNotice) * (this.getGuiScale());
 		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), renderingContext.getWindow().getWidth() - noticeDekal - 4, 0, copyrightNotice, this.getGuiScale(), noticeColor);
 	
 	}

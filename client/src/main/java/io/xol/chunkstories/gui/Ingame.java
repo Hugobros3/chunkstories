@@ -431,7 +431,7 @@ public class Ingame extends Layer
 				return true;
 			}
 		}
-		else if (!guiHidden && input.equals("inventory"))
+		/*else if (!guiHidden && input.equals("inventory"))
 		{
 			if (playerEntity != null)
 			{
@@ -441,7 +441,7 @@ public class Ingame extends Layer
 				else
 					gameWindow.setLayer(new InventoryOverlay(gameWindow, this, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory() }));
 			}
-		}
+		}*/
 		//Exit brings up the pause menu
 		else if (input.equals("exit"))
 		{

@@ -58,7 +58,7 @@ public abstract class GuiElement {
 
 	/** Is the mouse over this object */
 	public boolean isMouseOver(Mouse mouse) {
-		return mouse.getCursorX() >= this.getPositionX() && mouse.getCursorY() >= this.getPositionY() && mouse.getCursorX() <= this.getPositionX() + this.getWidth() && this.getPositionY() <= this.getPositionY() + this.getWidth();
+		return mouse.getCursorX() >= this.getPositionX() && mouse.getCursorY() >= this.getPositionY() && mouse.getCursorX() <= this.getPositionX() + this.getWidth() && mouse.getCursorY() <= this.getPositionY() + this.getHeight();
 	}
 	
 	public final boolean isMouseOver() {

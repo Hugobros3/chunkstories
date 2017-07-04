@@ -57,6 +57,8 @@ public class ScrollableContainer extends FocusableGuiElement implements Clickabl
 		float startY = this.yPosition + height;
 		int i = scroll;
 		
+		//renderer.getGuiRenderer().drawBoxWindowsSpace(xPosition, yPosition, xPosition + width, yPosition + height, 0, 0, 0, 0, null, true, false, new Vector4fm(1.0f));
+		
 		while(true)
 		{
 			if(i >= elements.size())
