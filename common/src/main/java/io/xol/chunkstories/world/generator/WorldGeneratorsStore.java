@@ -48,10 +48,10 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 			{
 				className = this.resolveProperty("class", BlankWorldGenerator.class.getName());
 				
-				System.out.println("Loading generator classname: "+className);
+				//System.out.println("Loading generator classname: "+className);
 				Class<?> untypedClass = store.modsManager().getClassByName(className);
 				
-				System.out.println("untypedClass="+untypedClass);
+				//System.out.println("untypedClass="+untypedClass);
 				//Class<?> untypedClass = Class.forName(className);
 				if (!WorldGenerator.class.isAssignableFrom(untypedClass))
 					throw new IllegalWorldGeneratorDeclarationException(className + " is not a subclass of WorldGenerator");
@@ -68,7 +68,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 				throw new IllegalWorldGeneratorDeclarationException("WorldGenerator " + this.getName() + " has an issue with it's constructor: " + e.getMessage());
 			}
 			
-			System.out.println("GENERATOR TYPE INIT OK " + name);
+			//System.out.println("GENERATOR TYPE INIT OK " + name);
 		}
 
 		private final String className;

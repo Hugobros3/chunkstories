@@ -60,7 +60,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 		public IOTaskProcessCompressedChunkArrival(int x, int y, int z, byte[] packetData)
 		{
-			System.out.println("x' :"+x);
 			this.chunkX = x;
 			this.chunkY = y;
 			this.chunkZ = z;
@@ -92,7 +91,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 				return true;
 			}*/
 			
-			System.out.println("chunk data OK");
 			
 			if (data != null)
 			{
@@ -138,7 +136,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 
 	public void requestChunkCompressedDataProcess(PacketChunkCompressedData data)
 	{
-		System.out.println("x° :"+data.x);
 		IOTaskProcessCompressedChunkArrival task = new IOTaskProcessCompressedChunkArrival(data.x, data.y, data.z, data.data);
 		scheduleTask(task);
 	}

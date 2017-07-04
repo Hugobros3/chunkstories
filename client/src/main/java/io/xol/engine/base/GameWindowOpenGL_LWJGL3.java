@@ -406,9 +406,9 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 				
 				String videoModeString = videoMode.width() + "x" + videoMode.height() + " @" + videoMode.refreshRate()+"Hz ";
 				
-				System.out.println(videoModeString+(videoMode.blueBits()+videoMode.redBits()+videoMode.greenBits()) + "bpp");
+				//System.out.println(videoModeString+(videoMode.blueBits()+videoMode.redBits()+videoMode.greenBits()) + "bpp");
 				VideoMode vm = new VideoMode(monitorCount, videoMode);
-				System.out.println("vm: "+vm);
+				//System.out.println("vm: "+vm);
 				enumeratedVideoModes.add(vm);
 			}
 		}

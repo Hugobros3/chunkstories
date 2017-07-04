@@ -59,7 +59,6 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 		x = in.readInt();
 		y = in.readInt();
 		z = in.readInt();
-		System.out.println("x :"+x);
 		//Thread.dumpStack();
 		
 		int length = in.readInt();

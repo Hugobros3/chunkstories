@@ -115,11 +115,6 @@ public class WorldRendererImplementation implements WorldRenderer
 		if(RenderingConfig.doDynamicCubemaps)
 			cubemapRenderer.renderWorldCubemap(renderingInterface, renderBuffers.environmentMap, 128, true);
 		
-		this.renderWorldInternal(renderingInterface);
-	}
-		
-	protected void renderWorldInternal(RenderingInterface renderingInterface)
-	{
 		//Step one, set the camera to the proper spot
 		CameraInterface mainCamera = renderingInterface.getCamera();
 		EntityControllable entity = Client.getInstance().getPlayer().getControlledEntity();
@@ -134,6 +129,14 @@ public class WorldRendererImplementation implements WorldRenderer
 		
 		// Prepare matrices
 		mainCamera.setupUsingScreenSize(gameWindow.getWidth(), gameWindow.getHeight());
+		
+		this.renderWorldInternal(renderingInterface);
+	}
+		
+	protected void renderWorldInternal(RenderingInterface renderingInterface)
+	{
+		//Step one, set the camera to the proper spot
+		CameraInterface mainCamera = renderingInterface.getCamera();
 
 		//Update PVS
 		chunksRenderer.updatePVSSet(mainCamera);
@@ -771,5 +774,9 @@ public class WorldRendererImplementation implements WorldRenderer
 	public ShadowMapRenderer getShadowRenderer()
 	{
 		return this.shadower;
+	}
+
+	public CubemapRenderer getCubemapRenderer() {
+		return this.cubemapRenderer;
 	}
 }

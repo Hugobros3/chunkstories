@@ -11,7 +11,7 @@ logs/
 target/
 mods/
 screenshots/
-scripts/
+skyboxscreens/
 
 _Caches_
 res/textures/tiles_merged*
@@ -24,6 +24,7 @@ _Don't include build stuff_
 bin/
 */build/
 *.class
+scripts/
 
 _Random utility/built jars no one cares about_
 counter.jar
@@ -40,6 +41,7 @@ wrappers/
 hs_err_pid*
 *.hprof
 *.trace
+*.cap
 injectee.dll
 
 _Hide eclipse projects_
@@ -56,3 +58,4 @@ dz4cs/
 dogez_content.zip
 server-icon - Copie.png
 gradle.properties
+/Renderdoc-client.cap

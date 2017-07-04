@@ -91,14 +91,13 @@ public class EntitySerializer
 				{
 					//Read UTF-8 component name
 					String componentName = in.readUTF();
-					System.out.println("Reading component "+componentName);
 					try {
 						entity.getComponents().tryPullComponentInStream(componentName, source, in);
 					}
 					catch(UnknownComponentException e) {
+						ChunkStoriesLoggerImplementation.getInstance().log("Failure reading component "+componentName + " from "+source, LogType.INTERNAL, LogLevel.WARN);
 						ChunkStoriesLoggerImplementation.getInstance().log(e.getMessage(), LogType.INTERNAL, LogLevel.WARN);
 					}
-					System.out.println("Went ok");
 				}
 				else
 				{

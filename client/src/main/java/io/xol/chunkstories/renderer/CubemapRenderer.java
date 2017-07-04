@@ -51,8 +51,10 @@ public class CubemapRenderer {
 		int scrW, scrH;
 		// Setup cubemap resolution
 
-		if (!onlyTerrain)
+		if (!onlyTerrain) {
+			
 			worldRenderer.setupRenderSize(resolution, resolution);
+		}
 		
 		scrW = resolution;
 		scrH = resolution;
@@ -109,18 +111,18 @@ public class CubemapRenderer {
 			renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
 			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+			camera.setupUsingScreenSize(scrW, scrH);
+			
 			// Scene rendering
 			if (onlyTerrain)
 			{
-				camera.setupUsingScreenSize(scrW, scrH);
-
 				//Draw sky
 				worldRenderer.getSky().render(renderingContext);
 
 				worldRenderer.getFarTerrainRenderer().renderTerrain(renderingContext, null);
 			}
 			else
-				worldRenderer.renderWorld(renderingContext);
+				worldRenderer.renderWorldInternal(renderingContext);
 
 			if (cubemap != null)
 			{
@@ -146,7 +148,7 @@ public class CubemapRenderer {
 			{
 				// GL access
 				
-				glBindTexture(GL_TEXTURE_2D, buffers.environmentMapBufferHDR.getId());
+				glBindTexture(GL_TEXTURE_2D, buffers.shadedBuffer.getId());
 				//glBindTexture(GL_TEXTURE_2D, environmentMapBufferHDR.getId());
 
 				// File access
@@ -154,14 +156,17 @@ public class CubemapRenderer {
 				image.mkdirs();
 
 				ByteBuffer bbuf = ByteBuffer.allocateDirect(scrW * scrH * 4 * 4).order(ByteOrder.nativeOrder());
-				System.out.println(bbuf);
 				glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, bbuf);
-				System.out.println(bbuf);
+				System.out.println("Took side "+z);
 
 				BufferedImage pixels = new BufferedImage(scrW, scrH, BufferedImage.TYPE_INT_RGB);
 				for (int x = 0; x < scrW; x++)
 					for (int y = 0; y < scrH; y++)
 					{
+						/*bbuf.getFloat();
+						if(x % 500 == 0)
+							System.out.println(bbuf.getFloat());*/
+						
 						int i = 4 * (x + scrW * y);
 						int r = (int) Math2.clamp(Math.pow((bbuf.getFloat(i * 4)) / 1d, 1d / 2.2d) * 255d, 0.0, 255.0);
 						int g = (int) Math2.clamp(Math.pow((bbuf.getFloat(i * 4 + 4)) / 1d, 1d / 2.2d) * 255d, 0.0, 255.0);

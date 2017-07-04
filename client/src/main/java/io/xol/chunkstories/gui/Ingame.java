@@ -231,19 +231,13 @@ public class Ingame extends Layer
 				if(e.getTranslatedBoundingBox().lineIntersection(cameraPosition, camera.getViewDirection().castToDoublePrecision()) != null)
 
 					FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4fm(0, 0, 0.5f, 1.0f));
-					//e.getTranslatedBoundingBox().debugDraw(0, 0, 0.5f, 1);
 				else
 					FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4fm(0, 1f, 1f, 1.0f));
-				//e.getTranslatedBoundingBox().debugDraw(0, 1, 1, 1);
-				
-				//[Vector3dm x:67.29906576230833 y:23.65 z:28.805621056886654]
-				//System.out.println(cameraPosition);
 				
 				for(CollisionBox box : e.getCollisionBoxes())
 				{
 					box.translate(e.getLocation());
 					FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4fm(0, 1, 0.5f, 1.0f));
-					//box.debugDraw(0, 1, 0.5f, 1);
 				}
 			}
 		}
@@ -253,11 +247,11 @@ public class Ingame extends Layer
 		
 		//Cubemap rendering trigger (can't run it while main render is occuring)
 		//TODO reimplement cubemaps screenshots
-		/*if (shouldTakeACubemap)
+		if (shouldTakeACubemap)
 		{
 			shouldTakeACubemap = false;
-			world.getWorldRenderer().renderWorldCubemap(null, 512, false);
-		}*/
+			world.getWorldRenderer().getCubemapRenderer().renderWorldCubemap(renderingContext, null, 1024, false);
+		}
 
 		//Fades in & out the overlay
 		if (!isCovered())
