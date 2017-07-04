@@ -23,6 +23,7 @@ server-icon.png
 _Don't include build stuff_
 bin/
 */build/
+/gradle/
 *.class
 scripts/
 

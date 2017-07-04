@@ -10,9 +10,25 @@
 apply plugin: 'java'
 
 apply plugin: 'java-library'
+apply plugin: 'maven'
 
 dependencies {
     api project(':api')
+}
+
+//Create a properties.gradle with login credentials to use this.
+if(hasProperty('uploadArtifactUsername')) {
+	println 'Login credentials found'
+	uploadArchives {
+		repositories {
+			mavenDeployer {
+				repository(url: "http://maven.xol.io/repository/public/") {
+					authentication(userName: uploadArtifactUsername, password: uploadArtifactPassword)
+				}
+				pom.artifactId = 'common'
+			}
+		}
+	}
 }
 
 version = rootProject.version

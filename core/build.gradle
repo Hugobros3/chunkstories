@@ -10,6 +10,7 @@
 apply plugin: 'java'
 
 apply plugin: 'java-library'
+apply plugin: 'maven'
 
 dependencies {
     api project(':api')
@@ -18,3 +19,18 @@ dependencies {
 
 version = rootProject.version
 description = 'Basic content the game runs by default'
+
+//Create a properties.gradle with login credentials to use this.
+if(hasProperty('uploadArtifactUsername')) {
+	println 'Login credentials found'
+	uploadArchives {
+		repositories {
+				mavenDeployer {
+					repository(url: "http://maven.xol.io/repository/public/") {
+						authentication(userName: uploadArtifactUsername, password: uploadArtifactPassword)
+					}
+					pom.artifactId = 'core'
+				}
+		}
+	}
+}
