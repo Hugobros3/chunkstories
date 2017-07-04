@@ -22,25 +22,24 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 	//protected BitmapFont font;
 
 	private Runnable action;
-
-	public Button(Layer layer, int x, int y, int width, int height, String t, BitmapFont f, int s)
+	
+	public Button(Layer layer, int x, int y, int width, String t)
 	{
-		this(layer, x, y, width, height, t, s, null);
+		this(layer, x, y, width, t, null);
 	}
 	
-	public Button(Layer layer, int x, int y, int width, int height, String t, int s)
-	{
-		this(layer, x, y, width, height, t, s, null);
+	protected int scale() {
+		return layer.getGuiScale();
 	}
 	
-	public Button(Layer layer, int x, int y, int width, int height, String t, int s, Runnable r)
+	public Button(Layer layer, int x, int y, int width, String t, Runnable r)
 	{
 		super(layer);
 		xPosition = x;
 		yPosition = y;
 		text = t;
 		this.width = width;
-		this.height = height;
+		this.height = 32;
 		
 		this.action = r;
 	}
@@ -48,13 +47,18 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 	public float getWidth()
 	{
 		String localizedText = Client.getInstance().getContent().localization().localize(text);
-		int width = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * 2;
+		int width = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * scale();
 				//FontRenderer2.getTextLengthUsingFont(size * 16, localizedText, font);
 		
+		//Can have a predefined with
 		if(this.width > width)
-			return this.width + 8;
+			return this.width + 4 * scale();
 		
-		return width + 8;
+		return width + 4 * scale();
+	}
+	
+	public float getHeight() {
+		return height;
 	}
 
 	public boolean isMouseOver(Mouse mouse)
@@ -64,7 +68,7 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 
 	public void render(RenderingInterface renderer) {
 		String localizedText = Client.getInstance().getContent().localization().localize(text);
-		float textWidth = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * 2;//FontRenderer2.getTextLengthUsingFont(size * 16, localizedText, font);
+		float textWidth = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * scale();//FontRenderer2.getTextLengthUsingFont(size * 16, localizedText, font);
 		if (width < 0)
 		{
 			width = textWidth;
@@ -73,15 +77,15 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 		if (isFocused() || isMouseOver())
 		{
 			TexturesHandler.getTexture("./textures/gui/scalableButtonOver.png").setLinearFiltering(false);
-			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width + 8, height + 16, 4, "./textures/gui/scalableButtonOver.png", 32, 2);
+			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width + 8, getHeight() + 16, 4, "./textures/gui/scalableButtonOver.png", 32, scale());
 		}
 		else
 		{
 			TexturesHandler.getTexture("./textures/gui/scalableButton.png").setLinearFiltering(false);
-			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width + 8, height + 16, 4, "./textures/gui/scalableButton.png", 32, 2);
+			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width + 8, getHeight() + 16, 4, "./textures/gui/scalableButton.png", 32, scale());
 		}
 		
-		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), xPosition + textDekal, yPosition - height / 2, localizedText, 2, 2, new Vector4fm(1.0f));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), xPosition + textDekal, yPosition - height / 2, localizedText, scale(), scale(), new Vector4fm(1.0f));
 		//FontRenderer2.drawTextUsingSpecificFont(xPosition + textDekal, yPosition - height / 2, 0, size * 32, localizedText, font);
 		//return width * 2 * size - 12;
 	}

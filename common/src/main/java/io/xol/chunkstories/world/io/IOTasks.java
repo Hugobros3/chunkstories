@@ -127,7 +127,7 @@ public class IOTasks extends Thread
 				}
 			}
 		}
-		System.out.println("WorldLoader worker thread stopped");
+		System.out.println("IOTasks worker thread stopped");
 	}
 
 	public int getSize()
@@ -675,10 +675,16 @@ public class IOTasks extends Thread
 	public void dumpIOTaks()
 	{
 		System.out.println("dumping io tasks");
+		
+		//Hardcoding a security because you can fill the queue faster than you can iterate it
+		int hardLimit = 500;
 		Iterator<IOTask> i = this.tasks.iterator();
 		while (i.hasNext())
 		{
 			IOTask task = i.next();
+			hardLimit--;
+			if(hardLimit < 0)
+				return;
 			System.out.println(task);
 		}
 	}

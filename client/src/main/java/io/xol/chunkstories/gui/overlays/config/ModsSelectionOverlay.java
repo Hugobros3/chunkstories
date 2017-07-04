@@ -24,7 +24,8 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.mods.ModImplementation;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModZip;
-import io.xol.chunkstories.gui.ng.NgButton;
+import io.xol.chunkstories.gui.ng.ThinButton;
+import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay.ModsScrollableContainer.ModItem;
@@ -38,12 +39,12 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 
 public class ModsSelectionOverlay extends Layer
 {
-	NgButton applyMods = new NgButton(this, 0, 0, ("Apply Mods"));
+	LargeButtonIcon applyMods = new LargeButtonIcon(this, "validate");
 	
-	NgButton locateExtMod = new NgButton(this, 0, 0, ("Locate external mod"));
-	NgButton openModsFolder = new NgButton(this, 0, 0, ("Open mods folder"));
+	ThinButton locateExtMod = new ThinButton(this, 0, 0, ("Locate external mod"));
+	ThinButton openModsFolder = new ThinButton(this, 0, 0, ("Open mods folder"));
 	
-	NgButton backOption = new NgButton(this, 0, 0, ("Back"));
+	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
 	
 	ModsScrollableContainer modsContainer = new ModsScrollableContainer(this);
 	
@@ -52,8 +53,11 @@ public class ModsSelectionOverlay extends Layer
 		super(window, parent);
 		
 		elements.add(modsContainer);
+		
 		elements.add(locateExtMod);
 		elements.add(openModsFolder);
+		elements.add(backOption);
+		elements.add(applyMods);
 		
 		this.backOption.setAction(new Runnable() {
 			@Override
@@ -85,8 +89,6 @@ public class ModsSelectionOverlay extends Layer
 				buildModsList();
 			}
 		});
-		elements.add(backOption);
-		elements.add(applyMods);
 		
 		buildModsList();
 	}
@@ -153,6 +155,8 @@ public class ModsSelectionOverlay extends Layer
 	@Override
 	public void render(RenderingInterface renderingContext)
 	{
+		parentLayer.getRootLayer().render(renderingContext);
+		
 		backOption.setPosition(xPosition + 8, 8);
 		backOption.render(renderingContext);
 
@@ -167,11 +171,11 @@ public class ModsSelectionOverlay extends Layer
 		totalLengthOfButtons += locateExtMod.getWidth();
 		totalLengthOfButtons += spacing;
 		
-		totalLengthOfButtons += openModsFolder.getWidth();
-		totalLengthOfButtons += spacing;
+		//totalLengthOfButtons += openModsFolder.getWidth();
+		//totalLengthOfButtons += spacing;
 		
 		float buttonDisplayX = renderingContext.getWindow().getWidth() / 2 - totalLengthOfButtons / 2;
-		float buttonDisplayY = 4;
+		float buttonDisplayY = 8;
 
 		locateExtMod.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += locateExtMod.getWidth() + spacing;
@@ -181,23 +185,16 @@ public class ModsSelectionOverlay extends Layer
 		buttonDisplayX += openModsFolder.getWidth() + spacing;
 		openModsFolder.render(renderingContext);
 		
-		applyMods.setPosition(buttonDisplayX, buttonDisplayY);
+		applyMods.setPosition(this.getWidth() - applyMods.getWidth() - 8, 8);
 		buttonDisplayX += applyMods.getWidth() + spacing;
 		applyMods.render(renderingContext);
 		
-		int s = Client.getInstance().getGameWindow().getScalingFactor();
+		int s = Client.getInstance().getGameWindow().getGuiScale();
 		
 		modsContainer.setPosition((width - 480 * s) / 2, 32);
 		modsContainer.setDimensions(480 * s, height - 32 - 32 * s);
 		modsContainer.render(renderingContext);
 	}
-	
-	/*
-	public boolean onScroll(int dy)
-	{
-		modsContainer.scroll(dy > 0);
-		return true;
-	}*/
 	
 	@Override
 	public boolean handleInput(Input input) {
@@ -209,7 +206,6 @@ public class ModsSelectionOverlay extends Layer
 		
 		return super.handleInput(input);
 	}
-
 	
 	class ModsScrollableContainer extends ScrollableContainer {
 		
@@ -229,7 +225,7 @@ public class ModsSelectionOverlay extends Layer
 			
 			text+=" out of "+elements.size();
 			int dekal = renderer.getFontRenderer().getFont("arial", 12).getWidth(text) / 2;
-			renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), xPosition + width / 2 - dekal * scale, yPosition + 16 / scale, text, scale, new Vector4fm(0.0, 0.0, 0.0, 1.0));
+			renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), xPosition + width / 2 - dekal * scale(), yPosition + 16 / scale(), text, scale(), new Vector4fm(0.0, 0.0, 0.0, 1.0));
 			
 			//return r;
 		}
@@ -291,7 +287,7 @@ public class ModsSelectionOverlay extends Layer
 			
 			public boolean isOverUpButton(Mouse mouse)
 			{
-				int s = ModsScrollableContainer.this.scale;
+				int s = ModsScrollableContainer.this.scale();
 				float mx = mouse.getCursorX();
 				float my = mouse.getCursorY();
 				
@@ -304,7 +300,7 @@ public class ModsSelectionOverlay extends Layer
 			
 			public boolean isOverEnableDisableButton(Mouse mouse)
 			{
-				int s = ModsScrollableContainer.this.scale;
+				int s = ModsScrollableContainer.this.scale();
 				float mx = mouse.getCursorX();
 				float my = mouse.getCursorY();
 
@@ -317,7 +313,7 @@ public class ModsSelectionOverlay extends Layer
 			
 			public boolean isOverDownButton(Mouse mouse)
 			{
-				int s = ModsScrollableContainer.this.scale;
+				int s = ModsScrollableContainer.this.scale();
 				float mx = mouse.getCursorX();
 				float my = mouse.getCursorY();
 
@@ -333,7 +329,7 @@ public class ModsSelectionOverlay extends Layer
 			{
 				Mouse mouse = renderer.getClient().getInputsManager().getMouse();
 				
-				int s = ModsScrollableContainer.this.scale;
+				int s = ModsScrollableContainer.this.scale();
 				//Setup textures
 				Texture2DGL bgTexture = TexturesHandler.getTexture(isMouseOver(mouse) ? "./textures/gui/modsOver.png" : "./textures/gui/mods.png");
 				bgTexture.setLinearFiltering(false);

@@ -25,7 +25,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 	InputText usernameForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
 	InputText passwordForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
 	
-	Button loginButton = new Button(this, 0, 0, 128, 32, ("#{login.login}"), 1);
+	Button loginButton = new Button(this, 0, 0, 128, "#{login.login}");
 	
 	public LoginOverlay(GameWindow scene, Layer parent)
 	{

@@ -6,8 +6,18 @@ package io.xol.chunkstories;
 
 public class VersionInfo
 {
-	public static String version = "2017.04.27";
-	public static int networkProtocolVersion = 34;
+	public static String version = autoVersion();
+	public static int networkProtocolVersion = 35;
 	
 	public static short csfFormatVersion = 0x2b;
+
+	private static String autoVersion() {
+		
+		//If compiled jar, it has this
+		String ver = VersionInfo.class.getPackage().getImplementationVersion();
+		if(ver != null)
+			return ver;
+		
+		return "Debug build";
+	}
 }

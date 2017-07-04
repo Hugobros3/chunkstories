@@ -292,15 +292,15 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 			//TODO do a simple max() and improve accuracy
 			float height = 1024f;
 			
-			//if (!renderingContext.getCamera().isBoxInFrustrum(new CollisionBox(regionMesh.regionDisplayedX * 256, 0, regionMesh.regionDisplayedZ * 256, 256, height, 256)))
-			//	continue;
+			//Early-out
+			if (!renderingContext.getCamera().isBoxInFrustrum(new CollisionBox(regionMesh.regionDisplayedX * 256, 0, regionMesh.regionDisplayedZ * 256, 256, height, 256)))
+				continue;
 			
 			for(int i = 0; i < 8; i++)
 				for(int j = 0; j < 8; j++)
 				{
 					int delta = regionMesh.regionSummary.max[i][j] - regionMesh.regionSummary.min[i][j];
 					//System.out.println(regionMesh.regionSummary.max[i][j]);
-					//if (renderingContext.getCamera().isBoxInFrustrum(new CollisionBox((regionMesh.regionDisplayedX * 8 + i) * 32, 0, (regionMesh.regionDisplayedZ * 8 + j) * 32, 32, height, 32)))
 					if (renderingContext.getCamera().isBoxInFrustrum(new CollisionBox((regionMesh.regionDisplayedX * 8 + i) * 32, regionMesh.regionSummary.min[i][j], (regionMesh.regionDisplayedZ * 8 + j) * 32, 32, delta + 1, 32)))
 					{
 						if(mask != null)

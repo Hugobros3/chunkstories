@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.gui.overlays.ServerSelectionOverlayNg.ServerSelectionZone.ServerGuiItem;
@@ -31,8 +32,11 @@ import io.xol.engine.net.HttpRequester;
 public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 {
 	InputText ipForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
-	Button backOption = new Button(this, 0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
-	Button connectButton = new Button(this, 0, 0, 128, 32, "Connect", BitmapFont.SMALLFONTS, 1);
+	
+
+	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
+	//Button backOption = new Button(this, 0, 0, 300, "#{menu.back}");
+	Button connectButton = new Button(this, 0, 0, 128, "#{connection.connect}");
 	
 	ServerSelectionZone serverSelectionZone = new ServerSelectionZone(this);
 	
@@ -84,26 +88,28 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 	@Override
 	public void render(RenderingInterface renderingContext)
 	{
+		parentLayer.getRootLayer().render(renderingContext);
+		
 		if (autologin && !ipForm.text.equals(""))
 			login();
 
 		// title
-		FontRenderer2.drawTextUsingSpecificFontRVBA(32, renderingContext.getWindow().getHeight() - 32 * (1 + 1), 0, 32 + 1 * 16, "Select a server", BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
+		FontRenderer2.drawTextUsingSpecificFontRVBA(32, renderingContext.getWindow().getHeight() - 32 * (1 + 1), 0, 32 + 1 * 16, "Select a server from the list or type in the address directly", BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
 		// gui
-		float txtbox = renderingContext.getWindow().getWidth() - 50 - connectButton.getWidth() * 2 - 75;
+		float txtbox = renderingContext.getWindow().getWidth() - connectButton.getWidth();
 		ipForm.setPosition(25, renderingContext.getWindow().getHeight() - 50 * (1 + 1));
-		ipForm.setMaxLength(txtbox);
+		ipForm.setWidth(txtbox);
 		ipForm.drawWithBackGround();
 		
 		connectButton.setPosition(txtbox + 96 + 12, renderingContext.getWindow().getHeight() - 50 - 16 - 18);
 		
 		connectButton.render(renderingContext);
 
-		backOption.setPosition(xPosition + 192, 96);
+		backOption.setPosition(8, 8);
 		backOption.render(renderingContext);
 
 		updateServers();
-		int s = Client.getInstance().getGameWindow().getScalingFactor();
+		int s = Client.getInstance().getGameWindow().getGuiScale();
 		
 		serverSelectionZone.setPosition((width - 480 * s) / 2, 32);
 		serverSelectionZone.setDimensions(480 * s, height - 32 - 128);

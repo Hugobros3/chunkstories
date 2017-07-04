@@ -17,10 +17,10 @@ import io.xol.engine.gui.elements.Button;
 
 public class PauseOverlay extends Layer
 {
-	Button resumeButton = new Button(this, 0, 0, 320, 32, "#{menu.resume}", BitmapFont.SMALLFONTS, 1);
-	Button optionsButton = new Button(this, 0, 0, 320, 32, "#{menu.options}", BitmapFont.SMALLFONTS, 1);
-	Button modsButton = new Button(this, -100, 0, 320, 32, "#{menu.mods}", BitmapFont.SMALLFONTS, 1);
-	Button exitButton = new Button(this, 0, 0, 320, 32, "#{menu.backto}", BitmapFont.SMALLFONTS, 1);
+	Button resumeButton = new Button(this, 0, 0, 320, "#{menu.resume}");
+	Button optionsButton = new Button(this, 0, 0, 320, "#{menu.options}");
+	Button modsButton = new Button(this, -100, 0, 320, "#{menu.mods}");
+	Button exitButton = new Button(this, 0, 0, 320, "#{menu.backto}");
 	
 	public PauseOverlay(GameWindow scene, Layer parent)
 	{

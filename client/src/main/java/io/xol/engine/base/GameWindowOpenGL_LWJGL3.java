@@ -247,8 +247,11 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 
 						glViewport(0, 0, width, height);
 
-						if (layer != null)
+						Layer layer = GameWindowOpenGL_LWJGL3.this.layer;
+						while (layer != null) {
 							layer.onResize(width, height);
+							layer = layer.getParentLayer();
+						}
 				    }
 				}));
 
@@ -331,11 +334,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			e.printStackTrace();
 			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
 		}
-	}
-	
-	public int getScalingFactor()
-	{
-		return windowWidth > 1024 ? 2 : 1;
 	}
 
 	private void sync(int fps)
@@ -645,5 +643,25 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			e.printStackTrace();
 			return "#FF0000Failed to take screenshot ! (" + e.toString() + ")";
 		}
+	}
+
+	@Override
+	public int getGuiScale() {
+		//TODO config option to force this up
+		
+		//Sub-original resolution results in very tiny GUI scaling
+		if(getWidth() < 1024)
+			return 1;
+		
+		//Usual resolution scaling up to 1080P
+		if(getWidth() <= 1920)
+			return 2;
+		
+		//Special mid-level one for 1440p
+		if(getWidth() <= 2560)
+			return 3;
+		
+		//4K
+		return 4;
 	}
 }

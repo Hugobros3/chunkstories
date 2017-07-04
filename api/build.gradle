@@ -12,7 +12,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven'
 
 //TODO Make version depend on Git ?
-version = '100'
+version = '102'
 description = 'Open API for the game \'Chunk Stories\''
 
 dependencies {
@@ -36,21 +36,20 @@ version = null
 //archiveName = 'api.jar'
 }
 
-task test555 {
-	println uploadArtifactUsername
-	println uploadArtifactPassword
+//Create a properties.gradle with login credentials to use this.
+if(hasProperty('uploadArtifactUsername')) {
+	println 'Login credentials found'
+	uploadArchives {
+		repositories {
+				mavenDeployer {
+					repository(url: "http://xol.io:8080/repository/public/") {
+						authentication(userName: uploadArtifactUsername, password: uploadArtifactPassword)
+					}
+				}
+		}
+	}
 }
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "http://xol.io:8080/repository/public/") {
-				authentication(userName: uploadArtifactUsername, password: uploadArtifactPassword)
-			}
-        }
-    }
-}
-
+		
 task artifacts {
 	group = "Help"
 		description = "Displays the artifacts associated with each configuration of " + project

@@ -61,6 +61,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	WorldEffectsRenderer weatherEffectsRenderer;
 	ShadowMapRenderer shadower;
 	BloomRenderer bloomRenderer;
+	CubemapRenderer cubemapRenderer;
 	
 	float animationTimer = 0.0f;
 	float apertureModifier = 1.0f;
@@ -76,23 +77,24 @@ public class WorldRendererImplementation implements WorldRenderer
 		this.gameWindow = client.getGameWindow();
 		//this.renderingInterface = GameWindowOpenGL.getInstance().getRenderingContext();
 		//this.mainCamera = renderingInterface.getCamera();
-
-		//Creates subsystems
-		this.chunksRenderer = new ChunkMeshesRenderer(this);
-		
-		entitiesRenderer = new EntitiesRenderer(world);
-		particlesRenderer = new ClientParticlesRenderer(world);
-		farTerrainRenderer = new FarTerrainRenderer(world, this);
-		weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
-		skyRenderer = new DefaultSkyRenderer(world);
-		decalsRenderer = new DecalsRendererImplementation(this);
-		shadower = new ShadowMapRenderer(this);
-		bloomRenderer = new BloomRenderer(this);
 		
 		//Creates all these fancy render buffers
 		renderBuffers = new RenderBuffers();
 		//Create a holder for the general world rendering textures
 		worldTextures = new WorldTextures();
+
+		//Creates subsystems
+		this.chunksRenderer = new ChunkMeshesRenderer(this);
+		
+		this.entitiesRenderer = new EntitiesRenderer(world);
+		this.particlesRenderer = new ClientParticlesRenderer(world);
+		this.farTerrainRenderer = new FarTerrainRenderer(world, this);
+		this.weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
+		this.skyRenderer = new DefaultSkyRenderer(world);
+		this.decalsRenderer = new DecalsRendererImplementation(this);
+		this.shadower = new ShadowMapRenderer(this);
+		this.bloomRenderer = new BloomRenderer(this);
+		this.cubemapRenderer = new CubemapRenderer(this);
 	}
 
 	@Override
@@ -109,6 +111,14 @@ public class WorldRendererImplementation implements WorldRenderer
 
 	@Override
 	public void renderWorld(RenderingInterface renderingInterface)
+	{
+		if(RenderingConfig.doDynamicCubemaps)
+			cubemapRenderer.renderWorldCubemap(renderingInterface, renderBuffers.environmentMap, 128, true);
+		
+		this.renderWorldInternal(renderingInterface);
+	}
+		
+	protected void renderWorldInternal(RenderingInterface renderingInterface)
 	{
 		//Step one, set the camera to the proper spot
 		CameraInterface mainCamera = renderingInterface.getCamera();
@@ -226,7 +236,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		// to read it back and blend it
 		for (int pass = 1; pass < 3; pass++)
 		{
-			ShaderInterface liquidBlocksShader = renderingInterface.useShader("blocks_liquid_pass" + (pass));
+			ShaderInterface liquidBlocksShader = renderingInterface.useShader("blocks_liquid_pass" + pass);
 
 			liquidBlocksShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
 
@@ -578,10 +588,8 @@ public class WorldRendererImplementation implements WorldRenderer
 			environmentMapFBO = new FrameBufferObjectGL(null, environmentMap.getFace(0));
 		}
 
-		public void resizeBuffers()
+		public void resizeBuffers(int width, int height)
 		{
-			int width = gameWindow.getWidth();
-			int height = gameWindow.getHeight();
 			this.fboGBuffers.resizeFBO(width, height);
 			this.fboShadedBuffer.resizeFBO(width, height);
 			// Resize bloom components
@@ -699,21 +707,30 @@ public class WorldRendererImplementation implements WorldRenderer
 	@Override
 	public void setupRenderSize()
 	{
-		this.renderBuffers.resizeBuffers();
+		int width = gameWindow.getWidth();
+		int height = gameWindow.getHeight();
+		this.setupRenderSize(width, height);
+	}
+	
+	public void setupRenderSize(int width, int height) {
+		this.renderBuffers.resizeBuffers(width, height);
 	}
 
-	@Override
-	public FarTerrainMeshRenderer getFarTerrainRenderer()
-	{
-		return this.farTerrainRenderer;
-	}
-
+	/** Debug-related, usually not called in gameplay */
 	public void reloadContentSpecificStuff()
 	{
 		farTerrainRenderer.markVoxelTexturesSummaryDirty();
 		entitiesRenderer.clearLoadedEntitiesRenderers();
 		
 		worldTextures.reload();
+	}
+
+	//Component getters
+	
+	@Override
+	public FarTerrainRenderer getFarTerrainRenderer()
+	{
+		return this.farTerrainRenderer;
 	}
 
 	@Override

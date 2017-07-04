@@ -13,6 +13,18 @@ apply plugin: 'java'
 // Apply the application plugin to add support for building an application
 apply plugin: 'application'
 
+//Make this into a shadow jar
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+    }
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
 version = rootProject.version
 description = 'Multiplatform PC Client using LWJGL3'
 
@@ -62,6 +74,19 @@ dependencies {
 
 // Define the main class for the application
 mainClassName = 'io.xol.chunkstories.client.Client'
+
+jar {
+	manifest {
+		attributes  'Implementation-Title': 'Chunk Stories Client',
+					'Implementation-Version': version
+	}
+}
+
+shadowJar {
+   baseName = 'chunkstories'
+   classifier = null
+   version = null
+}
 
 run { 
     /* Need to split the space-delimited value in the exec.args */

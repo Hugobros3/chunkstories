@@ -33,12 +33,16 @@ public class ScrollableContainer extends FocusableGuiElement implements Clickabl
 	
 	protected int scroll = 0;
 
-	public int scale = 1;
+	//public int scale = 1;
 	
 	public void setDimensions(float width, float height)
 	{
 		this.width = width;
 		this.height = height;
+	}
+	
+	protected int scale() {
+		return layer.getGuiScale();
 	}
 	
 	public boolean isMouseOver(int mx, int my)
@@ -58,10 +62,10 @@ public class ScrollableContainer extends FocusableGuiElement implements Clickabl
 			if(i >= elements.size())
 				break;
 			ContainerElement element = elements.get(i);
-			startY -= element.height * scale;
-			if(startY - element.height * scale < this.yPosition)
+			startY -= element.height * scale();
+			if(startY - element.height * scale() < this.yPosition)
 				break;
-			startY -= 4 * scale;
+			startY -= 4 * scale();
 			i++;
 			
 			element.setPosition(this.xPosition, startY);
@@ -113,7 +117,7 @@ public class ScrollableContainer extends FocusableGuiElement implements Clickabl
 		
 		public void render(RenderingInterface renderer)
 		{
-			int s = ScrollableContainer.this.scale;
+			int s = ScrollableContainer.this.scale();
 			//Setup textures
 			Texture2DGL bgTexture = TexturesHandler.getTexture(isMouseOver(renderer.getClient().getInputsManager().getMouse()) ? "./textures/gui/genericOver.png" : "./textures/gui/generic.png");
 			bgTexture.setLinearFiltering(false);
@@ -141,7 +145,7 @@ public class ScrollableContainer extends FocusableGuiElement implements Clickabl
 		
 		public boolean isMouseOver(Mouse mouse)
 		{
-			int s = ScrollableContainer.this.scale;
+			int s = ScrollableContainer.this.scale();
 			float mx = mouse.getCursorX();//Mouse.getX();
 			float my = mouse.getCursorY();//Mouse.getY();
 			return mx >= positionX && mx <= positionX + width * s && my >= positionY && my <= positionY + height * s;
@@ -159,10 +163,10 @@ public class ScrollableContainer extends FocusableGuiElement implements Clickabl
 			if(i >= elements.size())
 				break;
 			ContainerElement element = elements.get(i);
-			if(startY - element.height * scale < this.yPosition)
+			if(startY - element.height * scale() < this.yPosition)
 				break;
-			startY -= element.height * scale;
-			startY -= 4 * scale;
+			startY -= element.height * scale();
+			startY -= 4 * scale();
 			i++;
 			
 			if(element.isMouseOver(mouseButton.getMouse()))

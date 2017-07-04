@@ -28,4 +28,6 @@ public interface GameWindow
 	public boolean hasFocus();
 
 	public String takeScreenshot();
+
+	public int getGuiScale();
 }

@@ -16,8 +16,8 @@ import io.xol.engine.gui.elements.Button;
 public class LogPolicyAsk extends Layer
 {
 	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	Button acceptButton = new Button(this, 0, 0, 300, 32, ("#{logpolicy.accept}"), BitmapFont.SMALLFONTS, 1);
-	Button refuseButton = new Button(this, 0, 0, 300, 32, ("#{logpolicy.deny}"), BitmapFont.SMALLFONTS, 1);
+	Button acceptButton = new Button(this, 0, 0, 300, "#{logpolicy.accept}");
+	Button refuseButton = new Button(this, 0, 0, 300, "#{logpolicy.deny}");
 	
 	String message = Client.getInstance().getContent().localization().getLocalizedString("logpolicy.asktext");
 	

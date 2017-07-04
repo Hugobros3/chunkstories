@@ -8,10 +8,11 @@ Bugs TBF:
 + Login button offset
 + Gui scale/Server window
 + Copy/Paste/Line-delete general
-+ One side of panes is fucked
-+ Rain is black
-+ Kill all sounds when exiting to menu
-+ CRAZY gc trashing
++ CRAZY gc trashing (present since rendering rework)
++ Ladders don't work (bodged)
++ Voxel light can bleed (need to study more)
+
+* Be wary of memory leaks
 
 Todo:
 

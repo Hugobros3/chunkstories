@@ -16,6 +16,7 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.graphics.fonts.BitmapFont;
@@ -27,8 +28,11 @@ import io.xol.engine.gui.elements.Button;
 public class LevelSelectOverlay extends Layer
 {
 	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	Button backOption = new Button(this, 0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
-	Button newWorldOption = new Button(this, 0, 0, 300, 32, ("New..."), BitmapFont.SMALLFONTS, 1);
+	
+
+	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
+	//Button backOption = new Button(this, 0, 0, 300, "#{menu.back}");
+	LargeButtonIcon newWorldOption = new LargeButtonIcon(this, "new");
 	List<WorldInfoImplementation> localWorlds = new ArrayList<WorldInfoImplementation>();
 	List<LocalWorldButton> worldsButtons = new ArrayList<LocalWorldButton>();
 
@@ -79,7 +83,7 @@ public class LevelSelectOverlay extends Layer
 			
 			
 			// System.out.println(worldButton.toString());
-			worldButton.setHeight(64 + 8);
+			//worldButton.setHeight(64 + 8);
 			elements.add(worldButton);
 			worldsButtons.add(worldButton);
 		}
@@ -90,7 +94,7 @@ public class LevelSelectOverlay extends Layer
 	@Override
 	public void render(RenderingInterface renderingContext)
 	{
-		parentLayer.render(renderingContext);
+		parentLayer.getRootLayer().render(renderingContext);
 		
 		if (scroll < 0)
 			scroll = 0;
@@ -118,10 +122,10 @@ public class LevelSelectOverlay extends Layer
 			posY -= 96;
 		}
 
-		backOption.setPosition(xPosition + 192, 48);
+		backOption.setPosition(8, 8);
 		backOption.render(renderingContext);
 		
-		newWorldOption.setPosition(renderingContext.getWindow().getWidth() - 192, 48);
+		newWorldOption.setPosition(renderingContext.getWindow().getWidth() - newWorldOption.getWidth() - 8, 8);
 		newWorldOption.render(renderingContext);
 	}
 	
@@ -145,7 +149,8 @@ public class LevelSelectOverlay extends Layer
 
 		public LocalWorldButton(int x, int y, WorldInfoImplementation info)
 		{
-			super(LevelSelectOverlay.this, x, y, 0, 0, "", null, 333);
+			super(LevelSelectOverlay.this, x, y, 0, "");
+			this.height = 64 + 8;
 			this.info = info;
 		}
 

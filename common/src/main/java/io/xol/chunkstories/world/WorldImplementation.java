@@ -236,7 +236,7 @@ public abstract class WorldImplementation implements World
 		Entity check = this.getEntityByUUID(entity.getUUID());
 		if (check != null)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Added an entity twice");
+			ChunkStoriesLoggerImplementation.getInstance().log("Added an entity twice "+check+" conflits with "+entity + " UUID: "+entity.getUUID());
 			ChunkStoriesLoggerImplementation.getInstance().save();
 			Thread.dumpStack();
 			System.exit(-1);

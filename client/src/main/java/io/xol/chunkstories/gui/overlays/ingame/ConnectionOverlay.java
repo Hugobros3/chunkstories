@@ -17,7 +17,7 @@ public class ConnectionOverlay extends Layer
 {
 	ClientSideConnectionSequence connectionSequence;
 	
-	Button exitButton = new Button(this, 0, 0, 320, 32, "ragequit", BitmapFont.SMALLFONTS, 1);
+	Button exitButton = new Button(this, 0, 0, 320, "#{connection.cancel}");
 	
 	public ConnectionOverlay(GameWindow scene, Layer parent, String ip, int port)
 	{
@@ -37,6 +37,8 @@ public class ConnectionOverlay extends Layer
 	@Override
 	public void render(RenderingInterface renderingContext)
 	{
+		parentLayer.getRootLayer().render(renderingContext);
+		
 		String color = "606060";
 		//color += HexTools.intToHex((int) (Math.random() * 255));
 		//color += HexTools.intToHex((int) (Math.random() * 255));

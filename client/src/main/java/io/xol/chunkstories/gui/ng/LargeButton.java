@@ -1,0 +1,42 @@
+package io.xol.chunkstories.gui.ng;
+
+import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.textures.Texture2D;
+import io.xol.chunkstories.client.Client;
+import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.engine.graphics.util.CorneredBoxDrawer;
+
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
+public class LargeButton extends BaseNgButton{
+	
+	public LargeButton(Layer layer, String text) {
+		super(layer, Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer().getFont("haettenschweiler", 18.666f), 0, 0, text);
+		this.width = 96;
+		this.height = 24;
+
+		this.text = "#{menu."+text+"}";
+	}
+
+	@Override
+	public void render(RenderingInterface renderer) {
+		String localizedText = Client.getInstance().getContent().localization().localize(text);
+		
+		Texture2D buttonTexture = TexturesHandler.getTexture("./textures/gui/mainMenu.png");
+		if (isFocused() || isMouseOver())
+			buttonTexture = TexturesHandler.getTexture("./textures/gui/mainMenuOver.png");
+			
+		buttonTexture.setLinearFiltering(false);
+		CorneredBoxDrawer.drawCorneredBoxTiled(xPosition + getWidth() / 2, yPosition + getHeight() / 2, getWidth(), getHeight(), 4 * scale(), buttonTexture, 32, scale());
+		
+		float yPositionText = yPosition + 2 * scale() / 2;
+		float centering = getWidth() / 2 - font.getWidth(localizedText) * scale() / 2;
+		renderer.getFontRenderer().drawString(font, xPosition + centering + scale(), yPositionText - scale(), localizedText, scale(), new Vector4fm(161/255f, 161/255f, 161/255f, 1));
+		renderer.getFontRenderer().drawString(font, xPosition + centering, yPositionText, localizedText, scale(), new Vector4fm(38/255f, 38/255f, 38/255f, 1));
+	}
+
+}

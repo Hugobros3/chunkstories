@@ -141,5 +141,12 @@ public class Layer {
 	public void onResize(int newWidth, int newHeight) {
 		if(parentLayer != null)
 			parentLayer.onResize(newWidth, newHeight);
+		
+		this.setWidth(newWidth);
+		this.setHeight(newHeight);
+	}
+	
+	public int getGuiScale() {
+		return gameWindow.getGuiScale();
 	}
 }

@@ -20,16 +20,22 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 	public int fontSize = 32;
 
 	public BitmapFont font;
-	public float maxlen = 128;
+	//public float maxlen = 128;
 
-	public InputText(Layer layer, int x, int y, int maxlen, int fontSize, BitmapFont f)
+	public InputText(Layer layer, int x, int y, int width, int fontSize, BitmapFont f)
 	{
 		super(layer);
 		xPosition = x;
 		yPosition = y;
 		font = f;
 		this.fontSize = fontSize;
-		this.maxlen = maxlen;
+		//this.maxlen = maxlen;
+		this.width = width;
+		this.height = 32;
+	}
+	
+	protected int scale() {
+		return layer.getGuiScale();
 	}
 	
 	public boolean handleInput(Input input) {
@@ -51,61 +57,9 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 		return true;
 	}
 
-	/*public void update()
-	{
-		if (hasFocus())
-		{
-			while (Keyboard.next())
-			{
-				if (Keyboard.getEventKeyState() == true)
-				{
-					char c = Keyboard.getEventCharacter();
-					int ek = Keyboard.getEventKey();
-					if (ek == 14)
-					{
-						if (text.length() > 0)
-							text = text.substring(0, text.length() - 1);
-					}
-					else if (ek == 28)
-					{
-
-					}
-					else
-					// if(TextKeys.isTextKey(ek))
-					{
-						if (c != 0)
-							text += c;
-					}
-				}
-			}
-		}
-	}
-
-	public void input(int k)
-	{
-		char c = Keyboard.getEventCharacter();
-
-		int ek = k;
-		if (ek == 14)
-		{
-			if (text.length() > 0)
-				text = text.substring(0, text.length() - 1);
-		}
-		else if (ek == 28)
-		{
-
-		}
-		else
-		// if(TextKeys.isTextKey(ek))
-		{
-			if (c != 0)
-				text += c;
-		}
-	}*/
-
 	public void drawWithBackGround()
 	{
-		float len = maxlen;
+		float len = width;
 		int txtlen = FontRenderer2.getTextLengthUsingFont(fontSize, text+" ", font);
 		if(txtlen > len)
 			len = txtlen;
@@ -119,7 +73,7 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 
 	public void drawWithBackGroundTransparent()
 	{
-		float len = maxlen;
+		float len = width;
 		int txtlen = FontRenderer2.getTextLengthUsingFont(fontSize, text+" ", font);
 		if(txtlen > len)
 			len = txtlen;
@@ -130,6 +84,15 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 		FontRenderer2.drawTextUsingSpecificFont(xPosition, yPosition, 0, fontSize, text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 		// System.out.println(text);
 	}
+	
+	public float getWidth() {
+		float len = width;
+		int txtlen = FontRenderer2.getTextLengthUsingFont(fontSize, text+" ", font);
+		if(txtlen > len)
+			len = txtlen;
+		
+		return len;
+	}
 
 	public void drawWithBackGroundPassworded()
 	{
@@ -138,9 +101,9 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 		char c : text.toCharArray())
 			passworded += "*";
 		if (isFocused())
-			CorneredBoxDrawer.drawCorneredBox(xPosition + maxlen / 2, yPosition + fontSize / 2, maxlen, 32, 8, "./textures/gui/textbox.png");
+			CorneredBoxDrawer.drawCorneredBox(xPosition + getWidth() / 2, yPosition + fontSize / 2, getWidth(), 32, 8, "./textures/gui/textbox.png");
 		else
-			CorneredBoxDrawer.drawCorneredBox(xPosition + maxlen / 2, yPosition + fontSize / 2, maxlen, 32, 8, "./textures/gui/textboxnofocus.png");
+			CorneredBoxDrawer.drawCorneredBox(xPosition + getWidth() / 2, yPosition + fontSize / 2, getWidth(), 32, 8, "./textures/gui/textboxnofocus.png");
 		FontRenderer2.drawTextUsingSpecificFont(xPosition, yPosition, 0, fontSize, passworded + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
 
 	}
@@ -149,15 +112,10 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 	{
 		text = t;
 	}
-
-	public void setMaxLength(float f)
-	{
-		maxlen = f;
-	}
 	
 	public boolean isMouseOver(Mouse mouse)
 	{
-		return (mouse.getCursorX() >= xPosition - 4 && mouse.getCursorX() < xPosition + maxlen + 4 && mouse.getCursorY() >= yPosition - 4 && mouse.getCursorY() <= yPosition + fontSize + 4);
+		return (mouse.getCursorX() >= xPosition - 4 && mouse.getCursorX() < xPosition + getWidth() + 4 && mouse.getCursorY() >= yPosition - 4 && mouse.getCursorY() <= yPosition + fontSize + 4);
 	}
 
 	@Override

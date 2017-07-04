@@ -13,7 +13,7 @@ import io.xol.engine.gui.elements.Button;
 
 public class MessageBoxOverlay extends Layer
 {
-	Button okButton = new Button(this, 0, 0, 300, 32, ("Ok"), BitmapFont.SMALLFONTS, 1);
+	Button okButton = new Button(this, 0, 0, 300, "#{menu.ok}");
 	String message;
 	
 	public MessageBoxOverlay(GameWindow scene, Layer parent, String message)
@@ -21,6 +21,7 @@ public class MessageBoxOverlay extends Layer
 		super(scene, parent);
 		// Gui buttons
 		this.message = message;
+		
 		this.okButton.setAction(new Runnable() {
 
 			@Override
@@ -36,7 +37,9 @@ public class MessageBoxOverlay extends Layer
 	@Override
 	public void render(RenderingInterface renderingContext)
 	{
-		int dekal = renderingContext.getFontRenderer().defaultFont().getWidth(message) / 2;
+		parentLayer.render(renderingContext);
+		
+		float dekal = renderingContext.getFontRenderer().defaultFont().getWidth(message);
 		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().defaultFont(), renderingContext.getWindow().getWidth()/2-dekal*1.5f, renderingContext.getWindow().getHeight() / 2 + 64, message, 3f, 3f, new Vector4fm(1,0.2f,0.2f,1));
 		
 		okButton.setPosition(renderingContext.getWindow().getWidth()/2, renderingContext.getWindow().getHeight() / 2 - 32);

@@ -4,6 +4,9 @@ menu.mods Mods
 menu.back Back
 menu.backto Back to menu
 
+menu.online Find a server...
+menu.mods Mods...
+
 ingame.pause Ingame menu
 
 menu.singleplayer Singleplayer

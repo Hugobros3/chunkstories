@@ -22,8 +22,8 @@ public class DeathOverlay extends Layer
 {
 	//GuiElementsHandler guiHandler = new GuiElementsHandler();
 	
-	Button respawnButton = new Button(this, 0, 0, 320, 32, "tryhard", BitmapFont.SMALLFONTS, 1);
-	Button exitButton = new Button(this, 0, 0, 320, 32, "ragequit", BitmapFont.SMALLFONTS, 1);
+	Button respawnButton = new Button(this, 0, 0, 320, "#{ingame.respawn}");
+	Button exitButton = new Button(this, 0, 0, 320, "#{ingame.exit}");
 
 	public DeathOverlay(GameWindow scene, Layer parent)
 	{

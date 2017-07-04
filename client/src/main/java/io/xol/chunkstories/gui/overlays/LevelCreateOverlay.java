@@ -20,9 +20,8 @@ import io.xol.engine.gui.elements.InputText;
 
 public class LevelCreateOverlay extends Layer
 {
-	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	Button cancelOption = new Button(this, 0, 0, 150, 32, ("Cancel"), BitmapFont.SMALLFONTS, 1);
-	Button createOption = new Button(this, 0, 0, 150, 32, ("Create"), BitmapFont.SMALLFONTS, 1);
+	Button cancelOption = new Button(this, 0, 0, 150, "Cancel");
+	Button createOption = new Button(this, 0, 0, 150, "Create");
 	
 	InputText levelName = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
 	InputText worldGenName = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
@@ -59,6 +58,14 @@ public class LevelCreateOverlay extends Layer
 		elements.add(worldGenName);
 		
 		worldGenName.text = "flat";
+		
+		int frame_border_size = 64;
+
+		xPosition = xPosition + frame_border_size;
+		yPosition = yPosition + frame_border_size;
+		
+		width -= frame_border_size * 2;
+		height -= frame_border_size * 2;
 	}
 
 	@Override
@@ -71,11 +78,11 @@ public class LevelCreateOverlay extends Layer
 		
 		int frame_border_size = 64;
 		
-		float positionStartX = xPosition + frame_border_size;
-		float positionStartY = yPosition + frame_border_size;
+		float positionStartX = xPosition;// + frame_border_size;
+		float positionStartY = yPosition;// + frame_border_size;
 		
-		width -= frame_border_size * 2;
-		height -= frame_border_size * 2;
+		//width -= frame_border_size * 2;
+		//height -= frame_border_size * 2;
 		
 		float x = positionStartX + 20;
 		// int y = 48;
@@ -89,7 +96,7 @@ public class LevelCreateOverlay extends Layer
 		int lvlnm_l = renderingContext.getFontRenderer().getFont("arial", 12).getWidth("Level name") * 2;
 		
 		levelName.setPosition(x + lvlnm_l + 20, positionStartY + height - 64 - 96);
-		levelName.setMaxLength(width - (x + lvlnm_l + 20) - 20);
+		levelName.setWidth(width - (x + lvlnm_l + 20) - 20);
 		levelName.drawWithBackGround();
 		
 		String wg_string = "World generator to use";
@@ -97,7 +104,7 @@ public class LevelCreateOverlay extends Layer
 		int wg_sl = renderingContext.getFontRenderer().getFont("arial", 12).getWidth(wg_string) * 2;
 		
 		worldGenName.setPosition(x + wg_sl + 20, positionStartY + height - 64 - 148);
-		worldGenName.setMaxLength(width - (x + wg_sl + 20) - 20);
+		worldGenName.setWidth(width - (x + wg_sl + 20) - 20);
 		worldGenName.drawWithBackGround();
 		
 		WorldGeneratorType wg = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.text);

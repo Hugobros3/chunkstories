@@ -31,7 +31,7 @@ public abstract class GuiElement {
 		return width;
 	}
 	
-	public float getHeigh() {
+	public float getHeight() {
 		return height;
 	}
 	

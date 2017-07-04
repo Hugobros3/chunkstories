@@ -17,24 +17,19 @@ import io.xol.engine.graphics.util.CorneredBoxDrawer;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class NgButton extends FocusableGuiElement implements ClickableGuiElement
+public class BaseNgButton extends FocusableGuiElement implements ClickableGuiElement
 {
 	public String text;
 	public final Font font;
-	public int size;
-
-	protected int height;
-	
-	private int scale = 1;
 	
 	private Runnable action;
 	
-	public NgButton(Layer layer, int x, int y, String text)
+	public BaseNgButton(Layer layer, int x, int y, String text)
 	{
 		this(layer, Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer().getFont("arial", 12), x, y, text);
 	}
 	
-	public NgButton(Layer layer, Font font, int x, int y, String text)
+	public BaseNgButton(Layer layer, Font font, int x, int y, String text)
 	{
 		super(layer);
 		this.font = font;
@@ -42,21 +37,31 @@ public class NgButton extends FocusableGuiElement implements ClickableGuiElement
 		this.xPosition = x;
 		this.yPosition = y;
 		this.text = text;
-		this.height = 18;
+		this.height = 32;
+	}
+	
+	protected int scale() {
+		return layer.getGuiScale();
 	}
 
 	public float getWidth()
 	{
 		String localizedText = Client.getInstance().getContent().localization().localize(text);
-		//int width = renderer.getFontRenderer().getFont("arial", 12).getWidth(localizedText);
-		int width = font.getWidth(localizedText);
-		return (width + 8) * scale;
+		float width = font.getWidth(localizedText);
+		
+		if(this.width > width)
+			width = this.width;
+		
+		return (width) * scale();
+	}
+	
+	public float getHeight() {
+		return height * scale();
 	}
 
 	public boolean isMouseOver(Mouse mouse)
 	{
-		float width = getWidth();
-		return (mouse.getCursorX() >= xPosition && mouse.getCursorX() < xPosition + width && mouse.getCursorY() >= yPosition && mouse.getCursorY() <= yPosition + height * scale);
+		return (mouse.getCursorX() >= xPosition && mouse.getCursorX() < xPosition + getWidth() && mouse.getCursorY() >= yPosition && mouse.getCursorY() <= yPosition + getHeight());
 	}
 
 	@Override
@@ -69,10 +74,10 @@ public class NgButton extends FocusableGuiElement implements ClickableGuiElement
 			buttonTexture = TexturesHandler.getTexture("./textures/gui/scalableButtonOver2.png");
 			
 		buttonTexture.setLinearFiltering(false);
-		CorneredBoxDrawer.drawCorneredBoxTiled(xPosition + (width) / 2, yPosition + 9 * scale, width, 18 * scale, 4 * scale, buttonTexture, 32, scale);
+		CorneredBoxDrawer.drawCorneredBoxTiled(xPosition + (width) / 2, yPosition + getHeight() / 2, width, getHeight(), 4 * scale(), buttonTexture, 32, scale());
 		
 		//if(scale == 1)
-		renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), xPosition + 4 * scale, yPosition, localizedText, scale, new Vector4fm(76/255f, 76/255f, 76/255f, 1));
+		renderer.getFontRenderer().drawString(font, xPosition + 4 * scale(), yPosition, localizedText, scale(), new Vector4fm(76/255f, 76/255f, 76/255f, 1));
 		//else
 		//	TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial24px18pt, posx + 4 * scale, posy + 2, text, scale / 2, new Vector4fm(76/255f, 76/255f, 76/255f, 1));
 	}
@@ -81,8 +86,8 @@ public class NgButton extends FocusableGuiElement implements ClickableGuiElement
 	public boolean handleClick(MouseButton mouseButton) {
 		if(!mouseButton.equals("mouse.left"))
 			return false;
-
-		System.out.println("hitler"+mouseButton.getName());
+		
+		this.layer.getGameWindow().getClient().getSoundManager().playSoundEffect("./sounds/gui/gui_click2.ogg");
 		
 		if(this.action != null)
 			this.action.run();

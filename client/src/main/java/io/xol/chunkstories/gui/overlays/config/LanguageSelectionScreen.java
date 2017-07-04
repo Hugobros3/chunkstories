@@ -29,7 +29,7 @@ import io.xol.engine.gui.elements.Button;
 
 public class LanguageSelectionScreen extends Layer
 {
-	Button backOption = new Button(this, 0, 0, 300, 32, ("Back"), BitmapFont.SMALLFONTS, 1);
+	Button backOption = new Button(this, 0, 0, 300, "#{menu.back}");
 	List<LanguageButton> languages = new ArrayList<LanguageButton>();
 
 	boolean allowBackButton;
@@ -130,7 +130,7 @@ public class LanguageSelectionScreen extends Layer
 
 		public LanguageButton(Layer layer, int x, int y, String info)
 		{
-			super(layer, x, y, 0, 0, "", null, 333);
+			super(layer, x, y, 0, "");
 			posx = x;
 			posy = y;
 			this.translationCode = info;

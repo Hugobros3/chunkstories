@@ -6,7 +6,9 @@ import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.ng.NgButton;
+import io.xol.chunkstories.gui.ng.LargeButton;
+import io.xol.chunkstories.gui.ng.LargeButtonIcon;
+import io.xol.chunkstories.gui.ng.ThinButton;
 import io.xol.chunkstories.gui.overlays.config.LogPolicyAsk;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
@@ -18,11 +20,17 @@ import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
 public class MainMenuOverlay extends Layer
 {
 	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	NgButton singlePlayer = new NgButton(this, 0, 0,("#{menu.singleplayer}"));
-	NgButton multiPlayer = new NgButton(this, 0, 0, ("#{menu.serverbrowser}"));
-	NgButton modsOption = new NgButton(this, 0, 0,("#{menu.mods}"));
-	NgButton optionsMenu = new NgButton(this, 0, 0,("#{menu.options}"));
-	NgButton exitGame = new NgButton(this, 0, 0, ("#{menu.quit}"));
+	/*ThinButton singlePlayer = new ThinButton(this, 0, 0,("#{menu.singleplayer}"));
+	ThinButton multiPlayer = new ThinButton(this, 0, 0, ("#{menu.serverbrowser}"));
+	ThinButton modsOption = new ThinButton(this, 0, 0,("#{menu.mods}"));
+	ThinButton optionsMenu = new ThinButton(this, 0, 0,("#{menu.options}"));
+	ThinButton exitGame = new ThinButton(this, 0, 0, ("#{menu.quit}"));*/
+	
+	LargeButtonIcon largeOnline = new LargeButtonIcon(this, "online");
+	LargeButtonIcon largeMods = new LargeButtonIcon(this, "mods");
+	
+	LargeButton largeSingleplayer = new LargeButton(this, "singleplayer");
+	LargeButton largeOptions = new LargeButton(this, "options");
 	
 	//NgButton k = new NgButton(this, 0, 0, "Singleplayer");
 
@@ -30,35 +38,35 @@ public class MainMenuOverlay extends Layer
 	{
 		super(scene, parent);
 		// Gui buttons
-		this.singlePlayer.setAction(new Runnable() {
+		this.largeSingleplayer.setAction(new Runnable() {
 			@Override
 			public void run() {
 				gameWindow.setLayer(new LevelSelectOverlay(gameWindow, MainMenuOverlay.this));
 			}
 		});
 		
-		this.multiPlayer.setAction(new Runnable() {
+		this.largeOnline.setAction(new Runnable() {
 			@Override
 			public void run() {
 				gameWindow.setLayer(new ServerSelectionOverlayNg(gameWindow, MainMenuOverlay.this, false));
 			}
 		});
 		
-		this.modsOption.setAction(new Runnable() {
+		this.largeMods.setAction(new Runnable() {
 			@Override
 			public void run() {
 				gameWindow.setLayer(new ModsSelectionOverlay(gameWindow, MainMenuOverlay.this));
 			}
 		});
 		
-		this.optionsMenu.setAction(new Runnable() {
+		this.largeOptions.setAction(new Runnable() {
 			@Override
 			public void run() {
 				gameWindow.setLayer(new OptionsOverlay(gameWindow, MainMenuOverlay.this));
 			}
 		});
 		
-		this.exitGame.setAction(new Runnable() {
+		/*this.exitGame.setAction(new Runnable() {
 			@Override
 			public void run() {
 				gameWindow.close();
@@ -69,9 +77,13 @@ public class MainMenuOverlay extends Layer
 		elements.add(multiPlayer);
 		elements.add(modsOption);
 		elements.add(optionsMenu);
-		elements.add(exitGame);
+		elements.add(exitGame);*/
 		
-		//elements.add(k);
+		elements.add(largeOnline);
+		elements.add(largeMods);
+		
+		elements.add(largeSingleplayer);
+		elements.add(largeOptions);
 	}
 
 	@Override
@@ -81,58 +93,42 @@ public class MainMenuOverlay extends Layer
 		
 		if(gameWindow.getLayer() == this && Client.getInstance().configDeprecated().getProp("log-policy", "undefined").equals("undefined"))
 			gameWindow.setLayer(new LogPolicyAsk(gameWindow, this));
-		
-		float totalLengthOfButtons = 0;
-		float spacing = -1;
-		
-		totalLengthOfButtons += singlePlayer.getWidth();
-		totalLengthOfButtons += spacing;
-		
-		totalLengthOfButtons += multiPlayer.getWidth();
-		totalLengthOfButtons += spacing;
-		
-		totalLengthOfButtons += modsOption.getWidth();
-		totalLengthOfButtons += spacing;
-		
-		totalLengthOfButtons += optionsMenu.getWidth();
-		totalLengthOfButtons += spacing;
-		
-		totalLengthOfButtons += exitGame.getWidth();
-		
-		float buttonDisplayX = renderingContext.getWindow().getWidth() / 2 - totalLengthOfButtons / 2;
-		float buttonDisplayY = 32;
-		
-		singlePlayer.setPosition(buttonDisplayX, buttonDisplayY);
-		buttonDisplayX += singlePlayer.getWidth() + spacing;
-		singlePlayer.render(renderingContext);
 
-		multiPlayer.setPosition(buttonDisplayX, buttonDisplayY);
-		buttonDisplayX += multiPlayer.getWidth() + spacing;
-		multiPlayer.render(renderingContext);
+		float spacing = 8;
+		float buttonsAreaSize = (96 * 2 + spacing) * this.getGuiScale();
+		
+		float leftButtonX = this.getWidth() / 2 - buttonsAreaSize / 2;
+		
+		float ySmall = (12) * this.getGuiScale();
+		float yBig = ySmall + (24 + spacing) * this.getGuiScale();
+		
+		largeOnline.setPosition(leftButtonX, yBig);
+		largeOnline.render(renderingContext);
 
-		modsOption.setPosition(buttonDisplayX, buttonDisplayY);
-		buttonDisplayX += modsOption.getWidth() + spacing;
-		modsOption.render(renderingContext);
+		largeSingleplayer.setPosition(leftButtonX, ySmall);
+		largeSingleplayer.render(renderingContext);
+		
+		float rightButtonX = leftButtonX + (spacing + 96) * this.getGuiScale();
+		
+		largeMods.setPosition(rightButtonX, yBig);
+		largeMods.render(renderingContext);
 
-		optionsMenu.setPosition(buttonDisplayX, buttonDisplayY);
-		buttonDisplayX += optionsMenu.getWidth() + spacing;
-		optionsMenu.render(renderingContext);
-
-		exitGame.setPosition(buttonDisplayX, buttonDisplayY);
-		buttonDisplayX += exitGame.getWidth() + spacing;
-		exitGame.render(renderingContext);
-
-		Vector4fm noticeColor = new Vector4fm(100/255f, 100/255f, 100/255f, 1);
+		largeOptions.setPosition(rightButtonX, ySmall);
+		largeOptions.render(renderingContext);
+		
+		//Notices
+		Vector4fm noticeColor = new Vector4fm(1.0f);
 		String version = "Chunk Stories Client " + VersionInfo.version;
 		renderingContext.getFontRenderer().defaultFont().getWidth(version);
-		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), 4, 0, version, 1, noticeColor);
+		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), 4, 0, version, this.getGuiScale(), noticeColor);
 	
 		String copyrightNotice = "Copyright (c) 2016-2017 XolioWare Interactive";
-		float noticeDekal = renderingContext.getFontRenderer().defaultFont().getWidth(copyrightNotice);
-		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), renderingContext.getWindow().getWidth() - noticeDekal - 4, 0, copyrightNotice, 1, noticeColor);
+		float noticeDekal = renderingContext.getFontRenderer().defaultFont().getWidth(copyrightNotice) * this.getGuiScale();
+		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), renderingContext.getWindow().getWidth() - noticeDekal - 4, 0, copyrightNotice, this.getGuiScale(), noticeColor);
 	
 	}
 
+	//TODO re-include some of that stuff
 	/*@Override
 	public boolean handleKeypress(int k)
 	{
@@ -151,13 +147,5 @@ public class MainMenuOverlay extends Layer
 			throw new RuntimeException("Epic crash");
 		}
 		return false;
-	}
-
-	@Override
-	public boolean onClick(int posx, int posy, int button)
-	{
-		if (button == 0)
-			guiHandler.handleClick(posx, posy);
-		return true;
 	}*/
 }
