@@ -322,10 +322,13 @@ public class BVHAnimation implements SkeletalAnimation
 							{
 								// if(readingFrame == 0)
 								// System.out.println("Reading "+currentBone.channels+" for bone : "+currentBone.name+" starting at index:"+index);
+								
+								//For some reason I had a overly compilcated system but it just ends up reading it sequencially it seems
+								//TODO clean that crap up and simply shit
 								for (int i = 0; i < currentBone.channels; i++)
 								{
 									currentBone.animationData[readingFrame][i] = lineData[index];
-									System.out.println("reading channel "+i+" for bone id"+currentBone.id);
+									//System.out.println("reading channel "+i+" for bone id"+currentBone.id);
 									index++;
 								}
 							}

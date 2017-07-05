@@ -1,5 +1,8 @@
 package io.xol.chunkstories.gui.overlays;
 
+import java.io.File;
+import java.io.IOException;
+
 import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
@@ -7,8 +10,10 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
+import io.xol.chunkstories.world.WorldInfoFile;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.gui.elements.Button;
@@ -44,9 +49,15 @@ public class LevelCreateOverlay extends Layer
 				if (worldGenerator != null)
 				{
 					//String generator = "flat";
-					WorldInfoImplementation info = new WorldInfoImplementation(levelName.text, ""+System.currentTimeMillis(), "", WorldInfo.WorldSize.MEDIUM, worldGenName.text);
+					String internalName = levelName.text.replaceAll("[^\\w\\s]","_");
+					WorldInfoImplementation info = new WorldInfoImplementation(internalName, levelName.text, ""+System.currentTimeMillis(), "", WorldInfo.WorldSize.MEDIUM, worldGenName.text);
 					
-					Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), info));
+					try {
+						Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), WorldInfoFile.createNewWorld(new File(GameDirectory.getGameFolderPath() + "/worlds"), info)));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		});

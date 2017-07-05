@@ -38,7 +38,6 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
-import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.sandbox.WorldLogicThread;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.entity.EntityWorldIterator;
@@ -109,25 +108,33 @@ public abstract class WorldImplementation implements World
 	public WorldImplementation(GameContext gameContext, WorldInfoImplementation info)
 	{
 		this.gameContext = gameContext;
+		this.worldInfo = info;
 		
-		worldInfo = info;
 		//Creates world generator
 		this.generator = gameContext.getContent().generators().getWorldGenerator(info.getGeneratorName()).createForWorld(this);
 
-		//this.generator.initialize(this);
-
-		//this.chunksData = new ChunksData();
+		//Create holders for the world data
 		this.regions = new HashMapWorldRegionsHolder(this);
 		this.regionSummaries = new WorldRegionSummariesHolder(this);
 		
+		//And for the citizens
 		this.entities = new EntitiesHolder(this);
-		//this.logic = Executors.newSingleThreadScheduledExecutor();
 
 		if (this instanceof WorldMaster)
 		{
-			this.folder = new File(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName());
+			if(!(worldInfo instanceof WorldInfoFile)) {
+				throw new RuntimeException("Master worlds can only run off WorldInfoFiles.");
+			}
+			
+			WorldInfoFile worldInfoFile = (WorldInfoFile)worldInfo;
+			
+			this.folder = worldInfoFile.getFile().getParentFile();//new File(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName());
 
-			this.internalData = new ConfigFile(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName() + "/internal.dat");
+			System.out.println(folder.getPath());
+			System.out.println(folder.getAbsolutePath());
+			System.out.println(folder);
+			
+			this.internalData = new ConfigFile(this.folder.getPath()+"/internal.dat");//GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName() + "/internal.dat");
 			this.internalData.load();
 
 			this.entitiesUUIDGenerator.set(internalData.getLong("entities-ids-counter", 0));

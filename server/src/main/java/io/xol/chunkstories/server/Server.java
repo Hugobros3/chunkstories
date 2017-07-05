@@ -29,6 +29,7 @@ import io.xol.chunkstories.server.net.UserConnection;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
 import io.xol.chunkstories.server.propagation.ServerModsProvider;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
+import io.xol.chunkstories.world.WorldInfoFile;
 import io.xol.chunkstories.world.WorldServer;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -127,7 +128,7 @@ public class Server implements Runnable, ServerInterface
 			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
 			if (new File(worldDir).exists())
 			{
-				world = new WorldServer(this, worldDir);
+				world = new WorldServer(this, new WorldInfoFile(new File(worldDir + "/info.txt")));
 			}
 			else
 			{

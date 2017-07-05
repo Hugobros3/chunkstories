@@ -1,6 +1,5 @@
 package io.xol.chunkstories.tools;
 
-import java.io.File;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.GameContext;
@@ -15,7 +14,7 @@ import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.WorldInfoImplementation;
+import io.xol.chunkstories.world.WorldInfoFile;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -26,9 +25,9 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 {
 	private final GameContext toolContext;
 	
-	public WorldTool(GameContext toolContext, String worldDir)
+	public WorldTool(GameContext toolContext, WorldInfoFile info)
 	{
-		super(toolContext, new WorldInfoImplementation(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
+		super(toolContext, info);//new WorldInfoImplementation(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
 
 		this.toolContext = toolContext;
 		
@@ -36,10 +35,10 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 		//ioHandler.start();
 	}
 
-	public WorldTool(GameContext toolContext, File csWorldDir)
+	/*public WorldTool(GameContext toolContext, File csWorldDir)
 	{
 		this(toolContext, csWorldDir.getAbsolutePath());
-	}
+	}*/
 	
 	public GameContext getGameContext()
 	{

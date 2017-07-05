@@ -1,11 +1,13 @@
 package io.xol.chunkstories.tools;
 
 import java.io.File;
+import java.io.IOException;
 
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.WorldInfoFile;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -14,7 +16,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 public class SummaryRegenerator
 {
 
-	public static void main(String[] arguments)
+	public static void main(String[] arguments) throws IOException
 	{
 		if (arguments.length < 2)
 		{
@@ -41,7 +43,7 @@ public class SummaryRegenerator
 			}
 
 			//TODO let implement GameContext
-			WorldImplementation world = new WorldTool(null, csWorldName);//, "", new BlankWorldGenerator(), size);
+			WorldImplementation world = new WorldTool(null, new WorldInfoFile(new File(csWorldDir + "/info.txt")));//, "", new BlankWorldGenerator(), size);
 			for (int i = 0; i < world.getSizeInChunks() / 8; i++)
 			{
 				for (int j = 0; j < world.getSizeInChunks() / 8; j++)

@@ -5,6 +5,7 @@ package io.xol.chunkstories.gui.overlays;
 // http://xol.io
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +18,8 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
-import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
+import io.xol.chunkstories.world.WorldInfoFile;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
@@ -33,7 +34,7 @@ public class LevelSelectOverlay extends Layer
 	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
 	//Button backOption = new Button(this, 0, 0, 300, "#{menu.back}");
 	LargeButtonIcon newWorldOption = new LargeButtonIcon(this, "new");
-	List<WorldInfoImplementation> localWorlds = new ArrayList<WorldInfoImplementation>();
+	List<WorldInfoFile> localWorlds = new ArrayList<WorldInfoFile>();
 	List<LocalWorldButton> worldsButtons = new ArrayList<LocalWorldButton>();
 
 	public LevelSelectOverlay(GameWindow scene, Layer parent)
@@ -68,10 +69,21 @@ public class LevelSelectOverlay extends Layer
 			File infoTxt = new File(f.getAbsolutePath() + "/info.txt");
 			if (infoTxt.exists())
 			{
-				localWorlds.add(new WorldInfoImplementation(infoTxt, f.getName()));
+				try {
+					localWorlds.add(new WorldInfoFile(infoTxt));
+					
+					/*BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(infoTxt), "UTF-8"));
+	
+					localWorlds.add(new WorldInfoImplementation(reader));
+					//localWorlds.add(new WorldInfoImplementation(infoTxt, f.getName()));
+					reader.close();*/
+				}
+				catch(IOException e) {
+					Client.getInstance().logger().error("Could not load world declaration file "+ infoTxt);
+				}
 			}
 		}
-		for (WorldInfoImplementation wi : localWorlds)
+		for (WorldInfoFile wi : localWorlds)
 		{
 			LocalWorldButton worldButton = new LocalWorldButton(0, 0, wi);
 			worldButton.setAction(new Runnable() {
@@ -145,9 +157,9 @@ public class LevelSelectOverlay extends Layer
 	
 	public class LocalWorldButton extends Button
 	{
-		public WorldInfoImplementation info;
+		public WorldInfoFile info;
 
-		public LocalWorldButton(int x, int y, WorldInfoImplementation info)
+		public LocalWorldButton(int x, int y, WorldInfoFile info)
 		{
 			super(LevelSelectOverlay.this, x, y, 0, "");
 			this.height = 64 + 8;

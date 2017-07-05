@@ -1,7 +1,9 @@
 package io.xol.chunkstories.client.net.packets;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.net.PacketSender;
@@ -21,7 +23,7 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
-		short length = in.readShort();
+		/*short length = in.readShort();
 
 		byte[] bytes = new byte[length];
 
@@ -29,9 +31,13 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 
 		char[] chars2 = new char[length / 2];
 		for (int i = 0; i < chars2.length; i++)
-			chars2[i] = (char) ((bytes[i * 2] << 8) + (bytes[i * 2 + 1] & 0xFF));
-
-		info = new WorldInfoImplementation(new String(chars2), "");
+			chars2[i] = (char) ((bytes[i * 2] << 8) + (bytes[i * 2 + 1] & 0xFF));*/
+		
+		//info = new WorldInfoImplementation(new String(chars2), "");
+		
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+		
+		info = new WorldInfoImplementation(reader);
 		
 		if (processor instanceof ClientPacketsProcessor)
 		{

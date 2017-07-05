@@ -70,8 +70,6 @@ public class IOTasksMultiplayerServer extends IOTasks
 				}
 				else
 				{
-					System.out.println("holder not loaded yet "+holder);
-					
 					return false;
 				}
 			}

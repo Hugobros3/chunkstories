@@ -3,112 +3,122 @@ package io.xol.chunkstories.world;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Random;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.world.WorldInfo;
-import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
+import io.xol.chunkstories.materials.GenericConfigurable;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class WorldInfoImplementation implements WorldInfo
+public class WorldInfoImplementation extends GenericConfigurable implements WorldInfo
 {
-	private String internalName = "";
+	private final String internalName;
+	
 	private String name;
 	private String seed;
 	private String description = "";
 	private WorldInfo.WorldSize size;
 	private String generatorName;
+
+	//To guess a new seed in case we couldn't
+	static Random random = new Random();
 	
-	public WorldInfoImplementation(String name, String seed, String description, WorldInfo.WorldSize size, String generator)
+	/** Either you create one of those from scratch */
+	public WorldInfoImplementation(String internalName, String name, String seed, String description, WorldInfo.WorldSize size, String generator)
 	{
-		this.internalName = name;
-		this.name = name;
+		super();
+		
+		this.internalName = internalName;
+		if(this.internalName == null)
+			throw new UnsupportedOperationException("Internal name can't be null");
+		
+		this.setProperty("internalName", internalName);
+		
+		this.setName(name);
 		this.setSeed(seed);
 		this.setDescription(description);
 		this.setSize(size);
 		this.setGeneratorName(generator);
 	}
-
-	public WorldInfoImplementation(String fileContents, String internalName)
-	{
-		this.internalName = internalName;
-		for (String line : fileContents.split("\n"))
-			readLine(line);
+	
+	/** Or you load'em from a stream of bytes */
+	public WorldInfoImplementation(BufferedReader reader) throws IOException {
+		super(reader);
+		
+		this.internalName = this.resolveProperty("internalName", null);
+		if(this.internalName == null)
+			throw new UnsupportedOperationException("Internal name can't be null");
+		
+		this.setName(this.resolveProperty("name", internalName));
+		this.setSeed(this.resolveProperty("seed", ""+random.nextLong()));
+		this.setDescription(this.resolveProperty("description", "A world with no description"));
+		
+		String sizeName = this.resolveProperty("size", null);
+		if(sizeName == null)
+			throw new UnsupportedOperationException("This world doesn't specify a file size");
+		
+		WorldSize size = WorldSize.getWorldSize(sizeName);
+		if(size == null)
+			throw new UnsupportedOperationException("This world specifies an unrecognised file size: "+sizeName);
+		
+		this.setSize(size);
+		this.setGeneratorName(this.resolveProperty("worldGenerator", this.resolveProperty("worldgen", "blank")));
+		
 	}
-
-	public WorldInfoImplementation(File file, String internalName)
+	
+	/*public WorldInfoImplementation(File file) throws IOException
 	{
+		super();
+		
 		try
 		{
-			this.internalName = internalName;
-
-			//FileReader fileReader = new FileReader(file);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-			String line = "";
-			while ((line = reader.readLine()) != null)
-			{
-				readLine(line);
-			}
+			super.load(reader);
 			reader.close();
-			
-			//folder = file.getParentFile();
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
-	}
+	}*/
 
-	void readLine(String line)
+	/*public WorldInfoImplementation(String internalName, File file)
 	{
-		if (!line.startsWith("#"))
+		this(internalName);
+		
+		try
 		{
-			if(!line.contains(":"))
-				return;
-			String[] splitted = line.split(": ");
-			String parameterName = splitted[0];
-			String parameterValue = splitted[1];
-			switch (parameterName)
-			{
-			case "name":
-				setName(parameterValue);
-				break;
-			case "seed":
-				setSeed(parameterValue);
-				break;
-			case "worldgen":
-				setGeneratorName(parameterValue);
-				break;
-			case "size":
-				setSize(WorldInfo.WorldSize.getWorldSize(parameterValue));
-				break;
-			case "description":
-				setDescription(parameterValue);
-				break;
-			default:
-				break;
-			}
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			super.load(reader);
+			reader.close();
 		}
-	}
-
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}*/
+	
 	public void save(File file)
 	{
 		try
 		{
 			if(!file.getParentFile().exists())
 				file.getParentFile().mkdirs();
-			Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
-			for (String line : saveText())
-				out.write(line + "\n");
-			out.close();
+			
+			FileOutputStream output = new FileOutputStream(file);
+			
+			saveInStream(output);
+			
+			output.close();
 		}
 		catch (IOException e)
 		{
@@ -116,34 +126,33 @@ public class WorldInfoImplementation implements WorldInfo
 		}
 	}
 
-	public String[] saveText()
-	{
-		return new String[] { "name: " + getName(), "seed: " + getSeed(), "worldgen: " + getGeneratorName(), "size: " + getSize().name() };
+	public void saveInStream(OutputStream output) throws IOException {
+		Writer out = new BufferedWriter(new OutputStreamWriter(output, "UTF-8"));
+		
+		for(Entry<String, String> k : properties.entrySet()) {
+			out.write(k.getKey()+": "+k.getValue().replace("\n", "\\n") + "\n");
+		}
+		
+		out.flush();
 	}
 
 	/**
 	 * Will send a packet containing this object information to the user
 	 * @param sender
 	 */
-	public void sendInfo(PacketDestinator user)
+	/*public void sendInfo(PacketDestinator user)
 	{
 		PacketSendWorldInfo packet = new PacketSendWorldInfo();
 		packet.info = this;
 		user.pushPacket(packet);
-	}
+	}*/
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInfo#getInternalName()
-	 */
 	@Override
 	public String getInternalName()
 	{
 		return internalName;
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInfo#getName()
-	 */
 	@Override
 	public String getName()
 	{
@@ -153,12 +162,10 @@ public class WorldInfoImplementation implements WorldInfo
 	public void setName(String name)
 	{
 		this.name = name;
+		this.setProperty("name", name);
 		//this.internalName = name.replaceAll("[^\\w\\s]","_");
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInfo#getSeed()
-	 */
 	@Override
 	public String getSeed()
 	{
@@ -168,11 +175,9 @@ public class WorldInfoImplementation implements WorldInfo
 	public void setSeed(String seed)
 	{
 		this.seed = seed;
+		this.setProperty("seed", seed);
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInfo#getDescription()
-	 */
 	@Override
 	public String getDescription()
 	{
@@ -182,11 +187,9 @@ public class WorldInfoImplementation implements WorldInfo
 	public void setDescription(String description)
 	{
 		this.description = description;
+		this.setProperty("description", description);
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInfo#getSize()
-	 */
 	@Override
 	public WorldInfo.WorldSize getSize()
 	{
@@ -196,11 +199,9 @@ public class WorldInfoImplementation implements WorldInfo
 	public void setSize(WorldInfo.WorldSize size)
 	{
 		this.size = size;
+		this.setProperty("size", this.size.name());
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.WorldInfo#getGeneratorName()
-	 */
 	@Override
 	public String getGeneratorName()
 	{
@@ -210,5 +211,10 @@ public class WorldInfoImplementation implements WorldInfo
 	public void setGeneratorName(String generatorName)
 	{
 		this.generatorName = generatorName;
+		this.setProperty("worldGenerator", generatorName);
+	}
+
+	protected Map<String, String> getProperties() {
+		return properties;
 	}
 }

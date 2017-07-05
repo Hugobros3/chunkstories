@@ -5,8 +5,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import io.xol.chunkstories.VersionInfo;
+import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.engine.misc.ConnectionStep;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
@@ -41,33 +43,76 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 		this.status = new ConnectionStep("Asking server required mods...");
 		String modsString = connection.obtainModsString();
 		Set<String> requiredMd5s = new HashSet<String>();
-		Set<String> toDownload = new HashSet<String>();
+		//Set<String> toDownload = new HashSet<String>();
 		
 		for(String requiredMod : modsString.split(";"))
 		{
-			if(requiredMod.startsWith("md5:"))
-			{
-				requiredMod = requiredMod.substring(4, requiredMod.length());
-				String md5Required = requiredMod.contains(":") ? requiredMod.split(":")[0] : requiredMod;
-				System.out.println("Mod with md5="+md5Required+" required.");
-				
-				requiredMd5s.add(md5Required);
-				
-				File cached = new File(GameDirectory.getGameFolderPath()+"/servermods/"+md5Required+".zip");
-				if(!cached.exists())
-					//Gib me
-					toDownload.add(md5Required);
+			//if(requiredMod.startsWith("md5:"))
+			//requiredMod = requiredMod.substring(4, requiredMod.length());
+			
+			if(!requiredMod.contains(":"))
+				continue;
+			
+			String[] properties = requiredMod.split(":");
+			if(properties.length < 3)
+				continue;
+			
+			String modInternalName = properties[0];
+			String modMd5Hash = properties[1];
+			long modSizeInBytes = Long.parseLong(properties[2]);
+			
+			//String md5Required = requiredMod.contains(":") ? requiredMod.split(":")[0] : requiredMod;
+			Client.getInstance().logger().info("Server asks for mod "+modInternalName +" ("+modSizeInBytes+" bytes), md5="+modMd5Hash);
+			
+			requiredMd5s.add(modMd5Hash);
+			
+			File cached = new File(GameDirectory.getGameFolderPath()+"/servermods/"+modMd5Hash+".zip");
+			if(!cached.exists()) {
+				//Sequentially download all the mods from the server
+				status = connection.obtainModFile(modMd5Hash, cached);//new File(GameDirectory.getGameFolderPath()+"/servermods/"+modMd5Hash+".zip"));
+				status.waitForEnd();
 			}
-			//TODO handle ? or define it in spec
+			
+			//Check their size and signature
+			if(cached.length() != modSizeInBytes) {
+				Client.getInstance().logger().info("Invalid filesize for downloaded mod "+modInternalName + " (hash: " + modMd5Hash + ")" + " expected filesize = " + modSizeInBytes + " != actual filesize = "+cached.length());
+				cached.delete(); //Delete suspicious file
+				status = new ConnectionStep("Error loading mod " + modInternalName + " check error log.");
+				connection.close();
+			}
+
+			//Test if the mod loads
+			ModZip testHash = null;
+			try {
+				testHash = new ModZip(cached);
+			} catch (ModLoadFailureException e) {
+				e.printStackTrace();
+				
+				Client.getInstance().logger().info("Could not load downloaded mod "+modInternalName + " (hash: " + modMd5Hash + "), see stack trace");
+				cached.delete(); //Delete suspicious file
+				status = new ConnectionStep("Error loading mod " + modInternalName + " check error log.");
+				connection.close();
+			}
+			
+			//Test the md5 hash wasn't tampered with
+			String actualMd5Hash = testHash.getMD5Hash();
+			if(!actualMd5Hash.equals(modMd5Hash)) {
+				Client.getInstance().logger().info("Invalid md5 hash for mod "+modInternalName + " expected md5 hash = " + modMd5Hash + " != actual md5 hash = "+actualMd5Hash);
+				cached.delete(); //Delete suspicious file
+				status = new ConnectionStep("Error loading mod " + modInternalName + " check error log.");
+				connection.close();
+			}
 			
 		}
 		//if not check we have them downloaded
-		for(String md5Required : toDownload)
+		
+		/*for(String md5Required : toDownload)
 		{
 			//status = "Downloading mod "+md5Required;
 			status = connection.obtainModFile(md5Required, new File(GameDirectory.getGameFolderPath()+"/servermods/"+md5Required+".zip"));
 			status.waitForEnd();
-		}
+		}*/
+		
 		//Now enable all this
 		String[] requiredMods = new String[requiredMd5s.size()];
 		int i = 0;

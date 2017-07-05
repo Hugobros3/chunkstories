@@ -49,16 +49,18 @@ public class ServerModsProvider
 		for (Mod mod : server.getContent().modsManager().getCurrentlyLoadedMods())
 		{
 			String hash = mod.getMD5Hash();
-			//System.out.println("Mod " + mod + " md5 = " + hash);
+			long size;
+			
 			server.logger().info("Building distribuable zipfile for mod " + mod.getModInfo().getName());
 			if (mod instanceof ModZip)
 			{
-				System.out.println("Oh wait it already exists :D");
+				server.logger().info("Nevermind, that mod is already in a .zip format, moving on");
 				redistribuables.put(hash, ((ModZip) mod).getZipFileLocation());
+				size = ((ModZip)mod).getZipFileLocation().length();
 			}
 			else if (mod instanceof ModFolder)
 			{
-				System.out.println("Making it from scratch.");
+				server.logger().info("Making it from scratch.");
 				File wipZipfile = new File(cacheFolder.getAbsolutePath() + "/" + hash + ".zip");
 
 				try
@@ -91,11 +93,16 @@ public class ServerModsProvider
 				}
 				
 				redistribuables.put(hash, wipZipfile);
+				size = wipZipfile.length();
 			}
+			else
+				throw new UnsupportedOperationException("Mods can't be anything but a .zip or a folder");
 
 			//Also add it to the string
-			modsString += "md5:" + hash + ";";
+			modsString += mod.getModInfo().getInternalName() + ":" + hash + ":" + size + ";";
 		}
+		
+		//Remove the last ;
 		if (modsString.length() > 1)
 			modsString = modsString.substring(0, modsString.length() - 1);
 	}

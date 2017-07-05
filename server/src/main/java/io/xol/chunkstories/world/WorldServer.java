@@ -1,6 +1,5 @@
 package io.xol.chunkstories.world;
 
-import java.io.File;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.Location;
@@ -15,13 +14,13 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.WorldNetworked;
 import io.xol.chunkstories.net.PacketsProcessorActual;
 import io.xol.chunkstories.net.PacketsProcessorCommon.PendingSynchPacket;
+import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.server.Server;
 import io.xol.chunkstories.server.net.UserConnection;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerServer;
 import io.xol.engine.sound.sources.VirtualSoundManager;
 
@@ -37,9 +36,9 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	private VirtualServerParticlesManager virtualServerParticlesManager;
 	private VirtualServerDecalsManager virtualServerDecalsManager;
 
-	public WorldServer(Server server, String worldDir)
+	public WorldServer(Server server, WorldInfoFile worldInfo)
 	{
-		super(server, new WorldInfoImplementation(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
+		super(server, worldInfo); //new WorldInfoImplementation(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
 
 		this.server = server;
 		this.virtualServerSoundManager = new VirtualSoundManager(this);
@@ -93,8 +92,12 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		if (message.equals("info"))
 		{
 			//Sends the construction info for the world, and then the player entity
-			worldInfo.sendInfo(sender);
+			//worldInfo.sendInfo(sender);
 
+			PacketSendWorldInfo packet = new PacketSendWorldInfo(worldInfo);
+			sender.pushPacket(packet);
+			
+			
 			//TODO only spawn the player when he asks to
 			spawnPlayer(sender.getProfile());
 		}

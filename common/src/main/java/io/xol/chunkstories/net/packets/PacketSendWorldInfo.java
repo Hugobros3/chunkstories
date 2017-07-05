@@ -17,13 +17,22 @@ import java.io.IOException;
 public class PacketSendWorldInfo extends Packet
 {
 	public WorldInfoImplementation info;
+	
+	public PacketSendWorldInfo() {
+		
+	}
+	
+	public PacketSendWorldInfo(WorldInfoImplementation info) {
+		this.info = info;
+	}
 
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
-		String tg = "";
+		/*String tg = "";
 		for (String line : info.saveText())
 			tg += line + "\n";
+		
 		char[] data = tg.toCharArray();
 		//Wow such computations
 		short length = (short) (data.length * 2);
@@ -37,7 +46,16 @@ public class PacketSendWorldInfo extends Packet
 			bytes[i * 2 + 2] = (byte) (data[i] >> 8);
 			bytes[i * 2 + 3] = (byte) data[i];
 		}
-		out.write(bytes);
+		out.write(bytes);*/
+		
+		info.saveInStream(out);
+		
+		//Append an 'end' tag so the WorldInfoImplementation reader can figure out it's done reading that
+		
+		out.write("end\n".getBytes("UTF-8"));
+		//out.writeUTF("end\n");
+		
+		out.flush();
 	}
 
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException

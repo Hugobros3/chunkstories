@@ -8,18 +8,20 @@ import java.io.InputStreamReader;
 import io.xol.chunkstories.api.exceptions.content.mods.MalformedModTxtException;
 import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.mods.ModInfo;
+import io.xol.chunkstories.materials.GenericConfigurable;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ModInfoImplementation implements ModInfo
+public class ModInfoImplementation extends GenericConfigurable implements ModInfo
 {
 	private Mod mod;
 	
+	private final String internalName;
 	private String name;
-	private String version = "undefined";
-	private String description = "No description given";
+	private String version;// = "undefined";
+	private String description;// = "No description given";
 	
 	public Mod getMod()
 	{
@@ -46,11 +48,29 @@ public class ModInfoImplementation implements ModInfo
 	
 	public ModInfoImplementation(Mod mod, InputStream inputStream) throws MalformedModTxtException
 	{
+		super();
+		
 		if(inputStream == null)
 			throw new MalformedModTxtException(this);
 		
+		try {
+			load(new BufferedReader(new InputStreamReader(inputStream)));
+		}
+		catch(IOException e) {
+			throw new MalformedModTxtException(this);
+		}
+		
+		this.internalName = this.resolveProperty("internalName", null);
+		this.name = this.resolveProperty("name", "<internalName");
+		this.version = this.resolveProperty("version", "1.0");
+		this.description = this.resolveProperty("description", "Please provide a description in your mod.txt");
+
+		//Requires a name to be set, at least
+		if(this.internalName == null)
+			throw new MalformedModTxtException(this);
+		
 		//Try to read the ressource
-		try
+		/*try
 		{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
 			
@@ -76,12 +96,13 @@ public class ModInfoImplementation implements ModInfo
 		catch (IOException e)
 		{
 			throw new MalformedModTxtException(this);
-		}
+		}*/
 		
-		//Requires a name to be set, at least
-		//TODO change it, require more
-		if(this.name == null)
-			throw new MalformedModTxtException(this);
 		
+	}
+
+	@Override
+	public String getInternalName() {
+		return internalName;
 	}
 }

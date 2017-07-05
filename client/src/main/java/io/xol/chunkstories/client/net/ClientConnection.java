@@ -331,7 +331,7 @@ public class ClientConnection extends Thread implements RemoteServer
 			}
 		};
 		
-		System.out.println("Asking for "+md5Required);
+		Client.getInstance().logger().info("Asking for "+md5Required);
 		this.sendTextMessage("send-mod/md5:"+md5Required);
 		this.flush();
 		
