@@ -3,20 +3,8 @@ package io.xol.chunkstories.anvil;
 import io.xol.chunkstories.anvil.nbt.NBTByte;
 import io.xol.chunkstories.anvil.nbt.NBTByteArray;
 import io.xol.chunkstories.anvil.nbt.NBTCompound;
-import io.xol.chunkstories.anvil.nbt.NBTInt;
-import io.xol.chunkstories.anvil.nbt.NBTList;
-import io.xol.chunkstories.anvil.nbt.NBTString;
 import io.xol.chunkstories.anvil.nbt.NBTag;
-import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.world.WorldImplementation;
-
 import java.io.ByteArrayInputStream;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -73,6 +61,10 @@ public class MinecraftChunk
 			}
 		}
 	}
+	
+	public NBTCompound getRootTag() {
+		return root;
+	}
 
 	//TODO This has nothing to do in the lib !
 	/*
@@ -127,52 +119,6 @@ public class MinecraftChunk
 			}
 		}
 	}*/
-
-	private JSONParser parser = new JSONParser();
-	
-	private String parseSignData(String data)
-	{
-		if(data.endsWith("null"))
-			return "";
-		if(data.startsWith("\""))
-			return data.substring(1, data.length() - 1);
-		if(data.startsWith("{"))
-		{
-			JSONObject jSonObject;
-			try
-			{
-				//System.out.println(":"+data);
-				jSonObject = (JSONObject) parser.parse(data);
-				
-				Object extraObject = jSonObject.get("extra");
-				
-				String extra = "";
-				if(extraObject != null)
-				{
-					Object arrayObject = (((JSONArray)extraObject).get(0));
-					if(arrayObject instanceof String)
-						extra = (String) arrayObject;
-					else if(arrayObject instanceof JSONObject)
-					{
-						extra = (String) ((JSONObject) (((JSONArray)extraObject).get(0))).get("text");
-					}
-				}
-				
-				String text = (String) jSonObject.get("text");
-				//Get whatever one is good
-				
-				//System.out.println("extra : "+extra);
-				//System.out.println("text : "+text);
-				return text.length() > extra.length() ? text : extra;
-			}
-			catch (ParseException e)
-			{
-				System.out.println("Can't parse sign "+e.getMessage());
-				e.printStackTrace();
-			}
-		}
-		return data;
-	}
 
 	public int getBlockID(int x, int y, int z)
 	{

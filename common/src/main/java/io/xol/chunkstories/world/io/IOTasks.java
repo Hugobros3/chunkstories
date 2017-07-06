@@ -317,7 +317,7 @@ public class IOTasks extends Thread
 					return false;
 				}*/
 				//Generate this crap !
-				region.generateAll();
+				//region.generateAll();
 				//Pre bake phase 1 lightning
 			}
 

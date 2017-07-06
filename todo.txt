@@ -1,11 +1,8 @@
 Bugs TBF:
 
 + No light prepass on loaded chunks
-+ Some overlays lack bg draw
 + No AO on blocks (sorta fixed)
 + Slow chunks rebuild time (Multithreaded now)
-+ cubemap missing
-+ Login button offset
 + Gui scale/Server window
 + Copy/Paste/Line-delete general
 + CRAZY gc trashing (present since rendering rework)
@@ -16,10 +13,16 @@ Bugs TBF:
 
 Todo:
 
-Bring back the world converter ( possibly MT this time ? )
+.entities
+.world (!)
+Bring back the world converter ( possibly MT this time ? )µ
+Release RC1
+Give guns recoil
+
+LT:
+
+
 
 IRL:
 
-Send g1840
-Send SSD RMA ok
-Buy fans ok
+Send SSD RMA
