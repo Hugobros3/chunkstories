@@ -62,7 +62,13 @@ public abstract class PacketsProcessorCommon implements PacketsProcessorActual
 				secondByte = secondByte & 0xFF;
 				packetType = secondByte | (firstByte & 0x7F) << 8;
 			}
-			Packet packet = ((PacketTypeDeclared)store.getPacketTypeById(packetType)).createNew(this instanceof ClientPacketsProcessor);
+			
+			PacketTypeDeclared ptd = ((PacketTypeDeclared)store.getPacketTypeById(packetType));
+			if(ptd == null) {
+				throw new UnknowPacketException(packetType);
+			}
+			
+			Packet packet = ptd.createNew(this instanceof ClientPacketsProcessor);
 
 			//When we get a packetSynch
 			if (packet instanceof PacketSynch)

@@ -1,6 +1,7 @@
 package io.xol.chunkstories.client.net.packets;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,20 +24,15 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
 	{
-		/*short length = in.readShort();
-
-		byte[] bytes = new byte[length];
-
-		in.read(bytes, 0, length);
-
-		char[] chars2 = new char[length / 2];
-		for (int i = 0; i < chars2.length; i++)
-			chars2[i] = (char) ((bytes[i * 2] << 8) + (bytes[i * 2 + 1] & 0xFF));*/
+		//This is messy slow and all, but I rather this than dealing with the insane bullshit of UTF-8/16 wizzardry required to bypass the convience of a BufferedReader
+		//And I can be Unicode-correct so fancy pants bloggers don't get mad at me
+		int size = in.readInt();
+		byte[] vaChier = new byte[size];
+		in.readFully(vaChier);
 		
-		//info = new WorldInfoImplementation(new String(chars2), "");
+		ByteArrayInputStream bais = new ByteArrayInputStream(vaChier);
 		
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-		
+		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, "UTF-8"));
 		info = new WorldInfoImplementation(reader);
 		
 		if (processor instanceof ClientPacketsProcessor)

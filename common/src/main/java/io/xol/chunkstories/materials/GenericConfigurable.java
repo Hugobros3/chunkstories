@@ -18,10 +18,13 @@ public class GenericConfigurable {
 		
 	}
 	
-	public GenericConfigurable(BufferedReader reader) throws IOException
-	{
+	public GenericConfigurable(BufferedReader reader) throws IOException {
 		load(reader);
 	}
+	
+	/*public GenericConfigurable(InputStream in) throws IOException {
+		load(in);
+	}*/
 	
 	protected void load(BufferedReader reader) throws IOException {
 		String line;

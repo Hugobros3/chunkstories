@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketsProcessor;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -29,33 +30,25 @@ public class PacketSendWorldInfo extends Packet
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
-		/*String tg = "";
-		for (String line : info.saveText())
-			tg += line + "\n";
+		//This is moronic
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		info.saveInStream(baos);
 		
-		char[] data = tg.toCharArray();
-		//Wow such computations
-		short length = (short) (data.length * 2);
-		byte[] bytes = new byte[length + 2];
-		//Write length in first 2 bytes
-		bytes[0] = (byte) (length >> 8);
-		bytes[1] = (byte) length;
-		//Then the data
-		for (int i = 0; i < data.length; i++)
-		{
-			bytes[i * 2 + 2] = (byte) (data[i] >> 8);
-			bytes[i * 2 + 3] = (byte) data[i];
-		}
-		out.write(bytes);*/
+		//So is this
+		baos.flush();
+		byte[] fuckthis = baos.toByteArray();
 		
-		info.saveInStream(out);
+		//And all of this
+		out.writeInt(fuckthis.length);
+		out.write(fuckthis);
 		
-		//Append an 'end' tag so the WorldInfoImplementation reader can figure out it's done reading that
-		
-		out.write("end\n".getBytes("UTF-8"));
-		//out.writeUTF("end\n");
-		
+		//I especially hated this part
 		out.flush();
+		
+		//Wasted half an afternoon trying to figure out this mess, moral of the story is to NEVER bother hacking arround with utf-8 and ALWAYS send the length before, because fuck
+		//you that's why.
+		
+		//System.out.println("Sent "+fuckthis.length +" bytes of world data to "+destinator);
 	}
 
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException

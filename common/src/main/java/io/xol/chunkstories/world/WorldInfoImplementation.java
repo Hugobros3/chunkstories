@@ -75,38 +75,6 @@ public class WorldInfoImplementation extends GenericConfigurable implements Worl
 		
 	}
 	
-	/*public WorldInfoImplementation(File file) throws IOException
-	{
-		super();
-		
-		try
-		{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-			super.load(reader);
-			reader.close();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}*/
-
-	/*public WorldInfoImplementation(String internalName, File file)
-	{
-		this(internalName);
-		
-		try
-		{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-			super.load(reader);
-			reader.close();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}*/
-	
 	public void save(File file)
 	{
 		try
@@ -135,17 +103,6 @@ public class WorldInfoImplementation extends GenericConfigurable implements Worl
 		
 		out.flush();
 	}
-
-	/**
-	 * Will send a packet containing this object information to the user
-	 * @param sender
-	 */
-	/*public void sendInfo(PacketDestinator user)
-	{
-		PacketSendWorldInfo packet = new PacketSendWorldInfo();
-		packet.info = this;
-		user.pushPacket(packet);
-	}*/
 	
 	@Override
 	public String getInternalName()

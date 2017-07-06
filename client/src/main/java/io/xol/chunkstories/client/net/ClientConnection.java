@@ -110,9 +110,6 @@ public class ClientConnection extends Thread implements RemoteServer
 			try
 			{
 				Packet packet = packetsProcessor.getPacket(in);
-				String n = Client.getInstance().getContent().packets().getPacketType(packet).getName();
-				if(!n.equals("time"))
-					System.out.println(">>"+n);
 				packet.process(this, in, packetsProcessor);
 			}
 			catch (Exception e)
