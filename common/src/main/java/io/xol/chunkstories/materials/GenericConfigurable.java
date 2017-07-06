@@ -27,7 +27,6 @@ public class GenericConfigurable {
 		String line;
 		while ((line = reader.readLine()) != null)
 		{
-			System.out.println("!!!"+line);
 			line = line.replace("\t", "");
 			if (line.startsWith("#"))
 			{

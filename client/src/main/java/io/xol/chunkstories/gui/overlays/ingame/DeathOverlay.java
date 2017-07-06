@@ -9,7 +9,6 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.gui.elements.Button;
@@ -19,8 +18,7 @@ import io.xol.engine.gui.elements.Button;
 //http://xol.io
 
 public class DeathOverlay extends Layer
-{
-	//GuiElementsHandler guiHandler = new GuiElementsHandler();
+{;
 	
 	Button respawnButton = new Button(this, 0, 0, 320, "#{ingame.respawn}");
 	Button exitButton = new Button(this, 0, 0, 320, "#{ingame.exit}");
@@ -58,23 +56,25 @@ public class DeathOverlay extends Layer
 	}
 
 	@Override
-	public void render(RenderingInterface renderingContext)
+	public void render(RenderingInterface renderer)
 	{
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
+		parentLayer.render(renderer);
+		
+		renderer.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderer.getWindow().getWidth(), renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
 		
 		String color = "";
 		color += HexTools.intToHex((int) (Math.random() * 255));
 		color += HexTools.intToHex((int) (Math.random() * 255));
 		color += HexTools.intToHex((int) (Math.random() * 255));
 		
-		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(96, "YOU DIEDED", BitmapFont.SMALLFONTS) / 2, renderingContext.getWindow().getHeight() / 2 + 48 * 3, 0, 96, "#FF0000YOU DIEDED", BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(48, "git gud scrub", BitmapFont.SMALLFONTS) / 2, renderingContext.getWindow().getHeight() / 2 + 36 * 3, 0, 48, "#"+color+"git gud scrub", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(renderer.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(96, "YOU DIEDED", BitmapFont.SMALLFONTS) / 2, renderer.getWindow().getHeight() / 2 + 48 * 3, 0, 96, "#FF0000YOU DIEDED", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(renderer.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(48, "git gud scrub", BitmapFont.SMALLFONTS) / 2, renderer.getWindow().getHeight() / 2 + 36 * 3, 0, 48, "#"+color+"git gud scrub", BitmapFont.SMALLFONTS);
 
-		respawnButton.setPosition(renderingContext.getWindow().getWidth()/2, renderingContext.getWindow().getHeight()/2 + 48);
-		exitButton.setPosition(renderingContext.getWindow().getWidth()/2, renderingContext.getWindow().getHeight()/2 - 24);
+		respawnButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 + 48);
+		exitButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 - 24);
 		
-		respawnButton.render(renderingContext);
-		exitButton.render(renderingContext);
+		respawnButton.render(renderer);
+		exitButton.render(renderer);
 		
 		//When the new entity arrives
 		if(Client.getInstance().getPlayer().getControlledEntity() != null)

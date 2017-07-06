@@ -27,6 +27,8 @@ item 128 weapon_ak47
 	fireSound: sounds/weapons/ak47/shootNear.ogg
 	modelObj: ./models/ak47.hq.obj
 	modelDiffuse: ./models/ak47.hq.png
+	shootingAnimationName: ./animations/human/human_shoot_assault_rifle.bvh
+	shootingAnimationDuration: 100
 end
 
 item 129 mag_ak47

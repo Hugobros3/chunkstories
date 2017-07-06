@@ -61,21 +61,21 @@ public class PauseOverlay extends Layer
 	}
 
 	@Override
-	public void render(RenderingInterface renderingContext)
+	public void render(RenderingInterface renderer)
 	{
-		parentLayer.render(renderingContext);
+		parentLayer.render(renderer);
 		
-		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(48, "#{ingame.pause}", BitmapFont.SMALLFONTS) / 2, renderingContext.getWindow().getHeight() / 2 + 48 * 3, 0, 48, "In-game menu", BitmapFont.SMALLFONTS);
+		FontRenderer2.drawTextUsingSpecificFont(renderer.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(48, "#{ingame.pause}", BitmapFont.SMALLFONTS) / 2, renderer.getWindow().getHeight() / 2 + 48 * 3, 0, 48, "In-game menu", BitmapFont.SMALLFONTS);
 
-		resumeButton.setPosition(renderingContext.getWindow().getWidth()/2, renderingContext.getWindow().getHeight()/2 + 48 * 2);
-		optionsButton.setPosition(renderingContext.getWindow().getWidth()/2, renderingContext.getWindow().getHeight()/2 + 48 * 1);
+		resumeButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 + 48 * 2);
+		optionsButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 + 48 * 1);
 		//modsButton.setPosition(renderingContext.getWindow().getWidth()/2, renderingContext.getWindow().getHeight()/2 + 48 * 0);
-		exitButton.setPosition(renderingContext.getWindow().getWidth()/2, renderingContext.getWindow().getHeight()/2 - 48);
+		exitButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 - 48);
 		
-		resumeButton.render(renderingContext);
-		optionsButton.render(renderingContext);
+		resumeButton.render(renderer);
+		optionsButton.render(renderer);
 		//modsButton.draw();
-		exitButton.render(renderingContext);
+		exitButton.render(renderer);
 	}
 	
 	@Override

@@ -8,4 +8,8 @@ package io.xol.chunkstories.api.item.interfaces;
 public interface ItemCustomHoldingAnimation
 {
 	public String getCustomAnimationName();
+	
+	public default double transformAnimationTime(double originalTime) {
+		return originalTime;
+	}
 }

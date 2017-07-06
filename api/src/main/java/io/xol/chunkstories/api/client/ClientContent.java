@@ -15,6 +15,8 @@ import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 
 public interface ClientContent extends Content
 {
+	public ClientInterface getClient();
+	
 	public ClientMeshLibrary meshes();
 	
 	public TexturesLibrary textures();

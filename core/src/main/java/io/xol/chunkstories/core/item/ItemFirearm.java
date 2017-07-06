@@ -57,11 +57,15 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 	public final String scopeTexture;
 	
 	public final String holdingAnimationName;
+	public final String shootingAnimationName;
+	public final long shootingAnimationDuration;
 
 	private boolean wasTriggerPressedLastTick = false;
 	private long lastShot = 0L;
 
 	private long cooldownEnd = 0L;
+	private long animationStart = 0L;
+	private long animationCooldownEnd = 0L;
 
 	private boolean isScoped = false;
 
@@ -92,6 +96,9 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 		scopeTexture = type.resolveProperty("scopeTexture", "./textures/gui/scope.png");
 		
 		holdingAnimationName = type.resolveProperty("holdingAnimationName", "./animations/human/holding-rifle.bvh");
+		shootingAnimationName = type.resolveProperty("shootingAnimationName", "./animations/human/human_shoot_pistol.bvh");
+		
+		shootingAnimationDuration = Long.parseLong(type.resolveProperty("shootingAnimationDuration", "200"));
 	}
 	
 	/** Some weapons have fancy renderers */
@@ -245,6 +252,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 							(float) soundRange);
 				}
 				
+				playAnimation();
 
 				//Raytrace shot
 				Vector3dm eyeLocation = new Vector3dm(shooter.getLocation());
@@ -545,9 +553,33 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 		return scopeSlow;
 	}
 
+	public void playAnimation() {
+		this.animationStart = System.currentTimeMillis();
+		this.animationCooldownEnd = this.animationStart + this.shootingAnimationDuration;
+	}
+
 	@Override
 	public String getCustomAnimationName()
 	{
+		if(this.animationCooldownEnd > System.currentTimeMillis())
+			return this.shootingAnimationName;
 		return holdingAnimationName;
+	}
+
+	@Override
+	public double transformAnimationTime(double originalTime) {
+		if(this.animationCooldownEnd > System.currentTimeMillis()) {
+			long delta = System.currentTimeMillis() - this.animationStart;
+			return delta;
+			/*
+			double deltaD = delta;
+			double durationD = 200;//this.shootingAnimationDuration;
+			double time = deltaD / durationD;
+			time *= 200;
+			//System.out.println(time);
+			return time;*/
+		}
+		
+		return originalTime;
 	}
 }

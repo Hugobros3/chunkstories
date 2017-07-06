@@ -60,3 +60,10 @@ particle fire_light 8
 	albedoTexture: ./textures/particles/white_smoke.png
 	shaderName: particles_fire
 	renderTime: never
+end
+
+particle lightning_strike_illumination 9
+	handlerClass: io.xol.chunkstories.core.particles.ParticleLightningStrike
+	billboardSize: 0.0
+	renderTime: never
+end

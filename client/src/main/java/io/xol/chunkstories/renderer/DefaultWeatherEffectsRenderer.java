@@ -155,7 +155,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 
 				rainIntensity *= 0.5;
 
-				//System.out.println(rainIntensity);
+				//Plays the rain loop
 
 				if (rainSoundSource == null || rainSoundSource.isDonePlaying())
 					rainSoundSource = world.getSoundManager().playMusic("sounds/sfx/rainloop.ogg", 0, 0, 0, 1, rainIntensity, true);
@@ -199,28 +199,17 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 		}
 
 		renderingContext.setCullingMode(CullingMode.DISABLED);
-
 		renderingContext.getCamera().setupShader(weatherShader);
 
 		//Time since gen in ms
 		weatherShader.setUniform1f("time", (System.currentTimeMillis() - lastRender) / 1000f);
-
 		renderingContext.bindTexture2D("lightmap", TexturesHandler.getTexture("./textures/environement/lightcolors.png"));
-		//weatherShader.setUniformSampler(0, "lightmap", TexturesHandler.getTexture("environement/lightcolors.png"));
 		
 		//TODO check on this
-		weatherShader.setUniform1f("sunTime", world.getTime() % 10000);//worldRenderer.getSky().time);
-
+		weatherShader.setUniform1f("sunTime", world.getTime() % 10000);
 		renderingContext.bindAttribute("vertexIn", rainVerticesBuffer.asAttributeSource(VertexFormat.FLOAT, 4));
-
 		float rainIntensity = Math.min(Math.max(0.0f, rainPresence - 0.5f) / 0.3f, 1.0f);
-
-		//System.out.println("rainIntensity"+rainIntensity);
-		
 		renderingContext.draw(Primitive.TRIANGLE, 0, 20000 + (int) (90000 * rainIntensity));
-		//GLCalls.drawArrays(GL_TRIANGLES, 0, 2000 + (int)(9000 * rainIntensity));
-		//glDisable(GL_BLEND);
-
 		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 	}
 
@@ -239,6 +228,8 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 		rainVerticesBuffer.destroy();
 	}
 
+	long noThunderUntil;
+	
 	@Override
 	public void tick()
 	{
@@ -252,6 +243,30 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 
 			for (int i = 0; i < snowPresence * 10; i++)
 				world.getParticlesManager().spawnParticleAtPosition("snow", loc.add(Math.random() * 20 - 10, Math.random() * 20, Math.random() * 20 - 10));
+		}
+		
+		//Spawn a few lightning strikes once in a while
+		//TODO server-side
+		if(world.getWeather() > 0.9) {
+			if(world.getWorldInfo().resolveProperty("thunderEnabled", "true").equals("true")) {
+				//noThunderUntil = 0;
+				if(System.currentTimeMillis() > noThunderUntil) {
+					long maxDelay = Long.parseLong(world.getWorldInfo().resolveProperty("maxThunderDelayInMs", "30000"));
+					long delay = Math.max(0, random.nextLong() % maxDelay);
+				
+					if(noThunderUntil != 0)
+					{
+						int worldX = random.nextInt(world.getSizeInChunks() * 32);
+						int worldZ = random.nextInt(world.getSizeInChunks() * 32);
+						
+						//Spawn the strike
+						System.out.println("clac");
+						world.getParticlesManager().spawnParticleAtPosition("lightning_strike_illumination", new Location(world, worldX, 0, worldZ));
+					}
+					
+					noThunderUntil = System.currentTimeMillis() + delay;
+				}
+			}
 		}
 	}
 }

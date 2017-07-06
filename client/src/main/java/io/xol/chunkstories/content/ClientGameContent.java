@@ -15,12 +15,15 @@ import io.xol.engine.sound.library.SoundsLibrary;
 
 public class ClientGameContent extends GameContentStore implements ClientContent
 {
+	private final ClientInterface client;
+	
 	private final ClientMeshStore meshes;
 	private final TexturesLibrary textures;
 	
 	public ClientGameContent(ClientInterface client, String modsStringArgument)
 	{
 		super(client, modsStringArgument);
+		this.client = client;
 		
 		this.meshes = new ClientMeshStore(this, super.meshes);
 		
@@ -52,5 +55,10 @@ public class ClientGameContent extends GameContentStore implements ClientContent
 
 	public FontRenderer fonts() {
 		return Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer();
+	}
+
+	@Override
+	public ClientInterface getClient() {
+		return client;
 	}
 }

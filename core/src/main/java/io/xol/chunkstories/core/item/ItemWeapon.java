@@ -9,9 +9,12 @@ import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.InventoryHolder;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
+
 public class ItemWeapon extends Item
 {
-
 	public ItemWeapon(ItemType type)
 	{
 		super(type);

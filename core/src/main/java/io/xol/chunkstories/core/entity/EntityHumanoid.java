@@ -168,14 +168,14 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			if (boneName.endsWith("boneTorso"))
 				characterRotationMatrix.rotate((90 - getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3fm(0, 0, 1));
 
+			ItemPile selectedItem = null;
+
+			if (EntityHumanoid.this instanceof EntityWithSelectedItem)
+				selectedItem = ((EntityWithSelectedItem) EntityHumanoid.this).getSelectedItemComponent().getSelectedItem();
+
 			if (Arrays.asList("boneArmLU", "boneArmRU").contains(boneName))
 			{
 				double k = (stance.get() == EntityHumanoidStance.CROUCHING) ? 0.65 : 0.75;
-
-				ItemPile selectedItem = null;
-
-				if (EntityHumanoid.this instanceof EntityWithSelectedItem)
-					selectedItem = ((EntityWithSelectedItem) EntityHumanoid.this).getSelectedItemComponent().getSelectedItem();
 
 				if (selectedItem != null)
 				{
@@ -191,6 +191,10 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 					//characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation() + ((stance.get() == EntityHumanoidStance.CROUCHING) ? -50f : 0f)) / 180f * 3.14159f, new Vector3fm(0, 1, 0));
 					
 				}
+			}
+			
+			if(boneName.equals("boneItemInHand") && selectedItem.getItem() instanceof ItemCustomHoldingAnimation) {
+				animationTime = ((ItemCustomHoldingAnimation) selectedItem.getItem()).transformAnimationTime(animationTime);
 			}
 
 			return Matrix4f.mul(characterRotationMatrix, getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime), null);
