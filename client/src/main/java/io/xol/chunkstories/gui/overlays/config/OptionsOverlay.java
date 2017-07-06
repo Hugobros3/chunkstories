@@ -421,8 +421,8 @@ public class OptionsOverlay extends Layer
 			for (GuiElement f : tab.configButtons)
 				elements.add(f);
 			
-			String txt = tab.name;
-			int txtlen = FontRenderer2.getTextLengthUsingFont(32, txt, BitmapFont.SMALLFONTS);
+			//String txt = tab.name;
+			//int txtlen = FontRenderer2.getTextLengthUsingFont(32, txt, BitmapFont.SMALLFONTS);
 			TabButton tabButton = new TabButton(this, tab);
 			
 			//Make the action of the tab buttons switching tab effectively

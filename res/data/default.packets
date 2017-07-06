@@ -77,7 +77,7 @@ end
 
 packet velocity_delta 15
 	allowedFrom: server
-	commonClass: io.xol.chunkstories.net.packets.PacketVelocityDelta
+	commonClass: io.xol.chunkstories.api.net.packets.PacketVelocityDelta
 end
 
 packet open_inventory 16

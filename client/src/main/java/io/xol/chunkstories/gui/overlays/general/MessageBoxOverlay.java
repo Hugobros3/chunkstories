@@ -4,7 +4,6 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.gui.elements.Button;
 
 //(c) 2015-2017 XolioWare Interactive
