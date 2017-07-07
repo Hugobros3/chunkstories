@@ -163,7 +163,8 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 			logger.error("Brownout lel");
 		}
 		
-		WorldImplementation csWorld = new WorldTool(this, worldInfoFile);
+		//IO is NOT blocking here, good luck.
+		WorldImplementation csWorld = new WorldTool(this, worldInfoFile, false);
 
 		//Step one: copy the entire world data
 		stepOneCopyWorldData(mcWorld, csWorld, minecraftOffsetX, minecraftOffsetZ);
@@ -577,6 +578,8 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		
 		csWorld.setDefaultSpawnLocation(new Location(csWorld, spawnX, spawnY, spawnZ));
 		csWorld.saveEverything().traverse();
+		
+		csWorld.destroy();
 	}
 	
 	private void verbose(String s)

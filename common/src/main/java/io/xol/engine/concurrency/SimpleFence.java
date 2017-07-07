@@ -12,9 +12,9 @@ public class SimpleFence implements Fence
 	
 	public void signal()
 	{
-		isOpen = true;
 		synchronized(this)
 		{
+			isOpen = true;
 			notifyAll();
 		}
 	}
@@ -29,6 +29,9 @@ public class SimpleFence implements Fence
 			
 			synchronized(this)
 			{
+				if(isOpen)
+					break;
+				
 				try
 				{
 					wait();

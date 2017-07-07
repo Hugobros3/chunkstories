@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Iterator;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.jpountz.lz4.LZ4Exception;
@@ -37,7 +38,9 @@ public class IOTasks extends Thread implements TaskExecutor
 	protected WorldImplementation world;
 
 	protected UniqueQueue<IOTask> tasks = new UniqueQueue<IOTask>();
-	private AtomicBoolean die = new AtomicBoolean();
+	protected Semaphore tasksCounter = new Semaphore(0);
+	
+	//private AtomicBoolean die = new AtomicBoolean();
 
 	protected LZ4Factory factory = LZ4Factory.fastestInstance();
 	protected LZ4FastDecompressor decompressor = factory.fastDecompressor();
@@ -45,6 +48,15 @@ public class IOTasks extends Thread implements TaskExecutor
 	protected int worldSizeInChunks = 0;
 	protected int worldHeightInChunks = 0;
 
+	private IOTask DIE = new IOTask() {
+
+		@Override
+		protected boolean task(TaskExecutor taskExecutor) {
+			return false;
+		}
+		
+	};
+	
 	//Per-thread buffer
 	protected static ThreadLocal<byte[]> unCompressedDataBuffer = new ThreadLocal<byte[]>()
 	{
@@ -65,14 +77,18 @@ public class IOTasks extends Thread implements TaskExecutor
 
 	public boolean scheduleTask(IOTask task)
 	{
-		if (die.get())
-			return false;
+		//TODO assert importance
+		//if (die.get())
+		//	return false;
 
 		boolean code = tasks.add(task);
-		synchronized (this)
+		if(code) {
+			tasksCounter.release();
+		}
+		/*synchronized (this)
 		{
 			notifyAll();
-		}
+		}*/
 		return code;
 	}
 
@@ -89,13 +105,19 @@ public class IOTasks extends Thread implements TaskExecutor
 
 		this.setPriority(Constants.IO_THREAD_PRIOTITY);
 		this.setName("IO Tasks");
-		while (!die.get())
+		while (true)//(!die.get())
 		{
 			IOTask task = null;
 
+			tasksCounter.acquireUninterruptibly();
+			
 			task = tasks.poll();
 			if (task == null)
 			{
+				//Crash and burn
+				System.exit(-1);
+				
+				/*System.out.println("out of work, sleeping");
 				try
 				{
 					synchronized (this)
@@ -106,7 +128,10 @@ public class IOTasks extends Thread implements TaskExecutor
 				catch (InterruptedException e)
 				{
 					e.printStackTrace();
-				}
+				}*/
+			}
+			else if(task == DIE) {
+				break;
 			}
 			else
 			{
@@ -116,8 +141,14 @@ public class IOTasks extends Thread implements TaskExecutor
 					//ChunkStoriesLogger.getInstance().info("processing task : "+task);
 					boolean taskSuccessfull = task.run(this);
 					// If it returns false, requeue it.
-					if (!taskSuccessfull)
-						tasks.add(task);
+					
+					//if (!taskSuccessfull)
+					//	tasks.add(task);
+					if(taskSuccessfull == false)
+						rescheduleTask(task);
+					//else
+					//	tasksQueueSize.decrementAndGet();
+					
 					
 					// Runs a post-run operation
 					//else if (task.postRunOperation != null)
@@ -134,6 +165,14 @@ public class IOTasks extends Thread implements TaskExecutor
 		System.out.println("IOTasks worker thread stopped");
 	}
 
+	void rescheduleTask(IOTask task)
+	{
+		tasks.add(task);
+		tasksCounter.release();
+		
+		//tasksRescheduled++;
+	}
+	
 	public int getSize()
 	{
 		int i = 0;
@@ -444,7 +483,20 @@ public class IOTasks extends Thread implements TaskExecutor
 			return null;
 
 		IOTask task = new IOTaskSaveRegion(holder);
-		scheduleTask(task);
+		if(!scheduleTask(task)) {
+			//I really thinks this is smart
+			
+			//System.out.println("Could not request a region save, another one is still going");
+			//System.out.println("Creating a task to submit it once we can");
+			scheduleTask(new IOTask() {
+
+				@Override
+				protected boolean task(TaskExecutor taskExecutor) {
+					return scheduleTask(task);
+				}
+				
+			});
+		}
 		
 		return task;
 	}
@@ -686,7 +738,8 @@ public class IOTasks extends Thread implements TaskExecutor
 
 	public void kill()
 	{
-		die.set(true);
+		scheduleTask(DIE);
+		//die.set(true);
 		synchronized (this)
 		{
 			notifyAll();
@@ -728,6 +781,8 @@ public class IOTasks extends Thread implements TaskExecutor
 				e.printStackTrace();
 			}
 		}
-		die.set(true);
+		
+		scheduleTask(DIE);
+		//die.set(true);
 	}
 }

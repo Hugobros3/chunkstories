@@ -15,6 +15,7 @@ import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfoFile;
+import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -25,13 +26,23 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 {
 	private final GameContext toolContext;
 	
-	public WorldTool(GameContext toolContext, WorldInfoFile info)
+	public WorldTool(GameContext toolContext, WorldInfoFile info) {
+		this(toolContext, info, true);
+	}
+	
+	public WorldTool(GameContext toolContext, WorldInfoFile info, boolean immediateIO)
 	{
 		super(toolContext, info);//new WorldInfoImplementation(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
 
 		this.toolContext = toolContext;
 		
-		ioHandler = new IOTasksImmediate(this);
+		if(immediateIO)
+			ioHandler = new IOTasksImmediate(this);
+		else {
+			//Normal IO.
+			ioHandler = new IOTasks(this);
+			ioHandler.start();
+		}
 		//ioHandler.start();
 	}
 
