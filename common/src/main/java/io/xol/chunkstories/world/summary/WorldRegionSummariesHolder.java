@@ -67,7 +67,9 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		}
 		dontDeleteWhileCreating.release();
 		
-		return summary.registerUser(worldUser) ? summary : null;
+		//NOTE: WARNING: ETC: CONTROVERSIAL CHANGE HITLER. 
+		//Change of spec. Returns the summary no matter what. No way of knowing if the add was redundant, that's on you.
+		return summary.registerUser(worldUser) ? summary : summary;
 	}
 
 	@Override

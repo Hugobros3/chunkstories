@@ -183,9 +183,11 @@ public class IOTasks extends Thread implements TaskExecutor
 			// If for some reasons the chunks holder's are still not loaded, we requeue the job
 			if (!chunkSlot.getRegion().isDiskDataLoaded())
 				return false;
+			
 			// When a loader was removed from the world, remaining operations on it are discarded
 			if (chunkSlot.getRegion().isUnloaded())
 				return true;
+			
 			// And so are redudant operations
 			if (chunkSlot.isChunkLoaded())
 				return true;
@@ -224,6 +226,7 @@ public class IOTasks extends Thread implements TaskExecutor
 				chunkSlot.createChunk(data);
 				//result = new CubicChunk(region, cx, cy, cz, data);
 				
+				//TODO Look into this properly
 				//We never want to mess with that when we are the world
 				//if(!(world instanceof WorldTool))
 				//	result.bakeVoxelLightning(false);

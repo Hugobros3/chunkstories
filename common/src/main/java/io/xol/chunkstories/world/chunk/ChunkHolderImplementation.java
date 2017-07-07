@@ -6,12 +6,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.io.IOTasks.IOTask;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.engine.concurrency.SafeWriteLock;
+import io.xol.engine.concurrency.TrivialFence;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
@@ -49,7 +51,8 @@ public class ChunkHolderImplementation implements ChunkHolder
 	private SafeWriteLock compressedDataLock = new SafeWriteLock();
 	private byte[] compressedData;
 	
-	private WeakReference<IOTask> loadChunkTask;
+	private IOTask loadChunkTask;
+	//private WeakReference<IOTask> loadChunkTask;
 	private CubicChunk chunk;
 
 	// LZ4 compressors & decompressors stuff
@@ -138,18 +141,19 @@ public class ChunkHolderImplementation implements ChunkHolder
 		}
 	}
 	
-	public void loadChunk()
+	/*private void loadChunk()
 	{
-		if(loadChunkTask == null || loadChunkTask.get() == null)
-			loadChunkTask = new WeakReference<IOTask>(getRegion().getWorld().ioHandler.requestChunkLoad(this));
-	}
+		if(loadChunkTask == null)// || loadChunkTask.get() == null)
+			loadChunkTask = getRegion().getWorld().ioHandler.requestChunkLoad(this);
+			//loadChunkTask = new WeakReference<IOTask>(getRegion().getWorld().ioHandler.requestChunkLoad(this));
+	}*/
 
-	void unloadChunk()
+	private void unloadChunk()
 	{
 		//Kill any load chunk operation that is still scheduled
 		if(loadChunkTask != null)
 		{
-			IOTask task = loadChunkTask.get();
+			IOTask task = loadChunkTask;//.get();
 			if(task != null)
 				task.cancel();
 			
@@ -167,7 +171,6 @@ public class ChunkHolderImplementation implements ChunkHolder
 		
 		//Null-out reference
 		chunk = null;
-		
 	}
 
 	@Override
@@ -219,8 +222,11 @@ public class ChunkHolderImplementation implements ChunkHolder
 		
 		users.add(new WeakReference<WorldUser>(user));
 		
-		if(chunk == null)
-			loadChunk();
+		//This runs under a lock so we can afford to be lazy about thread safety
+		if(chunk == null && loadChunkTask == null) {
+			//We create a task only if one isn't already ongoing.
+			loadChunkTask = getRegion().getWorld().ioHandler.requestChunkLoad(this);
+		}
 		
 		return true;
 	}
@@ -391,5 +397,20 @@ public class ChunkHolderImplementation implements ChunkHolder
 		}
 			
 		return false;
+	}
+
+	@Override
+	public boolean isChunkLoaded() {
+		return chunk != null;
+	}
+
+	@Override
+	public Fence waitForLoading() {
+		Fence f = this.loadChunkTask;
+		if(f != null)
+			return f;
+		
+		//Return a trvial fence if the chunk is not currently loading anything
+		return new TrivialFence();
 	}
 }

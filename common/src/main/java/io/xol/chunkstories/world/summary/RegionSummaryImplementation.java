@@ -521,4 +521,9 @@ public class RegionSummaryImplementation implements RegionSummary
 			}
 		
 	}
+
+	@Override
+	public Fence waitForLoading() {
+		return this.loadFence;
+	}
 }

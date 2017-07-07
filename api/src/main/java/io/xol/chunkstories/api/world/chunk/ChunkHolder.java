@@ -2,6 +2,8 @@ package io.xol.chunkstories.api.world.chunk;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.util.concurrency.Fence;
+
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -49,10 +51,9 @@ public interface ChunkHolder
 	
 	public Chunk getChunk();
 	
-	public default boolean isChunkLoaded()
-	{
-		return getChunk() != null;
-	}
+	public boolean isChunkLoaded();
+	
+	public Fence waitForLoading();
 	
 	public void compressChunkData();
 }

@@ -33,6 +33,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfoFile;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
+import io.xol.engine.concurrency.CompoundFence;
 import io.xol.engine.misc.FoldersUtils;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -117,7 +118,9 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 	private final GameContentStore content;
 	private ChunkStoriesLoggerImplementation logger;
 	
-	private final int targetChunksToKeepInRam = 256;
+	//TODO make these configurable
+	private final int targetChunksToKeepInRam = 1024;
+	private final int threadsCount = 1;
 
 	public OfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ)
 	{
@@ -204,6 +207,9 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 
 		Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
 		//Set<RegionSummary> registeredCS_Summaries = new HashSet<RegionSummary>();
+		WorldUser worldUser = this;
+		int chunksAquired = 0;
+		
 
 		//TODO Does standard vanilla minecraft even support 512 and more worlds now ? No information to be found on the wiki apparently
 		int mcWorldHeight = 256;
@@ -218,7 +224,6 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 					//Load the culprit (There isn't any fancy world management, the getRegion() actually loads the entire region file)
 					MinecraftRegion minecraftRegion = mcWorld.getRegion(minecraftRegionX, minecraftRegionZ);
 
-					WorldUser worldUser = this;
 					
 					//Iterate over each chunk within the minecraft region
 					//TODO Good candidate for task-ifying
@@ -251,13 +256,22 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 										if(summary != null)
 											registeredCS_Summaries.add(summary);*/
 
+
+										CompoundFence loadRelevantData = new CompoundFence();
+										
 										//Then the chunks
 										for (int y = 0; y < mcWorldHeight; y += 32)
 										{
 											ChunkHolder holder = csWorld.aquireChunkHolderWorldCoordinates(worldUser, chunkStoriesCurrentChunkX, y, chunkStoriesCurrentChunkZ);
-											if (holder != null)
+											if (holder != null) {
 												registeredCS_Holders.add(holder);
+												loadRelevantData.add(holder.waitForLoading());
+												chunksAquired++;
+											}
 										}
+										
+										//Wait for them to actually load
+										loadRelevantData.traverse();
 
 										for (int x = 0; x < 16; x++)
 											for (int z = 0; z < 16; z++)
@@ -315,7 +329,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 
 							}
 
-							if (csWorld.getRegionsHolder().countChunks() > targetChunksToKeepInRam)
+							if (chunksAquired > targetChunksToKeepInRam)
 							{
 								//Save world
 								verbose("More than "+targetChunksToKeepInRam+" chunks already in memory, saving and unloading before continuing");
@@ -323,14 +337,17 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 								//Redudant, see below
 								//csWorld.saveEverything();
 
-								for (ChunkHolder holder : registeredCS_Holders)
+								for (ChunkHolder holder : registeredCS_Holders) {
 									holder.unregisterUser(worldUser);
+									chunksAquired--;
+								}
 
 								//registeredCS_Summaries.clear();
 								registeredCS_Holders.clear();
 
 								//Automatically saves what we don't need anymore because this is a master world
-								csWorld.unloadUselessData();
+								csWorld.unloadUselessData().traverse();
+								verbose("Done.");
 							}
 						}
 					}
@@ -346,8 +363,9 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 			e.printStackTrace();
 		}
 
-		csWorld.saveEverything();
-		csWorld.unloadEverything();
+		csWorld.unloadUselessData();
+		//csWorld.saveEverything().traverse();
+		//csWorld.unloadEverything();
 	}
 
 	protected void stepTwoCreateSummaryData(WorldImplementation csWorld)
@@ -364,21 +382,33 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		double completion = 0.0;
 		long lastPercentageShow = System.currentTimeMillis();
 
+		WorldUser worldUser = this;
 		Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
+		
 		for (int regionX = 0; regionX < size.sizeInChunks / 8; regionX++)
 			for (int regionZ = 0; regionZ < size.sizeInChunks / 8; regionZ++)
 			{
-				RegionSummaryImplementation summary = csWorld.getRegionsSummariesHolder().aquireRegionSummary(this, regionX, regionZ);
+				
+				//We wait on a bunch of stuff to load everytime
+				CompoundFence loadRelevantData = new CompoundFence();
+				
+				RegionSummaryImplementation summary = csWorld.getRegionsSummariesHolder().aquireRegionSummary(worldUser, regionX, regionZ);
+				loadRelevantData.add(summary.waitForLoading());
 
 				//Aquires the chunks we want to make the summaries of.
 				for (int innerCX = 0; innerCX < 8; innerCX++)
 					for (int innerCZ = 0; innerCZ < 8; innerCZ++)
 						for (int chunkY = 0; chunkY < maxHeightPossible / 32; chunkY++)
 						{
-							ChunkHolder holder = csWorld.aquireChunkHolder(this, regionX * 8 + innerCX, chunkY, regionZ * 8 + innerCZ);
-							if (holder != null)
+							ChunkHolder holder = csWorld.aquireChunkHolder(worldUser, regionX * 8 + innerCX, chunkY, regionZ * 8 + innerCZ);
+							if (holder != null) {
 								registeredCS_Holders.add(holder);
+								loadRelevantData.add(holder.waitForLoading());
+							}
 						}
+				
+				//Wait until all of that crap loads
+				loadRelevantData.traverse();
 
 				//Descend from top
 				for (int i = 0; i < 256; i++)
@@ -418,10 +448,12 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 					}
 				}
 
+				//We don't need those chunks anymore
 				for (ChunkHolder holder : registeredCS_Holders)
-					holder.unregisterUser(this);
+					holder.unregisterUser(worldUser);
 
-				summary.unregisterUser(this);
+				//Neither do we do the summary
+				summary.unregisterUser(worldUser);
 				
 				registeredCS_Holders.clear();
 
@@ -448,26 +480,40 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
 		Set<RegionSummary> registeredCS_Summaries = new HashSet<RegionSummary>();
 
+		int chunksAquired = 0;
+		WorldUser worldUser = this;
+		
 		for (int chunkX = 0; chunkX < size.sizeInChunks; chunkX++)
 			for (int chunkZ = 0; chunkZ < size.sizeInChunks; chunkZ++)
 			{
-				RegionSummary sum = csWorld.getRegionsSummariesHolder().getRegionSummaryChunkCoordinates(chunkX, chunkZ);
-				if (sum == null)
-				{
+				CompoundFence loadRelevantData = new CompoundFence();
+				
+				//RegionSummary sum = csWorld.getRegionsSummariesHolder().getRegionSummaryChunkCoordinates(chunkX, chunkZ);
+				//if (sum == null)
+				//{
 					//System.out.println("Loading missing summary");
-					sum = csWorld.getRegionsSummariesHolder().aquireRegionSummaryChunkCoordinates(this, chunkX, chunkZ);
-					registeredCS_Summaries.add(sum);
-				}
+				
+				RegionSummary sum = csWorld.getRegionsSummariesHolder().aquireRegionSummaryChunkCoordinates(worldUser, chunkX, chunkZ);
+				registeredCS_Summaries.add(sum);
+				loadRelevantData.add(sum.waitForLoading());
+				
+				//}
 
 				//Loads 3x3 arround relevant chunks
 				for (int i = -1; i < 2; i++)
 					for (int j = -1; j < 2; j++)
 						for (int chunkY = 0; chunkY <= maxHeightPossible / 32; chunkY++)
 						{
-							ChunkHolder holder = csWorld.aquireChunkHolder(this, chunkX + i, chunkY, chunkZ + j);
-							if (holder != null)
+							ChunkHolder holder = csWorld.aquireChunkHolder(worldUser, chunkX + i, chunkY, chunkZ + j);
+							if (holder != null) {
 								registeredCS_Holders.add(holder);
+								loadRelevantData.add(holder.waitForLoading());
+								chunksAquired++;
+							}
 						}
+				
+				//Wait for everything to actually load
+				loadRelevantData.traverse();
 
 				//Spreads lightning, from top to botton
 				for (int chunkY = maxHeightPossible / 32; chunkY >= 0; chunkY--)
@@ -475,8 +521,8 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 					csWorld.getChunk(chunkX, chunkY, chunkZ).computeVoxelLightning(true);
 				}
 
+				//Show progress
 				done++;
-
 				if (Math.floor(((double) done / (double) todo) * 100) > completion)
 				{
 					completion = Math.floor(((double) done / (double) todo) * 100);
@@ -487,34 +533,38 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 						lastPercentageShow = System.currentTimeMillis();
 					}
 				}
-
-				if (csWorld.getRegionsHolder().countChunks() > 256)
+			
+				if (chunksAquired > targetChunksToKeepInRam)
 				{
 					//Save world
-					//verbose("More than 256 chunks already in memory, saving and unloading before continuing");
-					csWorld.saveEverything();
+					verbose("More than "+targetChunksToKeepInRam+" chunks already in memory, saving and unloading before continuing");
+					
+					//csWorld.saveEverything();
 					//for(Region region : registeredCS_Regions)
 					//	region.unregisterUser(user);
 
-					for (ChunkHolder holder : registeredCS_Holders)
-						holder.unregisterUser(this);
+					for (ChunkHolder holder : registeredCS_Holders) {
+						holder.unregisterUser(worldUser);
+						chunksAquired--;
+					}
 
 					for (RegionSummary summary : registeredCS_Summaries)
-						summary.unregisterUser(this);
+						summary.unregisterUser(worldUser);
 
 					registeredCS_Summaries.clear();
 					registeredCS_Holders.clear();
 
-					csWorld.unloadUselessData();
+					csWorld.unloadUselessData().traverse();
+					verbose("Done.");
 				}
 			}
 
 		//Terminate
 		csWorld.saveEverything();
 		for (ChunkHolder holder : registeredCS_Holders)
-			holder.unregisterUser(this);
+			holder.unregisterUser(worldUser);
 
-		csWorld.unloadUselessData();
+		csWorld.unloadUselessData().traverse();
 	}
 
 	protected void stetFourTidbits(MinecraftWorld mcWorld, WorldImplementation csWorld)
@@ -526,7 +576,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		int spawnZ = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnZ")).getData();
 		
 		csWorld.setDefaultSpawnLocation(new Location(csWorld, spawnX, spawnY, spawnZ));
-		csWorld.saveEverything();
+		csWorld.saveEverything().traverse();
 	}
 	
 	private void verbose(String s)
