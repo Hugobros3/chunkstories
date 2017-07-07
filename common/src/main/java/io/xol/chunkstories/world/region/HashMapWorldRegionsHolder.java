@@ -250,7 +250,7 @@ public class HashMapWorldRegionsHolder
 		
 		noConcurrentRegionCreationDestruction.release();
 		
-		return userAdded ? holder : null;
+		return userAdded ? holder : holder;
 	}
 
 	public RegionImplementation aquireRegion(WorldUser user, int regionX, int regionY, int regionZ)

@@ -278,4 +278,14 @@ public class IDsConverter
 		}
 		return -1;
 	}
+
+	public static int[] generateQuickConversionTable() {
+		//Create a conversion table
+		int[] quickConversion = new int[4096 * 16];
+		for (int i = 0; i < 4096; i++)
+			for (int m = 0; m < 16; m++)
+				quickConversion[i * 16 + m] = IDsConverter.getChunkStoriesIdFromMinecraft(i, m);
+				
+		return quickConversion;
+	}
 }

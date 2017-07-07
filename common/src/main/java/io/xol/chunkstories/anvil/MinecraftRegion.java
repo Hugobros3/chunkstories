@@ -30,6 +30,7 @@ public class MinecraftRegion {
 	int[] sizes = new int[1024];
 	
 	RandomAccessFile is;
+	private MinecraftChunk[][] chunks = new MinecraftChunk[32][32];
 	
 	public MinecraftRegion(File regionFile) {
 		try{
@@ -50,6 +51,10 @@ public class MinecraftRegion {
 			{
 				is.read(osef);
 			}
+			
+			for(int x = 0; x < 32; x++)
+				for(int z = 0; z < 32; z ++)
+					chunks[x][z] = getChunkInternal(x, z);
 		}
 		catch(Exception e)
 		{
@@ -62,7 +67,11 @@ public class MinecraftRegion {
 		return ((x & 31) + (z & 31) * 32);
 	}
 	
-	public MinecraftChunk getChunk(int x, int z)
+	public MinecraftChunk getChunk(int x, int z) {
+		return chunks[x][z];
+	}
+	
+	private MinecraftChunk getChunkInternal(int x, int z)
 	{
 		int l = offset(x,z);
 		if(sizes[l] > 0)
@@ -81,6 +90,7 @@ public class MinecraftRegion {
 				if(compression != 2)
 				{
 					System.out.println("Fatal error : compression scheme not Zlib. ("+compression+") at "+is.getFilePointer()+" l = "+l+" s= "+sizes[l]);
+					Thread.dumpStack();
 					Runtime.getRuntime().exit(1);
 				}
 				else

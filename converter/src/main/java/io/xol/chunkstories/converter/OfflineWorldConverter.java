@@ -62,6 +62,9 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		//Modifiers
 		boolean verboseMode = false;
 		boolean deleteAndRewrite = false;
+		
+		int threadCount = -1;
+		
 		for (int i = 5; i < arguments.length; i++)
 		{
 			if (arguments[i].startsWith("-"))
@@ -70,6 +73,15 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 					verboseMode = true;
 				if (arguments[i].contains("r"))
 					deleteAndRewrite = true;
+			}
+			if(arguments[i].startsWith("-mt")) {
+				if(arguments[i].startsWith("-mt="))
+				{
+					String coreCounts = arguments[i].substring(4);
+					threadCount = Integer.parseInt(coreCounts);
+				}
+				else
+					threadCount = Runtime.getRuntime().availableProcessors();
 			}
 		}
 
@@ -111,20 +123,44 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		}
 
 		//Finally start the conversion
-		OfflineWorldConverter converter = new OfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ);
+		
+		OfflineWorldConverter converter;
+		
+		System.out.println("threadCount: "+threadCount);
+		
+		if(threadCount <= 1)
+			converter = new OfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ);
+		else
+			converter = new MultithreadedOfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, threadCount);
+		
+		
+		converter.run();
 	}
 
-	private final boolean verboseMode;
-	private final GameContentStore content;
-	private ChunkStoriesLoggerImplementation logger;
+	//TODO Does standard vanilla minecraft even support 512 and more worlds now ? No information to be found on the wiki apparently
+	public static final int mcWorldHeight = 256;
+	
+	protected final boolean verboseMode;
+	protected final GameContentStore content;
+	protected ChunkStoriesLoggerImplementation logger;
 	
 	//TODO make these configurable
-	private final int targetChunksToKeepInRam = 1024;
-	private final int threadsCount = 1;
+	protected final int targetChunksToKeepInRam = 4096;
 
+	protected final MinecraftWorld mcWorld;
+	protected final WorldTool csWorld;
+	
+	protected final int minecraftOffsetX;
+	protected final int minecraftOffsetZ;
+
+	protected final String mcWorldName;
+	
 	public OfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ)
 	{
 		this.verboseMode = verboseMode;
+		this.minecraftOffsetX = minecraftOffsetX;
+		this.minecraftOffsetZ = minecraftOffsetZ;
+		this.mcWorldName = mcWorldName;
 
 		//Start logs
 		Calendar cal = Calendar.getInstance();
@@ -136,7 +172,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		content.reload();
 
 		//Loads the Minecraft World
-		MinecraftWorld mcWorld = new MinecraftWorld(mcFolder);
+		mcWorld = new MinecraftWorld(mcFolder);
 
 		//Creates the ChunkStories world data file
 		/*csFolder.mkdirs();
@@ -164,8 +200,12 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		}
 		
 		//IO is NOT blocking here, good luck.
-		WorldImplementation csWorld = new WorldTool(this, worldInfoFile, false);
-
+		csWorld = new WorldTool(this, worldInfoFile, false);
+	}
+	
+	public void run() {
+		long benchmarkingStart = System.currentTimeMillis();
+		
 		//Step one: copy the entire world data
 		stepOneCopyWorldData(mcWorld, csWorld, minecraftOffsetX, minecraftOffsetZ);
 		//Step two: make the summary data for chunk stories
@@ -174,19 +214,20 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		stepThreeSpreadLightning(csWorld);
 		//Step four: fluff
 		stetFourTidbits(mcWorld, csWorld);
+		
+		long timeTook = System.currentTimeMillis() - benchmarkingStart;
+		double timeTookSeconds = timeTook / 1000.0;
+		
+		System.out.println("Done converting "+mcWorldName + ", took "+timeTookSeconds + " seconds.");
 	}
 
 	protected void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX, int minecraftOffsetZ)
 	{
 		verbose("Entering step one: making summary data");
 
-		//Create a conversion table
 		long ict = System.nanoTime();
 		verbose("Creating ids conversion cache");
-		int[] quickConversion = new int[4096 * 16];
-		for (int i = 0; i < 4096; i++)
-			for (int m = 0; m < 16; m++)
-				quickConversion[i * 16 + m] = IDsConverter.getChunkStoriesIdFromMinecraft(i, m);
+		int[] quickConversion = IDsConverter.generateQuickConversionTable();
 		verbose("Done, took " + (System.nanoTime() - ict) / 1000 + " µs");
 
 		//Prepares the loops
@@ -210,10 +251,6 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		//Set<RegionSummary> registeredCS_Summaries = new HashSet<RegionSummary>();
 		WorldUser worldUser = this;
 		int chunksAquired = 0;
-		
-
-		//TODO Does standard vanilla minecraft even support 512 and more worlds now ? No information to be found on the wiki apparently
-		int mcWorldHeight = 256;
 
 		try
 		{
@@ -369,7 +406,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		//csWorld.unloadEverything();
 	}
 
-	protected void stepTwoCreateSummaryData(WorldImplementation csWorld)
+	protected void stepTwoCreateSummaryData(WorldTool csWorld)
 	{
 		verbose("Entering step two: making summary data");
 
@@ -582,7 +619,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		csWorld.destroy();
 	}
 	
-	private void verbose(String s)
+	protected void verbose(String s)
 	{
 		if (verboseMode)
 		{

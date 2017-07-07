@@ -200,7 +200,7 @@ public class IOTasks extends Thread implements TaskExecutor
 			super.cancel();
 			
 			//Kinf of redundant since it'll be skipped afterwards but meh
-			tasks.remove(this);
+			//tasks.remove(this);
 		}
 	}
 

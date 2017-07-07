@@ -24,8 +24,10 @@ public class RenderByteBuffer implements VoxelBakerHighPoly, VoxelBakerCubic
 	@Override
 	public void addVerticeInt(int i0, int i1, int i2)
 	{
-		if(i0 < 0 || i1 < 0 || i2 < 0)
+		if(i0 < 0 || i1 < 0 || i2 < 0) {
+			System.out.println("screw off");
 			System.exit(0);
+		}
 		if(byteBuffer.position() == byteBuffer.capacity())
 			return;
 		byteBuffer.put((byte) i0);

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -46,7 +47,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		uuid = ((x << region.getWorld().getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | y ) << region.getWorld().getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | z;
 	}
 
-	private Set<WeakReference<WorldUser>> users = new HashSet<WeakReference<WorldUser>>();
+	private Set<WeakReference<WorldUser>> users = ConcurrentHashMap.newKeySet();//<WeakReference<WorldUser>>();
 	
 	private SafeWriteLock compressedDataLock = new SafeWriteLock();
 	private byte[] compressedData;
