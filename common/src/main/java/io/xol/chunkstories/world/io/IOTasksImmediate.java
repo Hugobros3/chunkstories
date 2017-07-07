@@ -22,7 +22,8 @@ public class IOTasksImmediate extends IOTasks {
 	{
 		if(tasks.size() > 50)
 		{
-			System.out.println("IOTask size > 50 ! Dumping then crashing");
+			//Shouldn't happen, this indicates the tasks keep being submitted in another task and not fullfilling.
+			System.out.println("Immediate IOTask size > 50 ! Dumping then crashing");
 			Iterator<IOTask> i = tasks.iterator();
 			while(i.hasNext())
 			{
@@ -33,7 +34,7 @@ public class IOTasksImmediate extends IOTasks {
 		}
 		if(tasks.add(task))
 		{
-			task.run();
+			task.run(this);
 			tasks.remove(task);
 		}
 	}
@@ -54,23 +55,30 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public void requestRegionSave(RegionImplementation holder)
+	public IOTask requestRegionSave(RegionImplementation holder)
 	{
 		IOTask task = new IOTaskSaveRegion(holder);
 		runTask(task);
+		
+		//Already completed ...
+		return task;
 	}
 
 	@Override
-	public void requestRegionSummaryLoad(RegionSummaryImplementation summary)
+	public IOTaskLoadSummary requestRegionSummaryLoad(RegionSummaryImplementation summary)
 	{
-		IOTask task = new IOTaskLoadSummary(summary);
+		IOTaskLoadSummary task = new IOTaskLoadSummary(summary);
 		runTask(task);
+		
+		return task;
 	}
 
 	@Override
-	public void requestRegionSummarySave(RegionSummaryImplementation summary)
+	public IOTaskSaveSummary requestRegionSummarySave(RegionSummaryImplementation summary)
 	{
-		IOTask task = new IOTaskSaveSummary(summary);
+		IOTaskSaveSummary task = new IOTaskSaveSummary(summary);
 		runTask(task);
+		
+		return task;
 	}
 }

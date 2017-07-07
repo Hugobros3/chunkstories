@@ -24,6 +24,7 @@ import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.util.IterableIterator;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
@@ -51,6 +52,7 @@ import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.region.HashMapWorldRegionsHolder;
 import io.xol.chunkstories.world.summary.WorldRegionSummariesHolder;
+import io.xol.engine.concurrency.CompoundFence;
 import io.xol.engine.misc.ConfigFile;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -717,11 +719,13 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public void saveEverything()
+	public Fence saveEverything()
 	{
+		CompoundFence regionsAndSummaries = new CompoundFence();
+		
 		//System.out.println("Saving all parts of world "+worldInfo.getName());
-		regions.saveAll();
-		getRegionsSummariesHolder().saveAllLoadedSummaries();
+		regionsAndSummaries.add(regions.saveAll());
+		regionsAndSummaries.add(getRegionsSummariesHolder().saveAllLoadedSummaries());
 
 		this.worldInfo.save(new File(this.getFolderPath() + "/info.txt"));
 		this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
@@ -729,6 +733,8 @@ public abstract class WorldImplementation implements World
 		this.internalData.setLong("worldTimeInternal", worldTicksCounter);
 		this.internalData.setFloat("overcastFactor", overcastFactor);
 		this.internalData.save();
+		
+		return regionsAndSummaries;
 	}
 
 	/**
@@ -1031,9 +1037,11 @@ public abstract class WorldImplementation implements World
 		ioHandler.kill();
 	}
 
-	public void unloadUselessData()
+	public Fence unloadUselessData()
 	{
-		this.getRegionsHolder().unloadsUselessData();
+		Fence onlyThisHasAFence = this.getRegionsHolder().unloadsUselessData();
 		this.getRegionsSummariesHolder().unloadsUselessData();
+		
+		return onlyThisHasAFence;
 	}
 }

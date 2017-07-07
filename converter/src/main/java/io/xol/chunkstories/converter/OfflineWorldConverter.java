@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.WorldInfo;
@@ -115,6 +116,8 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 	private final boolean verboseMode;
 	private final GameContentStore content;
 	private ChunkStoriesLoggerImplementation logger;
+	
+	private final int targetChunksToKeepInRam = 256;
 
 	public OfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ)
 	{
@@ -169,17 +172,17 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		stetFourTidbits(mcWorld, csWorld);
 	}
 
-	private void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX, int minecraftOffsetZ)
+	protected void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX, int minecraftOffsetZ)
 	{
 		verbose("Entering step one: making summary data");
 
 		//Create a conversion table
 		long ict = System.nanoTime();
 		verbose("Creating ids conversion cache");
-		int[] cachedIdsMatrix = new int[4096 * 16];
+		int[] quickConversion = new int[4096 * 16];
 		for (int i = 0; i < 4096; i++)
 			for (int m = 0; m < 16; m++)
-				cachedIdsMatrix[i * 16 + m] = IDsConverter.getChunkStoriesIdFromMinecraft(i, m);
+				quickConversion[i * 16 + m] = IDsConverter.getChunkStoriesIdFromMinecraft(i, m);
 		verbose("Done, took " + (System.nanoTime() - ict) / 1000 + " µs");
 
 		//Prepares the loops
@@ -202,23 +205,28 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
 		//Set<RegionSummary> registeredCS_Summaries = new HashSet<RegionSummary>();
 
-		//TODO Does minecraft even support 512 and more worlds ? No information to be found on the wiki apparently
+		//TODO Does standard vanilla minecraft even support 512 and more worlds now ? No information to be found on the wiki apparently
 		int mcWorldHeight = 256;
 
 		try
 		{
+			//We do this minecraft region per minecraft region.
 			for (int minecraftRegionX = mcRegionStartX; minecraftRegionX < mcRegionEndX; minecraftRegionX++)
 			{
 				for (int minecraftRegionZ = mcRegionStartZ; minecraftRegionZ < mcRegionEndZ; minecraftRegionZ++)
 				{
+					//Load the culprit (There isn't any fancy world management, the getRegion() actually loads the entire region file)
 					MinecraftRegion minecraftRegion = mcWorld.getRegion(minecraftRegionX, minecraftRegionZ);
 
+					WorldUser worldUser = this;
+					
 					//Iterate over each chunk within the minecraft region
+					//TODO Good candidate for task-ifying
 					for (int minecraftCurrentChunkXinsideRegion = 0; minecraftCurrentChunkXinsideRegion < 32; minecraftCurrentChunkXinsideRegion++)
 					{
 						for (int minecraftCuurrentChunkZinsideRegion = 0; minecraftCuurrentChunkZinsideRegion < 32; minecraftCuurrentChunkZinsideRegion++)
 						{
-							//Map minecraft chunk-space to chunk storie's
+							//Map minecraft chunk-space to chunk stories's
 							int chunkStoriesCurrentChunkX = (minecraftCurrentChunkXinsideRegion + minecraftRegionX * 32) * 16 - minecraftOffsetX;
 							int chunkStoriesCurrentChunkZ = (minecraftCuurrentChunkZinsideRegion + minecraftRegionZ * 32) * 16 - minecraftOffsetZ;
 
@@ -237,7 +245,8 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 									{
 										//If it succeed, we first require to load the corresponding chunkstories stuff
 
-										//Ignore the summaries
+										//Ignore the summaries for now
+										
 										/*RegionSummary summary = csWorld.getRegionsSummariesHolder().aquireRegionSummaryWorldCoordinates(this, chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ);
 										if(summary != null)
 											registeredCS_Summaries.add(summary);*/
@@ -245,7 +254,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 										//Then the chunks
 										for (int y = 0; y < mcWorldHeight; y += 32)
 										{
-											ChunkHolder holder = csWorld.aquireChunkHolderWorldCoordinates(this, chunkStoriesCurrentChunkX, y, chunkStoriesCurrentChunkZ);
+											ChunkHolder holder = csWorld.aquireChunkHolderWorldCoordinates(worldUser, chunkStoriesCurrentChunkX, y, chunkStoriesCurrentChunkZ);
 											if (holder != null)
 												registeredCS_Holders.add(holder);
 										}
@@ -257,10 +266,11 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 													//Translate each block
 													int mcId = minecraftChunk.getBlockID(x, y, z) & 0xFFF;
 													int meta = minecraftChunk.getBlockMeta(x, y, z) & 0xF;
+													
 													//Ignore air blocks
 													if (mcId != 0)
 													{
-														int dataToSet = cachedIdsMatrix[mcId * 16 + meta];//IDsConverter.getChunkStoriesIdFromMinecraft(mcId, meta);
+														int dataToSet = quickConversion[mcId * 16 + meta];//IDsConverter.getChunkStoriesIdFromMinecraft(mcId, meta);
 														if (dataToSet == -2)
 															dataToSet = IDsConverter.getChunkStoriesIdFromMinecraftComplex(mcId, meta, minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
 
@@ -268,10 +278,11 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 														{
 															Voxel voxel = VoxelsStore.get().getVoxelById(dataToSet);
 
-															//Optionally runs whatever the voxel requires to run when placed
+															//Optionally runs whatever the voxel requires to run when placed (kof kof .. doors )
 															if (voxel instanceof VoxelLogic)
 																dataToSet = ((VoxelLogic) voxel).onPlace(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet, null);
 
+															//Don't bother for nothing
 															if (dataToSet != -1)
 																csWorld.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet);
 														}
@@ -279,9 +290,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 												}
 
 										//Converts external data such as signs
-									
 										SpecialBlocksHandler.processAdditionalStuff(minecraftChunk, csWorld, chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
-										//minecraftChunk.postProcess(csWorld, chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
 									}
 								}
 								catch (Exception e)
@@ -290,6 +299,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 									e.printStackTrace();
 								}
 
+								//Display progress
 								minecraftChunksImported++;
 								if (Math.floor(((double) minecraftChunksImported / (double) minecraftChunksToImport) * 100) > completion)
 								{
@@ -305,24 +315,21 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 
 							}
 
-							//System.out.println(csWorld.getRegionsHolder().countChunks());
-							if (csWorld.getRegionsHolder().countChunks() > 256)
+							if (csWorld.getRegionsHolder().countChunks() > targetChunksToKeepInRam)
 							{
 								//Save world
-								//verbose("More than 256 chunks already in memory, saving and unloading before continuing");
-								csWorld.saveEverything();
-								//for(Region region : registeredCS_Regions)
-								//	region.unregisterUser(user);
+								verbose("More than "+targetChunksToKeepInRam+" chunks already in memory, saving and unloading before continuing");
+								
+								//Redudant, see below
+								//csWorld.saveEverything();
 
 								for (ChunkHolder holder : registeredCS_Holders)
-									holder.unregisterUser(this);
-
-								//for(RegionSummary summary : registeredCS_Summaries)
-								//	summary.unregisterUser(this);
+									holder.unregisterUser(worldUser);
 
 								//registeredCS_Summaries.clear();
 								registeredCS_Holders.clear();
 
+								//Automatically saves what we don't need anymore because this is a master world
 								csWorld.unloadUselessData();
 							}
 						}
@@ -343,7 +350,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		csWorld.unloadEverything();
 	}
 
-	private void stepTwoCreateSummaryData(WorldImplementation csWorld)
+	protected void stepTwoCreateSummaryData(WorldImplementation csWorld)
 	{
 		verbose("Entering step two: making summary data");
 
@@ -362,9 +369,8 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 			for (int regionZ = 0; regionZ < size.sizeInChunks / 8; regionZ++)
 			{
 				RegionSummaryImplementation summary = csWorld.getRegionsSummariesHolder().aquireRegionSummary(this, regionX, regionZ);
-				//System.out.println(regionX+":"+regionZ);
 
-				//Aquires the summaries.
+				//Aquires the chunks we want to make the summaries of.
 				for (int innerCX = 0; innerCX < 8; innerCX++)
 					for (int innerCZ = 0; innerCZ < 8; innerCZ++)
 						for (int chunkY = 0; chunkY < maxHeightPossible / 32; chunkY++)
@@ -372,8 +378,6 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 							ChunkHolder holder = csWorld.aquireChunkHolder(this, regionX * 8 + innerCX, chunkY, regionZ * 8 + innerCZ);
 							if (holder != null)
 								registeredCS_Holders.add(holder);
-
-							//System.out.println((regionX * 8 + innerCX)+":"+ chunkY+":"+ (regionZ * 8 + innerCZ)+" "+registeredCS_Holders.size()+"   "+holder);
 						}
 
 				//Descend from top
@@ -396,8 +400,13 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 					}
 
 				done++;
-				summary.saveSummary();
+				
+				Fence waitForSummarySave = summary.saveSummary();
+				verbose("Waiting for summary saving...");
+				waitForSummarySave.traverse();
+				verbose("Done.");
 
+				//Display progress...
 				if (Math.floor(((double) done / (double) todo) * 100) > completion)
 				{
 					completion = Math.floor(((double) done / (double) todo) * 100);
@@ -416,11 +425,13 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 				
 				registeredCS_Holders.clear();
 
-				csWorld.unloadUselessData();
+				verbose("Saving unused chunk data...");
+				csWorld.unloadUselessData().traverse();
+				verbose("Done.");
 			}
 	}
 
-	private void stepThreeSpreadLightning(WorldImplementation csWorld)
+	protected void stepThreeSpreadLightning(WorldImplementation csWorld)
 	{
 		verbose("Entering step three: spreading light");
 
@@ -506,7 +517,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		csWorld.unloadUselessData();
 	}
 
-	private void stetFourTidbits(MinecraftWorld mcWorld, WorldImplementation csWorld)
+	protected void stetFourTidbits(MinecraftWorld mcWorld, WorldImplementation csWorld)
 	{
 		verbose("Entering step four: tidbits");
 		

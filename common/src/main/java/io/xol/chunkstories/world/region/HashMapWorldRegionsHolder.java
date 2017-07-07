@@ -1,6 +1,7 @@
 package io.xol.chunkstories.world.region;
 
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -8,6 +9,7 @@ import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.engine.concurrency.CompoundFence;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
@@ -106,8 +108,10 @@ public class HashMapWorldRegionsHolder
 		return null;
 	}
 
-	public void saveAll()
+	public Fence saveAll()
 	{
+		CompoundFence allRegionsFences = new CompoundFence();
+		
 		Iterator<RegionImplementation> i = regions.values().iterator();
 		Region region;
 		while (i.hasNext())
@@ -115,9 +119,11 @@ public class HashMapWorldRegionsHolder
 			region = i.next();
 			if (region != null)
 			{
-				region.save();
+				allRegionsFences.add(region.save());
 			}
 		}
+		
+		return allRegionsFences;
 	}
 
 	public void clearAll()
@@ -195,8 +201,11 @@ public class HashMapWorldRegionsHolder
 		return c;
 	}
 	
-	public void unloadsUselessData()
+	public Fence unloadsUselessData()
 	{
+		//We might want to wait for a few things
+		CompoundFence compoundFence = new CompoundFence();
+		
 		//Prevents unloading a region whilst one of it's chunk holders is being aquired
 		noConcurrentRegionCreationDestruction.acquireUninterruptibly();
 		
@@ -211,19 +220,19 @@ public class HashMapWorldRegionsHolder
 			//If no users have registered for any chunks
 			if(region.isUnused() && region.canBeUnloaded())
 			{
+				// You actually don't want to stop saving, because entities move arround and you could fuck your representation of the world else
+				// Either it's all read-only, either it's stream-saving everything
+				// This is the only way to ensure all entities end up in a single region file and we don't have uuid conflicts
 				if(world instanceof WorldMaster)
-					region.unloadAndSave();
+					compoundFence.add(region.unloadAndSave());
 				else
-					region.unload();
-			}
-			else
-			{
-				//if(region.getRegionY() == 0)
-				//	System.out.println("no unload"+region+region.isUnused());
+					region.unload(); //Immediate
 			}
 		}
 		
 		noConcurrentRegionCreationDestruction.release();
+		
+		return compoundFence;
 	}
 
 	/**

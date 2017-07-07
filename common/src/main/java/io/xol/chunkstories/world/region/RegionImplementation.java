@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.io.IOTasks.IOTask;
 import io.xol.engine.concurrency.SafeWriteLock;
 
 import java.lang.ref.WeakReference;
@@ -335,16 +336,16 @@ public class RegionImplementation implements Region
 	}
 
 	@Override
-	public void save()
+	public IOTask save()
 	{
-		world.ioHandler.requestRegionSave(this);
+		return world.ioHandler.requestRegionSave(this);
 	}
 
 	@Override
-	public void unloadAndSave()
+	public IOTask unloadAndSave()
 	{
 		unload();
-		world.ioHandler.requestRegionSave(this);
+		return world.ioHandler.requestRegionSave(this);
 	}
 
 	@Override

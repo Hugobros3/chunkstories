@@ -12,6 +12,7 @@ import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.util.IterableIterator;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -284,8 +285,9 @@ public interface World
 
 	/**
 	 * Blocking method saving all loaded chunks
+	 * @return a Fence that clears once that's done
 	 */
-	public void saveEverything();
+	public Fence saveEverything();
 
 	/**
 	 * Destroys the world, kill threads and frees stuff

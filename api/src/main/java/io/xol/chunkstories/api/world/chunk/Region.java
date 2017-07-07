@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -58,9 +59,11 @@ public interface Region
 
 	//public boolean removeChunk(int chunkX, int chunkY, int chunkZ);
 
-	public void save();
+	/** Will be traversable once the file representing the region at the time of calling this is done writing. */
+	public Fence save();
 
-	public void unloadAndSave();
+	/** Same as above, but unloads first */
+	public Fence unloadAndSave();
 
 	public World getWorld();
 

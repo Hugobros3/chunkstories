@@ -3,6 +3,7 @@ package io.xol.chunkstories.world.summary;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -12,6 +13,8 @@ import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.io.IOTasks.IOTask;
+import io.xol.engine.concurrency.SimpleFence;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -63,6 +66,8 @@ public class RegionSummaryImplementation implements RegionSummary
 
 	public final Texture2D heightsTexture;
 	public final Texture2D voxelTypesTexture;
+	
+	protected final Fence loadFence;
 
 	RegionSummaryImplementation(WorldRegionSummariesHolder worldSummariesHolder, int rx, int rz)
 	{
@@ -88,7 +93,8 @@ public class RegionSummaryImplementation implements RegionSummary
 			voxelTypesTexture = null;
 		}
 
-		loadSummary();
+		//Add a fence to wait out loading
+		loadFence = this.world.ioHandler.requestRegionSummaryLoad(this);
 	}
 
 	@Override
@@ -222,14 +228,9 @@ public class RegionSummaryImplementation implements RegionSummary
 		return c;
 	}
 
-	private void loadSummary()
+	public IOTask saveSummary()
 	{
-		this.world.ioHandler.requestRegionSummaryLoad(this);
-	}
-
-	public void saveSummary()
-	{
-		this.world.ioHandler.requestRegionSummarySave(this);
+		return this.world.ioHandler.requestRegionSummarySave(this);
 	}
 
 	private int index(int x, int z)
@@ -361,6 +362,10 @@ public class RegionSummaryImplementation implements RegionSummary
 	{
 		if (summaryUnloaded.compareAndSet(false, true))
 		{
+			//Signal the loading fence if it's haven't been already
+			if(loadFence instanceof SimpleFence)
+				((SimpleFence) loadFence).signal();
+			
 			if (world instanceof WorldClient)
 			{
 				heightsTexture.destroy();

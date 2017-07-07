@@ -6,10 +6,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.engine.concurrency.CompoundFence;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -204,12 +206,15 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		return summaries.size();
 	}
 
-	public void saveAllLoadedSummaries()
+	public Fence saveAllLoadedSummaries()
 	{
+		CompoundFence allSummariesSaves = new CompoundFence();
 		for (RegionSummaryImplementation cs : summaries.values())
 		{
-			cs.saveSummary();
+			allSummariesSaves.add(cs.saveSummary());
 		}
+		
+		return allSummariesSaves;
 	}
 
 	public void setHeightAndId(int x, int z, int y, int id)

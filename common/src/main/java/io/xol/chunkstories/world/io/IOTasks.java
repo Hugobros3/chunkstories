@@ -1,8 +1,11 @@
 package io.xol.chunkstories.world.io;
 
 import io.xol.chunkstories.Constants;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
+import io.xol.chunkstories.workers.Task;
+import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
@@ -29,7 +32,7 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 /**
  * This thread does I/O work in queue. Extended by IOTaskMultiplayerClient and IOTaskMultiplayerServer for the client/server model.
  */
-public class IOTasks extends Thread
+public class IOTasks extends Thread implements TaskExecutor
 {
 	protected WorldImplementation world;
 
@@ -111,13 +114,14 @@ public class IOTasks extends Thread
 				try
 				{
 					//ChunkStoriesLogger.getInstance().info("processing task : "+task);
-					boolean taskSuccessfull = task.run();
+					boolean taskSuccessfull = task.run(this);
 					// If it returns false, requeue it.
 					if (!taskSuccessfull)
 						tasks.add(task);
+					
 					// Runs a post-run operation
-					else if (task.postRunOperation != null)
-						task.postRunOperation.run();
+					//else if (task.postRunOperation != null)
+					//	task.postRunOperation.run();
 
 				}
 				catch (Exception e)
@@ -140,21 +144,24 @@ public class IOTasks extends Thread
 		return i;
 	}
 
-	public abstract class IOTask
+	public abstract class IOTask extends Task
 	{
-		Runnable postRunOperation = null;
+		/*Runnable postRunOperation = null;
 
 		public void setPostRunOperation(Runnable runnable)
 		{
 			postRunOperation = runnable;
-		}
+		}*/
 
-		abstract public boolean run();
+		//abstract public boolean run();
 
+		@Override
 		public void cancel()
 		{
+			super.cancel();
+			
+			//Kinf of redundant since it'll be skipped afterwards but meh
 			tasks.remove(this);
-			//System.out.println("Task " + this + " removed.");
 		}
 	}
 
@@ -171,7 +178,7 @@ public class IOTasks extends Thread
 		}
 
 		@Override
-		public boolean run()
+		public boolean task(TaskExecutor taskExecutor)
 		{
 			// If for some reasons the chunks holder's are still not loaded, we requeue the job
 			if (!chunkSlot.getRegion().isDiskDataLoaded())
@@ -280,7 +287,7 @@ public class IOTasks extends Thread
 		}
 
 		@Override
-		public boolean run()
+		public boolean task(TaskExecutor taskExecutor)
 		{
 			//Check no saving operations are occuring
 			IOTaskSaveRegion saveRegionTask = new IOTaskSaveRegion(region);
@@ -379,7 +386,7 @@ public class IOTasks extends Thread
 		}
 
 		@Override
-		public boolean run()
+		public boolean task(TaskExecutor taskExecutor)
 		{
 			holder.handler.savingOperations.incrementAndGet();
 			// First compress all loaded chunks !
@@ -428,30 +435,37 @@ public class IOTasks extends Thread
 		}
 	}
 
-	public void requestRegionSave(RegionImplementation holder)
+	public IOTask requestRegionSave(RegionImplementation holder)
 	{
 		if (!holder.isDiskDataLoaded())
-			return;
+			return null;
 
 		IOTask task = new IOTaskSaveRegion(holder);
 		scheduleTask(task);
+		
+		return task;
 	}
 
-	public void requestRegionSaveAndUnload(RegionImplementation holder)
+	//Irrelevant. We unload first actually
+	@Deprecated
+	private void requestRegionSaveAndUnload(RegionImplementation holder)
 	{
 		if (!holder.isDiskDataLoaded())
 			return;
 
-		IOTask task = new IOTaskSaveRegion(holder);
+		IOTask task = new IOTaskSaveRegion(holder) {
 
-		task.setPostRunOperation(new Runnable()
-		{
 			@Override
-			public void run()
-			{
-				holder.unload();
+			public boolean task(TaskExecutor taskExecutor) {
+				boolean worked = super.task(taskExecutor);
+				if(worked) {
+					holder.unload();
+				}
+				
+				return worked;
 			}
-		});
+			
+		};
 
 		scheduleTask(task);
 	}
@@ -466,7 +480,7 @@ public class IOTasks extends Thread
 		}
 
 		@Override
-		public boolean run()
+		public boolean task(TaskExecutor taskExecutor)
 		{
 			if (summary.isLoaded())
 				return true;
@@ -564,10 +578,12 @@ public class IOTasks extends Thread
 		}
 	}
 
-	public void requestRegionSummaryLoad(RegionSummaryImplementation summary)
+	public Fence requestRegionSummaryLoad(RegionSummaryImplementation summary)
 	{
-		IOTask task = new IOTaskLoadSummary(summary);
+		IOTaskLoadSummary task = new IOTaskLoadSummary(summary);
 		scheduleTask(task);
+		
+		return task;
 	}
 
 	public class IOTaskSaveSummary extends IOTask
@@ -580,7 +596,7 @@ public class IOTasks extends Thread
 		}
 
 		@Override
-		public boolean run()
+		public boolean task(TaskExecutor taskExecutor)
 		{
 			try
 			{
@@ -652,10 +668,12 @@ public class IOTasks extends Thread
 		}
 	}
 
-	public void requestRegionSummarySave(RegionSummaryImplementation summary)
+	public IOTaskSaveSummary requestRegionSummarySave(RegionSummaryImplementation summary)
 	{
-		IOTask task = new IOTaskSaveSummary(summary);
+		IOTaskSaveSummary task = new IOTaskSaveSummary(summary);
 		scheduleTask(task);
+		
+		return task;
 	}
 
 	public void notifyChunkUnload(int chunkX, int chunkY, int chunkZ)

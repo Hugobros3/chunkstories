@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.server.net.UserConnection;
+import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
@@ -44,7 +45,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 		}
 		
 		@Override
-		public boolean run()
+		public boolean task(TaskExecutor taskExecutor)
 		{
 			try
 			{
@@ -118,7 +119,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 		}
 		
 		@Override
-		public boolean run()
+		public boolean task(TaskExecutor taskExecutor)
 		{
 			try
 			{
