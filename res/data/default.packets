@@ -31,7 +31,7 @@ end
 
 packet move_item 6
 	allowedFrom: client
-	serverClass: io.xol.chunkstories.core.net.packets.PacketInventoryMoveItemPile
+	commonClass: io.xol.chunkstories.core.net.packets.PacketInventoryMoveItemPile
 end
 
 packet partial_inv_update 7
