@@ -100,9 +100,9 @@ public interface Content
 		
 		public EntityType getEntityTypeByName(String entityName);
 		
-		public EntityType getEntityTypeByClassname(String className);
+		//public EntityType getEntityTypeByClassname(String className);
 		
-		public short getEntityIdByClassname(String className);
+		//public short getEntityIdByClassname(String className);
 		
 		public Iterator<EntityType> all();
 

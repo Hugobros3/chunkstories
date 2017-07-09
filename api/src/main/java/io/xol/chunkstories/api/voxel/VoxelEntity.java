@@ -38,6 +38,8 @@ public abstract class VoxelEntity extends Voxel implements VoxelLogic, VoxelInte
 			
 			return entity;
 		}
+		
+		//Does not make sense
 		System.out.println("Edge case : looking for an voxel entity in a region that is not supposed to be loaded");
 		return null;
 	}
@@ -51,8 +53,6 @@ public abstract class VoxelEntity extends Voxel implements VoxelLogic, VoxelInte
 			return voxelData;
 		
 		EntityVoxel voxelEntity = createVoxelEntity(world, x, y, z);
-
-		//System.out.println("added voxel entity");
 		
 		world.addEntity(voxelEntity);
 		

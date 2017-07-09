@@ -36,7 +36,7 @@ public class EntitySerializer
 			LengthAwareOutputStream out = LengthAwareBufferedIOHelper.getLengthAwareOutput();
 			
 			out.writeLong(entity.getUUID());
-			out.writeShort(entity.getEID());
+			out.writeShort(entity.getType().getId());
 
 			//Write all components we wanna update
 			entity.getComponents().pushAllComponentsInStream(destination, out);

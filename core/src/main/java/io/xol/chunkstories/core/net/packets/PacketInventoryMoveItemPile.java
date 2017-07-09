@@ -19,7 +19,6 @@ import io.xol.chunkstories.core.entity.EntityGroundItem;
 import io.xol.chunkstories.item.inventory.InventoryLocalCreativeMenu;
 import io.xol.chunkstories.net.InventoryTranslator;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
-import io.xol.chunkstories.world.WorldImplementation;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -170,7 +169,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 				}
 				
 				Location loc = playerEntity.getLocation();
-				EntityGroundItem entity = new EntityGroundItem((WorldImplementation) loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), itemPile);
+				EntityGroundItem entity = new EntityGroundItem(player.getContext().getContent().entities().getEntityTypeByName("groundItem"), loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), itemPile);
 				loc.getWorld().addEntity(entity);
 				
 				player.sendMessage("Notice : throwing stuff on ground is still glitchy and experimental.");

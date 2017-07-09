@@ -36,7 +36,7 @@ public class PacketEntity extends PacketSynch implements PacketPrepared
 		this.entityToUpdate = entityToUpdate;
 		
 		entityUUID = entityToUpdate.getUUID();
-		entityTypeID = entityToUpdate.getEID();
+		entityTypeID = entityToUpdate.getType().getId();
 		
 		this.getSynchPacketOutputStream().writeLong(entityUUID);
 		this.getSynchPacketOutputStream().writeShort(entityTypeID);

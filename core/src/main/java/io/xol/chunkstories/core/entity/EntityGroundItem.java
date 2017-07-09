@@ -1,6 +1,7 @@
 package io.xol.chunkstories.core.entity;
 
 import io.xol.chunkstories.api.entity.EntityBase;
+import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
@@ -19,15 +20,15 @@ public class EntityGroundItem extends EntityBase implements EntityRenderable
 	private long spawnTime;
 	private final EntityGroundItemPileComponent itemPileWithin;
 	
-	public EntityGroundItem(World world, double x, double y, double z)
+	public EntityGroundItem(EntityType t, World world, double x, double y, double z)
 	{
-		super(world, x, y, z);
+		super(t, world, x, y, z);
 		itemPileWithin = new EntityGroundItemPileComponent(this);
 	}
 	
-	public EntityGroundItem(World world, double x, double y, double z, ItemPile itemPile)
+	public EntityGroundItem(EntityType t, World world, double x, double y, double z, ItemPile itemPile)
 	{
-		super(world, x, y, z);
+		super(t, world, x, y, z);
 		itemPileWithin = new EntityGroundItemPileComponent(this, itemPile);
 		spawnTime = System.currentTimeMillis();
 	}

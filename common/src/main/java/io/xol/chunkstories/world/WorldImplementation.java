@@ -212,7 +212,7 @@ public abstract class WorldImplementation implements World
 			
 			//TODO EntitySimplePlayer ?
 			if(entity == null || ((entity instanceof EntityLiving) && (((EntityLiving) entity).isDead())))
-				entity = this.gameContext.getContent().entities().getEntityTypeByName("EntityPlayer").create(this);
+				entity = this.gameContext.getContent().entities().getEntityTypeByName("player").create(this);
 				//entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName()); //Default entity
 			else
 				entity.setUUID(-1);

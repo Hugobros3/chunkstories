@@ -33,8 +33,9 @@ public abstract class EntityBase implements Entity
 	private boolean hasSpawned = false;
 	
 	//The eID is just a cache to speed up classname<->serialized id resolution
-	private final short eID;
-
+	//private final short eID;
+	private final EntityType entityType;
+	
 	//Multiplayer players or other agents that chose to be notified when components of the entity are changed
 	private final Set<Subscriber> subscribers = new HashSet<Subscriber>();
 
@@ -43,7 +44,7 @@ public abstract class EntityBase implements Entity
 	final protected EntityComponentPosition positionComponent;
 	final protected EntityComponentVelocity velocityComponent;
 	
-	public EntityBase(World world, double x, double y, double z)
+	public EntityBase(EntityType entityType, World world, double x, double y, double z)
 	{
 		this.world = world;
 
@@ -56,7 +57,7 @@ public abstract class EntityBase implements Entity
 		positionComponent.setPosition(x, y, z);
 		
 		//@see: eID field declaration
-		eID = world.getGameContext().getContent().entities().getEntityIdByClassname(this.getClass().getName());
+		this.entityType = entityType;//world.getGameContext().getContent().entities().getEntityIdByClassname(this.getClass().getName());
 	}
 	
 	public EntityComponentExistence getComponentExistence()
@@ -126,7 +127,7 @@ public abstract class EntityBase implements Entity
 	@Override
 	public String toString()
 	{
-		return "[" + this.getClass().getSimpleName() + ": holderExists: " + (positionComponent.getRegionWithin() != null) + " ,position : " + positionComponent.getLocation() + " UUID : " + entityUUID + " EID : " + this.getEID() + " Region:"
+		return "[" + this.getClass().getSimpleName() + ": holderExists: " + (positionComponent.getRegionWithin() != null) + " ,position : " + positionComponent.getLocation() + " UUID : " + entityUUID + " Type: " + this.getType().getName() + " Region:"
 				+ this.positionComponent.getRegionWithin() + " ]";
 	}
 
@@ -209,9 +210,9 @@ public abstract class EntityBase implements Entity
 	}
 
 	@Override
-	public final short getEID()
+	public final EntityType getType()
 	{
-		return eID;
+		return entityType;
 	}
 
 	@Override

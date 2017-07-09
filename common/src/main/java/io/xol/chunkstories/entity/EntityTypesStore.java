@@ -2,18 +2,15 @@ package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.EntityTypes;
-import io.xol.chunkstories.api.GameContext;
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityType;
+import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;
 import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.content.GameContentStore;
+import io.xol.chunkstories.item.EntityTypeImpl;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -24,18 +21,18 @@ import java.util.Map;
 
 public class EntityTypesStore implements EntityTypes
 {
-	private final GameContext context;
+	//private final GameContext context;
 	private final Content content;
 	//private final EntityComponentsStore entityComponents;
 	
 	private Map<Short, EntityType> entityTypesById = new HashMap<Short, EntityType>();
 	private Map<String, EntityType> entityTypesByName = new HashMap<String, EntityType>();
-	private Map<String, EntityType> entityTypesByClassname = new HashMap<String, EntityType>();
+	//private Map<String, EntityType> entityTypesByClassname = new HashMap<String, EntityType>();
 
 	public EntityTypesStore(GameContentStore content)
 	{
 		this.content = content;
-		this.context = content.getContext();
+		//this.context = content.getContext();
 		
 		//this.entityComponents = new EntityComponentsStore(context, this);
 		
@@ -46,7 +43,7 @@ public class EntityTypesStore implements EntityTypes
 	{
 		entityTypesById.clear();
 		entityTypesByName.clear();
-		entityTypesByClassname.clear();
+		//entityTypesByClassname.clear();
 		
 		Iterator<Asset> i = content.modsManager().getAllAssetsByExtension("entities");
 		while(i.hasNext())
@@ -76,52 +73,20 @@ public class EntityTypesStore implements EntityTypes
 				}
 				else
 				{
-					if(line.contains(" "))
+					if(line.startsWith("entity "))
 					{
 						String[] split = line.split(" ");
-						short id = Short.parseShort(split[0]);
-						String className = split[1];
-						
-						String entityTypeName = className.substring(className.lastIndexOf(".") + 1);
-						if(split.length >= 3)
-							entityTypeName = split[2];
-							
-						System.out.println(entityTypeName);
+						String name = split[1];
+						short id = Short.parseShort(split[2]);
 						
 						try
 						{
-							Class<?> entityClass = content.modsManager().getClassByName(className);
-							if(entityClass == null)
-							{
-								System.out.println("Entity class "+className+" does not exist in codebase.");
-							}
-							else if (!(Entity.class.isAssignableFrom(entityClass)))
-							{
-								ChunkStoriesLoggerImplementation.getInstance().warning("Entity class " + entityClass + " is not implementing the Entity interface.");
-							}
-							else
-							{
-								@SuppressWarnings("rawtypes")
-								Class[] types = { World.class, Double.TYPE, Double.TYPE , Double.TYPE  };
-								@SuppressWarnings("unchecked")
-								Constructor<? extends Entity> constructor = (Constructor<? extends Entity>) entityClass.getConstructor(types);
-								
-								if(constructor == null)
-								{
-									System.out.println("Entity "+className+" does not provide a valid constructor.");
-								}
-								else
-								{
-									EntityTypeLoaded addMe = new EntityTypeLoaded(entityTypeName, className, constructor, id);
+							EntityTypeImpl entityType = new EntityTypeImpl(this, name, id, reader);
 
-									entityTypesById.put(id, addMe);
-									entityTypesByName.put(entityTypeName, addMe);
-									entityTypesByClassname.put(className, addMe);
-								}
-							}
-
+							this.entityTypesById.put(entityType.getId(), entityType);
+							this.entityTypesByName.put(entityType.getName(), entityType);
 						}
-						catch (NoSuchMethodException | SecurityException | IllegalArgumentException e)
+						catch (IllegalEntityDeclarationException e)
 						{
 							e.printStackTrace();
 						}
@@ -136,7 +101,7 @@ public class EntityTypesStore implements EntityTypes
 		}
 	}
 
-	class EntityTypeLoaded implements EntityType {
+	/*class EntityTypeLoaded implements EntityType {
 
 		public EntityTypeLoaded(String name, String className, Constructor<? extends Entity> constructor, short id)
 		{
@@ -173,7 +138,7 @@ public class EntityTypesStore implements EntityTypes
 		@Override
 		public Entity create(World world)
 		{
-			Object[] parameters = { world, 0d, 0d, 0d };
+			Object[] parameters = { this, world, 0d, 0d, 0d };
 			try
 			{
 				return constructor.newInstance(parameters);
@@ -188,7 +153,7 @@ public class EntityTypesStore implements EntityTypes
 			}
 		}
 		
-	}
+	}*/
 
 	@Override
 	public EntityType getEntityTypeById(short entityId)
@@ -202,19 +167,22 @@ public class EntityTypesStore implements EntityTypes
 		return entityTypesByName.get(entityName);
 	}
 
-	@Override
+	@Deprecated
 	public EntityType getEntityTypeByClassname(String className)
 	{
-		return entityTypesByClassname.get(className);
+		throw new UnsupportedOperationException();
+		//return entityTypesByClassname.get(className);
 	}
 
-	@Override
+	@Deprecated
 	public short getEntityIdByClassname(String className)
 	{
+		throw new UnsupportedOperationException();
+		/*
 		EntityType type = entityTypesByClassname.get(className);
 		if(type == null)
 			return -1;
-		return type.getId();
+		return type.getId();*/
 	}
 
 	@Override

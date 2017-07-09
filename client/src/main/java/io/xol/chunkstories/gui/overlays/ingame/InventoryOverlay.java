@@ -19,7 +19,6 @@ import io.xol.chunkstories.core.entity.EntityGroundItem;
 import io.xol.chunkstories.core.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.gui.InventoryDrawer;
 import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -238,7 +237,7 @@ public class InventoryOverlay extends Layer
 						
 						//Spawn a new ground item
 						Location loc = playerEntity.getLocation();
-						EntityGroundItem entity = new EntityGroundItem((WorldImplementation) loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), selectedItem);
+						EntityGroundItem entity = new EntityGroundItem(player.getContext().getContent().entities().getEntityTypeByName("groundItem"), loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), selectedItem);
 						loc.getWorld().addEntity(entity);
 						
 						player.sendMessage("Notice : throwing stuff on ground is still glitchy and experimental.");

@@ -1,6 +1,7 @@
 package io.xol.chunkstories.core.entity;
 
 import io.xol.chunkstories.api.entity.EntityBase;
+import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -11,9 +12,9 @@ public class EntitySUV extends EntityBase// implements EntityRenderable
 {
 	int i = 0;
 
-	public EntitySUV(World w, double x, double y, double z)
+	public EntitySUV(EntityType t, World w, double x, double y, double z)
 	{
-		super(w, x, y, z);
+		super(t, w, x, y, z);
 		//anim = new BVHAnimation(new File("res/models/human.bvh"));
 	}
 

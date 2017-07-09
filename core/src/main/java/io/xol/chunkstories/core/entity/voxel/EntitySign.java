@@ -1,6 +1,7 @@
 package io.xol.chunkstories.core.entity.voxel;
 
 import io.xol.chunkstories.api.entity.EntityBase;
+import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.math.Matrix4f;
 import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
@@ -29,9 +30,9 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 	String cachedText = null;
 	TextMesh renderData = null;
 
-	public EntitySign(World w, double x, double y, double z)
+	public EntitySign(EntityType t, World w, double x, double y, double z)
 	{
-		super(w, x, y, z);
+		super(t, w, x, y, z);
 	}
 
 	public void setText(String text)

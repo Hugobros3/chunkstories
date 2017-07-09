@@ -1,6 +1,7 @@
 package io.xol.chunkstories.core.entity.voxel;
 
 import io.xol.chunkstories.api.entity.EntityBase;
+import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
@@ -16,9 +17,9 @@ public class EntityChest extends EntityBase implements EntityWithInventory, Enti
 {
 	EntityComponentPublicInventory inventoryComponent;
 	
-	public EntityChest(World w, double x, double y, double z)
+	public EntityChest(EntityType t, World w, double x, double y, double z)
 	{
-		super(w, x, y, z);
+		super(t, w, x, y, z);
 		inventoryComponent = new EntityComponentPublicInventory(this, 10, 6);
 	}
 	

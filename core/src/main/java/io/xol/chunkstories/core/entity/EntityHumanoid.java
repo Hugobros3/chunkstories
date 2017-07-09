@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.animation.SkeletalAnimation;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.DamageCause;
+import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemVoxel;
@@ -23,7 +24,6 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -59,9 +59,9 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 	
 	public final EntityComponentStance stance;
 
-	public EntityHumanoid(World world, double x, double y, double z)
+	public EntityHumanoid(EntityType t, World world, double x, double y, double z)
 	{
-		super(world, x, y, z);
+		super(t, world, x, y, z);
 
 		stance = new EntityComponentStance(this);
 		

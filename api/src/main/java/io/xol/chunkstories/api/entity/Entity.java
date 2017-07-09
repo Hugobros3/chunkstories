@@ -21,6 +21,12 @@ import io.xol.chunkstories.api.world.chunk.Region;
 
 public interface Entity
 {
+	
+	/**
+	 * Return the object representing the declaration of this entity in a .entities file
+	 */
+	public EntityType getType();
+	
 	public EntityComponentExistence getComponentExistence();
 	
 	public EntityComponentPosition getEntityComponentPosition();
@@ -87,13 +93,6 @@ public interface Entity
 	 * @param camera
 	 */
 	public void setupCamera(RenderingInterface camera);
-	
-	/**
-	 * Get the EntityID of this entity
-	 * ie : the number in .entities files
-	 * @return
-	 */
-	public short getEID();
 
 	/**
 	 * Get the UUID of this entity.

@@ -12,6 +12,7 @@ import io.xol.chunkstories.api.entity.components.EntityComponentName;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityFeedable;
@@ -91,9 +92,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 	int variant;
 	
-	public EntityPlayer(World w, double x, double y, double z)
+	public EntityPlayer(EntityType t, World w, double x, double y, double z)
 	{
-		super(w, x, y, z);
+		super(t, w, x, y, z);
 		
 		controllerComponent = new EntityComponentController(this, this.getComponents().getLastComponent());
 		
@@ -109,9 +110,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		armor = new EntityArmorInventory(this, 4, 1);
 	}
 
-	public EntityPlayer(WorldImplementation w, double x, double y, double z, String name)
+	public EntityPlayer(EntityType t, WorldImplementation w, double x, double y, double z, String name)
 	{
-		this(w, x, y, z);
+		this(t, w, x, y, z);
 		this.name.setName(name);
 
 		variant = ColorsTools.getUniqueColorCode(name) % 6;

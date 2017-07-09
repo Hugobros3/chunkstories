@@ -1,6 +1,7 @@
 package io.xol.chunkstories.core.entity.voxel;
 
 import io.xol.chunkstories.api.entity.EntityBase;
+import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.world.World;
@@ -11,9 +12,9 @@ import io.xol.chunkstories.api.world.World;
 
 public class EntityVoxelTest extends EntityBase implements EntityVoxel
 {
-	public EntityVoxelTest(World w, double x, double y, double z)
+	public EntityVoxelTest(EntityType t, World w, double x, double y, double z)
 	{
-		super(w, x, y, z);
+		super(t, w, x, y, z);
 	}
 	
 	@Override

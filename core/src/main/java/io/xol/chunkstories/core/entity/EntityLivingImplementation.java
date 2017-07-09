@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.entity.DamageCause;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityBase;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
@@ -54,9 +55,9 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 	protected double lastStandingHeight = Double.NaN;
 	protected boolean wasStandingLastTick = true;
 
-	public EntityLivingImplementation(World world, double x, double y, double z)
+	public EntityLivingImplementation(EntityType t, World world, double x, double y, double z)
 	{
-		super(world, x, y, z);
+		super(t, world, x, y, z);
 
 		entityRotationComponent = new EntityComponentRotation(this, this.getComponents().getLastComponent());
 		entityHealthComponent = new EntityComponentHealth(this, getStartHealth());
