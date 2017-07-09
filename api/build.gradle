@@ -12,7 +12,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven'
 
 //TODO Make version depend on Git ?
-version = '104'
+version = '105'
 description = 'Open API for the game \'Chunk Stories\''
 
 dependencies {
