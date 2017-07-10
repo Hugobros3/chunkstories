@@ -69,7 +69,7 @@ dependencies {
 
 // Dépendances des autres sous-projets
 dependencies {
-    compile project(':api')
+    //compile project(':api')
     compile project(':core')
     compile project(':common')
 }

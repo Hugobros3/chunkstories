@@ -30,7 +30,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 mainClassName = 'io.xol.chunkstories.converter.OfflineWorldConverter'
 
 dependencies {
-    compile project(':api')
+    //compile project(':api')
     compile project(':core')
     compile project(':common')
 }

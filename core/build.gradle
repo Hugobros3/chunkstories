@@ -13,7 +13,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven'
 
 dependencies {
-    api project(':api')
+    //api project(':api')
     api project(':common')
 }
 
