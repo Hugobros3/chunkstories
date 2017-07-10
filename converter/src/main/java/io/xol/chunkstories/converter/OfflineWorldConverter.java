@@ -179,7 +179,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		WorldInfoImplementation info = new WorldInfoImplementation("name: Converted_" + mcFolder + "\n" + "seed: null\n" + "worldgen: blank\n" + "size: " + size.name(), csFolder.getName());
 
 		//Save it and creates the ChunkStories world
-		info.save(new File(csFolder.getAbsolutePath() + "/info.txt"));*/
+		info.save(new File(csFolder.getAbsolutePath() + "/info.world"));*/
 		
 		String worldGenerator = "blank";
 		

@@ -32,7 +32,7 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	
 	public WorldTool(GameContext toolContext, WorldInfoFile info, boolean immediateIO)
 	{
-		super(toolContext, info);//new WorldInfoImplementation(new File(worldDir + "/info.txt"), new File(worldDir).getName()));
+		super(toolContext, info);//new WorldInfoImplementation(new File(worldDir + "/info.world"), new File(worldDir).getName()));
 
 		this.toolContext = toolContext;
 		

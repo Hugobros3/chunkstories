@@ -28,7 +28,7 @@ public class WorldInfoFile extends WorldInfoImplementation {
 	
 	/** Utility to create new worlds */
 	public static WorldInfoFile createNewWorld(File folderIn, WorldInfoImplementation basedOn) throws IOException {
-		File file = new File(folderIn.getPath() + "/info.txt");
+		File file = new File(folderIn.getPath() + "/info.world");
 		
 		basedOn.save(file);
 		

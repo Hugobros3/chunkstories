@@ -727,7 +727,7 @@ public abstract class WorldImplementation implements World
 		regionsAndSummaries.add(regions.saveAll());
 		regionsAndSummaries.add(getRegionsSummariesHolder().saveAllLoadedSummaries());
 
-		this.worldInfo.save(new File(this.getFolderPath() + "/info.txt"));
+		this.worldInfo.save(new File(this.getFolderPath() + "/info.world"));
 		this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
 		this.internalData.setLong("worldTime", worldTime);
 		this.internalData.setLong("worldTimeInternal", worldTicksCounter);

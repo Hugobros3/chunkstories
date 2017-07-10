@@ -32,7 +32,6 @@ import io.xol.engine.net.HttpRequester;
 public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 {
 	InputText ipForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
-	
 
 	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
 	//Button backOption = new Button(this, 0, 0, 300, "#{menu.back}");

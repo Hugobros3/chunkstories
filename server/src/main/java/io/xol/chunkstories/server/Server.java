@@ -128,7 +128,7 @@ public class Server implements Runnable, ServerInterface
 			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
 			if (new File(worldDir).exists())
 			{
-				world = new WorldServer(this, new WorldInfoFile(new File(worldDir + "/info.txt")));
+				world = new WorldServer(this, new WorldInfoFile(new File(worldDir + "/info.world")));
 			}
 			else
 			{

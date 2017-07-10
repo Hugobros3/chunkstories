@@ -159,7 +159,7 @@ public class MinecraftMapConverter implements GameContext, WorldUser
 			WorldInfoFile worldInfoFile = WorldInfoFile.createNewWorld(csWorldDir, worldInfo);
 			
 			//WorldInfoImplementation info = new WorldInfoImplementation("name: Converted_" + mcWorldName + "\n" + "seed: null\n" + "worldgen: blank\n" + "size: " + size.name(), csWorldName);
-			//worldInfoFile.save(new File(csWorldDir + "/info.txt"));
+			//worldInfoFile.save(new File(csWorldDir + "/info.world"));
 			
 			WorldImplementation exported = new WorldTool(user, worldInfoFile);
 

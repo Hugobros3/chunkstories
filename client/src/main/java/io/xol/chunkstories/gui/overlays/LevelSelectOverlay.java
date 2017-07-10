@@ -66,7 +66,7 @@ public class LevelSelectOverlay extends Layer
 			worldsFolder.mkdir();
 		for (File f : worldsFolder.listFiles())
 		{
-			File infoTxt = new File(f.getAbsolutePath() + "/info.txt");
+			File infoTxt = new File(f.getAbsolutePath() + "/info.world");
 			if (infoTxt.exists())
 			{
 				try {

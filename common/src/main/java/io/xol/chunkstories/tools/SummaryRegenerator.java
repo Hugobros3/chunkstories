@@ -43,7 +43,7 @@ public class SummaryRegenerator
 			}
 
 			//TODO let implement GameContext
-			WorldImplementation world = new WorldTool(null, new WorldInfoFile(new File(csWorldDir + "/info.txt")));//, "", new BlankWorldGenerator(), size);
+			WorldImplementation world = new WorldTool(null, new WorldInfoFile(new File(csWorldDir + "/info.world")));//, "", new BlankWorldGenerator(), size);
 			for (int i = 0; i < world.getSizeInChunks() / 8; i++)
 			{
 				for (int j = 0; j < world.getSizeInChunks() / 8; j++)
