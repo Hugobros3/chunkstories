@@ -12,6 +12,7 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
@@ -157,12 +158,17 @@ public class ServerPlayer implements Player
 		{
 			//Useless, kept for admin easyness, scripts, whatnot
 			Location controlledEntityLocation = controlledEntity.getLocation();
+			
+			//Safely assumes as a SERVER the world will be master ;)
+			WorldMaster world = (WorldMaster) controlledEntityLocation.getWorld();
+			
 			playerDataFile.setDouble("posX", controlledEntityLocation.getX());
 			playerDataFile.setDouble("posY", controlledEntityLocation.getY());
 			playerDataFile.setDouble("posZ", controlledEntityLocation.getZ());
+			playerDataFile.setString("world", world.getWorldInfo().getInternalName());
 
 			//Serializes the whole player entity !!!
-			SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + this.getName().toLowerCase() + ".csf");
+			SerializedEntityFile playerEntityFile = new SerializedEntityFile(world.getFolderPath() + "/players/" + this.getName().toLowerCase() + ".csf");
 			playerEntityFile.write(controlledEntity);
 		}
 

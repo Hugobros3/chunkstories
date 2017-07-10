@@ -191,7 +191,7 @@ public abstract class WorldImplementation implements World
 		
 		Entity savedEntity = null;
 		
-		SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + player.getName().toLowerCase() + ".csf");
+		SerializedEntityFile playerEntityFile = new SerializedEntityFile(this.getFolderPath() + "/players/" + player.getName().toLowerCase() + ".csf");
 		if(playerEntityFile.exists())
 			savedEntity = playerEntityFile.read(this);
 		

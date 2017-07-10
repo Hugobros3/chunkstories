@@ -501,7 +501,7 @@ public class Ingame extends Layer
 	
 			if(this.playerEntity != null)
 			{
-				SerializedEntityFile playerEntityFile = new SerializedEntityFile("./players/" + Client.getInstance().getPlayer().getName().toLowerCase() + ".csf");
+				SerializedEntityFile playerEntityFile = new SerializedEntityFile(world.getFolderPath() + "/players/" + Client.getInstance().getPlayer().getName().toLowerCase() + ".csf");
 				playerEntityFile.write(this.playerEntity);
 			}
 		}
@@ -529,8 +529,8 @@ public class Ingame extends Layer
 		int by = ((int)(double) camera.getCameraPosition().getY());
 		int bz = ((int)(double) camera.getCameraPosition().getZ());
 		int data = world.getVoxelData(bx, by, bz);
-		int bl = (data & 0x0F000000) >> 0x18;
-		int sl = (data & 0x00F00000) >> 0x14;
+		int bl = VoxelFormat.blocklight(data);
+		int sl = VoxelFormat.sunlight(data);//(data & 0x00F00000) >> 0x14;
 		int cx = bx / 32;
 		int cy = by / 32;
 		int cz = bz / 32;
