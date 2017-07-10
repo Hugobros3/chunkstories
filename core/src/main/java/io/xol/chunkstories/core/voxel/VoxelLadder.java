@@ -1,5 +1,6 @@
 package io.xol.chunkstories.core.voxel;
 
+import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
@@ -20,6 +21,7 @@ public class VoxelLadder extends Voxel implements VoxelClimbable
 	public VoxelModel getVoxelRenderer(VoxelContext info)
 	{
 		int meta = info.getMetaData();
+		
 		if(meta == 2)
 			return models[2];
 		else if(meta == 3)
@@ -30,4 +32,23 @@ public class VoxelLadder extends Voxel implements VoxelClimbable
 			return models[1];
 		return models[0];
 	}
+
+	@Override
+	public CollisionBox[] getCollisionBoxes(VoxelContext info) {
+
+		int meta = info.getMetaData();
+		
+		if(meta == 2)
+			return new CollisionBox[]{new CollisionBox(1.0, 1.0, 0.1).translate(0.0, 0.0, 0.9)};
+		if(meta == 3)
+			return new CollisionBox[]{new CollisionBox(1.0, 1.0, 0.1)};
+		if(meta == 4)
+			return new CollisionBox[]{new CollisionBox(0.1, 1.0, 1.0).translate(0.9, 0.0, 0.0)};
+		if(meta == 5)
+			return new CollisionBox[]{new CollisionBox(0.1, 1.0, 1.0)};
+		
+		return super.getCollisionBoxes(info);
+	}
+	
+	
 }
