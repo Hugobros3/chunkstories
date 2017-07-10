@@ -17,9 +17,7 @@ import io.xol.chunkstories.api.rendering.target.RenderTargetAttachementsConfigur
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.gui.overlays.LoginOverlay;
 import io.xol.chunkstories.gui.overlays.MainMenuOverlay;
-import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
 import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;

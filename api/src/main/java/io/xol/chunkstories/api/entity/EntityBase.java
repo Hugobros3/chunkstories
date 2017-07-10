@@ -26,6 +26,7 @@ import io.xol.chunkstories.api.world.chunk.Region;
 
 public abstract class EntityBase implements Entity
 {
+	final private EntityType entityType;
 	final protected World world;
 	
 	//The entity UUID is set to -1 so when added to a World the World assigns it a proper one
@@ -34,10 +35,9 @@ public abstract class EntityBase implements Entity
 	
 	//The eID is just a cache to speed up classname<->serialized id resolution
 	//private final short eID;
-	private final EntityType entityType;
 	
 	//Multiplayer players or other agents that chose to be notified when components of the entity are changed
-	private final Set<Subscriber> subscribers = new HashSet<Subscriber>();
+	final private Set<Subscriber> subscribers = new HashSet<Subscriber>();
 
 	//Basic components every entity should have
 	final protected EntityComponentExistence existenceComponent;

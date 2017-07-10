@@ -60,6 +60,7 @@ public class Chat
 		public long time;
 		public String text;
 
+		@SuppressWarnings("unused")
 		public void clickRelative(int x, int y)
 		{
 			//TODO clickable text, urls etc

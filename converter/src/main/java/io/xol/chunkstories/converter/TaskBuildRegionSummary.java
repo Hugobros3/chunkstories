@@ -40,9 +40,10 @@ public class TaskBuildRegionSummary extends Task {
 				{
 					ChunkHolder holder = csWorld.aquireChunkHolder(cwt, regionX * 8 + innerCX, chunkY, regionZ * 8 + innerCZ);
 					if (holder != null) {
-						cwt.registeredCS_Holders.add(holder);
-						cwt.chunksAquired++;
 						loadRelevantData.add(holder.waitForLoading());
+						
+						if(cwt.registeredCS_Holders.add(holder))
+							cwt.chunksAquired++;
 					}
 				}
 		

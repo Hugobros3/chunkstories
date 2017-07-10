@@ -21,7 +21,6 @@ import io.xol.chunkstories.api.world.chunk.Region;
 
 public interface Entity
 {
-	
 	/**
 	 * Return the object representing the declaration of this entity in a .entities file
 	 */
@@ -31,34 +30,23 @@ public interface Entity
 	
 	public EntityComponentPosition getEntityComponentPosition();
 	
-	/**
-	 * Returns the location of the entity
-	 * @return
-	 */
+	/** @return the location of the entity */
 	public Location getLocation();
 	
-	/**
-	 * Sets the location of the entity
-	 * @param loc
-	 */
+	/** Sets the location of the entity */
 	public void setLocation(Location loc);
 	
-	/**
-	 * Return the entity's current chunk holder
-	 * @return
-	 */
+	/** @return the entity's current chunk holder */
 	public Region getRegion();
 	
-	/**
-	 * Return the entity's world
-	 * @return
-	 */
+	/** @return the entity's world */
 	public World getWorld();
 
-	/**
-	 * Updates the entity, ran at 60Hz by default
-	 */
+	/** Updates the entity, ran at 60Hz by default */
 	public void tick();
+
+	/** Called when trying to interact with an entity. Returning 'true' will stop the interaction chain and won't allow anything further to interact with it. */
+	public boolean handleInteraction(Entity entity, Input input);
 
 	//TODO refactor these properly
 	public void moveWithoutCollisionRestrain(Vector3dm delta);
@@ -76,34 +64,22 @@ public interface Entity
 	//TODO Does all entities need that for real ?
 	public EntityComponentVelocity getVelocityComponent();
 	
-	/**
-	 * Returns the entitie's AABBs to their position
-	 * @return
-	 */
+	/** @return the entitie's AABBs to their position */
 	public CollisionBox getTranslatedBoundingBox();
 	
-	/**
-	 * Returns the entitie's AABBs
-	 * @return
-	 */
+	/** @return the entitie's AABBs */
 	public CollisionBox getBoundingBox();
 	
 	/**
 	 * Called when controlling/viewing an entity
-	 * @param camera
+	 * @param renderer
 	 */
-	public void setupCamera(RenderingInterface camera);
+	public void setupCamera(RenderingInterface renderer);
 
-	/**
-	 * Get the UUID of this entity.
-	 * @return
-	 */
+	/** @return the UUID of this entity. */
 	public long getUUID();
 	
-	/**
-	 * Sets the UUID of the entity. Reserved for internals, trying to set/change the UUID after it's been results in an exception.
-	 * @return
-	 */
+	/** Sets the UUID of the entity. Reserved for internals, trying to set/change the UUID after it's been results in an exception. */
 	public void setUUID(long uuid);
 	
 	/**
@@ -119,10 +95,7 @@ public interface Entity
 	 */
 	public boolean shouldBeTrackedBy(Player player);
 
-	/**
-	 * Returns false once the entity has been removed from the world
-	 * @return
-	 */
+	/** @return false once the entity has been removed from the world */
 	public boolean exists();
 
 	/**
@@ -141,7 +114,5 @@ public interface Entity
 	public EntityComponent getComponents();
 
 	public CollisionBox[] getCollisionBoxes();
-
-	public boolean handleInteraction(Entity entity, Input input);
 	
 }

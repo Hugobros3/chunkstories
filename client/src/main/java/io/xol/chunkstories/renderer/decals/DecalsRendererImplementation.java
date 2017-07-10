@@ -146,42 +146,36 @@ public class DecalsRendererImplementation implements DecalsRenderer
 									@Override
 									public byte getSunlightLevelForCorner(Corners corner)
 									{
-										// TODO Auto-generated method stub
 										return 0;
 									}
 
 									@Override
 									public byte getBlocklightLevelForCorner(Corners corner)
 									{
-										// TODO Auto-generated method stub
 										return 0;
 									}
 
 									@Override
 									public byte getAoLevelForCorner(Corners corner)
 									{
-										// TODO Auto-generated method stub
 										return 0;
 									}
 
 									@Override
 									public byte getSunlightLevelInterpolated(float vertX, float vertY, float vertZ)
 									{
-										// TODO Auto-generated method stub
 										return 0;
 									}
 
 									@Override
 									public byte getBlocklightLevelInterpolated(float vertX, float vertY, float vertZ)
 									{
-										// TODO Auto-generated method stub
 										return 0;
 									}
 
 									@Override
 									public byte getAoLevelInterpolated(float vertX, float vertY, float vertZ)
 									{
-										// TODO Auto-generated method stub
 										return 0;
 									}
 									
@@ -226,34 +220,28 @@ public class DecalsRendererImplementation implements DecalsRenderer
 								@Override
 								public int getRenderedVoxelPositionInChunkX()
 								{
-									// TODO Auto-generated method stub
 									return bri.getX() & 0x1f;
 								}
 
 								@Override
 								public int getRenderedVoxelPositionInChunkY()
 								{
-									// TODO Auto-generated method stub
 									return bri.getY() & 0x1f;
 								}
 
 								@Override
 								public int getRenderedVoxelPositionInChunkZ()
 								{
-									// TODO Auto-generated method stub
 									return bri.getZ() & 0x1f;
 								}
 
 								@Override
 								public VoxelLighter getCurrentVoxelLighter()
 								{
-									// TODO Auto-generated method stub
 									return voxeLighter;
 								}
 							};
 							
-							//TODO
-							//System.out.println("FIXME LATER REEEE");
 							model.renderInto(chunkRenderer, o2, world.getChunkWorldCoordinates(location), world.peek(location));
 						}
 

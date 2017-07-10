@@ -47,6 +47,12 @@ public class EntitySerializer
 			//Flush the deal
 			out.writeTheStuffPrecededByLength(dos);
 		}
+		catch(NullPointerException e)
+		{
+			System.out.println(entity.getClass().getName());
+			System.out.println(entity.getType());
+			e.printStackTrace();
+		}
 		catch (IOException e)
 		{
 			e.printStackTrace();

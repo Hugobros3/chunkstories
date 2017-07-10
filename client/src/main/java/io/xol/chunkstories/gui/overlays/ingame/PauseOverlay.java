@@ -4,6 +4,9 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.util.concurrency.Fence;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
@@ -50,6 +53,20 @@ public class PauseOverlay extends Layer
 		this.exitButton.setAction(new Runnable() {
 			@Override
 			public void run() {
+				
+				//Ingame ingame = (Ingame)getRootLayer();
+				World world = Client.getInstance().getWorld();
+				if(world instanceof WorldMaster) {
+					
+					//TODO: Stop simulation
+					Fence fence = world.saveEverything();
+					
+					exitButton.text = "#{world.saving}";
+					
+					fence.traverse();
+				}
+				
+				
 				Client.getInstance().exitToMainMenu();
 			}
 		});

@@ -72,7 +72,6 @@ public class TaskConvertMcChunk extends Task {
 					if(summary != null)
 						registeredCS_Summaries.add(summary);*/
 
-
 					CompoundFence loadRelevantData = new CompoundFence();
 					
 					//Then the chunks
@@ -80,9 +79,10 @@ public class TaskConvertMcChunk extends Task {
 					{
 						ChunkHolder holder = csWorld.aquireChunkHolderWorldCoordinates(cwt, chunkStoriesCurrentChunkX, y, chunkStoriesCurrentChunkZ);
 						if (holder != null) {
-							cwt.registeredCS_Holders.add(holder);
 							loadRelevantData.add(holder.waitForLoading());
-							cwt.chunksAquired++;
+							
+							if(cwt.registeredCS_Holders.add(holder))
+								cwt.chunksAquired++;
 						}
 					}
 					

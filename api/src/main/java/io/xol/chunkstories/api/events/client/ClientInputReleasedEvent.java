@@ -2,7 +2,6 @@ package io.xol.chunkstories.api.events.client;
 
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventListeners;
-import io.xol.chunkstories.api.events.categories.ClientEvent;
 import io.xol.chunkstories.api.input.Input;
 
 //(c) 2015-2017 XolioWare Interactive

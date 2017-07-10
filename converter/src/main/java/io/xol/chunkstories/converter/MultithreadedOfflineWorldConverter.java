@@ -260,9 +260,9 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 							{
 								ChunkHolder holder = csWorld.aquireChunkHolder(worldUser, chunkX + i, chunkY, chunkZ + j);
 								if (holder != null) {
-									registeredCS_Holders.add(holder);
 									loadRelevantData.add(holder.waitForLoading());
-									chunksAquired++;
+									if(registeredCS_Holders.add(holder))
+										chunksAquired++;
 								}
 							}
 					
@@ -300,7 +300,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 						}
 					}
 				
-					if (chunksAquired > targetChunksToKeepInRam)
+					if (registeredCS_Holders.size() > targetChunksToKeepInRam)
 					{
 						//Save world
 						//verbose("More than "+targetChunksToKeepInRam+" chunks already in memory, saving and unloading before continuing");

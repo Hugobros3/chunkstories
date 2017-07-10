@@ -20,7 +20,6 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Iterator;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.jpountz.lz4.LZ4Exception;
 import net.jpountz.lz4.LZ4Factory;

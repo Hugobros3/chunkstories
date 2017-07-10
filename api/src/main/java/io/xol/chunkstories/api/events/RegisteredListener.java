@@ -1,7 +1,5 @@
 package io.xol.chunkstories.api.events;
 
-import java.lang.reflect.InvocationTargetException;
-
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 
 //(c) 2015-2017 XolioWare Interactive

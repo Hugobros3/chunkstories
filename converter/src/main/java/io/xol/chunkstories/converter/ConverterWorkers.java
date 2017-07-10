@@ -8,7 +8,6 @@ import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
-import io.xol.chunkstories.converter.ConverterWorkers.ConverterWorkerThread;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.workers.Task;
 import io.xol.chunkstories.workers.TaskExecutor;
