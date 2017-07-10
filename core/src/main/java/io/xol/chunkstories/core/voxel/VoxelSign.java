@@ -1,7 +1,6 @@
 package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
@@ -22,13 +21,10 @@ import io.xol.chunkstories.core.entity.voxel.EntitySign;
 
 public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 {
-	private final EntityType signEntityType;
 	
 	public VoxelSign(VoxelType type)
 	{
 		super(type);
-		
-		signEntityType = store.parent().entities().getEntityTypeByName("sign");
 	}
 
 	@Override
@@ -49,7 +45,7 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 	@Override
 	protected EntityVoxel createVoxelEntity(World world, int x, int y, int z)
 	{
-		return new EntitySign(signEntityType, world, x, y, z);
+		return new EntitySign(store.parent().entities().getEntityTypeByName("sign"), world, x, y, z);
 	}
 	
 	@Override

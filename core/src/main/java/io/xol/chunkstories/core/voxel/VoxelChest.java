@@ -3,7 +3,6 @@ package io.xol.chunkstories.core.voxel;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.input.Input;
@@ -29,8 +28,6 @@ public class VoxelChest extends VoxelEntity
 	VoxelTexture sideTexture;
 	VoxelTexture topTexture;
 	
-	EntityType chestEntityType;
-	
 	public VoxelChest(VoxelType type)
 	{
 		super(type);
@@ -38,8 +35,6 @@ public class VoxelChest extends VoxelEntity
 		frontTexture = store.textures().getVoxelTextureByName(getName() + "front");
 		sideTexture = store.textures().getVoxelTextureByName(getName() + "side");
 		topTexture = store.textures().getVoxelTextureByName(getName() + "top");
-		
-		chestEntityType = store.parent().entities().getEntityTypeByName("chest");
 	}
 
 	@Override
@@ -79,7 +74,7 @@ public class VoxelChest extends VoxelEntity
 	@Override
 	protected EntityVoxel createVoxelEntity(World world, int x, int y, int z)
 	{
-		return new EntityChest(chestEntityType, world, x, y, z);
+		return new EntityChest(store.parent().entities().getEntityTypeByName("chest"), world, x, y, z);
 	}
 	
 	@Override
