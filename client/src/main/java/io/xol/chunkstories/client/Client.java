@@ -46,7 +46,7 @@ public class Client implements ClientInterface
 	private static Client staticClientReference; //Self-reference for static access
 	
 	//Base client data
-	private final ConfigDeprecated clientConfig = new ConfigFile("./config/client.cfg");
+	private final ConfigDeprecated clientConfig;
 	private final ChunkStoriesLoggerImplementation logger;
 	private final ClientGameContent gameContent;
 
@@ -95,13 +95,26 @@ public class Client implements ClientInterface
 			}
 			else
 			{
-				System.out.println("Chunk Stories arguments : \n" + "-oldgl Disables OpenGL 3.0+ stuff\n" + "-forceobsolete Forces the game to run even if requirements aren't met\n"
-						+ "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n" + "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument" + "" + "");
+				String helpText = "Chunk Stories "+VersionInfo.version+"\n";
+				
+				if(s.equals("-h") || s.equals("--help"))
+					helpText += "Command line help: \n";
+				else
+					helpText += "Unrecognized command: "+s + "\n";
+				
+				helpText += "-oldgl Disables OpenGL 3.0+ stuff\n";
+				helpText += "-forceobsolete Forces the game to run even if requirements aren't met\n";
+				helpText +=  "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n";
+				helpText += "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument";
+			
+				System.out.println(helpText);
+				return;
 			}
 		}
 		
 		new Client(modsStringArgument);
 
+		//Not supposed to happen, gets there when Client crashes badly.
 		System.exit(-1);
 	}
 
@@ -119,12 +132,15 @@ public class Client implements ClientInterface
 		String time = sdf.format(cal.getTime());
 		logger = new ChunkStoriesLoggerImplementation(this, LogLevel.ALL, LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/logs/" + time + ".log"));
 		
+		//Get configuration right
+		clientConfig = new ConfigFile("./config/client.cfg");
+		
 		// Create game content manager
 		gameContent = new ClientGameContent(this, modsStringArgument);
 		gameContent.reload();
 		
 		//Load the correct language
-		String lang = clientConfig.getProp("language", "undefined");
+		String lang = clientConfig.getString("language", "undefined");
 		if(!lang.equals("undefined"))
 			gameContent.localization().loadTranslation(lang);
 		

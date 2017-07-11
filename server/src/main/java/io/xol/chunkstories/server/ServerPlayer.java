@@ -14,7 +14,6 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
-import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.item.inventory.Inventory;
@@ -74,7 +73,7 @@ public class ServerPlayer implements Player
 
 		// Sets dates
 		this.playerDataFile.setString("lastlogin", "" + System.currentTimeMillis());
-		if (this.playerDataFile.getProp("firstlogin", "nope").equals("nope"))
+		if (this.playerDataFile.getString("firstlogin", "nope").equals("nope"))
 			this.playerDataFile.setString("firstlogin", "" + System.currentTimeMillis());
 
 		//Does not create a player entity here, this is taken care of by the player (re)spawn req
@@ -151,8 +150,8 @@ public class ServerPlayer implements Player
 
 	public void save()
 	{
-		long lastTime = Long.parseLong(playerDataFile.getProp("timeplayed", "0"));
-		long lastLogin = Long.parseLong(playerDataFile.getProp("lastlogin", "0"));
+		long lastTime = playerDataFile.getLong("timeplayed", 0);
+		long lastLogin = playerDataFile.getLong("lastlogin", 0);
 
 		if (controlledEntity != null)
 		{

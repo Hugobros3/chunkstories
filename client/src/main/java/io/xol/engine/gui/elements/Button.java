@@ -8,7 +8,6 @@ import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 
@@ -19,7 +18,6 @@ import io.xol.engine.graphics.util.CorneredBoxDrawer;
 public class Button extends FocusableGuiElement implements ClickableGuiElement
 {
 	public String text = "";
-	//protected BitmapFont font;
 
 	private Runnable action;
 	

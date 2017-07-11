@@ -26,7 +26,7 @@ public class Lwjgl3KeyBindCompound extends Lwjgl3Input {
 
 	@Override
 	public void reload() {
-		String keyNamesString = Client.getInstance().getConfig().getProp("bind.glfw.compound."+name, defaultKeysNames);
+		String keyNamesString = Client.getInstance().getConfig().getString("bind.glfw.compound."+name, defaultKeysNames);
 		String keyNames[] = keyNamesString.split("\\+");
 		
 		glfwKeys = new int[keyNames.length];

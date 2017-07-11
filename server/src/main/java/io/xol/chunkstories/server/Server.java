@@ -124,7 +124,7 @@ public class Server implements Runnable, ServerInterface
 			pluginsManager = new DefaultServerPluginManager(this);
 
 			// Load the world(s)
-			String worldName = serverConfig.getProp("world", "world");
+			String worldName = serverConfig.getString("world", "world");
 			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
 			if (new File(worldDir).exists())
 			{

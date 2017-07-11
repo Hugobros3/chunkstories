@@ -36,7 +36,7 @@ public class ChunkMeshesRenderer
 		//this.chunksBaker = new ChunkMeshesBakerThread(world);
 		
 		int nbThreads = -1;
-		String configThreads = Client.getInstance().configDeprecated().getProp("workersThreads", "auto");
+		String configThreads = Client.getInstance().configDeprecated().getString("workersThreads", "auto");
 		if(!configThreads.equals("auto")) {
 			try {
 				nbThreads = Integer.parseInt(configThreads);

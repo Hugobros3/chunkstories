@@ -13,9 +13,6 @@ Bugs TBF:
 
 Todo:
 
-.entities
-.world (!)
-Bring back the world converter ( possibly MT this time ? )µ
 Release RC1
 Give guns recoil
 

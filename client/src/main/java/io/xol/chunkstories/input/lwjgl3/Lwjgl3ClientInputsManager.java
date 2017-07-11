@@ -26,6 +26,7 @@ import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
+import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientConnection;
 import io.xol.chunkstories.gui.overlays.config.KeyBindSelectionOverlay;
@@ -65,6 +66,25 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 	public Lwjgl3ClientInputsManager(GameWindowOpenGL_LWJGL3 gameWindow)
 	{
 		this.gameWindow = gameWindow;
+		
+		ConfigDeprecated clientConfig = gameWindow.getClient().configDeprecated();
+		if(clientConfig.getString("lwjgl-version", "lwjgl2").equals("lwjgl2")) {
+			
+			gameWindow.getClient().logger().warning("Game was last ran on LWJGL2.x, input codes are messed up, resetting all of them.");
+			
+			//Removes ALL inputs declared using the old inputs codes of LWJGL2
+			Iterator<String> i = clientConfig.getFieldsSet();
+			
+			while(i.hasNext()) {
+				String field = i.next();
+				
+				if(field.startsWith("bind.")) {
+					clientConfig.removeFieldValue(field);
+				}
+			}
+		}
+		clientConfig.setString("lwjgl-version", "lwjgl3");
+		clientConfig.save();
 		
 		mouse = new Lwjgl3Mouse(this);
 		LEFT = new Lwjgl3MouseButton(mouse, "mouse.left", 0);

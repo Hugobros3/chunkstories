@@ -37,10 +37,10 @@ public class LoginOverlay extends Layer implements HttpRequester
 		
 		//Autologin fills in the forms automagically
 		//TODO Secure storage of password
-		if (Client.getInstance().getConfig().getProp("autologin", "ko").equals("ok"))
+		if (Client.getInstance().getConfig().getString("autologin", "ko").equals("ok"))
 		{
-			usernameForm.setText(Client.getInstance().getConfig().getProp("user", ""));
-			passwordForm.setText(Client.getInstance().getConfig().getProp("pass", ""));
+			usernameForm.setText(Client.getInstance().getConfig().getString("user", ""));
+			passwordForm.setText(Client.getInstance().getConfig().getString("pass", ""));
 			autologin = true;
 		}
 		
@@ -72,7 +72,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 	{
 		parentLayer.render(renderer);
 		
-		if(Client.getInstance().configDeprecated().getProp("language", "undefined").equals("undefined"))
+		if(Client.getInstance().configDeprecated().getString("language", "undefined").equals("undefined"))
 		{
 			gameWindow.setLayer(new LanguageSelectionScreen(gameWindow, this, false));
 			//this.mainScene.changeOverlay(new LanguageSelectionScreen(mainScene, this, false));
@@ -203,7 +203,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 				}
 				
 				//If the user didn't opt-out, look for crash files and upload those
-				if(Client.getInstance().configDeprecated().getProp("log-policy", "undefined").equals("send"))
+				if(Client.getInstance().configDeprecated().getString("log-policy", "undefined").equals("send"))
 				{
 					JavaCrashesUploader t = new JavaCrashesUploader(Client.getInstance());
 					t.start();

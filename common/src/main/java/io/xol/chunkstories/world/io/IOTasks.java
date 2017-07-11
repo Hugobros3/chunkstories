@@ -38,8 +38,6 @@ public class IOTasks extends Thread implements TaskExecutor
 
 	protected UniqueQueue<IOTask> tasks = new UniqueQueue<IOTask>();
 	protected Semaphore tasksCounter = new Semaphore(0);
-	
-	//private AtomicBoolean die = new AtomicBoolean();
 
 	protected LZ4Factory factory = LZ4Factory.fastestInstance();
 	protected LZ4FastDecompressor decompressor = factory.fastDecompressor();
@@ -738,7 +736,6 @@ public class IOTasks extends Thread implements TaskExecutor
 	public void kill()
 	{
 		scheduleTask(DIE);
-		//die.set(true);
 		synchronized (this)
 		{
 			notifyAll();
@@ -762,12 +759,14 @@ public class IOTasks extends Thread implements TaskExecutor
 		}
 	}
 
-	public void shutdown()
+	public void waitThenKill()
 	{
 		synchronized (this)
 		{
 			notifyAll();
 		}
+		
+		//Wait for it to finish what it's doing
 		while (this.tasks.size() > 0)
 		{
 			try
@@ -776,12 +775,10 @@ public class IOTasks extends Thread implements TaskExecutor
 			}
 			catch (InterruptedException e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 		
 		scheduleTask(DIE);
-		//die.set(true);
 	}
 }

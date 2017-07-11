@@ -14,6 +14,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -121,20 +122,12 @@ public class ConfigFile implements ConfigDeprecated
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.engine.misc.ConfigDeprecated#getIntProp(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public int getIntProp(String s, String a)
-	{
-		return Integer.parseInt(getProp(s, a));
-	}
 
 	/* (non-Javadoc)
 	 * @see io.xol.engine.misc.ConfigDeprecated#getProp(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public String getProp(String s, String a)
+	public String getString(String s, String a)
 	{
 		if (props.containsKey(s))
 			return props.get(s);
@@ -152,7 +145,7 @@ public class ConfigFile implements ConfigDeprecated
 	@Override
 	public String getString(String s)
 	{
-		return getProp(s, "");
+		return getString(s, "");
 	}
 
 	/* (non-Javadoc)
@@ -161,7 +154,7 @@ public class ConfigFile implements ConfigDeprecated
 	@Override
 	public int getInteger(String s, int intProp)
 	{
-		return Integer.parseInt(getProp(s, intProp + ""));
+		return Integer.parseInt(getString(s, intProp + ""));
 	}
 
 	/* (non-Javadoc)
@@ -170,7 +163,7 @@ public class ConfigFile implements ConfigDeprecated
 	@Override
 	public boolean getBoolean(String string, boolean booleanProp)
 	{
-		return getProp(string, booleanProp + "").equals("true");
+		return getString(string, booleanProp + "").equals("true");
 	}
 
 	/* (non-Javadoc)
@@ -179,7 +172,7 @@ public class ConfigFile implements ConfigDeprecated
 	@Override
 	public float getFloat(String s)
 	{
-		return Float.parseFloat(getProp(s, "0.0"));
+		return Float.parseFloat(getString(s, "0.0"));
 	}
 
 	/* (non-Javadoc)
@@ -188,7 +181,7 @@ public class ConfigFile implements ConfigDeprecated
 	@Override
 	public float getFloat(String s, float f)
 	{
-		return Float.parseFloat(getProp(s, "" + f));
+		return Float.parseFloat(getString(s, "" + f));
 	}
 
 	/* (non-Javadoc)
@@ -197,7 +190,7 @@ public class ConfigFile implements ConfigDeprecated
 	@Override
 	public double getDouble(String s)
 	{
-		return Double.parseDouble(getProp(s, "0.0"));
+		return Double.parseDouble(getString(s, "0.0"));
 	}
 
 	/* (non-Javadoc)
@@ -206,7 +199,7 @@ public class ConfigFile implements ConfigDeprecated
 	@Override
 	public double getDouble(String s, double d)
 	{
-		return Double.parseDouble(getProp(s, d + ""));
+		return Double.parseDouble(getString(s, d + ""));
 	}
 
 	/* (non-Javadoc)
@@ -217,11 +210,11 @@ public class ConfigFile implements ConfigDeprecated
 	{
 		try
 		{
-			return Long.parseLong(getProp(s, l + ""));
+			return Long.parseLong(getString(s, l + ""));
 		}
 		catch (NumberFormatException e)
 		{
-			return (long) Double.parseDouble(getProp(s, l + ""));
+			return (long) Double.parseDouble(getString(s, l + ""));
 		}
 	}
 
@@ -279,5 +272,31 @@ public class ConfigFile implements ConfigDeprecated
 	public boolean isFieldSet(String string)
 	{
 		return props.containsKey(string);
+	}
+
+	@Override
+	public int getInteger(String property) {
+		return getInteger(property, 0);
+	}
+
+	@Override
+	public boolean getBoolean(String property) {
+		return getBoolean(property, false);
+	}
+
+	@Override
+	public long getLong(String property) {
+		return getLong(property, 0);
+	}
+
+	@Override
+	public void removeFieldValue(String string) {
+		props.remove(string);
+	}
+
+	@Override
+	public Iterator<String> getFieldsSet() {
+		List<String> fields = new ArrayList<String>(props.keySet());
+		return fields.iterator();
 	}
 }

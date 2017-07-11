@@ -320,7 +320,9 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 				//Reset counters
 				GLCalls.nextFrame();
 			}
-			System.out.println("Copyright 2015-2016 XolioWare Interactive");
+			
+			//Sane way of ending the game.
+			client.logger().info("Copyright 2015-2017 XolioWare Interactive");
 			
 			soundManager.destroy();
 			client.onClose();
@@ -438,7 +440,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		if(isFullscreenEnabled) {
 			//Enable fullscreen using desktop resolution, by default on the primary monitor and at it's nominal video mode
 			
-			String modeString = client.configDeprecated().getProp("fullScreenResolution", null);
+			String modeString = client.configDeprecated().getString("fullScreenResolution", null);
 			if(modeString == null || modeString.contains("x") || !modeString.contains(":")) {
 				modeString = "1:"+currentVideoMode.width()+":"+currentVideoMode.height()+":"+currentVideoMode.refreshRate();
 				client.configDeprecated().setString("fullScreenResolution", modeString);

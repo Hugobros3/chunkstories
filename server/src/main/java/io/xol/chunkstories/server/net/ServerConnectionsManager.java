@@ -42,7 +42,7 @@ public class ServerConnectionsManager extends Thread
 		this.server = server;
 		this.packetsProcessor = new ServerPacketsProcessorImplementation(server);
 		
-		this.maxClients = server.getServerConfig().getIntProp("maxusers", "100");
+		this.maxClients = server.getServerConfig().getInteger("maxusers", 100);
 	}
 
 	public Server getServer()
@@ -55,7 +55,7 @@ public class ServerConnectionsManager extends Thread
 	{
 		try
 		{
-			serverSocket = new ServerSocket(server.getServerConfig().getIntProp("server-port", "30410"));
+			serverSocket = new ServerSocket(server.getServerConfig().getInteger("server-port", 30410));
 			server.logger().info("Started server on port " + serverSocket.getLocalPort() + ", ip=" + serverSocket.getInetAddress());
 
 			externalIP = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?ip=1", "");// serverSocket.getInetAddress().getHostAddress();

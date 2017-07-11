@@ -27,7 +27,7 @@ public class ServerAnnouncerThread extends Thread
 	{
 		this.server = server;
 		
-		lolcode = server.getServerConfig().getIntProp("lolcode", "0");
+		lolcode = server.getServerConfig().getInteger("lolcode", 0);
 		if (lolcode == 0L)
 		{
 			// System.out.println("lolcode = 0");
@@ -35,10 +35,10 @@ public class ServerAnnouncerThread extends Thread
 			lolcode = rnd.nextInt(100000);
 			server.getServerConfig().setInteger("lolcode", lolcode);
 		}
-		updatedelay = Long.parseLong(server.getServerConfig().getProp("update-delay", "10000"));
+		updatedelay = server.getServerConfig().getLong("update-delay", 10000L);
 		String hostname = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?host=1", "");
-		srv_name = server.getServerConfig().getProp("server-name", "unnamedserver@" + hostname);
-		srv_desc = server.getServerConfig().getProp("server-desc", "Default description.");
+		srv_name = server.getServerConfig().getString("server-name", "unnamedserver@" + hostname);
+		srv_desc = server.getServerConfig().getString("server-desc", "Default description.");
 		setName("Multiverse thread");
 	}
 
@@ -56,7 +56,7 @@ public class ServerAnnouncerThread extends Thread
 			while (run.get())
 			{
 				// System.out.println("Updating server data on Multiverse.");
-				if (server.getServerConfig().getProp("enable-multiverse", "false").equals("true"))
+				if (server.getServerConfig().getString("enable-multiverse", "false").equals("true"))
 				{
 					HttpRequests.sendPost("http://chunkstories.xyz/api/serverAnnounce.php", "srvname=" + srv_name + "&desc=" + srv_desc + "&ip=" + ip + "&mu=" + server.getHandler().getMaxClients() + "&u="
 							+ server.getHandler().getNumberOfAuthentificatedClients() + "&n=0&w=default&p=1&v=" + VersionInfo.version + "&lolcode=" + lolcode);

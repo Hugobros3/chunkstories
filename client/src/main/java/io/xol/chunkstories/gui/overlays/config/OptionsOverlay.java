@@ -64,7 +64,7 @@ public class OptionsOverlay extends Layer
 		{
 			super(OptionsOverlay.this, 0, 0, n);
 			this.parameter = n;
-			this.value = Client.getInstance().getConfig().getProp(parameter, value);
+			this.value = Client.getInstance().getConfig().getString(parameter, value);
 			
 			this.height = 24;
 			this.width = 160;
@@ -349,7 +349,7 @@ public class OptionsOverlay extends Layer
 					@Override
 					public void run()
 					{
-						String code = Client.getInstance().getConfig().getProp("language", "en");
+						String code = Client.getInstance().getConfig().getString("language", "en");
 						Client.getInstance().configDeprecated().setString("language", code);
 						Client.getInstance().getContent().localization().loadTranslation(code);
 					}

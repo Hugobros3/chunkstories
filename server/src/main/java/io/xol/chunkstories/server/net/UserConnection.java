@@ -208,7 +208,7 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 		if (loginRequest.startsWith("version:"))
 		{
 			version = loginRequest.replace("version:", "");
-			if (connectionsManager.getServer().getServerConfig().getProp("check-version", "true").equals("true"))
+			if (connectionsManager.getServer().getServerConfig().getString("check-version", "true").equals("true"))
 			{
 				if (Integer.parseInt(version) != VersionInfo.networkProtocolVersion)
 					disconnect("Wrong protocol version ! " + version + " != " + VersionInfo.networkProtocolVersion + " \n Update your game !");
@@ -228,7 +228,7 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 				disconnect("No valid token supplied");
 				return;
 			}
-			if (connectionsManager.getServer().getServerConfig().getIntProp("offline-mode", "0") == 1)
+			if (connectionsManager.getServer().getServerConfig().getInteger("offline-mode", 0) == 1)
 			{
 				// Offline-mode !
 				System.out.println("Warning : Offline-mode is on, letting " + this.name + " connecting without verification");
@@ -244,8 +244,8 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 	 */
 	void sendInformationAboutServer()
 	{
-		this.sendInternalTextMessage("info/name:" + getServer().getServerConfig().getProp("server-name", "unnamedserver@" + connectionsManager.getHostname()));
-		this.sendInternalTextMessage("info/motd:" + getServer().getServerConfig().getProp("server-desc", "Default description."));
+		this.sendInternalTextMessage("info/name:" + getServer().getServerConfig().getString("server-name", "unnamedserver@" + connectionsManager.getHostname()));
+		this.sendInternalTextMessage("info/motd:" + getServer().getServerConfig().getString("server-desc", "Default description."));
 		this.sendInternalTextMessage("info/connected:" + getServer().getHandler().getNumberOfAuthentificatedClients() + ":" + connectionsManager.getMaxClients());
 		this.sendInternalTextMessage("info/version:" + VersionInfo.version);
 		this.sendInternalTextMessage("info/mods:" + getServer().getModsProvider().getModsString());

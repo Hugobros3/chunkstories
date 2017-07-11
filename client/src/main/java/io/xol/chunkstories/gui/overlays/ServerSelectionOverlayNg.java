@@ -74,7 +74,7 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 		elements.add(backOption);
 		
 		autologin = a;
-		String lastServer = Client.getInstance().configDeprecated().getProp("last-server", "");
+		String lastServer = Client.getInstance().configDeprecated().getString("last-server", "");
 		if (!lastServer.equals(""))
 		{
 			ipForm.setText(lastServer);

@@ -91,7 +91,7 @@ public class MainMenuOverlay extends Layer
 	{
 		parentLayer.render(renderingContext);
 		
-		if(gameWindow.getLayer() == this && Client.getInstance().configDeprecated().getProp("log-policy", "undefined").equals("undefined"))
+		if(gameWindow.getLayer() == this && Client.getInstance().configDeprecated().getString("log-policy", "undefined").equals("undefined"))
 			gameWindow.setLayer(new LogPolicyAsk(gameWindow, this));
 
 		float spacing = 8;

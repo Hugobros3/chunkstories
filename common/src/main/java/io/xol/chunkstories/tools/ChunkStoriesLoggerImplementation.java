@@ -85,7 +85,7 @@ public class ChunkStoriesLoggerImplementation implements ChunkStoriesLogger
 			{
 				ClientInterface client = (ClientInterface)gameContext;
 
-				if (client.configDeprecated().getProp("log-policy", "undefined").equals("send"))
+				if (client.configDeprecated().getString("log-policy", "undefined").equals("send"))
 					Runtime.getRuntime().exec("java -jar logs-reporter.jar " + client.username() + " \"" + logFile.getAbsolutePath() + "\"");
 			}
 		}
