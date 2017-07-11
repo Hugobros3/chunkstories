@@ -3,6 +3,7 @@ package io.xol.chunkstories.content.sandbox;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.GameContext;
@@ -13,11 +14,14 @@ import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.Scheduler;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.engine.concurrency.SimpleFence;
+import io.xol.engine.concurrency.TrivialFence;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -33,7 +37,11 @@ public class WorldLogicThread extends Thread implements GameLogic
 	private final WorldImplementation world;
 	
 	private GameLogicScheduler gameLogicScheduler;
-	private boolean die = false;
+	
+	private AtomicBoolean die = new AtomicBoolean(false);
+	//private boolean die = false;
+	
+	private SimpleFence waitForLogicFinish = new SimpleFence();
 
 	public WorldLogicThread(WorldImplementation world, SecurityManager securityManager)
 	{
@@ -72,7 +80,7 @@ public class WorldLogicThread extends Thread implements GameLogic
 		//Installs a custom SecurityManager
 		System.out.println("Security manager: "+System.getSecurityManager());
 
-		while (!die)
+		while (!die.get())
 		{
 			//Dirty performance metric :]
 			//perfMetric();
@@ -110,7 +118,6 @@ public class WorldLogicThread extends Thread implements GameLogic
 			//nanoCheckStep(2, "Incomming packets");
 			
 			this.getPluginsManager().fireEvent(new WorldTickEvent(world));
-			
 			
 			//Place the entire tick() method in a try/catch
 			try
@@ -153,6 +160,8 @@ public class WorldLogicThread extends Thread implements GameLogic
 			//Game logic is 60 ticks/s
 			sync(getTargetFps());
 		}
+		
+		waitForLogicFinish.signal();
 	}
 
 	float fps = 0.0f;
@@ -239,9 +248,14 @@ public class WorldLogicThread extends Thread implements GameLogic
 		return context.getPluginManager();
 	}
 	
-	public void stopLogicThread()
+	public Fence stopLogicThread()
 	{
-		die = true;
+		if(!this.isAlive())
+			return new TrivialFence();
+		
+		die.set(true);
+		
+		return waitForLogicFinish;
 	}
 
 	@Override

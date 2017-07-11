@@ -160,6 +160,10 @@ public abstract class WorldImplementation implements World
 	{
 		worldThread.start();
 	}
+	
+	public Fence stopLogic() {
+		return worldThread.stopLogicThread();
+	}
 
 	@Override
 	public WorldInfo getWorldInfo()
@@ -632,6 +636,10 @@ public abstract class WorldImplementation implements World
 			}
 			return newData;
 		}
+		else {
+			//Chunk is null.REEE
+			//throw new RuntimeException("Chunk wasn't loaded properly in fact :[ "+ x / 32 + " : " + y / 32 + " : " + z / 32);
+		}
 		return -1;
 	}
 
@@ -648,6 +656,10 @@ public abstract class WorldImplementation implements World
 		if (c != null)
 		{
 			c.setVoxelDataWithoutUpdates(x % 32, y % 32, z % 32, i);
+		}
+		else {
+			//Chunk is null.REEE
+			//throw new RuntimeException("Chunk wasn't loaded properly in fact :[ "+ x / 32 + " : " + y / 32 + " : " + z / 32);
 		}
 	}
 
@@ -1022,11 +1034,12 @@ public abstract class WorldImplementation implements World
 	public void destroy()
 	{
 		//Stop the game logic first
-		worldThread.stopLogicThread();
+		worldThread.stopLogicThread().traverse();
 
 		this.regions.destroy();
 		this.getRegionsSummariesHolder().destroy();
-		//this.logic.shutdown();
+		
+		//Always, ALWAYS save this.
 		if (this instanceof WorldMaster)
 		{
 			this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());

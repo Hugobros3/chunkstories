@@ -280,18 +280,21 @@ public class Server implements Runnable, ServerInterface
 	private void closeServer()
 	{
 		// When stopped, close sockets and save config.
+		log.info("Stopping world logic");
+		
 		log.info("Killing all connections");
 		connectionsManager.closeAll();
 		connectionsManager.closeConnectionsManager();
-
-		log.info("Saving map ...");
-		world.saveEverything();
+		
 		log.info("Shutting down plugins ...");
 		pluginsManager.disablePlugins();
-		log.info("Done, closing worlds");
-		world.ioHandler.shutdown();
+		
+		log.info("Saving map and waiting for IO to finish");
+		world.saveEverything();
+		world.ioHandler.waitThenKill();
+		
+		log.info("Done");
 		world.destroy();
-		log.info("IO done");
 
 		log.info("Saving configuration");
 		serverConfig.save();

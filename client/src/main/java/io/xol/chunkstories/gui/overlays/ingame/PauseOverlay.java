@@ -59,7 +59,12 @@ public class PauseOverlay extends Layer
 				if(world instanceof WorldMaster) {
 					
 					//TODO: Stop simulation
-					Fence fence = world.saveEverything();
+					Fence fence = ((WorldMaster)world).stopLogic();
+					
+					exitButton.text = "#{world.saving}";
+					
+					fence.traverse();
+					fence = world.saveEverything();
 					
 					exitButton.text = "#{world.saving}";
 					
