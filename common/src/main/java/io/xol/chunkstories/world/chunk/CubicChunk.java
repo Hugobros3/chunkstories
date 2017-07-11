@@ -19,6 +19,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -60,6 +61,8 @@ public abstract class CubicChunk implements Chunk
 
 	static final int sunBitshift = 0x10;
 	static final int blockBitshift = 0x14;
+	
+	private Semaphore chunkDataArrayCreation = new Semaphore(1);
 	
 	//These wonderfull things does magic for us, they are unique per-thread so they won't ever clog memory neither will they have contigency issues
 	//Seriously awesome
@@ -275,7 +278,7 @@ public abstract class CubicChunk implements Chunk
 		z = sanitizeCoordinate(z);
 		//Allocate if it makes sense
 		if (chunkVoxelData == null)
-			chunkVoxelData = new int[32 * 32 * 32];
+			chunkVoxelData = atomicalyCreateInternalData();
 
 		int dataBefore = chunkVoxelData[x * 32 * 32 + y * 32 + z];
 		chunkVoxelData[x * 32 * 32 + y * 32 + z] = data;
@@ -288,6 +291,18 @@ public abstract class CubicChunk implements Chunk
 			((ChunkRenderable)this).markForReRender();
 	}
 
+	private int[] atomicalyCreateInternalData() {
+		chunkDataArrayCreation.acquireUninterruptibly();
+
+		//If it's STILL null
+		if (chunkVoxelData == null)
+			chunkVoxelData = new int[32 * 32 * 32];
+		
+		chunkDataArrayCreation.release();
+		
+		return chunkVoxelData;
+	}
+	
 	public void setVoxelDataWithoutUpdates(int x, int y, int z, int data)
 	{
 		x = sanitizeCoordinate(x);
@@ -295,7 +310,7 @@ public abstract class CubicChunk implements Chunk
 		z = sanitizeCoordinate(z);
 		//Allocate if it makes sense
 		if (chunkVoxelData == null)
-			chunkVoxelData = new int[32 * 32 * 32];
+			chunkVoxelData = atomicalyCreateInternalData();
 
 		chunkVoxelData[x * 32 * 32 + y * 32 + z] = data;
 		
