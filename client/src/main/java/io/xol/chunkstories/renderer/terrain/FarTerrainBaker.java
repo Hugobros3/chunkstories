@@ -375,7 +375,7 @@ public class FarTerrainBaker
 			ByteBuffer byteBuffer = BufferUtils.createByteBuffer(vboContent.length);
 			byteBuffer.put(vboContent);
 			byteBuffer.flip();
-			verticesObject.uploadData(byteBuffer);
+			verticesObject.uploadData(byteBuffer).traverse();
 		}
 	
 		public void delete()
