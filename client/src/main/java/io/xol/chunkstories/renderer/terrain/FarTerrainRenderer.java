@@ -198,14 +198,9 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 
 		//TODO hidden inputs ?
 		if(renderingContext.getClient().getInputsManager().getInputByName("wireframeFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
-		//if(InputAbstractor.isKeyDown(GLFW.GLFW_KEY_F10))
-		//if (Keyboard.isKeyDown(Keyboard.KEY_F10))
 			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
-
 		if(!renderingContext.getClient().getInputsManager().getInputByName("hideFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
-		//if (!(InputAbstractor.isKeyDown(GLFW.GLFW_KEY_F9) && RenderingConfig.isDebugAllowed))
-		//if (!(InputAbstractor.isKeyDown(org.lwjgl.input.Keyboard.KEY_F9) && RenderingConfig.isDebugAllowed))
 			drawTerrainBits(renderingContext, mask, terrainShader);
 		
 		renderingContext.flush();
@@ -286,6 +281,8 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		temp2.clear();
 		
 		int bitsDrew = 0;
+		
+		CollisionBox collisionBoxCheck = new CollisionBox(0, 0, 0, 0, 0, 0);
 		for (FarTerrainBaker.RegionMesh regionMesh : regionsMeshesToRenderSorted)
 		{
 			//Frustrum checks (assuming maxHeight of 1024 blocks)
@@ -300,8 +297,16 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 				for(int j = 0; j < 8; j++)
 				{
 					int delta = regionMesh.regionSummary.max[i][j] - regionMesh.regionSummary.min[i][j];
-					//System.out.println(regionMesh.regionSummary.max[i][j]);
-					if (renderingContext.getCamera().isBoxInFrustrum(new CollisionBox((regionMesh.regionDisplayedX * 8 + i) * 32, regionMesh.regionSummary.min[i][j], (regionMesh.regionDisplayedZ * 8 + j) * 32, 32, delta + 1, 32)))
+					
+					collisionBoxCheck.xpos = regionMesh.regionDisplayedX * 8 + i * 32;
+					collisionBoxCheck.ypos = regionMesh.regionSummary.min[i][j];
+					collisionBoxCheck.zpos = (regionMesh.regionDisplayedZ * 8 + j) * 32;
+					collisionBoxCheck.xw = 32;
+					collisionBoxCheck.h = delta + 1;
+					collisionBoxCheck.zw = 32;
+					
+					if (renderingContext.getCamera().isBoxInFrustrum(collisionBoxCheck))
+					//if (renderingContext.getCamera().isBoxInFrustrum(new CollisionBox((regionMesh.regionDisplayedX * 8 + i) * 32, regionMesh.regionSummary.min[i][j], (regionMesh.regionDisplayedZ * 8 + j) * 32, 32, delta + 1, 32)))
 					{
 						if(mask != null)
 						{

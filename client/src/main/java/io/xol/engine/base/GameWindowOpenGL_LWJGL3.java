@@ -63,7 +63,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	public RenderingContext renderingContext;
 	private ALSoundManager soundManager;
 
-	//private Scene currentScene = null;
 	private Layer layer;
 
 	private String windowName;
@@ -73,9 +72,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	
 	private int windowWidth = defaultWidth;
 	private int windowHeight = defaultHeight;
-	//public static boolean resized = false;
-	//private boolean forceResize = false;
-
 	private int targetFPS = 60;
 
 	private boolean closeRequest = false;
@@ -91,8 +87,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	private long lastTime = 0;
 
 	public long vramUsageVerticesObjects = 0;
-
-	//private long timeTookLastTime = 0;
 
 	Queue<SynchronousTask> mainThreadQueue = new ConcurrentLinkedQueue<SynchronousTask>();
 	
