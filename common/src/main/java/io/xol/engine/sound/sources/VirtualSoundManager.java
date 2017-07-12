@@ -6,8 +6,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3d;
+import org.joml.Vector3fc;
+
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundManager;
@@ -168,7 +169,7 @@ public class VirtualSoundManager implements SoundManager
 		}
 
 		@Override
-		public void setListenerPosition(float x, float y, float z, Vector3fm lookAt, Vector3fm up)
+		public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up)
 		{
 			throw new UnsupportedOperationException("Irrelevant");
 		}
@@ -191,7 +192,7 @@ public class VirtualSoundManager implements SoundManager
 			if(loc == null)
 				return false;
 			
-			return loc.distanceTo(new Vector3dm(soundSource.x, soundSource.y, soundSource.z)) < soundSource.attenuationEnd + 1.0;
+			return loc.distance(new Vector3d(soundSource.x, soundSource.y, soundSource.z)) < soundSource.attenuationEnd + 1.0;
 		}
 	}
 
@@ -320,7 +321,7 @@ public class VirtualSoundManager implements SoundManager
 	}
 
 	@Override
-	public void setListenerPosition(float x, float y, float z, Vector3fm lookAt, Vector3fm up)
+	public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up)
 	{
 	}
 

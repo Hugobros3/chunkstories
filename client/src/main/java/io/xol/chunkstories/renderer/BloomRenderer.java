@@ -2,7 +2,7 @@ package io.xol.chunkstories.renderer;
 
 import java.nio.ByteBuffer;
 
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.engine.graphics.textures.Texture2DGL;
@@ -18,7 +18,7 @@ public class BloomRenderer
 
 	private int frameLumaDownloadDelay = 0;
 	private final static int FRAME_DELAY_FOR_LUMA_MIP_GRAB = 2;
-	private Vector3fm averageColorForAllFrame = new Vector3fm(1.0);
+	private Vector3f averageColorForAllFrame = new Vector3f(1.0f);
 	private int downloadSize;
 	
 	public BloomRenderer(WorldRendererImplementation worldRenderer)
@@ -70,11 +70,11 @@ public class BloomRenderer
 				minMipmapBuffer.flip();
 
 				//System.out.println("Obtained: "+minMipmapBuffer);
-				averageColorForAllFrame = new Vector3fm(0.0);
+				averageColorForAllFrame = new Vector3f(0.0f);
 				for (int i = 0; i < downloadSize; i++)
 					averageColorForAllFrame.add(minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat());
 
-				averageColorForAllFrame.scale(1.0f / downloadSize);
+				averageColorForAllFrame.mul(1.0f / downloadSize);
 				//System.out.println(averageColorForAllFrame);
 
 				//Throw that out
@@ -83,7 +83,7 @@ public class BloomRenderer
 		}
 
 		//Do continous luma adapation
-		float luma = averageColorForAllFrame.getX() * 0.2125f + averageColorForAllFrame.getY() * 0.7154f + averageColorForAllFrame.getZ() * 0.0721f;
+		float luma = averageColorForAllFrame.x() * 0.2125f + averageColorForAllFrame.y() * 0.7154f + averageColorForAllFrame.z() * 0.0721f;
 
 		luma *= apertureModifier;
 		luma = (float) Math.pow(luma, 1d / 2.2);

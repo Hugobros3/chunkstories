@@ -1,6 +1,6 @@
 package io.xol.chunkstories.core.particles;
 
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;
 import io.xol.chunkstories.api.particles.ParticlesRenderer;
@@ -41,8 +41,8 @@ public class ParticleMuzzleFlash extends ParticleTypeHandler
 			@Override
 			public void forEach_Rendering(RenderingInterface renderingContext, ParticleData data)
 			{
-				renderingContext.getLightsRenderer().queueLight(new Light(new Vector3fm(1.0f, 181f/255f, 79/255f),
-						new Vector3fm((float) data.getX(), (float) data.getY(), (float) data.getZ()),
+				renderingContext.getLightsRenderer().queueLight(new Light(new Vector3f(1.0f, 181f/255f, 79/255f),
+						new Vector3f((float) data.x(), (float) data.y(), (float) data.z()),
 						15f + (float) Math.random() * 5f));
 			}
 

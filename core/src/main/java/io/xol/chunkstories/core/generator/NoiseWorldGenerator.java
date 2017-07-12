@@ -4,7 +4,7 @@ import java.util.Random;
 
 import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
 import io.xol.chunkstories.api.math.random.SeededSimplexNoiseGenerator;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldGenerator;
@@ -37,7 +37,7 @@ public class NoiseWorldGenerator extends WorldGenerator
 		//rnd.setSeed(cx * 32 + cz + 48716148);
 		
 		//CubicChunk chunk = new CubicChunk(region, cx, cy, cz);
-		Vector3fm position = new Vector3fm();
+		Vector3f position = new Vector3f();
 
 		int wx = 8, wy = 4, wz = 8;
 		
@@ -54,12 +54,12 @@ public class NoiseWorldGenerator extends WorldGenerator
 					int y = b * (32 / wy);
 					int z = c * (32 / wz);
 
-					position.setX((float) (cx * 32 + x));
-					position.setY((float) (cy * 32 + y));
-					position.setZ((float) (cz * 32 + z));
+					position.x = ((float) (cx * 32 + x));
+					position.y = ((float) (cy * 32 + y));
+					position.z = ((float) (cz * 32 + z));
 
-					position.scale(0.05f);
-					generated[wwx * (wwy * c + b) + a] = ssng.noise(position.getX(), position.getY(), position.getZ());
+					position.mul(0.05f);
+					generated[wwx * (wwy * c + b) + a] = ssng.noise(position.x(), position.y(), position.z());
 				}
 
 		for (int x = 0; x < 32; x++)

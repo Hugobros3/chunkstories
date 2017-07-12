@@ -6,7 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+
 import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -16,13 +18,13 @@ import io.xol.chunkstories.world.WorldImplementation;
 public class EntityRayIterator implements Iterator<Entity>
 {
 	WorldImplementation world;
-	Vector3dm initialPosition;
-	Vector3dm direction;
+	Vector3dc initialPosition;
+	Vector3dc direction;
 	
 	List<Entity> sortedEntities = new ArrayList<Entity>();
 	Iterator<Entity> lazyFuck;
 	
-	public EntityRayIterator(WorldImplementation world, Vector3dm initialPosition, Vector3dm direction, double limit)
+	public EntityRayIterator(WorldImplementation world, Vector3dc initialPosition, Vector3dc direction, double limit)
 	{
 		this.world = world;
 		this.initialPosition = initialPosition;
@@ -33,10 +35,10 @@ public class EntityRayIterator implements Iterator<Entity>
 		{
 			Entity entity = iterator.next();
 			//Distance check
-			if(limit == -1 || entity.getLocation().distanceTo(initialPosition) <= limit)
+			if(limit == -1 || entity.getLocation().distance(initialPosition) <= limit)
 			{
 				
-				Vector3dm toEntity = new Vector3dm(entity.getLocation());
+				Vector3d toEntity = new Vector3d(entity.getLocation());
 				toEntity.sub(initialPosition);
 				//Check direction of the line to avoid hitting hitself, backtracking and wrapping arround the world
 				if(direction.dot(toEntity) > 0)
@@ -61,8 +63,8 @@ public class EntityRayIterator implements Iterator<Entity>
 			@Override
 			public int compare(Entity a, Entity b)
 			{
-				double distanceA = a.getLocation().distanceTo(initialPosition);
-				double distanceB = b.getLocation().distanceTo(initialPosition);
+				double distanceA = a.getLocation().distance(initialPosition);
+				double distanceB = b.getLocation().distance(initialPosition);
 				
 				if(distanceA < distanceB)
 					return -1;

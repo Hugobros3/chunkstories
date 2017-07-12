@@ -25,7 +25,8 @@ import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3fc;
+
 import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
@@ -172,7 +173,7 @@ public class ALSoundManager implements ClientSoundManager
 	public float x, y, z;
 
 	@Override
-	public void setListenerPosition(float x, float y, float z, Vector3fm lookAt, Vector3fm up)
+	public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up)
 	{
 		this.x = x;
 		this.y = y;
@@ -183,7 +184,7 @@ public class ALSoundManager implements ClientSoundManager
 		//AL10.alListener(AL10.AL_VELOCITY, xxx);
 		
 
-		FloatBuffer rotScratch = MemoryUtil.memAllocFloat(6).put(new float[] { lookAt.getX(), lookAt.getY(), lookAt.getZ(), up.getX(), up.getY(), up.getZ() });
+		FloatBuffer rotScratch = MemoryUtil.memAllocFloat(6).put(new float[] { lookAt.x(), lookAt.y(), lookAt.z(), up.x(), up.y(), up.z() });
 		rotScratch.flip();
 		alListenerfv(AL_ORIENTATION, rotScratch);
 		//FloatBuffer listenerOri = BufferUtils.createFloatBuffer(6).put(new float[] { 0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f });

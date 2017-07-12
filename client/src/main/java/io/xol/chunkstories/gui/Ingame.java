@@ -27,8 +27,8 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Math2;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector3d;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
@@ -162,7 +162,7 @@ public class Ingame extends Layer
 			gameWindow.setLayer(new DeathOverlay(gameWindow, this));
 
 		//Get the player location
-		Vector3dm cameraPosition = (Vector3dm) renderingContext.getCamera().getCameraPosition();
+		Vector3d cameraPosition = (Vector3d) renderingContext.getCamera().getCameraPosition();
 
 		// Update the player
 		if (playerEntity instanceof EntityControllable)
@@ -188,9 +188,9 @@ public class Ingame extends Layer
 			int drawDebugDist = 6;
 			//cameraPosition.negate();
 
-			for (int i = ((int)(double) cameraPosition.getX()) - drawDebugDist; i <= ((int)(double) cameraPosition.getX()) + drawDebugDist; i++)
-				for (int j = ((int)(double) cameraPosition.getY()) - drawDebugDist; j <= ((int)(double) cameraPosition.getY()) + drawDebugDist; j++)
-					for (int k = ((int)(double) cameraPosition.getZ()) - drawDebugDist; k <= ((int)(double) cameraPosition.getZ()) + drawDebugDist; k++)
+			for (int i = ((int)(double) cameraPosition.x()) - drawDebugDist; i <= ((int)(double) cameraPosition.x()) + drawDebugDist; i++)
+				for (int j = ((int)(double) cameraPosition.y()) - drawDebugDist; j <= ((int)(double) cameraPosition.y()) + drawDebugDist; j++)
+					for (int k = ((int)(double) cameraPosition.z()) - drawDebugDist; k <= ((int)(double) cameraPosition.z()) + drawDebugDist; k++)
 					{
 						data = world.getVoxelData(i, j, k);
 						id = VoxelFormat.id(data);
@@ -199,10 +199,10 @@ public class Ingame extends Layer
 						if (tboxes != null)
 							for (CollisionBox box : tboxes)
 								if (VoxelsStore.get().getVoxelById(id).getType().isSolid())
-									FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4fm(1, 0, 0, 1.0f));
+									FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4f(1, 0, 0, 1.0f));
 									//box.debugDraw(1, 0, 0, 1.0f);
 								else
-									FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4fm(1, 1, 0, 0.25f));
+									FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4f(1, 1, 0, 0.25f));
 									//box.debugDraw(1, 1, 0, 0.25f);
 						
 						//((VoxelTypeImplementation) VoxelsStore.get().getVoxelById(id).getType()).debugRenderCollision(renderingContext, world, i, j, k);
@@ -225,16 +225,16 @@ public class Ingame extends Layer
 					}
 				}
 				
-				if(e.getTranslatedBoundingBox().lineIntersection(cameraPosition, camera.getViewDirection().castToDoublePrecision()) != null)
+				if(e.getTranslatedBoundingBox().lineIntersection(cameraPosition, new Vector3d(camera.getViewDirection())) != null)
 
-					FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4fm(0, 0, 0.5f, 1.0f));
+					FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4f(0, 0, 0.5f, 1.0f));
 				else
-					FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4fm(0, 1f, 1f, 1.0f));
+					FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4f(0, 1f, 1f, 1.0f));
 				
 				for(CollisionBox box : e.getCollisionBoxes())
 				{
 					box.translate(e.getLocation());
-					FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4fm(0, 1, 0.5f, 1.0f));
+					FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4f(0, 1, 0.5f, 1.0f));
 				}
 			}
 		}
@@ -294,7 +294,7 @@ public class Ingame extends Layer
 				//Health
 				int horizontalBitsToDraw = (int) (8 + 118 * Math2.clamp(livingPlayer.getHealth() / livingPlayer.getMaxHealth(), 0.0, 1.0));
 				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(renderingContext.getWindow().getWidth() / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f,
-						32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4fm(1.0f, 1.0f, 1.0f, 0.75f));
+						32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
 
 				//Food
 				if (livingPlayer instanceof EntityPlayer)
@@ -304,7 +304,7 @@ public class Ingame extends Layer
 					horizontalBitsToDraw = (int) (0 + 126 * Math2.clamp(playerPlayer.getFoodLevel() / 100f, 0.0, 1.0));
 					renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(
 							renderingContext.getWindow().getWidth() / 2 + 0 * 128 * scale + 0, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0.5f , 64f / 256f, 0.5f + horizontalBitsToDraw / 256f,
-							32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4fm(1.0f, 1.0f, 1.0f, 0.75f));
+							32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
 				}
 			}
 			//Or draw cursor
@@ -525,9 +525,9 @@ public class Ingame extends Layer
 
 		long total = Runtime.getRuntime().totalMemory();
 		long used = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		int bx = ((int)(double) camera.getCameraPosition().getX());
-		int by = ((int)(double) camera.getCameraPosition().getY());
-		int bz = ((int)(double) camera.getCameraPosition().getZ());
+		int bx = ((int)(double) camera.getCameraPosition().x());
+		int by = ((int)(double) camera.getCameraPosition().y());
+		int bz = ((int)(double) camera.getCameraPosition().z());
 		int data = world.getVoxelData(bx, by, bz);
 		int bl = VoxelFormat.blocklight(data);
 		int sl = VoxelFormat.sunlight(data);//(data & 0x00F00000) >> 0x14;

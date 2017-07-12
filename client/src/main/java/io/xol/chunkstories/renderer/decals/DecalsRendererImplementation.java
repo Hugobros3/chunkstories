@@ -8,13 +8,11 @@ import java.util.Map;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.MatrixHelper;
-import io.xol.chunkstories.api.math.vector.Vector3;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.operations.VectorCrossProduct;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.effects.DecalsRenderer;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
@@ -74,42 +72,50 @@ public class DecalsRendererImplementation implements DecalsRenderer
 			return texture;
 		}
 		
-		void addDecal(Vector3dm position, Vector3dm orientation, Vector3dm size)
+		void addDecal(Vector3dc position, Vector3dc orientation, Vector3dc size)
 		{
 			decalsByteBuffer.limit(decalsByteBuffer.capacity());
 			
 			ByteBuffer bbuf = BufferUtils.createByteBuffer(128 * 1024 * 4 * (3 + 3));
 			
-			orientation.normalize();
+			//orientation.normalize();
 
-			Vector3<Float> lookAt = orientation.castToSinglePrecision();
+			Vector3f lookAt = new Vector3f((float)orientation.x(), (float)orientation.y(), (float)orientation.z());
+			lookAt.normalize();
+			//Vector3<Float> lookAt = orientation.castToSinglePrecision();
 			
-			Vector3fm up = new Vector3fm(0.0f, 1.0f, 0.0f);
-			VectorCrossProduct.cross33(lookAt, up, up);
-			VectorCrossProduct.cross33(up, lookAt, up);
+			Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 			
-			Matrix4f rotationMatrix = MatrixHelper.getLookAtMatrix(new Vector3fm(0.0f), lookAt, up);
+			lookAt.cross(up, up);
+			//VectorCrossProduct.cross33(lookAt, up, up);
+			
+			up.cross(lookAt);
+			//VectorCrossProduct.cross33(up, lookAt, up);
+			
+			Matrix4f rotationMatrix = new Matrix4f();
+			rotationMatrix.lookAt(new Vector3f(0.0f), lookAt, up);
+			//MatrixHelper.getLookAtMatrix(new Vector3f(0.0f), lookAt, up);
 			
 			DecalsVoxelBaker virtualRenderBytebuffer = new DecalsVoxelBaker(bbuf);
-			Vector3dm size2 = new Vector3dm(size);
-			size2.scale(1.5);
-			size2.add(new Vector3dm(0.5));
+			Vector3d size2 = new Vector3d(size);
+			size2.mul(1.5);
+			size2.add(new Vector3d(0.5));
 			//TODO use proper dda ?
 			try{
-			for (int x = 0; x < size2.getX(); x++)
-				for (int y = 0; y < size2.getY(); y++)
-					for (int z = 0; z < size2.getZ(); z++)
+			for (int x = 0; x < size2.x(); x++)
+				for (int y = 0; y < size2.y(); y++)
+					for (int z = 0; z < size2.z(); z++)
 					{
-						float dx = (float) (x - size2.getX() / 2.0);
-						float dy = (float) (y - size2.getY() / 2.0);
-						float dz = (float) (z - size2.getZ() / 2.0);
+						float dx = (float) (x - size2.x() / 2.0);
+						float dy = (float) (y - size2.y() / 2.0);
+						float dz = (float) (z - size2.z() / 2.0);
 
-						Vector4fm rotateMe = new Vector4fm(dx, dy, dz, 1.0f);
+						Vector4f rotateMe = new Vector4f(dx, dy, dz, 1.0f);
 						//Matrix4f.transform(rotationMatrix, rotateMe, rotateMe);
 
 						Location location = new Location(world, position);
-						location.add(new Vector3dm(rotateMe.getX(), rotateMe.getY(), rotateMe.getZ()));
-						location.add(new Vector3dm(0.5));
+						location.add(new Vector3d(rotateMe.x(), rotateMe.y(), rotateMe.z()));
+						location.add(new Vector3d(0.5));
 
 						int idThere = VoxelFormat.id(world.getVoxelData(location));
 
@@ -285,13 +291,13 @@ public class DecalsRendererImplementation implements DecalsRenderer
 		this.world = worldRenderer.getWorld();
 	}
 	
-	public void drawDecal(Vector3dm position, Vector3dm orientation, Vector3dm size, String decalName)
+	public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName)
 	{
 		Texture2DGL texture = TexturesHandler.getTexture("./textures/decals/"+decalName+".png");
 		drawDecal(position, orientation, size, texture);
 	}
 
-	public void drawDecal(Vector3dm position, Vector3dm orientation, Vector3dm size, Texture2DGL texture)
+	public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, Texture2DGL texture)
 	{
 		if(texture == null)
 			return;

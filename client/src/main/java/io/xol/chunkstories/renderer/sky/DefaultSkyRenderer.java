@@ -3,7 +3,7 @@ package io.xol.chunkstories.renderer.sky;
 import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.chunkstories.api.math.Math2;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.SkyboxRenderer;
@@ -37,12 +37,12 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 		this.cloudsRenderer = new CloudsRenderer(world, this);
 	}
 
-	public Vector3fm getSunPosition()
+	public Vector3f getSunPosition()
 	{
 		float sunloc = (float) (time * Math.PI * 2 / 1.6 - 0.5);
 		float sunangle = 0;
 		float sundistance = 1000;
-		return new Vector3fm((float) (400 + sundistance * Math.sin(rad(sunangle)) * Math.cos(sunloc)), (float) (height + sundistance * Math.sin(sunloc)), (float) (sundistance * Math.cos(rad(sunangle)) * Math.cos(sunloc))).normalize();
+		return new Vector3f((float) (400 + sundistance * Math.sin(rad(sunangle)) * Math.cos(sunloc)), (float) (height + sundistance * Math.sin(sunloc)), (float) (sundistance * Math.cos(rad(sunangle)) * Math.cos(sunloc))).normalize();
 	}
 	
 	public void render(RenderingInterface renderingContext)
@@ -53,7 +53,7 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 		
 		renderingContext.getRenderTargetManager().setDepthMask(false);
 
-		Vector3fm sunPosVector = getSunPosition();
+		Vector3f sunPosVector = getSunPosition();
 
 		ShaderInterface skyShader = renderingContext.useShader("sky");
 		
@@ -82,7 +82,7 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 		skyTextureRaining.setMipMapping(false);
 		skyTextureRaining.setTextureWrapping(false);
 
-		skyShader.setUniform3f("sunPos", sunPosVector.getX(), sunPosVector.getY(), sunPosVector.getZ());
+		skyShader.setUniform3f("sunPos", sunPosVector.x(), sunPosVector.y(), sunPosVector.z());
 		skyShader.setUniform1f("time", time);
 		renderingContext.getCamera().setupShader(skyShader);
 
@@ -92,7 +92,7 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 		
 		ShaderInterface starsShader = renderingContext.useShader("stars");
 		
-		starsShader.setUniform3f("sunPos", sunPosVector.getX(), sunPosVector.getY(), sunPosVector.getZ());
+		starsShader.setUniform3f("sunPos", sunPosVector.x(), sunPosVector.y(), sunPosVector.z());
 		starsShader.setUniform3f("color", 1f, 1f, 1f);
 		renderingContext.getCamera().setupShader(starsShader);
 		int NB_STARS = 500;
@@ -101,10 +101,10 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 			stars = BufferUtils.createFloatBuffer(NB_STARS * 3);
 			for (int i = 0; i < NB_STARS; i++)
 			{
-				Vector3fm star = new Vector3fm((float) Math.random() * 2f - 1f, (float) Math.random(), (float) Math.random() * 2f - 1f);
+				Vector3f star = new Vector3f((float) Math.random() * 2f - 1f, (float) Math.random(), (float) Math.random() * 2f - 1f);
 				star.normalize();
-				star.scale(100f);
-				stars.put(new float[] { star.getX(), star.getY(), star.getZ() });
+				star.mul(100f);
+				stars.put(new float[] { star.x(), star.y(), star.z() });
 			}
 		}
 		stars.rewind();
@@ -136,9 +136,9 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 		shaderInterface.setUniform1f("fogStartDistance", Math2.mix(512, 32, fogFactor));
 		shaderInterface.setUniform1f("fogEndDistance", Math2.mix(1024, 384, fogFactor));
 		
-		Vector3fm sunPos = this.getSunPosition();
+		Vector3f sunPos = this.getSunPosition();
 		
-		shaderInterface.setUniform3f("sunPos", sunPos.getX(), sunPos.getY(), sunPos.getZ());
+		shaderInterface.setUniform3f("sunPos", sunPos.x(), sunPos.y(), sunPos.z());
 		
 		//shaderInterface.setUniform1f("fogStartDistance", 200000);
 		//shaderInterface.setUniform1f("fogEndDistance", 200000);

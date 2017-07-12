@@ -5,7 +5,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
@@ -62,6 +62,6 @@ public class FrametimeRenderer
 		renderingContext.bindTexture1D("frametimeData", texture);
 		renderingContext.drawFSQuad();
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().defaultFont(), 4, 192 - 30, "Frametime (ms)", 2, 2, new Vector4fm(0.0, 1.0, 0.0, 1.0));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().defaultFont(), 4, 192 - 30, "Frametime (ms)", 2, 2, new Vector4f(0.0f, 1.0f, 0.0f, 1.0f));
 	}
 }

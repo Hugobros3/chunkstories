@@ -1,6 +1,6 @@
 package io.xol.chunkstories.voxel;
 
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -19,7 +19,7 @@ public class VoxelTextureAtlased implements VoxelTexture
 	private int atlasT;
 	private int atlasS;
 	
-	private Vector4fm color;
+	private Vector4f color;
 	public int positionInColorIndex;
 	
 	public VoxelTextureAtlased(String name, int id) throws Exception
@@ -86,12 +86,12 @@ public class VoxelTextureAtlased implements VoxelTexture
 	}
 
 	@Override
-	public Vector4fm getColor()
+	public Vector4f getColor()
 	{
 		return color;
 	}
 
-	public void setColor(Vector4fm color)
+	public void setColor(Vector4f color)
 	{
 		this.color = color;
 	}

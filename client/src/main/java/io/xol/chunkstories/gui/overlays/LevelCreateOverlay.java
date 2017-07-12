@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
 import io.xol.chunkstories.api.gui.Layer;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.WorldInfo;
@@ -85,7 +85,7 @@ public class LevelCreateOverlay extends Layer
 		if(parentLayer != null)
 			this.parentLayer.render(renderingContext);
 		
-		renderingContext.getGuiRenderer().drawBox(0.0f, 0.0f, 1.0f, 1.0f, 0, 0, 0, 0, null, true, false, new Vector4fm(0.0f, 0.0f, 0.0f, 0.75f));
+		renderingContext.getGuiRenderer().drawBox(0.0f, 0.0f, 1.0f, 1.0f, 0, 0, 0, 0, null, true, false, new Vector4f(0.0f, 0.0f, 0.0f, 0.75f));
 		
 		int frame_border_size = 64;
 		
@@ -99,11 +99,11 @@ public class LevelCreateOverlay extends Layer
 		// int y = 48;
 		CorneredBoxDrawer.drawCorneredBoxTiled(positionStartX + width/2, positionStartY + height/2, width, height, 8, "./textures/gui/scalableButton.png", 32, 2);
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64, "Create a new World", 3, 3, new Vector4fm(1));
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 32, "For use in singleplayer", 2, 2, width, new Vector4fm(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64, "Create a new World", 3, 3, new Vector4f(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 32, "For use in singleplayer", 2, 2, width, new Vector4f(1));
 		
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 96 - 4, "Level name", 2, 2, width, new Vector4fm(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 96 - 4, "Level name", 2, 2, width, new Vector4f(1));
 		int lvlnm_l = renderingContext.getFontRenderer().getFont("arial", 12).getWidth("Level name") * 2;
 		
 		levelName.setPosition(x + lvlnm_l + 20, positionStartY + height - 64 - 96);
@@ -111,7 +111,7 @@ public class LevelCreateOverlay extends Layer
 		levelName.drawWithBackGround();
 		
 		String wg_string = "World generator to use";
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 148 - 4, wg_string, 2, 2, width, new Vector4fm(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 148 - 4, wg_string, 2, 2, width, new Vector4f(1));
 		int wg_sl = renderingContext.getFontRenderer().getFont("arial", 12).getWidth(wg_string) * 2;
 		
 		worldGenName.setPosition(x + wg_sl + 20, positionStartY + height - 64 - 148);
@@ -127,7 +127,7 @@ public class LevelCreateOverlay extends Layer
 			wg_validity_string = "#00FF00'" + worldGenName.text + "' is a valid world generator !";
 		}
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 196 - 4, wg_validity_string, 2, 2, width, new Vector4fm(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 196 - 4, wg_validity_string, 2, 2, width, new Vector4f(1));
 		
 		//FontRenderer2.drawTextUsingSpecificFont(20, height - 64, 0, 48, "Create a new World", BitmapFont.SMALLFONTS);
 

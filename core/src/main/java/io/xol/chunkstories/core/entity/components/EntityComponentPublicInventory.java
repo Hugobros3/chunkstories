@@ -64,7 +64,7 @@ public class EntityComponentPublicInventory extends EntityComponentInventory
 				return true;
 			
 			//It's public if you're near enough.
-			if(entity != null && entity.getLocation().distanceTo(EntityComponentPublicInventory.this.entity.getLocation()) <= NEAR_DISTANCE) {
+			if(entity != null && entity.getLocation().distance(EntityComponentPublicInventory.this.entity.getLocation()) <= NEAR_DISTANCE) {
 				return true;
 			}
 			

@@ -5,7 +5,7 @@ import java.util.Collection;
 import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3d;
 import io.xol.chunkstories.core.entity.EntityHumanoid;
 import io.xol.chunkstories.core.entity.EntityHumanoid.EntityHumanoidStance;
 import io.xol.chunkstories.core.entity.EntityPlayer;
@@ -48,7 +48,7 @@ public class ZombieAI extends GenericHumanoidAI
 			//Only look for them once in 2s
 			attackEntityCooldown = (int) (Math.random() * 60 * 2);
 
-			for (Entity entityToLook : entity.getWorld().getEntitiesInBox(entity.getLocation(), new Vector3dm(entity.stage().aggroRadius * 2f)))
+			for (Entity entityToLook : entity.getWorld().getEntitiesInBox(entity.getLocation(), new Vector3d(entity.stage().aggroRadius * 2f)))
 			{
 				float visibilityModifier = 1f;
 				if(entityToLook instanceof EntityPlayer) {
@@ -63,7 +63,7 @@ public class ZombieAI extends GenericHumanoidAI
 				if (entityToLook.getVelocityComponent().getVelocity().length() > 0.7)
 					visibilityModifier += 1.0f;
 				
-				if (!entityToLook.equals(entity) && entityToLook.getLocation().distanceTo(entity.getLocation()) * visibilityModifier <= entity.stage().aggroRadius && entityToLook instanceof EntityHumanoid && !((EntityHumanoid) entityToLook).isDead())
+				if (!entityToLook.equals(entity) && entityToLook.getLocation().distance(entity.getLocation()) * visibilityModifier <= entity.stage().aggroRadius && entityToLook instanceof EntityHumanoid && !((EntityHumanoid) entityToLook).isDead())
 				{
 					//Check target is in set
 					if (targetsTypes.contains(entityToLook.getClass()))
@@ -107,7 +107,7 @@ public class ZombieAI extends GenericHumanoidAI
 		{
 			super.execute();
 
-			float distance = (float)(double) this.entityFollowed.getLocation().distanceTo(entity.getLocation());
+			float distance = (float)(double) this.entityFollowed.getLocation().distance(entity.getLocation());
 			
 			//Within the final give up distance ? Set the give up distance to be at that from then on
 			if(giveupDistance - distance > 1)

@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.rendering.GameWindow;
@@ -225,7 +225,7 @@ public class ModsSelectionOverlay extends Layer
 			
 			text+=" out of "+elements.size();
 			int dekal = renderer.getFontRenderer().getFont("arial", 12).getWidth(text) / 2;
-			renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), xPosition + width / 2 - dekal * scale(), yPosition + 16 / scale(), text, scale(), new Vector4fm(0.0, 0.0, 0.0, 1.0));
+			renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), xPosition + width / 2 - dekal * scale(), yPosition + 16 / scale(), text, scale(), new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
 			
 			//return r;
 		}
@@ -288,8 +288,8 @@ public class ModsSelectionOverlay extends Layer
 			public boolean isOverUpButton(Mouse mouse)
 			{
 				int s = ModsScrollableContainer.this.scale();
-				float mx = mouse.getCursorX();
-				float my = mouse.getCursorY();
+				double mx = mouse.getCursorX();
+				double my = mouse.getCursorY();
 				
 				float positionX = this.positionX + 460 * s;
 				float positionY = this.positionY + 37 * s;
@@ -301,8 +301,8 @@ public class ModsSelectionOverlay extends Layer
 			public boolean isOverEnableDisableButton(Mouse mouse)
 			{
 				int s = ModsScrollableContainer.this.scale();
-				float mx = mouse.getCursorX();
-				float my = mouse.getCursorY();
+				double mx = mouse.getCursorX();
+				double my = mouse.getCursorY();
 
 				float positionX = this.positionX + 460 * s;
 				float positionY = this.positionY + 20 * s;
@@ -314,8 +314,8 @@ public class ModsSelectionOverlay extends Layer
 			public boolean isOverDownButton(Mouse mouse)
 			{
 				int s = ModsScrollableContainer.this.scale();
-				float mx = mouse.getCursorX();
-				float my = mouse.getCursorY();
+				double mx = mouse.getCursorX();
+				double my = mouse.getCursorY();
 
 				float positionX = this.positionX + 460 * s;
 				float positionY = this.positionY + 2 * s;
@@ -342,29 +342,29 @@ public class ModsSelectionOverlay extends Layer
 				enableDisableTexture.setLinearFiltering(false);
 				
 				//Render graphical base
-				renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, bgTexture, true, false, enabled ? new Vector4fm(1.0, 1.0, 1.0, 1.0) : new Vector4fm(1.0, 0.5, 0.5, 1.0));
+				renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, bgTexture, true, false, enabled ? new Vector4f(1.0f, 1.0f, 1.0f, 1.0f) : new Vector4f(1.0f, 0.5f, 0.5f, 1.0f));
 				//Render subbuttons
 				if(isOverUpButton(mouse))
-					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, upArrowTexture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, upArrowTexture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 				if(isOverEnableDisableButton(mouse))
-					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, enableDisableTexture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, enableDisableTexture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 				if(isOverDownButton(mouse))
-					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, downArrowTexture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, downArrowTexture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 				
 				//Render icon
-				renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX + 4 * s, positionY + 4 * s, 64 * s, 64 * s, 0, 1, 1, 0, icon, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+				renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX + 4 * s, positionY + 4 * s, 64 * s, 64 * s, 0, 1, 1, 0, icon, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 				//Text !
 				if(name != null)
-					renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 54 * s, name, s, new Vector4fm(0.0, 0.0, 0.0, 1.0));
+					renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 54 * s, name, s, new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
 				
 				if(topRightString != null)
 				{
 					float dekal = width - renderer.getFontRenderer().getFont("arial", 12).getWidth(topRightString) - 4;
-					renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + dekal* s, positionY + 54 * s, topRightString, s, new Vector4fm(0.25, 0.25, 0.25, 1.0));
+					renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + dekal* s, positionY + 54 * s, topRightString, s, new Vector4f(0.25f, 0.25f, 0.25f, 1.0f));
 				}
 				
 				if(descriptionLines != null)
-					renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 38 * s, descriptionLines, s, new Vector4fm(0.25, 0.25, 0.25, 1.0));
+					renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("arial", 12), positionX + 70 * s, positionY + 38 * s, descriptionLines, s, new Vector4f(0.25f, 0.25f, 0.25f, 1.0f));
 				
 			}
 			

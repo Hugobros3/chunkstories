@@ -4,7 +4,7 @@ import java.util.Map;
 
 import io.xol.chunkstories.api.animation.SkeletonAnimator;
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
-import io.xol.chunkstories.api.math.Matrix4f;
+import org.joml.Matrix4f;
 import io.xol.chunkstories.api.mesh.MultiPartMesh;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -43,7 +43,7 @@ public class MultiPartMeshRenderableImpl extends MeshRenderableImpl implements R
 		prepareDraw(renderingContext);
 
 		Matrix4f currentObjectMatrix = renderingContext.getObjectMatrix();
-		Matrix4f matrix;
+		Matrix4f matrix = new Matrix4f();
 
 		int totalSize = 0;
 		if (skeleton != null)
@@ -77,13 +77,14 @@ public class MultiPartMeshRenderableImpl extends MeshRenderableImpl implements R
 				}
 
 				//Get transformer matrix
-				matrix = skeleton.getBoneHierarchyTransformationMatrixWithOffset(currentVertexGroup, animationTime < 0 ? 0 : animationTime);
+				matrix.set(skeleton.getBoneHierarchyTransformationMatrixWithOffset(currentVertexGroup, animationTime < 0 ? 0 : animationTime));
 				
 				if(currentObjectMatrix == null)
 					currentObjectMatrix = new Matrix4f();
 				
 				//Send the transformation
-				Matrix4f.mul(currentObjectMatrix, matrix, matrix);
+				currentObjectMatrix.mul(matrix, matrix);
+				//Matrix4f.mul(currentObjectMatrix, matrix, matrix);
 				
 				renderingContext.setObjectMatrix(matrix);
 				

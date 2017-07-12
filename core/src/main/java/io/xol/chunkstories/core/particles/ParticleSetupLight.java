@@ -1,6 +1,6 @@
 package io.xol.chunkstories.core.particles;
 
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;
 import io.xol.chunkstories.api.particles.ParticlesRenderer;
@@ -22,13 +22,13 @@ public class ParticleSetupLight extends ParticleTypeHandler
 	public class ParticleSetupLightData extends ParticleData {
 
 		public int timer = 4800;
-		public Vector3fm c;
+		public Vector3f c;
 		public Light light;
 		
 		public ParticleSetupLightData(float x, float y, float z)
 		{
 			super(x, y, z);
-			c = new Vector3fm(Math.random(), Math.random(), Math.random());
+			c = new Vector3f((float)Math.random(), (float)Math.random(), (float)Math.random());
 		}
 	}
 

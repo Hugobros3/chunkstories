@@ -1,10 +1,11 @@
 package io.xol.chunkstories.core.entity.voxel;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.EntityBase;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.entity.EntityVoxel;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
@@ -76,7 +77,7 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 
 			for (EntitySign entitySign : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
-				if (renderingContext.getCamera().getCameraPosition().distanceTo(entitySign.getLocation()) > 32)
+				if (renderingContext.getCamera().getCameraPosition().distance(entitySign.getLocation()) > 32)
 					continue;
 				
 				e++;
@@ -85,7 +86,7 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 				diffuse.setLinearFiltering(false);
 				renderingContext.bindAlbedoTexture(diffuse);
 				renderingContext.bindNormalTexture(renderingContext.textures().getTexture("./textures/normalnormal.png"));
-				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3fm(0));
+				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
 
 				int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
 
@@ -99,11 +100,13 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 				int facing = VoxelFormat.meta(modelBlockData);
 
 				Matrix4f mutrix = new Matrix4f();
-				mutrix.translate(new Vector3fm(0.5f, 0.0f, 0.5f));
-				mutrix.translate(entitySign.getLocation().castToSinglePrecision());
-				mutrix.rotate((float) Math.PI * 2.0f * (-facing) / 16f, new Vector3fm(0, 1, 0));
+				mutrix.translate(new Vector3f(0.5f, 0.0f, 0.5f));
+				
+				Location loc = entitySign.getLocation();
+				mutrix.translate((float)loc.x, (float)loc.y, (float)loc.z);
+				mutrix.rotate((float) Math.PI * 2.0f * (-facing) / 16f, new Vector3f(0, 1, 0));
 				if (isPost)
-					mutrix.translate(new Vector3fm(0.0f, 0.0f, -0.5f));
+					mutrix.translate(new Vector3f(0.0f, 0.0f, -0.5f));
 				renderingContext.setObjectMatrix(mutrix);
 
 				//glDisable(GL_CULL_FACE);
@@ -121,7 +124,7 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 					entitySign.renderData = renderingContext.getFontRenderer().newTextMeshObject(renderingContext.getFontRenderer().defaultFont(), entitySign.cachedText);
 				}
 				// Display it
-				mutrix.translate(new Vector3fm(0.0f, 1.15f, 0.055f));
+				mutrix.translate(new Vector3f(0.0f, 1.15f, 0.055f));
 				renderingContext.setObjectMatrix(mutrix);
 				entitySign.renderData.render(renderingContext);
 			}

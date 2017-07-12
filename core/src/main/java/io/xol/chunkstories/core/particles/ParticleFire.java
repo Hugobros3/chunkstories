@@ -1,6 +1,9 @@
 package io.xol.chunkstories.core.particles;
 
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector3fc;
+
 import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
@@ -25,7 +28,7 @@ public class ParticleFire extends ParticleTypeHandler
 
 		public int timer = 60 * 60;
 		public float temp = 7000;
-		Vector3dm vel = new Vector3dm();
+		Vector3d vel = new Vector3d();
 		int decay;
 		
 		public ParticleFireData(float x, float y, float z)
@@ -35,9 +38,8 @@ public class ParticleFire extends ParticleTypeHandler
 			decay = 15+(int)(Math.random()*5);
 		}
 		
-		public void setVelocity(Vector3dm vel)
-		{
-			this.vel = vel;
+		public void setVelocity(Vector3dc vel) {
+			this.vel.set(vel);
 		}
 
 		@Override
@@ -91,6 +93,11 @@ public class ParticleFire extends ParticleTypeHandler
 		{
 			return 0;
 		}
+
+		@Override
+		public void setVelocity(Vector3fc vel) {
+			this.vel.set(vel);
+		}
 	}
 
 	@Override
@@ -105,12 +112,12 @@ public class ParticleFire extends ParticleTypeHandler
 		ParticleFireData b = (ParticleFireData) data;
 		
 		b.timer--;
-		b.setX((float) (b.getX() + b.vel.getX()));
-		b.setY((float) (b.getY() + b.vel.getY()));
-		b.setZ((float) (b.getZ() + b.vel.getZ()));
+		b.x = ((float) (b.x() + b.vel.x()));
+		b.y = ((float) (b.y() + b.vel.y()));
+		b.z = ((float) (b.z() + b.vel.z()));
 		
-		if (!((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY(), b.getZ()))
-			b.vel.setY(b.vel.getY() + 0.02/60.0);
+		if (!((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()))
+			b.vel.y = (b.vel.y() + 0.02/60.0);
 		else
 			b.vel.set(0d, 0d, 0d);
 		
@@ -119,7 +126,7 @@ public class ParticleFire extends ParticleTypeHandler
 		
 		//b.vel.scale(0.95129708668990249416970880243486);
 		
-		b.vel.scale(0.93);
+		b.vel.mul(0.93);
 		
 		if(b.vel.length() < 0.1/60.0)
 			b.vel.set(0d, 0d, 0d);
@@ -134,7 +141,7 @@ public class ParticleFire extends ParticleTypeHandler
 			b.temp = 1;	
 		}
 		
-		if(((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY(), b.getZ()))
+		if(((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()))
 			b.destroy();
 	}
 	
@@ -166,9 +173,9 @@ public class ParticleFire extends ParticleTypeHandler
 			@Override
 			public void forEach_Rendering(RenderingInterface renderingContext, ParticleData data)
 			{
-				data.setY((float) (data.getY() + (Math.random() - 0.1) * 0.0015));
-				data.setX((float) (data.getX() + (Math.random() - 0.5) * 0.0015));
-				data.setZ((float) (data.getZ() + (Math.random() - 0.5) * 0.0015));
+				data.y = ((float) (data.y() + (Math.random() - 0.1) * 0.0015));
+				data.x = ((float) (data.x() + (Math.random() - 0.5) * 0.0015));
+				data.z = ((float) (data.z() + (Math.random() - 0.5) * 0.0015));
 				
 				((ParticleFireData)data).timer--;
 				if (((ParticleFireData)data).timer < 0)

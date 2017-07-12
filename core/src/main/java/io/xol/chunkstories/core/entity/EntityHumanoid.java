@@ -13,9 +13,9 @@ import io.xol.chunkstories.api.item.ItemVoxel;
 import io.xol.chunkstories.api.item.interfaces.ItemCustomHoldingAnimation;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.material.Material;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer.RenderingPass;
@@ -40,7 +40,7 @@ import io.xol.engine.animation.CompoundAnimationHelper;
 public abstract class EntityHumanoid extends EntityLivingImplementation
 {
 	double jumpForce = 0;
-	protected Vector3dm targetVelocity = new Vector3dm(0);
+	protected Vector3d targetVelocity = new Vector3d(0);
 
 	boolean justJumped = false;
 	boolean justLanded = false;
@@ -102,9 +102,9 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 				}
 			}
 
-			Vector3dm vel = getVelocityComponent().getVelocity();
+			Vector3d vel = getVelocityComponent().getVelocity();
 
-			double horizSpd = Math.sqrt(vel.getX() * vel.getX() + vel.getZ() * vel.getZ());
+			double horizSpd = Math.sqrt(vel.x() * vel.x() + vel.z() * vel.z());
 
 			if(stance.get() == EntityHumanoidStance.STANDING)
 			{
@@ -134,9 +134,9 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 
 		public Matrix4f getBoneTransformationMatrix(String boneName, double animationTime)
 		{
-			Vector3dm vel = getVelocityComponent().getVelocity();
+			Vector3d vel = getVelocityComponent().getVelocity();
 
-			double horizSpd = Math.sqrt(vel.getX() * vel.getX() + vel.getZ() * vel.getZ());
+			double horizSpd = Math.sqrt(vel.x() * vel.x() + vel.z() * vel.z());
 
 			animationTime *= 0.75;
 
@@ -145,8 +145,8 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 
 			if (boneName.endsWith("boneHead"))
 			{
-				Matrix4f modify = getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime);
-				modify.rotate((float) (EntityHumanoid.this.getEntityRotationComponent().getVerticalRotation() / 180 * Math.PI), new Vector3fm(0, 1, 0));
+				Matrix4f modify = new Matrix4f(getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime));
+				modify.rotate((float) (EntityHumanoid.this.getEntityRotationComponent().getVerticalRotation() / 180 * Math.PI), new Vector3f(0, 1, 0));
 				return modify;
 			}
 
@@ -157,7 +157,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 				animationTime *= 1.5;
 			else if (Arrays.asList(new String[] { "boneArmLU", "boneArmRU", "boneArmLD", "boneArmRD", "boneItemInHand", "boneTorso" }).contains(boneName))
 			{
-				//Vector3dm vel = getVelocityComponent().getVelocity();
+				//Vector3d vel = getVelocityComponent().getVelocity();
 				//double horizSpd = Math.sqrt(vel.getX() * vel.getX() + vel.getZ() * vel.getZ());
 
 				//System.out.println((horizSpd / 0.065) * 0.3);
@@ -166,7 +166,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			Matrix4f characterRotationMatrix = new Matrix4f();
 			//Only the torso is modified, the effect is replicated accross the other bones later
 			if (boneName.endsWith("boneTorso"))
-				characterRotationMatrix.rotate((90 - getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3fm(0, 0, 1));
+				characterRotationMatrix.rotate((90 - getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
 
 			ItemPile selectedItem = null;
 
@@ -179,16 +179,16 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 
 				if (selectedItem != null)
 				{
-					characterRotationMatrix.translate(new Vector3fm(0f, 0f, (float) k));
-					characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation() + ((stance.get() == EntityHumanoidStance.CROUCHING) ? -50f : 0f)) / 180f * 3.14159f, new Vector3fm(0, 1, 0));
-					characterRotationMatrix.translate(new Vector3fm(0f, 0f, -(float) k));
+					characterRotationMatrix.translate(new Vector3f(0f, 0f, (float) k));
+					characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation() + ((stance.get() == EntityHumanoidStance.CROUCHING) ? -50f : 0f)) / 180f * 3.14159f, new Vector3f(0, 1, 0));
+					characterRotationMatrix.translate(new Vector3f(0f, 0f, -(float) k));
 					
 					
 					
 					if(stance.get() == EntityHumanoidStance.CROUCHING && EntityHumanoid.this.equals(((WorldClient)getWorld()).getClient().getPlayer().getControlledEntity()))
-						characterRotationMatrix.translate(new Vector3fm(-0.25f, 0f, -0.2f));
+						characterRotationMatrix.translate(new Vector3f(-0.25f, 0f, -0.2f));
 					
-					//characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation() + ((stance.get() == EntityHumanoidStance.CROUCHING) ? -50f : 0f)) / 180f * 3.14159f, new Vector3fm(0, 1, 0));
+					//characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation() + ((stance.get() == EntityHumanoidStance.CROUCHING) ? -50f : 0f)) / 180f * 3.14159f, new Vector3f(0, 1, 0));
 					
 				}
 			}
@@ -197,7 +197,8 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 				animationTime = ((ItemCustomHoldingAnimation) selectedItem.getItem()).transformAnimationTime(animationTime);
 			}
 
-			return Matrix4f.mul(characterRotationMatrix, getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime), null);
+			return characterRotationMatrix.mul(getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime));
+			//return Matrix4f.mul(characterRotationMatrix, getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime), null);
 		}
 
 		public boolean shouldHideBone(RenderingInterface renderingContext, String boneName)
@@ -255,13 +256,13 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			{
 				Location location = entity.getPredictedLocation();
 
-				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
+				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && location.distance(renderingContext.getCamera().getCameraPosition()) > 15f)
 					continue;
 
 				entity.cachedSkeleton.lodUpdate(renderingContext);
 
 				Matrix4f matrix = new Matrix4f();
-				matrix.translate(location.castToSinglePrecision());
+				matrix.translate((float)location.x, (float)location.y, (float)location.z);
 				renderingContext.setObjectMatrix(matrix);
 
 				renderingContext.meshes().getRenderableMultiPartAnimatableMeshByName("./models/human.obj").render(renderingContext, entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000);
@@ -279,7 +280,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			for (EntityHumanoid entity : renderableEntitiesIterator)
 			{
 
-				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
+				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && entity.getLocation().distance(renderingContext.getCamera().getCameraPosition()) > 15f)
 					continue;
 
 				ItemPile selectedItemPile = null;
@@ -287,14 +288,15 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 				if (entity instanceof EntityWithSelectedItem)
 					selectedItemPile = ((EntityWithSelectedItem) entity).getSelectedItemComponent().getSelectedItem();
 
-				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3fm(0));
+				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
 
 				if (selectedItemPile != null)
 				{
 					Matrix4f itemMatrix = new Matrix4f();
-					itemMatrix.translate(entity.getPredictedLocation().castToSinglePrecision());
+					itemMatrix.translate((float)entity.getPredictedLocation().x(), (float)entity.getPredictedLocation().y(), (float)entity.getPredictedLocation().z());
 
-					Matrix4f.mul(itemMatrix, entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000), itemMatrix);
+					itemMatrix.mul(entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000));
+					//Matrix4f.mul(itemMatrix, entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000), itemMatrix);
 
 					selectedItemPile.getItem().getType().getRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
 				}
@@ -324,7 +326,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 		return new EntityHumanoidRenderer<EntityHumanoid>();
 	}
 
-	public Vector3dm getTargetVelocity()
+	public Vector3d getTargetVelocity()
 	{
 		return targetVelocity;
 	}
@@ -364,8 +366,8 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 
 			//Set acceleration vector to wanted speed - actual speed
 			if(isDead())
-				targetVelocity = new Vector3dm(0.0);
-			acceleration = new Vector3dm(targetVelocity.getX() - getVelocityComponent().getVelocity().getX(), 0, targetVelocity.getZ() - getVelocityComponent().getVelocity().getZ());
+				targetVelocity = new Vector3d(0.0);
+			acceleration = new Vector3d(targetVelocity.x() - getVelocityComponent().getVelocity().x(), 0, targetVelocity.z() - getVelocityComponent().getVelocity().z());
 
 			//Limit maximal acceleration depending if we're on the groud or not, we accelerate 2x faster on ground
 			double maxAcceleration = isOnGround() ? 0.010 : 0.005;
@@ -374,7 +376,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			if (acceleration.length() > maxAcceleration)
 			{
 				acceleration.normalize();
-				acceleration.scale(maxAcceleration);
+				acceleration.mul(maxAcceleration);
 			}
 		}
 
@@ -400,7 +402,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 
 		//When the entities are too far from the player, don't play any sounds
 		if (((WorldClient)getWorld()).getClient().getPlayer().getControlledEntity() != null)
-			if (((WorldClient)getWorld()).getClient().getPlayer().getControlledEntity().getLocation().distanceTo(this.getLocation()) > 25f)
+			if (((WorldClient)getWorld()).getClient().getPlayer().getControlledEntity().getLocation().distance(this.getLocation()) > 25f)
 				return;
 
 		// Sound stuff
@@ -414,15 +416,15 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 		lastTickOnGround = this.isOnGround();
 
 		//Bobbing
-		Vector3dm horizontalSpeed = this.getVelocityComponent().getVelocity().clone();
-		horizontalSpeed.setY(0d);
+		Vector3d horizontalSpeed = new Vector3d(this.getVelocityComponent().getVelocity());
+		horizontalSpeed.y = 0d;
 
 		if (isOnGround())
 			metersWalked += Math.abs(horizontalSpeed.length());
 
 		boolean inWater = isInWater(); //voxelIn != null && voxelIn.getType().isLiquid();
 
-		Voxel voxelStandingOn = VoxelsStore.get().getVoxelById(world.getVoxelData(this.getLocation().clone().add(0.0, -0.01, 0.0)));
+		Voxel voxelStandingOn = VoxelsStore.get().getVoxelById(world.getVoxelData(new Vector3d(this.getLocation()).add(0.0, -0.01, 0.0)));
 
 		if (voxelStandingOn == null || !voxelStandingOn.getType().isSolid() && !voxelStandingOn.getType().isLiquid())
 			return;
@@ -434,7 +436,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			justJumped = false;
 			getWorld().getSoundManager()
 					.playSoundEffect(material.resolveProperty("jumpingSounds"), getLocation(),
-							(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f)
+							(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().x() * getVelocityComponent().getVelocity().x() + getVelocityComponent().getVelocity().z() * getVelocityComponent().getVelocity().z()) * 0.1f), 1f)
 					.setAttenuationEnd(10);
 		}
 		if (justLanded)
@@ -442,7 +444,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			justLanded = false;
 			getWorld().getSoundManager()
 					.playSoundEffect(material.resolveProperty("landingSounds"), getLocation(),
-							(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f), 1f)
+							(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().x() * getVelocityComponent().getVelocity().x() + getVelocityComponent().getVelocity().z() * getVelocityComponent().getVelocity().z()) * 0.1f), 1f)
 					.setAttenuationEnd(10);
 		}
 
@@ -452,13 +454,13 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			if (horizontalSpeed.length() <= 0.06)
 				getWorld().getSoundManager()
 						.playSoundEffect(material.resolveProperty("walkingSounds"), getLocation(),
-								(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f),
+								(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().x() * getVelocityComponent().getVelocity().x() + getVelocityComponent().getVelocity().z() * getVelocityComponent().getVelocity().z()) * 0.1f),
 								1f)
 						.setAttenuationEnd(10);
 			else
 				getWorld().getSoundManager()
 						.playSoundEffect(material.resolveProperty("runningSounds"), getLocation(),
-								(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getY() * getVelocityComponent().getVelocity().getY()) * 0.1f),
+								(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().x() * getVelocityComponent().getVelocity().x() + getVelocityComponent().getVelocity().z() * getVelocityComponent().getVelocity().z()) * 0.1f),
 								1f)
 						.setAttenuationEnd(10);
 

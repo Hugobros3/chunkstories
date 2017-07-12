@@ -7,8 +7,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.math.vector.Vector3;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.World.NearEntitiesIterator;
 import io.xol.chunkstories.api.world.chunk.Region;
@@ -50,17 +51,17 @@ public class EntitiesHolder implements Iterable<Entity>
 		return backing.get(uuid);
 	}
 	
-	public NearEntitiesIterator getEntitiesInBox(Vector3<Double> center, Vector3<Double> boxSize) {
+	public NearEntitiesIterator getEntitiesInBox(Vector3dc center, Vector3dc boxSize) {
 		
 		return new NearEntitiesIterator() {
 		
-		int centerVoxel_x = (int)(double)center.getX();
-		int centerVoxel_y = (int)(double)center.getY();
-		int centerVoxel_z = (int)(double)center.getZ();
+		int centerVoxel_x = (int)(double)center.x();
+		int centerVoxel_y = (int)(double)center.y();
+		int centerVoxel_z = (int)(double)center.z();
 		
-		int box_ceil_x = (int)Math.ceil((double) boxSize.getX());
-		int box_ceil_y = (int)Math.ceil((double) boxSize.getY());
-		int box_ceil_z = (int)Math.ceil((double) boxSize.getZ());
+		int box_ceil_x = (int)Math.ceil((double) boxSize.x());
+		int box_ceil_y = (int)Math.ceil((double) boxSize.y());
+		int box_ceil_z = (int)Math.ceil((double) boxSize.z());
 		
 		int box_start_x = sanitizeHorizontalCoordinate(centerVoxel_x - box_ceil_x);
 		int box_start_y = sanitizeVerticalCoordinate(centerVoxel_y - box_ceil_y);
@@ -117,17 +118,17 @@ public class EntitiesHolder implements Iterable<Entity>
 				
 				Location loc = entity.getLocation();
 				
-				int locx = (int)(double)loc.getX();
+				int locx = (int)(double)loc.x();
 				//Normal case, check if it's in the bounds, wrap-arround case, check if it's outside
 				if((box_start_x > box_end_x) == (locx >= box_start_x && locx <= box_end_x))
 					continue;
 				
-				int locy = (int)(double)loc.getY();
+				int locy = (int)(double)loc.y();
 				//Normal case, check if it's in the bounds, wrap-arround case, check if it's outside
 				if((box_start_y > box_end_y) == (locy >= box_start_y && locy <= box_end_y))
 					continue;
 					
-				int locz = (int)(double)loc.getZ();
+				int locz = (int)(double)loc.z();
 				//Normal case, check if it's in the bounds, wrap-arround case, check if it's outside
 				if((box_start_z > box_end_z) == (locz >= box_start_z && locz <= box_end_z))
 					continue;
@@ -137,7 +138,7 @@ public class EntitiesHolder implements Iterable<Entity>
 					//Found a good one
 					this.next = entity;
 					
-					Vector3dm check = new Vector3dm(loc);
+					Vector3d check = new Vector3d(loc);
 					check.sub(center);
 					this.distance = check.length();
 					return true;

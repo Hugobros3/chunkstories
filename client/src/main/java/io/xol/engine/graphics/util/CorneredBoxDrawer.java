@@ -1,6 +1,6 @@
 package io.xol.engine.graphics.util;
 
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GuiRenderer;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
@@ -25,7 +25,7 @@ public class CorneredBoxDrawer
 		float botRightCornerY = posy + height / 2;
 		
 		//Debug helper
-		//guiRenderer.drawBoxWindowsSpace(topLeftCornerX, topLeftCornerY, botRightCornerX, botRightCornerY, 0, 0, 0, 0, null, true, false, new Vector4fm(1.0, 1.0, 0.0, 1.0));
+		//guiRenderer.drawBoxWindowsSpace(topLeftCornerX, topLeftCornerY, botRightCornerX, botRightCornerY, 0, 0, 0, 0, null, true, false, new Vector4f(1.0, 1.0, 0.0, 1.0));
 		
 		int cornerSizeScaled = scale * cornerSize;
 		
@@ -48,7 +48,7 @@ public class CorneredBoxDrawer
 				float startY = topLeftCornerY + cornerSizeScaled + fillerY;
 				
 				guiRenderer.drawBoxWindowsSpace(startX, startY, startX + toFillX, startY + toFillY
-						, texCoordInsideTopLeft, texCoordInsideTopLeft + toFillY / textureSize / scale, texCoordInsideTopLeft + toFillX / textureSize / scale,  texCoordInsideTopLeft, texture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+						, texCoordInsideTopLeft, texCoordInsideTopLeft + toFillY / textureSize / scale, texCoordInsideTopLeft + toFillX / textureSize / scale,  texCoordInsideTopLeft, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 			}
 		
 		//Fill the horizontal sides
@@ -60,10 +60,10 @@ public class CorneredBoxDrawer
 			float startY = topLeftCornerY;
 			
 			guiRenderer.drawBoxWindowsSpace(startX, startY + height - cornerSizeScaled, startX + toFillX, startY + height
-					, texCoordInsideTopLeft, texCoordInsideTopLeft, texCoordInsideTopLeft + toFillX / textureSize / scale,  0, texture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+					, texCoordInsideTopLeft, texCoordInsideTopLeft, texCoordInsideTopLeft + toFillX / textureSize / scale,  0, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 		
 			guiRenderer.drawBoxWindowsSpace(startX, startY, startX + toFillX, startY + cornerSizeScaled
-					, texCoordInsideTopLeft, 1.0f, texCoordInsideTopLeft + toFillX / textureSize / scale, texCoordInsideBottomRight, texture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+					, texCoordInsideTopLeft, 1.0f, texCoordInsideTopLeft + toFillX / textureSize / scale, texCoordInsideBottomRight, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 		
 		}
 		
@@ -76,24 +76,24 @@ public class CorneredBoxDrawer
 			float startX = topLeftCornerX;
 			
 			guiRenderer.drawBoxWindowsSpace(startX, startY, startX + cornerSizeScaled, startY + toFillY
-					, 0, texCoordInsideBottomRight - (textureSizeInternal * scale - toFillY) / textureSize / scale, texCoordInsideTopLeft, texCoordInsideTopLeft, texture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+					, 0, texCoordInsideBottomRight - (textureSizeInternal * scale - toFillY) / textureSize / scale, texCoordInsideTopLeft, texCoordInsideTopLeft, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 			
 			guiRenderer.drawBoxWindowsSpace(startX + width - cornerSizeScaled, startY, startX + width, startY + toFillY
-					, texCoordInsideBottomRight, texCoordInsideBottomRight - (textureSizeInternal * scale - toFillY) / textureSize / scale, 1.0f, texCoordInsideTopLeft, texture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+					, texCoordInsideBottomRight, texCoordInsideBottomRight - (textureSizeInternal * scale - toFillY) / textureSize / scale, 1.0f, texCoordInsideTopLeft, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 		}
 		
 		//Fill the 4 corners
 		guiRenderer.drawBoxWindowsSpace(topLeftCornerX, botRightCornerY - cornerSizeScaled, topLeftCornerX + cornerSizeScaled, botRightCornerY
-				, 0, texCoordInsideTopLeft, texCoordInsideTopLeft, 0, texture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+				, 0, texCoordInsideTopLeft, texCoordInsideTopLeft, 0, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 		
 		guiRenderer.drawBoxWindowsSpace(topLeftCornerX, topLeftCornerY, topLeftCornerX + cornerSizeScaled, topLeftCornerY + cornerSizeScaled
-				, 0, 1.0f, texCoordInsideTopLeft, texCoordInsideBottomRight, texture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+				, 0, 1.0f, texCoordInsideTopLeft, texCoordInsideBottomRight, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 		
 		guiRenderer.drawBoxWindowsSpace(botRightCornerX - cornerSizeScaled, botRightCornerY - cornerSizeScaled, botRightCornerX, botRightCornerY
-				, texCoordInsideBottomRight, texCoordInsideTopLeft, 1.0f, 0, texture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+				, texCoordInsideBottomRight, texCoordInsideTopLeft, 1.0f, 0, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 		
 		guiRenderer.drawBoxWindowsSpace(botRightCornerX - cornerSizeScaled, topLeftCornerY, botRightCornerX, topLeftCornerY + cornerSizeScaled
-				, texCoordInsideBottomRight, 1.0f, 1.0f, texCoordInsideBottomRight, texture, true, false, new Vector4fm(1.0, 1.0, 1.0, 1.0));
+				, texCoordInsideBottomRight, 1.0f, 1.0f, texCoordInsideBottomRight, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 		
 	}
 

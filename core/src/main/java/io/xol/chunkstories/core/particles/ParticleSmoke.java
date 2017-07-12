@@ -1,6 +1,9 @@
 package io.xol.chunkstories.core.particles;
 
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector3fc;
+
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;
@@ -23,16 +26,20 @@ public class ParticleSmoke extends ParticleTypeHandler
 	public class ParticleSmokeData extends ParticleData implements ParticleDataWithVelocity{
 
 		public int timer = 60 * 60;
-		Vector3dm vel = new Vector3dm();
+		Vector3d vel = new Vector3d();
 		
 		public ParticleSmokeData(float x, float y, float z)
 		{
 			super(x, y, z);
 		}
 		
-		public void setVelocity(Vector3dm vel)
-		{
-			this.vel = vel;
+		public void setVelocity(Vector3dc vel) {
+			this.vel.set(vel);
+		}
+
+		@Override
+		public void setVelocity(Vector3fc vel) {
+			this.vel.set(vel);
 		}
 	}
 
@@ -48,21 +55,21 @@ public class ParticleSmoke extends ParticleTypeHandler
 		ParticleSmokeData b = (ParticleSmokeData) data;
 		
 		b.timer--;
-		b.setX((float) (b.getX() + b.vel.getX()));
-		b.setY((float) (b.getY() + b.vel.getY()));
-		b.setZ((float) (b.getZ() + b.vel.getZ()));
+		b.x = ((float) (b.x() + b.vel.x()));
+		b.y = ((float) (b.y() + b.vel.y()));
+		b.z = ((float) (b.z() + b.vel.z()));
 		
-		/*if (!((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY(), b.getZ()))
-			b.vel.setY(b.vel.getY() + -0.89/60.0);
+		/*if (!((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()))
+			b.vel.setY(b.vel.y() + -0.89/60.0);
 		else
 			b.vel.set(0d, 0d, 0d);*/
 		
 		// 60th square of 0.5
-		b.vel.scale(0.98581402);
+		b.vel.mul(0.98581402);
 		if(b.vel.length() < 0.1/60.0)
 			b.vel.set(0d, 0d, 0d);
 		
-		if(b.timer < 0 || ((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY(), b.getZ()))
+		if(b.timer < 0 || ((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()))
 			b.destroy();
 	}
 
@@ -88,9 +95,9 @@ public class ParticleSmoke extends ParticleTypeHandler
 			@Override
 			public void forEach_Rendering(RenderingInterface renderingContext, ParticleData data)
 			{
-				data.setY((float) (data.getY() + (Math.random() - 0.1) * 0.0015));
-				data.setX((float) (data.getX() + (Math.random() - 0.5) * 0.0015));
-				data.setZ((float) (data.getZ() + (Math.random() - 0.5) * 0.0015));
+				data.y = ((float) (data.y() + (Math.random() - 0.1) * 0.0015));
+				data.x = ((float) (data.x() + (Math.random() - 0.5) * 0.0015));
+				data.z = ((float) (data.z() + (Math.random() - 0.5) * 0.0015));
 				
 				((ParticleSmokeData)data).timer--;
 				if (((ParticleSmokeData)data).timer < 0)

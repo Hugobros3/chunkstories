@@ -6,8 +6,11 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
+
+import org.joml.Vector2f;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+
 import io.xol.chunkstories.core.entity.EntityHumanoid;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
@@ -33,8 +36,8 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 		{
 			//Dead entities shouldn't be moving
 			
-			entity.getTargetVelocity().setX(0d);
-			entity.getTargetVelocity().setZ(0d);
+			entity.getTargetVelocity().x = (0d);
+			entity.getTargetVelocity().z = (0d);
 			return;
 		}
 		
@@ -54,7 +57,7 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 		//Water-jump
 		if(VoxelsStore.get().getVoxelById(entity.getWorld().getVoxelData(entity.getLocation())).getType().isLiquid())
 		{
-			if(entity.getVelocityComponent().getVelocity().getY() < 0.15)
+			if(entity.getVelocityComponent().getVelocity().y() < 0.15)
 				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
 			//System.out.println("vel:");
 		}
@@ -103,9 +106,9 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			
 			if(lookAtNearbyEntities > 0.0 && lookAtEntityCoolDown == 0)
 			{
-				for(Entity entityToLook : entity.getWorld().getEntitiesInBox(entity.getLocation(), new Vector3dm(lookAtNearbyEntities)))
+				for(Entity entityToLook : entity.getWorld().getEntitiesInBox(entity.getLocation(), new Vector3d(lookAtNearbyEntities)))
 				{
-					if(!entityToLook.equals(entity) && entityToLook.getLocation().distanceTo(GenericHumanoidAI.this.entity.getLocation()) <= lookAtNearbyEntities && entityToLook instanceof EntityHumanoid && !((EntityHumanoid) entityToLook).isDead())
+					if(!entityToLook.equals(entity) && entityToLook.getLocation().distance(GenericHumanoidAI.this.entity.getLocation()) <= lookAtNearbyEntities && entityToLook instanceof EntityHumanoid && !((EntityHumanoid) entityToLook).isDead())
 					{
 						GenericHumanoidAI.this.setAiTask(new AiTaskLookAtEntity((EntityHumanoid) entityToLook, 10f, this));
 						lookAtEntityCoolDown = (int) (Math.random() * 60 * 5);
@@ -119,12 +122,12 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 			if(Math.random() > 0.9990)
 			{
 				GenericHumanoidAI.this.setAiTask(new AiTaskGoSomewhere(
-				new Location(entity.getWorld(), entity.getLocation().clone().add((Math.random() * 2.0 - 1.0) * 10, 0d, (Math.random() * 2.0 - 1.0) * 10)), 505));
+				new Location(entity.getWorld(), entity.getLocation().add((Math.random() * 2.0 - 1.0) * 10, 0d, (Math.random() * 2.0 - 1.0) * 10)), 505));
 				return;
 			}
 
-			entity.getTargetVelocity().setX(0d);
-			entity.getTargetVelocity().setZ(0d);
+			entity.getTargetVelocity().x = (0d);
+			entity.getTargetVelocity().z = (0d);
 			//entity.getVelocityComponent().setVelocityX(0);
 			//entity.getVelocityComponent().setVelocityZ(0);
 		}
@@ -157,19 +160,19 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 				return;
 			}
 
-			if(entityFollowed.getLocation().distanceTo(entity.getLocation()) > maxDistance)
+			if(entityFollowed.getLocation().distance(entity.getLocation()) > maxDistance)
 			{
 				//System.out.println("too far"+entityFollowed.getLocation().distanceTo(entity.getLocation()));
 				GenericHumanoidAI.this.setAiTask(previousTask);
 				return;
 			}
 
-			Vector3dm delta = entity.getLocation().clone().sub(entityFollowed.getLocation());
+			Vector3d delta = entity.getLocation().sub(entityFollowed.getLocation());
 			
 			makeEntityLookAt(entity, delta);
 			
-			entity.getTargetVelocity().setX(0d);
-			entity.getTargetVelocity().setZ(0d);
+			entity.getTargetVelocity().x = (0d);
+			entity.getTargetVelocity().z = (0d);
 			//entity.getVelocityComponent().setVelocityX(0);
 			//entity.getVelocityComponent().setVelocityZ(0);
 		}
@@ -200,35 +203,37 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 				return;
 			}
 
-			if(entityFollowed.getLocation().distanceTo(entity.getLocation()) > maxDistance)
+			if(entityFollowed.getLocation().distance(entity.getLocation()) > maxDistance)
 			{
 				//System.out.println("Entity too far"+entityFollowed.getLocation().distanceTo(entity.getLocation()));
 				GenericHumanoidAI.this.setAiTask(previousTask);
 				return;
 			}
 			
-			Vector3dm delta = entityFollowed.getLocation().clone().sub(entity.getLocation());
+			Vector3d delta = entityFollowed.getLocation().sub(entity.getLocation());
 			
-			makeEntityLookAt(entity, delta.clone().negate());
+			makeEntityLookAt(entity, new Vector3d(delta).negate());
 			
-			delta.setY(0d);
+			delta.y = (0d);
 			
 			//System.out.println("CUCK +"+delta);
 			
-			delta.normalize().scale(entitySpeed);
+			delta.normalize().mul(entitySpeed);
 
-			entity.getTargetVelocity().setX(delta.getX());
-			entity.getTargetVelocity().setZ(delta.getZ());
+			entity.getTargetVelocity().x = (delta.x());
+			entity.getTargetVelocity().z = (delta.z());
 			
 			//entity.getVelocityComponent().setVelocityX(delta.getX());
 			//entity.getVelocityComponent().setVelocityZ(delta.getZ());
 			
 			if(((EntityHumanoid)entity).isOnGround())
 			{
-				Vector3dm rem = entity.canMoveWithCollisionRestrain(entity.getTargetVelocity());
-				rem.setY(0.0D);
+				Vector3dc rem = entity.canMoveWithCollisionRestrain(entity.getTargetVelocity());
 				
-				if(rem.length() > 0.001)
+				//rem.setY(0.0D);
+
+				if(Math.sqrt(rem.x() * rem.x() + rem.z() * rem.z()) > 0.001)
+				//if(rem.length() > 0.001)
 					entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
 			}
 		}
@@ -263,7 +268,7 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 				return;
 			}
 			
-			Vector3dm delta = location.clone().sub(entity.getLocation());
+			Vector3d delta = new Vector3d(location).sub(entity.getLocation());
 			
 			if(delta.length() < 0.25)
 			{
@@ -271,45 +276,46 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 				return;
 			}	
 			
-			makeEntityLookAt(entity, delta.clone().negate());
+			makeEntityLookAt(entity, new Vector3d(delta).negate());
 			
-			delta.setY(0d);
+			delta.y = (0d);
 			
 			double entitySpeed = 0.02;
 			
 			//System.out.println("CUCK +"+delta);
 			
-			delta.normalize().scale(entitySpeed);
+			delta.normalize().mul(entitySpeed);
 
-			entity.getTargetVelocity().setX(delta.getX());
-			entity.getTargetVelocity().setZ(delta.getZ());
+			entity.getTargetVelocity().x = (delta.x());
+			entity.getTargetVelocity().z = (delta.z());
 			
 			//entity.getVelocityComponent().setVelocityX(delta.getX());
 			//entity.getVelocityComponent().setVelocityZ(delta.getZ());
 			
 			if(((EntityHumanoid)entity).isOnGround())
 			{
-				Vector3dm rem = entity.canMoveWithCollisionRestrain(entity.getTargetVelocity());
-				rem.setY(0.0D);
-				
-				if(rem.length() > 0.001)
+				Vector3dc rem = entity.canMoveWithCollisionRestrain(entity.getTargetVelocity());
+				//rem.setY(0.0D);
+
+				if(Math.sqrt(rem.x() * rem.x() + rem.z() * rem.z()) > 0.001)
+				//if(rem.length() > 0.001)
 					entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);
 			}
 		}
 		
 	}
 
-	private void makeEntityLookAt(EntityHumanoid entity, Vector3dm delta)
+	private void makeEntityLookAt(EntityHumanoid entity, Vector3d delta)
 	{
-		Vector2fm deltaHorizontal = new Vector2fm((float)(double)delta.getX(), (float)(double)delta.getZ());
-		Vector2fm deltaVertical = new Vector2fm(deltaHorizontal.length(),(float)(double) delta.getY());
+		Vector2f deltaHorizontal = new Vector2f((float)(double)delta.x(), (float)(double)delta.z());
+		Vector2f deltaVertical = new Vector2f(deltaHorizontal.length(),(float)(double) delta.y());
 		deltaHorizontal.normalize();
 		deltaVertical.normalize();
 		
-		double targetH = Math.acos(deltaHorizontal.getY()) * 180.0 / Math.PI;
-		double targetV = Math.asin(deltaVertical.getY()) * 180.0 / Math.PI;
+		double targetH = Math.acos(deltaHorizontal.y()) * 180.0 / Math.PI;
+		double targetV = Math.asin(deltaVertical.y()) * 180.0 / Math.PI;
 		
-		if(deltaHorizontal.getX() > 0.0)
+		if(deltaHorizontal.x() > 0.0)
 			targetH *= -1;
 		
 		if(targetV > 90f)

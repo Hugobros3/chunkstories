@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
@@ -215,7 +215,7 @@ public class OptionsOverlay extends Layer
 			
 			ObjectRenderer.renderTexturedRect(xPosition + getWidth() * (Float.parseFloat(value)-min)/(max-min), yPosition + 12 * scale(), 32 * scale(), 32 * scale(), 0, 0, 32, 32, 32, "./textures/gui/barCursor.png");
 			
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), xPosition + textDekal, yPosition + 4 * scale(), localizedText, scale(), scale(), new Vector4fm(1.0f));
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), xPosition + textDekal, yPosition + 4 * scale(), localizedText, scale(), scale(), new Vector4f(1.0f));
 		}
 
 	}
@@ -462,8 +462,8 @@ public class OptionsOverlay extends Layer
 		int optionsPanelSize = (160 * 2 + 16 + 32) * this.getGuiScale();
 		
 		//Shades the BG
-		renderer.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderer.getWindow().getWidth(), renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
-		renderer.getGuiRenderer().drawBoxWindowsSpace(renderer.getWindow().getWidth() / 2.0f - optionsPanelSize / 2, 0, renderer.getWindow().getWidth()  / 2 + optionsPanelSize / 2, renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4fm(0.0, 0.0, 0.0, 0.5));
+		renderer.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderer.getWindow().getWidth(), renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
+		renderer.getGuiRenderer().drawBoxWindowsSpace(renderer.getWindow().getWidth() / 2.0f - optionsPanelSize / 2, 0, renderer.getWindow().getWidth()  / 2 + optionsPanelSize / 2, renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 		
 		//Render the tabs buttons
 		float dekal = 16 * this.getGuiScale();
@@ -493,7 +493,7 @@ public class OptionsOverlay extends Layer
 			if(c instanceof ConfigButtonScale && c.isMouseOver() && mouse.getMainButton().isPressed())
 			{
 				ConfigButtonScale cs = (ConfigButtonScale)c;
-				cs.onClick(mouse.getCursorX(), mouse.getCursorY(), 0);
+				cs.onClick((float)mouse.getCursorX(), (float)mouse.getCursorY(), 0);
 				cs.apply();
 			}
 			
@@ -523,7 +523,7 @@ public class OptionsOverlay extends Layer
 			{
 				if (b.isMouseOver())
 				{
-					b.onClick(mb.getMouse().getCursorX(), mb.getMouse().getCursorY(), mb.getName().equals("mouse.left") ? 0 : 1);
+					b.onClick((float)mb.getMouse().getCursorX(), (float)mb.getMouse().getCursorY(), mb.getName().equals("mouse.left") ? 0 : 1);
 					b.apply();
 				}
 			}

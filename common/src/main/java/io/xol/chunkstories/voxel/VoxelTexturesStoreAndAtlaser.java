@@ -23,8 +23,8 @@ import io.xol.engine.misc.CasterIterator;
 import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
@@ -41,7 +41,7 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 {
 	Map<String, VoxelTextureAtlased> texMap = new HashMap<String, VoxelTextureAtlased>();
 	int uniquesIds = 0;
-	//static Map<String, Vector4fm> colors = new HashMap<String, Vector4fm>();
+	//static Map<String, Vector4f> colors = new HashMap<String, Vector4f>();
 
 	public static int BLOCK_ATLAS_SIZE;
 	public static int BLOCK_ATLAS_FACTOR;
@@ -220,7 +220,7 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 
 					float alphaTotal = 0;
 					int nonNullPixels = 0;
-					Vector3fm color = new Vector3fm();
+					Vector3f color = new Vector3f();
 					for (int x = 0; x < vt.imageFileDimensions; x++)
 					{
 						for (int y = 0; y < vt.imageFileDimensions; y++)
@@ -239,16 +239,16 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 							float green = ((rgb & 0x00FF00) >> 8) / 255f * alpha;
 							float blue = (rgb & 0x0000FF) / 255f * alpha;
 
-							color.add(new Vector3fm(red, green, blue));
-							//Vector3fm.add(color, new Vector3fm(red, green, blue), color);
+							color.add(new Vector3f(red, green, blue));
+							//Vector3f.add(color, new Vector3f(red, green, blue), color);
 						}
 					}
 
-					color.scale(1f / alphaTotal);
+					color.mul(1f / alphaTotal);
 					if (nonNullPixels > 0)
 						alphaTotal /= nonNullPixels;
 
-					vt.setColor(new Vector4fm(color.getX(), color.getY(), color.getZ(), alphaTotal));
+					vt.setColor(new Vector4f(color.x(), color.y(), color.z(), alphaTotal));
 
 					//Don't bother if it's not a Client context
 					if(diffuseTextureImage == null)

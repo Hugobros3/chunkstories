@@ -1,8 +1,9 @@
 package io.xol.chunkstories.renderer;
 
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.MatrixHelper;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
@@ -40,13 +41,19 @@ public class ShadowMapRenderer
 		int shadowDepthRange = 200;
 		
 		//Builds the shadow matrix
-		Matrix4f depthProjectionMatrix = MatrixHelper.getOrthographicMatrix(-shadowRange, shadowRange, -shadowRange, shadowRange, -shadowDepthRange, shadowDepthRange);
-		Matrix4f depthViewMatrix = MatrixHelper.getLookAtMatrix(sky.getSunPosition(), new Vector3fm(0, 0, 0), new Vector3fm(0, 1, 0));
+		Matrix4f depthProjectionMatrix = new Matrix4f().ortho(-shadowRange, shadowRange, -shadowRange, shadowRange, -shadowDepthRange, shadowDepthRange);//MatrixHelper.getOrthographicMatrix(-shadowRange, shadowRange, -shadowRange, shadowRange, -shadowDepthRange, shadowDepthRange);
+		Matrix4f depthViewMatrix = new Matrix4f().lookAt(sky.getSunPosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 		Matrix4f shadowMVP = new Matrix4f();
-		Matrix4f.mul(depthProjectionMatrix, depthViewMatrix, shadowMVP);
+		
+		depthProjectionMatrix.mul(depthViewMatrix, shadowMVP);
+		//Matrix4f.mul(depthProjectionMatrix, depthViewMatrix, shadowMVP);
 		
 		Matrix4f actualMatrixReturned = new Matrix4f(shadowMVP);
-		shadowMVP.translate(new Vector3fm(renderingContext.getCamera().getCameraPosition()).negate());
+		Vector3dc posd = renderingContext.getCamera().getCameraPosition();
+		Vector3f pos = new Vector3f((float)posd.x(), (float)posd.y(), (float)posd.z());
+		pos.negate();
+		
+		shadowMVP.translate(pos);
 
 		//Set appropriate fixed function stuff
 		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);

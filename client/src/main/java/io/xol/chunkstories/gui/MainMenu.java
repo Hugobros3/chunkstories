@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 import io.xol.chunkstories.api.gui.Layer;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
@@ -221,7 +221,7 @@ public class MainMenu extends Layer
 		renderingContext.setBlendMode(BlendMode.MIX);
 		float diagonal = (float) Math.sqrt(gameWindow.getWidth() * gameWindow.getWidth() + gameWindow.getHeight() * gameWindow.getHeight());
 		float iconSize = (float) (diagonal / 3 + 50 * Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 30000f)));
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(gameWindow.getWidth() / 2 - iconSize / 2, gameWindow.getHeight() / 2 - iconSize / 2, gameWindow.getWidth() / 2 + iconSize / 2, gameWindow.getHeight() / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true, new Vector4fm(1.0, 1.0, 1.0, alphaIcon));
+		renderingContext.getGuiRenderer().drawBoxWindowsSpace(gameWindow.getWidth() / 2 - iconSize / 2, gameWindow.getHeight() / 2 - iconSize / 2, gameWindow.getWidth() / 2 + iconSize / 2, gameWindow.getHeight() / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true, new Vector4f(1.0f, 1.0f, 1.0f, alphaIcon));
 		//renderingContext.getGuiRenderer().drawBuffer();
 		
 		//TODO swap out

@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.gui.FocusableGuiElement;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
@@ -77,9 +77,9 @@ public class BaseNgButton extends FocusableGuiElement implements ClickableGuiEle
 		CorneredBoxDrawer.drawCorneredBoxTiled(xPosition + (width) / 2, yPosition + getHeight() / 2, width, getHeight(), 4 * scale(), buttonTexture, 32, scale());
 		
 		//if(scale == 1)
-		renderer.getFontRenderer().drawString(font, xPosition + 4 * scale(), yPosition, localizedText, scale(), new Vector4fm(76/255f, 76/255f, 76/255f, 1));
+		renderer.getFontRenderer().drawString(font, xPosition + 4 * scale(), yPosition, localizedText, scale(), new Vector4f(76/255f, 76/255f, 76/255f, 1));
 		//else
-		//	TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial24px18pt, posx + 4 * scale, posy + 2, text, scale / 2, new Vector4fm(76/255f, 76/255f, 76/255f, 1));
+		//	TrueTypeFontRenderer.get().drawString(TrueTypeFont.arial24px18pt, posx + 4 * scale, posy + 2, text, scale / 2, new Vector4f(76/255f, 76/255f, 76/255f, 1));
 	}
 
 	@Override

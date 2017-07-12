@@ -5,7 +5,7 @@ import java.nio.FloatBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
@@ -52,7 +52,7 @@ public class FakeImmediateModeDebugRenderer
 
 	public static void glColor4f(float r, float g, float b, float a)
 	{
-		color = new Vector4fm(r, g, b, a);
+		color = new Vector4f(r, g, b, a);
 	}
 
 	public static int GL_LINES = GL11.GL_LINES;
@@ -79,7 +79,7 @@ public class FakeImmediateModeDebugRenderer
 		size++;
 	}
 
-	static Vector4fm color = new Vector4fm(1f, 1f, 1f, 1f);
+	static Vector4f color = new Vector4f(1f, 1f, 1f, 1f);
 	static FloatBuffer data = BufferUtils.createFloatBuffer(3 * 1000);
 	static int size = 0;
 	static int mode = 0;
@@ -150,13 +150,13 @@ public class FakeImmediateModeDebugRenderer
 		return cube;
 	}
 
-	private static final Vector4fm defaultColor = new Vector4fm(1.0f, 1.0f, 1.0f, 1.0f);
+	private static final Vector4f defaultColor = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 	
-	public static void renderCollisionBox(CollisionBox box, Vector4fm color) {
+	public static void renderCollisionBox(CollisionBox box, Vector4f color) {
 		if(color == null)
 			color = defaultColor;
 		
-		glColor4f(color.getX(), color.getY(), color.getZ(), color.getW());
+		glColor4f(color.x(), color.y(), color.z(), color.w());
 		glDisable(GL_CULL_FACE);
 		
 		glBegin(GL_LINES);

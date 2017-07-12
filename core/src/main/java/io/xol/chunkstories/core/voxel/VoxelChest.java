@@ -103,8 +103,8 @@ public class VoxelChest extends VoxelEntity
 		if (entity != null)
 		{
 			Location loc = entity.getLocation();
-			double dx = loc.getX() - (x + 0.5);
-			double dz = loc.getZ() - (z + 0.5);
+			double dx = loc.x() - (x + 0.5);
+			double dz = loc.z() - (z + 0.5);
 			if (Math.abs(dx) > Math.abs(dz))
 			{
 				if(dx > 0)

@@ -1,13 +1,17 @@
 package io.xol.engine.graphics.shaders;
 
-import io.xol.chunkstories.api.math.Matrix3f;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.Vector2;
-import io.xol.chunkstories.api.math.vector.Vector3;
-import io.xol.chunkstories.api.math.vector.Vector4;
-import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Matrix3fc;
+import org.joml.Matrix4fc;
+import org.joml.Vector2dc;
+import org.joml.Vector2f;
+import org.joml.Vector2fc;
+import org.joml.Vector3dc;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector4dc;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
+
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;
@@ -274,69 +278,99 @@ public class ShaderProgram implements ShaderInterface
 	}
 
 	@Override
+	public void setUniform1f(String uniformName, float uniformData)
+	{
+		uncommitedUniforms.put(uniformName, (uniformData));
+	}
+
+	@Override
 	public void setUniform1f(String uniformName, double uniformData)
 	{
 		uncommitedUniforms.put(uniformName, ((float)uniformData));
-		//uniformsAttributesFloat.put(uniformName, (float) uniformData);
+	}
+
+	@Override
+	public void setUniform2f(String uniformName, float uniformData_x, float uniformData_y)
+	{
+		setUniform2f(uniformName, new Vector2f(uniformData_x, uniformData_y));
 	}
 
 	@Override
 	public void setUniform2f(String uniformName, double uniformData_x, double uniformData_y)
 	{
-		setUniform2f(uniformName, new Vector2fm(uniformData_x, uniformData_y));
-		//uncommitedUniforms.put(uniformName, uniformData);
-		//uniformsAttributes2Float.put(uniformName, new Vector2fm(uniformData_x, uniformData_y));
+		setUniform2f(uniformName, new Vector2f((float)uniformData_x, (float)uniformData_y));
 	}
 
 	@Override
-	public void setUniform2f(String uniformName, Vector2<?> uniformData)
+	public void setUniform2f(String uniformName, Vector2fc uniformData)
 	{
-		uncommitedUniforms.put(uniformName, uniformData.castToSinglePrecision());
-		//uniformsAttributes2Float.put(uniformName, uniformData);
+		uncommitedUniforms.put(uniformName, uniformData);
+	}
+
+	@Override
+	public void setUniform2f(String uniformName, Vector2dc uniformData)
+	{
+		setUniform2f(uniformName, (float)uniformData.x(), (float)uniformData.y());
+	}
+
+	@Override
+	public void setUniform3f(String uniformName, float uniformData_x, float uniformData_y, float uniformData_z)
+	{
+		setUniform3f(uniformName, new Vector3f(uniformData_x, uniformData_y, uniformData_z));
 	}
 
 	@Override
 	public void setUniform3f(String uniformName, double uniformData_x, double uniformData_y, double uniformData_z)
 	{
-		setUniform3f(uniformName, new Vector3fm(uniformData_x, uniformData_y, uniformData_z));
-		//uncommitedUniforms.put(uniformName, uniformData);
-		//uniformsAttributes3Float.put(uniformName, new Vector3fm(uniformData_x, uniformData_y, uniformData_z));
+		setUniform3f(uniformName, new Vector3f((float)uniformData_x, (float)uniformData_y, (float)uniformData_z));
 	}
 
 	@Override
-	public void setUniform3f(String uniformName, Vector3<?> uniformData)
+	public void setUniform3f(String uniformName, Vector3fc uniformData)
 	{
-		uncommitedUniforms.put(uniformName, uniformData.castToSinglePrecision());
-		//uniformsAttributes3Float.put(uniformName, uniformData);
+		uncommitedUniforms.put(uniformName, uniformData);
+	}
+
+	@Override
+	public void setUniform3f(String uniformName, Vector3dc uniformData)
+	{
+		setUniform3f(uniformName, (float)uniformData.x(), (float)uniformData.y(), (float)uniformData.z());
+	}
+
+	@Override
+	public void setUniform4f(String uniformName, float x, float y, float z, float w)
+	{
+		setUniform4f(uniformName, new Vector4f(x, y, z, w));
 	}
 
 	@Override
 	public void setUniform4f(String uniformName, double x, double y, double z, double w)
 	{
-		setUniform4f(uniformName, new Vector4fm(x, y, z, w));
-		//uncommitedUniforms.put(uniformName, uniformData);
-		//uniformsAttributes4Float.put(uniformName, new Vector4fm(x, y, z, w));
+		setUniform4f(uniformName, new Vector4f((float)x, (float)y, (float)z, (float)w));
 	}
 
 	@Override
-	public void setUniform4f(String uniformName, Vector4<?> uniformData)
-	{
-		uncommitedUniforms.put(uniformName, uniformData.castToSinglePrecision());
-		//uniformsAttributes4Float.put(uniformName, uniformData);
-	}
-
-	@Override
-	public void setUniformMatrix4f(String uniformName, Matrix4f uniformData)
+	public void setUniform4f(String uniformName, Vector4fc uniformData)
 	{
 		uncommitedUniforms.put(uniformName, uniformData);
-		//uniformsAttributesMatrix4.put(uniformName, uniformData);
 	}
 
 	@Override
-	public void setUniformMatrix3f(String uniformName, Matrix3f uniformData)
+	public void setUniform4f(String uniformName, Vector4dc uniformData)
+	{
+		setUniform4f(uniformName, (float)uniformData.x(), (float)uniformData.y(), (float)uniformData.z(), (float)uniformData.w());
+	}
+
+	@Override
+	public void setUniformMatrix4f(String uniformName, Matrix4fc uniformData)
 	{
 		uncommitedUniforms.put(uniformName, uniformData);
-		//uniformsAttributesMatrix3.put(uniformName, uniformData);
+	}
+
+	@Override
+	public void setUniformMatrix3f(String uniformName, Matrix3fc uniformData)
+	{
+		uncommitedUniforms.put(uniformName, uniformData);
 	}
 
 	public class InternalUniformsConfiguration implements UniformsConfiguration
@@ -388,28 +422,23 @@ public class ShaderProgram implements ShaderInterface
 			glUniform1f(uniformLocation, (Float)((Double)uniformData).floatValue());
 		else if(uniformData instanceof Integer)
 			glUniform1i(uniformLocation, (Integer)uniformData);
-		else if(uniformData instanceof Vector2fm)
-			glUniform2f(uniformLocation, ((Vector2fm)uniformData).getX(), ((Vector2fm)uniformData).getY());
-		else if(uniformData instanceof Vector4fm)
-			glUniform4f(uniformLocation, ((Vector4fm)uniformData).getX(), ((Vector4fm)uniformData).getY(), ((Vector4fm)uniformData).getZ(), ((Vector4fm)uniformData).getW());
-		//New vectors
-		else if(uniformData instanceof Vector4)
-			glUniform4f(uniformLocation, (float)(Number)((Vector4<?>)uniformData).getX(), (float)(Number)((Vector4<?>)uniformData).getY(), (float)(Number)((Vector4<?>)uniformData).getZ(), (float)(Number)((Vector4<?>)uniformData).getW());
-		else if(uniformData instanceof Vector3)
-			glUniform3f(uniformLocation, (float)(Number)((Vector3<?>)uniformData).getX(), (float)(Number)((Vector3<?>)uniformData).getY(), (float)(Number)((Vector3<?>)uniformData).getZ());
-		else if(uniformData instanceof Vector2)
-			glUniform2f(uniformLocation, (float)(Number)((Vector2<?>)uniformData).getX(), (float)(Number)((Vector2<?>)uniformData).getY());
+		else if(uniformData instanceof Vector2fc)
+			glUniform2f(uniformLocation, ((Vector2fc)uniformData).x(), ((Vector2fc)uniformData).y());
+		else if(uniformData instanceof Vector3fc)
+			glUniform3f(uniformLocation, ((Vector3fc)uniformData).x(), ((Vector3fc)uniformData).y(), ((Vector3fc)uniformData).z());
+		else if(uniformData instanceof Vector4fc)
+			glUniform4f(uniformLocation, ((Vector4fc)uniformData).x(), ((Vector4fc)uniformData).y(), ((Vector4fc)uniformData).z(), ((Vector4fc)uniformData).w());
 		
-		else if(uniformData instanceof Matrix4f)
+		else if(uniformData instanceof Matrix4fc)
 		{
-			((Matrix4f)uniformData).store(matrix4fBuffer);
+			((Matrix4fc)uniformData).get(matrix4fBuffer);
 			matrix4fBuffer.position(0);
 			glUniformMatrix4fv(uniformLocation, false, matrix4fBuffer);
 			matrix4fBuffer.clear();
 		}
-		else if(uniformData instanceof Matrix3f)
+		else if(uniformData instanceof Matrix3fc)
 		{
-			((Matrix3f)uniformData).store(matrix3fBuffer);
+			((Matrix3fc)uniformData).get(matrix3fBuffer);
 			matrix3fBuffer.position(0);
 			glUniformMatrix3fv(uniformLocation, false, matrix3fBuffer);
 			matrix3fBuffer.clear();

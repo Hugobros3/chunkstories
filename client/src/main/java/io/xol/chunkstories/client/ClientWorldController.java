@@ -113,9 +113,9 @@ public class ClientWorldController implements PlayerClient
 			return;
 			
 		//Subscribe to nearby wanted chunks
-		int cameraChunkX = Math2.floor((controlledEntity.getLocation().getX()) / 32);
-		int cameraChunkY = Math2.floor((controlledEntity.getLocation().getY()) / 32);
-		int cameraChunkZ = Math2.floor((controlledEntity.getLocation().getZ()) / 32);
+		int cameraChunkX = Math2.floor((controlledEntity.getLocation().x()) / 32);
+		int cameraChunkY = Math2.floor((controlledEntity.getLocation().y()) / 32);
+		int cameraChunkZ = Math2.floor((controlledEntity.getLocation().z()) / 32);
 		int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
 		
 		for (int chunkX = (cameraChunkX - chunksViewDistance - 1); chunkX <= cameraChunkX + chunksViewDistance + 1; chunkX++)

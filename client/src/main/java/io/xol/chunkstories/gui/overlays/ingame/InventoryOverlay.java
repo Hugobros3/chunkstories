@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -66,8 +66,8 @@ public class InventoryOverlay extends Layer
 				ItemPile pileHighlighted = inventories[i].getItemPileAt(highlightedSlot[0], highlightedSlot[1]);
 				if (pileHighlighted != null)
 				{
-					float mx = mouse.getCursorX();
-					float my = mouse.getCursorY();
+					float mx = (float)mouse.getCursorX();
+					float my = (float)mouse.getCursorY();
 					
 					renderer.getFontRenderer().drawString(renderer.getFontRenderer().defaultFont(), mx, my, pileHighlighted.getItem().getName(), 2);
 					//System.out.println(pileHighlighted);
@@ -84,11 +84,11 @@ public class InventoryOverlay extends Layer
 			//GuiDrawer.drawBoxWindowsSpaceWithSize(mouse.getCursorX() - width / 2, mouse.getCursorY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
 
 			//
-			selectedItem.getItem().getType().getRenderer().renderItemInInventory(renderer, selectedItem, mouse.getCursorX() - width / 2, mouse.getCursorY() - height / 2, 2);
+			selectedItem.getItem().getType().getRenderer().renderItemInInventory(renderer, selectedItem, (float)mouse.getCursorX() - width / 2, (float)mouse.getCursorY() - height / 2, 2);
 
 			if (selectedItemAmount != 1)
-				renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), mouse.getCursorX() - width / 2 + (selectedItem.getItem().getType().getSlotsWidth() - 1.0f) * slotSize, mouse.getCursorY() - height / 2, selectedItemAmount + "", 2, 2,
-						new Vector4fm(1, 1, 1, 1));
+				renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), (float)mouse.getCursorX() - width / 2 + (selectedItem.getItem().getType().getSlotsWidth() - 1.0f) * slotSize, (float)mouse.getCursorY() - height / 2, selectedItemAmount + "", 2, 2,
+						new Vector4f(1, 1, 1, 1));
 
 		}
 		//System.out.println(inventories[0]);
@@ -237,7 +237,7 @@ public class InventoryOverlay extends Layer
 						
 						//Spawn a new ground item
 						Location loc = playerEntity.getLocation();
-						EntityGroundItem entity = new EntityGroundItem(player.getContext().getContent().entities().getEntityTypeByName("groundItem"), loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), selectedItem);
+						EntityGroundItem entity = new EntityGroundItem(player.getContext().getContent().entities().getEntityTypeByName("groundItem"), loc.getWorld(), loc.x(), loc.y(), loc.z(), selectedItem);
 						loc.getWorld().addEntity(entity);
 						
 						player.sendMessage("Notice : throwing stuff on ground is still glitchy and experimental.");

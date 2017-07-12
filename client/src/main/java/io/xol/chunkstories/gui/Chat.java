@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.rendering.GameWindow;
@@ -203,7 +203,7 @@ public class Chat
 				alpha = 0;
 			if (alpha > 1 || ingame.getGameWindow().getLayer() instanceof ChatPanelOverlay)
 				alpha = 1;
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 9, (linesDrew - 1) * 26 + 180 + (50), localizedLine, 2, 2, chatWidth, new Vector4fm(1, 1, 1, alpha));
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 9, (linesDrew - 1) * 26 + 180 + (50), localizedLine, 2, 2, chatWidth, new Vector4f(1, 1, 1, alpha));
 		}
 		
 	}
@@ -312,9 +312,9 @@ public class Chat
 		else if (input.equals("_-"))
 		{
 			Entity e = Client.getInstance().getPlayer().getControlledEntity();
-			int cx = ((int)(double)e.getLocation().getX())/32;
-			int cy = ((int)(double)e.getLocation().getY())/32;
-			int cz = ((int)(double)e.getLocation().getZ())/32;
+			int cx = ((int)(double)e.getLocation().x())/32;
+			int cy = ((int)(double)e.getLocation().y())/32;
+			int cz = ((int)(double)e.getLocation().z())/32;
 			
 			insert("No fuck you"+((WorldImplementation)Client.getInstance().getWorld()).getRegionsHolder().getRegionChunkCoordinates(cx, cy, cz));
 		}

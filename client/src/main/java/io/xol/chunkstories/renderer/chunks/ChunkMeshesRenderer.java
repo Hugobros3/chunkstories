@@ -9,10 +9,12 @@ import java.util.Set;
 
 import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.Vector3;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer;
@@ -76,12 +78,14 @@ public class ChunkMeshesRenderer
 	public void updatePVSSet(CameraInterface camera)
 	{
 		//Updates these once
-		cameraChunkX = Math2.floor((camera.getCameraPosition().getX()) / 32f);
-		cameraChunkY = Math2.floor((camera.getCameraPosition().getY()) / 32f);
-		cameraChunkZ = Math2.floor((camera.getCameraPosition().getZ()) / 32f);
+		cameraChunkX = Math2.floor((camera.getCameraPosition().x()) / 32f);
+		cameraChunkY = Math2.floor((camera.getCameraPosition().y()) / 32f);
+		cameraChunkZ = Math2.floor((camera.getCameraPosition().z()) / 32f);
 
+		Vector3fc cameraFloatPosition = new Vector3f((float)camera.getCameraPosition().x(), (float)camera.getCameraPosition().y(), (float)camera.getCameraPosition().z());
+		
 		//Do a floodfill arround the entity
-		List<Chunk> floodFillResults = floodFillArround(camera.getCameraPosition(), (int) RenderingConfig.viewDistance / 32);
+		List<Chunk> floodFillResults = floodFillArround(cameraFloatPosition, (int) RenderingConfig.viewDistance / 32);
 
 		culledChunksNormal.clear();
 		//Check they have render data & submit them if they don't
@@ -93,32 +97,32 @@ public class ChunkMeshesRenderer
 			boolean shouldShowChunk = chunk.getChunkX() == cameraChunkX && chunk.getChunkY() == cameraChunkY && chunk.getChunkZ() == cameraChunkZ;
 			if (!shouldShowChunk)
 			{
-				Vector3fm center = new Vector3fm(command.displayWorldX + 16, command.displayWorldY + 15, command.displayWorldZ + 16);
-				shouldShowChunk = camera.isBoxInFrustrum(center, new Vector3fm(32, 32, 32));
+				Vector3f center = new Vector3f(command.displayWorldX + 16, command.displayWorldY + 15, command.displayWorldZ + 16);
+				shouldShowChunk = camera.isBoxInFrustrum(center, new Vector3f(32, 32, 32));
 			}
 			
 			if(shouldShowChunk)
 				culledChunksNormal.add(command);
 		}
 
-		culledChunksShadow = updateShadowPVS(camera.getCameraPosition());
+		culledChunksShadow = updateShadowPVS(cameraFloatPosition);
 	}
 
 	private final int verticalDistance = 8;
 
 	private final List<Chunk> floodFillSet = new ArrayList<Chunk>();
-	private final Set<Vector3dm> floodFillMask = new HashSet<Vector3dm>();
+	private final Set<Vector3d> floodFillMask = new HashSet<Vector3d>();
 
 	private final Deque<Integer> floodFillDeque = new ArrayDeque<Integer>();
 	
-	private List<Chunk> floodFillArround(Vector3<Double> vector3, int maxDistance)
+	private List<Chunk> floodFillArround(Vector3fc vector3, int maxDistance)
 	{
 		floodFillSet.clear();
 		floodFillMask.clear();
 		floodFillDeque.clear();
 		//Micro-optimization: Moved those to fields
 		/*List<Chunk> floodFillSet = new ArrayList<Chunk>();
-		Set<Vector3dm> floodFillMask = new HashSet<Vector3dm>();
+		Set<Vector3d> floodFillMask = new HashSet<Vector3d>();
 
 		Deque<Integer> floodFillDeque = new ArrayDeque<Integer>();*/
 
@@ -140,9 +144,9 @@ public class ChunkMeshesRenderer
 
 			Chunk chunk = world.getChunk(chunkX, chunkY, chunkZ);
 
-			if (floodFillMask.contains(new Vector3dm(chunkX, chunkY, chunkZ)))
+			if (floodFillMask.contains(new Vector3d(chunkX, chunkY, chunkZ)))
 				continue;
-			floodFillMask.add(new Vector3dm(chunkX, chunkY, chunkZ));
+			floodFillMask.add(new Vector3d(chunkX, chunkY, chunkZ));
 
 			if (chunk != null)
 			{
@@ -150,14 +154,14 @@ public class ChunkMeshesRenderer
 					sideFrom = -1;
 
 				floodFillSet.add(chunk);
-				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][2]) && LoopingMathHelper.moduloDistance(chunkX, cameraChunkX, worldSizeInChunks) < maxDistance && !floodFillMask.contains(new Vector3dm(chunkX + 1, chunkY, chunkZ)))
+				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][2]) && LoopingMathHelper.moduloDistance(chunkX, cameraChunkX, worldSizeInChunks) < maxDistance && !floodFillMask.contains(new Vector3d(chunkX + 1, chunkY, chunkZ)))
 				{
 					floodFillDeque.push(ajustedChunkX + 1);
 					floodFillDeque.push(chunkY);
 					floodFillDeque.push(ajustedChunkZ);
 					floodFillDeque.push(0);
 				}
-				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][0]) && LoopingMathHelper.moduloDistance(chunkX, cameraChunkX, worldSizeInChunks) < maxDistance && !floodFillMask.contains(new Vector3dm(chunkX - 1, chunkY, chunkZ)))
+				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][0]) && LoopingMathHelper.moduloDistance(chunkX, cameraChunkX, worldSizeInChunks) < maxDistance && !floodFillMask.contains(new Vector3d(chunkX - 1, chunkY, chunkZ)))
 				{
 					floodFillDeque.push(ajustedChunkX - 1);
 					floodFillDeque.push(chunkY);
@@ -165,14 +169,14 @@ public class ChunkMeshesRenderer
 					floodFillDeque.push(2);
 				}
 
-				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][4]) && (chunkY - cameraChunkY) < verticalDistance && !floodFillMask.contains(new Vector3dm(chunkX, chunkY + 1, chunkZ)))
+				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][4]) && (chunkY - cameraChunkY) < verticalDistance && !floodFillMask.contains(new Vector3d(chunkX, chunkY + 1, chunkZ)))
 				{
 					floodFillDeque.push(ajustedChunkX);
 					floodFillDeque.push(chunkY + 1);
 					floodFillDeque.push(ajustedChunkZ);
 					floodFillDeque.push(5);
 				}
-				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][5]) && -(chunkY - cameraChunkY) < verticalDistance && !floodFillMask.contains(new Vector3dm(chunkX, chunkY - 1, chunkZ)))
+				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][5]) && -(chunkY - cameraChunkY) < verticalDistance && !floodFillMask.contains(new Vector3d(chunkX, chunkY - 1, chunkZ)))
 				{
 					floodFillDeque.push(ajustedChunkX);
 					floodFillDeque.push(chunkY - 1);
@@ -180,14 +184,14 @@ public class ChunkMeshesRenderer
 					floodFillDeque.push(4);
 				}
 
-				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][1]) && LoopingMathHelper.moduloDistance(chunkZ, cameraChunkZ, worldSizeInChunks) < maxDistance && !floodFillMask.contains(new Vector3dm(chunkX, chunkY, chunkZ + 1)))
+				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][1]) && LoopingMathHelper.moduloDistance(chunkZ, cameraChunkZ, worldSizeInChunks) < maxDistance && !floodFillMask.contains(new Vector3d(chunkX, chunkY, chunkZ + 1)))
 				{
 					floodFillDeque.push(ajustedChunkX);
 					floodFillDeque.push(chunkY);
 					floodFillDeque.push(ajustedChunkZ + 1);
 					floodFillDeque.push(3);
 				}
-				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][3]) && LoopingMathHelper.moduloDistance(chunkZ, cameraChunkZ, worldSizeInChunks) < maxDistance && !floodFillMask.contains(new Vector3dm(chunkX, chunkY, chunkZ - 1)))
+				if ((sideFrom == -1 || ((CubicChunk) chunk).occlusionSides[sideFrom][3]) && LoopingMathHelper.moduloDistance(chunkZ, cameraChunkZ, worldSizeInChunks) < maxDistance && !floodFillMask.contains(new Vector3d(chunkX, chunkY, chunkZ - 1)))
 				{
 					floodFillDeque.push(ajustedChunkX);
 					floodFillDeque.push(chunkY);
@@ -201,7 +205,7 @@ public class ChunkMeshesRenderer
 	}
 
 	private final List<ChunkRenderCommand> shadowChunks = new ArrayList<ChunkRenderCommand>();
-	private List<ChunkRenderCommand> updateShadowPVS(Vector3<Double> vector3)
+	private List<ChunkRenderCommand> updateShadowPVS(Vector3fc vector3)
 	{
 		//Micro-optimization: Moved to a field
 		//List<ChunkRenderCommand> shadowChunks = new ArrayList<ChunkRenderCommand>();
@@ -253,13 +257,13 @@ public class ChunkMeshesRenderer
 		Matrix4f matrix = new Matrix4f();
 		for (ChunkRenderCommand command : culledChunks)
 		{
-			matrix.setIdentity();
-			matrix.translate(new Vector3fm(command.displayWorldX, command.displayWorldY, command.displayWorldZ));
+			matrix.identity();
+			matrix.translate(new Vector3f(command.displayWorldX, command.displayWorldY, command.displayWorldZ));
 			
 			renderingInterface.setObjectMatrix(matrix);
 			
-			Vector3dm chunkPos = new Vector3dm(command.displayWorldX + 16, command.displayWorldY + 16, command.displayWorldZ + 16);
-			double distance = renderingInterface.getCamera().getCameraPosition().distanceTo(chunkPos);
+			Vector3d chunkPos = new Vector3d(command.displayWorldX + 16, command.displayWorldY + 16, command.displayWorldZ + 16);
+			double distance = renderingInterface.getCamera().getCameraPosition().distance(chunkPos);
 			
 			RenderLodLevel lodToUse;
 			/*if(chunkMeshesPass.equals(RenderingPass.SHADOW))
@@ -341,9 +345,9 @@ public class ChunkMeshesRenderer
 			
 			mask = new boolean[xz_dimension * 2 + 1][y_dimension * 2 + 1][xz_dimension * 2 + 1];
 			
-			centerChunkX = Math2.floor((camera.getCameraPosition().getX()) / 32);
-			centerChunkY = Math2.floor((camera.getCameraPosition().getY()) / 32);
-			centerChunkZ = Math2.floor((camera.getCameraPosition().getZ()) / 32);
+			centerChunkX = Math2.floor((camera.getCameraPosition().x()) / 32);
+			centerChunkY = Math2.floor((camera.getCameraPosition().y()) / 32);
+			centerChunkZ = Math2.floor((camera.getCameraPosition().z()) / 32);
 			
 			for(int a = centerChunkX - xz_dimension; a <= centerChunkX + xz_dimension; a++)
 				for(int b = centerChunkY - y_dimension; b < centerChunkY + y_dimension; b++)

@@ -1,6 +1,6 @@
 package io.xol.chunkstories.renderer.lights;
 
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface.LightsAccumulator;
 import io.xol.chunkstories.api.rendering.lightning.Light;
@@ -72,7 +72,7 @@ public class LightsRenderer implements LightsAccumulator
 
 	private boolean lightInFrustrum(RenderingInterface renderingContext, Light light)
 	{
-		return renderingContext.getCamera().isBoxInFrustrum(new Vector3fm(light.getPosition().getX() - light.getDecay(), light.getPosition().getY() - light.getDecay(), light.getPosition().getZ() - light.getDecay()), new Vector3fm(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
+		return renderingContext.getCamera().isBoxInFrustrum(new Vector3f(light.getPosition().x() - light.getDecay(), light.getPosition().y() - light.getDecay(), light.getPosition().z() - light.getDecay()), new Vector3f(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
 	}
 	
 	public void renderPendingLights(RenderingInterface renderingContext)

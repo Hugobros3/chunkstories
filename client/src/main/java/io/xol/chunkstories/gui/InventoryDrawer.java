@@ -3,7 +3,7 @@ package io.xol.chunkstories.gui;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.core.entity.interfaces.EntityWithSelectedItem;
@@ -72,7 +72,7 @@ public class InventoryDrawer
 		Texture2D inventoryTexture = TexturesHandler.getTexture("./textures/gui/inventory/inventory.png");
 		inventoryTexture.setLinearFiltering(false);
 
-		Vector4fm color = new Vector4fm(1f, 1f, 1f, summary ? 0.5f : 1f);
+		Vector4f color = new Vector4f(1f, 1f, 1f, summary ? 0.5f : 1f);
 		//All 8 corners
 		context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x, y + internalHeight + cornerSize, cornerSize, cornerSize, 0, 0.03125f, 0.03125f, 0, inventoryTexture, true, true, color);
 		context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize, y + internalHeight + cornerSize, internalWidth, cornerSize, 0.03125f, 0.03125f, 0.96875f, 0, inventoryTexture, true, true, color);
@@ -203,7 +203,7 @@ public class InventoryDrawer
 
 				if (amountToDisplay > 1)
 					context.getFontRenderer().drawStringWithShadow(context.getFontRenderer().defaultFont(), x + cornerSize + ((pile.getItem().getType().getSlotsWidth() - 1.0f) + i) * slotSize, y + cornerSize + j * slotSize, amountToDisplay + "", scale, scale,
-							new Vector4fm(1, 1, 1, 1));
+							new Vector4f(1, 1, 1, 1));
 			}
 		}
 	}

@@ -3,8 +3,9 @@ package io.xol.chunkstories.core.entity;
 import io.xol.chunkstories.api.entity.EntityBase;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
@@ -74,8 +75,11 @@ public class EntityGroundItem extends EntityBase implements EntityRenderable
 				if(within != null)
 				{
 					Matrix4f matrix = new Matrix4f();
-					matrix.translate(e.getLocation().add(0.0, 0.25, 0.0).castToSinglePrecision());
-					matrix.rotate((float)Math.PI/2, new Vector3fm(1,0 ,0));
+					
+					Vector3d loc = e.getLocation().add(0.0, 0.25, 0.0);
+					matrix.translate((float)loc.x, (float)loc.y, (float)loc.z);
+					//matrix.translate(e.getLocation().add(0.0, 0.25, 0.0));
+					matrix.rotate((float)Math.PI/2, new Vector3f(1,0 ,0));
 					//System.out.println("Rendering ItemPileOnGround "+e+"IS:"+within);
 					within.getItem().getType().getRenderer().renderItemInWorld(renderingInterface, within, e.getWorld(), e.getLocation(), matrix);
 					renderingInterface.flush();

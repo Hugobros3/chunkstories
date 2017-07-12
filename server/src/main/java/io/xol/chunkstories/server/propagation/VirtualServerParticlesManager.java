@@ -2,7 +2,8 @@ package io.xol.chunkstories.server.propagation;
 
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3dc;
+
 import io.xol.chunkstories.api.net.packets.PacketParticle;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
@@ -33,13 +34,13 @@ public class VirtualServerParticlesManager implements ParticlesManager
 		}
 
 		@Override
-		public void spawnParticleAtPosition(String particleTypeName, Vector3dm position)
+		public void spawnParticleAtPosition(String particleTypeName, Vector3dc position)
 		{
 			spawnParticleAtPositionWithVelocity(particleTypeName, position, null);
 		}
 
 		@Override
-		public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dm position, Vector3dm velocity)
+		public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc position, Vector3dc velocity)
 		{
 			Iterator<Player> i = worldServer.getPlayers();
 			while(i.hasNext())
@@ -52,23 +53,23 @@ public class VirtualServerParticlesManager implements ParticlesManager
 
 	}
 	
-	void tellPlayer(Player player, String particleTypeName, Vector3dm location, Vector3dm velocity)
+	void tellPlayer(Player player, String particleTypeName, Vector3dc location, Vector3dc velocity)
 	{
-		PacketParticle packet = new PacketParticle();
-		packet.particleName = particleTypeName;
+		PacketParticle packet = new PacketParticle(particleTypeName, location, velocity);
+		/*packet.particleName = particleTypeName;
 		packet.position = location;
-		packet.velocity = velocity;
+		packet.velocity = velocity;*/
 		player.pushPacket(packet);
 	}
 
 	@Override
-	public void spawnParticleAtPosition(String particleTypeName, Vector3dm position)
+	public void spawnParticleAtPosition(String particleTypeName, Vector3dc position)
 	{
 		spawnParticleAtPositionWithVelocity(particleTypeName, position, null);
 	}
 
 	@Override
-	public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dm location, Vector3dm velocity)
+	public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc location, Vector3dc velocity)
 	{
 		Iterator<Player> i = worldServer.getPlayers();
 		while(i.hasNext())

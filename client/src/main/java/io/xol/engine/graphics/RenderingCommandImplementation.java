@@ -6,8 +6,8 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;
-import io.xol.chunkstories.api.math.Matrix3f;
-import io.xol.chunkstories.api.math.Matrix4f;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import io.xol.chunkstories.api.rendering.Primitive;
 
 import static org.lwjgl.opengl.GL11.*;

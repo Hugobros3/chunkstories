@@ -12,9 +12,10 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.item.renderer.ItemRenderer;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -129,16 +130,16 @@ public class ItemMeleeWeapon extends ItemWeapon
 		{
 			//Actually hits
 			EntityLiving shooter = (EntityLiving) owner;
-			Vector3dm direction = shooter.getDirectionLookingAt();
+			Vector3dc direction = shooter.getDirectionLookingAt();
 
-			Vector3dm eyeLocation = new Vector3dm(shooter.getLocation());
+			Vector3d eyeLocation = new Vector3d(shooter.getLocation());
 			if (shooter instanceof EntityPlayer)
-				eyeLocation.add(new Vector3dm(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
+				eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
 
 			//Find wall collision
 			Location shotBlock = owner.getWorld().collisionsManager().raytraceSolid(eyeLocation, direction, range);
 
-			Vector3dm nearestLocation = null;
+			Vector3d nearestLocation = null;
 
 			//Loops to try and break blocks
 			while(owner.getWorld() instanceof WorldMaster && shotBlock != null)
@@ -154,8 +155,8 @@ public class ItemMeleeWeapon extends ItemWeapon
 					owner.getWorld().setVoxelData(shotBlock, 0);
 					for(int i = 0; i < 25; i++)
 					{
-						Vector3dm smashedVoxelParticleDirection = new Vector3dm(direction);
-						smashedVoxelParticleDirection.scale(2.0);
+						Vector3d smashedVoxelParticleDirection = new Vector3d(direction);
+						smashedVoxelParticleDirection.mul(2.0);
 						smashedVoxelParticleDirection.add(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
 						smashedVoxelParticleDirection.normalize();
 						
@@ -175,15 +176,15 @@ public class ItemMeleeWeapon extends ItemWeapon
 				Location shotBlockOuter = owner.getWorld().collisionsManager().raytraceSolidOuter(eyeLocation, direction, range);
 				if (shotBlockOuter != null)
 				{
-					Vector3dm normal = shotBlockOuter.sub(shotBlock);
+					Vector3d normal = shotBlockOuter.sub(shotBlock);
 
 					double NbyI2x = 2.0 * direction.dot(normal);
-					Vector3dm NxNbyI2x = new Vector3dm(normal);
-					NxNbyI2x.scale(NbyI2x);
+					Vector3d NxNbyI2x = new Vector3d(normal);
+					NxNbyI2x.mul(NbyI2x);
 
-					Vector3dm reflected = new Vector3dm(direction);
+					Vector3d reflected = new Vector3d(direction);
 					reflected.sub(NxNbyI2x);
-					//Vector3dm.sub(direction, NxNbyI2x, reflected);
+					//Vector3d.sub(direction, NxNbyI2x, reflected);
 
 					//shotBlock.setX(shotBlock.getX() + 1);
 					int data = owner.getWorld().getVoxelData(shotBlock);
@@ -191,42 +192,42 @@ public class ItemMeleeWeapon extends ItemWeapon
 
 					//This seems fine
 
-					for (CollisionBox box : voxel.getTranslatedCollisionBoxes(owner.getWorld(), (int) (double) shotBlock.getX(), (int) (double) shotBlock.getY(), (int) (double) shotBlock.getZ()))
+					for (CollisionBox box : voxel.getTranslatedCollisionBoxes(owner.getWorld(), (int) (double) shotBlock.x(), (int) (double) shotBlock.y(), (int) (double) shotBlock.z()))
 					{
-						Vector3dm thisLocation = box.lineIntersection(eyeLocation, direction);
+						Vector3dc thisLocation = box.lineIntersection(eyeLocation, direction);
 						if (thisLocation != null)
 						{
-							if (nearestLocation == null || nearestLocation.distanceTo(eyeLocation) > thisLocation.distanceTo(eyeLocation))
-								nearestLocation = thisLocation;
+							if (nearestLocation == null || nearestLocation.distance(eyeLocation) > thisLocation.distance(eyeLocation))
+								nearestLocation.set(thisLocation);
 						}
 					}
 
 					//Position adjustements so shot blocks always shoot proper particles
-					if (shotBlock.getX() - nearestLocation.getX() <= -1.0)
+					if (shotBlock.x() - nearestLocation.x() <= -1.0)
 						nearestLocation.add(-0.01, 0.0, 0.0);
-					if (shotBlock.getY() - nearestLocation.getY() <= -1.0)
+					if (shotBlock.y() - nearestLocation.y() <= -1.0)
 						nearestLocation.add(0.0, -0.01, 0.0);
-					if (shotBlock.getZ() - nearestLocation.getZ() <= -1.0)
+					if (shotBlock.z() - nearestLocation.z() <= -1.0)
 						nearestLocation.add(0.0, 0.0, -0.01);
 
 					for (int i = 0; i < 25; i++)
 					{
-						Vector3dm untouchedReflection = new Vector3dm(reflected);
+						Vector3d untouchedReflection = new Vector3d(reflected);
 
-						Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
-						random.scale(0.5);
+						Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+						random.mul(0.5);
 						untouchedReflection.add(random);
 						untouchedReflection.normalize();
 
-						untouchedReflection.scale(0.25);
+						untouchedReflection.mul(0.25);
 
-						Vector3dm ppos = new Vector3dm(nearestLocation);
+						Vector3d ppos = new Vector3d(nearestLocation);
 						owner.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
 
 						owner.getWorld().getSoundManager().playSoundEffect(VoxelsStore.get().getVoxelById(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.25f);
 					}
 
-					owner.getWorld().getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3dm(0.5), "bullethole");
+					owner.getWorld().getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");
 				}
 			}
 
@@ -244,7 +245,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 						//Get hit location
 						for (HitBox hitBox : ((EntityLiving) shotEntity).getHitBoxes())
 						{
-							Vector3dm hitPoint = hitBox.lineIntersection(eyeLocation, direction);
+							Vector3dc hitPoint = hitBox.lineIntersection(eyeLocation, direction);
 
 							if (hitPoint == null)
 								continue;
@@ -253,11 +254,12 @@ public class ItemMeleeWeapon extends ItemWeapon
 							((EntityLiving) shotEntity).damage(pileAsDamageCause(pile), hitBox, (float) damage);
 
 							//Spawn blood particles
-							Vector3dm bloodDir = direction.normalize().scale(0.25);
+							Vector3d bloodDir = new Vector3d();
+							direction.normalize(bloodDir).mul(0.25);
 							for (int i = 0; i < 250; i++)
 							{
-								Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
-								random.scale(0.25);
+								Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+								random.mul(0.25);
 								random.add(bloodDir);
 
 								shooter.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("blood", hitPoint, random);
@@ -265,7 +267,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 
 							//Spawn blood on walls
 							if (nearestLocation != null)
-								shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3dm(3.0), "blood");
+								shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3d(3.0), "blood");
 						}
 					}
 				}
@@ -311,11 +313,11 @@ public class ItemMeleeWeapon extends ItemWeapon
 			}
 
 			float dekal = -0.45f;
-			matrixed.translate(new Vector3fm(0, dekal, 0));
-			matrixed.rotate(rot, new Vector3fm(0, 0, 1));
-			matrixed.translate(new Vector3fm(0, 0.25 - dekal, 0));
+			matrixed.translate(new Vector3f(0, dekal, 0));
+			matrixed.rotate(rot, new Vector3f(0, 0, 1));
+			matrixed.translate(new Vector3f(0, 0.25f - dekal, 0));
 
-			matrixed.scale(new Vector3fm(instance.itemRenderScale));
+			matrixed.scale(new Vector3f(instance.itemRenderScale));
 
 			super.renderItemInWorld(renderingInterface, pile, world, location, matrixed);
 		}

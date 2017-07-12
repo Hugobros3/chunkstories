@@ -33,7 +33,7 @@ public class VoxelContextOlder implements VoxelContext
 	
 	public VoxelContextOlder(Location location)
 	{
-		this(location.getWorld(), (int)(double)location.getX(), (int)(double)location.getY(), (int)(double)location.getZ());
+		this(location.getWorld(), (int)(double)location.x(), (int)(double)location.y(), (int)(double)location.z());
 	}
 
 	public VoxelContextOlder(World world, int x, int y, int z)

@@ -1,7 +1,7 @@
 package io.xol.engine.graphics.fonts;
 
 import io.xol.chunkstories.api.math.HexTools;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -30,7 +30,7 @@ public class FontRenderer2
 		Texture2DGL fontTexture = TexturesHandler.getTexture("./textures/font/" + font.name + ".png");
 		fontTexture.setLinearFiltering(false);
 		
-		Vector4fm color = new Vector4fm(r, v, b, alpha);
+		Vector4f color = new Vector4f(r, v, b, alpha);
 
 		float baseX = xpos;
 		float baseY = ypos;
@@ -97,7 +97,7 @@ public class FontRenderer2
 						int rgb[] = ColorsTools.hexToRGB(colorCode);
 						// System.out.println("colorcode found ! - "+colorCode
 						// +" rgb:"+rgb[1]);
-						color = new Vector4fm(rgb[0] / 255.0f, rgb[1] / 255.0f, rgb[2] / 255.0f, alpha);
+						color = new Vector4f(rgb[0] / 255.0f, rgb[1] / 255.0f, rgb[2] / 255.0f, alpha);
 						skip = 6;
 					}
 				}

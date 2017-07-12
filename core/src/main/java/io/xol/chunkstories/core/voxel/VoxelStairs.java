@@ -94,8 +94,8 @@ public class VoxelStairs extends Voxel implements VoxelLogic
 		if (entity != null)
 		{
 			Location loc = entity.getLocation();
-			double dx = loc.getX() - (x + 0.5);
-			double dz = loc.getZ() - (z + 0.5);
+			double dx = loc.x() - (x + 0.5);
+			double dz = loc.z() - (z + 0.5);
 
 			//System.out.println("dx: "+dx+" dz:" + dz);
 			

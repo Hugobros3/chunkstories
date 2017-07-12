@@ -48,8 +48,8 @@ public class CloudsRenderer
 	{
 		int width = 128;
 
-		int camChunkX = (int) (double)renderingContext.getCamera().getCameraPosition().getX() / 32;
-		int camChunkZ = (int) (double)renderingContext.getCamera().getCameraPosition().getZ() / 32;
+		int camChunkX = (int) (double)renderingContext.getCamera().getCameraPosition().x() / 32;
+		int camChunkZ = (int) (double)renderingContext.getCamera().getCameraPosition().z() / 32;
 
 		if(System.currentTimeMillis() - lastBaked < 5000 || (camChunkX == lastChunkX && camChunkZ == lastChunkZ))
 			return;

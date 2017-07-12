@@ -10,8 +10,8 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.math.Math2;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -258,7 +258,7 @@ public class WorldRendererImplementation implements WorldRenderer
 			renderingInterface.getCamera().setupShader(liquidBlocksShader);
 
 			//Underwater flag
-			Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int) (double) renderingInterface.getCamera().getCameraPosition().getX(), (int) (double) renderingInterface.getCamera().getCameraPosition().getY(), (int) (double) renderingInterface.getCamera().getCameraPosition().getZ()));
+			Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int) (double) renderingInterface.getCamera().getCameraPosition().x(), (int) (double) renderingInterface.getCamera().getCameraPosition().y(), (int) (double) renderingInterface.getCamera().getCameraPosition().z()));
 			liquidBlocksShader.setUniform1f("underwater", vox.getType().isLiquid() ? 1 : 0);
 
 			if (pass == 1)
@@ -359,7 +359,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 
-		Vector3fm sunPos = skyRenderer.getSunPosition();
+		Vector3f sunPos = skyRenderer.getSunPosition();
 
 		renderingContext.getRenderTargetManager().setConfiguration(renderBuffers.fboShadedBuffer);
 		//fboShadedBuffer.bind();
@@ -476,8 +476,8 @@ public class WorldRendererImplementation implements WorldRenderer
 		//renderingContext.bindTexture2D("debugBuffer", (System.currentTimeMillis() % 1000 < 500) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
 		renderingContext.bindTexture2D("debugBuffer", renderBuffers.shadowMapBuffer);
 
-		Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int)(double)renderingContext.getCamera().getCameraPosition().getX(),
-				(int)(double)renderingContext.getCamera().getCameraPosition().getY(), (int)(double)renderingContext.getCamera().getCameraPosition().getZ()));
+		Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int)(double)renderingContext.getCamera().getCameraPosition().x(),
+				(int)(double)renderingContext.getCamera().getCameraPosition().y(), (int)(double)renderingContext.getCamera().getCameraPosition().z()));
 		
 		postProcess.setUniform1f("underwater", vox.getType().isLiquid() ? 1 : 0);
 		postProcess.setUniform1f("animationTimer", animationTimer);
@@ -658,7 +658,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		Entity e = Client.getInstance().getPlayer().getControlledEntity();
 		if (e != null)
 		{
-			return wetFactor * (1f - Math2.clamp((e.getLocation().getY() - 110) / 20, 0, 1));
+			return wetFactor * (1f - Math2.clamp((e.getLocation().y() - 110) / 20, 0, 1));
 		}
 
 		return wetFactor;
@@ -684,14 +684,14 @@ public class WorldRendererImplementation implements WorldRenderer
 
 		shader.setUniform1f("shadowStrength", 1.0f);
 
-		//shader.setUniform3f("sunColor", Math2.mix(new Vector3fm(0.80f, 0.80f, 0.69f), new Vector3fm(0.5f), sunLightFactor));
-		shader.setUniform3f("sunColor", Math2.mix(new Vector3fm(1.0f), new Vector3fm(0.5f), sunLightFactor));
+		//shader.setUniform3f("sunColor", Math2.mix(new Vector3f(0.80f, 0.80f, 0.69f), new Vector3f(0.5f), sunLightFactor));
+		shader.setUniform3f("sunColor", Math2.mix(new Vector3f(1.0f), new Vector3f(0.5f), sunLightFactor));
 
 		float shadowBrightness = 0.5f / 255f;
-		Vector3fm shadowColorSunny = new Vector3fm(0.0f, 88f * shadowBrightness, 150f * shadowBrightness);
-		shadowColorSunny = Math2.mix(shadowColorSunny, new Vector3fm(shadowBrightness * 255f), 0.5f);
+		Vector3f shadowColorSunny = new Vector3f(0.0f, 88f * shadowBrightness, 150f * shadowBrightness);
+		shadowColorSunny = Math2.mix(shadowColorSunny, new Vector3f(shadowBrightness * 255f), 0.5f);
 
-		Vector3fm shadowColor = Math2.mix(shadowColorSunny, new Vector3fm(0.5f), sunLightFactor);
+		Vector3f shadowColor = Math2.mix(shadowColorSunny, new Vector3f(0.5f), sunLightFactor);
 		shader.setUniform3f("shadowColor", shadowColor);
 	}
 

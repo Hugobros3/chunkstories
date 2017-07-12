@@ -2,7 +2,8 @@ package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3dc;
+
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -1975,9 +1976,9 @@ public abstract class CubicChunk implements Chunk
 	}
 
 	@Override
-	public ChunkVoxelContext peek(Vector3dm location)
+	public ChunkVoxelContext peek(Vector3dc location)
 	{
-		return peek((int)(double)location.getX(), (int)(double)location.getY(), (int)(double)location.getZ());
+		return peek((int)(double)location.x(), (int)(double)location.y(), (int)(double)location.z());
 	}
 
 	@Override

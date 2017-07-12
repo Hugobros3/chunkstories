@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.gui.FocusableGuiElement;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -83,7 +83,7 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width + 8, getHeight() + 16, 4, "./textures/gui/scalableButton.png", 32, scale());
 		}
 		
-		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), xPosition + textDekal, yPosition - height / 2, localizedText, scale(), scale(), new Vector4fm(1.0f));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), xPosition + textDekal, yPosition - height / 2, localizedText, scale(), scale(), new Vector4f(1.0f));
 		//FontRenderer2.drawTextUsingSpecificFont(xPosition + textDekal, yPosition - height / 2, 0, size * 32, localizedText, font);
 		//return width * 2 * size - 12;
 	}

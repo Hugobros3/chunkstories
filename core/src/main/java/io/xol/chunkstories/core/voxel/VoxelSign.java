@@ -3,8 +3,9 @@ package io.xol.chunkstories.core.voxel;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
+
+import org.joml.Vector2f;
+import org.joml.Vector3d;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelEntity;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -61,17 +62,17 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 		
 		if(entity != null)
 		{
-			Vector3dm blockLocation = new Vector3dm(x + 0.5, y, z + 0.5);
+			Vector3d blockLocation = new Vector3d(x + 0.5, y, z + 0.5);
 			blockLocation.sub(entity.getLocation());
 			blockLocation.negate();
 			
-			Vector2fm direction = new Vector2fm((float)(double)blockLocation.getX(), (float)(double)blockLocation.getZ());
+			Vector2f direction = new Vector2f((float)(double)blockLocation.x(), (float)(double)blockLocation.z());
 			direction.normalize();
 			//System.out.println("x:"+direction.x+"y:"+direction.y);
 			
-			double asAngle = Math.acos(direction.getY()) / Math.PI * 180;
+			double asAngle = Math.acos(direction.y()) / Math.PI * 180;
 			asAngle *= -1;
-			if(direction.getX() < 0)
+			if(direction.x() < 0)
 				asAngle *= -1;
 			
 			//asAngle += 180.0;

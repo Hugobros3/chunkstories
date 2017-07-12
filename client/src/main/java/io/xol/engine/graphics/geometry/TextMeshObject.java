@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.rendering.text.TextMesh;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
@@ -46,9 +46,9 @@ public class TextMeshObject implements TextMesh
 	private int temp = 0;
 
 	private Texture2D currentTexture;
-	private Vector4fm currentColor;
+	private Vector4f currentColor;
 
-	public void setState(Texture2D texture, Vector4fm color)
+	public void setState(Texture2D texture, Vector4f color)
 	{
 		//If we changed texture, render the temp stuff
 		//TODO: This is retarded, we don't even record the != textures yet (UTF-8 support bitchez)
@@ -111,10 +111,10 @@ public class TextMeshObject implements TextMesh
 		tempBuffer.putFloat(textureStartX);
 		tempBuffer.putFloat(textureStartY);
 		//Color
-		tempBuffer.putFloat(currentColor.getX());
-		tempBuffer.putFloat(currentColor.getY());
-		tempBuffer.putFloat(currentColor.getZ());
-		tempBuffer.putFloat(currentColor.getW());
+		tempBuffer.putFloat(currentColor.x());
+		tempBuffer.putFloat(currentColor.y());
+		tempBuffer.putFloat(currentColor.z());
+		tempBuffer.putFloat(currentColor.w());
 	}
 
 	public void done()

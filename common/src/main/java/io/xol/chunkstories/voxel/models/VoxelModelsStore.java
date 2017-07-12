@@ -2,7 +2,7 @@ package io.xol.chunkstories.voxel.models;
 
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Content.Voxels;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
@@ -239,10 +239,10 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 							texcoordsTemp.add(new float[] { Float.parseFloat(tex[0]), Float.parseFloat(tex[1]) });
 
 							//Normalizes normal at loading time
-							Vector3fm normalizeMe = new Vector3fm(Float.parseFloat(nor[0]), Float.parseFloat(nor[1]), Float.parseFloat(nor[2]));
+							Vector3f normalizeMe = new Vector3f(Float.parseFloat(nor[0]), Float.parseFloat(nor[1]), Float.parseFloat(nor[2]));
 							normalizeMe.normalize();
 
-							normalsTemp.add(new float[] { normalizeMe.getX(), normalizeMe.getY(), normalizeMe.getZ() });
+							normalsTemp.add(new float[] { normalizeMe.x(), normalizeMe.y(), normalizeMe.z() });
 
 							byte extra = 0;
 							if (splitted.length >= 5)

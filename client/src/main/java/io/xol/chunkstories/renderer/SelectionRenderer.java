@@ -23,9 +23,9 @@ public class SelectionRenderer
 
 	public void drawSelectionBox(Location location)
 	{
-		int x = (int)(double) location.getX();
-		int y = (int)(double) location.getY();
-		int z = (int)(double) location.getZ();
+		int x = (int)(double) location.x();
+		int y = (int)(double) location.y();
+		int z = (int)(double) location.z();
 		glColor4f(1, 1, 1, 1.0f);
 		//GL11.glBlendFunc(GL11.GL_ONE_MINUS_SRC_COLOR, GL11.GL_ZERO);
 		//GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);

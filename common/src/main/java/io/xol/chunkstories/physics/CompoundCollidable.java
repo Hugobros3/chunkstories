@@ -1,6 +1,7 @@
 package io.xol.chunkstories.physics;
 
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3dc;
+
 import io.xol.chunkstories.api.physics.Collidable;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -26,11 +27,11 @@ public final class CompoundCollidable implements Collidable
 	}
 
 	@Override
-	public Vector3dm lineIntersection(Vector3dm lineStart, Vector3dm lineDirection)
+	public Vector3dc lineIntersection(Vector3dc lineStart, Vector3dc lineDirection)
 	{
 		for(Collidable c : elements)
 		{
-			Vector3dm intersection = c.lineIntersection(lineStart, lineDirection);
+			Vector3dc intersection = c.lineIntersection(lineStart, lineDirection);
 			if(intersection != null)
 				return intersection;
 		}

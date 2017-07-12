@@ -3,6 +3,7 @@ package io.xol.chunkstories.renderer;
 import java.nio.FloatBuffer;
 import java.util.Random;
 
+import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
@@ -11,7 +12,6 @@ import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.math.Math2;
-import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldEffectsRenderer;
@@ -55,7 +55,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 
 		bufferOffset %= 110000;
 		bufferOffset += 10000;
-		Vector2fm view2drop = new Vector2fm();
+		Vector2f view2drop = new Vector2f();
 		for (int i = 0; i < 100000; i++)
 		{
 			// We want to always leave alone the topmost part of the array until it has gone out of view
@@ -67,11 +67,11 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 			//Max height it can fall to before reverting to used
 			float rdMh = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int) rdX, (int) rdZ);
 			//Raindrop size, change orientation to face viewer
-			view2drop.setX(rdX - viewX);
-			view2drop.setY(rdZ - viewZ);
+			view2drop.x = (rdX - viewX);
+			view2drop.y = (rdZ - viewZ);
 			view2drop.normalize();
-			float mx = 0.005f * -view2drop.getY();
-			float mz = 0.005f * view2drop.getX();
+			float mx = 0.005f * -view2drop.y();
+			float mz = 0.005f * view2drop.x();
 			float rainDropletSize = 0.2f + random.nextFloat() * 0.18f;
 			//Build triangle strip
 
@@ -131,9 +131,9 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 	@Override
 	public void renderEffects(RenderingInterface renderingContext)
 	{
-		viewX = (int)(double) renderingContext.getCamera().getCameraPosition().getX();
-		viewY = (int)(double) renderingContext.getCamera().getCameraPosition().getY();
-		viewZ = (int)(double) renderingContext.getCamera().getCameraPosition().getZ();
+		viewX = (int)(double) renderingContext.getCamera().getCameraPosition().x();
+		viewY = (int)(double) renderingContext.getCamera().getCameraPosition().y();
+		viewZ = (int)(double) renderingContext.getCamera().getCameraPosition().z();
 		
 		float rainPresence = world.getWeather();
 		
@@ -180,7 +180,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 		Entity e = Client.getInstance().getPlayer().getControlledEntity();
 		if(e != null)
 		{
-			return world.getWeather()*Math2.clamp((e.getLocation().getY() - 120) / 20, 0, 1);
+			return world.getWeather()*Math2.clamp((e.getLocation().y() - 120) / 20, 0, 1);
 		}
 		
 		return 0;

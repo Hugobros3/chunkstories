@@ -18,9 +18,10 @@ import io.xol.chunkstories.api.item.interfaces.ItemZoom;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.item.renderer.ItemRenderer;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -248,30 +249,30 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 				//Play sounds
 				if (controller != null)
 				{
-					controller.getSoundManager().playSoundEffect(this.soundName, (float) (double) user.getLocation().getX(), (float) (double) user.getLocation().getY(), (float) (double) user.getLocation().getZ(), 1.0f, 1.0f, 1.0f,
+					controller.getSoundManager().playSoundEffect(this.soundName, (float) (double) user.getLocation().x(), (float) (double) user.getLocation().y(), (float) (double) user.getLocation().z(), 1.0f, 1.0f, 1.0f,
 							(float) soundRange);
 				}
 				
 				playAnimation();
 
 				//Raytrace shot
-				Vector3dm eyeLocation = new Vector3dm(shooter.getLocation());
+				Vector3d eyeLocation = new Vector3d(shooter.getLocation());
 				//eyeLocation.add(0.25, 0.0, 0.25);
 
 				if (shooter instanceof EntityPlayer)
-					eyeLocation.add(new Vector3dm(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
+					eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) shooter).eyePosition, 0.0));
 
 				//For each shot
 				for (int ss = 0; ss < shots; ss++)
 				{
-					Vector3dm direction = shooter.getDirectionLookingAt();
-					direction.add(new Vector3dm(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
+					Vector3d direction = new Vector3d(shooter.getDirectionLookingAt());
+					direction.add(new Vector3d(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().mul(accuracy / 100d));
 					direction.normalize();
 
 					//Find wall collision
 					Location shotBlock = user.getWorld().collisionsManager().raytraceSolid(eyeLocation, direction, range);
 
-					Vector3dm nearestLocation = null;
+					Vector3dc nearestLocation = null;
 
 					//Loops to try and break blocks
 					while(user.getWorld() instanceof WorldMaster && shotBlock != null)
@@ -287,8 +288,8 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 							user.getWorld().setVoxelData(shotBlock, 0);
 							for(int i = 0; i < 25; i++)
 							{
-								Vector3dm smashedVoxelParticleDirection = new Vector3dm(direction);
-								smashedVoxelParticleDirection.scale(2.0);
+								Vector3d smashedVoxelParticleDirection = new Vector3d(direction);
+								smashedVoxelParticleDirection.mul(2.0);
 								smashedVoxelParticleDirection.add(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
 								smashedVoxelParticleDirection.normalize();
 								
@@ -309,15 +310,15 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 						
 						if (shotBlockOuter != null)
 						{
-							Vector3dm normal = shotBlockOuter.sub(shotBlock);
+							Vector3d normal = shotBlockOuter.sub(shotBlock);
 
 							double NbyI2x = 2.0 * direction.dot(normal);
-							Vector3dm NxNbyI2x = new Vector3dm(normal);
-							NxNbyI2x.scale(NbyI2x);
+							Vector3d NxNbyI2x = new Vector3d(normal);
+							NxNbyI2x.mul(NbyI2x);
 
-							Vector3dm reflected = new Vector3dm(direction);
+							Vector3d reflected = new Vector3d(direction);
 							reflected.sub(NxNbyI2x);
-							//Vector3dm.sub(direction, NxNbyI2x, reflected);
+							//Vector3d.sub(direction, NxNbyI2x, reflected);
 
 							//shotBlock.setX(shotBlock.getX() + 1);
 							int data = user.getWorld().getVoxelData(shotBlock);
@@ -325,51 +326,53 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 
 							//This seems fine
 
-							for (CollisionBox box : voxel.getTranslatedCollisionBoxes(user.getWorld(), (int) (double) shotBlock.getX(), (int) (double) shotBlock.getY(), (int) (double) shotBlock.getZ()))
+							for (CollisionBox box : voxel.getTranslatedCollisionBoxes(user.getWorld(), (int) (double) shotBlock.x(), (int) (double) shotBlock.y(), (int) (double) shotBlock.z()))
 							{
-								Vector3dm thisLocation = box.lineIntersection(eyeLocation, direction);
+								Vector3dc thisLocation = box.lineIntersection(eyeLocation, direction);
 								if (thisLocation != null)
 								{
-									if (nearestLocation == null || nearestLocation.distanceTo(eyeLocation) > thisLocation.distanceTo(eyeLocation))
+									if (nearestLocation == null || nearestLocation.distance(eyeLocation) > thisLocation.distance(eyeLocation))
 										nearestLocation = thisLocation;
 								}
 							}
 
+							Vector3d particleSpawnPosition = new Vector3d(nearestLocation);
+							
 							//Position adjustements so shot blocks always shoot proper particles
-							if (shotBlock.getX() - nearestLocation.getX() <= -1.0)
-								nearestLocation.add(-0.01, 0d, 0d);
-							if (shotBlock.getY() - nearestLocation.getY() <= -1.0)
-								nearestLocation.add(0d, -0.01, 0d);
-							if (shotBlock.getZ() - nearestLocation.getZ() <= -1.0)
-								nearestLocation.add(0d, 0d, -0.01);
+							if (shotBlock.x() - particleSpawnPosition.x() <= -1.0)
+								particleSpawnPosition.add(-0.01, 0d, 0d);
+							if (shotBlock.y() - particleSpawnPosition.y() <= -1.0)
+								particleSpawnPosition.add(0d, -0.01, 0d);
+							if (shotBlock.z() - particleSpawnPosition.z() <= -1.0)
+								particleSpawnPosition.add(0d, 0d, -0.01);
 
 							for (int i = 0; i < 25; i++)
 							{
-								Vector3dm untouchedReflection = new Vector3dm(reflected);
+								Vector3d untouchedReflection = new Vector3d(reflected);
 
-								Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
-								random.scale(0.5);
+								Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+								random.mul(0.5);
 								untouchedReflection.add(random);
 								untouchedReflection.normalize();
 
-								untouchedReflection.scale(0.25);
+								untouchedReflection.mul(0.25);
 
-								Vector3dm ppos = new Vector3dm(nearestLocation);
-								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
-
-								controller.getSoundManager().playSoundEffect(VoxelsStore.get().getVoxelById(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.05f);
+								//Vector3d ppos = new Vector3d(particleSpawnPosition);
+								controller.getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", particleSpawnPosition, untouchedReflection);
 
 							}
-
+							
+							controller.getSoundManager().playSoundEffect(VoxelsStore.get().getVoxelById(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), particleSpawnPosition, 1, 0.05f);
+							
 							/*double bspeed = 5/60.0 * (1 + Math.random() * 3 * Math.random());
-							Vector3dm ppos = new Vector3dm(reflected);
+							Vector3d ppos = new Vector3d(reflected);
 							ppos.normalize();
 							ppos.scale(0.5);
 							ppos.add(nearestLocation);
 							WorldEffects.createFireball(shooter.getWorld(), ppos, 1f, damage*0.15*bspeed, (float) (0.0 + 0.05*damage));
 							*/
 							
-							controller.getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3dm(0.5), "bullethole");
+							controller.getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");
 						}
 					}
 					
@@ -388,7 +391,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 								//Get hit location
 								for (HitBox hitBox : ((EntityLiving) shotEntity).getHitBoxes())
 								{
-									Vector3dm hitPoint = hitBox.lineIntersection(eyeLocation, direction);
+									Vector3dc hitPoint = hitBox.lineIntersection(eyeLocation, direction);
 									
 									if(hitPoint == null)
 										continue;
@@ -399,11 +402,11 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 									((EntityLiving) shotEntity).damage(pileAsDamageCause(pile), hitBox, (float) damage);
 
 									//Spawn blood particles
-									Vector3dm bloodDir = direction.normalize().scale(0.75);
+									Vector3d bloodDir = direction.normalize().mul(0.75);
 									for (int i = 0; i < 120; i++)
 									{
-										Vector3dm random = new Vector3dm(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
-										random.scale(0.25);
+										Vector3d random = new Vector3d(Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0);
+										random.mul(0.25);
 										random.add(bloodDir);
 
 										shooter.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("blood", hitPoint, random);
@@ -411,7 +414,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 
 									//Spawn blood on walls
 									if (nearestLocation != null)
-										shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3dm(Math.min(3, shots) * damage / 20f), "blood");
+										shooter.getWorld().getDecalsManager().drawDecal(nearestLocation, bloodDir, new Vector3d(Math.min(3, shots) * damage / 20f), "blood");
 								}
 							}
 						}
@@ -490,12 +493,12 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 			if (isScoped())
 				drawScope(renderingInterface);
 
-			Vector3dm eyeLocation = new Vector3dm(clientControlledEntity.getLocation());
+			Vector3d eyeLocation = new Vector3d(clientControlledEntity.getLocation());
 			if (clientControlledEntity instanceof EntityPlayer)
-				eyeLocation.add(new Vector3dm(0.0, ((EntityPlayer) clientControlledEntity).eyePosition, 0.0));
+				eyeLocation.add(new Vector3d(0.0, ((EntityPlayer) clientControlledEntity).eyePosition, 0.0));
 
-			Vector3dm direction = clientControlledEntity.getDirectionLookingAt();
-			direction.add(new Vector3dm(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scale(accuracy / 100d));
+			Vector3d direction = new Vector3d(clientControlledEntity.getDirectionLookingAt());
+			direction.add(new Vector3d(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().mul(accuracy / 100d));
 			direction.normalize();
 
 			//Location shotBlock = clientControlledEntity.getWorld().raytraceSolid(eyeLocation, direction, 5000);
@@ -528,9 +531,9 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 		int bandwidth = (max - min) / 2;
 		int x = 0;
 
-		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, renderingInterface.getWindow().getHeight(), 0, 0, 0, 0, null, false, false, new Vector4fm(0.0, 0.0, 0.0, 1.0));
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, renderingInterface.getWindow().getHeight(), 0, 0, 0, 0, null, false, false, new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
 		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += min, renderingInterface.getWindow().getHeight(), 0, 1, 1, 0, renderingInterface.textures().getTexture(scopeTexture), false, false, null);
-		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, renderingInterface.getWindow().getHeight(), 0, 0, 0, 0, null, false, false, new Vector4fm(0.0, 0.0, 0.0, 1.0));
+		renderingInterface.getGuiRenderer().drawBoxWindowsSpace(x, 0, x += bandwidth, renderingInterface.getWindow().getHeight(), 0, 0, 0, 0, null, false, false, new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
 	}
 
 	public boolean isScoped()

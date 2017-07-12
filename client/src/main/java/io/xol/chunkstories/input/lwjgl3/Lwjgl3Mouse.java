@@ -13,7 +13,9 @@ import org.lwjgl.system.MemoryUtil;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
-import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
+
+import org.joml.Vector2d;
+import org.joml.Vector2f;
 import io.xol.chunkstories.client.Client;
 
 public class Lwjgl3Mouse implements Mouse {
@@ -39,12 +41,12 @@ public class Lwjgl3Mouse implements Mouse {
 		return im.MIDDLE;
 	}
 	
-	public Vector2fm getMousePosition()
+	public Vector2d getMousePosition()
 	{
 		DoubleBuffer b1 = MemoryUtil.memAllocDouble(1);
 		DoubleBuffer b2 = MemoryUtil.memAllocDouble(1);
 		glfwGetCursorPos(im.gameWindow.glfwWindowHandle, b1, b2);
-		Vector2fm vec2 = new Vector2fm(b1.get(), im.gameWindow.getHeight() - b2.get());
+		Vector2d vec2 = new Vector2d(b1.get(), im.gameWindow.getHeight() - b2.get());
 		MemoryUtil.memFree(b1);
 		MemoryUtil.memFree(b2);
 
@@ -52,13 +54,13 @@ public class Lwjgl3Mouse implements Mouse {
 	}
 
 	@Override
-	public float getCursorX() {
-		return getMousePosition().getX();
+	public double getCursorX() {
+		return getMousePosition().x();
 	}
 
 	@Override
-	public float getCursorY() {
-		return getMousePosition().getY();
+	public double getCursorY() {
+		return getMousePosition().y();
 	}
 
 	@Override

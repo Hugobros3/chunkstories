@@ -2,7 +2,7 @@ package io.xol.chunkstories.gui.overlays;
 
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.gui.Layer;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
@@ -117,7 +117,7 @@ public class MainMenuOverlay extends Layer
 		largeOptions.render(renderingContext);
 		
 		//Notices
-		Vector4fm noticeColor = new Vector4fm(0.5f);
+		Vector4f noticeColor = new Vector4f(0.5f);
 		String version = "Chunk Stories Client " + VersionInfo.version;
 		renderingContext.getFontRenderer().defaultFont().getWidth(version);
 		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), 4, 0, version, this.getGuiScale(), noticeColor);

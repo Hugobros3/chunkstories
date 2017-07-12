@@ -16,8 +16,9 @@ import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.events.player.PlayerSpawnEvent;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.math.vector.Vector3;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.Player;
@@ -355,7 +356,7 @@ public abstract class WorldImplementation implements World
 		return new EntityWorldIterator(entities.iterator());
 	}
 	
-	public NearEntitiesIterator getEntitiesInBox(Vector3<Double> center, Vector3<Double> boxSize)
+	public NearEntitiesIterator getEntitiesInBox(Vector3dc center, Vector3dc boxSize)
 	{
 		return entities.getEntitiesInBox(center, boxSize);
 	}
@@ -382,9 +383,9 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public int getVoxelData(Vector3dm location)
+	public int getVoxelData(Vector3dc location)
 	{
-		return getVoxelData((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
+		return getVoxelData((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 
 	@Override
@@ -402,9 +403,9 @@ public abstract class WorldImplementation implements World
 	}
 	
 	@Override
-	public WorldVoxelContext peek(Vector3dm location)
+	public WorldVoxelContext peek(Vector3dc location)
 	{
-		return peek((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
+		return peek((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 
 	@Override
@@ -484,7 +485,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void setVoxelData(Location location, int data)
 	{
-		setVoxelData((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ(), data);
+		setVoxelData((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z(), data);
 	}
 
 	@Override
@@ -496,7 +497,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void setVoxelData(Location location, int data, Entity entity)
 	{
-		actuallySetsDataAt((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ(), data, entity);
+		actuallySetsDataAt((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z(), data, entity);
 	}
 
 	@Override
@@ -678,7 +679,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public int getSunlightLevelLocation(Location location)
 	{
-		return getSunlightLevelWorldCoordinates((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
+		return getSunlightLevelWorldCoordinates((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 
 	@Override
@@ -696,7 +697,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public int getBlocklightLevelLocation(Location location)
 	{
-		return getBlocklightLevelWorldCoordinates((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
+		return getBlocklightLevelWorldCoordinates((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 	
 	@Override
@@ -803,9 +804,9 @@ public abstract class WorldImplementation implements World
 	@Override
 	public void setDefaultSpawnLocation(Location location)
 	{
-		internalData.setDouble("defaultSpawnX", location.getX());
-		internalData.setDouble("defaultSpawnY", location.getY());
-		internalData.setDouble("defaultSpawnZ", location.getZ());
+		internalData.setDouble("defaultSpawnX", location.x());
+		internalData.setDouble("defaultSpawnY", location.y());
+		internalData.setDouble("defaultSpawnZ", location.z());
 		internalData.save();
 	}
 
@@ -866,7 +867,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public ChunkHolder aquireChunkHolderLocation(WorldUser user, Location location)
 	{
-		return aquireChunkHolder(user, (int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
+		return aquireChunkHolder(user, (int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 
 	@Override
@@ -914,7 +915,7 @@ public abstract class WorldImplementation implements World
 	@Override
 	public CubicChunk getChunkWorldCoordinates(Location location)
 	{
-		return getChunkWorldCoordinates((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
+		return getChunkWorldCoordinates((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 
 	@Override
@@ -975,13 +976,13 @@ public abstract class WorldImplementation implements World
 	@Override
 	public RegionImplementation aquireRegionLocation(WorldUser user, Location location)
 	{
-		return aquireRegionWorldCoordinates(user, (int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
+		return aquireRegionWorldCoordinates(user, (int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 
 	@Override
 	public RegionImplementation getRegionLocation(Location location)
 	{
-		return getRegionWorldCoordinates((int) (double) location.getX(), (int) (double) location.getY(), (int) (double) location.getZ());
+		return getRegionWorldCoordinates((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 
 	@Override

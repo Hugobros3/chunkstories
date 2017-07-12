@@ -452,7 +452,7 @@ public class RegionImplementation implements Region
 		while (entities.hasNext())
 		{
 			Entity entity = entities.next();
-			if (entity != null && entity instanceof EntityVoxel && ((int)(double) entity.getLocation().getX() == worldX) && ((int)(double) entity.getLocation().getY() == worldY) && ((int)(double) entity.getLocation().getZ() == worldZ))
+			if (entity != null && entity instanceof EntityVoxel && ((int)(double) entity.getLocation().x() == worldX) && ((int)(double) entity.getLocation().y() == worldY) && ((int)(double) entity.getLocation().z() == worldZ))
 				return (EntityVoxel) entity;
 		}
 		return null;

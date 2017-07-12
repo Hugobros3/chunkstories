@@ -1,7 +1,7 @@
 package io.xol.chunkstories.gui.ng;
 
 import io.xol.chunkstories.api.gui.Layer;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
@@ -38,8 +38,8 @@ public class LargeButtonIcon extends BaseNgButton{
 		
 		float yPositionText = yPosition + 50 * scale() / 2;
 		float centering = getWidth() / 2 - font.getWidth(localizedText) * scale() / 2;
-		renderer.getFontRenderer().drawString(font, xPosition + centering + scale(), yPositionText - scale(), localizedText, scale(), new Vector4fm(161/255f, 161/255f, 161/255f, 1));
-		renderer.getFontRenderer().drawString(font, xPosition + centering, yPositionText, localizedText, scale(), new Vector4fm(38/255f, 38/255f, 38/255f, 1));
+		renderer.getFontRenderer().drawString(font, xPosition + centering + scale(), yPositionText - scale(), localizedText, scale(), new Vector4f(161/255f, 161/255f, 161/255f, 1));
+		renderer.getFontRenderer().drawString(font, xPosition + centering, yPositionText, localizedText, scale(), new Vector4f(38/255f, 38/255f, 38/255f, 1));
 	
 		renderer.textures().getTexture("./textures/gui/icons/"+iconName+".png").setLinearFiltering(false);
 		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(xPosition + getWidth() / 2 - 16 * scale(), yPosition + getHeight() / 2 - 26 * scale(), 32 * scale(), 32 * scale(), 0, 1, 1, 0, renderer.textures().getTexture("./textures/gui/icons/"+iconName+".png"), false, true, null);

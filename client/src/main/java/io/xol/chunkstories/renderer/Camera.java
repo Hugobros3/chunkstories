@@ -4,14 +4,16 @@ package io.xol.chunkstories.renderer;
 // http://chunkstories.xyz
 // http://xol.io
 
-import io.xol.chunkstories.api.math.Matrix3f;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.Vector3;
-import io.xol.chunkstories.api.math.vector.Vector3m;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.operations.VectorCrossProduct;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
+
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
@@ -29,8 +31,8 @@ public class Camera implements CameraInterface
 	public float rotationZ = 0.0f;
 	//Camera positions
 	
-	private Vector3dm position = new Vector3dm();
-	//private Vector3dm pos = new Vector3dm();
+	private Vector3d position = new Vector3d();
+	//private Vector3d pos = new Vector3d();
 	
 	//Mouse pointer tracking
 	float lastPX = -1f;
@@ -70,13 +72,17 @@ public class Camera implements CameraInterface
 		float rotV = rotationX;
 		float a = (float) ((180-rotH) / 180f * Math.PI);
 		float b = (float) ((-rotV) / 180f * Math.PI);
-		Vector3fm lookAt = new Vector3fm((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
+		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 		
-		Vector3fm up = new Vector3fm(0.0f, 1.0f, 0.0f);
-		VectorCrossProduct.cross33(lookAt, up, up);
-		VectorCrossProduct.cross33(up, lookAt, up);
+		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 		
-		Client.getInstance().getSoundManager().setListenerPosition((float)(double)position.getX(), (float)(double)position.getY(), (float)(double)position.getZ(), lookAt, up);
+		lookAt.cross(up, up);		
+		//VectorCrossProduct.cross33(lookAt, up, up);
+		
+		up.cross(lookAt, up);
+		//VectorCrossProduct.cross33(up, lookAt, up);
+		
+		Client.getInstance().getSoundManager().setListenerPosition((float)(double)position.x(), (float)(double)position.y(), (float)(double)position.z(), lookAt, up);
 	}
 
 	public float fov = 45;
@@ -87,30 +93,44 @@ public class Camera implements CameraInterface
 	public void updateMatricesForShaderUniforms()
 	{
 		//Invert two main patrices
-		Matrix4f.invert(projectionMatrix4f, projectionMatrix4fInverted);
-		Matrix4f.invert(modelViewMatrix4f, modelViewMatrix4fInverted);
+		
+		projectionMatrix4f.invert(projectionMatrix4fInverted);
+		//Matrix4f.invert(projectionMatrix4f, projectionMatrix4fInverted);
+		
+		modelViewMatrix4f.invert(modelViewMatrix4fInverted);
+		//Matrix4f.invert(modelViewMatrix4f, modelViewMatrix4fInverted);
 		
 		//Build normal matrix
 		Matrix4f tempMatrix = new Matrix4f();
-		Matrix4f.invert(modelViewMatrix4f, tempMatrix);
-		Matrix4f.transpose(tempMatrix, tempMatrix);
-		normalMatrix3f.m00 = tempMatrix.m00;
-		normalMatrix3f.m01 = tempMatrix.m01;
-		normalMatrix3f.m02 = tempMatrix.m02;
+		
+		modelViewMatrix4f.invert(tempMatrix);
+		//Matrix4f.invert(modelViewMatrix4f, tempMatrix);
+		
+		tempMatrix.transpose();
+		//Matrix4f.transpose(tempMatrix, tempMatrix);
+		normalMatrix3f.m00 = tempMatrix.m00();
+		normalMatrix3f.m01 = tempMatrix.m01();
+		normalMatrix3f.m02 = tempMatrix.m02();
 
-		normalMatrix3f.m10 = tempMatrix.m10;
-		normalMatrix3f.m11 = tempMatrix.m11;
-		normalMatrix3f.m12 = tempMatrix.m12;
+		normalMatrix3f.m10 = tempMatrix.m10();
+		normalMatrix3f.m11 = tempMatrix.m11();
+		normalMatrix3f.m12 = tempMatrix.m12();
 
-		normalMatrix3f.m20 = tempMatrix.m20;
-		normalMatrix3f.m21 = tempMatrix.m21;
-		normalMatrix3f.m22 = tempMatrix.m22;
+		normalMatrix3f.m20 = tempMatrix.m20();
+		normalMatrix3f.m21 = tempMatrix.m21();
+		normalMatrix3f.m22 = tempMatrix.m22();
 		//Invert it
-		Matrix3f.invert(normalMatrix3f, normalMatrix3fInverted);
+
+		normalMatrix3f.invert(normalMatrix3fInverted);
+		//Matrix3f.invert(normalMatrix3f, normalMatrix3fInverted);
 		
 		//Premultiplied versions ( optimization for poor drivers that don't figure it out themselves )
-		Matrix4f.mul(projectionMatrix4f, modelViewMatrix4f, modelViewProjectionMatrix4f);
-		Matrix4f.invert(modelViewProjectionMatrix4f, modelViewProjectionMatrix4fInverted);
+		
+		projectionMatrix4f.mul(modelViewMatrix4f, modelViewProjectionMatrix4f);
+		//Matrix4f.mul(projectionMatrix4f, modelViewMatrix4f, modelViewProjectionMatrix4f);
+				
+		modelViewProjectionMatrix4f.invert(modelViewProjectionMatrix4fInverted);
+		//Matrix4f.invert(modelViewProjectionMatrix4f, modelViewProjectionMatrix4fInverted);
 	}
 
 	public void setupUsingScreenSize(int width, int height)
@@ -129,46 +149,51 @@ public class Camera implements CameraInterface
 		float far = 3000f;
 		
 		// Generate the projection matrix
-		projectionMatrix4f.setIdentity();
-		projectionMatrix4f.m00 = (near * 2) / (right - left);
-		projectionMatrix4f.m11 = (near * 2) / (top - bottom);
+		projectionMatrix4f.identity();
+		projectionMatrix4f.m00((near * 2) / (right - left));
+		projectionMatrix4f.m11((near * 2) / (top - bottom));
 		float A = (right + left) / (right - left);
 		float B = (top + bottom) / ( top - bottom);
 		float C = - (far + near) / (far - near);
 		float D = - (2 * far * near) / (far - near);
-		projectionMatrix4f.m20 = A;
-		projectionMatrix4f.m21 = B;
-		projectionMatrix4f.m22 = C;
-		projectionMatrix4f.m32 = D;
-		projectionMatrix4f.m23 = -1;
-		projectionMatrix4f.m33 = 0;
+		projectionMatrix4f.m20(A);
+		projectionMatrix4f.m21(B);
+		projectionMatrix4f.m22(C);
+		projectionMatrix4f.m32(D);
+		projectionMatrix4f.m23(-1);
+		projectionMatrix4f.m33(0);
 		
 		// Grab the generated matrix
 		
-		modelViewMatrix4f.setIdentity();
+		modelViewMatrix4f.identity();
 		// Rotate the modelview matrix
-		modelViewMatrix4f.rotate((float) (rotationZ / 180 * Math.PI), new Vector3fm( 0.0f, 0.0f, 1.0f));
-		modelViewMatrix4f.rotate((float) (rotationX / 180 * Math.PI), new Vector3fm( 1.0f, 0.0f, 0.0f));
-		modelViewMatrix4f.rotate((float) (rotationY / 180 * Math.PI), new Vector3fm( 0.0f, 1.0f, 0.0f));
+		modelViewMatrix4f.rotate((float) (rotationZ / 180 * Math.PI), new Vector3f( 0.0f, 0.0f, 1.0f));
+		modelViewMatrix4f.rotate((float) (rotationX / 180 * Math.PI), new Vector3f( 1.0f, 0.0f, 0.0f));
+		modelViewMatrix4f.rotate((float) (rotationY / 180 * Math.PI), new Vector3f( 0.0f, 1.0f, 0.0f));
 		
-		Vector3m<Float> position = this.position.castToSinglePrecision();
+		Vector3f position = new Vector3f((float)this.position.x, (float)this.position.y, (float)this.position.z);
+		//Vector3m<Float> position = this.position.castToSinglePrecision();
 		
 		float rotH = rotationY;
 		float rotV = rotationX;
 		float a = (float) ((180-rotH) / 180f * Math.PI);
 		float b = (float) ((-rotV) / 180f * Math.PI);
-		Vector3fm lookAt = new Vector3fm((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
-		//Vector3fm direction = new Vector3fm((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
+		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
+		//Vector3f direction = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 		
-		Vector3fm up = new Vector3fm(0.0f, 1.0f, 0.0f);
-		VectorCrossProduct.cross33(lookAt, up, up);
-		VectorCrossProduct.cross33(up, lookAt, up);
+		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+		lookAt.cross(up, up);
+		//VectorCrossProduct.cross33(lookAt, up, up);
+		up.cross(lookAt, up);
+		//VectorCrossProduct.cross33(up, lookAt, up);
 		
 		lookAt.add(position);
-		//Vector3fm.add(position, lookAt, lookAt);
-		position.scale(0.0f);
+		//Vector3f.add(position, lookAt, lookAt);
+		
+		//TODO ?
+		position.mul(0.0f);
 	    
-	   // modelViewMatrix4f = MatrixHelper.getLookAtMatrix(position, direction, up);
+		// modelViewMatrix4f = MatrixHelper.getLookAtMatrix(position, direction, up);
 	    
 	    //return result;
 		
@@ -182,7 +207,7 @@ public class Camera implements CameraInterface
 	
 	private void computeFrustrumPlanes()
 	{
-		Vector3fm temp = new Vector3fm();
+		Vector3f temp = new Vector3f();
 		//Init values
 		float tang = (float)Math.tan(toRad(fov)) ;
 		float ratio = (float) viewportWidth / (float) viewportHeight;
@@ -198,59 +223,67 @@ public class Camera implements CameraInterface
 		
 		//System.out.println(position);
 		
-		//Vector3fm position = new Vector3fm((float)-camPosX, (float)-camPosY, (float)-camPosZ);
+		//Vector3f position = new Vector3f((float)-camPosX, (float)-camPosY, (float)-camPosZ);
 		
 		float rotH = rotationY;
 		float rotV = rotationX;
 		float a = (float) ((180-rotH) / 180f * Math.PI);
 		float b = (float) ((-rotV) / 180f * Math.PI);
-		Vector3fm lookAt = new Vector3fm((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
+		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 		
-		Vector3fm up = new Vector3fm(0.0f, 1.0f, 0.0f);
-		VectorCrossProduct.cross33(lookAt, up, up);
-		VectorCrossProduct.cross33(up, lookAt, up);
+		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 		
-		lookAt.add(position.castToSinglePrecision());
-		//Vector3fm.add(position, lookAt, lookAt);
+		lookAt.cross(up, up);
+		//VectorCrossProduct.cross33(lookAt, up, up);
+		
+		up.cross(lookAt, up);
+		//VectorCrossProduct.cross33(up, lookAt, up);
+		
+		lookAt.add(new Vector3f((float)this.position.x, (float)this.position.y, (float)this.position.z));
+		//Vector3f.add(position, lookAt, lookAt);
 		
 		// Create the 6 frustrum planes
-		Vector3fm Z = new Vector3fm(position);
+		Vector3f Z = new Vector3f((float)this.position.x, (float)this.position.y, (float)this.position.z);
 		
 		Z.sub(lookAt);
-		//Vector3fm.sub(position, lookAt, Z);
+		//Vector3f.sub(position, lookAt, Z);
 		Z.normalize();
 		
-		Vector3fm X = new Vector3fm();
-		VectorCrossProduct.cross33(up, Z, X);
+		Vector3f X = new Vector3f();
+		
+		up.cross(Z, X);
+		//VectorCrossProduct.cross33(up, Z, X);
 		X.normalize();
 
-		Vector3fm Y = new Vector3fm();
-		VectorCrossProduct.cross33(Z, X, Y);
+		Vector3f Y = new Vector3f();
 		
-		Vector3fm nearCenterPoint = new Vector3fm(position);
-		temp = new Vector3fm(Z);
-		temp.scale(0.1f);
+		Z.cross(X, Y);
+		//VectorCrossProduct.cross33(Z, X, Y);
+		
+		Vector3f nearCenterPoint = new Vector3f((float)this.position.x, (float)this.position.y, (float)this.position.z);
+		temp = new Vector3f(Z);
+		temp.mul(0.1f);
 		
 		nearCenterPoint.sub(temp);
-		//Vector3fm.sub(position, temp, nearCenterPoint);
+		//Vector3f.sub(position, temp, nearCenterPoint);
 
-		Vector3fm farCenterPoint = new Vector3fm(position);
-		temp = new Vector3fm(Z);
-		temp.scale(3000f);
+		Vector3f farCenterPoint = new Vector3f((float)this.position.x, (float)this.position.y, (float)this.position.z);
+		temp = new Vector3f(Z);
+		temp.mul(3000f);
 		
 		farCenterPoint.sub(temp);
-		//Vector3fm.sub(position, temp, farCenterPoint);
+		//Vector3f.sub(position, temp, farCenterPoint);
 		
 		// Eventually the fucking points
-		Vector3fm nearTopLeft = vadd(nearCenterPoint, vsub(smult(Y, nh), smult(X, nw)));
-		Vector3fm nearTopRight = vadd(nearCenterPoint, vadd(smult(Y, nh), smult(X, nw)));
-		Vector3fm nearBottomLeft = vsub(nearCenterPoint, vadd(smult(Y, nh), smult(X, nw)));
-		Vector3fm nearBottomRight = vsub(nearCenterPoint, vsub(smult(Y, nh), smult(X, nw)));
+		Vector3f nearTopLeft = vadd(nearCenterPoint, vsub(smult(Y, nh), smult(X, nw)));
+		Vector3f nearTopRight = vadd(nearCenterPoint, vadd(smult(Y, nh), smult(X, nw)));
+		Vector3f nearBottomLeft = vsub(nearCenterPoint, vadd(smult(Y, nh), smult(X, nw)));
+		Vector3f nearBottomRight = vsub(nearCenterPoint, vsub(smult(Y, nh), smult(X, nw)));
 
-		Vector3fm farTopLeft = vadd(farCenterPoint, vsub(smult(Y, fh), smult(X, fw)));
-		Vector3fm farTopRight = vadd(farCenterPoint, vadd(smult(Y, fh), smult(X, fw)));
-		Vector3fm farBottomLeft = vsub(farCenterPoint, vadd(smult(Y, fh), smult(X, fw)));
-		Vector3fm farBottomRight = vsub(farCenterPoint, vsub(smult(Y, fh), smult(X, fw)));
+		Vector3f farTopLeft = vadd(farCenterPoint, vsub(smult(Y, fh), smult(X, fw)));
+		Vector3f farTopRight = vadd(farCenterPoint, vadd(smult(Y, fh), smult(X, fw)));
+		Vector3f farBottomLeft = vsub(farCenterPoint, vadd(smult(Y, fh), smult(X, fw)));
+		Vector3f farBottomRight = vsub(farCenterPoint, vsub(smult(Y, fh), smult(X, fw)));
 		
 		cameraPlanes[0] = new CollisionPlane(nearTopRight, nearTopLeft, farTopLeft);
 		cameraPlanes[1] = new CollisionPlane(nearBottomLeft, nearBottomRight, farBottomRight);
@@ -266,43 +299,43 @@ public class Camera implements CameraInterface
 			{
 				for(int k = 0; k < 2; k++)
 				{
-					corners[i * 4 + j * 2 + k] = new Vector3fm();
+					corners[i * 4 + j * 2 + k] = new Vector3f();
 				}
 			}
 		}
 	}
 	
 	//Convinience methods, why wouldn't java allow operator overloading is beyond me.
-	private Vector3fm vadd(Vector3fm a, Vector3fm b)
+	private Vector3f vadd(Vector3f a, Vector3f b)
 	{
-		Vector3fm out = new Vector3fm(a);
+		Vector3f out = new Vector3f(a);
 		out.add(b);
-		//Vector3fm.add(a, b, out);
+		//Vector3f.add(a, b, out);
 		return out;
 	}
 	
-	private Vector3fm vsub(Vector3fm a, Vector3fm b)
+	private Vector3f vsub(Vector3f a, Vector3f b)
 	{
-		Vector3fm out = new Vector3fm(a);
+		Vector3f out = new Vector3f(a);
 		out.sub(b);
-		//Vector3fm.sub(a, b, out);
+		//Vector3f.sub(a, b, out);
 		return out;
 	}
 	
-	private Vector3fm smult(Vector3fm in, float scale)
+	private Vector3f smult(Vector3f in, float scale)
 	{
-		Vector3fm out = new Vector3fm(in);
-		out.scale(scale);
+		Vector3f out = new Vector3f(in);
+		out.mul(scale);
 		return out;
 	}
 
-	Vector3fm corners[] = new Vector3fm[8];
+	Vector3f corners[] = new Vector3f[8];
 	
 	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.CameraInterface#isBoxInFrustrum(io.xol.chunkstories.api.math.Vector3fm, io.xol.chunkstories.api.math.Vector3fm)
+	 * @see io.xol.chunkstories.renderer.CameraInterface#isBoxInFrustrum(io.xol.chunkstories.api.math.Vector3f, io.xol.chunkstories.api.math.Vector3f)
 	 */
 	@Override
-	public boolean isBoxInFrustrum(Vector3<Float> center, Vector3<Float> dimensions)
+	public boolean isBoxInFrustrum(Vector3fc center, Vector3fc dimensions)
 	{
 		//Manual loop unrolling
 		/*for(int i = 0; i < 2; i++)
@@ -324,37 +357,37 @@ public class Camera implements CameraInterface
 		final float MINUSONE = -0.5f;
 		
 		//i=0 j=0 k=0
-		corners[0].setX(center.getX() + dimensions.getX()   * MINUSONE);
-		corners[0].setY(center.getY() + dimensions.getY()   * MINUSONE);
-		corners[0].setZ(center.getZ() + dimensions.getZ()   * MINUSONE);
+		corners[0].x = (center.x() + dimensions.x()   * MINUSONE);
+		corners[0].y = (center.y() + dimensions.y()   * MINUSONE);
+		corners[0].z = (center.z() + dimensions.z()   * MINUSONE);
 		//i=0 j=0 k=1
-		corners[1].setX(center.getX() + dimensions.getX()   * MINUSONE);
-		corners[1].setY(center.getY() + dimensions.getY()   * MINUSONE);
-		corners[1].setZ(center.getZ() + dimensions.getZ()   *  PLUSONE);
+		corners[1].x = (center.x() + dimensions.x()   * MINUSONE);
+		corners[1].y = (center.y() + dimensions.y()   * MINUSONE);
+		corners[1].z = (center.z() + dimensions.z()   *  PLUSONE);
 		//i=0 j=1 k=0
-		corners[2].setX(center.getX() + dimensions.getX()   * MINUSONE);
-		corners[2].setY(center.getY() + dimensions.getY()   *  PLUSONE);
-		corners[2].setZ(center.getZ() + dimensions.getZ()   * MINUSONE);
+		corners[2].x = (center.x() + dimensions.x()   * MINUSONE);
+		corners[2].y = (center.y() + dimensions.y()   *  PLUSONE);
+		corners[2].z = (center.z() + dimensions.z()   * MINUSONE);
 		//i=0 j=1 k=1
-		corners[3].setX(center.getX() + dimensions.getX()   * MINUSONE);
-		corners[3].setY(center.getY() + dimensions.getY()   *  PLUSONE);
-		corners[3].setZ(center.getZ() + dimensions.getZ()   *  PLUSONE);
+		corners[3].x = (center.x() + dimensions.x()   * MINUSONE);
+		corners[3].y = (center.y() + dimensions.y()   *  PLUSONE);
+		corners[3].z = (center.z() + dimensions.z()   *  PLUSONE);
 		//i=1 j=0 k=0
-		corners[4].setX(center.getX() + dimensions.getX()   *  PLUSONE);
-		corners[4].setY(center.getY() + dimensions.getY()   * MINUSONE);
-		corners[4].setZ(center.getZ() + dimensions.getZ()   * MINUSONE);
+		corners[4].x = (center.x() + dimensions.x()   *  PLUSONE);
+		corners[4].y = (center.y() + dimensions.y()   * MINUSONE);
+		corners[4].z = (center.z() + dimensions.z()   * MINUSONE);
 		//i=1 j=0 k=1
-		corners[5].setX(center.getX() + dimensions.getX()   *  PLUSONE);
-		corners[5].setY(center.getY() + dimensions.getY()   * MINUSONE);
-		corners[5].setZ(center.getZ() + dimensions.getZ()   *  PLUSONE);
+		corners[5].x = (center.x() + dimensions.x()   *  PLUSONE);
+		corners[5].y = (center.y() + dimensions.y()   * MINUSONE);
+		corners[5].z = (center.z() + dimensions.z()   *  PLUSONE);
 		//i=1 j=1 k=0
-		corners[6].setX(center.getX() + dimensions.getX()   *  PLUSONE);
-		corners[6].setY(center.getY() + dimensions.getY()   *  PLUSONE);
-		corners[6].setZ(center.getZ() + dimensions.getZ()   * MINUSONE);
+		corners[6].x = (center.x() + dimensions.x()   *  PLUSONE);
+		corners[6].y = (center.y() + dimensions.y()   *  PLUSONE);
+		corners[6].z = (center.z() + dimensions.z()   * MINUSONE);
 		//i=1 j=1 k=1
-		corners[7].setX(center.getX() + dimensions.getX()   *  PLUSONE);
-		corners[7].setY(center.getY() + dimensions.getY()   *  PLUSONE);
-		corners[7].setZ(center.getZ() + dimensions.getZ()   *  PLUSONE);
+		corners[7].x = (center.x() + dimensions.x()   *  PLUSONE);
+		corners[7].y = (center.y() + dimensions.y()   *  PLUSONE);
+		corners[7].z = (center.z() + dimensions.z()   *  PLUSONE);
 		
 		for(int i = 0; i < 6; i++)
 		{
@@ -389,10 +422,12 @@ public class Camera implements CameraInterface
 
 	private void translateCamera()
 	{
-		untranslatedMVP4f.load(modelViewMatrix4f);
-		Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
+		untranslatedMVP4f.set(modelViewMatrix4f);
+		
+		untranslatedMVP4f.invert(untranslatedMVP4fInv);
+		//Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
 
-		modelViewMatrix4f.translate(position.clone().negate().castToSinglePrecision());
+		modelViewMatrix4f.translate(new Vector3f((float)this.position.x, (float)this.position.y, (float)this.position.z).negate());
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
 	}
@@ -424,9 +459,9 @@ public class Camera implements CameraInterface
 		shaderInterface.setUniform3f("camPos", getCameraPosition());
 	}
 	
-	public Vector3fm transform3DCoordinate(Vector3fm in)
+	public Vector3f transform3DCoordinate(Vector3fc in)
 	{
-		return transform3DCoordinate(new Vector4fm(in.getX(), in.getY(), in.getZ(), 1f));
+		return transform3DCoordinate(new Vector4f(in.x(), in.y(), in.z(), 1f));
 	}
 	
 	/**
@@ -434,30 +469,34 @@ public class Camera implements CameraInterface
 	 * @param in
 	 * @return
 	 */
-	public Vector3fm transform3DCoordinate(Vector4fm in)
+	public Vector3f transform3DCoordinate(Vector4fc in)
 	{
-		//position = new Vector4fm(-(float)e.posX, -(float)e.posY, -(float)e.posZ, 1f);
-		//position = new Vector4fm(1f, 1f, 1f, 1);
+		//position = new Vector4f(-(float)e.posX, -(float)e.posY, -(float)e.posZ, 1f);
+		//position = new Vector4f(1f, 1f, 1f, 1);
 		Matrix4f mvm = this.modelViewMatrix4f;
 		Matrix4f pm = this.projectionMatrix4f;
 
 		//Matrix4f combined = Matrix4f.mul(pm, mvm, null);
 		
-		in = Matrix4f.transform(mvm, in, null);
-		// transformed.scale(1/transformed.w);
-		in = Matrix4f.transform(pm, in, null);
+		Vector4f transormed = new Vector4f();
+		mvm.transform(in, transormed);
+		
+		//in = Matrix4f.transform(mvm, in, null);
+		
+		pm.transform(transormed, transormed);
+		//in = Matrix4f.transform(pm, in, null);
 		
 		//in = Matrix4f.transform(combined, in, null);
 
 		//position.scale(1/position.w);
 
-		Vector3fm posOnScreen = new Vector3fm((float)in.getX(), (float)in.getY(), 0f);
-		float scale = 1/in.getZ();
-		posOnScreen.scale(scale);
+		Vector3f posOnScreen = new Vector3f((float)in.x(), (float)in.y(), 0f);
+		float scale = 1/in.z();
+		posOnScreen.mul(scale);
 
-		posOnScreen.setX((posOnScreen.getX() * 0.5f + 0.5f) * viewportWidth);
-		posOnScreen.setY(((posOnScreen.getY() * 0.5f + 0.5f)) * viewportHeight);
-		posOnScreen.setZ(scale);
+		posOnScreen.x = ((posOnScreen.x() * 0.5f + 0.5f) * viewportWidth);
+		posOnScreen.y = (((posOnScreen.y() * 0.5f + 0.5f)) * viewportHeight);
+		posOnScreen.z = (scale);
 		return posOnScreen;
 	}
 
@@ -465,38 +504,39 @@ public class Camera implements CameraInterface
 	 * @see io.xol.chunkstories.renderer.CameraInterface#getViewDirection()
 	 */
 	@Override
-	public Vector3fm getViewDirection()
+	public Vector3f getViewDirection()
 	{
 		float rotH = rotationY;
 		float rotV = rotationX;
 		float a = (float) ((180-rotH) / 180f * Math.PI);
 		float b = (float) ((-rotV) / 180f * Math.PI);
-		return new Vector3fm((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
+		return new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 	}
 
 	/* (non-Javadoc)
 	 * @see io.xol.chunkstories.renderer.CameraInterface#getCameraPosition()
 	 */
 	@Override
-	public Vector3dm getCameraPosition()
+	public Vector3dc getCameraPosition()
 	{
-		return this.position.clone();
+		return this.position;
 		//return this.pos.clone().negate();
 	}
 
 	@Override
-	public void setCameraPosition(Vector3dm pos)
+	public void setCameraPosition(Vector3dc pos)
 	{
-		this.position = pos;
-		//this.pos = new Vector3dm(pos).negate();
+		this.position.x = pos.x();
+		this.position.y = pos.y();
+		this.position.z = pos.z();
+		//this.pos = new Vector3d(pos).negate();
 	}
 
 	@Override
 	public boolean isBoxInFrustrum(CollisionBox box)
 	{
-		//if(box.xw < 128)
-		//System.out.println(box);
-		return this.isBoxInFrustrum(new Vector3fm(box.xpos + box.xw / 2, box.ypos + box.h / 2, box.zpos + box.zw / 2), new Vector3fm(box.xw, box.h, box.zw));
+		//TODO don't create fucking objects
+		return this.isBoxInFrustrum(new Vector3f((float)(box.xpos + box.xw / 2),(float)( box.ypos + box.h / 2),(float)( box.zpos + box.zw / 2)), new Vector3f((float)box.xw, (float)box.h, (float)box.zw));
 	}
 
 	@Override

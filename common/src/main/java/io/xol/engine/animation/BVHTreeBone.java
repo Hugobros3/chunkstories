@@ -5,10 +5,11 @@ import java.util.List;
 
 import io.xol.chunkstories.api.animation.SkeletalAnimation.SkeletonBone;
 import io.xol.chunkstories.api.math.Math2;
-import io.xol.chunkstories.api.math.Matrix4f;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
+
 import io.xol.chunkstories.api.math.Quaternion4d;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -21,10 +22,10 @@ public class BVHTreeBone implements SkeletonBone
 	final int id;
 	
 	//Offset from 0.0.0 ( for rigging )
-	Vector3fm offset;
+	Vector3f offset;
 	
 	//Destination vector ( for end bones only )
-	Vector3fm dest;
+	Vector3f dest;
 
 	//Float array containing the data, [frames][channel]
 	float[][] animationData;
@@ -105,9 +106,9 @@ public class BVHTreeBone implements SkeletonBone
 		Matrix4f matrix = new Matrix4f();
 
 		//Apply rotations
-		matrix.rotate(rotX, new Vector3fm(1, 0, 0));
-		matrix.rotate(rotY, new Vector3fm(0, 1, 0));
-		matrix.rotate(rotZ, new Vector3fm(0, 0, 1));
+		matrix.rotate(rotX, new Vector3f(1, 0, 0));
+		matrix.rotate(rotY, new Vector3f(0, 1, 0));
+		matrix.rotate(rotZ, new Vector3f(0, 0, 1));
 		
 		//Apply transformations
 		if (channels == 6)
@@ -141,8 +142,10 @@ public class BVHTreeBone implements SkeletonBone
 		Matrix4f matrix = getTransformationMatrixInterpolatedInternal(frameLower, frameUpper, t);
 
 		//Apply the father transformation
-		if (parent != null)
-			Matrix4f.mul(parent.getTransformationMatrixInterpolatedRecursive(frameLower, frameUpper, t), matrix, matrix);
+		if (parent != null) {
+			parent.getTransformationMatrixInterpolatedRecursive(frameLower, frameUpper, t).mul(matrix, matrix);
+			//Matrix4f.mul(parent.getTransformationMatrixInterpolatedRecursive(frameLower, frameUpper, t), matrix, matrix);
+		}
 		
 		return matrix;
 	}
@@ -200,14 +203,14 @@ public class BVHTreeBone implements SkeletonBone
 			rotZUpper = toRad(animationData[frameUpper][2]);
 		}
 
-		Quaternion4d quaternionXLower = Quaternion4d.fromAxisAngle(new Vector3dm(1.0, 0.0, 0.0), rotXLower);
-		Quaternion4d quaternionYLower = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 1.0, 0.0), rotYLower);
-		Quaternion4d quaternionZLower = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 0.0, 1.0), rotZLower);
+		Quaternion4d quaternionXLower = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotXLower);
+		Quaternion4d quaternionYLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotYLower);
+		Quaternion4d quaternionZLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZLower);
 		Quaternion4d totalLower = quaternionXLower.mult(quaternionYLower).mult(quaternionZLower);
 
-		Quaternion4d quaternionXUpper = Quaternion4d.fromAxisAngle(new Vector3dm(1.0, 0.0, 0.0), rotXUpper);
-		Quaternion4d quaternionYUpper = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 1.0, 0.0), rotYUpper);
-		Quaternion4d quaternionZUpper = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 0.0, 1.0), rotZUpper);
+		Quaternion4d quaternionXUpper = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotXUpper);
+		Quaternion4d quaternionYUpper = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotYUpper);
+		Quaternion4d quaternionZUpper = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZUpper);
 		Quaternion4d totalUpper = (quaternionXUpper.mult(quaternionYUpper)).mult(quaternionZUpper);
 		
 		Quaternion4d total = Quaternion4d.slerp(totalLower, totalUpper, t);
@@ -217,16 +220,16 @@ public class BVHTreeBone implements SkeletonBone
 		//Apply transformations
 		if (channels == 6)
 		{
-			matrix.m30 += Math2.mix(animationData[frameLower][0], animationData[frameUpper][0], t);
-			matrix.m31 += Math2.mix(animationData[frameLower][1], animationData[frameUpper][1], t);
-			matrix.m32 += Math2.mix(animationData[frameLower][2], animationData[frameUpper][2], t);
+			matrix.m30(matrix.m30() + Math2.mix(animationData[frameLower][0], animationData[frameUpper][0], t));
+			matrix.m31(matrix.m31() + Math2.mix(animationData[frameLower][1], animationData[frameUpper][1], t));
+			matrix.m32(matrix.m32() + Math2.mix(animationData[frameLower][2], animationData[frameUpper][2], t));
 		}
 		//TODO check on that, I'm not sure if you should apply both when possible
 		else
 		{
-			matrix.m30 += offset.getX();
-			matrix.m31 += offset.getY();
-			matrix.m32 += offset.getZ();
+			matrix.m30(matrix.m30() + offset.x());
+			matrix.m31(matrix.m31() + offset.y());
+			matrix.m32(matrix.m32() + offset.z());
 		}
 		
 		return matrix;

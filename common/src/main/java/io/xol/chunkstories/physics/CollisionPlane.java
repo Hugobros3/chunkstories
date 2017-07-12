@@ -1,35 +1,38 @@
 package io.xol.chunkstories.physics;
 
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.operations.VectorCrossProduct;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 
 public class CollisionPlane
 {
 	public final double a, b, c, d;
-	Vector3dm n;
+	Vector3d n;
 	
-	public CollisionPlane(Vector3fm p1, Vector3fm p2, Vector3fm p3)
+	public CollisionPlane(Vector3f p1, Vector3f p2, Vector3f p3)
 	{
-		Vector3dm v = new Vector3dm(p2.getX(), p2.getY(), p2.getZ());
-		Vector3dm u = new Vector3dm(p3.getX(), p3.getY(), p3.getZ());
+		Vector3d v = new Vector3d(p2.x(), p2.y(), p2.z());
+		Vector3d u = new Vector3d(p3.x(), p3.y(), p3.z());
 		
-		v.sub(p1.castToDoublePrecision());
-		u.sub(p1.castToDoublePrecision());
+		Vector3d p1d = new Vector3d(p1);
 		
-		n = new Vector3dm();
-		VectorCrossProduct.cross33(v, u, n);
+		v.sub(p1d);
+		u.sub(p1d);
+		
+		n = new Vector3d();
+		
+		v.cross(u, n);
+		//VectorCrossProduct.cross33(v, u, n);
 		n.normalize();
 		
-		a = n.getX();
-		b = n.getY();
-		c = n.getZ();
+		a = n.x();
+		b = n.y();
+		c = n.z();
 		
-		d = -p1.castToDoublePrecision().dot(n);
+		d = -p1d.dot(n);
 	}
 	
-	public double distance(Vector3fm point)
+	public double distance(Vector3f point)
 	{
-		return a * point.getX() + b * point.getY() + c * point.getZ() + d;
+		return a * point.x() + b * point.y() + c * point.z() + d;
 	}
 }

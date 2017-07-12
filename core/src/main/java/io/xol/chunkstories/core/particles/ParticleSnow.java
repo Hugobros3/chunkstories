@@ -1,6 +1,9 @@
 package io.xol.chunkstories.core.particles;
 
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector3fc;
+
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;
@@ -22,16 +25,20 @@ public class ParticleSnow extends ParticleTypeHandler
 	public class SnowData extends ParticleData implements ParticleDataWithVelocity {
 		
 		int hp = 60 * 2; // 5s
-		Vector3dm vel = new Vector3dm((Math.random() * 0.5 - 0.25) * 0.5, -Math.random() * 0.15 - 0.10, (Math.random() * 0.5 - 0.25) * 0.5);
+		Vector3d vel = new Vector3d((Math.random() * 0.5 - 0.25) * 0.5, -Math.random() * 0.15 - 0.10, (Math.random() * 0.5 - 0.25) * 0.5);
 		
 		public SnowData(float x, float y, float z)
 		{
 			super(x, y, z);
 		}
 		
-		public void setVelocity(Vector3dm vel)
-		{
-			this.vel = vel;
+		public void setVelocity(Vector3dc vel) {
+			this.vel.set(vel);
+		}
+
+		@Override
+		public void setVelocity(Vector3fc vel) {
+			this.vel.set(vel);
 		}
 	}
 
@@ -46,11 +53,11 @@ public class ParticleSnow extends ParticleTypeHandler
 	{
 		SnowData b = (SnowData) data;
 		
-		b.setX((float) (b.getX() + b.vel.getX()));
-		b.setY((float) (b.getY() + b.vel.getY()));
-		b.setZ((float) (b.getZ() + b.vel.getZ()));
+		b.x = ((float) (b.x() + b.vel.x()));
+		b.y = ((float) (b.y() + b.vel.y()));
+		b.z = ((float) (b.z() + b.vel.z()));
 		
-		if (((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY(), b.getZ()))
+		if (((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()))
 		{
 			b.hp--;
 			b.vel.set(0d, 0d, 0d);
@@ -61,7 +68,7 @@ public class ParticleSnow extends ParticleTypeHandler
 		//if(b.vel.length() < 0.1/60.0)
 		//	b.vel.zero();
 		
-		if(b.hp < 0 || b.getY() < 0)
+		if(b.hp < 0 || b.y() < 0)
 			b.destroy();
 	}
 	

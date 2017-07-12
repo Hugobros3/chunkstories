@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;
 import io.xol.chunkstories.api.particles.ParticlesRenderer;
@@ -54,12 +54,12 @@ public class ParticleLightningStrike extends ParticleTypeHandler
 					Entity entity = player.getControlledEntity();
 					if(entity != null) {
 						Location loc = entity.getLocation();
-						data.set((float)(double)data.getX(), (float)(double)loc.getY() + 1024, (float)(double)data.getZ());
+						data.set((float)(double)data.x(), (float)(double)loc.y() + 1024, (float)(double)data.z());
 					}
 				}
 				
-				renderingContext.getLightsRenderer().queueLight(new Light(new Vector3fm(226/255f, 255/255f, 226/255f).scale((float) (1f + Math.random())),
-						new Vector3fm((float) data.getX(), (float) data.getY(), (float) data.getZ()),
+				renderingContext.getLightsRenderer().queueLight(new Light(new Vector3f(226/255f, 255/255f, 226/255f).mul((float) (1f + Math.random())),
+						new Vector3f((float) data.x(), (float) data.y(), (float) data.z()),
 						102004f + (float) Math.random() * 5f));
 			}
 

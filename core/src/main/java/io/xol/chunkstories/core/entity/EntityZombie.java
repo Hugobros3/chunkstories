@@ -13,8 +13,8 @@ import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.entity.components.EntityComponent;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
@@ -161,13 +161,13 @@ public class EntityZombie extends EntityHumanoid
 			{
 				Location location = entity.getPredictedLocation();
 
-				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
+				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && location.distance(renderingContext.getCamera().getCameraPosition()) > 15f)
 					continue;
 
 				entity.cachedSkeleton.lodUpdate(renderingContext);
 
 				Matrix4f matrix = new Matrix4f();
-				matrix.translate(location.castToSinglePrecision());
+				matrix.translate((float)location.x, (float)location.y, (float)location.z);
 				renderingContext.setObjectMatrix(matrix);
 				
 				//Player textures
@@ -180,12 +180,13 @@ public class EntityZombie extends EntityHumanoid
 				//animationsData.add(new AnimatableData(location.castToSinglePrecision(), entity.getAnimatedSkeleton(), System.currentTimeMillis() % 1000000, bl, sl));
 			
 			}
+
 			
 			//Render items in hands
 			for (EntityHumanoid entity : renderableEntitiesIterator)
 			{
-
-				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && entity.getLocation().distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f)
+				//don't render items in hand when far
+				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && entity.getLocation().distance(renderingContext.getCamera().getCameraPosition()) > 15f)
 					continue;
 
 				ItemPile selectedItemPile = null;
@@ -193,14 +194,16 @@ public class EntityZombie extends EntityHumanoid
 				if (entity instanceof EntityWithSelectedItem)
 					selectedItemPile = ((EntityWithSelectedItem) entity).getSelectedItemComponent().getSelectedItem();
 
-				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3fm(0));
+				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
 
 				if (selectedItemPile != null)
 				{
+					Location location = entity.getPredictedLocation();
 					Matrix4f itemMatrix = new Matrix4f();
-					itemMatrix.translate(entity.getPredictedLocation().castToSinglePrecision());
+					itemMatrix.translate((float)location.x, (float)location.y, (float)location.z);
 
-					Matrix4f.mul(itemMatrix, entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000), itemMatrix);
+					itemMatrix.mul(entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000));
+					//Matrix4f.mul(itemMatrix, entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000), itemMatrix);
 
 					selectedItemPile.getItem().getType().getRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
 				}

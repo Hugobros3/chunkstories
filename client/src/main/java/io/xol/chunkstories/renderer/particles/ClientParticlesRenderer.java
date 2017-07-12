@@ -3,7 +3,9 @@ package io.xol.chunkstories.renderer.particles;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3dc;
+import org.joml.Vector3f;
+
 import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType.RenderTime;
@@ -68,20 +70,20 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 		return a;
 	}
 
-	public void spawnParticleAtPosition(String particleTypeName, Vector3dm location)
+	public void spawnParticleAtPosition(String particleTypeName, Vector3dc location)
 	{
 		spawnParticleAtPositionWithVelocity(particleTypeName, location, null);
 	}
 
-	public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dm location, Vector3dm velocity)
+	public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc location, Vector3dc velocity)
 	{
 		ParticleTypeHandler particleType = store.getParticleTypeHandlerByName(particleTypeName);
 		if (particleType == null || location == null)
 			return;
 
-		ParticleData particleData = particleType.createNew(world, (float)(double) location.getX(), (float)(double) location.getY(), (float)(double) location.getZ());
+		ParticleData particleData = particleType.createNew(world, (float)(double) location.x(), (float)(double) location.y(), (float)(double) location.z());
 		if (velocity != null && particleData instanceof ParticleDataWithVelocity)
-			((ParticleDataWithVelocity) particleData).setVelocity(velocity);
+			((ParticleDataWithVelocity) particleData).setVelocity(new Vector3f((float)velocity.x(), (float)velocity.y(), (float)velocity.z()));
 
 		addParticle(particleType, particleData);
 	}
@@ -183,31 +185,31 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 						elementsInDrawBuffer = 0;
 					}
 
-					particlesPositionsBuffer.put((float) p.getX());
-					particlesPositionsBuffer.put((float) p.getY());
-					particlesPositionsBuffer.put((float) p.getZ());
+					particlesPositionsBuffer.put((float) p.x());
+					particlesPositionsBuffer.put((float) p.y());
+					particlesPositionsBuffer.put((float) p.z());
 
-					particlesPositionsBuffer.put((float) p.getX());
-					particlesPositionsBuffer.put((float) p.getY());
-					particlesPositionsBuffer.put((float) p.getZ());
+					particlesPositionsBuffer.put((float) p.x());
+					particlesPositionsBuffer.put((float) p.y());
+					particlesPositionsBuffer.put((float) p.z());
 
-					particlesPositionsBuffer.put((float) p.getX());
-					particlesPositionsBuffer.put((float) p.getY());
-					particlesPositionsBuffer.put((float) p.getZ());
+					particlesPositionsBuffer.put((float) p.x());
+					particlesPositionsBuffer.put((float) p.y());
+					particlesPositionsBuffer.put((float) p.z());
 
 					//Second triangle
 					
-					particlesPositionsBuffer.put((float) p.getX());
-					particlesPositionsBuffer.put((float) p.getY());
-					particlesPositionsBuffer.put((float) p.getZ());
+					particlesPositionsBuffer.put((float) p.x());
+					particlesPositionsBuffer.put((float) p.y());
+					particlesPositionsBuffer.put((float) p.z());
 
-					particlesPositionsBuffer.put((float) p.getX());
-					particlesPositionsBuffer.put((float) p.getY());
-					particlesPositionsBuffer.put((float) p.getZ());
+					particlesPositionsBuffer.put((float) p.x());
+					particlesPositionsBuffer.put((float) p.y());
+					particlesPositionsBuffer.put((float) p.z());
 
-					particlesPositionsBuffer.put((float) p.getX());
-					particlesPositionsBuffer.put((float) p.getY());
-					particlesPositionsBuffer.put((float) p.getZ());
+					particlesPositionsBuffer.put((float) p.x());
+					particlesPositionsBuffer.put((float) p.y());
+					particlesPositionsBuffer.put((float) p.z());
 
 					//TODO No this sucks. Delet dis.
 					if (p instanceof ParticleDataWithTextureCoordinates)

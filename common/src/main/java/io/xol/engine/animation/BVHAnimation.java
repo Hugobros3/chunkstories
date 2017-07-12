@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.xol.chunkstories.api.animation.SkeletalAnimation;
-import io.xol.chunkstories.api.math.Matrix4f;
+import org.joml.Matrix4f;
 import io.xol.chunkstories.api.math.Quaternion4d;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 
@@ -39,9 +39,9 @@ public class BVHAnimation implements SkeletalAnimation
 		float rotY = (float) (Math.random() * 2.0 * Math.PI);
 		float rotZ = (float) (Math.random() * 2.0 * Math.PI);
 
-		Quaternion4d quaternionXLower = Quaternion4d.fromAxisAngle(new Vector3dm(1.0, 0.0, 0.0), rotX);
-		Quaternion4d quaternionYLower = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 1.0, 0.0), rotY);
-		Quaternion4d quaternionZLower = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 0.0, 1.0), rotZ);
+		Quaternion4d quaternionXLower = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotX);
+		Quaternion4d quaternionYLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotY);
+		Quaternion4d quaternionZLower = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZ);
 		Quaternion4d total = new Quaternion4d(quaternionXLower);
 		total = total.mult(quaternionYLower);
 		total.normalize();
@@ -50,17 +50,17 @@ public class BVHAnimation implements SkeletalAnimation
 		Matrix4f matrix = new Matrix4f();
 
 		//Apply rotations
-		matrix.rotate(rotX, new Vector3fm(1, 0, 0));
-		matrix.rotate(rotY, new Vector3fm(0, 1, 0));
-		matrix.rotate(rotZ, new Vector3fm(0, 0, 1));
+		matrix.rotate(rotX, new Vector3f(1, 0, 0));
+		matrix.rotate(rotY, new Vector3f(0, 1, 0));
+		matrix.rotate(rotZ, new Vector3f(0, 0, 1));
 
 		Matrix4f mX = new Matrix4f();
 		Matrix4f mY = new Matrix4f();
 		Matrix4f mZ = new Matrix4f();
 
-		mX.rotate(rotX, new Vector3fm(1, 0, 0));
-		mY.rotate(rotY, new Vector3fm(0, 1, 0));
-		mZ.rotate(rotZ, new Vector3fm(0, 0, 1));
+		mX.rotate(rotX, new Vector3f(1, 0, 0));
+		mY.rotate(rotY, new Vector3f(0, 1, 0));
+		mZ.rotate(rotZ, new Vector3f(0, 0, 1));
 
 		/*System.out.println("Old:\n"+matrix);
 		System.out.println("New:\n"+Matrix4f.mul(Matrix4f.mul(mX, mY, null), mZ, null));
@@ -73,9 +73,9 @@ public class BVHAnimation implements SkeletalAnimation
 		//System.out.println(quaternionYLower);
 		//System.out.println(quaternionZLower);
 
-		mX = Quaternion4d.fromAxisAngle(new Vector3dm(1.0, 0.0, 0.0), rotX).toMatrix4f();
-		mY = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 1.0, 0.0), rotY).toMatrix4f();
-		mZ = Quaternion4d.fromAxisAngle(new Vector3dm(0.0, 0.0, 1.0), rotZ).toMatrix4f();
+		mX = Quaternion4d.fromAxisAngle(new Vector3d(1.0, 0.0, 0.0), rotX).toMatrix4f();
+		mY = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 1.0, 0.0), rotY).toMatrix4f();
+		mZ = Quaternion4d.fromAxisAngle(new Vector3d(0.0, 0.0, 1.0), rotZ).toMatrix4f();
 
 		//System.out.println("Old:\n"+matrix);
 		//System.out.println("New:\n"+Matrix4f.mul(Matrix4f.mul(mX, mY, null), mZ, null));
@@ -96,23 +96,30 @@ public class BVHAnimation implements SkeletalAnimation
 		System.out.println("");
 
 		Matrix4f blender2ingame = new Matrix4f();
-		blender2ingame.m11 = 0;
-		blender2ingame.m22 = 0;
-		blender2ingame.m12 = 1;
-		blender2ingame.m21 = 1;
+		blender2ingame.m11(0);
+		blender2ingame.m22(0);
+		blender2ingame.m12(1);
+		blender2ingame.m21(1);
 
 		//Rotate the matrix first to apply the transformation in blender space
-		Matrix4f.mul(blender2ingame, matrix, matrix);
+		
+		blender2ingame.mul(matrix, matrix);
+		//Matrix4f.mul(blender2ingame, matrix, matrix);
 
 		//Mirror it
 		Matrix4f mirror = new Matrix4f();
-		mirror.m22 = -1;
-		Matrix4f.mul(mirror, matrix, matrix);
+		mirror.m22(-1);
+		
+		mirror.mul(matrix, matrix);
+		//Matrix4f.mul(mirror, matrix, matrix);
 
 		//Rotate again after so it's back the correct way arround
-		Matrix4f.mul(matrix, blender2ingame, matrix);
+		
+		matrix.mul(blender2ingame);
+		//Matrix4f.mul(matrix, blender2ingame, matrix);
 
-		Matrix4f.mul(matrix, mirror, matrix);
+		matrix.mul(mirror);
+		//Matrix4f.mul(matrix, mirror, matrix);
 
 		System.out.println(matrix);
 	}
@@ -205,23 +212,29 @@ public class BVHAnimation implements SkeletalAnimation
 	{
 		//Swaps Y and Z axises arround
 		Matrix4f blender2ingame = new Matrix4f();
-		blender2ingame.m11 = 0;
-		blender2ingame.m22 = 0;
-		blender2ingame.m12 = 1;
-		blender2ingame.m21 = 1;
+		blender2ingame.m11(0);
+		blender2ingame.m22(0);
+		blender2ingame.m12(1);
+		blender2ingame.m21(1);
 
 		//Rotate the matrix first to apply the transformation in blender space
-		Matrix4f.mul(blender2ingame, matrix, matrix);
+		blender2ingame.mul(matrix, matrix);
+		//Matrix4f.mul(blender2ingame, matrix, matrix);
 
 		//Mirror it
 		Matrix4f mirror = new Matrix4f();
-		mirror.m22 = -1;
-		Matrix4f.mul(mirror, matrix, matrix);
+		mirror.m22(-1);
+		
+		mirror.mul(matrix, matrix);
+		//Matrix4f.mul(mirror, matrix, matrix);
 
 		//Rotate again after so it's back the correct way arround
-		Matrix4f.mul(matrix, blender2ingame, matrix);
+		
+		matrix.mul(blender2ingame, matrix);
+		//Matrix4f.mul(matrix, blender2ingame, matrix);
 
-		Matrix4f.mul(matrix, mirror, matrix);
+		matrix.mul(mirror);
+		//Matrix4f.mul(matrix, mirror, matrix);
 
 		return matrix;
 	}
@@ -231,7 +244,7 @@ public class BVHAnimation implements SkeletalAnimation
 		Matrix4f offsetMatrix = new Matrix4f();
 		
 		new Matrix4f();
-		Vector3fm offsetTotal = new Vector3fm();
+		Vector3f offsetTotal = new Vector3f();
 
 		//Sanity checking
 		for (BVHTreeBone b : bones)
@@ -242,16 +255,16 @@ public class BVHAnimation implements SkeletalAnimation
 				while (kek != null)
 				{
 					//Swap yz arround and negate input Y to apply blender -> ingame coordinates system transformation
-					offsetTotal.setX(offsetTotal.getX() + kek.offset.getX());
-					offsetTotal.setY(offsetTotal.getY() + kek.offset.getZ());
-					offsetTotal.setZ(offsetTotal.getZ() + -kek.offset.getY());
+					offsetTotal.x = (offsetTotal.x() + kek.offset.x());
+					offsetTotal.y = (offsetTotal.y() + kek.offset.z());
+					offsetTotal.z = (offsetTotal.z() + -kek.offset.y());
 					kek = kek.parent;
 				}
 				//Negate it and build the offset matrix
 				offsetTotal.negate();
-				offsetMatrix.m30 += offsetTotal.getX();
-				offsetMatrix.m31 += offsetTotal.getY();
-				offsetMatrix.m32 += offsetTotal.getZ();
+				offsetMatrix.m30(offsetMatrix.m30() + offsetTotal.x());
+				offsetMatrix.m31(offsetMatrix.m31() + offsetTotal.y());
+				offsetMatrix.m32(offsetMatrix.m32() + offsetTotal.z());
 			}
 
 		return offsetMatrix;
@@ -270,7 +283,9 @@ public class BVHAnimation implements SkeletalAnimation
 		matrix = getBoneHierarchyTransformationMatrix(boneName, animationTime);
 
 		//Apply the offset matrix
-		Matrix4f.mul(matrix, getOffsetMatrix(boneName), matrix);
+		
+		matrix.mul(getOffsetMatrix(boneName));
+		//Matrix4f.mul(matrix, getOffsetMatrix(boneName), matrix);
 		return matrix;
 	}
 
@@ -370,9 +385,9 @@ public class BVHAnimation implements SkeletalAnimation
 					else if (line.startsWith("OFFSET"))
 					{
 						if (readingDest)
-							currentBone.dest = new Vector3fm(Float.parseFloat(items[1]), Float.parseFloat(items[2]), Float.parseFloat(items[3]));
+							currentBone.dest = new Vector3f(Float.parseFloat(items[1]), Float.parseFloat(items[2]), Float.parseFloat(items[3]));
 						else
-							currentBone.offset = new Vector3fm(Float.parseFloat(items[1]), Float.parseFloat(items[2]), Float.parseFloat(items[3]));
+							currentBone.offset = new Vector3f(Float.parseFloat(items[1]), Float.parseFloat(items[2]), Float.parseFloat(items[3]));
 					}
 					else if (line.startsWith("CHANNELS"))
 					{

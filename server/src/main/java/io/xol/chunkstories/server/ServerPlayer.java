@@ -103,9 +103,9 @@ public class ServerPlayer implements Player
 
 			Location loc = e.getLocation();
 			//Distance calculations
-			double dx = LoopingMathHelper.moduloDistance(controlledEntityLocation.getX(), loc.getX(), ws);
-			double dy = Math.abs(controlledEntityLocation.getY() - loc.getY());
-			double dz = LoopingMathHelper.moduloDistance(controlledEntityLocation.getZ(), loc.getZ(), ws);
+			double dx = LoopingMathHelper.moduloDistance(controlledEntityLocation.x(), loc.x(), ws);
+			double dy = Math.abs(controlledEntityLocation.y() - loc.y());
+			double dz = LoopingMathHelper.moduloDistance(controlledEntityLocation.z(), loc.z(), ws);
 			shouldTrack = (dx < 256 && dz < 256 && dy < 256);
 			boolean contains = subscribedEntities.contains(e) && e.shouldBeTrackedBy(this);
 			//Too close and untracked
@@ -129,9 +129,9 @@ public class ServerPlayer implements Player
 
 			Location loc = e.getLocation();
 			//Distance calculations
-			double dx = LoopingMathHelper.moduloDistance(controlledEntityLocation.getX(), loc.getX(), ws);
-			double dy = Math.abs(controlledEntityLocation.getY() - loc.getY());
-			double dz = LoopingMathHelper.moduloDistance(controlledEntityLocation.getZ(), loc.getZ(), ws);
+			double dx = LoopingMathHelper.moduloDistance(controlledEntityLocation.x(), loc.x(), ws);
+			double dy = Math.abs(controlledEntityLocation.y() - loc.y());
+			double dz = LoopingMathHelper.moduloDistance(controlledEntityLocation.z(), loc.z(), ws);
 			shouldTrack = (dx < 256 && dz < 256 && dy < 256);
 
 			//Reasons other than distance to stop tracking this entity
@@ -161,9 +161,9 @@ public class ServerPlayer implements Player
 			//Safely assumes as a SERVER the world will be master ;)
 			WorldMaster world = (WorldMaster) controlledEntityLocation.getWorld();
 			
-			playerDataFile.setDouble("posX", controlledEntityLocation.getX());
-			playerDataFile.setDouble("posY", controlledEntityLocation.getY());
-			playerDataFile.setDouble("posZ", controlledEntityLocation.getZ());
+			playerDataFile.setDouble("posX", controlledEntityLocation.x());
+			playerDataFile.setDouble("posY", controlledEntityLocation.y());
+			playerDataFile.setDouble("posZ", controlledEntityLocation.z());
 			playerDataFile.setString("world", world.getWorldInfo().getInternalName());
 
 			//Serializes the whole player entity !!!
@@ -530,9 +530,9 @@ public class ServerPlayer implements Player
 			return;
 			
 		//Subscribe to nearby wanted chunks
-		int cameraChunkX = Math2.floor((controlledEntity.getLocation().getX()) / 32);
-		int cameraChunkY = Math2.floor((controlledEntity.getLocation().getY()) / 32);
-		int cameraChunkZ = Math2.floor((controlledEntity.getLocation().getZ()) / 32);
+		int cameraChunkX = Math2.floor((controlledEntity.getLocation().x()) / 32);
+		int cameraChunkY = Math2.floor((controlledEntity.getLocation().y()) / 32);
+		int cameraChunkZ = Math2.floor((controlledEntity.getLocation().z()) / 32);
 		//TODO config this
 		int chunksViewDistance = (int) (256 / 32);
 		

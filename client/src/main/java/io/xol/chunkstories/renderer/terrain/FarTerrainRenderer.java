@@ -12,10 +12,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.xol.engine.graphics.textures.Texture1DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
+import org.joml.Vector3dc;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.Constants;
-import io.xol.chunkstories.api.math.vector.Vector3;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
@@ -114,10 +114,10 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 			{
 				VoxelTextureAtlased voxelTexture = (VoxelTextureAtlased)i.next();
 
-				bb.put((byte) (voxelTexture.getColor().getX() * 255));
-				bb.put((byte) (voxelTexture.getColor().getY() * 255));
-				bb.put((byte) (voxelTexture.getColor().getZ() * 255));
-				bb.put((byte) (voxelTexture.getColor().getW() * 255));
+				bb.put((byte) (voxelTexture.getColor().x() * 255));
+				bb.put((byte) (voxelTexture.getColor().y() * 255));
+				bb.put((byte) (voxelTexture.getColor().z() * 255));
+				bb.put((byte) (voxelTexture.getColor().w() * 255));
 
 				voxelTexture.positionInColorIndex = counter;
 				counter++;
@@ -147,10 +147,10 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 	public void renderTerrain(RenderingInterface renderingContext, RenderedChunksMask mask)
 	{
 		//Check for world updates
-		Vector3<Double> cameraPosition = renderingContext.getCamera().getCameraPosition();
+		Vector3dc cameraPosition = renderingContext.getCamera().getCameraPosition();
 		
-		int xCoordinates = ((int)(double)cameraPosition.getX());
-		int zCoordinates = ((int)(double)cameraPosition.getZ());
+		int xCoordinates = ((int)(double)cameraPosition.x());
+		int zCoordinates = ((int)(double)cameraPosition.z());
 		
 		xCoordinates %= world.getWorldSize();
 		zCoordinates %= world.getWorldSize();
@@ -227,14 +227,14 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		
 		//Camera is of position
 		CameraInterface camera = renderingContext.getCamera();
-		int camRX = (int) (camera.getCameraPosition().getX() / 256);
-		int camRZ = (int) (camera.getCameraPosition().getZ() / 256);
+		int camRX = (int) (camera.getCameraPosition().x() / 256);
+		int camRZ = (int) (camera.getCameraPosition().z() / 256);
 
 		int wrapRegionsDistance = world.getSizeInChunks() / 2;
 		int worldSizeInRegions = world.getSizeInChunks() / 8;
 
-		int cameraChunkX = (int) (camera.getCameraPosition().getX() / 32);
-		int cameraChunkZ = (int) (camera.getCameraPosition().getZ() / 32);
+		int cameraChunkX = (int) (camera.getCameraPosition().x() / 32);
+		int cameraChunkZ = (int) (camera.getCameraPosition().z() / 32);
 		
 		//Update their displayed position to reflect where the camera is
 		for(RegionMesh mesh : renderedRegions)
@@ -298,7 +298,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 				{
 					int delta = regionMesh.regionSummary.max[i][j] - regionMesh.regionSummary.min[i][j];
 					
-					collisionBoxCheck.xpos = regionMesh.regionDisplayedX * 8 + i * 32;
+					collisionBoxCheck.xpos = (regionMesh.regionDisplayedX * 8 + i) * 32;
 					collisionBoxCheck.ypos = regionMesh.regionSummary.min[i][j];
 					collisionBoxCheck.zpos = (regionMesh.regionDisplayedZ * 8 + j) * 32;
 					collisionBoxCheck.xw = 32;
@@ -375,8 +375,8 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 
 	private void startAsynchSummaryRegeneration(CameraInterface camera)
 	{
-		cameraChunkX = (int) (camera.getCameraPosition().getX() / 32);
-		cameraChunkZ = (int) (camera.getCameraPosition().getZ() / 32);
+		cameraChunkX = (int) (camera.getCameraPosition().x() / 32);
+		cameraChunkZ = (int) (camera.getCameraPosition().z() / 32);
 		
 		Thread asynchGenerateThread = new Thread()
 		{

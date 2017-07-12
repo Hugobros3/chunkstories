@@ -27,10 +27,12 @@ import io.xol.chunkstories.api.item.interfaces.ItemOverlay;
 import io.xol.chunkstories.api.item.interfaces.ItemZoom;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.player.PlayerClient;
@@ -123,8 +125,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	{
 		if (isDead())
 			return;
-		float cPX = controller.getInputsManager().getMouse().getCursorX();
-		float cPY = controller.getInputsManager().getMouse().getCursorY();
+		float cPX = (float)controller.getInputsManager().getMouse().getCursorX();
+		float cPY = (float)controller.getInputsManager().getMouse().getCursorY();
 		
 		float dx = 0, dy = 0;
 		if (lastPX != -1f)
@@ -169,9 +171,9 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if (world instanceof WorldMaster && (world.getTicksElapsed() % 60L) == 0L)
 		{
 			//TODO Use more precise, regional functions to not iterate over the entire world like a retard
-			for (Entity e : world.getEntitiesInBox(getLocation(), new Vector3dm(3.0)))
+			for (Entity e : world.getEntitiesInBox(getLocation(), new Vector3d(3.0)))
 			{
-				if (e instanceof EntityGroundItem && e.getLocation().distanceTo(this.getLocation()) < 3.0f)
+				if (e instanceof EntityGroundItem && e.getLocation().distance(this.getLocation()) < 3.0f)
 				{
 					EntityGroundItem eg = (EntityGroundItem) e;
 					if (!eg.canBePickedUpYet())
@@ -236,7 +238,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			
 			//Being on a ladder resets your jump height
 			if(onLadder)
-				lastStandingHeight = this.getEntityComponentPosition().getLocation().getY();
+				lastStandingHeight = this.getEntityComponentPosition().getLocation().y();
 			if(this.getFlyingComponent().get())
 				lastStandingHeight = Double.NaN;
 			
@@ -369,8 +371,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			this.getVelocityComponent().setVelocityY((float) (Math.sin((-(this.getEntityRotationComponent().getVerticalRotation()) / 180f * Math.PI)) * horizontalSpeed));
 		}
 
-		targetVelocity.setX(Math.sin((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed);
-		targetVelocity.setZ(Math.cos((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed);
+		targetVelocity.x = (Math.sin((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed);
+		targetVelocity.z = (Math.cos((180 - this.getEntityRotationComponent().getHorizontalRotation() + modif) / 180f * Math.PI) * horizontalSpeed);
 	}
 
 	public static float flySpeed = 0.125f;
@@ -434,7 +436,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		{
 			lastCameraLocation = getLocation();
 
-			rd.getCamera().setCameraPosition(new Vector3dm(positionComponent.getLocation().add(0.0, eyePosition, 0.0)));
+			rd.getCamera().setCameraPosition(new Vector3d(positionComponent.getLocation().add(0.0, eyePosition, 0.0)));
 			//camera.pos = lastCameraLocation.clone().negate();
 			//camera.pos.add(0d, -eyePosition, 0d);
 
@@ -449,8 +451,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			}
 
 			rd.getCamera().setFOV(modifier * (float) (rd.renderingConfig().getFov()//RenderingConfig.fov
-					+ ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) > 0.07 * 0.07
-							? ((getVelocityComponent().getVelocity().getX() * getVelocityComponent().getVelocity().getX() + getVelocityComponent().getVelocity().getZ() * getVelocityComponent().getVelocity().getZ()) - 0.07 * 0.07) * 500 : 0)));
+					+ ((getVelocityComponent().getVelocity().x() * getVelocityComponent().getVelocity().x() + getVelocityComponent().getVelocity().z() * getVelocityComponent().getVelocity().z()) > 0.07 * 0.07
+							? ((getVelocityComponent().getVelocity().x() * getVelocityComponent().getVelocity().x() + getVelocityComponent().getVelocity().z() * getVelocityComponent().getVelocity().z()) - 0.07 * 0.07) * 500 : 0)));
 			
 		}
 	}
@@ -458,10 +460,10 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	@Override
 	public Location getBlockLookingAt(boolean inside)
 	{
-		Vector3dm initialPosition = new Vector3dm(getLocation());
-		initialPosition.add(new Vector3dm(0, eyePosition, 0));
+		Vector3d initialPosition = new Vector3d(getLocation());
+		initialPosition.add(new Vector3d(0, eyePosition, 0));
 
-		Vector3dm direction = getDirectionLookingAt();
+		Vector3d direction = new Vector3d(getDirectionLookingAt());
 
 		if (inside)
 			return world.collisionsManager().raytraceSelectable(new Location(world, initialPosition), direction, 256.0);
@@ -487,24 +489,24 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		}
 
 		//Renders the nametag above the player heads
-		Vector3dm pos = getLocation();
+		Vector3d pos = getLocation();
 
 		//don't render tags too far out
-		if (pos.distanceTo(renderingContext.getCamera().getCameraPosition()) > 32f)
+		if (pos.distance(renderingContext.getCamera().getCameraPosition()) > 32f)
 			return;
 
 		//Don't render a dead player tag
 		if (this.getHealth() <= 0)
 			return;
 
-		Vector3fm posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3fm((float)(double) pos.getX(), (float)(double) pos.getY() + 2.0f, (float)(double) pos.getZ()));
+		Vector3fc posOnScreen = renderingContext.getCamera().transform3DCoordinate(new Vector3f((float)(double) pos.x(), (float)(double) pos.y() + 2.0f, (float)(double) pos.z()));
 
-		float scale = posOnScreen.getZ();
+		float scale = posOnScreen.z();
 		String txt = name.getName();// + rotH;
 		float dekal = renderingContext.getFontRenderer().defaultFont().getWidth(txt) * 16 * scale;
 		//System.out.println("dekal"+dekal);
 		if (scale > 0)
-			renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().defaultFont(), posOnScreen.getX() - dekal / 2, posOnScreen.getY(), txt, 16 * scale, 16 * scale, new Vector4fm(1, 1, 1, 1));
+			renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().defaultFont(), posOnScreen.x() - dekal / 2, posOnScreen.y(), txt, 16 * scale, 16 * scale, new Vector4f(1, 1, 1, 1));
 	}
 
 	class EntityPlayerRenderer<H extends EntityPlayer> extends EntityHumanoidRenderer<H>
@@ -522,16 +524,21 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 			
 			int e = 0;
 
+			Vector3f loc3f = new Vector3f();
+			Vector3f pre3f = new Vector3f();
+			
 			for (EntityPlayer entity : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
 				Location location = entity.getPredictedLocation();
+				loc3f.set((float)location.x(), (float)location.y(), (float)location.z());
+				pre3f.set((float)entity.getPredictedLocation().x(), (float)entity.getPredictedLocation().y(), (float)entity.getPredictedLocation().z());
 
-				if (!(renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && location.distanceTo(renderingContext.getCamera().getCameraPosition()) > 15f))
+				if (!(renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && location.distance(renderingContext.getCamera().getCameraPosition()) > 15f))
 				{
 					entity.cachedSkeleton.lodUpdate(renderingContext);
 
 					Matrix4f matrix = new Matrix4f();
-					matrix.translate(location.castToSinglePrecision());
+					matrix.translate(loc3f);
 					renderingContext.setObjectMatrix(matrix);
 
 					variant = ColorsTools.getUniqueColorCode(entity.getName()) % 6;
@@ -561,14 +568,15 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					if (entity instanceof EntityWithSelectedItem)
 						selectedItemPile = ((EntityWithSelectedItem) entity).getSelectedItemComponent().getSelectedItem();
 
-					renderingContext.currentShader().setUniform3f("objectPosition", new Vector3fm(0));
+					renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
 
 					if (selectedItemPile != null)
 					{
 						Matrix4f itemMatrix = new Matrix4f();
-						itemMatrix.translate(entity.getPredictedLocation().castToSinglePrecision());
+						itemMatrix.translate(pre3f);
 
-						Matrix4f.mul(itemMatrix, entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000), itemMatrix);
+						itemMatrix.mul(entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000));
+						//Matrix4f.mul(itemMatrix, entity.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix("boneItemInHand", System.currentTimeMillis() % 1000000), itemMatrix);
 
 						selectedItemPile.getItem().getType().getRenderer().renderItemInWorld(renderingContext, selectedItemPile, world, entity.getLocation(), itemMatrix);
 					}
@@ -629,15 +637,15 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		double maxLen = 1024;
 		
 		if(blockLocation != null ) {
-			Vector3dm diff = blockLocation.clone().sub(this.getLocation());
-			//Vector3dm dir = diff.clone().normalize();
+			Vector3d diff = new Vector3d(blockLocation).sub(this.getLocation());
+			//Vector3d dir = diff.clone().normalize();
 			maxLen = diff.length();
 		}
 		
-		Vector3dm initialPosition = new Vector3dm(getLocation());
-		initialPosition.add(new Vector3dm(0, eyePosition, 0));
+		Vector3d initialPosition = new Vector3d(getLocation());
+		initialPosition.add(new Vector3d(0, eyePosition, 0));
 		
-		Vector3dm direction = getDirectionLookingAt();
+		Vector3dc direction = getDirectionLookingAt();
 		
 		Iterator<Entity> i = world.collisionsManager().rayTraceEntities(initialPosition, direction, maxLen);
 		while(i.hasNext()) {

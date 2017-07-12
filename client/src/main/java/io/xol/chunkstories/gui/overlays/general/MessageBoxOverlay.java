@@ -1,7 +1,7 @@
 package io.xol.chunkstories.gui.overlays.general;
 
 import io.xol.chunkstories.api.gui.Layer;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.engine.gui.elements.Button;
@@ -39,7 +39,7 @@ public class MessageBoxOverlay extends Layer
 		parentLayer.render(renderingContext);
 		
 		float dekal = renderingContext.getFontRenderer().defaultFont().getWidth(message);
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().defaultFont(), renderingContext.getWindow().getWidth()/2-dekal*1.5f, renderingContext.getWindow().getHeight() / 2 + 64, message, 3f, 3f, new Vector4fm(1,0.2f,0.2f,1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().defaultFont(), renderingContext.getWindow().getWidth()/2-dekal*1.5f, renderingContext.getWindow().getHeight() / 2 + 64, message, 3f, 3f, new Vector4f(1,0.2f,0.2f,1));
 		
 		okButton.setPosition(renderingContext.getWindow().getWidth()/2, renderingContext.getWindow().getHeight() / 2 - 32);
 		okButton.render(renderingContext);

@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.ClientRenderingConfig;
 import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
-import io.xol.chunkstories.api.math.Matrix4f;
+import org.joml.Matrix4f;
 import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
@@ -201,7 +201,7 @@ public class RenderingContext implements RenderingInterface
 	{
 		if (objectMatrix == null)
 			objectMatrix = new Matrix4f();
-		currentObjectMatrix = objectMatrix.clone();
+		currentObjectMatrix = new Matrix4f(objectMatrix);
 		return this.currentObjectMatrix;
 	}
 

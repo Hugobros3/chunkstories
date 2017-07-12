@@ -3,8 +3,9 @@ package io.xol.chunkstories.tools;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.GameContext;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3dc;
+import org.joml.Vector3fc;
+
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
@@ -118,7 +119,7 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 		}
 
 		@Override
-		public void setListenerPosition(float x, float y, float z, Vector3fm lookAt, Vector3fm up)
+		public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up)
 		{
 		}
 
@@ -136,14 +137,14 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	{
 
 		@Override
-		public void spawnParticleAtPosition(String particleTypeName, Vector3dm location)
+		public void spawnParticleAtPosition(String particleTypeName, Vector3dc location)
 		{
 			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
-		public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dm location, Vector3dm velocity)
+		public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc location, Vector3dc velocity)
 		{
 			// TODO Auto-generated method stub
 			
@@ -162,7 +163,7 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	{
 
 		@Override
-		public void drawDecal(Vector3dm position, Vector3dm orientation, Vector3dm size, String decalName)
+		public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName)
 		{
 			// TODO Auto-generated method stub
 			

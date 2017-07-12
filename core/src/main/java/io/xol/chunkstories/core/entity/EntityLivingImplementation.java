@@ -15,12 +15,14 @@ import io.xol.chunkstories.api.entity.components.EntityComponentRotation;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityFlying;
 import io.xol.chunkstories.api.events.entity.EntityDamageEvent;
-import io.xol.chunkstories.api.math.Matrix4f;
-import io.xol.chunkstories.api.math.vector.dp.Vector2dm;
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
-import io.xol.chunkstories.api.math.vector.sp.Vector2fm;
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
-import io.xol.chunkstories.api.math.vector.sp.Vector4fm;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -42,7 +44,7 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 	EntityComponentRotation entityRotationComponent;
 
 	//Movement stuff
-	public Vector3dm acceleration = new Vector3dm();
+	public Vector3d acceleration = new Vector3d();
 
 	//Damage/health stuff
 	private EntityComponentHealth entityHealthComponent;
@@ -92,20 +94,22 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 
 			context.currentShader().setUniform1i("doTransform", 1);
 
-			Matrix4f boneTransormation = EntityLivingImplementation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000);
+			Matrix4f boneTransormation = new Matrix4f(EntityLivingImplementation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000));
 
 			if (boneTransormation == null)
 				return;
 
 			Matrix4f worldPositionTransformation = new Matrix4f();
-			Vector3fm pos = EntityLivingImplementation.this.getLocation().castToSinglePrecision();
+			
+			Location loc = EntityLivingImplementation.this.getLocation();
+			Vector3f pos = new Vector3f((float)loc.x, (float)loc.y, (float)loc.z);
 			worldPositionTransformation.translate(pos);
 
-			boneTransormation.multiply(worldPositionTransformation);
+			boneTransormation.mul(worldPositionTransformation);
 
 			//Scales/moves the identity box to reflect collisionBox shape
-			boneTransormation.translate(new Vector3fm(box.xpos, box.ypos, box.zpos));
-			boneTransormation.scale(new Vector3fm(box.xw, box.h, box.zw));
+			boneTransormation.translate(new Vector3f((float)box.xpos, (float)box.ypos, (float)box.zpos));
+			boneTransormation.scale(new Vector3f((float)box.xw, (float)box.h, (float)box.zw));
 
 			context.currentShader().setUniformMatrix4f("transform", boneTransormation);
 			context.unbindAttributes();
@@ -117,7 +121,7 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 
 			if (ec != null)
 			{
-				if (lineIntersection((Vector3dm) context.getCamera().getCameraPosition(), ((EntityPlayer) ec).getDirectionLookingAt()) != null)
+				if (lineIntersection((Vector3d) context.getCamera().getCameraPosition(), ((EntityPlayer) ec).getDirectionLookingAt()) != null)
 					context.currentShader().setUniform4f("colorIn", 1.0, 0.0, 0.0, 1.0);
 			}
 
@@ -125,42 +129,49 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 			context.currentShader().setUniform1i("doTransform", 0);
 		}
 
-		public Vector3dm lineIntersection(Vector3dm lineStart, Vector3dm lineDirection)
+		public Vector3dc lineIntersection(Vector3dc lineStart, Vector3dc lineDirection)
 		{
-			Matrix4f fromAABBToWorld = EntityLivingImplementation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000);
+			Matrix4f fromAABBToWorld = new Matrix4f(EntityLivingImplementation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000));
 
 			//Fuck off if this has issues
 			if (fromAABBToWorld == null)
 				return null;
 
 			Matrix4f worldPositionTransformation = new Matrix4f();
-			Vector3fm pos = EntityLivingImplementation.this.getLocation().castToSinglePrecision();
+			
+			Location entityLoc = EntityLivingImplementation.this.getLocation();
+			
+			Vector3f pos = new Vector3f((float)entityLoc.x, (float)entityLoc.y, (float)entityLoc.z);
 			worldPositionTransformation.translate(pos);
 
 			//Creates from AABB space to worldspace
-			fromAABBToWorld.multiply(worldPositionTransformation);
+			fromAABBToWorld.mul(worldPositionTransformation);
 
 			//Invert it.
 			Matrix4f fromWorldToAABB = new Matrix4f();
-			Matrix4f.invert(fromAABBToWorld, fromWorldToAABB);
+			
+			fromAABBToWorld.invert();
+			//Matrix4f.invert(fromAABBToWorld, fromWorldToAABB);
 
 			//Transform line start into AABB space
-			Vector4fm lineStart4 = new Vector4fm(lineStart.getX(), lineStart.getY(), lineStart.getZ(), 1.0f);
-			Vector4fm lineDirection4 = new Vector4fm(lineDirection.getX(), lineDirection.getY(), lineDirection.getZ(), 0.0f);
+			Vector4f lineStart4 = new Vector4f((float)lineStart.x(), (float)lineStart.y(), (float)lineStart.z(), 1.0f);
+			Vector4f lineDirection4 = new Vector4f((float)lineDirection.x(), (float)lineDirection.y(), (float)lineDirection.z(), 0.0f);
 
 			//System.out.println(skeletonPart);
 
 			//System.out.println(lineStart4+":"+lineDirection4);
 
-			Matrix4f.transform(fromWorldToAABB, lineStart4, lineStart4);
-			Matrix4f.transform(fromWorldToAABB, lineDirection4, lineDirection4);
+			fromWorldToAABB.transform(lineStart4);
+			//Matrix4f.transform(fromWorldToAABB, lineStart4, lineStart4);
+			fromWorldToAABB.transform(lineDirection4);
+			//Matrix4f.transform(fromWorldToAABB, lineDirection4, lineDirection4);
 
 			//System.out.println(lineStart4+":"+lineDirection4);
 
-			Vector3dm lineStartTransformed = new Vector3dm(lineStart4.getX(), lineStart4.getY(), lineStart4.getZ());
-			Vector3dm lineDirectionTransformed = new Vector3dm(lineDirection4.getX(), lineDirection4.getY(), lineDirection4.getZ());
+			Vector3d lineStartTransformed = new Vector3d(lineStart4.x(), lineStart4.y(), lineStart4.z());
+			Vector3d lineDirectionTransformed = new Vector3d(lineDirection4.x(), lineDirection4.y(), lineDirection4.z());
 
-			Vector3dm hitPoint = box.lineIntersection(lineStartTransformed, lineDirectionTransformed);
+			Vector3dc hitPoint = box.lineIntersection(lineStartTransformed, lineDirectionTransformed);
 
 			//System.out.println(hitPoint);
 
@@ -168,11 +179,13 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 				return null;
 
 			//Transform hitPoint back into world
-			Vector4fm hitPoint4 = new Vector4fm(hitPoint.getX(), hitPoint.getY(), hitPoint.getZ(), 1.0f);
-			Matrix4f.transform(fromAABBToWorld, hitPoint4, hitPoint4);
+			Vector4f hitPoint4 = new Vector4f((float)hitPoint.x(), (float)hitPoint.y(), (float)hitPoint.z(), 1.0f);
+			
+			fromAABBToWorld.transform(hitPoint4);
+			//Matrix4f.transform(fromAABBToWorld, hitPoint4, hitPoint4);
 
-			hitPoint.set((double) (float) hitPoint4.getX(), (double) (float) hitPoint4.getY(), (double) (float) hitPoint4.getZ());
-			return hitPoint;
+			//hitPoint.set((double) (float) hitPoint4.x(), (double) (float) hitPoint4.y(), (double) (float) hitPoint4.z());
+			return new Vector3d((double) (float) hitPoint4.x(), (double) (float) hitPoint4.y(), (double) (float) hitPoint4.z());
 		}
 
 		@Override
@@ -239,14 +252,14 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 			if (cause instanceof Entity)
 			{
 				Entity attacker = (Entity) cause;
-				Vector3dm attackKnockback = this.getLocation().sub(attacker.getLocation().add(0d, 0d, 0d));
-				attackKnockback.setY(0d);
+				Vector3d attackKnockback = this.getLocation().sub(attacker.getLocation().add(0d, 0d, 0d));
+				attackKnockback.y = (0d);
 				attackKnockback.normalize();
 				
 				float knockback = (float) Math.max(1f, Math.pow(damageDealt, 0.5f));
 				
-				attackKnockback.scale(knockback / 50d);
-				attackKnockback.setY(knockback / 50d);
+				attackKnockback.mul(knockback / 50d);
+				attackKnockback.y = (knockback / 50d);
 				/*
 				attackKnockback.scale(damageDealt / 500d);
 				attackKnockback.scale(1.0 / (1.0 + 5 * this.getVelocityComponent().getVelocity().length()));*/
@@ -285,7 +298,7 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 			{
 				if(!wasStandingLastTick && !Double.isNaN(lastStandingHeight))
 				{
-					double fallDistance = lastStandingHeight - this.getEntityComponentPosition().getLocation().getY();
+					double fallDistance = lastStandingHeight - this.getEntityComponentPosition().getLocation().y();
 					if(fallDistance > 0)
 					{
 						//System.out.println("Fell "+fallDistance+" meters");
@@ -297,7 +310,7 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 						}
 					}
 				}
-				lastStandingHeight = this.getEntityComponentPosition().getLocation().getY();
+				lastStandingHeight = this.getEntityComponentPosition().getLocation().y();
 			}
 			this.wasStandingLastTick = isOnGround();
 		}
@@ -317,10 +330,11 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 
 		if (shouldDoTick)
 		{
-			Vector3dm velocity = getVelocityComponent().getVelocity();
-
-			Vector2fm headRotationVelocity = this.getEntityRotationComponent().tickInpulse();
-			getEntityRotationComponent().addRotation(headRotationVelocity.getX(), headRotationVelocity.getY());
+			Vector3dc ogVelocity = getVelocityComponent().getVelocity();
+			Vector3d velocity = new Vector3d(ogVelocity);
+			
+			Vector2f headRotationVelocity = this.getEntityRotationComponent().tickInpulse();
+			getEntityRotationComponent().addRotation(headRotationVelocity.x(), headRotationVelocity.y());
 
 			//voxelIn = VoxelsStore.get().getVoxelById(VoxelFormat.id(world.getVoxelData(positionComponent.getLocation())));
 			boolean inWater = isInWater(); //voxelIn.getType().isLiquid();
@@ -329,10 +343,10 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 			if (!(this instanceof EntityFlying && ((EntityFlying) this).getFlyingComponent().get()))
 			{
 				double terminalVelocity = inWater ? -0.05 : -0.5;
-				if (velocity.getY() > terminalVelocity)
-					velocity.setY(velocity.getY() - 0.008);
-				if (velocity.getY() < terminalVelocity)
-					velocity.setY(terminalVelocity);
+				if (velocity.y() > terminalVelocity)
+					velocity.y = (velocity.y() - 0.008);
+				if (velocity.y() < terminalVelocity)
+					velocity.y = (terminalVelocity);
 
 				//Water limits your overall movement
 				double targetSpeedInWater = 0.02;
@@ -349,26 +363,26 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 
 						//System.out.println(decelerationThen);
 
-						acceleration.add(velocity.clone().normalize().negate().scale(decelerationThen));
-						//acceleration.add(0.0, decelerationThen * (velocity.getY() > 0.0 ? 1.0 : -1.0), 0.0);
+						acceleration.add(new Vector3d(velocity).normalize().negate().mul(decelerationThen));
+						//acceleration.add(0.0, decelerationThen * (velocity.y() > 0.0 ? 1.0 : -1.0), 0.0);
 					}
 				}
 			}
 
 			// Acceleration
-			velocity.setX(velocity.getX() + acceleration.getX());
-			velocity.setY(velocity.getY() + acceleration.getY());
-			velocity.setZ(velocity.getZ() + acceleration.getZ());
+			velocity.x = (velocity.x() + acceleration.x());
+			velocity.y = (velocity.y() + acceleration.y());
+			velocity.z = (velocity.z() + acceleration.z());
 
 			//TODO ugly
-			if (!world.isChunkLoaded((int) (double) positionComponent.getLocation().getX() / 32, (int) (double) positionComponent.getLocation().getY() / 32, (int) (double) positionComponent.getLocation().getZ() / 32))
+			if (!world.isChunkLoaded((int) (double) positionComponent.getLocation().x() / 32, (int) (double) positionComponent.getLocation().y() / 32, (int) (double) positionComponent.getLocation().z() / 32))
 			{
 				velocity.set(0d, 0d, 0d);
 			}
 
 			//Eventually moves
-			Vector3dm remainingToMove = moveWithCollisionRestrain(velocity.getX(), velocity.getY(), velocity.getZ());
-			Vector2dm remaining2d = new Vector2dm(remainingToMove.getX(), remainingToMove.getZ());
+			Vector3dc remainingToMove = moveWithCollisionRestrain(velocity.x(), velocity.y(), velocity.z());
+			Vector2d remaining2d = new Vector2d(remainingToMove.x(), remainingToMove.z());
 
 			//Auto-step logic
 			if (remaining2d.length() > 0.001 && isOnGround())
@@ -378,7 +392,7 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 				{
 					System.out.println("Too fast, capping");
 					remaining2d.normalize();
-					remaining2d.scale(0.20);
+					remaining2d.mul(0.20);
 				}
 
 				//Get whatever we are colliding with
@@ -388,34 +402,34 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 				//Do it if possible
 
 				//TODO remake proper
-				Vector3dm blockedMomentum = new Vector3dm(remaining2d.getX(), 0, remaining2d.getY());
+				Vector3d blockedMomentum = new Vector3d(remaining2d.x(), 0, remaining2d.y());
 				for (double d = 0.25; d < 0.5; d += 0.05)
 				{
 					//I don't want any of this to reflect on the object, because it causes ugly jumps in the animation
-					Vector3dm canMoveUp = this.canMoveWithCollisionRestrain(new Vector3dm(0.0, d, 0.0));
+					Vector3dc canMoveUp = this.canMoveWithCollisionRestrain(new Vector3d(0.0, d, 0.0));
 					//It can go up that bit
 					if (canMoveUp.length() == 0.0f)
 					{
 						//Would it help with being stuck ?
-						Vector3dm tryFromHigher = new Vector3dm(this.getLocation());
-						tryFromHigher.add(new Vector3dm(0.0, d, 0.0));
-						Vector3dm blockedMomentumRemaining = this.canMoveWithCollisionRestrain(tryFromHigher, blockedMomentum);
+						Vector3d tryFromHigher = new Vector3d(this.getLocation());
+						tryFromHigher.add(new Vector3d(0.0, d, 0.0));
+						Vector3dc blockedMomentumRemaining = this.canMoveWithCollisionRestrain(tryFromHigher, blockedMomentum);
 						//If length of remaining momentum < of what we requested it to do, that means it *did* go a bit further away
 						if (blockedMomentumRemaining.length() < blockedMomentum.length())
 						{
 							//Where would this land ?
-							Vector3dm afterJump = new Vector3dm(tryFromHigher);
+							Vector3d afterJump = new Vector3d(tryFromHigher);
 							afterJump.add(blockedMomentum);
 							afterJump.sub(blockedMomentumRemaining);
 
 							//land distance = whatever is left of our -0.55 delta when it hits the ground
-							Vector3dm landDistance = this.canMoveWithCollisionRestrain(afterJump, new Vector3dm(0.0, -d, 0.0));
-							afterJump.add(new Vector3dm(0.0, -d, 0.0));
+							Vector3dc landDistance = this.canMoveWithCollisionRestrain(afterJump, new Vector3d(0.0, -d, 0.0));
+							afterJump.add(new Vector3d(0.0, -d, 0.0));
 							afterJump.sub(landDistance);
 
 							this.setLocation(new Location(world, afterJump));
 
-							remaining2d = new Vector2dm(blockedMomentumRemaining.getX(), blockedMomentumRemaining.getZ());
+							remaining2d = new Vector2d(blockedMomentumRemaining.x(), blockedMomentumRemaining.z());
 							break;
 						}
 					}
@@ -423,15 +437,15 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 			}
 
 			//Collisions, snap to axises
-			if (Math.abs(remaining2d.getX()) >= 0.001d)
-				velocity.setX(0d);
-			if (Math.abs(remaining2d.getY()) >= 0.001d)
-				velocity.setZ(0d);
+			if (Math.abs(remaining2d.x()) >= 0.001d)
+				velocity.x = (0d);
+			if (Math.abs(remaining2d.y()) >= 0.001d)
+				velocity.z = (0d);
 			// Stap it
-			if (isOnGround() && velocity.getY() < 0)
-				velocity.setY(0d);
+			if (isOnGround() && velocity.y() < 0)
+				velocity.y = (0d);
 			else if (isOnGround())
-				velocity.setY(0d);
+				velocity.y = (0d);
 
 			getVelocityComponent().setVelocity(velocity);
 		}
@@ -456,7 +470,7 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 		return entityRotationComponent;
 	}
 
-	public Vector3dm getDirectionLookingAt()
+	public Vector3dc getDirectionLookingAt()
 	{
 		return getEntityRotationComponent().getDirectionLookingAt();
 	}
@@ -489,7 +503,7 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 
 		public void lodUpdate(RenderingInterface renderingContext)
 		{
-			double distance = getLocation().distanceTo(renderingContext.getCamera().getCameraPosition());
+			double distance = getLocation().distance(renderingContext.getCamera().getCameraPosition());
 			double targetFps = renderingContext.renderingConfig().getAnimationCacheFrameRate();//RenderingConfig.animationCacheFrameRate;
 
 			int lodDivisor = 1;
@@ -519,12 +533,12 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 		class CachedData
 		{
 
-			Matrix4f matrix = null;
+			Matrix4fc matrix = null;
 			long lastUpdate = -1;
 
 			boolean needsUpdate = false;
 
-			CachedData(Matrix4f matrix, long lastUpdate)
+			CachedData(Matrix4fc matrix, long lastUpdate)
 			{
 				super();
 				this.matrix = matrix;
@@ -533,13 +547,13 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 		}
 
 		@Override
-		public Matrix4f getBoneHierarchyTransformationMatrix(String nameOfEndBone, double animationTime)
+		public Matrix4fc getBoneHierarchyTransformationMatrix(String nameOfEndBone, double animationTime)
 		{
 			return dataSource.getBoneHierarchyTransformationMatrix(nameOfEndBone, animationTime);
 		}
 
 		@Override
-		public Matrix4f getBoneHierarchyTransformationMatrixWithOffset(String nameOfEndBone, double animationTime)
+		public Matrix4fc getBoneHierarchyTransformationMatrixWithOffset(String nameOfEndBone, double animationTime)
 		{
 			//if(true)
 			//	dataSource.getBoneHierarchyTransformationMatrixWithOffset(nameOfEndBone, animationTime);
@@ -553,14 +567,14 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 			if (cachedData != null && !cachedData.needsUpdate)
 			{
 				cachedData.needsUpdate = false;
-				return cachedData.matrix.clone();
+				return cachedData.matrix;
 			}
 
 			//Obtains the matrix and caches it
-			Matrix4f matrix = dataSource.getBoneHierarchyTransformationMatrixWithOffset(nameOfEndBone, animationTime);
+			Matrix4fc matrix = dataSource.getBoneHierarchyTransformationMatrixWithOffset(nameOfEndBone, animationTime);
 			cachedBones.put(nameOfEndBone, new CachedData(matrix, System.currentTimeMillis()));
 
-			return matrix.clone();
+			return matrix;
 		}
 
 		public boolean shouldHideBone(RenderingInterface renderingContext, String boneName)

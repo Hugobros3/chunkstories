@@ -1,6 +1,6 @@
 package io.xol.chunkstories.core.particles;
 
-import io.xol.chunkstories.api.math.vector.sp.Vector3fm;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;
 import io.xol.chunkstories.api.particles.ParticlesRenderer;
@@ -23,12 +23,12 @@ public class ParticleLight extends ParticleTypeHandler
 	public class ParticleLightData extends ParticleData {
 
 		public int timer = 2;
-		public Vector3fm c;
+		public Vector3f c;
 		
 		public ParticleLightData(float x, float y, float z)
 		{
 			super(x, y, z);
-			c = new Vector3fm(Math.random(), Math.random(), Math.random());
+			c = new Vector3f((float)Math.random(), (float)Math.random(), (float)Math.random());
 		}
 	}
 
@@ -54,8 +54,8 @@ public class ParticleLight extends ParticleTypeHandler
 			public void forEach_Rendering(RenderingInterface renderingContext, ParticleData data2)
 			{
 				ParticleLightData data = (ParticleLightData)data2;
-				renderingContext.getLightsRenderer().queueLight(new Light(new Vector3fm(1.0f, 181f/255f, 79/255f),
-						new Vector3fm((float) data.c.getX(), (float) data.c.getY(), (float) data.c.getZ()),
+				renderingContext.getLightsRenderer().queueLight(new Light(new Vector3f(1.0f, 181f/255f, 79/255f),
+						new Vector3f((float) data.c.x(), (float) data.c.y(), (float) data.c.z()),
 						15f + (float) Math.random() * 5f));
 			}
 

@@ -3,7 +3,8 @@ package io.xol.engine.animation;
 import io.xol.chunkstories.api.animation.SkeletalAnimation;
 import io.xol.chunkstories.api.animation.SkeletalAnimation.SkeletonBone;
 import io.xol.chunkstories.api.animation.SkeletonAnimator;
-import io.xol.chunkstories.api.math.Matrix4f;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -27,12 +28,12 @@ public abstract class CompoundAnimationHelper implements SkeletonAnimator
 	/**
 	 * Returns the local matrix to use for a bone, by default grabs it for the playing animation, but you can change that for some effects
 	 */
-	public Matrix4f getBoneTransformationMatrix(String boneName, double animationTime)
+	public Matrix4fc getBoneTransformationMatrix(String boneName, double animationTime)
 	{
 		return getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime);
 	}
 
-	private final Matrix4f getBoneHierarchyTransformationMatrixInternal(String boneName, double animationTime)
+	private final Matrix4fc getBoneHierarchyTransformationMatrixInternal(String boneName, double animationTime)
 	{
 		SkeletalAnimation animation = getAnimationPlayingForBone(boneName, animationTime);
 		SkeletonBone bone = animation.getBone(boneName);
@@ -44,12 +45,18 @@ public abstract class CompoundAnimationHelper implements SkeletonAnimator
 		}
 
 		//Get this very bone transformation matrix
-		Matrix4f thisBoneMatrix = getBoneTransformationMatrix(boneName, animationTime);
+		Matrix4fc thisBoneMatrix = getBoneTransformationMatrix(boneName, animationTime);
 
 		//Transform by parent if existant
 		SkeletonBone parent = animation.getBone(boneName).getParent();
-		if (parent != null)
-			Matrix4f.mul(getBoneHierarchyTransformationMatrixInternal(parent.getName(), animationTime), thisBoneMatrix, thisBoneMatrix);
+		if (parent != null) {
+			
+			Matrix4f thisBoneMatrix2 = new Matrix4f(thisBoneMatrix);
+			getBoneHierarchyTransformationMatrixInternal(parent.getName(), animationTime).mul(thisBoneMatrix2, thisBoneMatrix2);
+			//Matrix4f.mul(getBoneHierarchyTransformationMatrixInternal(parent.getName(), animationTime), thisBoneMatrix, thisBoneMatrix);
+
+			return thisBoneMatrix2;
+		}
 
 		return thisBoneMatrix;
 	}
@@ -57,7 +64,7 @@ public abstract class CompoundAnimationHelper implements SkeletonAnimator
 	/**
 	 * Returns a matrix to offset the rigged mesh
 	 */
-	public Matrix4f getBoneHierarchyMeshOffsetMatrix(String boneName, double animationTime)
+	public Matrix4fc getBoneHierarchyMeshOffsetMatrix(String boneName, double animationTime)
 	{
 		SkeletalAnimation animation = getAnimationPlayingForBone(boneName, animationTime);
 		return animation.getOffsetMatrix(boneName);
@@ -66,20 +73,21 @@ public abstract class CompoundAnimationHelper implements SkeletonAnimator
 	/**
 	 * Used to draw debug bone armature
 	 */
-	public Matrix4f getBoneHierarchyTransformationMatrix(String nameOfEndBone, double animationTime)
+	public Matrix4fc getBoneHierarchyTransformationMatrix(String nameOfEndBone, double animationTime)
 	{
-		return BVHAnimation.transformBlenderBVHExportToChunkStoriesWorldSpace(getBoneHierarchyTransformationMatrixInternal(nameOfEndBone, animationTime));
+		return BVHAnimation.transformBlenderBVHExportToChunkStoriesWorldSpace(new Matrix4f(getBoneHierarchyTransformationMatrixInternal(nameOfEndBone, animationTime)));
 	}
 
 	/**
 	 * Used to draw mesh parts in OpenGL
 	 */
-	public Matrix4f getBoneHierarchyTransformationMatrixWithOffset(String nameOfEndBone, double animationTime)
+	public Matrix4fc getBoneHierarchyTransformationMatrixWithOffset(String nameOfEndBone, double animationTime)
 	{
-		Matrix4f matrix = getBoneHierarchyTransformationMatrix(nameOfEndBone, animationTime);
+		Matrix4f matrix = new Matrix4f(getBoneHierarchyTransformationMatrix(nameOfEndBone, animationTime));
 
 		//Apply the offset matrix
-		Matrix4f.mul(matrix, getBoneHierarchyMeshOffsetMatrix(nameOfEndBone, animationTime), matrix);
+		matrix.mul(getBoneHierarchyMeshOffsetMatrix(nameOfEndBone, animationTime));
+		//Matrix4f.mul(matrix, getBoneHierarchyMeshOffsetMatrix(nameOfEndBone, animationTime), matrix);
 
 		return matrix;
 	}

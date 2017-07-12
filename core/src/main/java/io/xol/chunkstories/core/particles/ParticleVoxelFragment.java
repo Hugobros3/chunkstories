@@ -1,6 +1,9 @@
 package io.xol.chunkstories.core.particles;
 
-import io.xol.chunkstories.api.math.vector.dp.Vector3dm;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector3fc;
+
 import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
@@ -30,7 +33,7 @@ public class ParticleVoxelFragment extends ParticleTypeHandler
 		VoxelTexture tex;
 		
 		int timer = 1450; // 30s
-		Vector3dm vel = new Vector3dm();
+		Vector3d vel = new Vector3d();
 		
 		float rightX, topY, leftX, bottomY;
 		
@@ -44,10 +47,16 @@ public class ParticleVoxelFragment extends ParticleTypeHandler
 			//System.out.println("id+"+id + " "+ tex.atlasOffset / 32768f);
 		}
 		
-		public void setVelocity(Vector3dm vel)
+		public void setVelocity(Vector3dc vel)
 		{
-			this.vel = vel;
-			this.add(vel.castToSinglePrecision());
+			this.vel.set(vel);
+			this.add((float)vel.x(), (float)vel.y(), (float)vel.z());
+		}
+
+		@Override
+		public void setVelocity(Vector3fc vel) {
+			this.vel.set(vel);
+			this.add(vel);
 		}
 
 		@Override
@@ -139,17 +148,17 @@ public class ParticleVoxelFragment extends ParticleTypeHandler
 		FragmentData b = (FragmentData) data;
 		
 		b.timer--;
-		b.setX((float) (b.getX() + b.vel.getX()));
-		b.setY((float) (b.getY() + b.vel.getY()));
-		b.setZ((float) (b.getZ() + b.vel.getZ()));
+		b.x = ((float) (b.x() + b.vel.x()));
+		b.y = ((float) (b.y() + b.vel.y()));
+		b.z = ((float) (b.z() + b.vel.z()));
 		
-		if (!((WorldImplementation) world).checkCollisionPoint(b.getX(), b.getY() - 0.1, b.getZ()))
-			b.vel.setY(b.vel.getY() + -0.89/60.0);
+		if (!((WorldImplementation) world).checkCollisionPoint(b.x(), b.y() - 0.1, b.z()))
+			b.vel.y = (b.vel.y() + -0.89/60.0);
 		else
 			b.vel.set(0d, 0d, 0d);
 		
 		// 60th square of 0.5
-		b.vel.scale(0.98581402);
+		b.vel.mul(0.98581402);
 		if(b.vel.length() < 0.1/60.0)
 			b.vel.set(0d, 0d, 0d);
 		
