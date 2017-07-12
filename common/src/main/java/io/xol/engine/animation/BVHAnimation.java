@@ -203,6 +203,7 @@ public class BVHAnimation implements SkeletalAnimation
 				matrix = b.getTransformationMatrixInterpolatedRecursive(frameLower, frameUpper, interp);
 			}
 
+		System.out.println("lel unused");
 		transformBlenderBVHExportToChunkStoriesWorldSpace(matrix);
 
 		return matrix;
@@ -212,18 +213,18 @@ public class BVHAnimation implements SkeletalAnimation
 	{
 		//Swaps Y and Z axises arround
 		Matrix4f blender2ingame = new Matrix4f();
-		blender2ingame.m11(0);
-		blender2ingame.m22(0);
-		blender2ingame.m12(1);
-		blender2ingame.m21(1);
-
+		blender2ingame.m11(0.0f);
+		blender2ingame.m22(0.0f);
+		blender2ingame.m12(1.0f);
+		blender2ingame.m21(1.0f);
+		
 		//Rotate the matrix first to apply the transformation in blender space
 		blender2ingame.mul(matrix, matrix);
 		//Matrix4f.mul(blender2ingame, matrix, matrix);
 
 		//Mirror it
 		Matrix4f mirror = new Matrix4f();
-		mirror.m22(-1);
+		mirror.m22(-1.0f);
 		
 		mirror.mul(matrix, matrix);
 		//Matrix4f.mul(mirror, matrix, matrix);
@@ -233,7 +234,7 @@ public class BVHAnimation implements SkeletalAnimation
 		matrix.mul(blender2ingame, matrix);
 		//Matrix4f.mul(matrix, blender2ingame, matrix);
 
-		matrix.mul(mirror);
+		matrix.mul(mirror, matrix);
 		//Matrix4f.mul(matrix, mirror, matrix);
 
 		return matrix;

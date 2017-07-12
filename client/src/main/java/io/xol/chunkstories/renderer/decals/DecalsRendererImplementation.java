@@ -86,6 +86,12 @@ public class DecalsRendererImplementation implements DecalsRenderer
 			
 			Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 			
+			//Fail-over when looking straight down
+			if(lookAt.x == 0.0 && (lookAt.y == 1.0 || lookAt.y == -1.0) && lookAt.z == 0) {
+				up.y = 0.0f;
+				up.x = 1.0f;
+			}
+			
 			lookAt.cross(up, up);
 			//VectorCrossProduct.cross33(lookAt, up, up);
 			
@@ -93,7 +99,7 @@ public class DecalsRendererImplementation implements DecalsRenderer
 			//VectorCrossProduct.cross33(up, lookAt, up);
 			
 			Matrix4f rotationMatrix = new Matrix4f();
-			rotationMatrix.lookAt(new Vector3f(0.0f), lookAt, up);
+			rotationMatrix.setLookAt(new Vector3f(0.0f), lookAt, up);
 			//MatrixHelper.getLookAtMatrix(new Vector3f(0.0f), lookAt, up);
 			
 			DecalsVoxelBaker virtualRenderBytebuffer = new DecalsVoxelBaker(bbuf);

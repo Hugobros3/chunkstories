@@ -139,7 +139,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 			//Find wall collision
 			Location shotBlock = owner.getWorld().collisionsManager().raytraceSolid(eyeLocation, direction, range);
 
-			Vector3d nearestLocation = null;
+			Vector3d nearestLocation = new Vector3d();
 
 			//Loops to try and break blocks
 			while(owner.getWorld() instanceof WorldMaster && shotBlock != null)

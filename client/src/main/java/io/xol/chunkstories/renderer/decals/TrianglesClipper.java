@@ -29,19 +29,22 @@ public class TrianglesClipper
 		toClipSpace = new Matrix4f(rotationMatrix);
 		toClipSpace.translate(new Vector3f((float)originPosition.x(), (float)originPosition.y(), (float)originPosition.z()).negate());
 		
+		
 		Matrix4f resize = new Matrix4f();
-		resize.scale(new Vector3f(1 / (float)size.x(), 1 / (float)size.y(), 1));
+		resize.scale(new Vector3f(1f / (float)size.x(), 1f / (float)size.y(), 1));
 		
 		resize.transpose();
 		//Matrix4f.transpose(resize, resize);
 
-		resize.mul(toClipSpace);
+		
+		resize.mul(toClipSpace, toClipSpace);
 		//Matrix4f.mul(resize, toClipSpace, toClipSpace);
 
 		Matrix4f decal = new Matrix4f();
 		decal.translate(new Vector3f(0.5f, 0.5f, 1.0f));
 
-		decal.mul(toClipSpace);
+		decal.mul(toClipSpace, toClipSpace);
+		
 		//Matrix4f.mul(decal, toClipSpace, toClipSpace);
 
 		fromClipSpace = new Matrix4f();
@@ -90,6 +93,11 @@ public class TrianglesClipper
 		toClipSpace.transform(new Vector4f(vert3.x(), vert3.y(), vert3.z(), 1.0f), tv3);
 		//Matrix4f.transform(toClipSpace, new Vector4f(vert3.x(), vert3.y(), vert3.z(), 1.0f), null);
 
+		/*if(Float.isNaN(tv1.x())) {
+			System.out.println("Transform fucked vert1: "+vert1 + " in "+tv1);
+			System.out.println(toClipSpace);
+		}*/
+		
 		if (tv1.x() < 0.0 && tv2.x() < 0.0 && tv3.x() < 0.0)
 			return 0;
 		if (tv1.y() < 0.0 && tv2.y() < 0.0 && tv3.y() < 0.0)
@@ -165,7 +173,9 @@ public class TrianglesClipper
 		}
 		else
 		{
-			System.out.println("fuck X");
+			System.out.println("cullLeft: X ordering is fucked: " + v1.x() + " " + v2.x() + " " + v3.x());
+			System.out.println("Input was: "+vert1.x() + " " + vert2.x() + " " + vert3.x());
+			System.out.println("Input aka: "+vert1 + " " + vert2 + " " + vert3);
 			return 0;
 		}
 

@@ -95,7 +95,7 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 			context.currentShader().setUniform1i("doTransform", 1);
 
 			Matrix4f boneTransormation = new Matrix4f(EntityLivingImplementation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000));
-
+			
 			if (boneTransormation == null)
 				return;
 
@@ -105,7 +105,8 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 			Vector3f pos = new Vector3f((float)loc.x, (float)loc.y, (float)loc.z);
 			worldPositionTransformation.translate(pos);
 
-			boneTransormation.mul(worldPositionTransformation);
+			worldPositionTransformation.mul(boneTransormation, boneTransormation);
+			//boneTransormation.mul(worldPositionTransformation);
 
 			//Scales/moves the identity box to reflect collisionBox shape
 			boneTransormation.translate(new Vector3f((float)box.xpos, (float)box.ypos, (float)box.zpos));
@@ -145,12 +146,14 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 			worldPositionTransformation.translate(pos);
 
 			//Creates from AABB space to worldspace
-			fromAABBToWorld.mul(worldPositionTransformation);
+			
+			worldPositionTransformation.mul(fromAABBToWorld, fromAABBToWorld);
+			//fromAABBToWorld.mul(worldPositionTransformation);
 
 			//Invert it.
 			Matrix4f fromWorldToAABB = new Matrix4f();
 			
-			fromAABBToWorld.invert();
+			fromAABBToWorld.invert(fromWorldToAABB);
 			//Matrix4f.invert(fromAABBToWorld, fromWorldToAABB);
 
 			//Transform line start into AABB space
@@ -167,6 +170,7 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 			//Matrix4f.transform(fromWorldToAABB, lineDirection4, lineDirection4);
 
 			//System.out.println(lineStart4+":"+lineDirection4);
+			//System.out.println(fromWorldToAABB);
 
 			Vector3d lineStartTransformed = new Vector3d(lineStart4.x(), lineStart4.y(), lineStart4.z());
 			Vector3d lineDirectionTransformed = new Vector3d(lineDirection4.x(), lineDirection4.y(), lineDirection4.z());

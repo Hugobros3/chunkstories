@@ -51,8 +51,8 @@ public abstract class CompoundAnimationHelper implements SkeletonAnimator
 		SkeletonBone parent = animation.getBone(boneName).getParent();
 		if (parent != null) {
 			
-			Matrix4f thisBoneMatrix2 = new Matrix4f(thisBoneMatrix);
-			getBoneHierarchyTransformationMatrixInternal(parent.getName(), animationTime).mul(thisBoneMatrix2, thisBoneMatrix2);
+			Matrix4f thisBoneMatrix2 = new Matrix4f();
+			getBoneHierarchyTransformationMatrixInternal(parent.getName(), animationTime).mul(thisBoneMatrix, thisBoneMatrix2);
 			//Matrix4f.mul(getBoneHierarchyTransformationMatrixInternal(parent.getName(), animationTime), thisBoneMatrix, thisBoneMatrix);
 
 			return thisBoneMatrix2;
