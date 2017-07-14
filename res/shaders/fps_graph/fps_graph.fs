@@ -22,8 +22,8 @@ void main()
 	float alpha = 1.0 - (mod(currentTiming - pos / sizeInPixels * 1024 + 1024, 1024))/1024.0 * 1.5;
 	
 	fragColor = vec4(vec3(0.0), 0.2);
-	float min = texture1D(frametimeData, (pos - 2.0) / sizeInPixels).r;
-	float max = texture1D(frametimeData, pos / sizeInPixels).r;
+	float min = texture(frametimeData, (pos - 2.0) / sizeInPixels).r;
+	float max = texture(frametimeData, pos / sizeInPixels).r;
 	
 	float delta = (height) - max;
 	if(abs(delta) < 2)
