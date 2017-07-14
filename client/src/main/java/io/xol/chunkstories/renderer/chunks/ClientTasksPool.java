@@ -325,4 +325,9 @@ public class ClientTasksPool extends TasksPool<Task> implements ChunkMeshesBaker
 			this.scheduleTask(DIE);
 	}
 	
+	@Override
+	public String toString() {
+		return "[ClientTasksPool threads:"+threadsCount+" tasksQueue: "+tasksQueue.size()+" ]";
+	}
+	
 }

@@ -231,7 +231,7 @@ public class Client implements ClientInterface
 	public void printChat(String textToPrint)
 	{
 		if (gameWindow.getLayer().getRootLayer() instanceof Ingame)
-			((Ingame) gameWindow.getLayer().getRootLayer()).chat.insert(textToPrint);
+			((Ingame) gameWindow.getLayer().getRootLayer()).chatManager.insert(textToPrint);
 	}
 
 	public void openInventories(Inventory... inventories)
