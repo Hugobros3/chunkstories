@@ -1,22 +1,14 @@
 package io.xol.chunkstories.gui;
 
-import java.util.Iterator;
-
 /*import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;*/
 
-import io.xol.engine.graphics.GLCalls;
-import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
-import io.xol.engine.graphics.geometry.VertexBufferGL;
-import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
-import io.xol.chunkstories.api.entity.EntityLiving.HitBox;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
@@ -27,22 +19,13 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.math.Math2;
-import org.joml.Vector3d;
 import org.joml.Vector4f;
-import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
-import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.WorldRenderer;
-import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
-import io.xol.chunkstories.api.util.IterableIterator;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientMasterPluginManager;
 import io.xol.chunkstories.client.ClientSlavePluginManager;
@@ -55,11 +38,7 @@ import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.PauseOverlay;
 import io.xol.chunkstories.renderer.SelectionRenderer;
-import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
-import io.xol.chunkstories.renderer.chunks.RenderableChunk;
-import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldClientRemote;
 
@@ -69,7 +48,7 @@ import io.xol.chunkstories.world.WorldClientRemote;
 
 public class Ingame extends Layer
 {
-	final private WorldClientCommon world;
+	private final WorldClientCommon world;
 	
 	//Moved from client to IG, as these make sense per world/play
 	private final ClientPluginManager pluginManager;
@@ -77,24 +56,34 @@ public class Ingame extends Layer
 	//Only in SP
 	private final LocalServerContext localServer;
 
-	// Renderer
-	SelectionRenderer selectionRenderer;
-	InventoryDrawer inventoryDrawer;
+	// Renderer & client interface components
+	private final SelectionRenderer selectionRenderer;
+	private InventoryDrawer inventoryBarDrawer = null;
+	private final PhysicsWireframeDebugger wireframeDebugger;
+	private final DebugInfoRenderer debugInfoRenderer;
+	public final Chat chatManager;
+	
+	//Convinience references
+	private boolean focus2 = true;
+	private Entity playerEntity;
 
-	//Camera camera = new Camera();
-	public Chat chat;
-	protected boolean focus = true;
-	Entity playerEntity;
-
+	//TODO: Move to config, just like f3
 	private boolean guiHidden = false;
-	boolean shouldTakeACubemap = false;
+	
+	//Hack
+	private boolean shouldTakeACubemap = false;
 
 	public Ingame(GameWindowOpenGL_LWJGL3 window, WorldClientCommon world)
 	{
 		super(window, null);
 		this.world = world;
 		
-		chat = new Chat(this);
+		this.chatManager = new Chat(this);
+
+		//Creates the rendering stuff
+		this.selectionRenderer = new SelectionRenderer(world);
+		this.wireframeDebugger = new PhysicsWireframeDebugger(window.getClient(), world);
+		this.debugInfoRenderer = new DebugInfoRenderer(window.getClient(), world);
 		
 		if(world instanceof WorldMaster)
 		{
@@ -115,10 +104,6 @@ public class Ingame extends Layer
 		if (world instanceof WorldMaster)
 			world.spawnPlayer(Client.getInstance().getPlayer());
 
-		//Creates the rendering stuff
-		//world.getWorldRenderer().setupRenderSize(window.getWidth(), window.getHeight());
-		selectionRenderer = new SelectionRenderer(world);
-
 		//Give focus
 		focus(true);
 	}
@@ -138,7 +123,7 @@ public class Ingame extends Layer
 		//if(gameWindow.getLayer() != this)
 		//if (this.currentOverlay != null)
 			return false;
-		return focus;
+		return focus2;
 	}
 
 	float pauseOverlayFade = 0.0f;
@@ -150,19 +135,16 @@ public class Ingame extends Layer
 		if ((playerEntity == null || playerEntity != Client.getInstance().getPlayer().getControlledEntity()) && Client.getInstance().getPlayer().getControlledEntity() != null)
 		{
 			playerEntity = Client.getInstance().getPlayer().getControlledEntity();
+			
+			
 			if (playerEntity instanceof EntityWithSelectedItem)
-				inventoryDrawer = ((EntityWithSelectedItem) playerEntity).getInventory() == null ? null : new InventoryDrawer((EntityWithSelectedItem) playerEntity);
+				inventoryBarDrawer = ((EntityWithSelectedItem) playerEntity).getInventory() == null ? null : new InventoryDrawer((EntityWithSelectedItem) playerEntity);
 			else
-				inventoryDrawer = null;
+				inventoryBarDrawer = null;
 		}
-
-		CameraInterface camera = renderingContext.getCamera();
 		
 		if (playerEntity != null && ((EntityLiving) playerEntity).isDead() && !(gameWindow.getLayer() instanceof DeathOverlay))
 			gameWindow.setLayer(new DeathOverlay(gameWindow, this));
-
-		//Get the player location
-		Vector3d cameraPosition = (Vector3d) renderingContext.getCamera().getCameraPosition();
 
 		// Update the player
 		if (playerEntity instanceof EntityControllable)
@@ -182,61 +164,8 @@ public class Ingame extends Layer
 		world.getWorldRenderer().renderWorld(renderingContext);
 
 		//Debug draws
-		if (RenderingConfig.physicsVisualization && playerEntity != null)
-		{
-			int id, data;
-			int drawDebugDist = 6;
-			//cameraPosition.negate();
-
-			for (int i = ((int)(double) cameraPosition.x()) - drawDebugDist; i <= ((int)(double) cameraPosition.x()) + drawDebugDist; i++)
-				for (int j = ((int)(double) cameraPosition.y()) - drawDebugDist; j <= ((int)(double) cameraPosition.y()) + drawDebugDist; j++)
-					for (int k = ((int)(double) cameraPosition.z()) - drawDebugDist; k <= ((int)(double) cameraPosition.z()) + drawDebugDist; k++)
-					{
-						data = world.getVoxelData(i, j, k);
-						id = VoxelFormat.id(data);
-						
-						CollisionBox[] tboxes = VoxelsStore.get().getVoxelById(id).getTranslatedCollisionBoxes(world, i, j, k);
-						if (tboxes != null)
-							for (CollisionBox box : tboxes)
-								if (VoxelsStore.get().getVoxelById(id).getType().isSolid())
-									FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4f(1, 0, 0, 1.0f));
-									//box.debugDraw(1, 0, 0, 1.0f);
-								else
-									FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4f(1, 1, 0, 0.25f));
-									//box.debugDraw(1, 1, 0, 0.25f);
-						
-						//((VoxelTypeImplementation) VoxelsStore.get().getVoxelById(id).getType()).debugRenderCollision(renderingContext, world, i, j, k);
-						//VoxelsStore.get().getVoxelById(id).debugRenderCollision(world, i, j, k);
-					}
-
-			//player.getTranslatedBoundingBox().debugDraw(0, 1, 1, 1);
-
-			Iterator<Entity> ie = world.getAllLoadedEntities();
-			while (ie.hasNext())
-			{
-				Entity e = ie.next();
-				
-				if(e instanceof EntityLiving)
-				{
-					EntityLiving eli = (EntityLiving)e;
-					for(HitBox hitbox: eli.getHitBoxes())
-					{
-						hitbox.draw(renderingContext);
-					}
-				}
-				
-				if(e.getTranslatedBoundingBox().lineIntersection(cameraPosition, new Vector3d(camera.getViewDirection())) != null)
-
-					FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4f(0, 0, 0.5f, 1.0f));
-				else
-					FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4f(0, 1f, 1f, 1.0f));
-				
-				for(CollisionBox box : e.getCollisionBoxes())
-				{
-					box.translate(e.getLocation());
-					FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4f(0, 1, 0.5f, 1.0f));
-				}
-			}
+		if (RenderingConfig.physicsVisualization && playerEntity != null) {
+			wireframeDebugger.render(renderingContext);
 		}
 		
 		if (selectedBlock != null && playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
@@ -272,12 +201,12 @@ public class Ingame extends Layer
 		if (!guiHidden)
 		{
 			//Draw chat
-			chat.update();
-			chat.draw(renderingContext);
+			chatManager.update();
+			chatManager.draw(renderingContext);
 
 			//Draw inventory
-			if (playerEntity != null && inventoryDrawer != null)
-				inventoryDrawer.drawPlayerInventorySummary(renderingContext, renderingContext.getWindow().getWidth() / 2 - 7, 64 + 64);
+			if (playerEntity != null && inventoryBarDrawer != null)
+				inventoryBarDrawer.drawPlayerInventorySummary(renderingContext, renderingContext.getWindow().getWidth() / 2 - 7, 64 + 64);
 
 			//TODO : move this crap into the EntityOverlays shit
 			//Draw health
@@ -307,29 +236,26 @@ public class Ingame extends Layer
 							32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
 				}
 			}
-			//Or draw cursor
-			//if(!isCovered())
-				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(renderingContext.getWindow().getWidth() / 2 - 8, renderingContext.getWindow().getHeight() / 2 - 8, 16, 16, 0, 1, 1, 0, renderingContext.textures().getTexture("./textures/gui/cursor.png"), false, true, null);
+			
+			// draw cursor
+			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(renderingContext.getWindow().getWidth() / 2 - 8, renderingContext.getWindow().getHeight() / 2 - 8, 16, 16, 0, 1, 1, 0, renderingContext.textures().getTexture("./textures/gui/cursor.png"), false, true, null);
 
 			//Draw debug info
 			if (RenderingConfig.showDebugInfo)
-				drawF3debugMenu(renderingContext);
+				debugInfoRenderer.drawF3debugMenu(renderingContext);;
 		}
+		
 		//Lack of overlay should infer autofocus
 		if (!isCovered())// && !chat.chatting)
-		{
 			focus(true);
-		}
 			
-		Client.profiler.reset("gui");
+		//Client.profiler.reset("gui");
 
 		// Check connection didn't died and change scene if it has
 		if (world instanceof WorldClientRemote)
 		{
-
 			if (!((WorldClientRemote) world).getConnection().isAlive() || ((WorldClientRemote) world).getConnection().hasFailed())
 				Client.getInstance().exitToMainMenu("Connection terminated : " + ((WorldClientRemote) world).getConnection().getLatestErrorMessage());
-
 		}
 
 		//Auto-switch to pause if it detects the game isn't in focus anymore
@@ -343,9 +269,9 @@ public class Ingame extends Layer
 	public void focus(boolean f)
 	{
 		gameWindow.getInputsManager().getMouse().setGrabbed(f);
-		if (f && !focus)
+		if (f && !focus2)
 			gameWindow.getInputsManager().getMouse().setMouseCursorLocation(Math.floor(gameWindow.getWidth() / 2.0f), Math.floor(gameWindow.getHeight() / 2.0f));
-		focus = f;
+		focus2 = f;
 	}
 
 	@Override
@@ -356,7 +282,7 @@ public class Ingame extends Layer
 			//Block inputs if chatting
 			if (input.equals("chat"))
 			{
-				gameWindow.setLayer(chat.new ChatPanelOverlay(gameWindow, this));
+				gameWindow.setLayer(chatManager.new ChatPanelOverlay(gameWindow, this));
 				focus(false);
 				return true;
 			}
@@ -372,7 +298,7 @@ public class Ingame extends Layer
 		}
 		else if (input.equals("screenshot"))
 		{
-			chat.insert(world.getWorldRenderer().screenShot());
+			chatManager.insert(world.getWorldRenderer().screenShot());
 		}
 		else if (input.equals("toggleDebugInfo"))
 		{
@@ -491,7 +417,7 @@ public class Ingame extends Layer
 	@Override
 	public void destroy()
 	{
-		//Logout sequence
+		//Logout sequence: Save the player entity
 		if(world instanceof WorldMaster)
 		{
 			Player player = Client.getInstance().getPlayer();
@@ -505,161 +431,27 @@ public class Ingame extends Layer
 				playerEntityFile.write(this.playerEntity);
 			}
 		}
-		//player.save();
-		//player.removePlayerFromWorld();
+		
+		//Stop the game logic and save
+		if(world instanceof WorldMaster) {
+			
+			//TODO: Stop simulation
+			Fence fence = ((WorldMaster)world).stopLogic();
+			
+			//exitButton.text = "#{world.saving}";
+			
+			fence.traverse();
+			fence = world.saveEverything();
+			
+			//exitButton.text = "#{world.saving}";
+			
+			fence.traverse();
+		}
 		
 		//Disables plugins
 		pluginManager.disablePlugins();
 		
 		this.world.getWorldRenderer().destroy();
-	}
-
-	private void drawF3debugMenu(RenderingInterface renderingInterface)
-	{
-		CameraInterface camera = renderingInterface.getCamera();
-		
-		int timeTook = Client.profiler.timeTook();
-		String debugInfo = Client.profiler.reset("gui").toString();
-		if (timeTook > 400)
-			System.out.println("Lengty frame, printing debug information : \n" + debugInfo);
-
-		long total = Runtime.getRuntime().totalMemory();
-		long used = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		int bx = ((int)(double) camera.getCameraPosition().x());
-		int by = ((int)(double) camera.getCameraPosition().y());
-		int bz = ((int)(double) camera.getCameraPosition().z());
-		int data = world.getVoxelData(bx, by, bz);
-		int bl = VoxelFormat.blocklight(data);
-		int sl = VoxelFormat.sunlight(data);//(data & 0x00F00000) >> 0x14;
-		int cx = bx / 32;
-		int cy = by / 32;
-		int cz = bz / 32;
-		int csh = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(bx, bz);
-
-		float angleX = -1;
-		if (playerEntity != null && playerEntity instanceof EntityLiving)
-			angleX = Math.round(((EntityLiving) playerEntity).getEntityRotationComponent().getHorizontalRotation());
-		//float angleY = Math.round(((EntityLiving) player).getEntityRotationComponent().getVerticalRotation());
-		double dx = Math.sin(angleX / 360 * 2.0 * Math.PI);
-		double dz = Math.cos(angleX / 360 * 2.0 * Math.PI);
-
-		VoxelSides side = VoxelSides.TOP;
-
-		//System.out.println("dx: "+dx+" dz:" + dz);
-
-		if (Math.abs(dx) > Math.abs(dz))
-		{
-			if (dx > 0)
-				side = VoxelSides.RIGHT;
-			else
-				side = VoxelSides.LEFT;
-		}
-		else
-		{
-			if (dz > 0)
-				side = VoxelSides.FRONT;
-			else
-				side = VoxelSides.BACK;
-		}
-
-		//Location selectedBlockLocation = ((EntityControllable) player).getBlockLookingAt(false);
-
-		int ec = 0;
-		IterableIterator<Entity> i = world.getAllLoadedEntities();
-		while (i.hasNext())
-		{
-			i.next();
-			ec++;
-		}
-
-		Chunk current = world.getChunk(cx, cy, cz);
-		int x_top = renderingInterface.getWindow().getHeight() - 16;
-		FontRenderer2.drawTextUsingSpecificFont(20,
-				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + world.getWorldRenderer().getChunkMeshesRenderer().getChunksVisibleForPass(WorldRenderer.RenderingPass.NORMAL_OPAQUE)) + " Entities " + ec + " Particles :" + ((ClientParticlesRenderer) world.getParticlesManager()).count()
-						+ " #FF0000Render FPS: " + Client.getInstance().getGameWindow().getFPS() + " avg: " + Math.floor(10000.0 / Client.getInstance().getGameWindow().getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + world.getWorldRenderer().getWorld().getGameLogic().getSimulationFps(),
-				BitmapFont.SMALLFONTS);
-
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Frame timings : " + debugInfo, BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + world.getRegionsHolder().countChunksWithData() + "/"
-				+ world.getRegionsHolder().countChunks() + " " + Math.floor(world.getRegionsHolder().countChunksWithData() * 4 * 32 * 32 * 32 / (1024L * 1024 / 100f)) / 100f + "Mb used by chunks"
-
-		, BitmapFont.SMALLFONTS);
-
-		//FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + getLoadedChunksVramFootprint() + ", " + getLoadedTerrainVramFootprint(), BitmapFont.SMALLFONTS);
-
-		long totalVram = (renderingInterface.getTotalVramUsage()) / 1024 / 1024;
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram + "Mb as " + Texture2DGL.getTotalNumberOfTextureObjects() + " textures using " + Texture2DGL.getTotalVramUsage() / 1024 / 1024 + "Mb + "
-				+ VertexBufferGL.getTotalNumberOfVerticesObjects() + " Vertices objects using " + renderingInterface.getVertexDataVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
-
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : " + world.getWorldRenderer().getChunkMeshesRenderer().getBaker() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16,
-				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " Block looking at : bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
-
-		if (current == null)
-			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk null", BitmapFont.SMALLFONTS);
-		else if (current instanceof ChunkRenderable)
-		{
-			ChunkRenderDataHolder chunkRenderData = ((RenderableChunk) current).getChunkRenderData();
-			if (chunkRenderData != null)
-			{
-				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk : " + current + " - " + chunkRenderData.toString(), BitmapFont.SMALLFONTS);
-			}
-			else
-				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk : " + current + " - No rendering data", BitmapFont.SMALLFONTS);
-		}
-
-		if (playerEntity != null && playerEntity instanceof EntityLiving)
-		{
-			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Current Region : " + this.playerEntity.getWorld().getRegionChunkCoordinates(cx, cy, cz), BitmapFont.SMALLFONTS);
-			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 9 * 16, 0, 16, "Controlled Entity : " + this.playerEntity, BitmapFont.SMALLFONTS);
-		}
-	}
-
-	@SuppressWarnings("unused")
-	private String getLoadedChunksVramFootprint()
-	{
-		int nbChunks = 0;
-		long octelsTotal = 0;
-
-		ChunksIterator i = world.getAllLoadedChunks();
-		Chunk c;
-		while (i.hasNext())
-		{
-			c = i.next();
-			if (c == null)
-				continue;
-			if (c instanceof ChunkRenderable)
-			{
-				ChunkRenderDataHolder chunkRenderData = ((RenderableChunk) c).getChunkRenderData();
-				if (chunkRenderData != null)
-				{
-					nbChunks++;
-					//octelsTotal += chunkRenderData.getVramUsage();
-				}
-			}
-		}
-		return nbChunks + " chunks";//, storing " + octelsTotal / 1024 / 1024 + "Mb of vertex data.";
-	}
-
-	@SuppressWarnings("unused")
-	private String getLoadedTerrainVramFootprint()
-	{
-		int nbChunks = world.getRegionsSummariesHolder().countSummaries();
-		long octelsTotal = nbChunks * 256 * 256 * (1 + 1) * 4;
-
-		return nbChunks + " regions, storing " + octelsTotal / 1024 / 1024 + "Mb of data";
-	}
-
-	public String formatBigAssNumber(String in)
-	{
-		String formatted = "";
-		for (int i = 0; i < in.length(); i++)
-		{
-			if (i > 0 && i % 3 == 0)
-				formatted = "." + formatted;
-			formatted = in.charAt(in.length() - i - 1) + formatted;
-		}
-		return formatted;
 	}
 	
 	public ClientPluginManager getPluginManager()
