@@ -53,25 +53,6 @@ public class PauseOverlay extends Layer
 		this.exitButton.setAction(new Runnable() {
 			@Override
 			public void run() {
-				
-				//Ingame ingame = (Ingame)getRootLayer();
-				World world = Client.getInstance().getWorld();
-				if(world instanceof WorldMaster) {
-					
-					//TODO: Stop simulation
-					Fence fence = ((WorldMaster)world).stopLogic();
-					
-					exitButton.text = "#{world.saving}";
-					
-					fence.traverse();
-					fence = world.saveEverything();
-					
-					exitButton.text = "#{world.saving}";
-					
-					fence.traverse();
-				}
-				
-				
 				Client.getInstance().exitToMainMenu();
 			}
 		});
