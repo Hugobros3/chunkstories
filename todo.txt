@@ -13,9 +13,12 @@ Bugs TBF:
 
 Todo:
 
-Release RC1
-Give guns recoil
-JOML is of need
+RC2
+Remaining recoil
+Debug for tasks
+More gc fine-tuning
+Fix graph
+Fix grenades
 
 LT:
 

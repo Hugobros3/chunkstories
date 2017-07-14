@@ -158,7 +158,7 @@ voxel ladder 33
 	customClass: io.xol.chunkstories.core.voxel.VoxelLadder
 	opaque: false
 	usesCustomModel: true
-	solid: false
+	solid: true
 end
 
 voxel vine 34
