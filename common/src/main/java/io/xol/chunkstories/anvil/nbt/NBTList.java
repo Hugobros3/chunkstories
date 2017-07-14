@@ -21,9 +21,9 @@ public class NBTList extends NBTNamed {
 		super.feed(is);
 		type = is.read();
 		number = is.read() << 24;
-		number = is.read() << 16;
-		number = is.read() << 8;
-		number = is.read();
+		number |= is.read() << 16;
+		number |= is.read() << 8;
+		number |= is.read();
 		//System.out.println("Found a list of "+number+" tags of type : "+type+" ("+NBTag.Type.values()[type].name()+")");
 		if(type > 0)
 		{

@@ -18,6 +18,7 @@ public class NBTCompound extends NBTNamed implements Iterable<NBTNamed> {
 	@Override
 	public void feed(DataInputStream is) throws IOException {
 		super.feed(is);
+		//System.out.println("NBTCompound: "+this.getName());
 		NBTag tag = NBTag.parseInputStream(is);
 		while(tag instanceof NBTNamed)
 		{

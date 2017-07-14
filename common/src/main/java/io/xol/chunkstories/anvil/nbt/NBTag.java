@@ -65,7 +65,7 @@ public abstract class NBTag
 			return tag;
 		}
 		catch(ArrayIndexOutOfBoundsException e) {
-			System.out.println("Last valid type was : "+lastType);
+			System.out.println("Out of bounds type exception: "+t+" Last valid type was : "+lastType);
 			throw new RuntimeException("Well fuck");
 		}
 	}
