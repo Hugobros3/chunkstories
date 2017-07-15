@@ -179,8 +179,8 @@ public class WorldRendererImplementation implements WorldRenderer
 		
 		//Add forward rendered stuff
 		farTerrainRenderer.renderTerrain(renderingInterface, chunksRenderer.getRenderedChunksMask(mainCamera));
-		weatherEffectsRenderer.renderEffects(renderingInterface);
 		particlesRenderer.render(renderingInterface, false);
+		weatherEffectsRenderer.renderEffects(renderingInterface);
 	}
 
 	private void gbuffers_opaque_chunk_meshes(RenderingInterface renderingInterface)

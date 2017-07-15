@@ -123,6 +123,8 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 					entitySign.cachedText = entitySign.signText.getSignText();
 					entitySign.renderData = renderingContext.getFontRenderer().newTextMeshObject(renderingContext.getFontRenderer().defaultFont(), entitySign.cachedText);
 				}
+				
+				//System.out.println(entitySign.cachedText);
 				// Display it
 				mutrix.translate(new Vector3f(0.0f, 1.15f, 0.055f));
 				renderingContext.setObjectMatrix(mutrix);

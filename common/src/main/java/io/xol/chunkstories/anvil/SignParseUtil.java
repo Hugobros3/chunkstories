@@ -10,13 +10,23 @@ import org.json.simple.parser.ParseException;
 //http://xol.io
 
 public class SignParseUtil {
-	private static JSONParser parser = new JSONParser();
+	
+	private static ThreadLocal<JSONParser> threadSafeJsonParser = new ThreadLocal<JSONParser>() {
+
+		@Override
+		protected JSONParser initialValue() {
+			return new JSONParser();
+		}
+		
+	};
 	
 	/** Sign data is a mess of legacy and incompatible formats, the same save can contain multiple ways of formatting this data, this method should return
 	 * something along the lines of what the actual Minecraft client could read out of it
 	 */
 	public static String parseSignData(String data)
 	{
+		if(data == null)
+			return "";
 		if(data.endsWith("null"))
 			return "";
 		if(data.startsWith("\""))
@@ -27,7 +37,7 @@ public class SignParseUtil {
 			try
 			{
 				//System.out.println(":"+data);
-				jSonObject = (JSONObject) parser.parse(data);
+				jSonObject = (JSONObject) threadSafeJsonParser.get().parse(data);
 				
 				Object extraObject = jSonObject.get("extra");
 				
@@ -52,6 +62,8 @@ public class SignParseUtil {
 			}
 			catch (ParseException e)
 			{
+				System.out.println(data);
+				System.out.println(data.length());
 				System.out.println("Can't parse sign "+e.getMessage());
 				e.printStackTrace();
 			}

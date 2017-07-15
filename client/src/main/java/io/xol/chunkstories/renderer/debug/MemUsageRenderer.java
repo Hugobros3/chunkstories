@@ -32,8 +32,14 @@ public class MemUsageRenderer
 		long elapsedTime = (System.nanoTime() - lastTime);
 		lastTime = System.nanoTime();
 		
-		dataBB.putFloat(lel * 4, (float)((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024) / (Runtime.getRuntime().totalMemory() / 1024 / 1024) * 256);
+		float totalMemoryMB = Runtime.getRuntime().totalMemory() / 1024 / 1024;
+		float freeMemoryMB = Runtime.getRuntime().freeMemory() / 1024 / 1024;
 		
+		float usedMemoryMB = totalMemoryMB - freeMemoryMB;
+		
+		dataBB.putFloat(lel * 4, usedMemoryMB / totalMemoryMB * 192f);
+		
+		//System.out.println(usedMemoryMB + " / " + totalMemoryMB);
 		
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.MIX);

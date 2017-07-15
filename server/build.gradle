@@ -39,6 +39,13 @@ jar {
 	archivesBaseName = 'server-naked'
 }
 
+jar {
+	manifest {
+		attributes  'Implementation-Title': 'Chunk Stories Server',
+					'Implementation-Version': version
+	}
+}
+
 shadowJar {
    baseName = 'server'
    classifier = null

@@ -21,6 +21,11 @@ public class ParticleTypeImpl extends GenericNamedConfigurable implements Partic
 	
 	private final ParticleTypeHandler handler;
 
+	@Override
+	public String getShaderName() {
+		return this.resolveProperty("shaderName", "particles");
+	}
+
 	public ParticleTypeImpl(ParticlesTypesStore store, String particleName, int id, BufferedReader reader)
 			throws IllegalParticleDeclarationException, IOException {
 		super(particleName, reader);

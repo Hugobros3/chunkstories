@@ -30,10 +30,10 @@ public class SpecialBlocksHandler {
 		if (entitiesList != null)
 		{
 			//System.out.println("TileEntities:");
-			for (NBTag elements : entitiesList.elements)
+			for (NBTag element : entitiesList.elements)
 			{
-				//System.out.println("Found TileEntity");
-				NBTCompound entity = (NBTCompound) elements;
+				//System.out.println("Found TileEntity" + element);
+				NBTCompound entity = (NBTCompound) element;
 				NBTString entityId = (NBTString) entity.getTag("id");
 				
 				int tileX = ((NBTInt)entity.getTag("x")).data;
@@ -44,11 +44,12 @@ public class SpecialBlocksHandler {
 				int csCoordinatesY = tileY;
 				int csCoordinatesZ = (tileZ % 16 + 16) % 16 + csBaseZ;
 				
-				if (entityId.data.equals("Chest"))
+				//System.out.println(entityId.data);
+				if (entityId.data.toLowerCase().equals("chest"))
 				{
 					//System.out.println("Found "+entityId.data+" at "+tileX+": "+tileY+" "+tileZ);
 				}
-				else if (entityId.data.equals("Sign"))
+				else if (entityId.data.toLowerCase().equals("sign") || entityId.data.toLowerCase().equals("minecraft:sign"))
 				{
 					//System.out.println("Found "+entityId.data+" at "+tileX+": "+tileY+" "+tileZ);
 					//System.out.println("aka "+" at "+csCoordinatesX+": "+csCoordinatesY+" "+csCoordinatesZ);

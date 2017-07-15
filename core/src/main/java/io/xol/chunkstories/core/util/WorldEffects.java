@@ -18,7 +18,7 @@ public class WorldEffects
 	public static void createFireball(World world, Vector3d center, double radius, double debrisSpeed, float f)
 	{
 		//Play effect directly in SP
-		if(world instanceof WorldClient && !(world instanceof WorldMaster))
+		if(world instanceof WorldClient && (world instanceof WorldMaster))
 			createFireballFx(world, center, radius, debrisSpeed, f);
 		//Dispatch to users in MP
 		else if(world instanceof WorldMaster)

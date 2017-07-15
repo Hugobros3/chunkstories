@@ -15,10 +15,11 @@ Todo:
 
 RC2
 Remaining recoil
-Debug for tasks
 More gc fine-tuning
-Fix graph
+Fix graph scaling
+Fix signs
 Fix grenades
+Make FakeCraft ?
 
 LT:
 

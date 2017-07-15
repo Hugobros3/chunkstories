@@ -10,10 +10,28 @@ allprojects {
 	}
 }
 
-version = '2017.07.12'
-//version = 'Alpha 1.0rc1'
+//version = '2017.07.12'
+version = 'Alpha 1.0rc2'
 description = 'A voxel game and game engine designed for modders'
 group = 'io.xol.chunkstories'
+
+task buildAll {
+	dependsOn ':client:shadowJar'
+	dependsOn ':server:shadowJar'
+	dependsOn ':converter:shadowJar'
+	
+	dependsOn ':core:jar'
+	dependsOn ':common:jar'
+}
+
+task uploadAll {
+	dependsOn ':client:uploadShadow'
+	dependsOn ':server:uploadShadow'
+	//dependsOn ':converter:shadowJar'
+	
+	dependsOn ':core:uploadArtifacts'
+	dependsOn ':common:uploadArtifacts'
+}
 
 subprojects {
 

@@ -88,7 +88,7 @@ end
 
 packet fx_explosion 17
 	allowedFrom: server
-	commonClass: io.xol.chunkstories.net.packets.PacketExplosionEffect
+	commonClass: io.xol.chunkstories.core.net.packets.PacketExplosionEffect
 end
 
 #Be sensible and add your own ones after The game has an hardlimit of arround 32768 packet types possible
