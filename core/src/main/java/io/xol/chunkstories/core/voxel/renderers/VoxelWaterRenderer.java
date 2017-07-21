@@ -1,4 +1,4 @@
-package io.xol.chunkstories.core.voxel;
+package io.xol.chunkstories.core.voxel.renderers;
 
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;

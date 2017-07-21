@@ -1,7 +1,6 @@
 package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.Constants;
-import io.xol.chunkstories.core.voxel.DefaultVoxelRenderer;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool.PooledByteBuffer;
 import io.xol.chunkstories.api.Content.Voxels;
@@ -29,6 +28,7 @@ import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.graphics.geometry.VertexBufferGL;

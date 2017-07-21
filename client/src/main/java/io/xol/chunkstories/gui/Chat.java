@@ -203,7 +203,7 @@ public class Chat
 				alpha = 0;
 			if (alpha > 1 || ingame.getGameWindow().getLayer() instanceof ChatPanelOverlay)
 				alpha = 1;
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 9, (linesDrew - 1) * 26 + 180 + (50), localizedLine, 2, 2, chatWidth, new Vector4f(1, 1, 1, alpha));
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 9, (linesDrew - 1) * renderer.getFontRenderer().defaultFont().getLineHeight() * 2 + 180 + (50), localizedLine, 2, 2, chatWidth, new Vector4f(1, 1, 1, alpha));
 		}
 		
 	}

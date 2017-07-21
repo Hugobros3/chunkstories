@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive

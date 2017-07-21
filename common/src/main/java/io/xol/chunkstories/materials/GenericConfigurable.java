@@ -53,13 +53,15 @@ public class GenericConfigurable {
 		//if(properties.containsKey(propertyName))
 		//	properties.replace(propertyName, propertyValue);
 		//else
-		properties.put(propertyName, propertyValue);
+		properties.put(propertyName.toLowerCase(), propertyValue);
 	}
 	
 	private static Random random = new Random();
 	
 	public String resolveProperty(String propertyName)
 	{
+		propertyName = propertyName.toLowerCase();
+		
 		String resolved = properties.get(propertyName);
 		if(resolved == null)
 			return null;

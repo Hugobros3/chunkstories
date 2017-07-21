@@ -3,6 +3,7 @@ package io.xol.chunkstories.core.voxel;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.world.VoxelContext;
+import io.xol.chunkstories.core.voxel.renderers.VoxelWaterRenderer;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.models.VoxelModelLoaded;
 

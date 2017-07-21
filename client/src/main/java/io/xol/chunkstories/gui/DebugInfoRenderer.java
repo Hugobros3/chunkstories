@@ -67,8 +67,10 @@ public class DebugInfoRenderer {
 		}
 		
 		int data = world.getVoxelData(bx, by, bz);
+		int id = VoxelFormat.id(data);
+		int meta = VoxelFormat.meta(data);
 		int bl = VoxelFormat.blocklight(data);
-		int sl = VoxelFormat.sunlight(data);//(data & 0x00F00000) >> 0x14;
+		int sl = VoxelFormat.sunlight(data);
 		int cx = bx / 32;
 		int cy = by / 32;
 		int cz = bz / 32;
@@ -125,7 +127,7 @@ public class DebugInfoRenderer {
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : " + world.getWorldRenderer().getChunkMeshesRenderer().getBaker() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16,
-				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " Block looking at : bl:" + bl + " sl:" + sl + " cx:" + cx + " cy:" + cy + " cz:" + cz + " csh:" + csh, BitmapFont.SMALLFONTS);
+				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " #FF0000Block looking at#FFFFFF : pos: "+bx + ": " + by + ": " + bz +" data: "+data+" id: "+id+" meta: "+meta+" bl:" + bl + " sl:" + sl + " csh:" + csh, BitmapFont.SMALLFONTS);
 
 		if (current == null)
 			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk null", BitmapFont.SMALLFONTS);

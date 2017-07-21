@@ -37,7 +37,7 @@ void main()
 {
 	vec4 color = texture(diffuseTexture, texCoordPassed);
 	
-	float depth = texture(zBuffer, gl_FragCoord.xy / screenViewportSize ).x;
+	//float depth = texture(zBuffer, gl_FragCoord.xy / screenViewportSize ).x;
 	
 	vec3 normal = vec3(0.0, 1.0, 0.0);
 	
@@ -60,7 +60,7 @@ void main()
 	
 	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(eyeDirection), vec3(normal)), 0.0, 1.0);
 	
-	gl_FragDepth = gl_FragCoord.z - 0.001;
+	//gl_FragDepth = gl_FragCoord.z - 0.001;
 	
 	//Diffuse G-Buffer
 	gl_FragData[0] = vec4(color.rgb, color.a);

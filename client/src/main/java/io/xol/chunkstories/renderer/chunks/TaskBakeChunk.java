@@ -30,7 +30,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.core.voxel.DefaultVoxelRenderer;
+import io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.renderer.chunks.ClientTasksPool.ClientWorkerThread.ChunkMeshingBuffers;
 import io.xol.chunkstories.voxel.VoxelsStore;

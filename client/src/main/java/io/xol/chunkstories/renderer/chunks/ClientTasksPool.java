@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.core.voxel.DefaultVoxelRenderer;
+import io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.workers.Task;
 import io.xol.chunkstories.workers.TaskExecutor;
@@ -152,7 +152,7 @@ public class ClientTasksPool extends TasksPool<Task> implements ChunkMeshesBaker
 
 				byteBuffers[VertexLayout.INTRICATE.ordinal()][LodLevel.ANY.ordinal()][ShadingType.OPAQUE.ordinal()] = MemoryUtil.memAlloc(0x800000);//BufferUtils.createByteBuffer(0x800000);
 				byteBuffers[VertexLayout.INTRICATE.ordinal()][LodLevel.LOW.ordinal()][ShadingType.OPAQUE.ordinal()] = MemoryUtil.memAlloc(0x400000);//BufferUtils.createByteBuffer(0x400000);
-				byteBuffers[VertexLayout.INTRICATE.ordinal()][LodLevel.HIGH.ordinal()][ShadingType.OPAQUE.ordinal()] = MemoryUtil.memAlloc(0x400000);//BufferUtils.createByteBuffer(0x400000);
+				byteBuffers[VertexLayout.INTRICATE.ordinal()][LodLevel.HIGH.ordinal()][ShadingType.OPAQUE.ordinal()] = MemoryUtil.memAlloc(0x800000);//BufferUtils.createByteBuffer(0x400000);
 				
 				//Allocate more reasonnable size for other buffers and give them all a wrapper
 				for(int i = 0; i < ChunkMeshDataSubtypes.VertexLayout.values().length; i++)
@@ -162,7 +162,7 @@ public class ClientTasksPool extends TasksPool<Task> implements ChunkMeshesBaker
 						for(int k = 0; k < ChunkMeshDataSubtypes.ShadingType.values().length; k++)
 						{
 							if(byteBuffers[i][j][k] == null)
-								byteBuffers[i][j][k] = MemoryUtil.memAlloc(0x100000);//BufferUtils.createByteBuffer(0x100000);
+								byteBuffers[i][j][k] = MemoryUtil.memAlloc(0x200000);//BufferUtils.createByteBuffer(0x100000);
 							
 							if(byteBuffers[i][j][k] == null)
 							{

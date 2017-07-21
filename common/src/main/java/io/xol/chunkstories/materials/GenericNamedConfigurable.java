@@ -2,9 +2,6 @@ package io.xol.chunkstories.materials;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
 
 import io.xol.chunkstories.api.content.NamedWithProperties;
 
@@ -54,16 +51,10 @@ public class GenericNamedConfigurable extends GenericConfigurable implements Nam
 		return this.name;
 	}
 	
-	public void setProperty(String propertyName, String propertyValue)
-	{
-		//if(properties.containsKey(propertyName))
-		//	properties.replace(propertyName, propertyValue);
-		//else
-		properties.put(propertyName, propertyValue);
-	}
-	
 	public String resolveProperty(String propertyName)
 	{
+		propertyName = propertyName.toLowerCase();
+		
 		String resolved = super.resolveProperty(propertyName);
 		if(resolved == null)
 			return null;

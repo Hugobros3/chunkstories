@@ -1,24 +1,46 @@
-package io.xol.chunkstories.renderer;
+package io.xol.chunkstories.renderer.decals;
 
 import static io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer.*;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.physics.CollisionBox;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.core.item.ItemMiningTool;
+import io.xol.chunkstories.core.item.ItemMiningTool.MiningProgress;
 import io.xol.chunkstories.voxel.VoxelContextOlder;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class SelectionRenderer
+public class VoxelOverlays
 {
 	World world;
 
-	public SelectionRenderer(World w)
+	public VoxelOverlays(World w)
 	{
 		world = w;
+	}
+	
+	BreakingBlockDecal dekal = null;
+	
+	public void drawnCrackedBlocks(RenderingInterface renderingInterface) {
+		MiningProgress progress = ItemMiningTool.myProgress;
+		if(progress == null || (dekal != null && !dekal.miningProgress.equals(progress))) {
+			if(dekal != null) {
+				dekal.destroy();
+				dekal = null;
+			}
+		}
+		
+		if(progress != null) {
+			if(dekal == null) {
+				dekal = new BreakingBlockDecal(progress);
+			}
+			dekal.render(renderingInterface);
+		}
 	}
 
 	public void drawSelectionBox(Location location)

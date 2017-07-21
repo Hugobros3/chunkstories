@@ -14,6 +14,7 @@ material dirt
 	runningSounds: sounds/materials/<name>/<name>_run[1-9].ogg
 	landingSounds: sounds/materials/<name>/<name>_land[1-4].ogg
 	jumpingSounds: <walkingSounds>
+	materialHardnessForShovel: 0.3
 end
 
 material stone
@@ -21,6 +22,7 @@ material stone
 	runningSounds: sounds/materials/<name>/<name>_run[1-11].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
+	materialHardnessForPickaxe: 0.3
 end
 
 material grass
@@ -29,6 +31,11 @@ material grass
 	runningSounds: sounds/materials/<name>/<name>_run[1-4].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
+	materialHardnessForShovel: 0.4
+end
+
+material plant
+	materialHardness: 0.0
 end
 
 material water
@@ -47,6 +54,7 @@ material sand
 	runningSounds: sounds/materials/<name>/<name>_run[1-11].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
+	materialHardnessForShovel: 0.2
 end
 
 material concrete
@@ -54,6 +62,8 @@ material concrete
 	runningSounds: sounds/materials/<name>/<name>_run[1-11].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
+	hardness: 1.2
+	materialHardnessForPickaxe: 0.4
 end
 
 material snow
@@ -62,6 +72,7 @@ material snow
 	runningSounds: sounds/materials/<name>/snow_run[1-10].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
+	materialHardnessForShovel: 0.5
 end
 
 material metal
@@ -70,6 +81,7 @@ material metal
 	runningSounds: sounds/materials/<name>/metalbox_run[1-10].ogg
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
+	materialHardness: 2.0
 end
 
 material wet
@@ -87,6 +99,7 @@ material gravel
 	runningSounds: sounds/materials/<name>/<name>_run[1-11].ogg
 	landingSounds: sounds/materials/<name>/<name>_land[1-2].ogg
 	jumpingSounds: <walkingSounds>
+	materialHardnessForShovel: 0.5
 end
 
 material bluntwood
@@ -94,4 +107,5 @@ material bluntwood
 	runningSounds: <walkingSounds>
 	landingSounds: <walkingSounds>
 	jumpingSounds: <walkingSounds>
+	materialHardnessForAxe: 0.5
 end

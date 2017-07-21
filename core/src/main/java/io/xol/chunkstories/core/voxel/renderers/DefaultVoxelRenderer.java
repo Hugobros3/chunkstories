@@ -1,4 +1,8 @@
-package io.xol.chunkstories.core.voxel;
+package io.xol.chunkstories.core.voxel.renderers;
+
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -537,12 +541,15 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 	protected boolean shallBuildWallArround(VoxelContext renderInfo, int face)
 	{
 		//int baseID = renderInfo.data;
-		Voxel facing = VoxelsStore.get().getVoxelById(renderInfo.getSideId(face));
+		int facingId = renderInfo.getSideId(face);
+		Voxel facing = VoxelsStore.get().getVoxelById(facingId);
 		Voxel voxel = renderInfo.getVoxel();
 
 		if (voxel.getType().isLiquid() && !facing.getType().isLiquid())
 			return true;
-		if (!facing.getType().isOpaque() && (!voxel.sameKind(facing) || !voxel.getType().isSelfOpaque()))
+		
+		//Facing.isSideOpaque
+		if (/*!facing.getType().isOpaque() && */!facing.isFaceOpaque(VoxelSides.values()[face].getOppositeSide(), facingId) && (!voxel.sameKind(facing) || !voxel.getType().isSelfOpaque()))
 			return true;
 		return false;
 	}

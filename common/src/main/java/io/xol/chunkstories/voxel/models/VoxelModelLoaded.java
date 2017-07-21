@@ -279,6 +279,6 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 	public int renderInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, VoxelContext info)
 	{
 		VoxelBakerHighPoly renderByteBuffer = chunkRenderer.getHighpolyBakerFor(LodLevel.ANY, ShadingType.OPAQUE);
-		return this.renderInto(renderByteBuffer, bakingContext, info, chunk, info.getX(), info.getY(), info.getZ());
+		return this.renderInto(renderByteBuffer, bakingContext, info, chunk, info.getX() & 0x1F, info.getY() & 0x1F, info.getZ() & 0x1F);
 	}
 }

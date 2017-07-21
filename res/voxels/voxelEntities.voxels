@@ -1,4 +1,3 @@
-
 voxel wood_sign 95
 	customClass: io.xol.chunkstories.core.voxel.VoxelSign
 	solid: false
@@ -13,7 +12,7 @@ voxel wood_sign_post 96
 	model: none
 end
 
-voxel chest 97
+voxel wood_chest 97
 	customClass: io.xol.chunkstories.core.voxel.VoxelChest
 	opaque: false
 	selfOpaque: true

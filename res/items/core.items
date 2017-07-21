@@ -12,6 +12,25 @@ item 2 item_voxel_1x2
 	height: 2
 end
 
+item 3 iron_pickaxe
+	class: io.xol.chunkstories.core.item.ItemMiningTool
+	toolType: pickaxe
+	miningEfficiency: 1.0
+end
+
+item 4 iron_shovel
+	class: io.xol.chunkstories.core.item.ItemMiningTool
+	toolType: shovel
+	miningEfficiency: 1.0
+end
+
+item 5 iron_axe
+	class: io.xol.chunkstories.core.item.ItemMiningTool
+	toolType: axe
+	miningEfficiency: 1.0
+end
+
+# Standalone demo of the weapons component
 item 128 weapon_ak47
 	customClass: io.xol.chunkstories.core.item.ItemFirearm
 	width: 3
@@ -37,7 +56,4 @@ item 129 mag_ak47
 	height: 2
 	maxStackSize: 30
 	forWeapon: weapon_ak47
-end
-
-item 130 he_grenade
 end

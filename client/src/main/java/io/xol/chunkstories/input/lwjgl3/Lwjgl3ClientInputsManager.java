@@ -349,7 +349,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		//System.out.println("Input pressed "+input.getName());
 		
 		//Try the client-side event press
-		ClientInputPressedEvent event = new ClientInputPressedEvent(input);
+		ClientInputPressedEvent event = new ClientInputPressedEvent(gameWindow.getClient(), input);
 		
 		ClientPluginManager cpm = gameWindow.getClient().getPluginManager();
 		if(cpm != null) {
@@ -407,7 +407,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 	@Override
 	public boolean onInputReleased(Input input)
 	{
-		ClientInputReleasedEvent event = new ClientInputReleasedEvent(input);
+		ClientInputReleasedEvent event = new ClientInputReleasedEvent(gameWindow.getClient(), input);
 		ClientPluginManager cpm = gameWindow.getClient().getPluginManager();
 		if(cpm != null) {
 			cpm.fireEvent(event);

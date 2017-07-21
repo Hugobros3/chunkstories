@@ -5,26 +5,22 @@ Bugs TBF:
 + Slow chunks rebuild time (Multithreaded now)
 + Gui scale/Server window
 + Copy/Paste/Line-delete general
-+ CRAZY gc trashing (present since rendering rework)
-+ Ladders don't work (bodged)
 + Voxel light can bleed (need to study more)
 
 * Be wary of memory leaks
 
 Todo:
 
-RC2
+RC3
 Remaining recoil
-More gc fine-tuning
-Fix graph scaling
-Fix signs
-Fix grenades
+Feature parity XolioZ
+
+Content has to progress.
+
+ + Animals ?
+ + Vehicles
+ + Mining tools
+ 
+
+
 Make FakeCraft ?
-
-LT:
-
-
-
-IRL:
-
-Send SSD RMA

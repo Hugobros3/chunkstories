@@ -26,6 +26,7 @@ voxel leaves 5
 	opaque: false
 	selfOpaque: false
 	shading: 2
+	hardness: 0.5
 end
 
 voxel forestgrass 6
@@ -45,11 +46,13 @@ voxel pineleaves 9
 	opaque: false
 	selfOpaque: false
 	shading: 1
+	hardness: 0.5
 end
 
 voxel bricks 10
 	#textures: bricks2, bricks2, bricks2, bricks2, bricks2, bricks2
 	material: stone
+	hardness: 1.2
 end
 
 voxel gravel 11
@@ -61,6 +64,7 @@ end
 
 voxel cactus 13
 	textures: ~side, ~side, ~side, ~side, ~top, ~
+	hardness: 0.8
 end
 
 voxel planks 14
@@ -72,6 +76,8 @@ voxel glass 15
 	opaque: false
 	selfOpaque: true
 	material: glass
+	hardness: 1.5
+	hardnessForAxe: 0.5
 end
 
 voxel glowing 16
@@ -94,6 +100,7 @@ voxel birchleaves 19
 	opaque: false
 	selfOpaque: false
 	shading: 1
+	hardness: 0.5
 end
 
 voxel whool 20
@@ -117,7 +124,7 @@ voxel ironGrill 25
 	#texture: debug
 end
 
-voxel woodFence 26
+voxel wood_fence 26
 	customClass: io.xol.chunkstories.core.voxel.VoxelFence
 	opaque: false
 	selfOpaque: true
@@ -137,21 +144,22 @@ voxel stonebrick 29
 	material: stone
 end
 
-voxel stonebrickcracked 30
+voxel stonebrick_cracked 30
 	material: stone
 end
 
-voxel stonebrickmossy 31
+voxel stonebrick_mossy 31
 	material: stone
 end
 
-voxel glassPane 32
+voxel glass_pane 32
 	customClass: io.xol.chunkstories.core.voxel.VoxelPane
 	opaque: false
 	usesCustomModel: true
 	texture: glass
 	selfOpaque: true
 	material: glass
+	hardness: 0.5
 end
 
 voxel ladder 33
@@ -159,6 +167,7 @@ voxel ladder 33
 	opaque: false
 	usesCustomModel: true
 	solid: true
+	hardnessForAxe: 0.5
 end
 
 voxel vine 34
@@ -166,6 +175,7 @@ voxel vine 34
 	opaque: false
 	usesCustomModel: true
 	solid: false
+	hardness: 0.5
 end
 
 voxel torch 35
@@ -174,6 +184,7 @@ voxel torch 35
 	model: torch
 	emitting: 15
 	collisionBox: (0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+	hardness: 0.0
 end
 
 voxel soil 36
@@ -200,7 +211,8 @@ voxel web 51
 	collisionBox: (0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
 end
 
-voxel yellowflower 52
+voxel flower_yellow 52
+	material: plant
 	solid: false
 	opaque: false
 	model: grass
@@ -209,7 +221,8 @@ voxel yellowflower 52
 	affectedByWind: true
 end
 
-voxel redflower 53
+voxel flower_red 53
+	material: plant
 	solid: false
 	opaque: false
 	model: grass
@@ -218,7 +231,7 @@ voxel redflower 53
 	affectedByWind: true
 end
 
-voxel ironblock 54
+voxel iron_block 54
 	material: metal
 end
 
@@ -226,6 +239,7 @@ voxel glowoff 55
 end
 
 voxel wheat 56
+	material: plant
 	solid: false
 	opaque: false
 	model: ~
@@ -233,7 +247,8 @@ voxel wheat 56
 	affectedByWind: true
 end
 
-voxel grass_prop 64
+voxel flower_orange 57
+	material: plant
 	solid: false
 	opaque: false
 	model: grass
@@ -242,7 +257,72 @@ voxel grass_prop 64
 	affectedByWind: true
 end
 
-voxel forestgrass_prop 65
+voxel flower_blue 58
+	material: plant
+	solid: false
+	opaque: false
+	model: grass
+	#models: ~
+	collisionBox: (0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+	affectedByWind: true
+end
+
+voxel flower_purple 59
+	material: plant
+	solid: false
+	opaque: false
+	model: grass
+	#models: ~
+	collisionBox: (0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+	affectedByWind: true
+end
+
+voxel flower_white 60
+	material: plant
+	solid: false
+	opaque: false
+	model: grass
+	#models: ~
+	collisionBox: (0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+	affectedByWind: true
+end
+
+voxel mushroom_red 61
+	material: plant
+	solid: false
+	opaque: false
+	model: grass
+	#models: ~
+	collisionBox: (0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+	affectedByWind: true
+end
+
+voxel mushroom_brown 62
+	material: plant
+	solid: false
+	opaque: false
+	model: grass
+	#models: ~
+	collisionBox: (0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+	affectedByWind: true
+end
+
+voxel gold_block 63
+	material: metal
+end
+
+voxel grass_prop 64
+	material: plant
+	solid: false
+	opaque: false
+	model: grass
+	#models: ~
+	collisionBox: (0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+	affectedByWind: true
+end
+
+voxel dead_grass 65
+	material: plant
 	solid: false
 	opaque: false
 	model: grass
@@ -256,6 +336,14 @@ voxel rails 66
 	solid: false
 	opaque: false
 	model: rails
+end
+
+voxel hard_sand 67
+	material: stone
+end
+
+voxel white_concrete 68
+	material: stone
 end
 
 #Doors
@@ -285,6 +373,18 @@ voxel iron_door_top 73
 	model: door.m0
 end
 
+voxel cobble_mossy 74
+	material: stone
+end
+
+voxel rock 75
+	material: stone
+end
+
+voxel hard_rock 76
+	material: stone
+end
+
 voxel path 80
 	opaque: false
 	selfOpaque: true
@@ -292,15 +392,6 @@ voxel path 80
 	texture: dirt
 	material: dirt
 	collisionBox: (0.0, 0.0, 0.0, 1.0, 0.875, 1.0)
-end
-
-voxel ardoiseSlab 81
-	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
-	opaque: false
-	texture: ardoise
-	#textures: ~, ~, ~Side, ~Side, ~Side, ~Side
-	model: halftile.bottom
-	material: stone
 end
 
 voxel ardoise 82
@@ -312,14 +403,6 @@ voxel bookshelf 83
 	material: bluntwood
 end
 
-voxel ardoiseStairs 84
-	customClass: io.xol.chunkstories.core.voxel.VoxelStairs
-	texture: ardoise
-	opaque: false
-	model: stairs.m0
-	material: stone
-end
-
 voxel path 85
 	opaque: false
 	selfOpaque: true
@@ -329,13 +412,103 @@ voxel path 85
 	textures: pathside, pathside, pathside, pathside, path, dirt
 end
 
-voxel stoneWall 86
+voxel cobble_wall 86
 	customClass: io.xol.chunkstories.core.voxel.VoxelStoneWall
 	opaque: false
 	texture: cobble
 	material: stone
 end
 
+voxel coal_ore 87
+	texture: stone_coal_ore
+	material: stone
+end
+
+voxel copper_ore 88
+	texture: stone_copper_ore
+	material: stone
+end
+
+voxel diamond_ore 89
+	texture: stone_diamond_ore
+	material: stone
+end
+
+voxel gold_ore 90
+	texture: stone_gold_ore
+	material: stone
+end
+
+voxel silver_ore 91
+	texture: stone_silver_ore
+	material: stone
+end
+
+voxel iron_ore 92
+	texture: stone_iron_ore
+	material: stone
+end
+
+voxel bamboo 93
+	texture: sugar_cane
+	solid: false
+	opaque: false
+	model: grass
+	material: plant
+end
+
+voxel hellearth 94
+	material: stone
+end
+
+voxel stonebrick_fancy 99
+	material: stone
+end
+
+voxel goldplanks 109
+	material: bluntwood
+end
+
+voxel whiteplanks 110
+	material: bluntwood
+end
+
+voxel darkplanks 111
+	material: bluntwood
+end
+
+voxel cobble_wall_mossy 112
+	customClass: io.xol.chunkstories.core.voxel.VoxelStoneWall
+	opaque: false
+	texture: cobble_mossy
+	material: stone
+end
+
+voxel hay 114
+	material: grass
+	textures: ~_side, ~_side, ~_side, ~_side, ~_top, ~_top
+end
+
+voxel fancy_andesite 115
+	material: stone
+end
+
+voxel granite 116
+	material: stone
+end
+
+voxel fancy_granite 117
+	material: stone
+end
+
+voxel marble 118
+	material: stone
+end
+
+voxel fancy_marble 119
+	material: stone
+end
+	
 voxel water 128
 	customClass: io.xol.chunkstories.core.voxel.VoxelLiquid
 	selfOpaque: true
@@ -344,4 +517,15 @@ voxel water 128
 	model: water
 	liquid: true
 	shading: 1
+end
+
+voxel lava 129
+	#customClass: io.xol.chunkstories.core.voxel.VoxelLiquid
+	selfOpaque: true
+	solid: false
+	opaque: false
+	model: water
+	liquid: true
+	shading: 1
+	emitting: 15
 end
