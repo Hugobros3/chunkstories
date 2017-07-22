@@ -16,7 +16,6 @@ import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.events.player.PlayerSpawnEvent;
 import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
-import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 import io.xol.chunkstories.api.particles.ParticlesManager;
@@ -532,7 +531,7 @@ public abstract class WorldImplementation implements World
 				{
 					//Optionally runs whatever the voxel requires to run when modified
 					if (formerVoxel instanceof VoxelLogic)
-						newData = ((VoxelLogic) formerVoxel).onModification(this, x, y, z, newData, entity);
+						newData = ((VoxelLogic) formerVoxel).onModification(this, x, y, z, formerData, newData, entity);
 				}
 				else
 				{

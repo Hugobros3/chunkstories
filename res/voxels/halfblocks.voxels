@@ -1,35 +1,65 @@
-voxel fullSlab 43
-	textures: stoneSlabSide, stoneSlabSide, stoneSlabSide, stoneSlabSide, stoneSlab, stoneSlab
+voxel full_slab 43
+	textures: slab_side, slab_side, slab_side, slab_side, slab_top, slab_top
 	material: stone
 end
 
-voxel stoneSlab 44
+voxel slab 44
 	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
 	opaque: false
-	textures: ~Side, ~Side, ~Side, ~Side, ~, ~
+	textures: ~_side, ~_side, ~_side, ~_side, ~_top, ~_top
 	model: halftile.bottom
 	material: stone
 end
 
-voxel brickSlab 45
+voxel brick_slab 45
 	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
 	opaque: false
 	texture: redbricks
-	#textures: ~, ~, ~Side, ~Side, ~Side, ~Side
 	model: halftile.bottom
 	material: stone
 end
 
-voxel woodSlab 46
+voxel planks_slab 46
 	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
 	opaque: false
 	texture: planks
-	#textures: ~, ~, ~Side, ~Side, ~Side, ~Side
 	model: halftile.bottom
 	material: bluntwood
 end
 
-voxel cobbleSlab 47
+voxel goldplanks_slab 100
+	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
+	opaque: false
+	texture: goldplanks
+	model: halftile.bottom
+	material: bluntwood
+end
+
+voxel whiteplanks_slab 101
+	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
+	opaque: false
+	texture: whiteplanks
+	model: halftile.bottom
+	material: bluntwood
+end
+
+voxel darkplanks_slab 102
+	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
+	opaque: false
+	texture: darkplanks
+	model: halftile.bottom
+	material: bluntwood
+end
+
+voxel hardsand_slab 103
+	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
+	opaque: false
+	texture: hard_sand
+	model: halftile.bottom
+	material: stone
+end
+
+voxel cobble_slab 47
 	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
 	opaque: false
 	texture: cobble
@@ -38,10 +68,28 @@ voxel cobbleSlab 47
 	material: stone
 end
 
-voxel stonebrickSlab 48
+voxel stonebrick_slab 48
 	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
 	opaque: false
 	texture: stonebrick
+	#textures: ~, ~, ~Side, ~Side, ~Side, ~Side
+	model: halftile.bottom
+	material: stone
+end
+
+voxel ardoise_slab 81
+	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
+	opaque: false
+	texture: ardoise
+	#textures: ~, ~, ~Side, ~Side, ~Side, ~Side
+	model: halftile.bottom
+	material: stone
+end
+
+voxel white_concrete_slab 104
+	customClass: io.xol.chunkstories.core.voxel.VoxelHalfTile
+	opaque: false
+	texture: white_concrete
 	#textures: ~, ~, ~Side, ~Side, ~Side, ~Side
 	model: halftile.bottom
 	material: stone

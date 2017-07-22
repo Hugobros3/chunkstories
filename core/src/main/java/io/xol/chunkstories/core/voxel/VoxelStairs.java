@@ -132,7 +132,7 @@ public class VoxelStairs extends Voxel implements VoxelLogic
 	}
 	
 	@Override
-	public int onModification(World world, int x, int y, int z, int voxelData, Entity entity) throws IllegalBlockModificationException
+	public int onModification(World world, int x, int y, int z, int formerData, int voxelData, Entity entity) throws IllegalBlockModificationException
 	{
 		throw new IllegalBlockModificationException("Stairs can't be changed direction");
 	}

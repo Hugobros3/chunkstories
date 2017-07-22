@@ -2,12 +2,11 @@ package io.xol.chunkstories.converter;
 
 import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
-import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
+import io.xol.chunkstories.converter.ConverterMapping.Mapper;
+import io.xol.chunkstories.converter.ConverterMapping.NonTrivialMapper;
 import io.xol.chunkstories.converter.ConverterWorkers.ConverterWorkerThread;
 import io.xol.chunkstories.tools.WorldTool;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.workers.Task;
 import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.engine.concurrency.CompoundFence;
@@ -25,15 +24,14 @@ public class TaskConvertMcChunk extends Task {
 	private int minecraftRegionX;
 	private int minecraftRegionZ;
 
-	private int[] quickConversion;
+	private ConverterMapping mappers;
 
 	private MinecraftChunk minecraftChunk;
 	
 	public TaskConvertMcChunk(MinecraftRegion minecraftRegion, MinecraftChunk minecraftChunk, int chunkStoriesCurrentChunkX,
 			int chunkStoriesCurrentChunkZ, int minecraftCurrentChunkXinsideRegion,
 			int minecraftCuurrentChunkZinsideRegion, int minecraftRegionX, int minecraftRegionZ,
-			int[] quickConversion) {
-		super();
+			ConverterMapping quickConversion) {
 		this.minecraftRegion = minecraftRegion;
 		this.minecraftChunk = minecraftChunk;
 		
@@ -43,7 +41,7 @@ public class TaskConvertMcChunk extends Task {
 		this.minecraftCuurrentChunkZinsideRegion = minecraftCuurrentChunkZinsideRegion;
 		this.minecraftRegionX = minecraftRegionX;
 		this.minecraftRegionZ = minecraftRegionZ;
-		this.quickConversion = quickConversion;
+		this.mappers = quickConversion;
 	}
 
 	@Override
@@ -95,12 +93,28 @@ public class TaskConvertMcChunk extends Task {
 							{
 								//Translate each block
 								int mcId = minecraftChunk.getBlockID(x, y, z) & 0xFFF;
-								int meta = minecraftChunk.getBlockMeta(x, y, z) & 0xF;
+								byte meta = (byte) (minecraftChunk.getBlockMeta(x, y, z) & 0xF);
 								
 								//Ignore air blocks
 								if (mcId != 0)
 								{
-									int dataToSet = quickConversion[mcId * 16 + meta];//IDsConverter.getChunkStoriesIdFromMinecraft(mcId, meta);
+									Mapper mapper = this.mappers.getMapper(mcId, meta);
+									if(mapper == null)
+										continue;
+									
+									if(mapper instanceof NonTrivialMapper) {
+										((NonTrivialMapper)mapper).output(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, mcId, meta, minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
+									} else {
+										
+										//Directly set trivial blocks
+										int trivial = mapper.output(mcId, meta);
+										if(trivial != 0x0) {
+											csWorld.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, trivial);
+										}
+									}
+									
+									
+									/*int dataToSet = quickConversion[mcId * 16 + meta];//IDsConverter.getChunkStoriesIdFromMinecraft(mcId, meta);
 									if (dataToSet == -2)
 										dataToSet = IDsConverter.getChunkStoriesIdFromMinecraftComplex(mcId, meta, minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
 
@@ -115,7 +129,7 @@ public class TaskConvertMcChunk extends Task {
 										//Don't bother for nothing
 										if (dataToSet != -1)
 											csWorld.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet);
-									}
+									}*/
 								}
 							}
 

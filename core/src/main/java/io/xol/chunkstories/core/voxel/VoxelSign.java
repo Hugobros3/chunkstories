@@ -2,6 +2,7 @@ package io.xol.chunkstories.core.voxel;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
+import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
 
 import org.joml.Vector2f;
@@ -56,7 +57,7 @@ public class VoxelSign extends VoxelEntity implements VoxelCustomIcon
 	}
 		
 	@Override
-	public int onPlace(World world, int x, int y, int z, int voxelData, Entity entity)
+	public int onPlace(World world, int x, int y, int z, int voxelData, Entity entity) throws IllegalBlockModificationException
 	{
 		super.onPlace(world, x, y, z, voxelData, entity);
 		

@@ -26,6 +26,8 @@ import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.content.GameContentStore;
+import io.xol.chunkstories.converter.ConverterMapping.Mapper;
+import io.xol.chunkstories.converter.ConverterMapping.NonTrivialMapper;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -42,7 +44,7 @@ import io.xol.engine.misc.FoldersUtils;
 
 public class OfflineWorldConverter implements GameContext, WorldUser
 {
-	public static void main(String arguments[])
+	public static void main(String arguments[]) throws IOException
 	{
 		//Parse arguments first
 		if (arguments.length < 5)
@@ -155,7 +157,9 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 
 	protected final String mcWorldName;
 	
-	public OfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ)
+	protected final ConverterMapping mappers;
+	
+	public OfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ) throws IOException
 	{
 		this.verboseMode = verboseMode;
 		this.minecraftOffsetX = minecraftOffsetX;
@@ -171,6 +175,12 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		content = new GameContentStore(this, null);
 		content.reload();
 
+
+		verbose("Loading converter_mapping.txt");
+		File file = new File("converter_mapping.txt");
+		mappers = new ConverterMapping(this, file);
+		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " µs");
+		
 		//Loads the Minecraft World
 		mcWorld = new MinecraftWorld(mcFolder);
 
@@ -223,12 +233,11 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 
 	protected void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX, int minecraftOffsetZ)
 	{
-		verbose("Entering step one: making summary data");
+		verbose("Entering step one: converting raw block data");
 
 		long ict = System.nanoTime();
-		verbose("Creating ids conversion cache");
-		int[] quickConversion = IDsConverter.generateQuickConversionTable();
-		verbose("Done, took " + (System.nanoTime() - ict) / 1000 + " µs");
+		//verbose("Creating ids conversion cache");
+		//int[] quickConversion = IDsConverter.generateQuickConversionTable();
 
 		//Prepares the loops
 		WorldSize size = csWorld.getWorldInfo().getSize();
@@ -317,12 +326,12 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 												{
 													//Translate each block
 													int mcId = minecraftChunk.getBlockID(x, y, z) & 0xFFF;
-													int meta = minecraftChunk.getBlockMeta(x, y, z) & 0xF;
+													byte meta = (byte) (minecraftChunk.getBlockMeta(x, y, z) & 0xF);
 													
 													//Ignore air blocks
 													if (mcId != 0)
 													{
-														int dataToSet = quickConversion[mcId * 16 + meta];//IDsConverter.getChunkStoriesIdFromMinecraft(mcId, meta);
+														/*int dataToSet = quickConversion[mcId * 16 + meta];//IDsConverter.getChunkStoriesIdFromMinecraft(mcId, meta);
 														if (dataToSet == -2)
 															dataToSet = IDsConverter.getChunkStoriesIdFromMinecraftComplex(mcId, meta, minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
 
@@ -337,6 +346,21 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 															//Don't bother for nothing
 															if (dataToSet != -1)
 																csWorld.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet);
+														}*/
+														
+														Mapper mapper = this.mappers.getMapper(mcId, meta);
+														if(mapper == null)
+															continue;
+														
+														if(mapper instanceof NonTrivialMapper) {
+															((NonTrivialMapper)mapper).output(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, mcId, meta, minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
+														} else {
+															
+															//Directly set trivial blocks
+															int trivial = mapper.output(mcId, meta);
+															if(trivial != 0x0) {
+																csWorld.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, trivial);
+															}
 														}
 													}
 												}

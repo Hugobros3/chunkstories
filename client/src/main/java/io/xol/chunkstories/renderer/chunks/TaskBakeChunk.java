@@ -2,12 +2,10 @@ package io.xol.chunkstories.renderer.chunks;
 
 import java.nio.ByteBuffer;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.math.Math2;
-import io.xol.chunkstories.api.rendering.vertex.RecyclableByteBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.util.concurrency.Fence;
@@ -17,7 +15,6 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
-import io.xol.chunkstories.api.voxel.models.RenderByteBuffer;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
@@ -28,10 +25,7 @@ import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer;
-import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
 import io.xol.chunkstories.renderer.chunks.ClientTasksPool.ClientWorkerThread.ChunkMeshingBuffers;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.workers.Task;
@@ -93,8 +87,12 @@ public class TaskBakeChunk extends Task {
 				nearChunks++;
 			if (world.isChunkLoaded(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ() - 1))
 				nearChunks++;
+			if (world.isChunkLoaded(chunk.getChunkX(), chunk.getChunkY() + 1, chunk.getChunkZ()) || chunk.getChunkY() == world.getWorldInfo().getSize().heightInChunks - 1)
+				nearChunks++;
+			if (world.isChunkLoaded(chunk.getChunkX(), chunk.getChunkY() - 1, chunk.getChunkZ()) || chunk.getChunkY() == 0)
+				nearChunks++;
 
-			if (nearChunks == 4)
+			if (nearChunks == 6)
 			{
 				//Let task exec
 				//result = task.run(this);

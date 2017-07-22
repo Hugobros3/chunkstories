@@ -64,7 +64,7 @@ end
 
 voxel hardsand_stairs 105
 	customClass: io.xol.chunkstories.core.voxel.VoxelStairs
-	texture: hardsand
+	texture: hard_sand
 	opaque: false
 	model: stairs.m0
 	material: stone

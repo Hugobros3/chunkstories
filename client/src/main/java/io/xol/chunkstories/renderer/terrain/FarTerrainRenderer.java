@@ -389,7 +389,15 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 				Thread.currentThread().setPriority(Constants.TERRAIN_RENDERER_THREAD_PRIORITY);
 
 				FarTerrainBaker baker = new FarTerrainBaker(regionMeshBuffer, world, cameraChunkX, cameraChunkZ);
+				List<RegionMesh> previousMeshes = renderedRegions;
+				
 				renderedRegions = baker.generateArround();
+				
+				if(previousMeshes != null) {
+					for(RegionMesh rm : previousMeshes) {
+						rm.delete();
+					}
+				}
 				
 				farTerrainUpdatesToTakeIntoAccount.addAndGet(-tookIntoAccount);
 				lastTerrainUpdateTiming = System.currentTimeMillis();

@@ -115,6 +115,10 @@ public class TextMeshObject implements TextMesh
 		tempBuffer.putFloat(currentColor.y());
 		tempBuffer.putFloat(currentColor.z());
 		tempBuffer.putFloat(currentColor.w());
+		//Normals
+		tempBuffer.putFloat(0f);
+		tempBuffer.putFloat(0f);
+		tempBuffer.putFloat(1f);
 	}
 
 	public void done()
@@ -132,16 +136,21 @@ public class TextMeshObject implements TextMesh
 		//glDisable(GL_CULL_FACE);
 		//renderingContext.disableVertexAttribute("normalIn");
 		
+		//renderingContext.currentShader().setUniform1f("useNormalIn", 0f);
+		
 		//TODO use texture pages
 		for (VertexBuffer verticesObject : verticesObjects)
 		{
-			int stride = 4 * ( 3 + 2 + 4);
+			int stride = 4 * ( 3 + 2 + 4 + 3);
 			renderingContext.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, stride, 0));
 			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 2, stride, 4 * 3));
 			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 4, stride, 4 * ( 3 + 2)));
+			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 4, stride, 4 * ( 3 + 2 + 4)));
 			
 			renderingContext.draw(Primitive.TRIANGLE, 0, (int) (verticesObject.getVramUsage() / stride));
 		}
+		
+		//renderingContext.currentShader().setUniform1f("useNormalIn", 1f);
 	}
 
 	@Override

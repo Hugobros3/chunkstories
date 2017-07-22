@@ -1,6 +1,7 @@
 package io.xol.chunkstories.converter;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,7 +27,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 	private final int threadsCount;
 	private final ConverterWorkers workers;
 	
-	public MultithreadedOfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ, int threadsCount) {
+	public MultithreadedOfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ, int threadsCount) throws IOException {
 		super(verboseMode, mcFolder, csFolder, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ);
 		
 		this.threadsCount = threadsCount;
@@ -44,13 +45,13 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 	@Override
 	protected void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX,
 			int minecraftOffsetZ) {
-		
-		verbose("Entering step one: making summary data");
+
+		verbose("Entering step one: converting raw block data");
 
 		long ict = System.nanoTime();
-		verbose("Creating ids conversion cache");
+		/*verbose("Creating ids conversion cache");
 		int[] quickConversion = IDsConverter.generateQuickConversionTable();
-		verbose("Done, took " + (System.nanoTime() - ict) / 1000 + " µs");
+		verbose("Done, took " + (System.nanoTime() - ict) / 1000 + " µs");*/
 
 		//Prepares the loops
 		WorldSize size = csWorld.getWorldInfo().getSize();
@@ -98,7 +99,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 								if (minecraftRegion != null) {
 									MinecraftChunk minecraftChunk = minecraftRegion.getChunk(minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion);
 								
-									TaskConvertMcChunk task = new TaskConvertMcChunk(minecraftRegion, minecraftChunk, chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, minecraftRegionX, minecraftRegionZ, quickConversion);
+									TaskConvertMcChunk task = new TaskConvertMcChunk(minecraftRegion, minecraftChunk, chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, minecraftRegionX, minecraftRegionZ, mappers);
 									workers.scheduleTask(task);
 									waitForTheBoys.add(task);
 								}

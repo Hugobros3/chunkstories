@@ -288,7 +288,7 @@ public class ChunkMeshesRenderer
 			this.chunk = (ChunkRenderable) chunk;
 
 			//Request rendering them if they aren't already present
-			if ((this.chunk.isMarkedForReRender() || chunk.needsLightningUpdates()) && !chunk.isAirChunk())
+			if ((this.chunk.isMarkedForReRender() /*|| chunk.needsLightningUpdates()*/) && !chunk.isAirChunk())
 				chunksBaker.requestChunkRender(this.chunk);
 
 			this.displayWorldY = chunk.getChunkY() << 5;

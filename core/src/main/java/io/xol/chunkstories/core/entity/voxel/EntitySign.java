@@ -105,12 +105,12 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 				Location loc = entitySign.getLocation();
 				mutrix.translate((float)loc.x, (float)loc.y, (float)loc.z);
 				mutrix.rotate((float) Math.PI * 2.0f * (-facing) / 16f, new Vector3f(0, 1, 0));
-				if (isPost)
+				if (!isPost)
 					mutrix.translate(new Vector3f(0.0f, 0.0f, -0.5f));
 				renderingContext.setObjectMatrix(mutrix);
 
 				//glDisable(GL_CULL_FACE);
-				if (isPost)
+				if (!isPost)
 					renderingContext.meshes().getRenderableMeshByName("./models/sign_post.obj").render(renderingContext);
 				else
 					renderingContext.meshes().getRenderableMeshByName("./models/sign.obj").render(renderingContext);

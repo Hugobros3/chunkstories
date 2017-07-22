@@ -1,6 +1,6 @@
 #Minecraft -> Chunk stories IDs maps
 #Most of the blocks from Minecraft 1.12 are here
-#Syntax: <minecraftId>[:meta] chunkStoriesBlockName[:meta (8-bit)] [tags]
+#Syntax: <minecraftId>[:meta] chunkStoriesBlockName[:meta (8-bit)] [special mapper]
 0 air
 1 stone
 1:1 granite
@@ -27,6 +27,9 @@
 11 lava keepmeta
 12 sand 
 13 gravel
+14 gold_ore
+15 iron_ore
+16 coal_ore
 17 wood
 17:2 birchwood
 18 leaves
@@ -43,7 +46,7 @@
 #26 bed
 27 rails
 28 rails
-29 web
+30 web
 31 grass_prop
 31:0 dead_grass
 32 dead_grass
@@ -82,6 +85,14 @@
 44:5 stonebrick_slab slab
 44:6 ardoise_slab slab
 44:7 white_concrete_slab slab
+44:8 slab slab
+44:9 hardsand_slab slab
+44:10 planks_slab slab
+44:11 cobble_slab slab
+44:12 brick_slab slab
+44:13 stonebrick_slab slab
+44:14 ardoise_slab slab
+44:15 white_concrete_slab slab
 45 redbricks
 #46 explosives
 47 bookshelf
@@ -91,23 +102,23 @@
 #51 fire
 #52 spawner
 53 planks_stairs keepmeta
-54 wood_chest
+54 wood_chest chest
 #55 wire
 #Diamond ore
-56 stone
-57 colored.3
+56 diamond_ore
+57 colored:3
 58 planks
 59 wheat
 60 soil
 #TODO: Oven
 61 stone
 62 stone
-63 wood_sign_post
-64 wood_door door
+63 wood_sign_post sign
+64 wood_door door 
 65 ladder keepmeta
 66 rails keepmeta
 67 cobble_stairs keepmeta
-68 wood_sign
+68 wood_sign sign
 #69 lever
 #70 stone plate
 71 iron_door door
@@ -152,14 +163,14 @@
 #103 melon block
 #104 pumpking stem
 #105 melon stem
-106 vine
+106 vine keepmeta
 #107 fence gate
 108 brick_stairs keepmeta
-109 stonebrick_stairs
+109 stonebrick_stairs keepmeta
 110 grass
 #111 lily pad
 112 ardoise
-113 fence
+113 wood_fence
 114 ardoise_stairs keepmeta
 #115 hell pustuls
 #116 workbench II
@@ -168,7 +179,7 @@
 #119 warp
 #121 moonrock
 123 glowoff
-124 glowon
+124 glowing
 125 planks
 125:1 darkplanks
 125:2 whiteplanks
@@ -181,6 +192,12 @@
 126:3 goldplanks_slab slab
 126:4 goldplanks_slab slab
 126:5 darkplanks_slab slab
+
+126:9 darkplanks_slab slab
+126:10 whiteplanks_slab slab
+126:11 goldplanks_slab slab
+126:12 goldplanks_slab slab
+126:13 darkplanks_slab slab
 #127 cocoa fruit
 128 hardsand_stairs keepmeta
 129 silver_ore
@@ -201,7 +218,7 @@
 #143 Wood button
 #144 beheaded
 #150 workbenchIII
-146 wood_chest
+146 wood_chest chest
 #147
 #148
 #149 logic_gate_off

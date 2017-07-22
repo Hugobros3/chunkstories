@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.voxel.VoxelEntity;
@@ -32,9 +33,9 @@ public class VoxelChest extends VoxelEntity
 	{
 		super(type);
 		
-		frontTexture = store.textures().getVoxelTextureByName(getName() + "front");
-		sideTexture = store.textures().getVoxelTextureByName(getName() + "side");
-		topTexture = store.textures().getVoxelTextureByName(getName() + "top");
+		frontTexture = store.textures().getVoxelTextureByName(getName() + "_front");
+		sideTexture = store.textures().getVoxelTextureByName(getName() + "_side");
+		topTexture = store.textures().getVoxelTextureByName(getName() + "_top");
 	}
 
 	@Override
@@ -93,7 +94,7 @@ public class VoxelChest extends VoxelEntity
 	
 	@Override
 	//Chunk stories chests use Minecraft format to ease porting of maps
-	public int onPlace(World world, int x, int y, int z, int voxelData, Entity entity)
+	public int onPlace(World world, int x, int y, int z, int voxelData, Entity entity) throws IllegalBlockModificationException
 	{
 		super.onPlace(world, x, y, z, voxelData, entity);
 		
