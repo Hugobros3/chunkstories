@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer.RenderingPass;
@@ -22,7 +23,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 
 public class EntitiesRenderer
 {
-	Map<Class<? extends EntityRenderable>, EntityRenderer<? extends EntityRenderable>> entityRenderers = new HashMap<Class<? extends EntityRenderable>, EntityRenderer<? extends EntityRenderable>>();
+	Map<EntityType, EntityRenderer<? extends EntityRenderable>> entityRenderers = new HashMap<EntityType, EntityRenderer<? extends EntityRenderable>>();
 
 	World world;
 
@@ -45,17 +46,17 @@ public class EntitiesRenderer
 		((WorldImplementation) world).entitiesLock.readLock().lock();
 
 		//Sort them by type
-		Map<Class<? extends EntityRenderable>, List<EntityRenderable>> renderableEntitiesTypes = new HashMap<Class<? extends EntityRenderable>, List<EntityRenderable>>();
+		Map<EntityType, List<EntityRenderable>> renderableEntitiesTypes = new HashMap<EntityType, List<EntityRenderable>>();
 		for (Entity entity : world.getAllLoadedEntities())
 		{
 			if (entity instanceof EntityRenderable)
 			{
 				EntityRenderable entityRenderable = (EntityRenderable) entity;
-				List<EntityRenderable> entitiesOfThisType = renderableEntitiesTypes.get(entityRenderable.getClass());
+				List<EntityRenderable> entitiesOfThisType = renderableEntitiesTypes.get(entityRenderable.getType());
 				if (entitiesOfThisType == null)
 				{
-					renderableEntitiesTypes.put(entityRenderable.getClass(), new ArrayList<EntityRenderable>());
-					entitiesOfThisType = renderableEntitiesTypes.get(entityRenderable.getClass());
+					renderableEntitiesTypes.put(entityRenderable.getType(), new ArrayList<EntityRenderable>());
+					entitiesOfThisType = renderableEntitiesTypes.get(entityRenderable.getType());
 				}
 				entitiesOfThisType.add(entityRenderable);
 			}
@@ -63,7 +64,7 @@ public class EntitiesRenderer
 
 		int entitiesRendered = 0;
 
-		for (Entry<Class<? extends EntityRenderable>, List<EntityRenderable>> entry : renderableEntitiesTypes.entrySet())
+		for (Entry<EntityType, List<EntityRenderable>> entry : renderableEntitiesTypes.entrySet())
 		{
 			List<EntityRenderable> entities = entry.getValue();
 
