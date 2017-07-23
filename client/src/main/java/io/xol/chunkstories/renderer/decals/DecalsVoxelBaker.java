@@ -3,6 +3,7 @@ package io.xol.chunkstories.renderer.decals;
 import java.nio.ByteBuffer;
 
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext.VoxelLighter;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
@@ -14,10 +15,17 @@ import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 public class DecalsVoxelBaker implements VoxelBakerHighPoly, VoxelBakerCubic
 {
 	ByteBuffer byteBuffer;
+	int cx, cy, cz;
 	
 	public DecalsVoxelBaker(ByteBuffer byteBuffer)
 	{
 		this.byteBuffer = byteBuffer;
+	}
+	
+	public void setChunk(Chunk c) {
+		cx = c.getChunkX();
+		cy = c.getChunkY();
+		cz = c.getChunkZ();
 	}
 	
 	@Override
@@ -31,9 +39,9 @@ public class DecalsVoxelBaker implements VoxelBakerHighPoly, VoxelBakerCubic
 	{
 		if(byteBuffer.position() == byteBuffer.capacity())
 			return;
-		byteBuffer.putFloat(f0);
-		byteBuffer.putFloat(f1);
-		byteBuffer.putFloat(f2);
+		byteBuffer.putFloat(f0 + cx * 32);
+		byteBuffer.putFloat(f1 + cy * 32);
+		byteBuffer.putFloat(f2 + cz * 32);
 	}
 
 	@Override

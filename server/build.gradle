@@ -44,6 +44,8 @@ jar {
 		attributes  'Implementation-Title': 'Chunk Stories Server',
 					'Implementation-Version': version
 	}
+	
+   classifier = 'bare'
 }
 
 shadowJar {
@@ -59,3 +61,8 @@ run {
 	workingDir = rootProject.projectDir
     args new String("--dir="+rootProject.projectDir).split()
 }
+
+configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is distZip } } 
+configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is distTar } } 
+configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is shadowDistZip } } 
+configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is shadowDistTar } } 

@@ -20,8 +20,14 @@ import io.xol.chunkstories.world.WorldImplementation;
 
 public class ParticleFire extends ParticleTypeHandler
 {
+	final boolean ignoreCollisions;
+	final boolean destroyOnCollision;
+	
 	public ParticleFire(ParticleType type) {
 		super(type);
+		
+		ignoreCollisions = type.resolveProperty("ignoreCollisions", "false").equals("true");
+		destroyOnCollision = type.resolveProperty("destroyOnCollision", "true").equals("true");
 	}
 
 	public class ParticleFireData extends ParticleData implements ParticleDataWithVelocity, ParticleDataWithTextureCoordinates{
@@ -116,7 +122,7 @@ public class ParticleFire extends ParticleTypeHandler
 		b.y = ((float) (b.y() + b.vel.y()));
 		b.z = ((float) (b.z() + b.vel.z()));
 		
-		if (!((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()))
+		if (!((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()) && !ignoreCollisions)
 			b.vel.y = (b.vel.y() + 0.02/60.0);
 		else
 			b.vel.set(0d, 0d, 0d);
@@ -141,7 +147,7 @@ public class ParticleFire extends ParticleTypeHandler
 			b.temp = 1;	
 		}
 		
-		if(((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()))
+		if(((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()) && destroyOnCollision)
 			b.destroy();
 	}
 	

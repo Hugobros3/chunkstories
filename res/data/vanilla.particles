@@ -67,3 +67,13 @@ particle lightning_strike_illumination 9
 	billboardSize: 0.0
 	renderTime: never
 end
+
+particle fire_small 10
+	handlerClass: io.xol.chunkstories.core.particles.ParticleFire
+	billboardSize: 0.3
+	shaderName: particles_fire
+	renderTime: forward
+	albedoTexture: ./textures/particles/white_smoke.png
+	destroyOnCollision: false
+	ignoreCollisions: true
+end

@@ -18,6 +18,7 @@ import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer;
+import io.xol.chunkstories.api.rendering.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -253,6 +254,9 @@ public class ChunkMeshesRenderer
 			default:
 				throw new RuntimeException("Undefined ChunkMeshesPass "+chunkMeshesPass);
 		}
+		
+		if(chunkMeshesPass == RenderingPass.SHADOW)
+			renderingInterface.currentShader().setUniform1f("useVoxelCoordinates", 1f);
 
 		Matrix4f matrix = new Matrix4f();
 		for (ChunkRenderCommand command : culledChunks)
@@ -273,6 +277,9 @@ public class ChunkMeshesRenderer
 			
 			((RenderableChunk) command.chunk).getChunkRenderData().renderPass(renderingInterface, lodToUse, shadingType);
 		}
+
+		if(chunkMeshesPass == RenderingPass.SHADOW)
+			renderingInterface.currentShader().setUniform1f("useVoxelCoordinates", 0f);
 	}
 	
 	public int getChunksVisibleForPass(WorldRenderer.RenderingPass chunkMeshesPass)

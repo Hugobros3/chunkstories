@@ -1,5 +1,6 @@
 package io.xol.chunkstories.renderer.lights;
 
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface.LightsAccumulator;
@@ -72,6 +73,9 @@ public class LightsRenderer implements LightsAccumulator
 
 	private boolean lightInFrustrum(RenderingInterface renderingContext, Light light)
 	{
+		if(renderingContext.getCamera().getCameraPosition().distance(new Vector3d(light.position)) <= light.decay)
+			return true;
+		
 		return renderingContext.getCamera().isBoxInFrustrum(new Vector3f(light.getPosition().x() - light.getDecay(), light.getPosition().y() - light.getDecay(), light.getPosition().z() - light.getDecay()), new Vector3f(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
 	}
 	

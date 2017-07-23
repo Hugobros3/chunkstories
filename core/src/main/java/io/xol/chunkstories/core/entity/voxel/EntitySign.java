@@ -77,6 +77,7 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 
 			for (EntitySign entitySign : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
+				
 				if (renderingContext.getCamera().getCameraPosition().distance(entitySign.getLocation()) > 32)
 					continue;
 				
@@ -86,11 +87,11 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 				diffuse.setLinearFiltering(false);
 				renderingContext.bindAlbedoTexture(diffuse);
 				renderingContext.bindNormalTexture(renderingContext.textures().getTexture("./textures/normalnormal.png"));
-				renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
+				//renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
 
 				int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
-
 				Voxel voxel = VoxelsStore.get().getVoxelById(modelBlockData);
+				
 				boolean isPost = voxel.getName().endsWith("_post");
 
 				int lightSky = VoxelFormat.sunlight(modelBlockData);

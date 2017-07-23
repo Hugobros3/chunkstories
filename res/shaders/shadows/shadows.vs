@@ -19,13 +19,19 @@ uniform float allowForWavyStuff;
 
 uniform mat4 objectMatrix;
 
+uniform float useVoxelCoordinates;
 uniform float isUsingInstancedData;
 uniform sampler2D instancedDataSampler;
 
 <include ../lib/shadowTricks.glsl>
 
 void main(){
-	texCoordPassed = vec4(texCoordIn/32768.0,0,0);
+
+	if(useVoxelCoordinates > 0.0)
+		texCoordPassed = vec4(texCoordIn/32768.0,0,0);
+	else
+		texCoordPassed = vec4(texCoordIn,0,0);
+	
 	//gl_Position = ftransform();
 	vec4 v = objectMatrix * vec4(vertexIn.xyz, 1);
 	

@@ -33,6 +33,7 @@ import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.voxel.VoxelContextOlder;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -253,8 +254,11 @@ public class DecalsRendererImplementation implements DecalsRenderer
 									return voxeLighter;
 								}
 							};
+
+							Chunk chunk = world.getChunkWorldCoordinates(location);
+							virtualRenderBytebuffer.setChunk(chunk);
 							
-							model.renderInto(chunkRenderer, o2, world.getChunkWorldCoordinates(location), world.peek(location));
+							model.renderInto(chunkRenderer, o2, chunk, world.peek(location));
 						}
 
 					}
@@ -365,7 +369,10 @@ public class DecalsRendererImplementation implements DecalsRenderer
 			//renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2), 0);
 			//renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2), 4 * 3);
 			
+			//System.out.println("wtf son");
+			
 			renderingInterface.draw(Primitive.TRIANGLE, 0, decalType.kount);
+			//System.out.println(decalType.kount);
 			
 			renderingInterface.flush();
 			//decalType.verticesObject.drawElementsTriangles(decalType.kount);

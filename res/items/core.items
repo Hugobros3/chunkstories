@@ -30,6 +30,72 @@ item 5 iron_axe
 	miningEfficiency: 1.0
 end
 
+item 6 bread
+	customClass: io.xol.dogez.mods.items.FoodItem
+	calories: 20
+	maxStackSize: 5
+end
+
+item 7 soup
+	customClass: io.xol.dogez.mods.items.FoodItem
+	calories: 15
+	maxStackSize: 10
+end
+
+item 8 cookie
+	customClass: io.xol.dogez.mods.items.FoodItem
+	calories: 10
+	maxStackSize: 30
+end
+
+item 9 pie
+	customClass: io.xol.dogez.mods.items.FoodItem
+	calories: 20
+	maxStackSize: 2
+end
+
+item 10 apple
+	customClass: io.xol.dogez.mods.items.FoodItem
+	calories: 25
+	maxStackSize: 5
+end
+
+item 11 steak
+	customClass: io.xol.dogez.mods.items.FoodItem
+	calories: 40
+	maxStackSize: 5
+end
+
+item 12 ble
+	customClass: io.xol.dogez.mods.items.FoodItem
+	calories: 5
+	maxStackSize: 40
+end
+
+item 13 bow
+end
+
+item 14 arrow
+end
+
+item 15 stick
+end
+
+item 16 diamond
+end
+
+item 17 gold_bar
+end
+
+item 18 iron_bar
+end
+
+item 19 copper_bar
+end
+
+item 20 coal
+end
+
 # Standalone demo of the weapons component
 item 128 weapon_ak47
 	customClass: io.xol.chunkstories.core.item.ItemFirearm
