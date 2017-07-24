@@ -61,6 +61,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	WorldEffectsRenderer weatherEffectsRenderer;
 	ShadowMapRenderer shadower;
 	BloomRenderer bloomRenderer;
+	ReflectionsRenderer reflectionsRenderer;
 	CubemapRenderer cubemapRenderer;
 	
 	float animationTimer = 0.0f;
@@ -75,11 +76,10 @@ public class WorldRendererImplementation implements WorldRenderer
 	{
 		this.world = world;
 		this.gameWindow = client.getGameWindow();
-		//this.renderingInterface = GameWindowOpenGL.getInstance().getRenderingContext();
-		//this.mainCamera = renderingInterface.getCamera();
 		
 		//Creates all these fancy render buffers
 		renderBuffers = new RenderBuffers();
+		
 		//Create a holder for the general world rendering textures
 		worldTextures = new WorldTextures();
 
@@ -94,6 +94,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		this.decalsRenderer = new DecalsRendererImplementation(this);
 		this.shadower = new ShadowMapRenderer(this);
 		this.bloomRenderer = new BloomRenderer(this);
+		this.reflectionsRenderer = new ReflectionsRenderer(this);
 		this.cubemapRenderer = new CubemapRenderer(this);
 	}
 
@@ -174,12 +175,18 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingInterface.getRenderTargetManager().setConfiguration(renderBuffers.fboShadedBuffer);
 		renderBuffers.fboShadedBuffer.setEnabledRenderTargets();
 		
+		//Render the deffered light
 		renderShadedBlocks(renderingInterface, sun_shadowMap);
 		renderLightsDeffered(renderingInterface);
 		
 		//Add forward rendered stuff
 		farTerrainRenderer.renderTerrain(renderingInterface, chunksRenderer.getRenderedChunksMask(mainCamera));
 		particlesRenderer.render(renderingInterface, false);
+		
+		//Render SSR if enabled
+		if(RenderingConfig.doRealtimeReflections)
+			reflectionsRenderer.renderRealtimeScreenSpaceReflections(renderingInterface);
+		
 		weatherEffectsRenderer.renderEffects(renderingInterface);
 	}
 
@@ -359,8 +366,6 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 
-		Vector3f sunPos = skyRenderer.getSunPosition();
-
 		renderingContext.getRenderTargetManager().setConfiguration(renderBuffers.fboShadedBuffer);
 		//fboShadedBuffer.bind();
 
@@ -396,7 +401,6 @@ public class WorldRendererImplementation implements WorldRenderer
 		{
 			applyShadowsShader.setUniformMatrix4f("shadowMatrix", sun_shadowMap.getShadowTransformationMatrix());
 		}
-		applyShadowsShader.setUniform3f("sunPos", sunPos);
 
 		// Matrices for screen-space transformations
 		renderingContext.getCamera().setupShader(applyShadowsShader);
@@ -467,6 +471,9 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingContext.bindTexture2D("metaBuffer", renderBuffers.materialBuffer);
 		renderingContext.bindTexture2D("shadowMap", renderBuffers.shadowMapBuffer);
 		
+		renderingContext.bindTexture2D("reflectionsBuffer", renderBuffers.reflectionsBuffer);
+		renderingContext.bindCubemap("environmentMap", renderBuffers.environmentMap);
+		
 		//If we enable bloom
 		if(bloomRendered != null)
 			renderingContext.bindTexture2D("bloomBuffer", bloomRendered);
@@ -474,7 +481,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingContext.bindTexture2D("ssaoBuffer", renderBuffers.ssaoBuffer);
 		renderingContext.bindTexture2D("pauseOverlayTexture", TexturesHandler.getTexture("./textures/gui/darker.png"));
 		//renderingContext.bindTexture2D("debugBuffer", (System.currentTimeMillis() % 1000 < 500) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
-		renderingContext.bindTexture2D("debugBuffer", renderBuffers.shadowMapBuffer);
+		renderingContext.bindTexture2D("debugBuffer", renderBuffers.reflectionsBuffer);
 
 		Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int)(double)renderingContext.getCamera().getCameraPosition().x(),
 				(int)(double)renderingContext.getCamera().getCameraPosition().y(), (int)(double)renderingContext.getCamera().getCameraPosition().z()));
@@ -515,38 +522,39 @@ public class WorldRendererImplementation implements WorldRenderer
 	public class RenderBuffers
 	{
 		// Main Rendertarget (HDR)
-		public Texture2DRenderTargetGL shadedBuffer;
+		public final Texture2DRenderTargetGL shadedBuffer;
 
 		// G-Buffers
-		public Texture2DRenderTargetGL zBuffer;
+		public final Texture2DRenderTargetGL zBuffer;
+		public final Texture2DRenderTargetGL albedoBuffer, normalBuffer, materialBuffer;
 
-		public Texture2DRenderTargetGL albedoBuffer, normalBuffer, materialBuffer;
-
-		// Bloom texture
-		public Texture2DRenderTargetGL bloomBuffer, ssaoBuffer;
+		// Bloom texture & SSAO buffer
+		public final Texture2DRenderTargetGL bloomBuffer, ssaoBuffer;
+		
+		public final Texture2DRenderTargetGL reflectionsBuffer;
 
 		// FBOs
-		public RenderTargetAttachementsConfiguration fboGBuffers, fboShadedBuffer, fboBloom, fboSSAO;
+		public final RenderTargetAttachementsConfiguration fboGBuffers, fboShadedBuffer, fboBloom, fboSSAO, fboSSR;
 
-		public Texture2DRenderTargetGL blurIntermediateBuffer;
-		public RenderTargetAttachementsConfiguration fboBlur;
+		public final Texture2DRenderTargetGL blurIntermediateBuffer;
+		public final RenderTargetAttachementsConfiguration fboBlur;
 
 		// 64x64 texture used to cull distant mesh
-		public Texture2DRenderTargetGL loadedChunksMapTop, loadedChunksMapBot;
-		public RenderTargetAttachementsConfiguration fboLoadedChunksTop, fboLoadedChunksBot;
+		public final Texture2DRenderTargetGL loadedChunksMapTop, loadedChunksMapBot;
+		public final RenderTargetAttachementsConfiguration fboLoadedChunksTop, fboLoadedChunksBot;
 
 		// Shadow maps
 		public int shadowMapResolution = 0;
-		public Texture2DRenderTargetGL shadowMapBuffer;
-		public RenderTargetAttachementsConfiguration shadowMapFBO;
+		public final Texture2DRenderTargetGL shadowMapBuffer;
+		public final RenderTargetAttachementsConfiguration shadowMapFBO;
 
 		//Environment map
 		public int ENVMAP_SIZE = 128;
-		public CubemapGL environmentMap;
+		public final CubemapGL environmentMap;
 
 		//Temp buffers
-		public Texture2DRenderTargetGL environmentMapBufferHDR, environmentMapBufferZ;
-		public RenderTargetAttachementsConfiguration environmentMapFastFbo, environmentMapFBO;
+		public final Texture2DRenderTargetGL environmentMapBufferHDR, environmentMapBufferZ;
+		public final RenderTargetAttachementsConfiguration environmentMapFastFbo, environmentMapFBO;
 
 		RenderBuffers()
 		{
@@ -560,11 +568,16 @@ public class WorldRendererImplementation implements WorldRenderer
 			// Bloom texture
 			bloomBuffer = new Texture2DRenderTargetGL(RGB_HDR, gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
 			ssaoBuffer = new Texture2DRenderTargetGL(RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
+			
+			// Reflections (HDR)
+			reflectionsBuffer = new Texture2DRenderTargetGL(RGB_HDR, gameWindow.getWidth(), gameWindow.getHeight());
 
 			// FBOs
 			fboGBuffers = new FrameBufferObjectGL(zBuffer, albedoBuffer, normalBuffer, materialBuffer);
 
 			fboShadedBuffer = new FrameBufferObjectGL(zBuffer, shadedBuffer);
+			
+			fboSSR = new FrameBufferObjectGL(null, reflectionsBuffer);
 			fboBloom = new FrameBufferObjectGL(null, bloomBuffer);
 			fboSSAO = new FrameBufferObjectGL(null, ssaoBuffer);
 
@@ -595,10 +608,11 @@ public class WorldRendererImplementation implements WorldRenderer
 		{
 			this.fboGBuffers.resizeFBO(width, height);
 			this.fboShadedBuffer.resizeFBO(width, height);
+			this.fboSSR.resizeFBO(width, height);
 			// Resize bloom components
-			fboBlur.resizeFBO(width / 2, height / 2);
-			fboBloom.resizeFBO(width / 2, height / 2);
-			fboSSAO.resizeFBO(width, height);
+			this.fboBlur.resizeFBO(width / 2, height / 2);
+			this.fboBloom.resizeFBO(width / 2, height / 2);
+			this.fboSSAO.resizeFBO(width, height);
 		}
 
 		public void resizeShadowMaps()

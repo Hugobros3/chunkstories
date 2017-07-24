@@ -59,8 +59,9 @@ out vec4 fragColor;
 <include ../lib/transformations.glsl>
 <include ../lib/shadowTricks.glsl>
 <include ../lib/normalmapping.glsl>
+//<include ../lib/ssr.glsl>
 
-vec4 computeLight(vec4 inputColor2, vec3 normal, vec4 worldSpacePosition, vec4 meta, float specular)
+vec4 computeLight(vec4 inputColor2, vec3 normal, vec4 worldSpacePosition, vec4 meta)
 {
 	vec4 inputColor = vec4(0.0);
 	inputColor.rgb = pow(inputColor2.rgb, vec3(gamma));
@@ -68,8 +69,6 @@ vec4 computeLight(vec4 inputColor2, vec3 normal, vec4 worldSpacePosition, vec4 m
 	float NdotL = clamp(dot(normalize(normal), normalize(normalMatrix * sunPos )), -1.0, 1.0);
 
 	float opacity = 0.0;
-	//Shadows sampling
-	vec4 coordinatesInShadowmap = accuratizeShadow(shadowMatrix * (untranslatedMVInv * worldSpacePosition));
 
 	//Declaration here
 	vec3 finalLight = vec3(0.0);
@@ -79,6 +78,9 @@ vec4 computeLight(vec4 inputColor2, vec3 normal, vec4 worldSpacePosition, vec4 m
 	voxelSunlight *= textureGammaIn(lightColors, vec2(time, 1.0)).rgb;
 	
 	<ifdef shadows>
+	//Shadows sampling
+		vec4 coordinatesInShadowmap = accuratizeShadow(shadowMatrix * (untranslatedMVInv * worldSpacePosition));
+	
 		float clamped = 10 * clamp(NdotL, 0.0, 0.1);
 		
 		//How much in shadows's brightness the object is
@@ -133,7 +135,6 @@ vec4 computeLight(vec4 inputColor2, vec3 normal, vec4 worldSpacePosition, vec4 m
 	
 	return inputColor;
 }
-<include ../lib/ssr.glsl>
 
 void main() {
     vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(screenCoord, depthBuffer);
@@ -144,14 +145,16 @@ void main() {
 	vec3 pixelNormal = decodeNormal(normalBufferData);
 	
 	vec4 shadingColor = texture(albedoBuffer, screenCoord);
-	//shadingColor.rgb = normalize(shadingColor.rgb);
 	
+	//Discard fragments using alpha
 	if(shadingColor.a > 0.0)
 	{
 		float spec = pow(normalBufferData.z, 1.0);
-		shadingColor = computeLight(shadingColor, pixelNormal, cameraSpacePosition, pixelMeta, spec);
-		if(spec > 0.0)
-			shadingColor.rgb = mix(shadingColor.rgb, computeReflectedPixel(screenCoord, cameraSpacePosition.xyz, pixelNormal, pixelMeta.y).rgb, spec);
+		shadingColor = computeLight(shadingColor, pixelNormal, cameraSpacePosition, pixelMeta);
+		
+		//if(spec > 0.0)
+		//	shadingColor.rgb = mix(shadingColor.rgb, computeReflectedPixel(screenCoord, cameraSpacePosition.xyz, pixelNormal, pixelMeta.y).rgb, spec);
+		
 		//shadingColor = vec4(1.0, 0.0, 0.0, 0.0);
 	}
 	else

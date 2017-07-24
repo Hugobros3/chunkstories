@@ -82,7 +82,12 @@ public class DecalsVoxelBaker implements VoxelBakerHighPoly, VoxelBakerCubic
 	@Override
 	public void addNormalsInt(int i0, int i1, int i2, byte extra)
 	{
-		this.addVerticeFloat((i0 + 1) / 512 - 1, (i1 + 1) / 512 - 1, (i2 + 1) / 512 - 1);
+		if(byteBuffer.position() == byteBuffer.capacity())
+			return;
+		byteBuffer.putFloat((float)(i0 + 1) / 512 - 1);
+		byteBuffer.putFloat((float)(i1 + 1) / 512 - 1);
+		byteBuffer.putFloat((float)(i2 + 1) / 512 - 1);
+		//this.addVerticeFloat((i0 + 1) / 512 - 1, (i1 + 1) / 512 - 1, (i2 + 1) / 512 - 1);
 	}
 
 	@Override

@@ -14,6 +14,9 @@ Todo:
 RC3
 Remaining recoil
 Feature parity XolioZ
+Fix local sounds in 3d
+Extrude 2D shit
+Drop shit from voxels
 
 Content has to progress.
 

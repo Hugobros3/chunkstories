@@ -10,12 +10,12 @@ uniform sampler2D debugBuffer;
 uniform sampler2D shadowMap;
 
 uniform sampler2D bloomBuffer;
-uniform sampler2D ssaoBuffer;
+uniform sampler2D reflectionsBuffer;
 
 uniform sampler2D pauseOverlayTexture;
 uniform float pauseOverlayFade;
 
-uniform samplerCube skybox;
+uniform samplerCube environmentMap;
 
 in vec2 texCoord;
 in vec2 pauseOverlayCoords;
@@ -44,8 +44,8 @@ const float gammaInv = 0.45454545454;
 const vec4 waterColor = vec4(0.2, 0.4, 0.45, 1.0);
 
 <include ../lib/transformations.glsl>
-/*<include fxaa.fs>*/
 <include dither.glsl>
+<include ../lib/normalmapping.glsl>
 
 vec4 getDebugShit(vec2 coords);
 
@@ -58,6 +58,7 @@ float poltergeist(vec2 coordinate, float seed)
 
 void main() {
 	vec2 finalCoords = texCoord;
+    vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(finalCoords, depthBuffer);
 	
 	// Water coordinates distorsion
 	finalCoords.x += underwater*sin(finalCoords.x * 50.0 + finalCoords.y * 60.0 + animationTimer * 1.0) / screenViewportSize.x * 5.0;
@@ -69,7 +70,22 @@ void main() {
 	// Tints pixels blue underwater
 	compositeColor = mix(compositeColor, compositeColor * waterColor, underwater);
 	
-	compositeColor *= apertureModifier;
+	//Applies reflections
+	vec4 normalData = texture(normalBuffer, finalCoords);
+	float reflectionsAmount = normalData.z;
+	
+	//Dynamic reflections
+	<ifdef doRealtimeReflections>
+		compositeColor = mix(compositeColor, texture(reflectionsBuffer, finalCoords), reflectionsAmount);
+	<endif doRealtimeReflections>
+	//Static reflections
+	<ifdef !doRealtimeReflections>
+		
+		vec3 pixelNormal = decodeNormal(normalData);
+		vec3 cameraSpaceVector = normalize(reflect(normalize(cameraSpacePosition.xyz), pixelNormal));
+		vec3 normSkyDirection = normalMatrixInv * cameraSpaceVector;
+		compositeColor = mix(compositeColor, texture(environmentMap, vec3(normSkyDirection.x, -normSkyDirection.y, -normSkyDirection.z)), reflectionsAmount);
+	<endif !doRealtimeReflections>
 	
 	//Applies bloom
 	<ifdef doBloom>
@@ -79,9 +95,12 @@ void main() {
 	//Gamma-corrects stuff
 	compositeColor.rgb = pow(compositeColor.rgb, vec3(gammaInv));
 	
-	vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(finalCoords, depthBuffer);
+	//vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(finalCoords, depthBuffer);
 	//Darkens further pixels underwater
 	compositeColor = mix(compositeColor, vec4(0.0), underwater * clamp(length(cameraSpacePosition) / 32.0, 0.0, 1.0));
+	
+	// Eye adapatation
+	compositeColor *= apertureModifier;
 	
 	//Dither the final pixel colour
 	vec3 its2 = compositeColor.rgb;
@@ -139,8 +158,9 @@ vec4 getDebugShit(vec2 coords)
 			//shit.yz += texture2D(metaBuffer, sampleCoords).xy;
 			<ifdef dynamicGrass>
 			
-			shit = vec4(1.0, 1.0, 1.0, 1.0) * texture2D(bloomBuffer, sampleCoords).x * 1.0;
-			//shit = texture2DLod(debugBuffer, sampleCoords, 80.0);
+			//shit = vec4(1.0, 1.0, 1.0, 1.0) * texture2D(bloomBuffer, sampleCoords).x * 1.0;
+			shit = texture2D(debugBuffer, sampleCoords, 80.0);
+			shit = pow(texture2D(debugBuffer, sampleCoords, 0.0), vec4(gammaInv));
 			<endif dynamicGrass>
 		}
 	}

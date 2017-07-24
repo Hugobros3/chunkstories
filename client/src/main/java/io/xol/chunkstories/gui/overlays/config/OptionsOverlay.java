@@ -260,7 +260,8 @@ public class OptionsOverlay extends Layer
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("shadows_apply").reload(RenderingConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("reflections").reload(RenderingConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonToggle("doDynamicCubemaps").setApplyAction(new Runnable(){
@@ -316,7 +317,7 @@ public class OptionsOverlay extends Layer
 						@Override
 						public void run()
 						{
-							if (parentLayer instanceof Ingame){
+							if (parentLayer.getRootLayer() instanceof Ingame){
 								Client.getInstance().getWorld().getWorldRenderer().setupRenderSize();
 							ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
 						}

@@ -1,27 +1,25 @@
-vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec3 pixelNormal, float showSkybox)
+vec4 computeReflectedPixel(sampler2D depthBuffer, sampler2D colorBuffer, samplerCube fallbackCubemap, vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec3 pixelNormal, float showSkybox)
 {
     vec2 screenSpacePosition2D = screenSpaceCoords;
 	
     vec3 cameraSpaceViewDir = normalize(cameraSpacePosition);
     vec3 cameraSpaceVector = normalize(reflect(cameraSpaceViewDir, pixelNormal));
-	vec3 oldPosition = cameraSpacePosition;
-    vec3 cameraSpaceVectorPosition = oldPosition + cameraSpaceVector;
+    vec3 cameraSpaceVectorPosition = cameraSpacePosition + cameraSpaceVector;
     vec3 currentPosition = convertCameraSpaceToScreenSpace(cameraSpaceVectorPosition);
     
 	// Is the reflection pointing in the right direction ?
-	
-	
-	vec4 color = vec4(0.0);// texture(comp_diffuse, screenSpacePosition2D); // vec4(pow(texture(gcolor, screenSpacePosition2D).rgb, vec3(3.0f + 1.2f)), 0.0);
+	vec4 color = vec4(0.0);
    
 	const int maxRefinements = 3;
 	int numRefinements = 0;
-    	int count = 0;
+    int count = 0;
 	vec2 finalSamplePos = screenSpacePosition2D;
 	
 	int numSteps = 0;
 	
 	bool outOfViewport = true;
 	
+	//SSR stepping goes here
 	<ifdef doRealtimeReflections>
     for (int i = 0; i < 40; i++)
     {
@@ -75,7 +73,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
     }
 	<endif doRealtimeReflections>
 	
-	color = texture(albedoBuffer, finalSamplePos);
+	color = texture(colorBuffer, finalSamplePos);
 	
 	if(numSteps > 38)
 		color.a = 0.0f;
@@ -86,7 +84,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	
 	vec3 normSkyDirection = normalMatrixInv * cameraSpaceVector;
 		
-	vec3 skyColor = getSkyColor(time, normSkyDirection);
+	vec3 skyColor = getSkyColor(dayTime, normSkyDirection);
 		
 	//float specular = clamp(pow(dot(normalize(normSkyDirection),normalize(sunPos)),16.0),0.0,1.0);
 		
@@ -100,7 +98,7 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	if(color.a == 0.0)
 	{
 		<ifdef doDynamicCubemaps>
-		skyColor = texture(environmentCubemap, vec3(normSkyDirection.x, -normSkyDirection.y, -normSkyDirection.z)).rgb;
+		skyColor = texture(fallbackCubemap, vec3(normSkyDirection.x, -normSkyDirection.y, -normSkyDirection.z)).rgb;
 		
 		//skyColor = pow(skyColor.rgb, vec3(gamma));
 		skyColor *= showSkybox;
@@ -112,21 +110,22 @@ vec4 computeReflectedPixel(vec2 screenSpaceCoords, vec3 cameraSpacePosition, vec
 	}
 	else
 	{
-		vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(finalSamplePos, depthBuffer);
-		vec4 pixelNormal = texture(normalBuffer, finalSamplePos);
-		vec4 pixelMeta = texture(metaBuffer, finalSamplePos);
+		//vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(finalSamplePos, depthBuffer);
+		//vec4 pixelNormal = texture(normalBuffer, finalSamplePos);
+		//vec4 pixelMeta = texture(metaBuffer, finalSamplePos);
 		
-		color = computeLight(color, decodeNormal(pixelNormal), cameraSpacePosition, pixelMeta, pixelNormal.z);
+		color = texture(colorBuffer, finalSamplePos);
+		//color = computeLight(color, decodeNormal(pixelNormal), cameraSpacePosition, pixelMeta, pixelNormal.z);
 		
 		// Apply fog
-		vec3 sum = (cameraSpacePosition.xyz);
+		/*vec3 sum = (cameraSpacePosition.xyz);
 		float dist = length(sum)-fogStartDistance;
 		float fogFactor = (dist) / (fogEndDistance-fogStartDistance);
 		float fogIntensity = clamp(fogFactor, 0.0, 1.0);
 		
 		vec3 fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz - camPos).xyz));
 		
-		color = mix(color, vec4(fogColor,color.a), fogIntensity);
+		color = mix(color, vec4(fogColor,color.a), fogIntensity);*/
 	}
 	return color;
 }
