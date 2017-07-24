@@ -270,6 +270,7 @@ public class OptionsOverlay extends Layer
 					{
 						ShadersLibrary.getShaderProgram("shadows_apply").reload(RenderingConfig.getShaderConfig());
 						ShadersLibrary.getShaderProgram("terrain").reload(RenderingConfig.getShaderConfig());
+						ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
 					}
 				}),
 				new ConfigButtonToggle("doShadows").setApplyAction(new Runnable(){

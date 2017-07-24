@@ -142,6 +142,7 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 		
 		//shaderInterface.setUniform1f("fogStartDistance", 200000);
 		//shaderInterface.setUniform1f("fogEndDistance", 200000);
+		shaderInterface.setUniform1f("dayTime", this.time);
 		shaderInterface.setUniform1f("overcastFactor", world.getWeather());
 	}
 	

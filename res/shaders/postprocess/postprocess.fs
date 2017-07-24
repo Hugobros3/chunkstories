@@ -32,6 +32,14 @@ uniform mat4 modelViewMatrixInv;
 uniform mat3 normalMatrix;
 uniform mat3 normalMatrixInv;
 
+//Sky data
+uniform sampler2D sunSetRiseTexture;
+uniform sampler2D skyTextureSunny;
+uniform sampler2D skyTextureRaining;
+uniform vec3 sunPos;
+uniform float overcastFactor;
+uniform float dayTime;
+
 uniform float animationTimer;
 uniform float underwater;
 
@@ -46,6 +54,7 @@ const vec4 waterColor = vec4(0.2, 0.4, 0.45, 1.0);
 <include ../lib/transformations.glsl>
 <include dither.glsl>
 <include ../lib/normalmapping.glsl>
+<include ../sky/sky.glsl>
 
 vec4 getDebugShit(vec2 coords);
 
@@ -80,11 +89,20 @@ void main() {
 	<endif doRealtimeReflections>
 	//Static reflections
 	<ifdef !doRealtimeReflections>
-		
 		vec3 pixelNormal = decodeNormal(normalData);
 		vec3 cameraSpaceVector = normalize(reflect(normalize(cameraSpacePosition.xyz), pixelNormal));
 		vec3 normSkyDirection = normalMatrixInv * cameraSpaceVector;
-		compositeColor = mix(compositeColor, texture(environmentMap, vec3(normSkyDirection.x, -normSkyDirection.y, -normSkyDirection.z)), reflectionsAmount);
+		
+		//If dynamics cubemap are enabled, use that
+		<ifdef doDynamicCubemaps>
+			compositeColor = mix(compositeColor, texture(environmentMap, vec3(normSkyDirection.x, -normSkyDirection.y, -normSkyDirection.z)), reflectionsAmount);
+		<endif doDynamicCubemaps>
+		
+		//Else just use the crappy sky color only
+		<ifdef !doDynamicCubemaps>
+			vec3 skyColor = getSkyColor(dayTime, normSkyDirection);
+			compositeColor = mix(compositeColor, vec4(skyColor, 1.0), reflectionsAmount);
+		<endif !doDynamicCubemaps>
 	<endif !doRealtimeReflections>
 	
 	//Applies bloom

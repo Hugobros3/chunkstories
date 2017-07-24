@@ -367,7 +367,6 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 
 		renderingContext.getRenderTargetManager().setConfiguration(renderBuffers.fboShadedBuffer);
-		//fboShadedBuffer.bind();
 
 		float lightMultiplier = 1.0f;
 
@@ -392,7 +391,7 @@ public class WorldRendererImplementation implements WorldRenderer
 
 		renderingContext.bindCubemap("environmentCubemap", renderBuffers.environmentMap);
 
-		applyShadowsShader.setUniform1f("time", skyRenderer.time);
+		applyShadowsShader.setUniform1f("dayTime", skyRenderer.time);
 
 		applyShadowsShader.setUniform1f("shadowMapResolution", RenderingConfig.shadowMapResolutions);
 		applyShadowsShader.setUniform1f("shadowVisiblity", shadower.getShadowVisibility());
@@ -491,6 +490,11 @@ public class WorldRendererImplementation implements WorldRenderer
 		postProcess.setUniform1f("pauseOverlayFade", pauseFade);
 
 		renderingContext.getCamera().setupShader(postProcess);
+		skyRenderer.setupShader(postProcess);
+		
+		renderingContext.bindTexture2D("sunSetRiseTexture", worldTextures.sunGlowTexture);
+		renderingContext.bindTexture2D("skyTextureSunny", worldTextures.skyTextureSunny);
+		renderingContext.bindTexture2D("skyTextureRaining", worldTextures.skyTextureRaining);
 
 		postProcess.setUniform1f("apertureModifier", apertureModifier);
 

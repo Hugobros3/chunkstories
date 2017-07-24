@@ -86,13 +86,6 @@ vec4 computeReflectedPixel(sampler2D depthBuffer, sampler2D colorBuffer, sampler
 		
 	vec3 skyColor = getSkyColor(dayTime, normSkyDirection);
 		
-	//float specular = clamp(pow(dot(normalize(normSkyDirection),normalize(sunPos)),16.0),0.0,1.0);
-		
-	float sunSpecular = 100.0 * clamp(1.0-overcastFactor * 2.0, 0.0, 1.0) * pow(clamp(dot(normalize(normSkyDirection),normalize(sunPos)), 0.0, 1.0),750.0);
-	
-	
-	skyColor += vec3(sunSpecular);
-		
 	skyColor *= showSkybox;//texture(blocklights, lightMapUV).rgb;
 	
 	if(color.a == 0.0)

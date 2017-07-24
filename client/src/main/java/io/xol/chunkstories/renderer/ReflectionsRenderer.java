@@ -1,14 +1,9 @@
 package io.xol.chunkstories.renderer;
 
-import org.joml.Vector3f;
-
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
-import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.engine.graphics.textures.TexturesHandler;
 
 public class ReflectionsRenderer {
 

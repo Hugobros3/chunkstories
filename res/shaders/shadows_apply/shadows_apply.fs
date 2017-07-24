@@ -20,6 +20,7 @@ uniform sampler2D skyTextureSunny;
 uniform sampler2D skyTextureRaining;
 uniform vec3 sunPos;
 uniform float overcastFactor;
+uniform float dayTime;
 
 uniform sampler2D lightColors;
 uniform sampler2D blockLightmap;
@@ -75,7 +76,7 @@ vec4 computeLight(vec4 inputColor2, vec3 normal, vec4 worldSpacePosition, vec4 m
 	
 	//Voxel light input, modified linearly according to time of day
 	vec3 voxelSunlight = textureGammaIn(blockLightmap, vec2(0.0, meta.y)).rgb;
-	voxelSunlight *= textureGammaIn(lightColors, vec2(time, 1.0)).rgb;
+	voxelSunlight *= textureGammaIn(lightColors, vec2(dayTime, 1.0)).rgb;
 	
 	<ifdef shadows>
 	//Shadows sampling
@@ -166,7 +167,7 @@ void main() {
 	float fogFactor = (dist) / (fogEndDistance-fogStartDistance);
 	float fogIntensity = clamp(fogFactor, 0.0, 1.0);
 	
-	vec3 fogColor = getSkyColorWOSun(time, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz - camPos).xyz));
+	vec3 fogColor = getSkyColorWOSun(dayTime, normalize(((modelViewMatrixInv * cameraSpacePosition).xyz - camPos).xyz));
 	
 	fragColor = mix(shadingColor, vec4(fogColor,shadingColor.a), fogIntensity);
 }
