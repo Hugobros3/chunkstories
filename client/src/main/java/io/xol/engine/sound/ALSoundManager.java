@@ -25,14 +25,17 @@ import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
+
+import org.joml.Vector3dc;
 import org.joml.Vector3fc;
 
-import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundSource;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.sound.ogg.SoundDataOggSample;
 import io.xol.engine.sound.sources.ALBufferedSoundSource;
 import io.xol.engine.sound.sources.ALSoundSource;
+import io.xol.engine.sound.sources.DummySoundSource;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -50,7 +53,6 @@ public class ALSoundManager implements ClientSoundManager
 	private AtomicBoolean shutdownState = new AtomicBoolean(false);
 
 	int[] auxEffectsSlotsId;
-	SoundEffect[] auxEffectsSlots;
 	
 	private long device;
 	private long context;
@@ -120,8 +122,8 @@ public class ALSoundManager implements ClientSoundManager
 					auxEffectsSlotsId[j] = i;
 					j++;
 				}
-				auxEffectsSlots = new SoundEffect[auxSlotsIds.size()];
-				ChunkStoriesLoggerImplementation.getInstance().info(auxEffectsSlots.length + " avaible auxiliary effects slots.");
+				//auxEffectsSlots = new SoundEffect[auxSlotsIds.size()];
+				//ChunkStoriesLoggerImplementation.getInstance().info(auxEffectsSlots.length + " avaible auxiliary effects slots.");
 			}
 
 			Runtime.getRuntime().addShutdownHook(new Thread()
@@ -190,22 +192,23 @@ public class ALSoundManager implements ClientSoundManager
 		//FloatBuffer listenerOri = BufferUtils.createFloatBuffer(6).put(new float[] { 0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f });
 	}
 
-	//long countTo9223372036854775808 = 0L;
-
 	public void addSoundSource(ALSoundSource soundSource)
 	{
 		soundSource.play();
-		//countTo9223372036854775808++;
-		//soundSource.soundSourceUUID = countTo9223372036854775808;
 		playingSoundSources.add(soundSource);
 	}
 
 	@Override
-	public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain, float attStart, float attEnd)
+	public SoundSource playSoundEffect(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain, float attStart, float attEnd)
 	{
 		try
 		{
-			ALSoundSource ss = new ALSoundSource(soundEffect, x, y, z, false, false, pitch, gain, attStart, attEnd);
+			ALSoundSource ss;
+			if(mode == Mode.STREAMED)
+				ss = new ALBufferedSoundSource(soundEffect, position, pitch, gain, attStart, attEnd);
+			else
+				ss = new ALSoundSource(soundEffect, mode, position, pitch, gain, attStart, attEnd);
+			
 			addSoundSource(ss);
 			return ss;
 		}
@@ -213,7 +216,7 @@ public class ALSoundManager implements ClientSoundManager
 		{
 			System.out.println("Sound not found "+soundEffect);
 		}
-		return new DummySound();
+		return new DummySoundSource();
 	}
 
 	@Override
@@ -256,7 +259,7 @@ public class ALSoundManager implements ClientSoundManager
 		return j;
 	}
 
-	@Override
+	/*@Override
 	public SoundSource playSoundEffect(String soundEffect)
 	{
 		return playSoundEffect(soundEffect, 0, 0, 0, 1, 1);
@@ -276,37 +279,7 @@ public class ALSoundManager implements ClientSoundManager
 			System.out.println("Music not found "+musicName);
 		}
 		return null;
-	}
-
-	@Override
-	public int getMaxEffectsSlots()
-	{
-		return this.auxEffectsSlots.length;
-	}
-
-	@Override
-	public boolean setEffectForSlot(int slot, SoundEffect effect)
-	{
-		if (auxEffectsSlots.length <= 0)
-			return false;
-		else if (slot >= 0 && slot < auxEffectsSlots.length)
-		{
-			auxEffectsSlots[slot] = effect;
-			return true;
-		}
-		else
-			return false;
-	}
-
-	public int getSlotForEffect(SoundEffect effect)
-	{
-		for (int i = 0; i < auxEffectsSlots.length; i++)
-		{
-			if (auxEffectsSlots[i].equals(effect))
-				return i;
-		}
-		return -1;
-	}
+	}*/
 
 	@Override
 	public Iterator<SoundSource> getAllPlayingSounds()
@@ -330,14 +303,14 @@ public class ALSoundManager implements ClientSoundManager
 	}
 
 	@Override
-	public SoundSource replicateServerSoundSource(String soundName, float x, float y, float z, boolean loop, boolean isAmbient, float pitch, float gain, float attenuationStart, float attenuationEnd, boolean buffered, long UUID) {
+	public SoundSource replicateServerSoundSource(String soundName, Mode mode, Vector3dc position, float pitch, float gain, float attenuationStart, float attenuationEnd, long UUID) {
 		try {
 			ALSoundSource soundSource = null;
 				
-			if (buffered)
-				soundSource = new ALBufferedSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain, attenuationStart, attenuationEnd);
+			if (mode == Mode.STREAMED)
+				soundSource = new ALBufferedSoundSource(soundName, position, pitch, gain, attenuationStart, attenuationEnd);
 			else
-				soundSource = new ALSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain, attenuationStart, attenuationEnd);
+				soundSource = new ALSoundSource(soundName, mode, position, pitch, gain, attenuationStart, attenuationEnd);
 			
 			//Match the UUIDs
 			soundSource.setUUID(UUID);

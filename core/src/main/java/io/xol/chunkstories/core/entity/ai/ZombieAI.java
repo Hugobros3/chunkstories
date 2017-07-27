@@ -5,6 +5,8 @@ import java.util.Collection;
 import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
+
 import org.joml.Vector3d;
 import io.xol.chunkstories.core.entity.EntityHumanoid;
 import io.xol.chunkstories.core.entity.EntityHumanoid.EntityHumanoidStance;
@@ -69,8 +71,8 @@ public class ZombieAI extends GenericHumanoidAI
 					if (targetsTypes.contains(entityToLook.getClass()))
 					{
 						//Play a borking sound
-						entity.getWorld().getSoundManager().playSoundEffect("sounds/sfx/zombie.ogg", entity.getLocation(), (float) (1.5 + Math.random() * 0.2), 1.5f);//.setPitch();
-						entity.getWorld().getSoundManager().playSoundEffect("sounds/sfx/zombie.ogg", entity.getLocation(), (float) (1.5 + Math.random() * 0.2), 1.5f);//.setPitch();
+						entity.getWorld().getSoundManager().playSoundEffect("sounds/sfx/zombie.ogg", Mode.NORMAL, entity.getLocation(), (float) (1.5 + Math.random() * 0.2), 1.5f);//.setPitch();
+						entity.getWorld().getSoundManager().playSoundEffect("sounds/sfx/zombie.ogg", Mode.NORMAL, entity.getLocation(), (float) (1.5 + Math.random() * 0.2), 1.5f);//.setPitch();
 						
 						//Set new task
 						setAiTask(new AiTaskAttackEntity((EntityHumanoid) entityToLook, 10f, 15f, currentTask, entity.stage().attackCooldown, entity.stage().attackDamage));

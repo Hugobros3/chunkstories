@@ -1,6 +1,7 @@
 package io.xol.engine.sound.sources;
 
-import io.xol.chunkstories.api.sound.SoundEffect;
+import org.joml.Vector3dc;
+
 import io.xol.chunkstories.api.sound.SoundSource;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -13,22 +14,14 @@ import io.xol.chunkstories.api.sound.SoundSource;
 public class SoundSourceVirtual extends SoundSourceAbstract
 {
 	public boolean stopped = false;
-	public boolean buffered;
 	String soundEffect;
 	VirtualSoundManager virtualServerSoundManager;
 	
-	public SoundSourceVirtual(VirtualSoundManager virtualServerSoundManager, String soundEffect, float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain, boolean buffered, float attStart, float attEnd)
+	public SoundSourceVirtual(VirtualSoundManager virtualServerSoundManager, String soundEffect, Mode mode, Vector3dc position, float pitch, float gain, float attStart, float attEnd)
 	{
-		super(x, y, z, loop, ambient, pitch, gain, attStart, attEnd);
-		this.buffered = buffered;
+		super(mode, position, pitch, gain, attStart, attEnd);
 		this.soundEffect = soundEffect;
 		this.virtualServerSoundManager = virtualServerSoundManager;
-	}
-
-	@Override
-	public SoundSource applyEffect(SoundEffect soundEffect)
-	{
-		return null;
 	}
 
 	@Override
@@ -62,6 +55,14 @@ public class SoundSourceVirtual extends SoundSourceAbstract
 	}
 
 	@Override
+	public SoundSource setPosition(Vector3dc position) {
+		super.setPosition(position);
+		virtualServerSoundManager.updateSourceForEveryone(this, null);
+		return this;
+	}
+
+
+	@Override
 	public SoundSource setAttenuationStart(float start)
 	{
 		super.setAttenuationStart(start);
@@ -77,7 +78,6 @@ public class SoundSourceVirtual extends SoundSourceAbstract
 		virtualServerSoundManager.updateSourceForEveryone(this, null);
 		return this;
 	}
-
 	@Override
 	public boolean isDonePlaying()
 	{

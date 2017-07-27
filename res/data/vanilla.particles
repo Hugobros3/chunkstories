@@ -77,3 +77,11 @@ particle fire_small 10
 	destroyOnCollision: false
 	ignoreCollisions: true
 end
+
+particle black_smoke 11
+	handlerClass: io.xol.chunkstories.core.particles.ParticleSmoke
+	billboardSize: 1.5
+	shaderName: particles_ab
+	albedoTexture: ./textures/particles/black_smoke.png
+	renderTime: forward
+end

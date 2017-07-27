@@ -23,6 +23,7 @@ import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.ai.ZombieAI;
@@ -230,7 +231,7 @@ public class EntityZombie extends EntityHumanoid
 	public float damage(DamageCause cause, HitBox osef, float damage)
 	{
 		if(!isDead())
-			world.getSoundManager().playSoundEffect("sounds/sfx/entities/zombie/hurt.ogg", this.getLocation(), (float)Math.random() * 0.4f + 0.8f, 1.5f + Math.min(0.5f, damage / 15.0f));
+			world.getSoundManager().playSoundEffect("sounds/sfx/entities/zombie/hurt.ogg", Mode.NORMAL, this.getLocation(), (float)Math.random() * 0.4f + 0.8f, 1.5f + Math.min(0.5f, damage / 15.0f));
 		
 		if(cause instanceof EntityLiving) {
 

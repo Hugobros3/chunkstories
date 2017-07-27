@@ -19,6 +19,7 @@ import io.xol.chunkstories.api.item.renderer.ItemRenderer;
 import io.xol.chunkstories.api.material.Material;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -91,7 +92,7 @@ public class ItemMiningTool extends Item implements VoxelModificationCause {
 										rnd.set(progress.loc);
 										rnd.add(Math.random() * 0.98, Math.random() * 0.98, Math.random() * 0.98);
 										world.getParticlesManager().spawnParticleAtPosition("voxel_frag", rnd);
-										world.getSoundManager().playSoundEffect("sounds/gameplay/voxel_remove.ogg", progress.loc, 1.0f, 1.0f);
+										world.getSoundManager().playSoundEffect("sounds/gameplay/voxel_remove.ogg", Mode.NORMAL, progress.loc, 1.0f, 1.0f);
 									}
 									world.setVoxelData(progress.loc, 0, owner);
 								}
@@ -149,7 +150,7 @@ public class ItemMiningTool extends Item implements VoxelModificationCause {
 					elapsedd /= (float)animationCycleDuration;
 					
 					if(elapsedd >= progress.timesSoundPlayed && elapsed > 50) {
-						world.getSoundManager().playSoundEffect("sounds/gameplay/voxel_remove.ogg", progress.loc, 1.5f, 1.0f);
+						world.getSoundManager().playSoundEffect("sounds/gameplay/voxel_remove.ogg", Mode.NORMAL, progress.loc, 1.5f, 1.0f);
 						progress.timesSoundPlayed++;
 					}
 					

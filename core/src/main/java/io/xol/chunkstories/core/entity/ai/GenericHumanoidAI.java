@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.ai.AI;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 
 import org.joml.Vector2f;
 import org.joml.Vector3d;
@@ -51,7 +52,7 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 		//Random grunge
 		if(rng.nextFloat() > 0.9990)
 		{
-			entity.getWorld().getSoundManager().playSoundEffect("sounds/sfx/zombie.ogg", entity.getLocation(), (float) (0.9 + Math.random() * 0.2), 1.0f);//.setPitch();
+			entity.getWorld().getSoundManager().playSoundEffect("sounds/sfx/zombie.ogg", Mode.NORMAL, entity.getLocation(), (float) (0.9 + Math.random() * 0.2), 1.0f);//.setPitch();
 		}
 		
 		//Water-jump

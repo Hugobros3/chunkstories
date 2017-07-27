@@ -26,6 +26,7 @@ import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -182,7 +183,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 					{
 						//Play sounds
 						if (playerClient != null)
-							playerClient.getSoundManager().playSoundEffect("sounds/dogez/weapon/default/dry.ogg", owner.getLocation(), 1.0f, 1.0f, 1f, (float) soundRange);
+							playerClient.getSoundManager().playSoundEffect("sounds/dogez/weapon/default/dry.ogg", Mode.NORMAL, owner.getLocation(), 1.0f, 1.0f, 1f, (float) soundRange);
 						//Dry.ogg
 						//return;
 					}
@@ -249,7 +250,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 				//Play sounds
 				if (controller != null)
 				{
-					controller.getSoundManager().playSoundEffect(this.soundName, (float) (double) user.getLocation().x(), (float) (double) user.getLocation().y(), (float) (double) user.getLocation().z(), 1.0f, 1.0f, 1.0f,
+					controller.getSoundManager().playSoundEffect(this.soundName, Mode.NORMAL, user.getLocation(), 1.0f, 1.0f, 1.0f,
 							(float) soundRange);
 				}
 				
@@ -295,7 +296,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 								
 								user.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", shotBlock, smashedVoxelParticleDirection);
 							}
-							user.getWorld().getSoundManager().playSoundEffect("sounds/sfx/glass.ogg", shotBlock, (float)Math.random() * 0.2f + 0.9f, 1.0f);
+							user.getWorld().getSoundManager().playSoundEffect("sounds/sfx/glass.ogg", Mode.NORMAL, shotBlock, (float)Math.random() * 0.2f + 0.9f, 1.0f);
 							
 							//Re-raytrace the ray
 							shotBlock = user.getWorld().collisionsManager().raytraceSolid(eyeLocation, direction, range);
@@ -362,7 +363,7 @@ public class ItemFirearm extends ItemWeapon implements ItemOverlay, ItemZoom, It
 
 							}
 							
-							controller.getSoundManager().playSoundEffect(VoxelsStore.get().getVoxelById(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), particleSpawnPosition, 1, 0.05f);
+							controller.getSoundManager().playSoundEffect(VoxelsStore.get().getVoxelById(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), Mode.NORMAL, particleSpawnPosition, 1, 0.05f);
 							
 							/*double bspeed = 5/60.0 * (1 + Math.random() * 3 * Math.random());
 							Vector3d ppos = new Vector3d(reflected);

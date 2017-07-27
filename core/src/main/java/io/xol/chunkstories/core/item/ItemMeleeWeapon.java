@@ -19,6 +19,7 @@ import org.joml.Vector3f;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -162,7 +163,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 						
 						owner.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", shotBlock, smashedVoxelParticleDirection);
 					}
-					owner.getWorld().getSoundManager().playSoundEffect("sounds/sfx/glass.ogg", shotBlock, (float)Math.random() * 0.2f + 0.9f, 1.0f);
+					owner.getWorld().getSoundManager().playSoundEffect("sounds/sfx/glass.ogg", Mode.NORMAL, shotBlock, (float)Math.random() * 0.2f + 0.9f, 1.0f);
 					
 					//Re-raytrace the ray
 					shotBlock = owner.getWorld().collisionsManager().raytraceSolid(eyeLocation, direction, range);
@@ -224,7 +225,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 						Vector3d ppos = new Vector3d(nearestLocation);
 						owner.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
 
-						owner.getWorld().getSoundManager().playSoundEffect(VoxelsStore.get().getVoxelById(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), ppos, 1, 0.25f);
+						owner.getWorld().getSoundManager().playSoundEffect(VoxelsStore.get().getVoxelById(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), Mode.NORMAL, ppos, 1, 0.25f);
 					}
 
 					owner.getWorld().getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");

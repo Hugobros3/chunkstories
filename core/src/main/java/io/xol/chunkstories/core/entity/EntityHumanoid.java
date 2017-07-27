@@ -23,6 +23,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -435,7 +436,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 		{
 			justJumped = false;
 			getWorld().getSoundManager()
-					.playSoundEffect(material.resolveProperty("jumpingSounds"), getLocation(),
+					.playSoundEffect(material.resolveProperty("jumpingSounds"), Mode.NORMAL, getLocation(),
 							(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().x() * getVelocityComponent().getVelocity().x() + getVelocityComponent().getVelocity().z() * getVelocityComponent().getVelocity().z()) * 0.1f), 1f)
 					.setAttenuationEnd(10);
 		}
@@ -443,7 +444,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 		{
 			justLanded = false;
 			getWorld().getSoundManager()
-					.playSoundEffect(material.resolveProperty("landingSounds"), getLocation(),
+					.playSoundEffect(material.resolveProperty("landingSounds"), Mode.NORMAL, getLocation(),
 							(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().x() * getVelocityComponent().getVelocity().x() + getVelocityComponent().getVelocity().z() * getVelocityComponent().getVelocity().z()) * 0.1f), 1f)
 					.setAttenuationEnd(10);
 		}
@@ -453,13 +454,13 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			metersWalked %= 0.2 * Math.PI * 2;
 			if (horizontalSpeed.length() <= 0.06)
 				getWorld().getSoundManager()
-						.playSoundEffect(material.resolveProperty("walkingSounds"), getLocation(),
+						.playSoundEffect(material.resolveProperty("walkingSounds"), Mode.NORMAL, getLocation(),
 								(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().x() * getVelocityComponent().getVelocity().x() + getVelocityComponent().getVelocity().z() * getVelocityComponent().getVelocity().z()) * 0.1f),
 								1f)
 						.setAttenuationEnd(10);
 			else
 				getWorld().getSoundManager()
-						.playSoundEffect(material.resolveProperty("runningSounds"), getLocation(),
+						.playSoundEffect(material.resolveProperty("runningSounds"), Mode.NORMAL, getLocation(),
 								(float) (0.9f + Math.sqrt(getVelocityComponent().getVelocity().x() * getVelocityComponent().getVelocity().x() + getVelocityComponent().getVelocity().z() * getVelocityComponent().getVelocity().z()) * 0.1f),
 								1f)
 						.setAttenuationEnd(10);
@@ -511,7 +512,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 		
 		damage *= 0.5;
 
-		world.getSoundManager().playSoundEffect("sounds/sfx/entities/flesh.ogg", this.getLocation(), (float)Math.random() * 0.4f + 0.4f, 1);
+		world.getSoundManager().playSoundEffect("sounds/sfx/entities/flesh.ogg", Mode.NORMAL, this.getLocation(), (float)Math.random() * 0.4f + 0.4f, 1);
 		
 		//System.out.println("Hit:"+(osef == null ? "" : osef.getName()) + " dmg: "+damage);
 

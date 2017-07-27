@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.lwjgl.system.MemoryUtil;
+
 import static org.lwjgl.openal.AL10.*;
 
 import io.xol.engine.sound.SoundDataBuffered;
@@ -32,7 +34,7 @@ public class SoundDataOggStream extends SoundDataBuffered
 			oggInput = new OggInputStream(new DataInputStream(is));
 			format = oggInput.getChannel() == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
 			
-			buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
+			buffer = MemoryUtil.memAlloc(BUFFER_SIZE);//ByteBuffer.allocateDirect(BUFFER_SIZE);
 			length = 0; // Empty size until we request some
 		}
 		catch (Exception e)
@@ -81,7 +83,9 @@ public class SoundDataOggStream extends SoundDataBuffered
 	@Override
 	public void destroy()
 	{
-		System.out.println("destroy command issued");
+		if(buffer != null)
+			MemoryUtil.memFree(buffer);
+		//System.out.println("destroy command issued");
 		
 		int result;
 		if((result = alGetError()) != AL_NO_ERROR)

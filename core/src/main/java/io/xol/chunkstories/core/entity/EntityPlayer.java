@@ -42,6 +42,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
@@ -800,7 +801,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		if(!isDead())
 		{
 			int i = 1 + (int) Math.random() * 3;
-			world.getSoundManager().playSoundEffect("sounds/sfx/entities/human/hurt"+i+".ogg", this.getLocation(), (float)Math.random() * 0.4f + 0.8f, 5.0f);
+			world.getSoundManager().playSoundEffect("sounds/sfx/entities/human/hurt"+i+".ogg", Mode.NORMAL, this.getLocation(), (float)Math.random() * 0.4f + 0.8f, 5.0f);
 		}
 		
 		return super.damage(cause, osef, damage);

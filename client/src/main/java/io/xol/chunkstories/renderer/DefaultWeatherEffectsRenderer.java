@@ -18,6 +18,7 @@ import io.xol.chunkstories.api.rendering.WorldEffectsRenderer;
 import io.xol.chunkstories.api.rendering.WorldRenderer;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.sound.SoundSource;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
@@ -158,7 +159,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 				//Plays the rain loop
 
 				if (rainSoundSource == null || rainSoundSource.isDonePlaying())
-					rainSoundSource = world.getSoundManager().playMusic("sounds/sfx/rainloop.ogg", 0, 0, 0, 1, rainIntensity, true);
+					rainSoundSource = world.getSoundManager().playSoundEffect("sounds/sfx/rainloop.ogg", Mode.STREAMED, null, 1f, rainIntensity, 15f, 15f);
 
 				if (rainSoundSource != null)
 					rainSoundSource.setGain(rainIntensity);

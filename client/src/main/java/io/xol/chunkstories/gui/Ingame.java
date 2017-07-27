@@ -168,7 +168,7 @@ public class Ingame extends Layer
 			wireframeDebugger.render(renderingContext);
 		}
 		
-		if (selectedBlock != null && playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
+		if (!guiHidden && selectedBlock != null && playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
 			selectionRenderer.drawSelectionBox(selectedBlock);
 		
 		selectionRenderer.drawnCrackedBlocks(renderingContext);

@@ -1,7 +1,7 @@
 package io.xol.engine.sound.sources;
 
 import static org.lwjgl.openal.AL10.*;
-import static org.lwjgl.openal.AL11.*;
+import org.joml.Vector3dc;
 
 //TODO EFX LWJGL3
 //import static org.lwjgl.openal.EFX10.*;
@@ -9,11 +9,8 @@ import static org.lwjgl.openal.AL11.*;
 import org.lwjgl.openal.AL10;
 
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
-import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundManager;
-import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
-import io.xol.engine.sound.ALSoundManager;
 import io.xol.engine.sound.SoundData;
 import io.xol.engine.sound.SoundDataBuffered;
 import io.xol.engine.sound.library.SoundsLibrary;
@@ -28,11 +25,11 @@ public class ALSoundSource extends SoundSourceAbstract
 
 	public SoundData soundData;
 
-	SoundEffect effect;
+	//SoundEffect effect;
 
-	ALSoundSource(float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain, float attStart, float attEnd)
+	ALSoundSource(Mode mode, Vector3dc position, float pitch, float gain, float attStart, float attEnd)
 	{
-		super(x, y, z, loop, ambient, pitch, gain, attStart, attEnd);
+		super(mode, position, pitch, gain, attStart, attEnd);
 	}
 
 	public void setUUID(long uUID)
@@ -40,20 +37,13 @@ public class ALSoundSource extends SoundSourceAbstract
 		this.soundSourceUUID = uUID;
 	}
 
-	public ALSoundSource(String soundEffect, float x, float y, float z, boolean loop, boolean ambient, float pitch, float gain, float attStart, float attEnd) throws SoundEffectNotFoundException
+	public ALSoundSource(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain, float attStart, float attEnd) throws SoundEffectNotFoundException
 	{
-		this(x, y, z, loop, ambient, pitch, gain, attStart, attEnd);
+		this(mode, position, pitch, gain, attStart, attEnd);
 
 		this.soundData = SoundsLibrary.obtainSample(soundEffect);
 		if (soundData == null)
 			throw new SoundEffectNotFoundException();
-	}
-
-	@Override
-	public SoundSource applyEffect(SoundEffect soundEffect)
-	{
-		this.effect = soundEffect;
-		return this;
 	}
 
 	public void play()
@@ -98,16 +88,7 @@ public class ALSoundSource extends SoundSourceAbstract
 				elapsed--;
 			}
 		}
-		ALSoundManager alManager = ((ALSoundManager) manager);
-		/*if (isAmbient)
-		{
-			//To get rid of spatialization we tp the ambient sources to the listener
-			x = alManager.x;
-			y = alManager.y;
-			z = alManager.z;
-		}*/
-		if (effect != null)
-			effectSlotId = alManager.getSlotForEffect(effect);
+		
 		updateSource();
 	}
 
@@ -121,7 +102,7 @@ public class ALSoundSource extends SoundSourceAbstract
 	{
 		if (soundData == null)
 			return true;
-		return !loop && (System.currentTimeMillis() - soundStartTime > soundData.getLengthMs());
+		return !(getMode() == Mode.LOOPED) && (System.currentTimeMillis() - soundStartTime > soundData.getLengthMs());
 	}
 
 	/**
@@ -154,51 +135,17 @@ public class ALSoundSource extends SoundSourceAbstract
 
 	private void updateSource()
 	{
-		alSource3f(openAlSourceId, AL_POSITION, x, y, z);
-		/*if (efxSlot == -1 && ALSoundManager.efxOn)
-		{
-			efxSlot = alGenAuxiliaryEffectSlots();
-			alAuxiliaryEffectSloti(efxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
-		
-			if (reverbEffectSlot == -1)
-			{
-				reverbEffectSlot = alGenEffects();
-				alEffecti(reverbEffectSlot, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
-				alEffectf(reverbEffectSlot, AL_REVERB_DENSITY, AL_REVERB_DEFAULT_DENSITY);
-				alEffectf(reverbEffectSlot, AL_REVERB_DIFFUSION, AL_REVERB_DEFAULT_DIFFUSION);
-				alEffectf(reverbEffectSlot, AL_REVERB_GAIN, AL_REVERB_DEFAULT_GAIN);
-				alEffectf(reverbEffectSlot, AL_REVERB_GAINHF, AL_REVERB_DEFAULT_GAINHF);
-				//alEffectf(reverbEffectSlot, AL_REVERB_GAINLF, pEFXEAXReverb.flGainLF);
-				alEffectf(reverbEffectSlot, AL_REVERB_DECAY_TIME, AL_REVERB_DEFAULT_DECAY_TIME);
-				alEffectf(reverbEffectSlot, AL_REVERB_DECAY_HFRATIO, AL_REVERB_DEFAULT_DECAY_HFRATIO);
-				//alEffectf(reverbEffectSlot, AL_REVERB_DECAY_LFRATIO, AL_REVERB_DECAY_LFRATIO);
-				alEffectf(reverbEffectSlot, AL_REVERB_REFLECTIONS_GAIN, AL_REVERB_DEFAULT_REFLECTIONS_GAIN);
-				alEffectf(reverbEffectSlot, AL_REVERB_REFLECTIONS_DELAY, AL_REVERB_DEFAULT_REFLECTIONS_DELAY);
-				//alEffectfv(reverbEffectSlot, AL_REVERB_REFLECTIONS_PAN, @pEFXEAXReverb.flReflectionsPan);
-				alEffectf(reverbEffectSlot, AL_REVERB_LATE_REVERB_GAIN, AL_REVERB_DEFAULT_LATE_REVERB_GAIN);
-				alEffectf(reverbEffectSlot, AL_REVERB_LATE_REVERB_DELAY, AL_REVERB_DEFAULT_LATE_REVERB_DELAY);
-				//alEffectfv(reverbEffectSlot, AL_REVERB_LATE_REVERB_PAN, @pEFXEAXReverb.flLateReverbPan);
-				//alEffectf(reverbEffectSlot, AL_REVERB_ECHO_TIME, pEFXEAXReverb.flEchoTime);
-				//alEffectf(reverbEffectSlot, AL_REVERB_ECHO_DEPTH, pEFXEAXReverb.flEchoDepth);
-				//alEffectf(reverbEffectSlot, AL_REVERB_MODULATION_TIME, pEFXEAXReverb.flModulationTime);
-				//alEffectf(reverbEffectSlot, AL_REVERB_MODULATION_DEPTH, pEFXEAXReverb.flModulationDepth);
-				alEffectf(reverbEffectSlot, AL_REVERB_AIR_ABSORPTION_GAINHF, AL_REVERB_DEFAULT_AIR_ABSORPTION_GAINHF);
-				//alEffectf(reverbEffectSlot, AL_REVERB_HFREFERENCE, pEFXEAXReverb.flHFReference);
-				//alEffectf(reverbEffectSlot, AL_REVERB_LFREFERENCE, pEFXEAXReverb.flLFReference);
-				alEffectf(reverbEffectSlot, AL_REVERB_ROOM_ROLLOFF_FACTOR, AL_REVERB_DEFAULT_ROOM_ROLLOFF_FACTOR);
-				alEffecti(reverbEffectSlot, AL_REVERB_DECAY_HFLIMIT, AL_REVERB_DEFAULT_DECAY_HFLIMIT);
-			}
-			
-			alAuxiliaryEffectSloti(efxSlot, AL_EFFECTSLOT_EFFECT, reverbEffectSlot);
-		}*/
-
 		lock.lock();
+		
+		if(position != null)
+			alSource3f(openAlSourceId, AL_POSITION, (float)position.x, (float)position.y, (float)position.z);
+		
 		if (updateProperties)
 		{
 			alSourcef(openAlSourceId, AL_PITCH, pitch);
 			alSourcef(openAlSourceId, AL_GAIN, gain);
-			//alSourcef(openAlSourceId, AL_ROLLOFF_FACTOR, isAmbient ? 0f : 1f);
 
+			boolean isAmbient = this.position == null;
 			if (isAmbient)
 			{
 				alSourcei(openAlSourceId, AL_SOURCE_RELATIVE, AL_TRUE);

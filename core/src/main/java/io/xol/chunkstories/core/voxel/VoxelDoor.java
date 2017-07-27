@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.item.ItemVoxel;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.physics.CollisionBox;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelCustomIcon;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -135,7 +136,7 @@ public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, Vo
 		if (VoxelsStore.get().getVoxelById(otherLocationId) instanceof VoxelDoor)
 		{
 			System.out.println("new door status : " + newState);
-			voxelContext.getWorld().getSoundManager().playSoundEffect("sounds/sfx/door.ogg", voxelContext.getLocation(), 1.0f, 1.0f);
+			voxelContext.getWorld().getSoundManager().playSoundEffect("sounds/sfx/door.ogg", Mode.NORMAL, voxelContext.getLocation(), 1.0f, 1.0f);
 
 			voxelContext.getLocation().setVoxelDataAtLocation(VoxelFormat.changeMeta(voxelContext.getData(), newData));
 			otherPartLocation.setVoxelDataAtLocation(VoxelFormat.changeMeta(otherPartLocation.getVoxelDataAtLocation(), newData));

@@ -9,15 +9,16 @@ import org.joml.Vector3fc;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
-import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfoFile;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
+import io.xol.engine.sound.sources.DummySoundSource;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -68,22 +69,9 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	class NullSoundManager implements SoundManager
 	{
 
-		@Override
-		public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain, float attStart, float attEnd)
-		{
-
-			return null;
-		}
 
 		@Override
 		public SoundSource playSoundEffect(String soundEffect)
-		{
-
-			return null;
-		}
-
-		@Override
-		public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient, float attStart, float attEnd)
 		{
 
 			return null;
@@ -107,20 +95,15 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 		}
 
 		@Override
-		public int getMaxEffectsSlots()
-		{
-			return 0;
-		}
-
-		@Override
-		public boolean setEffectForSlot(int slot, SoundEffect effect)
-		{
-			return false;
-		}
-
-		@Override
 		public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up)
 		{
+		}
+
+		@Override
+		public SoundSource playSoundEffect(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain,
+				float attStart, float attEnd) {
+			// TODO Auto-generated method stub
+			return new DummySoundSource();
 		}
 
 	}

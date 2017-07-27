@@ -3,6 +3,7 @@ package io.xol.chunkstories.core.util;
 import io.xol.chunkstories.api.Location;
 import org.joml.Vector3d;
 import io.xol.chunkstories.api.player.Player;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -43,7 +44,7 @@ public class WorldEffects
 		}
 		
 		//Play the sound more directly
-		world.getSoundManager().playSoundEffect("./sounds/sfx/kboom.ogg", center, (float)(0.9f + Math.random() * 0.2f), (float)(debrisSpeed * debrisSpeed * 10f), 1, 150);
+		world.getSoundManager().playSoundEffect("./sounds/sfx/kboom.ogg", Mode.NORMAL, center, (float)(0.9f + Math.random() * 0.2f), (float)(debrisSpeed * debrisSpeed * 10f), 1, 150);
 	}
 	
 	public static void createFireballFx(World world, Vector3d center, double radius, double debrisSpeed, float f)

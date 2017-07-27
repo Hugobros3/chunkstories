@@ -6,13 +6,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.api.Location;
-import org.joml.Vector3d;
+import org.joml.Vector3dc;
 import org.joml.Vector3fc;
 
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.sound.SoundEffect;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.net.packets.PacketSoundSource;
 
@@ -62,18 +62,9 @@ public class VirtualSoundManager implements SoundManager
 		}
 
 		@Override
-		public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain, float attStart, float attEnd)
+		public SoundSource playSoundEffect(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain, float attStart, float attEnd)
 		{
-			SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualSoundManager.this, soundEffect, x, y, z, false, false, pitch, gain, false, attStart, attEnd);
-			//Play the sound effect for everyone
-			addSourceToEveryone(soundSource, this);
-			return soundSource;
-		}
-
-		@Override
-		public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient, float attStart, float attEnd)
-		{
-			SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualSoundManager.this, musicName, x, y, z, false, ambient, pitch, gain, true, attStart, attEnd);
+			SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualSoundManager.this, soundEffect, mode, position, pitch, gain, attStart, attEnd);
 			//Play the sound effect for everyone
 			addSourceToEveryone(soundSource, this);
 			return soundSource;
@@ -157,18 +148,6 @@ public class VirtualSoundManager implements SoundManager
 		}
 
 		@Override
-		public int getMaxEffectsSlots()
-		{
-			return 0;
-		}
-
-		@Override
-		public boolean setEffectForSlot(int slot, SoundEffect effect)
-		{
-			return false;
-		}
-
-		@Override
 		public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up)
 		{
 			throw new UnsupportedOperationException("Irrelevant");
@@ -176,7 +155,7 @@ public class VirtualSoundManager implements SoundManager
 
 		public boolean couldHearSource(SoundSourceVirtual soundSource)
 		{
-			if(soundSource.isAmbient)
+			if(soundSource.position == null)
 				return true;
 			
 			if(soundSource.gain <= 0)
@@ -192,7 +171,7 @@ public class VirtualSoundManager implements SoundManager
 			if(loc == null)
 				return false;
 			
-			return loc.distance(new Vector3d(soundSource.x, soundSource.y, soundSource.z)) < soundSource.attenuationEnd + 1.0;
+			return loc.distance(soundSource.getPosition()) < soundSource.attenuationEnd + 1.0;
 		}
 	}
 
@@ -260,29 +239,20 @@ public class VirtualSoundManager implements SoundManager
 	}
 
 	@Override
-	public SoundSource playSoundEffect(String soundEffect, float x, float y, float z, float pitch, float gain, float attStart, float attEnd)
+	public SoundSource playSoundEffect(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain, float attStart, float attEnd)
 	{
-		SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualSoundManager.this, soundEffect, x, y, z, false, false, pitch, gain, false, attStart, attEnd);
+		SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualSoundManager.this, soundEffect, mode, position, pitch, gain, attStart, attEnd);
 		//Play the sound effect for everyone
 		addSourceToEveryone(soundSource, null);
 		return soundSource;
 	}
 
-	@Override
+	/*@Override
 	public SoundSource playSoundEffect(String soundEffect)
 	{
 		// TODO Have yet to specify on playing GUI sounds for everyone 
 		return null;
-	}
-
-	@Override
-	public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient, float attStart, float attEnd)
-	{
-		SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualSoundManager.this, musicName, x, y, z, false, ambient, pitch, gain, true, attStart, attEnd);
-		//Play the sound effect for everyone
-		addSourceToEveryone(soundSource, null);
-		return soundSource;
-	}
+	}*/
 
 	@Override
 	public void stopAnySound(String soundEffect)
@@ -306,18 +276,6 @@ public class VirtualSoundManager implements SoundManager
 		{
 			i.next().stop();
 		}
-	}
-
-	@Override
-	public int getMaxEffectsSlots()
-	{
-		return 0;
-	}
-
-	@Override
-	public boolean setEffectForSlot(int slot, SoundEffect effect)
-	{
-		return false;
 	}
 
 	@Override

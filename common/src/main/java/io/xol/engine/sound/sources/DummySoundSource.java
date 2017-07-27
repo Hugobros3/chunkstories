@@ -1,13 +1,14 @@
-package io.xol.engine.sound;
+package io.xol.engine.sound.sources;
 
-import io.xol.chunkstories.api.sound.SoundEffect;
+import org.joml.Vector3dc;
+
 import io.xol.chunkstories.api.sound.SoundSource;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class DummySound implements SoundSource
+public class DummySoundSource implements SoundSource
 {
 
 	@Override
@@ -25,13 +26,6 @@ public class DummySound implements SoundSource
 
 	@Override
 	public SoundSource setPitch(float pitch)
-	{
-		// TODO Auto-generated method stub
-		return this;
-	}
-
-	@Override
-	public SoundSource setAmbient(boolean ambient)
 	{
 		// TODO Auto-generated method stub
 		return this;
@@ -66,13 +60,6 @@ public class DummySound implements SoundSource
 	}
 
 	@Override
-	public SoundSource applyEffect(SoundEffect soundEffect)
-	{
-		// TODO Auto-generated method stub
-		return this;
-	}
-
-	@Override
 	public void stop()
 	{
 		// TODO Auto-generated method stub
@@ -84,6 +71,48 @@ public class DummySound implements SoundSource
 	{
 		// TODO Auto-generated method stub
 		return true;
+	}
+
+	@Override
+	public Mode getMode() {
+		// TODO Auto-generated method stub
+		return Mode.NORMAL;
+	}
+
+	@Override
+	public SoundSource setPosition(Vector3dc location) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public float getPitch() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public float getGain() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public float getAttenuationStart() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public float getAttenuationEnd() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public Vector3dc getPosition() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

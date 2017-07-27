@@ -4,12 +4,16 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketsProcessor;
 import io.xol.chunkstories.api.sound.SoundSource;
+import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.engine.sound.sources.SoundSourceVirtual;
 import io.xol.chunkstories.api.net.PacketSender;
 
@@ -35,18 +39,25 @@ public class PacketSoundSource extends PacketSynchPrepared
 	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeUTF(soundSourceToSend.getSoundName());
-		out.writeLong(soundSourceToSend.soundSourceUUID);
-		out.writeFloat(soundSourceToSend.x);
-		out.writeFloat(soundSourceToSend.y);
-		out.writeFloat(soundSourceToSend.z);
-		out.writeBoolean(soundSourceToSend.loop);
-		out.writeBoolean(soundSourceToSend.isAmbient);
-		out.writeBoolean(soundSourceToSend.buffered);
+		out.writeLong(soundSourceToSend.getUUID());
+		Vector3dc position = soundSourceToSend.getPosition();
+		if(position != null) {
+			out.writeBoolean(true);
+			out.writeFloat((float) position.x());
+			out.writeFloat((float) position.y());
+			out.writeFloat((float) position.z());
+		}
+		else
+			out.writeBoolean(false);
+		//out.writeBoolean(soundSourceToSend.loop);
+		//out.writeBoolean(soundSourceToSend.isAmbient);
+		//out.writeBoolean(soundSourceToSend.buffered);
+		out.writeByte(soundSourceToSend.getMode().ordinal());
 		out.writeBoolean(soundSourceToSend.stopped);
-		out.writeFloat(soundSourceToSend.pitch);
-		out.writeFloat(soundSourceToSend.gain);
-		out.writeFloat(soundSourceToSend.attenuationStart);
-		out.writeFloat(soundSourceToSend.attenuationEnd);
+		out.writeFloat(soundSourceToSend.getPitch());
+		out.writeFloat(soundSourceToSend.getGain());
+		out.writeFloat(soundSourceToSend.getAttenuationStart());
+		out.writeFloat(soundSourceToSend.getAttenuationEnd());
 	}
 
 	@Override
@@ -54,12 +65,20 @@ public class PacketSoundSource extends PacketSynchPrepared
 	{
 		String soundName = in.readUTF();
 		long UUID = in.readLong();
-		float x = in.readFloat();
-		float y = in.readFloat();
-		float z = in.readFloat();
-		boolean loop = in.readBoolean();
-		boolean isAmbient = in.readBoolean();
-		boolean buffered = in.readBoolean();
+		
+		boolean hasPosition = in.readBoolean();
+		Vector3dc position = null;
+		if(hasPosition) {
+			position = new Vector3d(in.readFloat(), in.readFloat(), in.readFloat());
+		}
+		
+		//boolean loop = in.readBoolean();
+		//boolean isAmbient = in.readBoolean();
+		//boolean buffered = in.readBoolean();
+		
+		byte modeByte = in.readByte();
+		Mode mode = Mode.values()[modeByte];
+		
 		boolean stopped = in.readBoolean();
 		float pitch = in.readFloat();
 		float gain = in.readFloat();
@@ -79,29 +98,8 @@ public class PacketSoundSource extends PacketSynchPrepared
 
 		if (soundSource == null) {
 			
-			soundSource = cpe.getContext().getSoundManager().replicateServerSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain, attenuationStart, attenuationEnd, buffered, UUID);
+			soundSource = cpe.getContext().getSoundManager().replicateServerSoundSource(soundName, mode, position, pitch, gain, attenuationStart, attenuationEnd, UUID);
 			return;
-			
-			/*try
-			{
-				/*if (buffered)
-					soundSource = new ALBufferedSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain, attenuationStart, attenuationEnd);
-				else
-					soundSource = new ALSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain, attenuationStart, attenuationEnd);
-				
-				//Match the UUIDs
-				soundSource.setUUID(UUID);
-				((ALSoundManager) Client.getInstance().getSoundManager()).addSoundSource(soundSource);*/
-				
-				//Play dat shit dawg
-			/*	cpe.getContext().getSoundManager().replicateServerSoundSource(soundName, x, y, z, loop, isAmbient, pitch, gain, attenuationStart, attenuationEnd, buffered, UUID);
-				
-			}
-			catch (SoundEffectNotFoundException e)
-			{
-				cpe.getContext().logger().error("Can't play sound "+soundName + "from server. (UUID="+UUID+")");
-				return;
-			}*/
 		}
 		if(stopped)
 		{
@@ -110,7 +108,7 @@ public class PacketSoundSource extends PacketSynchPrepared
 		}
 
 		//Update the soundSource with all we can
-		soundSource.setPosition(x, y, z);
+		soundSource.setPosition(position);
 		soundSource.setPitch(pitch);
 		soundSource.setGain(gain);
 		soundSource.setAttenuationStart(attenuationStart);
