@@ -3,6 +3,7 @@ package io.xol.chunkstories.renderer.terrain;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import org.joml.Vector2d;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.Location;
@@ -40,58 +41,65 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 	
 	public FarTerrainNoMeshRenderer(WorldRendererImplementation worldRenderer) {
 		this.worldRenderer = worldRenderer;
+		
+		for(int i = 0; i < detailLevels.length; i++) {
+			grids[i] = generateGrid(detailLevels[i]);
+		}
 	}
 	
 	@Override
 	public void markFarTerrainMeshDirty() {
-		// TODO Auto-generated method stub
 		
 	}
 
-	VertexBufferGL grid32x32 = null;
+	VertexBufferGL generateGrid(int gridSubdivisions) {
+		VertexBufferGL grid = new VertexBufferGL();
+		
+		ByteBuffer bb = MemoryUtil.memAlloc(gridSubdivisions * gridSubdivisions * 2 * 3 * (3 * 4));
+		bb.order(ByteOrder.LITTLE_ENDIAN);
+		MemFreeByteBuffer mbb = new MemFreeByteBuffer(bb);
+		int s = 256 / gridSubdivisions;
+		for(int a = 0; a < gridSubdivisions; a++)
+			for(int b = 0; b < gridSubdivisions; b++) {
+				int i = a * s;
+				int j = b * s;
+				bb.putFloat(i + 0);
+				bb.putFloat(0);
+				bb.putFloat(j + 0);
+				
+				bb.putFloat(i + s);
+				bb.putFloat(0);
+				bb.putFloat(j + 0);
+				
+				bb.putFloat(i + s);
+				bb.putFloat(0);
+				bb.putFloat(j + s);
+				
+				bb.putFloat(i + 0);
+				bb.putFloat(0);
+				bb.putFloat(j + 0);
+				
+				bb.putFloat(i + 0);
+				bb.putFloat(0);
+				bb.putFloat(j + s);
+				
+				bb.putFloat(i + s);
+				bb.putFloat(0);
+				bb.putFloat(j + s);
+			}
+		bb.flip();
+		grid.uploadData(mbb);
+		
+		return grid;
+	}
+	
+	int detailLevels[] = {1, 2, 4, 8, 16, 32, 64, 128, 256};
+	VertexBufferGL grids[] = new VertexBufferGL[detailLevels.length];
+	//VertexBufferGL grid = null;
 	VertexBufferGL gridAttributes = new VertexBufferGL();
 	
 	@Override
 	public void renderTerrain(RenderingInterface renderer, ReadyVoxelMeshesMask mask) {
-		if(grid32x32 == null) {
-			grid32x32 = new VertexBufferGL();
-			
-			ByteBuffer bb = MemoryUtil.memAlloc(32 * 32 * 2 * 3 * (3 * 4));
-			bb.order(ByteOrder.LITTLE_ENDIAN);
-			MemFreeByteBuffer mbb = new MemFreeByteBuffer(bb);
-			int s = 8;
-			for(int a = 0; a < 32; a++)
-				for(int b = 0; b < 32; b++) {
-					int i = a * s;
-					int j = b * s;
-					bb.putFloat(i + 0);
-					bb.putFloat(0);
-					bb.putFloat(j + 0);
-					
-					bb.putFloat(i + s);
-					bb.putFloat(0);
-					bb.putFloat(j + 0);
-					
-					bb.putFloat(i + s);
-					bb.putFloat(0);
-					bb.putFloat(j + s);
-					
-					bb.putFloat(i + 0);
-					bb.putFloat(0);
-					bb.putFloat(j + 0);
-					
-					bb.putFloat(i + 0);
-					bb.putFloat(0);
-					bb.putFloat(j + s);
-					
-					bb.putFloat(i + s);
-					bb.putFloat(0);
-					bb.putFloat(j + s);
-				}
-			bb.flip();
-			grid32x32.uploadData(mbb);
-			//MemoryUtil.memFree(bb);
-		}
 		
 		ShaderInterface terrainShader = renderer.useShader("terrain");
 		renderer.setBlendMode(BlendMode.DISABLED);
@@ -138,6 +146,8 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 			if(playerPosition == null)
 				return; //We won't do shit with that going on
 			
+			Vector2d playerCenter = new Vector2d(playerPosition.x, playerPosition.z);
+			
 			World world = playerPosition.getWorld();
 			
 			int chunkX = (int) Math.floor(playerPosition.x / 32.0);
@@ -146,38 +156,68 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 			int regionX = chunkX / 8;
 			int regionZ = chunkZ / 8;
 			
-			ByteBuffer summariesAttributes = MemoryUtil.memAlloc(9 * 9 * (4 + 2 * 4));
-			MemFreeByteBuffer auto_free_summariesAttributes = new MemFreeByteBuffer(summariesAttributes);
-
-			//int drawMany[] = new int[2 * 9 * 9];
-			//int k = 0;
+			int[] lodInstanceCount = new int[detailLevels.length];
+			ByteBuffer lodByteBuffer[] = new ByteBuffer[detailLevels.length];
 			
-			int count = 0;
+			//ByteBuffer summariesAttributes = MemoryUtil.memAlloc(9 * 9 * (4 + 2 * 4));
+			//MemFreeByteBuffer auto_free_summariesAttributes = new MemFreeByteBuffer(summariesAttributes);
+			//int count = 0;
+
+			Vector2d center = new Vector2d();
 			for(int i = -4; i <= 4; i++)
 				for(int j = -4; j <= 4; j++) {
 					int regionI = regionX + i;
 					int regionJ = regionZ + j;
 					
+					center.set(regionI * 256 + 128, regionJ * 256 + 128);
+					
+					int lod = detailLevels.length - (int) (Math.pow(Math.min(1024, center.distance(playerCenter)) / 1024, 0.5) * detailLevels.length);
+					//System.out.println((Math.min(512, center.distance(playerCenter)) / 512f * detailLevels.length));
+					//System.out.println(center.distance(playerCenter));
+					if(lod <= 1) lod = 1;
+					if(lod >= detailLevels.length)
+						lod = detailLevels.length - 1;
+					//System.out.println("lod:"+lod);
+			
+					//lod = Math.random() > 0.5 ? 1 : 2;
+					ByteBuffer summariesAttributes = lodByteBuffer[lod];
+					
 					int index = worldRenderer.getSummariesTexturesHolder().getSummaryIndex(regionI, regionJ);
 					if(index == -1)
 						continue;
+					
+					if(summariesAttributes == null) {
+						summariesAttributes = MemoryUtil.memAlloc(9 * 9 * (4 + 2 * 4));
+						lodByteBuffer[lod] = summariesAttributes;
+					}
 					
 					summariesAttributes.putFloat(regionI * 256);
 					summariesAttributes.putFloat(regionJ * 256);
 					summariesAttributes.putInt(index);
 					
-					count++;
+					lodInstanceCount[lod]++;
 				}
-			summariesAttributes.flip();
 			
-			renderer.bindAttribute("vertexIn", grid32x32.asAttributeSource(VertexFormat.FLOAT, 3, 0, 0L));
-			renderer.bindAttribute("displacementIn", gridAttributes.asAttributeSource(VertexFormat.FLOAT, 2, (4 + 2 * 4), 0L, 1));
-			renderer.bindAttribute("indexIn", gridAttributes.asIntegerAttributeSource(VertexFormat.INTEGER, 1, (4 + 2 * 4), 8L, 1));
+			//DC = # of lods
+			for(int lod = 0; lod < detailLevels.length; lod++) {
 
-			gridAttributes.uploadData(auto_free_summariesAttributes);
-			
-			renderer.draw(Primitive.TRIANGLE, 0, 32*32*2*3, count);
-			
+				//Check if anything was supposed to be drew at this lod
+				ByteBuffer summariesAttributes = lodByteBuffer[lod];
+				if(summariesAttributes == null)
+					continue;
+				
+				//Flip buffer, box it for autodeletion, upload it
+				summariesAttributes.flip();
+				MemFreeByteBuffer auto_free_summariesAttributes = new MemFreeByteBuffer(summariesAttributes);
+				gridAttributes.uploadData(auto_free_summariesAttributes);
+				
+				renderer.bindAttribute("vertexIn", grids[lod].asAttributeSource(VertexFormat.FLOAT, 3, 0, 0L));
+				renderer.bindAttribute("displacementIn", gridAttributes.asAttributeSource(VertexFormat.FLOAT, 2, (4 + 2 * 4), 0L, 1));
+				renderer.bindAttribute("indexIn", gridAttributes.asIntegerAttributeSource(VertexFormat.INTEGER, 1, (4 + 2 * 4), 8L, 1));
+				
+				renderer.draw(Primitive.TRIANGLE, 0, detailLevels[lod]*detailLevels[lod]*2*3, lodInstanceCount[lod]);
+				renderer.flush();
+			}
 		}
 		
 		renderer.flush();
@@ -187,6 +227,9 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 	
 	@Override
 	public void destroy() {
-		
+		for(int i = 0; i < detailLevels.length; i++) {
+			grids[i].destroy();
+		}
+		gridAttributes.destroy();
 	}
 }
