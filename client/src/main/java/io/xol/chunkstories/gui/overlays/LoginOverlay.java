@@ -1,5 +1,7 @@
 package io.xol.chunkstories.gui.overlays;
 
+import io.xol.chunkstories.api.gui.FocusableGuiElement;
+import io.xol.chunkstories.api.gui.GuiElement;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import org.joml.Vector4f;
@@ -133,7 +135,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 			}
 		}
 		
-		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 12, 12 , "Copyright 2016 XolioWare Interactive", 2, 2, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 12, 12 , "Copyright 2017 XolioWare Interactive", 2, 2, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 		//FontRenderer2.drawTextUsingSpecificFont(12, 12, 0, 32, "Copyright 2016 XolioWare Interactive", BitmapFont.SMALLFONTS);
 	}
 	
@@ -156,7 +158,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 		{
 			Client.offline = true;
 			Client.username = "OfflineUser" + (int) (Math.random() * 1000);
-			gameWindow.setLayer(new MainMenuOverlay(gameWindow, this));
+			gameWindow.setLayer(new MainMenuOverlay(gameWindow, parentLayer));
 			//this.mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));//eng.changeScene(new MainMenu(eng));
 		}
 		else
@@ -172,6 +174,25 @@ public class LoginOverlay extends Layer implements HttpRequester
 			autologin = false;
 		else if(input.equals("enter"))
 			connect();
+		else if(input.equals("tab")) {
+			int shift = gameWindow.getInputsManager().getInputByName("shift").isPressed() ? -1 : 1;
+			int i = this.elements.indexOf(this.focusedElement);
+			
+			GuiElement elem = null;
+			
+			while(elem == null || !(elem instanceof FocusableGuiElement)) {
+				i += shift;
+				if(i < 0)
+					i = this.elements.size();
+				if(i >= this.elements.size())
+					i = 0;
+				
+				elem = this.elements.get(i);
+			}
+			
+			if(elem != null)
+				this.focusedElement = (FocusableGuiElement) elem;
+		}
 		
 		return super.handleInput(input);
 	}
