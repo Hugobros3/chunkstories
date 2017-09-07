@@ -36,6 +36,7 @@ import io.xol.chunkstories.renderer.lights.ComputedShadowMap;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 import io.xol.chunkstories.renderer.sky.DefaultSkyRenderer;
 import io.xol.chunkstories.renderer.terrain.FarTerrainMeshRenderer;
+import io.xol.chunkstories.renderer.terrain.FarTerrainNoMeshRenderer;
 import io.xol.chunkstories.renderer.terrain.SummariesArrayTexture;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -90,7 +91,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		
 		this.entitiesRenderer = new EntitiesRenderer(world);
 		this.particlesRenderer = new ClientParticlesRenderer(world);
-		this.farTerrainRenderer = new FarTerrainMeshRenderer(world, this);
+		this.farTerrainRenderer = new FarTerrainNoMeshRenderer(this);
 		this.summariesTexturesHolder = new SummariesArrayTexture(client);
 		this.weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
 		this.skyRenderer = new DefaultSkyRenderer(world);

@@ -5,8 +5,10 @@
 
 //Vertex inputs
 in vec4 vertexIn;
-in int voxelDataIn;
+//in int voxelDataIn;
 in vec4 normalIn;
+in vec4 displacementIn;
+in int indexIn;
 
 //Passed variables
 out vec3 vertexPassed;
@@ -16,9 +18,10 @@ out vec2 textureCoord;
 out vec3 eyeDirection;
 out float fogIntensity;
 out float fresnelTerm;
+out int indexPassed;
 
 //Complements vertexIn
-uniform vec2 chunkPosition;
+uniform vec2 visualOffset;
 
 //Sky
 uniform float sunIntensity;
@@ -44,6 +47,8 @@ uniform float viewDistance;
 uniform float fogStartDistance;
 uniform float fogEndDistance;
 
+uniform usampler2DArray heights;
+
 //Unused
 //flat out int voxelData;
 
@@ -53,13 +58,18 @@ void main()
 	vec4 vertice = vec4(vertexIn.xyz, 1.0);
 	vertice.y -= 0.2;
 	
-	textureCoord = (vertice.zx + vec2(0.5))/256.0;
+	vec2 inMeshCoords = (vertice.zx + vec2(0.5))/256.0;
+	textureCoord = inMeshCoords;
 	
 	//Normals decoding and passing
-	normalPassed = normalIn.xyz * 0.5 - vec3(0.5);
-	normalPassed = normalize(normalPassed);
+	//normalPassed = normalIn.xyz * 0.5 - vec3(0.5);
+	//normalPassed = normalize(normalPassed);
+	normalPassed = vec3(0.0, 1.0, 0.0);
 	
-	vertice.xz += chunkPosition.xy;
+	indexPassed = indexIn;
+	vertice.xz += displacementIn.xy;
+	vertice.y += texture(heights, vec3(inMeshCoords, indexIn)).r;
+	//vertice.xz += visualOffset.xy;
 	
 	//Fresnel equation for water
 	fresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(vertice.xyz - camPos), normalPassed), 0.0, 1.0);

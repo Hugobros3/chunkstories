@@ -316,6 +316,17 @@ public class RenderingContext implements RenderingInterface
 	}
 	
 	@Override
+	public RenderingCommand draw(Primitive p, int startAt, int count, int instances)
+	{
+		RenderingCommandImplementation command = new RenderingCommandMultipleInstances(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix,
+				startAt, count, instances);
+
+		queue(command);
+
+		return command;
+	}
+	
+	@Override
 	public RenderingCommand drawMany(Primitive p, int... startAndCountPairs)
 	{
 		if(startAndCountPairs.length == 0)

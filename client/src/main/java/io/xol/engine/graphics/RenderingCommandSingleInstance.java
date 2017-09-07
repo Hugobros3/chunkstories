@@ -32,20 +32,7 @@ public class RenderingCommandSingleInstance extends RenderingCommandImplementati
 		this.count = count;
 	}
 
-	public RenderingCommand merge(RenderingCommandSingleInstance mergeWith)
-	{
-		//Debug
-		throw new UnsupportedOperationException();
-
-		/*assert mergeWith.canMerge(this);
-		
-		for (Matrix4f foreightObject : mergeWith.getObjectsMatrices())
-			objectMatrices.add(foreightObject);
-		
-		return this;*/
-	}
-
-	private void setup(RenderingInterface renderingInterface) throws RenderingException
+	protected void setup(RenderingInterface renderingInterface) throws RenderingException
 	{
 		//Make sure to use the right shader
 		((ShaderProgram) shaderInterface).use();
@@ -89,6 +76,7 @@ public class RenderingCommandSingleInstance extends RenderingCommandImplementati
 		//Updates uniforms
 		this.uniformsConfiguration.setup(renderingInterface);
 
+		((ShaderProgram) this.shaderInterface).validate();
 	}
 
 	@Override

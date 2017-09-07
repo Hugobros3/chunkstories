@@ -34,20 +34,7 @@ public class RenderingCommandMultiDraw extends RenderingCommandImplementation
 		this.counts = counts;
 	}
 
-	public RenderingCommand merge(RenderingCommandMultiDraw mergeWith)
-	{
-		//Debug
-		throw new UnsupportedOperationException();
-
-		/*assert mergeWith.canMerge(this);
-		
-		for (Matrix4f foreightObject : mergeWith.getObjectsMatrices())
-			objectMatrices.add(foreightObject);
-		
-		return this;*/
-	}
-
-	private void setup(RenderingInterface renderingInterface) throws RenderingException
+	protected void setup(RenderingInterface renderingInterface) throws RenderingException
 	{
 		//Make sure to use the right shader
 		((ShaderProgram) shaderInterface).use();
@@ -91,6 +78,7 @@ public class RenderingCommandMultiDraw extends RenderingCommandImplementation
 		//Updates uniforms
 		this.uniformsConfiguration.setup(renderingInterface);
 
+		((ShaderProgram) this.shaderInterface).validate();
 	}
 
 	@Override

@@ -330,6 +330,8 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 			renderingContext.bindArrayTexture("heights", worldRenderer.getSummariesTexturesHolder().getHeightsArrayTexture());
 			renderingContext.bindArrayTexture("topVoxels", worldRenderer.getSummariesTexturesHolder().getTopVoxelsArrayTexture());
 			
+			renderingContext.bindTexture1D("blocksTexturesSummary", getBlocksTexturesSummary());
+			
 			int index = worldRenderer.getSummariesTexturesHolder().getSummaryIndex(regionSummaryData.getRegionX(), regionSummaryData.getRegionZ());
 			if(index == -1) {
 				//System.out.println("index == -1");
@@ -348,12 +350,10 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 			regionSummaryData.heightsTexture.setTextureWrapping(false);
 			regionSummaryData.heightsTexture.setLinearFiltering(false);*/
 			
-			renderingContext.bindTexture1D("blocksTexturesSummary", getBlocksTexturesSummary());
-			
 			//Actual region position
 			terrainShader.setUniform2f("regionPosition", regionSummaryData.getRegionX(), regionSummaryData.getRegionZ());
 			//Displayed position
-			terrainShader.setUniform2f("chunkPosition", regionMesh.regionDisplayedX * 256, regionMesh.regionDisplayedZ * 256);
+			terrainShader.setUniform2f("visualOffset", regionMesh.regionDisplayedX * 256, regionMesh.regionDisplayedZ * 256);
 
 			//Checks this regionMesh instance has it's stuff uploaded already
 			if (!regionMesh.verticesObject.isDataPresent())

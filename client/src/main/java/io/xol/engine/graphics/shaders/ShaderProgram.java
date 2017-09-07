@@ -47,6 +47,7 @@ public class ShaderProgram implements ShaderInterface
 	private int vertexShaderId;
 	private int fragShaderId;
 
+	boolean needValidation = false;
 	boolean loadOK = false;
 
 	private static FloatBuffer matrix4fBuffer = BufferUtils.createFloatBuffer(16);
@@ -220,36 +221,8 @@ public class ShaderProgram implements ShaderInterface
 
 			return;
 		}
-
-		glValidateProgram(shaderProgramId);
-
-		if (glGetProgrami(shaderProgramId, GL_VALIDATE_STATUS) == GL_FALSE)
-		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Failed to validate program " + filename + "", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
-
-			String errorsSource = glGetProgramInfoLog(shaderProgramId, 5000);
-
-			String[] errorsLines = errorsSource.split("\n");
-			String[] sourceLines = fragSource.toString().split("\n");
-			for (String line : errorsLines)
-			{
-				ChunkStoriesLoggerImplementation.getInstance().log(line, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
-				if (line.toLowerCase().startsWith("error: "))
-				{
-					String[] parsed = line.split(":");
-					if (parsed.length >= 3)
-					{
-						int lineNumber = Integer.parseInt(parsed[2]);
-						if (sourceLines.length > lineNumber)
-						{
-							System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
-						}
-					}
-				}
-			}
-
-			return;
-		}
+		
+		needValidation = true;
 
 		loadOK = true;
 	}
@@ -495,14 +468,51 @@ public class ShaderProgram implements ShaderInterface
 	{
 		if (currentProgram == shaderProgramId)
 			return;
-
+		
 		glUseProgram(shaderProgramId);
+		
 		currentProgram = shaderProgramId;
 		//Reset uniforms when changing shader
 		
 		//setUniforms.clear();
 		uncommitedUniforms.clear();
 		commitedUniforms.clear();
+	}
+	
+	public void validate() {
+		if(needValidation) {
+			glValidateProgram(shaderProgramId);
+
+			if (glGetProgrami(shaderProgramId, GL_VALIDATE_STATUS) == GL_FALSE)
+			{
+				ChunkStoriesLoggerImplementation.getInstance().log("Failed to validate program " + filename + "", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+
+				String errorsSource = glGetProgramInfoLog(shaderProgramId, 5000);
+
+				String[] errorsLines = errorsSource.split("\n");
+				//String[] sourceLines = fragSource.toString().split("\n");
+				for (String line : errorsLines)
+				{
+					ChunkStoriesLoggerImplementation.getInstance().log(line, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+					if (line.toLowerCase().startsWith("error: "))
+					{
+						String[] parsed = line.split(":");
+						if (parsed.length >= 3)
+						{
+							int lineNumber = Integer.parseInt(parsed[2]);
+							/*if (sourceLines.length > lineNumber)
+							{
+								System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
+							}*/
+						}
+					}
+				}
+
+				//return;
+			}
+			
+			needValidation = false;
+		}
 	}
 
 	static int currentProgram = -2;

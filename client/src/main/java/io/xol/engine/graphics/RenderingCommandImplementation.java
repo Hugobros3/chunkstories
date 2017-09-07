@@ -70,37 +70,6 @@ public abstract class RenderingCommandImplementation implements RenderingCommand
 		return pipelineConfiguration;
 	}
 
-	/**
-	 * Used to automatically instanciate similar rendering commands
-	 */
-	public final boolean canMerge(RenderingCommand renderingCommand)
-	{
-		if(getPrimitive() != renderingCommand.getPrimitive())
-			return false;
-		
-		//Check shader
-		if (!getShader().equals(renderingCommand.getShader()))
-			return false;
-
-		//These rendering commands use the same pipeline configuration
-		if(!getPipelineConfiguration().equals(renderingCommand.getPipelineConfiguration()))
-			return false;
-		
-		//These rendering commands do not use different textures for the same samplers
-		if (!getBoundTextures().isCompatibleWith(renderingCommand.getBoundTextures()))
-			return false;
-
-		//These rendering commands do not use different attributes sources for the same attribute locations
-		if (!getAttributesConfiguration().isCompatibleWith(renderingCommand.getAttributesConfiguration()))
-			return false;
-
-		//These rendering commands do not sets differents values to the same uniforms
-		if (!getUniformsConfiguration().isCompatibleWith(renderingCommand.getUniformsConfiguration()))
-			return false;
-
-		return true;
-	}
-
 	@Override
 	public Primitive getPrimitive()
 	{

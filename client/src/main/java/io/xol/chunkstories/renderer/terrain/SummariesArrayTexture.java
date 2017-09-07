@@ -129,13 +129,9 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 						if(sum != null && sum.isLoaded()) {
 							
 							loadHeights((RegionSummaryImplementation)sum, bb);
-							/*glBindTexture(GL_TEXTURE_2D_ARRAY, heightsArrayTextureId);
-							glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, slot, 256, 256, 1, GL_R16UI, GL_INT, bb);*/
 							heights.uploadTextureData(slot, 0, bb);
 
 							loadTopVoxels((RegionSummaryImplementation)sum, bb);
-							/*glBindTexture(GL_TEXTURE_2D_ARRAY, topVoxelsArrayTextureId);
-							glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, slot, 256, 256, 1, GL_R16UI, GL_INT, bb);*/
 							topVoxels.uploadTextureData(slot, 0, bb);
 							
 							arrayTextureContents[slot].hasData = true;

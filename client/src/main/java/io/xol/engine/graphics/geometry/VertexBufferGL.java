@@ -14,6 +14,8 @@ import io.xol.engine.concurrency.TrivialFence;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL33.*;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
@@ -369,15 +371,18 @@ public class VertexBufferGL implements VertexBuffer
 	class VerticesObjectAsAttribute implements AttributeSource
 	{
 		VertexFormat format;
-		int dimensions, stride;
+		int dimensions, stride, divisor;
 		long offset;
+		boolean asIntAttribute;
 
-		public VerticesObjectAsAttribute(VertexFormat format, int dimensions, int stride, long offset)
+		public VerticesObjectAsAttribute(VertexFormat format, int dimensions, int stride, long offset, int divisor, boolean asIntAttribute)
 		{
 			this.format = format;
 			this.dimensions = dimensions;
 			this.stride = stride;
 			this.offset = offset;
+			this.divisor = divisor;
+			this.asIntAttribute = asIntAttribute;
 		}
 
 		@Override
@@ -390,29 +395,39 @@ public class VertexBufferGL implements VertexBuffer
 			if(!isDataPresent())
 				throw new RuntimeException("No VBO data uploaded | "+Client.getInstance().getGameWindow().getRenderingContext());
 			//Set pointer
-			glVertexAttribPointer(gl_AttributeLocation, dimensions, format.glId, format.normalized, stride, offset);
+			if(asIntAttribute)
+				glVertexAttribIPointer(gl_AttributeLocation, dimensions, format.glId, stride, offset);
+			else
+				glVertexAttribPointer(gl_AttributeLocation, dimensions, format.glId, format.normalized, stride, offset);
+			glVertexAttribDivisor(gl_AttributeLocation, divisor);
 		}
 
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.geometry.VertexBuffer#asAttributeSource(io.xol.engine.graphics.geometry.VertexFormat, int)
-	 */
 	@Override
 	public AttributeSource asAttributeSource(VertexFormat format, int dimensions)
 	{
-		return new VerticesObjectAsAttribute(format, dimensions, 0, 0);
+		return new VerticesObjectAsAttribute(format, dimensions, 0, 0, 0, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.geometry.VertexBuffer#asAttributeSource(io.xol.engine.graphics.geometry.VertexFormat, int, int, long)
-	 */
 	@Override
 	public AttributeSource asAttributeSource(VertexFormat format, int dimensions, int stride, long offset)
 	{
-		return new VerticesObjectAsAttribute(format, dimensions, stride, offset);
+		return new VerticesObjectAsAttribute(format, dimensions, stride, offset, 0, false);
 	}
 
+	@Override
+	public AttributeSource asAttributeSource(VertexFormat format, int dimensions, int stride, long offset, int divisor)
+	{
+		return new VerticesObjectAsAttribute(format, dimensions, stride, offset, divisor, false);
+	}
+
+	@Override
+	public AttributeSource asIntegerAttributeSource(VertexFormat format, int dimensions, int stride, long offset, int divisor)
+	{
+		return new VerticesObjectAsAttribute(format, dimensions, stride, offset, divisor, true);
+	}
+	
 	/* (non-Javadoc)
 	 * @see io.xol.engine.graphics.geometry.VertexBuffer#getVramUsage()
 	 */

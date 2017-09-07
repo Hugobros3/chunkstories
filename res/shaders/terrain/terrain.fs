@@ -15,6 +15,8 @@ in vec3 eyeDirection;
 in float fresnelTerm;
 in float fogIntensity;
 
+flat in int indexPassed;
+
 //Framebuffer outputs
 out vec4 shadedFramebufferOut;
 
@@ -82,15 +84,17 @@ void main()
 	if(vertexPassed.y-1.5 > heightCoveredStart && vertexPassed.y-0.0-32.0 < heightCoveredEnd && ignoreWorldCulling < 1.0)
 		discard;*/
 
-	//int voxelDataActual = voxelData;
-	uint voxelId = texture(topVoxels, vec3(textureCoord, arrayIndex)).r;
+	//arrayIndex
+	uint voxelId = texture(topVoxels, vec3(textureCoord, indexPassed)).r;
 	
 	//512-voxel types summary... not best
-	vec4 diffuseColor = texture(blocksTexturesSummary, (float(voxelId))/512.0);
+	//vec4 diffuseColor = texture(blocksTexturesSummary, (float(voxelId))/512.0);
+	
+	vec4 diffuseColor = vec4(1.0, 0.0, 0.0, 1.0);
 	
 	//Apply plants color if alpha is < 1.0
-	if(diffuseColor.a < 1.0)
-		diffuseColor.rgb *= texture(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
+	//if(diffuseColor.a < 1.0)
+	//	diffuseColor.rgb *= texture(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
 	
 	//Apply gamma then
 	diffuseColor.rgb = pow(diffuseColor.rgb, vec3(gamma));
@@ -173,4 +177,5 @@ void main()
 	
 	//Mix in fog
 	shadedFramebufferOut = mix(vec4(finalColor, 1.0),vec4(fogColor,1.0), fogIntensity);
+	//shadedFramebufferOut = vec4(1.0, 0.0, 0.0, 1.0);
 }

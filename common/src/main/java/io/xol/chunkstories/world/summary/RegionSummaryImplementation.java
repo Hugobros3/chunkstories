@@ -1,16 +1,11 @@
 package io.xol.chunkstories.world.summary;
 
-import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
-import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.io.IOTasks.IOTask;
@@ -18,8 +13,6 @@ import io.xol.engine.concurrency.SimpleFence;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
