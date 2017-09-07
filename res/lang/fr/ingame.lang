@@ -16,4 +16,4 @@ login.login Connection
 login.register Inscrivez-vous sur http://chunkstories.xyz
 
 login.auto1 Connection automatique dans 
-login.auto2  secondes...
+login.auto2  secondes... (ESC pour annuler)

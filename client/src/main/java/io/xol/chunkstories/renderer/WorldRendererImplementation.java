@@ -35,7 +35,8 @@ import io.xol.chunkstories.renderer.decals.DecalsRendererImplementation;
 import io.xol.chunkstories.renderer.lights.ComputedShadowMap;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 import io.xol.chunkstories.renderer.sky.DefaultSkyRenderer;
-import io.xol.chunkstories.renderer.terrain.FarTerrainRenderer;
+import io.xol.chunkstories.renderer.terrain.FarTerrainMeshRenderer;
+import io.xol.chunkstories.renderer.terrain.SummariesArrayTexture;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
@@ -58,6 +59,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	DecalsRendererImplementation decalsRenderer;
 	ClientParticlesRenderer particlesRenderer;
 	FarTerrainRenderer farTerrainRenderer;
+	SummariesTexturesHolder summariesTexturesHolder;
 	WorldEffectsRenderer weatherEffectsRenderer;
 	ShadowMapRenderer shadower;
 	BloomRenderer bloomRenderer;
@@ -88,7 +90,8 @@ public class WorldRendererImplementation implements WorldRenderer
 		
 		this.entitiesRenderer = new EntitiesRenderer(world);
 		this.particlesRenderer = new ClientParticlesRenderer(world);
-		this.farTerrainRenderer = new FarTerrainRenderer(world, this);
+		this.farTerrainRenderer = new FarTerrainMeshRenderer(world, this);
+		this.summariesTexturesHolder = new SummariesArrayTexture(client);
 		this.weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
 		this.skyRenderer = new DefaultSkyRenderer(world);
 		this.decalsRenderer = new DecalsRendererImplementation(this);
@@ -113,6 +116,8 @@ public class WorldRendererImplementation implements WorldRenderer
 	@Override
 	public void renderWorld(RenderingInterface renderingInterface)
 	{
+		((SummariesArrayTexture) summariesTexturesHolder).update();
+		
 		if(RenderingConfig.doDynamicCubemaps)
 			cubemapRenderer.renderWorldCubemap(renderingInterface, renderBuffers.environmentMap, 128, true);
 		
@@ -519,6 +524,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		skyRenderer.destroy();
 		particlesRenderer.destroy();
 		farTerrainRenderer.destroy();
+		summariesTexturesHolder.destroy();
 		entitiesRenderer.clearLoadedEntitiesRenderers();
 		chunksRenderer.destroy();
 	}
@@ -740,7 +746,10 @@ public class WorldRendererImplementation implements WorldRenderer
 	/** Debug-related, usually not called in gameplay */
 	public void reloadContentSpecificStuff()
 	{
-		farTerrainRenderer.markVoxelTexturesSummaryDirty();
+		//TODO REMOVE REMOVE REMOVE
+		if(farTerrainRenderer instanceof FarTerrainMeshRenderer)
+			((FarTerrainMeshRenderer) farTerrainRenderer).markVoxelTexturesSummaryDirty();
+		
 		entitiesRenderer.clearLoadedEntitiesRenderers();
 		
 		worldTextures.reload();
@@ -796,5 +805,10 @@ public class WorldRendererImplementation implements WorldRenderer
 
 	public CubemapRenderer getCubemapRenderer() {
 		return this.cubemapRenderer;
+	}
+
+	@Override
+	public SummariesTexturesHolder getSummariesTexturesHolder() {
+		return summariesTexturesHolder;
 	}
 }

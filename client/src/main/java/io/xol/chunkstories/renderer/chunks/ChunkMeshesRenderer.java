@@ -18,6 +18,7 @@ import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer;
+import io.xol.chunkstories.api.rendering.WorldRenderer.FarTerrainRenderer.ReadyVoxelMeshesMask;
 import io.xol.chunkstories.api.rendering.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
@@ -338,7 +339,7 @@ public class ChunkMeshesRenderer
 		return new RenderedChunksMask(camera, Math.max(2, (int)(RenderingConfig.viewDistance / 32f) - 1), 5);
 	}
 	
-	public class RenderedChunksMask {
+	public class RenderedChunksMask implements ReadyVoxelMeshesMask {
 
 		int centerChunkX, centerChunkY, centerChunkZ;
 		

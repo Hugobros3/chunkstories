@@ -20,8 +20,11 @@ out vec4 shadedFramebufferOut;
 
 //Textures
 uniform sampler2D normalTexture; // Water surface
-uniform sampler2D heightMap; // Heightmap
-uniform sampler2D groundTexture; // Block ids
+
+uniform usampler2DArray heights; // Heightmap
+uniform usampler2DArray topVoxels; // Block ids
+uniform int arrayIndex;
+
 uniform sampler1D blocksTexturesSummary; // Atlas ids -> diffuse rgb
 uniform sampler2D vegetationColorTexture; //Vegetation
 
@@ -80,10 +83,10 @@ void main()
 		discard;*/
 
 	//int voxelDataActual = voxelData;
-	float voxelId = texture(groundTexture, textureCoord).r;
+	uint voxelId = texture(topVoxels, vec3(textureCoord, arrayIndex)).r;
 	
 	//512-voxel types summary... not best
-	vec4 diffuseColor = texture(blocksTexturesSummary, voxelId/512.0);
+	vec4 diffuseColor = texture(blocksTexturesSummary, (float(voxelId))/512.0);
 	
 	//Apply plants color if alpha is < 1.0
 	if(diffuseColor.a < 1.0)

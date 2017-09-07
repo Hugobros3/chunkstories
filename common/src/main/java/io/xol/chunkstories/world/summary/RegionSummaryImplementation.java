@@ -64,8 +64,8 @@ public class RegionSummaryImplementation implements RegionSummary
 	//Textures (client renderer)
 	public final AtomicBoolean texturesUpToDate = new AtomicBoolean(false);
 
-	public final Texture2D heightsTexture;
-	public final Texture2D voxelTypesTexture;
+	//public final Texture2D heightsTexture;
+	//public final Texture2D voxelTypesTexture;
 	
 	protected final Fence loadFence;
 
@@ -82,7 +82,7 @@ public class RegionSummaryImplementation implements RegionSummary
 			handler = null;
 
 		//Create rendering stuff only if we're a client world
-		if (world instanceof WorldClient)
+		/*if (world instanceof WorldClient)
 		{
 			heightsTexture = ((ClientInterface)world.getGameContext()).getContent().textures().newTexture2D(TextureFormat.RED_32F, 256, 256);
 			voxelTypesTexture = ((ClientInterface)world.getGameContext()).getContent().textures().newTexture2D(TextureFormat.RED_32F, 256, 256);
@@ -91,7 +91,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		{
 			heightsTexture = null;
 			voxelTypesTexture = null;
-		}
+		}*/
 
 		//Add a fence to wait out loading
 		loadFence = this.world.ioHandler.requestRegionSummaryLoad(this);
@@ -313,8 +313,8 @@ public class RegionSummaryImplementation implements RegionSummary
 		z &= 0xFF;
 		return ids[index(x, z)];
 	}
-
-	private boolean uploadTextures()
+	
+	/*private boolean uploadTextures_()
 	{
 		if (heights == null)
 			return false;
@@ -356,7 +356,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		//Flag it
 		texturesUpToDate.set(true);
 		return true;
-	}
+	}*/
 
 	void unloadSummary()
 	{
@@ -366,11 +366,11 @@ public class RegionSummaryImplementation implements RegionSummary
 			if(loadFence instanceof SimpleFence)
 				((SimpleFence) loadFence).signal();
 			
-			if (world instanceof WorldClient)
+			/*if (world instanceof WorldClient)
 			{
 				heightsTexture.destroy();
 				voxelTypesTexture.destroy();
-			}
+			}*/
 
 			if (!worldSummariesHolder.removeSummary(this))
 			{
@@ -473,9 +473,9 @@ public class RegionSummaryImplementation implements RegionSummary
 		return ids;
 	}
 	
-	public void setData(int[] heightData, int[] voxelData)
+	public void setSummaryData(int[] heightData, int[] voxelData)
 	{
-		texturesUpToDate.set(false);
+		//texturesUpToDate.set(false);
 		
 		// 512kb per summary, use of max mipmaps for heights
 		heights = new int[(int) Math.ceil(256 * 256 * (1 + 1 / 3D))];
@@ -487,14 +487,18 @@ public class RegionSummaryImplementation implements RegionSummary
 		recomputeMetadata();
 		
 		summaryLoaded.set(true);
+		
+		if(world instanceof WorldClient) {
+			((WorldClient)world).getWorldRenderer().getSummariesTexturesHolder().warnDataHasArrived(regionX, regionZ);
+		}
 	}
 	
 	private void recomputeMetadata() {
 		this.computeHeightMetadata();
 		this.computeMinMax();
 		
-		if(world instanceof WorldClient)
-			uploadTextures();
+		//if(world instanceof WorldClient)
+		//	uploadTextures();
 	}
 
 	private void computeMinMax()

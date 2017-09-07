@@ -576,7 +576,7 @@ public class IOTasks extends Thread implements TaskExecutor
 						ChunkStoriesLoggerImplementation.getInstance().error("Could not load load chunk summary at " + summary + " cause: " + e.getMessage());
 					}
 
-					summary.setData(heights, ids);
+					summary.setSummaryData(heights, ids);
 				}
 				catch (FileNotFoundException e)
 				{
@@ -601,7 +601,7 @@ public class IOTasks extends Thread implements TaskExecutor
 						ids[x * 256 + z] = t;
 					}
 
-				summary.setData(heights, ids);
+				summary.setSummaryData(heights, ids);
 				// then save
 
 				//summary.save(summary.handler);

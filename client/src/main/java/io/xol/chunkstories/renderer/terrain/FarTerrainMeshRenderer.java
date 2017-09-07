@@ -20,7 +20,7 @@ import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.WorldRenderer.FarTerrainMeshRenderer;
+import io.xol.chunkstories.api.rendering.WorldRenderer.FarTerrainRenderer;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
@@ -44,7 +44,7 @@ import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class FarTerrainRenderer implements FarTerrainMeshRenderer
+public class FarTerrainMeshRenderer implements FarTerrainRenderer
 {
 	private static final int TRIANGLES_PER_FACE = 2; // 2 triangles per face
 	private static final int TRIANGLE_SIZE = 3; // 3 vertex per triangles
@@ -81,7 +81,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 	private long lastTerrainUpdateTiming;
 	private long timeToWaitBetweenTerrainUpdates = 2500;
 
-	public FarTerrainRenderer(WorldClientCommon world, WorldRendererImplementation worldRenderer)
+	public FarTerrainMeshRenderer(WorldClientCommon world, WorldRendererImplementation worldRenderer)
 	{
 		this.world = world;
 		this.worldRenderer = worldRenderer;
@@ -144,7 +144,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 		return blockTexturesSummary;
 	}
 
-	public void renderTerrain(RenderingInterface renderingContext, RenderedChunksMask mask)
+	public void renderTerrain(RenderingInterface renderingContext, ReadyVoxelMeshesMask mask)
 	{
 		//Check for world updates
 		Vector3dc cameraPosition = renderingContext.getCamera().getCameraPosition();
@@ -212,7 +212,7 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 	List<Integer> temp = new ArrayList<Integer>();
 	List<Integer> temp2 = new ArrayList<Integer>();
 	
-	private int drawTerrainBits(RenderingInterface renderingContext, RenderedChunksMask mask, ShaderInterface terrainShader)
+	private int drawTerrainBits(RenderingInterface renderingContext, ReadyVoxelMeshesMask mask, ShaderInterface terrainShader)
 	{
 		//Starts asynch regeneration
 		if (farTerrainUpdatesToTakeIntoAccount.get() > 0 && (System.currentTimeMillis() - this.lastTerrainUpdateTiming) > this.timeToWaitBetweenTerrainUpdates)
@@ -327,13 +327,26 @@ public class FarTerrainRenderer implements FarTerrainMeshRenderer
 			if(regionSummaryData.isUnloaded())
 				continue;
 			
-			renderingContext.bindTexture2D("groundTexture", regionSummaryData.voxelTypesTexture);
+			renderingContext.bindArrayTexture("heights", worldRenderer.getSummariesTexturesHolder().getHeightsArrayTexture());
+			renderingContext.bindArrayTexture("topVoxels", worldRenderer.getSummariesTexturesHolder().getTopVoxelsArrayTexture());
+			
+			int index = worldRenderer.getSummariesTexturesHolder().getSummaryIndex(regionSummaryData.getRegionX(), regionSummaryData.getRegionZ());
+			if(index == -1) {
+				//System.out.println("index == -1");
+				continue;
+			}
+			
+			//System.out.println("index:"+index);
+			
+			terrainShader.setUniform1i("arrayIndex", index);
+			
+			/*renderingContext.bindTexture2D("groundTexture", regionSummaryData.voxelTypesTexture);
 			regionSummaryData.voxelTypesTexture.setTextureWrapping(false);
 			regionSummaryData.voxelTypesTexture.setLinearFiltering(false);
 			
 			renderingContext.bindTexture2D("heightMap", regionSummaryData.heightsTexture);
 			regionSummaryData.heightsTexture.setTextureWrapping(false);
-			regionSummaryData.heightsTexture.setLinearFiltering(false);
+			regionSummaryData.heightsTexture.setLinearFiltering(false);*/
 			
 			renderingContext.bindTexture1D("blocksTexturesSummary", getBlocksTexturesSummary());
 			

@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTes
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
 import io.xol.chunkstories.api.rendering.target.RenderTargetManager;
 import io.xol.chunkstories.api.rendering.text.FontRenderer;
+import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.Texture1D;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
@@ -161,6 +162,12 @@ public class RenderingContext implements RenderingInterface
 	public TexturingConfiguration bindCubemap(String cubemapSamplerName, Cubemap cubemapTexture)
 	{
 		texturingConfiguration = texturingConfiguration.bindCubemap(cubemapSamplerName, cubemapTexture);
+		return texturingConfiguration;
+	}
+
+	@Override
+	public TexturingConfiguration bindArrayTexture(String textureSamplerName, ArrayTexture texture) {
+		texturingConfiguration = texturingConfiguration.bindArrayTexture(textureSamplerName, texture);
 		return texturingConfiguration;
 	}
 
