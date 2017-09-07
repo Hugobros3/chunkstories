@@ -15,7 +15,7 @@ in vec3 eyeDirection;
 in float fresnelTerm;
 in float fogIntensity;
 
-flat in int indexPassed;
+flat in ivec4 indexPassed;
 
 //Framebuffer outputs
 out vec4 shadedFramebufferOut;
@@ -74,6 +74,27 @@ uniform float ignoreWorldCulling;
 
 <include ../sky/sky.glsl>
 
+uint access(usampler2DArray tex, vec2 coords) {
+	if(coords.x <= 1.0) {
+		if(coords.y <= 1.0) {
+			return texture(tex, vec3(coords, indexPassed.x)).r;
+		}
+		else {
+			return texture(tex, vec3(coords - vec2(0.0, 1.0), indexPassed.y)).r;
+		}
+	}
+	else {
+		if(coords.y <= 1.0) {
+			return texture(tex, vec3(coords - vec2(1.0, 0.0), indexPassed.z)).r;
+		}
+		else {
+			return texture(tex, vec3(coords - vec2(1.0), indexPassed.w)).r;
+		}
+	}
+	
+	return 250;
+}
+
 void main()
 {
 	//Computes the zone covered by actual chunks
@@ -85,12 +106,18 @@ void main()
 		discard;*/
 
 	//arrayIndex
-	uint voxelId = texture(topVoxels, vec3(textureCoord, indexPassed)).r;
+	uint voxelId = access(topVoxels, textureCoord);//texture(topVoxels, vec3(textureCoord, indexPassed)).r;
+	
+	if(voxelId == 250)
+	{
+		shadedFramebufferOut = vec4(1.0, 1.0, 0.0, 1.0);
+		return;
+	}
 	
 	//512-voxel types summary... not best
 	//vec4 diffuseColor = texture(blocksTexturesSummary, (float(voxelId))/512.0);
 	
-	vec4 diffuseColor = vec4(1.0, 0.0, 0.0, 1.0);
+	vec4 diffuseColor = vec4(0.5, float(voxelId) / 50, mod(float(voxelId), 1.0), 1.0);
 	
 	//Apply plants color if alpha is < 1.0
 	//if(diffuseColor.a < 1.0)
@@ -103,7 +130,7 @@ void main()
 	vec3 normal = normalPassed;
 	
 	//Water case
-	if(voxelId > 511.0)
+	if(voxelId == 128)
 	{
 		diffuseColor.rgb = pow(vec3(51 / 255.0, 105 / 255.0, 110 / 255.0), vec3(gamma));
 	
@@ -177,5 +204,6 @@ void main()
 	
 	//Mix in fog
 	shadedFramebufferOut = mix(vec4(finalColor, 1.0),vec4(fogColor,1.0), fogIntensity);
+	shadedFramebufferOut.w = 0.5;
 	//shadedFramebufferOut = vec4(1.0, 0.0, 0.0, 1.0);
 }

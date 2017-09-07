@@ -163,12 +163,13 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 		int ids[] = sum.getVoxelData();
 		for (int i = 0; i < 256 * 256; i++)
 		{
-			int id = ids[i];
-			Voxel v = VoxelsStore.get().getVoxelById(id);
-			if (v.getType().isLiquid())
+			bb.putInt(ids[i]);
+			//int id = ids[i];
+			//Voxel v = VoxelsStore.get().getVoxelById(id);
+			/*if (v.getType().isLiquid())
 				bb.putInt(512);
 			else
-				bb.putInt(((VoxelTextureAtlased)v.getVoxelTexture(id, VoxelSides.TOP, null)).positionInColorIndex);
+				bb.putInt(((VoxelTextureAtlased)v.getVoxelTexture(id, VoxelSides.TOP, null)).positionInColorIndex);*/
 		}
 		bb.flip();
 	}

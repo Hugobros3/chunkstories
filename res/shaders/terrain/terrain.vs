@@ -8,7 +8,7 @@ in vec4 vertexIn;
 //in int voxelDataIn;
 in vec4 normalIn;
 in vec4 displacementIn;
-in int indexIn;
+in ivec4 indexIn;
 
 //Passed variables
 out vec3 vertexPassed;
@@ -18,7 +18,7 @@ out vec2 textureCoord;
 out vec3 eyeDirection;
 out float fogIntensity;
 out float fresnelTerm;
-out int indexPassed;
+out ivec4 indexPassed;
 
 //Complements vertexIn
 uniform vec2 visualOffset;
@@ -48,9 +48,30 @@ uniform float fogStartDistance;
 uniform float fogEndDistance;
 
 uniform usampler2DArray heights;
+uniform int lodLevel;
+uniform int maskPresence;
 
 //Unused
 //flat out int voxelData;
+
+uint access(usampler2DArray tex, vec2 coords) {
+	if(coords.x <= 1.0) {
+		if(coords.y <= 1.0) {
+			return texture(tex, vec3(coords, indexIn.x)).r;
+		}
+		else {
+			return texture(tex, vec3(coords - vec2(0.0, 1.0), indexIn.y)).r;
+		}
+	}
+	else {
+		if(coords.y <= 1.0) {
+			return texture(tex, vec3(coords - vec2(1.0, 0.0), indexIn.z)).r;
+		}
+		else {
+			return texture(tex, vec3(coords - vec2(1.0), indexIn.w)).r;
+		}
+	}
+}
 
 void main()
 {
@@ -58,7 +79,7 @@ void main()
 	vec4 vertice = vec4(vertexIn.xyz, 1.0);
 	vertice.y -= 0.2;
 	
-	vec2 inMeshCoords = (vertice.zx + vec2(0.5))/256.0;
+	vec2 inMeshCoords = (vertice.zx + mod(displacementIn.yx, 256.0) + vec2(0.5))/256.0;
 	textureCoord = inMeshCoords;
 	
 	//Normals decoding and passing
@@ -68,7 +89,8 @@ void main()
 	
 	indexPassed = indexIn;
 	vertice.xz += displacementIn.xy;
-	vertice.y += texture(heights, vec3(inMeshCoords, indexIn)).r;
+	vertice.y += access(heights, inMeshCoords);//texture(heights, vec3(inMeshCoords, indexIn.x)).r;
+	
 	//vertice.xz += visualOffset.xy;
 	
 	//Fresnel equation for water
@@ -77,6 +99,11 @@ void main()
 	//Pass data
 	vertexPassed = vertice.xyz;
 	eyeDirection = vertice.xyz-camPos;
+	
+	if(lodLevel ==0 && maskPresence == 1) {
+		vertice.y -= (1.0 - clamp(length(eyeDirection), 0.0, 512) / 512.0) * 32;
+	}
+	
 	lightMapCoords = vec2(0.0, sunIntensity);
 	
 	//Computes fog
